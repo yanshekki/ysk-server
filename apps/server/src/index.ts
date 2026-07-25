@@ -1,4 +1,4 @@
-export { createAppContext } from './app-context.js';
+export { createAppContext, closeAppContext, applyProtection } from './app-context.js';
 export { createHttpServer, listen } from './http-server.js';
 export { runSetup } from './cli/setup.js';
 export { runUpdate } from './cli/update.js';

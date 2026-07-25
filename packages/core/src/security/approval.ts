@@ -1,10 +1,11 @@
 /**
- * Human-in-the-loop approval queue for high-risk actions.
+ * Human-in-the-loop approval queue — persisted via ApprovalRepository when provided.
  */
 
 import type { ApprovalStatus, RiskTier } from '@ysk/shared';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import { randomUUID } from 'node:crypto';
+import type { ApprovalRepository, ApprovalRow } from '../repositories/approval-repo.js';
 
 export interface ApprovalRecord {
   id: string;
@@ -19,11 +20,10 @@ export interface ApprovalRecord {
 }
 
 export class ApprovalQueue {
-  private readonly records = new Map<string, ApprovalRecord>();
+  private readonly memory = new Map<string, ApprovalRecord>();
 
-  /**
-   * Create a pending approval request for a high-risk action.
-   */
+  constructor(private readonly repo?: ApprovalRepository) {}
+
   request(input: {
     action: string;
     risk: RiskTier;
@@ -39,43 +39,41 @@ export class ApprovalQueue {
       payload: input.payload ?? {},
       createdAt: new Date().toISOString(),
     };
-    this.records.set(record.id, record);
+    if (this.repo) {
+      this.repo.insert(toRow(record));
+    } else {
+      this.memory.set(record.id, record);
+    }
     return { ...record };
   }
 
   get(id: string): ApprovalRecord | undefined {
-    const r = this.records.get(id);
+    if (this.repo) {
+      const row = this.repo.find(id);
+      return row ? fromRow(row) : undefined;
+    }
+    const r = this.memory.get(id);
     return r ? { ...r } : undefined;
   }
 
   list(status?: ApprovalStatus): ApprovalRecord[] {
-    const all = [...this.records.values()];
-    const filtered = status ? all.filter((r) => r.status === status) : all;
-    return filtered.map((r) => ({ ...r }));
+    if (this.repo) {
+      return this.repo.list(status).map(fromRow);
+    }
+    const all = [...this.memory.values()];
+    return (status ? all.filter((r) => r.status === status) : all).map((r) => ({ ...r }));
   }
 
-  /**
-   * Approve a pending request. Returns updated record.
-   */
   approve(id: string, decidedBy: string): ApprovalRecord {
     return this.decide(id, 'approved', decidedBy);
   }
 
-  /**
-   * Reject a pending request.
-   */
   reject(id: string, decidedBy: string): ApprovalRecord {
     return this.decide(id, 'rejected', decidedBy);
   }
 
-  /**
-   * Mark approved request as executed after successful run.
-   */
   markExecuted(id: string): ApprovalRecord {
-    const record = this.records.get(id);
-    if (!record) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Approval not found: ${id}`, { httpStatus: 404 });
-    }
+    const record = this.require(id);
     if (record.status !== 'approved') {
       throw new YskError(
         ErrorCodes.VALIDATION,
@@ -84,12 +82,10 @@ export class ApprovalQueue {
       );
     }
     record.status = 'executed';
+    this.persist(record);
     return { ...record };
   }
 
-  /**
-   * Ensure an approval id is approved before high-risk execute.
-   */
   assertApproved(id: string | undefined, action: string): void {
     if (!id) {
       throw new YskError(
@@ -98,7 +94,7 @@ export class ApprovalQueue {
         { httpStatus: 403, details: { action } },
       );
     }
-    const record = this.records.get(id);
+    const record = this.get(id);
     if (!record) {
       throw new YskError(ErrorCodes.NOT_FOUND, `Approval not found: ${id}`, { httpStatus: 404 });
     }
@@ -128,10 +124,7 @@ export class ApprovalQueue {
   }
 
   private decide(id: string, status: 'approved' | 'rejected', decidedBy: string): ApprovalRecord {
-    const record = this.records.get(id);
-    if (!record) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Approval not found: ${id}`, { httpStatus: 404 });
-    }
+    const record = this.require(id);
     if (record.status !== 'pending') {
       throw new YskError(ErrorCodes.VALIDATION, `Approval already ${record.status}`, {
         httpStatus: 400,
@@ -140,6 +133,56 @@ export class ApprovalQueue {
     record.status = status;
     record.decidedAt = new Date().toISOString();
     record.decidedBy = decidedBy;
+    this.persist(record);
     return { ...record };
   }
+
+  private require(id: string): ApprovalRecord {
+    const record = this.get(id);
+    if (!record) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Approval not found: ${id}`, { httpStatus: 404 });
+    }
+    // return mutable copy bound for persist — re-fetch into memory map if needed
+    if (!this.repo) {
+      return this.memory.get(id)!;
+    }
+    // for repo-backed, work on a mutable object then persist
+    return { ...record };
+  }
+
+  private persist(record: ApprovalRecord): void {
+    if (this.repo) {
+      this.repo.updateStatus(record.id, record.status, record.decidedBy);
+    } else {
+      this.memory.set(record.id, record);
+    }
+  }
+}
+
+function toRow(r: ApprovalRecord): ApprovalRow {
+  return {
+    id: r.id,
+    action: r.action,
+    risk: r.risk,
+    requested_by: r.requestedBy,
+    status: r.status,
+    payload: r.payload,
+    created_at: r.createdAt,
+    decided_at: r.decidedAt,
+    decided_by: r.decidedBy,
+  };
+}
+
+function fromRow(r: ApprovalRow): ApprovalRecord {
+  return {
+    id: r.id,
+    action: r.action,
+    risk: r.risk,
+    requestedBy: r.requested_by,
+    status: r.status,
+    payload: r.payload,
+    createdAt: r.created_at,
+    decidedAt: r.decided_at,
+    decidedBy: r.decided_by,
+  };
 }

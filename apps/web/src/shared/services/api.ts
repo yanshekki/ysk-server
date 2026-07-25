@@ -2,15 +2,18 @@
  * All backend calls go through this shared services layer.
  */
 
-import type { AuthLoginResponse, HealthResponse } from '@ysk/shared';
+import type { AuthLoginResponse, HealthResponse, ProjectDto } from '@ysk/shared';
+import { authStore } from '../stores/auth-store';
 
 const base = '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = authStore.getToken();
   const res = await fetch(`${base}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {}),
     },
   });
@@ -31,12 +34,46 @@ export const api = {
       body: JSON.stringify({ username, password }),
     });
   },
-  me(token: string): Promise<{ user: { username: string; roles: string[] } }> {
-    return request('/api/v1/auth/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  logout(): Promise<{ ok: boolean }> {
+    return request('/api/v1/auth/logout', { method: 'POST' });
   },
-  status(): Promise<{ product: string; version: string; tools: string[] }> {
+  me(): Promise<{ user: { username: string; roles: string[]; locale: string } }> {
+    return request('/api/v1/auth/me');
+  },
+  status(): Promise<{ product: string; version: string; tools: string[]; executeEnabled: boolean }> {
     return request('/api/v1/status');
+  },
+  listProjects(): Promise<{ items: ProjectDto[] }> {
+    return request('/api/v1/projects');
+  },
+  createProject(body: {
+    name: string;
+    domain?: string;
+    runtime?: string;
+  }): Promise<{ project: ProjectDto; osProvision: unknown }> {
+    return request('/api/v1/projects', { method: 'POST', body: JSON.stringify(body) });
+  },
+  deleteProject(id: string): Promise<{ ok: boolean }> {
+    return request(`/api/v1/projects/${id}`, { method: 'DELETE' });
+  },
+  listApprovals(): Promise<{ items: Array<Record<string, unknown>> }> {
+    return request('/api/v1/approvals?status=pending');
+  },
+  approve(id: string): Promise<unknown> {
+    return request(`/api/v1/approvals/${id}/approve`, { method: 'POST' });
+  },
+  audit(): Promise<{ items: Array<Record<string, unknown>> }> {
+    return request('/api/v1/audit');
+  },
+  executeTool(body: {
+    tool: string;
+    args?: Record<string, unknown>;
+    dryRun?: boolean;
+    approvalId?: string;
+  }): Promise<Record<string, unknown>> {
+    return request('/api/v1/tools/execute', { method: 'POST', body: JSON.stringify(body) });
+  },
+  listTools(): Promise<{ items: Array<Record<string, unknown>> }> {
+    return request('/api/v1/tools');
   },
 };

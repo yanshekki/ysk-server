@@ -1,5 +1,5 @@
 /**
- * Control-plane HTTP entry (no external framework — Node http only).
+ * Control-plane HTTP API — real auth, tools, projects, audit.
  */
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
@@ -11,11 +11,7 @@ import {
   type ResourceScope,
   type SystemRole,
 } from '@ysk/shared';
-import {
-  checkRbac,
-  executeToolCall,
-  evaluateProtection,
-} from '@ysk/core';
+import { checkRbac, executeToolCall, evaluateProtection } from '@ysk/core';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
 
@@ -33,6 +29,9 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(payload),
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
   });
   res.end(payload);
 }
@@ -47,12 +46,13 @@ function parseUrl(req: IncomingMessage): URL {
   return new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
 }
 
-/**
- * Create the YSK Server control-plane HTTP server.
- */
 export function createHttpServer(ctx: AppContext): Server {
   return createServer(async (req, res) => {
     try {
+      if (req.method === 'OPTIONS') {
+        return sendJson(res, 204, {});
+      }
+
       const url = parseUrl(req);
       const method = req.method ?? 'GET';
 
@@ -74,6 +74,8 @@ export function createHttpServer(ctx: AppContext): Server {
           version: VERSION,
           startedAt: ctx.startedAt,
           protection: ctx.protection,
+          dataDir: ctx.dataDir,
+          executeEnabled: ctx.host.executeEnabled(),
           tools: ctx.allowlist.list().map((t) => t.tool),
         });
       }
@@ -88,15 +90,70 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, result);
       }
 
+      if (method === 'POST' && url.pathname === '/api/v1/auth/logout') {
+        ctx.auth.logout(getBearer(req));
+        return sendJson(res, 200, { ok: true });
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/auth/me') {
         const user = ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { user });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/audit') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: ctx.audit.listRecent(100) });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/projects') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: ctx.projects.list() });
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/projects') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          domain?: string;
+          runtime?: 'node' | 'php' | 'static';
+          runtimeVersion?: string;
+          env?: 'staging' | 'production';
+        };
+        const created = await ctx.projects.create({
+          name: data.name ?? '',
+          domain: data.domain,
+          runtime: data.runtime ?? 'node',
+          runtimeVersion: data.runtimeVersion ?? '20',
+          env: data.env,
+          actor: user.username,
+        });
+        return sendJson(res, 201, created);
+      }
+
+      if (method === 'GET' && url.pathname.startsWith('/api/v1/projects/')) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        return sendJson(res, 200, { project: ctx.projects.get(id) });
+      }
+
+      if (method === 'DELETE' && url.pathname.startsWith('/api/v1/projects/')) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        await ctx.projects.delete(id, user.username);
+        return sendJson(res, 200, { ok: true });
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/agents/register') {
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { agentId?: string };
         const session = ctx.agents.register(data.agentId ?? '');
+        ctx.audit.append({
+          actor: data.agentId ?? 'agent',
+          action: 'agent.register',
+          detail: session,
+          ok: true,
+        });
         return sendJson(res, 200, session);
       }
 
@@ -110,8 +167,7 @@ export function createHttpServer(ctx: AppContext): Server {
           approvalId?: string;
           scope?: ResourceScope;
         };
-        const roles = user.roles as SystemRole[];
-        const result = executeToolCall(
+        const result = await executeToolCall(
           {
             tool: data.tool ?? '',
             args: data.args ?? {},
@@ -122,13 +178,21 @@ export function createHttpServer(ctx: AppContext): Server {
             allowlist: ctx.allowlist,
             approvals: ctx.approvals,
             actor: user.username,
-            roles,
+            roles: user.roles as SystemRole[],
             scope: data.scope,
             protection: ctx.protection,
+            host: ctx.host,
+            audit: ctx.audit,
+            dataDir: ctx.dataDir,
           },
           data.approvalId,
         );
         return sendJson(res, 200, result);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/tools') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: ctx.allowlist.list() });
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/rbac/check') {
@@ -147,6 +211,7 @@ export function createHttpServer(ctx: AppContext): Server {
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/protection') {
+        const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
           networkReachable?: boolean;
@@ -161,7 +226,50 @@ export function createHttpServer(ctx: AppContext): Server {
           highRequestRate: data.highRequestRate,
         });
         applyProtection(ctx, state);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'protection.set',
+          detail: state,
+          ok: true,
+        });
         return sendJson(res, 200, ctx.protection);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/approvals') {
+        ctx.auth.authenticate(getBearer(req));
+        const status = url.searchParams.get('status') as 'pending' | null;
+        return sendJson(res, 200, {
+          items: status ? ctx.approvals.list(status) : ctx.approvals.list(),
+        });
+      }
+
+      if (
+        method === 'POST' &&
+        url.pathname.startsWith('/api/v1/approvals/') &&
+        url.pathname.endsWith('/approve')
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const record = ctx.approvals.approve(id, user.username);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'approval.approve',
+          resource: id,
+          detail: record,
+          ok: true,
+        });
+        return sendJson(res, 200, record);
+      }
+
+      if (
+        method === 'POST' &&
+        url.pathname.startsWith('/api/v1/approvals/') &&
+        url.pathname.endsWith('/reject')
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const record = ctx.approvals.reject(id, user.username);
+        return sendJson(res, 200, record);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/llm/chat') {
@@ -178,16 +286,29 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, response);
       }
 
-      if (method === 'GET' && url.pathname === '/api/v1/approvals') {
-        ctx.auth.authenticate(getBearer(req));
-        return sendJson(res, 200, { items: ctx.approvals.list() });
+      if (method === 'POST' && url.pathname === '/api/v1/settings/llm') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          baseUrl?: string;
+          apiKey?: string;
+          model?: string;
+        };
+        ctx.settings.setJson('llm', data);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'settings.llm',
+          detail: { baseUrl: data.baseUrl, model: data.model },
+          ok: true,
+        });
+        return sendJson(res, 200, { ok: true, llm: data });
       }
 
-      if (method === 'POST' && url.pathname.startsWith('/api/v1/approvals/') && url.pathname.endsWith('/approve')) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[4];
-        const record = ctx.approvals.approve(id, user.username);
-        return sendJson(res, 200, record);
+      if (method === 'GET' && url.pathname === '/api/v1/settings/llm') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, {
+          llm: ctx.settings.getJson('llm') ?? {},
+        });
       }
 
       return sendJson(res, 404, {

@@ -168,6 +168,46 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'tools') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0];
+    if (sub === 'run') {
+      const tool = getOpt(args, '--tool');
+      if (!tool) {
+        process.stderr.write('Usage: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n');
+        return 1;
+      }
+      const argPairs = args
+        .map((a, i) => (a === '--arg' ? args[i + 1] : null))
+        .filter(Boolean) as string[];
+      const toolArgs: Record<string, unknown> = {};
+      for (const p of argPairs) {
+        const eq = p.indexOf('=');
+        if (eq > 0) toolArgs[p.slice(0, eq)] = p.slice(eq + 1);
+      }
+      const { createAppContext, closeAppContext } = await import('./app-context.js');
+      const { executeToolCall } = await import('@ysk/core');
+      const configPath = getOpt(args, '--config');
+      const config = configPath ? (await import('./config-loader.js')).loadConfigFile(configPath) : undefined;
+      const ctx = createAppContext({ version: VERSION, config, configPath });
+      try {
+        const result = await executeToolCall(
+          { tool, args: toolArgs, dryRun: hasFlag(args, '--dry-run') },
+          {
+            allowlist: ctx.allowlist,
+            approvals: ctx.approvals,
+            actor: 'cli',
+            roles: ['admin'],
+            host: ctx.host,
+            audit: ctx.audit,
+            protection: ctx.protection,
+            dataDir: ctx.dataDir,
+          },
+        );
+        printJson(result);
+        return result.allowed ? 0 : 1;
+      } finally {
+        closeAppContext(ctx);
+      }
+    }
     const tools = createDefaultAllowlist().list();
     const payload: StructuredResult = {
       ok: true,

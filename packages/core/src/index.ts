@@ -7,3 +7,6 @@ export * from './email/index.js';
 export * from './agents/index.js';
 export * from './services/index.js';
 export * from './errors/index.js';
+export * from './db/index.js';
+export * from './repositories/index.js';
+export * from './host/index.js';

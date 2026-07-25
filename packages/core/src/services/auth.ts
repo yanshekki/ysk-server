@@ -1,44 +1,58 @@
 /**
- * Basic auth service for Web UI (token-based MVP).
+ * Persistent auth: scrypt password hashing + SQLite sessions.
  */
 
 import type { AuthLoginRequest, AuthLoginResponse, UserDto } from '@ysk/shared';
 import { ErrorCodes, YskError } from '@ysk/shared';
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import type { UserRepository } from '../repositories/user-repo.js';
+import type { SessionRepository } from '../repositories/session-repo.js';
+import type { AuditRepository } from '../repositories/audit-repo.js';
 
-export interface StoredUser {
-  id: string;
-  username: string;
-  passwordHash: string;
-  salt: string;
-  roles: UserDto['roles'];
-  locale: string;
-}
+const SCRYPT_KEYLEN = 64;
 
 export class AuthService {
-  private readonly users = new Map<string, StoredUser>();
-  private readonly tokens = new Map<string, { userId: string; expiresAt: number }>();
+  constructor(
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly audit?: AuditRepository,
+  ) {}
 
   /**
-   * Bootstrap default admin (used by setup).
+   * Bootstrap admin if no users exist (called by setup).
    */
   ensureAdmin(username: string, password: string, locale = 'zh-TW'): UserDto {
-    const existing = [...this.users.values()].find((u) => u.username === username);
-    if (existing) {
-      return toDto(existing);
+    const existing = this.users.findByUsername(username);
+    if (existing) return toDto(existing);
+    if (this.users.count() > 0 && !existing) {
+      // admin username may differ; only create if zero users
+    }
+    if (this.users.count() > 0) {
+      const first = this.users.findByUsername(username);
+      if (first) return toDto(first);
     }
     const salt = randomBytes(16).toString('hex');
     const passwordHash = hashPassword(password, salt);
-    const user: StoredUser = {
+    const now = new Date().toISOString();
+    const user = {
       id: randomBytes(8).toString('hex'),
       username,
-      passwordHash,
-      salt,
-      roles: ['admin'],
+      password_hash: passwordHash,
+      password_salt: salt,
+      roles: ['admin'] as const,
       locale,
+      created_at: now,
+      updated_at: now,
     };
-    this.users.set(user.id, user);
-    return toDto(user);
+    this.users.insert({ ...user, roles: ['admin'] });
+    this.audit?.append({
+      actor: 'system',
+      action: 'auth.ensureAdmin',
+      resource: username,
+      detail: { created: true },
+      ok: true,
+    });
+    return { id: user.id, username, roles: ['admin'], locale };
   }
 
   login(req: AuthLoginRequest): AuthLoginResponse {
@@ -47,29 +61,63 @@ export class AuthService {
         httpStatus: 400,
       });
     }
-    const user = [...this.users.values()].find((u) => u.username === req.username);
-    if (!user || !verifyPassword(req.password, user.salt, user.passwordHash)) {
+    const user = this.users.findByUsername(req.username);
+    if (!user || !verifyPassword(req.password, user.password_salt, user.password_hash)) {
+      this.audit?.append({
+        actor: req.username,
+        action: 'auth.login',
+        detail: { ok: false },
+        ok: false,
+      });
       throw new YskError(ErrorCodes.UNAUTHORIZED, 'Invalid credentials', { httpStatus: 401 });
     }
+    this.sessions.deleteExpired(new Date().toISOString());
     const token = randomBytes(24).toString('hex');
-    const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
-    this.tokens.set(token, { userId: user.id, expiresAt });
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    this.sessions.insert({
+      token,
+      user_id: user.id,
+      expires_at: expiresAt,
+      created_at: new Date().toISOString(),
+    });
+    this.audit?.append({
+      actor: user.username,
+      action: 'auth.login',
+      detail: { ok: true },
+      ok: true,
+    });
     return {
       token,
       user: toDto(user),
-      expiresAt: new Date(expiresAt).toISOString(),
+      expiresAt,
     };
+  }
+
+  logout(token: string | undefined): void {
+    if (!token) return;
+    const session = this.sessions.find(token);
+    this.sessions.delete(token);
+    if (session) {
+      const user = this.users.findById(session.user_id);
+      this.audit?.append({
+        actor: user?.username ?? 'unknown',
+        action: 'auth.logout',
+        detail: {},
+        ok: true,
+      });
+    }
   }
 
   authenticate(token: string | undefined): UserDto {
     if (!token) {
       throw new YskError(ErrorCodes.UNAUTHORIZED, 'Missing token', { httpStatus: 401 });
     }
-    const session = this.tokens.get(token);
-    if (!session || session.expiresAt < Date.now()) {
+    const session = this.sessions.find(token);
+    if (!session || session.expires_at < new Date().toISOString()) {
+      if (session) this.sessions.delete(token);
       throw new YskError(ErrorCodes.UNAUTHORIZED, 'Invalid or expired token', { httpStatus: 401 });
     }
-    const user = this.users.get(session.userId);
+    const user = this.users.findById(session.user_id);
     if (!user) {
       throw new YskError(ErrorCodes.UNAUTHORIZED, 'User not found', { httpStatus: 401 });
     }
@@ -77,20 +125,23 @@ export class AuthService {
   }
 }
 
-function hashPassword(password: string, salt: string): string {
-  return createHash('sha256').update(`${salt}:${password}`).digest('hex');
+export function hashPassword(password: string, salt: string): string {
+  return scryptSync(password, salt, SCRYPT_KEYLEN).toString('hex');
 }
 
-function verifyPassword(password: string, salt: string, expected: string): boolean {
-  const actual = hashPassword(password, salt);
-  try {
-    return timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
-  } catch {
-    return false;
-  }
+export function verifyPassword(password: string, salt: string, expectedHex: string): boolean {
+  const actual = scryptSync(password, salt, SCRYPT_KEYLEN);
+  const expected = Buffer.from(expectedHex, 'hex');
+  if (actual.length !== expected.length) return false;
+  return timingSafeEqual(actual, expected);
 }
 
-function toDto(user: StoredUser): UserDto {
+function toDto(user: {
+  id: string;
+  username: string;
+  roles: UserDto['roles'];
+  locale: string;
+}): UserDto {
   return {
     id: user.id,
     username: user.username,
