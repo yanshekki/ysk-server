@@ -1,6 +1,25 @@
 type Listener = () => void;
 
-let token: string | null = localStorage.getItem('ysk_token');
+function safeGet(key: string): string | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSet(key: string, value: string | null): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {
+    /* ignore */
+  }
+}
+
+let token: string | null = safeGet('ysk_token');
 const listeners = new Set<Listener>();
 
 export const authStore = {
@@ -9,8 +28,7 @@ export const authStore = {
   },
   setToken(value: string | null): void {
     token = value;
-    if (value) localStorage.setItem('ysk_token', value);
-    else localStorage.removeItem('ysk_token');
+    safeSet('ysk_token', value);
     listeners.forEach((l) => l());
   },
   subscribe(listener: Listener): () => void {
