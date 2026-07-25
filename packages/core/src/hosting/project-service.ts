@@ -88,14 +88,14 @@ export class ProjectService {
       osProvision.detail = results.join('; ');
     }
 
-    // Optional nginx config in dataDir
+    // Optional nginx config in dataDir (port filled on deploy)
     let nginxPath: string | undefined;
     if (input.domain) {
       const confDir = join(this.dataDir, 'nginx', 'conf.d');
       mkdirSync(confDir, { recursive: true });
       const conf = renderNginxProxy({
         serverName: input.domain,
-        upstream: `http://127.0.0.1:3000`,
+        upstream: `http://127.0.0.1:3100`,
         ssl: false,
         cloudflareRealIp: true,
       });
@@ -141,6 +141,15 @@ export class ProjectService {
     if (!row) {
       throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
     }
+    // Best-effort stop managed process before removing files
+    const pid = row.pid;
+    if (pid) {
+      try {
+        process.kill(pid, 'SIGTERM');
+      } catch {
+        /* already dead */
+      }
+    }
     // Only delete under dataDir/projects
     const projectsRoot = join(this.dataDir, 'projects');
     if (removeFiles && row.home_dir.startsWith(projectsRoot) && existsSync(row.home_dir)) {
@@ -176,6 +185,14 @@ function toDto(row: ProjectRow): ProjectDto {
     runtime: row.runtime,
     runtimeVersion: row.runtime_version,
     env: row.env,
+    status: row.status,
+    port: row.port,
+    pid: row.pid,
+    processStatus: row.process_status,
+    nginxConfigPath: row.nginx_config_path,
+    lastHealth: row.last_health,
+    lastDeployAt: row.last_deploy_at,
+    osProvisioned: row.os_provisioned,
   };
 }
 

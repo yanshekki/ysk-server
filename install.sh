@@ -171,14 +171,16 @@ print_next() {
  $PRODUCT installation finished
 ============================================================
  Next steps:
-   1. $CLI setup --non-interactive
-   2. $CLI serve --config \$HOME/.ysk/config.json
-      or install systemd unit (see docs/deploy/systemd.md / deploy/ysk-server.service)
-   3. Open Web UI and login
-   4. Docs: https://github.com/yanshekki/ysk-server
+   1. $CLI setup --non-interactive --data-dir /var/lib/ysk-server
+   2. $CLI serve --data-dir /var/lib/ysk-server --port 8787
+      or: sudo cp deploy/ysk-server.service /etc/systemd/system/ && systemctl enable --now ysk-server
+   3. Open Web UI → login → Projects → Deploy Node (real listen)
+   4. Real-ops guide: docs/deploy/real-ops.md
+   5. Verify: bash scripts/e2e-real-ops.sh
 
  Commands:
    $CLI --help
+   $CLI serve --data-dir .ysk --port 8787
    $CLI update --check
    $CLI update --apply   # needs network + YSK_EXECUTE=1
    $CLI ask "show system info"
@@ -187,6 +189,7 @@ print_next() {
  Optional env:
    YSK_EXECUTE=1          # allow system mutations (apt, ufw, certbot, …)
    YSK_PROBE_ON_START=1   # run protection probe on serve start
+   YSK_ADMIN_PASSWORD=…  # initial admin password on first boot
 
 EOF
 }

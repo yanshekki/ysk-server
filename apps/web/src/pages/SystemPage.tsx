@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { api } from '../shared/services/api';
 
 export function SystemPage() {
@@ -6,6 +6,20 @@ export function SystemPage() {
   const [log, setLog] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [certs, setCerts] = useState<Array<Record<string, unknown>>>([]);
+
+  async function refreshCerts() {
+    try {
+      const r = await api.listSslCertificates();
+      setCerts(r.items);
+    } catch {
+      /* optional until login */
+    }
+  }
+
+  useEffect(() => {
+    void refreshCerts();
+  }, []);
 
   async function run(path: string, body: unknown) {
     setBusy(true);
@@ -16,6 +30,7 @@ export function SystemPage() {
         body: JSON.stringify(body),
       });
       setLog(JSON.stringify(r, null, 2));
+      if (path.includes('/ssl/')) await refreshCerts();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'failed');
     } finally {
@@ -137,6 +152,34 @@ export function SystemPage() {
           </button>
         </div>
       </div>
+
+      {certs.length > 0 && (
+        <div className="card">
+          <h2 className="card__title">SSL apply 紀錄（write-back）</h2>
+          <div className="table-wrap">
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Domain</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {certs.slice(0, 10).map((c) => (
+                  <tr key={String(c.id)}>
+                    <td>{String(c.domain ?? '—')}</td>
+                    <td>
+                      <span className="badge badge--ok">{String(c.apply_status ?? '—')}</span>
+                    </td>
+                    <td className="muted">{String(c.updated_at ?? '—')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {log && (
         <div className="card">

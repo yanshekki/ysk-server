@@ -39,6 +39,15 @@ export interface StoreProject {
   status: string;
   nginx_config_path?: string;
   os_provisioned: boolean;
+  /** Listen port for app process (Node/PHP-FPM proxy target) */
+  port?: number;
+  /** Running process pid when managed by control plane */
+  pid?: number;
+  pidfile?: string;
+  /** stopped | starting | running | unhealthy | failed */
+  process_status?: string;
+  last_health?: Record<string, unknown>;
+  last_deploy_at?: string;
   created_at: string;
   updated_at: string;
 }

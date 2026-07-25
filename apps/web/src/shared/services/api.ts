@@ -2,7 +2,7 @@
  * All backend calls go through this shared services layer.
  */
 
-import type { AuthLoginResponse, HealthResponse, ProjectDto } from '@ysk/shared';
+import type { AuthLoginResponse, HealthResponse, OpsApplyResultDto, ProjectDto } from '@ysk/shared';
 import { authStore } from '../stores/auth-store';
 
 const base = '';
@@ -58,6 +58,34 @@ export const api = {
   },
   deleteProject(id: string): Promise<{ ok: boolean }> {
     return request(`/api/v1/projects/${id}`, { method: 'DELETE' });
+  },
+  getProject(id: string): Promise<{ project: ProjectDto }> {
+    return request(`/api/v1/projects/${id}`);
+  },
+  /** Real Node deploy: spawn + pidfile + listen + HTTP health */
+  deployProject(
+    id: string,
+    body?: { port?: number; entry?: string; nodeVersion?: string },
+  ): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/deploy`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    });
+  },
+  stopProject(id: string): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/stop`, { method: 'POST', body: '{}' });
+  },
+  projectHealth(id: string): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/health`);
+  },
+  publishNginx(id: string, body?: { systemConfDir?: string; ssl?: boolean }): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/publish-nginx`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    });
+  },
+  listSslCertificates(): Promise<{ items: Array<Record<string, unknown>> }> {
+    return request('/api/v1/system/ssl/certificates');
   },
   listApprovals(): Promise<{ items: Array<Record<string, unknown>> }> {
     return request('/api/v1/approvals?status=pending');

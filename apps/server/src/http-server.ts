@@ -135,13 +135,61 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 201, created);
       }
 
-      if (method === 'GET' && url.pathname.startsWith('/api/v1/projects/')) {
+      // Project ops — specific paths before generic :id
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          port?: number;
+          entry?: string;
+          nodeVersion?: string;
+          enableSystemd?: boolean;
+        };
+        const result = await ctx.projectOps.deployNode(id, {
+          actor: user.username,
+          port: data.port,
+          entry: data.entry,
+          nodeVersion: data.nodeVersion,
+          enableSystemd: data.enableSystemd,
+        });
+        return sendJson(res, result.ok ? 200 : 502, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/stop$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.stopNode(id, user.username);
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/health$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.health(id);
+        return sendJson(res, result.ok ? 200 : 503, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/publish-nginx$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { systemConfDir?: string; ssl?: boolean };
+        const result = await ctx.projectOps.publishNginx(id, {
+          actor: user.username,
+          systemConfDir: data.systemConfDir,
+          ssl: data.ssl,
+        });
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         return sendJson(res, 200, { project: ctx.projects.get(id) });
       }
 
-      if (method === 'DELETE' && url.pathname.startsWith('/api/v1/projects/')) {
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         await ctx.projects.delete(id, user.username);
@@ -563,6 +611,7 @@ export function createHttpServer(ctx: AppContext): Server {
           port?: number;
           enableService?: boolean;
         };
+        // Low-level artifact write only; use POST .../deploy for real process
         const result = await applyNodeHosting({
           dataDir: ctx.dataDir,
           projectId: proj.id,
@@ -570,9 +619,10 @@ export function createHttpServer(ctx: AppContext): Server {
           linuxUser: proj.linuxUser,
           homeDir: proj.homeDir,
           nodeVersion: data.nodeVersion ?? proj.runtimeVersion ?? '20',
-          port: data.port,
+          port: data.port ?? proj.port,
           host: ctx.host,
           enableService: data.enableService,
+          nodeBinary: process.execPath,
         });
         ctx.audit.append({
           actor: user.username,

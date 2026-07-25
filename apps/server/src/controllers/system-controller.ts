@@ -99,20 +99,52 @@ export async function handleSystemRoutes(
   if (method === 'POST' && url.pathname === '/api/v1/system/email/apply') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { domain?: string; installPackages?: boolean };
+    const data = JSON.parse(raw || '{}') as {
+      domain?: string;
+      installPackages?: boolean;
+      domainId?: string;
+    };
+    const domain = data.domain ?? 'example.com';
     const result = await applyEmailStack({
       dataDir: ctx.dataDir,
-      domain: data.domain ?? 'example.com',
+      domain,
       host: ctx.host,
       installPackages: data.installPackages,
     });
+    // Write-back apply status onto matching email domain record (durable)
+    const applyStatus = {
+      status: result.ok ? 'applied' : 'failed',
+      ok: result.ok,
+      at: new Date().toISOString(),
+      written: result.written,
+      notes: result.notes,
+      actor: user.username,
+    };
+    const emailRows = ctx.db.snapshot.email_domains as Array<Record<string, unknown>>;
+    const match = emailRows.find(
+      (e) =>
+        (data.domainId && e.id === data.domainId) ||
+        String(e.domain ?? '').toLowerCase() === domain.toLowerCase(),
+    );
+    if (match) {
+      match.apply_status = applyStatus.status;
+      match.last_apply = applyStatus;
+      match.updated_at = applyStatus.at;
+      ctx.db.persist();
+    } else {
+      // still record standalone apply job under settings for visibility
+      ctx.settings.set(
+        `email.apply.${domain}`,
+        JSON.stringify(applyStatus),
+      );
+    }
     ctx.audit.append({
       actor: user.username,
       action: 'system.email.apply',
-      detail: result,
+      detail: { ...result, applyStatus, domainId: match?.id },
       ok: result.ok,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, applyStatus, domainId: match?.id ?? null });
     return true;
   }
 
@@ -120,19 +152,47 @@ export async function handleSystemRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { domain?: string; email?: string; run?: boolean };
+    const domain = data.domain ?? 'example.com';
     const result = await applyLetsEncrypt({
-      domain: data.domain ?? 'example.com',
+      domain,
       email: data.email ?? 'admin@example.com',
       host: ctx.host,
       run: data.run,
     });
+    const now = new Date().toISOString();
+    const certRow = {
+      id: `cert-${domain}-${Date.now()}`,
+      domain,
+      email: data.email ?? 'admin@example.com',
+      provider: 'letsencrypt',
+      apply_status: result.ok ? (data.run ? 'issued_or_planned' : 'planned') : 'failed',
+      ok: result.ok,
+      commands: result.commands,
+      notes: result.notes,
+      commandResults: result.commandResults,
+      created_at: now,
+      updated_at: now,
+      actor: user.username,
+    };
+    ctx.db.snapshot.certificates.unshift(certRow);
+    // keep last 50
+    if (ctx.db.snapshot.certificates.length > 50) {
+      ctx.db.snapshot.certificates = ctx.db.snapshot.certificates.slice(0, 50);
+    }
+    ctx.db.persist();
     ctx.audit.append({
       actor: user.username,
       action: 'system.ssl.apply',
-      detail: result,
+      detail: { ...result, certId: certRow.id },
       ok: result.ok,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, certificate: certRow });
+    return true;
+  }
+
+  if (method === 'GET' && url.pathname === '/api/v1/system/ssl/certificates') {
+    ctx.auth.authenticate(getBearer(req));
+    sendJson(res, 200, { items: ctx.db.snapshot.certificates });
     return true;
   }
 

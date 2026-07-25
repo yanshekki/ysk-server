@@ -90,6 +90,27 @@
   width: 100%;
 }
 
+.btn--link {
+  background: transparent;
+  border: none;
+  color: var(--brand-blue);
+  padding: 0;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.btn--link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
 /* —— Card (shared across all pages) —— */
 .card {
   background: var(--bg-white);
@@ -347,6 +368,35 @@ pre.code {
 
 pre.code--spaced {
   margin-top: var(--space-4);
+}
+
+/* —— Key/value detail list —— */
+.kv {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+
+.kv > div {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.kv dt {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-sub);
+}
+
+.kv dd {
+  margin: 0;
+}
+
+table.data tr.is-selected td {
+  background: rgba(59, 130, 246, 0.08);
 }
 
 code.inline {

@@ -102,6 +102,31 @@ export interface ProjectDto {
   runtime: 'node' | 'php' | 'static';
   runtimeVersion?: string;
   env: 'staging' | 'production';
+  /** Control-plane lifecycle: active | running | stopped | unhealthy | failed | … */
+  status?: string;
+  port?: number;
+  pid?: number;
+  processStatus?: string;
+  nginxConfigPath?: string;
+  lastHealth?: Record<string, unknown>;
+  lastDeployAt?: string;
+  osProvisioned?: boolean;
+}
+
+/** Result of real deploy / publish / health ops */
+export interface OpsApplyResultDto {
+  ok: boolean;
+  projectId: string;
+  port?: number;
+  pid?: number;
+  pidfile?: string;
+  url?: string;
+  processStatus: string;
+  health?: { ok: boolean; status?: number; body?: string; ms?: number; error?: string };
+  listening: boolean;
+  nginxPath?: string;
+  notes: string[];
+  written: string[];
 }
 
 export interface SslCertPlan {

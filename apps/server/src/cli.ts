@@ -350,7 +350,11 @@ async function main(argv: string[]): Promise<number> {
 
   if (command === 'serve') {
     const configPath = getOpt(args, '--config');
-    const config = configPath ? loadConfigFile(configPath) : undefined;
+    let config = configPath ? loadConfigFile(configPath) : undefined;
+    const dataDirOpt = getOpt(args, '--data-dir');
+    if (dataDirOpt) {
+      config = config ? { ...config, dataDir: dataDirOpt } : ({ dataDir: dataDirOpt } as NonNullable<typeof config>);
+    }
     const host = getOpt(args, '--host') ?? config?.listenHost ?? '127.0.0.1';
     const port = Number(
       getOpt(args, '--port') ?? process.env.PORT ?? config?.listenPort ?? 8787,
@@ -359,6 +363,8 @@ async function main(argv: string[]): Promise<number> {
       version: VERSION,
       config,
       configPath,
+      dataDir: dataDirOpt ?? config?.dataDir,
+      adminPassword: process.env.YSK_ADMIN_PASSWORD,
     });
     const server = createHttpServer(ctx);
     const addr = await listen(server, host, port);

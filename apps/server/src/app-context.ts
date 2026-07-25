@@ -13,6 +13,7 @@ import {
   LlmGateway,
   ProjectRepository,
   ProjectService,
+  ProjectOpsService,
   SessionRepository,
   SettingsRepository,
   UserRepository,
@@ -45,6 +46,7 @@ export interface AppContext {
   protection: ProtectionState;
   host: HostExecutor;
   projects: ProjectService;
+  projectOps: ProjectOpsService;
   email: EmailService;
   ai: AiTaskService;
   audit: AuditRepository;
@@ -105,6 +107,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   });
 
   const projects = new ProjectService(projectRepo, host, dataDir, audit);
+  const projectOps = new ProjectOpsService(projectRepo, host, dataDir, audit);
   const email = new EmailService(db, host, audit);
   const fleet = new FleetService(db);
   const allowlist = createDefaultAllowlist();
@@ -124,6 +127,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     protection,
     host,
     projects,
+    projectOps,
     email,
     ai: null as unknown as AiTaskService,
     audit,

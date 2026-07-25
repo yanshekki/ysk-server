@@ -1,5 +1,6 @@
 export * from './project.js';
 export * from './project-service.js';
+export * from './project-ops.js';
 export * from './runtime.js';
 export * from './database.js';
 export * from './nginx-ssl.js';
