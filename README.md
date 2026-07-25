@@ -29,6 +29,8 @@
 - **PowerDNS** install script + load dual-mode (`pdnsutil` / apt needs root+EXECUTE)
 - **Email MTA** managed Postfix/Dovecot/OpenDKIM + milter + `install-mta.sh` (fail-closed install)
 - **Mailboxes**: real Maildir + `virtual_mailbox` maps under dataDir; optional system user (root+EXECUTE)
+- **Dovecot passdb** export (passwd-file + auth snippet) from managed mailboxes
+- **Multi-version runtime probe** (Node 18/20/22, PHP 8.1–8.3) + install helpers (fail-closed)
 - **FTPS**: vsftpd config + install helper (fail-closed install)
 - **UFW script** under `dataDir/firewall/ufw-apply.sh` (apply needs root+EXECUTE; no fake ok)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
@@ -61,9 +63,8 @@
 
 ### Spec backlog (not production-ready yet)
 
-- Multi-version Node/PHP runtime install matrix; PM2 cluster/`pm2 save` fleet polish
-- Full Postfix/Dovecot operational mail (beyond templates + optional apt)
-- Live MTA full production (webmail, Dovecot passdb wiring, quota)
+- Bare-metal runtime install polish; PHP-FPM-only default (no php -S)
+- Webmail UI + BLF-CRYPT Dovecot production hash scheme
 - FTPS production enable; fail2ban ban-action automation
 - OpenClaw/Hermes/IonClaw full installers (probe/templates exist)
 - ≥90% test coverage; broader integration e2e

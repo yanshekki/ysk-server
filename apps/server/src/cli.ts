@@ -591,6 +591,39 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return result.ok ? 0 : 1;
       }
+      if (sub === 'runtimes' || sub === 'runtimes-probe') {
+        const { probeRuntimes, listSupportedRuntimes } = await import('@ysk/core');
+        printJson({
+          supported: listSupportedRuntimes(),
+          probe: await probeRuntimes(ctx.host),
+        });
+        return 0;
+      }
+      if (sub === 'runtime-install') {
+        const { planOrInstallRuntime } = await import('@ysk/core');
+        const kind = (getOpt(args, '--kind') ?? 'node') as 'node' | 'php';
+        const result = await planOrInstallRuntime({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          kind,
+          version: getOpt(args, '--version') ?? (kind === 'php' ? '8.2' : '20'),
+          install: hasFlag(args, '--install'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'dovecot-passdb') {
+        const { writeDovecotPassdb, writeAllDovecotPassdbs } = await import('@ysk/core');
+        const domain = getOpt(args, '--domain');
+        if (!domain || hasFlag(args, '--all')) {
+          printJson(writeAllDovecotPassdbs({ dataDir: ctx.dataDir, db: ctx.db }));
+          return 0;
+        }
+        printJson(
+          writeDovecotPassdb({ dataDir: ctx.dataDir, db: ctx.db, domain }),
+        );
+        return 0;
+      }
       if (sub === 'firewall-apply') {
         const result = await applyFirewall({
           host: ctx.host,
@@ -611,6 +644,8 @@ async function main(argv: string[]): Promise<number> {
           '  email-apply --domain X [--install]',
           '  email-mailbox --domain X --local user [--password P] [--system]',
           '  ftps-apply --domain X [--install]',
+          '  runtimes | runtime-install --kind node|php --version V [--install]',
+          '  dovecot-passdb --domain X | --all',
           '  firewall-apply [--smtp] [--apply]',
           '',
         ].join('\n'),

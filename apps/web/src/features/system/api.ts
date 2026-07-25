@@ -115,4 +115,11 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  runtimes: () =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/hosting/runtimes'),
+  runtimeInstall: (body: { kind: 'node' | 'php'; version: string; install?: boolean }) =>
+    api.requestRaw('/api/v1/hosting/runtimes/install', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 };

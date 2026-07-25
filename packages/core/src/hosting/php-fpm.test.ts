@@ -29,6 +29,7 @@ describe('php-fpm', () => {
       expect(existsSync(r.poolPath)).toBe(true);
       expect(readFileSync(r.poolPath, 'utf8')).toContain('user = ysk_demo');
       expect(r.enabled).toBe(false);
+      expect(r.ok).toBe(false); // enable requested but no EXECUTE/root
       expect(r.requiresExecute || r.requiresRoot).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });

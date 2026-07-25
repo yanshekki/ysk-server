@@ -190,6 +190,26 @@ export function EmailPage() {
           >
             Refresh list
           </button>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={busy || items.length === 0}
+            onClick={() => {
+              void (async () => {
+                if (!items[0]?.id) return;
+                setBusy(true);
+                try {
+                  setMboxLog(await emailApi.dovecotPassdb(items[0].id));
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'passdb failed');
+                } finally {
+                  setBusy(false);
+                }
+              })();
+            }}
+          >
+            Write Dovecot passdb
+          </button>
         </div>
         {mailboxes.length > 0 && (
           <ul className="list-plain list-spaced u-mt-4">

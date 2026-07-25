@@ -29,11 +29,12 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - CLI: hosting dns-zone, powerdns-*, email-apply, firewall-apply
 - Mailbox Maildir provision + virtual maps API/CLI/UI; FTPS fail-closed install
 - Self-update `ok` flag; project setEnv/backup coverage in ops tests
+- Runtime probe/install (Node/PHP multi-version); Dovecot passdb export; fetchTransport tests
 
 ### Still partial / Spec backlog
 
-- Full multi-version runtime install matrices, production PHP-FPM-only (no php -S)
-- Webmail + Dovecot passdb production wiring
+- Bare-metal runtime install matrices polish; PHP-FPM-only default (no php -S)
+- Webmail + production crypt schemes for Dovecot
 - ≥90% coverage target, public npm packages published
 
 ### Earlier scaffolding notes

@@ -100,8 +100,13 @@ export async function applyPhpFpmPool(input: {
     }
   }
 
+  // Fail closed: if enable requested but not executed/enabled, ok=false
+  let ok = true;
+  if (want && !can) ok = false;
+  else if (want && can) ok = enabled;
+
   return {
-    ok: !want || !can || enabled || commandResults.length === 0,
+    ok,
     poolPath,
     written,
     notes,

@@ -296,6 +296,43 @@ export function SystemPage() {
           </button>
         </div>
         <div className="card">
+          <h2 className="card__title">Runtimes (Node/PHP)</h2>
+          <div className="form-actions btn-row">
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() => void run(() => api.runtimes())}
+            >
+              Probe versions
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() =>
+                void run(() =>
+                  api.runtimeInstall({ kind: 'node', version: '20', install: false }),
+                )
+              }
+            >
+              Node 20 install script
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() =>
+                void run(() =>
+                  api.runtimeInstall({ kind: 'php', version: '8.2', install: false }),
+                )
+              }
+            >
+              PHP 8.2 install script
+            </button>
+          </div>
+        </div>
+        <div className="card">
           <h2 className="card__title">Protection probe</h2>
           <button
             type="button"

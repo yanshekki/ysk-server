@@ -28,6 +28,11 @@ import {
   applyPowerDnsZone,
   powerDnsStatus,
   installPowerDnsPackages,
+  probeRuntimes,
+  planOrInstallRuntime,
+  writeDovecotPassdb,
+  writeAllDovecotPassdbs,
+  listSupportedRuntimes,
   planFirewall,
   planPublicFileServer,
   probeEndpoint,
@@ -671,6 +676,77 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'GET' && url.pathname === '/api/v1/email/mailboxes') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { items: ctx.email.listMailboxes() });
+      }
+
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/dovecot-passdb$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const domain = ctx.email.get(id);
+        const result = writeDovecotPassdb({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          domain: domain.domain,
+          domainId: id,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.dovecot_passdb',
+          resource: domain.domain,
+          detail: { mailboxCount: result.mailboxCount, written: result.written },
+          ok: result.ok,
+        });
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/email/dovecot-passdb/all') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const result = writeAllDovecotPassdbs({ dataDir: ctx.dataDir, db: ctx.db });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.dovecot_passdb.all',
+          detail: { domains: result.domains.length },
+          ok: true,
+        });
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes') {
+        ctx.auth.authenticate(getBearer(req));
+        const supported = listSupportedRuntimes();
+        const probe = await probeRuntimes(ctx.host);
+        return sendJson(res, 200, { supported, probe });
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/runtimes/install') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          kind?: 'node' | 'php';
+          version?: string;
+          install?: boolean;
+        };
+        const result = await planOrInstallRuntime({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          kind: data.kind ?? 'node',
+          version: data.version ?? (data.kind === 'php' ? '8.2' : '20'),
+          install: data.install,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.runtime.install',
+          detail: {
+            kind: result.kind,
+            version: result.version,
+            ok: result.ok,
+            install: Boolean(data.install),
+          },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok || !data.install ? 200 : 422, result);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/hosting/nginx') {

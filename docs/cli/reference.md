@@ -109,6 +109,9 @@ ysk-server hosting powerdns-load --zone example.com --ip 203.0.113.10 [--load]
 ysk-server hosting email-apply --domain example.com [--install]
 ysk-server hosting email-mailbox --domain example.com --local info [--password P] [--system]
 ysk-server hosting ftps-apply --domain files.example.com [--install]
+ysk-server hosting runtimes
+ysk-server hosting runtime-install --kind node --version 20
+ysk-server hosting dovecot-passdb --domain example.com
 ysk-server hosting firewall-apply [--smtp] [--apply]
 ```
 

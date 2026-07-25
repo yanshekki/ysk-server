@@ -262,7 +262,7 @@ export class EmailService {
       const salt = randomBytes(16).toString('hex');
       const hash = scryptSync(input.password, salt, 32).toString('hex');
       passwordHash = `scrypt$${salt}$${hash}`;
-      notes.push('Password hash stored (scrypt) — wire to Dovecot passdb for production');
+      notes.push('Password hash stored (scrypt) — export via writeDovecotPassdb for Dovecot');
     } else if (input.password) {
       notes.push('Password ignored (min 8 chars) — mailbox created without hash');
     }
@@ -377,6 +377,23 @@ export class EmailService {
       password_hash: passwordHash,
     });
     this.db.persist();
+
+    // Refresh Dovecot passdb for this domain when dataDir present
+    if (this.dataDir) {
+      try {
+        const { writeDovecotPassdb } = await import('./dovecot-passdb.js');
+        const pd = writeDovecotPassdb({
+          dataDir: this.dataDir,
+          db: this.db,
+          domain: row.domain,
+          domainId,
+        });
+        written.push(...pd.written);
+        notes.push(...pd.notes.filter((n) => !notes.includes(n)));
+      } catch (e) {
+        notes.push(`passdb write failed: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
 
     this.audit?.append({
       actor: input.actor,
