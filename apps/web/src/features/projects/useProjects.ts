@@ -21,7 +21,7 @@ export function useProjects() {
   }, [refresh]);
 
   const create = useCallback(
-    async (input: { name: string; domain?: string; runtime?: string }) => {
+    async (input: { name: string; domain?: string; runtime?: string; templateId?: string }) => {
       setBusy(true);
       setError(null);
       try {

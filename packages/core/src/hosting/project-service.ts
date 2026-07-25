@@ -12,6 +12,7 @@ import { renderNginxProxy } from './nginx-ssl.js';
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
 import type { HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
+import { getAppTemplate, scaffoldAppTemplate, type AppTemplateId } from './app-templates.js';
 
 export class ProjectService {
   constructor(
@@ -44,17 +45,32 @@ export class ProjectService {
     runtimeVersion?: string;
     env?: 'staging' | 'production';
     actor: string;
-  }): Promise<{ project: ProjectDto; osProvision: { attempted: boolean; ok: boolean; detail: string }; plan: string[] }> {
+    /** Optional one-click template */
+    templateId?: string;
+    forceTemplate?: boolean;
+  }): Promise<{
+    project: ProjectDto;
+    osProvision: { attempted: boolean; ok: boolean; detail: string };
+    plan: string[];
+    scaffold?: ReturnType<typeof scaffoldAppTemplate>;
+  }> {
     if (!input.name?.trim()) {
       throw new YskError(ErrorCodes.VALIDATION, 'Project name is required', { httpStatus: 400 });
+    }
+    let runtime = input.runtime;
+    let runtimeVersion = input.runtimeVersion;
+    if (input.templateId) {
+      const tpl = getAppTemplate(input.templateId);
+      runtime = tpl.runtime;
+      runtimeVersion = runtimeVersion ?? tpl.runtimeVersion;
     }
     const id = randomUUID();
     const plan = planProjectIsolation({
       id,
       name: input.name,
       domain: input.domain,
-      runtime: input.runtime,
-      runtimeVersion: input.runtimeVersion,
+      runtime,
+      runtimeVersion,
       env: input.env,
     });
 
@@ -103,6 +119,17 @@ export class ProjectService {
       writeFileSync(nginxPath, conf, 'utf8');
     }
 
+    let scaffold: ReturnType<typeof scaffoldAppTemplate> | undefined;
+    if (input.templateId) {
+      scaffold = scaffoldAppTemplate({
+        templateId: input.templateId as AppTemplateId,
+        homeDir,
+        projectName: input.name,
+        domain: input.domain,
+        force: input.forceTemplate,
+      });
+    }
+
     const now = new Date().toISOString();
     const row: ProjectRow = {
       id,
@@ -111,8 +138,8 @@ export class ProjectService {
       linux_user: plan.project.linuxUser,
       linux_group: plan.project.linuxGroup,
       home_dir: homeDir,
-      runtime: input.runtime,
-      runtime_version: input.runtimeVersion,
+      runtime,
+      runtime_version: runtimeVersion,
       env: input.env ?? 'production',
       status: osProvision.ok ? 'active' : 'active_pending_os',
       nginx_config_path: nginxPath,
@@ -125,7 +152,7 @@ export class ProjectService {
       actor: input.actor,
       action: 'project.create',
       resource: id,
-      detail: { name: input.name, homeDir, osProvision },
+      detail: { name: input.name, homeDir, osProvision, templateId: input.templateId, scaffold },
       ok: true,
     });
 
@@ -133,7 +160,43 @@ export class ProjectService {
       project: toDto(row),
       osProvision,
       plan: plan.commands,
+      scaffold,
     };
+  }
+
+  /**
+   * Apply template onto existing project home.
+   */
+  applyTemplate(
+    id: string,
+    templateId: string,
+    actor: string,
+    force = false,
+  ): { project: ProjectDto; scaffold: ReturnType<typeof scaffoldAppTemplate> } {
+    const row = this.projects.findById(id);
+    if (!row) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+    }
+    const meta = getAppTemplate(templateId);
+    const scaffold = scaffoldAppTemplate({
+      templateId,
+      homeDir: row.home_dir,
+      projectName: row.name,
+      domain: row.domain,
+      force,
+    });
+    this.projects.updateMeta(id, {
+      runtime: meta.runtime,
+      runtime_version: meta.runtimeVersion,
+    });
+    this.audit?.append({
+      actor,
+      action: 'project.template',
+      resource: id,
+      detail: { templateId, scaffold },
+      ok: scaffold.ok,
+    });
+    return { project: this.get(id), scaffold };
   }
 
   async delete(id: string, actor: string, removeFiles = true): Promise<void> {

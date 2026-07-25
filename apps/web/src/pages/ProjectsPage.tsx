@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto, OpsApplyResultDto } from '@ysk/shared';
 import { projectsApi, useProjects } from '../features/projects';
@@ -18,6 +18,10 @@ export function ProjectsPage() {
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [runtime, setRuntime] = useState<'node' | 'php' | 'static'>('node');
+  const [templateId, setTemplateId] = useState('');
+  const [templates, setTemplates] = useState<
+    Array<{ id: string; name: string; description: string; runtime: string }>
+  >([]);
   const [gitUrl, setGitUrl] = useState('');
   const [envText, setEnvText] = useState('NODE_ENV=production\n');
   const [msg, setMsg] = useState<string | null>(null);
@@ -27,6 +31,13 @@ export function ProjectsPage() {
   const [quotaMb, setQuotaMb] = useState('1024');
   const [memoryMax, setMemoryMax] = useState('512M');
   const [cpuQuota, setCpuQuota] = useState('100');
+
+  useEffect(() => {
+    void projectsApi
+      .listTemplates()
+      .then((r) => setTemplates(r.items))
+      .catch(() => undefined);
+  }, []);
 
   async function refreshAndSelect() {
     const list = await refresh();
@@ -39,8 +50,13 @@ export function ProjectsPage() {
     e.preventDefault();
     setMsg(null);
     try {
-      const project = await create({ name, domain: domain || undefined, runtime });
-      setMsg(`Created ${project.name}`);
+      const project = await create({
+        name,
+        domain: domain || undefined,
+        runtime,
+        templateId: templateId || undefined,
+      });
+      setMsg(`Created ${project.name}${templateId ? ` (${templateId})` : ''}`);
       setName('');
       setDomain('');
       setSelected(project);
@@ -153,7 +169,33 @@ export function ProjectsPage() {
                 <option value="static">Static</option>
               </select>
             </div>
+            <div className="field field--flush">
+              <label htmlFor="ptpl">Template (optional)</label>
+              <select
+                id="ptpl"
+                value={templateId}
+                onChange={(e) => {
+                  setTemplateId(e.target.value);
+                  const t = templates.find((x) => x.id === e.target.value);
+                  if (t?.runtime === 'node' || t?.runtime === 'php' || t?.runtime === 'static') {
+                    setRuntime(t.runtime);
+                  }
+                }}
+              >
+                <option value="">— none —</option>
+                {templates.map((tpl) => (
+                  <option key={tpl.id} value={tpl.id}>
+                    {tpl.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+          {templateId && (
+            <p className="muted u-text-sm">
+              {templates.find((x) => x.id === templateId)?.description}
+            </p>
+          )}
           <div className="form-actions">
             <button type="submit" className="btn btn--primary" disabled={busy}>
               {t('projects.create')}

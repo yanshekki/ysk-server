@@ -6,7 +6,11 @@ import { api } from '../../shared/services/api';
 
 export const projectsApi = {
   list: () => api.listProjects(),
-  create: (body: { name: string; domain?: string; runtime?: string }) => api.createProject(body),
+  create: (body: { name: string; domain?: string; runtime?: string; templateId?: string }) =>
+    api.createProject(body),
+  listTemplates: () => api.listTemplates(),
+  applyTemplate: (id: string, body: { templateId: string; force?: boolean }) =>
+    api.applyTemplate(id, body),
   remove: (id: string) => api.deleteProject(id),
   deploy: (id: string) => api.deployProject(id),
   deployPhp: (id: string) => api.deployPhp(id),

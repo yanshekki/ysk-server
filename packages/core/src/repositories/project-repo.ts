@@ -35,6 +35,20 @@ export class ProjectRepository {
     this.db.persist();
   }
 
+  updateMeta(
+    id: string,
+    patch: Partial<Pick<ProjectRow, 'runtime' | 'runtime_version' | 'domain' | 'name'>>,
+  ): void {
+    const p = this.db.snapshot.projects.find((x) => x.id === id);
+    if (!p) return;
+    if (patch.runtime !== undefined) p.runtime = patch.runtime;
+    if (patch.runtime_version !== undefined) p.runtime_version = patch.runtime_version;
+    if (patch.domain !== undefined) p.domain = patch.domain;
+    if (patch.name !== undefined) p.name = patch.name;
+    p.updated_at = new Date().toISOString();
+    this.db.persist();
+  }
+
   /**
    * Patch runtime / deploy fields after real process ops.
    */

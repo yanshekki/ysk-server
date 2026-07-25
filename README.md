@@ -35,6 +35,8 @@
 - **Agent install apply** (`execute` needs `YSK_EXECUTE`; never fake success)
 - **SMTP relay** config for blocked Port 25 + settings write-back
 - **Dashboard summary** API (projects / agents / DNSBL / relay / scheduler)
+- **App templates**: node-starter / static-site / wordpress-php one-click scaffold
+- **Redis provision** probe + optional redis-cli PING (refuse without EXECUTE)
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

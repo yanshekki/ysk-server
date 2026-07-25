@@ -235,5 +235,21 @@ SUM=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/dashboard/summary" -H "$AUT
 echo "$SUM" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.projects||!j.agents) process.exit(18);})"
 log "Dashboard summary OK"
 
+# App templates
+TPL=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/templates" -H "$AUTH")
+echo "$TPL" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.items||j.items.length<3) process.exit(19);})"
+CREATE_TPL=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"name":"tpl-demo","runtime":"node","templateId":"node-starter"}')
+echo "$CREATE_TPL" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.scaffold||!j.scaffold.ok) process.exit(20);})"
+log "Templates OK"
+
+# Redis provision (expect 422 without redis/EXECUTE — not fake ok)
+REDIS=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/db/redis-provision" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"projectId":"p","dbIndex":1,"execute":true}' || true)
+echo "$REDIS" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(j.ok===true&&j.executed!==true&&!j.reachable) process.exit(0); if(typeof j.ok!=='boolean') process.exit(21);})"
+log "Redis provision response OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"

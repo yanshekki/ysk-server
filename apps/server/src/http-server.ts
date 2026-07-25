@@ -54,6 +54,8 @@ import {
   applyAgentInstall,
   applySmtpRelay,
   loadSmtpRelaySettings,
+  listAppTemplates,
+  provisionRedisBinding,
 } from '@ysk/core';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -154,6 +156,8 @@ export function createHttpServer(ctx: AppContext): Server {
           runtime?: 'node' | 'php' | 'static';
           runtimeVersion?: string;
           env?: 'staging' | 'production';
+          templateId?: string;
+          forceTemplate?: boolean;
         };
         const created = await ctx.projects.create({
           name: data.name ?? '',
@@ -162,8 +166,28 @@ export function createHttpServer(ctx: AppContext): Server {
           runtimeVersion: data.runtimeVersion ?? '20',
           env: data.env,
           actor: user.username,
+          templateId: data.templateId,
+          forceTemplate: data.forceTemplate,
         });
         return sendJson(res, 201, created);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/templates') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: listAppTemplates() });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/template$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { templateId?: string; force?: boolean };
+        const result = ctx.projects.applyTemplate(
+          id,
+          data.templateId ?? 'node-starter',
+          user.username,
+          data.force,
+        );
+        return sendJson(res, 200, result);
       }
 
       // Project ops — specific paths before generic :id
@@ -1122,6 +1146,35 @@ export function createHttpServer(ctx: AppContext): Server {
           locale: u.locale,
         }));
         return sendJson(res, 200, { items: users });
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/db/redis-provision') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          projectId?: string;
+          dbIndex?: number;
+          maxmemoryMb?: number;
+          host?: string;
+          port?: number;
+          execute?: boolean;
+        };
+        const result = await provisionRedisBinding({
+          hostExec: ctx.host,
+          projectId: data.projectId ?? 'shared',
+          dbIndex: data.dbIndex,
+          maxmemoryMb: data.maxmemoryMb,
+          redisHost: data.host,
+          redisPort: data.port,
+          execute: data.execute,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.redis.provision',
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
       }
 
       // MySQL real provision (refuse unless EXECUTE; never fake success)

@@ -53,8 +53,23 @@ export const api = {
     name: string;
     domain?: string;
     runtime?: string;
-  }): Promise<{ project: ProjectDto; osProvision: unknown }> {
+    templateId?: string;
+  }): Promise<{ project: ProjectDto; osProvision: unknown; scaffold?: unknown }> {
     return request('/api/v1/projects', { method: 'POST', body: JSON.stringify(body) });
+  },
+  listTemplates(): Promise<{
+    items: Array<{ id: string; name: string; description: string; runtime: string }>;
+  }> {
+    return request('/api/v1/templates');
+  },
+  applyTemplate(
+    id: string,
+    body: { templateId: string; force?: boolean },
+  ): Promise<{ project: ProjectDto; scaffold: unknown }> {
+    return request(`/api/v1/projects/${id}/template`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   },
   deleteProject(id: string): Promise<{ ok: boolean }> {
     return request(`/api/v1/projects/${id}`, { method: 'DELETE' });
