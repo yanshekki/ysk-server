@@ -71,6 +71,35 @@ export const api = {
       body: JSON.stringify(body),
     });
   },
+  wordpressDownload(id: string, body?: { force?: boolean }): Promise<Record<string, unknown>> {
+    return request(`/api/v1/projects/${id}/wordpress-download`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    });
+  },
+  provisionPostgres(body: {
+    dbName: string;
+    username: string;
+    password: string;
+    host?: string;
+    port?: number;
+    execute?: boolean;
+  }): Promise<Record<string, unknown>> {
+    return request('/api/v1/hosting/db/postgres-provision', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+  provisionRedis(body: {
+    projectId?: string;
+    dbIndex?: number;
+    execute?: boolean;
+  }): Promise<Record<string, unknown>> {
+    return request('/api/v1/hosting/db/redis-provision', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
   deleteProject(id: string): Promise<{ ok: boolean }> {
     return request(`/api/v1/projects/${id}`, { method: 'DELETE' });
   },

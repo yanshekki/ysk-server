@@ -206,6 +206,41 @@ export function SystemPage() {
           </button>
         </div>
         <div className="card">
+          <h2 className="card__title">PostgreSQL provision</h2>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={busy}
+            onClick={() =>
+              void run('/api/v1/hosting/db/postgres-provision', {
+                dbName: 'yskapp',
+                username: 'yskapp',
+                password: 'changeme99',
+                execute: false,
+              })
+            }
+          >
+            Plan / probe PG (execute=false)
+          </button>
+        </div>
+        <div className="card">
+          <h2 className="card__title">Redis provision</h2>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={busy}
+            onClick={() =>
+              void run('/api/v1/hosting/db/redis-provision', {
+                projectId: 'demo',
+                dbIndex: 1,
+                execute: false,
+              })
+            }
+          >
+            Probe Redis
+          </button>
+        </div>
+        <div className="card">
           <h2 className="card__title">Protection probe</h2>
           <button
             type="button"

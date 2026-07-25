@@ -548,6 +548,31 @@ export function ProjectsPage() {
             >
               Set resources
             </button>
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={busy}
+              onClick={() => {
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    const r = await projectsApi.wordpressDownload(selected.id);
+                    setOpsLog(r as unknown as OpsApplyResultDto);
+                    setMsg(
+                      r.ok
+                        ? 'WordPress core ready'
+                        : String((r.notes as string[] | undefined)?.slice(-1)[0] ?? 'WP download needs YSK_EXECUTE'),
+                    );
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'wp download failed');
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              Download WordPress
+            </button>
           </div>
           {logTail && (
             <div className="u-mt-4">

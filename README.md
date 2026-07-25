@@ -37,6 +37,8 @@
 - **Dashboard summary** API (projects / agents / DNSBL / relay / scheduler)
 - **App templates**: node-starter / static-site / wordpress-php one-click scaffold
 - **Redis provision** probe + optional redis-cli PING (refuse without EXECUTE)
+- **PostgreSQL provision** via psql (refuse without EXECUTE; never fake ok)
+- **WordPress download** optional (`YSK_EXECUTE=1` + network) into project public/
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

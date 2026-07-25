@@ -56,6 +56,8 @@ import {
   loadSmtpRelaySettings,
   listAppTemplates,
   provisionRedisBinding,
+  downloadWordpressCore,
+  provisionPostgresDatabase,
 } from '@ysk/core';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -1171,6 +1173,56 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.audit.append({
           actor: user.username,
           action: 'hosting.redis.provision',
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/db/postgres-provision') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          dbName?: string;
+          username?: string;
+          password?: string;
+          host?: string;
+          port?: number;
+          execute?: boolean;
+        };
+        const result = await provisionPostgresDatabase({
+          dbName: data.dbName ?? 'app',
+          username: data.username ?? 'appuser',
+          password: data.password ?? '',
+          host: data.host,
+          port: data.port,
+          hostExec: ctx.host,
+          execute: data.execute,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.postgres.provision',
+          detail: { ...result, password: undefined },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/wordpress-download$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { force?: boolean };
+        const result = await downloadWordpressCore({
+          host: ctx.host,
+          homeDir: proj.homeDir,
+          force: data.force,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'project.wordpress_download',
+          resource: id,
           detail: result,
           ok: result.ok,
         });

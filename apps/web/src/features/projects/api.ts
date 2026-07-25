@@ -11,6 +11,8 @@ export const projectsApi = {
   listTemplates: () => api.listTemplates(),
   applyTemplate: (id: string, body: { templateId: string; force?: boolean }) =>
     api.applyTemplate(id, body),
+  wordpressDownload: (id: string, force?: boolean) =>
+    api.wordpressDownload(id, { force }),
   remove: (id: string) => api.deleteProject(id),
   deploy: (id: string) => api.deployProject(id),
   deployPhp: (id: string) => api.deployPhp(id),

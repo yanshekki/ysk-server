@@ -251,5 +251,22 @@ REDIS=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/db/redis-p
 echo "$REDIS" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(j.ok===true&&j.executed!==true&&!j.reachable) process.exit(0); if(typeof j.ok!=='boolean') process.exit(21);})"
 log "Redis provision response OK"
 
+# Postgres provision refuse path
+PG=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/db/postgres-provision" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"dbName":"yskpg","username":"yskpg","password":"longpassword1","execute":true}' || true)
+echo "$PG" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(typeof j.ok!=='boolean') process.exit(22); if(j.ok===true&&j.executed!==true) process.exit(23);})"
+log "Postgres provision response OK"
+
+# WordPress download refuse without EXECUTE (create php project first)
+WP_CREATE=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"name":"wp-demo","runtime":"php","templateId":"wordpress-php"}')
+WP_ID=$(printf '%s' "$WP_CREATE" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d).project.id))")
+WP=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${WP_ID}/wordpress-download" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{}' || true)
+echo "$WP" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(j.requiresExecute!==true&&j.ok!==true) process.exit(24);})"
+log "WordPress download gate OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"

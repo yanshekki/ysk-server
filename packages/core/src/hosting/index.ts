@@ -19,5 +19,7 @@ export * from './quota.js';
 export * from './cloudflare-dns.js';
 export * from './app-templates.js';
 export * from './redis-provision.js';
+export * from './wordpress-download.js';
+export * from './postgres-provision.js';
 
 
