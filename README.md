@@ -39,6 +39,7 @@
 - **Redis provision** probe + optional redis-cli PING (refuse without EXECUTE)
 - **PostgreSQL provision** via psql (refuse without EXECUTE; never fake ok)
 - **WordPress download** optional (`YSK_EXECUTE=1` + network) into project public/
+- **CLI**: `projects create --template`, deploy/stop/backup, `templates`, hosting db provision
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)
@@ -102,6 +103,13 @@ pnpm e2e:real-ops
 ysk-server setup --non-interactive
 ysk-server serve --data-dir .ysk --port 8787
 ysk-server system unit-install --data-dir .ysk
+ysk-server templates --json
+ysk-server projects create --name demo --template node-starter --data-dir .ysk
+ysk-server projects deploy --id <uuid> --data-dir .ysk
+ysk-server projects backup --id <uuid> --data-dir .ysk
+ysk-server hosting redis-provision --db 1
+ysk-server hosting postgres-provision --db app --user appuser --password longpass99
+ysk-server agents --probe
 ysk-server update --check
 ysk-server tools --json
 ysk-server --help

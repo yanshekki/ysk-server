@@ -268,5 +268,12 @@ WP=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${WP_ID}/wor
 echo "$WP" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(j.requiresExecute!==true&&j.ok!==true) process.exit(24);})"
 log "WordPress download gate OK"
 
+# CLI templates + projects create --template
+CLI_OUT=$(node apps/server/dist/cli.js templates --json)
+echo "$CLI_OUT" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.items||j.items.length<2) process.exit(25);})"
+CLI_CREATE=$(node apps/server/dist/cli.js projects create --data-dir "$DATA_DIR" --name cli-tpl --template static-site --json)
+echo "$CLI_CREATE" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.project||!j.scaffold) process.exit(26);})"
+log "CLI templates/projects OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"

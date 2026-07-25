@@ -93,6 +93,53 @@ describe('setup + persistence', () => {
   });
 });
 
+describe('CLI projects + templates', () => {
+  it('lists templates and creates project with --template via main()', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cli-tpl-'));
+    const logs: string[] = [];
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+      logs.push(String(chunk));
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      runSetup({ dataDir: dir, nonInteractive: true, force: true, adminPassword: 'admin' });
+      logs.length = 0;
+      const codeTpl = await main(['node', 'ysk-server', 'templates', '--json']);
+      expect(codeTpl).toBe(0);
+      const tplOut = logs.join('');
+      expect(tplOut).toContain('node-starter');
+
+      logs.length = 0;
+      const code = await main([
+        'node',
+        'ysk-server',
+        'projects',
+        'create',
+        '--data-dir',
+        dir,
+        '--name',
+        'CliTpl',
+        '--template',
+        'node-starter',
+        '--json',
+      ]);
+      expect(code).toBe(0);
+      const out = logs.join('');
+      expect(out).toContain('CliTpl');
+      expect(out).toContain('scaffold');
+      // list
+      logs.length = 0;
+      const codeList = await main(['node', 'ysk-server', 'projects', 'list', '--data-dir', dir, '--json']);
+      expect(codeList).toBe(0);
+      expect(logs.join('')).toContain('CliTpl');
+    } finally {
+      process.stdout.write = origWrite;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('update', () => {
   it('reports structured self-update status', async () => {
     const upToDate = await runUpdate({ checkOnly: true, latest: VERSION });

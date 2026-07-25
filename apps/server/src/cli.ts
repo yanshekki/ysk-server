@@ -40,9 +40,10 @@ Commands:
   system unit-install   Install ysk-server.service [--enable]
   tools                 List tools; tools run --tool <name>
   ask                   Plan AI task from natural language
-  projects              List/create projects (real disk)
-  hosting               nginx list|sync
-  agents                List managed AI agent runtimes
+  projects              list|create|deploy|stop|backup|template
+  templates             List one-click app templates
+  hosting               nginx|nginx-sync|redis-provision|postgres-provision
+  agents                List / probe managed AI agent runtimes
   agent run             Outbound fleet agent (poll control plane)
   version               Print version
   help                  Show this help
@@ -51,29 +52,22 @@ Global options:
   --json                Structured JSON output (AI-agent friendly)
   --help, -h            Show help
   --version, -V         Show version
+  --data-dir <path>     Data directory (many commands)
+  --config <path>       Config.json from setup
 
-setup options:
-  --data-dir <path>     Data directory (default: ./.ysk)
-  --host <host>         Listen host (default: 127.0.0.1)
-  --port <port>         Listen port (default: 8787)
-  --locale <code>       zh-TW | en | zh-CN
-  --non-interactive     No prompts (scripted deploy)
-  --dry-run             Validate and print plan without writing
-  --force               Overwrite existing config
+projects create:
+  --name <n> --domain <d> --runtime node|php|static
+  --template node-starter|static-site|wordpress-php
 
-update options:
-  --check               Check only (npm registry when online)
-  --latest <version>    Override latest version for planning
-  --apply               Apply npm install -g (requires YSK_EXECUTE=1)
-
-serve options:
-  --config <path>       Load config.json written by setup
-  --host <host>         Bind host (overrides config)
-  --port <port>         Bind port (overrides config)
+projects deploy|stop|backup|template:
+  --id <projectId>   [--template <id>] [--force]
 
 Examples:
   ${CLI_NAME} setup --non-interactive --dry-run
   ${CLI_NAME} serve --config .ysk/config.json
+  ${CLI_NAME} projects create --name demo --template node-starter
+  ${CLI_NAME} projects deploy --id <uuid>
+  ${CLI_NAME} templates --json
   ${CLI_NAME} tools --json
 `.trim();
   process.stdout.write(`${text}\n`);
@@ -231,6 +225,28 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'agents') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0];
+    if (sub === 'probe' || hasFlag(args, '--probe')) {
+      const configPath = getOpt(args, '--config');
+      const dataDir = getOpt(args, '--data-dir');
+      let config = configPath ? loadConfigFile(configPath) : undefined;
+      if (dataDir) {
+        config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
+      }
+      const { createAppContext, closeAppContext } = await import('./app-context.js');
+      const { probeAllAgentRuntimes } = await import('@ysk/core');
+      const ctx = createAppContext({
+        version: VERSION,
+        config,
+        dataDir: dataDir ?? config?.dataDir,
+      });
+      try {
+        printJson({ ok: true, items: await probeAllAgentRuntimes(ctx.host) });
+        return 0;
+      } finally {
+        closeAppContext(ctx);
+      }
+    }
     const data = listAgentRuntimes();
     if (json) printJson({ ok: true, code: 'YSK_AGENTS', message: 'Agent runtimes', data });
     else {
@@ -295,30 +311,117 @@ async function main(argv: string[]): Promise<number> {
     }
   }
 
+  if (command === 'templates') {
+    const { listAppTemplates } = await import('@ysk/core');
+    printJson({ ok: true, items: listAppTemplates() });
+    return 0;
+  }
+
   if (command === 'projects') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
     const configPath = getOpt(args, '--config');
-    const config = configPath ? loadConfigFile(configPath) : undefined;
+    const dataDir = getOpt(args, '--data-dir');
+    let config = configPath ? loadConfigFile(configPath) : undefined;
+    if (dataDir) {
+      config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
+    }
     const { createAppContext, closeAppContext } = await import('./app-context.js');
-    const ctx = createAppContext({ version: VERSION, config, configPath });
+    const ctx = createAppContext({
+      version: VERSION,
+      config,
+      configPath,
+      dataDir: dataDir ?? config?.dataDir,
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
     try {
+      if (sub === 'list') {
+        printJson({ ok: true, items: ctx.projects.list() });
+        return 0;
+      }
       if (sub === 'create') {
         const name = getOpt(args, '--name');
         if (!name) {
-          process.stderr.write('Usage: ysk-server projects create --name <name> [--domain d]\n');
+          process.stderr.write(
+            'Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static] [--template id]\n',
+          );
           return 1;
         }
+        const runtimeRaw = getOpt(args, '--runtime') ?? 'node';
+        const runtime =
+          runtimeRaw === 'php' || runtimeRaw === 'static' || runtimeRaw === 'node'
+            ? runtimeRaw
+            : 'node';
         const created = await ctx.projects.create({
           name,
           domain: getOpt(args, '--domain'),
-          runtime: (getOpt(args, '--runtime') as 'node') ?? 'node',
+          runtime,
+          runtimeVersion: getOpt(args, '--runtime-version'),
+          templateId: getOpt(args, '--template'),
+          forceTemplate: hasFlag(args, '--force'),
           actor: 'cli',
         });
         printJson(created);
         return 0;
       }
-      printJson({ ok: true, items: ctx.projects.list() });
-      return 0;
+      if (sub === 'deploy') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write('Usage: ysk-server projects deploy --id <projectId>\n');
+          return 1;
+        }
+        const proj = ctx.projects.get(id);
+        const result =
+          proj.runtime === 'php'
+            ? await ctx.projectOps.deployPhp(id, { actor: 'cli' })
+            : await ctx.projectOps.deployNode(id, { actor: 'cli' });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'stop') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write('Usage: ysk-server projects stop --id <projectId>\n');
+          return 1;
+        }
+        printJson(await ctx.projectOps.stopNode(id, 'cli'));
+        return 0;
+      }
+      if (sub === 'backup') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write('Usage: ysk-server projects backup --id <projectId>\n');
+          return 1;
+        }
+        const result = await ctx.projectOps.backup(id, 'cli');
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'template') {
+        const id = getOpt(args, '--id');
+        const templateId = getOpt(args, '--template');
+        if (!id || !templateId) {
+          process.stderr.write(
+            'Usage: ysk-server projects template --id <projectId> --template <id> [--force]\n',
+          );
+          return 1;
+        }
+        printJson(ctx.projects.applyTemplate(id, templateId, 'cli', hasFlag(args, '--force')));
+        return 0;
+      }
+      if (sub === 'health') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write('Usage: ysk-server projects health --id <projectId>\n');
+          return 1;
+        }
+        const result = await ctx.projectOps.health(id);
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      process.stderr.write(
+        'Usage: ysk-server projects list|create|deploy|stop|backup|template|health [options]\n',
+      );
+      return 1;
     } finally {
       closeAppContext(ctx);
     }
@@ -327,10 +430,26 @@ async function main(argv: string[]): Promise<number> {
   if (command === 'hosting') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'nginx';
     const configPath = getOpt(args, '--config');
-    const config = configPath ? loadConfigFile(configPath) : undefined;
+    const dataDir = getOpt(args, '--data-dir');
+    let config = configPath ? loadConfigFile(configPath) : undefined;
+    if (dataDir) {
+      config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
+    }
     const { createAppContext, closeAppContext } = await import('./app-context.js');
-    const { listManagedNginxConfs, syncNginxConfigs } = await import('@ysk/core');
-    const ctx = createAppContext({ version: VERSION, config, configPath });
+    const {
+      listManagedNginxConfs,
+      syncNginxConfigs,
+      provisionRedisBinding,
+      provisionPostgresDatabase,
+      provisionMysqlDatabase,
+    } = await import('@ysk/core');
+    const ctx = createAppContext({
+      version: VERSION,
+      config,
+      configPath,
+      dataDir: dataDir ?? config?.dataDir,
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
     try {
       if (sub === 'nginx' || sub === 'nginx-list') {
         printJson({ files: listManagedNginxConfs(ctx.dataDir), dataDir: ctx.dataDir });
@@ -346,7 +465,41 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return 0;
       }
-      process.stderr.write('Usage: ysk-server hosting nginx|nginx-sync [--dry-run] [--system-dir PATH]\n');
+      if (sub === 'redis-provision') {
+        const result = await provisionRedisBinding({
+          hostExec: ctx.host,
+          projectId: getOpt(args, '--project-id') ?? 'shared',
+          dbIndex: getOpt(args, '--db') ? Number(getOpt(args, '--db')) : 0,
+          execute: hasFlag(args, '--execute'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'postgres-provision') {
+        const result = await provisionPostgresDatabase({
+          dbName: getOpt(args, '--db') ?? 'app',
+          username: getOpt(args, '--user') ?? 'appuser',
+          password: getOpt(args, '--password') ?? '',
+          hostExec: ctx.host,
+          execute: hasFlag(args, '--execute'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'mysql-provision') {
+        const result = await provisionMysqlDatabase({
+          dbName: getOpt(args, '--db') ?? 'app',
+          username: getOpt(args, '--user') ?? 'appuser',
+          password: getOpt(args, '--password') ?? '',
+          hostExec: ctx.host,
+          execute: hasFlag(args, '--execute'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      process.stderr.write(
+        'Usage: ysk-server hosting nginx|nginx-sync|redis-provision|postgres-provision|mysql-provision\n',
+      );
       return 1;
     } finally {
       closeAppContext(ctx);
