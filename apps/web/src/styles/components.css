@@ -1,42 +1,7 @@
-@import './tokens.css';
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: var(--font-sans);
-  color: var(--text-main);
-  background: var(--bg-page);
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-}
-
-img,
-svg {
-  max-width: 100%;
-  display: block;
-}
-
-a {
-  color: var(--brand-blue);
-  text-decoration: none;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
+/**
+ * Reusable UI patterns — prefer these over page-specific classes.
+ * Core patterns: .card .btn .field .page-header .table-wrap .empty .alert .shell .login-*
+ */
 
 /* —— Typography helpers —— */
 .gradient-text {
@@ -51,17 +16,23 @@ textarea {
   color: var(--text-sub);
 }
 
-/* —— Buttons —— */
+.section-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+/* —— Buttons (shared) —— */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 0.6rem 1.15rem;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   font-weight: 600;
-  font-size: 0.925rem;
+  font-size: var(--text-md);
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition), background var(--transition),
     border-color var(--transition);
@@ -112,36 +83,40 @@ textarea {
 
 .btn--sm {
   padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
-/* —— Card —— */
+.btn--block {
+  width: 100%;
+}
+
+/* —— Card (shared across all pages) —— */
 .card {
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  padding: 1.25rem 1.35rem;
+  padding: var(--space-5) 1.35rem;
 }
 
 .card + .card {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .card__title {
   margin: 0 0 0.35rem;
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .card__desc {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-4);
   color: var(--text-sub);
-  font-size: 0.925rem;
+  font-size: var(--text-md);
 }
 
-/* —— Form —— */
+/* —— Form patterns —— */
 .field {
   display: flex;
   flex-direction: column;
@@ -149,8 +124,12 @@ textarea {
   margin-bottom: 0.9rem;
 }
 
+.field--flush {
+  margin-bottom: 0;
+}
+
 .field label {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-sub);
 }
@@ -173,6 +152,10 @@ textarea {
   outline: none;
   border-color: var(--brand-blue);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.form-actions {
+  margin-top: var(--space-4);
 }
 
 /* —— Badge —— */
@@ -203,12 +186,16 @@ textarea {
   color: #dc2626;
 }
 
+.badge--beside {
+  margin-left: var(--space-2);
+}
+
 /* —— Alert —— */
 .alert {
-  padding: 0.75rem 1rem;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .alert--error {
@@ -236,6 +223,11 @@ textarea {
   border-radius: var(--radius-md);
 }
 
+.table-wrap + .section-title,
+.section-title + .table-wrap {
+  /* spacing handled by stack where needed */
+}
+
 table.data {
   width: 100%;
   border-collapse: collapse;
@@ -245,7 +237,7 @@ table.data {
 table.data th,
 table.data td {
   text-align: left;
-  padding: 0.75rem 1rem;
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-light);
 }
 
@@ -268,7 +260,7 @@ table.data tr:hover td {
 
 /* —— Page header —— */
 .page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-6);
 }
 
 .page-header h1 {
@@ -283,17 +275,27 @@ table.data tr:hover td {
   color: var(--text-sub);
 }
 
-/* —— Grid —— */
+/* —— Grid / stack —— */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stack--sm {
+  gap: var(--space-2);
 }
 
 /* —— Empty —— */
 .empty {
   text-align: center;
-  padding: 2.5rem 1rem;
+  padding: 2.5rem var(--space-4);
   color: var(--text-sub);
 }
 
@@ -301,6 +303,10 @@ table.data tr:hover td {
   font-weight: 700;
   color: var(--text-main);
   margin-bottom: 0.35rem;
+}
+
+.empty p {
+  margin: 0;
 }
 
 /* —— Spinner —— */
@@ -311,6 +317,7 @@ table.data tr:hover td {
   border-top-color: var(--brand-blue);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes spin {
@@ -319,10 +326,16 @@ table.data tr:hover td {
   }
 }
 
-/* —— Code / pre —— */
+.loading-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* —— Code —— */
 pre.code {
   margin: 0;
-  padding: 0.85rem 1rem;
+  padding: 0.85rem var(--space-4);
   background: var(--bg-subtle);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
@@ -332,12 +345,34 @@ pre.code {
   color: var(--text-main);
 }
 
+pre.code--spaced {
+  margin-top: var(--space-4);
+}
+
 code.inline {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
   background: var(--bg-subtle);
   padding: 0.1em 0.35em;
   border-radius: 4px;
+}
+
+/* —— Lists —— */
+.list-plain {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.list-spaced > li {
+  margin-bottom: 0.65rem;
+}
+
+.list-spaced > li:last-child {
+  margin-bottom: 0;
+}
+
+.list-flush {
+  margin: 0;
 }
 
 /* —— App shell —— */
@@ -378,7 +413,7 @@ code.inline {
 }
 
 .shell__nav {
-  padding: 1rem 0.75rem;
+  padding: var(--space-4) var(--space-3);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -415,9 +450,9 @@ code.inline {
 }
 
 .shell__footer {
-  padding: 0.85rem 1rem 1.15rem;
+  padding: 0.85rem var(--space-4) 1.15rem;
   border-top: 1px solid var(--border-color);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
@@ -433,8 +468,8 @@ code.inline {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 0 1.5rem;
+  gap: var(--space-3);
+  padding: 0 var(--space-6);
   background: var(--bg-white);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
@@ -442,8 +477,16 @@ code.inline {
   z-index: 30;
 }
 
+.shell__user {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  display: inline-flex;
+  align-items: center;
+}
+
 .shell__content {
-  padding: 1.5rem clamp(1rem, 3vw, 2rem);
+  padding: var(--space-6) clamp(1rem, 3vw, 2rem);
   max-width: var(--container-max);
   width: 100%;
   margin: 0 auto;
@@ -453,13 +496,13 @@ code.inline {
   display: none;
 }
 
-/* —— Login —— */
+/* —— Login (shared brand surface) —— */
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: var(--space-6);
   background:
     radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59, 130, 246, 0.12), transparent 55%),
     radial-gradient(ellipse 60% 40% at 100% 100%, rgba(16, 185, 129, 0.1), transparent 50%),
@@ -473,7 +516,7 @@ code.inline {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 2rem 1.75rem 1.75rem;
+  padding: var(--space-8) 1.75rem 1.75rem;
 }
 
 .login-card__brand {
@@ -492,7 +535,7 @@ code.inline {
 
 .login-card__brand h1 {
   margin: 0 0 0.35rem;
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
   font-weight: 800;
   letter-spacing: -0.03em;
 }
@@ -500,11 +543,11 @@ code.inline {
 .login-card__brand p {
   margin: 0;
   color: var(--text-sub);
-  font-size: 0.925rem;
+  font-size: var(--text-md);
 }
 
 .login-card__footer {
-  margin-top: 1.25rem;
+  margin-top: var(--space-5);
   text-align: center;
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -515,7 +558,19 @@ code.inline {
   font-weight: 600;
 }
 
-/* Mobile */
+/* Health / meta text blocks inside cards */
+.meta-block {
+  margin: 0 0 var(--space-3);
+}
+
+.meta-block--tight {
+  margin: 0;
+}
+
+.meta-block--top {
+  margin: var(--space-3) 0 0;
+}
+
 @media (max-width: 900px) {
   .shell__sidebar {
     position: fixed;

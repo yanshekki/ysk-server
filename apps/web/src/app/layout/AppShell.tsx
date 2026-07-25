@@ -74,13 +74,9 @@ export function AppShell() {
           <button type="button" className="btn btn--ghost btn--sm" onClick={cycleLang}>
             {i18n.language}
           </button>
-          <span className="muted" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+          <span className="shell__user">
             {user?.username ?? '—'}
-            {user?.roles?.[0] ? (
-              <span className="badge" style={{ marginLeft: 8 }}>
-                {user.roles[0]}
-              </span>
-            ) : null}
+            {user?.roles?.[0] ? <span className="badge badge--beside">{user.roles[0]}</span> : null}
           </span>
           <button type="button" className="btn btn--secondary btn--sm" onClick={() => void onLogout()}>
             {t('nav.logout')}

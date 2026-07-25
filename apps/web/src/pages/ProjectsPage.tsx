@@ -65,11 +65,11 @@ export function ProjectsPage() {
         <h2 className="card__title">{t('projects.create')}</h2>
         <form onSubmit={(e) => void onCreate(e)}>
           <div className="grid">
-            <div className="field" style={{ marginBottom: 0 }}>
+            <div className="field field--flush">
               <label htmlFor="pname">{t('projects.name')}</label>
               <input id="pname" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
-            <div className="field" style={{ marginBottom: 0 }}>
+            <div className="field field--flush">
               <label htmlFor="pdomain">{t('projects.domain')}</label>
               <input
                 id="pdomain"
@@ -79,7 +79,7 @@ export function ProjectsPage() {
               />
             </div>
           </div>
-          <div style={{ marginTop: '1rem' }}>
+          <div className="form-actions">
             <button type="submit" className="btn btn--primary" disabled={busy}>
               {t('projects.create')}
             </button>

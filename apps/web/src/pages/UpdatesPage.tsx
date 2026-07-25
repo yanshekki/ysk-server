@@ -11,7 +11,7 @@ export function UpdatesPage() {
       <div className="card">
         <div className="empty">
           <div className="empty__title">Coming online</div>
-          <p className="muted" style={{ margin: 0 }}>
+          <p className="muted">
             Inventory scheduler and approval-gated package updates wire into this panel.
           </p>
         </div>

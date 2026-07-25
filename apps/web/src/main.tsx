@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './app/App';
-import './app/styles/global.css';
+import './styles/index.css';
 import './shared/lib/i18n';
 
 const root = document.getElementById('root');

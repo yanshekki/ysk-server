@@ -76,7 +76,7 @@ export function EmailPage() {
         <h2 className="card__title">{t('email.create')}</h2>
         <form onSubmit={(e) => void onCreate(e)}>
           <div className="grid">
-            <div className="field" style={{ marginBottom: 0 }}>
+            <div className="field field--flush">
               <label htmlFor="edomain">Domain</label>
               <input
                 id="edomain"
@@ -86,12 +86,12 @@ export function EmailPage() {
                 required
               />
             </div>
-            <div className="field" style={{ marginBottom: 0 }}>
+            <div className="field field--flush">
               <label htmlFor="eip">Server IP</label>
               <input id="eip" value={serverIp} onChange={(e) => setServerIp(e.target.value)} required />
             </div>
           </div>
-          <div style={{ marginTop: '1rem' }}>
+          <div className="form-actions">
             <button type="submit" className="btn btn--primary" disabled={busy}>
               {t('email.create')}
             </button>
@@ -152,14 +152,14 @@ export function EmailPage() {
             Health {bundle.health.score}/{bundle.health.maxScore}
           </h2>
           {bundle.health.messages.length > 0 && (
-            <ul className="muted" style={{ marginTop: 0 }}>
+            <ul className="muted list-flush">
               {bundle.health.messages.map((m) => (
                 <li key={m}>{m}</li>
               ))}
             </ul>
           )}
-          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>DNS records</h3>
-          <div className="table-wrap" style={{ marginBottom: '1rem' }}>
+          <h3 className="section-title">DNS records</h3>
+          <div className="table-wrap u-mb-4">
             <table className="data">
               <thead>
                 <tr>
@@ -176,23 +176,19 @@ export function EmailPage() {
                     </td>
                     <td>{r.name}</td>
                     <td>
-                      <code className="inline" style={{ wordBreak: 'break-all' }}>
-                        {r.value}
-                      </code>
+                      <code className="inline u-break-all">{r.value}</code>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>{t('email.externalTodos')}</h3>
-          <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
+          <h3 className="section-title">{t('email.externalTodos')}</h3>
+          <ul className="list-plain list-spaced">
             {bundle.externalTodos.map((todo) => (
-              <li key={todo.id} style={{ marginBottom: '0.65rem' }}>
+              <li key={todo.id}>
                 <strong>{todo.title}</strong>
-                <div className="muted" style={{ fontSize: '0.9rem' }}>
-                  {todo.description}
-                </div>
+                <div className="muted u-text-sm">{todo.description}</div>
               </li>
             ))}
           </ul>

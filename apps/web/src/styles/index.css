@@ -1,0 +1,8 @@
+/**
+ * SINGLE CSS entry for YSK Server Web.
+ * Change look-and-feel only under src/styles/ — never page-level CSS or inline styles.
+ */
+@import './tokens.css';
+@import './base.css';
+@import './components.css';
+@import './utilities.css';

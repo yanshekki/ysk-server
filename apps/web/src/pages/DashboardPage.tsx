@@ -43,8 +43,9 @@ export function DashboardPage() {
 
       {error && <div className="alert alert--error">{error}</div>}
       {loading && (
-        <div className="card" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <div className="spinner" /> <span className="muted">Loading…</span>
+        <div className="card loading-row">
+          <div className="spinner" />
+          <span className="muted">Loading…</span>
         </div>
       )}
 
@@ -53,17 +54,17 @@ export function DashboardPage() {
           <h2 className="card__title">{t('dashboard.health')}</h2>
           {health && (
             <>
-              <p style={{ margin: '0 0 0.75rem' }}>
+              <p className="meta-block">
                 <span className={`badge${health.status === 'ok' ? ' badge--ok' : ' badge--warn'}`}>
                   {health.status}
                 </span>
               </p>
-              <p className="muted" style={{ margin: 0 }}>
+              <p className="muted meta-block--tight">
                 {health.product} · v{health.version}
               </p>
-              <p style={{ margin: '0.75rem 0 0' }}>
+              <p className="meta-block--top">
                 {t('dashboard.protection')}:{' '}
-                <strong style={{ fontWeight: 700 }}>{health.protectionMode}</strong>
+                <strong className="u-font-bold">{health.protectionMode}</strong>
               </p>
             </>
           )}
@@ -74,9 +75,7 @@ export function DashboardPage() {
           {audit.length === 0 ? (
             <div className="empty">
               <div className="empty__title">—</div>
-              <p className="muted" style={{ margin: 0 }}>
-                {t('dashboard.needLogin')}
-              </p>
+              <p className="muted">{t('dashboard.needLogin')}</p>
             </div>
           ) : (
             <div className="table-wrap">
@@ -95,7 +94,7 @@ export function DashboardPage() {
                         <code className="inline">{String(a.action)}</code>
                       </td>
                       <td>{String(a.actor)}</td>
-                      <td className="muted" style={{ whiteSpace: 'nowrap' }}>
+                      <td className="muted u-nowrap">
                         {String(a.created_at).replace('T', ' ').slice(0, 19)}
                       </td>
                     </tr>

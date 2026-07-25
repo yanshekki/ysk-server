@@ -62,7 +62,7 @@ export function SecurityPage() {
         <button type="button" className="btn btn--primary" disabled={busy} onClick={() => void runSysInfo()}>
           {t('security.runSysInfo')}
         </button>
-        {result && <pre className="code" style={{ marginTop: '1rem' }}>{result}</pre>}
+        {result && <pre className="code code--spaced">{result}</pre>}
       </div>
 
       <div className="card">
