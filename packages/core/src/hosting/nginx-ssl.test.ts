@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { planLetsEncrypt, renderNginxPhpFpm, renderNginxProxy } from './nginx-ssl.js';
+import {
+  planLetsEncrypt,
+  renderNginxPhpFpm,
+  renderNginxProxy,
+  renderNginxStatic,
+} from './nginx-ssl.js';
 
 describe('nginx + ssl', () => {
   it('renders reverse proxy with cloudflare real ip and ssl', () => {
@@ -49,5 +54,16 @@ describe('nginx + ssl', () => {
     expect(conf).toContain('fastcgi_pass unix:/run/php/php8.2-fpm-demo.sock');
     expect(conf).toContain('root /var/www/php');
     expect(conf).toContain('try_files');
+  });
+
+  it('renders static site server block', () => {
+    const conf = renderNginxStatic({
+      serverName: 'static.example.com',
+      docRoot: '/var/www/static',
+      cloudflareRealIp: true,
+    });
+    expect(conf).toContain('root /var/www/static');
+    expect(conf).toContain('try_files $uri $uri/ /index.html');
+    expect(conf).toContain('expires 7d');
   });
 });

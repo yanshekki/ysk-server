@@ -16,7 +16,8 @@
 - Auth (admin bootstrap), RBAC hooks, Allowlist, Approval queue, Audit log
 - **Web UI served from the same `serve` process** when `apps/web` is built
 - Projects on disk under `dataDir`; **Deploy Node** with real TCP listen + HTTP health: **systemd** (root + `YSK_EXECUTE=1`) → **PM2** (`YSK_EXECUTE=1` + `pm2` on PATH) → **pidfile** fallback; ecosystem always written
-- **Deploy PHP** via `php -S` (real listen) + Apache vhost templates
+- **Deploy PHP**: FPM+nginx or `php -S`; **Deploy static**: nginx `root` + try_files (optional system reload)
+- **Deploy PHP** artifacts + Apache vhost templates
 - **Git deploy** (clone/pull → redeploy), **env vars** (`.env`), **tar backup** under `dataDir/backups`
 - **Cron** jobs stored + managed crontab file; install needs `YSK_EXECUTE=1`
 - **Daily scheduler**: inventory snapshot + project backups (`daily-inventory`, `daily-backup`)

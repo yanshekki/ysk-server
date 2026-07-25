@@ -7,7 +7,7 @@ import {
   type AiTask,
   type TaskStore,
 } from './task-planner.js';
-import { getPlaybook, listPlaybooks } from './playbooks.js';
+import { getPlaybook, listPlaybooks, startPlaybookRun } from './playbooks.js';
 
 class MemStore implements TaskStore {
   tasks = new Map<string, AiTask>();
@@ -54,5 +54,12 @@ describe('AI task planner', () => {
   it('lists built-in playbooks', () => {
     expect(listPlaybooks().length).toBeGreaterThan(2);
     expect(getPlaybook('nginx-health').steps[0].tool).toBe('service.status');
+  });
+
+  it('startPlaybookRun creates pending run and rejects unknown', () => {
+    const run = startPlaybookRun('discover-host', 'admin');
+    expect(run.status).toBe('pending');
+    expect(run.playbookId).toBe('discover-host');
+    expect(() => getPlaybook('no-such-playbook')).toThrow(/not found/i);
   });
 });

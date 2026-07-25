@@ -245,18 +245,35 @@ function isMutatingArgv(argv: string[]): boolean {
     bin === 'chmod' ||
     bin === 'cp' ||
     bin === 'mv' ||
+    bin === 'rm' ||
+    bin === 'rmdir' ||
+    bin === 'unlink' ||
     bin === 'install' ||
     bin === 'ln' ||
+    bin === 'crontab' ||
     bin === 'a2ensite' ||
     bin === 'a2dissite' ||
     bin === 'mysql' ||
-    bin === 'nginx'
+    bin === 'nginx' ||
+    bin === 'pm2' ||
+    bin === 'pdnsutil'
   ) {
     // nginx -t is read-only check
     if (bin === 'nginx' && argv[1] === '-t') return false;
+    // pm2 jlist / list are read-only
+    if (bin === 'pm2' && (argv[1] === 'jlist' || argv[1] === 'list' || argv[1] === 'status')) {
+      return false;
+    }
     return true;
   }
   if (bin === 'certbot') return true;
+  // bash -c with destructive patterns still run under higher-level allowlist; treat bash as mutating when not dry
+  if (bin === 'bash' || bin === 'sh') {
+    const script = argv.slice(1).join(' ');
+    if (/\b(rm|mv|cp|apt|useradd|systemctl\s+(enable|start|restart|stop)|crontab)\b/.test(script)) {
+      return true;
+    }
+  }
   return false;
 }
 

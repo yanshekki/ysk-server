@@ -213,13 +213,45 @@ export function createHttpServer(ctx: AppContext): Server {
           entry?: string;
           nodeVersion?: string;
           enableSystemd?: boolean;
+          preferFpm?: boolean;
+          forceBuiltin?: boolean;
+          ssl?: boolean;
+          reload?: boolean;
         };
-        const result = await ctx.projectOps.deployNode(id, {
+        const proj = ctx.projects.get(id);
+        const result =
+          proj.runtime === 'php'
+            ? await ctx.projectOps.deployPhp(id, {
+                actor: user.username,
+                port: data.port,
+                preferFpm: data.preferFpm,
+                forceBuiltin: data.forceBuiltin,
+              })
+            : proj.runtime === 'static'
+              ? await ctx.projectOps.deployStatic(id, {
+                  actor: user.username,
+                  ssl: data.ssl,
+                  reload: data.reload,
+                })
+              : await ctx.projectOps.deployNode(id, {
+                  actor: user.username,
+                  port: data.port,
+                  entry: data.entry,
+                  nodeVersion: data.nodeVersion,
+                  enableSystemd: data.enableSystemd,
+                });
+        return sendJson(res, result.ok ? 200 : 502, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-static$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { ssl?: boolean; reload?: boolean };
+        const result = await ctx.projectOps.deployStatic(id, {
           actor: user.username,
-          port: data.port,
-          entry: data.entry,
-          nodeVersion: data.nodeVersion,
-          enableSystemd: data.enableSystemd,
+          ssl: data.ssl,
+          reload: data.reload,
         });
         return sendJson(res, result.ok ? 200 : 502, result);
       }

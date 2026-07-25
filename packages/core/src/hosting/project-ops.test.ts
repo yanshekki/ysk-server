@@ -141,4 +141,31 @@ describe('ProjectOpsService real deploy', () => {
     expect(conf).toContain('proxy_pass http://127.0.0.1:3123');
     expect(conf).toContain('server_name ngx.local');
   });
+
+  it('deployStatic writes nginx root conf and index.html', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-static-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+
+    const { project } = await projects.create({
+      name: 'StaticSite',
+      domain: 'static.local',
+      runtime: 'static',
+      templateId: 'static-site',
+      actor: 'test',
+    });
+    const dep = await ops.deployStatic(project.id, { actor: 'test' });
+    expect(dep.ok).toBe(true);
+    expect(dep.nginxPath && existsSync(dep.nginxPath)).toBe(true);
+    expect(existsSync(join(project.homeDir, 'app', 'public', 'index.html'))).toBe(true);
+    const conf = readFileSync(dep.nginxPath!, 'utf8');
+    expect(conf).toContain('root ');
+    expect(conf).toContain('try_files');
+    expect(conf).toContain('server_name static.local');
+    expect(dep.degraded).toBe(true); // no root reload
+  });
 });

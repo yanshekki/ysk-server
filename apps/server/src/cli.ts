@@ -377,7 +377,12 @@ async function main(argv: string[]): Promise<number> {
                 preferFpm: hasFlag(args, '--fpm'),
                 forceBuiltin: hasFlag(args, '--builtin'),
               })
-            : await ctx.projectOps.deployNode(id, { actor: 'cli' });
+            : proj.runtime === 'static'
+              ? await ctx.projectOps.deployStatic(id, {
+                  actor: 'cli',
+                  reload: hasFlag(args, '--reload'),
+                })
+              : await ctx.projectOps.deployNode(id, { actor: 'cli' });
         printJson(result);
         return result.ok ? 0 : 1;
       }

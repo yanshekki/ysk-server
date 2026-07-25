@@ -20,7 +20,7 @@ import { checkHttp, findFreePort, isPortListening, waitHttpOk } from '../host/he
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import { applyNodeHosting } from './node-apply.js';
-import { renderNginxPhpFpm, renderNginxProxy } from './nginx-ssl.js';
+import { renderNginxPhpFpm, renderNginxProxy, renderNginxStatic } from './nginx-ssl.js';
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
 import { selectPhpRuntime } from './runtime.js';
 import { gitSync } from './git-deploy.js';
@@ -443,6 +443,138 @@ export class ProjectOpsService {
   }
 
   /**
+   * Static site deploy: ensure public/index.html, write nginx root conf,
+   * optional system conf.d sync + reload when root+EXECUTE.
+   * No process spawn (no port) — status is "published" when conf written.
+   */
+  async deployStatic(
+    projectId: string,
+    opts: {
+      actor: string;
+      ssl?: boolean;
+      reload?: boolean;
+    },
+  ): Promise<OpsApplyResult> {
+    const row = this.require(projectId);
+    if (row.runtime !== 'static' && row.runtime !== 'php') {
+      // allow static deploy for static; php public/ also works as static assets
+      if (row.runtime === 'node') {
+        throw new YskError(
+          ErrorCodes.VALIDATION,
+          'deployStatic: use deployNode for runtime=node (or change runtime to static)',
+          { httpStatus: 400 },
+        );
+      }
+    }
+    const notes: string[] = [];
+    const written: string[] = [];
+    const docRoot = join(row.home_dir, 'app', 'public');
+    mkdirSync(docRoot, { recursive: true });
+    const indexPath = join(docRoot, 'index.html');
+    if (!existsSync(indexPath)) {
+      writeFileSync(
+        indexPath,
+        `<!doctype html><html><head><meta charset="utf-8"><title>${row.name}</title></head>
+<body><h1>${row.name}</h1><p>YSK static site</p></body></html>\n`,
+        'utf8',
+      );
+      written.push(indexPath);
+      notes.push(`Created placeholder ${indexPath}`);
+    } else {
+      notes.push(`Using existing ${indexPath}`);
+    }
+
+    const serverName = row.domain ?? `${row.linux_user}.local`;
+    const wantSsl = Boolean(opts.ssl);
+    const managed = resolveManagedCertPaths(this.dataDir, serverName);
+    const conf = renderNginxStatic({
+      serverName,
+      docRoot,
+      ssl: wantSsl && managed.exists,
+      cloudflareRealIp: true,
+      sslCertificate: wantSsl && managed.exists ? managed.fullchain : undefined,
+      sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
+    });
+    const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
+    written.push(nginxPath);
+    notes.push(`Static nginx conf: ${nginxPath}`);
+    notes.push(`Document root: ${docRoot}`);
+
+    let nginxReloaded = false;
+    const wantReload =
+      opts.reload === true ||
+      (opts.reload !== false && this.host.executeEnabled() && this.host.isRoot());
+    if (wantReload && this.host.executeEnabled() && this.host.isRoot()) {
+      const sync = await syncNginxConfigs({
+        dataDir: this.dataDir,
+        systemConfDir: '/etc/nginx/conf.d',
+        host: this.host,
+        dryRun: false,
+      });
+      written.push(...sync.copied);
+      notes.push(...sync.notes);
+      if (sync.tested) {
+        const rel = await this.host.runCommand(['systemctl', 'reload', 'nginx'], {
+          timeoutMs: 15_000,
+        });
+        nginxReloaded = rel.exitCode === 0;
+        notes.push(
+          nginxReloaded
+            ? 'nginx reloaded (static site live if DNS points here)'
+            : `nginx reload exit=${rel.exitCode}`,
+        );
+      }
+    } else if (wantReload) {
+      notes.push('nginx reload skipped: need root + YSK_EXECUTE=1');
+    } else {
+      notes.push('Managed conf only — publish with reload when ready');
+    }
+
+    // Stop any leftover node/php process from previous runtime
+    await this.stopProcess(row, notes);
+
+    this.projects.updateRuntimeState(projectId, {
+      port: undefined,
+      pid: undefined,
+      pidfile: undefined,
+      process_status: 'running',
+      status: nginxReloaded ? 'running' : 'published',
+      nginx_config_path: nginxPath,
+      last_health: {
+        ok: true,
+        at: new Date().toISOString(),
+        deployMode: 'static_nginx',
+        degraded: !nginxReloaded,
+        docRoot,
+      },
+      last_deploy_at: new Date().toISOString(),
+    });
+
+    this.audit?.append({
+      actor: opts.actor,
+      action: 'project.deploy_static',
+      resource: projectId,
+      detail: { nginxPath, docRoot, nginxReloaded },
+      ok: true,
+    });
+
+    return {
+      ok: true,
+      projectId,
+      processStatus: 'running',
+      listening: false,
+      nginxPath,
+      notes,
+      written,
+      degraded: !nginxReloaded,
+      deployMode: 'none',
+      nginxReloaded,
+      requiresRoot: !this.host.isRoot(),
+      requiresExecute: !this.host.executeEnabled(),
+    };
+  }
+
+  /**
    * Live health check against stored port; updates last_health.
    */
   async health(projectId: string): Promise<OpsApplyResult> {
@@ -695,11 +827,14 @@ export class ProjectOpsService {
       if (row.runtime === 'node') {
         redeployResult = await this.deployNode(projectId, { actor: opts.actor });
         notes.push(...redeployResult.notes);
+      } else if (row.runtime === 'static') {
+        redeployResult = await this.deployStatic(projectId, { actor: opts.actor });
+        notes.push(...redeployResult.notes);
       } else if (row.runtime === 'php') {
         redeployResult = await this.deployPhp(projectId, { actor: opts.actor });
         notes.push(...redeployResult.notes);
       } else {
-        notes.push('Runtime static — git sync only, no process redeploy');
+        notes.push(`Runtime ${row.runtime} — git sync only, no process redeploy`);
       }
     }
     this.audit?.append({

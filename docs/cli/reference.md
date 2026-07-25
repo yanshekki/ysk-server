@@ -90,7 +90,7 @@ ysk-server projects backup --id UUID
 ysk-server projects template --id UUID --template ID [--force]
 ```
 
-Deploy selects Node or PHP path from project runtime. Node deploy: systemd (root + `YSK_EXECUTE=1`) → PM2 → pidfile. PHP deploy: PHP-FPM+nginx (root + EXECUTE) → `php -S` degraded. Flags: `projects deploy --fpm` / `--builtin`.
+Deploy selects Node / PHP / static from project runtime. Node: systemd → PM2 → pidfile. PHP: FPM+nginx → `php -S`. Static: nginx root conf (`--reload` for system). Flags: `--fpm` / `--builtin` / `--reload`.
 
 ## hosting
 

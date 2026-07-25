@@ -33,6 +33,8 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - PHP deploy: FPM+nginx fastcgi production path vs php -S; SHA512-CRYPT mailbox hashes
 - OSV inventory mock tests; renderNginxPhpFpm
 - Roundcube webmail plan/apply; coverage for protection/operation-level/repos
+- deployStatic nginx path; host executor blocks rm/crontab/pm2 without EXECUTE
+- Repo tests (session/project); playbooks startPlaybookRun coverage
 
 ### Still partial / Spec backlog
 
