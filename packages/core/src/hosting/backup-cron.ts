@@ -2,7 +2,15 @@
  * Real backup (tar) and cron job management under dataDir.
  */
 
-import { existsSync, mkdirSync, readdirSync, writeFileSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  writeFileSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { ErrorCodes, YskError } from '@ysk/shared';
@@ -16,6 +24,91 @@ export interface BackupResult {
   bytes?: number;
   notes: string[];
   commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+}
+
+export interface BackupListItem {
+  projectId: string;
+  name: string;
+  path: string;
+  bytes: number;
+  mtime: string;
+}
+
+/**
+ * List backup archives under dataDir/backups.
+ */
+export function listBackups(dataDir: string): BackupListItem[] {
+  const root = join(dataDir, 'backups');
+  if (!existsSync(root)) return [];
+  const out: BackupListItem[] = [];
+  for (const projectId of readdirSync(root)) {
+    const dir = join(root, projectId);
+    try {
+      if (!statSync(dir).isDirectory()) continue;
+      for (const name of readdirSync(dir).filter((f) => f.endsWith('.tar.gz'))) {
+        const path = join(dir, name);
+        const st = statSync(path);
+        out.push({
+          projectId,
+          name,
+          path,
+          bytes: st.size,
+          mtime: st.mtime.toISOString(),
+        });
+      }
+    } catch {
+      /* skip */
+    }
+  }
+  return out.sort((a, b) => (a.mtime < b.mtime ? 1 : -1));
+}
+
+/**
+ * Backup every project that has a home_dir on disk.
+ */
+export async function backupAllProjects(input: {
+  host: HostExecutor;
+  dataDir: string;
+  projects: Array<{ id: string; home_dir: string; name?: string }>;
+}): Promise<{
+  ok: boolean;
+  results: Array<BackupResult & { projectId: string }>;
+  notes: string[];
+}> {
+  const results: Array<BackupResult & { projectId: string }> = [];
+  for (const p of input.projects) {
+    if (!existsSync(p.home_dir)) {
+      results.push({
+        projectId: p.id,
+        ok: false,
+        notes: [`skip missing home ${p.home_dir}`],
+        commandResults: [],
+      });
+      continue;
+    }
+    try {
+      const r = await backupProject({
+        host: input.host,
+        dataDir: input.dataDir,
+        projectId: p.id,
+        homeDir: p.home_dir,
+      });
+      results.push({ projectId: p.id, ...r });
+    } catch (e) {
+      results.push({
+        projectId: p.id,
+        ok: false,
+        notes: [e instanceof Error ? e.message : String(e)],
+        commandResults: [],
+      });
+    }
+  }
+  const ok = results.length === 0 || results.some((r) => r.ok);
+  return {
+    ok,
+    results,
+    notes: [`Backed up ${results.filter((r) => r.ok).length}/${results.length} projects`],
+  };
 }
 
 /**
@@ -72,7 +165,6 @@ export async function backupProject(input: {
     .reverse();
   for (const old of files.slice(10)) {
     try {
-      const { unlinkSync } = await import('node:fs');
       unlinkSync(join(destDir, old));
     } catch {
       /* ignore */

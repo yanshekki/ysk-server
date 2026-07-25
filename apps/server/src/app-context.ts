@@ -29,6 +29,7 @@ import {
   fetchTransport,
   openDatabase,
   runProtectionProbes,
+  backupAllProjects,
   type Allowlist,
   type HostExecutor,
   type ProtectionState,
@@ -196,24 +197,77 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       },
       { runImmediately: process.env.YSK_PROBE_ON_START === '1' },
     );
-    scheduler.every('daily-inventory', 24 * 60 * 60_000, async () => {
-      try {
-        const inv = await collectInventory(host);
-        settings.setJson('last_inventory', {
-          at: new Date().toISOString(),
-          count: inv.length,
-          sample: inv.slice(0, 20),
-        });
-        audit.append({
-          actor: 'system',
-          action: 'update.inventory.scheduled',
-          detail: { count: inv.length },
-          ok: true,
-        });
-      } catch {
-        /* ignore */
-      }
-    });
+    scheduler.every(
+      'daily-inventory',
+      24 * 60 * 60_000,
+      async () => {
+        try {
+          const inv = await collectInventory(host);
+          settings.setJson('last_inventory', {
+            at: new Date().toISOString(),
+            count: inv.length,
+            sample: inv.slice(0, 40),
+            items: inv.slice(0, 80),
+          });
+          audit.append({
+            actor: 'system',
+            action: 'update.inventory.scheduled',
+            detail: { count: inv.length },
+            ok: true,
+          });
+        } catch {
+          /* ignore */
+        }
+      },
+      { runImmediately: process.env.YSK_INVENTORY_ON_START === '1' },
+    );
+
+    // Daily project backups (interval overridable for tests)
+    const backupMs = Number(process.env.YSK_BACKUP_INTERVAL_MS ?? 24 * 60 * 60_000);
+    scheduler.every(
+      'daily-backup',
+      Number.isFinite(backupMs) && backupMs >= 5_000 ? backupMs : 24 * 60 * 60_000,
+      async () => {
+        try {
+          const projects = projectRepo.list();
+          const r = await backupAllProjects({
+            host,
+            dataDir,
+            projects: projects.map((p) => ({
+              id: p.id,
+              home_dir: p.home_dir,
+              name: p.name,
+            })),
+          });
+          for (const item of r.results) {
+            if (item.ok && item.archivePath) {
+              projectRepo.updateRuntimeState(item.projectId, {
+                last_backup_path: item.archivePath,
+                last_backup_at: new Date().toISOString(),
+              });
+            }
+          }
+          settings.setJson('last_backup_run', {
+            at: new Date().toISOString(),
+            ...r,
+          });
+          audit.append({
+            actor: 'system',
+            action: 'backup.scheduled',
+            detail: { notes: r.notes, ok: r.ok, count: r.results.length },
+            ok: r.ok,
+          });
+        } catch (e) {
+          audit.append({
+            actor: 'system',
+            action: 'backup.scheduled',
+            detail: { error: e instanceof Error ? e.message : String(e) },
+            ok: false,
+          });
+        }
+      },
+      { runImmediately: process.env.YSK_BACKUP_ON_START === '1' },
+    );
   }
 
   return ctx;

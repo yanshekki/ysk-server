@@ -19,6 +19,8 @@
 - **Deploy PHP** via `php -S` (real listen) + Apache vhost templates
 - **Git deploy** (clone/pull → redeploy), **env vars** (`.env`), **tar backup** under `dataDir/backups`
 - **Cron** jobs stored + managed crontab file; install needs `YSK_EXECUTE=1`
+- **Daily scheduler**: inventory snapshot + project backups (`daily-inventory`, `daily-backup`)
+- **Logs tail** per project; **Updates** page refresh inventory; Dashboard project/backup summary
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

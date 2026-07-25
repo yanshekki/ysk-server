@@ -16,6 +16,7 @@ export function ProjectsPage() {
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<ProjectDto | null>(null);
   const [opsLog, setOpsLog] = useState<OpsApplyResultDto | null>(null);
+  const [logTail, setLogTail] = useState<string>('');
 
   async function refresh() {
     const r = await api.listProjects();
@@ -398,6 +399,48 @@ export function ProjectsPage() {
               {t('projects.stop')}
             </button>
           </div>
+          <div className="form-actions btn-row">
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={busy}
+              onClick={() => {
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    const r = await api.requestRaw<{
+                      files: Array<{ name: string }>;
+                      tail?: { lines: string[]; file: string };
+                    }>(`/api/v1/projects/${selected.id}/logs`);
+                    if (r.files[0]) {
+                      const t = await api.requestRaw<{
+                        tail: { lines: string[]; file: string };
+                      }>(
+                        `/api/v1/projects/${selected.id}/logs?file=${encodeURIComponent(r.files[0].name)}&lines=80`,
+                      );
+                      setLogTail(
+                        `# ${t.tail.file}\n` + (t.tail.lines ?? []).join('\n'),
+                      );
+                    } else {
+                      setLogTail('(no log files yet — deploy first)');
+                    }
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'logs failed');
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              View logs
+            </button>
+          </div>
+          {logTail && (
+            <div className="u-mt-4">
+              <h3 className="section-title">Logs</h3>
+              <pre className="code code--spaced">{logTail}</pre>
+            </div>
+          )}
           {opsLog && (
             <div className="u-mt-4">
               <h3 className="section-title">{t('projects.opsResult')}</h3>

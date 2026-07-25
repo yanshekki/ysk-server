@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LocalHostExecutor } from '../host/executor.js';
 import { JsonStore } from '../db/store.js';
-import { backupProject, CronJobService } from './backup-cron.js';
+import { backupProject, CronJobService, listBackups, backupAllProjects } from './backup-cron.js';
 
 describe('backup + cron', () => {
   const dirs: string[] = [];
@@ -28,6 +28,24 @@ describe('backup + cron', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.archivePath && existsSync(r.archivePath)).toBe(true);
+  });
+
+  it('lists backups after backupAllProjects', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bakall-'));
+    dirs.push(dir);
+    const home = join(dir, 'projects', 'p1');
+    mkdirSync(join(home, 'app'), { recursive: true });
+    writeFileSync(join(home, 'app', 'x.txt'), 'x', 'utf8');
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const r = await backupAllProjects({
+      host,
+      dataDir: dir,
+      projects: [{ id: 'p1', home_dir: home, name: 'P1' }],
+    });
+    expect(r.results.some((x) => x.ok)).toBe(true);
+    const list = listBackups(dir);
+    expect(list.length).toBeGreaterThan(0);
+    expect(list[0].projectId).toBe('p1');
   });
 
   it('writes managed crontab and refuses install without EXECUTE', async () => {

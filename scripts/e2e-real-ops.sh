@@ -123,6 +123,21 @@ BAK=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_
 echo "$BAK" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||!j.archivePath) process.exit(10);})"
 log "Backup OK"
 
+# Logs list
+LOGS=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_ID}/logs" -H "$AUTH")
+echo "$LOGS" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!Array.isArray(j.files)) process.exit(12);})"
+log "Logs list OK"
+
+# Inventory refresh
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/updates/inventory/refresh" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{"osv":false}' >/dev/null
+log "Inventory refresh OK"
+
+# Scheduler jobs
+SCH=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/scheduler" -H "$AUTH")
+echo "$SCH" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!Array.isArray(j.jobs)) process.exit(13);})"
+log "Scheduler OK"
+
 # Cron managed file
 curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/cron" \
   -H "$AUTH" -H 'Content-Type: application/json' \

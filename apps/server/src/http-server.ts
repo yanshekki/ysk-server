@@ -33,6 +33,11 @@ import {
   buildRcaReport,
   planSelfUpdate,
   provisionMysqlDatabase,
+  listBackups,
+  backupAllProjects,
+  listProjectLogs,
+  tailProjectLog,
+  lookupOsvVulns,
 } from '@ysk/core';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
@@ -551,14 +556,113 @@ export function createHttpServer(ctx: AppContext): Server {
       }
       if (method === 'GET' && url.pathname === '/api/v1/updates/inventory') {
         ctx.auth.authenticate(getBearer(req));
+        const cached = url.searchParams.get('cached') === '1';
+        if (cached) {
+          const last = ctx.settings.getJson<Record<string, unknown>>('last_inventory');
+          return sendJson(res, 200, {
+            cached: true,
+            last,
+            inventory: (last?.items as unknown[]) ?? last?.sample ?? [],
+            advice: [],
+          });
+        }
         const inv = await collectInventory(ctx.host);
         const advice = adviseInventory(inv);
-        return sendJson(res, 200, { inventory: inv, advice });
+        ctx.settings.setJson('last_inventory', {
+          at: new Date().toISOString(),
+          count: inv.length,
+          sample: inv.slice(0, 40),
+          items: inv.slice(0, 80),
+        });
+        return sendJson(res, 200, {
+          cached: false,
+          inventory: inv,
+          advice,
+          collectedAt: new Date().toISOString(),
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/updates/inventory/refresh') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { osv?: boolean; limit?: number };
+        const inv = await collectInventory(ctx.host);
+        let advice = adviseInventory(inv);
+        if (data.osv) {
+          const limit = Math.min(data.limit ?? 5, 15);
+          for (const item of advice.slice(0, limit)) {
+            const cves = await lookupOsvVulns(item.packageName, item.currentVersion);
+            if (cves.length) {
+              item.cves = cves;
+              item.summary = `${item.summary}; OSV: ${cves.slice(0, 3).join(', ')}`;
+            }
+          }
+        }
+        ctx.settings.setJson('last_inventory', {
+          at: new Date().toISOString(),
+          count: inv.length,
+          sample: inv.slice(0, 40),
+          items: inv.slice(0, 80),
+          advice: advice.slice(0, 40),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'update.inventory.refresh',
+          detail: { count: inv.length, osv: Boolean(data.osv) },
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          inventory: inv,
+          advice,
+          collectedAt: new Date().toISOString(),
+        });
       }
       if (method === 'GET' && url.pathname === '/api/v1/updates/self') {
         ctx.auth.authenticate(getBearer(req));
         const latest = process.env.YSK_LATEST_VERSION ?? VERSION;
         return sendJson(res, 200, planSelfUpdate({ current: VERSION, latest }));
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/backups') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, {
+          items: listBackups(ctx.dataDir),
+          lastRun: ctx.settings.getJson('last_backup_run') ?? null,
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/run-all') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const projects = ctx.db.snapshot.projects;
+        const r = await backupAllProjects({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          projects: projects.map((p) => ({
+            id: p.id,
+            home_dir: p.home_dir,
+            name: p.name,
+          })),
+        });
+        for (const item of r.results) {
+          if (item.ok && item.archivePath) {
+            const p = projects.find((x) => x.id === item.projectId);
+            if (p) {
+              p.last_backup_path = item.archivePath;
+              p.last_backup_at = new Date().toISOString();
+              p.updated_at = new Date().toISOString();
+            }
+          }
+        }
+        ctx.db.persist();
+        ctx.settings.setJson('last_backup_run', { at: new Date().toISOString(), ...r });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.run_all',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 500, r);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/scheduler') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { jobs: ctx.scheduler.list() });
       }
       if (method === 'GET' && url.pathname === '/api/v1/fleet/agents') {
         ctx.auth.authenticate(getBearer(req));
@@ -771,6 +875,22 @@ export function createHttpServer(ctx: AppContext): Server {
         const id = url.pathname.split('/')[4];
         const result = await ctx.projectOps.backup(id, user.username);
         return sendJson(res, result.ok ? 200 : 500, result);
+      }
+
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/logs$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const files = listProjectLogs(proj.homeDir);
+        const file = url.searchParams.get('file');
+        if (file) {
+          const lines = Number(url.searchParams.get('lines') ?? 200);
+          return sendJson(res, 200, {
+            files,
+            tail: tailProjectLog(proj.homeDir, file, Number.isFinite(lines) ? lines : 200),
+          });
+        }
+        return sendJson(res, 200, { files });
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-php$/)) {

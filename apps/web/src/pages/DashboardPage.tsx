@@ -10,6 +10,10 @@ export function DashboardPage() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [audit, setAudit] = useState<Array<Record<string, unknown>>>([]);
   const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
+  const [projects, setProjects] = useState<
+    Array<{ id: string; name: string; processStatus?: string; port?: number; status?: string }>
+  >([]);
+  const [backups, setBackups] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,6 +27,18 @@ export function DashboardPage() {
         if (!cancelled) setAudit(a.items.slice(0, 12));
         const m = await api.requestRaw<Record<string, unknown>>('/api/v1/metrics');
         if (!cancelled) setMetrics(m);
+        try {
+          const p = await api.listProjects();
+          if (!cancelled) setProjects(p.items.slice(0, 12));
+        } catch {
+          /* guest */
+        }
+        try {
+          const b = await api.requestRaw<{ items: unknown[] }>('/api/v1/backups');
+          if (!cancelled) setBackups(b.items.length);
+        } catch {
+          /* optional */
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Error');
       } finally {
@@ -99,6 +115,30 @@ export function DashboardPage() {
           ) : (
             <span className="muted">—</span>
           )}
+        </div>
+
+        <div className="card">
+          <h2 className="card__title">Projects</h2>
+          {projects.length === 0 ? (
+            <p className="muted">No projects yet</p>
+          ) : (
+            <ul className="list-plain list-spaced">
+              {projects.map((p) => (
+                <li key={p.id}>
+                  <strong>{p.name}</strong>{' '}
+                  <span
+                    className={
+                      p.processStatus === 'running' ? 'badge badge--ok' : 'badge'
+                    }
+                  >
+                    {p.processStatus ?? p.status ?? '—'}
+                  </span>
+                  {p.port != null && <span className="muted"> :{p.port}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="muted meta-block--top">Backups on disk: {backups}</p>
         </div>
 
         <div className="card">
