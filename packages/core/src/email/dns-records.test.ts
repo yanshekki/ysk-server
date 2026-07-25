@@ -3,6 +3,7 @@ import {
   buildExternalTodos,
   generateEmailDnsRecords,
   planEmailStackInstall,
+  planTestSend,
   scoreEmailHealth,
 } from './dns-records.js';
 
@@ -54,5 +55,9 @@ describe('email DNS + external checklist', () => {
     expect(install.packages).toContain('postfix');
     expect(install.packages).toContain('dovecot-core');
     expect(install.ports).toContain(25);
+
+    const testSend = planTestSend({ from: 'noreply@example.com', to: 'you@example.com' });
+    expect(testSend.command).toContain('sendmail');
+    expect(testSend.analysisHints.some((h) => /spam|PTR|Port 25/i.test(h))).toBe(true);
   });
 });

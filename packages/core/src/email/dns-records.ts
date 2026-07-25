@@ -235,6 +235,34 @@ export function planEmailStackInstall(domain: string): {
   };
 }
 
+/**
+ * Plan a test-send (does not actually send in unit tests / non-root envs).
+ */
+export function planTestSend(input: {
+  from: string;
+  to: string;
+  subject?: string;
+}): { command: string; notes: string[]; analysisHints: string[] } {
+  if (!input.from || !input.to) {
+    throw new YskError(ErrorCodes.VALIDATION, 'from and to required for test send', {
+      httpStatus: 400,
+    });
+  }
+  const subject = input.subject ?? 'YSK Server mail test';
+  return {
+    command: `printf 'Subject: ${subject}\\n\\nYSK Server deliverability test\\n' | sendmail -f ${input.from} ${input.to}`,
+    notes: [
+      'Requires local MTA (Postfix) installed and Port 25/relay configured',
+      'Check recipient spam folder and server mail logs after send',
+    ],
+    analysisHints: [
+      'If deferred: check Port 25 block or relay credentials',
+      'If accepted but spam: improve SPF/DKIM/DMARC/PTR and warm-up',
+      'Inspect /var/log/mail.log or journalctl -u postfix',
+    ],
+  };
+}
+
 function assertDomain(domain: string): void {
   if (!domain || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
     throw new YskError(ErrorCodes.VALIDATION, `Invalid domain: ${domain}`, { httpStatus: 400 });
