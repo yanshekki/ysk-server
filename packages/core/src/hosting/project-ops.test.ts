@@ -82,6 +82,32 @@ describe('ProjectOpsService real deploy', () => {
     expect(await isPortListening(result.port!)).toBe(false);
   }, 30_000);
 
+  it('backups project and setEnv writes .env', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-ops-env-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+
+    const { project } = await projects.create({
+      name: 'EnvBak',
+      runtime: 'node',
+      actor: 'test',
+    });
+    const env = ops.setEnv(project.id, { FOO: 'bar', PORT: '3999' }, 'test');
+    expect(env.ok).toBe(true);
+    expect(existsSync(join(project.homeDir, 'app', '.env'))).toBe(true);
+    expect(readFileSync(join(project.homeDir, 'app', '.env'), 'utf8')).toContain('FOO=bar');
+
+    const bak = await ops.backup(project.id, 'test');
+    expect(bak.ok).toBe(true);
+    expect(bak.archivePath && existsSync(bak.archivePath)).toBe(true);
+    const row = repo.findById(project.id)!;
+    expect(row.last_backup_path).toBe(bak.archivePath);
+  });
+
   it('publishNginx writes conf with project port', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-ngx-'));
     dirs.push(dir);

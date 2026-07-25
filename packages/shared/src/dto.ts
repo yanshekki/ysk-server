@@ -111,6 +111,12 @@ export interface ProjectDto {
   lastHealth?: Record<string, unknown>;
   lastDeployAt?: string;
   osProvisioned?: boolean;
+  gitUrl?: string;
+  gitBranch?: string;
+  gitCommit?: string;
+  envVars?: Record<string, string>;
+  lastBackupPath?: string;
+  lastBackupAt?: string;
 }
 
 /** Result of real deploy / publish / health ops */

@@ -739,6 +739,114 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, status);
       }
 
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git-deploy$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          gitUrl?: string;
+          branch?: string;
+          redeploy?: boolean;
+        };
+        const result = await ctx.projectOps.gitDeploy(id, {
+          actor: user.username,
+          gitUrl: data.gitUrl,
+          branch: data.branch,
+          redeploy: data.redeploy,
+        });
+        return sendJson(res, result.ok ? 200 : 502, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/env$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { env?: Record<string, string> };
+        const result = ctx.projectOps.setEnv(id, data.env ?? {}, user.username);
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/backup$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.backup(id, user.username);
+        return sendJson(res, result.ok ? 200 : 500, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-php$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          port?: number;
+          phpVersion?: string;
+          enableApache?: boolean;
+        };
+        const result = await ctx.projectOps.deployPhp(id, {
+          actor: user.username,
+          port: data.port,
+          phpVersion: data.phpVersion,
+          enableApache: data.enableApache,
+        });
+        return sendJson(res, result.ok ? 200 : 502, result);
+      }
+
+      // Cron jobs
+      if (method === 'GET' && url.pathname === '/api/v1/cron') {
+        ctx.auth.authenticate(getBearer(req));
+        const projectId = url.searchParams.get('projectId') ?? undefined;
+        return sendJson(res, 200, { items: ctx.cron.list(projectId) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/cron') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          projectId?: string;
+          user?: string;
+          schedule?: string;
+          command?: string;
+        };
+        const job = ctx.cron.create({
+          projectId: data.projectId,
+          user: data.user ?? 'ysk',
+          schedule: data.schedule ?? '0 3 * * *',
+          command: data.command ?? 'true',
+          actor: user.username,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cron.create',
+          resource: job.id,
+          detail: job,
+          ok: true,
+        });
+        return sendJson(res, 201, { job });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cron\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const ok = ctx.cron.delete(id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cron.delete',
+          resource: id,
+          detail: { ok },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/cron/install') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const result = await ctx.cron.installCrontab(user.username);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cron.install',
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
       // Static Web UI (SPA) — after all API routes
       if (tryServeStatic(req, res, url.pathname, webRoot)) {
         return;

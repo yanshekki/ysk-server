@@ -48,6 +48,14 @@ export interface StoreProject {
   process_status?: string;
   last_health?: Record<string, unknown>;
   last_deploy_at?: string;
+  /** Git remote for deploy */
+  git_url?: string;
+  git_branch?: string;
+  git_commit?: string;
+  /** App env vars written to .env */
+  env_vars?: Record<string, string>;
+  last_backup_path?: string;
+  last_backup_at?: string;
   created_at: string;
   updated_at: string;
 }

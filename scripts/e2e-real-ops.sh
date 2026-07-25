@@ -114,6 +114,24 @@ NGX_PATH=$(printf '%s' "$NGX" | node -e "let d='';process.stdin.on('data',c=>d+=
 grep -q "proxy_pass http://127.0.0.1:${APP_PORT}" "$NGX_PATH" || fail "nginx conf missing upstream port"
 log "Nginx conf OK: $NGX_PATH"
 
+# Env + backup
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_ID}/env" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"env":{"YSK_E2E":"1","NODE_ENV":"production"}}' >/dev/null
+BAK=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_ID}/backup" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{}')
+echo "$BAK" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||!j.archivePath) process.exit(10);})"
+log "Backup OK"
+
+# Cron managed file
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/cron" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"projectId\":\"${PROJECT_ID}\",\"schedule\":\"0 3 * * *\",\"command\":\"true\"}" >/dev/null
+CRON_INSTALL=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/cron/install" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{}' || true)
+echo "$CRON_INSTALL" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d); if(j.ok===true) process.exit(0); if(!j.path) process.exit(11);}catch{process.exit(11)}})" || fail "cron install response invalid"
+log "Cron managed path OK (install may require EXECUTE)"
+
 # Stop
 curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_ID}/stop" \
   -H "$AUTH" -H 'Content-Type: application/json' -d '{}' >/dev/null

@@ -51,6 +51,12 @@ export class ProjectRepository {
         | 'nginx_config_path'
         | 'last_health'
         | 'last_deploy_at'
+        | 'git_url'
+        | 'git_branch'
+        | 'git_commit'
+        | 'env_vars'
+        | 'last_backup_path'
+        | 'last_backup_at'
       >
     >,
   ): void {
@@ -64,6 +70,12 @@ export class ProjectRepository {
     if (patch.nginx_config_path !== undefined) p.nginx_config_path = patch.nginx_config_path;
     if (patch.last_health !== undefined) p.last_health = patch.last_health;
     if (patch.last_deploy_at !== undefined) p.last_deploy_at = patch.last_deploy_at;
+    if (patch.git_url !== undefined) p.git_url = patch.git_url;
+    if (patch.git_branch !== undefined) p.git_branch = patch.git_branch;
+    if (patch.git_commit !== undefined) p.git_commit = patch.git_commit;
+    if (patch.env_vars !== undefined) p.env_vars = patch.env_vars;
+    if (patch.last_backup_path !== undefined) p.last_backup_path = patch.last_backup_path;
+    if (patch.last_backup_at !== undefined) p.last_backup_at = patch.last_backup_at;
     p.updated_at = new Date().toISOString();
     this.db.persist();
   }

@@ -16,6 +16,9 @@
 - Auth (admin bootstrap), RBAC hooks, Allowlist, Approval queue, Audit log
 - **Web UI served from the same `serve` process** when `apps/web` is built
 - Projects on disk under `dataDir`; **Deploy Node** with real TCP listen + HTTP health (pidfile mode always; **systemd production** when root + `YSK_EXECUTE=1`)
+- **Deploy PHP** via `php -S` (real listen) + Apache vhost templates
+- **Git deploy** (clone/pull → redeploy), **env vars** (`.env`), **tar backup** under `dataDir/backups`
+- **Cron** jobs stored + managed crontab file; install needs `YSK_EXECUTE=1`
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

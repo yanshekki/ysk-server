@@ -193,6 +193,12 @@ function toDto(row: ProjectRow): ProjectDto {
     lastHealth: row.last_health,
     lastDeployAt: row.last_deploy_at,
     osProvisioned: row.os_provisioned,
+    gitUrl: row.git_url,
+    gitBranch: row.git_branch,
+    gitCommit: row.git_commit,
+    envVars: row.env_vars,
+    lastBackupPath: row.last_backup_path,
+    lastBackupAt: row.last_backup_at,
   };
 }
 

@@ -84,6 +84,48 @@ export const api = {
       body: JSON.stringify(body ?? {}),
     });
   },
+  gitDeploy(
+    id: string,
+    body?: { gitUrl?: string; branch?: string; redeploy?: boolean },
+  ): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/git-deploy`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    });
+  },
+  setProjectEnv(id: string, env: Record<string, string>): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/env`, {
+      method: 'POST',
+      body: JSON.stringify({ env }),
+    });
+  },
+  backupProject(id: string): Promise<OpsApplyResultDto & { archivePath?: string }> {
+    return request(`/api/v1/projects/${id}/backup`, { method: 'POST', body: '{}' });
+  },
+  deployPhp(
+    id: string,
+    body?: { port?: number; phpVersion?: string; enableApache?: boolean },
+  ): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/deploy-php`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    });
+  },
+  listCron(projectId?: string): Promise<{ items: Array<Record<string, unknown>> }> {
+    const q = projectId ? `?projectId=${encodeURIComponent(projectId)}` : '';
+    return request(`/api/v1/cron${q}`);
+  },
+  createCron(body: {
+    projectId?: string;
+    user?: string;
+    schedule: string;
+    command: string;
+  }): Promise<{ job: Record<string, unknown> }> {
+    return request('/api/v1/cron', { method: 'POST', body: JSON.stringify(body) });
+  },
+  installCron(): Promise<{ ok: boolean; notes: string[]; path: string }> {
+    return request('/api/v1/cron/install', { method: 'POST', body: '{}' });
+  },
   listSslCertificates(): Promise<{ items: Array<Record<string, unknown>> }> {
     return request('/api/v1/system/ssl/certificates');
   },

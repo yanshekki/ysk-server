@@ -8,6 +8,9 @@ export function ProjectsPage() {
   const [items, setItems] = useState<ProjectDto[]>([]);
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
+  const [runtime, setRuntime] = useState<'node' | 'php' | 'static'>('node');
+  const [gitUrl, setGitUrl] = useState('');
+  const [envText, setEnvText] = useState('NODE_ENV=production\n');
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -34,7 +37,7 @@ export function ProjectsPage() {
     setMsg(null);
     setBusy(true);
     try {
-      const r = await api.createProject({ name, domain: domain || undefined, runtime: 'node' });
+      const r = await api.createProject({ name, domain: domain || undefined, runtime });
       setMsg(`Created ${r.project.name}`);
       setName('');
       setDomain('');
@@ -65,7 +68,15 @@ export function ProjectsPage() {
   }
 
   async function runOps(
-    action: 'deploy' | 'stop' | 'health' | 'publish-nginx',
+    action:
+      | 'deploy'
+      | 'deploy-php'
+      | 'stop'
+      | 'health'
+      | 'publish-nginx'
+      | 'git-deploy'
+      | 'backup'
+      | 'env',
     id: string,
   ) {
     setBusy(true);
@@ -74,9 +85,26 @@ export function ProjectsPage() {
     try {
       let result: OpsApplyResultDto;
       if (action === 'deploy') result = await api.deployProject(id);
+      else if (action === 'deploy-php') result = await api.deployPhp(id);
       else if (action === 'stop') result = await api.stopProject(id);
       else if (action === 'health') result = await api.projectHealth(id);
-      else result = await api.publishNginx(id);
+      else if (action === 'publish-nginx') result = await api.publishNginx(id);
+      else if (action === 'git-deploy') {
+        result = await api.gitDeploy(id, {
+          gitUrl: gitUrl || undefined,
+          redeploy: true,
+        });
+      } else if (action === 'backup') result = await api.backupProject(id);
+      else {
+        const env: Record<string, string> = {};
+        for (const line of envText.split('\n')) {
+          const tline = line.trim();
+          if (!tline || tline.startsWith('#')) continue;
+          const i = tline.indexOf('=');
+          if (i > 0) env[tline.slice(0, i).trim()] = tline.slice(i + 1).trim();
+        }
+        result = await api.setProjectEnv(id, env);
+      }
 
       setOpsLog(result);
       setMsg(
@@ -118,6 +146,18 @@ export function ProjectsPage() {
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="app.example.com"
               />
+            </div>
+            <div className="field field--flush">
+              <label htmlFor="pruntime">Runtime</label>
+              <select
+                id="pruntime"
+                value={runtime}
+                onChange={(e) => setRuntime(e.target.value as 'node' | 'php' | 'static')}
+              >
+                <option value="node">Node.js</option>
+                <option value="php">PHP</option>
+                <option value="static">Static</option>
+              </select>
             </div>
           </div>
           <div className="form-actions">
@@ -262,6 +302,19 @@ export function ProjectsPage() {
               <dd className="muted">{selected.lastDeployAt ?? '—'}</dd>
             </div>
             <div>
+              <dt>Git</dt>
+              <dd className="muted">
+                {selected.gitUrl ?? '—'} {selected.gitCommit ? `@ ${selected.gitCommit.slice(0, 8)}` : ''}
+              </dd>
+            </div>
+            <div>
+              <dt>Backup</dt>
+              <dd className="muted">
+                {selected.lastBackupPath ?? '—'}
+                {selected.lastBackupAt ? ` (${selected.lastBackupAt})` : ''}
+              </dd>
+            </div>
+            <div>
               <dt>Last health</dt>
               <dd>
                 <pre className="code">
@@ -272,14 +325,53 @@ export function ProjectsPage() {
               </dd>
             </div>
           </dl>
+          <div className="field">
+            <label htmlFor="giturl">Git URL</label>
+            <input
+              id="giturl"
+              value={gitUrl}
+              onChange={(e) => setGitUrl(e.target.value)}
+              placeholder="https://github.com/org/repo.git"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="penv">Env (.env)</label>
+            <textarea id="penv" rows={4} value={envText} onChange={(e) => setEnvText(e.target.value)} />
+          </div>
           <div className="form-actions btn-row">
             <button
               type="button"
               className="btn btn--primary"
               disabled={busy}
-              onClick={() => void runOps('deploy', selected.id)}
+              onClick={() =>
+                void runOps(selected.runtime === 'php' ? 'deploy-php' : 'deploy', selected.id)
+              }
             >
-              {t('projects.deploy')}
+              {selected.runtime === 'php' ? 'Deploy PHP' : t('projects.deploy')}
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() => void runOps('git-deploy', selected.id)}
+            >
+              Git deploy
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() => void runOps('env', selected.id)}
+            >
+              Save env
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() => void runOps('backup', selected.id)}
+            >
+              Backup
             </button>
             <button
               type="button"

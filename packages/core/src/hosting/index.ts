@@ -10,5 +10,7 @@ export * from './node-apply.js';
 export * from './db-client.js';
 export * from './mysql-provision.js';
 export * from './system-apply.js';
+export * from './git-deploy.js';
+export * from './backup-cron.js';
 
 

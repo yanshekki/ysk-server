@@ -14,6 +14,7 @@ import {
   ProjectRepository,
   ProjectService,
   ProjectOpsService,
+  CronJobService,
   SessionRepository,
   SettingsRepository,
   UserRepository,
@@ -47,6 +48,7 @@ export interface AppContext {
   host: HostExecutor;
   projects: ProjectService;
   projectOps: ProjectOpsService;
+  cron: CronJobService;
   email: EmailService;
   ai: AiTaskService;
   audit: AuditRepository;
@@ -112,6 +114,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
 
   const projects = new ProjectService(projectRepo, host, dataDir, audit);
   const projectOps = new ProjectOpsService(projectRepo, host, dataDir, audit);
+  const cron = new CronJobService(db, host, dataDir);
   const email = new EmailService(db, host, audit);
   const fleet = new FleetService(db);
   const allowlist = createDefaultAllowlist();
@@ -132,6 +135,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     host,
     projects,
     projectOps,
+    cron,
     email,
     ai: null as unknown as AiTaskService,
     audit,

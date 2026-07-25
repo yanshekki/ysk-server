@@ -1,0 +1,52 @@
+import { describe, expect, it, afterEach } from 'vitest';
+import { mkdtempSync, mkdirSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { LocalHostExecutor } from '../host/executor.js';
+import { JsonStore } from '../db/store.js';
+import { backupProject, CronJobService } from './backup-cron.js';
+
+describe('backup + cron', () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs) rmSync(d, { recursive: true, force: true });
+    dirs.length = 0;
+  });
+
+  it('creates tar.gz backup of project home', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bak-'));
+    dirs.push(dir);
+    const home = join(dir, 'projects', 'ysk_demo');
+    mkdirSync(join(home, 'app'), { recursive: true });
+    writeFileSync(join(home, 'app', 'hi.txt'), 'hello', 'utf8');
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const r = await backupProject({
+      host,
+      dataDir: dir,
+      projectId: 'p1',
+      homeDir: home,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.archivePath && existsSync(r.archivePath)).toBe(true);
+  });
+
+  it('writes managed crontab and refuses install without EXECUTE', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cron-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const cron = new CronJobService(store, host, dir);
+    const job = cron.create({
+      user: 'ysk',
+      schedule: '0 4 * * *',
+      command: 'echo ysk',
+      actor: 'test',
+    });
+    expect(job.id).toBeTruthy();
+    const path = cron.writeManagedCrontab();
+    expect(existsSync(path)).toBe(true);
+    const install = await cron.installCrontab('test');
+    expect(install.ok).toBe(false);
+    expect(install.requiresExecute).toBe(true);
+  });
+});

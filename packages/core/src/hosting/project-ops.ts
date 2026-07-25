@@ -22,6 +22,9 @@ import type { AuditRepository } from '../repositories/audit-repo.js';
 import { applyNodeHosting } from './node-apply.js';
 import { renderNginxProxy } from './nginx-ssl.js';
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
+import { gitSync } from './git-deploy.js';
+import { backupProject } from './backup-cron.js';
+import { applyPhpHosting } from './system-apply.js';
 
 export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' | 'failed';
 
@@ -569,6 +572,311 @@ export class ProjectOpsService {
     };
   }
 
+  /**
+   * Git clone/pull into project app dir, then redeploy runtime if node/php.
+   */
+  async gitDeploy(
+    projectId: string,
+    opts: {
+      actor: string;
+      gitUrl?: string;
+      branch?: string;
+      redeploy?: boolean;
+      depth?: number;
+    },
+  ): Promise<OpsApplyResult & { git?: Awaited<ReturnType<typeof gitSync>> }> {
+    const row = this.require(projectId);
+    const gitUrl = opts.gitUrl ?? row.git_url;
+    if (!gitUrl) {
+      throw new YskError(ErrorCodes.VALIDATION, 'gitUrl required (or set on project)', {
+        httpStatus: 400,
+      });
+    }
+    const appDir = join(row.home_dir, 'app');
+    const git = await gitSync({
+      host: this.host,
+      gitUrl,
+      targetDir: appDir,
+      branch: opts.branch ?? row.git_branch,
+      depth: opts.depth ?? 1,
+    });
+    this.projects.updateRuntimeState(projectId, {
+      git_url: gitUrl,
+      git_branch: git.branch ?? opts.branch,
+      git_commit: git.commit,
+    });
+    const notes = [...git.notes];
+    let redeployResult: OpsApplyResult | undefined;
+    if (git.ok && opts.redeploy !== false) {
+      if (row.runtime === 'node') {
+        redeployResult = await this.deployNode(projectId, { actor: opts.actor });
+        notes.push(...redeployResult.notes);
+      } else if (row.runtime === 'php') {
+        redeployResult = await this.deployPhp(projectId, { actor: opts.actor });
+        notes.push(...redeployResult.notes);
+      } else {
+        notes.push('Runtime static — git sync only, no process redeploy');
+      }
+    }
+    this.audit?.append({
+      actor: opts.actor,
+      action: 'project.git_deploy',
+      resource: projectId,
+      detail: { git, redeploy: Boolean(redeployResult) },
+      ok: git.ok && (redeployResult?.ok ?? true),
+    });
+    return {
+      ok: git.ok && (redeployResult?.ok ?? true),
+      projectId,
+      port: redeployResult?.port ?? row.port,
+      pid: redeployResult?.pid ?? row.pid,
+      url: redeployResult?.url,
+      processStatus: redeployResult?.processStatus ?? ((row.process_status as OpsProcessStatus) || 'stopped'),
+      listening: redeployResult?.listening ?? false,
+      nginxPath: redeployResult?.nginxPath ?? row.nginx_config_path,
+      notes,
+      written: redeployResult?.written ?? [],
+      git,
+      degraded: redeployResult?.degraded ?? true,
+    };
+  }
+
+  /**
+   * Write env vars to app/.env and store on project.
+   */
+  setEnv(
+    projectId: string,
+    envVars: Record<string, string>,
+    actor: string,
+  ): OpsApplyResult {
+    const row = this.require(projectId);
+    const appDir = join(row.home_dir, 'app');
+    mkdirSync(appDir, { recursive: true });
+    const merged = { ...(row.env_vars ?? {}), ...envVars };
+    // remove empty keys
+    for (const [k, v] of Object.entries(merged)) {
+      if (v === '' || v === undefined) delete merged[k];
+    }
+    const envPath = join(appDir, '.env');
+    const lines = Object.entries(merged).map(([k, v]) => `${k}=${String(v).replace(/\n/g, ' ')}`);
+    writeFileSync(envPath, lines.join('\n') + '\n', 'utf8');
+    this.projects.updateRuntimeState(projectId, { env_vars: merged });
+    this.audit?.append({
+      actor,
+      action: 'project.set_env',
+      resource: projectId,
+      detail: { keys: Object.keys(merged) },
+      ok: true,
+    });
+    return {
+      ok: true,
+      projectId,
+      processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+      listening: false,
+      notes: [`Wrote ${envPath} (${Object.keys(merged).length} keys)`],
+      written: [envPath],
+    };
+  }
+
+  /**
+   * Tar backup of project home under dataDir/backups.
+   */
+  async backup(projectId: string, actor: string): Promise<OpsApplyResult & { archivePath?: string }> {
+    const row = this.require(projectId);
+    const r = await backupProject({
+      host: this.host,
+      dataDir: this.dataDir,
+      projectId,
+      homeDir: row.home_dir,
+    });
+    if (r.ok && r.archivePath) {
+      this.projects.updateRuntimeState(projectId, {
+        last_backup_path: r.archivePath,
+        last_backup_at: new Date().toISOString(),
+      });
+    }
+    this.audit?.append({
+      actor,
+      action: 'project.backup',
+      resource: projectId,
+      detail: r,
+      ok: r.ok,
+    });
+    return {
+      ok: r.ok,
+      projectId,
+      processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+      listening: false,
+      notes: r.notes,
+      written: r.archivePath ? [r.archivePath] : [],
+      archivePath: r.archivePath,
+    };
+  }
+
+  /**
+   * PHP deploy: applyPhpHosting artifacts + spawn `php -S` for real HTTP listen (degraded),
+   * or rely on apache when root+EXECUTE enableSite.
+   */
+  async deployPhp(
+    projectId: string,
+    opts: {
+      actor: string;
+      port?: number;
+      phpVersion?: string;
+      enableApache?: boolean;
+      healthTimeoutMs?: number;
+    },
+  ): Promise<OpsApplyResult> {
+    const row = this.require(projectId);
+    if (row.runtime !== 'php' && row.runtime !== 'static') {
+      // allow force php on static
+      if (row.runtime === 'node') {
+        throw new YskError(ErrorCodes.VALIDATION, 'deployPhp: project runtime is node — use deployNode', {
+          httpStatus: 400,
+        });
+      }
+    }
+    const notes: string[] = [];
+    const written: string[] = [];
+    const port = opts.port ?? row.port ?? (await findFreePort(8100, 8999));
+    const docRoot = join(row.home_dir, 'app', 'public');
+    mkdirSync(docRoot, { recursive: true });
+    const domain = row.domain ?? `${row.linux_user}.local`;
+
+    const apply = await applyPhpHosting({
+      dataDir: this.dataDir,
+      domain,
+      docRoot,
+      phpVersion: opts.phpVersion ?? row.runtime_version ?? '8.2',
+      poolName: row.linux_user,
+      host: this.host,
+      enableSite: Boolean(opts.enableApache && this.host.executeEnabled() && this.host.isRoot()),
+    });
+    written.push(...apply.written);
+    notes.push(...apply.notes);
+
+    await this.stopProcess(row, notes);
+
+    // Prefer built-in server for real listen without root
+    const phpBin = await resolvePhpBinary(this.host, opts.phpVersion ?? row.runtime_version ?? '8.2');
+    if (!phpBin) {
+      this.projects.updateRuntimeState(projectId, {
+        port,
+        process_status: 'failed',
+        status: 'failed',
+      });
+      return {
+        ok: false,
+        projectId,
+        port,
+        processStatus: 'failed',
+        listening: false,
+        notes: [...notes, 'php binary not found — install php-cli'],
+        written,
+        degraded: true,
+      };
+    }
+
+    const pidfile = join(row.home_dir, 'app.pid');
+    const logOut = join(row.home_dir, 'logs', 'php.out.log');
+    const logErr = join(row.home_dir, 'logs', 'php.err.log');
+    mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
+
+    const outFd = openSync(logOut, 'a');
+    const errFd = openSync(logErr, 'a');
+    const child = spawn(phpBin, ['-S', `127.0.0.1:${port}`, '-t', docRoot], {
+      cwd: docRoot,
+      env: { ...process.env, PORT: String(port) },
+      detached: true,
+      stdio: ['ignore', outFd, errFd],
+    });
+    closeSync(outFd);
+    closeSync(errFd);
+    const pid = child.pid;
+    if (!pid) {
+      return {
+        ok: false,
+        projectId,
+        port,
+        processStatus: 'failed',
+        listening: false,
+        notes: [...notes, 'php spawn returned no pid'],
+        written,
+        degraded: true,
+      };
+    }
+    child.unref();
+    writeFileSync(pidfile, `${pid}\n`, 'utf8');
+    notes.push(`PHP built-in server pid=${pid} on 127.0.0.1:${port}`);
+
+    const url = `http://127.0.0.1:${port}/`;
+    const health = await waitHttpOk(url, { timeoutMs: opts.healthTimeoutMs ?? 12_000 });
+    const listening = await isPortListening(port);
+    const processStatus: OpsProcessStatus =
+      health.ok && listening ? 'running' : 'unhealthy';
+
+    const conf = renderNginxProxy({
+      serverName: domain,
+      upstream: `http://127.0.0.1:${port}`,
+      ssl: false,
+      cloudflareRealIp: true,
+    });
+    const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
+    written.push(nginxPath);
+
+    this.projects.updateRuntimeState(projectId, {
+      port,
+      pid,
+      pidfile,
+      process_status: processStatus,
+      status: processStatus === 'running' ? 'running_degraded' : processStatus,
+      nginx_config_path: nginxPath,
+      last_health: {
+        ok: health.ok,
+        status: health.status,
+        body: health.body,
+        error: health.error,
+        ms: health.ms,
+        at: new Date().toISOString(),
+        url,
+        deployMode: 'php_builtin',
+        degraded: true,
+      },
+      last_deploy_at: new Date().toISOString(),
+    });
+
+    this.audit?.append({
+      actor: opts.actor,
+      action: 'project.deploy_php',
+      resource: projectId,
+      detail: { port, pid, health, listening },
+      ok: health.ok && listening,
+    });
+
+    return {
+      ok: health.ok && listening,
+      projectId,
+      port,
+      pid,
+      pidfile,
+      url,
+      processStatus,
+      health: {
+        ok: health.ok,
+        status: health.status,
+        body: health.body,
+        ms: health.ms,
+        error: health.error,
+      },
+      listening,
+      nginxPath,
+      notes,
+      written,
+      degraded: true,
+      deployMode: 'pidfile',
+    };
+  }
+
   private require(id: string): ProjectRow {
     const row = this.projects.findById(id);
     if (!row) {
@@ -614,6 +922,16 @@ export function resolveNodeBinary(): string {
   // Prefer current process binary so deploy works without custom node install
   if (process.execPath && existsSync(process.execPath)) return process.execPath;
   return 'node';
+}
+
+async function resolvePhpBinary(host: HostExecutor, version: string): Promise<string | null> {
+  const candidates = [`php${version}`, `php${version.split('.')[0]}`, 'php'];
+  for (const bin of candidates) {
+    const r = await host.runCommand(['bash', '-c', `command -v ${bin} || true`], { timeoutMs: 3_000 });
+    const p = r.stdout.trim();
+    if (p) return p;
+  }
+  return null;
 }
 
 export function isPidAlive(pid: number): boolean {
