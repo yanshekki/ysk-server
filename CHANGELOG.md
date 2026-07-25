@@ -27,11 +27,13 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - Email MTA: milter, master.cf snippet, KeyTable, install-mta.sh; fail-closed install
 - PM2 `save` after successful start; AI/llm FSD; AiTaskService tests
 - CLI: hosting dns-zone, powerdns-*, email-apply, firewall-apply
+- Mailbox Maildir provision + virtual maps API/CLI/UI; FTPS fail-closed install
+- Self-update `ok` flag; project setEnv/backup coverage in ops tests
 
 ### Still partial / Spec backlog
 
 - Full multi-version runtime install matrices, production PHP-FPM-only (no php -S)
-- Complete Postfix multi-mailbox + webmail production
+- Webmail + Dovecot passdb production wiring
 - ≥90% coverage target, public npm packages published
 
 ### Earlier scaffolding notes

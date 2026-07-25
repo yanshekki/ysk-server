@@ -61,6 +61,15 @@ describe('system-level apply writers', () => {
     expect(existsSync(ngx.written[0])).toBe(true);
     const ftps = await applyFtps({ dataDir: dir, domain: 'files.example.com', host });
     expect(existsSync(ftps.written[0])).toBe(true);
+    expect(ftps.ok).toBe(true);
+    const ftpsInstall = await applyFtps({
+      dataDir: dir,
+      domain: 'files.example.com',
+      host,
+      install: true,
+    });
+    expect(ftpsInstall.ok).toBe(false);
+    expect(ftpsInstall.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
     const unit = writeControlPlaneSystemdUnit({
       dataDir: dir,
       cliPath: '/usr/bin/ysk-server',

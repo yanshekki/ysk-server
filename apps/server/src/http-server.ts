@@ -644,6 +644,35 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, result.ok ? 200 : 422, result);
       }
 
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/mailboxes$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        return sendJson(res, 200, { items: ctx.email.listMailboxes(id) });
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/mailboxes$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          localPart?: string;
+          password?: string;
+          provisionSystem?: boolean;
+        };
+        const result = await ctx.email.createMailbox(id, {
+          localPart: data.localPart ?? '',
+          password: data.password,
+          provisionSystem: data.provisionSystem,
+          actor: user.username,
+        });
+        return sendJson(res, result.ok ? 201 : 422, result);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/email/mailboxes') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: ctx.email.listMailboxes() });
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/hosting/nginx') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, {

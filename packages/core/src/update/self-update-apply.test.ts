@@ -25,6 +25,20 @@ describe('runSelfUpdate', () => {
       latestOverride: '9.9.9',
     });
     expect(r.applied).toBe(false);
+    expect(r.ok).toBe(false);
     expect(r.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+  });
+
+  it('reports ok when already up to date even with apply', async () => {
+    const host = new LocalHostExecutor({ executeEnabled: true });
+    const r = await runSelfUpdate({
+      currentVersion: '1.0.0',
+      host,
+      apply: true,
+      latestOverride: '1.0.0',
+    });
+    expect(r.applied).toBe(false);
+    expect(r.ok).toBe(true);
+    expect(r.notes.some((n) => /up to date/i.test(n))).toBe(true);
   });
 });

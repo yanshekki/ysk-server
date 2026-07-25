@@ -50,6 +50,8 @@ export async function runSelfUpdate(input: {
   registry?: RegistryVersion;
   plan: ReturnType<typeof planSelfUpdate>;
   applied: boolean;
+  /** false when apply was requested but did not succeed */
+  ok: boolean;
   commandResults: Array<{ argv: string[]; exitCode: number; stdout: string; stderr: string }>;
   notes: string[];
 }> {
@@ -102,7 +104,17 @@ export async function runSelfUpdate(input: {
     notes.push('already up to date');
   }
 
-  return { registry, plan, applied, commandResults, notes };
+  const ok = input.apply
+    ? applied || !plan.status.updateAvailable
+    : true;
+  if (input.apply && plan.status.updateAvailable && !applied) {
+    // ensure callers can detect refuse without fake success
+    if (!notes.some((n) => /YSK_EXECUTE|failed|already/i.test(n))) {
+      notes.push('apply did not complete');
+    }
+  }
+
+  return { registry, plan, applied, commandResults, notes, ok };
 }
 
 export { compareVersions };

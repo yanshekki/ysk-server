@@ -16,6 +16,10 @@ export function EmailPage() {
   const [relayUser, setRelayUser] = useState('');
   const [relayPass, setRelayPass] = useState('');
   const [relayLog, setRelayLog] = useState<Record<string, unknown> | null>(null);
+  const [mboxLocal, setMboxLocal] = useState('info');
+  const [mboxPass, setMboxPass] = useState('');
+  const [mboxLog, setMboxLog] = useState<Record<string, unknown> | null>(null);
+  const [mailboxes, setMailboxes] = useState<Array<Record<string, unknown>>>([]);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -120,6 +124,84 @@ export function EmailPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      <div className="card">
+        <h2 className="card__title">Mailbox (Maildir)</h2>
+        <p className="card__desc">
+          Writes Maildir + virtual_mailbox map under dataDir/email/&lt;domain&gt;/ — system user needs
+          root + YSK_EXECUTE
+        </p>
+        <div className="grid">
+          <div className="field field--flush">
+            <label htmlFor="mlocal">Local part</label>
+            <input id="mlocal" value={mboxLocal} onChange={(e) => setMboxLocal(e.target.value)} />
+          </div>
+          <div className="field field--flush">
+            <label htmlFor="mpass">Password (optional, ≥8)</label>
+            <input
+              id="mpass"
+              type="password"
+              value={mboxPass}
+              onChange={(e) => setMboxPass(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="form-actions btn-row">
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={busy || items.length === 0}
+            onClick={() => {
+              void (async () => {
+                const id = items[0]?.id;
+                if (!id) return;
+                setBusy(true);
+                setError(null);
+                try {
+                  setMboxLog(
+                    await emailApi.createMailbox(id, {
+                      localPart: mboxLocal,
+                      password: mboxPass || undefined,
+                    }),
+                  );
+                  const list = await emailApi.listMailboxes(id);
+                  setMailboxes(list.items);
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'mailbox failed');
+                } finally {
+                  setBusy(false);
+                }
+              })();
+            }}
+          >
+            Create on first domain
+          </button>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={busy || items.length === 0}
+            onClick={() => {
+              void (async () => {
+                if (!items[0]?.id) return;
+                setMailboxes((await emailApi.listMailboxes(items[0].id)).items);
+              })();
+            }}
+          >
+            Refresh list
+          </button>
+        </div>
+        {mailboxes.length > 0 && (
+          <ul className="list-plain list-spaced u-mt-4">
+            {mailboxes.map((m) => (
+              <li key={String(m.id)}>
+                <code className="inline">{String(m.address)}</code>{' '}
+                <span className="badge">{String(m.status)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {mboxLog && <pre className="code code--spaced">{JSON.stringify(mboxLog, null, 2)}</pre>}
       </div>
 
       <div className="card">

@@ -305,34 +305,62 @@ export async function applyPhpHosting(input: {
 
 /**
  * Write FTPS (vsftpd) snippet under dataDir; optional install.
+ * Never fakes ok when install requested but skipped/failed.
  */
 export async function applyFtps(input: {
   dataDir: string;
   domain: string;
   host: HostExecutor;
   install?: boolean;
-}): Promise<ApplyResult> {
+}): Promise<ApplyResult & { requiresExecute: boolean; requiresRoot: boolean }> {
   const plan = planFtps({ domain: input.domain });
   const dir = join(input.dataDir, 'ftps');
   mkdirSync(dir, { recursive: true });
   const confPath = join(dir, 'vsftpd.conf');
   writeFileSync(confPath, plan.configSnippet + '\n', 'utf8');
-  const notes = [`Config ${confPath}`, `PASV ${plan.pasvMin}-${plan.pasvMax}`];
-  const commands: string[][] = input.install
-    ? plan.commands.map((c) => ['bash', '-c', c])
+  const helper = join(dir, 'install-ftps.sh');
+  writeFileSync(
+    helper,
+    [
+      '#!/usr/bin/env bash',
+      '# YSK Server FTPS install helper',
+      'set -euo pipefail',
+      'export DEBIAN_FRONTEND=noninteractive',
+      'apt-get update',
+      'apt-get install -y vsftpd',
+      `cp ${JSON.stringify(confPath)} /etc/vsftpd.conf`,
+      'systemctl enable --now vsftpd',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+  const notes = [
+    `Config ${confPath}`,
+    `PASV ${plan.pasvMin}-${plan.pasvMax}`,
+    `Helper: ${helper}`,
+  ];
+  const want = Boolean(input.install);
+  const commands: string[][] = want
+    ? [
+        ...plan.commands.map((c) => ['bash', '-c', c] as string[]),
+        ['cp', confPath, '/etc/vsftpd.conf'],
+        ['systemctl', 'enable', '--now', 'vsftpd'],
+      ]
     : [];
-  if (input.install) {
-    commands.push(['cp', confPath, '/etc/vsftpd.conf']);
+  const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
+  if (want && !execute) {
+    notes.push('FTPS install skipped: need root + YSK_EXECUTE=1 (never fake success)');
   }
-  const execute = Boolean(input.install && input.host.executeEnabled() && input.host.isRoot());
-  if (input.install && !execute) notes.push('FTPS install skipped: need root + YSK_EXECUTE=1');
   const commandResults = await runAll(input.host, commands, execute);
+  const ranOk = commandResults.every((c) => c.exitCode === 0);
   return {
-    ok: true,
-    written: [confPath],
+    ok: want ? execute && ranOk : true,
+    written: [confPath, helper],
     commands: commands.map((c) => c.join(' ')),
     commandResults,
     notes,
+    requiresExecute: !input.host.executeEnabled(),
+    requiresRoot: !input.host.isRoot(),
   };
 }
 

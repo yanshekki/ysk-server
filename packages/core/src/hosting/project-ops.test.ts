@@ -74,6 +74,16 @@ describe('ProjectOpsService real deploy', () => {
     expect(row.port).toBe(result.port);
     expect(row.pid).toBe(result.pid);
 
+    const env = ops.setEnv(project.id, { FOO: 'bar', EMPTY: '' }, 'test');
+    expect(env.ok).toBe(true);
+    expect(existsSync(join(project.homeDir, 'app', '.env'))).toBe(true);
+    expect(readFileSync(join(project.homeDir, 'app', '.env'), 'utf8')).toContain('FOO=bar');
+    expect(readFileSync(join(project.homeDir, 'app', '.env'), 'utf8')).not.toContain('EMPTY=');
+
+    const bak = await ops.backup(project.id, 'test');
+    expect(bak.ok).toBe(true);
+    expect(bak.archivePath && existsSync(bak.archivePath)).toBe(true);
+
     const stop = await ops.stopNode(project.id, 'test');
     expect(stop.ok).toBe(true);
     expect(stop.processStatus).toBe('stopped');

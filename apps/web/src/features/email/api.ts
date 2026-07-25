@@ -25,6 +25,20 @@ export const emailApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  listMailboxes: (domainId?: string) =>
+    domainId
+      ? api.requestRaw<{ items: Array<Record<string, unknown>> }>(
+          `/api/v1/email/domains/${domainId}/mailboxes`,
+        )
+      : api.requestRaw<{ items: Array<Record<string, unknown>> }>('/api/v1/email/mailboxes'),
+  createMailbox: (
+    domainId: string,
+    body: { localPart: string; password?: string; provisionSystem?: boolean },
+  ) =>
+    api.requestRaw<Record<string, unknown>>(`/api/v1/email/domains/${domainId}/mailboxes`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   dns: (id: string) => api.requestRaw<EmailBundle>(`/api/v1/email/domains/${id}/dns`),
   liveCheck: (id: string) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/email/domains/${id}/live-check`, {

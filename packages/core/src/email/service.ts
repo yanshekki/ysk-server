@@ -1,13 +1,14 @@
 /**
- * Email domain management: real DKIM keygen + durable checklist/health.
+ * Email domain management: real DKIM keygen + durable checklist/health + mailboxes.
  */
 
-import { generateKeyPairSync, randomUUID } from 'node:crypto';
+import { generateKeyPairSync, randomUUID, scryptSync, randomBytes } from 'node:crypto';
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk/shared';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import {
   buildExternalTodos,
-  generateEmailDnsRecords,
   planEmailStackInstall,
   planTestSend,
   scoreEmailHealth,
@@ -38,6 +39,8 @@ export class EmailService {
     private readonly db: YskDatabase,
     private readonly host: HostExecutor,
     private readonly audit?: AuditRepository,
+    /** When set, mailbox provision writes Maildir + virtual maps under dataDir */
+    private readonly dataDir?: string,
   ) {}
 
   list(): EmailDomainRecord[] {
@@ -212,59 +215,220 @@ export class EmailService {
   }
 
   /**
-   * Record mailbox plan; with root+EXECUTE attempt useradd-style note or local entry.
+   * Provision mailbox: always write managed Maildir + virtual maps under dataDir when available.
+   * Optional system vmail user when root + YSK_EXECUTE + provisionSystem.
+   * Never fakes system provision success.
    */
-  createMailbox(
+  async createMailbox(
     domainId: string,
-    input: { localPart: string; actor: string },
-  ): {
+    input: {
+      localPart: string;
+      actor: string;
+      password?: string;
+      /** Attempt system useradd under vmail (needs root + EXECUTE) */
+      provisionSystem?: boolean;
+    },
+  ): Promise<{
     ok: boolean;
     mailbox: Record<string, unknown>;
     notes: string[];
+    written: string[];
     requiresExecute: boolean;
-  } {
+    requiresRoot: boolean;
+    commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+  }> {
     const row = this.get(domainId);
     const local = input.localPart.trim().toLowerCase();
     if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
       throw new YskError(ErrorCodes.VALIDATION, 'Invalid mailbox local part', { httpStatus: 400 });
     }
     const address = `${local}@${row.domain}`;
+    const existing = this.db.snapshot.mailboxes.find(
+      (m) => String(m.address).toLowerCase() === address,
+    );
+    if (existing) {
+      throw new YskError(ErrorCodes.VALIDATION, `Mailbox already exists: ${address}`, {
+        httpStatus: 409,
+      });
+    }
+
+    const notes: string[] = [];
+    const written: string[] = [];
+    const commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }> = [];
+    let maildirPath: string | undefined;
+    let passwordHash: string | undefined;
+
+    if (input.password && input.password.length >= 8) {
+      const salt = randomBytes(16).toString('hex');
+      const hash = scryptSync(input.password, salt, 32).toString('hex');
+      passwordHash = `scrypt$${salt}$${hash}`;
+      notes.push('Password hash stored (scrypt) — wire to Dovecot passdb for production');
+    } else if (input.password) {
+      notes.push('Password ignored (min 8 chars) — mailbox created without hash');
+    }
+
+    if (this.dataDir) {
+      const base = join(this.dataDir, 'email', row.domain, 'mailboxes', local);
+      const cur = join(base, 'Maildir', 'cur');
+      const newDir = join(base, 'Maildir', 'new');
+      const tmp = join(base, 'Maildir', 'tmp');
+      mkdirSync(cur, { recursive: true });
+      mkdirSync(newDir, { recursive: true });
+      mkdirSync(tmp, { recursive: true });
+      maildirPath = join(base, 'Maildir');
+      writeFileSync(
+        join(base, 'README.txt'),
+        [
+          `YSK managed mailbox ${address}`,
+          `Maildir: ${maildirPath}`,
+          'Load via Postfix virtual_mailbox_maps + Dovecot mail_location',
+          '',
+        ].join('\n'),
+        'utf8',
+      );
+      written.push(maildirPath, join(base, 'README.txt'));
+      notes.push(`Maildir provisioned: ${maildirPath}`);
+    } else {
+      notes.push('No dataDir on EmailService — DB record only (pass dataDir for Maildir)');
+    }
+
+    const wantSystem = Boolean(input.provisionSystem);
+    const canSystem = wantSystem && this.host.executeEnabled() && this.host.isRoot();
+    let systemUser: string | undefined;
+    let status = 'managed';
+
+    if (wantSystem && !canSystem) {
+      notes.push('System user provision skipped: need root + YSK_EXECUTE=1 (never fake success)');
+      status = 'managed_pending_system';
+    }
+
+    if (canSystem) {
+      systemUser = `vmail_${local}`.replace(/[^a-z0-9_]/g, '').slice(0, 32);
+      const home = maildirPath
+        ? join(maildirPath, '..')
+        : `/var/mail/vhosts/${row.domain}/${local}`;
+      const mk = await this.host.runCommand(['mkdir', '-p', home], { timeoutMs: 10_000 });
+      commandResults.push({
+        argv: ['mkdir', '-p', home],
+        exitCode: mk.exitCode,
+        stderr: mk.stderr,
+      });
+      const ua = await this.host.runCommand(
+        ['useradd', '-r', '-m', '-d', home, '-s', '/usr/sbin/nologin', systemUser],
+        { timeoutMs: 30_000 },
+      );
+      commandResults.push({
+        argv: ['useradd', systemUser],
+        exitCode: ua.exitCode,
+        stderr: ua.stderr,
+      });
+      if (ua.exitCode === 0) {
+        status = 'system_provisioned';
+        notes.push(`System user ${systemUser} created`);
+      } else {
+        status = 'managed_system_failed';
+        notes.push(`useradd failed: ${ua.stderr || ua.stdout}`);
+      }
+    }
+
+    // rewrite virtual maps for domain from all mailboxes
+    if (this.dataDir) {
+      const mapDir = join(this.dataDir, 'email', row.domain, 'postfix');
+      mkdirSync(mapDir, { recursive: true });
+      const allForDomain = [
+        ...this.db.snapshot.mailboxes.filter((m) => m.domain_id === domainId),
+        {
+          address,
+          local_part: local,
+          maildir: maildirPath,
+        },
+      ];
+      const vmailbox = allForDomain
+        .map((m) => {
+          const md =
+            (m.maildir as string) ||
+            join(this.dataDir!, 'email', row.domain, 'mailboxes', String(m.local_part), 'Maildir');
+          // postfix virtual_mailbox_maps: trailing / means Maildir
+          return `${m.address} ${md}/`;
+        })
+        .join('\n');
+      const vpath = join(mapDir, 'virtual_mailbox');
+      writeFileSync(vpath, vmailbox + '\n', 'utf8');
+      written.push(vpath);
+      notes.push(`Virtual mailbox map: ${vpath}`);
+    }
+
     const mailbox = {
       id: randomUUID(),
       domain_id: domainId,
       domain: row.domain,
       local_part: local,
       address,
-      status: this.host.executeEnabled() && this.host.isRoot() ? 'planned_system' : 'planned',
+      status,
+      maildir: maildirPath,
+      system_user: systemUser,
+      password_hash: passwordHash ? '***set***' : undefined,
+      password_hash_full: passwordHash,
       created_at: new Date().toISOString(),
     };
-    this.db.snapshot.mailboxes.unshift(mailbox);
+    // store without exposing full hash in list responses later — keep full in store for now under private key
+    this.db.snapshot.mailboxes.unshift({
+      ...mailbox,
+      password_hash: passwordHash,
+    });
     this.db.persist();
-    const notes = [
-      `Mailbox ${address} recorded`,
-      this.host.executeEnabled() && this.host.isRoot()
-        ? 'Production: create system/vmail user via email stack apply + user provisioning'
-        : 'Planned only — set YSK_EXECUTE=1 + root to provision system mail users',
-    ];
+
     this.audit?.append({
       actor: input.actor,
       action: 'email.mailbox.create',
       resource: address,
-      detail: mailbox,
-      ok: true,
+      detail: {
+        id: mailbox.id,
+        status,
+        maildir: maildirPath,
+        systemUser,
+        hasPassword: Boolean(passwordHash),
+      },
+      ok: status !== 'managed_system_failed',
     });
+
+    const ok = !wantSystem || canSystem ? status !== 'managed_system_failed' : true;
+    // If system was requested but skipped, still ok for managed Maildir path
+    const finalOk = wantSystem && !canSystem ? true : ok;
+
     return {
-      ok: true,
-      mailbox,
+      ok: finalOk,
+      mailbox: {
+        id: mailbox.id,
+        domain_id: domainId,
+        domain: row.domain,
+        local_part: local,
+        address,
+        status,
+        maildir: maildirPath,
+        system_user: systemUser,
+        has_password: Boolean(passwordHash),
+        created_at: mailbox.created_at,
+      },
       notes,
-      requiresExecute: !(this.host.executeEnabled() && this.host.isRoot()),
+      written,
+      requiresExecute: !this.host.executeEnabled(),
+      requiresRoot: !this.host.isRoot(),
+      commandResults,
     };
   }
 
   listMailboxes(domainId?: string): Array<Record<string, unknown>> {
     const all = this.db.snapshot.mailboxes;
-    if (!domainId) return all.map((m) => ({ ...m }));
-    return all.filter((m) => m.domain_id === domainId).map((m) => ({ ...m }));
+    const map = (m: Record<string, unknown>) => {
+      const { password_hash: _ph, password_hash_full: _pf, ...rest } = m;
+      return {
+        ...rest,
+        has_password: Boolean(_ph || _pf),
+      };
+    };
+    if (!domainId) return all.map(map);
+    return all.filter((m) => m.domain_id === domainId).map(map);
   }
 
   markApplyStatus(

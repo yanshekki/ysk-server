@@ -88,6 +88,9 @@ Base URL: `http://127.0.0.1:8787`
 | GET | `/api/v1/email/domains/:id/dns` | Bearer | DNS bundle |
 | POST | `/api/v1/email/domains/:id/live-check` | Bearer | Live MX/SPF/DKIM/DMARC/PTR/Port25/DNSBL |
 | POST | `/api/v1/email/domains/:id/test-send` | Bearer | Test send |
+| GET | `/api/v1/email/mailboxes` | Bearer | List all mailboxes |
+| GET | `/api/v1/email/domains/:id/mailboxes` | Bearer | List domain mailboxes |
+| POST | `/api/v1/email/domains/:id/mailboxes` | Bearer | Provision Maildir + virtual map |
 | POST | `/api/v1/email/dnsbl/check` | Bearer | Multi-list DNSBL for IP |
 | GET | `/api/v1/email/dnsbl/last` | Bearer | Last scheduled DNSBL run |
 | POST | `/api/v1/email/warmup` | Bearer | Warm-up plan |

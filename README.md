@@ -28,6 +28,8 @@
 - **BIND zone files** under `dataDir/dns/zones/` (+ optional `named-checkzone` when EXECUTE)
 - **PowerDNS** install script + load dual-mode (`pdnsutil` / apt needs root+EXECUTE)
 - **Email MTA** managed Postfix/Dovecot/OpenDKIM + milter + `install-mta.sh` (fail-closed install)
+- **Mailboxes**: real Maildir + `virtual_mailbox` maps under dataDir; optional system user (root+EXECUTE)
+- **FTPS**: vsftpd config + install helper (fail-closed install)
 - **UFW script** under `dataDir/firewall/ufw-apply.sh` (apply needs root+EXECUTE; no fake ok)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
 - **Multi DNSBL** (Spamhaus / SpamCop / Barracuda) + email live-check UI
@@ -61,7 +63,7 @@
 
 - Multi-version Node/PHP runtime install matrix; PM2 cluster/`pm2 save` fleet polish
 - Full Postfix/Dovecot operational mail (beyond templates + optional apt)
-- Live MTA full production (webmail, multi-domain mailbox provisioning)
+- Live MTA full production (webmail, Dovecot passdb wiring, quota)
 - FTPS production enable; fail2ban ban-action automation
 - OpenClaw/Hermes/IonClaw full installers (probe/templates exist)
 - ≥90% test coverage; broader integration e2e

@@ -117,7 +117,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   const projects = new ProjectService(projectRepo, host, dataDir, audit);
   const projectOps = new ProjectOpsService(projectRepo, host, dataDir, audit);
   const cron = new CronJobService(db, host, dataDir);
-  const email = new EmailService(db, host, audit);
+  const email = new EmailService(db, host, audit, dataDir);
   const fleet = new FleetService(db);
   const allowlist = createDefaultAllowlist();
   const approvals = new ApprovalQueue(approvalRepo);

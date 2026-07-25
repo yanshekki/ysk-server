@@ -553,6 +553,44 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return result.ok ? 0 : 1;
       }
+      if (sub === 'email-mailbox') {
+        const domainName = getOpt(args, '--domain');
+        const localPart = getOpt(args, '--local') ?? getOpt(args, '--user');
+        if (!domainName || !localPart) {
+          process.stderr.write(
+            'Usage: ysk-server hosting email-mailbox --domain X --local user [--password P]\n',
+          );
+          return 1;
+        }
+        let domain = ctx.email.list().find((d) => d.domain === domainName);
+        if (!domain) {
+          const created = ctx.email.create({
+            domain: domainName,
+            serverIp: getOpt(args, '--ip') ?? '203.0.113.10',
+            actor: 'cli',
+          });
+          domain = created.domain as typeof domain;
+        }
+        const result = await ctx.email.createMailbox(domain!.id, {
+          localPart,
+          password: getOpt(args, '--password'),
+          provisionSystem: hasFlag(args, '--system'),
+          actor: 'cli',
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'ftps-apply') {
+        const { applyFtps } = await import('@ysk/core');
+        const result = await applyFtps({
+          dataDir: ctx.dataDir,
+          domain: getOpt(args, '--domain') ?? 'files.example.com',
+          host: ctx.host,
+          install: hasFlag(args, '--install'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
       if (sub === 'firewall-apply') {
         const result = await applyFirewall({
           host: ctx.host,
@@ -571,6 +609,8 @@ async function main(argv: string[]): Promise<number> {
           '  dns-zones | powerdns-status | powerdns-install [--install]',
           '  powerdns-load --zone X --ip A.B.C.D [--load]',
           '  email-apply --domain X [--install]',
+          '  email-mailbox --domain X --local user [--password P] [--system]',
+          '  ftps-apply --domain X [--install]',
           '  firewall-apply [--smtp] [--apply]',
           '',
         ].join('\n'),
