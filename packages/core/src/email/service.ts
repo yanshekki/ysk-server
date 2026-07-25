@@ -212,6 +212,78 @@ export class EmailService {
   }
 
   /**
+   * Record mailbox plan; with root+EXECUTE attempt useradd-style note or local entry.
+   */
+  createMailbox(
+    domainId: string,
+    input: { localPart: string; actor: string },
+  ): {
+    ok: boolean;
+    mailbox: Record<string, unknown>;
+    notes: string[];
+    requiresExecute: boolean;
+  } {
+    const row = this.get(domainId);
+    const local = input.localPart.trim().toLowerCase();
+    if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
+      throw new YskError(ErrorCodes.VALIDATION, 'Invalid mailbox local part', { httpStatus: 400 });
+    }
+    const address = `${local}@${row.domain}`;
+    const mailbox = {
+      id: randomUUID(),
+      domain_id: domainId,
+      domain: row.domain,
+      local_part: local,
+      address,
+      status: this.host.executeEnabled() && this.host.isRoot() ? 'planned_system' : 'planned',
+      created_at: new Date().toISOString(),
+    };
+    this.db.snapshot.mailboxes.unshift(mailbox);
+    this.db.persist();
+    const notes = [
+      `Mailbox ${address} recorded`,
+      this.host.executeEnabled() && this.host.isRoot()
+        ? 'Production: create system/vmail user via email stack apply + user provisioning'
+        : 'Planned only — set YSK_EXECUTE=1 + root to provision system mail users',
+    ];
+    this.audit?.append({
+      actor: input.actor,
+      action: 'email.mailbox.create',
+      resource: address,
+      detail: mailbox,
+      ok: true,
+    });
+    return {
+      ok: true,
+      mailbox,
+      notes,
+      requiresExecute: !(this.host.executeEnabled() && this.host.isRoot()),
+    };
+  }
+
+  listMailboxes(domainId?: string): Array<Record<string, unknown>> {
+    const all = this.db.snapshot.mailboxes;
+    if (!domainId) return all.map((m) => ({ ...m }));
+    return all.filter((m) => m.domain_id === domainId).map((m) => ({ ...m }));
+  }
+
+  markApplyStatus(
+    domainId: string,
+    status: { ok: boolean; notes?: string[]; serviceStatus?: Record<string, string> },
+  ): void {
+    const row = domains(this.db).find((e) => e.id === domainId);
+    if (!row) return;
+    (row as EmailDomainRecord & { apply_status?: string; last_apply?: unknown }).apply_status =
+      status.ok ? 'applied' : 'failed';
+    (row as EmailDomainRecord & { last_apply?: unknown }).last_apply = {
+      ...status,
+      at: new Date().toISOString(),
+    };
+    (row as EmailDomainRecord).updated_at = new Date().toISOString();
+    this.db.persist();
+  }
+
+  /**
    * Attempt real test send via sendmail if available; otherwise structured failure.
    */
   async testSend(

@@ -231,9 +231,29 @@ function isMutatingArgv(argv: string[]): boolean {
   const bin = argv[0];
   if (bin === 'systemctl') {
     const sub = argv[1];
-    return sub !== 'is-active' && sub !== 'status' && sub !== 'show';
+    return sub !== 'is-active' && sub !== 'status' && sub !== 'show' && sub !== 'list-units';
   }
-  if (bin === 'apt-get' || bin === 'apt' || bin === 'useradd' || bin === 'userdel' || bin === 'groupadd') {
+  if (
+    bin === 'apt-get' ||
+    bin === 'apt' ||
+    bin === 'useradd' ||
+    bin === 'userdel' ||
+    bin === 'groupadd' ||
+    bin === 'groupdel' ||
+    bin === 'usermod' ||
+    bin === 'chown' ||
+    bin === 'chmod' ||
+    bin === 'cp' ||
+    bin === 'mv' ||
+    bin === 'install' ||
+    bin === 'ln' ||
+    bin === 'a2ensite' ||
+    bin === 'a2dissite' ||
+    bin === 'mysql' ||
+    bin === 'nginx'
+  ) {
+    // nginx -t is read-only check
+    if (bin === 'nginx' && argv[1] === '-t') return false;
     return true;
   }
   if (bin === 'certbot') return true;

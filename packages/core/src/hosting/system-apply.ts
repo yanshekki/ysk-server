@@ -42,7 +42,7 @@ export async function applyEmailStack(input: {
   mailHostname?: string;
   host: HostExecutor;
   installPackages?: boolean;
-}): Promise<ApplyResult> {
+}): Promise<ApplyResult & { serviceStatus?: Record<string, string> }> {
   const domain = input.domain.trim().toLowerCase();
   if (!domain) throw new YskError(ErrorCodes.VALIDATION, 'domain required', { httpStatus: 400 });
   const mailHost = input.mailHostname ?? `mail.${domain}`;
@@ -114,12 +114,23 @@ export async function applyEmailStack(input: {
   }
   const commandResults = await runAll(input.host, commands, execute);
   const ok = commandResults.every((c) => c.exitCode === 0) || !execute;
+  const serviceStatus: Record<string, string> = {};
+  for (const svc of ['postfix', 'dovecot', 'opendkim']) {
+    try {
+      const st = await input.host.runCommand(['systemctl', 'is-active', svc], { timeoutMs: 5_000 });
+      serviceStatus[svc] = (st.stdout || st.stderr || `exit_${st.exitCode}`).trim();
+    } catch {
+      serviceStatus[svc] = 'unknown';
+    }
+  }
+  notes.push(`services: ${JSON.stringify(serviceStatus)}`);
   return {
     ok,
     written,
     commands: commands.map((a) => a.join(' ')),
     commandResults,
     notes,
+    serviceStatus,
   };
 }
 
@@ -190,12 +201,21 @@ export async function applyPhpHosting(input: {
   const execute = Boolean(input.enableSite && input.host.executeEnabled() && input.host.isRoot());
   if (input.enableSite && !execute) notes.push('Apache enable skipped: need root + YSK_EXECUTE=1');
   const commandResults = await runAll(input.host, commands, execute);
+  const ranOk = commandResults.every((c) => c.exitCode === 0);
+  let phpActive: string | undefined;
+  if (execute) {
+    const st = await input.host.runCommand(['systemctl', 'is-active', `php${rt.version}-fpm`], {
+      timeoutMs: 5_000,
+    });
+    phpActive = (st.stdout || st.stderr || '').trim();
+    notes.push(`php-fpm is-active: ${phpActive}`);
+  }
   return {
-    ok: true,
+    ok: execute ? ranOk : true,
     written: [path, index],
     commands: commands.map((c) => c.join(' ')),
     commandResults,
-    notes,
+    notes: phpActive ? [...notes, `php_fpm=${phpActive}`] : notes,
   };
 }
 

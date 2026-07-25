@@ -167,14 +167,18 @@ export function ProjectsPage() {
                     <td>
                       <span
                         className={
-                          p.processStatus === 'running'
+                          p.processStatus === 'running' && p.status !== 'running_degraded'
                             ? 'badge badge--ok'
-                            : p.processStatus === 'unhealthy' || p.processStatus === 'failed'
-                              ? 'badge badge--danger'
-                              : 'badge'
+                            : p.status === 'running_degraded' || p.processStatus === 'running'
+                              ? 'badge badge--warn'
+                              : p.processStatus === 'unhealthy' || p.processStatus === 'failed'
+                                ? 'badge badge--danger'
+                                : 'badge'
                         }
                       >
-                        {p.processStatus ?? p.status ?? '—'}
+                        {p.status === 'running_degraded'
+                          ? 'running (degraded)'
+                          : (p.processStatus ?? p.status ?? '—')}
                       </span>
                     </td>
                     <td className="muted">{p.port ?? '—'}</td>

@@ -14,7 +14,8 @@
     "dev:server": "pnpm --filter @ysk/server dev",
     "dev:web": "pnpm --filter @ysk/web dev",
     "typecheck": "pnpm -r run typecheck --if-present",
-    "e2e:real-ops": "bash scripts/e2e-real-ops.sh"
+    "e2e:real-ops": "bash scripts/e2e-real-ops.sh",
+    "e2e:hosting-root": "bash scripts/e2e-hosting-root.sh"
   },
   "engines": {
     "node": ">=20"

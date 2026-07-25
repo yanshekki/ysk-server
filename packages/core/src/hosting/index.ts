@@ -8,6 +8,7 @@ export * from './nginx-sync.js';
 export * from './extras.js';
 export * from './node-apply.js';
 export * from './db-client.js';
+export * from './mysql-provision.js';
 export * from './system-apply.js';
 
 

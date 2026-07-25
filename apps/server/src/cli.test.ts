@@ -57,6 +57,7 @@ describe('setup + persistence', () => {
       });
       expect(result.ok).toBe(true);
       expect(existsSync(join(dir, 'ysk.json'))).toBe(true);
+      expect(existsSync(join(dir, 'systemd', 'ysk-server.service'))).toBe(true);
       const cfg = loadConfigFile(result.data!.configPath);
 
       const ctx1 = createAppContext({

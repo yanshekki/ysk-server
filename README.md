@@ -1,57 +1,84 @@
 # YSK Server
 
-**YSK Server** (`ysk-server`) is an AI-centric, security-first Linux server management platform with a full web hosting control panel.
+**YSK Server** (`ysk-server`) is an AI-centric, security-first Linux server management platform with a web hosting control panel.
 
-- **CLI**: `ysk-server`
-- **npm package**: `ysk-server`
-- **Repository**: https://github.com/yanshekki/ysk-server
+| Item | Value |
+|------|--------|
+| CLI | `ysk-server` |
+| Repository | https://github.com/yanshekki/ysk-server |
+| Spec | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) |
 
-## Features
+## Honest capability matrix (do not over-claim)
 
-- Untrusted LLM gateway (OpenAI-compatible) with hard Allowlist + Human Approval
-- Three-axis RBAC (role × resource scope × operation level)
-- Project isolation via independent Linux users
-- Multi-version Node.js / PHP hosting, MySQL, Redis, Nginx, Let’s Encrypt
-- Intelligent updates & vulnerability advice with rollback
-- Professional Email Server guided deploy (Postfix/Dovecot/DKIM) + external checklist (DNS/SPF/DKIM/DMARC/PTR/Port 25)
-- AI agent runtime management (OpenClaw / Hermes / IonClaw)
-- Offline / DDoS Protection Mode
-- Web UI + AI-agent-friendly CLI (structured JSON, dry-run, schema discovery)
+### Implemented now (usable)
 
-## Quick install (Ubuntu 22.04 / 24.04)
+- Control plane API + CLI (`setup`, `serve`, `tools`, `projects`, `update`, `system unit-install`)
+- Auth (admin bootstrap), RBAC hooks, Allowlist, Approval queue, Audit log
+- **Web UI served from the same `serve` process** when `apps/web` is built
+- Projects on disk under `dataDir`; **Deploy Node** with real TCP listen + HTTP health (pidfile mode always; **systemd production** when root + `YSK_EXECUTE=1`)
+- Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
+- Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
+- Files manager (sandbox under dataDir)
+- Protection probes, metrics, AI task planner (untrusted LLM gateway)
+- Self-update check / plan (`update --apply` needs EXECUTE)
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash
-```
+### Partial / needs root + `YSK_EXECUTE=1`
 
-Non-interactive:
+- Linux `useradd` project isolation
+- Systemd enable for project units & control plane
+- apt install email stack, certbot run, ufw apply, Apache PHP enable
+- MySQL **real** provision via `mysql` CLI (otherwise returns SQL plan with `ok: false`)
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
-```
+### Spec backlog (not production-ready yet)
 
-From source:
+- Multi-version Node/PHP runtime install matrix, PM2 fleet
+- Full Postfix/Dovecot operational mail (beyond templates + optional apt)
+- PowerDNS, FTPS production, fail2ban automation
+- OpenClaw/Hermes/IonClaw installers
+- ≥90% test coverage; full Feature-Sliced frontend refactor
+- npm global publish as single package (use `install.sh --from-source` today)
 
-```bash
-./install.sh --from-source --non-interactive
-```
+See [docs/deploy/production-mvp.md](docs/deploy/production-mvp.md) for the Phase 2 Hosting MVP checklist.
 
-## Development
+## Quick start (development)
 
 ```bash
 pnpm install
 pnpm build
+export YSK_ADMIN_PASSWORD=admin
+node apps/server/dist/cli.js setup --data-dir .ysk --non-interactive --force
+node apps/server/dist/cli.js serve --data-dir .ysk --port 8787
+# Open http://127.0.0.1:8787/  (Web UI + API)
+```
+
+## Install script (Ubuntu 22.04 / 24.04)
+
+```bash
+./install.sh --from-source --non-interactive
+# optional: YSK_EXECUTE=1 sudo ./install.sh --from-source --non-interactive  # then system unit-install
+```
+
+```bash
+# Production mutations
+export YSK_EXECUTE=1
+sudo -E node apps/server/dist/cli.js system unit-install --enable --data-dir /var/lib/ysk-server
+```
+
+## Verify real ops
+
+```bash
 pnpm test
-pnpm --filter @ysk/server exec node dist/cli.js --help
-pnpm --filter @ysk/server exec node dist/cli.js serve
-pnpm --filter @ysk/web dev
+pnpm e2e:real-ops
+# optional root path:
+# sudo bash scripts/e2e-hosting-root.sh
 ```
 
 ## CLI
 
 ```bash
 ysk-server setup --non-interactive
-ysk-server serve
+ysk-server serve --data-dir .ysk --port 8787
+ysk-server system unit-install --data-dir .ysk
 ysk-server update --check
 ysk-server tools --json
 ysk-server --help
@@ -61,15 +88,12 @@ ysk-server --help
 
 | Doc | Path |
 |-----|------|
-| Architecture | [docs/architecture/overview.md](docs/architecture/overview.md) |
-| API | [docs/api/overview.md](docs/api/overview.md) |
-| CLI Reference | [docs/cli/reference.md](docs/cli/reference.md) |
-| Security | [docs/security/overview.md](docs/security/overview.md) |
-| Deploy / Install / Update | [docs/deploy/install-update.md](docs/deploy/install-update.md) |
-| Email external setup | [docs/email/external-setup.md](docs/email/external-setup.md) |
-| AI Agent guide | [docs/ai-agent/guide.md](docs/ai-agent/guide.md) |
-| User manual (zh-TW) | [docs/user-manual/zh-TW.md](docs/user-manual/zh-TW.md) |
+| Production MVP | [docs/deploy/production-mvp.md](docs/deploy/production-mvp.md) |
+| Real ops vertical | [docs/deploy/real-ops.md](docs/deploy/real-ops.md) |
+| Root apply | [docs/deploy/root-apply.md](docs/deploy/root-apply.md) |
 | Spec | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) |
+| API | [docs/api/overview.md](docs/api/overview.md) |
+| Security | [docs/security/overview.md](docs/security/overview.md) |
 
 ## License
 

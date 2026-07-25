@@ -128,14 +128,21 @@ export async function handleSystemRoutes(
     );
     if (match) {
       match.apply_status = applyStatus.status;
-      match.last_apply = applyStatus;
+      match.last_apply = { ...applyStatus, serviceStatus: result.serviceStatus };
       match.updated_at = applyStatus.at;
       ctx.db.persist();
+      if (typeof match.id === 'string') {
+        ctx.email.markApplyStatus(match.id, {
+          ok: result.ok,
+          notes: result.notes,
+          serviceStatus: result.serviceStatus,
+        });
+      }
     } else {
       // still record standalone apply job under settings for visibility
       ctx.settings.set(
         `email.apply.${domain}`,
-        JSON.stringify(applyStatus),
+        JSON.stringify({ ...applyStatus, serviceStatus: result.serviceStatus }),
       );
     }
     ctx.audit.append({
@@ -144,7 +151,12 @@ export async function handleSystemRoutes(
       detail: { ...result, applyStatus, domainId: match?.id },
       ok: result.ok,
     });
-    sendJson(res, 200, { ...result, applyStatus, domainId: match?.id ?? null });
+    sendJson(res, 200, {
+      ...result,
+      applyStatus,
+      domainId: match?.id ?? null,
+      serviceStatus: result.serviceStatus,
+    });
     return true;
   }
 

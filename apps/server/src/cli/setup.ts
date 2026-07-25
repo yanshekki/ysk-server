@@ -12,8 +12,11 @@ import {
   buildConfigFromSetup,
   openDatabase,
   closeDatabase,
+  writeControlPlaneSystemdUnit,
 } from '@ysk/core';
 import { CLI_NAME, PRODUCT_NAME, type StructuredResult } from '@ysk/shared';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
 export interface SetupOptions {
   dataDir?: string;
@@ -85,9 +88,18 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
     writeFileSync(
       join(dataDir, 'README.txt'),
-      `${PRODUCT_NAME} data directory\nCLI: ${CLI_NAME}\nDB: ysk.sqlite\n`,
+      `${PRODUCT_NAME} data directory\nCLI: ${CLI_NAME}\nDB: ysk.json\n`,
       'utf8',
     );
+
+    // Systemd unit template for control plane
+    const cliPath = resolveCliPath();
+    const { unitPath } = writeControlPlaneSystemdUnit({
+      dataDir,
+      cliPath,
+      nodePath: process.execPath,
+    });
+    mkdirSync(join(dataDir, 'systemd'), { recursive: true });
 
     // Real DB init + admin
     const db = openDatabase(dbPath);
@@ -104,7 +116,7 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     audit.append({
       actor: 'system',
       action: 'setup.complete',
-      detail: { dataDir, configPath, dbPath },
+      detail: { dataDir, configPath, dbPath, unitPath },
       ok: true,
     });
     closeDatabase(db);
@@ -118,11 +130,12 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
         dbPath,
         config,
         nextSteps: [
-          `Start control plane: ${CLI_NAME} serve --config ${configPath}`,
-          `Open Web UI and login as ${config.adminUsername}`,
-          'Set YSK_EXECUTE=1 to enable mutating host tools outside dataDir',
-          'Configure LLM: POST /api/v1/settings/llm or env YSK_LLM_BASE_URL',
-          'Review security docs: docs/security/',
+          `Start (API + Web UI): ${CLI_NAME} serve --config ${configPath}`,
+          `Open http://${config.listenHost}:${config.listenPort}/ and login as ${config.adminUsername}`,
+          `Systemd unit template: ${unitPath}`,
+          `Install unit (root + YSK_EXECUTE): ${CLI_NAME} system unit-install --enable --data-dir ${dataDir}`,
+          'Production host mutations require YSK_EXECUTE=1 and root',
+          'See docs/deploy/production-mvp.md',
         ],
       },
     };
@@ -134,5 +147,17 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
       message,
       error: { code: 'YSK_SETUP_FAILED', message },
     };
+  }
+}
+
+function resolveCliPath(): string {
+  try {
+    // setup.js lives in dist/cli/ or src/cli/
+    const here = dirname(fileURLToPath(import.meta.url));
+    const distCli = join(here, '..', 'cli.js');
+    if (existsSync(distCli)) return distCli;
+    return join(here, 'cli.js');
+  } catch {
+    return 'ysk-server';
   }
 }

@@ -6,15 +6,19 @@
 import { CLI_NAME, PRODUCT_NAME, type StructuredResult } from '@ysk/shared';
 import {
   createDefaultAllowlist,
+  installControlPlaneSystemd,
   listAgentRuntimes,
   planSelfUpdate,
 } from '@ysk/core';
-import { createAppContext } from './app-context.js';
+import { createAppContext, closeAppContext } from './app-context.js';
 import { createHttpServer, listen } from './http-server.js';
 import { runSetup } from './cli/setup.js';
 import { runUpdate } from './cli/update.js';
 import { loadConfigFile } from './config-loader.js';
 import { VERSION } from './version.js';
+import { resolveWebRoot } from './http/static.js';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 function printJson(data: unknown): void {
   process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
@@ -32,7 +36,8 @@ Usage:
 Commands:
   setup                 Initialize control plane + database
   update                Check / plan self-update
-  serve                 Start control-plane HTTP server
+  serve                 Start HTTP API + Web UI (if built)
+  system unit-install   Install ysk-server.service [--enable]
   tools                 List tools; tools run --tool <name>
   ask                   Plan AI task from natural language
   projects              List/create projects (real disk)
@@ -348,6 +353,43 @@ async function main(argv: string[]): Promise<number> {
     }
   }
 
+  if (command === 'system') {
+    const sub = args[1];
+    if (sub === 'unit-install') {
+      const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
+      const enable = hasFlag(args, '--enable');
+      const cliPath = resolveDistCliPath();
+      const ctx = createAppContext({
+        version: VERSION,
+        dataDir,
+        executeEnabled: process.env.YSK_EXECUTE === '1',
+      });
+      try {
+        const result = await installControlPlaneSystemd({
+          dataDir,
+          cliPath,
+          host: ctx.host,
+          enable,
+        });
+        if (json) printJson(result);
+        else {
+          process.stdout.write(`${result.notes.join('\n')}\n`);
+          process.stdout.write(`written: ${result.written.join(', ')}\n`);
+          if (!enable) {
+            process.stdout.write(
+              `To enable: YSK_EXECUTE=1 sudo ${CLI_NAME} system unit-install --enable --data-dir ${dataDir}\n`,
+            );
+          }
+        }
+        return result.ok ? 0 : 1;
+      } finally {
+        closeAppContext(ctx);
+      }
+    }
+    process.stderr.write('Usage: ysk-server system unit-install [--enable] [--data-dir PATH]\n');
+    return 1;
+  }
+
   if (command === 'serve') {
     const configPath = getOpt(args, '--config');
     let config = configPath ? loadConfigFile(configPath) : undefined;
@@ -359,12 +401,14 @@ async function main(argv: string[]): Promise<number> {
     const port = Number(
       getOpt(args, '--port') ?? process.env.PORT ?? config?.listenPort ?? 8787,
     );
+    const webRoot = resolveWebRoot(getOpt(args, '--web-root'));
     const ctx = createAppContext({
       version: VERSION,
       config,
       configPath,
       dataDir: dataDirOpt ?? config?.dataDir,
       adminPassword: process.env.YSK_ADMIN_PASSWORD,
+      webRoot: webRoot ?? undefined,
     });
     const server = createHttpServer(ctx);
     const addr = await listen(server, host, port);
@@ -379,13 +423,25 @@ async function main(argv: string[]): Promise<number> {
           configPath: configPath ?? null,
           adminUsername: config?.adminUsername ?? 'admin',
           locale: config?.locale ?? 'zh-TW',
+          webUi: Boolean(webRoot),
+          webRoot,
         },
       });
     } else {
       process.stdout.write(`${msg}\n`);
       process.stdout.write(`Health: http://${addr.host}:${addr.port}/health\n`);
+      process.stdout.write(
+        webRoot
+          ? `Web UI:  http://${addr.host}:${addr.port}/\n`
+          : `Web UI:  not found (build apps/web or set YSK_WEB_ROOT)\n`,
+      );
       if (configPath) {
         process.stdout.write(`Config: ${configPath} (admin=${config?.adminUsername}, locale=${config?.locale})\n`);
+      }
+      if (!ctx.host.executeEnabled() || !ctx.host.isRoot()) {
+        process.stdout.write(
+          `Mode: degraded (set YSK_EXECUTE=1 + root for OS-level apply)\n`,
+        );
       }
     }
     if (process.env.YSK_SERVE_ONCE === '1') {
@@ -424,6 +480,16 @@ if (isDirectRun) {
       process.exitCode = 1;
     },
   );
+}
+
+function resolveDistCliPath(): string {
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const p = join(here, 'cli.js');
+    return p;
+  } catch {
+    return process.argv[1] ?? 'ysk-server';
+  }
 }
 
 export { main, runSetup, runUpdate };

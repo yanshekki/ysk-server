@@ -15,6 +15,7 @@ NON_INTERACTIVE=0
 RUN_SETUP=1
 UPGRADE=0
 INSTALL_FROM_SOURCE=0
+INSTALL_SYSTEMD=0
 
 log() { printf '[%s] %s\n' "$PRODUCT" "$*"; }
 err() { printf '[%s] ERROR: %s\n' "$PRODUCT" "$*" >&2; }
@@ -28,6 +29,7 @@ Options:
   --skip-setup        Install only; do not run '$CLI setup'
   --upgrade           Upgrade mode (reinstall / update package)
   --from-source       Install from current git checkout (development)
+  --install-systemd   After setup, write/install ysk-server.service (needs root + YSK_EXECUTE for enable)
   -h, --help          Show help
 EOF
 }
@@ -38,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     --skip-setup) RUN_SETUP=0; shift ;;
     --upgrade) UPGRADE=1; shift ;;
     --from-source) INSTALL_FROM_SOURCE=1; shift ;;
+    --install-systemd) INSTALL_SYSTEMD=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) err "Unknown option: $1"; usage; exit 1 ;;
   esac
@@ -159,8 +162,34 @@ run_setup() {
   if require_cmd "$CLI"; then
     log "Running: ${setup_cmd[*]}"
     "${setup_cmd[@]}" || log "setup returned non-zero (config may already exist)"
+  elif [[ "$INSTALL_FROM_SOURCE" -eq 1 && -f "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/apps/server/dist/cli.js" ]]; then
+    local root
+    root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    log "Running setup via node dist/cli.js"
+    node "$root/apps/server/dist/cli.js" setup --non-interactive --force || true
   else
     log "CLI binary not on PATH yet; run manually: $CLI setup"
+  fi
+}
+
+install_systemd_unit() {
+  if [[ "$INSTALL_SYSTEMD" -ne 1 ]]; then
+    return 0
+  fi
+  local root
+  root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local cli_js="$root/apps/server/dist/cli.js"
+  if [[ ! -f "$cli_js" ]]; then
+    log "No dist/cli.js — skip systemd"
+    return 0
+  fi
+  local data="${YSK_DATA_DIR:-$HOME/.ysk}"
+  log "Writing systemd unit for dataDir=$data"
+  if [[ "$(id -u)" -eq 0 && "${YSK_EXECUTE:-}" == "1" ]]; then
+    YSK_EXECUTE=1 node "$cli_js" system unit-install --enable --data-dir "$data" || log "unit-install enable failed"
+  else
+    node "$cli_js" system unit-install --data-dir "$data" || true
+    log "Unit written under $data/systemd — enable with: YSK_EXECUTE=1 sudo $CLI system unit-install --enable --data-dir $data"
   fi
 }
 
@@ -175,7 +204,7 @@ print_next() {
    2. $CLI serve --data-dir /var/lib/ysk-server --port 8787
       or: sudo cp deploy/ysk-server.service /etc/systemd/system/ && systemctl enable --now ysk-server
    3. Open Web UI → login → Projects → Deploy Node (real listen)
-   4. Real-ops guide: docs/deploy/real-ops.md
+   4. Production MVP: docs/deploy/production-mvp.md
    5. Verify: bash scripts/e2e-real-ops.sh
 
  Commands:
@@ -201,7 +230,9 @@ main() {
   install_node
   install_product
   run_setup
+  install_systemd_unit
   print_next
+  log "Done"
 }
 
 main "$@"

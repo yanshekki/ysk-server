@@ -2,7 +2,14 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../shared/services/api';
 
-type Domain = { id: string; domain: string; health_score: number; server_ip: string };
+type Domain = {
+  id: string;
+  domain: string;
+  health_score: number;
+  server_ip: string;
+  apply_status?: string;
+  last_apply?: Record<string, unknown>;
+};
 
 type Bundle = {
   records: Array<{ type: string; name: string; value: string; description: string }>;
@@ -112,6 +119,7 @@ export function EmailPage() {
                 <tr>
                   <th>Domain</th>
                   <th>Health</th>
+                  <th>Apply</th>
                   <th>IP</th>
                   <th />
                 </tr>
@@ -126,6 +134,9 @@ export function EmailPage() {
                       <span className={`badge${d.health_score >= 80 ? ' badge--ok' : ' badge--warn'}`}>
                         {d.health_score}/100
                       </span>
+                    </td>
+                    <td>
+                      <span className="badge">{d.apply_status ?? '—'}</span>
                     </td>
                     <td className="muted">{d.server_ip}</td>
                     <td>

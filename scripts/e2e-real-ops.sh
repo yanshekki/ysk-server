@@ -27,6 +27,7 @@ log "Building packages…"
 pnpm --filter @ysk/shared build
 pnpm --filter @ysk/core build
 pnpm --filter @ysk/server build
+pnpm --filter @ysk/web build || log "web build optional for API-only path"
 
 mkdir -p "$DATA_DIR"
 log "dataDir=$DATA_DIR apiPort=$PORT_API"
@@ -49,6 +50,16 @@ for i in $(seq 1 40); do
   if [[ $i -eq 40 ]]; then fail "API did not become healthy"; fi
 done
 log "API healthy"
+
+# Web UI static (when dist exists)
+if curl -fsS "http://127.0.0.1:${PORT_API}/" 2>/dev/null | head -c 200 | grep -qiE 'html|ysk|root|div'; then
+  log "Web UI HTML served on /"
+else
+  log "Web UI not detected (build apps/web for full product entry)"
+fi
+
+STATUS=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/status")
+echo "$STATUS" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.mode) process.exit(9); process.stderr.write('mode='+j.mode+'\\n')})"
 
 TOKEN=$(
   curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/auth/login" \

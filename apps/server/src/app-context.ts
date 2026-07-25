@@ -59,6 +59,8 @@ export interface AppContext {
   config?: YskConfig;
   configPath?: string;
   dataDir: string;
+  /** Packaged Web UI root (null if not built) */
+  webRoot?: string;
   /** Rebuild LLM gateway from settings (after settings.llm update) */
   reloadLlm: () => void;
   /** Run protection probes and apply resulting mode */
@@ -76,6 +78,8 @@ export interface CreateAppContextOptions {
   /** Override db path (tests) */
   dbPath?: string;
   executeEnabled?: boolean;
+  /** Override web static root */
+  webRoot?: string;
 }
 
 export function createAppContext(versionOrOpts: string | CreateAppContextOptions): AppContext {
@@ -139,6 +143,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     config: opts.config,
     configPath: opts.configPath,
     dataDir,
+    webRoot: opts.webRoot,
     reloadLlm() {
       ctx.llm = buildLlm(settings);
       ctx.llm.setProtection(ctx.protection);

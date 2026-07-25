@@ -32,14 +32,18 @@ import {
   syncNginxConfigs,
   buildRcaReport,
   planSelfUpdate,
+  provisionMysqlDatabase,
 } from '@ysk/core';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
 import { getBearer, parseUrl, readBody, sendError, sendJson } from './http/util.js';
 import { handleFilesRoutes } from './controllers/files-controller.js';
 import { handleSystemRoutes } from './controllers/system-controller.js';
+import { resolveWebRoot, tryServeStatic } from './http/static.js';
 
 export function createHttpServer(ctx: AppContext): Server {
+  const webRoot = resolveWebRoot(ctx.webRoot);
+
   return createServer(async (req, res) => {
     try {
       // rate window for protection heuristics
@@ -80,6 +84,10 @@ export function createHttpServer(ctx: AppContext): Server {
           protection: ctx.protection,
           dataDir: ctx.dataDir,
           executeEnabled: ctx.host.executeEnabled(),
+          isRoot: ctx.host.isRoot(),
+          webUi: Boolean(webRoot),
+          webRoot: webRoot ?? null,
+          mode: ctx.host.executeEnabled() && ctx.host.isRoot() ? 'production_capable' : 'degraded',
           tools: ctx.allowlist.list().map((t) => t.tool),
         });
       }
@@ -695,10 +703,52 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, { items: users });
       }
 
+      // MySQL real provision (refuse unless EXECUTE; never fake success)
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/db/mysql-provision') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          dbName?: string;
+          username?: string;
+          password?: string;
+          host?: string;
+          execute?: boolean;
+        };
+        const result = await provisionMysqlDatabase({
+          dbName: data.dbName ?? 'app',
+          username: data.username ?? 'appuser',
+          password: data.password ?? '',
+          host: data.host,
+          hostExec: ctx.host,
+          execute: data.execute !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.mysql.provision',
+          detail: { ...result, password: undefined },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
+      // Project live status from system truth
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/status$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const status = await ctx.projectOps.liveStatus(id);
+        return sendJson(res, 200, status);
+      }
+
+      // Static Web UI (SPA) — after all API routes
+      if (tryServeStatic(req, res, url.pathname, webRoot)) {
+        return;
+      }
+
       return sendJson(res, 404, {
         ok: false,
         code: 'YSK_NOT_FOUND',
         message: `Not found: ${method} ${url.pathname}`,
+        webUi: Boolean(webRoot),
       });
     } catch (err) {
       return sendError(res, err);

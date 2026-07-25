@@ -38,6 +38,14 @@ export interface OpsApplyResult {
   nginxPath?: string;
   notes: string[];
   written: string[];
+  /** true when process was only pidfile-spawned (not system systemd) */
+  degraded?: boolean;
+  requiresRoot?: boolean;
+  requiresExecute?: boolean;
+  deployMode?: 'systemd' | 'pidfile' | 'none';
+  nginxReloaded?: boolean;
+  systemdUnit?: string;
+  nginxStatus?: string;
 }
 
 export class ProjectOpsService {
@@ -88,6 +96,10 @@ export class ProjectOpsService {
     // Stop any previous process for this project
     await this.stopProcess(row, notes);
 
+    const preferSystemd =
+      opts.enableSystemd === true ||
+      (opts.enableSystemd !== false && this.host.executeEnabled() && this.host.isRoot());
+
     const apply = await applyNodeHosting({
       dataDir: this.dataDir,
       projectId: row.id,
@@ -98,7 +110,7 @@ export class ProjectOpsService {
       entry,
       port,
       host: this.host,
-      enableService: opts.enableSystemd,
+      enableService: preferSystemd,
       nodeBinary,
     });
     written.push(apply.envPath, apply.unitPath, apply.appDir);
@@ -114,8 +126,7 @@ export class ProjectOpsService {
 
     mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
     const pidfile = join(row.home_dir, 'app.pid');
-    const logOut = join(row.home_dir, 'logs', 'app.out.log');
-    const logErr = join(row.home_dir, 'logs', 'app.err.log');
+    const unitName = `ysk-project-${row.linux_user}.service`;
 
     this.projects.updateRuntimeState(projectId, {
       port,
@@ -127,63 +138,110 @@ export class ProjectOpsService {
       last_deploy_at: new Date().toISOString(),
     });
 
-    let child: ChildProcess;
-    try {
-      const outFd = openSync(logOut, 'a');
-      const errFd = openSync(logErr, 'a');
-      child = spawn(nodeBinary, [entry], {
-        cwd: appDir,
-        env: {
-          ...process.env,
-          NODE_ENV: 'production',
-          PORT: String(port),
-          HOST: '127.0.0.1',
-        },
-        detached: true,
-        stdio: ['ignore', outFd, errFd],
-      });
-      closeSync(outFd);
-      closeSync(errFd);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      this.projects.updateRuntimeState(projectId, {
-        process_status: 'failed',
-        status: 'failed',
-        last_health: { ok: false, error: msg, at: new Date().toISOString() },
-      });
-      return {
-        ok: false,
-        projectId,
-        port,
-        pidfile,
-        processStatus: 'failed',
-        listening: false,
-        notes: [...notes, `spawn failed: ${msg}`],
-        written,
-      };
+    let pid: number | undefined;
+    let deployMode: 'systemd' | 'pidfile' = 'pidfile';
+    let degraded = true;
+
+    if (preferSystemd && this.host.executeEnabled() && this.host.isRoot()) {
+      // Production path: install unit and start via systemd
+      const r1 = await this.host.runCommand(['cp', apply.unitPath, `/etc/systemd/system/${unitName}`]);
+      const r2 = await this.host.runCommand(['systemctl', 'daemon-reload']);
+      const r3 = await this.host.runCommand(['systemctl', 'enable', '--now', unitName]);
+      notes.push(
+        `systemd: cp exit=${r1.exitCode}, daemon-reload=${r2.exitCode}, enable=${r3.exitCode}`,
+      );
+      if (r1.exitCode === 0 && r3.exitCode === 0) {
+        deployMode = 'systemd';
+        degraded = false;
+        const mainPid = await this.host.runCommand([
+          'systemctl',
+          'show',
+          '-p',
+          'MainPID',
+          '--value',
+          unitName,
+        ]);
+        const n = Number(mainPid.stdout.trim());
+        if (Number.isFinite(n) && n > 0) {
+          pid = n;
+          writeFileSync(pidfile, `${pid}\n`, 'utf8');
+        }
+        notes.push(`Production deploy via systemd unit ${unitName}`);
+      } else {
+        notes.push('systemd enable failed — falling back to pidfile spawn');
+      }
+    } else {
+      notes.push(
+        'Deploy mode: pidfile (degraded). Set YSK_EXECUTE=1 and run as root for systemd production path.',
+      );
     }
 
-    const pid = child.pid;
-    if (!pid) {
-      this.projects.updateRuntimeState(projectId, {
-        process_status: 'failed',
-        status: 'failed',
-      });
-      return {
-        ok: false,
-        projectId,
-        port,
-        pidfile,
-        processStatus: 'failed',
-        listening: false,
-        notes: [...notes, 'spawn returned no pid'],
-        written,
-      };
-    }
+    if (deployMode === 'pidfile') {
+      const logOut = join(row.home_dir, 'logs', 'app.out.log');
+      const logErr = join(row.home_dir, 'logs', 'app.err.log');
+      let child: ChildProcess;
+      try {
+        const outFd = openSync(logOut, 'a');
+        const errFd = openSync(logErr, 'a');
+        child = spawn(nodeBinary, [entry], {
+          cwd: appDir,
+          env: {
+            ...process.env,
+            NODE_ENV: 'production',
+            PORT: String(port),
+            HOST: '127.0.0.1',
+          },
+          detached: true,
+          stdio: ['ignore', outFd, errFd],
+        });
+        closeSync(outFd);
+        closeSync(errFd);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.projects.updateRuntimeState(projectId, {
+          process_status: 'failed',
+          status: 'failed',
+          last_health: { ok: false, error: msg, at: new Date().toISOString() },
+        });
+        return {
+          ok: false,
+          projectId,
+          port,
+          pidfile,
+          processStatus: 'failed',
+          listening: false,
+          notes: [...notes, `spawn failed: ${msg}`],
+          written,
+          degraded: true,
+          deployMode: 'pidfile',
+          requiresRoot: !this.host.isRoot(),
+          requiresExecute: !this.host.executeEnabled(),
+        };
+      }
 
-    child.unref();
-    writeFileSync(pidfile, `${pid}\n`, 'utf8');
-    notes.push(`Spawned pid=${pid}, pidfile=${pidfile}`);
+      pid = child.pid;
+      if (!pid) {
+        this.projects.updateRuntimeState(projectId, {
+          process_status: 'failed',
+          status: 'failed',
+        });
+        return {
+          ok: false,
+          projectId,
+          port,
+          pidfile,
+          processStatus: 'failed',
+          listening: false,
+          notes: [...notes, 'spawn returned no pid'],
+          written,
+          degraded: true,
+          deployMode: 'pidfile',
+        };
+      }
+      child.unref();
+      writeFileSync(pidfile, `${pid}\n`, 'utf8');
+      notes.push(`Spawned pid=${pid}, pidfile=${pidfile}`);
+    }
 
     const url = `http://127.0.0.1:${port}/`;
     const health = await waitHttpOk(url, { timeoutMs: opts.healthTimeoutMs ?? 12_000 });
@@ -198,11 +256,12 @@ export class ProjectOpsService {
           : `Health failed after ${health.ms}ms: ${health.error ?? health.status}`,
       );
     } else {
-      notes.push(`Health OK in ${health.ms}ms (HTTP ${health.status}) body=${JSON.stringify(health.body)}`);
+      notes.push(
+        `Health OK in ${health.ms}ms (HTTP ${health.status}) body=${JSON.stringify(health.body)}`,
+      );
     }
 
-    // Nginx with real upstream port
-    let nginxPath = row.nginx_config_path;
+    // Nginx with real upstream port (managed dataDir; system reload via publishNginx)
     const serverName = row.domain ?? `${row.linux_user}.local`;
     const conf = renderNginxProxy({
       serverName,
@@ -210,16 +269,23 @@ export class ProjectOpsService {
       ssl: false,
       cloudflareRealIp: true,
     });
-    nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
+    const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
     notes.push(`Nginx conf published (managed): ${nginxPath}`);
+
+    const statusLabel =
+      processStatus === 'running'
+        ? degraded
+          ? 'running_degraded'
+          : 'running'
+        : processStatus;
 
     this.projects.updateRuntimeState(projectId, {
       port,
       pid,
       pidfile,
       process_status: processStatus,
-      status: processStatus === 'running' ? 'running' : 'unhealthy',
+      status: statusLabel,
       nginx_config_path: nginxPath,
       last_health: {
         ok: health.ok,
@@ -229,6 +295,8 @@ export class ProjectOpsService {
         ms: health.ms,
         at: new Date().toISOString(),
         url,
+        deployMode,
+        degraded,
       },
       last_deploy_at: new Date().toISOString(),
     });
@@ -237,7 +305,7 @@ export class ProjectOpsService {
       actor: opts.actor,
       action: 'project.deploy_node',
       resource: projectId,
-      detail: { port, pid, health, listening, nginxPath },
+      detail: { port, pid, health, listening, nginxPath, deployMode, degraded },
       ok: health.ok && listening,
     });
 
@@ -260,6 +328,11 @@ export class ProjectOpsService {
       nginxPath,
       notes,
       written,
+      degraded,
+      deployMode,
+      systemdUnit: deployMode === 'systemd' ? unitName : undefined,
+      requiresRoot: !this.host.isRoot(),
+      requiresExecute: !this.host.executeEnabled(),
     };
   }
 
@@ -269,6 +342,11 @@ export class ProjectOpsService {
   async stopNode(projectId: string, actor: string): Promise<OpsApplyResult> {
     const row = this.require(projectId);
     const notes: string[] = [];
+    const unitName = `ysk-project-${row.linux_user}.service`;
+    if (this.host.executeEnabled() && this.host.isRoot()) {
+      const r = await this.host.runCommand(['systemctl', 'stop', unitName], { timeoutMs: 15_000 });
+      notes.push(`systemctl stop ${unitName} exit=${r.exitCode}`);
+    }
     await this.stopProcess(row, notes);
     this.projects.updateRuntimeState(projectId, {
       pid: undefined,
@@ -366,6 +444,8 @@ export class ProjectOpsService {
       actor: string;
       systemConfDir?: string;
       ssl?: boolean;
+      /** When true (default if EXECUTE), run nginx -t + reload */
+      reload?: boolean;
     },
   ): Promise<OpsApplyResult> {
     const row = this.require(projectId);
@@ -378,20 +458,50 @@ export class ProjectOpsService {
       cloudflareRealIp: true,
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
+    const systemDir =
+      opts.systemConfDir ??
+      (this.host.executeEnabled() && this.host.isRoot() ? '/etc/nginx/conf.d' : undefined);
     const sync = await syncNginxConfigs({
       dataDir: this.dataDir,
-      systemConfDir: opts.systemConfDir,
+      systemConfDir: systemDir,
       host: this.host,
     });
+    const notes = [`Wrote ${nginxPath}`, ...sync.notes];
+    let nginxReloaded = false;
+    let nginxStatus = 'managed_only';
+    const wantReload = opts.reload ?? Boolean(systemDir && this.host.executeEnabled());
+
+    if (wantReload && this.host.executeEnabled()) {
+      const t = await this.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
+      notes.push(`nginx -t exit=${t.exitCode}: ${(t.stderr || t.stdout).trim()}`);
+      if (t.exitCode === 0) {
+        const r = await this.host.runCommand(['systemctl', 'reload', 'nginx'], { timeoutMs: 15_000 });
+        nginxReloaded = r.exitCode === 0;
+        nginxStatus = nginxReloaded ? 'reloaded' : `reload_failed:${r.stderr}`;
+        notes.push(nginxReloaded ? 'nginx reloaded' : `nginx reload failed: ${r.stderr}`);
+      } else {
+        nginxStatus = 'nginx_t_failed';
+      }
+    } else if (wantReload) {
+      notes.push('nginx reload skipped: set YSK_EXECUTE=1');
+      nginxStatus = 'requires_execute';
+    }
+
     this.projects.updateRuntimeState(projectId, {
       nginx_config_path: nginxPath,
+      last_health: {
+        ...(row.last_health ?? {}),
+        nginxStatus,
+        nginxReloaded,
+        at: new Date().toISOString(),
+      },
     });
     this.projects.updateNginxPath(projectId, nginxPath);
     this.audit?.append({
       actor: opts.actor,
       action: 'project.publish_nginx',
       resource: projectId,
-      detail: { nginxPath, port, sync },
+      detail: { nginxPath, port, sync, nginxReloaded, nginxStatus },
       ok: true,
     });
     return {
@@ -401,8 +511,61 @@ export class ProjectOpsService {
       processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
       listening: port ? await isPortListening(port) : false,
       nginxPath,
-      notes: [`Wrote ${nginxPath}`, ...sync.notes],
+      notes,
       written: [nginxPath, ...sync.copied],
+      nginxReloaded,
+      nginxStatus,
+      requiresExecute: !this.host.executeEnabled(),
+      requiresRoot: !this.host.isRoot(),
+      degraded: !nginxReloaded,
+    };
+  }
+
+  /**
+   * Live status from pidfile / systemd / port (system truth).
+   */
+  async liveStatus(projectId: string): Promise<{
+    projectId: string;
+    processStatus: OpsProcessStatus;
+    port?: number;
+    pid?: number;
+    listening: boolean;
+    pidAlive: boolean;
+    systemdActive?: string;
+    degraded: boolean;
+    deployMode: string;
+    lastHealth?: Record<string, unknown>;
+    osProvisioned: boolean;
+    linuxUser: string;
+  }> {
+    const row = this.require(projectId);
+    const port = row.port;
+    const listening = port ? await isPortListening(port) : false;
+    const pid = row.pid;
+    const pidAlive = pid ? isPidAlive(pid) : false;
+    let systemdActive: string | undefined;
+    const unitName = `ysk-project-${row.linux_user}.service`;
+    if (this.host.pathExists('/bin/systemctl') || this.host.pathExists('/usr/bin/systemctl')) {
+      const r = await this.host.runCommand(['systemctl', 'is-active', unitName], { timeoutMs: 5_000 });
+      systemdActive = (r.stdout || r.stderr || '').trim() || `exit_${r.exitCode}`;
+    }
+    let processStatus: OpsProcessStatus = (row.process_status as OpsProcessStatus) ?? 'stopped';
+    if (listening) processStatus = 'running';
+    else if (pidAlive) processStatus = 'unhealthy';
+    const degraded = systemdActive !== 'active';
+    return {
+      projectId,
+      processStatus,
+      port,
+      pid,
+      listening,
+      pidAlive,
+      systemdActive,
+      degraded,
+      deployMode: systemdActive === 'active' ? 'systemd' : 'pidfile_or_none',
+      lastHealth: row.last_health,
+      osProvisioned: row.os_provisioned,
+      linuxUser: row.linux_user,
     };
   }
 
