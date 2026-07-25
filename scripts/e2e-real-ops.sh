@@ -219,7 +219,21 @@ AG=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/agents/runtimes" -H "$AUTH")
 echo "$AG" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.items||j.items.length<3) process.exit(17);})"
 curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/agents/runtimes/openclaw/unit" \
   -H "$AUTH" -H 'Content-Type: application/json' -d '{}' >/dev/null
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/agents/runtimes/openclaw/install" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"execute":false}' >/dev/null
 log "Agent runtimes OK"
+
+# SMTP relay config
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/relay" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"host":"smtp.example.com","port":587,"username":"u","password":"p","applySystem":false}' >/dev/null
+log "SMTP relay OK"
+
+# Dashboard summary
+SUM=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/dashboard/summary" -H "$AUTH")
+echo "$SUM" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.projects||!j.agents) process.exit(18);})"
+log "Dashboard summary OK"
 
 log "PASS — real ops vertical verified"
 echo "PASS"

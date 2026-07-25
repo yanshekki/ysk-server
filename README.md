@@ -32,6 +32,9 @@
 - **Email warm-up plan** + scheduled multi-DNSBL job (`email-dnsbl`)
 - **Email feature slice** (`features/email`)
 - **Agent runtime probe** (path/systemd/PATH) + unit template write
+- **Agent install apply** (`execute` needs `YSK_EXECUTE`; never fake success)
+- **SMTP relay** config for blocked Port 25 + settings write-back
+- **Dashboard summary** API (projects / agents / DNSBL / relay / scheduler)
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

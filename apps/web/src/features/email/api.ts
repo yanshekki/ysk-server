@@ -48,4 +48,20 @@ export const emailApi = {
       method: 'POST',
       body: '{}',
     }),
+  getRelay: () =>
+    api.requestRaw<{ settings: Record<string, unknown> | null; files: unknown }>(
+      '/api/v1/email/relay',
+    ),
+  setRelay: (body: {
+    host: string;
+    port?: number;
+    username?: string;
+    password?: string;
+    security?: string;
+    applySystem?: boolean;
+  }) =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/email/relay', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 };

@@ -14,6 +14,7 @@ export function DashboardPage() {
     Array<{ id: string; name: string; processStatus?: string; port?: number; status?: string }>
   >([]);
   const [backups, setBackups] = useState<number>(0);
+  const [summary, setSummary] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,6 +37,12 @@ export function DashboardPage() {
         try {
           const b = await api.requestRaw<{ items: unknown[] }>('/api/v1/backups');
           if (!cancelled) setBackups(b.items.length);
+        } catch {
+          /* optional */
+        }
+        try {
+          const s = await api.requestRaw<Record<string, unknown>>('/api/v1/dashboard/summary');
+          if (!cancelled) setSummary(s);
         } catch {
           /* optional */
         }
@@ -139,6 +146,59 @@ export function DashboardPage() {
             </ul>
           )}
           <p className="muted meta-block--top">Backups on disk: {backups}</p>
+        </div>
+
+        <div className="card">
+          <h2 className="card__title">Ops summary</h2>
+          {summary ? (
+            <>
+              <p className="meta-block">
+                Projects running:{' '}
+                <strong>
+                  {String(
+                    (summary.projects as { running?: number; total?: number })?.running ?? 0,
+                  )}
+                  /
+                  {String((summary.projects as { total?: number })?.total ?? 0)}
+                </strong>
+              </p>
+              <p className="muted meta-block--tight">
+                Email domains:{' '}
+                {String((summary.email as { domains?: number })?.domains ?? 0)}
+                {(summary.email as { smtpRelay?: unknown })?.smtpRelay
+                  ? ' · relay configured'
+                  : ''}
+              </p>
+              <p className="muted meta-block--tight">
+                DNSBL last:{' '}
+                {String(
+                  (
+                    (summary.email as { lastDnsbl?: { at?: string } })?.lastDnsbl
+                      ?.at as string
+                  )?.slice(0, 19) ?? '—',
+                )}
+              </p>
+              <ul className="list-plain list-spaced u-mt-4">
+                {(
+                  (summary.agents as { items?: Array<{ kind: string; status: string }> })
+                    ?.items ?? []
+                ).map((a) => (
+                  <li key={a.kind}>
+                    <code className="inline">{a.kind}</code>{' '}
+                    <span
+                      className={
+                        a.status === 'running' ? 'badge badge--ok' : 'badge badge--warn'
+                      }
+                    >
+                      {a.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <span className="muted">—</span>
+          )}
         </div>
 
         <div className="card">

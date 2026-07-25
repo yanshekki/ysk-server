@@ -12,6 +12,10 @@ export function EmailPage() {
   const [dnsbl, setDnsbl] = useState<Record<string, unknown> | null>(null);
   const [warmup, setWarmup] = useState<Record<string, unknown> | null>(null);
   const [dnsblLast, setDnsblLast] = useState<Record<string, unknown> | null>(null);
+  const [relayHost, setRelayHost] = useState('smtp.example.com');
+  const [relayUser, setRelayUser] = useState('');
+  const [relayPass, setRelayPass] = useState('');
+  const [relayLog, setRelayLog] = useState<Record<string, unknown> | null>(null);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -116,6 +120,61 @@ export function EmailPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      <div className="card">
+        <h2 className="card__title">SMTP relay (Port 25 blocked)</h2>
+        <p className="card__desc">Writes Postfix relay snippets under dataDir; system apply needs root + YSK_EXECUTE</p>
+        <div className="grid">
+          <div className="field field--flush">
+            <label htmlFor="rh">Relay host</label>
+            <input id="rh" value={relayHost} onChange={(e) => setRelayHost(e.target.value)} />
+          </div>
+          <div className="field field--flush">
+            <label htmlFor="ru">Username</label>
+            <input id="ru" value={relayUser} onChange={(e) => setRelayUser(e.target.value)} />
+          </div>
+          <div className="field field--flush">
+            <label htmlFor="rp">Password</label>
+            <input
+              id="rp"
+              type="password"
+              value={relayPass}
+              onChange={(e) => setRelayPass(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="form-actions btn-row">
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={busy}
+            onClick={() => {
+              void (async () => {
+                setBusy(true);
+                try {
+                  setRelayLog(
+                    await emailApi.setRelay({
+                      host: relayHost,
+                      port: 587,
+                      username: relayUser || undefined,
+                      password: relayPass || undefined,
+                      security: 'starttls',
+                      applySystem: false,
+                    }),
+                  );
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'relay failed');
+                } finally {
+                  setBusy(false);
+                }
+              })();
+            }}
+          >
+            Save relay config
+          </button>
+        </div>
+        {relayLog && <pre className="code code--spaced">{JSON.stringify(relayLog, null, 2)}</pre>}
       </div>
 
       <div className="card">

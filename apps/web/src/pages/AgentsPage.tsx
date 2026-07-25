@@ -102,6 +102,31 @@ export function AgentsPage() {
     }
   }
 
+  async function installKind(kind: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await api.requestRaw<Record<string, unknown>>(
+        `/api/v1/agents/runtimes/${kind}/install`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ execute: false }),
+        },
+      );
+      setDetail(r);
+      setMsg(
+        r.ok
+          ? `Install plan artifacts for ${kind} (execute=false)`
+          : `Install incomplete — set YSK_EXECUTE=1 for real install`,
+      );
+      await refreshRuntimes();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'install failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function showPlan(kind: string) {
     setBusy(true);
     try {
@@ -197,6 +222,14 @@ export function AgentsPage() {
                   onClick={() => void writeUnit(rt.kind)}
                 >
                   Write unit
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--secondary btn--sm"
+                  disabled={busy}
+                  onClick={() => void installKind(rt.kind)}
+                >
+                  Install (safe)
                 </button>
               </div>
             </div>

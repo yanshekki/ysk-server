@@ -51,6 +51,9 @@ import {
   planAgentInstall,
   parseAgentKind,
   renderAgentSystemdUnit,
+  applyAgentInstall,
+  applySmtpRelay,
+  loadSmtpRelaySettings,
 } from '@ysk/core';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -283,6 +286,119 @@ export function createHttpServer(ctx: AppContext): Server {
             `Unit template written to ${unitPath}`,
             'Enable with root + YSK_EXECUTE: cp to /etc/systemd/system && systemctl enable --now',
           ],
+        });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/install$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const kind = parseAgentKind(url.pathname.split('/')[5]);
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { execute?: boolean; enableUnit?: boolean };
+        const result = await applyAgentInstall({
+          dataDir: ctx.dataDir,
+          kind,
+          host: ctx.host,
+          execute: data.execute,
+          enableUnit: data.enableUnit,
+          nodePath: process.execPath,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'agent.install',
+          resource: kind,
+          detail: {
+            ok: result.ok,
+            enabled: result.enabled,
+            requiresExecute: result.requiresExecute,
+            notes: result.notes,
+          },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok || !data.execute ? 200 : 422, result);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/dashboard/summary') {
+        ctx.auth.authenticate(getBearer(req));
+        const projects = ctx.projects.list();
+        const agentRuntimes = await probeAllAgentRuntimes(ctx.host);
+        const lastDnsbl = ctx.settings.getJson<Record<string, unknown>>('last_dnsbl_run');
+        const lastBackup = ctx.settings.getJson<Record<string, unknown>>('last_backup_run');
+        const lastInventory = ctx.settings.getJson<Record<string, unknown>>('last_inventory');
+        const relay = ctx.settings.get('email.smtp_relay');
+        return sendJson(res, 200, {
+          projects: {
+            total: projects.length,
+            running: projects.filter((p) => p.processStatus === 'running').length,
+            items: projects.slice(0, 8).map((p) => ({
+              id: p.id,
+              name: p.name,
+              processStatus: p.processStatus,
+              port: p.port,
+            })),
+          },
+          agents: {
+            items: agentRuntimes.map((a) => ({
+              kind: a.kind,
+              name: a.name,
+              status: a.status,
+              unitActive: a.unitActive,
+            })),
+          },
+          email: {
+            domains: ctx.email.list().length,
+            lastDnsbl: lastDnsbl ?? null,
+            smtpRelay: relay ? JSON.parse(relay) : loadSmtpRelaySettings(ctx.dataDir),
+          },
+          ops: {
+            lastBackup: lastBackup ?? null,
+            lastInventory: lastInventory
+              ? { at: lastInventory.at, count: lastInventory.count }
+              : null,
+            scheduler: ctx.scheduler.list(),
+          },
+        });
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/email/relay') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          host?: string;
+          port?: number;
+          username?: string;
+          password?: string;
+          security?: 'none' | 'starttls' | 'tls';
+          domain?: string;
+          applySystem?: boolean;
+        };
+        const result = await applySmtpRelay({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          relay: {
+            host: data.host ?? '',
+            port: data.port ?? 587,
+            username: data.username,
+            password: data.password,
+            security: data.security ?? 'starttls',
+            domain: data.domain,
+          },
+          applySystem: data.applySystem,
+          db: ctx.db,
+          actor: user.username,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.relay.apply',
+          detail: { ...result, config: result.config },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok || !data.applySystem ? 200 : 422, result);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/email/relay') {
+        ctx.auth.authenticate(getBearer(req));
+        const stored = ctx.settings.get('email.smtp_relay');
+        return sendJson(res, 200, {
+          settings: stored ? JSON.parse(stored) : null,
+          files: loadSmtpRelaySettings(ctx.dataDir),
         });
       }
 
