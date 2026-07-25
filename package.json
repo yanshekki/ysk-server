@@ -1,0 +1,28 @@
+{
+  "name": "ysk-server",
+  "version": "0.1.0",
+  "description": "YSK Server — AI-secure Linux server manager with full web hosting control panel",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "ysk-server": "./apps/server/dist/cli.js"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "test:coverage": "pnpm --filter @ysk/core test:coverage && pnpm --filter @ysk/server test:coverage",
+    "dev:server": "pnpm --filter @ysk/server dev",
+    "dev:web": "pnpm --filter @ysk/web dev",
+    "typecheck": "pnpm -r run typecheck --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "keywords": ["ysk-server", "linux", "server-manager", "hosting", "ai"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yanshekki/ysk-server.git"
+  }
+}

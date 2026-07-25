@@ -1,0 +1,29 @@
+{
+  "name": "@ysk/server",
+  "version": "0.1.0",
+  "description": "YSK Server control plane HTTP API and CLI",
+  "type": "module",
+  "bin": {
+    "ysk-server": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node ./scripts/chmod-bin.mjs",
+    "dev": "tsx src/cli.ts serve",
+    "start": "node dist/cli.js serve",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@ysk/core": "workspace:*",
+    "@ysk/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8"
+  }
+}
