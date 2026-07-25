@@ -38,6 +38,7 @@ Commands:
   projects              List/create projects (real disk)
   hosting               nginx list|sync
   agents                List managed AI agent runtimes
+  agent run             Outbound fleet agent (poll control plane)
   version               Print version
   help                  Show this help
 
@@ -230,6 +231,37 @@ async function main(argv: string[]): Promise<number> {
     else {
       for (const a of data) process.stdout.write(`${a.kind}\t${a.name}\t${a.status}\n`);
     }
+    return 0;
+  }
+
+  if (command === 'agent') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'run';
+    if (sub !== 'run') {
+      process.stderr.write('Usage: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n');
+      return 1;
+    }
+    const controlPlane = getOpt(args, '--control-plane') ?? 'http://127.0.0.1:8787';
+    const agentId = getOpt(args, '--id') ?? `agent-${process.pid}`;
+    const group = getOpt(args, '--group');
+    const intervalMs = Number(getOpt(args, '--interval') ?? 5000);
+    const { runOutboundAgent } = await import('@ysk/core');
+    process.stdout.write(
+      `YSK outbound agent ${agentId} → ${controlPlane} (interval ${intervalMs}ms)\n`,
+    );
+    const ac = new AbortController();
+    process.on('SIGINT', () => ac.abort());
+    process.on('SIGTERM', () => ac.abort());
+    await runOutboundAgent({
+      controlPlane,
+      agentId,
+      group,
+      intervalMs,
+      signal: ac.signal,
+      onCommand: async (cmd) => {
+        process.stdout.write(`[cmd ${cmd.id}] ${JSON.stringify(cmd.payload)}\n`);
+        return { ok: true, echo: cmd.payload, at: new Date().toISOString() };
+      },
+    });
     return 0;
   }
 

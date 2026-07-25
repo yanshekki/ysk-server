@@ -9,6 +9,8 @@ const NAV: Array<{ to: string; end?: boolean; key: string; icon: string }> = [
   { to: '/projects', key: 'projects', icon: '▣' },
   { to: '/security', key: 'security', icon: '⛨' },
   { to: '/email', key: 'email', icon: '✉' },
+  { to: '/files', key: 'files', icon: '▤' },
+  { to: '/system', key: 'system', icon: '⚙' },
   { to: '/updates', key: 'updates', icon: '↻' },
   { to: '/agents', key: 'agents', icon: '⚡' },
 ];

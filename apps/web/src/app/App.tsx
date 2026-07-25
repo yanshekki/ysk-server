@@ -10,6 +10,8 @@ import { ProjectsPage } from '../pages/ProjectsPage';
 import { UpdatesPage } from '../pages/UpdatesPage';
 import { AgentsPage } from '../pages/AgentsPage';
 import { AiPage } from '../pages/AiPage';
+import { FilesPage } from '../pages/FilesPage';
+import { SystemPage } from '../pages/SystemPage';
 
 /**
  * Unauthenticated users only reach /login.
@@ -39,6 +41,8 @@ export function App() {
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="security" element={<SecurityPage />} />
           <Route path="email" element={<EmailPage />} />
+          <Route path="files" element={<FilesPage />} />
+          <Route path="system" element={<SystemPage />} />
           <Route path="updates" element={<UpdatesPage />} />
           <Route path="agents" element={<AgentsPage />} />
         </Route>

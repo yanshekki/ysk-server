@@ -12,4 +12,5 @@ export * from './repositories/index.js';
 export * from './host/index.js';
 export * from './skills/index.js';
 export * from './monitoring/index.js';
+export * from './files/index.js';
 

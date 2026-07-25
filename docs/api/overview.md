@@ -78,6 +78,18 @@ Base URL: `http://127.0.0.1:8787`
 | GET | `/api/v1/protection/status` | Bearer | Current mode, scheduler jobs, last probe/inventory |
 | POST | `/api/v1/protection/emergency` | Bearer | Apply protection + run emergency playbook |
 
+## Files (sandbox)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/files?root=public&path=.` | Bearer | List directory |
+| GET | `/api/v1/files/read?path=` | Bearer | Read text file |
+| PUT | `/api/v1/files/write` | Bearer | Write text/base64 |
+| POST | `/api/v1/files/mkdir` | Bearer | Create directory |
+| DELETE | `/api/v1/files?path=` | Bearer | Delete path |
+
+`root=public` → `dataDir/files/public`; `root=project:<id>` → project home.
+
 ## System-level apply
 
 | Method | Path | Auth | Description |
