@@ -1,0 +1,48 @@
+/**
+ * Design tokens aligned with https://ysk.hk/assets/css/tokens.css
+ * + admin console extensions.
+ */
+:root {
+  --brand-blue: #3b82f6;
+  --brand-blue-light: #60a5fa;
+  --brand-green: #10b981;
+  --brand-green-light: #34d399;
+  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+  --brand-gradient-soft: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.08) 0%,
+    rgba(16, 185, 129, 0.08) 100%
+  );
+
+  --text-main: #0f172a;
+  --text-sub: #64748b;
+  --text-muted: #94a3b8;
+  --bg-page: #fafbfc;
+  --bg-white: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.1);
+  --shadow-hover: 0 20px 40px rgba(59, 130, 246, 0.12);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --header-height: 64px;
+  --sidebar-width: 260px;
+  --container-max: 1200px;
+
+  --font-sans: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --danger: #ef4444;
+  --ok: #10b981;
+  --warn: #f59e0b;
+}

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../shared/services/api';
-import { authStore } from '../shared/stores/auth-store';
 
 export function SecurityPage() {
   const { t } = useTranslation();
@@ -9,9 +8,9 @@ export function SecurityPage() {
   const [approvals, setApprovals] = useState<Array<Record<string, unknown>>>([]);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   async function refresh() {
-    if (!authStore.getToken()) return;
     const [tRes, aRes] = await Promise.all([api.listTools(), api.listApprovals()]);
     setTools(tRes.items);
     setApprovals(aRes.items);
@@ -23,57 +22,124 @@ export function SecurityPage() {
 
   async function runSysInfo() {
     setError(null);
+    setBusy(true);
     try {
       const r = await api.executeTool({ tool: 'sys.info', args: {} });
       setResult(JSON.stringify(r, null, 2));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'failed');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function approve(id: string) {
-    await api.approve(id);
-    await refresh();
+    setBusy(true);
+    try {
+      await api.approve(id);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'failed');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <div>
-      <div className="card">
+      <header className="page-header">
         <h1>{t('security.title')}</h1>
         <p>{t('security.allowlist')}</p>
-        <p>{t('security.llmUntrusted')}</p>
-        {error && <p className="error">{error}</p>}
-        <button type="button" onClick={() => void runSysInfo()}>
-          Run sys.info (real)
+      </header>
+
+      {error && <div className="alert alert--error">{error}</div>}
+
+      <div className="alert alert--info">{t('security.llmUntrusted')}</div>
+
+      <div className="card">
+        <h2 className="card__title">Host probe</h2>
+        <p className="card__desc">Run a real read-only tool against the control-plane host.</p>
+        <button type="button" className="btn btn--primary" disabled={busy} onClick={() => void runSysInfo()}>
+          {t('security.runSysInfo')}
         </button>
-        {result && (
-          <pre style={{ overflow: 'auto', maxHeight: 240, fontSize: 12 }}>{result}</pre>
+        {result && <pre className="code" style={{ marginTop: '1rem' }}>{result}</pre>}
+      </div>
+
+      <div className="card">
+        <h2 className="card__title">{t('security.pending')}</h2>
+        {approvals.length === 0 ? (
+          <div className="empty">
+            <div className="empty__title">{t('security.none')}</div>
+          </div>
+        ) : (
+          <div className="table-wrap">
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Risk</th>
+                  <th>By</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {approvals.map((a) => (
+                  <tr key={String(a.id)}>
+                    <td>
+                      <code className="inline">{String(a.action)}</code>
+                    </td>
+                    <td>
+                      <span className="badge badge--warn">{String(a.risk)}</span>
+                    </td>
+                    <td>{String(a.requestedBy ?? a.requested_by ?? '—')}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn--primary btn--sm"
+                        disabled={busy}
+                        onClick={() => void approve(String(a.id))}
+                      >
+                        Approve
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
+
       <div className="card">
-        <h3>Pending approvals</h3>
-        <ul>
-          {approvals.map((a) => (
-            <li key={String(a.id)}>
-              {String(a.action)} — {String(a.risk)}{' '}
-              <button type="button" onClick={() => void approve(String(a.id))}>
-                Approve
-              </button>
-            </li>
-          ))}
-          {!approvals.length && <li className="muted">None</li>}
-        </ul>
-      </div>
-      <div className="card">
-        <h3>Allowlist tools ({tools.length})</h3>
-        <ul>
-          {tools.map((t) => (
-            <li key={String(t.tool)}>
-              <code>{String(t.tool)}</code> — allowed={String(t.allowed)} risk={String(t.risk)}{' '}
-              approval={String(t.requiresApproval)}
-            </li>
-          ))}
-        </ul>
+        <h2 className="card__title">Allowlist ({tools.length})</h2>
+        <div className="table-wrap">
+          <table className="data">
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Allowed</th>
+                <th>Risk</th>
+                <th>Approval</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tools.map((tool) => (
+                <tr key={String(tool.tool)}>
+                  <td>
+                    <code className="inline">{String(tool.tool)}</code>
+                  </td>
+                  <td>
+                    <span className={`badge${tool.allowed ? ' badge--ok' : ' badge--danger'}`}>
+                      {String(tool.allowed)}
+                    </span>
+                  </td>
+                  <td>{String(tool.risk)}</td>
+                  <td>{String(tool.requiresApproval)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

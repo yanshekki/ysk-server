@@ -4,7 +4,10 @@ import { App } from './app/App';
 import './app/styles/global.css';
 import './shared/lib/i18n';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root');
+if (!root) throw new Error('Missing #root');
+
+ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,

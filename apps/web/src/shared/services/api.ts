@@ -25,6 +25,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  requestRaw<T>(path: string, init?: RequestInit): Promise<T> {
+    return request<T>(path, init);
+  },
   health(): Promise<HealthResponse> {
     return request<HealthResponse>('/health');
   },

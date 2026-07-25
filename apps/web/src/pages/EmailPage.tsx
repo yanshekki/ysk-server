@@ -1,41 +1,26 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { authStore } from '../shared/stores/auth-store';
+import { api } from '../shared/services/api';
 
 type Domain = { id: string; domain: string; health_score: number; server_ip: string };
+
+type Bundle = {
+  records: Array<{ type: string; name: string; value: string; description: string }>;
+  externalTodos: Array<{ id: string; title: string; description: string; completed: boolean }>;
+  health: { score: number; maxScore: number; messages: string[] };
+};
 
 export function EmailPage() {
   const { t } = useTranslation();
   const [items, setItems] = useState<Domain[]>([]);
   const [domain, setDomain] = useState('');
   const [serverIp, setServerIp] = useState('203.0.113.10');
-  const [bundle, setBundle] = useState<{
-    records: Array<{ type: string; name: string; value: string; description: string }>;
-    externalTodos: Array<{ id: string; title: string; description: string; completed: boolean }>;
-    health: { score: number; maxScore: number; messages: string[] };
-  } | null>(null);
+  const [bundle, setBundle] = useState<Bundle | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  async function api<T>(path: string, init?: RequestInit): Promise<T> {
-    const token = authStore.getToken();
-    const res = await fetch(path, {
-      ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message ?? res.statusText);
-    return data as T;
-  }
+  const [busy, setBusy] = useState(false);
 
   async function refresh() {
-    if (!authStore.getToken()) {
-      setError('Please login first');
-      return;
-    }
-    const r = await api<{ items: Domain[] }>('/api/v1/email/domains');
+    const r = await api.requestRaw<{ items: Domain[] }>('/api/v1/email/domains');
     setItems(r.items);
   }
 
@@ -46,13 +31,9 @@ export function EmailPage() {
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setBusy(true);
     try {
-      const created = await api<{
-        domain: Domain;
-        records: typeof bundle extends null ? never : NonNullable<typeof bundle>['records'];
-        externalTodos: NonNullable<typeof bundle>['externalTodos'];
-        health: NonNullable<typeof bundle>['health'];
-      }>('/api/v1/email/domains', {
+      const created = await api.requestRaw<Bundle & { domain: Domain }>('/api/v1/email/domains', {
         method: 'POST',
         body: JSON.stringify({ domain, serverIp }),
       });
@@ -65,62 +46,153 @@ export function EmailPage() {
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'failed');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function loadDns(id: string) {
-    const b = await api<NonNullable<typeof bundle>>(`/api/v1/email/domains/${id}/dns`);
-    setBundle(b);
+    setBusy(true);
+    try {
+      const b = await api.requestRaw<Bundle>(`/api/v1/email/domains/${id}/dns`);
+      setBundle(b);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'failed');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <div>
-      <div className="card">
+      <header className="page-header">
         <h1>{t('email.title')}</h1>
-        <p className="muted">{t('email.externalTodos')}</p>
-        {error && <p className="error">{error}</p>}
-        <form onSubmit={onCreate}>
-          <label className="muted">Domain</label>
-          <input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="example.com" required />
-          <label className="muted">Server IP</label>
-          <input value={serverIp} onChange={(e) => setServerIp(e.target.value)} required />
-          <button type="submit">Create email domain (real DKIM keys)</button>
+        <p>{t('email.externalTodos')}</p>
+      </header>
+
+      {error && <div className="alert alert--error">{error}</div>}
+
+      <div className="card">
+        <h2 className="card__title">{t('email.create')}</h2>
+        <form onSubmit={(e) => void onCreate(e)}>
+          <div className="grid">
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label htmlFor="edomain">Domain</label>
+              <input
+                id="edomain"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="example.com"
+                required
+              />
+            </div>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label htmlFor="eip">Server IP</label>
+              <input id="eip" value={serverIp} onChange={(e) => setServerIp(e.target.value)} required />
+            </div>
+          </div>
+          <div style={{ marginTop: '1rem' }}>
+            <button type="submit" className="btn btn--primary" disabled={busy}>
+              {t('email.create')}
+            </button>
+          </div>
         </form>
       </div>
+
       <div className="card">
-        <h3>Domains</h3>
-        <ul>
-          {items.map((d) => (
-            <li key={d.id}>
-              <strong>{d.domain}</strong> — health {d.health_score}/100{' '}
-              <button type="button" className="secondary" onClick={() => void loadDns(d.id)}>
-                Show DNS / checklist
-              </button>
-            </li>
-          ))}
-        </ul>
+        <h2 className="card__title">{t('email.domains')}</h2>
+        {items.length === 0 ? (
+          <div className="empty">
+            <div className="empty__title">—</div>
+          </div>
+        ) : (
+          <div className="table-wrap">
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Domain</th>
+                  <th>Health</th>
+                  <th>IP</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((d) => (
+                  <tr key={d.id}>
+                    <td>
+                      <strong>{d.domain}</strong>
+                    </td>
+                    <td>
+                      <span className={`badge${d.health_score >= 80 ? ' badge--ok' : ' badge--warn'}`}>
+                        {d.health_score}/100
+                      </span>
+                    </td>
+                    <td className="muted">{d.server_ip}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn--secondary btn--sm"
+                        disabled={busy}
+                        onClick={() => void loadDns(d.id)}
+                      >
+                        DNS
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+
       {bundle && (
         <div className="card">
-          <h3>
+          <h2 className="card__title">
             Health {bundle.health.score}/{bundle.health.maxScore}
-          </h3>
-          <ul>
-            {bundle.health.messages.map((m) => (
-              <li key={m}>{m}</li>
-            ))}
-          </ul>
-          <h4>DNS records (copy to DNS provider)</h4>
-          <pre style={{ fontSize: 12, overflow: 'auto' }}>
-            {bundle.records.map((r) => `${r.type}\t${r.name}\t${r.value}\n`).join('')}
-          </pre>
-          <h4>{t('email.externalTodos')}</h4>
-          <ul>
-            {bundle.externalTodos.map((t) => (
-              <li key={t.id}>
-                <strong>{t.title}</strong>
-                <br />
-                <span className="muted">{t.description}</span>
+          </h2>
+          {bundle.health.messages.length > 0 && (
+            <ul className="muted" style={{ marginTop: 0 }}>
+              {bundle.health.messages.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          )}
+          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>DNS records</h3>
+          <div className="table-wrap" style={{ marginBottom: '1rem' }}>
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Name</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bundle.records.map((r, i) => (
+                  <tr key={`${r.type}-${r.name}-${i}`}>
+                    <td>
+                      <span className="badge">{r.type}</span>
+                    </td>
+                    <td>{r.name}</td>
+                    <td>
+                      <code className="inline" style={{ wordBreak: 'break-all' }}>
+                        {r.value}
+                      </code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>{t('email.externalTodos')}</h3>
+          <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
+            {bundle.externalTodos.map((todo) => (
+              <li key={todo.id} style={{ marginBottom: '0.65rem' }}>
+                <strong>{todo.title}</strong>
+                <div className="muted" style={{ fontSize: '0.9rem' }}>
+                  {todo.description}
+                </div>
               </li>
             ))}
           </ul>
