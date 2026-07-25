@@ -11,7 +11,13 @@ import {
   type ResourceScope,
   type SystemRole,
 } from '@ysk/shared';
-import { checkRbac, executeToolCall, evaluateProtection } from '@ysk/core';
+import {
+  checkRbac,
+  executeToolCall,
+  evaluateProtection,
+  listManagedNginxConfs,
+  syncNginxConfigs,
+} from '@ysk/core';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
 
@@ -31,7 +37,7 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
     'Content-Length': Buffer.byteLength(payload),
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS',
   });
   res.end(payload);
 }
@@ -295,20 +301,107 @@ export function createHttpServer(ctx: AppContext): Server {
           model?: string;
         };
         ctx.settings.setJson('llm', data);
+        ctx.reloadLlm();
         ctx.audit.append({
           actor: user.username,
           action: 'settings.llm',
           detail: { baseUrl: data.baseUrl, model: data.model },
           ok: true,
         });
-        return sendJson(res, 200, { ok: true, llm: data });
+        return sendJson(res, 200, { ok: true, llm: data, transport: data.baseUrl ? 'http' : 'echo' });
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/settings/llm') {
         ctx.auth.authenticate(getBearer(req));
+        const llm = ctx.settings.getJson<{ baseUrl?: string }>('llm') ?? {};
         return sendJson(res, 200, {
-          llm: ctx.settings.getJson('llm') ?? {},
+          llm,
+          transport: llm.baseUrl || process.env.YSK_LLM_BASE_URL ? 'http' : 'echo',
         });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/email/domains') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: ctx.email.list().map(redactEmail) });
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/email/domains') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          serverIp?: string;
+          mailHostname?: string;
+        };
+        const created = ctx.email.create({
+          domain: data.domain ?? '',
+          serverIp: data.serverIp ?? '',
+          mailHostname: data.mailHostname,
+          actor: user.username,
+        });
+        return sendJson(res, 201, created);
+      }
+
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/dns$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        return sendJson(res, 200, ctx.email.getDnsBundle(id));
+      }
+
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/checks$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          dnsApplied?: boolean;
+          dmarcPresent?: boolean;
+          ptrOk?: boolean;
+          port25Open?: boolean | null;
+        };
+        return sendJson(res, 200, ctx.email.updateChecks(id, data, user.username));
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/test-send$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { from?: string; to?: string; subject?: string };
+        const result = await ctx.email.testSend(
+          id,
+          { from: data.from ?? '', to: data.to ?? '', subject: data.subject },
+          user.username,
+        );
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/nginx') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, {
+          files: listManagedNginxConfs(ctx.dataDir),
+          dataDir: ctx.dataDir,
+        });
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/nginx/sync') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          systemConfDir?: string;
+          dryRun?: boolean;
+        };
+        const result = await syncNginxConfigs({
+          dataDir: ctx.dataDir,
+          systemConfDir: data.systemConfDir,
+          host: ctx.host,
+          dryRun: data.dryRun,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'nginx.sync',
+          detail: result,
+          ok: true,
+        });
+        return sendJson(res, 200, result);
       }
 
       return sendJson(res, 404, {
@@ -341,4 +434,8 @@ export async function listen(
     server.listen(port, host, () => resolve());
   });
   return { host, port };
+}
+
+function redactEmail<T extends { dkim_private_key?: string }>(e: T) {
+  return { ...e, dkim_private_key: '***redacted***' };
 }

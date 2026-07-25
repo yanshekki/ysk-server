@@ -30,10 +30,12 @@ Usage:
   ${CLI_NAME} <command> [options]
 
 Commands:
-  setup                 Initialize control plane config skeleton
+  setup                 Initialize control plane + database
   update                Check / plan self-update
   serve                 Start control-plane HTTP server
-  tools                 List allowlisted tools (schema discovery)
+  tools                 List tools; tools run --tool <name>
+  projects              List/create projects (real disk)
+  hosting               nginx list|sync
   agents                List managed AI agent runtimes
   version               Print version
   help                  Show this help
@@ -226,6 +228,64 @@ async function main(argv: string[]): Promise<number> {
       for (const a of data) process.stdout.write(`${a.kind}\t${a.name}\t${a.status}\n`);
     }
     return 0;
+  }
+
+  if (command === 'projects') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const configPath = getOpt(args, '--config');
+    const config = configPath ? loadConfigFile(configPath) : undefined;
+    const { createAppContext, closeAppContext } = await import('./app-context.js');
+    const ctx = createAppContext({ version: VERSION, config, configPath });
+    try {
+      if (sub === 'create') {
+        const name = getOpt(args, '--name');
+        if (!name) {
+          process.stderr.write('Usage: ysk-server projects create --name <name> [--domain d]\n');
+          return 1;
+        }
+        const created = await ctx.projects.create({
+          name,
+          domain: getOpt(args, '--domain'),
+          runtime: (getOpt(args, '--runtime') as 'node') ?? 'node',
+          actor: 'cli',
+        });
+        printJson(created);
+        return 0;
+      }
+      printJson({ ok: true, items: ctx.projects.list() });
+      return 0;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'hosting') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'nginx';
+    const configPath = getOpt(args, '--config');
+    const config = configPath ? loadConfigFile(configPath) : undefined;
+    const { createAppContext, closeAppContext } = await import('./app-context.js');
+    const { listManagedNginxConfs, syncNginxConfigs } = await import('@ysk/core');
+    const ctx = createAppContext({ version: VERSION, config, configPath });
+    try {
+      if (sub === 'nginx' || sub === 'nginx-list') {
+        printJson({ files: listManagedNginxConfs(ctx.dataDir), dataDir: ctx.dataDir });
+        return 0;
+      }
+      if (sub === 'nginx-sync') {
+        const result = await syncNginxConfigs({
+          dataDir: ctx.dataDir,
+          systemConfDir: getOpt(args, '--system-dir'),
+          host: ctx.host,
+          dryRun: hasFlag(args, '--dry-run'),
+        });
+        printJson(result);
+        return 0;
+      }
+      process.stderr.write('Usage: ysk-server hosting nginx|nginx-sync [--dry-run] [--system-dir PATH]\n');
+      return 1;
+    } finally {
+      closeAppContext(ctx);
+    }
   }
 
   if (command === 'serve') {

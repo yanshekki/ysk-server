@@ -16,6 +16,7 @@ import {
   SessionRepository,
   SettingsRepository,
   UserRepository,
+  EmailService,
   createDefaultAllowlist,
   echoTransport,
   evaluateProtection,
@@ -38,6 +39,7 @@ export interface AppContext {
   protection: ProtectionState;
   host: HostExecutor;
   projects: ProjectService;
+  email: EmailService;
   audit: AuditRepository;
   settings: SettingsRepository;
   version: string;
@@ -45,6 +47,8 @@ export interface AppContext {
   config?: YskConfig;
   configPath?: string;
   dataDir: string;
+  /** Rebuild LLM gateway from settings (after settings.llm update) */
+  reloadLlm: () => void;
 }
 
 export interface CreateAppContextOptions {
@@ -82,39 +86,27 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     auth.ensureAdmin(adminUsername, password, locale);
   }
 
-  const llmSettings = settings.getJson<{ baseUrl?: string; apiKey?: string; model?: string }>('llm') ?? {};
-  const useEcho = process.env.YSK_LLM_ECHO === '1' || (!llmSettings.baseUrl && !process.env.YSK_LLM_BASE_URL);
-  const llm = new LlmGateway(
-    {
-      baseUrl: llmSettings.baseUrl ?? process.env.YSK_LLM_BASE_URL ?? 'http://127.0.0.1:11434',
-      apiKey: llmSettings.apiKey ?? process.env.YSK_LLM_API_KEY,
-      defaultModel: llmSettings.model ?? 'local',
-      localBaseUrl: process.env.YSK_LLM_LOCAL_URL ?? 'http://127.0.0.1:11434',
-      localModel: 'local',
-    },
-    useEcho ? echoTransport : fetchTransport,
-  );
-
-  const protection = evaluateProtection({ networkReachable: true });
-  llm.setProtection(protection);
-
   const host = new LocalHostExecutor({
     executeEnabled: opts.executeEnabled,
     allowedWriteRoots: [dataDir, '/tmp'],
   });
 
   const projects = new ProjectService(projectRepo, host, dataDir, audit);
+  const email = new EmailService(db, host, audit);
 
-  return {
+  const protection = evaluateProtection({ networkReachable: true });
+
+  const ctx: AppContext = {
     db,
     auth,
     allowlist: createDefaultAllowlist(),
     approvals: new ApprovalQueue(approvalRepo),
     agents: new AgentComms(),
-    llm,
+    llm: buildLlm(settings),
     protection,
     host,
     projects,
+    email,
     audit,
     settings,
     version: opts.version,
@@ -122,7 +114,29 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     config: opts.config,
     configPath: opts.configPath,
     dataDir,
+    reloadLlm() {
+      ctx.llm = buildLlm(settings);
+      ctx.llm.setProtection(ctx.protection);
+    },
   };
+  ctx.llm.setProtection(protection);
+  return ctx;
+}
+
+function buildLlm(settings: SettingsRepository): LlmGateway {
+  const llmSettings = settings.getJson<{ baseUrl?: string; apiKey?: string; model?: string }>('llm') ?? {};
+  const baseUrl = llmSettings.baseUrl ?? process.env.YSK_LLM_BASE_URL;
+  const useEcho = process.env.YSK_LLM_ECHO === '1' || !baseUrl;
+  return new LlmGateway(
+    {
+      baseUrl: baseUrl ?? 'http://127.0.0.1:11434',
+      apiKey: llmSettings.apiKey ?? process.env.YSK_LLM_API_KEY,
+      defaultModel: llmSettings.model ?? 'local',
+      localBaseUrl: process.env.YSK_LLM_LOCAL_URL ?? 'http://127.0.0.1:11434',
+      localModel: 'local',
+    },
+    useEcho ? echoTransport : fetchTransport,
+  );
 }
 
 export function applyProtection(ctx: AppContext, state: ProtectionState): void {
