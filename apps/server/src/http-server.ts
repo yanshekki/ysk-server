@@ -44,6 +44,7 @@ import {
   applyPhpFpmPool,
   applyCloudflareDns,
   persistDnsZoneApply,
+  checkIpDnsbl,
 } from '@ysk/core';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
@@ -771,6 +772,21 @@ export function createHttpServer(ctx: AppContext): Server {
           dkimSelector: d.dkim_selector,
         });
         return sendJson(res, 200, live);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/check') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { ip?: string };
+        const ip = data.ip?.trim();
+        if (!ip) {
+          return sendJson(res, 400, {
+            ok: false,
+            code: 'YSK_VALIDATION',
+            message: 'ip required',
+          });
+        }
+        const report = await checkIpDnsbl(ip);
+        return sendJson(res, 200, report);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/node-apply$/)) {

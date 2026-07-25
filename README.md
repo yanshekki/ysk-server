@@ -26,6 +26,9 @@
 - **FTPS** vsftpd config generation under dataDir
 - **Cloudflare DNS apply** (`CF_API_TOKEN`); dry-run without token (never fake success)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
+- **Multi DNSBL** (Spamhaus / SpamCop / Barracuda) + email live-check UI
+- **fail2ban** jail.local under dataDir; install needs root + `YSK_EXECUTE=1`
+- **Projects feature slice** (`features/projects` api + hooks)
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

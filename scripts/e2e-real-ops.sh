@@ -195,5 +195,18 @@ curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_ID}/re
   -d '{"memoryMax":"256M","cpuQuotaPercent":50}' >/dev/null
 log "Resources OK"
 
+# fail2ban plan
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/system/fail2ban/apply" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"apply":false}' >/dev/null
+log "fail2ban jail.local OK"
+
+# DNSBL check (loopback synthetic)
+DNSBL=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/dnsbl/check" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"ip":"127.0.0.1"}')
+echo "$DNSBL" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.results||!j.results.length) process.exit(16);})"
+log "DNSBL multi-list OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"

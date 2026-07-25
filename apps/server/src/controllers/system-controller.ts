@@ -12,6 +12,7 @@ import {
   applyPhpHosting,
   applyFtps,
   applyFirewall,
+  applyFail2ban,
   applyNginxSite,
   installControlPlaneSystemd,
   runProtectionProbes,
@@ -273,6 +274,26 @@ export async function handleSystemRoutes(
       ok: result.ok,
     });
     sendJson(res, 200, result);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/apply') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { apply?: boolean; jails?: string[] };
+    const result = await applyFail2ban({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      apply: data.apply,
+      jails: data.jails,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.fail2ban.apply',
+      detail: result,
+      ok: result.ok,
+    });
+    sendJson(res, result.ok || !data.apply ? 200 : 422, result);
     return true;
   }
 

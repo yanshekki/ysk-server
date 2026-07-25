@@ -195,6 +195,17 @@ export function SystemPage() {
           </button>
         </div>
         <div className="card">
+          <h2 className="card__title">fail2ban</h2>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={busy}
+            onClick={() => void run('/api/v1/system/fail2ban/apply', { apply: false })}
+          >
+            Write jail.local
+          </button>
+        </div>
+        <div className="card">
           <h2 className="card__title">Protection probe</h2>
           <button
             type="button"

@@ -1,19 +1,26 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto, OpsApplyResultDto } from '@ysk/shared';
-import { api } from '../shared/services/api';
+import { projectsApi, useProjects } from '../features/projects';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
-  const [items, setItems] = useState<ProjectDto[]>([]);
+  const {
+    items,
+    error,
+    setError,
+    busy,
+    setBusy,
+    refresh,
+    create,
+    remove,
+  } = useProjects();
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [runtime, setRuntime] = useState<'node' | 'php' | 'static'>('node');
   const [gitUrl, setGitUrl] = useState('');
   const [envText, setEnvText] = useState('NODE_ENV=production\n');
-  const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<ProjectDto | null>(null);
   const [opsLog, setOpsLog] = useState<OpsApplyResultDto | null>(null);
   const [logTail, setLogTail] = useState<string>('');
@@ -21,53 +28,36 @@ export function ProjectsPage() {
   const [memoryMax, setMemoryMax] = useState('512M');
   const [cpuQuota, setCpuQuota] = useState('100');
 
-  async function refresh() {
-    const r = await api.listProjects();
-    setItems(r.items);
+  async function refreshAndSelect() {
+    const list = await refresh();
     if (selected) {
-      const updated = r.items.find((p) => p.id === selected.id) ?? null;
-      setSelected(updated);
+      setSelected(list.find((p) => p.id === selected.id) ?? null);
     }
   }
 
-  useEffect(() => {
-    void refresh().catch((e: Error) => setError(e.message));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   async function onCreate(e: FormEvent) {
     e.preventDefault();
-    setError(null);
     setMsg(null);
-    setBusy(true);
     try {
-      const r = await api.createProject({ name, domain: domain || undefined, runtime });
-      setMsg(`Created ${r.project.name}`);
+      const project = await create({ name, domain: domain || undefined, runtime });
+      setMsg(`Created ${project.name}`);
       setName('');
       setDomain('');
-      setSelected(r.project);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'create failed');
-    } finally {
-      setBusy(false);
+      setSelected(project);
+    } catch {
+      /* error set by hook */
     }
   }
 
   async function onDelete(id: string) {
-    setBusy(true);
-    setError(null);
     try {
-      await api.deleteProject(id);
+      await remove(id);
       if (selected?.id === id) {
         setSelected(null);
         setOpsLog(null);
       }
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'delete failed');
-    } finally {
-      setBusy(false);
+    } catch {
+      /* error set by hook */
     }
   }
 
@@ -88,17 +78,17 @@ export function ProjectsPage() {
     setMsg(null);
     try {
       let result: OpsApplyResultDto;
-      if (action === 'deploy') result = await api.deployProject(id);
-      else if (action === 'deploy-php') result = await api.deployPhp(id);
-      else if (action === 'stop') result = await api.stopProject(id);
-      else if (action === 'health') result = await api.projectHealth(id);
-      else if (action === 'publish-nginx') result = await api.publishNginx(id);
+      if (action === 'deploy') result = await projectsApi.deploy(id);
+      else if (action === 'deploy-php') result = await projectsApi.deployPhp(id);
+      else if (action === 'stop') result = await projectsApi.stop(id);
+      else if (action === 'health') result = await projectsApi.health(id);
+      else if (action === 'publish-nginx') result = await projectsApi.publishNginx(id);
       else if (action === 'git-deploy') {
-        result = await api.gitDeploy(id, {
+        result = await projectsApi.gitDeploy(id, {
           gitUrl: gitUrl || undefined,
           redeploy: true,
         });
-      } else if (action === 'backup') result = await api.backupProject(id);
+      } else if (action === 'backup') result = await projectsApi.backup(id);
       else {
         const env: Record<string, string> = {};
         for (const line of envText.split('\n')) {
@@ -107,7 +97,7 @@ export function ProjectsPage() {
           const i = tline.indexOf('=');
           if (i > 0) env[tline.slice(0, i).trim()] = tline.slice(i + 1).trim();
         }
-        result = await api.setProjectEnv(id, env);
+        result = await projectsApi.setEnv(id, env);
       }
 
       setOpsLog(result);
@@ -116,7 +106,7 @@ export function ProjectsPage() {
           ? `${action} OK` + (result.url ? ` → ${result.url}` : '')
           : `${action} failed: ${result.notes?.slice(-1)[0] ?? 'see log'}`,
       );
-      await refresh();
+      await refreshAndSelect();
     } catch (err) {
       setError(err instanceof Error ? err.message : `${action} failed`);
     } finally {
@@ -411,18 +401,11 @@ export function ProjectsPage() {
                 void (async () => {
                   setBusy(true);
                   try {
-                    const r = await api.requestRaw<{
-                      files: Array<{ name: string }>;
-                      tail?: { lines: string[]; file: string };
-                    }>(`/api/v1/projects/${selected.id}/logs`);
+                    const r = await projectsApi.logs(selected.id);
                     if (r.files[0]) {
-                      const t = await api.requestRaw<{
-                        tail: { lines: string[]; file: string };
-                      }>(
-                        `/api/v1/projects/${selected.id}/logs?file=${encodeURIComponent(r.files[0].name)}&lines=80`,
-                      );
+                      const t = await projectsApi.logs(selected.id, r.files[0].name, 80);
                       setLogTail(
-                        `# ${t.tail.file}\n` + (t.tail.lines ?? []).join('\n'),
+                        `# ${t.tail?.file ?? r.files[0].name}\n` + (t.tail?.lines ?? []).join('\n'),
                       );
                     } else {
                       setLogTail('(no log files yet — deploy first)');
@@ -454,16 +437,10 @@ export function ProjectsPage() {
                 void (async () => {
                   setBusy(true);
                   try {
-                    const r = await api.requestRaw<Record<string, unknown>>(
-                      `/api/v1/projects/${selected.id}/quota`,
-                      {
-                        method: 'POST',
-                        body: JSON.stringify({ quotaMb: Number(quotaMb) || 1024 }),
-                      },
-                    );
-                    setOpsLog(r as unknown as OpsApplyResultDto);
+                    const r = await projectsApi.setQuota(selected.id, Number(quotaMb) || 1024);
+                    setOpsLog(r);
                     setMsg('Quota updated');
-                    await refresh();
+                    await refreshAndSelect();
                   } catch (e) {
                     setError(e instanceof Error ? e.message : 'quota failed');
                   } finally {
@@ -482,10 +459,10 @@ export function ProjectsPage() {
                 void (async () => {
                   setBusy(true);
                   try {
-                    const r = await api.publishNginx(selected.id, { ssl: true });
+                    const r = await projectsApi.publishNginx(selected.id, { ssl: true });
                     setOpsLog(r);
                     setMsg(r.ok ? 'Nginx SSL publish OK' : 'Nginx SSL publish issues');
-                    await refresh();
+                    await refreshAndSelect();
                   } catch (e) {
                     setError(e instanceof Error ? e.message : 'ssl publish failed');
                   } finally {
@@ -512,19 +489,13 @@ export function ProjectsPage() {
                 void (async () => {
                   setBusy(true);
                   try {
-                    const r = await api.requestRaw<OpsApplyResultDto>(
-                      `/api/v1/projects/${selected.id}/resources`,
-                      {
-                        method: 'POST',
-                        body: JSON.stringify({
-                          memoryMax,
-                          cpuQuotaPercent: Number(cpuQuota) || 100,
-                        }),
-                      },
-                    );
+                    const r = await projectsApi.setResources(selected.id, {
+                      memoryMax,
+                      cpuQuotaPercent: Number(cpuQuota) || 100,
+                    });
                     setOpsLog(r);
                     setMsg('Resources saved — redeploy to apply unit');
-                    await refresh();
+                    await refreshAndSelect();
                   } catch (e) {
                     setError(e instanceof Error ? e.message : 'resources failed');
                   } finally {

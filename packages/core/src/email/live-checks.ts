@@ -6,6 +6,7 @@ import { resolveMx, resolveTxt, reverse } from 'node:dns/promises';
 import { createConnection } from 'node:net';
 import type { EmailHealthReport } from '@ysk/shared';
 import { scoreEmailHealth } from './dns-records.js';
+import { checkIpDnsbl, type DnsblReport } from './dnsbl.js';
 
 export interface LiveCheckResult {
   mx: { ok: boolean; detail: string };
@@ -14,7 +15,7 @@ export interface LiveCheckResult {
   dmarc: { ok: boolean; detail: string };
   ptr: { ok: boolean; detail: string };
   port25: { ok: boolean | null; detail: string };
-  dnsbl: { ok: boolean; detail: string };
+  dnsbl: { ok: boolean; detail: string; report?: DnsblReport };
   health: EmailHealthReport;
 }
 
@@ -114,23 +115,13 @@ export async function runLiveEmailChecks(input: {
     ? 'Outbound TCP 25 appears open (probe to gmail-smtp-in.l.google.com)'
     : 'Outbound TCP 25 probe failed — may be blocked; request unblock or use relay';
 
-  // Simple zen.spamhaus.org style DNSBL (ip reversed)
-  let dnsblOk = true;
-  let dnsblDetail = 'not listed (zen.spamhaus.org query)';
-  try {
-    const rev = input.serverIp.split('.').reverse().join('.');
-    const { resolve4 } = await import('node:dns/promises');
-    try {
-      await resolve4(`${rev}.zen.spamhaus.org`);
-      dnsblOk = false;
-      dnsblDetail = 'LISTED on zen.spamhaus.org (or query returned A)';
-    } catch {
-      dnsblOk = true;
-      dnsblDetail = 'No A record from zen.spamhaus.org (likely not listed)';
-    }
-  } catch {
-    dnsblDetail = 'DNSBL check skipped';
-  }
+  // Multi-list DNSBL (Spamhaus / SpamCop / Barracuda)
+  const dnsblReport = await checkIpDnsbl(input.serverIp);
+  const dnsblOk = dnsblReport.ok;
+  const dnsblDetail =
+    dnsblReport.listedOn.length > 0
+      ? `LISTED: ${dnsblReport.listedOn.join(', ')}`
+      : `clean on ${dnsblReport.cleanOn.join(', ')}`;
 
   const health = scoreEmailHealth({
     domain: input.domain,
@@ -142,6 +133,10 @@ export async function runLiveEmailChecks(input: {
     dnsApplied: mxOk && spfOk && dkimOk,
     dmarcPresent: dmarcOk,
   });
+  if (!dnsblOk) {
+    health.messages.push(`DNSBL: ${dnsblDetail}`);
+    health.score = Math.max(0, health.score - 15);
+  }
 
   return {
     mx: { ok: mxOk, detail: mxDetail },
@@ -150,7 +145,7 @@ export async function runLiveEmailChecks(input: {
     dmarc: { ok: dmarcOk, detail: dmarcDetail },
     ptr: { ok: ptrOk, detail: ptrDetail },
     port25: { ok: port25Open, detail: port25Detail },
-    dnsbl: { ok: dnsblOk, detail: dnsblDetail },
+    dnsbl: { ok: dnsblOk, detail: dnsblDetail, report: dnsblReport },
     health,
   };
 }

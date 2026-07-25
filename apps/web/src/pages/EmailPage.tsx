@@ -23,6 +23,8 @@ export function EmailPage() {
   const [domain, setDomain] = useState('');
   const [serverIp, setServerIp] = useState('203.0.113.10');
   const [bundle, setBundle] = useState<Bundle | null>(null);
+  const [live, setLive] = useState<Record<string, unknown> | null>(null);
+  const [dnsbl, setDnsbl] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -65,6 +67,38 @@ export function EmailPage() {
       setBundle(b);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runLiveCheck(id: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await api.requestRaw<Record<string, unknown>>(
+        `/api/v1/email/domains/${id}/live-check`,
+        { method: 'POST', body: '{}' },
+      );
+      setLive(r);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'live-check failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runDnsbl(ip: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await api.requestRaw<Record<string, unknown>>('/api/v1/email/dnsbl/check', {
+        method: 'POST',
+        body: JSON.stringify({ ip }),
+      });
+      setDnsbl(r);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'dnsbl failed');
     } finally {
       setBusy(false);
     }
@@ -140,14 +174,32 @@ export function EmailPage() {
                     </td>
                     <td className="muted">{d.server_ip}</td>
                     <td>
-                      <button
-                        type="button"
-                        className="btn btn--secondary btn--sm"
-                        disabled={busy}
-                        onClick={() => void loadDns(d.id)}
-                      >
-                        DNS
-                      </button>
+                      <div className="btn-row">
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          disabled={busy}
+                          onClick={() => void loadDns(d.id)}
+                        >
+                          DNS
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          disabled={busy}
+                          onClick={() => void runLiveCheck(d.id)}
+                        >
+                          Live check
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          disabled={busy}
+                          onClick={() => void runDnsbl(d.server_ip)}
+                        >
+                          DNSBL
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -157,6 +209,26 @@ export function EmailPage() {
         )}
       </div>
 
+      {live && (
+        <div className="card">
+          <h2 className="card__title">Live check result</h2>
+          <pre className="code">{JSON.stringify(live, null, 2)}</pre>
+        </div>
+      )}
+      {dnsbl && (
+        <div className="card">
+          <h2 className="card__title">DNSBL / blacklist</h2>
+          <p>
+            {dnsbl.ok ? (
+              <span className="badge badge--ok">clean</span>
+            ) : (
+              <span className="badge badge--danger">listed</span>
+            )}{' '}
+            <span className="muted">{String(dnsbl.ip)}</span>
+          </p>
+          <pre className="code">{JSON.stringify(dnsbl, null, 2)}</pre>
+        </div>
+      )}
       {bundle && (
         <div className="card">
           <h2 className="card__title">
