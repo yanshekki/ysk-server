@@ -9,6 +9,7 @@ import { EmailPage } from '../pages/EmailPage';
 import { ProjectsPage } from '../pages/ProjectsPage';
 import { UpdatesPage } from '../pages/UpdatesPage';
 import { AgentsPage } from '../pages/AgentsPage';
+import { AiPage } from '../pages/AiPage';
 
 /**
  * Unauthenticated users only reach /login.
@@ -34,6 +35,7 @@ export function App() {
           }
         >
           <Route index element={<DashboardPage />} />
+          <Route path="ai" element={<AiPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="security" element={<SecurityPage />} />
           <Route path="email" element={<EmailPage />} />

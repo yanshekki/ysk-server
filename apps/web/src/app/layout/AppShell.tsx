@@ -5,6 +5,7 @@ import { useAuth } from '../../shared/hooks/useAuth';
 
 const NAV: Array<{ to: string; end?: boolean; key: string; icon: string }> = [
   { to: '/', end: true, key: 'dashboard', icon: '◉' },
+  { to: '/ai', key: 'ai', icon: '✦' },
   { to: '/projects', key: 'projects', icon: '▣' },
   { to: '/security', key: 'security', icon: '⛨' },
   { to: '/email', key: 'email', icon: '✉' },

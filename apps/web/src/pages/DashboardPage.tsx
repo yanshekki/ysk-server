@@ -9,6 +9,7 @@ export function DashboardPage() {
   const { user } = useAuth();
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [audit, setAudit] = useState<Array<Record<string, unknown>>>([]);
+  const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,6 +21,8 @@ export function DashboardPage() {
         if (!cancelled) setHealth(h);
         const a = await api.audit();
         if (!cancelled) setAudit(a.items.slice(0, 12));
+        const m = await api.requestRaw<Record<string, unknown>>('/api/v1/metrics');
+        if (!cancelled) setMetrics(m);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Error');
       } finally {
@@ -67,6 +70,34 @@ export function DashboardPage() {
                 <strong className="u-font-bold">{health.protectionMode}</strong>
               </p>
             </>
+          )}
+        </div>
+
+        <div className="card">
+          <h2 className="card__title">Host metrics</h2>
+          {metrics ? (
+            <>
+              <p className="meta-block">
+                Load: <strong>{JSON.stringify(metrics.loadavg)}</strong>
+              </p>
+              <p className="muted meta-block--tight">
+                CPUs: {String(metrics.cpuCount)} · Mem used:{' '}
+                {metrics.memory && typeof metrics.memory === 'object'
+                  ? `${Math.round(((metrics.memory as { usedRatio: number }).usedRatio || 0) * 100)}%`
+                  : '—'}
+              </p>
+              {Array.isArray(metrics.alerts) && metrics.alerts.length > 0 && (
+                <p className="meta-block--top">
+                  {(metrics.alerts as string[]).map((a) => (
+                    <span key={a} className="badge badge--warn">
+                      {a}
+                    </span>
+                  ))}
+                </p>
+              )}
+            </>
+          ) : (
+            <span className="muted">—</span>
           )}
         </div>
 

@@ -17,6 +17,8 @@ import {
   SettingsRepository,
   UserRepository,
   EmailService,
+  AiTaskService,
+  FleetService,
   createDefaultAllowlist,
   echoTransport,
   evaluateProtection,
@@ -35,11 +37,13 @@ export interface AppContext {
   allowlist: Allowlist;
   approvals: ApprovalQueue;
   agents: AgentComms;
+  fleet: FleetService;
   llm: LlmGateway;
   protection: ProtectionState;
   host: HostExecutor;
   projects: ProjectService;
   email: EmailService;
+  ai: AiTaskService;
   audit: AuditRepository;
   settings: SettingsRepository;
   version: string;
@@ -93,20 +97,25 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
 
   const projects = new ProjectService(projectRepo, host, dataDir, audit);
   const email = new EmailService(db, host, audit);
+  const fleet = new FleetService(db);
+  const allowlist = createDefaultAllowlist();
+  const approvals = new ApprovalQueue(approvalRepo);
 
   const protection = evaluateProtection({ networkReachable: true });
 
   const ctx: AppContext = {
     db,
     auth,
-    allowlist: createDefaultAllowlist(),
-    approvals: new ApprovalQueue(approvalRepo),
+    allowlist,
+    approvals,
     agents: new AgentComms(),
+    fleet,
     llm: buildLlm(settings),
     protection,
     host,
     projects,
     email,
+    ai: null as unknown as AiTaskService,
     audit,
     settings,
     version: opts.version,
@@ -117,9 +126,20 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     reloadLlm() {
       ctx.llm = buildLlm(settings);
       ctx.llm.setProtection(ctx.protection);
+      // rebind AI service llm reference via recreate
+      ctx.ai = new AiTaskService(
+        db,
+        allowlist,
+        approvals,
+        host,
+        audit,
+        ctx.llm,
+        () => ctx.protection,
+      );
     },
   };
   ctx.llm.setProtection(protection);
+  ctx.ai = new AiTaskService(db, allowlist, approvals, host, audit, ctx.llm, () => ctx.protection);
   return ctx;
 }
 

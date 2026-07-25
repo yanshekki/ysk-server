@@ -10,3 +10,6 @@ export * from './errors/index.js';
 export * from './db/index.js';
 export * from './repositories/index.js';
 export * from './host/index.js';
+export * from './skills/index.js';
+export * from './monitoring/index.js';
+

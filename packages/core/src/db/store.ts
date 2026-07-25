@@ -76,10 +76,19 @@ export interface StoreData {
   agent_sessions: Array<Record<string, unknown>>;
   agent_messages: Array<Record<string, unknown>>;
   email_domains: Array<Record<string, unknown>>;
+  /** AI tasks Plan→Review→Execute */
+  ai_tasks: Array<Record<string, unknown>>;
+  playbook_runs: Array<Record<string, unknown>>;
+  update_jobs: Array<Record<string, unknown>>;
+  dns_zones: Array<Record<string, unknown>>;
+  firewall_rules: Array<Record<string, unknown>>;
+  certificates: Array<Record<string, unknown>>;
+  mailboxes: Array<Record<string, unknown>>;
+  cron_jobs: Array<Record<string, unknown>>;
 }
 
 const EMPTY: StoreData = {
-  version: 1,
+  version: 2,
   users: [],
   sessions: [],
   projects: [],
@@ -89,6 +98,14 @@ const EMPTY: StoreData = {
   agent_sessions: [],
   agent_messages: [],
   email_domains: [],
+  ai_tasks: [],
+  playbook_runs: [],
+  update_jobs: [],
+  dns_zones: [],
+  firewall_rules: [],
+  certificates: [],
+  mailboxes: [],
+  cron_jobs: [],
 };
 
 export class JsonStore {
@@ -100,13 +117,25 @@ export class JsonStore {
     mkdirSync(dirname(path), { recursive: true });
     if (existsSync(path)) {
       this.data = { ...EMPTY, ...JSON.parse(readFileSync(path, 'utf8')) };
-      // ensure arrays
+      // ensure arrays / maps
       this.data.users = this.data.users ?? [];
       this.data.sessions = this.data.sessions ?? [];
       this.data.projects = this.data.projects ?? [];
       this.data.approvals = this.data.approvals ?? [];
       this.data.audit_events = this.data.audit_events ?? [];
       this.data.settings = this.data.settings ?? {};
+      this.data.agent_sessions = this.data.agent_sessions ?? [];
+      this.data.agent_messages = this.data.agent_messages ?? [];
+      this.data.email_domains = this.data.email_domains ?? [];
+      this.data.ai_tasks = this.data.ai_tasks ?? [];
+      this.data.playbook_runs = this.data.playbook_runs ?? [];
+      this.data.update_jobs = this.data.update_jobs ?? [];
+      this.data.dns_zones = this.data.dns_zones ?? [];
+      this.data.firewall_rules = this.data.firewall_rules ?? [];
+      this.data.certificates = this.data.certificates ?? [];
+      this.data.mailboxes = this.data.mailboxes ?? [];
+      this.data.cron_jobs = this.data.cron_jobs ?? [];
+      this.data.version = this.data.version ?? EMPTY.version;
     } else {
       this.data = structuredClone(EMPTY);
       this.persist();

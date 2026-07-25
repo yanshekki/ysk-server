@@ -34,6 +34,7 @@ Commands:
   update                Check / plan self-update
   serve                 Start control-plane HTTP server
   tools                 List tools; tools run --tool <name>
+  ask                   Plan AI task from natural language
   projects              List/create projects (real disk)
   hosting               nginx list|sync
   agents                List managed AI agent runtimes
@@ -228,6 +229,31 @@ async function main(argv: string[]): Promise<number> {
       for (const a of data) process.stdout.write(`${a.kind}\t${a.name}\t${a.status}\n`);
     }
     return 0;
+  }
+
+  if (command === 'ask') {
+    const prompt = args.filter((a) => !a.startsWith('-')).slice(1).join(' ');
+    if (!prompt) {
+      process.stderr.write('Usage: ysk-server ask "check system info"\n');
+      return 1;
+    }
+    const configPath = getOpt(args, '--config');
+    const config = configPath ? loadConfigFile(configPath) : undefined;
+    const { createAppContext, closeAppContext } = await import('./app-context.js');
+    const ctx = createAppContext({ version: VERSION, config, configPath });
+    try {
+      const task = await ctx.ai.create(prompt, 'cli', false);
+      if (hasFlag(args, '--execute')) {
+        ctx.ai.approve(task.id, 'cli');
+        const done = await ctx.ai.execute(task.id, 'cli', ['admin']);
+        printJson(done);
+        return done.status === 'completed' ? 0 : 1;
+      }
+      printJson(task);
+      return 0;
+    } finally {
+      closeAppContext(ctx);
+    }
   }
 
   if (command === 'projects') {

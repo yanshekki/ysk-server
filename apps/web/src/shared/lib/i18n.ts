@@ -9,6 +9,7 @@ const resources = {
       company: 'YSK Limited',
       nav: {
         dashboard: '儀表板',
+        ai: 'AI 任務',
         projects: '專案',
         security: '安全',
         email: '郵件',
@@ -75,6 +76,7 @@ const resources = {
       company: 'YSK Limited',
       nav: {
         dashboard: 'Dashboard',
+        ai: 'AI Tasks',
         projects: 'Projects',
         security: 'Security',
         email: 'Email',
@@ -141,6 +143,7 @@ const resources = {
       company: 'YSK Limited',
       nav: {
         dashboard: '仪表盘',
+        ai: 'AI 任务',
         projects: '项目',
         security: '安全',
         email: '邮件',
