@@ -56,8 +56,9 @@ setup options:
   --force               Overwrite existing config
 
 update options:
-  --check               Check only
+  --check               Check only (npm registry when online)
   --latest <version>    Override latest version for planning
+  --apply               Apply npm install -g (requires YSK_EXECUTE=1)
 
 serve options:
   --config <path>       Load config.json written by setup
@@ -161,9 +162,10 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'update') {
-    const result = runUpdate({
+    const result = await runUpdate({
       checkOnly: hasFlag(args, '--check'),
       latest: getOpt(args, '--latest'),
+      apply: hasFlag(args, '--apply'),
     });
     if (json) printJson(result);
     else process.stdout.write(`${result.message}\n`);

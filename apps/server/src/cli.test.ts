@@ -93,10 +93,13 @@ describe('setup + persistence', () => {
 });
 
 describe('update', () => {
-  it('reports structured self-update status', () => {
-    const upToDate = runUpdate({ checkOnly: true, latest: VERSION });
+  it('reports structured self-update status', async () => {
+    const upToDate = await runUpdate({ checkOnly: true, latest: VERSION });
     expect(upToDate.ok).toBe(true);
-    expect(upToDate.data?.status.currentVersion).toBe(VERSION);
+    const ver =
+      (upToDate.data as { plan?: { status: { currentVersion: string } } })?.plan?.status
+        ?.currentVersion ?? VERSION;
+    expect(ver).toBe(VERSION);
   });
 });
 

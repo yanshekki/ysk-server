@@ -19,11 +19,14 @@ import {
   EmailService,
   AiTaskService,
   FleetService,
+  Scheduler,
+  collectInventory,
   createDefaultAllowlist,
   echoTransport,
   evaluateProtection,
   fetchTransport,
   openDatabase,
+  runProtectionProbes,
   type Allowlist,
   type HostExecutor,
   type ProtectionState,
@@ -46,6 +49,9 @@ export interface AppContext {
   ai: AiTaskService;
   audit: AuditRepository;
   settings: SettingsRepository;
+  scheduler: Scheduler;
+  /** rolling request counter for rate detection */
+  requestHits: number[];
   version: string;
   startedAt: string;
   config?: YskConfig;
@@ -53,6 +59,9 @@ export interface AppContext {
   dataDir: string;
   /** Rebuild LLM gateway from settings (after settings.llm update) */
   reloadLlm: () => void;
+  /** Run protection probes and apply resulting mode */
+  runAutoProtection: () => ReturnType<typeof runProtectionProbes>;
+  stopScheduler: () => void;
 }
 
 export interface CreateAppContextOptions {
@@ -103,6 +112,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
 
   const protection = evaluateProtection({ networkReachable: true });
 
+  const scheduler = new Scheduler();
   const ctx: AppContext = {
     db,
     auth,
@@ -118,6 +128,8 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     ai: null as unknown as AiTaskService,
     audit,
     settings,
+    scheduler,
+    requestHits: [],
     version: opts.version,
     startedAt: new Date().toISOString(),
     config: opts.config,
@@ -126,7 +138,6 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     reloadLlm() {
       ctx.llm = buildLlm(settings);
       ctx.llm.setProtection(ctx.protection);
-      // rebind AI service llm reference via recreate
       ctx.ai = new AiTaskService(
         db,
         allowlist,
@@ -137,9 +148,61 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
         () => ctx.protection,
       );
     },
+    async runAutoProtection() {
+      const now = Date.now();
+      ctx.requestHits = ctx.requestHits.filter((t) => now - t < 60_000);
+      const probe = await runProtectionProbes({
+        requestCountLastMinute: ctx.requestHits.length,
+      });
+      applyProtection(ctx, probe.protection);
+      ctx.settings.setJson('last_protection_probe', probe);
+      if (probe.protection.mode !== 'normal') {
+        ctx.audit.append({
+          actor: 'system',
+          action: 'protection.auto',
+          detail: probe,
+          ok: true,
+        });
+      }
+      return probe;
+    },
+    stopScheduler() {
+      scheduler.stopAll();
+    },
   };
   ctx.llm.setProtection(protection);
   ctx.ai = new AiTaskService(db, allowlist, approvals, host, audit, ctx.llm, () => ctx.protection);
+
+  // P7: periodic protection probe (5 min) + daily inventory snapshot
+  if (process.env.YSK_DISABLE_SCHEDULER !== '1') {
+    scheduler.every(
+      'protection-probe',
+      5 * 60_000,
+      async () => {
+        await ctx.runAutoProtection();
+      },
+      { runImmediately: process.env.YSK_PROBE_ON_START === '1' },
+    );
+    scheduler.every('daily-inventory', 24 * 60 * 60_000, async () => {
+      try {
+        const inv = await collectInventory(host);
+        settings.setJson('last_inventory', {
+          at: new Date().toISOString(),
+          count: inv.length,
+          sample: inv.slice(0, 20),
+        });
+        audit.append({
+          actor: 'system',
+          action: 'update.inventory.scheduled',
+          detail: { count: inv.length },
+          ok: true,
+        });
+      } catch {
+        /* ignore */
+      }
+    });
+  }
+
   return ctx;
 }
 
@@ -171,5 +234,6 @@ export function applyProtection(ctx: AppContext, state: ProtectionState): void {
 }
 
 export function closeAppContext(ctx: AppContext): void {
+  ctx.stopScheduler();
   ctx.db.close();
 }

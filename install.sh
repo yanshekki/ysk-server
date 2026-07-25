@@ -172,14 +172,21 @@ print_next() {
 ============================================================
  Next steps:
    1. $CLI setup --non-interactive
-   2. $CLI serve
+   2. $CLI serve --config \$HOME/.ysk/config.json
+      or install systemd unit (see docs/deploy/systemd.md / deploy/ysk-server.service)
    3. Open Web UI and login
    4. Docs: https://github.com/yanshekki/ysk-server
 
  Commands:
    $CLI --help
    $CLI update --check
+   $CLI update --apply   # needs network + YSK_EXECUTE=1
+   $CLI ask "show system info"
    $CLI tools --json
+
+ Optional env:
+   YSK_EXECUTE=1          # allow system mutations (apt, ufw, certbot, …)
+   YSK_PROBE_ON_START=1   # run protection probe on serve start
 
 EOF
 }

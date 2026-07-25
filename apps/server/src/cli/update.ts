@@ -1,37 +1,65 @@
 /**
- * ysk-server update — self-update check / plan.
+ * ysk-server update — check npm registry + optional apply.
  */
 
-import { planSelfUpdate } from '@ysk/core';
+import { planSelfUpdate, runSelfUpdate, LocalHostExecutor } from '@ysk/core';
 import { PRODUCT_NAME, type StructuredResult } from '@ysk/shared';
 import { VERSION } from '../version.js';
 
-export function runUpdate(opts: {
+export async function runUpdate(opts: {
   checkOnly?: boolean;
   latest?: string;
-}): StructuredResult<ReturnType<typeof planSelfUpdate>> {
-  const latest = opts.latest ?? process.env.YSK_LATEST_VERSION ?? VERSION;
-  const plan = planSelfUpdate({
-    current: VERSION,
-    latest,
+  apply?: boolean;
+}): Promise<StructuredResult<unknown>> {
+  const host = new LocalHostExecutor({
+    executeEnabled: process.env.YSK_EXECUTE === '1' || process.env.YSK_EXECUTE === 'true',
   });
 
-  if (opts.checkOnly || !plan.status.updateAvailable) {
+  try {
+    const result = await runSelfUpdate({
+      currentVersion: VERSION,
+      host,
+      apply: Boolean(opts.apply) && !opts.checkOnly,
+      latestOverride: opts.latest,
+    });
+
+    if (opts.checkOnly || !result.plan.status.updateAvailable) {
+      return {
+        ok: true,
+        code: result.plan.status.updateAvailable ? 'YSK_UPDATE_AVAILABLE' : 'YSK_UP_TO_DATE',
+        message: result.plan.status.updateAvailable
+          ? `${PRODUCT_NAME} update available: ${VERSION} -> ${result.plan.status.latestVersion}`
+          : `${PRODUCT_NAME} is up to date (${VERSION})`,
+        data: result,
+      };
+    }
+
+    if (opts.apply) {
+      return {
+        ok: result.applied,
+        code: result.applied ? 'YSK_UPDATE_APPLIED' : 'YSK_UPDATE_APPLY_FAILED',
+        message: result.applied
+          ? `${PRODUCT_NAME} updated via npm`
+          : `${PRODUCT_NAME} apply failed or skipped — ${result.notes.join('; ')}`,
+        data: result,
+      };
+    }
+
     return {
       ok: true,
-      code: plan.status.updateAvailable ? 'YSK_UPDATE_AVAILABLE' : 'YSK_UP_TO_DATE',
-      message: plan.status.updateAvailable
-        ? `${PRODUCT_NAME} update available: ${VERSION} -> ${latest}`
-        : `${PRODUCT_NAME} is up to date (${VERSION})`,
+      code: 'YSK_UPDATE_PLANNED',
+      message: `${PRODUCT_NAME} self-update planned (run with --apply and YSK_EXECUTE=1)`,
+      data: result,
+    };
+  } catch (e) {
+    // fallback offline plan
+    const latest = opts.latest ?? VERSION;
+    const plan = planSelfUpdate({ current: VERSION, latest });
+    return {
+      ok: true,
+      code: 'YSK_UPDATE_OFFLINE_PLAN',
+      message: e instanceof Error ? e.message : String(e),
       data: plan,
     };
   }
-
-  // Full apply requires network + package privileges; report plan for orchestration
-  return {
-    ok: true,
-    code: 'YSK_UPDATE_PLANNED',
-    message: `${PRODUCT_NAME} self-update planned (apply via package manager / install.sh --upgrade)`,
-    data: plan,
-  };
 }

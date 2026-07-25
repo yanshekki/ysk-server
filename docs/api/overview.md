@@ -70,4 +70,27 @@ Base URL: `http://127.0.0.1:8787`
 | POST | `/api/v1/fleet/agents/:id/heartbeat` | — | Heartbeat |
 | GET/POST | `/api/v1/fleet/agents/:id/commands` | Bearer | Pull / enqueue commands |
 
+## Protection (P7)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/protection/probe` | Bearer | Active network probes → auto protection mode + playbook suggestions |
+| GET | `/api/v1/protection/status` | Bearer | Current mode, scheduler jobs, last probe/inventory |
+| POST | `/api/v1/protection/emergency` | Bearer | Apply protection + run emergency playbook |
+
+## System-level apply
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/system/email/apply` | Bearer | Write Postfix/Dovecot/OpenDKIM configs; optional apt install |
+| POST | `/api/v1/system/ssl/apply` | Bearer | Certbot plan / optional run |
+| POST | `/api/v1/system/php/apply` | Bearer | PHP vhost + index under dataDir |
+| POST | `/api/v1/system/ftps/apply` | Bearer | vsftpd config |
+| POST | `/api/v1/system/firewall/apply` | Bearer | ufw/fail2ban plan / optional apply |
+| POST | `/api/v1/system/nginx/site` | Bearer | Write site conf; optional reload |
+| POST | `/api/v1/system/systemd/install` | Bearer | Control-plane unit template / enable |
+| POST | `/api/v1/updates/self/apply` | Bearer | npm registry check + optional `npm i -g` |
+
+Mutating system paths require **`YSK_EXECUTE=1`** and usually **root**. Without them, apply writes managed files under `dataDir` and returns copy commands.
+
 LLM outputs are always `untrusted: true` and never execute without the tool gate.
