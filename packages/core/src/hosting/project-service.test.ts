@@ -39,4 +39,28 @@ describe('ProjectService real lifecycle', () => {
     closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('creates with node-starter template scaffold', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-proj-tpl-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    const created = await svc.create({
+      name: 'TplApp',
+      runtime: 'node',
+      templateId: 'node-starter',
+      actor: 'admin',
+    });
+    expect(created.scaffold?.ok).toBe(true);
+    expect(existsSync(join(created.project.homeDir, 'app', 'server.js'))).toBe(true);
+    expect(existsSync(join(created.project.homeDir, 'app', 'package.json'))).toBe(true);
+
+    const applied = svc.applyTemplate(created.project.id, 'static-site', 'admin', true);
+    expect(applied.scaffold.ok).toBe(true);
+    expect(existsSync(join(created.project.homeDir, 'app', 'public', 'index.html'))).toBe(true);
+    expect(svc.get(created.project.id).runtime).toBe('static');
+
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
 });

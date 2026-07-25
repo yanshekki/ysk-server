@@ -121,7 +121,9 @@ ysk-server --help
 |-----|------|
 | Production MVP | [docs/deploy/production-mvp.md](docs/deploy/production-mvp.md) |
 | Real ops vertical | [docs/deploy/real-ops.md](docs/deploy/real-ops.md) |
+| npm publish | [docs/deploy/npm-publish.md](docs/deploy/npm-publish.md) |
 | Root apply | [docs/deploy/root-apply.md](docs/deploy/root-apply.md) |
+| CLI reference | [docs/cli/reference.md](docs/cli/reference.md) |
 | Spec | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) |
 | API | [docs/api/overview.md](docs/api/overview.md) |
 | Security | [docs/security/overview.md](docs/security/overview.md) |

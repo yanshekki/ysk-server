@@ -11,3 +11,4 @@ coverage/
 data/
 .ysk/
 tmp/
+*.tgz
