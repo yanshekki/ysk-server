@@ -56,6 +56,8 @@ export interface StoreProject {
   env_vars?: Record<string, string>;
   last_backup_path?: string;
   last_backup_at?: string;
+  /** Disk soft quota MiB */
+  quota_mb?: number;
   created_at: string;
   updated_at: string;
 }

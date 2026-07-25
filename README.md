@@ -21,6 +21,9 @@
 - **Cron** jobs stored + managed crontab file; install needs `YSK_EXECUTE=1`
 - **Daily scheduler**: inventory snapshot + project backups (`daily-inventory`, `daily-backup`)
 - **Logs tail** per project; **Updates** page refresh inventory; Dashboard project/backup summary
+- **SSL PEM upload** to `dataDir/certs/` + nginx SSL conf with managed paths
+- **PHP-FPM pool** conf under dataDir (enable with root+EXECUTE); **project quota** via `du`
+- **FTPS** vsftpd config generation under dataDir
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

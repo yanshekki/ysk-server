@@ -57,6 +57,7 @@ export class ProjectRepository {
         | 'env_vars'
         | 'last_backup_path'
         | 'last_backup_at'
+        | 'quota_mb'
       >
     >,
   ): void {
@@ -76,6 +77,7 @@ export class ProjectRepository {
     if (patch.env_vars !== undefined) p.env_vars = patch.env_vars;
     if (patch.last_backup_path !== undefined) p.last_backup_path = patch.last_backup_path;
     if (patch.last_backup_at !== undefined) p.last_backup_at = patch.last_backup_at;
+    if (patch.quota_mb !== undefined) p.quota_mb = patch.quota_mb;
     p.updated_at = new Date().toISOString();
     this.db.persist();
   }

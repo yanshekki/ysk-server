@@ -38,6 +38,10 @@ import {
   listProjectLogs,
   tailProjectLog,
   lookupOsvVulns,
+  uploadCertificate,
+  listUploadedCertFiles,
+  applyFtps,
+  applyPhpFpmPool,
 } from '@ysk/core';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
@@ -664,6 +668,60 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { jobs: ctx.scheduler.list() });
       }
+
+      // SSL upload (PEM) + list managed cert files
+      if (method === 'POST' && url.pathname === '/api/v1/ssl/upload') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          fullchainPem?: string;
+          privkeyPem?: string;
+        };
+        const cert = uploadCertificate({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          domain: data.domain ?? '',
+          fullchainPem: data.fullchainPem ?? '',
+          privkeyPem: data.privkeyPem ?? '',
+          actor: user.username,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssl.upload',
+          resource: cert.domain,
+          detail: { id: cert.id, paths: [cert.fullchain_path, cert.privkey_path] },
+          ok: true,
+        });
+        return sendJson(res, 201, { certificate: cert });
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/ssl/uploaded') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, {
+          files: listUploadedCertFiles(ctx.dataDir),
+          certificates: ctx.db.snapshot.certificates,
+        });
+      }
+
+      // FTPS apply (config under dataDir; install optional)
+      if (method === 'POST' && url.pathname === '/api/v1/system/ftps/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { domain?: string; install?: boolean };
+        const result = await applyFtps({
+          dataDir: ctx.dataDir,
+          domain: data.domain ?? 'files.local',
+          host: ctx.host,
+          install: data.install,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'system.ftps.apply',
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, 200, result);
+      }
       if (method === 'GET' && url.pathname === '/api/v1/fleet/agents') {
         ctx.auth.authenticate(getBearer(req));
         const group = url.searchParams.get('group') ?? undefined;
@@ -891,6 +949,43 @@ export function createHttpServer(ctx: AppContext): Server {
           });
         }
         return sendJson(res, 200, { files });
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/quota$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { quotaMb?: number };
+        const result = await ctx.projectOps.setQuota(id, data.quotaMb ?? 1024, user.username);
+        return sendJson(res, 200, result);
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/quota$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        return sendJson(res, 200, await ctx.projectOps.quotaStatus(id));
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/php-fpm$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { enable?: boolean; phpVersion?: string };
+        const result = await applyPhpFpmPool({
+          dataDir: ctx.dataDir,
+          poolName: proj.linuxUser,
+          linuxUser: proj.linuxUser,
+          phpVersion: data.phpVersion ?? proj.runtimeVersion ?? '8.2',
+          host: ctx.host,
+          enable: data.enable,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'project.php_fpm',
+          resource: id,
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, 200, result);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-php$/)) {

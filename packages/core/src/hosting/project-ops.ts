@@ -25,6 +25,9 @@ import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
 import { gitSync } from './git-deploy.js';
 import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
+import { resolveManagedCertPaths } from './ssl-certs.js';
+import { applyPhpFpmPool } from './php-fpm.js';
+import { assertQuotaMb, checkProjectQuota } from './quota.js';
 
 export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' | 'failed';
 
@@ -454,11 +457,15 @@ export class ProjectOpsService {
     const row = this.require(projectId);
     const port = row.port ?? 3000;
     const serverName = row.domain ?? `${row.linux_user}.local`;
+    const wantSsl = opts.ssl ?? false;
+    const managed = resolveManagedCertPaths(this.dataDir, serverName);
     const conf = renderNginxProxy({
       serverName,
       upstream: `http://127.0.0.1:${port}`,
-      ssl: opts.ssl ?? false,
+      ssl: wantSsl,
       cloudflareRealIp: true,
+      sslCertificate: wantSsl && managed.exists ? managed.fullchain : undefined,
+      sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     const systemDir =
@@ -470,6 +477,13 @@ export class ProjectOpsService {
       host: this.host,
     });
     const notes = [`Wrote ${nginxPath}`, ...sync.notes];
+    if (wantSsl && managed.exists) {
+      notes.push(`Using uploaded certs: ${managed.fullchain}`);
+    } else if (wantSsl) {
+      notes.push(
+        `SSL enabled with default LE paths (or upload via POST /api/v1/ssl/upload for ${serverName})`,
+      );
+    }
     let nginxReloaded = false;
     let nginxStatus = 'managed_only';
     const wantReload = opts.reload ?? Boolean(systemDir && this.host.executeEnabled());
@@ -743,11 +757,12 @@ export class ProjectOpsService {
     mkdirSync(docRoot, { recursive: true });
     const domain = row.domain ?? `${row.linux_user}.local`;
 
+    const phpVersion = opts.phpVersion ?? row.runtime_version ?? '8.2';
     const apply = await applyPhpHosting({
       dataDir: this.dataDir,
       domain,
       docRoot,
-      phpVersion: opts.phpVersion ?? row.runtime_version ?? '8.2',
+      phpVersion,
       poolName: row.linux_user,
       host: this.host,
       enableSite: Boolean(opts.enableApache && this.host.executeEnabled() && this.host.isRoot()),
@@ -755,10 +770,24 @@ export class ProjectOpsService {
     written.push(...apply.written);
     notes.push(...apply.notes);
 
+    const fpm = await applyPhpFpmPool({
+      dataDir: this.dataDir,
+      poolName: row.linux_user,
+      linuxUser: row.linux_user,
+      phpVersion,
+      host: this.host,
+      enable: Boolean(opts.enableApache && this.host.executeEnabled() && this.host.isRoot()),
+    });
+    written.push(...fpm.written);
+    notes.push(...fpm.notes);
+    if (fpm.enabled) {
+      notes.push('PHP-FPM pool enabled (production path)');
+    }
+
     await this.stopProcess(row, notes);
 
-    // Prefer built-in server for real listen without root
-    const phpBin = await resolvePhpBinary(this.host, opts.phpVersion ?? row.runtime_version ?? '8.2');
+    // Prefer built-in server for real listen without root (degraded but verifiable)
+    const phpBin = await resolvePhpBinary(this.host, phpVersion);
     if (!phpBin) {
       this.projects.updateRuntimeState(projectId, {
         port,
@@ -875,6 +904,51 @@ export class ProjectOpsService {
       degraded: true,
       deployMode: 'pidfile',
     };
+  }
+
+  /**
+   * Set soft disk quota (MiB) and return current usage.
+   */
+  async setQuota(
+    projectId: string,
+    quotaMb: number,
+    actor: string,
+  ): Promise<OpsApplyResult & { quota?: Awaited<ReturnType<typeof checkProjectQuota>> }> {
+    assertQuotaMb(quotaMb);
+    const row = this.require(projectId);
+    this.projects.updateRuntimeState(projectId, { quota_mb: quotaMb });
+    const quota = await checkProjectQuota({
+      host: this.host,
+      projectId,
+      homeDir: row.home_dir,
+      quotaMb,
+    });
+    this.audit?.append({
+      actor,
+      action: 'project.set_quota',
+      resource: projectId,
+      detail: quota,
+      ok: true,
+    });
+    return {
+      ok: true,
+      projectId,
+      processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+      listening: false,
+      notes: [`quota=${quotaMb}MB`, `used=${quota.usedMb}MB`, ...quota.notes],
+      written: [],
+      quota,
+    };
+  }
+
+  async quotaStatus(projectId: string) {
+    const row = this.require(projectId);
+    return checkProjectQuota({
+      host: this.host,
+      projectId,
+      homeDir: row.home_dir,
+      quotaMb: row.quota_mb,
+    });
   }
 
   private require(id: string): ProjectRow {

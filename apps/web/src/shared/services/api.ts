@@ -78,7 +78,10 @@ export const api = {
   projectHealth(id: string): Promise<OpsApplyResultDto> {
     return request(`/api/v1/projects/${id}/health`);
   },
-  publishNginx(id: string, body?: { systemConfDir?: string; ssl?: boolean }): Promise<OpsApplyResultDto> {
+  publishNginx(
+    id: string,
+    body?: { systemConfDir?: string; ssl?: boolean; reload?: boolean },
+  ): Promise<OpsApplyResultDto> {
     return request(`/api/v1/projects/${id}/publish-nginx`, {
       method: 'POST',
       body: JSON.stringify(body ?? {}),

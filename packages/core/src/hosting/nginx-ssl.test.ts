@@ -15,6 +15,19 @@ describe('nginx + ssl', () => {
     expect(conf).toContain('letsencrypt');
   });
 
+  it('uses uploaded cert paths when provided', () => {
+    const conf = renderNginxProxy({
+      serverName: 'app.example.com',
+      upstream: 'http://127.0.0.1:3000',
+      ssl: true,
+      cloudflareRealIp: false,
+      sslCertificate: '/data/certs/app.example.com/fullchain.pem',
+      sslCertificateKey: '/data/certs/app.example.com/privkey.pem',
+    });
+    expect(conf).toContain('/data/certs/app.example.com/fullchain.pem');
+    expect(conf).not.toContain('letsencrypt');
+  });
+
   it('plans certbot letsencrypt commands', () => {
     const plan = planLetsEncrypt({
       domain: 'app.example.com',

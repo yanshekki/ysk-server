@@ -34,11 +34,17 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
       httpStatus: 400,
     });
   }
-  const listen = config.ssl ? 'listen 443 ssl http2;' : 'listen 80;';
+  const listen = config.ssl
+    ? 'listen 443 ssl http2;\n  listen 80;\n  # prefer HTTPS when certs present'
+    : 'listen 80;';
+  const cert =
+    config.sslCertificate ?? `/etc/letsencrypt/live/${config.serverName}/fullchain.pem`;
+  const key =
+    config.sslCertificateKey ?? `/etc/letsencrypt/live/${config.serverName}/privkey.pem`;
   const sslBlock = config.ssl
     ? `
-  ssl_certificate /etc/letsencrypt/live/${config.serverName}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/${config.serverName}/privkey.pem;
+  ssl_certificate ${cert};
+  ssl_certificate_key ${key};
   ssl_protocols TLSv1.2 TLSv1.3;
 `.trim()
     : '';

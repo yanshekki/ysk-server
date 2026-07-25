@@ -199,6 +199,7 @@ function toDto(row: ProjectRow): ProjectDto {
     envVars: row.env_vars,
     lastBackupPath: row.last_backup_path,
     lastBackupAt: row.last_backup_at,
+    quotaMb: row.quota_mb,
   };
 }
 

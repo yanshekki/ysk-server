@@ -17,6 +17,7 @@ export function ProjectsPage() {
   const [selected, setSelected] = useState<ProjectDto | null>(null);
   const [opsLog, setOpsLog] = useState<OpsApplyResultDto | null>(null);
   const [logTail, setLogTail] = useState<string>('');
+  const [quotaMb, setQuotaMb] = useState('1024');
 
   async function refresh() {
     const r = await api.listProjects();
@@ -433,6 +434,65 @@ export function ProjectsPage() {
               }}
             >
               View logs
+            </button>
+            <label className="muted u-text-sm" htmlFor="qmb">
+              Quota MiB
+            </label>
+            <input
+              id="qmb"
+              value={quotaMb}
+              onChange={(e) => setQuotaMb(e.target.value)}
+              title="Quota MiB"
+            />
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={busy}
+              onClick={() => {
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    const r = await api.requestRaw<Record<string, unknown>>(
+                      `/api/v1/projects/${selected.id}/quota`,
+                      {
+                        method: 'POST',
+                        body: JSON.stringify({ quotaMb: Number(quotaMb) || 1024 }),
+                      },
+                    );
+                    setOpsLog(r as unknown as OpsApplyResultDto);
+                    setMsg('Quota updated');
+                    await refresh();
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'quota failed');
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              Set quota
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={busy}
+              onClick={() => {
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    const r = await api.publishNginx(selected.id, { ssl: true });
+                    setOpsLog(r);
+                    setMsg(r.ok ? 'Nginx SSL publish OK' : 'Nginx SSL publish issues');
+                    await refresh();
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'ssl publish failed');
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              Publish Nginx+SSL
             </button>
           </div>
           {logTail && (

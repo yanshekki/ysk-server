@@ -7,6 +7,12 @@ export function SystemPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [certs, setCerts] = useState<Array<Record<string, unknown>>>([]);
+  const [fullchain, setFullchain] = useState(
+    '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n',
+  );
+  const [privkey, setPrivkey] = useState(
+    '-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----\n',
+  );
 
   async function refreshCerts() {
     try {
@@ -119,6 +125,19 @@ export function SystemPage() {
           </button>
         </div>
         <div className="card">
+          <h2 className="card__title">FTPS (vsftpd)</h2>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={busy}
+            onClick={() =>
+              void run('/api/v1/system/ftps/apply', { domain, install: false })
+            }
+          >
+            Write FTPS config
+          </button>
+        </div>
+        <div className="card">
           <h2 className="card__title">Firewall plan</h2>
           <button
             type="button"
@@ -149,6 +168,45 @@ export function SystemPage() {
             onClick={() => void run('/api/v1/system/systemd/install', { enable: false })}
           >
             Write unit template
+          </button>
+        </div>
+      </div>
+
+      <div className="card">
+        <h2 className="card__title">Upload SSL certificate (PEM)</h2>
+        <p className="card__desc">Stored under dataDir/certs/&lt;domain&gt;/ — use with Publish Nginx ssl</p>
+        <div className="field">
+          <label htmlFor="fullchain">fullchain.pem</label>
+          <textarea
+            id="fullchain"
+            rows={4}
+            value={fullchain}
+            onChange={(e) => setFullchain(e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="privkey">privkey.pem</label>
+          <textarea
+            id="privkey"
+            rows={4}
+            value={privkey}
+            onChange={(e) => setPrivkey(e.target.value)}
+          />
+        </div>
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={busy}
+            onClick={() =>
+              void run('/api/v1/ssl/upload', {
+                domain,
+                fullchainPem: fullchain,
+                privkeyPem: privkey,
+              })
+            }
+          >
+            Upload cert
           </button>
         </div>
       </div>

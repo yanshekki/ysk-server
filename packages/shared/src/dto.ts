@@ -117,6 +117,8 @@ export interface ProjectDto {
   envVars?: Record<string, string>;
   lastBackupPath?: string;
   lastBackupAt?: string;
+  /** Disk quota in MiB (null/undefined = unlimited) */
+  quotaMb?: number;
 }
 
 /** Result of real deploy / publish / health ops */
@@ -147,6 +149,9 @@ export interface NginxProxyConfig {
   upstream: string;
   ssl: boolean;
   cloudflareRealIp: boolean;
+  /** Optional paths for uploaded / managed certs (defaults to Let's Encrypt layout) */
+  sslCertificate?: string;
+  sslCertificateKey?: string;
 }
 
 export interface UpdateItemDto {

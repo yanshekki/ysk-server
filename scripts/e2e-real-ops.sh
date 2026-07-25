@@ -164,5 +164,23 @@ CERTS=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/system/ssl/certificates" 
 echo "$CERTS" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.items||!j.items.length) process.exit(8);})"
 log "SSL certificate write-back OK"
 
+# SSL PEM upload
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/ssl/upload" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"domain\":\"${NAME}.local\",\"fullchainPem\":\"-----BEGIN CERTIFICATE-----\\nMIIB\\n-----END CERTIFICATE-----\\n\",\"privkeyPem\":\"-----BEGIN PRIVATE KEY-----\\nMIIE\\n-----END PRIVATE KEY-----\\n\"}" >/dev/null
+log "SSL upload OK"
+
+# Quota
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_ID}/quota" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"quotaMb":512}' >/dev/null
+log "Quota OK"
+
+# FTPS config
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/system/ftps/apply" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"domain\":\"${NAME}.local\",\"install\":false}" >/dev/null
+log "FTPS config OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"
