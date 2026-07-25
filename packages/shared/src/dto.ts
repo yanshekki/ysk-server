@@ -119,6 +119,8 @@ export interface ProjectDto {
   lastBackupAt?: string;
   /** Disk quota in MiB (null/undefined = unlimited) */
   quotaMb?: number;
+  memoryMax?: string;
+  cpuQuotaPercent?: number;
 }
 
 /** Result of real deploy / publish / health ops */

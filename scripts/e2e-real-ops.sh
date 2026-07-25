@@ -182,5 +182,18 @@ curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/system/ftps/apply" \
   -d "{\"domain\":\"${NAME}.local\",\"install\":false}" >/dev/null
 log "FTPS config OK"
 
+# Cloudflare DNS dry-run (no token)
+CF=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/dns/cloudflare/apply" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"zone\":\"${NAME}.example\",\"serverIp\":\"203.0.113.10\",\"dryRun\":true}")
+echo "$CF" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.planned||!j.planned.length) process.exit(14); if(j.requiresToken!==true&&j.dryRun!==true) process.exit(15);})"
+log "Cloudflare DNS plan/dry-run OK"
+
+# Resources limits
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PROJECT_ID}/resources" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"memoryMax":"256M","cpuQuotaPercent":50}' >/dev/null
+log "Resources OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"

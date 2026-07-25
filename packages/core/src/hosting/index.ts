@@ -16,5 +16,6 @@ export * from './project-logs.js';
 export * from './ssl-certs.js';
 export * from './php-fpm.js';
 export * from './quota.js';
+export * from './cloudflare-dns.js';
 
 

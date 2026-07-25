@@ -42,6 +42,8 @@ import {
   listUploadedCertFiles,
   applyFtps,
   applyPhpFpmPool,
+  applyCloudflareDns,
+  persistDnsZoneApply,
 } from '@ysk/core';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
@@ -839,6 +841,42 @@ export function createHttpServer(ctx: AppContext): Server {
           planDnsZone({ zone: data.zone ?? 'example.com', serverIp: data.serverIp ?? '1.2.3.4' }),
         );
       }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/cloudflare/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          zone?: string;
+          serverIp?: string;
+          mailHost?: string;
+          token?: string;
+          dryRun?: boolean;
+        };
+        const result = await applyCloudflareDns({
+          zone: data.zone ?? 'example.com',
+          serverIp: data.serverIp ?? '203.0.113.10',
+          mailHost: data.mailHost,
+          token: data.token,
+          dryRun: data.dryRun,
+        });
+        persistDnsZoneApply(ctx.db, result, user.username);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.cloudflare.apply',
+          resource: result.zoneName,
+          detail: {
+            ok: result.ok,
+            dryRun: result.dryRun,
+            created: result.created.length,
+            errors: result.errors,
+          },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok || result.dryRun ? 200 : 422, result);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/dns/zones') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: ctx.db.snapshot.dns_zones });
+      }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/firewall/plan') {
         ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
@@ -951,6 +989,17 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, { files });
       }
 
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/resources$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          memoryMax?: string;
+          cpuQuotaPercent?: number;
+        };
+        const result = ctx.projectOps.setResources(id, data, user.username);
+        return sendJson(res, 200, result);
+      }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/quota$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];

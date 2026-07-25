@@ -67,7 +67,25 @@ export function renderNodeProcessUnit(opts: {
   nodeBinary: string;
   entry: string;
   port: number;
+  /** Soft/hard memory limit e.g. 512M */
+  memoryMax?: string;
+  /** CPU quota percent e.g. 50 for 50% of one CPU */
+  cpuQuotaPercent?: number;
+  /** Max open files */
+  limitNOFILE?: number;
 }): string {
+  const limits: string[] = [];
+  if (opts.memoryMax) {
+    limits.push(`MemoryMax=${opts.memoryMax}`);
+    limits.push(`MemoryHigh=${opts.memoryMax}`);
+  }
+  if (opts.cpuQuotaPercent != null && opts.cpuQuotaPercent > 0) {
+    limits.push(`CPUQuota=${Math.min(10000, Math.floor(opts.cpuQuotaPercent))}%`);
+  }
+  if (opts.limitNOFILE != null && opts.limitNOFILE > 0) {
+    limits.push(`LimitNOFILE=${opts.limitNOFILE}`);
+  }
+  const limitBlock = limits.length ? limits.join('\n') + '\n' : '';
   return `[Unit]
 Description=YSK Server project ${opts.projectName}
 After=network.target
@@ -81,7 +99,7 @@ Environment=PORT=${opts.port}
 ExecStart=${opts.nodeBinary} ${opts.entry}
 Restart=on-failure
 RestartSec=5
-
+${limitBlock}
 [Install]
 WantedBy=multi-user.target
 `;

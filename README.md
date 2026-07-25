@@ -24,6 +24,8 @@
 - **SSL PEM upload** to `dataDir/certs/` + nginx SSL conf with managed paths
 - **PHP-FPM pool** conf under dataDir (enable with root+EXECUTE); **project quota** via `du`
 - **FTPS** vsftpd config generation under dataDir
+- **Cloudflare DNS apply** (`CF_API_TOKEN`); dry-run without token (never fake success)
+- **systemd resource limits** (MemoryMax / CPUQuota) on Node units
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

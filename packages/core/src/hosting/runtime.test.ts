@@ -27,9 +27,15 @@ describe('multi-version runtimes', () => {
       nodeBinary: '/usr/local/ysk/node/20/bin/node',
       entry: 'server.js',
       port: 3000,
+      memoryMax: '512M',
+      cpuQuotaPercent: 50,
+      limitNOFILE: 65535,
     });
     expect(unit).toContain('User=ysk_demo');
     expect(unit).toContain('PORT=3000');
+    expect(unit).toContain('MemoryMax=512M');
+    expect(unit).toContain('CPUQuota=50%');
+    expect(unit).toContain('LimitNOFILE=65535');
 
     const vhost = renderPhpVhost({
       domain: 'app.example.com',

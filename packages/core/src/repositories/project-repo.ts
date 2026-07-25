@@ -58,6 +58,8 @@ export class ProjectRepository {
         | 'last_backup_path'
         | 'last_backup_at'
         | 'quota_mb'
+        | 'memory_max'
+        | 'cpu_quota_percent'
       >
     >,
   ): void {
@@ -78,6 +80,8 @@ export class ProjectRepository {
     if (patch.last_backup_path !== undefined) p.last_backup_path = patch.last_backup_path;
     if (patch.last_backup_at !== undefined) p.last_backup_at = patch.last_backup_at;
     if (patch.quota_mb !== undefined) p.quota_mb = patch.quota_mb;
+    if (patch.memory_max !== undefined) p.memory_max = patch.memory_max;
+    if (patch.cpu_quota_percent !== undefined) p.cpu_quota_percent = patch.cpu_quota_percent;
     p.updated_at = new Date().toISOString();
     this.db.persist();
   }

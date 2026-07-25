@@ -58,6 +58,10 @@ export interface StoreProject {
   last_backup_at?: string;
   /** Disk soft quota MiB */
   quota_mb?: number;
+  /** systemd MemoryMax e.g. 512M */
+  memory_max?: string;
+  /** systemd CPUQuota percent */
+  cpu_quota_percent?: number;
   created_at: string;
   updated_at: string;
 }

@@ -13,6 +13,8 @@ export function SystemPage() {
   const [privkey, setPrivkey] = useState(
     '-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----\n',
   );
+  const [serverIp, setServerIp] = useState('203.0.113.10');
+  const [cfToken, setCfToken] = useState('');
 
   async function refreshCerts() {
     try {
@@ -136,6 +138,50 @@ export function SystemPage() {
           >
             Write FTPS config
           </button>
+        </div>
+        <div className="card">
+          <h2 className="card__title">Cloudflare DNS</h2>
+          <div className="field field--flush">
+            <label htmlFor="sip">Server IP</label>
+            <input id="sip" value={serverIp} onChange={(e) => setServerIp(e.target.value)} />
+          </div>
+          <div className="field field--flush">
+            <label htmlFor="cft">API Token (optional)</label>
+            <input
+              id="cft"
+              type="password"
+              value={cfToken}
+              onChange={(e) => setCfToken(e.target.value)}
+              placeholder="or CF_API_TOKEN env"
+            />
+          </div>
+          <div className="form-actions btn-row">
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() =>
+                void run('/api/v1/hosting/dns/plan', { zone: domain, serverIp })
+              }
+            >
+              Plan zone
+            </button>
+            <button
+              type="button"
+              className="btn btn--primary"
+              disabled={busy}
+              onClick={() =>
+                void run('/api/v1/hosting/dns/cloudflare/apply', {
+                  zone: domain,
+                  serverIp,
+                  token: cfToken || undefined,
+                  dryRun: !cfToken,
+                })
+              }
+            >
+              Apply (dry-run if no token)
+            </button>
+          </div>
         </div>
         <div className="card">
           <h2 className="card__title">Firewall plan</h2>

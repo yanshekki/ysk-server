@@ -200,6 +200,8 @@ function toDto(row: ProjectRow): ProjectDto {
     lastBackupPath: row.last_backup_path,
     lastBackupAt: row.last_backup_at,
     quotaMb: row.quota_mb,
+    memoryMax: row.memory_max,
+    cpuQuotaPercent: row.cpu_quota_percent,
   };
 }
 

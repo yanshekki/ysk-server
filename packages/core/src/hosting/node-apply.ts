@@ -33,6 +33,9 @@ export async function applyNodeHosting(input: {
   enableService?: boolean;
   /** Override binary (defaults to runtime plan path; use process.execPath for real spawn) */
   nodeBinary?: string;
+  memoryMax?: string;
+  cpuQuotaPercent?: number;
+  limitNOFILE?: number;
 }): Promise<NodeApplyResult> {
   const runtime = selectNodeRuntime(input.nodeVersion);
   const nodeBinary = input.nodeBinary ?? runtime.binaryPath;
@@ -60,6 +63,9 @@ export async function applyNodeHosting(input: {
     nodeBinary,
     entry: input.entry ?? 'server.js',
     port: input.port ?? 3000,
+    memoryMax: input.memoryMax,
+    cpuQuotaPercent: input.cpuQuotaPercent,
+    limitNOFILE: input.limitNOFILE,
   });
   writeFileSync(unitPath, unit, 'utf8');
 

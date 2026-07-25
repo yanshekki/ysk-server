@@ -81,6 +81,8 @@ export class ProjectOpsService {
       nodeVersion?: string;
       enableSystemd?: boolean;
       healthTimeoutMs?: number;
+      memoryMax?: string;
+      cpuQuotaPercent?: number;
     },
   ): Promise<OpsApplyResult> {
     const row = this.require(projectId);
@@ -106,6 +108,8 @@ export class ProjectOpsService {
       opts.enableSystemd === true ||
       (opts.enableSystemd !== false && this.host.executeEnabled() && this.host.isRoot());
 
+    const memoryMax = opts.memoryMax ?? row.memory_max;
+    const cpuQuotaPercent = opts.cpuQuotaPercent ?? row.cpu_quota_percent;
     const apply = await applyNodeHosting({
       dataDir: this.dataDir,
       projectId: row.id,
@@ -118,6 +122,9 @@ export class ProjectOpsService {
       host: this.host,
       enableService: preferSystemd,
       nodeBinary,
+      memoryMax,
+      cpuQuotaPercent,
+      limitNOFILE: 65535,
     });
     written.push(apply.envPath, apply.unitPath, apply.appDir);
     notes.push(...apply.notes);
@@ -903,6 +910,53 @@ export class ProjectOpsService {
       written,
       degraded: true,
       deployMode: 'pidfile',
+    };
+  }
+
+  /**
+   * Set systemd resource limits (MemoryMax / CPUQuota) stored for next deploy.
+   */
+  setResources(
+    projectId: string,
+    resources: { memoryMax?: string; cpuQuotaPercent?: number },
+    actor: string,
+  ): OpsApplyResult {
+    const row = this.require(projectId);
+    if (resources.memoryMax != null && !/^\d+[KMG]?$/i.test(resources.memoryMax)) {
+      throw new YskError(ErrorCodes.VALIDATION, 'memoryMax must look like 512M or 1G', {
+        httpStatus: 400,
+      });
+    }
+    if (
+      resources.cpuQuotaPercent != null &&
+      (!Number.isFinite(resources.cpuQuotaPercent) ||
+        resources.cpuQuotaPercent < 1 ||
+        resources.cpuQuotaPercent > 10000)
+    ) {
+      throw new YskError(ErrorCodes.VALIDATION, 'cpuQuotaPercent 1..10000', { httpStatus: 400 });
+    }
+    this.projects.updateRuntimeState(projectId, {
+      memory_max: resources.memoryMax,
+      cpu_quota_percent: resources.cpuQuotaPercent,
+    });
+    this.audit?.append({
+      actor,
+      action: 'project.set_resources',
+      resource: projectId,
+      detail: resources,
+      ok: true,
+    });
+    return {
+      ok: true,
+      projectId,
+      processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+      listening: false,
+      notes: [
+        `memoryMax=${resources.memoryMax ?? row.memory_max ?? 'unset'}`,
+        `cpuQuota=${resources.cpuQuotaPercent ?? row.cpu_quota_percent ?? 'unset'}%`,
+        'Re-deploy Node to rewrite systemd unit with limits',
+      ],
+      written: [],
     };
   }
 

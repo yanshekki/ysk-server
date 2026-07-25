@@ -18,6 +18,8 @@ export function ProjectsPage() {
   const [opsLog, setOpsLog] = useState<OpsApplyResultDto | null>(null);
   const [logTail, setLogTail] = useState<string>('');
   const [quotaMb, setQuotaMb] = useState('1024');
+  const [memoryMax, setMemoryMax] = useState('512M');
+  const [cpuQuota, setCpuQuota] = useState('100');
 
   async function refresh() {
     const r = await api.listProjects();
@@ -493,6 +495,45 @@ export function ProjectsPage() {
               }}
             >
               Publish Nginx+SSL
+            </button>
+            <label className="muted u-text-sm" htmlFor="mem">
+              MemoryMax
+            </label>
+            <input id="mem" value={memoryMax} onChange={(e) => setMemoryMax(e.target.value)} />
+            <label className="muted u-text-sm" htmlFor="cpuq">
+              CPU%
+            </label>
+            <input id="cpuq" value={cpuQuota} onChange={(e) => setCpuQuota(e.target.value)} />
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={busy}
+              onClick={() => {
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    const r = await api.requestRaw<OpsApplyResultDto>(
+                      `/api/v1/projects/${selected.id}/resources`,
+                      {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          memoryMax,
+                          cpuQuotaPercent: Number(cpuQuota) || 100,
+                        }),
+                      },
+                    );
+                    setOpsLog(r);
+                    setMsg('Resources saved — redeploy to apply unit');
+                    await refresh();
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'resources failed');
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              Set resources
             </button>
           </div>
           {logTail && (
