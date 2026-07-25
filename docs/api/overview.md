@@ -93,6 +93,7 @@ Base URL: `http://127.0.0.1:8787`
 | POST | `/api/v1/email/domains/:id/mailboxes` | Bearer | Provision Maildir + virtual map |
 | POST | `/api/v1/email/domains/:id/dovecot-passdb` | Bearer | Export Dovecot passwd-file |
 | POST | `/api/v1/email/dovecot-passdb/all` | Bearer | Export passdb for all domains |
+| POST | `/api/v1/email/webmail/apply` | Bearer | Roundcube plan / optional download |
 | GET | `/api/v1/hosting/runtimes` | Bearer | Probe Node/PHP multi-version |
 | POST | `/api/v1/hosting/runtimes/install` | Bearer | Install script / optional apt |
 | POST | `/api/v1/email/dnsbl/check` | Bearer | Multi-list DNSBL for IP |

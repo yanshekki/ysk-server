@@ -628,6 +628,20 @@ async function main(argv: string[]): Promise<number> {
         );
         return 0;
       }
+      if (sub === 'webmail-apply') {
+        const { applyWebmail } = await import('@ysk/core');
+        const result = await applyWebmail({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          domain: getOpt(args, '--domain') ?? 'webmail.example.com',
+          imapHost: getOpt(args, '--imap'),
+          smtpHost: getOpt(args, '--smtp'),
+          download: hasFlag(args, '--download'),
+          systemInstall: hasFlag(args, '--system'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
       if (sub === 'firewall-apply') {
         const result = await applyFirewall({
           host: ctx.host,
@@ -650,6 +664,7 @@ async function main(argv: string[]): Promise<number> {
           '  ftps-apply --domain X [--install]',
           '  runtimes | runtime-install --kind node|php --version V [--install]',
           '  dovecot-passdb --domain X | --all',
+          '  webmail-apply --domain webmail.example.com [--download]',
           '  firewall-apply [--smtp] [--apply]',
           '',
         ].join('\n'),

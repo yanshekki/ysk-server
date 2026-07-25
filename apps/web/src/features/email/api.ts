@@ -44,6 +44,16 @@ export const emailApi = {
       `/api/v1/email/domains/${domainId}/dovecot-passdb`,
       { method: 'POST', body: '{}' },
     ),
+  webmailApply: (body: {
+    domain: string;
+    imapHost?: string;
+    smtpHost?: string;
+    download?: boolean;
+  }) =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/email/webmail/apply', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   dns: (id: string) => api.requestRaw<EmailBundle>(`/api/v1/email/domains/${id}/dns`),
   liveCheck: (id: string) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/email/domains/${id}/live-check`, {

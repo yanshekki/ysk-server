@@ -33,6 +33,7 @@
 - **Multi-version runtime probe** (Node 18/20/22, PHP 8.1–8.3) + install helpers (fail-closed)
 - **PHP deploy dual-mode**: PHP-FPM + nginx fastcgi (root+EXECUTE) → `php -S` degraded fallback
 - **Mailbox passwords**: `{SHA512-CRYPT}` via openssl when available (else YSK-SCRYPT)
+- **Webmail (Roundcube)**: managed config + install helper + nginx; download needs EXECUTE
 - **FTPS**: vsftpd config + install helper (fail-closed install)
 - **UFW script** under `dataDir/firewall/ufw-apply.sh` (apply needs root+EXECUTE; no fake ok)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
@@ -65,7 +66,7 @@
 
 ### Spec backlog (not production-ready yet)
 
-- Bare-metal runtime install polish; webmail UI
+- Bare-metal runtime install polish; Roundcube full auto-login polish
 - Prefer BLF-CRYPT where openssl supports it; default FPM-only site policy knobs
 - FTPS production enable; fail2ban ban-action automation
 - OpenClaw/Hermes/IonClaw full installers (probe/templates exist)

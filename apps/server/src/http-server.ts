@@ -33,6 +33,7 @@ import {
   writeDovecotPassdb,
   writeAllDovecotPassdbs,
   listSupportedRuntimes,
+  applyWebmail,
   planFirewall,
   planPublicFileServer,
   probeEndpoint,
@@ -711,6 +712,35 @@ export function createHttpServer(ctx: AppContext): Server {
           ok: true,
         });
         return sendJson(res, 200, result);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/email/webmail/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          imapHost?: string;
+          smtpHost?: string;
+          download?: boolean;
+          systemInstall?: boolean;
+        };
+        const result = await applyWebmail({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          domain: data.domain ?? 'webmail.example.com',
+          imapHost: data.imapHost,
+          smtpHost: data.smtpHost,
+          download: data.download,
+          systemInstall: data.systemInstall,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.webmail.apply',
+          resource: result.domain,
+          detail: { mode: result.mode, ok: result.ok },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok || result.mode === 'plan' ? 200 : 422, result);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes') {

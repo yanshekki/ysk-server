@@ -112,6 +112,7 @@ ysk-server hosting ftps-apply --domain files.example.com [--install]
 ysk-server hosting runtimes
 ysk-server hosting runtime-install --kind node --version 20
 ysk-server hosting dovecot-passdb --domain example.com
+ysk-server hosting webmail-apply --domain webmail.example.com
 ysk-server hosting firewall-apply [--smtp] [--apply]
 ```
 

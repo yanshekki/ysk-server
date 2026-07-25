@@ -20,6 +20,8 @@ export function EmailPage() {
   const [mboxPass, setMboxPass] = useState('');
   const [mboxLog, setMboxLog] = useState<Record<string, unknown> | null>(null);
   const [mailboxes, setMailboxes] = useState<Array<Record<string, unknown>>>([]);
+  const [webmailDomain, setWebmailDomain] = useState('webmail.example.com');
+  const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -222,6 +224,48 @@ export function EmailPage() {
           </ul>
         )}
         {mboxLog && <pre className="code code--spaced">{JSON.stringify(mboxLog, null, 2)}</pre>}
+      </div>
+
+      <div className="card">
+        <h2 className="card__title">Webmail (Roundcube)</h2>
+        <p className="card__desc">
+          Writes config + nginx under dataDir; download needs YSK_EXECUTE (never fake success)
+        </p>
+        <div className="field">
+          <label htmlFor="wmd">Webmail hostname</label>
+          <input
+            id="wmd"
+            value={webmailDomain}
+            onChange={(e) => setWebmailDomain(e.target.value)}
+          />
+        </div>
+        <div className="form-actions btn-row">
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={busy}
+            onClick={() => {
+              void (async () => {
+                setBusy(true);
+                setError(null);
+                try {
+                  setWebmailLog(
+                    await emailApi.webmailApply({ domain: webmailDomain, download: false }),
+                  );
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'webmail failed');
+                } finally {
+                  setBusy(false);
+                }
+              })();
+            }}
+          >
+            Write plan
+          </button>
+        </div>
+        {webmailLog && (
+          <pre className="code code--spaced">{JSON.stringify(webmailLog, null, 2)}</pre>
+        )}
       </div>
 
       <div className="card">

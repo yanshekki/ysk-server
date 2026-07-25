@@ -32,10 +32,11 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - Runtime probe/install (Node/PHP multi-version); Dovecot passdb export; fetchTransport tests
 - PHP deploy: FPM+nginx fastcgi production path vs php -S; SHA512-CRYPT mailbox hashes
 - OSV inventory mock tests; renderNginxPhpFpm
+- Roundcube webmail plan/apply; coverage for protection/operation-level/repos
 
 ### Still partial / Spec backlog
 
-- Bare-metal runtime install matrices polish; webmail UI
+- Bare-metal runtime install matrices polish; Roundcube SSO polish
 - ≥90% coverage target, public npm packages published
 
 ### Earlier scaffolding notes
