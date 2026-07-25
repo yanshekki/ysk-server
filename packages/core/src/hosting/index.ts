@@ -21,5 +21,6 @@ export * from './app-templates.js';
 export * from './redis-provision.js';
 export * from './wordpress-download.js';
 export * from './postgres-provision.js';
+export * from './pm2-apply.js';
 
 

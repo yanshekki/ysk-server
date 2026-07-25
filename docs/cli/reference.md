@@ -90,7 +90,7 @@ ysk-server projects backup --id UUID
 ysk-server projects template --id UUID --template ID [--force]
 ```
 
-Deploy selects Node or PHP path from project runtime. Node deploy listens and health-checks; production systemd path needs root + `YSK_EXECUTE=1`.
+Deploy selects Node or PHP path from project runtime. Node deploy listens and health-checks; mode order: systemd (root + `YSK_EXECUTE=1`) → PM2 (`YSK_EXECUTE=1` + `pm2`) → pidfile. PM2 `ecosystem.config.cjs` is always written under the project home.
 
 ## hosting
 

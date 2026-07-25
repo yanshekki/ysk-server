@@ -1,61 +1,11 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../shared/services/api';
-import type { HealthResponse } from '@ysk/shared';
 import { useAuth } from '../shared/hooks/useAuth';
+import { useDashboard } from '../features/dashboard';
 
 export function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [audit, setAudit] = useState<Array<Record<string, unknown>>>([]);
-  const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
-  const [projects, setProjects] = useState<
-    Array<{ id: string; name: string; processStatus?: string; port?: number; status?: string }>
-  >([]);
-  const [backups, setBackups] = useState<number>(0);
-  const [summary, setSummary] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const h = await api.health();
-        if (!cancelled) setHealth(h);
-        const a = await api.audit();
-        if (!cancelled) setAudit(a.items.slice(0, 12));
-        const m = await api.requestRaw<Record<string, unknown>>('/api/v1/metrics');
-        if (!cancelled) setMetrics(m);
-        try {
-          const p = await api.listProjects();
-          if (!cancelled) setProjects(p.items.slice(0, 12));
-        } catch {
-          /* guest */
-        }
-        try {
-          const b = await api.requestRaw<{ items: unknown[] }>('/api/v1/backups');
-          if (!cancelled) setBackups(b.items.length);
-        } catch {
-          /* optional */
-        }
-        try {
-          const s = await api.requestRaw<Record<string, unknown>>('/api/v1/dashboard/summary');
-          if (!cancelled) setSummary(s);
-        } catch {
-          /* optional */
-        }
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Error');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { health, audit, metrics, projects, backups, summary, error, loading } = useDashboard();
 
   return (
     <div>

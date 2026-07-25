@@ -21,12 +21,20 @@ export interface GitDeployResult {
 
 export function assertGitUrl(url: string): void {
   const u = url.trim();
+  const remoteOk =
+    u.startsWith('https://') ||
+    u.startsWith('http://') ||
+    u.startsWith('git@') ||
+    u.startsWith('file://') ||
+    u.startsWith('ssh://');
+  // Absolute local path (bare repo / monorepo mirror) — no `..` segments
+  const localPathOk = u.startsWith('/') && !u.includes('//') && !/(^|\/)\.\.(\/|$)/.test(u);
   const ok =
     u.length > 0 &&
     u.length <= 512 &&
-    (u.startsWith('https://') || u.startsWith('http://') || u.startsWith('git@')) &&
+    (remoteOk || localPathOk) &&
     !/\s/.test(u) &&
-    !u.includes('..');
+    !(remoteOk && u.includes('..'));
   if (!ok) {
     throw new YskError(ErrorCodes.VALIDATION, 'Invalid git URL', { httpStatus: 400, details: { url } });
   }

@@ -15,7 +15,7 @@
 - Control plane API + CLI (`setup`, `serve`, `tools`, `projects`, `update`, `system unit-install`)
 - Auth (admin bootstrap), RBAC hooks, Allowlist, Approval queue, Audit log
 - **Web UI served from the same `serve` process** when `apps/web` is built
-- Projects on disk under `dataDir`; **Deploy Node** with real TCP listen + HTTP health (pidfile mode always; **systemd production** when root + `YSK_EXECUTE=1`)
+- Projects on disk under `dataDir`; **Deploy Node** with real TCP listen + HTTP health: **systemd** (root + `YSK_EXECUTE=1`) → **PM2** (`YSK_EXECUTE=1` + `pm2` on PATH) → **pidfile** fallback; ecosystem always written
 - **Deploy PHP** via `php -S` (real listen) + Apache vhost templates
 - **Git deploy** (clone/pull → redeploy), **env vars** (`.env`), **tar backup** under `dataDir/backups`
 - **Cron** jobs stored + managed crontab file; install needs `YSK_EXECUTE=1`
@@ -28,9 +28,9 @@
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
 - **Multi DNSBL** (Spamhaus / SpamCop / Barracuda) + email live-check UI
 - **fail2ban** jail.local under dataDir; install needs root + `YSK_EXECUTE=1`
-- **Projects feature slice** (`features/projects` api + hooks)
+- **Projects / Email / Agents / Dashboard / Updates** feature slices (`features/*` api + hooks)
 - **Email warm-up plan** + scheduled multi-DNSBL job (`email-dnsbl`)
-- **Email feature slice** (`features/email`)
+- **PM2** ecosystem + optional start (never fake success without EXECUTE)
 - **Agent runtime probe** (path/systemd/PATH) + unit template write
 - **Agent install apply** (`execute` needs `YSK_EXECUTE`; never fake success)
 - **SMTP relay** config for blocked Port 25 + settings write-back
@@ -55,11 +55,11 @@
 
 ### Spec backlog (not production-ready yet)
 
-- Multi-version Node/PHP runtime install matrix, PM2 fleet
+- Multi-version Node/PHP runtime install matrix; PM2 cluster/`pm2 save` fleet polish
 - Full Postfix/Dovecot operational mail (beyond templates + optional apt)
 - PowerDNS, FTPS production, fail2ban automation
-- OpenClaw/Hermes/IonClaw installers
-- ≥90% test coverage; full Feature-Sliced frontend refactor
+- OpenClaw/Hermes/IonClaw full installers (probe/templates exist)
+- ≥90% test coverage; remaining System/Security FSD pages
 - npm global publish as single package (use `install.sh --from-source` today)
 
 See [docs/deploy/production-mvp.md](docs/deploy/production-mvp.md) for the Phase 2 Hosting MVP checklist.

@@ -43,7 +43,7 @@ Login with setup admin. **Projects → Create → Deploy Node**.
 With control plane running as root + `YSK_EXECUTE=1`:
 
 1. Create project (attempts `useradd` for `ysk_*` user)
-2. Deploy Node → systemd unit `ysk-project-<user>.service` + health curl
+2. Deploy Node → systemd unit (root) or PM2 (`pm2` + EXECUTE) or pidfile + health curl
 3. Publish Nginx → copy conf.d + `nginx -t` + reload
 4. Status: `GET /api/v1/projects/:id/status`
 
@@ -74,7 +74,7 @@ sudo bash scripts/e2e-hosting-root.sh   # skips if not root
 | Spec | MVP coverage |
 |------|----------------|
 | §2.3 install/serve | setup + unit-install + serve Web |
-| §4.1–4.2 Project/Node | disk + deploy + optional OS user/systemd |
+| §4.1–4.2 Project/Node | disk + deploy (systemd / PM2 / pidfile) + optional OS user |
 | §4.3–4.4 PHP/MySQL | apply templates + mysql provision refuse/execute |
 | §4.6–4.7 SSL/Nginx | plan + reload path |
 | §5 Email | templates + live-check + service is-active |

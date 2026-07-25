@@ -28,8 +28,11 @@ import { applyPhpHosting } from './system-apply.js';
 import { resolveManagedCertPaths } from './ssl-certs.js';
 import { applyPhpFpmPool } from './php-fpm.js';
 import { assertQuotaMb, checkProjectQuota } from './quota.js';
+import { applyPm2Start, applyPm2Stop, writePm2Ecosystem } from './pm2-apply.js';
 
 export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' | 'failed';
+
+export type DeployMode = 'systemd' | 'pm2' | 'pidfile' | 'none';
 
 export interface OpsApplyResult {
   ok: boolean;
@@ -48,10 +51,11 @@ export interface OpsApplyResult {
   degraded?: boolean;
   requiresRoot?: boolean;
   requiresExecute?: boolean;
-  deployMode?: 'systemd' | 'pidfile' | 'none';
+  deployMode?: DeployMode;
   nginxReloaded?: boolean;
   systemdUnit?: string;
   nginxStatus?: string;
+  pm2App?: string;
 }
 
 export class ProjectOpsService {
@@ -80,6 +84,8 @@ export class ProjectOpsService {
       entry?: string;
       nodeVersion?: string;
       enableSystemd?: boolean;
+      /** Prefer PM2 when not using systemd (needs YSK_EXECUTE + pm2 on PATH) */
+      preferPm2?: boolean;
       healthTimeoutMs?: number;
       memoryMax?: string;
       cpuQuotaPercent?: number;
@@ -152,8 +158,22 @@ export class ProjectOpsService {
     });
 
     let pid: number | undefined;
-    let deployMode: 'systemd' | 'pidfile' = 'pidfile';
+    let deployMode: DeployMode = 'pidfile';
     let degraded = true;
+    let pm2App: string | undefined;
+
+    // Always write PM2 ecosystem (artifact only) for operators who use PM2 fleet
+    const eco = writePm2Ecosystem({
+      homeDir: row.home_dir,
+      linuxUser: row.linux_user,
+      appDir,
+      entry,
+      port,
+      nodeBinary,
+    });
+    written.push(eco.ecosystemPath);
+    notes.push(...eco.notes);
+    pm2App = eco.appName;
 
     if (preferSystemd && this.host.executeEnabled() && this.host.isRoot()) {
       // Production path: install unit and start via systemd
@@ -181,11 +201,42 @@ export class ProjectOpsService {
         }
         notes.push(`Production deploy via systemd unit ${unitName}`);
       } else {
-        notes.push('systemd enable failed — falling back to pidfile spawn');
+        notes.push('systemd enable failed — trying PM2 / pidfile fallback');
       }
-    } else {
+    }
+
+    // PM2 path after systemd miss: needs YSK_EXECUTE + pm2 on PATH (never fake ok).
+    const tryPm2 =
+      deployMode !== 'systemd' && opts.preferPm2 !== false && this.host.executeEnabled();
+
+    if (tryPm2) {
+      const pm2 = await applyPm2Start({
+        host: this.host,
+        homeDir: row.home_dir,
+        linuxUser: row.linux_user,
+        appDir,
+        entry,
+        port,
+        nodeBinary,
+        execute: true,
+      });
+      notes.push(...pm2.notes);
+      if (pm2.ok) {
+        deployMode = 'pm2';
+        degraded = false;
+        pid = pm2.pid;
+        if (pid) writeFileSync(pidfile, `${pid}\n`, 'utf8');
+        notes.push(`Deploy via PM2 app ${pm2.appName}`);
+      } else if (!this.host.executeEnabled()) {
+        notes.push('PM2 start refused without YSK_EXECUTE — falling back to pidfile');
+      } else {
+        notes.push('PM2 start failed — falling back to pidfile spawn');
+      }
+    }
+
+    if (deployMode === 'pidfile') {
       notes.push(
-        'Deploy mode: pidfile (degraded). Set YSK_EXECUTE=1 and run as root for systemd production path.',
+        'Deploy mode: pidfile (degraded). Root+YSK_EXECUTE → systemd; non-root+YSK_EXECUTE+pm2 → PM2.',
       );
     }
 
@@ -344,13 +395,14 @@ export class ProjectOpsService {
       degraded,
       deployMode,
       systemdUnit: deployMode === 'systemd' ? unitName : undefined,
+      pm2App: deployMode === 'pm2' ? pm2App : undefined,
       requiresRoot: !this.host.isRoot(),
       requiresExecute: !this.host.executeEnabled(),
     };
   }
 
   /**
-   * Stop process via pidfile (SIGTERM then SIGKILL).
+   * Stop process via systemd / PM2 / pidfile (SIGTERM then SIGKILL).
    */
   async stopNode(projectId: string, actor: string): Promise<OpsApplyResult> {
     const row = this.require(projectId);
@@ -359,6 +411,10 @@ export class ProjectOpsService {
     if (this.host.executeEnabled() && this.host.isRoot()) {
       const r = await this.host.runCommand(['systemctl', 'stop', unitName], { timeoutMs: 15_000 });
       notes.push(`systemctl stop ${unitName} exit=${r.exitCode}`);
+    }
+    if (this.host.executeEnabled()) {
+      const pm2Stop = await applyPm2Stop({ host: this.host, linuxUser: row.linux_user });
+      notes.push(...pm2Stop.notes);
     }
     await this.stopProcess(row, notes);
     this.projects.updateRuntimeState(projectId, {
@@ -576,7 +632,13 @@ export class ProjectOpsService {
     let processStatus: OpsProcessStatus = (row.process_status as OpsProcessStatus) ?? 'stopped';
     if (listening) processStatus = 'running';
     else if (pidAlive) processStatus = 'unhealthy';
-    const degraded = systemdActive !== 'active';
+    let deployMode = 'pidfile_or_none';
+    if (systemdActive === 'active') deployMode = 'systemd';
+    else if (row.last_health && typeof row.last_health === 'object') {
+      const dm = (row.last_health as { deployMode?: string }).deployMode;
+      if (dm === 'pm2' || dm === 'pidfile' || dm === 'systemd') deployMode = dm;
+    }
+    const degraded = deployMode !== 'systemd' && deployMode !== 'pm2';
     return {
       projectId,
       processStatus,
@@ -586,7 +648,7 @@ export class ProjectOpsService {
       pidAlive,
       systemdActive,
       degraded,
-      deployMode: systemdActive === 'active' ? 'systemd' : 'pidfile_or_none',
+      deployMode,
       lastHealth: row.last_health,
       osProvisioned: row.os_provisioned,
       linuxUser: row.linux_user,
