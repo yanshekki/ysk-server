@@ -2,8 +2,8 @@
  * Email domain management: real DKIM keygen + durable checklist/health + mailboxes.
  */
 
-import { generateKeyPairSync, randomUUID, scryptSync, randomBytes } from 'node:crypto';
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { generateKeyPairSync, randomUUID } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk/shared';
 import { ErrorCodes, YskError } from '@ysk/shared';
@@ -16,6 +16,7 @@ import {
 import type { YskDatabase } from '../db/database.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import type { HostExecutor } from '../host/executor.js';
+import { hashMailboxPassword } from './password-hash.js';
 
 export interface EmailDomainRecord {
   id: string;
@@ -257,12 +258,13 @@ export class EmailService {
     const commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }> = [];
     let maildirPath: string | undefined;
     let passwordHash: string | undefined;
+    let passwordScheme: string | undefined;
 
     if (input.password && input.password.length >= 8) {
-      const salt = randomBytes(16).toString('hex');
-      const hash = scryptSync(input.password, salt, 32).toString('hex');
-      passwordHash = `scrypt$${salt}$${hash}`;
-      notes.push('Password hash stored (scrypt) — export via writeDovecotPassdb for Dovecot');
+      const hashed = await hashMailboxPassword(input.password);
+      passwordHash = hashed.hash;
+      passwordScheme = hashed.scheme;
+      notes.push(...hashed.notes);
     } else if (input.password) {
       notes.push('Password ignored (min 8 chars) — mailbox created without hash');
     }
@@ -367,11 +369,9 @@ export class EmailService {
       status,
       maildir: maildirPath,
       system_user: systemUser,
-      password_hash: passwordHash ? '***set***' : undefined,
-      password_hash_full: passwordHash,
+      password_scheme: passwordScheme,
       created_at: new Date().toISOString(),
     };
-    // store without exposing full hash in list responses later — keep full in store for now under private key
     this.db.snapshot.mailboxes.unshift({
       ...mailbox,
       password_hash: passwordHash,

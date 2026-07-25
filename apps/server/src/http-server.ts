@@ -1592,12 +1592,16 @@ export function createHttpServer(ctx: AppContext): Server {
           port?: number;
           phpVersion?: string;
           enableApache?: boolean;
+          preferFpm?: boolean;
+          forceBuiltin?: boolean;
         };
         const result = await ctx.projectOps.deployPhp(id, {
           actor: user.username,
           port: data.port,
           phpVersion: data.phpVersion,
           enableApache: data.enableApache,
+          preferFpm: data.preferFpm,
+          forceBuiltin: data.forceBuiltin,
         });
         return sendJson(res, result.ok ? 200 : 502, result);
       }

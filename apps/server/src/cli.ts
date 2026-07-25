@@ -372,7 +372,11 @@ async function main(argv: string[]): Promise<number> {
         const proj = ctx.projects.get(id);
         const result =
           proj.runtime === 'php'
-            ? await ctx.projectOps.deployPhp(id, { actor: 'cli' })
+            ? await ctx.projectOps.deployPhp(id, {
+                actor: 'cli',
+                preferFpm: hasFlag(args, '--fpm'),
+                forceBuiltin: hasFlag(args, '--builtin'),
+              })
             : await ctx.projectOps.deployNode(id, { actor: 'cli' });
         printJson(result);
         return result.ok ? 0 : 1;

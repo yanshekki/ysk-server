@@ -20,8 +20,9 @@ import { checkHttp, findFreePort, isPortListening, waitHttpOk } from '../host/he
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import { applyNodeHosting } from './node-apply.js';
-import { renderNginxProxy } from './nginx-ssl.js';
+import { renderNginxPhpFpm, renderNginxProxy } from './nginx-ssl.js';
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
+import { selectPhpRuntime } from './runtime.js';
 import { gitSync } from './git-deploy.js';
 import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
@@ -797,8 +798,9 @@ export class ProjectOpsService {
   }
 
   /**
-   * PHP deploy: applyPhpHosting artifacts + spawn `php -S` for real HTTP listen (degraded),
-   * or rely on apache when root+EXECUTE enableSite.
+   * PHP deploy dual-mode:
+   * - production: PHP-FPM pool + nginx fastcgi when preferFpm/enableFpm + root + YSK_EXECUTE
+   * - degraded: `php -S` built-in server (verifiable without root)
    */
   async deployPhp(
     projectId: string,
@@ -807,12 +809,15 @@ export class ProjectOpsService {
       port?: number;
       phpVersion?: string;
       enableApache?: boolean;
+      /** Prefer PHP-FPM + nginx (default true when root+EXECUTE) */
+      preferFpm?: boolean;
+      /** Force php -S even if FPM available */
+      forceBuiltin?: boolean;
       healthTimeoutMs?: number;
     },
   ): Promise<OpsApplyResult> {
     const row = this.require(projectId);
     if (row.runtime !== 'php' && row.runtime !== 'static') {
-      // allow force php on static
       if (row.runtime === 'node') {
         throw new YskError(ErrorCodes.VALIDATION, 'deployPhp: project runtime is node — use deployNode', {
           httpStatus: 400,
@@ -827,6 +832,15 @@ export class ProjectOpsService {
     const domain = row.domain ?? `${row.linux_user}.local`;
 
     const phpVersion = opts.phpVersion ?? row.runtime_version ?? '8.2';
+    const phpRt = selectPhpRuntime(phpVersion);
+    const canProd =
+      this.host.executeEnabled() &&
+      this.host.isRoot() &&
+      opts.forceBuiltin !== true &&
+      (opts.preferFpm === true ||
+        opts.enableApache === true ||
+        (opts.preferFpm !== false && opts.enableApache !== false));
+
     const apply = await applyPhpHosting({
       dataDir: this.dataDir,
       domain,
@@ -834,7 +848,7 @@ export class ProjectOpsService {
       phpVersion,
       poolName: row.linux_user,
       host: this.host,
-      enableSite: Boolean(opts.enableApache && this.host.executeEnabled() && this.host.isRoot()),
+      enableSite: Boolean(canProd && opts.enableApache),
     });
     written.push(...apply.written);
     notes.push(...apply.notes);
@@ -845,17 +859,107 @@ export class ProjectOpsService {
       linuxUser: row.linux_user,
       phpVersion,
       host: this.host,
-      enable: Boolean(opts.enableApache && this.host.executeEnabled() && this.host.isRoot()),
+      enable: canProd,
     });
     written.push(...fpm.written);
     notes.push(...fpm.notes);
-    if (fpm.enabled) {
-      notes.push('PHP-FPM pool enabled (production path)');
-    }
 
     await this.stopProcess(row, notes);
 
-    // Prefer built-in server for real listen without root (degraded but verifiable)
+    // —— Production path: FPM enabled → nginx fastcgi, no php -S ——
+    if (fpm.enabled) {
+      const fpmSocket =
+        `/run/php/php${phpRt.version}-fpm-${row.linux_user}.sock`;
+      const conf = renderNginxPhpFpm({
+        serverName: domain,
+        docRoot,
+        fpmSocket,
+        ssl: false,
+        cloudflareRealIp: true,
+      });
+      const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
+      written.push(nginxPath);
+      notes.push(`PHP-FPM production nginx conf: ${nginxPath}`);
+      notes.push(`fastcgi_pass unix:${fpmSocket}`);
+
+      // best-effort system sync + nginx -t + reload
+      let nginxReloaded = false;
+      if (this.host.executeEnabled() && this.host.isRoot()) {
+        const sync = await syncNginxConfigs({
+          dataDir: this.dataDir,
+          systemConfDir: '/etc/nginx/conf.d',
+          host: this.host,
+          dryRun: false,
+        });
+        written.push(...sync.copied);
+        notes.push(...sync.notes);
+        if (sync.tested) {
+          const rel = await this.host.runCommand(['systemctl', 'reload', 'nginx'], {
+            timeoutMs: 15_000,
+          });
+          nginxReloaded = rel.exitCode === 0;
+          notes.push(
+            nginxReloaded
+              ? 'nginx reloaded'
+              : `nginx reload exit=${rel.exitCode}: ${rel.stderr}`,
+          );
+        }
+      }
+
+      this.projects.updateRuntimeState(projectId, {
+        port: undefined,
+        pid: undefined,
+        pidfile: undefined,
+        process_status: 'running',
+        status: 'running',
+        nginx_config_path: nginxPath,
+        last_health: {
+          ok: true,
+          at: new Date().toISOString(),
+          deployMode: 'php_fpm',
+          degraded: false,
+          fpmSocket,
+          nginxReloaded,
+        },
+        last_deploy_at: new Date().toISOString(),
+      });
+
+      this.audit?.append({
+        actor: opts.actor,
+        action: 'project.deploy_php',
+        resource: projectId,
+        detail: { deployMode: 'php_fpm', fpmSocket, nginxPath, nginxReloaded },
+        ok: true,
+      });
+
+      return {
+        ok: true,
+        projectId,
+        processStatus: 'running',
+        listening: false,
+        nginxPath,
+        notes: [
+          ...notes,
+          'Production PHP-FPM path — verify via public hostname after nginx reload',
+        ],
+        written,
+        degraded: false,
+        deployMode: 'none',
+        nginxReloaded,
+      };
+    }
+
+    if (canProd && !fpm.enabled) {
+      notes.push(
+        'PHP-FPM enable requested but not active — falling back to php -S (degraded)',
+      );
+    } else {
+      notes.push(
+        'Deploy mode: php -S (degraded). Root+YSK_EXECUTE for PHP-FPM+nginx production path.',
+      );
+    }
+
+    // —— Degraded path: php -S ——
     const phpBin = await resolvePhpBinary(this.host, phpVersion);
     if (!phpBin) {
       this.projects.updateRuntimeState(projectId, {
@@ -872,6 +976,7 @@ export class ProjectOpsService {
         notes: [...notes, 'php binary not found — install php-cli'],
         written,
         degraded: true,
+        deployMode: 'pidfile',
       };
     }
 
@@ -901,6 +1006,7 @@ export class ProjectOpsService {
         notes: [...notes, 'php spawn returned no pid'],
         written,
         degraded: true,
+        deployMode: 'pidfile',
       };
     }
     child.unref();
@@ -913,6 +1019,7 @@ export class ProjectOpsService {
     const processStatus: OpsProcessStatus =
       health.ok && listening ? 'running' : 'unhealthy';
 
+    // Proxy nginx for degraded path (local health via php -S)
     const conf = renderNginxProxy({
       serverName: domain,
       upstream: `http://127.0.0.1:${port}`,
@@ -947,7 +1054,7 @@ export class ProjectOpsService {
       actor: opts.actor,
       action: 'project.deploy_php',
       resource: projectId,
-      detail: { port, pid, health, listening },
+      detail: { port, pid, health, listening, deployMode: 'php_builtin' },
       ok: health.ok && listening,
     });
 
@@ -972,6 +1079,8 @@ export class ProjectOpsService {
       written,
       degraded: true,
       deployMode: 'pidfile',
+      requiresRoot: !this.host.isRoot(),
+      requiresExecute: !this.host.executeEnabled(),
     };
   }
 

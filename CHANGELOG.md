@@ -30,11 +30,12 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - Mailbox Maildir provision + virtual maps API/CLI/UI; FTPS fail-closed install
 - Self-update `ok` flag; project setEnv/backup coverage in ops tests
 - Runtime probe/install (Node/PHP multi-version); Dovecot passdb export; fetchTransport tests
+- PHP deploy: FPM+nginx fastcgi production path vs php -S; SHA512-CRYPT mailbox hashes
+- OSV inventory mock tests; renderNginxPhpFpm
 
 ### Still partial / Spec backlog
 
-- Bare-metal runtime install matrices polish; PHP-FPM-only default (no php -S)
-- Webmail + production crypt schemes for Dovecot
+- Bare-metal runtime install matrices polish; webmail UI
 - ≥90% coverage target, public npm packages published
 
 ### Earlier scaffolding notes

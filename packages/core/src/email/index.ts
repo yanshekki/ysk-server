@@ -5,4 +5,5 @@ export * from './dnsbl.js';
 export * from './warmup.js';
 export * from './relay.js';
 export * from './dovecot-passdb.js';
+export * from './password-hash.js';
 

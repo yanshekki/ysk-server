@@ -31,6 +31,8 @@
 - **Mailboxes**: real Maildir + `virtual_mailbox` maps under dataDir; optional system user (root+EXECUTE)
 - **Dovecot passdb** export (passwd-file + auth snippet) from managed mailboxes
 - **Multi-version runtime probe** (Node 18/20/22, PHP 8.1–8.3) + install helpers (fail-closed)
+- **PHP deploy dual-mode**: PHP-FPM + nginx fastcgi (root+EXECUTE) → `php -S` degraded fallback
+- **Mailbox passwords**: `{SHA512-CRYPT}` via openssl when available (else YSK-SCRYPT)
 - **FTPS**: vsftpd config + install helper (fail-closed install)
 - **UFW script** under `dataDir/firewall/ufw-apply.sh` (apply needs root+EXECUTE; no fake ok)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
@@ -63,8 +65,8 @@
 
 ### Spec backlog (not production-ready yet)
 
-- Bare-metal runtime install polish; PHP-FPM-only default (no php -S)
-- Webmail UI + BLF-CRYPT Dovecot production hash scheme
+- Bare-metal runtime install polish; webmail UI
+- Prefer BLF-CRYPT where openssl supports it; default FPM-only site policy knobs
 - FTPS production enable; fail2ban ban-action automation
 - OpenClaw/Hermes/IonClaw full installers (probe/templates exist)
 - ≥90% test coverage; broader integration e2e

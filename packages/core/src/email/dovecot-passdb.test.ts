@@ -35,7 +35,8 @@ describe('dovecot-passdb', () => {
     expect(existsSync(r.passwdPath)).toBe(true);
     const body = readFileSync(r.passwdPath, 'utf8');
     expect(body).toContain('hello@passdb.test');
-    expect(body).toContain('scrypt$');
+    // SHA512-CRYPT when openssl available, else YSK-SCRYPT
+    expect(body.includes('SHA512-CRYPT') || body.includes('scrypt$')).toBe(true);
     expect(existsSync(r.confSnippetPath)).toBe(true);
 
     const all = writeAllDovecotPassdbs({ dataDir: dir, db });

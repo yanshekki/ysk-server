@@ -70,6 +70,65 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
 }
 
 /**
+ * Render Nginx server block for PHP-FPM (unix socket) + static docroot.
+ */
+export function renderNginxPhpFpm(opts: {
+  serverName: string;
+  docRoot: string;
+  /** e.g. /run/php/php8.2-fpm-ysk_demo.sock */
+  fpmSocket: string;
+  ssl?: boolean;
+  cloudflareRealIp?: boolean;
+  sslCertificate?: string;
+  sslCertificateKey?: string;
+}): string {
+  if (!opts.serverName || !opts.docRoot || !opts.fpmSocket) {
+    throw new YskError(ErrorCodes.VALIDATION, 'serverName, docRoot, fpmSocket required', {
+      httpStatus: 400,
+    });
+  }
+  const listen = opts.ssl
+    ? 'listen 443 ssl http2;\n  listen 80;'
+    : 'listen 80;';
+  const cert =
+    opts.sslCertificate ?? `/etc/letsencrypt/live/${opts.serverName}/fullchain.pem`;
+  const key =
+    opts.sslCertificateKey ?? `/etc/letsencrypt/live/${opts.serverName}/privkey.pem`;
+  const sslBlock = opts.ssl
+    ? `
+  ssl_certificate ${cert};
+  ssl_certificate_key ${key};
+  ssl_protocols TLSv1.2 TLSv1.3;
+`.trim()
+    : '';
+  const realIp = opts.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
+  return `server {
+  ${listen}
+  server_name ${opts.serverName};
+  root ${opts.docRoot};
+  index index.php index.html;
+  ${sslBlock}
+  ${realIp}
+
+  location / {
+    try_files $uri $uri/ /index.php?$query_string;
+  }
+
+  location ~ \\.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:${opts.fpmSocket};
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+  }
+
+  location ~ /\\. {
+    deny all;
+  }
+}
+`;
+}
+
+/**
  * Build certbot command plan for Let’s Encrypt.
  */
 export function planLetsEncrypt(plan: SslCertPlan): { commands: string[]; notes: string[] } {
