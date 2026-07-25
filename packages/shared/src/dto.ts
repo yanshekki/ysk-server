@@ -206,7 +206,7 @@ export interface AgentRuntimeDto {
   kind: AgentRuntimeKind;
   name: string;
   version?: string;
-  status: 'stopped' | 'running' | 'error' | 'unknown';
+  status: 'stopped' | 'running' | 'error' | 'unknown' | 'not_installed';
   installPath?: string;
 }
 

@@ -29,6 +29,9 @@
 - **Multi DNSBL** (Spamhaus / SpamCop / Barracuda) + email live-check UI
 - **fail2ban** jail.local under dataDir; install needs root + `YSK_EXECUTE=1`
 - **Projects feature slice** (`features/projects` api + hooks)
+- **Email warm-up plan** + scheduled multi-DNSBL job (`email-dnsbl`)
+- **Email feature slice** (`features/email`)
+- **Agent runtime probe** (path/systemd/PATH) + unit template write
 - Nginx conf generation under `dataDir`; system `nginx -t` + reload when EXECUTE
 - Email: DKIM keygen, DNS checklist, live checks, config templates, apply status write-back
 - Files manager (sandbox under dataDir)

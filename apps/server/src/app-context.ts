@@ -30,6 +30,7 @@ import {
   openDatabase,
   runProtectionProbes,
   backupAllProjects,
+  checkIpDnsbl,
   type Allowlist,
   type HostExecutor,
   type ProtectionState,
@@ -267,6 +268,63 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
         }
       },
       { runImmediately: process.env.YSK_BACKUP_ON_START === '1' },
+    );
+
+    // Periodic DNSBL reputation check for registered email domains
+    const dnsblMs = Number(process.env.YSK_DNSBL_INTERVAL_MS ?? 12 * 60 * 60_000);
+    scheduler.every(
+      'email-dnsbl',
+      Number.isFinite(dnsblMs) && dnsblMs >= 10_000 ? dnsblMs : 12 * 60 * 60_000,
+      async () => {
+        try {
+          const domains = db.snapshot.email_domains as Array<{
+            id?: string;
+            domain?: string;
+            server_ip?: string;
+          }>;
+          const reports: Array<Record<string, unknown>> = [];
+          for (const d of domains.slice(0, 20)) {
+            if (!d.server_ip) continue;
+            const report = await checkIpDnsbl(String(d.server_ip));
+            reports.push({
+              domainId: d.id,
+              domain: d.domain,
+              ip: d.server_ip,
+              ok: report.ok,
+              listedOn: report.listedOn,
+              at: new Date().toISOString(),
+            });
+            if (!report.ok) {
+              audit.append({
+                actor: 'system',
+                action: 'email.dnsbl.listed',
+                resource: String(d.domain ?? d.id),
+                detail: report,
+                ok: false,
+              });
+            }
+          }
+          settings.setJson('last_dnsbl_run', {
+            at: new Date().toISOString(),
+            count: reports.length,
+            reports,
+          });
+          audit.append({
+            actor: 'system',
+            action: 'email.dnsbl.scheduled',
+            detail: { count: reports.length },
+            ok: true,
+          });
+        } catch (e) {
+          audit.append({
+            actor: 'system',
+            action: 'email.dnsbl.scheduled',
+            detail: { error: e instanceof Error ? e.message : String(e) },
+            ok: false,
+          });
+        }
+      },
+      { runImmediately: process.env.YSK_DNSBL_ON_START === '1' },
     );
   }
 

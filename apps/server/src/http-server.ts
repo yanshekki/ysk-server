@@ -45,7 +45,15 @@ import {
   applyCloudflareDns,
   persistDnsZoneApply,
   checkIpDnsbl,
+  planEmailWarmup,
+  probeAllAgentRuntimes,
+  probeAgentRuntime,
+  planAgentInstall,
+  parseAgentKind,
+  renderAgentSystemdUnit,
 } from '@ysk/core';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
 import { getBearer, parseUrl, readBody, sendError, sendJson } from './http/util.js';
@@ -227,6 +235,55 @@ export function createHttpServer(ctx: AppContext): Server {
           ok: true,
         });
         return sendJson(res, 200, session);
+      }
+
+      // Managed AI agent runtimes (OpenClaw / Hermes / IonClaw)
+      if (method === 'GET' && url.pathname === '/api/v1/agents/runtimes') {
+        ctx.auth.authenticate(getBearer(req));
+        const probes = await probeAllAgentRuntimes(ctx.host);
+        return sendJson(res, 200, { items: probes });
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = url.pathname.split('/')[5];
+        const probe = await probeAgentRuntime(kind, ctx.host);
+        return sendJson(res, 200, { runtime: probe });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/plan$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = parseAgentKind(url.pathname.split('/')[5]);
+        return sendJson(res, 200, planAgentInstall(kind));
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/unit$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const kind = parseAgentKind(url.pathname.split('/')[5]);
+        const plan = planAgentInstall(kind);
+        const unitsDir = join(ctx.dataDir, 'systemd');
+        mkdirSync(unitsDir, { recursive: true });
+        const unitName = `ysk-agent-${kind}.service`;
+        const unitPath = join(unitsDir, unitName);
+        const content = renderAgentSystemdUnit({
+          kind,
+          installPath: plan.runtime.installPath ?? `/opt/ysk-server/agents/${kind}`,
+          nodePath: process.execPath,
+        });
+        writeFileSync(unitPath, content, 'utf8');
+        ctx.audit.append({
+          actor: user.username,
+          action: 'agent.unit.write',
+          resource: kind,
+          detail: { unitPath },
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          unitPath,
+          unitName,
+          notes: [
+            `Unit template written to ${unitPath}`,
+            'Enable with root + YSK_EXECUTE: cp to /etc/systemd/system && systemctl enable --now',
+          ],
+        });
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/tools/execute') {
@@ -787,6 +844,38 @@ export function createHttpServer(ctx: AppContext): Server {
         }
         const report = await checkIpDnsbl(ip);
         return sendJson(res, 200, report);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/email/dnsbl/last') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, {
+          last: ctx.settings.getJson('last_dnsbl_run') ?? null,
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/email/warmup') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          serverIp?: string;
+          isNewIp?: boolean;
+        };
+        const plan = planEmailWarmup({
+          domain: data.domain ?? 'example.com',
+          serverIp: data.serverIp ?? '203.0.113.10',
+          isNewIp: data.isNewIp,
+        });
+        return sendJson(res, 200, plan);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/warmup$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const d = ctx.email.get(id);
+        const plan = planEmailWarmup({
+          domain: d.domain,
+          serverIp: d.server_ip,
+          isNewIp: true,
+        });
+        return sendJson(res, 200, plan);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/node-apply$/)) {

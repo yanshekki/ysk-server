@@ -1,74 +1,39 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../shared/services/api';
-
-type Domain = {
-  id: string;
-  domain: string;
-  health_score: number;
-  server_ip: string;
-  apply_status?: string;
-  last_apply?: Record<string, unknown>;
-};
-
-type Bundle = {
-  records: Array<{ type: string; name: string; value: string; description: string }>;
-  externalTodos: Array<{ id: string; title: string; description: string; completed: boolean }>;
-  health: { score: number; maxScore: number; messages: string[] };
-};
+import { emailApi, useEmailDomains, type EmailBundle } from '../features/email';
 
 export function EmailPage() {
   const { t } = useTranslation();
-  const [items, setItems] = useState<Domain[]>([]);
+  const { items, error, setError, busy, setBusy, create, loadDns } = useEmailDomains();
   const [domain, setDomain] = useState('');
   const [serverIp, setServerIp] = useState('203.0.113.10');
-  const [bundle, setBundle] = useState<Bundle | null>(null);
+  const [bundle, setBundle] = useState<EmailBundle | null>(null);
   const [live, setLive] = useState<Record<string, unknown> | null>(null);
   const [dnsbl, setDnsbl] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function refresh() {
-    const r = await api.requestRaw<{ items: Domain[] }>('/api/v1/email/domains');
-    setItems(r.items);
-  }
-
-  useEffect(() => {
-    void refresh().catch((e: Error) => setError(e.message));
-  }, []);
+  const [warmup, setWarmup] = useState<Record<string, unknown> | null>(null);
+  const [dnsblLast, setDnsblLast] = useState<Record<string, unknown> | null>(null);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setBusy(true);
     try {
-      const created = await api.requestRaw<Bundle & { domain: Domain }>('/api/v1/email/domains', {
-        method: 'POST',
-        body: JSON.stringify({ domain, serverIp }),
-      });
+      const created = await create({ domain, serverIp });
       setBundle({
         records: created.records,
         externalTodos: created.externalTodos,
         health: created.health,
       });
       setDomain('');
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'failed');
-    } finally {
-      setBusy(false);
+    } catch {
+      /* hook sets error */
     }
   }
 
-  async function loadDns(id: string) {
-    setBusy(true);
+  async function onDns(id: string) {
     try {
-      const b = await api.requestRaw<Bundle>(`/api/v1/email/domains/${id}/dns`);
-      setBundle(b);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'failed');
-    } finally {
-      setBusy(false);
+      setBundle(await loadDns(id));
+    } catch {
+      /* */
     }
   }
 
@@ -76,11 +41,7 @@ export function EmailPage() {
     setBusy(true);
     setError(null);
     try {
-      const r = await api.requestRaw<Record<string, unknown>>(
-        `/api/v1/email/domains/${id}/live-check`,
-        { method: 'POST', body: '{}' },
-      );
-      setLive(r);
+      setLive(await emailApi.liveCheck(id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'live-check failed');
     } finally {
@@ -92,15 +53,32 @@ export function EmailPage() {
     setBusy(true);
     setError(null);
     try {
-      const r = await api.requestRaw<Record<string, unknown>>('/api/v1/email/dnsbl/check', {
-        method: 'POST',
-        body: JSON.stringify({ ip }),
-      });
-      setDnsbl(r);
+      setDnsbl(await emailApi.dnsbl(ip));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'dnsbl failed');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function runWarmup(id: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      setWarmup(await emailApi.warmupDomain(id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'warmup failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function loadDnsblSchedule() {
+    try {
+      const r = await emailApi.dnsblLast();
+      setDnsblLast(r.last);
+    } catch {
+      /* optional */
     }
   }
 
@@ -142,6 +120,11 @@ export function EmailPage() {
 
       <div className="card">
         <h2 className="card__title">{t('email.domains')}</h2>
+        <div className="form-actions btn-row">
+          <button type="button" className="btn btn--secondary btn--sm" onClick={() => void loadDnsblSchedule()}>
+            Last scheduled DNSBL
+          </button>
+        </div>
         {items.length === 0 ? (
           <div className="empty">
             <div className="empty__title">—</div>
@@ -179,7 +162,7 @@ export function EmailPage() {
                           type="button"
                           className="btn btn--secondary btn--sm"
                           disabled={busy}
-                          onClick={() => void loadDns(d.id)}
+                          onClick={() => void onDns(d.id)}
                         >
                           DNS
                         </button>
@@ -199,6 +182,14 @@ export function EmailPage() {
                         >
                           DNSBL
                         </button>
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          disabled={busy}
+                          onClick={() => void runWarmup(d.id)}
+                        >
+                          Warm-up
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -209,6 +200,18 @@ export function EmailPage() {
         )}
       </div>
 
+      {dnsblLast && (
+        <div className="card">
+          <h2 className="card__title">Scheduled DNSBL (last run)</h2>
+          <pre className="code">{JSON.stringify(dnsblLast, null, 2)}</pre>
+        </div>
+      )}
+      {warmup && (
+        <div className="card">
+          <h2 className="card__title">Warm-up plan</h2>
+          <pre className="code">{JSON.stringify(warmup, null, 2)}</pre>
+        </div>
+      )}
       {live && (
         <div className="card">
           <h2 className="card__title">Live check result</h2>
@@ -271,7 +274,7 @@ export function EmailPage() {
             {bundle.externalTodos.map((todo) => (
               <li key={todo.id}>
                 <strong>{todo.title}</strong>
-                <div className="muted u-text-sm">{todo.description}</div>
+                <div className="muted">{todo.description}</div>
               </li>
             ))}
           </ul>

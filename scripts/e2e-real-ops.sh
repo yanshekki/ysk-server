@@ -208,5 +208,18 @@ DNSBL=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/dnsbl/check
 echo "$DNSBL" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.results||!j.results.length) process.exit(16);})"
 log "DNSBL multi-list OK"
 
+# Warm-up plan
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/warmup" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"domain":"example.com","serverIp":"203.0.113.10"}' >/dev/null
+log "Warm-up plan OK"
+
+# Agent runtime probes
+AG=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/agents/runtimes" -H "$AUTH")
+echo "$AG" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.items||j.items.length<3) process.exit(17);})"
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/agents/runtimes/openclaw/unit" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{}' >/dev/null
+log "Agent runtimes OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"
