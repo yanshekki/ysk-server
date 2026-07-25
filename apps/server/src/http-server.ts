@@ -3,13 +3,20 @@
  */
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
-import { CLI_NAME, PRODUCT_NAME, YskError, type HealthResponse } from '@ysk/shared';
+import {
+  CLI_NAME,
+  PRODUCT_NAME,
+  YskError,
+  type HealthResponse,
+  type ResourceScope,
+  type SystemRole,
+} from '@ysk/shared';
 import {
   checkRbac,
   executeToolCall,
   evaluateProtection,
 } from '@ysk/core';
-import type { AppContext } from './app-context.js';
+import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -101,14 +108,24 @@ export function createHttpServer(ctx: AppContext): Server {
           args?: Record<string, unknown>;
           dryRun?: boolean;
           approvalId?: string;
+          scope?: ResourceScope;
         };
+        const roles = user.roles as SystemRole[];
         const result = executeToolCall(
           {
             tool: data.tool ?? '',
             args: data.args ?? {},
             dryRun: data.dryRun,
+            scope: data.scope,
           },
-          { allowlist: ctx.allowlist, approvals: ctx.approvals, actor: user.username },
+          {
+            allowlist: ctx.allowlist,
+            approvals: ctx.approvals,
+            actor: user.username,
+            roles,
+            scope: data.scope,
+            protection: ctx.protection,
+          },
           data.approvalId,
         );
         return sendJson(res, 200, result);
@@ -135,13 +152,30 @@ export function createHttpServer(ctx: AppContext): Server {
           networkReachable?: boolean;
           ddosSuspected?: boolean;
           forceOffline?: boolean;
+          highRequestRate?: boolean;
         };
-        ctx.protection = evaluateProtection({
+        const state = evaluateProtection({
           networkReachable: data.networkReachable ?? true,
           ddosSuspected: data.ddosSuspected,
           forceOffline: data.forceOffline,
+          highRequestRate: data.highRequestRate,
         });
+        applyProtection(ctx, state);
         return sendJson(res, 200, ctx.protection);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/llm/chat') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          model?: string;
+          messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+        };
+        const response = await ctx.llm.chat({
+          model: data.model,
+          messages: data.messages ?? [],
+        });
+        return sendJson(res, 200, response);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/approvals') {

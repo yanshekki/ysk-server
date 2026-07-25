@@ -3,7 +3,6 @@
  * YSK Server CLI — AI-agent friendly structured output.
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
 import { CLI_NAME, PRODUCT_NAME, type StructuredResult } from '@ysk/shared';
 import {
   createDefaultAllowlist,
@@ -14,6 +13,7 @@ import { createAppContext } from './app-context.js';
 import { createHttpServer, listen } from './http-server.js';
 import { runSetup } from './cli/setup.js';
 import { runUpdate } from './cli/update.js';
+import { loadConfigFile } from './config-loader.js';
 import { VERSION } from './version.js';
 
 function printJson(data: unknown): void {
@@ -57,12 +57,13 @@ update options:
   --latest <version>    Override latest version for planning
 
 serve options:
-  --host <host>         Bind host (default: 127.0.0.1)
-  --port <port>         Bind port (default: 8787)
+  --config <path>       Load config.json written by setup
+  --host <host>         Bind host (overrides config)
+  --port <port>         Bind port (overrides config)
 
 Examples:
   ${CLI_NAME} setup --non-interactive --dry-run
-  ${CLI_NAME} serve --port 8787
+  ${CLI_NAME} serve --config .ysk/config.json
   ${CLI_NAME} tools --json
 `.trim();
   process.stdout.write(`${text}\n`);
@@ -78,12 +79,26 @@ function getOpt(args: string[], name: string): string | undefined {
   return undefined;
 }
 
+function printVersion(json: boolean): void {
+  if (json) {
+    printJson({ ok: true, product: PRODUCT_NAME, cli: CLI_NAME, version: VERSION });
+  } else {
+    process.stdout.write(`${PRODUCT_NAME} ${CLI_NAME}/${VERSION}\n`);
+  }
+}
+
 async function main(argv: string[]): Promise<number> {
   const args = argv.slice(2);
   const json = hasFlag(args, '--json');
-  const command = args.find((a) => !a.startsWith('-')) ?? 'help';
+  const command = args.find((a) => !a.startsWith('-'));
 
-  if (hasFlag(args, '--help') || hasFlag(args, '-h') || command === 'help') {
+  // Global flags must win over default-to-help when only flags are present
+  if (hasFlag(args, '--version') || hasFlag(args, '-V')) {
+    printVersion(json);
+    return 0;
+  }
+
+  if (hasFlag(args, '--help') || hasFlag(args, '-h')) {
     if (json) {
       printJson({
         ok: true,
@@ -98,12 +113,23 @@ async function main(argv: string[]): Promise<number> {
     return 0;
   }
 
-  if (hasFlag(args, '--version') || hasFlag(args, '-V') || command === 'version') {
+  if (!command || command === 'help') {
     if (json) {
-      printJson({ ok: true, product: PRODUCT_NAME, cli: CLI_NAME, version: VERSION });
+      printJson({
+        ok: true,
+        product: PRODUCT_NAME,
+        cli: CLI_NAME,
+        version: VERSION,
+        commands: ['setup', 'update', 'serve', 'tools', 'agents', 'version', 'help'],
+      });
     } else {
-      process.stdout.write(`${PRODUCT_NAME} ${CLI_NAME}/${VERSION}\n`);
+      printHelp();
     }
+    return 0;
+  }
+
+  if (command === 'version') {
+    printVersion(json);
     return 0;
   }
 
@@ -163,19 +189,39 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'serve') {
-    const host = getOpt(args, '--host') ?? '127.0.0.1';
-    const port = Number(getOpt(args, '--port') ?? process.env.PORT ?? 8787);
-    const ctx = createAppContext(VERSION);
+    const configPath = getOpt(args, '--config');
+    const config = configPath ? loadConfigFile(configPath) : undefined;
+    const host = getOpt(args, '--host') ?? config?.listenHost ?? '127.0.0.1';
+    const port = Number(
+      getOpt(args, '--port') ?? process.env.PORT ?? config?.listenPort ?? 8787,
+    );
+    const ctx = createAppContext({
+      version: VERSION,
+      config,
+      configPath,
+    });
     const server = createHttpServer(ctx);
     const addr = await listen(server, host, port);
     const msg = `${PRODUCT_NAME} listening on http://${addr.host}:${addr.port}`;
     if (json) {
-      printJson({ ok: true, code: 'YSK_SERVE', message: msg, data: addr });
+      printJson({
+        ok: true,
+        code: 'YSK_SERVE',
+        message: msg,
+        data: {
+          ...addr,
+          configPath: configPath ?? null,
+          adminUsername: config?.adminUsername ?? 'admin',
+          locale: config?.locale ?? 'zh-TW',
+        },
+      });
     } else {
       process.stdout.write(`${msg}\n`);
       process.stdout.write(`Health: http://${addr.host}:${addr.port}/health\n`);
+      if (configPath) {
+        process.stdout.write(`Config: ${configPath} (admin=${config?.adminUsername}, locale=${config?.locale})\n`);
+      }
     }
-    // Keep alive unless YSK_SERVE_ONCE for tests
     if (process.env.YSK_SERVE_ONCE === '1') {
       server.close();
       return 0;
@@ -187,7 +233,6 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'self-update-plan') {
-    // internal helper
     printJson(planSelfUpdate({ current: VERSION, latest: getOpt(args, '--latest') ?? VERSION }));
     return 0;
   }
@@ -196,19 +241,23 @@ async function main(argv: string[]): Promise<number> {
   return 1;
 }
 
-// Ensure dist is importable
-void main(process.argv).then(
-  (code) => {
-    if (code !== 0) process.exitCode = code;
-  },
-  (err) => {
-    process.stderr.write(`${err instanceof Error ? err.stack ?? err.message : err}\n`);
-    process.exitCode = 1;
-  },
-);
+// Only auto-run when executed as CLI entry (not when imported by tests)
+const isDirectRun =
+  process.argv[1] &&
+  (process.argv[1].endsWith('/cli.js') ||
+    process.argv[1].endsWith('/cli.ts') ||
+    process.argv[1].endsWith('ysk-server'));
 
-// re-export for tests
+if (isDirectRun) {
+  void main(process.argv).then(
+    (code) => {
+      if (code !== 0) process.exitCode = code;
+    },
+    (err) => {
+      process.stderr.write(`${err instanceof Error ? err.stack ?? err.message : err}\n`);
+      process.exitCode = 1;
+    },
+  );
+}
+
 export { main, runSetup, runUpdate };
-// silence unused in some bundlers
-void mkdirSync;
-void writeFileSync;

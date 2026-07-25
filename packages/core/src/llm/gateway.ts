@@ -6,11 +6,15 @@
 import type { LlmChatRequest, LlmChatResponse } from '@ysk/shared';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import { randomUUID } from 'node:crypto';
+import type { ProtectionState } from '../services/protection.js';
 
 export interface LlmProviderConfig {
   baseUrl: string;
   apiKey?: string;
   defaultModel: string;
+  /** Optional local-only base URL used when protection.localLlmOnly */
+  localBaseUrl?: string;
+  localModel?: string;
 }
 
 export interface LlmTransport {
@@ -51,14 +55,28 @@ export const echoTransport: LlmTransport = {
 };
 
 export class LlmGateway {
+  private protection: ProtectionState | undefined;
+
   constructor(
     private readonly config: LlmProviderConfig,
     private readonly transport: LlmTransport = nullTransport,
   ) {}
 
   /**
+   * Apply current protection mode (local-LLM-only, etc.).
+   */
+  setProtection(state: ProtectionState | undefined): void {
+    this.protection = state;
+  }
+
+  getProtection(): ProtectionState | undefined {
+    return this.protection;
+  }
+
+  /**
    * Chat completion. Response is ALWAYS untrusted — callers must route tool
    * intentions through Allowlist + Approval, never eval model text.
+   * When protection.localLlmOnly is set, remote baseUrl is ignored.
    */
   async chat(req: LlmChatRequest): Promise<LlmChatResponse> {
     if (!req.messages?.length) {
@@ -69,10 +87,29 @@ export class LlmGateway {
         throw new YskError(ErrorCodes.VALIDATION, 'invalid message shape', { httpStatus: 400 });
       }
     }
-    const model = req.model ?? this.config.defaultModel;
+
+    const localOnly = Boolean(this.protection?.localLlmOnly);
+    const baseUrl = localOnly
+      ? (this.config.localBaseUrl ?? 'http://127.0.0.1:11434')
+      : this.config.baseUrl;
+    const model = localOnly
+      ? (req.model && req.model.startsWith('local')
+          ? req.model
+          : (this.config.localModel ?? 'local'))
+      : (req.model ?? this.config.defaultModel);
+
+    // Refuse clearly remote model ids while local-only
+    if (localOnly && req.model && /gpt-|claude|gemini|openai/i.test(req.model)) {
+      throw new YskError(
+        ErrorCodes.FORBIDDEN,
+        `Protection mode ${this.protection?.mode}: remote model blocked (local LLM only)`,
+        { httpStatus: 403, details: { model: req.model, mode: this.protection?.mode } },
+      );
+    }
+
     const raw = await this.transport.complete({
-      baseUrl: this.config.baseUrl,
-      apiKey: this.config.apiKey,
+      baseUrl,
+      apiKey: localOnly ? undefined : this.config.apiKey,
       model,
       messages: req.messages,
       temperature: req.temperature,

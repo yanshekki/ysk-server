@@ -17,7 +17,10 @@ export interface PackageInventoryItem {
 
 /**
  * Derive structured update advice from inventory + advisory signals.
- * LLM may supply changelog text; this function still makes the final structured decision.
+ * Policy:
+ * - high/critical risk always requires human approval
+ * - low-risk security patches (no HIGH/CRITICAL CVE, no breaking) may auto-update
+ * - routine medium updates require approval
  */
 export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
   if (!item.packageName || !item.currentVersion) {
@@ -35,31 +38,42 @@ export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
   let summary = 'No update available';
 
   if (!same) {
-    if (cves.some((c) => /CRITICAL|HIGH/i.test(c)) || item.hasSecurityFix) {
-      advice = cves.some((c) => /CRITICAL/i.test(c)) ? 'urgent' : 'update';
-      risk = cves.some((c) => /CRITICAL/i.test(c)) ? 'critical' : 'high';
-      requiresApproval = risk === 'critical' || Boolean(item.hasBreakingChange);
-      summary = item.hasSecurityFix
-        ? 'Security fix available; update recommended'
-        : 'CVE-linked update available';
+    const hasCritical = cves.some((c) => /CRITICAL/i.test(c));
+    const hasHigh = cves.some((c) => /HIGH/i.test(c));
+
+    if (hasCritical) {
+      advice = 'urgent';
+      risk = 'critical';
+      requiresApproval = true;
+      summary = 'Critical CVE-linked update; human approval required';
+    } else if (hasHigh) {
+      advice = 'update';
+      risk = 'high';
+      requiresApproval = true;
+      summary = 'High-severity CVE update; human approval required';
     } else if (item.hasBreakingChange) {
       advice = 'watch';
       risk = 'high';
       requiresApproval = true;
       summary = 'Update available but may include breaking changes';
+    } else if (item.hasSecurityFix) {
+      // Security fix without HIGH/CRITICAL CVE tags and without breaking changes → auto-eligible
+      advice = 'update';
+      risk = 'low';
+      requiresApproval = false;
+      summary = 'Low-risk security update; eligible for auto-update';
     } else {
+      // Routine upgrade
       advice = 'update';
       risk = 'medium';
       requiresApproval = true;
-      summary = 'Routine update available';
+      summary = 'Routine update available; approval required';
     }
   }
 
-  // Low-risk security patches with no breaking change can auto-update
-  if (advice === 'update' && risk === 'medium' && item.hasSecurityFix && !item.hasBreakingChange) {
-    requiresApproval = false;
-    risk = 'low';
-    summary = 'Low-risk security update; eligible for auto-update';
+  // Invariant: high and critical always require approval
+  if (risk === 'high' || risk === 'critical') {
+    requiresApproval = true;
   }
 
   return {
