@@ -518,5 +518,3 @@ function extractPemBody(pem: string): string {
 function domains(db: YskDatabase): EmailDomainRecord[] {
   return db.snapshot.email_domains as unknown as EmailDomainRecord[];
 }
-
-export { generateEmailDnsRecords };

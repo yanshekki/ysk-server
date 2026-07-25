@@ -571,16 +571,16 @@ async function main(argv: string[]): Promise<number> {
           );
           return 1;
         }
-        let domain = ctx.email.list().find((d) => d.domain === domainName);
-        if (!domain) {
+        let domainId = ctx.email.list().find((d) => d.domain === domainName)?.id;
+        if (!domainId) {
           const created = ctx.email.create({
             domain: domainName,
             serverIp: getOpt(args, '--ip') ?? '203.0.113.10',
             actor: 'cli',
           });
-          domain = created.domain as typeof domain;
+          domainId = created.domain.id;
         }
-        const result = await ctx.email.createMailbox(domain!.id, {
+        const result = await ctx.email.createMailbox(domainId, {
           localPart,
           password: getOpt(args, '--password'),
           provisionSystem: hasFlag(args, '--system'),

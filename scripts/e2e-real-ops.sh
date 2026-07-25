@@ -275,5 +275,52 @@ CLI_CREATE=$(node apps/server/dist/cli.js projects create --data-dir "$DATA_DIR"
 echo "$CLI_CREATE" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.project||!j.scaffold) process.exit(26);})"
 log "CLI templates/projects OK"
 
+# Static site deploy (nginx root conf, no process)
+STATIC_CREATE=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"name\":\"static-${NAME}\",\"domain\":\"static-${NAME}.local\",\"runtime\":\"static\",\"templateId\":\"static-site\"}")
+STATIC_ID=$(printf '%s' "$STATIC_CREATE" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d).project.id))")
+STATIC_DEP=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${STATIC_ID}/deploy-static" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{}')
+echo "$STATIC_DEP" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||!j.nginxPath) process.exit(27);})"
+STATIC_NGX=$(printf '%s' "$STATIC_DEP" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d).nginxPath||''))")
+grep -q 'try_files' "$STATIC_NGX" || fail "static nginx conf missing try_files"
+log "Static deploy OK: $STATIC_NGX"
+
+# BIND zone file + PowerDNS plan + runtimes probe
+ZONE=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/dns/zone-file" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"zone\":\"e2e-${NAME}.test\",\"serverIp\":\"203.0.113.50\"}")
+echo "$ZONE" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||!j.zonePath) process.exit(28);})"
+PDNS=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/dns/powerdns/load" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"zone\":\"e2e-${NAME}.test\",\"serverIp\":\"203.0.113.50\",\"load\":false}")
+echo "$PDNS" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(j.mode!=='plan'&&j.ok!==true) process.exit(29);})"
+RT=$(curl -fsS "http://127.0.0.1:${PORT_API}/api/v1/hosting/runtimes" -H "$AUTH")
+echo "$RT" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.probe||!j.probe.node||!j.supported) process.exit(30);})"
+log "DNS zone / PowerDNS plan / runtimes OK"
+
+# Email domain + mailbox + webmail plan
+EM=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/domains" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"domain\":\"mail-${NAME}.test\",\"serverIp\":\"203.0.113.10\"}")
+EM_ID=$(printf '%s' "$EM" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d).domain.id))")
+MB=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/domains/${EM_ID}/mailboxes" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"localPart":"info","password":"longpassword99"}')
+echo "$MB" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||!j.mailbox) process.exit(31);})"
+WM=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/webmail/apply" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"domain\":\"webmail-${NAME}.test\",\"download\":false}")
+echo "$WM" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||j.mode!=='plan') process.exit(32);})"
+log "Email mailbox + webmail plan OK"
+
+# Firewall plan write script
+FW=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/system/firewall/apply" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"allowSmtp":true,"apply":false}')
+echo "$FW" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||!j.written||!j.written.length) process.exit(33);})"
+log "Firewall ufw script OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"

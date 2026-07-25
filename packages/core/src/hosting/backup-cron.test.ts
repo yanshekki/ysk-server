@@ -66,5 +66,13 @@ describe('backup + cron', () => {
     const install = await cron.installCrontab('test');
     expect(install.ok).toBe(false);
     expect(install.requiresExecute).toBe(true);
+
+    const disabled = cron.setEnabled(job.id, false);
+    expect(disabled?.enabled).toBe(false);
+    const body = (await import('node:fs')).readFileSync(path, 'utf8');
+    expect(body).not.toContain(job.command);
+    cron.setEnabled(job.id, true);
+    expect(cron.delete(job.id)).toBe(true);
+    expect(cron.list()).toHaveLength(0);
   });
 });

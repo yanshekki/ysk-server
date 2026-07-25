@@ -19,7 +19,7 @@
 - **Deploy PHP**: FPM+nginx or `php -S`; **Deploy static**: nginx `root` + try_files (optional system reload)
 - **Deploy PHP** artifacts + Apache vhost templates
 - **Git deploy** (clone/pull → redeploy), **env vars** (`.env`), **tar backup** under `dataDir/backups`
-- **Cron** jobs stored + managed crontab file; install needs `YSK_EXECUTE=1`
+- **Cron** jobs stored + managed crontab file; enable/disable + install needs `YSK_EXECUTE=1`
 - **Daily scheduler**: inventory snapshot + project backups (`daily-inventory`, `daily-backup`)
 - **Logs tail** per project; **Updates** page refresh inventory; Dashboard project/backup summary
 - **SSL PEM upload** to `dataDir/certs/` + nginx SSL conf with managed paths

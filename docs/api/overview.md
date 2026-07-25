@@ -52,6 +52,7 @@ Base URL: `http://127.0.0.1:8787`
 | POST | `/api/v1/projects/:id/publish-nginx` | Bearer | Nginx conf + optional reload |
 | POST | `/api/v1/projects/:id/git-deploy` | Bearer | Git clone/pull + redeploy |
 | POST | `/api/v1/projects/:id/deploy-static` | Bearer | Static site nginx root conf |
+| PATCH | `/api/v1/cron/:id` | Bearer | Enable/disable cron job |
 | POST | `/api/v1/hosting/dns/zone-file` | Bearer | Write BIND zone under dataDir/dns/zones |
 | GET | `/api/v1/hosting/dns/zone-files` | Bearer | List managed zone files |
 | GET | `/api/v1/hosting/dns/powerdns/status` | Bearer | Probe pdnsutil + list zones |

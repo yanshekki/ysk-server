@@ -35,6 +35,7 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - Roundcube webmail plan/apply; coverage for protection/operation-level/repos
 - deployStatic nginx path; host executor blocks rm/crontab/pm2 without EXECUTE
 - Repo tests (session/project); playbooks startPlaybookRun coverage
+- e2e: static/DNS/PowerDNS/mailbox/webmail/firewall; cron setEnabled; live-checks DNS mocks
 
 ### Still partial / Spec backlog
 

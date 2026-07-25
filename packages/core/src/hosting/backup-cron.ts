@@ -242,6 +242,17 @@ export class CronJobService {
     return this.db.snapshot.cron_jobs.length < before;
   }
 
+  /** Enable or disable a job and rewrite managed crontab. */
+  setEnabled(id: string, enabled: boolean): CronJobRecord | undefined {
+    const row = cronRows(this.db).find((j) => j.id === id);
+    if (!row) return undefined;
+    row.enabled = enabled;
+    row.updated_at = new Date().toISOString();
+    this.db.persist();
+    this.writeManagedCrontab();
+    return { ...row };
+  }
+
   /** Write all enabled jobs to dataDir/cron/ysk.crontab */
   writeManagedCrontab(): string {
     const dir = join(this.dataDir, 'cron');

@@ -1712,6 +1712,31 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendJson(res, ok ? 200 : 404, { ok });
       }
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/cron\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { enabled?: boolean };
+        if (typeof data.enabled !== 'boolean') {
+          return sendJson(res, 400, {
+            ok: false,
+            code: 'YSK_VALIDATION',
+            message: 'enabled boolean required',
+          });
+        }
+        const job = ctx.cron.setEnabled(id, data.enabled);
+        if (!job) {
+          return sendJson(res, 404, { ok: false, code: 'YSK_NOT_FOUND', message: 'cron job not found' });
+        }
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cron.set_enabled',
+          resource: id,
+          detail: { enabled: data.enabled },
+          ok: true,
+        });
+        return sendJson(res, 200, { job });
+      }
       if (method === 'POST' && url.pathname === '/api/v1/cron/install') {
         const user = ctx.auth.authenticate(getBearer(req));
         const result = await ctx.cron.installCrontab(user.username);
