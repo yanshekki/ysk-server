@@ -68,6 +68,18 @@ export const systemApi = {
     api.requestRaw<{ items: Array<Record<string, unknown>> }>(
       '/api/v1/hosting/dns/zone-files',
     ),
+  powerDnsStatus: () =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/hosting/dns/powerdns/status'),
+  powerDnsLoad: (body: {
+    zone: string;
+    serverIp: string;
+    mailHost?: string;
+    load?: boolean;
+  }) =>
+    api.requestRaw('/api/v1/hosting/dns/powerdns/load', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   cloudflareApply: (body: {
     zone: string;
     serverIp: string;

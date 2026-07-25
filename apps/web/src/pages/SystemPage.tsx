@@ -141,6 +141,38 @@ export function SystemPage() {
             >
               Write zone file
             </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() =>
+                void run(() =>
+                  api.powerDnsLoad({
+                    zone: domain,
+                    serverIp,
+                    load: false,
+                  }),
+                )
+              }
+            >
+              PowerDNS plan
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() =>
+                void run(() =>
+                  api.powerDnsLoad({
+                    zone: domain,
+                    serverIp,
+                    load: true,
+                  }),
+                )
+              }
+            >
+              PowerDNS load (EXECUTE)
+            </button>
           </div>
           {zoneFiles.length > 0 && (
             <p className="muted meta-block--top">

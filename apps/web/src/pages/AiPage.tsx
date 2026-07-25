@@ -1,82 +1,27 @@
-import { FormEvent, useEffect, useState } from 'react';
-import { api } from '../shared/services/api';
-
-type Task = {
-  id: string;
-  prompt: string;
-  status: string;
-  planSummary: string;
-  steps: Array<{ id: string; tool: string; status: string; requiresApproval: boolean; error?: string }>;
-};
+import { FormEvent } from 'react';
+import { useAiTasks } from '../features/llm';
 
 export function AiPage() {
-  const [prompt, setPrompt] = useState('show system info');
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [playbooks, setPlaybooks] = useState<Array<{ id: string; name: string; description: string }>>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [selected, setSelected] = useState<Task | null>(null);
-
-  async function refresh() {
-    const [t, p] = await Promise.all([
-      api.requestRaw<{ items: Task[] }>('/api/v1/ai/tasks'),
-      api.requestRaw<{ items: Array<{ id: string; name: string; description: string }> }>(
-        '/api/v1/ai/playbooks',
-      ),
-    ]);
-    setTasks(t.items);
-    setPlaybooks(p.items);
-  }
-
-  useEffect(() => {
-    void refresh().catch((e: Error) => setError(e.message));
-  }, []);
+  const {
+    prompt,
+    setPrompt,
+    tasks,
+    playbooks,
+    error,
+    busy,
+    selected,
+    setSelected,
+    createTask,
+    approveAndRun,
+    runPlaybook,
+  } = useAiTasks();
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
-    setBusy(true);
-    setError(null);
     try {
-      const task = await api.requestRaw<Task>('/api/v1/ai/tasks', {
-        method: 'POST',
-        body: JSON.stringify({ prompt, enrich: false }),
-      });
-      setSelected(task);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function approveAndRun(id: string) {
-    setBusy(true);
-    try {
-      await api.requestRaw(`/api/v1/ai/tasks/${id}/approve`, { method: 'POST' });
-      const done = await api.requestRaw<Task>(`/api/v1/ai/tasks/${id}/execute`, { method: 'POST' });
-      setSelected(done);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function runPlaybook(id: string) {
-    setBusy(true);
-    try {
-      const r = await api.requestRaw<{ task: Task }>('/api/v1/ai/playbooks/run', {
-        method: 'POST',
-        body: JSON.stringify({ playbookId: id }),
-      });
-      setSelected(r.task);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'failed');
-    } finally {
-      setBusy(false);
+      await createTask(prompt);
+    } catch {
+      /* hook sets error */
     }
   }
 
@@ -94,7 +39,12 @@ export function AiPage() {
         <form onSubmit={(e) => void onCreate(e)}>
           <div className="field">
             <label htmlFor="prompt">自然語言指令</label>
-            <input id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} required />
+            <input
+              id="prompt"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              required
+            />
           </div>
           <div className="form-actions">
             <button type="submit" className="btn btn--primary" disabled={busy}>

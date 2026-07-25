@@ -151,11 +151,15 @@ export async function applyLetsEncrypt(input: {
   });
   const notes = [...plan.notes];
   const commands = plan.commands.map((c) => ['bash', '-c', c]);
-  const execute = Boolean(input.run && input.host.executeEnabled() && input.host.isRoot());
-  if (input.run && !execute) notes.push('certbot run skipped: need root + YSK_EXECUTE=1');
+  const want = Boolean(input.run);
+  const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
+  if (want && !execute) {
+    notes.push('certbot run skipped: need root + YSK_EXECUTE=1 (never fake success)');
+  }
   const commandResults = await runAll(input.host, commands, execute);
+  const ranOk = commandResults.every((c) => c.exitCode === 0);
   return {
-    ok: execute ? commandResults.every((c) => c.exitCode === 0) : true,
+    ok: want ? execute && ranOk : true,
     written: [],
     commands: plan.commands,
     commandResults,

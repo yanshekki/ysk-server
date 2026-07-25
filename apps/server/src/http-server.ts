@@ -25,6 +25,8 @@ import {
   planDnsZone,
   writeManagedDnsZone,
   listManagedDnsZones,
+  applyPowerDnsZone,
+  powerDnsStatus,
   planFirewall,
   planPublicFileServer,
   probeEndpoint,
@@ -1136,6 +1138,53 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'GET' && url.pathname === '/api/v1/hosting/dns/zone-files') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { items: listManagedDnsZones(ctx.dataDir) });
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/dns/powerdns/status') {
+        ctx.auth.authenticate(getBearer(req));
+        const status = await powerDnsStatus({ dataDir: ctx.dataDir, host: ctx.host });
+        return sendJson(res, 200, status);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/powerdns/load') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          zone?: string;
+          serverIp?: string;
+          mailHost?: string;
+          load?: boolean;
+        };
+        const result = await applyPowerDnsZone({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          zone: data.zone ?? 'example.com',
+          serverIp: data.serverIp ?? '203.0.113.10',
+          mailHost: data.mailHost,
+          load: data.load,
+        });
+        ctx.db.snapshot.dns_zones = [
+          {
+            id: randomUUID(),
+            zone: result.zone,
+            provider: 'powerdns',
+            zonePath: result.zonePath,
+            mode: result.mode,
+            ok: result.ok,
+            updated_at: new Date().toISOString(),
+            actor: user.username,
+          },
+          ...ctx.db.snapshot.dns_zones.filter(
+            (z) => !(String(z.zone) === result.zone && z.provider === 'powerdns'),
+          ),
+        ].slice(0, 50);
+        ctx.db.persist();
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.powerdns.load',
+          resource: result.zone,
+          detail: { mode: result.mode, ok: result.ok, zonePath: result.zonePath },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/cloudflare/apply') {
         const user = ctx.auth.authenticate(getBearer(req));

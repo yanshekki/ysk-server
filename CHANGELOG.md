@@ -23,13 +23,14 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - Web FSD slices: projects, email, agents, dashboard, updates, system, security, files
 - Coverage: gitSync local clone/pull, scheduler, probeTcp, pm2-apply, dns-zone, firewall refuse
 - BIND zone files (`dataDir/dns/zones`) + UFW script writer (fail-closed apply)
+- PowerDNS plan/load (`pdnsutil`) + helper scripts; certbot refuse without EXECUTE
+- PM2 `save` after successful start; AI/llm FSD; fleet/settings/approval/files tests
 
 ### Still partial / Spec backlog
 
 - Full multi-version runtime install matrices, production PHP-FPM-only (no php -S)
 - Complete Postfix MTA production + webmail
-- PowerDNS live load API, ≥90% coverage target, public npm packages published
-- AI page FSD polish
+- PowerDNS apt install automation, ≥90% coverage target, public npm packages published
 
 ### Earlier scaffolding notes
 

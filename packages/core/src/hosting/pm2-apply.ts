@@ -202,6 +202,16 @@ export async function applyPm2Start(input: {
     }
   }
 
+  // Persist process list for reboot survival (best-effort)
+  const save = await input.host.runCommand(['pm2', 'save'], { timeoutMs: 30_000 });
+  commandResults.push({
+    argv: ['pm2', 'save'],
+    exitCode: save.exitCode,
+    stderr: save.stderr,
+  });
+  if (save.exitCode === 0) notes.push('pm2 save ok');
+  else notes.push(`pm2 save exit=${save.exitCode} (non-fatal)`);
+
   return {
     ok: true,
     appName: eco.appName,

@@ -1,0 +1,71 @@
+import { describe, expect, it } from 'vitest';
+import { mkdtempSync, existsSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { LocalHostExecutor } from '../host/executor.js';
+import { applyPowerDnsZone, probePowerDns } from './powerdns-apply.js';
+
+describe('powerdns-apply', () => {
+  it('writes zone + helper without load (plan mode)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pdns-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const r = await applyPowerDnsZone({
+      dataDir: dir,
+      host,
+      zone: 'pdns.example',
+      serverIp: '203.0.113.50',
+      load: false,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.mode).toBe('plan');
+    expect(existsSync(r.zonePath)).toBe(true);
+    expect(r.written.some((p) => p.includes('load-pdns.example.sh'))).toBe(true);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('refuses load without YSK_EXECUTE', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pdns-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const r = await applyPowerDnsZone({
+      dataDir: dir,
+      host,
+      zone: 'deny.example',
+      serverIp: '10.0.0.1',
+      load: true,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.mode).toBe('refused');
+    expect(r.requiresExecute).toBe(true);
+    expect(r.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('refuses load when pdnsutil missing even with EXECUTE', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pdns-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
+    const prev = process.env.PATH;
+    process.env.PATH = '/nonexistent-bin-path';
+    try {
+      const r = await applyPowerDnsZone({
+        dataDir: dir,
+        host,
+        zone: 'miss.example',
+        serverIp: '10.0.0.2',
+        load: true,
+      });
+      expect(r.ok).toBe(false);
+      expect(r.mode).toBe('refused');
+      expect(r.probe.available).toBe(false);
+    } finally {
+      process.env.PATH = prev;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('probePowerDns returns structure', async () => {
+    const host = new LocalHostExecutor({ executeEnabled: false });
+    const p = await probePowerDns(host);
+    expect(typeof p.available).toBe('boolean');
+    expect(Array.isArray(p.notes)).toBe(true);
+  });
+});
