@@ -22,9 +22,21 @@ describe('system-level apply writers', () => {
       host,
       installPackages: false,
     });
-    expect(r.written.length).toBeGreaterThan(2);
+    expect(r.written.length).toBeGreaterThan(5);
     expect(existsSync(r.written[0])).toBe(true);
     expect(readFileSync(r.written[0], 'utf8')).toContain('myhostname');
+    expect(readFileSync(r.written[0], 'utf8')).toContain('smtpd_milters');
+    expect(r.written.some((p) => p.endsWith('install-mta.sh'))).toBe(true);
+    expect(r.ok).toBe(true);
+
+    const installSkip = await applyEmailStack({
+      dataDir: dir,
+      domain: 'example.com',
+      host,
+      installPackages: true,
+    });
+    expect(installSkip.ok).toBe(false);
+    expect(installSkip.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
     rmSync(dir, { recursive: true, force: true });
   });
 

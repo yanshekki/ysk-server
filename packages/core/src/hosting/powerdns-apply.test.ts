@@ -3,7 +3,11 @@ import { mkdtempSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LocalHostExecutor } from '../host/executor.js';
-import { applyPowerDnsZone, probePowerDns } from './powerdns-apply.js';
+import {
+  applyPowerDnsZone,
+  installPowerDnsPackages,
+  probePowerDns,
+} from './powerdns-apply.js';
 
 describe('powerdns-apply', () => {
   it('writes zone + helper without load (plan mode)', async () => {
@@ -67,5 +71,17 @@ describe('powerdns-apply', () => {
     const p = await probePowerDns(host);
     expect(typeof p.available).toBe('boolean');
     expect(Array.isArray(p.notes)).toBe(true);
+  });
+
+  it('writes install helper and refuses install without EXECUTE', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pdns-i-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const plan = await installPowerDnsPackages({ dataDir: dir, host, install: false });
+    expect(plan.ok).toBe(true);
+    expect(existsSync(plan.written[0])).toBe(true);
+    const refused = await installPowerDnsPackages({ dataDir: dir, host, install: true });
+    expect(refused.ok).toBe(false);
+    expect(refused.requiresExecute).toBe(true);
+    rmSync(dir, { recursive: true, force: true });
   });
 });

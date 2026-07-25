@@ -98,6 +98,7 @@ export async function handleSystemRoutes(
   }
 
   if (method === 'POST' && url.pathname === '/api/v1/system/email/apply') {
+    // applyEmailStack is fail-closed when installPackages without EXECUTE
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as {
@@ -152,7 +153,7 @@ export async function handleSystemRoutes(
       detail: { ...result, applyStatus, domainId: match?.id },
       ok: result.ok,
     });
-    sendJson(res, 200, {
+    sendJson(res, result.ok || !data.installPackages ? 200 : 422, {
       ...result,
       applyStatus,
       domainId: match?.id ?? null,

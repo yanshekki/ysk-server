@@ -27,6 +27,7 @@ import {
   listManagedDnsZones,
   applyPowerDnsZone,
   powerDnsStatus,
+  installPowerDnsPackages,
   planFirewall,
   planPublicFileServer,
   probeEndpoint,
@@ -1143,6 +1144,23 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.auth.authenticate(getBearer(req));
         const status = await powerDnsStatus({ dataDir: ctx.dataDir, host: ctx.host });
         return sendJson(res, 200, status);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/powerdns/install') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { install?: boolean };
+        const result = await installPowerDnsPackages({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          install: data.install,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.powerdns.install',
+          detail: { ok: result.ok, install: Boolean(data.install) },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok || !data.install ? 200 : 422, result);
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/powerdns/load') {
         const user = ctx.auth.authenticate(getBearer(req));

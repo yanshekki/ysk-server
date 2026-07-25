@@ -42,7 +42,7 @@ Commands:
   ask                   Plan AI task from natural language
   projects              list|create|deploy|stop|backup|template
   templates             List one-click app templates
-  hosting               nginx|nginx-sync|redis-provision|postgres-provision
+  hosting               nginx|nginx-sync|db|dns|powerdns|firewall helpers
   agents                List / probe managed AI agent runtimes
   agent run             Outbound fleet agent (poll control plane)
   version               Print version
@@ -442,6 +442,13 @@ async function main(argv: string[]): Promise<number> {
       provisionRedisBinding,
       provisionPostgresDatabase,
       provisionMysqlDatabase,
+      writeManagedDnsZone,
+      listManagedDnsZones,
+      applyPowerDnsZone,
+      powerDnsStatus,
+      installPowerDnsPackages,
+      applyEmailStack,
+      applyFirewall,
     } = await import('@ysk/core');
     const ctx = createAppContext({
       version: VERSION,
@@ -497,8 +504,76 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return result.ok ? 0 : 1;
       }
+      if (sub === 'dns-zone') {
+        const result = await writeManagedDnsZone({
+          dataDir: ctx.dataDir,
+          zone: getOpt(args, '--zone') ?? 'example.com',
+          serverIp: getOpt(args, '--ip') ?? '203.0.113.10',
+          host: ctx.host,
+          validate: hasFlag(args, '--validate'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'dns-zones') {
+        printJson({ items: listManagedDnsZones(ctx.dataDir) });
+        return 0;
+      }
+      if (sub === 'powerdns-status') {
+        printJson(await powerDnsStatus({ dataDir: ctx.dataDir, host: ctx.host }));
+        return 0;
+      }
+      if (sub === 'powerdns-install') {
+        const result = await installPowerDnsPackages({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          install: hasFlag(args, '--install'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'powerdns-load') {
+        const result = await applyPowerDnsZone({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          zone: getOpt(args, '--zone') ?? 'example.com',
+          serverIp: getOpt(args, '--ip') ?? '203.0.113.10',
+          load: hasFlag(args, '--load'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'email-apply') {
+        const result = await applyEmailStack({
+          dataDir: ctx.dataDir,
+          domain: getOpt(args, '--domain') ?? 'example.com',
+          host: ctx.host,
+          installPackages: hasFlag(args, '--install'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
+      if (sub === 'firewall-apply') {
+        const result = await applyFirewall({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          allowSmtp: hasFlag(args, '--smtp'),
+          apply: hasFlag(args, '--apply'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
       process.stderr.write(
-        'Usage: ysk-server hosting nginx|nginx-sync|redis-provision|postgres-provision|mysql-provision\n',
+        [
+          'Usage: ysk-server hosting <sub>',
+          '  nginx | nginx-sync | redis-provision | postgres-provision | mysql-provision',
+          '  dns-zone --zone X --ip A.B.C.D [--validate]',
+          '  dns-zones | powerdns-status | powerdns-install [--install]',
+          '  powerdns-load --zone X --ip A.B.C.D [--load]',
+          '  email-apply --domain X [--install]',
+          '  firewall-apply [--smtp] [--apply]',
+          '',
+        ].join('\n'),
       );
       return 1;
     } finally {

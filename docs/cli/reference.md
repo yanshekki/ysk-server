@@ -101,6 +101,13 @@ ysk-server hosting nginx-sync [--system-dir PATH] [--dry-run]
 ysk-server hosting redis-provision [--project-id ID] [--db N] [--execute]
 ysk-server hosting postgres-provision --db NAME --user USER --password PASS [--execute]
 ysk-server hosting mysql-provision --db NAME --user USER --password PASS [--execute]
+ysk-server hosting dns-zone --zone example.com --ip 203.0.113.10 [--validate]
+ysk-server hosting dns-zones
+ysk-server hosting powerdns-status
+ysk-server hosting powerdns-install [--install]
+ysk-server hosting powerdns-load --zone example.com --ip 203.0.113.10 [--load]
+ysk-server hosting email-apply --domain example.com [--install]
+ysk-server hosting firewall-apply [--smtp] [--apply]
 ```
 
 `--execute` still requires `YSK_EXECUTE=1` and the matching client (`redis-cli` / `psql` / `mysql`). Without it, commands return structured failure + plan (never fake success).

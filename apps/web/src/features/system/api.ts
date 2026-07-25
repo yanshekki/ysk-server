@@ -70,6 +70,11 @@ export const systemApi = {
     ),
   powerDnsStatus: () =>
     api.requestRaw<Record<string, unknown>>('/api/v1/hosting/dns/powerdns/status'),
+  powerDnsInstall: (body: { install?: boolean }) =>
+    api.requestRaw('/api/v1/hosting/dns/powerdns/install', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   powerDnsLoad: (body: {
     zone: string;
     serverIp: string;

@@ -145,6 +145,14 @@ export function SystemPage() {
               type="button"
               className="btn btn--secondary"
               disabled={busy}
+              onClick={() => void run(() => api.powerDnsInstall({ install: false }))}
+            >
+              PowerDNS install script
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
               onClick={() =>
                 void run(() =>
                   api.powerDnsLoad({

@@ -54,6 +54,7 @@ Base URL: `http://127.0.0.1:8787`
 | POST | `/api/v1/hosting/dns/zone-file` | Bearer | Write BIND zone under dataDir/dns/zones |
 | GET | `/api/v1/hosting/dns/zone-files` | Bearer | List managed zone files |
 | GET | `/api/v1/hosting/dns/powerdns/status` | Bearer | Probe pdnsutil + list zones |
+| POST | `/api/v1/hosting/dns/powerdns/install` | Bearer | Write install script / optional apt |
 | POST | `/api/v1/hosting/dns/powerdns/load` | Bearer | Plan or load zone via pdnsutil |
 | POST | `/api/v1/projects/:id/env` | Bearer | Write `.env` |
 | POST | `/api/v1/projects/:id/backup` | Bearer | Tar backup |

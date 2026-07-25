@@ -262,3 +262,86 @@ export async function powerDnsStatus(input: {
   const probe = await probePowerDns(input.host);
   return { probe, zones: listManagedDnsZones(input.dataDir) };
 }
+
+export interface PowerDnsInstallResult {
+  ok: boolean;
+  notes: string[];
+  written: string[];
+  commands: string[];
+  commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+  requiresExecute: boolean;
+  requiresRoot: boolean;
+  probe: PowerDnsProbe;
+}
+
+/**
+ * Write PowerDNS install helper under dataDir; optional apt install when root+EXECUTE.
+ * Never fakes success when install was requested but skipped/failed.
+ */
+export async function installPowerDnsPackages(input: {
+  dataDir: string;
+  host: HostExecutor;
+  /** When true, run apt install (needs root + YSK_EXECUTE) */
+  install?: boolean;
+}): Promise<PowerDnsInstallResult> {
+  const dir = join(input.dataDir, 'dns', 'powerdns');
+  mkdirSync(dir, { recursive: true });
+  const scriptPath = join(dir, 'install-pdns.sh');
+  const packages = ['pdns-server', 'pdns-backend-bind', 'pdns-tools'];
+  writeFileSync(
+    scriptPath,
+    [
+      '#!/usr/bin/env bash',
+      '# YSK Server — install PowerDNS (BIND backend) for managed zone files',
+      'set -euo pipefail',
+      'export DEBIAN_FRONTEND=noninteractive',
+      'apt-get update',
+      `apt-get install -y ${packages.join(' ')}`,
+      'systemctl enable --now pdns || true',
+      'echo "PowerDNS installed — use ysk-server hosting powerdns-load --load"',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+  const notes = [
+    `Install helper: ${scriptPath}`,
+    `Packages: ${packages.join(', ')}`,
+    'After install, load zones with pdnsutil via powerdns/load API',
+  ];
+  const written = [scriptPath];
+  const commandResults: PowerDnsInstallResult['commandResults'] = [];
+  const commands: string[][] = [];
+  const want = Boolean(input.install);
+  if (want) {
+    commands.push(['apt-get', 'update']);
+    commands.push([
+      'bash',
+      '-c',
+      `DEBIAN_FRONTEND=noninteractive apt-get install -y ${packages.join(' ')}`,
+    ]);
+    commands.push(['systemctl', 'enable', '--now', 'pdns']);
+  }
+  const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
+  if (want && !execute) {
+    notes.push('PowerDNS apt install skipped: need root + YSK_EXECUTE=1 (never fake success)');
+  }
+  if (execute) {
+    for (const argv of commands) {
+      const r = await input.host.runCommand(argv, { timeoutMs: 300_000 });
+      commandResults.push({ argv, exitCode: r.exitCode, stderr: r.stderr });
+    }
+  }
+  const ranOk = commandResults.every((c) => c.exitCode === 0);
+  const probe = await probePowerDns(input.host);
+  notes.push(...probe.notes);
+  return {
+    ok: want ? execute && ranOk : true,
+    notes,
+    written,
+    commands: commands.map((c) => c.join(' ')),
+    commandResults,
+    requiresExecute: !input.host.executeEnabled(),
+    requiresRoot: !input.host.isRoot(),
+    probe,
+  };
+}

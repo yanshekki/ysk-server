@@ -26,7 +26,8 @@
 - **FTPS** vsftpd config generation under dataDir
 - **Cloudflare DNS apply** (`CF_API_TOKEN`); dry-run without token (never fake success)
 - **BIND zone files** under `dataDir/dns/zones/` (+ optional `named-checkzone` when EXECUTE)
-- **PowerDNS load** dual-mode (`pdnsutil load-zone` needs EXECUTE; helper script always written)
+- **PowerDNS** install script + load dual-mode (`pdnsutil` / apt needs root+EXECUTE)
+- **Email MTA** managed Postfix/Dovecot/OpenDKIM + milter + `install-mta.sh` (fail-closed install)
 - **UFW script** under `dataDir/firewall/ufw-apply.sh` (apply needs root+EXECUTE; no fake ok)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
 - **Multi DNSBL** (Spamhaus / SpamCop / Barracuda) + email live-check UI
@@ -60,7 +61,8 @@
 
 - Multi-version Node/PHP runtime install matrix; PM2 cluster/`pm2 save` fleet polish
 - Full Postfix/Dovecot operational mail (beyond templates + optional apt)
-- Full PowerDNS package install automation; FTPS production; fail2ban automation
+- Live MTA full production (webmail, multi-domain mailbox provisioning)
+- FTPS production enable; fail2ban ban-action automation
 - OpenClaw/Hermes/IonClaw full installers (probe/templates exist)
 - ≥90% test coverage; broader integration e2e
 - npm global publish as single package (use `install.sh --from-source` today)
@@ -112,6 +114,8 @@ ysk-server projects deploy --id <uuid> --data-dir .ysk
 ysk-server projects backup --id <uuid> --data-dir .ysk
 ysk-server hosting redis-provision --db 1
 ysk-server hosting postgres-provision --db app --user appuser --password longpass99
+ysk-server hosting dns-zone --zone example.com --ip 203.0.113.10
+ysk-server hosting email-apply --domain example.com
 ysk-server agents --probe
 ysk-server update --check
 ysk-server tools --json
