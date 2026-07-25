@@ -23,6 +23,8 @@ import {
   listPlaybooks,
   listManagedNginxConfs,
   planDnsZone,
+  writeManagedDnsZone,
+  listManagedDnsZones,
   planFirewall,
   planPublicFileServer,
   probeEndpoint,
@@ -1087,6 +1089,53 @@ export function createHttpServer(ctx: AppContext): Server {
           200,
           planDnsZone({ zone: data.zone ?? 'example.com', serverIp: data.serverIp ?? '1.2.3.4' }),
         );
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/zone-file') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          zone?: string;
+          serverIp?: string;
+          mailHost?: string;
+          validate?: boolean;
+        };
+        const result = await writeManagedDnsZone({
+          dataDir: ctx.dataDir,
+          zone: data.zone ?? 'example.com',
+          serverIp: data.serverIp ?? '203.0.113.10',
+          mailHost: data.mailHost,
+          host: ctx.host,
+          validate: data.validate,
+        });
+        ctx.db.snapshot.dns_zones = [
+          {
+            id: randomUUID(),
+            zone: result.zone,
+            provider: 'bind-file',
+            zonePath: result.zonePath,
+            serial: result.serial,
+            records: result.records,
+            ok: result.ok,
+            updated_at: new Date().toISOString(),
+            actor: user.username,
+          },
+          ...ctx.db.snapshot.dns_zones.filter(
+            (z) => !(String(z.zone) === result.zone && z.provider === 'bind-file'),
+          ),
+        ].slice(0, 50);
+        ctx.db.persist();
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.zone_file.write',
+          resource: result.zone,
+          detail: { zonePath: result.zonePath, serial: result.serial, ok: result.ok },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/dns/zone-files') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: listManagedDnsZones(ctx.dataDir) });
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/cloudflare/apply') {
         const user = ctx.auth.authenticate(getBearer(req));

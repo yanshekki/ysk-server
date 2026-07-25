@@ -20,15 +20,16 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - CLI: setup, serve, projects (create/deploy/…), templates, hosting DB helpers, agents probe
 - Docs: Spec, production-mvp, real-ops, npm-publish, CLI reference, API overview
 - Release helper: `scripts/prepare-release.sh` / `pnpm prepare-release`
-- Web FSD slices: projects, email, agents, dashboard, updates
-- Coverage: gitSync local clone/pull, scheduler, probeTcp, pm2-apply
+- Web FSD slices: projects, email, agents, dashboard, updates, system, security, files
+- Coverage: gitSync local clone/pull, scheduler, probeTcp, pm2-apply, dns-zone, firewall refuse
+- BIND zone files (`dataDir/dns/zones`) + UFW script writer (fail-closed apply)
 
 ### Still partial / Spec backlog
 
 - Full multi-version runtime install matrices, production PHP-FPM-only (no php -S)
 - Complete Postfix MTA production + webmail
-- PowerDNS built-in, ≥90% coverage target, public npm packages published
-- Feature-Sliced frontend for System/Security/Files pages
+- PowerDNS live load API, ≥90% coverage target, public npm packages published
+- AI page FSD polish
 
 ### Earlier scaffolding notes
 

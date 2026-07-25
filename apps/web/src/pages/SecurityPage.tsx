@@ -1,49 +1,9 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../shared/services/api';
+import { useSecurity } from '../features/security';
 
 export function SecurityPage() {
   const { t } = useTranslation();
-  const [tools, setTools] = useState<Array<Record<string, unknown>>>([]);
-  const [approvals, setApprovals] = useState<Array<Record<string, unknown>>>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function refresh() {
-    const [tRes, aRes] = await Promise.all([api.listTools(), api.listApprovals()]);
-    setTools(tRes.items);
-    setApprovals(aRes.items);
-  }
-
-  useEffect(() => {
-    void refresh().catch((e: Error) => setError(e.message));
-  }, []);
-
-  async function runSysInfo() {
-    setError(null);
-    setBusy(true);
-    try {
-      const r = await api.executeTool({ tool: 'sys.info', args: {} });
-      setResult(JSON.stringify(r, null, 2));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function approve(id: string) {
-    setBusy(true);
-    try {
-      await api.approve(id);
-      await refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'failed');
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { tools, approvals, error, result, busy, runSysInfo, approve } = useSecurity();
 
   return (
     <div>
@@ -59,7 +19,12 @@ export function SecurityPage() {
       <div className="card">
         <h2 className="card__title">Host probe</h2>
         <p className="card__desc">Run a real read-only tool against the control-plane host.</p>
-        <button type="button" className="btn btn--primary" disabled={busy} onClick={() => void runSysInfo()}>
+        <button
+          type="button"
+          className="btn btn--primary"
+          disabled={busy}
+          onClick={() => void runSysInfo()}
+        >
           {t('security.runSysInfo')}
         </button>
         {result && <pre className="code code--spaced">{result}</pre>}

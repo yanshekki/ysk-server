@@ -51,6 +51,8 @@ Base URL: `http://127.0.0.1:8787`
 | GET | `/api/v1/projects/:id/status` | Bearer | System-truth status |
 | POST | `/api/v1/projects/:id/publish-nginx` | Bearer | Nginx conf + optional reload |
 | POST | `/api/v1/projects/:id/git-deploy` | Bearer | Git clone/pull + redeploy |
+| POST | `/api/v1/hosting/dns/zone-file` | Bearer | Write BIND zone under dataDir/dns/zones |
+| GET | `/api/v1/hosting/dns/zone-files` | Bearer | List managed zone files |
 | POST | `/api/v1/projects/:id/env` | Bearer | Write `.env` |
 | POST | `/api/v1/projects/:id/backup` | Bearer | Tar backup |
 | GET | `/api/v1/projects/:id/logs` | Bearer | List/tail logs |

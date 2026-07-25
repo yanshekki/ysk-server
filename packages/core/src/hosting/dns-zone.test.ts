@@ -1,0 +1,53 @@
+import { describe, expect, it } from 'vitest';
+import { mkdtempSync, existsSync, readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { LocalHostExecutor } from '../host/executor.js';
+import { YskError } from '@ysk/shared';
+import {
+  listManagedDnsZones,
+  renderBindZoneFile,
+  writeManagedDnsZone,
+} from './dns-zone.js';
+
+describe('dns-zone', () => {
+  it('renders SOA/NS/A/MX zone body', () => {
+    const r = renderBindZoneFile({
+      zone: 'example.com',
+      serverIp: '203.0.113.10',
+      extraRecords: [{ type: 'TXT', name: '@', value: 'v=spf1 a -all', ttl: 300 }],
+    });
+    expect(r.body).toContain('IN\tSOA');
+    expect(r.body).toContain('203.0.113.10');
+    expect(r.body).toContain('IN\tMX');
+    expect(r.body).toContain('v=spf1');
+    expect(r.serial).toBeGreaterThan(2020010100);
+  });
+
+  it('rejects bad zone and IP', () => {
+    expect(() => renderBindZoneFile({ zone: '', serverIp: '1.2.3.4' })).toThrow(YskError);
+    expect(() =>
+      renderBindZoneFile({ zone: 'ok.com', serverIp: '999.1.1.1' }),
+    ).toThrow(YskError);
+  });
+
+  it('writes zone + meta under dataDir', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dns-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const r = await writeManagedDnsZone({
+      dataDir: dir,
+      zone: 'demo.local',
+      serverIp: '10.0.0.5',
+      host,
+      validate: true,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.requiresExecute).toBe(true);
+    expect(existsSync(r.zonePath)).toBe(true);
+    expect(readFileSync(r.zonePath, 'utf8')).toContain('demo.local.');
+    const listed = listManagedDnsZones(dir);
+    expect(listed.some((z) => z.zone === 'demo.local')).toBe(true);
+    expect(listed[0].serverIp).toBe('10.0.0.5');
+    rmSync(dir, { recursive: true, force: true });
+  });
+});

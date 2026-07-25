@@ -1,12 +1,9 @@
-import { FormEvent, useEffect, useState } from 'react';
-import { api } from '../shared/services/api';
+import { FormEvent, useState } from 'react';
+import { useSystemWizard } from '../features/system';
 
 export function SystemPage() {
+  const { log, error, busy, certs, zoneFiles, run, api } = useSystemWizard();
   const [domain, setDomain] = useState('demo.local');
-  const [log, setLog] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [certs, setCerts] = useState<Array<Record<string, unknown>>>([]);
   const [fullchain, setFullchain] = useState(
     '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n',
   );
@@ -16,39 +13,9 @@ export function SystemPage() {
   const [serverIp, setServerIp] = useState('203.0.113.10');
   const [cfToken, setCfToken] = useState('');
 
-  async function refreshCerts() {
-    try {
-      const r = await api.listSslCertificates();
-      setCerts(r.items);
-    } catch {
-      /* optional until login */
-    }
-  }
-
-  useEffect(() => {
-    void refreshCerts();
-  }, []);
-
-  async function run(path: string, body: unknown) {
-    setBusy(true);
-    setError(null);
-    try {
-      const r = await api.requestRaw<unknown>(path, {
-        method: 'POST',
-        body: JSON.stringify(body),
-      });
-      setLog(JSON.stringify(r, null, 2));
-      if (path.includes('/ssl/')) await refreshCerts();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   function onEmail(e: FormEvent) {
     e.preventDefault();
-    void run('/api/v1/system/email/apply', { domain, installPackages: false });
+    void run(() => api.emailApply({ domain, installPackages: false }));
   }
 
   return (
@@ -82,11 +49,13 @@ export function SystemPage() {
             className="btn btn--secondary"
             disabled={busy}
             onClick={() =>
-              void run('/api/v1/system/php/apply', {
-                domain: `php.${domain}`,
-                poolName: 'demo',
-                enableSite: false,
-              })
+              void run(() =>
+                api.phpApply({
+                  domain: `php.${domain}`,
+                  poolName: 'demo',
+                  enableSite: false,
+                }),
+              )
             }
           >
             Apply PHP vhost
@@ -99,11 +68,13 @@ export function SystemPage() {
             className="btn btn--secondary"
             disabled={busy}
             onClick={() =>
-              void run('/api/v1/system/nginx/site', {
-                serverName: `app.${domain}`,
-                upstream: 'http://127.0.0.1:3000',
-                reload: false,
-              })
+              void run(() =>
+                api.nginxSite({
+                  serverName: `app.${domain}`,
+                  upstream: 'http://127.0.0.1:3000',
+                  reload: false,
+                }),
+              )
             }
           >
             Write nginx conf
@@ -116,11 +87,13 @@ export function SystemPage() {
             className="btn btn--secondary"
             disabled={busy}
             onClick={() =>
-              void run('/api/v1/system/ssl/apply', {
-                domain,
-                email: `admin@${domain}`,
-                run: false,
-              })
+              void run(() =>
+                api.sslPlan({
+                  domain,
+                  email: `admin@${domain}`,
+                  run: false,
+                }),
+              )
             }
           >
             Plan Let&apos;s Encrypt
@@ -132,19 +105,51 @@ export function SystemPage() {
             type="button"
             className="btn btn--secondary"
             disabled={busy}
-            onClick={() =>
-              void run('/api/v1/system/ftps/apply', { domain, install: false })
-            }
+            onClick={() => void run(() => api.ftpsApply({ domain, install: false }))}
           >
             Write FTPS config
           </button>
         </div>
         <div className="card">
-          <h2 className="card__title">Cloudflare DNS</h2>
+          <h2 className="card__title">DNS (BIND zone file)</h2>
           <div className="field field--flush">
             <label htmlFor="sip">Server IP</label>
             <input id="sip" value={serverIp} onChange={(e) => setServerIp(e.target.value)} />
           </div>
+          <div className="form-actions btn-row">
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() => void run(() => api.dnsPlan({ zone: domain, serverIp }))}
+            >
+              Plan zone
+            </button>
+            <button
+              type="button"
+              className="btn btn--primary"
+              disabled={busy}
+              onClick={() =>
+                void run(() =>
+                  api.dnsZoneFile({
+                    zone: domain,
+                    serverIp,
+                    validate: false,
+                  }),
+                )
+              }
+            >
+              Write zone file
+            </button>
+          </div>
+          {zoneFiles.length > 0 && (
+            <p className="muted meta-block--top">
+              On disk: {zoneFiles.map((z) => String(z.zone)).join(', ')}
+            </p>
+          )}
+        </div>
+        <div className="card">
+          <h2 className="card__title">Cloudflare DNS</h2>
           <div className="field field--flush">
             <label htmlFor="cft">API Token (optional)</label>
             <input
@@ -155,28 +160,20 @@ export function SystemPage() {
               placeholder="or CF_API_TOKEN env"
             />
           </div>
-          <div className="form-actions btn-row">
-            <button
-              type="button"
-              className="btn btn--secondary"
-              disabled={busy}
-              onClick={() =>
-                void run('/api/v1/hosting/dns/plan', { zone: domain, serverIp })
-              }
-            >
-              Plan zone
-            </button>
+          <div className="form-actions">
             <button
               type="button"
               className="btn btn--primary"
               disabled={busy}
               onClick={() =>
-                void run('/api/v1/hosting/dns/cloudflare/apply', {
-                  zone: domain,
-                  serverIp,
-                  token: cfToken || undefined,
-                  dryRun: !cfToken,
-                })
+                void run(() =>
+                  api.cloudflareApply({
+                    zone: domain,
+                    serverIp,
+                    token: cfToken || undefined,
+                    dryRun: !cfToken,
+                  }),
+                )
               }
             >
               Apply (dry-run if no token)
@@ -184,15 +181,29 @@ export function SystemPage() {
           </div>
         </div>
         <div className="card">
-          <h2 className="card__title">Firewall plan</h2>
-          <button
-            type="button"
-            className="btn btn--secondary"
-            disabled={busy}
-            onClick={() => void run('/api/v1/system/firewall/apply', { allowSmtp: true, apply: false })}
-          >
-            Generate ufw rules
-          </button>
+          <h2 className="card__title">Firewall (ufw)</h2>
+          <div className="form-actions btn-row">
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() =>
+                void run(() => api.firewallApply({ allowSmtp: true, apply: false }))
+              }
+            >
+              Write ufw script
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={busy}
+              onClick={() =>
+                void run(() => api.firewallApply({ allowSmtp: true, apply: true }))
+              }
+            >
+              Apply (needs root+EXECUTE)
+            </button>
+          </div>
         </div>
         <div className="card">
           <h2 className="card__title">fail2ban</h2>
@@ -200,7 +211,7 @@ export function SystemPage() {
             type="button"
             className="btn btn--secondary"
             disabled={busy}
-            onClick={() => void run('/api/v1/system/fail2ban/apply', { apply: false })}
+            onClick={() => void run(() => api.fail2banApply({ apply: false }))}
           >
             Write jail.local
           </button>
@@ -212,12 +223,14 @@ export function SystemPage() {
             className="btn btn--secondary"
             disabled={busy}
             onClick={() =>
-              void run('/api/v1/hosting/db/postgres-provision', {
-                dbName: 'yskapp',
-                username: 'yskapp',
-                password: 'changeme99',
-                execute: false,
-              })
+              void run(() =>
+                api.postgresProvision({
+                  dbName: 'yskapp',
+                  username: 'yskapp',
+                  password: 'changeme99',
+                  execute: false,
+                }),
+              )
             }
           >
             Plan / probe PG (execute=false)
@@ -230,11 +243,13 @@ export function SystemPage() {
             className="btn btn--secondary"
             disabled={busy}
             onClick={() =>
-              void run('/api/v1/hosting/db/redis-provision', {
-                projectId: 'demo',
-                dbIndex: 1,
-                execute: false,
-              })
+              void run(() =>
+                api.redisProvision({
+                  projectId: 'demo',
+                  dbIndex: 1,
+                  execute: false,
+                }),
+              )
             }
           >
             Probe Redis
@@ -246,7 +261,7 @@ export function SystemPage() {
             type="button"
             className="btn btn--primary"
             disabled={busy}
-            onClick={() => void run('/api/v1/protection/probe', {})}
+            onClick={() => void run(() => api.protectionProbe())}
           >
             Run probe
           </button>
@@ -257,7 +272,7 @@ export function SystemPage() {
             type="button"
             className="btn btn--secondary"
             disabled={busy}
-            onClick={() => void run('/api/v1/system/systemd/install', { enable: false })}
+            onClick={() => void run(() => api.systemdInstall({ enable: false }))}
           >
             Write unit template
           </button>
@@ -291,11 +306,13 @@ export function SystemPage() {
             className="btn btn--primary"
             disabled={busy}
             onClick={() =>
-              void run('/api/v1/ssl/upload', {
-                domain,
-                fullchainPem: fullchain,
-                privkeyPem: privkey,
-              })
+              void run(() =>
+                api.sslUpload({
+                  domain,
+                  fullchainPem: fullchain,
+                  privkeyPem: privkey,
+                }),
+              )
             }
           >
             Upload cert

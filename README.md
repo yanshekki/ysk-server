@@ -25,10 +25,12 @@
 - **PHP-FPM pool** conf under dataDir (enable with root+EXECUTE); **project quota** via `du`
 - **FTPS** vsftpd config generation under dataDir
 - **Cloudflare DNS apply** (`CF_API_TOKEN`); dry-run without token (never fake success)
+- **BIND zone files** under `dataDir/dns/zones/` (+ optional `named-checkzone` when EXECUTE)
+- **UFW script** under `dataDir/firewall/ufw-apply.sh` (apply needs root+EXECUTE; no fake ok)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units
 - **Multi DNSBL** (Spamhaus / SpamCop / Barracuda) + email live-check UI
 - **fail2ban** jail.local under dataDir; install needs root + `YSK_EXECUTE=1`
-- **Projects / Email / Agents / Dashboard / Updates** feature slices (`features/*` api + hooks)
+- **Web FSD**: projects, email, agents, dashboard, updates, system, security, files
 - **Email warm-up plan** + scheduled multi-DNSBL job (`email-dnsbl`)
 - **PM2** ecosystem + optional start (never fake success without EXECUTE)
 - **Agent runtime probe** (path/systemd/PATH) + unit template write
@@ -57,9 +59,9 @@
 
 - Multi-version Node/PHP runtime install matrix; PM2 cluster/`pm2 save` fleet polish
 - Full Postfix/Dovecot operational mail (beyond templates + optional apt)
-- PowerDNS, FTPS production, fail2ban automation
+- PowerDNS API live load (BIND zone files exist); FTPS production; fail2ban automation
 - OpenClaw/Hermes/IonClaw full installers (probe/templates exist)
-- ≥90% test coverage; remaining System/Security FSD pages
+- ≥90% test coverage; remaining AI page FSD polish
 - npm global publish as single package (use `install.sh --from-source` today)
 
 See [docs/deploy/production-mvp.md](docs/deploy/production-mvp.md) for the Phase 2 Hosting MVP checklist.

@@ -261,11 +261,17 @@ export async function handleSystemRoutes(
   if (method === 'POST' && url.pathname === '/api/v1/system/firewall/apply') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { allowSmtp?: boolean; apply?: boolean };
+    const data = JSON.parse(raw || '{}') as {
+      allowSmtp?: boolean;
+      apply?: boolean;
+      extraTcpPorts?: number[];
+    };
     const result = await applyFirewall({
       host: ctx.host,
+      dataDir: ctx.dataDir,
       allowSmtp: data.allowSmtp,
       apply: data.apply,
+      extraTcpPorts: data.extraTcpPorts,
     });
     ctx.audit.append({
       actor: user.username,
@@ -273,7 +279,7 @@ export async function handleSystemRoutes(
       detail: result,
       ok: result.ok,
     });
-    sendJson(res, 200, result);
+    sendJson(res, result.ok || !data.apply ? 200 : 422, result);
     return true;
   }
 

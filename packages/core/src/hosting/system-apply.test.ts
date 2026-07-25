@@ -55,8 +55,24 @@ describe('system-level apply writers', () => {
     });
     expect(existsSync(unit.unitPath)).toBe(true);
     expect(unit.content).toContain('ysk-server');
-    const fw = await applyFirewall({ host, apply: false, allowSmtp: true });
+    const fw = await applyFirewall({
+      host,
+      dataDir: dir,
+      apply: false,
+      allowSmtp: true,
+    });
     expect(fw.commands.some((c) => c.includes('25'))).toBe(true);
+    expect(fw.written.some((p) => p.endsWith('ufw-apply.sh'))).toBe(true);
+    expect(fw.ok).toBe(true);
+
+    const fwApplySkip = await applyFirewall({
+      host,
+      dataDir: dir,
+      apply: true,
+      allowSmtp: true,
+    });
+    expect(fwApplySkip.ok).toBe(false);
+    expect(fwApplySkip.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
     rmSync(dir, { recursive: true, force: true });
   });
 });

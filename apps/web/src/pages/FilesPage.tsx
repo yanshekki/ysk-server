@@ -1,64 +1,29 @@
-import { FormEvent, useEffect, useState } from 'react';
-import { api } from '../shared/services/api';
-
-type Entry = { name: string; path: string; type: string; size: number; mtime: string };
+import { FormEvent } from 'react';
+import { useFiles } from '../features/files';
 
 export function FilesPage() {
-  const [path, setPath] = useState('.');
-  const [items, setItems] = useState<Entry[]>([]);
-  const [content, setContent] = useState('');
-  const [editPath, setEditPath] = useState('notes.txt');
-  const [error, setError] = useState<string | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  async function refresh(p = path) {
-    const r = await api.requestRaw<{ items: Entry[] }>(
-      `/api/v1/files?root=public&path=${encodeURIComponent(p)}`,
-    );
-    setItems(r.items);
-    setPath(p);
-  }
-
-  useEffect(() => {
-    void refresh('.').catch((e: Error) => setError(e.message));
-  }, []);
-
-  async function openEntry(e: Entry) {
-    setError(null);
-    if (e.type === 'dir') {
-      await refresh(e.path);
-      return;
-    }
-    const r = await api.requestRaw<{ content: string; path: string }>(
-      `/api/v1/files/read?root=public&path=${encodeURIComponent(e.path)}`,
-    );
-    setEditPath(r.path);
-    setContent(r.content);
-  }
+  const {
+    path,
+    items,
+    content,
+    setContent,
+    editPath,
+    setEditPath,
+    error,
+    msg,
+    refresh,
+    openEntry,
+    save,
+    mkdir,
+  } = useFiles();
 
   async function onSave(ev: FormEvent) {
     ev.preventDefault();
-    setError(null);
     try {
-      await api.requestRaw('/api/v1/files/write?root=public', {
-        method: 'PUT',
-        body: JSON.stringify({ path: editPath, content }),
-      });
-      setMsg(`Saved ${editPath}`);
-      await refresh(path);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'save failed');
+      await save(editPath, content);
+    } catch {
+      /* hook sets error */
     }
-  }
-
-  async function onMkdir() {
-    const name = `folder-${Date.now()}`;
-    const p = path === '.' ? name : `${path}/${name}`;
-    await api.requestRaw('/api/v1/files/mkdir?root=public', {
-      method: 'POST',
-      body: JSON.stringify({ path: p }),
-    });
-    await refresh(path);
   }
 
   return (
@@ -76,7 +41,7 @@ export function FilesPage() {
           <button type="button" className="btn btn--secondary btn--sm" onClick={() => void refresh('.')}>
             Root
           </button>
-          <button type="button" className="btn btn--secondary btn--sm" onClick={() => void onMkdir()}>
+          <button type="button" className="btn btn--secondary btn--sm" onClick={() => void mkdir()}>
             New folder
           </button>
         </div>
@@ -94,7 +59,11 @@ export function FilesPage() {
               {items.map((e) => (
                 <tr key={e.path}>
                   <td>
-                    <button type="button" className="btn btn--ghost btn--sm" onClick={() => void openEntry(e)}>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => void openEntry(e)}
+                    >
                       {e.name}
                     </button>
                   </td>
@@ -119,7 +88,12 @@ export function FilesPage() {
           </div>
           <div className="field">
             <label htmlFor="fcontent">Content</label>
-            <textarea id="fcontent" rows={8} value={content} onChange={(e) => setContent(e.target.value)} />
+            <textarea
+              id="fcontent"
+              rows={8}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
           </div>
           <div className="form-actions">
             <button type="submit" className="btn btn--primary">
