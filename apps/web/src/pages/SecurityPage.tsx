@@ -30,14 +30,25 @@ export function SecurityPage() {
   const [totpMsg, setTotpMsg] = useState<string | null>(null);
   const [totpErr, setTotpErr] = useState<string | null>(null);
   const [totpBusy, setTotpBusy] = useState(false);
+  const [apiKeys, setApiKeys] = useState<
+    Array<{ id: string; name: string; prefix: string; created_at: string }>
+  >([]);
+  const [newKeyName, setNewKeyName] = useState('panel-api');
+  const [newKeyToken, setNewKeyToken] = useState<string | null>(null);
 
   const refreshTotp = useCallback(async () => {
     setTotpStatus(await api.totpStatus());
   }, []);
 
+  const refreshKeys = useCallback(async () => {
+    const r = await api.listApiKeys();
+    setApiKeys(r.items ?? []);
+  }, []);
+
   useEffect(() => {
     void refreshTotp().catch(() => undefined);
-  }, [refreshTotp]);
+    void refreshKeys().catch(() => undefined);
+  }, [refreshTotp, refreshKeys]);
 
   const allowed = tools.filter((tool) => tool.allowed).length;
   const needsApproval = tools.filter((tool) => tool.requiresApproval).length;
@@ -185,6 +196,70 @@ export function SecurityPage() {
                 </div>
               </div>
             ) : null}
+          </CardSection>
+        </Card>
+
+        <Card>
+          <CardSection title="API Access Keys">
+            <p className="muted u-text-sm">建立後 token 只顯示一次。請妥善保存。</p>
+            {newKeyToken ? (
+              <Alert variant="ok">
+                新 Key：<code className="inline">{newKeyToken}</code>
+              </Alert>
+            ) : null}
+            <div className="btn-row u-mt-2">
+              <Field label="名稱" htmlFor="ak-name">
+                <input
+                  id="ak-name"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                />
+              </Field>
+              <Button
+                variant="primary"
+                size="md"
+                loading={totpBusy}
+                onClick={() => {
+                  setTotpBusy(true);
+                  void api
+                    .createApiKey(newKeyName)
+                    .then((r) => {
+                      setNewKeyToken(r.token);
+                      setTotpMsg('API key 已建立');
+                      return refreshKeys();
+                    })
+                    .catch((e: Error) => setTotpErr(e.message))
+                    .finally(() => setTotpBusy(false));
+                }}
+              >
+                建立 Key
+              </Button>
+            </div>
+            {apiKeys.length > 0 ? (
+              <ul className="list-plain list-spaced u-mt-3">
+                {apiKeys.map((k) => (
+                  <li key={k.id} className="btn-row" style={{ justifyContent: 'space-between' }}>
+                    <span>
+                      <strong>{k.name}</strong> · <code className="inline">{k.prefix}…</code>
+                    </span>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => {
+                        void api
+                          .deleteApiKey(k.id)
+                          .then(() => refreshKeys())
+                          .catch((e: Error) => setTotpErr(e.message));
+                      }}
+                    >
+                      刪除
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted u-mt-2">尚未有 API key</p>
+            )}
           </CardSection>
         </Card>
 

@@ -75,8 +75,18 @@ function badgeForKey(
 export function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { health, audit, metrics, projects, backups, summary, readiness, error, loading } =
-    useDashboard();
+  const {
+    health,
+    audit,
+    metrics,
+    projects,
+    backups,
+    expiringCerts,
+    summary,
+    readiness,
+    error,
+    loading,
+  } = useDashboard();
   const [software, setSoftware] = useState<SoftwareStatus[]>([]);
 
   useEffect(() => {
@@ -122,6 +132,18 @@ export function DashboardPage() {
           {readiness.summary[1] ? ` — ${readiness.summary[1]}` : ''}
           {' · '}
           <Link to="/system/readiness">詳情</Link>
+        </Alert>
+      ) : null}
+
+      {expiringCerts && expiringCerts.length > 0 ? (
+        <Alert variant={expiringCerts.some((c) => c.days <= 7) ? 'error' : 'info'}>
+          <strong>憑證到期：</strong>
+          {expiringCerts
+            .slice(0, 4)
+            .map((c) => `${c.domain}（${c.days < 0 ? '已過期' : `${c.days} 日`}）`)
+            .join(' · ')}
+          {' · '}
+          <Link to="/ssl">SSL</Link>
         </Alert>
       ) : null}
 

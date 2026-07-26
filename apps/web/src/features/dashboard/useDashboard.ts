@@ -13,6 +13,9 @@ export function useDashboard() {
     Array<{ id: string; name: string; processStatus?: string; port?: number; status?: string }>
   >([]);
   const [backups, setBackups] = useState(0);
+  const [expiringCerts, setExpiringCerts] = useState<
+    Array<{ domain: string; expires_at: string; days: number }>
+  >([]);
   const [summary, setSummary] = useState<Record<string, unknown> | null>(null);
   const [readiness, setReadiness] = useState<{
     productionReady: boolean;
@@ -46,6 +49,24 @@ export function useDashboard() {
           /* optional */
         }
         try {
+          const s = await dashboardApi.sslBindings();
+          if (!cancelled) {
+            const now = Date.now();
+            const exp = (s.items ?? [])
+              .filter((c) => c.expires_at)
+              .map((c) => {
+                const t = new Date(String(c.expires_at)).getTime();
+                const days = Math.floor((t - now) / (86400 * 1000));
+                return { domain: c.domain, expires_at: String(c.expires_at), days };
+              })
+              .filter((c) => c.days <= 30)
+              .sort((a, b) => a.days - b.days);
+            setExpiringCerts(exp);
+          }
+        } catch {
+          /* optional */
+        }
+        try {
           const s = await dashboardApi.summary();
           if (!cancelled) setSummary(s);
         } catch {
@@ -68,5 +89,16 @@ export function useDashboard() {
     };
   }, []);
 
-  return { health, audit, metrics, projects, backups, summary, readiness, error, loading };
+  return {
+    health,
+    audit,
+    metrics,
+    projects,
+    backups,
+    expiringCerts,
+    summary,
+    readiness,
+    error,
+    loading,
+  };
 }

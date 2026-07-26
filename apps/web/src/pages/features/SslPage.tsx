@@ -56,6 +56,15 @@ export function SslPage() {
   const [fullchain, setFullchain] = useState('');
   const [privkey, setPrivkey] = useState('');
   const [email, setEmail] = useState('');
+  const [bindings, setBindings] = useState<
+    Array<{
+      domain: string;
+      expires_at?: string | null;
+      projects?: Array<{ name: string }>;
+      mailDomains?: Array<{ domain: string }>;
+    }>
+  >([]);
+  const [renewNotes, setRenewNotes] = useState<string[]>([]);
 
   // Preset from other pages: ?domain=example.com&action=le
   useEffect(() => {
@@ -69,6 +78,18 @@ export function SslPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    void import('../../features/ssl/api').then(({ sslApi }) =>
+      sslApi
+        .bindings()
+        .then((r) => {
+          setBindings(r.items ?? []);
+          setRenewNotes(r.notes ?? []);
+        })
+        .catch(() => undefined),
+    );
+  }, [items.length]);
 
   async function onUpload(e: FormEvent) {
     e.preventDefault();
@@ -117,6 +138,41 @@ export function SslPage() {
         onDismiss={clearResult}
         busy={busy}
       />
+
+      {renewNotes.length || bindings.length ? (
+        <Card>
+          <CardSection title="綁定與續期">
+            {renewNotes.map((n) => (
+              <p key={n} className="muted u-text-sm">
+                {n}
+              </p>
+            ))}
+            {bindings.filter((b) => (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0)
+              .length > 0 ? (
+              <ul className="list-plain list-spaced u-mt-2">
+                {bindings
+                  .filter((b) => (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0)
+                  .map((b) => (
+                    <li key={b.domain}>
+                      <strong>{b.domain}</strong>
+                      {b.expires_at
+                        ? ` · 到期 ${new Date(b.expires_at).toLocaleDateString()}`
+                        : ''}
+                      {b.projects?.length
+                        ? ` · 專案: ${b.projects.map((p) => p.name).join(', ')}`
+                        : ''}
+                      {b.mailDomains?.length
+                        ? ` · 郵件: ${b.mailDomains.map((m) => m.domain).join(', ')}`
+                        : ''}
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <p className="muted u-text-sm">尚未偵測到專案／郵件綁定</p>
+            )}
+          </CardSection>
+        </Card>
+      ) : null}
 
       <Card>
         <CardSection title={`憑證 (${items.length})`}>

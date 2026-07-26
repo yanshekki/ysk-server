@@ -203,10 +203,33 @@ export function EmailDomainPage() {
           <Card>
             <CardSection
               title="DNS 與待辦"
-              description="此處為管理面板建議紀錄；寫入權威 DNS 需到 DNS 頁或外部供應商（誠實：非自動上線）"
+              description="建議紀錄可複製到外部 DNS 或到 DNS 頁建 zone（寫入 ≠ 權威上線）"
             >
               {bundle ? (
                 <>
+                  <div className="btn-row u-mb-3">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        const text = bundle.records
+                          .map((r) => `${r.type}\t${r.name}\t${r.value}`)
+                          .join('\n');
+                        void navigator.clipboard?.writeText(text);
+                      }}
+                    >
+                      複製全部紀錄
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        navigate(`/dns`)
+                      }
+                    >
+                      開啟 DNS 頁
+                    </Button>
+                  </div>
                   <DescriptionList
                     columns={2}
                     items={[
@@ -237,6 +260,7 @@ export function EmailDomainPage() {
                           <th>名稱</th>
                           <th>值</th>
                           <th>說明</th>
+                          <th />
                         </tr>
                       </thead>
                       <tbody>
@@ -252,6 +276,17 @@ export function EmailDomainPage() {
                               <code className="inline">{r.value}</code>
                             </td>
                             <td className="muted u-text-sm">{r.description}</td>
+                            <td>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  void navigator.clipboard?.writeText(r.value)
+                                }
+                              >
+                                複製
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -679,6 +714,62 @@ export function EmailDomainPage() {
                 >
                   申請 {domain.domain} Let’s Encrypt
                 </Button>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title="Autodiscover / Autoconfig">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      const r = await emailApi.autodiscover(domain.id);
+                      setWebmailLog({
+                        ok: true,
+                        notes: r.notes,
+                        mozillaXml: r.mozillaXml.slice(0, 200) + '…',
+                        urls: r.urls,
+                      });
+                      void navigator.clipboard?.writeText(r.mozillaXml);
+                    })
+                  }
+                >
+                  產生並複製 Mozilla XML
+                </Button>
+                <p className="muted u-text-sm u-mt-2">
+                  亦提供 Outlook Autodiscover XML（見操作結果 notes）
+                </p>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title="郵件佇列">
+                <div className="btn-row">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setWebmailLog(await emailApi.mailQueue());
+                      })
+                    }
+                  >
+                    查看佇列
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setWebmailLog(await emailApi.flushQueue({ all: true }));
+                      })
+                    }
+                  >
+                    清空佇列
+                  </Button>
+                </div>
               </CardSection>
             </Card>
             <Card>

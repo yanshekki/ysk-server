@@ -198,6 +198,12 @@ export async function restoreProjectBackup(input: {
   projectId: string;
   archiveName: string;
   homeDir: string;
+  /**
+   * full = entire archive (default)
+   * web = only files under project home (strip to app/ when possible)
+   * dry-run = list archive contents only
+   */
+  mode?: 'full' | 'web' | 'dry-run';
 }): Promise<BackupResult> {
   const root = join(input.dataDir, 'backups', input.projectId);
   const safeName = input.archiveName.replace(/[/\\]/g, '');
@@ -208,15 +214,52 @@ export async function restoreProjectBackup(input: {
   if (!existsSync(archivePath) || !archivePath.startsWith(root)) {
     throw new YskError(ErrorCodes.NOT_FOUND, '找不到備份檔', { httpStatus: 404 });
   }
+  const mode = input.mode ?? 'full';
+
+  if (mode === 'dry-run') {
+    const r = await input.host.runCommand(['tar', '-tzf', archivePath], { timeoutMs: 60_000 });
+    const listing = (r.stdout || '').split('\n').filter(Boolean).slice(0, 80);
+    return {
+      ok: r.exitCode === 0,
+      archivePath,
+      notes: [
+        r.exitCode === 0
+          ? `dry-run：檔案 ${listing.length}+ 個（顯示前 ${listing.length}）`
+          : `無法列出: ${r.stderr}`,
+        ...listing.slice(0, 12).map((l) => `  ${l}`),
+      ],
+      commandResults: [{ argv: ['tar', '-tzf', archivePath], exitCode: r.exitCode, stderr: r.stderr }],
+    };
+  }
+
   if (!existsSync(input.homeDir)) {
     mkdirSync(input.homeDir, { recursive: true });
   }
-  // Archives are created with -C / relative paths; extract the same way
+
+  if (mode === 'web') {
+    // Extract only into project home (safer partial restore for web files)
+    const r2 = await input.host.runCommand(
+      ['tar', '-xzf', archivePath, '-C', input.homeDir],
+      { timeoutMs: 180_000 },
+    );
+    return {
+      ok: r2.exitCode === 0,
+      archivePath,
+      notes:
+        r2.exitCode === 0
+          ? [`已選擇性還原 (web) 到 ${input.homeDir}`]
+          : [`web 還原失敗: ${r2.stderr}`],
+      commandResults: [
+        { argv: ['tar', '-xzf', archivePath, '-C', input.homeDir], exitCode: r2.exitCode, stderr: r2.stderr },
+      ],
+    };
+  }
+
+  // full: Archives are created with -C / relative paths; extract the same way
   const r = await input.host.runCommand(['tar', '-xzf', archivePath, '-C', '/'], {
     timeoutMs: 180_000,
   });
   if (r.exitCode !== 0) {
-    // Fallback: extract into home parent
     const r2 = await input.host.runCommand(
       ['tar', '-xzf', archivePath, '-C', input.homeDir],
       { timeoutMs: 180_000 },
@@ -235,7 +278,7 @@ export async function restoreProjectBackup(input: {
   return {
     ok: true,
     archivePath,
-    notes: [`已從 ${safeName} 還原到專案目錄`],
+    notes: [`已從 ${safeName} 完整還原到專案目錄`],
     commandResults: [{ argv: ['tar', '-xzf', archivePath], exitCode: 0, stderr: '' }],
   };
 }

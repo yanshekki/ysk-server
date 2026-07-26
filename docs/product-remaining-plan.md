@@ -32,20 +32,20 @@
 
 ### Wave 1 — 收完 Phase 1 邊角（P0 缺口）
 
-| # | ID | 項 | 範圍 | 估 |
-|---|-----|-----|------|----|
-| 1.1 | B18 | 從專案建立 jailed FTP | Project advanced/network → FTP API preset path | M |
-| 1.2 | B20 | 專案 access/error log 加強 | Logs tab 分檔、下載 tail | S |
-| 1.3 | B22 | PHP 版本 per-site | Project + php-fpm 綁定 | M |
-| 1.4 | B8 | 自訂 document root | network/deploy 設定 + nginx | M |
-| 1.5 | C8 | Email↔DNS「應加紀錄」共用清單 | Email DNS tab + copy-all | S |
-| 1.6 | F17 | Autodiscover / autoconfig | HTTP endpoints + 說明 | M |
-| 1.7 | F18 | 郵件佇列 list + flush | postqueue/postsuper 誠實 | M |
-| 1.8 | D9 | Dashboard 證書到期告警 | strip + link SSL | S |
-| 1.9 | D5 UI | SSL 頁顯示 renewJobs / bindings | 用現有 API | S |
-| 1.10 | L4 | 選擇性還原（至少 web vs full） | restore options | M |
-| 1.11 | R5 | API access keys | CRUD + auth | M |
-| 1.12 | — | Commit + push Phase 1 補洞 | git | S |
+| # | ID | 項 | 範圍 | 估 | Status |
+|---|-----|-----|------|----|--------|
+| 1.1 | B18 | 從專案建立 jailed FTP | Project advanced → FTP | M | **done** |
+| 1.2 | B20 | 專案 log 加強 | 分檔切換、複製 | S | **done** |
+| 1.3 | B22 | PHP 版本 per-site | Project + php-fpm | M | pending |
+| 1.4 | B8 | 自訂 document root | network + nginx | M | pending |
+| 1.5 | C8 | Email↔DNS 應加紀錄 | copy-all + DNS 入口 | S | **done** |
+| 1.6 | F17 | Autodiscover / autoconfig | XML API | M | **done** |
+| 1.7 | F18 | 郵件佇列 list + flush | postqueue | M | **done** |
+| 1.8 | D9 | Dashboard 證書到期 | 30 日內告警 | S | **done** |
+| 1.9 | D5 UI | SSL bindings + renew notes | SSL 頁 | S | **done** |
+| 1.10 | L4 | 選擇性還原 full/web/dry-run | restore mode | M | **done** |
+| 1.11 | R5 | API access keys | Security 頁 | M | **done** |
+| 1.12 | — | Commit + push | git | S | **done** (895f6c4 + this wave) |
 
 ### Wave 2 — 體驗拉過兩邊（P1 / Better）
 

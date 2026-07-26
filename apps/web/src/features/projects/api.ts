@@ -52,10 +52,22 @@ export const projectsApi = {
       ? `?file=${encodeURIComponent(file)}&lines=${lines}`
       : '';
     return api.requestRaw<{
-      files: Array<{ name: string }>;
+      files: Array<{ name: string; bytes?: number; mtime?: string }>;
       tail?: { lines: string[]; file: string };
     }>(`/api/v1/projects/${id}/logs${q}`);
   },
+  createFtp: (
+    id: string,
+    body: { username?: string; password: string; homeSubdir?: 'app' | 'root' },
+  ) =>
+    api.requestRaw<{
+      ok: boolean;
+      account?: Record<string, unknown>;
+      notes?: string[];
+    }>(`/api/v1/projects/${id}/ftp`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   setQuota: (id: string, quotaMb: number) =>
     api.requestRaw<OpsApplyResultDto>(`/api/v1/projects/${id}/quota`, {
       method: 'POST',

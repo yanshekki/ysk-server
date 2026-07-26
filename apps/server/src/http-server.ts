@@ -53,6 +53,7 @@ import {
   restoreProjectBackup,
   deleteProjectBackup,
   resolveBackupDownloadPath,
+  createProjectFtpAccount,
   listProjectLogs,
   tailProjectLog,
   lookupOsvVulns,
@@ -215,6 +216,41 @@ export function createHttpServer(ctx: AppContext): Server {
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { code?: string };
         return sendJson(res, 200, ctx.auth.disableTotp(user.id, data.code ?? ''));
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/auth/api-keys') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { listApiKeys } = await import('@ysk/core');
+        void user;
+        return sendJson(res, 200, { items: listApiKeys(ctx.db) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/api-keys') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { name?: string };
+        const { createApiKey } = await import('@ysk/core');
+        const created = createApiKey(ctx.db, { name: data.name ?? 'api-key', userId: user.id });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'auth.api_key.create',
+          detail: { id: created.key.id, name: created.key.name },
+          ok: true,
+        });
+        return sendJson(res, 201, created);
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/api-keys\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { deleteApiKey } = await import('@ysk/core');
+        const ok = deleteApiKey(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'auth.api_key.delete',
+          resource: id,
+          detail: { ok },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 404, { ok });
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/audit') {
@@ -936,6 +972,58 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, { domain: redactEmail(domain as unknown as Record<string, unknown>) });
       }
 
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/autodiscover$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const d = ctx.email.get(id);
+        const { renderMozillaAutoconfig, renderOutlookAutodiscover } = await import('@ysk/core');
+        return sendJson(res, 200, {
+          domain: d.domain,
+          mailHostname: d.mail_hostname,
+          mozillaXml: renderMozillaAutoconfig({
+            domain: d.domain,
+            imapHost: d.mail_hostname,
+            smtpHost: d.mail_hostname,
+          }),
+          outlookXml: renderOutlookAutodiscover({
+            domain: d.domain,
+            imapHost: d.mail_hostname,
+            smtpHost: d.mail_hostname,
+          }),
+          urls: {
+            mozilla: `https://autoconfig.${d.domain}/mail/config-v1.1.xml`,
+            outlook: `https://autodiscover.${d.domain}/autodiscover/autodiscover.xml`,
+          },
+          notes: [
+            '請將下列 XML 部署到對應 hostname，或複製到外部 DNS 主機',
+            `IMAP/SMTP: ${d.mail_hostname}`,
+          ],
+        });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/email/queue') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listMailQueue } = await import('@ysk/core');
+        return sendJson(res, 200, await listMailQueue(ctx.host));
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/email/queue/flush') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { id?: string; all?: boolean };
+        const { flushMailQueue } = await import('@ysk/core');
+        const r = await flushMailQueue(ctx.host, data);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.queue.flush',
+          detail: data,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/email/mailboxes') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { items: ctx.email.listMailboxes() });
@@ -1307,7 +1395,11 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/backups/restore') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { projectId?: string; name?: string };
+        const data = JSON.parse(raw || '{}') as {
+          projectId?: string;
+          name?: string;
+          mode?: 'full' | 'web' | 'dry-run';
+        };
         if (!data.projectId || !data.name) {
           return sendJson(res, 400, { ok: false, notes: ['projectId 與 name 必填'] });
         }
@@ -1321,12 +1413,13 @@ export function createHttpServer(ctx: AppContext): Server {
           projectId: data.projectId,
           archiveName: data.name,
           homeDir: project.home_dir,
+          mode: data.mode,
         });
         ctx.audit.append({
           actor: user.username,
           action: 'backup.restore',
           resource: data.projectId,
-          detail: { name: data.name, ...r },
+          detail: { name: data.name, mode: data.mode ?? 'full', ...r },
           ok: r.ok,
         });
         return sendJson(res, r.ok ? 200 : 422, r);
@@ -2014,6 +2107,34 @@ export function createHttpServer(ctx: AppContext): Server {
           });
         }
         return sendJson(res, 200, { files });
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/ftp$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          username?: string;
+          password?: string;
+          homeSubdir?: 'app' | 'root';
+        };
+        const result = createProjectFtpAccount(ctx.db, {
+          projectId: proj.id,
+          projectHome: proj.homeDir,
+          linuxUser: proj.linuxUser,
+          username: data.username,
+          password: data.password ?? '',
+          homeSubdir: data.homeSubdir,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'project.ftp.create',
+          resource: id,
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 201 : 422, result);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/resources$/)) {

@@ -45,6 +45,10 @@ export function ProjectDetailPage() {
   const [memoryMax, setMemoryMax] = useState('512M');
   const [cpuQuota, setCpuQuota] = useState('100');
   const [logTail, setLogTail] = useState('');
+  const [logFiles, setLogFiles] = useState<Array<{ name: string; bytes?: number; mtime?: string }>>(
+    [],
+  );
+  const [logFile, setLogFile] = useState<string>('');
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
 
   const refreshProject = useCallback(async () => {
@@ -85,16 +89,19 @@ export function ProjectDetailPage() {
     };
   }, [refreshProject, t]);
 
-  async function loadLogs() {
+  async function loadLogs(fileName?: string) {
     if (!project) return;
     setBusy(true);
     setError(null);
     try {
       const r = await projectsApi.logs(project.id);
-      if (r.files[0]) {
-        const tail = await projectsApi.logs(project.id, r.files[0].name, 80);
+      setLogFiles(r.files ?? []);
+      const pick = fileName || logFile || r.files[0]?.name;
+      if (pick) {
+        setLogFile(pick);
+        const tail = await projectsApi.logs(project.id, pick, 200);
         setLogTail(
-          `# ${tail.tail?.file ?? r.files[0].name}\n` + (tail.tail?.lines ?? []).join('\n'),
+          `# ${tail.tail?.file ?? pick}\n` + (tail.tail?.lines ?? []).join('\n'),
         );
       } else {
         setLogTail(t('projects.logsNoFiles'));
@@ -265,7 +272,15 @@ export function ProjectDetailPage() {
           />
         ) : null}
         {activeTab === 'logs' ? (
-          <ProjectLogsTab busy={busy} logTail={logTail} onLoad={() => void loadLogs()} />
+          <ProjectLogsTab
+            busy={busy}
+            logTail={logTail}
+            files={logFiles}
+            selectedFile={logFile}
+            onSelectFile={(name) => void loadLogs(name)}
+            onLoad={() => void loadLogs()}
+            onRefreshFile={() => void loadLogs(logFile)}
+          />
         ) : null}
         {activeTab === 'advanced' ? (
           <ProjectAdvancedTab
@@ -276,6 +291,7 @@ export function ProjectDetailPage() {
             onSuspend={() => void run('suspend', project.id).catch(() => undefined)}
             onUnsuspend={() => void run('unsuspend', project.id).catch(() => undefined)}
             onDelete={() => setConfirm('delete')}
+            onOpsMessage={(m) => setMsg(m)}
           />
         ) : null}
       </Tabs>

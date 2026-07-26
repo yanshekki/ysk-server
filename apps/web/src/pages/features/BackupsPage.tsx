@@ -39,6 +39,7 @@ export function BackupsPage() {
   const [lastRun, setLastRun] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<BackupItem | null>(null);
+  const [restoreMode, setRestoreMode] = useState<'full' | 'web' | 'dry-run'>('full');
   const [deleteTarget, setDeleteTarget] = useState<BackupItem | null>(null);
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
 
@@ -217,12 +218,37 @@ export function BackupsPage() {
                             下載
                           </Button>
                           <Button
+                            variant="ghost"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              setRestoreMode('dry-run');
+                              setRestoreTarget(b);
+                            }}
+                          >
+                            預覽
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              setRestoreMode('web');
+                              setRestoreTarget(b);
+                            }}
+                          >
+                            還原 web
+                          </Button>
+                          <Button
                             variant="primary"
                             size="sm"
                             loading={busy}
-                            onClick={() => setRestoreTarget(b)}
+                            onClick={() => {
+                              setRestoreMode('full');
+                              setRestoreTarget(b);
+                            }}
                           >
-                            還原
+                            完整還原
                           </Button>
                           <Button
                             variant="danger"
@@ -255,6 +281,7 @@ export function BackupsPage() {
                 body: JSON.stringify({
                   projectId: restoreTarget.projectId,
                   name: restoreTarget.name,
+                  mode: restoreMode,
                 }),
               });
               setRestoreTarget(null);
@@ -264,17 +291,27 @@ export function BackupsPage() {
               const m = e instanceof Error ? e.message : '還原失敗';
               return { ok: false, notes: [m], blockMessage: m };
             }
-          }, '還原完成');
+          }, restoreMode === 'dry-run' ? '預覽完成' : '還原完成');
         }}
-        title="還原此備份？"
+        title={
+          restoreMode === 'dry-run'
+            ? '預覽備份內容？'
+            : restoreMode === 'web'
+              ? '選擇性還原 (web)？'
+              : '完整還原？'
+        }
         description={
           restoreTarget
-            ? `會以 tar 展開 ${restoreTarget.name} 到專案目錄。可能覆蓋現有檔案。`
+            ? restoreMode === 'dry-run'
+              ? `只列出 ${restoreTarget.name} 內容，唔會改檔。`
+              : restoreMode === 'web'
+                ? `將 ${restoreTarget.name} 解壓到專案 home（較保守）。`
+                : `完整 tar 還原 ${restoreTarget.name}，可能覆蓋現有檔案。`
             : ''
         }
-        confirmLabel="還原"
+        confirmLabel={restoreMode === 'dry-run' ? '預覽' : '還原'}
         cancelLabel="取消"
-        danger
+        danger={restoreMode === 'full'}
         busy={busy}
       />
 

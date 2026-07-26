@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import type { JsonStore } from '../db/store.js';
 import { panelBlockMessage, type ApplyResult, type BlockReason } from './system-apply.js';
-import { listResources, updateResource } from './managed-resources.js';
+import { createResource, listResources, updateResource } from './managed-resources.js';
 
 export const FTPS_SETTINGS_KEY = 'ftps_settings';
 
@@ -61,6 +61,85 @@ export interface FtpsStatus {
   accountCount: number;
   settings: FtpsSettings;
   lastAppliedAt?: string;
+}
+
+/**
+ * Create a jailed FTP account rooted at a project home (or home/app).
+ * Does not apply vsftpd until panel apply — status draft/written honestly.
+ */
+export function createProjectFtpAccount(
+  db: JsonStore,
+  input: {
+    projectId: string;
+    projectHome: string;
+    linuxUser: string;
+    username?: string;
+    password: string;
+    /** default: projectHome/app if exists, else projectHome */
+    homeSubdir?: 'app' | 'root';
+  },
+): {
+  ok: boolean;
+  account: Record<string, unknown>;
+  notes: string[];
+  written: string[];
+} {
+  const password = String(input.password || '');
+  if (password.length < 8) {
+    return {
+      ok: false,
+      account: {},
+      notes: ['密碼至少 8 字元'],
+      written: [],
+    };
+  }
+  const baseUser =
+    (input.username || `p_${input.linuxUser.replace(/^ysk_/, '')}`).toLowerCase().replace(/[^a-z0-9._-]/g, '') ||
+    `p${input.projectId.slice(0, 8)}`;
+  const username = baseUser.slice(0, 32);
+  const existing = listResources(db, 'ftp_accounts').find(
+    (a) => String(a.username).toLowerCase() === username,
+  );
+  if (existing) {
+    return {
+      ok: false,
+      account: existing,
+      notes: [`FTP 用戶已存在: ${username}`],
+      written: [],
+    };
+  }
+  const appDir = join(input.projectHome, 'app');
+  const homePath =
+    input.homeSubdir === 'root'
+      ? input.projectHome
+      : existsSync(appDir)
+        ? appDir
+        : input.projectHome;
+  mkdirSync(homePath, { recursive: true });
+  const account = createResource(db, 'ftp_accounts', {
+    username,
+    password_plain: password,
+    homePath,
+    projectId: input.projectId,
+    chroot: true,
+    apply_status: 'draft',
+  });
+  return {
+    ok: true,
+    account: {
+      id: account.id,
+      username,
+      homePath,
+      projectId: input.projectId,
+      apply_status: 'draft',
+    },
+    notes: [
+      `已建立 FTP 帳戶 ${username}`,
+      `Jail 路徑: ${homePath}`,
+      '狀態 draft — 請到 FTP 服務頁「套用」才會寫入 vsftpd',
+    ],
+    written: [homePath],
+  };
 }
 
 export function loadFtpsSettings(db: JsonStore): FtpsSettings {

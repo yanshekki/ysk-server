@@ -142,4 +142,24 @@ export const emailApi = {
       method: 'PATCH',
       body: JSON.stringify(body),
     }),
+  autodiscover: (domainId: string) =>
+    api.requestRaw<{
+      domain: string;
+      mozillaXml: string;
+      outlookXml: string;
+      urls: Record<string, string>;
+      notes: string[];
+    }>(`/api/v1/email/domains/${domainId}/autodiscover`),
+  mailQueue: () =>
+    api.requestRaw<{
+      ok: boolean;
+      items: Array<{ id: string; raw: string }>;
+      notes: string[];
+      blocked?: boolean;
+    }>('/api/v1/email/queue'),
+  flushQueue: (body?: { id?: string; all?: boolean }) =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/email/queue/flush', {
+      method: 'POST',
+      body: JSON.stringify(body ?? { all: true }),
+    }),
 };

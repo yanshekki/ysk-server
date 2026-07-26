@@ -20,6 +20,17 @@ export type CertificateView = {
 
 export const sslApi = {
   list: () => api.requestRaw<{ items: CertificateView[] }>('/api/v1/ssl/certificates'),
+  bindings: () =>
+    api.requestRaw<{
+      items: Array<
+        CertificateView & {
+          projects?: Array<{ id: string; name: string; domain?: string }>;
+          mailDomains?: Array<{ id: string; domain: string }>;
+        }
+      >;
+      renewJobs?: Array<Record<string, unknown>>;
+      notes?: string[];
+    }>('/api/v1/ssl/bindings'),
   upload: (body: { domain: string; fullchainPem: string; privkeyPem: string }) =>
     api.requestRaw<{ certificate: Record<string, unknown> }>('/api/v1/ssl/upload', {
       method: 'POST',

@@ -8,4 +8,6 @@ export * from './dovecot-passdb.js';
 export * from './password-hash.js';
 export * from './webmail-apply.js';
 export * from './email-bootstrap.js';
+export * from './autodiscover.js';
+export * from './mail-queue.js';
 

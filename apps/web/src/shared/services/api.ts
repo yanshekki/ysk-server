@@ -98,6 +98,23 @@ export const api = {
       body: JSON.stringify({ code }),
     });
   },
+  listApiKeys(): Promise<{
+    items: Array<{ id: string; name: string; prefix: string; created_at: string }>;
+  }> {
+    return request('/api/v1/auth/api-keys');
+  },
+  createApiKey(name: string): Promise<{
+    key: { id: string; name: string; prefix: string; created_at: string };
+    token: string;
+  }> {
+    return request('/api/v1/auth/api-keys', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  },
+  deleteApiKey(id: string): Promise<{ ok: boolean }> {
+    return request(`/api/v1/auth/api-keys/${id}`, { method: 'DELETE' });
+  },
   status(): Promise<{ product: string; version: string; tools: string[]; executeEnabled: boolean }> {
     return request('/api/v1/status');
   },

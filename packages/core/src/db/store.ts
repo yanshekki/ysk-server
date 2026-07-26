@@ -133,6 +133,8 @@ export interface StoreData {
   file_shares: Array<Record<string, unknown>>;
   /** File favorites paths per root */
   file_favorites: Array<Record<string, unknown>>;
+  /** Panel API access keys (token hash) */
+  api_keys: Array<Record<string, unknown>>;
 }
 
 const EMPTY: StoreData = {
@@ -165,6 +167,7 @@ const EMPTY: StoreData = {
   dns_records: [],
   file_shares: [],
   file_favorites: [],
+  api_keys: [],
 };
 
 export class JsonStore {
@@ -203,6 +206,9 @@ export class JsonStore {
       this.data.postgres_users = this.data.postgres_users ?? [];
       this.data.redis_instances = this.data.redis_instances ?? [];
       this.data.dns_records = this.data.dns_records ?? [];
+      this.data.file_shares = this.data.file_shares ?? [];
+      this.data.file_favorites = this.data.file_favorites ?? [];
+      this.data.api_keys = this.data.api_keys ?? [];
       this.data.version = this.data.version ?? EMPTY.version;
     } else {
       this.data = structuredClone(EMPTY);

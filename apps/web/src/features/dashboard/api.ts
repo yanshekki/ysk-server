@@ -11,6 +11,10 @@ export const dashboardApi = {
   metrics: () => api.requestRaw<Record<string, unknown>>('/api/v1/metrics'),
   projects: () => api.listProjects(),
   backups: () => api.requestRaw<{ items: unknown[] }>('/api/v1/backups'),
+  sslBindings: () =>
+    api.requestRaw<{
+      items: Array<{ domain: string; expires_at?: string | null; files_exist?: boolean }>;
+    }>('/api/v1/ssl/bindings'),
   summary: () => api.requestRaw<Record<string, unknown>>('/api/v1/dashboard/summary'),
   readiness: async () => {
     // 503 when not productionReady still carries full report body
