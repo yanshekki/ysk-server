@@ -6,10 +6,12 @@ import { api } from '../../shared/services/api';
 export type AdviceRow = {
   packageName: string;
   currentVersion: string;
+  candidateVersion?: string;
   advice?: string;
   risk?: string;
   summary?: string;
   cves?: string[];
+  requiresApproval?: boolean;
 };
 
 export const updatesApi = {
@@ -26,7 +28,27 @@ export const updatesApi = {
       collectedAt?: string;
     }>('/api/v1/updates/inventory/refresh', {
       method: 'POST',
-      body: JSON.stringify({ osv }),
+      body: JSON.stringify({ osv, limit: 12 }),
+    }),
+  applyPackage: (body: {
+    packageName: string;
+    currentVersion: string;
+    candidateVersion?: string;
+    risk?: string;
+    cves?: string[];
+    requiresApproval?: boolean;
+    summary?: string;
+    confirmHighRisk?: boolean;
+  }) =>
+    api.requestRaw<{
+      ok: boolean;
+      applied?: boolean;
+      blocked?: boolean;
+      blockMessage?: string;
+      notes: string[];
+    }>('/api/v1/updates/apply', {
+      method: 'POST',
+      body: JSON.stringify(body),
     }),
   self: () => api.requestRaw<Record<string, unknown>>('/api/v1/updates/self'),
   selfApply: () =>

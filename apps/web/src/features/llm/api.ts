@@ -34,8 +34,16 @@ export const llmApi = {
     api.requestRaw(`/api/v1/ai/tasks/${id}/approve`, { method: 'POST' }),
   executeTask: (id: string) =>
     api.requestRaw<AiTask>(`/api/v1/ai/tasks/${id}/execute`, { method: 'POST' }),
+  cancelTask: (id: string) =>
+    api.requestRaw<AiTask>(`/api/v1/ai/tasks/${id}/cancel`, { method: 'POST' }),
+  rejectStep: (id: string, stepId: string) =>
+    api.requestRaw<AiTask>(`/api/v1/ai/tasks/${id}/steps/${stepId}/reject`, {
+      method: 'POST',
+    }),
   listPlaybooks: () =>
     api.requestRaw<{ items: PlaybookSummary[] }>('/api/v1/ai/playbooks'),
+  listPlaybookRuns: () =>
+    api.requestRaw<{ items: Array<Record<string, unknown>> }>('/api/v1/ai/playbook-runs'),
   runPlaybook: (playbookId: string) =>
     api.requestRaw<{ task: AiTask }>('/api/v1/ai/playbooks/run', {
       method: 'POST',

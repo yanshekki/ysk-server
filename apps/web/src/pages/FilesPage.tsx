@@ -92,6 +92,12 @@ export function FilesPage() {
   const [sharePath, setSharePath] = useState<string | null>(null);
   const [sharePass, setSharePass] = useState('');
   const [shareResult, setShareResult] = useState<string | null>(null);
+  const [versionsPath, setVersionsPath] = useState<string | null>(null);
+  const [versions, setVersions] = useState<
+    Array<{ id: string; path: string; createdAt: string; bytes: number }>
+  >([]);
+  const [webdavToken, setWebdavToken] = useState<string | null>(null);
+  const [webdavEnabled, setWebdavEnabled] = useState(false);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -255,7 +261,7 @@ export function FilesPage() {
   return (
     <FeaturePageLayout
       title="檔案"
-      subtitle="公用 / 專案檔案 · 垃圾桶 · 分享連結"
+      subtitle="公用 / 專案 · 版本 · WebDAV · 分享"
       actions={
         <div className="btn-row">
           <Link to="/files/public">
@@ -287,6 +293,77 @@ export function FilesPage() {
           { label: '已選', value: String(selected.size) },
         ]}
       />
+
+      <Card>
+        <CardSection
+          title="WebDAV"
+          description="Basic 用戶 ysk · 掛載 /webdav → 公用檔案根；token 只顯示一次"
+        >
+          <div className="btn-row">
+            <Button
+              variant="primary"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                setBusy(true);
+                void filesApi
+                  .webdavIssueToken()
+                  .then((r) => {
+                    setWebdavToken(r.token);
+                    setWebdavEnabled(true);
+                    setMsg(r.notes?.join('；') ?? '已簽發 token');
+                  })
+                  .catch((e: Error) => setError(e.message))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              啟用並簽發 token
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                void filesApi
+                  .webdavStatus()
+                  .then((s) => {
+                    setWebdavEnabled(s.enabled);
+                    setMsg(s.enabled ? `已啟用 · ${s.mountPath}` : '未啟用');
+                  })
+                  .catch((e: Error) => setError(e.message));
+              }}
+            >
+              狀態
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                void filesApi
+                  .webdavDisable()
+                  .then(() => {
+                    setWebdavEnabled(false);
+                    setWebdavToken(null);
+                    setMsg('已停用 WebDAV');
+                  })
+                  .catch((e: Error) => setError(e.message));
+              }}
+            >
+              停用
+            </Button>
+          </div>
+          {webdavToken ? (
+            <p className="u-mt-2">
+              <code className="inline u-break-all">{webdavToken}</code>
+            </p>
+          ) : (
+            <p className="muted u-text-sm u-mt-2">
+              {webdavEnabled ? '已啟用（token 不回顯）' : '預設關閉'}
+            </p>
+          )}
+        </CardSection>
+      </Card>
 
       <div className="fm-layout">
         {/* Sidebar */}
@@ -622,17 +699,37 @@ export function FilesPage() {
                                   {e.favorite ? '取消收藏' : '收藏'}
                                 </Button>
                                 {e.type === 'file' ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSharePath(e.path);
-                                      setSharePass('');
-                                      setShareResult(null);
-                                    }}
-                                  >
-                                    分享
-                                  </Button>
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSharePath(e.path);
+                                        setSharePass('');
+                                        setShareResult(null);
+                                      }}
+                                    >
+                                      分享
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      loading={busy}
+                                      onClick={() => {
+                                        setBusy(true);
+                                        void filesApi
+                                          .listVersions(root, e.path)
+                                          .then((r) => {
+                                            setVersionsPath(e.path);
+                                            setVersions(r.items ?? []);
+                                          })
+                                          .catch((err: Error) => setError(err.message))
+                                          .finally(() => setBusy(false));
+                                      }}
+                                    >
+                                      版本
+                                    </Button>
+                                  </>
                                 ) : null}
                                 <Button
                                   variant="ghost"
@@ -881,6 +978,62 @@ export function FilesPage() {
             autoFocus
           />
         </Field>
+      </Modal>
+
+      {/* Versions */}
+      <Modal
+        open={Boolean(versionsPath)}
+        onClose={() => {
+          setVersionsPath(null);
+          setVersions([]);
+        }}
+        title={`版本 — ${versionsPath ?? ''}`}
+        description="覆寫前自動快照（.versions）；最多保留 20 版"
+        footer={
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => {
+              setVersionsPath(null);
+              setVersions([]);
+            }}
+          >
+            關閉
+          </Button>
+        }
+      >
+        {versions.length === 0 ? (
+          <EmptyState title="尚無版本" description="修改並儲存檔案後會產生快照" />
+        ) : (
+          <ul className="list-plain list-spaced">
+            {versions.map((v) => (
+              <li key={v.id} className="btn-row">
+                <span className="muted u-text-sm">
+                  {new Date(v.createdAt).toLocaleString()} · {formatBytes(v.bytes)}
+                </span>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => {
+                    if (!versionsPath) return;
+                    setBusy(true);
+                    void filesApi
+                      .restoreVersion(root, versionsPath, v.id)
+                      .then((r) => {
+                        setMsg(r.notes?.join('；') ?? '已還原');
+                        return refresh();
+                      })
+                      .catch((e: Error) => setError(e.message))
+                      .finally(() => setBusy(false));
+                  }}
+                >
+                  還原
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
       </Modal>
 
       {/* Rename */}

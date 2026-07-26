@@ -25,6 +25,9 @@ export const DEFAULT_DNSBL_ZONES = [
   'zen.spamhaus.org',
   'bl.spamcop.net',
   'b.barracudacentral.org',
+  'dnsbl.sorbs.net',
+  'psbl.surriel.com',
+  'ubl.unsubscore.com',
 ] as const;
 
 /**
@@ -110,5 +113,37 @@ export async function checkIpDnsbl(
     cleanOn,
     results,
     notes,
+  };
+}
+
+/**
+ * Check multiple IPs against DNSBL zones (RBL depth for multi-homed hosts).
+ */
+export async function checkMultipleIpsDnsbl(
+  ips: string[],
+  zones: readonly string[] = DEFAULT_DNSBL_ZONES,
+  resolve: typeof resolve4 = resolve4,
+): Promise<{
+  ok: boolean;
+  reports: DnsblReport[];
+  listedIps: string[];
+  notes: string[];
+}> {
+  const unique = [...new Set(ips.map((i) => i.trim()).filter(Boolean))].slice(0, 10);
+  const reports: DnsblReport[] = [];
+  for (const ip of unique) {
+    reports.push(await checkIpDnsbl(ip, zones, resolve));
+  }
+  const listedIps = reports.filter((r) => !r.ok).map((r) => r.ip);
+  return {
+    ok: listedIps.length === 0,
+    reports,
+    listedIps,
+    notes: [
+      `Checked ${unique.length} IP(s) × ${zones.length} lists`,
+      listedIps.length
+        ? `Listed: ${listedIps.join(', ')}`
+        : 'All checked IPs clean on configured lists',
+    ],
   };
 }

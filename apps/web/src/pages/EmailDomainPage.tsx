@@ -24,6 +24,7 @@ import {
   Tabs,
 } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
+import { api } from '../shared/services/api';
 
 function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
@@ -143,6 +144,7 @@ export function EmailDomainPage() {
     { id: 'aliases', label: '別名／轉發' },
     { id: 'health', label: '健康' },
     { id: 'relay', label: '中繼' },
+    { id: 'sieve', label: 'Sieve / SSO' },
     { id: 'advanced', label: '進階' },
   ];
 
@@ -611,6 +613,27 @@ export function EmailDomainPage() {
                   loading={busy}
                   onClick={() =>
                     void withBusy(async () => {
+                      const ips = [domain.server_ip];
+                      try {
+                        const hostIps = await api.requestRaw<{ items: string[] }>(
+                          '/api/v1/system/ips',
+                        );
+                        ips.push(...(hostIps.items ?? []));
+                      } catch {
+                        /* optional */
+                      }
+                      setDnsbl(await emailApi.dnsblMulti([...new Set(ips)]));
+                    })
+                  }
+                >
+                  多 IP RBL
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
                       setWarmup(await emailApi.warmupDomain(domain.id));
                     })
                   }
@@ -697,6 +720,77 @@ export function EmailDomainPage() {
               <OpsResultPanel title="中繼結果" result={asOps(relayLog)} busy={busy} />
             </CardSection>
           </Card>
+        ) : null}
+
+        {tab === 'sieve' ? (
+          <div className="stack">
+            <Card>
+              <CardSection
+                title="Webmail SSO"
+                description="一次性 token；需 webmail 端認 token，唔假稱已接 Roundcube"
+              >
+                <div className="btn-row">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        const email = `postmaster@${domain.domain}`;
+                        const r = await emailApi.webmailSso({
+                          email,
+                          domain: domain.domain,
+                          ttlMinutes: 10,
+                        });
+                        setWebmailLog(r as Record<string, unknown>);
+                      })
+                    }
+                  >
+                    簽發 postmaster SSO
+                  </Button>
+                </div>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection
+                title="Sieve 過濾"
+                description="寫入 dataDir/email/sieve；written ≠ Dovecot 已載入"
+              >
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      const mailbox = `postmaster@${domain.domain}`;
+                      const r = await emailApi.writeSieve({
+                        mailbox,
+                        name: 'default.sieve',
+                        content: `require ["fileinto"];\n# YSK sieve for ${domain.domain}\n# if header :contains "X-Spam-Flag" "YES" { fileinto "Junk"; stop; }\n`,
+                      });
+                      setWebmailLog(r);
+                    })
+                  }
+                >
+                  寫入預設 Sieve（postmaster）
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      const mailbox = `postmaster@${domain.domain}`;
+                      setWebmailLog(await emailApi.listSieve(mailbox));
+                    })
+                  }
+                >
+                  列出 Sieve
+                </Button>
+              </CardSection>
+            </Card>
+            {webmailLog ? <OpsResultPanel title="結果" result={asOps(webmailLog)} /> : null}
+          </div>
         ) : null}
 
         {tab === 'advanced' ? (

@@ -35,6 +35,8 @@ export function AiPage() {
     createTask,
     approveAndRun,
     runPlaybook,
+    cancelTask,
+    rejectStep,
   } = useAiTasks();
 
   async function onCreate(e: FormEvent) {
@@ -47,7 +49,10 @@ export function AiPage() {
   }
 
   return (
-    <FeaturePageLayout title="AI 任務" subtitle="AI 任務與 Playbook（工具仍受 allowlist 限制）">
+    <FeaturePageLayout
+      title="AI 任務"
+      subtitle="Plan → Review → Execute · Playbook 受 allowlist 監督"
+    >
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <SummaryStrip
@@ -126,9 +131,25 @@ export function AiPage() {
                         variant="primary"
                         size="sm"
                         loading={busy}
+                        disabled={
+                          task.status === 'completed' ||
+                          task.status === 'cancelled' ||
+                          task.status === 'failed'
+                        }
                         onClick={() => void approveAndRun(task.id)}
                       >
                         批准並執行
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        loading={busy}
+                        disabled={
+                          task.status === 'completed' || task.status === 'cancelled'
+                        }
+                        onClick={() => void cancelTask(task.id)}
+                      >
+                        取消
                       </Button>
                     </div>
                   </div>
@@ -149,6 +170,7 @@ export function AiPage() {
                       <th>Status</th>
                       <th>Approval</th>
                       <th>Error</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
@@ -162,6 +184,18 @@ export function AiPage() {
                         </td>
                         <td>{String(s.requiresApproval)}</td>
                         <td className="muted">{s.error ?? '—'}</td>
+                        <td>
+                          {s.status === 'planned' || s.status === 'approved' ? (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => void rejectStep(selected.id, s.id)}
+                            >
+                              拒絕
+                            </Button>
+                          ) : null}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

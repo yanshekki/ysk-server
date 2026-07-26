@@ -14,15 +14,19 @@ export function useUpdates() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const load = useCallback(async (refresh = false) => {
+  const load = useCallback(async (refresh = false, osv = false) => {
     setError(null);
     setBusy(true);
     try {
       if (refresh) {
-        const inv = await updatesApi.refresh(false);
+        const inv = await updatesApi.refresh(osv);
         setInventory(inv.advice.slice(0, 40));
         setLastAt(inv.collectedAt ?? new Date().toISOString());
-        setMsg(`已掃描 ${inv.inventory.length} 個套件`);
+        setMsg(
+          osv
+            ? `已掃描 ${inv.inventory.length} 套件（含 OSV 查詢前 12 項）`
+            : `已掃描 ${inv.inventory.length} 個套件`,
+        );
       } else {
         const inv = await updatesApi.inventory();
         const merged =
@@ -45,6 +49,36 @@ export function useUpdates() {
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : '載入失敗');
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  const applyPackage = useCallback(async (row: AdviceRow, confirmHighRisk = false) => {
+    setBusy(true);
+    setError(null);
+    setMsg(null);
+    try {
+      const r = await updatesApi.applyPackage({
+        packageName: row.packageName,
+        currentVersion: row.currentVersion,
+        candidateVersion: row.candidateVersion,
+        risk: row.risk,
+        cves: row.cves,
+        requiresApproval: row.requiresApproval,
+        summary: row.summary,
+        confirmHighRisk,
+      });
+      const notes = sanitizeOperatorNotes(r.notes);
+      if (r.blocked || !r.ok) {
+        setError(r.blockMessage ?? notes[0] ?? '套用未完成');
+      } else {
+        setMsg(notes[0] ?? '已套用套件更新');
+      }
+      return r;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '更新失敗');
+      throw e;
     } finally {
       setBusy(false);
     }
@@ -77,5 +111,17 @@ export function useUpdates() {
     void load(false);
   }, [load]);
 
-  return { inventory, selfUpdate, lastAt, jobs, error, busy, msg, setMsg, load, applySelf };
+  return {
+    inventory,
+    selfUpdate,
+    lastAt,
+    jobs,
+    error,
+    busy,
+    msg,
+    setMsg,
+    load,
+    applySelf,
+    applyPackage,
+  };
 }

@@ -19,6 +19,7 @@ import { join, resolve, relative, dirname, basename, extname } from 'node:path';
 import { createHash, randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { ErrorCodes, YskError } from '@ysk/shared';
+import { listFileVersions, restoreFileVersion, snapshotFileVersion } from './versions.js';
 
 export interface FileEntry {
   name: string;
@@ -200,6 +201,7 @@ export class FileManager {
 
   writeText(relPath: string, content: string): { path: string; bytes: number } {
     const abs = assertInside(this.root, relPath);
+    this.snapshotIfExists(abs, relPath);
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, content, 'utf8');
     return { path: relPath, bytes: Buffer.byteLength(content) };
@@ -207,10 +209,39 @@ export class FileManager {
 
   writeBase64(relPath: string, base64: string): { path: string; bytes: number } {
     const abs = assertInside(this.root, relPath);
+    this.snapshotIfExists(abs, relPath);
     mkdirSync(dirname(abs), { recursive: true });
     const buf = Buffer.from(base64, 'base64');
     writeFileSync(abs, buf);
     return { path: relPath, bytes: buf.length };
+  }
+
+  /** Snapshot existing file into .versions before overwrite */
+  private snapshotIfExists(abs: string, relPath: string): void {
+    if (!existsSync(abs) || !statSync(abs).isFile()) return;
+    try {
+      snapshotFileVersion(this.root, abs, relPath);
+    } catch {
+      /* versions optional */
+    }
+  }
+
+  listVersions(relPath: string) {
+    return listFileVersions(this.root, relPath);
+  }
+
+  restoreVersion(relPath: string, versionId: string): { ok: boolean; notes: string[] } {
+    const abs = assertInside(this.root, relPath);
+    return restoreFileVersion(
+      this.root,
+      relPath,
+      versionId,
+      (buf) => {
+        mkdirSync(dirname(abs), { recursive: true });
+        writeFileSync(abs, buf);
+      },
+      abs,
+    );
   }
 
   mkdir(relPath: string): { path: string } {
@@ -475,7 +506,7 @@ export class FileManager {
     let dirCount = 0;
     const walk = (abs: string) => {
       for (const name of readdirSync(abs)) {
-        if (name === TRASH_DIR) continue;
+        if (name === TRASH_DIR || name === '.versions' || name === '.ysk') continue;
         const p = join(abs, name);
         const s = statSync(p);
         if (s.isDirectory()) {

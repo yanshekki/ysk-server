@@ -10,4 +10,6 @@ export * from './webmail-apply.js';
 export * from './email-bootstrap.js';
 export * from './autodiscover.js';
 export * from './mail-queue.js';
+export * from './webmail-sso.js';
+export * from './sieve.js';
 

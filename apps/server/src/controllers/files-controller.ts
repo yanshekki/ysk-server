@@ -37,6 +37,88 @@ export async function handleFilesRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
+  // Minimal WebDAV on /webdav/* (Basic ysk:token)
+  if (url.pathname === '/webdav' || url.pathname.startsWith('/webdav/')) {
+    const { getWebDavSettings, verifyWebDavToken, buildPropfindResponse, publicFilesRoot, FileManager } =
+      await import('@ysk/core');
+    const settings = getWebDavSettings(ctx.db);
+    if (!settings.enabled) {
+      sendJson(res, 503, { ok: false, message: 'WebDAV 未啟用' });
+      return true;
+    }
+    const auth = req.headers.authorization ?? '';
+    let okAuth = false;
+    if (auth.startsWith('Basic ')) {
+      try {
+        const decoded = Buffer.from(auth.slice(6), 'base64').toString('utf8');
+        const pass = decoded.includes(':') ? decoded.slice(decoded.indexOf(':') + 1) : '';
+        okAuth = verifyWebDavToken(ctx.db, pass);
+      } catch {
+        okAuth = false;
+      }
+    }
+    if (!okAuth) {
+      res.writeHead(401, {
+        'WWW-Authenticate': 'Basic realm="YSK WebDAV"',
+        'Content-Type': 'application/json',
+      });
+      res.end(JSON.stringify({ ok: false, message: 'Unauthorized' }));
+      return true;
+    }
+    const rel =
+      url.pathname === '/webdav' || url.pathname === '/webdav/'
+        ? '.'
+        : decodeURIComponent(url.pathname.replace(/^\/webdav\/?/, ''));
+    const fm = new FileManager(publicFilesRoot(ctx.dataDir));
+    if (method === 'OPTIONS' || method === 'PROPFIND') {
+      const entries =
+        method === 'PROPFIND'
+          ? fm.list(rel || '.').map((e) => ({
+              name: e.name,
+              href: `/webdav/${e.path}`,
+              isDir: e.type === 'dir',
+              size: e.size,
+              mtime: e.mtime,
+            }))
+          : [];
+      const xml = buildPropfindResponse({
+        href: url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`,
+        entries,
+      });
+      res.writeHead(207, {
+        'Content-Type': 'application/xml; charset=utf-8',
+        DAV: '1,2',
+        Allow: 'OPTIONS, GET, PUT, PROPFIND',
+      });
+      res.end(xml);
+      return true;
+    }
+    if (method === 'GET') {
+      try {
+        const file = fm.readBinary(rel);
+        res.writeHead(200, {
+          'Content-Type': file.mime,
+          'Content-Length': file.buffer.length,
+        });
+        res.end(file.buffer);
+      } catch (e) {
+        sendJson(res, 404, { ok: false, message: e instanceof Error ? e.message : 'not found' });
+      }
+      return true;
+    }
+    if (method === 'PUT') {
+      const chunks: Buffer[] = [];
+      for await (const c of req) chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c));
+      const buf = Buffer.concat(chunks);
+      fm.writeBase64(rel, buf.toString('base64'));
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, path: rel, bytes: buf.length }));
+      return true;
+    }
+    sendJson(res, 405, { ok: false, message: 'method not allowed' });
+    return true;
+  }
+
   // Public share download (no auth)
   if (method === 'GET' && url.pathname.startsWith('/api/v1/public/files/')) {
     const token = url.pathname.split('/').pop() ?? '';
@@ -464,6 +546,72 @@ export async function handleFilesRoutes(
     }
     const r = toggleFavorite(ctx.db, rootKey, data.path);
     sendJson(res, 200, r);
+    return true;
+  }
+
+  // File versions
+  if (method === 'GET' && url.pathname === '/api/v1/files/versions') {
+    const path = url.searchParams.get('path') ?? '';
+    if (!path) {
+      sendJson(res, 400, { ok: false, message: 'path required' });
+      return true;
+    }
+    sendJson(res, 200, { items: fm.listVersions(path), path });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/files/versions/restore') {
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { path?: string; versionId?: string };
+    if (!data.path || !data.versionId) {
+      sendJson(res, 400, { ok: false, message: 'path and versionId required' });
+      return true;
+    }
+    const r = fm.restoreVersion(data.path, data.versionId);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'files.version.restore',
+      resource: data.path,
+      detail: { versionId: data.versionId, ok: r.ok },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 404, r);
+    return true;
+  }
+
+  // WebDAV settings (control plane)
+  if (method === 'GET' && url.pathname === '/api/v1/files/webdav') {
+    const { getWebDavSettings } = await import('@ysk/core');
+    const s = getWebDavSettings(ctx.db);
+    sendJson(res, 200, {
+      enabled: s.enabled,
+      mountPath: s.mountPath,
+      tokenId: s.tokenId,
+      updated_at: s.updated_at,
+    });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/files/webdav/token') {
+    const { issueWebDavToken } = await import('@ysk/core');
+    const r = issueWebDavToken(ctx.db);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'files.webdav.token',
+      detail: { tokenId: r.settings.tokenId },
+      ok: true,
+    });
+    sendJson(res, 200, {
+      ok: true,
+      token: r.token,
+      tokenId: r.settings.tokenId,
+      mountPath: r.settings.mountPath,
+      notes: r.notes,
+    });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/files/webdav/disable') {
+    const { setWebDavSettings } = await import('@ysk/core');
+    setWebDavSettings(ctx.db, { enabled: false });
+    sendJson(res, 200, { ok: true, enabled: false });
     return true;
   }
 

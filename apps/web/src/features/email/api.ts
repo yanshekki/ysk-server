@@ -77,8 +77,38 @@ export const emailApi = {
       method: 'POST',
       body: JSON.stringify({ ip }),
     }),
+  dnsblMulti: (ips: string[]) =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/email/dnsbl/multi', {
+      method: 'POST',
+      body: JSON.stringify({ ips }),
+    }),
   dnsblLast: () =>
     api.requestRaw<{ last: Record<string, unknown> | null }>('/api/v1/email/dnsbl/last'),
+  webmailSso: (body: { email: string; domain: string; ttlMinutes?: number }) =>
+    api.requestRaw<{
+      ok: boolean;
+      token?: string;
+      loginUrl?: string;
+      expiresAt?: string;
+      notes: string[];
+    }>('/api/v1/email/webmail/sso', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  listSieve: (mailbox: string) =>
+    api.requestRaw<{ items: Array<Record<string, unknown>> }>(
+      `/api/v1/email/sieve?mailbox=${encodeURIComponent(mailbox)}`,
+    ),
+  writeSieve: (body: { mailbox: string; name?: string; content: string }) =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/email/sieve', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  deleteSieve: (mailbox: string, name: string) =>
+    api.requestRaw(
+      `/api/v1/email/sieve?mailbox=${encodeURIComponent(mailbox)}&name=${encodeURIComponent(name)}`,
+      { method: 'DELETE' },
+    ),
   warmup: (body: { domain: string; serverIp: string; isNewIp?: boolean }) =>
     api.requestRaw<Record<string, unknown>>('/api/v1/email/warmup', {
       method: 'POST',

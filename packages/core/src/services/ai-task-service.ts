@@ -99,6 +99,52 @@ export class AiTaskService {
     return updated;
   }
 
+  /** Cancel a planned/running task — mark remaining steps skipped. */
+  cancel(id: string, actor: string): AiTask {
+    const task = this.get(id);
+    if (task.status === 'completed' || task.status === 'cancelled') {
+      return task;
+    }
+    for (const step of task.steps) {
+      if (step.status === 'planned' || step.status === 'approved') {
+        step.status = 'skipped';
+        step.error = 'cancelled by operator';
+      }
+    }
+    task.status = 'cancelled';
+    task.updated_at = new Date().toISOString();
+    this.store.save(task);
+    this.audit.append({
+      actor,
+      action: 'ai.task.cancel',
+      resource: id,
+      detail: {},
+      ok: true,
+    });
+    return task;
+  }
+
+  /** Reject a single step (supervised). */
+  rejectStep(id: string, stepId: string, actor: string): AiTask {
+    const task = this.get(id);
+    const step = task.steps.find((s) => s.id === stepId);
+    if (!step) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'step not found', { httpStatus: 404 });
+    }
+    step.status = 'rejected';
+    step.error = `rejected by ${actor}`;
+    task.updated_at = new Date().toISOString();
+    this.store.save(task);
+    this.audit.append({
+      actor,
+      action: 'ai.task.reject_step',
+      resource: id,
+      detail: { stepId },
+      ok: true,
+    });
+    return task;
+  }
+
   /**
    * Execute approved (or non-approval) steps via real tool executor.
    */

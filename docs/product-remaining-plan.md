@@ -79,13 +79,13 @@
 
 ### Wave 4 — 差異化加深
 
-| # | 項 |
-|---|-----|
-| 4.1 | AI/Agents 生產化 |
-| 4.2 | CVE 更新流水線打磨 |
-| 4.3 | Files 版本 / WebDAV |
-| 4.4 | Webmail SSO · sieve/RBL 深度 |
-| 4.5 | DB 臨時只讀 user · remote host |
+| # | 項 | Status |
+|---|-----|--------|
+| 4.1 | AI/Agents 生產化 | **done** playbooks + cancel/reject + 監督 |
+| 4.2 | CVE 更新流水線打磨 | **done** OSV 掃描 UI + package apply fail-closed |
+| 4.3 | Files 版本 / WebDAV | **done** .versions + /webdav Basic |
+| 4.4 | Webmail SSO · sieve/RBL 深度 | **done** SSO token · sieve · multi-IP RBL |
+| 4.5 | DB 臨時只讀 user · remote host | **done** |
 
 ### 明確不做（凍結）
 

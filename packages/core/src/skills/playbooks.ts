@@ -60,6 +60,57 @@ export const BUILTIN_PLAYBOOKS: Playbook[] = [
       { tool: 'fs.read', args: { path: '/etc/os-release' }, description: 'OS release' },
     ],
   },
+  {
+    id: 'disk-pressure',
+    name: 'Disk pressure check',
+    description: 'Read-only disk usage via df',
+    emergency: false,
+    steps: [
+      { tool: 'sys.info', args: {}, description: 'Host facts' },
+      { tool: 'fs.read', args: { path: '/proc/mounts' }, description: 'Mount table' },
+    ],
+  },
+  {
+    id: 'mail-stack-status',
+    name: 'Mail stack status',
+    description: 'Check postfix + dovecot units',
+    emergency: false,
+    steps: [
+      { tool: 'service.status', args: { name: 'postfix' }, description: 'Postfix' },
+      { tool: 'service.status', args: { name: 'dovecot' }, description: 'Dovecot' },
+    ],
+  },
+  {
+    id: 'security-units',
+    name: 'Security units',
+    description: 'fail2ban + sshd status (read-only)',
+    emergency: false,
+    steps: [
+      { tool: 'service.status', args: { name: 'fail2ban' }, description: 'fail2ban' },
+      { tool: 'service.status', args: { name: 'ssh' }, description: 'sshd (ssh unit)' },
+    ],
+  },
+  {
+    id: 'web-stack-status',
+    name: 'Web stack status',
+    description: 'nginx + php-fpm probe',
+    emergency: false,
+    steps: [
+      { tool: 'service.status', args: { name: 'nginx' }, description: 'Nginx' },
+      { tool: 'service.status', args: { name: 'php8.2-fpm' }, description: 'PHP-FPM 8.2' },
+    ],
+  },
+  {
+    id: 'emergency-read-only',
+    name: 'Emergency read-only sweep',
+    description: 'Protection-safe facts only',
+    emergency: true,
+    steps: [
+      { tool: 'sys.info', args: {}, description: 'sys.info' },
+      { tool: 'process.list', args: {}, description: 'processes' },
+      { tool: 'fs.read', args: { path: '/etc/os-release' }, description: 'os-release' },
+    ],
+  },
 ];
 
 export function listPlaybooks(): Playbook[] {

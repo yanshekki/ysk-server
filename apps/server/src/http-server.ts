@@ -99,15 +99,16 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.requestHits = ctx.requestHits.filter((t) => t >= cutoff);
       }
 
-      if (req.method === 'OPTIONS') {
-        return sendJson(res, 204, {});
-      }
-
       const url = parseUrl(req);
       const method = req.method ?? 'GET';
 
-      // Modular controllers (files, managed resources, system apply)
+      // Modular controllers first (WebDAV needs OPTIONS/PROPFIND)
       if (await handleFilesRoutes(ctx, req, res, url, method)) return;
+
+      if (method === 'OPTIONS') {
+        return sendJson(res, 204, {});
+      }
+
       if (await handleResourcesRoutes(ctx, req, res, url, method)) return;
       if (await handleSystemRoutes(ctx, req, res, url, method)) return;
 
@@ -1456,6 +1457,24 @@ export function createHttpServer(ctx: AppContext): Server {
         const task = await ctx.ai.execute(id, user.username, user.roles as SystemRole[]);
         return sendJson(res, 200, task);
       }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ai\/tasks\/[^/]+\/cancel$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        return sendJson(res, 200, ctx.ai.cancel(id, user.username));
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ai\/tasks\/[^/]+\/steps\/[^/]+\/reject$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const parts = url.pathname.split('/');
+        const id = parts[5];
+        const stepId = parts[7];
+        return sendJson(res, 200, ctx.ai.rejectStep(id, stepId, user.username));
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/ai/playbook-runs') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, {
+          items: (ctx.db.snapshot.playbook_runs ?? []).slice(0, 40),
+        });
+      }
       if (method === 'GET' && url.pathname === '/api/v1/ai/playbooks') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { items: listPlaybooks() });
@@ -1590,6 +1609,58 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.auth.authenticate(getBearer(req));
         const latest = process.env.YSK_LATEST_VERSION ?? VERSION;
         return sendJson(res, 200, planSelfUpdate({ current: VERSION, latest }));
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/updates/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          packageName?: string;
+          currentVersion?: string;
+          candidateVersion?: string;
+          risk?: string;
+          advice?: string;
+          requiresApproval?: boolean;
+          cves?: string[];
+          summary?: string;
+          confirmHighRisk?: boolean;
+        };
+        const { applyPackageUpdate, planUpdateExecution, adviseUpdate } = await import('@ysk/core');
+        const item = adviseUpdate({
+          packageName: data.packageName ?? '',
+          currentVersion: data.currentVersion ?? '0',
+          candidateVersion: data.candidateVersion ?? data.currentVersion,
+          knownCves: data.cves,
+          hasSecurityFix: Boolean(data.cves?.length),
+        });
+        // Preserve client risk signals when present
+        if (data.risk) (item as { risk: string }).risk = data.risk;
+        if (data.requiresApproval != null) item.requiresApproval = data.requiresApproval;
+        if (data.summary) item.summary = data.summary;
+        const plan = planUpdateExecution(item);
+        const result = await applyPackageUpdate({
+          host: ctx.host,
+          item,
+          confirmHighRisk: data.confirmHighRisk,
+        });
+        ctx.db.snapshot.update_jobs.unshift({
+          id: randomUUID(),
+          packageName: item.packageName,
+          at: new Date().toISOString(),
+          actor: user.username,
+          ok: result.ok,
+          applied: result.applied,
+          notes: result.notes,
+          plan,
+        } as never);
+        ctx.db.persist();
+        ctx.audit.append({
+          actor: user.username,
+          action: 'update.package.apply',
+          resource: item.packageName,
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : result.blocked ? 422 : 500, result);
       }
       if (method === 'GET' && url.pathname === '/api/v1/backups') {
         ctx.auth.authenticate(getBearer(req));
@@ -1926,6 +1997,192 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendJson(res, 200, live);
       }
+      if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          email?: string;
+          domain?: string;
+          ttlMinutes?: number;
+        };
+        const { issueWebmailSso } = await import('@ysk/core');
+        const r = issueWebmailSso({
+          db: ctx.db,
+          email: data.email ?? '',
+          domain: data.domain ?? '',
+          ttlMinutes: data.ttlMinutes,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.webmail.sso',
+          resource: data.email,
+          detail: { ok: r.ok, expiresAt: r.expiresAt },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 400, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso/consume') {
+        // Used by webmail edge / test — token in body
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { token?: string };
+        const { consumeWebmailSso } = await import('@ysk/core');
+        const r = consumeWebmailSso(ctx.db, data.token ?? '');
+        return sendJson(res, r.ok ? 200 : 401, r);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/email/sieve') {
+        ctx.auth.authenticate(getBearer(req));
+        const mailbox = url.searchParams.get('mailbox') ?? '';
+        const { listSieveScripts } = await import('@ysk/core');
+        return sendJson(res, 200, { items: listSieveScripts(ctx.dataDir, mailbox) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/email/sieve') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          mailbox?: string;
+          name?: string;
+          content?: string;
+        };
+        const { writeSieveScript } = await import('@ysk/core');
+        const r = writeSieveScript({
+          dataDir: ctx.dataDir,
+          mailbox: data.mailbox ?? '',
+          name: data.name,
+          content: data.content ?? '',
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.sieve.write',
+          resource: data.mailbox,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, 200, r);
+      }
+      if (method === 'DELETE' && url.pathname === '/api/v1/email/sieve') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const mailbox = url.searchParams.get('mailbox') ?? '';
+        const name = url.searchParams.get('name') ?? '';
+        const { deleteSieveScript } = await import('@ysk/core');
+        const r = deleteSieveScript(ctx.dataDir, mailbox, name);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.sieve.delete',
+          resource: mailbox,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 404, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/multi') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { ips?: string[] };
+        const { checkMultipleIpsDnsbl } = await import('@ysk/core');
+        const r = await checkMultipleIpsDnsbl(data.ips ?? []);
+        return sendJson(res, 200, r);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/db/temp-users') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listTempDbUsers } = await import('@ysk/core');
+        return sendJson(res, 200, { items: listTempDbUsers(ctx.db) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/db/temp-users') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          engine?: 'mysql' | 'mariadb' | 'postgres';
+          database?: string;
+          username?: string;
+          ttlHours?: number;
+          apply?: boolean;
+        };
+        const { createTempReadonlyUser } = await import('@ysk/core');
+        const r = await createTempReadonlyUser({
+          db: ctx.db,
+          host: ctx.host,
+          engine: data.engine ?? 'mysql',
+          database: data.database ?? '',
+          username: data.username,
+          ttlHours: data.ttlHours,
+          actor: user.username,
+          apply: data.apply !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.temp_user.create',
+          resource: data.database,
+          detail: { ok: r.ok, username: r.user?.username, status: r.user?.apply_status },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 201 : 422, r);
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/temp-users\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { revokeTempDbUser } = await import('@ysk/core');
+        const r = revokeTempDbUser(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.temp_user.revoke',
+          resource: id,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 404, r);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/db/remote-hosts') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listRemoteDbHosts } = await import('@ysk/core');
+        return sendJson(res, 200, { items: listRemoteDbHosts(ctx.db) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/db/remote-hosts') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          id?: string;
+          engine?: 'mysql' | 'mariadb' | 'postgres';
+          label?: string;
+          host?: string;
+          port?: number;
+          username?: string;
+          password?: string;
+        };
+        const { upsertRemoteDbHost } = await import('@ysk/core');
+        const row = upsertRemoteDbHost(ctx.db, {
+          id: data.id,
+          engine: data.engine ?? 'mysql',
+          label: data.label ?? data.host ?? '',
+          host: data.host ?? '',
+          port: data.port,
+          username: data.username,
+          password: data.password,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.remote_host.upsert',
+          resource: row.id,
+          detail: { host: row.host, engine: row.engine },
+          ok: true,
+        });
+        return sendJson(res, 200, { host: row });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/remote-hosts\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { deleteRemoteDbHost } = await import('@ysk/core');
+        const ok = deleteRemoteDbHost(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.remote_host.delete',
+          resource: id,
+          detail: { ok },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+
       if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/check') {
         ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);

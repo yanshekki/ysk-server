@@ -185,6 +185,43 @@ export const filesApi = {
     api.requestRaw<{ items: Array<{ root: string; path: string }> }>(
       `/api/v1/files/favorites?${q(root)}`,
     ),
+
+  listVersions: (root: string, path: string) =>
+    api.requestRaw<{
+      items: Array<{ id: string; path: string; createdAt: string; bytes: number }>;
+      path: string;
+    }>(`/api/v1/files/versions?${q(root, { path })}`),
+
+  restoreVersion: (root: string, path: string, versionId: string) =>
+    api.requestRaw<{ ok: boolean; notes: string[] }>(
+      `/api/v1/files/versions/restore?${q(root)}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ path, versionId }),
+      },
+    ),
+
+  webdavStatus: () =>
+    api.requestRaw<{
+      enabled: boolean;
+      mountPath: string;
+      tokenId?: string;
+    }>('/api/v1/files/webdav?root=public'),
+
+  webdavIssueToken: () =>
+    api.requestRaw<{
+      ok: boolean;
+      token: string;
+      tokenId?: string;
+      mountPath: string;
+      notes: string[];
+    }>('/api/v1/files/webdav/token?root=public', { method: 'POST', body: '{}' }),
+
+  webdavDisable: () =>
+    api.requestRaw<{ ok: boolean }>('/api/v1/files/webdav/disable?root=public', {
+      method: 'POST',
+      body: '{}',
+    }),
 };
 
 /** Read file as base64 via FileReader */

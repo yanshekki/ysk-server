@@ -29,6 +29,7 @@ import type { ResourceRow } from '../../features/resources/api';
 import { dbEngineApi, type DbEngineKind, type DbEngineStatus } from '../../features/db-engine';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { api } from '../../shared/services/api';
 
 function serviceLabel(s: DbEngineStatus | null): {
   text: string;
@@ -63,6 +64,16 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const [password, setPassword] = useState('');
   const [host, setHost] = useState('localhost');
   const [dbId, setDbId] = useState('');
+  const [tempUsers, setTempUsers] = useState<Array<Record<string, unknown>>>([]);
+  const [remoteHosts, setRemoteHosts] = useState<Array<Record<string, unknown>>>([]);
+  const [tempDb, setTempDb] = useState('');
+  const [tempTtl, setTempTtl] = useState('24');
+  const [remoteLabel, setRemoteLabel] = useState('');
+  const [remoteHost, setRemoteHost] = useState('');
+  const [remotePort, setRemotePort] = useState('3306');
+  const [remoteUser, setRemoteUser] = useState('');
+  const [remotePass, setRemotePass] = useState('');
+  const [lastTempPassword, setLastTempPassword] = useState<string | null>(null);
 
   const busy = dbs.busy || users.busy || actBusy;
   const error = dbs.error || users.error || actError;
@@ -76,9 +87,23 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     }
   }, [engine]);
 
+  const refreshExtras = useCallback(async () => {
+    try {
+      const [t, r] = await Promise.all([
+        api.requestRaw<{ items: Array<Record<string, unknown>> }>('/api/v1/db/temp-users'),
+        api.requestRaw<{ items: Array<Record<string, unknown>> }>('/api/v1/db/remote-hosts'),
+      ]);
+      setTempUsers((t.items ?? []).filter((u) => String(u.engine) === engine));
+      setRemoteHosts((r.items ?? []).filter((h) => String(h.engine) === engine));
+    } catch {
+      /* optional */
+    }
+  }, [engine]);
+
   useEffect(() => {
     void refreshSvc();
-  }, [refreshSvc]);
+    void refreshExtras();
+  }, [refreshSvc, refreshExtras]);
 
   async function onInstall() {
     await run(async () => {
@@ -301,10 +326,19 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         busy={busy}
       />
 
+      {lastTempPassword ? (
+        <Alert variant="ok">
+          臨時只讀密碼（只顯示一次）：
+          <code className="inline">{lastTempPassword}</code>
+        </Alert>
+      ) : null}
+
       <Tabs
         tabs={[
           { id: 'databases', label: `資料庫 (${dbs.items.length})` },
           { id: 'users', label: `用戶 (${users.items.length})` },
+          { id: 'temp', label: `臨時只讀 (${tempUsers.length})` },
+          { id: 'remote', label: `遠端主機 (${remoteHosts.length})` },
         ]}
         active={tab}
         onChange={setTab}
@@ -386,7 +420,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               />
             </CardSection>
           </Card>
-        ) : (
+        ) : null}
+
+        {tab === 'users' ? (
           <Card>
             <CardSection title="用戶列表" description="可為資料庫授權用戶">
               <div className="form-actions">
@@ -439,7 +475,201 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               />
             </CardSection>
           </Card>
-        )}
+        ) : null}
+
+        {tab === 'temp' ? (
+          <Card>
+            <CardSection
+              title="臨時只讀用戶"
+              description="TTL 到期後控制面標記 expired；系統 DROP 需手動（誠實）"
+            >
+              <FormGrid>
+                <Field label="資料庫名" htmlFor="tmp-db" flush>
+                  <input
+                    id="tmp-db"
+                    value={tempDb}
+                    onChange={(e) => setTempDb(e.target.value)}
+                    placeholder="app_db"
+                  />
+                </Field>
+                <Field label="TTL 小時" htmlFor="tmp-ttl" flush>
+                  <input
+                    id="tmp-ttl"
+                    value={tempTtl}
+                    onChange={(e) => setTempTtl(e.target.value)}
+                  />
+                </Field>
+              </FormGrid>
+              <div className="btn-row u-mt-3">
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() => {
+                    void run(async () => {
+                      const r = await api.requestRaw<{
+                        ok: boolean;
+                        password?: string;
+                        notes?: string[];
+                        user?: Record<string, unknown>;
+                      }>('/api/v1/db/temp-users', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          engine,
+                          database: tempDb,
+                          ttlHours: Number(tempTtl) || 24,
+                          apply: true,
+                        }),
+                      });
+                      if (r.password) setLastTempPassword(r.password);
+                      await refreshExtras();
+                      return {
+                        ...r,
+                        ok: r.ok,
+                        notes: r.notes ?? [],
+                      } as OpsResultLike;
+                    }, '已建立臨時只讀用戶');
+                  }}
+                >
+                  建立只讀（套用系統）
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => void refreshExtras()}
+                >
+                  重新整理
+                </Button>
+              </div>
+              <ul className="list-plain list-spaced u-mt-3">
+                {tempUsers.map((u) => (
+                  <li key={String(u.id)} className="btn-row">
+                    <span>
+                      <strong>{String(u.username)}</strong> @ {String(u.database)} ·{' '}
+                      <Badge>{String(u.apply_status)}</Badge> · 到期{' '}
+                      {u.expiresAt ? new Date(String(u.expiresAt)).toLocaleString() : '—'}
+                    </span>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => {
+                        void api
+                          .requestRaw(`/api/v1/db/temp-users/${u.id}`, { method: 'DELETE' })
+                          .then(() => refreshExtras())
+                          .catch((e: Error) => setError(e.message));
+                      }}
+                    >
+                      撤銷登記
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </CardSection>
+          </Card>
+        ) : null}
+
+        {tab === 'remote' ? (
+          <Card>
+            <CardSection
+              title="遠端 DB 主機"
+              description="登記連線目標（密碼不回顯）；面板 dump/瀏覽可後續接"
+            >
+              <FormGrid>
+                <Field label="標籤" htmlFor="rh-label" flush>
+                  <input
+                    id="rh-label"
+                    value={remoteLabel}
+                    onChange={(e) => setRemoteLabel(e.target.value)}
+                  />
+                </Field>
+                <Field label="Host" htmlFor="rh-host" flush>
+                  <input
+                    id="rh-host"
+                    value={remoteHost}
+                    onChange={(e) => setRemoteHost(e.target.value)}
+                    required
+                  />
+                </Field>
+                <Field label="Port" htmlFor="rh-port" flush>
+                  <input
+                    id="rh-port"
+                    value={remotePort}
+                    onChange={(e) => setRemotePort(e.target.value)}
+                  />
+                </Field>
+                <Field label="Username" htmlFor="rh-user" flush>
+                  <input
+                    id="rh-user"
+                    value={remoteUser}
+                    onChange={(e) => setRemoteUser(e.target.value)}
+                  />
+                </Field>
+                <Field label="Password" htmlFor="rh-pass" flush>
+                  <input
+                    id="rh-pass"
+                    type="password"
+                    value={remotePass}
+                    onChange={(e) => setRemotePass(e.target.value)}
+                  />
+                </Field>
+              </FormGrid>
+              <div className="btn-row u-mt-3">
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() => {
+                    void api
+                      .requestRaw('/api/v1/db/remote-hosts', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          engine,
+                          label: remoteLabel || remoteHost,
+                          host: remoteHost,
+                          port: Number(remotePort) || undefined,
+                          username: remoteUser || undefined,
+                          password: remotePass || undefined,
+                        }),
+                      })
+                      .then(() => {
+                        setRemotePass('');
+                        setMsg('已儲存遠端主機');
+                        return refreshExtras();
+                      })
+                      .catch((e: Error) => setError(e.message));
+                  }}
+                >
+                  儲存
+                </Button>
+              </div>
+              <ul className="list-plain list-spaced u-mt-3">
+                {remoteHosts.map((h) => (
+                  <li key={String(h.id)} className="btn-row">
+                    <span>
+                      <strong>{String(h.label)}</strong> · {String(h.host)}:
+                      {String(h.port)} · {String(h.username ?? '—')}
+                      {h.hasPassword ? ' · 🔐' : ''}
+                    </span>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => {
+                        void api
+                          .requestRaw(`/api/v1/db/remote-hosts/${h.id}`, {
+                            method: 'DELETE',
+                          })
+                          .then(() => refreshExtras())
+                          .catch((e: Error) => setError(e.message));
+                      }}
+                    >
+                      刪除
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </CardSection>
+          </Card>
+        ) : null}
       </Tabs>
 
       <Modal

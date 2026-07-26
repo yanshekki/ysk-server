@@ -80,6 +80,44 @@ export function useAiTasks() {
     [refresh],
   );
 
+  const cancelTask = useCallback(
+    async (id: string) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const t = await llmApi.cancelTask(id);
+        setSelected(t);
+        await refresh();
+        return t;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'failed');
+        throw err;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refresh],
+  );
+
+  const rejectStep = useCallback(
+    async (taskId: string, stepId: string) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const t = await llmApi.rejectStep(taskId, stepId);
+        setSelected(t);
+        await refresh();
+        return t;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'failed');
+        throw err;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refresh],
+  );
+
   return {
     prompt,
     setPrompt,
@@ -93,5 +131,7 @@ export function useAiTasks() {
     createTask,
     approveAndRun,
     runPlaybook,
+    cancelTask,
+    rejectStep,
   };
 }

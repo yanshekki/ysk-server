@@ -35,8 +35,19 @@ const SELF_LABELS: Record<string, string> = {
 
 export function UpdatesPage() {
   const { t } = useTranslation();
-  const { inventory, selfUpdate, lastAt, jobs, error, busy, msg, setMsg, load, applySelf } =
-    useUpdates();
+  const {
+    inventory,
+    selfUpdate,
+    lastAt,
+    jobs,
+    error,
+    busy,
+    msg,
+    setMsg,
+    load,
+    applySelf,
+    applyPackage,
+  } = useUpdates();
 
   const highRisk = inventory.filter(
     (i) => i.risk === 'critical' || i.risk === 'high',
@@ -51,8 +62,17 @@ export function UpdatesPage() {
           <Button variant="secondary" size="md" loading={busy} onClick={() => void load(false)}>
             重新載入
           </Button>
-          <Button variant="primary" size="md" loading={busy} onClick={() => void load(true)}>
+          <Button variant="primary" size="md" loading={busy} onClick={() => void load(true, false)}>
             掃描套件
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            loading={busy}
+            onClick={() => void load(true, true)}
+            title="對前 12 個套件查 OSV（需外網）"
+          >
+            掃描 + OSV
           </Button>
         </div>
       }
@@ -149,6 +169,8 @@ export function UpdatesPage() {
                       <th>版本</th>
                       <th>建議</th>
                       <th>風險</th>
+                      <th>CVE</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
@@ -166,6 +188,36 @@ export function UpdatesPage() {
                         </td>
                         <td>
                           <Badge tone={riskTone(i.risk)}>{i.risk ?? '—'}</Badge>
+                          {i.requiresApproval ? (
+                            <Badge tone="warn">需審批</Badge>
+                          ) : null}
+                        </td>
+                        <td className="muted u-text-sm u-break-all">
+                          {i.cves?.length ? i.cves.slice(0, 3).join(', ') : '—'}
+                        </td>
+                        <td>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              const high =
+                                i.risk === 'high' ||
+                                i.risk === 'critical' ||
+                                Boolean(i.requiresApproval);
+                              if (
+                                high &&
+                                !confirm(
+                                  `確認套用高風險更新 ${i.packageName}？\n${i.summary ?? ''}`,
+                                )
+                              ) {
+                                return;
+                              }
+                              void applyPackage(i, high);
+                            }}
+                          >
+                            套用
+                          </Button>
                         </td>
                       </tr>
                     ))}
