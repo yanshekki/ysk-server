@@ -74,26 +74,46 @@ export async function applyMailDomainPolicy(input: {
   const sysPostfix = '/etc/postfix/ysk-server';
   const sysRspamd = '/etc/rspamd/local.d';
 
-  // Copy aggregated files + per-domain
+  // Derive global anvil rate (msgs/hour): min positive rate across domains, default 500
+  const globalRate = computeGlobalMessageRatePerHour(input.dataDir);
+  writeFileSync(
+    join(input.dataDir, 'email', 'policy', 'ysk-anvil.env'),
+    `YSK_MSG_RATE_PER_HOUR=${globalRate}\n`,
+    'utf8',
+  );
+  written.push(join(input.dataDir, 'email', 'policy', 'ysk-anvil.env'));
+
+  // Rspamd ratelimit module (domain buckets from ysk-rate-values)
+  const rlConf = writeRspamdRatelimitConf(input.dataDir, globalRate);
+  written.push(...rlConf.written);
+  notes.push(...rlConf.notes);
+
+  // Copy aggregated files + apply postfix anvil rate + rspamd
   const copyScript = [
     `mkdir -p ${JSON.stringify(sysPolicy)} ${JSON.stringify(sysPostfix)} ${JSON.stringify(sysRspamd)}`,
     `cp -a ${JSON.stringify(join(input.dataDir, 'email', 'policy'))}/. ${JSON.stringify(sysPolicy)}/`,
     `cp -f ${JSON.stringify(join(input.dataDir, 'email', 'policy', 'ysk-rate.map'))} ${JSON.stringify(join(sysPostfix, 'ysk-rate.map'))} 2>/dev/null || true`,
     `cp -f ${JSON.stringify(join(input.dataDir, 'email', 'policy', 'ysk-antispam.map'))} ${JSON.stringify(join(sysPolicy, 'ysk-antispam.map'))} 2>/dev/null || true`,
     `cp -f ${JSON.stringify(join(input.dataDir, 'email', 'policy', 'ysk-multimap.conf'))} ${JSON.stringify(join(sysRspamd, 'ysk_multimap.conf'))} 2>/dev/null || true`,
-    // Postfix: sender_throttle style via check_sender_access hash map (soft)
+    `cp -f ${JSON.stringify(join(input.dataDir, 'email', 'policy', 'ysk-ratelimit.conf'))} ${JSON.stringify(join(sysRspamd, 'ratelimit.conf'))} 2>/dev/null || true`,
     `if command -v postmap >/dev/null; then postmap hash:${sysPostfix}/ysk-rate.map 2>/dev/null || postmap ${sysPostfix}/ysk-rate.map 2>/dev/null || true; fi`,
-    // Ensure main.cf includes our restriction if not already
+    // Sender access map (domain allowlist style)
     `grep -q 'ysk-server/ysk-rate' /etc/postfix/main.cf 2>/dev/null || postconf -e "smtpd_sender_restrictions=\$smtpd_sender_restrictions, check_sender_access hash:${sysPostfix}/ysk-rate.map" 2>/dev/null || true`,
-    // Rspamd: ensure local.d includes multimap — write standalone conf that rspamd loads from local.d
-    `true`,
+    // Real outbound throttle via anvil (messages per hour window)
+    `postconf -e anvil_rate_time_unit=3600s 2>/dev/null || true`,
+    `postconf -e smtpd_client_message_rate_limit=${globalRate} 2>/dev/null || true`,
+    `postconf -e smtpd_client_recipient_rate_limit=$((${globalRate} * 5)) 2>/dev/null || true`,
+    `postconf -e smtpd_client_connection_rate_limit=$((${globalRate} / 10 + 20)) 2>/dev/null || true`,
   ].join(' && ');
 
   const cp = await input.host.runCommand(['bash', '-c', copyScript], { timeoutMs: 30_000 });
   notes.push(
     cp.exitCode === 0
-      ? `已複製政策到 ${sysPolicy} / ${sysPostfix} / ${sysRspamd}`
+      ? `已複製政策 + anvil 限速 ≈ ${globalRate} msgs/hour`
       : `系統套用部分失敗: ${(cp.stderr || cp.stdout).slice(0, 250)}`,
+  );
+  notes.push(
+    `Postfix anvil: smtpd_client_message_rate_limit=${globalRate} / 3600s（全域；取各域名 rate 最小值）`,
   );
 
   let reloadsOk = 0;
@@ -109,23 +129,22 @@ export async function applyMailDomainPolicy(input: {
     }
   }
 
-  // Verify postconf contains our map (best-effort)
   const check = await input.host.runCommand(
-    ['bash', '-c', 'postconf smtpd_sender_restrictions 2>/dev/null | head -1 || true'],
+    [
+      'bash',
+      '-c',
+      'postconf smtpd_client_message_rate_limit anvil_rate_time_unit smtpd_sender_restrictions 2>/dev/null | head -5 || true',
+    ],
     { timeoutMs: 5_000 },
   );
-  if (check.stdout.includes('ysk-rate')) {
-    notes.push('postfix 已引用 ysk-rate map（check_sender_access）');
-  } else {
-    notes.push(
-      'postfix 可能未成功 postconf 引用 rate map — 請檢查 main.cf / 權限',
-    );
+  if (check.stdout.includes('message_rate_limit')) {
+    notes.push(`postconf 確認: ${check.stdout.trim().replace(/\n/g, ' | ').slice(0, 200)}`);
   }
 
   const applied = cp.exitCode === 0 && reloadsOk > 0;
   notes.push(
     applied
-      ? '狀態：applied（maps 已安裝並至少一個服務 reload）'
+      ? '狀態：applied（anvil 限速 + maps + 至少一個服務 reload）'
       : '狀態：written/partial（系統複製或 reload 未完全成功）',
   );
   return {
@@ -133,6 +152,65 @@ export async function applyMailDomainPolicy(input: {
     notes,
     written,
     apply_status: applied ? 'applied' : 'written',
+  };
+}
+
+/** Min positive per-domain rate; default 500 msgs/hour */
+export function computeGlobalMessageRatePerHour(dataDir: string): number {
+  const root = join(dataDir, 'email', 'policy');
+  let min = Infinity;
+  try {
+    for (const name of readdirSync(root)) {
+      const f = join(root, name, 'rate.cf');
+      if (!existsSync(f)) continue;
+      const text = readFileSync(f, 'utf8');
+      for (const line of text.split('\n')) {
+        const t = line.trim();
+        if (!t || t.startsWith('#')) continue;
+        const n = Number(t.split(/\s+/)[1]);
+        if (Number.isFinite(n) && n > 0 && n < min) min = n;
+      }
+    }
+  } catch {
+    /* empty */
+  }
+  if (!Number.isFinite(min) || min === Infinity) return 500;
+  return Math.max(10, Math.min(Math.floor(min), 50_000));
+}
+
+function writeRspamdRatelimitConf(
+  dataDir: string,
+  globalRate: number,
+): { written: string[]; notes: string[] } {
+  const path = join(dataDir, 'email', 'policy', 'ysk-ratelimit.conf');
+  // Rspamd ratelimit: per-IP and soft per-domain buckets (msgs per hour → burst-ish)
+  const perMin = Math.max(1, Math.ceil(globalRate / 60));
+  writeFileSync(
+    path,
+    `# Generated by YSK Server — copied to /etc/rspamd/local.d/ratelimit.conf on apply
+# ~${globalRate} msgs/hour ≈ ${perMin}/min soft bucket
+
+rates {
+  # per authenticated user / IP
+  to = {
+    bucket = [
+      { burst = ${perMin * 2}; rate = "${perMin} / 1m"; },
+      { burst = ${Math.min(globalRate, 200)}; rate = "${globalRate} / 1h"; },
+    ];
+  }
+  # bounce protection
+  bounce_to = {
+    bucket = [
+      { burst = 2; rate = "2 / 1h"; },
+    ];
+  }
+}
+`,
+    'utf8',
+  );
+  return {
+    written: [path],
+    notes: [`已寫 rspamd ratelimit.conf（~${globalRate}/h）`],
   };
 }
 

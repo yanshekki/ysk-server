@@ -226,9 +226,13 @@ export async function listResticSnapshots(input: {
   };
 }
 
+/** Required confirm phrase when overwriteHome is true */
+export const RESTIC_OVERWRITE_CONFIRM = 'OVERWRITE';
+
 /**
  * Restore a restic snapshot into targetDir (default: homeDir/.restic-restore).
- * Does NOT overwrite live site unless targetDir === homeDir (dangerous; require confirm).
+ * Does NOT overwrite live site unless overwriteHome + confirmPhrase.
+ * dryRun: list snapshot paths only (restic ls), no file writes.
  */
 export async function resticRestoreProject(input: {
   host: HostExecutor;
@@ -241,7 +245,18 @@ export async function resticRestoreProject(input: {
   targetDir?: string;
   /** Allow writing into homeDir root (destructive) */
   overwriteHome?: boolean;
-}): Promise<{ ok: boolean; notes: string[]; targetDir?: string; blocked?: boolean }> {
+  /** Must equal RESTIC_OVERWRITE_CONFIRM when overwriteHome */
+  confirmPhrase?: string;
+  /** List only — no restore */
+  dryRun?: boolean;
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  targetDir?: string;
+  blocked?: boolean;
+  dryRun?: boolean;
+  paths?: string[];
+}> {
   const settings = getResticSettings(input.db);
   if (!settings.enabled) {
     return { ok: false, notes: ['restic 未啟用'] };
@@ -256,6 +271,19 @@ export async function resticRestoreProject(input: {
   const snap = input.snapshotId.replace(/[^a-fA-F0-9]/g, '').slice(0, 64);
   if (!snap) return { ok: false, notes: ['無效 snapshot id'] };
 
+  if (input.overwriteHome) {
+    if (input.confirmPhrase !== RESTIC_OVERWRITE_CONFIRM) {
+      return {
+        ok: false,
+        blocked: true,
+        notes: [
+          `覆寫 home 需 confirmPhrase="${RESTIC_OVERWRITE_CONFIRM}"（雙重確認）`,
+          '否則只允許還原到 .restic-restore-* 安全目錄',
+        ],
+      };
+    }
+  }
+
   const check = await input.host.runCommand(['bash', '-c', 'command -v restic || true'], {
     timeoutMs: 3_000,
   });
@@ -268,6 +296,36 @@ export async function resticRestoreProject(input: {
   const password = settings.password || 'ysk-restic-change-me';
   const envPrefix = buildResticEnv(settings, password, repo);
 
+  // Dry-run: restic ls snapshot (paths only)
+  if (input.dryRun) {
+    const ls = await input.host.runCommand(
+      [
+        'bash',
+        '-c',
+        `${envPrefix} restic ls ${JSON.stringify(snap)} 2>&1 | head -n 200`,
+      ],
+      { timeoutMs: 120_000 },
+    );
+    const lines = (ls.stdout || '')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 100);
+    return {
+      ok: ls.exitCode === 0,
+      dryRun: true,
+      paths: lines,
+      notes:
+        ls.exitCode === 0
+          ? [
+              `dry-run：snapshot ${snap} 含 ${lines.length} 條路徑（最多顯示 100）`,
+              '未寫入任何檔案',
+              '狀態：preview only',
+            ]
+          : [`dry-run 失敗: ${(ls.stderr || ls.stdout).slice(0, 300)}`],
+    };
+  }
+
   let target =
     input.targetDir?.trim() ||
     join(input.homeDir, `.restic-restore-${snap.slice(0, 8)}`);
@@ -277,12 +335,11 @@ export async function resticRestoreProject(input: {
   if (target === input.homeDir && !input.overwriteHome) {
     return {
       ok: false,
-      notes: ['拒絕覆寫 homeDir — 請設 overwriteHome:true 或改用安全目標目錄'],
+      notes: ['拒絕覆寫 homeDir — 請設 overwriteHome + confirmPhrase 或改用安全目標目錄'],
     };
   }
 
   mkdirSync(target === input.homeDir ? input.homeDir : target, { recursive: true });
-  // restic restore <id> --target <dir>
   const r = await input.host.runCommand(
     [
       'bash',
@@ -297,7 +354,13 @@ export async function resticRestoreProject(input: {
     ok,
     targetDir: target,
     notes: ok
-      ? [`已還原 snapshot ${snap} → ${target}`, out, '狀態：applied（檔案已寫出）']
+      ? [
+          `已還原 snapshot ${snap} → ${target}`,
+          out,
+          input.overwriteHome
+            ? '狀態：applied（已覆寫 homeDir）'
+            : '狀態：applied（安全目錄）',
+        ]
       : [`restore 失敗 exit=${r.exitCode}`, out],
   };
 }

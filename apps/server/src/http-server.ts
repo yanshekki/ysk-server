@@ -1883,6 +1883,8 @@ export function createHttpServer(ctx: AppContext): Server {
           snapshotId?: string;
           targetDir?: string;
           overwriteHome?: boolean;
+          confirmPhrase?: string;
+          dryRun?: boolean;
         };
         const p = ctx.db.snapshot.projects.find((x) => x.id === data.projectId);
         if (!p) return sendJson(res, 404, { ok: false, notes: ['專案不存在'] });
@@ -1896,12 +1898,19 @@ export function createHttpServer(ctx: AppContext): Server {
           snapshotId: data.snapshotId ?? '',
           targetDir: data.targetDir,
           overwriteHome: data.overwriteHome,
+          confirmPhrase: data.confirmPhrase,
+          dryRun: data.dryRun,
         });
         ctx.audit.append({
           actor: user.username,
-          action: 'backup.restic.restore',
+          action: data.dryRun ? 'backup.restic.restore.dry_run' : 'backup.restic.restore',
           resource: p.id,
-          detail: r,
+          detail: {
+            ok: r.ok,
+            dryRun: Boolean(data.dryRun),
+            overwriteHome: Boolean(data.overwriteHome),
+            notes: r.notes,
+          },
           ok: r.ok,
         });
         return sendJson(res, r.ok ? 200 : 422, r);

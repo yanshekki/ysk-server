@@ -208,15 +208,108 @@ export async function enableRoundcubeSsoPlugin(input: {
     };
   }
   notes.push(`已 symlink ${linkPath} → ${base.pluginDir}`);
-  notes.push('仍需在 Roundcube config 加 $config[\'plugins\'][] = \'ysk_sso\';');
-  notes.push('狀態：applied（plugin 目錄已連結；登入流程需自行驗收）');
   written.push(linkPath);
+
+  // Auto-enable in config.inc.php near this plugins tree
+  const configResult = await ensureRoundcubePluginInConfig({
+    host: input.host,
+    pluginsDir,
+    pluginName: 'ysk_sso',
+  });
+  notes.push(...configResult.notes);
+  written.push(...configResult.written);
+
+  const applied = configResult.ok || true;
+  notes.push(
+    configResult.ok
+      ? '狀態：applied（symlink + config plugins[] 已嘗試啟用）'
+      : '狀態：applied partial（symlink 成功；config 需手動加 plugins）',
+  );
   return {
-    ok: true,
+    ok: applied,
     notes,
     written,
     symlink: linkPath,
-    apply_status: 'applied',
+    apply_status: configResult.ok ? 'applied' : 'written',
   };
+}
+
+/**
+ * Ensure $config['plugins'][] = 'ysk_sso' in Roundcube config.inc.php
+ */
+export async function ensureRoundcubePluginInConfig(input: {
+  host: HostExecutor;
+  pluginsDir: string;
+  pluginName: string;
+}): Promise<{ ok: boolean; notes: string[]; written: string[] }> {
+  const notes: string[] = [];
+  const written: string[] = [];
+  const name = input.pluginName.replace(/[^a-z0-9_]/gi, '');
+  // pluginsDir = .../plugins → parent may hold config or config/
+  const candidates = [
+    join(input.pluginsDir, '..', 'config', 'config.inc.php'),
+    join(input.pluginsDir, '..', 'config.inc.php'),
+    join(input.pluginsDir, '..', '..', 'config', 'config.inc.php'),
+    '/etc/roundcube/config.inc.php',
+    '/var/lib/roundcube/config/config.inc.php',
+  ];
+
+  let configPath: string | undefined;
+  for (const c of candidates) {
+    if (existsSync(c)) {
+      configPath = c;
+      break;
+    }
+  }
+  if (!configPath) {
+    // probe via host find (best-effort)
+    const find = await input.host.runCommand(
+      [
+        'bash',
+        '-c',
+        `ls ${JSON.stringify(join(input.pluginsDir, '..', 'config', 'config.inc.php'))} 2>/dev/null; ls /etc/roundcube/config.inc.php 2>/dev/null; true`,
+      ],
+      { timeoutMs: 5_000 },
+    );
+    const line = find.stdout.trim().split('\n').find((l) => l.includes('config.inc.php'));
+    if (line && existsSync(line.trim())) configPath = line.trim();
+  }
+
+  if (!configPath) {
+    notes.push('找不到 config.inc.php — 請手動: $config[\'plugins\'][] = \'ysk_sso\';');
+    return { ok: false, notes, written };
+  }
+
+  // Idempotent append via bash (works even if path only on remote fs via host)
+  const snippet = `$config['plugins'][] = '${name}'; // YSK`;
+  const script = `
+set -e
+CFG=${JSON.stringify(configPath)}
+if grep -q "plugins'].*${name}" "$CFG" 2>/dev/null || grep -q "plugins\\]\\[\\].*${name}" "$CFG" 2>/dev/null || grep -q "'${name}'" "$CFG" 2>/dev/null; then
+  echo ALREADY
+  exit 0
+fi
+# Prefer inserting after plugins array if present
+if grep -q "\\$config\\['plugins'\\]" "$CFG" 2>/dev/null; then
+  printf '\\n// YSK auto-enable\\n%s\\n' ${JSON.stringify(snippet)} >> "$CFG"
+  echo APPENDED_AFTER_PLUGINS
+else
+  printf '\\n// YSK auto-enable SSO plugin\\n%s\\n' ${JSON.stringify(snippet)} >> "$CFG"
+  echo APPENDED_EOF
+fi
+`;
+  const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 10_000 });
+  const out = (r.stdout || '').trim();
+  if (r.exitCode !== 0) {
+    notes.push(`改 config 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+    return { ok: false, notes, written };
+  }
+  if (out.includes('ALREADY')) {
+    notes.push(`config 已包含 plugin ${name}: ${configPath}`);
+  } else {
+    notes.push(`已寫入 ${configPath}: ${snippet}`);
+    written.push(configPath);
+  }
+  return { ok: true, notes, written };
 }
 

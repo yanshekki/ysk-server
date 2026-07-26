@@ -532,45 +532,127 @@ export function BackupsPage() {
                         </td>
                         <td className="muted u-text-sm">{(s.tags ?? []).join(', ') || '—'}</td>
                         <td>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              const pid =
-                                restoreProjectId ||
-                                (s.tags ?? [])
-                                  .find((t) => t.startsWith('project:'))
-                                  ?.replace('project:', '') ||
-                                '';
-                              if (!pid) {
-                                setError('請填 projectId 或 snapshot 需有 project: tag');
-                                return;
-                              }
-                              if (
-                                !confirm(
-                                  `還原 ${s.id} 到專案 ${pid.slice(0, 8)}… 的 .restic-restore-* 目錄？`,
-                                )
-                              ) {
-                                return;
-                              }
-                              void run(async () => {
-                                return (await api.requestRaw(
-                                  '/api/v1/backups/restic/restore',
-                                  {
-                                    method: 'POST',
-                                    body: JSON.stringify({
-                                      projectId: pid,
-                                      snapshotId: s.id,
-                                      overwriteHome: false,
-                                    }),
-                                  },
-                                )) as OpsResultLike;
-                              }, 'restic 還原完成');
-                            }}
-                          >
-                            還原（安全目錄）
-                          </Button>
+                          <div className="btn-row">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => {
+                                const pid =
+                                  restoreProjectId ||
+                                  (s.tags ?? [])
+                                    .find((t) => t.startsWith('project:'))
+                                    ?.replace('project:', '') ||
+                                  '';
+                                if (!pid) {
+                                  setError('請填 projectId 或 snapshot 需有 project: tag');
+                                  return;
+                                }
+                                void run(async () => {
+                                  return (await api.requestRaw(
+                                    '/api/v1/backups/restic/restore',
+                                    {
+                                      method: 'POST',
+                                      body: JSON.stringify({
+                                        projectId: pid,
+                                        snapshotId: s.id,
+                                        dryRun: true,
+                                      }),
+                                    },
+                                  )) as OpsResultLike;
+                                }, 'dry-run 完成（未寫檔）');
+                              }}
+                            >
+                              預覽
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => {
+                                const pid =
+                                  restoreProjectId ||
+                                  (s.tags ?? [])
+                                    .find((t) => t.startsWith('project:'))
+                                    ?.replace('project:', '') ||
+                                  '';
+                                if (!pid) {
+                                  setError('請填 projectId 或 snapshot 需有 project: tag');
+                                  return;
+                                }
+                                if (
+                                  !confirm(
+                                    `還原 ${s.id} 到專案 ${pid.slice(0, 8)}… 的 .restic-restore-* 目錄？`,
+                                  )
+                                ) {
+                                  return;
+                                }
+                                void run(async () => {
+                                  return (await api.requestRaw(
+                                    '/api/v1/backups/restic/restore',
+                                    {
+                                      method: 'POST',
+                                      body: JSON.stringify({
+                                        projectId: pid,
+                                        snapshotId: s.id,
+                                        overwriteHome: false,
+                                      }),
+                                    },
+                                  )) as OpsResultLike;
+                                }, 'restic 還原完成');
+                              }}
+                            >
+                              安全目錄
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => {
+                                const pid =
+                                  restoreProjectId ||
+                                  (s.tags ?? [])
+                                    .find((t) => t.startsWith('project:'))
+                                    ?.replace('project:', '') ||
+                                  '';
+                                if (!pid) {
+                                  setError('請填 projectId 或 snapshot 需有 project: tag');
+                                  return;
+                                }
+                                if (
+                                  !confirm(
+                                    `危險：將覆寫專案 ${pid.slice(0, 8)}… 的 home 目錄！\n先確認已備份。`,
+                                  )
+                                ) {
+                                  return;
+                                }
+                                const phrase = window.prompt(
+                                  '請輸入 OVERWRITE 以確認覆寫 home',
+                                  '',
+                                );
+                                if (phrase !== 'OVERWRITE') {
+                                  setError('未輸入 OVERWRITE — 已取消');
+                                  return;
+                                }
+                                void run(async () => {
+                                  return (await api.requestRaw(
+                                    '/api/v1/backups/restic/restore',
+                                    {
+                                      method: 'POST',
+                                      body: JSON.stringify({
+                                        projectId: pid,
+                                        snapshotId: s.id,
+                                        overwriteHome: true,
+                                        confirmPhrase: 'OVERWRITE',
+                                      }),
+                                    },
+                                  )) as OpsResultLike;
+                                }, 'restic 覆寫 home 完成');
+                              }}
+                            >
+                              覆寫 home
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

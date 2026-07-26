@@ -45,6 +45,14 @@
 | 5.7 | B21 | 一鍵 App UI | M | **done**（Advanced WP 已有；Deploy 強化 PHP） |
 | 5.8 | T8 | Config export / rebuild | M | **done** export + rebuild nginx 選項 |
 
+### Wave 8 — 限速實效 / config 自動 / restore 安全
+
+| # | 項 | Status |
+|---|-----|--------|
+| 8.1 | Anvil + rspamd ratelimit 實限速 | **done** msgs/hour 全域 |
+| 8.2 | Roundcube config.inc.php 自動 plugins[] | **done** |
+| 8.3 | Restic dry-run + OVERWRITE 雙重確認 | **done** |
+
 ### Wave 7 — 加深收尾（mail 真引用 / SSO symlink / restic restore）
 
 | # | 項 | Status |
