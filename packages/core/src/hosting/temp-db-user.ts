@@ -166,6 +166,95 @@ export function revokeTempDbUser(db: JsonStore, id: string): { ok: boolean; note
   };
 }
 
+/**
+ * Drop expired temp RO users from MySQL/Postgres when EXECUTE+root; always mark expired in store.
+ */
+export async function expireTempDbUsers(input: {
+  db: JsonStore;
+  host: HostExecutor;
+  /** When true, attempt system DROP USER / DROP ROLE */
+  dropSystem?: boolean;
+}): Promise<{
+  ok: boolean;
+  expired: number;
+  dropped: number;
+  notes: string[];
+  blocked?: boolean;
+}> {
+  const now = new Date().toISOString();
+  const all = loadTemp(input.db);
+  const notes: string[] = [];
+  let expired = 0;
+  let dropped = 0;
+  let blocked = false;
+  const next: TempDbUser[] = [];
+
+  for (const u of all) {
+    if (u.expiresAt >= now && u.apply_status !== 'expired') {
+      next.push(u);
+      continue;
+    }
+    expired++;
+    const row: TempDbUser = { ...u, apply_status: 'expired' };
+    if (input.dropSystem && u.apply_status === 'applied') {
+      if (!input.host.executeEnabled() || !input.host.isRoot()) {
+        blocked = true;
+        notes.push(`${u.username}: 無法 DROP — 需 EXECUTE+root（已標記 expired）`);
+        next.push(row);
+        continue;
+      }
+      if (u.engine === 'postgres') {
+        const sql = `REASSIGN OWNED BY ${u.username} TO postgres; DROP OWNED BY ${u.username}; DROP ROLE IF EXISTS ${u.username};`;
+        const r = await input.host.runCommand(
+          [
+            'bash',
+            '-c',
+            `sudo -u postgres psql -d postgres -c ${JSON.stringify(sql)} 2>&1`,
+          ],
+          { timeoutMs: 15_000 },
+        );
+        if (r.exitCode === 0) {
+          dropped++;
+          notes.push(`${u.username}: PostgreSQL role dropped`);
+          // remove from store after drop
+          continue;
+        }
+        notes.push(`${u.username}: DROP 失敗 ${(r.stderr || r.stdout).slice(0, 120)}`);
+        next.push(row);
+      } else {
+        const sql = `DROP USER IF EXISTS '${u.username}'@'localhost'; FLUSH PRIVILEGES;`;
+        const r = await input.host.runCommand(
+          [
+            'bash',
+            '-c',
+            `mysql -e ${JSON.stringify(sql)} 2>&1 || mariadb -e ${JSON.stringify(sql)} 2>&1`,
+          ],
+          { timeoutMs: 15_000 },
+        );
+        if (r.exitCode === 0) {
+          dropped++;
+          notes.push(`${u.username}: MySQL user dropped`);
+          continue;
+        }
+        notes.push(`${u.username}: DROP 失敗 ${(r.stderr || r.stdout).slice(0, 120)}`);
+        next.push(row);
+      }
+    } else {
+      next.push(row);
+      notes.push(`${u.username}: 已標記 expired（未 DROP 系統帳號）`);
+    }
+  }
+
+  saveTemp(input.db, next);
+  return {
+    ok: !blocked || dropped > 0 || expired === 0,
+    expired,
+    dropped,
+    notes: notes.length ? notes : ['無過期臨時用戶'],
+    blocked: blocked || undefined,
+  };
+}
+
 export function listRemoteDbHosts(db: JsonStore): Array<Omit<RemoteDbHost, 'password'>> {
   return loadRemote(db).map(({ password: _p, ...rest }) => ({
     ...rest,

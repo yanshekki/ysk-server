@@ -68,10 +68,21 @@ export const projectsApi = {
       httpAuthUser?: string | null;
       httpAuthPass?: string | null;
       docRoot?: string | null;
+      bindIp?: string | null;
       publish?: boolean;
       ssl?: boolean;
     },
   ) => api.updateProjectNetwork(id, body),
+  webStats: (id: string) =>
+    api.requestRaw<{
+      linesRead: number;
+      status2xx: number;
+      status4xx: number;
+      status5xx: number;
+      topPaths: Array<{ path: string; count: number }>;
+      notes: string[];
+      logPath?: string;
+    }>(`/api/v1/projects/${id}/web-stats`),
   gitDeploy: (id: string, body?: { gitUrl?: string; redeploy?: boolean }) =>
     api.gitDeploy(id, body),
   setEnv: (id: string, env: Record<string, string>) => api.setProjectEnv(id, env),

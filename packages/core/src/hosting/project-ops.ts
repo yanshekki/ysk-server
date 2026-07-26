@@ -714,6 +714,7 @@ export class ProjectOpsService {
       siteRedirectUrl: row.site_redirect_url,
       authBasicUserFile,
       authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
+      bindIp: row.bind_ip,
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     const systemDir =

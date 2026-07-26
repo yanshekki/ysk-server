@@ -129,6 +129,8 @@ export interface ProjectDto {
   httpAuthUser?: string;
   /** Document root relative to homeDir */
   docRoot?: string;
+  /** Nginx listen bind IP */
+  bindIp?: string;
   lastHealth?: Record<string, unknown>;
   lastDeployAt?: string;
   osProvisioned?: boolean;
@@ -185,6 +187,8 @@ export interface NginxProxyConfig {
   /** auth_basic realm user file path */
   authBasicUserFile?: string;
   authBasicRealm?: string;
+  /** Optional bind IP for listen (empty = all interfaces) */
+  bindIp?: string;
 }
 
 export interface UpdateItemDto {

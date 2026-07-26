@@ -452,6 +452,8 @@ export async function applyDnsZone(
       tryReload,
       template: zone.template ? String(zone.template) : 'full',
       records: dataRecords.length ? dataRecords : undefined,
+      nsName: zone.nsName ? String(zone.nsName) : undefined,
+      ttl: zone.ttl != null ? Number(zone.ttl) : undefined,
     });
     // Honest: applied only if nameserver reload OK; else written
     const applyStatus = result.applyStatus;

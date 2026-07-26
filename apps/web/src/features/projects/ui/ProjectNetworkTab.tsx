@@ -30,6 +30,7 @@ export function ProjectNetworkTab({
   const [authUser, setAuthUser] = useState(project.httpAuthUser ?? '');
   const [authPass, setAuthPass] = useState('');
   const [docRoot, setDocRoot] = useState(project.docRoot ?? '');
+  const [bindIp, setBindIp] = useState(project.bindIp ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export function ProjectNetworkTab({
     setRedirectUrl(project.siteRedirectUrl ?? '');
     setAuthUser(project.httpAuthUser ?? '');
     setDocRoot(project.docRoot ?? '');
+    setBindIp(project.bindIp ?? '');
   }, [
     project.id,
     project.domain,
@@ -49,6 +51,7 @@ export function ProjectNetworkTab({
     project.siteRedirectUrl,
     project.httpAuthUser,
     project.docRoot,
+    project.bindIp,
   ]);
 
   function parseAliases(): string[] {
@@ -70,6 +73,7 @@ export function ProjectNetworkTab({
         httpAuthUser: authUser.trim() || null,
         httpAuthPass: authPass || null,
         docRoot: docRoot.trim() || null,
+        bindIp: bindIp.trim() || null,
         publish,
         ssl,
       });
@@ -194,6 +198,15 @@ export function ProjectNetworkTab({
                 value={docRoot}
                 onChange={(e) => setDocRoot(e.target.value)}
                 placeholder="app/public"
+                disabled={suspended}
+              />
+            </Field>
+            <Field label="Bind IP（可空=全部）" htmlFor="net-ip" flush>
+              <input
+                id="net-ip"
+                value={bindIp}
+                onChange={(e) => setBindIp(e.target.value)}
+                placeholder="203.0.113.10"
                 disabled={suspended}
               />
             </Field>

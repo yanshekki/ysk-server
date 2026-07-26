@@ -274,6 +274,37 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       { runImmediately: process.env.YSK_BACKUP_ON_START === '1' },
     );
 
+    // Expire temporary RO DB users (hourly)
+    scheduler.every(
+      'db-temp-expire',
+      Number(process.env.YSK_TEMP_DB_EXPIRE_MS ?? 60 * 60_000),
+      async () => {
+        try {
+          const { expireTempDbUsers } = await import('@ysk/core');
+          const r = await expireTempDbUsers({
+            db,
+            host,
+            dropSystem: process.env.YSK_TEMP_DB_AUTO_DROP === '1',
+          });
+          if (r.expired > 0) {
+            audit.append({
+              actor: 'system',
+              action: 'db.temp_user.expire.scheduled',
+              detail: r,
+              ok: r.ok,
+            });
+          }
+        } catch (e) {
+          audit.append({
+            actor: 'system',
+            action: 'db.temp_user.expire.scheduled',
+            detail: { error: e instanceof Error ? e.message : String(e) },
+            ok: false,
+          });
+        }
+      },
+    );
+
     // Periodic DNSBL reputation check for registered email domains
     const dnsblMs = Number(process.env.YSK_DNSBL_INTERVAL_MS ?? 12 * 60 * 60_000);
     scheduler.every(

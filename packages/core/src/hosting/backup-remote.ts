@@ -8,12 +8,18 @@ import { existsSync } from 'node:fs';
 
 export type BackupRemoteSettings = {
   enabled: boolean;
-  kind: 'sftp' | 'local';
+  kind: 'sftp' | 'local' | 's3';
   host?: string;
   port?: number;
   username?: string;
   path?: string;
   password?: string;
+  /** S3: bucket name or s3://bucket/prefix */
+  s3Bucket?: string;
+  s3Region?: string;
+  s3Endpoint?: string;
+  awsAccessKeyId?: string;
+  awsSecretAccessKey?: string;
 };
 
 export function getBackupRemote(db: JsonStore): BackupRemoteSettings {
@@ -30,7 +36,11 @@ export function getBackupRemote(db: JsonStore): BackupRemoteSettings {
 /** Public view — never return stored password plaintext. */
 export function getBackupRemotePublic(db: JsonStore): BackupRemoteSettings {
   const r = getBackupRemote(db);
-  return { ...r, password: r.password ? '***' : undefined };
+  return {
+    ...r,
+    password: r.password ? '***' : undefined,
+    awsSecretAccessKey: r.awsSecretAccessKey ? '***' : undefined,
+  };
 }
 
 export function setBackupRemote(
@@ -45,6 +55,12 @@ export function setBackupRemote(
   }
   if (patch.password === '***') {
     next.password = prev.password;
+  }
+  if (patch.awsSecretAccessKey === '' || patch.awsSecretAccessKey === undefined) {
+    next.awsSecretAccessKey = prev.awsSecretAccessKey;
+  }
+  if (patch.awsSecretAccessKey === '***') {
+    next.awsSecretAccessKey = prev.awsSecretAccessKey;
   }
   db.snapshot.backup_remote = next;
   db.persist();
@@ -97,6 +113,9 @@ export async function pushBackupRemote(input: {
       ],
     };
   }
+  if (remote.kind === 's3') {
+    return pushBackupS3(input.host, remote, input.localArchivePath);
+  }
   if (!remote.host || !remote.username || !remote.path) {
     return { ok: false, notes: ['遠端 SFTP 設定不完整（host/username/path）'] };
   }
@@ -139,5 +158,53 @@ export async function pushBackupRemote(input: {
   return {
     ok: r.exitCode === 0,
     notes: [r.exitCode === 0 ? `已 scp 到 ${dest}` : `scp 失敗: ${r.stderr || r.stdout}`],
+  };
+}
+
+async function pushBackupS3(
+  host: HostExecutor,
+  remote: BackupRemoteSettings,
+  localPath: string,
+): Promise<{ ok: boolean; notes: string[] }> {
+  const bucket = (remote.s3Bucket || remote.path || '').trim();
+  if (!bucket) {
+    return { ok: false, notes: ['S3 bucket/path 未設定'] };
+  }
+  const region = remote.s3Region || 'us-east-1';
+  const dest = bucket.startsWith('s3://')
+    ? `${bucket.replace(/\/$/, '')}/`
+    : `s3://${bucket.replace(/^s3:\/\//, '').replace(/\/$/, '')}/`;
+  const env: string[] = [
+    `AWS_DEFAULT_REGION=${JSON.stringify(region)}`,
+  ];
+  if (remote.awsAccessKeyId) {
+    env.push(`AWS_ACCESS_KEY_ID=${JSON.stringify(remote.awsAccessKeyId)}`);
+  }
+  if (remote.awsSecretAccessKey) {
+    env.push(`AWS_SECRET_ACCESS_KEY=${JSON.stringify(remote.awsSecretAccessKey)}`);
+  }
+  if (remote.s3Endpoint) {
+    env.push(`AWS_ENDPOINT_URL=${JSON.stringify(remote.s3Endpoint)}`);
+  }
+  const envPrefix = env.map((e) => `export ${e}`).join('; ') + ';';
+  // Prefer aws cli; fallback restic-less message
+  const r = await host.runCommand(
+    [
+      'bash',
+      '-c',
+      `${envPrefix} command -v aws >/dev/null && aws s3 cp ${JSON.stringify(localPath)} ${JSON.stringify(dest)} 2>&1 || echo NEED_AWS_CLI`,
+    ],
+    { timeoutMs: 300_000 },
+  );
+  const out = (r.stdout || '') + (r.stderr || '');
+  if (out.includes('NEED_AWS_CLI')) {
+    return {
+      ok: false,
+      notes: ['需要 aws CLI（或改用 restic s3 repo）'],
+    };
+  }
+  return {
+    ok: r.exitCode === 0,
+    notes: [r.exitCode === 0 ? `已上傳 S3 ${dest}` : `S3 失敗: ${out.slice(0, 300)}`],
   };
 }

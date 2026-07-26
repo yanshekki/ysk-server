@@ -31,12 +31,24 @@ type BackupItem = {
 
 type RemoteSettings = {
   enabled: boolean;
-  kind: 'sftp' | 'local';
+  kind: 'sftp' | 'local' | 's3';
   host?: string;
   port?: number;
   username?: string;
   path?: string;
   password?: string;
+  s3Bucket?: string;
+  s3Region?: string;
+  s3Endpoint?: string;
+  awsAccessKeyId?: string;
+  awsSecretAccessKey?: string;
+};
+
+type ResticSettings = {
+  enabled: boolean;
+  repoPath?: string;
+  password?: string;
+  s3Repo?: string;
 };
 
 function formatBytes(n?: number): string {
@@ -59,6 +71,7 @@ export function BackupsPage() {
     port: 22,
     path: '/backups/ysk',
   });
+  const [restic, setRestic] = useState<ResticSettings>({ enabled: false });
   const [exclusionsText, setExclusionsText] = useState(
     'node_modules\n.git\nvendor\n.cache',
   );
@@ -71,21 +84,39 @@ export function BackupsPage() {
         items: BackupItem[];
         lastRun?: Record<string, unknown> | null;
       }>('/api/v1/backups'),
-      api.requestRaw<{ remote?: RemoteSettings; exclusions?: string[] }>(
-        '/api/v1/backups/settings',
-      ),
+      api.requestRaw<{
+        remote?: RemoteSettings;
+        exclusions?: string[];
+        restic?: ResticSettings;
+      }>('/api/v1/backups/settings'),
     ]);
     setItems(r.items ?? []);
     setLastRun(r.lastRun ?? null);
     if (s.remote) {
+      const kind =
+        s.remote.kind === 'local' || s.remote.kind === 's3' ? s.remote.kind : 'sftp';
       setRemote({
         enabled: Boolean(s.remote.enabled),
-        kind: s.remote.kind === 'local' ? 'local' : 'sftp',
+        kind,
         host: s.remote.host ?? '',
         port: s.remote.port ?? 22,
         username: s.remote.username ?? '',
         path: s.remote.path ?? '/backups/ysk',
         password: s.remote.password === '***' ? '' : (s.remote.password ?? ''),
+        s3Bucket: s.remote.s3Bucket ?? '',
+        s3Region: s.remote.s3Region ?? 'us-east-1',
+        s3Endpoint: s.remote.s3Endpoint ?? '',
+        awsAccessKeyId: s.remote.awsAccessKeyId ?? '',
+        awsSecretAccessKey:
+          s.remote.awsSecretAccessKey === '***' ? '' : (s.remote.awsSecretAccessKey ?? ''),
+      });
+    }
+    if (s.restic) {
+      setRestic({
+        enabled: Boolean(s.restic.enabled),
+        repoPath: s.restic.repoPath ?? '',
+        password: s.restic.password === '***' ? '' : (s.restic.password ?? ''),
+        s3Repo: s.restic.s3Repo ?? '',
       });
     }
     if (s.exclusions?.length) {
@@ -105,7 +136,7 @@ export function BackupsPage() {
         .split(/[\n,]+/)
         .map((s) => s.trim())
         .filter(Boolean);
-      const body: { remote: RemoteSettings; exclusions: string[] } = {
+      const body = {
         remote: {
           enabled: remote.enabled,
           kind: remote.kind,
@@ -113,9 +144,22 @@ export function BackupsPage() {
           port: Number(remote.port) || 22,
           username: remote.username || undefined,
           path: remote.path || undefined,
+          s3Bucket: remote.s3Bucket || undefined,
+          s3Region: remote.s3Region || undefined,
+          s3Endpoint: remote.s3Endpoint || undefined,
+          awsAccessKeyId: remote.awsAccessKeyId || undefined,
           ...(remote.password ? { password: remote.password } : {}),
+          ...(remote.awsSecretAccessKey
+            ? { awsSecretAccessKey: remote.awsSecretAccessKey }
+            : {}),
         },
         exclusions,
+        restic: {
+          enabled: restic.enabled,
+          repoPath: restic.repoPath || undefined,
+          s3Repo: restic.s3Repo || undefined,
+          ...(restic.password ? { password: restic.password } : {}),
+        },
       };
       await api.requestRaw('/api/v1/backups/settings', {
         method: 'POST',
@@ -196,12 +240,16 @@ export function BackupsPage() {
                 onChange={(e) =>
                   setRemote((r) => ({
                     ...r,
-                    kind: e.target.value === 'local' ? 'local' : 'sftp',
+                    kind:
+                      e.target.value === 'local' || e.target.value === 's3'
+                        ? e.target.value
+                        : 'sftp',
                   }))
                 }
               >
                 <option value="sftp">SFTP / scp</option>
                 <option value="local">本機路徑鏡像</option>
+                <option value="s3">S3（aws cli）</option>
               </select>
             </Field>
             {remote.kind === 'sftp' ? (
@@ -241,16 +289,102 @@ export function BackupsPage() {
                 </Field>
               </>
             ) : null}
-            <Field
-              label={remote.kind === 'local' ? '本機鏡像路徑' : '遠端路徑'}
-              htmlFor="bk-path"
-              flush
-            >
+            {remote.kind === 's3' ? (
+              <>
+                <Field label="Bucket / s3://…" htmlFor="bk-s3b" flush>
+                  <input
+                    id="bk-s3b"
+                    value={remote.s3Bucket ?? ''}
+                    onChange={(e) => setRemote((r) => ({ ...r, s3Bucket: e.target.value }))}
+                    placeholder="my-bucket/ysk"
+                  />
+                </Field>
+                <Field label="Region" htmlFor="bk-s3r" flush>
+                  <input
+                    id="bk-s3r"
+                    value={remote.s3Region ?? ''}
+                    onChange={(e) => setRemote((r) => ({ ...r, s3Region: e.target.value }))}
+                  />
+                </Field>
+                <Field label="Endpoint（可選）" htmlFor="bk-s3e" flush>
+                  <input
+                    id="bk-s3e"
+                    value={remote.s3Endpoint ?? ''}
+                    onChange={(e) => setRemote((r) => ({ ...r, s3Endpoint: e.target.value }))}
+                  />
+                </Field>
+                <Field label="Access Key" htmlFor="bk-ak" flush>
+                  <input
+                    id="bk-ak"
+                    value={remote.awsAccessKeyId ?? ''}
+                    onChange={(e) =>
+                      setRemote((r) => ({ ...r, awsAccessKeyId: e.target.value }))
+                    }
+                  />
+                </Field>
+                <Field label="Secret Key" htmlFor="bk-sk" flush>
+                  <input
+                    id="bk-sk"
+                    type="password"
+                    value={remote.awsSecretAccessKey ?? ''}
+                    onChange={(e) =>
+                      setRemote((r) => ({ ...r, awsSecretAccessKey: e.target.value }))
+                    }
+                    placeholder="已儲存則留空"
+                  />
+                </Field>
+              </>
+            ) : null}
+            {remote.kind !== 's3' ? (
+              <Field
+                label={remote.kind === 'local' ? '本機鏡像路徑' : '遠端路徑'}
+                htmlFor="bk-path"
+                flush
+              >
+                <input
+                  id="bk-path"
+                  value={remote.path ?? ''}
+                  onChange={(e) => setRemote((r) => ({ ...r, path: e.target.value }))}
+                  placeholder="/backups/ysk"
+                />
+              </Field>
+            ) : null}
+          </FormGrid>
+          <FormGrid>
+            <Field label="restic 增量" htmlFor="rs-en" flush>
+              <select
+                id="rs-en"
+                value={restic.enabled ? 'yes' : 'no'}
+                onChange={(e) =>
+                  setRestic((r) => ({ ...r, enabled: e.target.value === 'yes' }))
+                }
+              >
+                <option value="no">否</option>
+                <option value="yes">是（需 restic 在 PATH）</option>
+              </select>
+            </Field>
+            <Field label="Repo 路徑" htmlFor="rs-path" flush>
               <input
-                id="bk-path"
-                value={remote.path ?? ''}
-                onChange={(e) => setRemote((r) => ({ ...r, path: e.target.value }))}
-                placeholder="/backups/ysk"
+                id="rs-path"
+                value={restic.repoPath ?? ''}
+                onChange={(e) => setRestic((r) => ({ ...r, repoPath: e.target.value }))}
+                placeholder="dataDir/restic-repo"
+              />
+            </Field>
+            <Field label="restic 密碼" htmlFor="rs-pw" flush>
+              <input
+                id="rs-pw"
+                type="password"
+                value={restic.password ?? ''}
+                onChange={(e) => setRestic((r) => ({ ...r, password: e.target.value }))}
+              />
+            </Field>
+            <Field label="或 s3: repo URL" htmlFor="rs-s3" flush>
+              <input
+                id="rs-s3"
+                value={restic.s3Repo ?? ''}
+                onChange={(e) => setRestic((r) => ({ ...r, s3Repo: e.target.value }))}
+                placeholder="s3:s3.amazonaws.com/bucket/path"
               />
             </Field>
           </FormGrid>
@@ -315,6 +449,21 @@ export function BackupsPage() {
               }
             >
               登記每日排程
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={busy}
+              onClick={() =>
+                void run(async () => {
+                  return (await api.requestRaw('/api/v1/backups/restic/run', {
+                    method: 'POST',
+                    body: '{}',
+                  })) as OpsResultLike;
+                }, 'restic 增量完成')
+              }
+            >
+              只跑 restic 增量
             </Button>
           </div>
           {lastRun ? (

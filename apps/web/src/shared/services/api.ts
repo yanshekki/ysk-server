@@ -235,6 +235,7 @@ export const api = {
       httpAuthUser?: string | null;
       httpAuthPass?: string | null;
       docRoot?: string | null;
+      bindIp?: string | null;
       publish?: boolean;
       ssl?: boolean;
     },

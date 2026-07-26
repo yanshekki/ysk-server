@@ -332,6 +332,7 @@ export class ProjectService {
       httpAuthUser?: string | null;
       httpAuthPass?: string | null;
       docRoot?: string | null;
+      bindIp?: string | null;
     },
     actor: string,
   ): ProjectDto {
@@ -373,6 +374,12 @@ export class ProjectService {
           : patch.docRoot !== undefined
             ? patch.docRoot.trim().replace(/^\//, '') || undefined
             : row.doc_root,
+      bind_ip:
+        patch.bindIp === null
+          ? undefined
+          : patch.bindIp !== undefined
+            ? patch.bindIp.trim() || undefined
+            : row.bind_ip,
     });
     this.audit?.append({
       actor,
@@ -407,6 +414,7 @@ function toDto(row: ProjectRow): ProjectDto {
     siteRedirectUrl: row.site_redirect_url,
     httpAuthUser: row.http_auth_user,
     docRoot: row.doc_root,
+    bindIp: row.bind_ip,
     lastHealth: row.last_health,
     lastDeployAt: row.last_deploy_at,
     osProvisioned: row.os_provisioned,

@@ -86,6 +86,8 @@ export interface StoreProject {
   http_auth_pass?: string;
   /** Custom document root relative to home (default app/public or app) */
   doc_root?: string;
+  /** Optional bind IP for nginx listen (empty = all) */
+  bind_ip?: string;
   last_health?: Record<string, unknown>;
   last_deploy_at?: string;
   /** Git remote for deploy */
@@ -169,7 +171,7 @@ export interface StoreData {
   /** Remote backup destination settings */
   backup_remote?: {
     enabled: boolean;
-    kind: 'sftp' | 'local';
+    kind: 'sftp' | 'local' | 's3';
     host?: string;
     port?: number;
     username?: string;
@@ -177,6 +179,11 @@ export interface StoreData {
     path?: string;
     /** not ideal — store for MVP panel ops; prefer key later */
     password?: string;
+    s3Bucket?: string;
+    s3Region?: string;
+    s3Endpoint?: string;
+    awsAccessKeyId?: string;
+    awsSecretAccessKey?: string;
   };
   /** Global backup exclusion globs */
   backup_exclusions?: string[];

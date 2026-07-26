@@ -1086,6 +1086,40 @@ export async function handleSystemRoutes(
     sendJson(res, 200, { items: listSqlDumps(ctx.dataDir, engine || undefined) });
     return true;
   }
+  if (method === 'POST' && url.pathname === '/api/v1/system/db/import') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      engine?: 'mysql' | 'mariadb' | 'postgres';
+      dbName?: string;
+      sqlPath?: string;
+      name?: string;
+      username?: string;
+      password?: string;
+    };
+    const { importSqlDatabase, listSqlDumps } = await import('@ysk/core');
+    let sqlPath = data.sqlPath ?? '';
+    if (!sqlPath && data.name) {
+      const found = listSqlDumps(ctx.dataDir, data.engine).find((d) => d.name === data.name);
+      sqlPath = found?.path ?? '';
+    }
+    const r = await importSqlDatabase({
+      host: ctx.host,
+      engine: data.engine ?? 'mysql',
+      dbName: data.dbName ?? '',
+      sqlPath,
+      username: data.username,
+      password: data.password,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'db.import',
+      detail: { engine: data.engine, dbName: data.dbName, ok: r.ok },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
 
   if (method === 'POST' && url.pathname === '/api/v1/system/nginx/site') {
     const user = ctx.auth.authenticate(getBearer(req));

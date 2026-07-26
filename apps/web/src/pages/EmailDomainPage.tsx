@@ -682,6 +682,44 @@ export function EmailDomainPage() {
                 >
                   暖身建議
                 </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setLive(
+                        await api.requestRaw(`/api/v1/email/domains/${domain.id}/policy`, {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            rateLimitPerHour: 200,
+                            antispam: true,
+                            applySystem: false,
+                          }),
+                        }),
+                      );
+                    })
+                  }
+                >
+                  寫入限速/反垃圾（written）
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setLive(
+                        await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                          method: 'POST',
+                          body: JSON.stringify({}),
+                        }),
+                      );
+                    })
+                  }
+                >
+                  寫入 Roundcube SSO 骨架
+                </Button>
               </div>
               {live ? <OpsResultPanel title="Live 檢查" result={asOps(live)} /> : null}
               {dnsbl ? <OpsResultPanel title="DNSBL" result={asOps(dnsbl)} /> : null}

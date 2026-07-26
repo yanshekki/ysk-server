@@ -55,9 +55,23 @@ function sslLines(opts: {
 `.trim();
 }
 
-function httpRedirectBlock(serverName: string): string {
+/** listen directives with optional bind IP */
+export function nginxListenLines(opts: {
+  ssl?: boolean;
+  bindIp?: string;
+}): string {
+  const ip = opts.bindIp?.trim();
+  const prefix = ip ? `${ip}:` : '';
+  if (opts.ssl) {
+    return `listen ${prefix}443 ssl http2;\n  listen ${prefix}80;`;
+  }
+  return `listen ${prefix}80;`;
+}
+
+function httpRedirectBlock(serverName: string, bindIp?: string): string {
+  const listen = nginxListenLines({ ssl: false, bindIp });
   return `server {
-  listen 80;
+  ${listen}
   server_name ${serverName};
   return 301 https://$host$request_uri;
 }
@@ -82,6 +96,7 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
     serverName: config.serverName,
     hsts: config.hsts,
   });
+  const bindIp = config.bindIp;
 
   const auth =
     config.authBasicUserFile
@@ -93,7 +108,7 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
 
   if (config.siteRedirectUrl) {
     const target = config.siteRedirectUrl.replace(/"/g, '');
-    const listen = config.ssl ? 'listen 443 ssl http2;\n  listen 80;' : 'listen 80;';
+    const listen = nginxListenLines({ ssl: config.ssl, bindIp });
     return `server {
   ${listen}
   server_name ${config.serverName};
@@ -104,8 +119,9 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
   }
 
   if (force) {
-    return `${httpRedirectBlock(config.serverName)}server {
-  listen 443 ssl http2;
+    const sslListen = nginxListenLines({ ssl: true, bindIp }).split('\n')[0];
+    return `${httpRedirectBlock(config.serverName, bindIp)}server {
+  ${sslListen}
   server_name ${config.serverName};
   ${sslBlock}
   ${realIp}
@@ -125,9 +141,7 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
 `;
   }
 
-  const listen = config.ssl
-    ? 'listen 443 ssl http2;\n  listen 80;'
-    : 'listen 80;';
+  const listen = nginxListenLines({ ssl: config.ssl, bindIp });
   return `server {
   ${listen}
   server_name ${config.serverName};

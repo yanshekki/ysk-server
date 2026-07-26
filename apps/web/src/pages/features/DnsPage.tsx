@@ -50,6 +50,11 @@ export function DnsPage() {
   const [dnssecMsg, setDnssecMsg] = useState<string | null>(null);
   const [dnssecNotes, setDnssecNotes] = useState<string[]>([]);
   const [dnssecDs, setDnssecDs] = useState<string | null>(null);
+  const [peerHost, setPeerHost] = useState('');
+  const [peerUser, setPeerUser] = useState('ysk');
+  const [peers, setPeers] = useState<Array<Record<string, unknown>>>([]);
+  const [soaNs, setSoaNs] = useState('');
+  const [soaTtl, setSoaTtl] = useState('300');
 
   // Keep selected zone row in sync after apply/refresh
   const selectedLive = useMemo(() => {
@@ -98,11 +103,20 @@ export function DnsPage() {
       serverIp,
       backend: 'bind',
       template,
+      nsName: soaNs.trim() || undefined,
+      ttl: Number(soaTtl) || 300,
     });
     setZoneOpen(false);
     setSelectedZone(item);
     setZone('');
     setTemplate('full');
+  }
+
+  async function refreshPeers() {
+    const r = await api.requestRaw<{ items: Array<Record<string, unknown>> }>(
+      '/api/v1/dns/cluster/peers',
+    );
+    setPeers(r.items ?? []);
   }
 
   async function onSaveRec(e: FormEvent) {
@@ -351,11 +365,87 @@ export function DnsPage() {
         </Card>
       </div>
 
+      <Card>
+        <CardSection
+          title="DNS Cluster"
+          description="peer scp zone 檔；written on peer ≠ named reload"
+        >
+          <div className="btn-row u-mb-3">
+            <Button variant="secondary" size="sm" onClick={() => void refreshPeers()}>
+              重新整理 peers
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() =>
+                void api
+                  .requestRaw('/api/v1/dns/cluster/peers', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      host: peerHost,
+                      username: peerUser,
+                      path: '/var/lib/ysk/dns/zones',
+                    }),
+                  })
+                  .then(() => refreshPeers())
+                  .catch((e: Error) => zones.setMsg?.(e.message))
+              }
+            >
+              新增 peer
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                void api
+                  .requestRaw('/api/v1/dns/cluster/push', {
+                    method: 'POST',
+                    body: '{}',
+                  })
+                  .then((r) => {
+                    const notes = (r as { notes?: string[] }).notes;
+                    setDnssecMsg(notes?.join('；') ?? '已推送');
+                  })
+                  .catch((e: Error) => setDnssecMsg(e.message))
+              }
+            >
+              推送 zones 到 peers
+            </Button>
+          </div>
+          <FormGrid>
+            <Field label="Peer host" htmlFor="peer-h" flush>
+              <input
+                id="peer-h"
+                value={peerHost}
+                onChange={(e) => setPeerHost(e.target.value)}
+                placeholder="ns2.example.com"
+              />
+            </Field>
+            <Field label="SSH user" htmlFor="peer-u" flush>
+              <input
+                id="peer-u"
+                value={peerUser}
+                onChange={(e) => setPeerUser(e.target.value)}
+              />
+            </Field>
+          </FormGrid>
+          <ul className="list-plain list-spaced u-mt-2">
+            {peers.map((p) => (
+              <li key={String(p.id)}>
+                <code className="inline">
+                  {String(p.username)}@{String(p.host)}:{String(p.path)}
+                </code>
+              </li>
+            ))}
+          </ul>
+        </CardSection>
+      </Card>
+
       <Modal
         open={zoneOpen}
         onClose={() => setZoneOpen(false)}
         title="建立 DNS Zone"
-        description="依模板種子記錄；寫入後狀態會誠實標示 written／applied"
+        description="依模板種子記錄；可設 SOA NS / TTL；寫入後狀態誠實標示"
         footer={
           <>
             <button type="button" className="btn btn--secondary" onClick={() => setZoneOpen(false)}>
@@ -378,6 +468,21 @@ export function DnsPage() {
                 value={serverIp}
                 onChange={(e) => setServerIp(e.target.value)}
                 required
+              />
+            </Field>
+            <Field label="SOA NS（可空=ns1.zone）" techKey="ns" htmlFor="soa-ns">
+              <input
+                id="soa-ns"
+                value={soaNs}
+                onChange={(e) => setSoaNs(e.target.value)}
+                placeholder="ns1.example.com."
+              />
+            </Field>
+            <Field label="SOA / 預設 TTL" techKey="ttl" htmlFor="soa-ttl">
+              <input
+                id="soa-ttl"
+                value={soaTtl}
+                onChange={(e) => setSoaTtl(e.target.value)}
               />
             </Field>
             <Field label="記錄模板" techKey="template" htmlFor="ztpl">

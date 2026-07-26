@@ -106,6 +106,18 @@ export const systemApi = {
     api.requestRaw<{
       items: Array<{ engine: string; name: string; path: string; bytes: number; mtime: string }>;
     }>(`/api/v1/system/db/dumps${engine ? `?engine=${engine}` : ''}`),
+  dbImport: (body: {
+    engine: 'mysql' | 'mariadb' | 'postgres';
+    dbName: string;
+    sqlPath?: string;
+    name?: string;
+    username?: string;
+    password?: string;
+  }) =>
+    api.requestRaw('/api/v1/system/db/import', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   systemdInstall: (body: { enable?: boolean }) =>
     api.requestRaw('/api/v1/system/systemd/install', {
       method: 'POST',

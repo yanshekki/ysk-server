@@ -235,6 +235,62 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <Button
             variant="secondary"
             size="md"
+            disabled={busy || !dbs.items[0]}
+            onClick={() => {
+              const name = String(dbs.items[0]?.name ?? '');
+              if (!name) return;
+              void systemApi
+                .dbDumps(engine === 'mariadb' ? 'mariadb' : 'mysql')
+                .then((list) => {
+                  const first = list.items[0];
+                  if (!first) {
+                    setError('尚無 dump 檔可 import');
+                    return;
+                  }
+                  if (!confirm(`將 ${first.name} 匯入 ${name}？`)) return;
+                  setMsg(null);
+                  setError(null);
+                  return systemApi
+                    .dbImport({
+                      engine: engine === 'mariadb' ? 'mariadb' : 'mysql',
+                      dbName: name,
+                      name: first.name,
+                    })
+                    .then((r) => {
+                      const notes = (r as { notes?: string[]; ok?: boolean }).notes;
+                      if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? '已 import');
+                      else setError(notes?.[0] ?? 'import 失敗');
+                    });
+                })
+                .catch((e: Error) => setError(e.message));
+            }}
+          >
+            Import 最新 dump
+          </Button>
+          <Button
+            variant="ghost"
+            size="md"
+            loading={busy}
+            onClick={() => {
+              void api
+                .requestRaw('/api/v1/db/temp-users/expire', {
+                  method: 'POST',
+                  body: JSON.stringify({ dropSystem: true }),
+                })
+                .then((r) => {
+                  setMsg(
+                    ((r as { notes?: string[] }).notes ?? []).join('；') || '已處理過期臨時用戶',
+                  );
+                  return refreshExtras();
+                })
+                .catch((e: Error) => setError(e.message));
+            }}
+          >
+            清理過期臨時用戶
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
             loading={busy}
             onClick={() => {
               void run(async () => {

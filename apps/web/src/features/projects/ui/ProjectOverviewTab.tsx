@@ -59,6 +59,13 @@ export function ProjectOverviewTab({
     quotaMb: number | null;
     withinQuota: boolean | null;
   } | null>(null);
+  const [webStats, setWebStats] = useState<{
+    linesRead: number;
+    status2xx: number;
+    status4xx: number;
+    status5xx: number;
+    notes: string[];
+  } | null>(null);
 
   useEffect(() => {
     void projectsApi
@@ -71,6 +78,18 @@ export function ProjectOverviewTab({
         }),
       )
       .catch(() => setUsage(null));
+    void projectsApi
+      .webStats(project.id)
+      .then((r) =>
+        setWebStats({
+          linesRead: r.linesRead,
+          status2xx: r.status2xx,
+          status4xx: r.status4xx,
+          status5xx: r.status5xx,
+          notes: r.notes ?? [],
+        }),
+      )
+      .catch(() => setWebStats(null));
   }, [project.id, project.quotaMb]);
 
   return (
@@ -103,6 +122,24 @@ export function ProjectOverviewTab({
               label: 'Document root',
               value: project.docRoot || 'app/public',
             },
+            ...(webStats
+              ? [
+                  {
+                    label: 'Access 樣本',
+                    value: `${webStats.linesRead} 行`,
+                  },
+                  {
+                    label: '2xx / 4xx / 5xx',
+                    value: `${webStats.status2xx}/${webStats.status4xx}/${webStats.status5xx}`,
+                    tone:
+                      webStats.status5xx > 0
+                        ? ('danger' as const)
+                        : webStats.status4xx > webStats.status2xx
+                          ? ('warn' as const)
+                          : ('ok' as const),
+                  },
+                ]
+              : []),
           ]}
         />
       ) : null}

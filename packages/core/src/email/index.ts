@@ -12,4 +12,6 @@ export * from './autodiscover.js';
 export * from './mail-queue.js';
 export * from './webmail-sso.js';
 export * from './sieve.js';
+export * from './mail-policy.js';
+export * from './roundcube-sso-plugin.js';
 

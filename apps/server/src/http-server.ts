@@ -755,6 +755,7 @@ export function createHttpServer(ctx: AppContext): Server {
           httpAuthUser?: string | null;
           httpAuthPass?: string | null;
           docRoot?: string | null;
+          bindIp?: string | null;
           publish?: boolean;
           ssl?: boolean;
         };
@@ -769,6 +770,7 @@ export function createHttpServer(ctx: AppContext): Server {
             httpAuthUser: data.httpAuthUser,
             httpAuthPass: data.httpAuthPass,
             docRoot: data.docRoot,
+            bindIp: data.bindIp,
           },
           user.username,
         );
@@ -1718,7 +1720,8 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/backups/run-all') {
         const user = ctx.auth.authenticate(getBearer(req));
         const projects = ctx.db.snapshot.projects;
-        const { getBackupExclusions, pushBackupRemote } = await import('@ysk/core');
+        const { getBackupExclusions, pushBackupRemote, resticBackupProject, getResticSettings } =
+          await import('@ysk/core');
         const excludes = getBackupExclusions(ctx.db);
         const r = await backupAllProjects({
           host: ctx.host,
@@ -1733,6 +1736,7 @@ export function createHttpServer(ctx: AppContext): Server {
             : ['node_modules', '.git', 'vendor', '.cache'],
         });
         const remoteNotes: string[] = [];
+        const resticOn = getResticSettings(ctx.db).enabled;
         for (const item of r.results) {
           if (item.ok && item.archivePath) {
             const p = projects.find((x) => x.id === item.projectId);
@@ -1751,13 +1755,29 @@ export function createHttpServer(ctx: AppContext): Server {
             } catch {
               /* ignore remote push errors per project */
             }
+            if (resticOn && p) {
+              try {
+                const rs = await resticBackupProject({
+                  host: ctx.host,
+                  dataDir: ctx.dataDir,
+                  db: ctx.db,
+                  projectId: p.id,
+                  homeDir: p.home_dir,
+                });
+                remoteNotes.push(
+                  ...rs.notes.map((n) => `[restic ${item.projectId.slice(0, 8)}] ${n}`),
+                );
+              } catch {
+                /* ignore */
+              }
+            }
           }
         }
         ctx.db.persist();
         const payload = {
           at: new Date().toISOString(),
           ...r,
-          notes: [...r.notes, ...remoteNotes.slice(0, 20)],
+          notes: [...r.notes, ...remoteNotes.slice(0, 30)],
         };
         ctx.settings.setJson('last_backup_run', payload);
         ctx.audit.append({
@@ -1771,10 +1791,15 @@ export function createHttpServer(ctx: AppContext): Server {
 
       if (method === 'GET' && url.pathname === '/api/v1/backups/settings') {
         ctx.auth.authenticate(getBearer(req));
-        const { getBackupRemotePublic, getBackupExclusions } = await import('@ysk/core');
+        const {
+          getBackupRemotePublic,
+          getBackupExclusions,
+          getResticSettingsPublic,
+        } = await import('@ysk/core');
         return sendJson(res, 200, {
           remote: getBackupRemotePublic(ctx.db),
           exclusions: getBackupExclusions(ctx.db),
+          restic: getResticSettingsPublic(ctx.db),
         });
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/settings') {
@@ -1783,26 +1808,60 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           remote?: Record<string, unknown>;
           exclusions?: string[];
+          restic?: Record<string, unknown>;
         };
         const {
           setBackupRemote,
           setBackupExclusions,
           getBackupRemotePublic,
           getBackupExclusions,
+          setResticSettings,
+          getResticSettingsPublic,
         } = await import('@ysk/core');
         if (data.remote) setBackupRemote(ctx.db, data.remote as never);
         if (data.exclusions) setBackupExclusions(ctx.db, data.exclusions);
+        if (data.restic) setResticSettings(ctx.db, data.restic as never);
         ctx.audit.append({
           actor: user.username,
           action: 'backup.settings',
-          detail: { hasRemote: Boolean(data.remote), exclusions: data.exclusions?.length },
+          detail: {
+            hasRemote: Boolean(data.remote),
+            exclusions: data.exclusions?.length,
+            restic: Boolean(data.restic),
+          },
           ok: true,
         });
         return sendJson(res, 200, {
           ok: true,
           remote: getBackupRemotePublic(ctx.db),
           exclusions: getBackupExclusions(ctx.db),
+          restic: getResticSettingsPublic(ctx.db),
         });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/restic/run') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { resticBackupProject } = await import('@ysk/core');
+        const results = [];
+        for (const p of ctx.db.snapshot.projects.slice(0, 40)) {
+          results.push({
+            projectId: p.id,
+            ...(await resticBackupProject({
+              host: ctx.host,
+              dataDir: ctx.dataDir,
+              db: ctx.db,
+              projectId: p.id,
+              homeDir: p.home_dir,
+            })),
+          });
+        }
+        const ok = results.every((r) => r.ok);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.restic.run',
+          detail: { count: results.length, ok },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 422, { ok, results });
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/restore') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -2127,6 +2186,163 @@ export function createHttpServer(ctx: AppContext): Server {
         const { checkMultipleIpsDnsbl } = await import('@ysk/core');
         const r = await checkMultipleIpsDnsbl(data.ips ?? []);
         return sendJson(res, 200, r);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/db/temp-users/expire') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { dropSystem?: boolean };
+        const { expireTempDbUsers } = await import('@ysk/core');
+        const r = await expireTempDbUsers({
+          db: ctx.db,
+          host: ctx.host,
+          dropSystem: data.dropSystem !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.temp_user.expire',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/policy$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          rateLimitPerHour?: number | null;
+          antispam?: boolean;
+          applySystem?: boolean;
+        };
+        const domain = ctx.email.get(id);
+        ctx.email.updateDomainMailFlags(
+          id,
+          {
+            rateLimitPerHour: data.rateLimitPerHour,
+            antispam: data.antispam,
+          },
+          user.username,
+        );
+        const { applyMailDomainPolicy } = await import('@ysk/core');
+        const r = await applyMailDomainPolicy({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          domain: domain.domain,
+          rateLimitPerHour: data.rateLimitPerHour,
+          antispam: data.antispam,
+          applySystem: data.applySystem,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.domain.policy',
+          resource: id,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso-plugin') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { panelBaseUrl?: string };
+        const { writeRoundcubeSsoPlugin } = await import('@ysk/core');
+        const r = writeRoundcubeSsoPlugin({
+          dataDir: ctx.dataDir,
+          panelBaseUrl: data.panelBaseUrl || `http://127.0.0.1:${process.env.YSK_PORT || 8787}`,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.webmail.sso_plugin',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/dns/cluster/peers') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listDnsClusterPeers } = await import('@ysk/core');
+        return sendJson(res, 200, { items: listDnsClusterPeers(ctx.db) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/dns/cluster/peers') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          host?: string;
+          username?: string;
+          port?: number;
+          path?: string;
+          label?: string;
+          id?: string;
+        };
+        const { upsertDnsClusterPeer } = await import('@ysk/core');
+        const peer = upsertDnsClusterPeer(ctx.db, {
+          id: data.id,
+          host: data.host ?? '',
+          username: data.username ?? '',
+          port: data.port,
+          path: data.path,
+          label: data.label,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.cluster.peer',
+          resource: peer.id,
+          detail: { host: peer.host },
+          ok: true,
+        });
+        return sendJson(res, 200, { peer });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/dns\/cluster\/peers\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[6];
+        const { deleteDnsClusterPeer } = await import('@ysk/core');
+        const ok = deleteDnsClusterPeer(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.cluster.peer.delete',
+          resource: id,
+          detail: { ok },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/dns/cluster/push') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { peerId?: string };
+        const { pushDnsZonesToCluster } = await import('@ysk/core');
+        const r = await pushDnsZonesToCluster({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          peerId: data.peerId,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.cluster.push',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/web-stats$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const { collectProjectWebStats } = await import('@ysk/core');
+        const stats = await collectProjectWebStats({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          projectId: id,
+          homeDir: proj.homeDir,
+          linuxUser: proj.linuxUser,
+        });
+        return sendJson(res, 200, stats);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/db/temp-users') {

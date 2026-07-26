@@ -145,6 +145,8 @@ export async function writeManagedDnsZone(input: {
   tryReload?: boolean;
   records?: DnsRecordPlan['records'];
   template?: DnsZoneTemplate | string;
+  nsName?: string;
+  ttl?: number;
 }): Promise<ZoneFileResult> {
   const zone = assertZoneName(input.zone);
   const template = normalizeDnsZoneTemplate(input.template);
@@ -154,6 +156,8 @@ export async function writeManagedDnsZone(input: {
     mailHost: input.mailHost,
     records: input.records,
     template,
+    nsName: input.nsName,
+    ttl: input.ttl,
   });
 
   const dir = join(input.dataDir, 'dns', 'zones');
