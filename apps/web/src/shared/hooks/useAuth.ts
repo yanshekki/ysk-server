@@ -13,8 +13,8 @@ export function useAuth() {
     });
   }, []);
 
-  const login = useCallback(async (username: string, password: string) => {
-    const res = await api.login(username, password);
+  const login = useCallback(async (username: string, password: string, totp?: string) => {
+    const res = await api.login(username, password, totp);
     authStore.setSession(res.token, {
       id: res.user.id,
       username: res.user.username,

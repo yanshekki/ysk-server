@@ -1,5 +1,5 @@
 /**
- * Persistent auth: scrypt password hashing + SQLite sessions.
+ * Persistent auth: scrypt password hashing + SQLite sessions + optional TOTP 2FA.
  */
 
 import type { AuthLoginRequest, AuthLoginResponse, UserDto } from '@ysk/shared';
@@ -8,6 +8,11 @@ import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { UserRepository } from '../repositories/user-repo.js';
 import type { SessionRepository } from '../repositories/session-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
+import {
+  buildOtpAuthUrl,
+  generateTotpSecret,
+  verifyTotp,
+} from '../security/totp.js';
 
 const SCRYPT_KEYLEN = 64;
 
@@ -55,7 +60,7 @@ export class AuthService {
     return { id: user.id, username, roles: ['admin'], locale };
   }
 
-  login(req: AuthLoginRequest): AuthLoginResponse {
+  login(req: AuthLoginRequest & { totp?: string }): AuthLoginResponse {
     if (!req.username || !req.password) {
       throw new YskError(ErrorCodes.VALIDATION, 'username and password required', {
         httpStatus: 400,
@@ -71,6 +76,20 @@ export class AuthService {
       });
       throw new YskError(ErrorCodes.UNAUTHORIZED, 'Invalid credentials', { httpStatus: 401 });
     }
+    if (user.totp_enabled && user.totp_secret) {
+      if (!req.totp || !verifyTotp(user.totp_secret, req.totp)) {
+        this.audit?.append({
+          actor: user.username,
+          action: 'auth.login',
+          detail: { ok: false, reason: 'totp' },
+          ok: false,
+        });
+        throw new YskError(ErrorCodes.UNAUTHORIZED, '需要有效的雙重驗證碼', {
+          httpStatus: 401,
+          details: { needsTotp: true },
+        });
+      }
+    }
     this.sessions.deleteExpired(new Date().toISOString());
     const token = randomBytes(24).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -83,13 +102,78 @@ export class AuthService {
     this.audit?.append({
       actor: user.username,
       action: 'auth.login',
-      detail: { ok: true },
+      detail: { ok: true, totp: Boolean(user.totp_enabled) },
       ok: true,
     });
     return {
       token,
       user: toDto(user),
       expiresAt,
+    };
+  }
+
+  /** Begin 2FA enrollment — returns secret + otpauth URL (not yet enabled). */
+  beginTotp(userId: string): { secret: string; otpauthUrl: string; enabled: boolean } {
+    const user = this.users.findById(userId);
+    if (!user) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+    }
+    const secret = generateTotpSecret();
+    this.users.updateTotp(userId, { totp_secret: secret, totp_enabled: false });
+    return {
+      secret,
+      otpauthUrl: buildOtpAuthUrl({ secret, username: user.username }),
+      enabled: false,
+    };
+  }
+
+  /** Confirm enrollment with a valid code → enable 2FA. */
+  confirmTotp(userId: string, code: string): { enabled: boolean } {
+    const user = this.users.findById(userId);
+    if (!user?.totp_secret) {
+      throw new YskError(ErrorCodes.VALIDATION, '請先開始設定 2FA', { httpStatus: 400 });
+    }
+    if (!verifyTotp(user.totp_secret, code)) {
+      throw new YskError(ErrorCodes.VALIDATION, '驗證碼無效', { httpStatus: 400 });
+    }
+    this.users.updateTotp(userId, { totp_enabled: true });
+    this.audit?.append({
+      actor: user.username,
+      action: 'auth.totp.enable',
+      detail: {},
+      ok: true,
+    });
+    return { enabled: true };
+  }
+
+  disableTotp(userId: string, code: string): { enabled: boolean } {
+    const user = this.users.findById(userId);
+    if (!user) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+    }
+    if (user.totp_enabled && user.totp_secret) {
+      if (!verifyTotp(user.totp_secret, code)) {
+        throw new YskError(ErrorCodes.VALIDATION, '驗證碼無效', { httpStatus: 400 });
+      }
+    }
+    this.users.updateTotp(userId, { totp_secret: null, totp_enabled: false });
+    this.audit?.append({
+      actor: user.username,
+      action: 'auth.totp.disable',
+      detail: {},
+      ok: true,
+    });
+    return { enabled: false };
+  }
+
+  totpStatus(userId: string): { enabled: boolean; enrolled: boolean } {
+    const user = this.users.findById(userId);
+    if (!user) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+    }
+    return {
+      enabled: Boolean(user.totp_enabled),
+      enrolled: Boolean(user.totp_secret),
     };
   }
 
@@ -141,11 +225,13 @@ function toDto(user: {
   username: string;
   roles: UserDto['roles'];
   locale: string;
+  totp_enabled?: boolean;
 }): UserDto {
   return {
     id: user.id,
     username: user.username,
     roles: [...user.roles],
     locale: user.locale,
+    totpEnabled: Boolean(user.totp_enabled),
   };
 }

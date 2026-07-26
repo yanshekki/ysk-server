@@ -16,6 +16,8 @@ import type {
 export interface AuthLoginRequest {
   username: string;
   password: string;
+  /** Optional TOTP when 2FA enabled */
+  totp?: string;
 }
 
 export interface AuthLoginResponse {
@@ -29,6 +31,8 @@ export interface UserDto {
   username: string;
   roles: SystemRole[];
   locale: string;
+  /** Operator has confirmed TOTP 2FA */
+  totpEnabled?: boolean;
 }
 
 export interface HealthResponse {

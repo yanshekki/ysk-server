@@ -448,6 +448,206 @@ export class EmailService {
     return all.filter((m) => m.domain_id === domainId).map(map);
   }
 
+  /**
+   * Alias / forward / catch-all entries for a domain.
+   * type=catchall uses local_part="*" → virtual_alias `@domain dest`
+   */
+  listAliases(domainId: string): Array<Record<string, unknown>> {
+    this.get(domainId);
+    return (this.db.snapshot.email_aliases ?? [])
+      .filter((a) => a.domain_id === domainId)
+      .map((a) => ({ ...a }));
+  }
+
+  createAlias(
+    domainId: string,
+    input: {
+      type: 'alias' | 'forward' | 'catchall';
+      /** ignored for catchall */
+      localPart?: string;
+      destinations: string[];
+      actor: string;
+    },
+  ): { ok: boolean; alias: Record<string, unknown>; notes: string[]; written: string[] } {
+    const row = this.get(domainId);
+    const type = input.type;
+    const dests = input.destinations
+      .map((d) => d.trim().toLowerCase())
+      .filter(Boolean);
+    if (!dests.length) {
+      throw new YskError(ErrorCodes.VALIDATION, '至少一個轉送目標', { httpStatus: 400 });
+    }
+    for (const d of dests) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d) && type !== 'alias') {
+        // allow local-only targets like postmaster for alias within domain
+      }
+    }
+    let local = (input.localPart ?? '').trim().toLowerCase();
+    if (type === 'catchall') {
+      local = '*';
+    } else {
+      if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
+        throw new YskError(ErrorCodes.VALIDATION, 'Invalid local part', { httpStatus: 400 });
+      }
+    }
+    const source =
+      type === 'catchall' ? `@${row.domain}` : `${local}@${row.domain}`;
+    const existing = (this.db.snapshot.email_aliases ?? []).find(
+      (a) => a.domain_id === domainId && String(a.source).toLowerCase() === source,
+    );
+    if (existing) {
+      throw new YskError(ErrorCodes.VALIDATION, `來源已存在: ${source}`, { httpStatus: 409 });
+    }
+    const alias = {
+      id: randomUUID(),
+      domain_id: domainId,
+      domain: row.domain,
+      type,
+      local_part: local,
+      source,
+      destinations: dests,
+      created_at: new Date().toISOString(),
+    };
+    if (!this.db.snapshot.email_aliases) this.db.snapshot.email_aliases = [];
+    this.db.snapshot.email_aliases.unshift(alias);
+    this.db.persist();
+    const written = this.rewriteVirtualAliasMap(domainId);
+    this.audit?.append({
+      actor: input.actor,
+      action: 'email.alias.create',
+      resource: source,
+      detail: { destinations: dests, type },
+      ok: true,
+    });
+    return {
+      ok: true,
+      alias,
+      notes: [`已建立 ${type}: ${source} → ${dests.join(', ')}`, ...written.notes],
+      written: written.written,
+    };
+  }
+
+  deleteAlias(
+    domainId: string,
+    aliasId: string,
+    actor: string,
+  ): { ok: boolean; notes: string[]; written: string[] } {
+    this.get(domainId);
+    const before = (this.db.snapshot.email_aliases ?? []).length;
+    this.db.snapshot.email_aliases = (this.db.snapshot.email_aliases ?? []).filter(
+      (a) => !(a.domain_id === domainId && a.id === aliasId),
+    );
+    const ok = this.db.snapshot.email_aliases.length < before;
+    if (!ok) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'Alias not found', { httpStatus: 404 });
+    }
+    this.db.persist();
+    const written = this.rewriteVirtualAliasMap(domainId);
+    this.audit?.append({
+      actor,
+      action: 'email.alias.delete',
+      resource: aliasId,
+      detail: {},
+      ok: true,
+    });
+    return { ok: true, notes: ['已刪除', ...written.notes], written: written.written };
+  }
+
+  /** Catch-all / autoreply flags on domain record */
+  updateDomainMailFlags(
+    domainId: string,
+    patch: {
+      catchallAddress?: string | null;
+      autoreplyEnabled?: boolean;
+      autoreplySubject?: string;
+      autoreplyBody?: string;
+      rateLimitPerHour?: number | null;
+      antispam?: boolean;
+      suspended?: boolean;
+    },
+    actor: string,
+  ): EmailDomainRecord {
+    const row = domains(this.db).find((e) => e.id === domainId) as EmailDomainRecord &
+      Record<string, unknown>;
+    if (!row) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Email domain not found: ${domainId}`, {
+        httpStatus: 404,
+      });
+    }
+    if (patch.catchallAddress !== undefined) {
+      row.catchall_address = patch.catchallAddress || undefined;
+      // sync catchall alias row
+      const existing = (this.db.snapshot.email_aliases ?? []).find(
+        (a) => a.domain_id === domainId && a.type === 'catchall',
+      );
+      if (patch.catchallAddress) {
+        if (existing) {
+          existing.destinations = [patch.catchallAddress.trim().toLowerCase()];
+          existing.source = `@${row.domain}`;
+        } else {
+          this.createAlias(domainId, {
+            type: 'catchall',
+            destinations: [patch.catchallAddress],
+            actor,
+          });
+        }
+      } else if (existing) {
+        this.deleteAlias(domainId, String(existing.id), actor);
+      }
+    }
+    if (patch.autoreplyEnabled !== undefined) row.autoreply_enabled = patch.autoreplyEnabled;
+    if (patch.autoreplySubject !== undefined) row.autoreply_subject = patch.autoreplySubject;
+    if (patch.autoreplyBody !== undefined) row.autoreply_body = patch.autoreplyBody;
+    if (patch.rateLimitPerHour !== undefined) {
+      row.rate_limit_per_hour = patch.rateLimitPerHour ?? undefined;
+    }
+    if (patch.antispam !== undefined) row.antispam = patch.antispam;
+    if (patch.suspended !== undefined) {
+      row.suspended = patch.suspended;
+      row.status = patch.suspended ? 'suspended' : 'active';
+    }
+    row.updated_at = new Date().toISOString();
+    this.db.persist();
+    this.rewriteVirtualAliasMap(domainId);
+    this.audit?.append({
+      actor,
+      action: 'email.domain.flags',
+      resource: domainId,
+      detail: patch,
+      ok: true,
+    });
+    return { ...row, dkim_private_key: '***redacted***' };
+  }
+
+  private rewriteVirtualAliasMap(domainId: string): { written: string[]; notes: string[] } {
+    const written: string[] = [];
+    const notes: string[] = [];
+    if (!this.dataDir) {
+      notes.push('無 dataDir — 只更新資料庫');
+      return { written, notes };
+    }
+    const row = this.get(domainId);
+    const mapDir = join(this.dataDir, 'email', row.domain, 'postfix');
+    mkdirSync(mapDir, { recursive: true });
+    const aliases = (this.db.snapshot.email_aliases ?? []).filter((a) => a.domain_id === domainId);
+    const lines = aliases.map((a) => {
+      const dest = (a.destinations as string[]).join(',');
+      return `${a.source} ${dest}`;
+    });
+    // also emit catchall_address if set and no catchall row
+    const d = domains(this.db).find((e) => e.id === domainId) as EmailDomainRecord & {
+      catchall_address?: string;
+    };
+    if (d?.catchall_address && !aliases.some((a) => a.type === 'catchall')) {
+      lines.push(`@${row.domain} ${d.catchall_address}`);
+    }
+    const path = join(mapDir, 'virtual_alias');
+    writeFileSync(path, lines.join('\n') + (lines.length ? '\n' : ''), 'utf8');
+    written.push(path);
+    notes.push(`virtual_alias: ${path} (${lines.length} 條)`);
+    return { written, notes };
+  }
+
   markApplyStatus(
     domainId: string,
     status: { ok: boolean; notes?: string[]; serviceStatus?: Record<string, string> },

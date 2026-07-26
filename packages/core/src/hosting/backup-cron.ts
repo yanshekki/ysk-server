@@ -263,6 +263,24 @@ export function deleteProjectBackup(
   }
 }
 
+/** Resolve a managed backup path for download (path constrained). */
+export function resolveBackupDownloadPath(
+  dataDir: string,
+  projectId: string,
+  archiveName: string,
+): { ok: true; path: string } | { ok: false; notes: string[] } {
+  const root = join(dataDir, 'backups', projectId);
+  const safeName = archiveName.replace(/[/\\]/g, '');
+  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
+    return { ok: false, notes: ['無效的備份檔名'] };
+  }
+  const archivePath = join(root, safeName);
+  if (!existsSync(archivePath) || !archivePath.startsWith(root)) {
+    return { ok: false, notes: ['找不到備份檔'] };
+  }
+  return { ok: true, path: archivePath };
+}
+
 export interface CronJobRecord {
   id: string;
   project_id?: string;
@@ -335,6 +353,63 @@ export class CronJobService {
     this.db.persist();
     this.writeManagedCrontab();
     return { ...row };
+  }
+
+  /**
+   * Run job command once (test). Requires EXECUTE; fail-closed.
+   */
+  async runNow(
+    id: string,
+    actor: string,
+  ): Promise<{
+    ok: boolean;
+    notes: string[];
+    exitCode?: number;
+    stdout?: string;
+    stderr?: string;
+    requiresExecute?: boolean;
+    blocked?: boolean;
+  }> {
+    const row = cronRows(this.db).find((j) => j.id === id);
+    if (!row) {
+      return { ok: false, notes: ['找不到 cron 工作'] };
+    }
+    if (!this.host.executeEnabled()) {
+      return {
+        ok: false,
+        blocked: true,
+        requiresExecute: true,
+        notes: ['無法立即執行：伺服器未開啟系統變更權限'],
+      };
+    }
+    const r = await this.host.runCommand(['bash', '-lc', row.command], {
+      timeoutMs: 120_000,
+    });
+    void actor;
+    return {
+      ok: r.exitCode === 0,
+      exitCode: r.exitCode,
+      stdout: (r.stdout || '').slice(0, 4000),
+      stderr: (r.stderr || '').slice(0, 4000),
+      notes: [
+        `執行: ${row.command}`,
+        `exit=${r.exitCode}`,
+        r.exitCode === 0 ? '成功' : '失敗',
+      ],
+    };
+  }
+
+  /** Ensure a daily full-backup job exists (idempotent by command marker). */
+  ensureBackupSchedule(schedule = '0 3 * * *'): CronJobRecord {
+    const marker = 'ysk-backup-all';
+    const existing = cronRows(this.db).find((j) => j.command.includes(marker));
+    if (existing) return { ...existing };
+    return this.create({
+      user: 'root',
+      schedule,
+      command: `ysk-server backup all # ${marker}`,
+      actor: 'system',
+    });
   }
 
   /** Write all enabled jobs to dataDir/cron/ysk.crontab */

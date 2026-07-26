@@ -64,10 +64,14 @@ export const api = {
   health(): Promise<HealthResponse> {
     return request<HealthResponse>('/health');
   },
-  login(username: string, password: string): Promise<AuthLoginResponse> {
+  login(
+    username: string,
+    password: string,
+    totp?: string,
+  ): Promise<AuthLoginResponse> {
     return request<AuthLoginResponse>('/api/v1/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, totp }),
     });
   },
   logout(): Promise<{ ok: boolean }> {
@@ -75,6 +79,24 @@ export const api = {
   },
   me(): Promise<{ user: { username: string; roles: string[]; locale: string } }> {
     return request('/api/v1/auth/me');
+  },
+  totpStatus(): Promise<{ enabled: boolean; enrolled: boolean }> {
+    return request('/api/v1/auth/totp');
+  },
+  totpBegin(): Promise<{ secret: string; otpauthUrl: string; enabled: boolean }> {
+    return request('/api/v1/auth/totp/begin', { method: 'POST', body: '{}' });
+  },
+  totpConfirm(code: string): Promise<{ enabled: boolean }> {
+    return request('/api/v1/auth/totp/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+  },
+  totpDisable(code: string): Promise<{ enabled: boolean }> {
+    return request('/api/v1/auth/totp/disable', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
   },
   status(): Promise<{ product: string; version: string; tools: string[]; executeEnabled: boolean }> {
     return request('/api/v1/status');
@@ -248,6 +270,9 @@ export const api = {
     hostInstalled?: boolean;
   }> {
     return request('/api/v1/cron/install', { method: 'POST', body: '{}' });
+  },
+  runCronNow(id: string): Promise<Record<string, unknown>> {
+    return request(`/api/v1/cron/${id}/run`, { method: 'POST', body: '{}' });
   },
   cronStatus(): Promise<{
     managedPath: string;

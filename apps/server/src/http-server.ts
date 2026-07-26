@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 import {
   CLI_NAME,
   PRODUCT_NAME,
+  YskError,
   type HealthResponse,
   type ResourceScope,
   type SystemRole,
@@ -51,6 +52,7 @@ import {
   backupAllProjects,
   restoreProjectBackup,
   deleteProjectBackup,
+  resolveBackupDownloadPath,
   listProjectLogs,
   tailProjectLog,
   lookupOsvVulns,
@@ -159,12 +161,29 @@ export function createHttpServer(ctx: AppContext): Server {
 
       if (method === 'POST' && url.pathname === '/api/v1/auth/login') {
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { username?: string; password?: string };
-        const result = ctx.auth.login({
-          username: data.username ?? '',
-          password: data.password ?? '',
-        });
-        return sendJson(res, 200, result);
+        const data = JSON.parse(raw || '{}') as {
+          username?: string;
+          password?: string;
+          totp?: string;
+        };
+        try {
+          const result = ctx.auth.login({
+            username: data.username ?? '',
+            password: data.password ?? '',
+            totp: data.totp,
+          });
+          return sendJson(res, 200, result);
+        } catch (e) {
+          if (e instanceof YskError && e.details && (e.details as { needsTotp?: boolean }).needsTotp) {
+            return sendJson(res, 401, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsTotp: true,
+            });
+          }
+          throw e;
+        }
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/auth/logout') {
@@ -175,6 +194,27 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'GET' && url.pathname === '/api/v1/auth/me') {
         const user = ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { user });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/auth/totp') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, ctx.auth.totpStatus(user.id));
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/totp/begin') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, ctx.auth.beginTotp(user.id));
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/totp/confirm') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { code?: string };
+        return sendJson(res, 200, ctx.auth.confirmTotp(user.id, data.code ?? ''));
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/totp/disable') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { code?: string };
+        return sendJson(res, 200, ctx.auth.disableTotp(user.id, data.code ?? ''));
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/audit') {
@@ -846,6 +886,56 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, result.ok ? 201 : 422, result);
       }
 
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/aliases$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        return sendJson(res, 200, { items: ctx.email.listAliases(id) });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/aliases$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          type?: 'alias' | 'forward' | 'catchall';
+          localPart?: string;
+          destinations?: string[];
+        };
+        const result = ctx.email.createAlias(id, {
+          type: data.type ?? 'forward',
+          localPart: data.localPart,
+          destinations: data.destinations ?? [],
+          actor: user.username,
+        });
+        return sendJson(res, 201, result);
+      }
+      if (
+        method === 'DELETE' &&
+        url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/aliases\/[^/]+$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const parts = url.pathname.split('/');
+        const id = parts[5];
+        const aliasId = parts[7];
+        const result = ctx.email.deleteAlias(id, aliasId, user.username);
+        return sendJson(res, 200, result);
+      }
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/flags$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          catchallAddress?: string | null;
+          autoreplyEnabled?: boolean;
+          autoreplySubject?: string;
+          autoreplyBody?: string;
+          rateLimitPerHour?: number | null;
+          antispam?: boolean;
+          suspended?: boolean;
+        };
+        const domain = ctx.email.updateDomainMailFlags(id, data, user.username);
+        return sendJson(res, 200, { domain: redactEmail(domain as unknown as Record<string, unknown>) });
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/email/mailboxes') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { items: ctx.email.listMailboxes() });
@@ -1258,6 +1348,42 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendJson(res, r.ok ? 200 : 422, r);
       }
+      if (method === 'GET' && url.pathname === '/api/v1/backups/download') {
+        ctx.auth.authenticate(getBearer(req));
+        const projectId = url.searchParams.get('projectId') ?? '';
+        const name = url.searchParams.get('name') ?? '';
+        const r = resolveBackupDownloadPath(ctx.dataDir, projectId, name);
+        if (!r.ok) return sendJson(res, 404, r);
+        const { createReadStream, statSync } = await import('node:fs');
+        const st = statSync(r.path);
+        res.writeHead(200, {
+          'Content-Type': 'application/gzip',
+          'Content-Length': st.size,
+          'Content-Disposition': `attachment; filename="${name.replace(/"/g, '')}"`,
+        });
+        createReadStream(r.path).pipe(res);
+        return;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/schedule') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { schedule?: string };
+        const job = ctx.cron.ensureBackupSchedule(data.schedule ?? '0 3 * * *');
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.schedule',
+          detail: job,
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          job,
+          notes: [
+            `已確保排程：${job.schedule} ${job.command}`,
+            '仍需到 Cron 頁「安裝到系統 crontab」才會真正生效',
+          ],
+        });
+      }
       if (method === 'GET' && url.pathname === '/api/v1/scheduler') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { jobs: ctx.scheduler.list() });
@@ -1304,6 +1430,49 @@ export function createHttpServer(ctx: AppContext): Server {
         const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk/core');
         dedupeCertificatesInStore(ctx.db);
         return sendJson(res, 200, { items: listCertificatesView(ctx.db, ctx.dataDir) });
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/ssl/bindings') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk/core');
+        dedupeCertificatesInStore(ctx.db);
+        const certs = listCertificatesView(ctx.db, ctx.dataDir);
+        const projects = ctx.projects.list();
+        const mail = ctx.email.list();
+        const bindings = certs.map((c) => {
+          const domain = String((c as { domain?: string }).domain ?? '');
+          const linkedProjects = projects
+            .filter(
+              (p) =>
+                p.domain === domain ||
+                (p.domainAliases ?? []).includes(domain) ||
+                (domain && p.domain?.endsWith(domain)),
+            )
+            .map((p) => ({ id: p.id, name: p.name, domain: p.domain }));
+          const linkedMail = mail
+            .filter((m) => m.domain === domain || domain.endsWith(m.domain))
+            .map((m) => ({ id: m.id, domain: m.domain }));
+          return {
+            ...c,
+            projects: linkedProjects,
+            mailDomains: linkedMail,
+          };
+        });
+        // renew job probe
+        const cronJobs = ctx.cron.list().filter(
+          (j) =>
+            j.command.includes('certbot') ||
+            j.command.includes('letsencrypt') ||
+            j.command.includes('ssl'),
+        );
+        return sendJson(res, 200, {
+          items: bindings,
+          renewJobs: cronJobs,
+          notes: [
+            cronJobs.length
+              ? `找到 ${cronJobs.length} 個可能相關嘅續期 cron`
+              : '未登記 certbot/LE 續期 cron（可用系統 certbot.timer）',
+          ],
+        });
       }
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssl\/certificates\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -1997,6 +2166,19 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.audit.append({
           actor: user.username,
           action: 'cron.install',
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cron\/[^/]+\/run$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.cron.runNow(id, user.username);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cron.run_now',
+          resource: id,
           detail: result,
           ok: result.ok,
         });

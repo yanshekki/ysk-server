@@ -120,6 +120,22 @@ export function BackupsPage() {
             >
               備份所有專案
             </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={busy}
+              onClick={() =>
+                void run(async () => {
+                  const r = (await api.requestRaw('/api/v1/backups/schedule', {
+                    method: 'POST',
+                    body: JSON.stringify({ schedule: '0 3 * * *' }),
+                  })) as OpsResultLike;
+                  return r;
+                }, '已登記每日 03:00 排程')
+              }
+            >
+              登記每日排程
+            </Button>
           </div>
           {lastRun ? (
             <div className="u-mt-4">
@@ -187,6 +203,19 @@ export function BackupsPage() {
                       </td>
                       <td>
                         <div className="btn-row">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              const q = new URLSearchParams({
+                                projectId: b.projectId,
+                                name: b.name,
+                              });
+                              window.open(`/api/v1/backups/download?${q}`, '_blank');
+                            }}
+                          >
+                            下載
+                          </Button>
                           <Button
                             variant="primary"
                             size="sm"

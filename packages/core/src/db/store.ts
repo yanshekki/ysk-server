@@ -15,6 +15,10 @@ export interface StoreUser {
   password_salt: string;
   roles: SystemRole[];
   locale: string;
+  /** Base32 TOTP secret when 2FA enrolled */
+  totp_secret?: string;
+  /** true only after user confirms a valid code */
+  totp_enabled?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -113,6 +117,8 @@ export interface StoreData {
   firewall_rules: Array<Record<string, unknown>>;
   certificates: Array<Record<string, unknown>>;
   mailboxes: Array<Record<string, unknown>>;
+  /** Mail aliases / forwards / catch-all per domain */
+  email_aliases: Array<Record<string, unknown>>;
   cron_jobs: Array<Record<string, unknown>>;
   /** Managed control-plane resource registries (CRUD entities) */
   nginx_sites: Array<Record<string, unknown>>;
@@ -147,6 +153,7 @@ const EMPTY: StoreData = {
   firewall_rules: [],
   certificates: [],
   mailboxes: [],
+  email_aliases: [],
   cron_jobs: [],
   nginx_sites: [],
   ftp_accounts: [],
@@ -186,6 +193,7 @@ export class JsonStore {
       this.data.firewall_rules = this.data.firewall_rules ?? [];
       this.data.certificates = this.data.certificates ?? [];
       this.data.mailboxes = this.data.mailboxes ?? [];
+      this.data.email_aliases = this.data.email_aliases ?? [];
       this.data.cron_jobs = this.data.cron_jobs ?? [];
       this.data.nginx_sites = this.data.nginx_sites ?? [];
       this.data.ftp_accounts = this.data.ftp_accounts ?? [];

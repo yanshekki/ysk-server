@@ -105,4 +105,41 @@ export const emailApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  listAliases: (domainId: string) =>
+    api.requestRaw<{ items: Array<Record<string, unknown>> }>(
+      `/api/v1/email/domains/${domainId}/aliases`,
+    ),
+  createAlias: (
+    domainId: string,
+    body: {
+      type: 'alias' | 'forward' | 'catchall';
+      localPart?: string;
+      destinations: string[];
+    },
+  ) =>
+    api.requestRaw<Record<string, unknown>>(`/api/v1/email/domains/${domainId}/aliases`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  deleteAlias: (domainId: string, aliasId: string) =>
+    api.requestRaw<Record<string, unknown>>(
+      `/api/v1/email/domains/${domainId}/aliases/${aliasId}`,
+      { method: 'DELETE' },
+    ),
+  updateFlags: (
+    domainId: string,
+    body: {
+      catchallAddress?: string | null;
+      autoreplyEnabled?: boolean;
+      autoreplySubject?: string;
+      autoreplyBody?: string;
+      rateLimitPerHour?: number | null;
+      antispam?: boolean;
+      suspended?: boolean;
+    },
+  ) =>
+    api.requestRaw<{ domain: EmailDomain }>(`/api/v1/email/domains/${domainId}/flags`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
 };

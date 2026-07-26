@@ -269,6 +269,19 @@ export function CronPage() {
                       loading={busy}
                       onClick={() =>
                         void run(async () => {
+                          const r = await api.runCronNow(job.id);
+                          return r as unknown as OpsResultLike;
+                        }, '已執行一次')
+                      }
+                    >
+                      立即執行
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      onClick={() =>
+                        void run(async () => {
                           await api.requestRaw(`/api/v1/cron/${job.id}`, {
                             method: 'PATCH',
                             body: JSON.stringify({ enabled: job.enabled === false }),

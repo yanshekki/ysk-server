@@ -59,6 +59,14 @@ export function EmailDomainPage() {
   const [mboxPass, setMboxPass] = useState('');
   const [mboxLog, setMboxLog] = useState<Record<string, unknown> | null>(null);
   const [mailboxes, setMailboxes] = useState<Array<Record<string, unknown>>>([]);
+  const [aliases, setAliases] = useState<Array<Record<string, unknown>>>([]);
+  const [aliasLocal, setAliasLocal] = useState('sales');
+  const [aliasDest, setAliasDest] = useState('');
+  const [aliasType, setAliasType] = useState<'forward' | 'alias' | 'catchall'>('forward');
+  const [aliasLog, setAliasLog] = useState<Record<string, unknown> | null>(null);
+  const [autoreplyOn, setAutoreplyOn] = useState(false);
+  const [autoreplySubject, setAutoreplySubject] = useState('自動回覆');
+  const [autoreplyBody, setAutoreplyBody] = useState('已收到您的郵件，稍後回覆。');
   const [webmailDomain, setWebmailDomain] = useState('webmail.example.com');
   const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
 
@@ -70,6 +78,7 @@ export function EmailDomainPage() {
     try {
       setBundle(await emailApi.dns(found.id));
       setMailboxes((await emailApi.listMailboxes(found.id)).items);
+      setAliases((await emailApi.listAliases(found.id)).items);
       setWebmailDomain(`webmail.${found.domain}`);
     } catch {
       /* optional */
@@ -131,6 +140,7 @@ export function EmailDomainPage() {
   const tabs = [
     { id: 'dns', label: 'DNS' },
     { id: 'mailbox', label: '郵箱' },
+    { id: 'aliases', label: '別名／轉發' },
     { id: 'health', label: '健康' },
     { id: 'relay', label: '中繼' },
     { id: 'advanced', label: '進階' },
@@ -353,6 +363,183 @@ export function EmailDomainPage() {
               <OpsResultPanel title="郵箱操作結果" result={asOps(mboxLog)} busy={busy} />
             </CardSection>
           </Card>
+        ) : null}
+
+        {tab === 'aliases' ? (
+          <div className="stack">
+            <Card>
+              <CardSection title="別名／轉發／Catch-all">
+                <FormGrid>
+                  <Field label="類型" htmlFor="al-type">
+                    <select
+                      id="al-type"
+                      value={aliasType}
+                      onChange={(e) =>
+                        setAliasType(e.target.value as 'forward' | 'alias' | 'catchall')
+                      }
+                    >
+                      <option value="forward">轉發</option>
+                      <option value="alias">別名</option>
+                      <option value="catchall">Catch-all（@domain）</option>
+                    </select>
+                  </Field>
+                  {aliasType !== 'catchall' ? (
+                    <Field label="本地部分" htmlFor="al-local">
+                      <input
+                        id="al-local"
+                        value={aliasLocal}
+                        onChange={(e) => setAliasLocal(e.target.value)}
+                        placeholder="sales"
+                      />
+                    </Field>
+                  ) : null}
+                  <Field label="目標（逗號分隔）" htmlFor="al-dest">
+                    <input
+                      id="al-dest"
+                      value={aliasDest}
+                      onChange={(e) => setAliasDest(e.target.value)}
+                      placeholder={`info@${domain.domain}`}
+                    />
+                  </Field>
+                </FormGrid>
+                <div className="btn-row u-mt-3">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        const destinations = aliasDest
+                          .split(/[,;\s]+/)
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        setAliasLog(
+                          await emailApi.createAlias(domain.id, {
+                            type: aliasType,
+                            localPart: aliasType === 'catchall' ? undefined : aliasLocal,
+                            destinations,
+                          }),
+                        );
+                        setAliases((await emailApi.listAliases(domain.id)).items);
+                      })
+                    }
+                  >
+                    新增
+                  </Button>
+                </div>
+                {aliases.length > 0 ? (
+                  <ul className="list-plain list-spaced u-mt-4">
+                    {aliases.map((a) => (
+                      <li key={String(a.id)} className="btn-row" style={{ justifyContent: 'space-between' }}>
+                        <span>
+                          <Badge>{String(a.type)}</Badge>{' '}
+                          <code className="inline">{String(a.source)}</code> →{' '}
+                          {(a.destinations as string[] | undefined)?.join(', ')}
+                        </span>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          loading={busy}
+                          onClick={() =>
+                            void withBusy(async () => {
+                              setAliasLog(
+                                await emailApi.deleteAlias(domain.id, String(a.id)),
+                              );
+                              setAliases((await emailApi.listAliases(domain.id)).items);
+                            })
+                          }
+                        >
+                          刪除
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="muted u-mt-3">尚未有別名／轉發</p>
+                )}
+                <OpsResultPanel title="別名結果" result={asOps(aliasLog)} busy={busy} />
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title="自動回覆">
+                <label className="field field--check">
+                  <input
+                    type="checkbox"
+                    checked={autoreplyOn}
+                    onChange={(e) => setAutoreplyOn(e.target.checked)}
+                  />
+                  <span>啟用自動回覆（寫入域名旗標；需 MTA sieve 才真正生效）</span>
+                </label>
+                <FormGrid>
+                  <Field label="主旨" htmlFor="ar-sub">
+                    <input
+                      id="ar-sub"
+                      value={autoreplySubject}
+                      onChange={(e) => setAutoreplySubject(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="內文" htmlFor="ar-body">
+                    <textarea
+                      id="ar-body"
+                      rows={3}
+                      value={autoreplyBody}
+                      onChange={(e) => setAutoreplyBody(e.target.value)}
+                    />
+                  </Field>
+                </FormGrid>
+                <div className="btn-row u-mt-3">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        await emailApi.updateFlags(domain.id, {
+                          autoreplyEnabled: autoreplyOn,
+                          autoreplySubject,
+                          autoreplyBody,
+                        });
+                        setAliasLog({
+                          ok: true,
+                          notes: ['已儲存自動回覆旗標'],
+                        });
+                      })
+                    }
+                  >
+                    儲存自動回覆
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        await emailApi.updateFlags(domain.id, { suspended: true });
+                        setAliasLog({ ok: true, notes: ['域名已標記暫停'] });
+                        await load();
+                      })
+                    }
+                  >
+                    暫停域名
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        await emailApi.updateFlags(domain.id, { suspended: false });
+                        setAliasLog({ ok: true, notes: ['域名已恢復'] });
+                        await load();
+                      })
+                    }
+                  >
+                    恢復域名
+                  </Button>
+                </div>
+              </CardSection>
+            </Card>
+          </div>
         ) : null}
 
         {tab === 'health' ? (

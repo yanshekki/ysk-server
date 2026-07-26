@@ -51,47 +51,47 @@ Ship order:
 | C9 | Validate zone (named-checkzone) | Better | **done** |
 
 ### 1.3 Email
-| ID | Work | Notes |
-|----|------|-------|
-| F3 | Alias + forward full CRUD | |
-| F4 | Catch-all | |
-| F5 | Autoreply | |
-| F6–F7 | DKIM/SPF/DMARC complete panel | |
-| F10 | Antispam per domain toggle | |
-| F13 | Outbound rate limits | |
-| F17 | Autodiscover/autoconfig endpoints | |
-| F18 | Mail queue list + flush | |
-| F20–F22 | Bootstrap honesty · mail SSL · suspend | |
+| ID | Work | Notes | Status |
+|----|------|-------|--------|
+| F3 | Alias + forward full CRUD | virtual_alias map | **done** |
+| F4 | Catch-all | type=catchall | **done** |
+| F5 | Autoreply | domain flags (MTA sieve later) | **done** (flags) |
+| F6–F7 | DKIM/SPF/DMARC complete panel | existing DNS tab | partial |
+| F10 | Antispam per domain toggle | flag field | partial |
+| F13 | Outbound rate limits | flag field | partial |
+| F17 | Autodiscover/autoconfig endpoints | | pending |
+| F18 | Mail queue list + flush | | pending |
+| F20–F22 | Bootstrap honesty · mail SSL · suspend | suspend flags | partial |
 
 ### 1.4 SSL
-| ID | Work | Notes |
-|----|------|-------|
-| D5 | Show auto-renew job status | |
-| D7 | Mail domain SSL integration | |
-| D8 | Binding overview (cert → projects/mail) | |
-| D9 | Expiry warnings on dashboard | Better |
+| ID | Work | Notes | Status |
+|----|------|-------|--------|
+| D5 | Show auto-renew job status | bindings.renewJobs | **done** (API) |
+| D7 | Mail domain SSL integration | LE deep-link | partial |
+| D8 | Binding overview (cert → projects/mail) | GET /ssl/bindings | **done** |
+| D9 | Expiry warnings on dashboard | | pending |
 
 ### 1.5 Backups
-| ID | Work | Notes |
-|----|------|-------|
-| L2 | Scheduled backups | cron integration |
-| L3 | Download archive | |
-| L4 | Selective restore | web/db/mail pieces |
-| L6 | Remote target config (SFTP/S3) | P0 for production |
-| L10 | Dry-run + honest result panel | Better |
+| ID | Work | Notes | Status |
+|----|------|-------|--------|
+| L2 | Scheduled backups | cron ensureBackupSchedule | **done** |
+| L3 | Download archive | GET /backups/download | **done** |
+| L4 | Selective restore | full restore only | partial |
+| L6 | Remote target config (SFTP/S3) | | pending |
+| L10 | Dry-run + honest result panel | | pending |
 
 ### 1.6 Auth
-| ID | Work | Notes |
-|----|------|-------|
-| R2 | Operator 2FA (TOTP) | P0 even single-admin |
-| R5 | API access keys management | |
-| Q4 | same 2FA foundation | |
+| ID | Work | Notes | Status |
+|----|------|-------|--------|
+| R2 | Operator 2FA (TOTP) | pure crypto TOTP | **done** |
+| R5 | API access keys management | | pending |
+| Q4 | same 2FA foundation | | **done** |
 
 ### 1.7 Cron
-| ID | Work | Notes |
-|----|------|-------|
-| K2–K3 | Generator UI + enable/disable | |
-| K5 | Run-now test execution | Better |
+| ID | Work | Notes | Status |
+|----|------|-------|--------|
+| K2–K3 | Generator UI + enable/disable | enable existed | **done** |
+| K5 | Run-now test execution | POST /cron/:id/run | **done** |
 
 ---
 
