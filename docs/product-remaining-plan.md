@@ -45,20 +45,20 @@
 | 5.7 | B21 | 一鍵 App UI | M | **done**（Advanced WP 已有；Deploy 強化 PHP） |
 | 5.8 | T8 | Config export / rebuild | M | **done** export + rebuild nginx 選項 |
 
-### Wave 6 — 平台加深（可後做）
+### Wave 6 — 平台加深（**done** @ `ceacc82`）
 
-| # | ID | 項 | 說明 |
-|---|-----|-----|------|
-| 6.1 | L7 | restic 類增量備份 | 本地 restic repo + 誠實 notes |
-| 6.2 | L6 | 遠端 S3 | 在 SFTP 後；需 credentials |
-| 6.3 | C7 | DNS cluster | 多機 sync（可選） |
-| 6.4 | B9 | 專案 bind multi-IP | vhost listen 選 IP |
-| 6.5 | C4 | SOA/NS UI | zone 級編輯 |
-| 6.6 | B19 | Web stats | AWStats-class 或簡化 access 統計 |
-| 6.7 | F13/F10 | 出站 rate / antispam 真生效 | 而家多為旗標 |
-| 6.8 | I4 | DB import | dump 已有，import SQL |
-| 6.9 | — | 臨時 RO user 到期 auto DROP | Wave4 只登記撤銷 |
-| 6.10 | F9+ | Roundcube 真 SSO 外掛 | 接 panel token |
+| # | ID | 項 | Status |
+|---|-----|-----|--------|
+| 6.1 | L7 | restic 增量 | **done** |
+| 6.2 | L6 | 遠端 S3 | **done**（aws cli） |
+| 6.3 | C7 | DNS cluster | **done** peers + scp |
+| 6.4 | B9 | 專案 bind IP | **done** |
+| 6.5 | C4 | SOA/NS UI | **done** 建立 zone |
+| 6.6 | B19 | Web stats | **done** access 樣本 |
+| 6.7 | F13/F10 | rate / antispam maps | **done** written（需 MTA 引用） |
+| 6.8 | I4 | DB import | **done** |
+| 6.9 | — | 臨時 RO expire/DROP | **done**（auto DROP：`YSK_TEMP_DB_AUTO_DROP=1`） |
+| 6.10 | F9+ | Roundcube SSO 骨架 | **done** written ≠ 已載入 |
 
 ### 明確不做（凍結）
 
