@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 export interface TabItem {
   id: string;
   label: string;
+  /** Optional count / status badge on the tab label */
+  badge?: string | number;
 }
 
 export interface TabsProps {
@@ -92,7 +94,10 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
                 className="tabs__tab"
                 onClick={() => onChange(tab.id)}
               >
-                {tab.label}
+                <span className="tabs__tab-label">{tab.label}</span>
+                {tab.badge != null && tab.badge !== '' ? (
+                  <span className="tabs__tab-badge">{tab.badge}</span>
+                ) : null}
               </button>
             ))}
           </div>

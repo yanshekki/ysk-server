@@ -11,6 +11,8 @@ import {
   CardSection,
   DescriptionList,
   FeaturePageLayout,
+  FormActions,
+  FormHint,
   OpsResultPanel,
   SummaryStrip,
   Tabs,
@@ -18,6 +20,20 @@ import {
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+
+function enabledLabel(v: string): string {
+  if (v === 'enabled') return '是';
+  if (v === 'disabled') return '否';
+  if (v === 'static' || v === 'indirect') return v;
+  return v || '—';
+}
+
+function actionLabel(action: 'start' | 'stop' | 'restart' | 'reload'): string {
+  if (action === 'start') return '啟動';
+  if (action === 'stop') return '停止';
+  if (action === 'restart') return '重啟';
+  return '重載';
+}
 
 type MatrixItem = {
   id: string;
@@ -78,7 +94,7 @@ export function ServicesPage() {
         const m = e instanceof Error ? e.message : '操作失敗';
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, `已 ${action}`);
+    }, `已${actionLabel(action)}`);
   }
 
   const running = items.filter((i) => i.active === 'active').length;
@@ -154,7 +170,7 @@ export function ServicesPage() {
                     <tr>
                       <th>服務</th>
                       <th>分類</th>
-                      <th>unit</th>
+                      <th>單元</th>
                       <th>狀態</th>
                       <th>開機自啟</th>
                       <th>操作</th>
@@ -180,7 +196,7 @@ export function ServicesPage() {
                         <td>
                           <Badge tone={toneFor(row.active, row.installed)}>{row.activeLabel}</Badge>
                         </td>
-                        <td className="muted u-text-sm">{row.enabled}</td>
+                        <td className="muted u-text-sm">{enabledLabel(row.enabled)}</td>
                         <td>
                           <div className="btn-row">
                             <Button
@@ -227,20 +243,23 @@ export function ServicesPage() {
         {tab === 'protection' ? (
           <Card>
             <CardSection title="保護探測" description="額外安全／保護狀態（與服務矩陣分開）">
-              <Button
-                variant="primary"
-                size="md"
-                loading={busy}
-                onClick={() =>
-                  void run(async () => {
-                    const r = (await systemApi.protectionProbe()) as Record<string, unknown>;
-                    setProbe(r);
-                    return { ok: true, notes: ['保護探測完成'], ...r } as unknown as OpsResultLike;
-                  }, '探測完成')
-                }
-              >
-                執行保護探測
-              </Button>
+              <FormHint>唯讀探測；不會修改防火牆或 fail2ban 設定。</FormHint>
+              <FormActions>
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = (await systemApi.protectionProbe()) as Record<string, unknown>;
+                      setProbe(r);
+                      return { ok: true, notes: ['保護探測完成'], ...r } as unknown as OpsResultLike;
+                    }, '探測完成')
+                  }
+                >
+                  執行保護探測
+                </Button>
+              </FormActions>
               {probe ? (
                 <div className="u-mt-4">
                   <DescriptionList

@@ -70,7 +70,7 @@ export async function handleResourcesRoutes(
   const user = ctx.auth.authenticate(getBearer(req));
   const { key, id, action, prefix } = parseCollection(url.pathname);
   if (!key || !prefix) {
-    sendJson(res, 404, { ok: false, message: 'Unknown resource collection' });
+    sendJson(res, 404, { ok: false, message: '未知的資源類型' });
     return true;
   }
 
@@ -100,7 +100,7 @@ export async function handleResourcesRoutes(
   if (method === 'GET' && id && !action) {
     const row = getResource(ctx.db, key, id);
     if (!row) {
-      sendJson(res, 404, { ok: false, message: 'Not found' });
+      sendJson(res, 404, { ok: false, message: '找不到資源' });
       return true;
     }
     sendJson(res, 200, { item: row });
@@ -114,7 +114,7 @@ export async function handleResourcesRoutes(
     if (key === 'certificates') {
       sendJson(res, 400, {
         ok: false,
-        message: 'Use POST /api/v1/ssl/upload or POST /api/v1/ssl/letsencrypt',
+        message: '請使用 POST /api/v1/ssl/upload 或 POST /api/v1/ssl/letsencrypt',
       });
       return true;
     }
@@ -124,7 +124,7 @@ export async function handleResourcesRoutes(
       const serverIp = String(data.serverIp ?? '127.0.0.1');
       const template = String(data.template ?? 'full');
       if (!zone) {
-        sendJson(res, 400, { ok: false, message: 'zone required' });
+        sendJson(res, 400, { ok: false, message: '請填寫 zone 名稱' });
         return true;
       }
       const row = createResource(ctx.db, key, {
@@ -150,7 +150,7 @@ export async function handleResourcesRoutes(
     if (key === 'mysql_databases') {
       const name = String(data.name ?? '').trim();
       if (!name) {
-        sendJson(res, 400, { ok: false, message: 'name required' });
+        sendJson(res, 400, { ok: false, message: '請填寫名稱' });
         return true;
       }
       const eng = data.engine === 'mariadb' ? 'mariadb' : 'mysql';
@@ -185,7 +185,7 @@ export async function handleResourcesRoutes(
     if (key === 'postgres_databases') {
       const name = String(data.name ?? '').trim();
       if (!name) {
-        sendJson(res, 400, { ok: false, message: 'name required' });
+        sendJson(res, 400, { ok: false, message: '請填寫名稱' });
         return true;
       }
       const row = createResource(ctx.db, key, {
@@ -224,7 +224,7 @@ export async function handleResourcesRoutes(
     delete data.id;
     const row = updateResource(ctx.db, key, id, data);
     if (!row) {
-      sendJson(res, 404, { ok: false, message: 'Not found' });
+      sendJson(res, 404, { ok: false, message: '找不到資源' });
       return true;
     }
     ctx.audit.append({
@@ -345,7 +345,7 @@ export async function handleResourcesRoutes(
       return true;
     }
 
-    sendJson(res, 400, { ok: false, message: 'apply not supported for this collection' });
+    sendJson(res, 400, { ok: false, message: '此資源不支援套用到系統' });
     return true;
   }
 

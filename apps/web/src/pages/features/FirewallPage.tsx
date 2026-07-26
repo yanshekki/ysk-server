@@ -8,17 +8,24 @@ import {
   Button,
   Card,
   CardSection,
+  CheckboxField,
   DescriptionList,
   FeaturePageLayout,
+  Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
-  SettingField,
-  SettingFieldList,
   SoftwareInstallBanner,
   SummaryStrip,
+  Tabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { usePageTab } from '../../shared/hooks/usePageTab';
+
+const FW_TABS = ['overview', 'rules', 'apply'] as const;
 
 export function FirewallPage() {
   const [allowSmtp, setAllowSmtp] = useState(true);
@@ -81,6 +88,7 @@ export function FirewallPage() {
   }
 
   const active = status?.active === 'active';
+  const [tab, setTab] = usePageTab(FW_TABS, 'overview');
 
   return (
     <FeaturePageLayout
@@ -137,89 +145,114 @@ export function FirewallPage() {
         ]}
       />
 
-      <Card>
-        <CardSection title="服務概覽" description="即時探測（唯讀）">
-          <DescriptionList
-            columns={2}
-            items={[
-              {
-                label: '狀態',
-                value: (
-                  <Badge tone={active ? 'ok' : status?.installed ? 'warn' : 'danger'}>
-                    {status?.installed ? status.active : '未安裝'}
-                  </Badge>
-                ),
-              },
-              { label: '已安裝', value: status?.installed ? '是' : '否' },
-              {
-                label: '系統變更',
-                value: status?.executeEnabled ? '已開啟' : '未開啟',
-              },
-              { label: '管理員', value: status?.isRoot ? '是' : '否' },
-            ]}
-          />
-        </CardSection>
-      </Card>
-
-      <Card>
-        <CardSection title="目前規則" description="來自 ufw status numbered">
-          {status?.numberedRules?.length ? (
-            <pre className="code code--spaced" style={{ maxHeight: 280, overflow: 'auto' }}>
-              {status.numberedRules.join('\n')}
-            </pre>
-          ) : (
-            <p className="muted u-text-sm" style={{ margin: 0 }}>
-              {status?.installed ? '未讀到規則（可能未啟用或無權讀取）' : '請先安裝 UFW'}
-            </p>
-          )}
-        </CardSection>
-      </Card>
-
-      <Card>
-        <CardSection
-          title="套用規則集"
-          description="寫入管理腳本並在有權限時執行 ufw（需系統變更 + root）"
-        >
-          <SettingFieldList>
-            <SettingField
-              label="允許 SMTP 相關埠"
-              techKey="25/465/587/993"
-              description="郵件出站／進站常用埠"
-              htmlFor="fw-smtp"
-            >
-              <select
-                id="fw-smtp"
-                value={allowSmtp ? 'yes' : 'no'}
-                onChange={(e) => setAllowSmtp(e.target.value === 'yes')}
-              >
-                <option value="yes">是</option>
-                <option value="no">否</option>
-              </select>
-            </SettingField>
-            <SettingField
-              label="額外 TCP 埠"
-              techKey="extra_tcp"
-              description="逗號分隔；可用 30000:30100 範圍（最多 40 個）"
-              htmlFor="fw-extra"
-            >
-              <input
-                id="fw-extra"
-                value={extraPorts}
-                onChange={(e) => setExtraPorts(e.target.value)}
-                placeholder="21, 30000:30100"
-              />
-            </SettingField>
-          </SettingFieldList>
-          <div className="setting-actions-bar">
-            <Button variant="primary" size="md" loading={busy} onClick={() => void onApply()}>
-              套用到系統
-            </Button>
+      <Tabs
+        tabs={[
+          { id: 'overview', label: '概覽' },
+          {
+            id: 'rules',
+            label: '規則',
+            badge: status?.numberedRules?.length || undefined,
+          },
+          { id: 'apply', label: '套用' },
+        ]}
+        active={tab}
+        onChange={setTab}
+        variant="scroll"
+      >
+        {tab === 'overview' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection title="服務概覽" description="即時探測（唯讀）">
+                <DescriptionList
+                  columns={2}
+                  items={[
+                    {
+                      label: '狀態',
+                      value: (
+                        <Badge tone={active ? 'ok' : status?.installed ? 'warn' : 'danger'}>
+                          {status?.installed ? status.active : '未安裝'}
+                        </Badge>
+                      ),
+                    },
+                    { label: '已安裝', value: status?.installed ? '是' : '否' },
+                    {
+                      label: '系統變更',
+                      value: status?.executeEnabled ? '已開啟' : '未開啟',
+                    },
+                    { label: '管理員', value: status?.isRoot ? '是' : '否' },
+                  ]}
+                />
+              </CardSection>
+            </Card>
           </div>
-          <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
-            預設會保留 SSH / 80 / 443。無權限時會明確失敗，不會假裝成功。
-          </p>
-        </CardSection>
-      </Card>
+        ) : null}
+
+        {tab === 'rules' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection title="目前規則" description="來自 ufw status numbered">
+                {status?.numberedRules?.length ? (
+                  <pre className="code code--spaced" style={{ maxHeight: 280, overflow: 'auto' }}>
+                    {status.numberedRules.join('\n')}
+                  </pre>
+                ) : (
+                  <p className="muted u-text-sm u-mb-0">
+                    {status?.installed
+                      ? '未讀到規則（可能未啟用或無權讀取）'
+                      : '請先安裝 UFW'}
+                  </p>
+                )}
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+
+        {tab === 'apply' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="套用規則集"
+                description="寫入管理腳本並在有權限時執行 ufw（需系統變更 + root）"
+              >
+                <div className="form-check-row">
+                  <CheckboxField
+                    id="fw-smtp"
+                    label="允許 SMTP 相關埠"
+                    description="放行 25 / 465 / 587 / 993（郵件常用）"
+                    checked={allowSmtp}
+                    onChange={setAllowSmtp}
+                  />
+                </div>
+                <FormLayout columns={2}>
+                  <Field
+                    label="額外 TCP 埠"
+                    htmlFor="fw-extra"
+                    fullWidth
+                    flush
+                    hint="逗號分隔；可用 30000:30100 範圍（最多 40 個）。預設含 FTPS 與 PASV"
+                  >
+                    <input
+                      id="fw-extra"
+                      value={extraPorts}
+                      onChange={(e) => setExtraPorts(e.target.value)}
+                      placeholder="21, 30000:30100"
+                      spellCheck={false}
+                    />
+                  </Field>
+                </FormLayout>
+                <FormHint>
+                  預設會保留 SSH／80／443。無權限時會明確失敗，不會假裝成功。
+                </FormHint>
+                <FormActions>
+                  <Button variant="primary" size="md" loading={busy} onClick={() => void onApply()}>
+                    套用到系統
+                  </Button>
+                </FormActions>
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+      </Tabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
     </FeaturePageLayout>

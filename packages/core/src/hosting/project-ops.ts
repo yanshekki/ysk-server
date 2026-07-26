@@ -12,6 +12,8 @@ import {
   unlinkSync,
   openSync,
   closeSync,
+  readdirSync,
+  statSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError } from '@ysk/shared';
@@ -28,7 +30,12 @@ import {
   renderNginxSuspended,
 } from './nginx-ssl.js';
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
-import { selectPhpRuntime } from './runtime.js';
+import {
+  defaultProcessCommands,
+  isProcessRuntime,
+  renderProcessUnit,
+  selectPhpRuntime,
+} from './runtime.js';
 import { gitSync } from './git-deploy.js';
 import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
@@ -106,7 +113,7 @@ export class ProjectOpsService {
   ): Promise<OpsApplyResult> {
     const row = this.require(projectId);
     if (row.runtime !== 'node') {
-      throw new YskError(ErrorCodes.VALIDATION, 'deployNode only supports runtime=node', {
+      throw new YskError(ErrorCodes.VALIDATION, 'deployNode 只適用於 Node 專案', {
         httpStatus: 400,
       });
     }
@@ -122,10 +129,10 @@ export class ProjectOpsService {
     const written: string[] = [];
     const entry = opts.entry ?? 'server.js';
     const nodeBinary = resolveNodeBinary();
-    notes.push(`Using node binary: ${nodeBinary}`);
+    notes.push(`使用 Node 執行檔：${nodeBinary}`);
 
     const port = opts.port ?? row.port ?? (await findFreePort(3100, 3999));
-    notes.push(`Target port: ${port}`);
+    notes.push(`目標埠：${port}`);
 
     // Stop any previous process for this project
     await this.stopProcess(row, notes);
@@ -158,7 +165,7 @@ export class ProjectOpsService {
     const appDir = apply.appDir;
     const entryPath = join(appDir, entry);
     if (!existsSync(entryPath)) {
-      throw new YskError(ErrorCodes.INTERNAL, `Entry missing after apply: ${entryPath}`, {
+      throw new YskError(ErrorCodes.INTERNAL, `套用後找不到進入點：${entryPath}`, {
         httpStatus: 500,
       });
     }
@@ -219,9 +226,9 @@ export class ProjectOpsService {
           pid = n;
           writeFileSync(pidfile, `${pid}\n`, 'utf8');
         }
-        notes.push(`Production deploy via systemd unit ${unitName}`);
+        notes.push(`以 systemd unit 部署：${unitName}`);
       } else {
-        notes.push('systemd enable failed — trying PM2 / pidfile fallback');
+        notes.push('systemd 啟用失敗 — 改試 PM2／pidfile');
       }
     }
 
@@ -246,11 +253,11 @@ export class ProjectOpsService {
         degraded = false;
         pid = pm2.pid;
         if (pid) writeFileSync(pidfile, `${pid}\n`, 'utf8');
-        notes.push(`Deploy via PM2 app ${pm2.appName}`);
+        notes.push(`以 PM2 部署：${pm2.appName}`);
       } else if (!this.host.executeEnabled()) {
         notes.push('無法使用 PM2，改用本機行程管理');
       } else {
-        notes.push('PM2 start failed — falling back to pidfile spawn');
+        notes.push('PM2 啟動失敗 — 改用 pidfile 啟動');
       }
     }
 
@@ -294,7 +301,7 @@ export class ProjectOpsService {
           pidfile,
           processStatus: 'failed',
           listening: false,
-          notes: [...notes, `spawn failed: ${msg}`],
+          notes: [...notes, `啟動行程失敗：${msg}`],
           written,
           degraded: true,
           deployMode: 'pidfile',
@@ -316,7 +323,7 @@ export class ProjectOpsService {
           pidfile,
           processStatus: 'failed',
           listening: false,
-          notes: [...notes, 'spawn returned no pid'],
+          notes: [...notes, '啟動行程後未取得行程編號'],
           written,
           degraded: true,
           deployMode: 'pidfile',
@@ -324,7 +331,7 @@ export class ProjectOpsService {
       }
       child.unref();
       writeFileSync(pidfile, `${pid}\n`, 'utf8');
-      notes.push(`Spawned pid=${pid}, pidfile=${pidfile}`);
+      notes.push(`已啟動 pid=${pid}，pidfile=${pidfile}`);
     }
 
     const url = `http://127.0.0.1:${port}/`;
@@ -357,7 +364,7 @@ export class ProjectOpsService {
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
-    notes.push(`Nginx conf published (managed): ${nginxPath}`);
+    notes.push(`已發布 Nginx 設定（管理檔）：${nginxPath}`);
 
     const statusLabel =
       processStatus === 'running'
@@ -385,6 +392,8 @@ export class ProjectOpsService {
         degraded,
       },
       last_deploy_at: new Date().toISOString(),
+      deploy_entry: entry,
+      last_deploy_notes: clipDeployNotes(notes),
     });
 
     this.audit?.append({
@@ -482,7 +491,7 @@ export class ProjectOpsService {
       if (row.runtime === 'node') {
         throw new YskError(
           ErrorCodes.VALIDATION,
-          'deployStatic: use deployNode for runtime=node (or change runtime to static)',
+          '此專案是 Node runtime，請使用 Node 部署（或改 runtime 為 static）',
           { httpStatus: 400 },
         );
       }
@@ -507,9 +516,9 @@ export class ProjectOpsService {
         'utf8',
       );
       written.push(indexPath);
-      notes.push(`Created placeholder ${indexPath}`);
+      notes.push(`已建立佔位頁：${indexPath}`);
     } else {
-      notes.push(`Using existing ${indexPath}`);
+      notes.push(`使用既有：${indexPath}`);
     }
 
     const primary = row.domain ?? `${row.linux_user}.local`;
@@ -528,8 +537,8 @@ export class ProjectOpsService {
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
-    notes.push(`Static nginx conf: ${nginxPath}`);
-    notes.push(`Document root: ${docRoot}`);
+    notes.push(`靜態 Nginx 設定：${nginxPath}`);
+    notes.push(`文件根目錄：${docRoot}`);
 
     let nginxReloaded = false;
     const wantReload =
@@ -551,14 +560,14 @@ export class ProjectOpsService {
         nginxReloaded = rel.exitCode === 0;
         notes.push(
           nginxReloaded
-            ? 'nginx reloaded (static site live if DNS points here)'
-            : `nginx reload exit=${rel.exitCode}`,
+            ? '已重載 Nginx (static site live if DNS points here)'
+            : `Nginx reload 結束碼=${rel.exitCode}`,
         );
       }
     } else if (wantReload) {
       notes.push('無法重載 Nginx：需要系統變更權限');
     } else {
-      notes.push('Managed conf only — publish with reload when ready');
+      notes.push('僅寫入管理設定 — 就緒後再發布並重載');
     }
 
     // Stop any leftover node/php process from previous runtime
@@ -617,7 +626,7 @@ export class ProjectOpsService {
         projectId,
         processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
         listening: false,
-        notes: ['No port assigned — deploy first'],
+        notes: ['尚未分配埠，請先部署專案'],
         written: [],
       };
     }
@@ -739,17 +748,17 @@ export class ProjectOpsService {
       systemConfDir: systemDir,
       host: this.host,
     });
-    const notes = [`Wrote ${nginxPath}`, ...sync.notes];
-    if (serverName.includes(' ')) notes.push(`server_name: ${serverName}`);
-    if (wantSsl && forceHttps) notes.push('Force HTTPS (HTTP→301)');
-    if (wantSsl && hsts) notes.push('HSTS enabled');
-    if (row.site_redirect_url) notes.push(`整站 redirect → ${row.site_redirect_url}`);
-    if (authBasicUserFile) notes.push(`HTTP Basic Auth: ${row.http_auth_user}`);
+    const notes = [`已寫入 Nginx 設定：${nginxPath}`, ...sync.notes];
+    if (serverName.includes(' ')) notes.push(`server_name：${serverName}`);
+    if (wantSsl && forceHttps) notes.push('強制 HTTPS（HTTP→301）');
+    if (wantSsl && hsts) notes.push('已啟用 HSTS');
+    if (row.site_redirect_url) notes.push(`整站重新導向 → ${row.site_redirect_url}`);
+    if (authBasicUserFile) notes.push(`HTTP 基本認證：${row.http_auth_user}`);
     if (wantSsl && managed.exists) {
-      notes.push(`Using uploaded certs: ${managed.fullchain}`);
+      notes.push(`使用已上傳憑證：${managed.fullchain}`);
     } else if (wantSsl) {
       notes.push(
-        `SSL enabled with default LE paths (or upload via POST /api/v1/ssl/upload for ${primary})`,
+        `已啟用 SSL（預設 Let’s Encrypt 路徑；或於 SSL 頁上傳 ${primary} 憑證）`,
       );
     }
     let nginxReloaded = false;
@@ -758,12 +767,16 @@ export class ProjectOpsService {
 
     if (wantReload && this.host.executeEnabled()) {
       const t = await this.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
-      notes.push(`nginx -t exit=${t.exitCode}: ${(t.stderr || t.stdout).trim()}`);
+      notes.push(
+        t.exitCode === 0
+          ? 'Nginx 設定檢查通過'
+          : `Nginx 設定檢查失敗：${(t.stderr || t.stdout).trim()}`,
+      );
       if (t.exitCode === 0) {
         const r = await this.host.runCommand(['systemctl', 'reload', 'nginx'], { timeoutMs: 15_000 });
         nginxReloaded = r.exitCode === 0;
         nginxStatus = nginxReloaded ? 'reloaded' : `reload_failed:${r.stderr}`;
-        notes.push(nginxReloaded ? 'nginx reloaded' : `nginx reload failed: ${r.stderr}`);
+        notes.push(nginxReloaded ? '已重載 Nginx' : `重載 Nginx 失敗：${r.stderr}`);
       } else {
         nginxStatus = 'nginx_t_failed';
       }
@@ -903,7 +916,7 @@ export class ProjectOpsService {
       systemConfDir: systemDir,
       host: this.host,
     });
-    const notes = [`Suspended vhost written: ${nginxPath}`, ...sync.notes];
+    const notes = [`已寫入暫停用虛擬主機：${nginxPath}`, ...sync.notes];
     let nginxReloaded = false;
     let nginxStatus = 'managed_only';
     if (systemDir && this.host.executeEnabled()) {
@@ -989,7 +1002,7 @@ export class ProjectOpsService {
   }
 
   /**
-   * Git clone/pull into project app dir, then redeploy runtime if node/php.
+   * Git clone/pull into project app dir, then redeploy runtime (all kinds).
    */
   async gitDeploy(
     projectId: string,
@@ -999,12 +1012,14 @@ export class ProjectOpsService {
       branch?: string;
       redeploy?: boolean;
       depth?: number;
+      entry?: string;
+      skipBuild?: boolean;
     },
   ): Promise<OpsApplyResult & { git?: Awaited<ReturnType<typeof gitSync>> }> {
     const row = this.require(projectId);
     const gitUrl = opts.gitUrl ?? row.git_url;
     if (!gitUrl) {
-      throw new YskError(ErrorCodes.VALIDATION, 'gitUrl required (or set on project)', {
+      throw new YskError(ErrorCodes.VALIDATION, '請提供 Git URL（或先在專案設定）', {
         httpStatus: 400,
       });
     }
@@ -1022,10 +1037,14 @@ export class ProjectOpsService {
       git_commit: git.commit,
     });
     const notes = [...git.notes];
+    const savedEntry = opts.entry?.trim() || row.deploy_entry?.trim() || undefined;
     let redeployResult: OpsApplyResult | undefined;
     if (git.ok && opts.redeploy !== false) {
       if (row.runtime === 'node') {
-        redeployResult = await this.deployNode(projectId, { actor: opts.actor });
+        redeployResult = await this.deployNode(projectId, {
+          actor: opts.actor,
+          entry: savedEntry,
+        });
         notes.push(...redeployResult.notes);
       } else if (row.runtime === 'static') {
         redeployResult = await this.deployStatic(projectId, { actor: opts.actor });
@@ -1033,8 +1052,15 @@ export class ProjectOpsService {
       } else if (row.runtime === 'php') {
         redeployResult = await this.deployPhp(projectId, { actor: opts.actor });
         notes.push(...redeployResult.notes);
+      } else if (isProcessRuntime(row.runtime)) {
+        redeployResult = await this.deployProcess(projectId, {
+          actor: opts.actor,
+          entry: savedEntry,
+          skipBuild: opts.skipBuild,
+        });
+        notes.push(...redeployResult.notes);
       } else {
-        notes.push(`Runtime ${row.runtime} — git sync only, no process redeploy`);
+        notes.push(`Runtime ${row.runtime} — 只同步 Git，不重啟行程`);
       }
     }
     this.audit?.append({
@@ -1092,7 +1118,7 @@ export class ProjectOpsService {
       projectId,
       processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
       listening: false,
-      notes: [`Wrote ${envPath} (${Object.keys(merged).length} keys)`],
+      notes: [`已寫入環境變數 ${envPath}（${Object.keys(merged).length} 項）`],
       written: [envPath],
     };
   }
@@ -1154,7 +1180,7 @@ export class ProjectOpsService {
     const row = this.require(projectId);
     if (row.runtime !== 'php' && row.runtime !== 'static') {
       if (row.runtime === 'node') {
-        throw new YskError(ErrorCodes.VALIDATION, 'deployPhp: project runtime is node — use deployNode', {
+        throw new YskError(ErrorCodes.VALIDATION, '此專案是 Node runtime，請使用 Node 部署', {
           httpStatus: 400,
         });
       }
@@ -1177,7 +1203,7 @@ export class ProjectOpsService {
     const phpRt = selectPhpRuntime(phpVersion);
     if (opts.phpVersion && opts.phpVersion !== row.runtime_version) {
       this.projects.updateMeta(projectId, { runtime_version: phpRt.version });
-      notes.push(`runtime_version → ${phpRt.version}`);
+      notes.push(`runtime 版本 → ${phpRt.version}`);
     }
     const canProd =
       this.host.executeEnabled() &&
@@ -1227,7 +1253,7 @@ export class ProjectOpsService {
       });
       const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
       written.push(nginxPath);
-      notes.push(`PHP-FPM production nginx conf: ${nginxPath}`);
+      notes.push(`PHP-FPM 生產 Nginx 設定：${nginxPath}`);
       notes.push(`fastcgi_pass unix:${fpmSocket}`);
 
       // best-effort system sync + nginx -t + reload
@@ -1248,8 +1274,8 @@ export class ProjectOpsService {
           nginxReloaded = rel.exitCode === 0;
           notes.push(
             nginxReloaded
-              ? 'nginx reloaded'
-              : `nginx reload exit=${rel.exitCode}: ${rel.stderr}`,
+              ? '已重載 Nginx'
+              : `Nginx reload 結束碼=${rel.exitCode}: ${rel.stderr}`,
           );
         }
       }
@@ -1321,7 +1347,7 @@ export class ProjectOpsService {
         port,
         processStatus: 'failed',
         listening: false,
-        notes: [...notes, 'php binary not found — install php-cli'],
+        notes: [...notes, 'php binary 找不到 — install php-cli'],
         written,
         degraded: true,
         deployMode: 'pidfile',
@@ -1351,7 +1377,7 @@ export class ProjectOpsService {
         port,
         processStatus: 'failed',
         listening: false,
-        notes: [...notes, 'php spawn returned no pid'],
+        notes: [...notes, 'PHP 行程啟動後未取得行程編號'],
         written,
         degraded: true,
         deployMode: 'pidfile',
@@ -1359,7 +1385,7 @@ export class ProjectOpsService {
     }
     child.unref();
     writeFileSync(pidfile, `${pid}\n`, 'utf8');
-    notes.push(`PHP built-in server pid=${pid} on 127.0.0.1:${port}`);
+    notes.push(`PHP 內建伺服器 pid=${pid} @ 127.0.0.1:${port}`);
 
     const url = `http://127.0.0.1:${port}/`;
     const health = await waitHttpOk(url, { timeoutMs: opts.healthTimeoutMs ?? 12_000 });
@@ -1442,7 +1468,7 @@ export class ProjectOpsService {
   ): OpsApplyResult {
     const row = this.require(projectId);
     if (resources.memoryMax != null && !/^\d+[KMG]?$/i.test(resources.memoryMax)) {
-      throw new YskError(ErrorCodes.VALIDATION, 'memoryMax must look like 512M or 1G', {
+      throw new YskError(ErrorCodes.VALIDATION, 'memoryMax 格式須如 512M 或 1G', {
         httpStatus: 400,
       });
     }
@@ -1452,7 +1478,7 @@ export class ProjectOpsService {
         resources.cpuQuotaPercent < 1 ||
         resources.cpuQuotaPercent > 10000)
     ) {
-      throw new YskError(ErrorCodes.VALIDATION, 'cpuQuotaPercent 1..10000', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, 'CPU 配額須為 1–10000', { httpStatus: 400 });
     }
     this.projects.updateRuntimeState(projectId, {
       memory_max: resources.memoryMax,
@@ -1527,7 +1553,7 @@ export class ProjectOpsService {
   private require(id: string): ProjectRow {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
     }
     return row;
   }
@@ -1543,17 +1569,17 @@ export class ProjectOpsService {
     if (pid && isPidAlive(pid)) {
       try {
         process.kill(pid, 'SIGTERM');
-        notes.push(`Sent SIGTERM to ${pid}`);
+        notes.push(`已送 SIGTERM 至 ${pid}`);
         await waitUntilDead(pid, 3000);
         if (isPidAlive(pid)) {
           process.kill(pid, 'SIGKILL');
-          notes.push(`Sent SIGKILL to ${pid}`);
+          notes.push(`已送 SIGKILL 至 ${pid}`);
         }
       } catch (e) {
         notes.push(`kill ${pid}: ${e instanceof Error ? e.message : String(e)}`);
       }
     } else if (pid) {
-      notes.push(`pid ${pid} already dead`);
+      notes.push(`pid ${pid} 已結束`);
     }
     if (existsSync(pidfile)) {
       try {
@@ -1563,12 +1589,304 @@ export class ProjectOpsService {
       }
     }
   }
+
+  /**
+   * Deploy process-style runtimes: python / go / rust
+   * (Node keeps deployNode for PM2/systemd richness.)
+   * Build optional → write unit → pidfile spawn → health check → nginx proxy conf.
+   */
+  async deployProcess(
+    projectId: string,
+    opts: {
+      actor: string;
+      entry?: string;
+      port?: number;
+      skipBuild?: boolean;
+      healthTimeoutMs?: number;
+    },
+  ): Promise<OpsApplyResult> {
+    const row = this.require(projectId);
+    if (!isProcessRuntime(row.runtime) || row.runtime === 'node') {
+      if (row.runtime === 'node') {
+        return this.deployNode(projectId, { actor: opts.actor, entry: opts.entry, port: opts.port });
+      }
+      throw new YskError(
+        ErrorCodes.VALIDATION,
+        `deployProcess 不適用於 runtime「${row.runtime}」`,
+        { httpStatus: 400 },
+      );
+    }
+
+    await assertWithinQuota({
+      host: this.host,
+      projectId,
+      homeDir: row.home_dir,
+      quotaMb: row.quota_mb,
+      action: 'Deploy',
+    });
+
+    const notes: string[] = [];
+    const written: string[] = [];
+    const appDir = join(row.home_dir, 'app');
+    mkdirSync(appDir, { recursive: true });
+    mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
+
+    const port = opts.port ?? row.port ?? (await findFreePort(3200, 3999));
+    const cargoName = resolveCargoPackageName(appDir);
+    // entry: request → saved deploy_entry → auto-detect (python/rust)
+    let entry = opts.entry?.trim() || row.deploy_entry?.trim() || undefined;
+    if (!entry && row.runtime === 'python') {
+      entry = detectPythonEntry(appDir) ?? undefined;
+    }
+    if (!entry && row.runtime === 'rust' && cargoName) {
+      entry = `./target/release/${cargoName}`;
+    }
+    const cmds = defaultProcessCommands(row.runtime, {
+      version: row.runtime_version,
+      entry,
+      port,
+      cargoName: cargoName ?? undefined,
+    });
+    notes.push(`Runtime：${row.runtime} · 埠 ${port} · entry ${cmds.entry}`);
+
+    await this.stopProcess(row, notes);
+
+    if (cmds.build && !opts.skipBuild) {
+      notes.push(`建置：${cmds.build}`);
+      const build = await this.host.runCommand(['bash', '-lc', cmds.build], {
+        timeoutMs: 600_000,
+        cwd: appDir,
+      } as { timeoutMs: number });
+      // HostExecutor may not support cwd — fallback via bash -c
+      if (build.exitCode !== 0) {
+        const build2 = await this.host.runCommand(
+          ['bash', '-c', `cd ${JSON.stringify(appDir)} && ${cmds.build}`],
+          { timeoutMs: 600_000 },
+        );
+        if (build2.exitCode !== 0) {
+          notes.push(`建置失敗：${(build2.stderr || build2.stdout || build.stderr).slice(0, 400)}`);
+          this.projects.updateRuntimeState(projectId, {
+            process_status: 'failed',
+            status: 'failed',
+            port,
+          });
+          return {
+            ok: false,
+            projectId,
+            port,
+            processStatus: 'failed',
+            listening: false,
+            notes,
+            written,
+            degraded: true,
+            requiresRoot: !this.host.isRoot(),
+            requiresExecute: !this.host.executeEnabled(),
+          };
+        }
+        notes.push('建置完成');
+      } else {
+        notes.push('建置完成');
+      }
+    }
+
+    const unitBody = renderProcessUnit({
+      projectName: row.name,
+      linuxUser: row.linux_user,
+      appDir,
+      execStart: cmds.execStart,
+      port,
+      env: { PORT: String(port), HOST: '127.0.0.1' },
+      memoryMax: row.memory_max,
+      cpuQuotaPercent: row.cpu_quota_percent,
+    });
+    const unitManaged = join(this.dataDir, 'systemd', `ysk-project-${row.linux_user}.service`);
+    mkdirSync(join(this.dataDir, 'systemd'), { recursive: true });
+    writeFileSync(unitManaged, unitBody, 'utf8');
+    written.push(unitManaged);
+    notes.push(`已寫入 systemd 範本：${unitManaged}`);
+
+    if (this.host.executeEnabled() && this.host.isRoot()) {
+      const systemUnit = `/etc/systemd/system/ysk-project-${row.linux_user}.service`;
+      try {
+        writeFileSync(systemUnit, unitBody, 'utf8');
+        written.push(systemUnit);
+        await this.host.runCommand(['systemctl', 'daemon-reload'], { timeoutMs: 15_000 });
+        const en = await this.host.runCommand(
+          ['systemctl', 'enable', '--now', `ysk-project-${row.linux_user}.service`],
+          { timeoutMs: 30_000 },
+        );
+        if (en.exitCode === 0) notes.push('已 enable --now 專案 unit');
+        else notes.push(`systemctl 啟動失敗：${en.stderr || en.stdout}`);
+      } catch (e) {
+        notes.push(`寫入系統 unit 失敗：${e instanceof Error ? e.message : String(e)}`);
+      }
+    } else {
+      notes.push('未以系統 unit 啟動（需系統變更 + 管理員）— 改用 pidfile');
+    }
+
+    const pidfile = join(row.home_dir, 'app.pid');
+    let pid: number | undefined;
+    // pidfile fallback if unit not running
+    const active = await this.host.runCommand(
+      ['systemctl', 'is-active', `ysk-project-${row.linux_user}.service`],
+      { timeoutMs: 5_000 },
+    );
+    const unitActive = active.stdout.trim() === 'active';
+
+    if (!unitActive) {
+      const logOut = join(row.home_dir, 'logs', 'app.out.log');
+      const logErr = join(row.home_dir, 'logs', 'app.err.log');
+      try {
+        const outFd = openSync(logOut, 'a');
+        const errFd = openSync(logErr, 'a');
+        const child = spawn('bash', ['-lc', cmds.execStart], {
+          cwd: appDir,
+          env: {
+            ...process.env,
+            PORT: String(port),
+            HOST: '127.0.0.1',
+          },
+          detached: true,
+          stdio: ['ignore', outFd, errFd],
+        });
+        closeSync(outFd);
+        closeSync(errFd);
+        pid = child.pid;
+        if (pid) {
+          child.unref();
+          writeFileSync(pidfile, `${pid}\n`, 'utf8');
+          notes.push(`pidfile 啟動 pid=${pid}`);
+        } else {
+          notes.push('pidfile 啟動未取得 pid');
+        }
+      } catch (err) {
+        notes.push(`pidfile 啟動失敗：${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    const url = `http://127.0.0.1:${port}/`;
+    const health = await waitHttpOk(url, { timeoutMs: opts.healthTimeoutMs ?? 15_000 });
+    const listening = await isPortListening(port);
+    let processStatus: OpsProcessStatus = 'running';
+    if (!health.ok || !listening) {
+      processStatus = listening ? 'unhealthy' : 'failed';
+      notes.push(
+        health.ok
+          ? '埠檢查異常'
+          : `健康檢查未通過（${health.ms}ms）：${health.error ?? health.status}`,
+      );
+    } else {
+      notes.push(`健康檢查通過（${health.ms}ms）`);
+    }
+
+    const serverName = buildServerNameList(
+      row.domain ?? `${row.linux_user}.local`,
+      row.domain_aliases,
+    );
+    const conf = renderNginxProxy({
+      serverName,
+      upstream: `http://127.0.0.1:${port}`,
+      ssl: false,
+      cloudflareRealIp: true,
+      forceHttps: false,
+      hsts: false,
+      siteRedirectUrl: row.site_redirect_url,
+      bindIp: row.bind_ip,
+    });
+    const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
+    written.push(nginxPath);
+    notes.push(`已寫入 Nginx 反代：${nginxPath}`);
+
+    this.projects.updateRuntimeState(projectId, {
+      port,
+      pid,
+      pidfile,
+      process_status: processStatus,
+      status: processStatus === 'running' ? 'running' : processStatus,
+      last_health: {
+        ok: health.ok,
+        status: health.status,
+        ms: health.ms,
+        at: new Date().toISOString(),
+      },
+      last_deploy_at: new Date().toISOString(),
+      nginx_config_path: nginxPath,
+      deploy_entry: cmds.entry,
+      last_deploy_notes: clipDeployNotes(notes),
+    });
+
+    this.audit?.append({
+      actor: opts.actor,
+      action: 'project.deploy_process',
+      resource: projectId,
+      detail: { runtime: row.runtime, port, processStatus, entry: cmds.entry },
+      ok: processStatus === 'running',
+    });
+
+    return {
+      ok: processStatus === 'running',
+      projectId,
+      port,
+      pid,
+      pidfile,
+      processStatus,
+      listening,
+      url,
+      notes,
+      written,
+      deployMode: unitActive ? 'systemd' : 'pidfile',
+      requiresRoot: !this.host.isRoot(),
+      requiresExecute: !this.host.executeEnabled(),
+    };
+  }
 }
 
 export function resolveNodeBinary(): string {
   // Prefer current process binary so deploy works without custom node install
   if (process.execPath && existsSync(process.execPath)) return process.execPath;
   return 'node';
+}
+
+function clipDeployNotes(notes: string[]): string[] {
+  return notes.filter(Boolean).slice(-8);
+}
+
+/**
+ * Prefer Django wsgi, then FastAPI main:app, then app.py / main.py script.
+ */
+export function detectPythonEntry(appDir: string): string | null {
+  // Django: */wsgi.py under first-level package
+  try {
+    for (const name of readdirSync(appDir)) {
+      const sub = join(appDir, name);
+      try {
+        if (!statSync(sub).isDirectory()) continue;
+      } catch {
+        continue;
+      }
+      if (existsSync(join(sub, 'wsgi.py')) && existsSync(join(sub, 'settings.py'))) {
+        return `${name}.wsgi:application`;
+      }
+    }
+  } catch {
+    /* fall through */
+  }
+  if (existsSync(join(appDir, 'main.py'))) return 'main:app';
+  if (existsSync(join(appDir, 'app.py'))) return 'app.py';
+  return null;
+}
+
+/** Read [package] name from Cargo.toml for release binary path. */
+export function resolveCargoPackageName(appDir: string): string | null {
+  const p = join(appDir, 'Cargo.toml');
+  if (!existsSync(p)) return null;
+  try {
+    const text = readFileSync(p, 'utf8');
+    const m = text.match(/^\s*name\s*=\s*"([^"]+)"/m);
+    return m?.[1] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function resolvePhpBinary(host: HostExecutor, version: string): Promise<string | null> {

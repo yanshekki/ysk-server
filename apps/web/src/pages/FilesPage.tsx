@@ -13,9 +13,15 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
+  FormHint,
+  FormLayout,
   Modal,
   SummaryStrip,
+  Tabs,
 } from '../shared/components/ui';
+import { usePageTab } from '../shared/hooks/usePageTab';
+
+const FILE_TABS = ['browse', 'trash', 'shares', 'webdav'] as const;
 import { filesApi, fileToBase64, type FileEntry, type TrashEntry, type FileShare } from '../features/files/api';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
@@ -258,6 +264,8 @@ export function FilesPage() {
 
   const selectedEntries = items.filter((i) => selected.has(i.path));
 
+  const [tab, setTab] = usePageTab(FILE_TABS, 'browse');
+
   return (
     <FeaturePageLayout
       title="檔案"
@@ -294,77 +302,24 @@ export function FilesPage() {
         ]}
       />
 
-      <Card>
-        <CardSection
-          title="WebDAV"
-          description="Basic 用戶 ysk · 掛載 /webdav → 公用檔案根；token 只顯示一次"
-        >
-          <div className="btn-row">
-            <Button
-              variant="primary"
-              size="sm"
-              loading={busy}
-              onClick={() => {
-                setBusy(true);
-                void filesApi
-                  .webdavIssueToken()
-                  .then((r) => {
-                    setWebdavToken(r.token);
-                    setWebdavEnabled(true);
-                    setMsg(r.notes?.join('；') ?? '已簽發 token');
-                  })
-                  .catch((e: Error) => setError(e.message))
-                  .finally(() => setBusy(false));
-              }}
-            >
-              啟用並簽發 token
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              loading={busy}
-              onClick={() => {
-                void filesApi
-                  .webdavStatus()
-                  .then((s) => {
-                    setWebdavEnabled(s.enabled);
-                    setMsg(s.enabled ? `已啟用 · ${s.mountPath}` : '未啟用');
-                  })
-                  .catch((e: Error) => setError(e.message));
-              }}
-            >
-              狀態
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              loading={busy}
-              onClick={() => {
-                void filesApi
-                  .webdavDisable()
-                  .then(() => {
-                    setWebdavEnabled(false);
-                    setWebdavToken(null);
-                    setMsg('已停用 WebDAV');
-                  })
-                  .catch((e: Error) => setError(e.message));
-              }}
-            >
-              停用
-            </Button>
-          </div>
-          {webdavToken ? (
-            <p className="u-mt-2">
-              <code className="inline u-break-all">{webdavToken}</code>
-            </p>
-          ) : (
-            <p className="muted u-text-sm u-mt-2">
-              {webdavEnabled ? '已啟用（token 不回顯）' : '預設關閉'}
-            </p>
-          )}
-        </CardSection>
-      </Card>
-
+      <Tabs
+        tabs={[
+          { id: 'browse', label: '瀏覽' },
+          { id: 'trash', label: '回收桶', badge: trash.length || undefined },
+          { id: 'shares', label: '分享', badge: shares.length || undefined },
+          { id: 'webdav', label: 'WebDAV' },
+        ]}
+        active={tab}
+        onChange={(id) => {
+          setTab(id);
+          if (id === 'browse' && (side === 'trash' || side === 'shares')) setSide('all');
+          if (id === 'trash') setSide('trash');
+          if (id === 'shares') setSide('shares');
+        }}
+        variant="scroll"
+      >
+        {tab === 'browse' ? (
+          <div className="tab-panel">
       <div className="fm-layout">
         {/* Sidebar */}
         <aside className="fm-sidebar">
@@ -394,15 +349,16 @@ export function FilesPage() {
               [
                 ['all', '全部檔案'],
                 ['favorites', '收藏'],
-                ['shares', '已分享連結'],
-                ['trash', '回收桶'],
               ] as const
             ).map(([id, label]) => (
               <button
                 key={id}
                 type="button"
                 className={`fm-side-item${side === id ? ' is-active' : ''}`}
-                onClick={() => setSide(id)}
+                onClick={() => {
+                  setSide(id);
+                  setTab('browse');
+                }}
               >
                 {label}
               </button>
@@ -412,8 +368,7 @@ export function FilesPage() {
 
         {/* Main */}
         <div className="fm-main">
-          {side === 'all' || side === 'favorites' ? (
-            <>
+                      <>
               {/* Toolbar */}
               <div className="fm-toolbar">
                 <div className="btn-row">
@@ -769,9 +724,14 @@ export function FilesPage() {
                 {dragOver ? <div className="fm-drop-hint">放開以上傳</div> : null}
               </div>
             </>
-          ) : null}
 
-          {side === 'trash' ? (
+        </div>
+      </div>
+          </div>
+        ) : null}
+
+        {tab === 'trash' ? (
+          <div className="tab-panel">
             <Card>
               <CardSection
                 title={`回收桶 (${trash.length})`}
@@ -852,9 +812,11 @@ export function FilesPage() {
                 )}
               </CardSection>
             </Card>
-          ) : null}
+          </div>
+        ) : null}
 
-          {side === 'shares' ? (
+        {tab === 'shares' ? (
+          <div className="tab-panel">
             <Card>
               <CardSection title={`公開分享連結 (${shares.length})`}>
                 {shares.length === 0 ? (
@@ -904,15 +866,91 @@ export function FilesPage() {
                 )}
               </CardSection>
             </Card>
-          ) : null}
-        </div>
-      </div>
+          </div>
+        ) : null}
+
+        {tab === 'webdav' ? (
+          <div className="tab-panel">
+      <Card>
+        <CardSection
+          title="WebDAV"
+          description="Basic 用戶 ysk · 掛載 /webdav → 公用檔案根；token 只顯示一次"
+        >
+          <div className="btn-row">
+            <Button
+              variant="primary"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                setBusy(true);
+                void filesApi
+                  .webdavIssueToken()
+                  .then((r) => {
+                    setWebdavToken(r.token);
+                    setWebdavEnabled(true);
+                    setMsg(r.notes?.join('；') ?? '已簽發 token');
+                  })
+                  .catch((e: Error) => setError(e.message))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              啟用並簽發 token
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                void filesApi
+                  .webdavStatus()
+                  .then((s) => {
+                    setWebdavEnabled(s.enabled);
+                    setMsg(s.enabled ? `已啟用 · ${s.mountPath}` : '未啟用');
+                  })
+                  .catch((e: Error) => setError(e.message));
+              }}
+            >
+              狀態
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                void filesApi
+                  .webdavDisable()
+                  .then(() => {
+                    setWebdavEnabled(false);
+                    setWebdavToken(null);
+                    setMsg('已停用 WebDAV');
+                  })
+                  .catch((e: Error) => setError(e.message));
+              }}
+            >
+              停用
+            </Button>
+          </div>
+          {webdavToken ? (
+            <p className="u-mt-2">
+              <code className="inline u-break-all">{webdavToken}</code>
+            </p>
+          ) : (
+            <p className="muted u-text-sm u-mt-2">
+              {webdavEnabled ? '已啟用（token 不回顯）' : '預設關閉'}
+            </p>
+          )}
+        </CardSection>
+      </Card>
+          </div>
+        ) : null}
+      </Tabs>
 
       {/* Mkdir */}
       <Modal
         open={mkdirOpen}
         onClose={() => setMkdirOpen(false)}
         title="新建資料夾"
+        description={`將建立於「${path || '/'}」`}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setMkdirOpen(false)}>
@@ -937,9 +975,24 @@ export function FilesPage() {
           </>
         }
       >
-        <Field label="資料夾名稱" htmlFor="mn">
-          <input id="mn" value={mkdirName} onChange={(e) => setMkdirName(e.target.value)} autoFocus />
-        </Field>
+        <FormLayout>
+          <Field
+            label="資料夾名稱"
+            htmlFor="mn"
+            flush
+            required
+            hint="不可含路徑分隔符"
+          >
+            <input
+              id="mn"
+              value={mkdirName}
+              onChange={(e) => setMkdirName(e.target.value)}
+              autoFocus
+              placeholder="docs"
+              spellCheck={false}
+            />
+          </Field>
+        </FormLayout>
       </Modal>
 
       {/* New text file */}
@@ -947,6 +1000,7 @@ export function FilesPage() {
         open={newFileOpen}
         onClose={() => setNewFileOpen(false)}
         title="新建文字檔"
+        description={`將建立於「${path || '/'}」`}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setNewFileOpen(false)}>
@@ -970,14 +1024,18 @@ export function FilesPage() {
           </>
         }
       >
-        <Field label="檔名" htmlFor="nf">
-          <input
-            id="nf"
-            value={newFileName}
-            onChange={(e) => setNewFileName(e.target.value)}
-            autoFocus
-          />
-        </Field>
+        <FormLayout>
+          <Field label="檔名" htmlFor="nf" flush required hint="例如 readme.md 或 notes.txt">
+            <input
+              id="nf"
+              value={newFileName}
+              onChange={(e) => setNewFileName(e.target.value)}
+              autoFocus
+              placeholder="readme.md"
+              spellCheck={false}
+            />
+          </Field>
+        </FormLayout>
       </Modal>
 
       {/* Versions */}
@@ -1041,6 +1099,7 @@ export function FilesPage() {
         open={Boolean(renameTarget)}
         onClose={() => setRenameTarget(null)}
         title="重新命名"
+        description={renameTarget ? `目前：${renameTarget.name}` : undefined}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setRenameTarget(null)}>
@@ -1067,9 +1126,16 @@ export function FilesPage() {
           </>
         }
       >
-        <Field label="新名稱" htmlFor="rn">
-          <input id="rn" value={renameTo} onChange={(e) => setRenameTo(e.target.value)} />
-        </Field>
+        <FormLayout>
+          <Field label="新名稱" htmlFor="rn" flush required hint="僅改檔名，不變更所在目錄">
+            <input
+              id="rn"
+              value={renameTo}
+              onChange={(e) => setRenameTo(e.target.value)}
+              spellCheck={false}
+            />
+          </Field>
+        </FormLayout>
       </Modal>
 
       {/* Move / copy */}
@@ -1077,6 +1143,11 @@ export function FilesPage() {
         open={Boolean(moveTarget)}
         onClose={() => setMoveTarget(null)}
         title={moveTarget?.mode === 'copy' ? '複製到…' : '移動到…'}
+        description={
+          moveTarget
+            ? `${moveTarget.mode === 'copy' ? '複製' : '移動'} ${moveTarget.entries.length} 個項目`
+            : undefined
+        }
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setMoveTarget(null)}>
@@ -1104,9 +1175,22 @@ export function FilesPage() {
           </>
         }
       >
-        <Field label="目標資料夾路徑" htmlFor="md" hint="相對 root，例如 docs 或 docs/a（空=根目錄）">
-          <input id="md" value={moveDest} onChange={(e) => setMoveDest(e.target.value)} />
-        </Field>
+        <FormLayout>
+          <Field
+            label="目標資料夾路徑"
+            htmlFor="md"
+            flush
+            hint="相對 root，例如 docs 或 docs/a；留空 = 根目錄"
+          >
+            <input
+              id="md"
+              value={moveDest}
+              onChange={(e) => setMoveDest(e.target.value)}
+              placeholder="docs/archive"
+              spellCheck={false}
+            />
+          </Field>
+        </FormLayout>
       </Modal>
 
       {/* Share */}
@@ -1114,6 +1198,7 @@ export function FilesPage() {
         open={Boolean(sharePath)}
         onClose={() => setSharePath(null)}
         title="建立公開分享連結"
+        description="產生可對外下載的連結；可選密碼保護"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setSharePath(null)}>
@@ -1142,16 +1227,26 @@ export function FilesPage() {
           </>
         }
       >
-        <p className="muted u-text-sm">路徑：{sharePath}</p>
-        <Field label="密碼（可選）" htmlFor="sp">
-          <input
-            id="sp"
-            type="password"
-            value={sharePass}
-            onChange={(e) => setSharePass(e.target.value)}
-            autoComplete="new-password"
-          />
-        </Field>
+        <FormHint>
+          路徑：<code className="inline">{sharePath}</code>
+        </FormHint>
+        <FormLayout>
+          <Field
+            label="密碼（可選）"
+            htmlFor="sp"
+            flush
+            hint="留空則任何人持有連結即可下載"
+          >
+            <input
+              id="sp"
+              type="password"
+              value={sharePass}
+              onChange={(e) => setSharePass(e.target.value)}
+              autoComplete="new-password"
+              placeholder="（可留空）"
+            />
+          </Field>
+        </FormLayout>
         {shareResult ? (
           <Alert variant="ok">
             連結已建立：

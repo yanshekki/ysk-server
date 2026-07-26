@@ -3,7 +3,10 @@
  */
 import { useCallback, useState } from 'react';
 import type { OpsResultLike } from '../../shared/components/ui';
-import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
+import {
+  humanizeOperatorMessage,
+  sanitizeOperatorNotes,
+} from '../../shared/lib/operator-messages';
 
 function toOpsResult(r: unknown): OpsResultLike {
   if (r && typeof r === 'object') {
@@ -11,7 +14,7 @@ function toOpsResult(r: unknown): OpsResultLike {
     const rawNotes: string[] = [];
     if (Array.isArray(o.notes)) rawNotes.push(...o.notes.map(String));
     if (Array.isArray(o.written)) {
-      for (const w of o.written) rawNotes.push(`已寫入設定`);
+      for (const _w of o.written) rawNotes.push('已寫入設定');
     }
     if (Array.isArray(o.messages)) rawNotes.push(...o.messages.map(String));
     if (typeof o.message === 'string') rawNotes.push(o.message);
@@ -24,7 +27,7 @@ function toOpsResult(r: unknown): OpsResultLike {
     );
     const blockMessage =
       typeof o.blockMessage === 'string'
-        ? o.blockMessage
+        ? humanizeOperatorMessage(o.blockMessage)
         : blocked
           ? notes[0] ?? '無法在管理面板完成此操作'
           : undefined;
@@ -66,14 +69,15 @@ export function useFeatureAction() {
       }
       return r;
     } catch (e) {
-      const m = e instanceof Error ? e.message : '操作失敗';
-      const blocked = /權限|系統變更|管理員|無法在管理面板/.test(m);
+      const raw = e instanceof Error ? e.message : '操作失敗';
+      const m = humanizeOperatorMessage(raw);
+      const blocked = /權限|系統變更|管理員|無法在管理面板|沙箱/.test(m);
       setError(null);
       setResult({
         ok: false,
         blocked,
         blockMessage: m,
-        notes: sanitizeOperatorNotes([m]),
+        notes: sanitizeOperatorNotes([raw]),
       });
       return null;
     } finally {

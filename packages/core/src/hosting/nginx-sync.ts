@@ -54,7 +54,7 @@ export async function syncNginxConfigs(opts: {
       files,
       copied: [],
       tested: false,
-      notes: [...notes, 'dry-run: no copy performed'],
+      notes: [...notes, '模擬執行：未實際複製'],
     };
   }
 
@@ -66,7 +66,7 @@ export async function syncNginxConfigs(opts: {
       copyFileSync(src, dest);
       copied.push(dest);
     }
-    notes.push(`Copied ${copied.length} file(s) to ${targetDir}`);
+    notes.push(`已複製 ${copied.length} 個設定檔到系統目錄`);
   } else if (targetDir) {
     notes.push('無法同步到系統 Nginx：需要系統變更權限');
   }
@@ -77,9 +77,11 @@ export async function syncNginxConfigs(opts: {
     const r = await opts.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
     tested = r.exitCode === 0;
     testOutput = `${r.stdout}\n${r.stderr}`.trim();
-    notes.push(tested ? 'nginx -t OK' : `nginx -t failed: ${testOutput}`);
+    notes.push(
+      tested ? 'Nginx 設定檢查通過' : `Nginx 設定檢查失敗：${testOutput || '未知錯誤'}`,
+    );
   } else {
-    notes.push('nginx -t skipped (binary missing or execute disabled)');
+    notes.push('已略過 Nginx 設定檢查（未安裝或未開系統變更權限）');
   }
 
   return { sourceDir, targetDir, files, copied, tested, testOutput, notes };
@@ -90,7 +92,7 @@ export async function syncNginxConfigs(opts: {
  */
 export function writeManagedNginxConf(dataDir: string, filename: string, content: string): string {
   if (!filename.endsWith('.conf')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'filename must end with .conf', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '檔名須以 .conf 結尾', { httpStatus: 400 });
   }
   const dir = join(dataDir, 'nginx', 'conf.d');
   mkdirSync(dir, { recursive: true });

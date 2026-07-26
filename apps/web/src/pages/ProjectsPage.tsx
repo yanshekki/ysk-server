@@ -18,7 +18,9 @@ export function ProjectsPage() {
   const { items, error, setError, busy, create, refresh } = useProjects();
   const [createOpen, setCreateOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [runtimeFilter, setRuntimeFilter] = useState<'all' | 'node' | 'php' | 'static'>('all');
+  const [runtimeFilter, setRuntimeFilter] = useState<
+    'all' | 'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
+  >('all');
   const [msg, setMsg] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
@@ -88,7 +90,10 @@ export function ProjectsPage() {
           <option value="all">{t('projects.filterAll')}</option>
           <option value="node">Node.js</option>
           <option value="php">PHP</option>
-          <option value="static">Static</option>
+          <option value="python">Python</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+          <option value="static">靜態</option>
         </select>
       </div>
 
@@ -119,7 +124,7 @@ export function ProjectsPage() {
             const extra = r.extras?.notes?.length ? ` · ${r.extras.notes.join('；')}` : '';
             setMsg(`${t('projects.created', { name: r.project.name })}${extra}`);
             setCreateOpen(false);
-            navigate(`/projects/${r.project.id}`);
+            navigate(`/projects/${r.project.id}?tab=deploy&fresh=1`);
           } catch {
             /* error from hook */
           }

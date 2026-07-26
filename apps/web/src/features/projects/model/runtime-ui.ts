@@ -22,6 +22,28 @@ export interface ProjectUiProfile {
   processLabelFallback: string;
 }
 
+function processProfile(
+  runtime: ProjectRuntime,
+  labelFallback: string,
+): ProjectUiProfile {
+  return {
+    runtime,
+    showDeploy: true,
+    deployIsPhp: false,
+    showStop: true,
+    showProcessPort: true,
+    showPid: true,
+    showDeployTab: true,
+    showGit: true,
+    showEnv: true,
+    showResourcesTab: true,
+    showWordpress: false,
+    showLogsTab: true,
+    processLabelKey: 'projects.railProcess',
+    processLabelFallback: labelFallback,
+  };
+}
+
 export function getProjectUiProfile(runtime: ProjectRuntime): ProjectUiProfile {
   if (runtime === 'php') {
     return {
@@ -38,7 +60,7 @@ export function getProjectUiProfile(runtime: ProjectRuntime): ProjectUiProfile {
       showWordpress: true,
       showLogsTab: true,
       processLabelKey: 'projects.railPhp',
-      processLabelFallback: 'PHP / site',
+      processLabelFallback: 'PHP / 站點',
     };
   }
   if (runtime === 'static') {
@@ -56,24 +78,22 @@ export function getProjectUiProfile(runtime: ProjectRuntime): ProjectUiProfile {
       showWordpress: false,
       showLogsTab: true,
       processLabelKey: 'projects.railStatic',
-      processLabelFallback: 'Static site',
+      processLabelFallback: '靜態站點',
     };
   }
+  if (runtime === 'python') return processProfile('python', 'Python 行程');
+  if (runtime === 'go') return processProfile('go', 'Go 行程');
+  if (runtime === 'rust') return processProfile('rust', 'Rust 行程');
   // node (default)
-  return {
-    runtime: 'node',
-    showDeploy: true,
-    deployIsPhp: false,
-    showStop: true,
-    showProcessPort: true,
-    showPid: true,
-    showDeployTab: true,
-    showGit: true,
-    showEnv: true,
-    showResourcesTab: true,
-    showWordpress: false,
-    showLogsTab: true,
-    processLabelKey: 'projects.railProcess',
-    processLabelFallback: 'Process',
-  };
+  return processProfile('node', 'Node 行程');
+}
+
+export function formatRuntimeName(runtime?: string): string {
+  if (runtime === 'php') return 'PHP';
+  if (runtime === 'node') return 'Node.js';
+  if (runtime === 'static') return '靜態';
+  if (runtime === 'python') return 'Python';
+  if (runtime === 'go') return 'Go';
+  if (runtime === 'rust') return 'Rust';
+  return runtime ?? '—';
 }

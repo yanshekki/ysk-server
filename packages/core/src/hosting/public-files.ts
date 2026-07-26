@@ -36,7 +36,7 @@ export async function applyPublicFileServer(input: {
 }): Promise<PublicFilesApplyResult> {
   const serverName = input.serverName.trim().toLowerCase();
   if (!serverName || serverName.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'serverName required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName', { httpStatus: 400 });
   }
   const plan = planPublicFileServer({
     root: publicFilesRoot(input.dataDir),
@@ -117,7 +117,7 @@ export async function applyPublicFileServer(input: {
         timeoutMs: 15_000,
       });
       nginxReloaded = rel.exitCode === 0;
-      notes.push(nginxReloaded ? 'nginx reloaded' : `nginx reload exit=${rel.exitCode}`);
+      notes.push(nginxReloaded ? '已重載 Nginx' : `Nginx reload 結束碼=${rel.exitCode}`);
     }
   } else if (wantReload) {
     notes.push('無法重載 Nginx：需要系統變更權限');

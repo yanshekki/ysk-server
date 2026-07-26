@@ -17,8 +17,21 @@ body {
   font-family: var(--font-sans);
   color: var(--text-main);
   background: var(--bg-page);
-  line-height: 1.65;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Kill browser default spacing that fights the design system */
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure,
+blockquote {
+  margin-block-start: 0;
 }
 
 img,

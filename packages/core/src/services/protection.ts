@@ -29,7 +29,7 @@ export function evaluateProtection(signals: {
       localLlmOnly: true,
       blockExternalTools: true,
       emergencyPlaybooksOnly: true,
-      reason: signals.forceOffline ? 'Forced offline' : 'Network unreachable',
+      reason: signals.forceOffline ? '強制離線模式' : '網路無法連線',
       changedAt: now,
     };
   }
@@ -39,7 +39,7 @@ export function evaluateProtection(signals: {
       localLlmOnly: true,
       blockExternalTools: false,
       emergencyPlaybooksOnly: true,
-      reason: 'DDoS suspected — degraded operations',
+      reason: '疑似 DDoS — 降級運作',
       changedAt: now,
     };
   }
@@ -49,7 +49,7 @@ export function evaluateProtection(signals: {
       localLlmOnly: false,
       blockExternalTools: false,
       emergencyPlaybooksOnly: false,
-      reason: 'High request rate — rate limiting active',
+      reason: '請求率偏高 — 已啟用限流',
       changedAt: now,
     };
   }

@@ -41,7 +41,7 @@ export function compareVersions(a: string, b: string): number {
  */
 export function planSelfUpdate(info: VersionInfo, now = new Date()): SelfUpdatePlan {
   if (!info.current || !info.latest) {
-    throw new YskError(ErrorCodes.VALIDATION, 'current and latest versions required', {
+    throw new YskError(ErrorCodes.VALIDATION, '需要目前版本與最新版本', {
       httpStatus: 400,
     });
   }

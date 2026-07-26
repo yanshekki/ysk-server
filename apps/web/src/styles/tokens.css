@@ -46,7 +46,7 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* Spacing scale (reuse everywhere) */
+  /* Spacing scale (4px base — reuse everywhere, never invent one-offs) */
   --space-0: 0;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -54,7 +54,26 @@
   --space-4: 1rem;
   --space-5: 1.25rem;
   --space-6: 1.5rem;
+  --space-7: 1.75rem;
   --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  /* Semantic layout roles (always prefer these over raw scale) */
+  --space-page-y: clamp(1.75rem, 2.5vw, 2.25rem);
+  --space-page-x: clamp(1.5rem, 3vw, 2.75rem);
+  --space-stack: var(--space-6); /* 1.5rem between page blocks */
+  --space-stack-lg: var(--space-8); /* 2rem header → body */
+  --space-card: var(--space-6); /* 1.5rem card padding */
+  --space-card-gap: var(--space-6);
+  --space-section: var(--space-5); /* title → content */
+  --space-field: var(--space-4); /* form fields */
+  --space-control-gap: var(--space-2); /* label ↔ input */
+  --space-chip-y: 0.35rem;
+  --space-chip-x: 0.7rem;
+  --space-grid: var(--space-5);
+  --space-tile: var(--space-5);
+  --space-tab-panel: var(--space-6);
+  --space-modal-pad: var(--space-6);
 
   /* Type */
   --text-xs: 0.75rem;
@@ -70,6 +89,12 @@
   --container-max: none;
   --control-height: 2.5rem;
   --control-padding-x: 0.85rem;
+
+  /* Forms — human-readable layouts (never 3+ auto columns) */
+  --form-max: 36rem;
+  --form-max-wide: 48rem;
+  --form-field-gap: var(--space-5);
+  --form-label-gap: var(--space-2);
 
   --font-sans: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);

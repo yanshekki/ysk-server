@@ -1,15 +1,40 @@
+# Dependencies
 node_modules/
+
+# Build / cache
 dist/
 coverage/
+*.tsbuildinfo
+.vite/
+*.tgz
+
+# Logs & env
 *.log
+npm-debug.log*
+pnpm-debug.log*
 .env
 .env.*
 !.env.example
+
+# OS / editor
 .DS_Store
-*.tsbuildinfo
-.vite/
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# Local runtime / panel data (never commit)
+# Production-style data dir
 data/
 .ysk/
+# Dev / integration test data dirs (any package depth)
+.ysk-test/
+**/.ysk-test/
+
+# Scratch
 tmp/
-*.tgz
+**/tmp/
+
+# Server-generated public assets (if present)
 apps/server/public/

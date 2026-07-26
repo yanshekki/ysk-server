@@ -21,10 +21,10 @@ export interface EmailDomainInput {
 export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord[] {
   assertDomain(input.domain);
   if (!input.serverIp) {
-    throw new YskError(ErrorCodes.VALIDATION, 'serverIp required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請指定伺服器 IP', { httpStatus: 400 });
   }
   if (!input.dkimPublicKey) {
-    throw new YskError(ErrorCodes.VALIDATION, 'dkimPublicKey required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請提供 DKIM 公鑰', { httpStatus: 400 });
   }
   const mailHost = input.mailHostname ?? `mail.${input.domain}`;
   const selector = input.selector ?? 'default';
@@ -40,7 +40,7 @@ export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord
       name: mailHost.replace(`.${input.domain}`, '') === mailHost ? mailHost : 'mail',
       value: input.serverIp,
       importance: 'required',
-      description: 'Mail server A record',
+      description: '郵件主機 A 記錄',
     },
     {
       type: 'MX',
@@ -48,28 +48,28 @@ export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord
       value: mailHost,
       priority: 10,
       importance: 'required',
-      description: 'MX points to mail hostname',
+      description: 'MX 指向郵件主機名',
     },
     {
       type: 'TXT',
       name: '@',
       value: spf,
       importance: 'required',
-      description: 'SPF policy',
+      description: 'SPF 政策',
     },
     {
       type: 'TXT',
       name: `${selector}._domainkey`,
       value: dkim,
       importance: 'required',
-      description: 'DKIM public key',
+      description: 'DKIM 公鑰',
     },
     {
       type: 'TXT',
       name: '_dmarc',
       value: dmarc,
       importance: 'recommended',
-      description: 'DMARC policy',
+      description: 'DMARC 政策',
     },
   ];
 }
@@ -89,43 +89,43 @@ export function buildExternalTodos(input: {
     {
       id: 'dns-mx-spf-dkim',
       category: 'dns',
-      title: 'Add MX / SPF / DKIM DNS records',
+      title: '新增 MX／SPF／DKIM DNS 記錄',
       description:
-        'Add the generated MX, SPF (TXT), and DKIM (TXT) records at your DNS provider. Cloudflare: use DNS only (grey cloud) for mail-related records.',
+        '於 DNS 供應商新增產生的 MX、SPF（TXT）與 DKIM（TXT）。Cloudflare：郵件相關記錄請用僅 DNS（灰雲）。',
       required: true,
       completed: Boolean(input.dnsApplied),
     },
     {
       id: 'dns-dmarc',
       category: 'dns',
-      title: 'Add DMARC TXT record',
-      description: 'Add _dmarc TXT to improve deliverability and reporting.',
+      title: '新增 DMARC TXT 記錄',
+      description: '新增 _dmarc TXT 以改善投遞與回報。',
       required: false,
       completed: Boolean(input.dmarcPresent),
     },
     {
       id: 'ptr',
       category: 'ptr',
-      title: 'Set Reverse DNS (PTR)',
-      description: `PTR must be set by your VPS/cloud IP owner to match HELO/EHLO (${input.mailHostname}). Request PTR in your provider console (AWS/GCP often need a ticket).`,
+      title: '設定反向 DNS（PTR）',
+      description: `PTR 須由 VPS／雲端 IP 擁有者設定，並與 HELO/EHLO（${input.mailHostname}）一致。請於供應商控制台申請（AWS/GCP 常需工單）。`,
       required: true,
       completed: Boolean(input.ptrOk),
     },
     {
       id: 'port25',
       category: 'port25',
-      title: 'Ensure outbound Port 25 is open',
+      title: '確認出站 Port 25 已開放',
       description:
-        'Many cloud providers block outbound Port 25 (TCP 25). Request unblock or configure an external SMTP relay.',
+        '許多雲供應商封鎖出站 TCP 25。請申請解鎖，或改用外部 SMTP 中繼。',
       required: true,
       completed: input.port25Open === true,
     },
     {
       id: 'reputation',
       category: 'reputation',
-      title: 'Monitor IP/domain reputation and warm-up',
+      title: '監控 IP／域名聲譽並暖機',
       description:
-        'New IPs/domains should not send high volume immediately. Check Spamhaus/Barracuda/MSRBL blacklists and follow warm-up guidance.',
+        '新 IP／域名不宜立刻高量出站。請檢查 Spamhaus 等黑名單，並遵循暖機指引。',
       required: false,
       completed: false,
     },
@@ -244,7 +244,7 @@ export function planTestSend(input: {
   subject?: string;
 }): { command: string; notes: string[]; analysisHints: string[] } {
   if (!input.from || !input.to) {
-    throw new YskError(ErrorCodes.VALIDATION, 'from and to required for test send', {
+    throw new YskError(ErrorCodes.VALIDATION, '測試寄信需要寄件者與收件者', {
       httpStatus: 400,
     });
   }
@@ -265,6 +265,6 @@ export function planTestSend(input: {
 
 function assertDomain(domain: string): void {
   if (!domain || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
-    throw new YskError(ErrorCodes.VALIDATION, `Invalid domain: ${domain}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, `域名無效：${domain}`, { httpStatus: 400 });
   }
 }

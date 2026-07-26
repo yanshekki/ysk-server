@@ -21,7 +21,7 @@ export interface PostgresProvisionResult {
 
 function assertIdent(value: string, field: string): void {
   if (!/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(value)) {
-    throw new YskError(ErrorCodes.VALIDATION, `Invalid ${field}: ${value}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, `欄位 ${field} 無效：${value}`, { httpStatus: 400 });
   }
 }
 
@@ -161,7 +161,7 @@ export async function provisionPostgresDatabase(input: {
     const already =
       /already exists/i.test(r.stderr) || /already exists/i.test(r.stdout);
     if (r.exitCode !== 0 && !already) {
-      notes.push(`psql failed: ${r.stderr || r.stdout}`);
+      notes.push(`psql 失敗：${r.stderr || r.stdout}`);
       return {
         ok: false,
         executed: true,

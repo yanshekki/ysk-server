@@ -14,6 +14,9 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   SummaryStrip,
 } from '../shared/components/ui';
 
@@ -85,11 +88,11 @@ export function AgentsPage() {
             tone: running > 0 ? 'ok' : 'default',
           },
           {
-            label: 'systemd active',
+            label: 'systemd 運行',
             value: unitActive,
             tone: unitActive > 0 ? 'ok' : 'default',
           },
-          { label: 'Fleet', value: agents.length },
+          { label: '機群', value: agents.length },
         ]}
       />
 
@@ -109,59 +112,63 @@ export function AgentsPage() {
               }
             />
           ) : (
-            <div className="grid">
+            <div className="kpi-grid kpi-grid--3">
               {runtimeList.map((rt) => (
-                <div className="card" key={rt.kind}>
-                  <div className="card__header">
-                    <h2 className="card__title">{rt.name ?? rt.kind}</h2>
+                <article className="kpi-card" key={rt.kind} role="listitem">
+                  <header className="kpi-card__head">
+                    <span className="kpi-card__label">{rt.name ?? rt.kind}</span>
                     <Badge tone={statusTone(rt.status)}>{statusLabel(rt.status)}</Badge>
-                  </div>
-                  <DescriptionList
-                    columns={1}
-                    items={[
-                      {
-                        label: '路徑',
-                        value: rt.installPath
-                          ? `${rt.pathExists ? '已存在' : '尚未安裝'} · ${rt.installPath}`
-                          : '—',
-                      },
-                      {
-                        label: 'systemd',
-                        value: rt.unitActive
-                          ? `${rt.unitName ?? 'unit'} · ${rt.unitActive}`
-                          : rt.unitName
-                            ? `${rt.unitName} · 未知`
+                  </header>
+                  <div className="kpi-card__body">
+                    <DescriptionList
+                      columns={1}
+                      items={[
+                        {
+                          label: '路徑',
+                          value: rt.installPath
+                            ? `${rt.pathExists ? '已存在' : '尚未安裝'} · ${rt.installPath}`
                             : '—',
-                      },
-                    ]}
-                  />
-                  <div className="btn-row u-mt-3">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      loading={busy}
-                      onClick={() => void probeKind(rt.kind)}
-                    >
-                      探測
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      loading={busy}
-                      onClick={() => void writeUnit(rt.kind)}
-                    >
-                      寫入 unit 範本
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      loading={busy}
-                      onClick={() => void installKind(rt.kind)}
-                    >
-                      安裝並啟用
-                    </Button>
+                        },
+                        {
+                          label: 'systemd',
+                          value: rt.unitActive
+                            ? `${rt.unitName ?? 'unit'} · ${rt.unitActive}`
+                            : rt.unitName
+                              ? `${rt.unitName} · 未知`
+                              : '—',
+                        },
+                      ]}
+                    />
                   </div>
-                </div>
+                  <footer className="kpi-card__foot">
+                    <div className="btn-row">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => void probeKind(rt.kind)}
+                      >
+                        探測
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => void writeUnit(rt.kind)}
+                      >
+                        unit
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => void installKind(rt.kind)}
+                      >
+                        安裝
+                      </Button>
+                    </div>
+                  </footer>
+                </article>
               ))}
             </div>
           )}
@@ -185,13 +192,29 @@ export function AgentsPage() {
         </Card>
       ) : null}
 
-      <div className="u-mt-4 grid">
+      <div className="grid">
         <Card>
-          <CardSection title="登記 Agent" description="Fleet 登記（控制面）">
-            <Field label="Agent ID" techKey="agent_id" htmlFor="aid">
-              <input id="aid" value={agentId} onChange={(e) => setAgentId(e.target.value)} />
-            </Field>
-            <div className="form-actions">
+          <CardSection title="登記 Agent" description="機群控制面登記；登記 ≠ 節點已上線">
+            <FormLayout>
+              <Field
+                label="Agent 識別碼"
+                htmlFor="aid"
+                flush
+                required
+                hint="唯一 ID，例如 edge-1 或 office-gateway"
+              >
+                <input
+                  id="aid"
+                  value={agentId}
+                  onChange={(e) => setAgentId(e.target.value)}
+                  placeholder="edge-1"
+                  spellCheck={false}
+                  autoComplete="off"
+                />
+              </Field>
+            </FormLayout>
+            <FormHint>只寫入面板機群清單；實際連線與運行時安裝請用上方探測／安裝。</FormHint>
+            <FormActions>
               <Button
                 variant="primary"
                 size="md"
@@ -200,23 +223,23 @@ export function AgentsPage() {
               >
                 登記
               </Button>
-            </div>
+            </FormActions>
           </CardSection>
         </Card>
 
         <Card>
-          <CardSection title={`Fleet (${agents.length})`}>
+          <CardSection title={`機群（${agents.length}）`}>
             {agents.length === 0 ? (
-              <EmptyState title="尚未登記 agent" description="先登記一個 ID" />
+              <EmptyState title="尚未登記 agent" description="先在左側登記一個識別碼" />
             ) : (
               <div className="table-wrap">
                 <table className="data">
                   <thead>
                     <tr>
-                      <th>Agent</th>
+                      <th>識別碼</th>
                       <th>狀態</th>
                       <th>群組</th>
-                      <th>最後見</th>
+                      <th>最後上線</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -224,7 +247,9 @@ export function AgentsPage() {
                       <tr key={a.id}>
                         <td>{a.agent_id}</td>
                         <td>
-                          <Badge tone={a.status === 'online' ? 'ok' : 'neutral'}>{a.status}</Badge>
+                          <Badge tone={a.status === 'online' ? 'ok' : 'neutral'}>
+                            {a.status === 'online' ? '在線' : a.status}
+                          </Badge>
                         </td>
                         <td>{a.group ?? '—'}</td>
                         <td className="muted u-nowrap">{a.last_seen_at?.slice(0, 19)}</td>

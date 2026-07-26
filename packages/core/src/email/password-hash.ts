@@ -25,7 +25,7 @@ export interface PasswordHashResult {
 export async function hashMailboxPassword(password: string): Promise<PasswordHashResult> {
   const notes: string[] = [];
   if (!password || password.length < 8) {
-    throw new Error('password must be at least 8 characters');
+    throw new Error('密碼至少需要 8 字元');
   }
 
   // openssl passwd -6 → $6$... SHA512-CRYPT
@@ -37,7 +37,7 @@ export async function hashMailboxPassword(password: string): Promise<PasswordHas
     );
     const h = stdout.trim();
     if (h.startsWith('$6$')) {
-      notes.push('SHA512-CRYPT via openssl passwd -6 (Dovecot scheme=SHA512-CRYPT)');
+      notes.push('已用 SHA512-CRYPT 雜湊密碼（Dovecot）');
       return {
         scheme: 'SHA512-CRYPT',
         hash: `{SHA512-CRYPT}${h}`,
@@ -45,12 +45,12 @@ export async function hashMailboxPassword(password: string): Promise<PasswordHas
       };
     }
   } catch {
-    notes.push('openssl passwd -6 unavailable — using YSK-SCRYPT');
+    notes.push('openssl 不可用，改用 YSK-SCRYPT 雜湊');
   }
 
   const salt = randomBytes(16).toString('hex');
   const hash = scryptSync(password, salt, 32).toString('hex');
-  notes.push('YSK-SCRYPT fallback (export scheme=YSK-SCRYPT or rehash with openssl for production)');
+  notes.push('使用 YSK-SCRYPT 後備雜湊（生產環境建議改為 openssl 雜湊）');
   return {
     scheme: 'YSK-SCRYPT',
     hash: `scrypt$${salt}$${hash}`,

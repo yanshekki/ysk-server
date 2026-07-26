@@ -28,7 +28,7 @@ export async function runCreateWizard(input: {
   body: {
     projectName: string;
     domain?: string;
-    runtime?: 'node' | 'php' | 'static';
+    runtime?: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
     serverIp?: string;
     createDns?: boolean;
     createMail?: boolean;

@@ -34,7 +34,7 @@ export interface ZoneFileResult {
 function assertZoneName(zone: string): string {
   const z = zone.trim().toLowerCase().replace(/\.$/, '');
   if (!z || z.length > 253 || !/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(z) || z.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Invalid zone name', {
+    throw new YskError(ErrorCodes.VALIDATION, 'zone 名稱無效', {
       httpStatus: 400,
       details: { zone },
     });
@@ -51,7 +51,7 @@ function assertIpv4(ip: string): void {
       return Number.isInteger(n) && n >= 0 && n <= 255 && String(n) === p;
     })
   ) {
-    throw new YskError(ErrorCodes.VALIDATION, 'serverIp must be IPv4', {
+    throw new YskError(ErrorCodes.VALIDATION, 'server IP 必須是 IPv4', {
       httpStatus: 400,
       details: { ip },
     });

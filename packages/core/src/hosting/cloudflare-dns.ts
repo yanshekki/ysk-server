@@ -114,7 +114,7 @@ export async function applyCloudflareDns(input: {
 }): Promise<CloudflareApplyResult> {
   const zone = input.zone.trim().toLowerCase();
   if (!zone || !input.serverIp) {
-    throw new YskError(ErrorCodes.VALIDATION, 'zone and serverIp required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫 zone 與 server IP', { httpStatus: 400 });
   }
   const plan = planDnsZone({
     zone,
@@ -133,7 +133,7 @@ export async function applyCloudflareDns(input: {
   const notes = [...plan.providerHints];
 
   if (!token) {
-    notes.push('No CF_API_TOKEN / CLOUDFLARE_API_TOKEN — dry-run only');
+    notes.push('未設定 Cloudflare API Token — 僅 dry-run');
     return {
       ok: false,
       zoneName: zone,
@@ -147,7 +147,7 @@ export async function applyCloudflareDns(input: {
     };
   }
   if (input.dryRun) {
-    notes.push('dryRun=true — no API mutations');
+    notes.push('dryRun=true — 不實際變更 API');
     return {
       ok: true,
       zoneName: zone,
@@ -224,7 +224,7 @@ export async function applyCloudflareDns(input: {
   }
 
   const ok = errors.length === 0;
-  notes.push(`Created ${created.length}, skipped ${skipped.length}, errors ${errors.length}`);
+  notes.push(`已建立 ${created.length}、略過 ${skipped.length}、錯誤 ${errors.length}`);
   return {
     ok,
     zoneId,

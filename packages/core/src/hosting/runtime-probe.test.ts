@@ -6,13 +6,15 @@ import { LocalHostExecutor } from '../host/executor.js';
 import { planOrInstallRuntime, probeRuntimes } from './runtime-probe.js';
 
 describe('runtime-probe', () => {
-  it('probes host for supported node/php versions', async () => {
+  it('probes host for supported node/php/python/go/rust versions', async () => {
     const host = new LocalHostExecutor({ executeEnabled: false });
     const r = await probeRuntimes(host);
     expect(r.node.length).toBeGreaterThanOrEqual(3);
     expect(r.php.length).toBeGreaterThanOrEqual(3);
+    expect(r.python.length).toBeGreaterThanOrEqual(3);
+    expect(r.go.length).toBeGreaterThanOrEqual(3);
+    expect(r.rust.length).toBeGreaterThanOrEqual(1);
     expect(r.notes.length).toBeGreaterThan(0);
-    // At least one node version may match host in CI
     expect(r.node.every((n) => typeof n.available === 'boolean')).toBe(true);
   });
 
@@ -37,7 +39,16 @@ describe('runtime-probe', () => {
       install: true,
     });
     expect(refused.ok).toBe(false);
-    expect(refused.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+    expect(refused.notes.some((n) => /系統變更|YSK_EXECUTE|權限/i.test(n))).toBe(true);
+
+    const goPlan = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'go',
+      version: '1.22',
+      install: false,
+    });
+    expect(goPlan.written[0]).toMatch(/install\.sh$/);
     rmSync(dir, { recursive: true, force: true });
   });
 });

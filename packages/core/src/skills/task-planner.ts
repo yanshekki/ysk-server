@@ -127,7 +127,7 @@ export function createAiTask(input: {
   store: TaskStore;
 }): AiTask {
   if (!input.prompt?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, 'prompt required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請輸入提示內容', { httpStatus: 400 });
   }
   const planned = planStepsFromPrompt(input.prompt, input.allowlist);
   const now = new Date().toISOString();

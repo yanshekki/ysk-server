@@ -77,7 +77,7 @@ export class ApprovalQueue {
     if (record.status !== 'approved') {
       throw new YskError(
         ErrorCodes.VALIDATION,
-        `Cannot mark executed from status ${record.status}`,
+        `無法從狀態 ${record.status} 標記為已執行`,
         { httpStatus: 400 },
       );
     }
@@ -90,33 +90,33 @@ export class ApprovalQueue {
     if (!id) {
       throw new YskError(
         ErrorCodes.APPROVAL_REQUIRED,
-        `Human approval required for action: ${action}`,
+        `此操作需要人工審批：${action}`,
         { httpStatus: 403, details: { action } },
       );
     }
     const record = this.get(id);
     if (!record) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Approval not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到審批：${id}`, { httpStatus: 404 });
     }
     if (record.status === 'pending') {
-      throw new YskError(ErrorCodes.APPROVAL_PENDING, 'Approval still pending', {
+      throw new YskError(ErrorCodes.APPROVAL_PENDING, '審批仍在等待中', {
         httpStatus: 403,
         details: { id, action },
       });
     }
     if (record.status === 'rejected') {
-      throw new YskError(ErrorCodes.APPROVAL_REJECTED, 'Approval was rejected', {
+      throw new YskError(ErrorCodes.APPROVAL_REJECTED, '審批已被拒絕', {
         httpStatus: 403,
         details: { id, action },
       });
     }
     if (record.status !== 'approved' && record.status !== 'executed') {
-      throw new YskError(ErrorCodes.APPROVAL_REQUIRED, `Invalid approval status: ${record.status}`, {
+      throw new YskError(ErrorCodes.APPROVAL_REQUIRED, `審批狀態無效：${record.status}`, {
         httpStatus: 403,
       });
     }
     if (record.action !== action) {
-      throw new YskError(ErrorCodes.VALIDATION, 'Approval action mismatch', {
+      throw new YskError(ErrorCodes.VALIDATION, '審批動作與請求不符', {
         httpStatus: 400,
         details: { expected: action, got: record.action },
       });
@@ -126,7 +126,7 @@ export class ApprovalQueue {
   private decide(id: string, status: 'approved' | 'rejected', decidedBy: string): ApprovalRecord {
     const record = this.require(id);
     if (record.status !== 'pending') {
-      throw new YskError(ErrorCodes.VALIDATION, `Approval already ${record.status}`, {
+      throw new YskError(ErrorCodes.VALIDATION, `審批已是 ${record.status}`, {
         httpStatus: 400,
       });
     }
@@ -140,7 +140,7 @@ export class ApprovalQueue {
   private require(id: string): ApprovalRecord {
     const record = this.get(id);
     if (!record) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Approval not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到審批：${id}`, { httpStatus: 404 });
     }
     // return mutable copy bound for persist — re-fetch into memory map if needed
     if (!this.repo) {

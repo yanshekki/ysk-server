@@ -79,7 +79,7 @@ export async function resticBackupProject(input: {
   if (!check.stdout.trim()) {
     return {
       ok: false,
-      notes: ['restic 不在 PATH — apt install restic 後再試'],
+      notes: ['restic 未安裝（不在 PATH），請於系統安裝 restic 後再試'],
     };
   }
 
@@ -222,7 +222,7 @@ export async function listResticSnapshots(input: {
   return {
     ok: true,
     snapshots,
-    notes: [`${snapshots.length} snapshots`],
+    notes: [`共 ${snapshots.length} 個 restic 快照`],
   };
 }
 

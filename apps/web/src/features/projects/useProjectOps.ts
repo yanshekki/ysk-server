@@ -25,6 +25,8 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
         memoryMax?: string;
         cpuQuotaPercent?: number;
         phpVersion?: string;
+        entry?: string;
+        skipBuild?: boolean;
       },
     ) => {
       setBusy(true);
@@ -34,7 +36,10 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
         let result: OpsApplyResultDto;
         switch (action) {
           case 'deploy':
-            result = await projectsApi.deploy(id);
+            result = await projectsApi.deploy(id, {
+              entry: opts?.entry || undefined,
+              skipBuild: opts?.skipBuild,
+            });
             break;
           case 'deploy-php':
             result = (await projectsApi.deployPhp(id, {
@@ -64,6 +69,8 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
             result = await projectsApi.gitDeploy(id, {
               gitUrl: opts?.gitUrl || undefined,
               redeploy: true,
+              entry: opts?.entry,
+              skipBuild: opts?.skipBuild,
             });
             break;
           case 'backup':

@@ -67,7 +67,7 @@ export async function pushDnsZonesToCluster(input: {
   const peers = listDnsClusterPeers(input.db).filter(
     (p) => !input.peerId || p.id === input.peerId,
   );
-  if (!peers.length) return { ok: true, notes: ['無 cluster peer'] };
+  if (!peers.length) return { ok: true, notes: ['尚未登記叢集 peer'] };
   if (!input.host.executeEnabled()) {
     return {
       ok: false,

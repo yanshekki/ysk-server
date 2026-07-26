@@ -8,9 +8,11 @@ import {
   EmptyState,
   Field,
   FeaturePageLayout,
-  FormGrid,
+  FormLayout,
   Modal,
   SoftwareInstallBanner,
+  FormHint,
+  CheckboxField,
 } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { ResourceTable } from '../../shared/components/resource/ResourceTable';
@@ -132,17 +134,23 @@ export function NginxPage() {
             columns={[
               {
                 key: 'serverName',
-                header: 'Server name',
+                header: '伺服器名稱',
                 render: (r) => <strong>{String(r.serverName ?? '—')}</strong>,
               },
               {
                 key: 'kind',
                 header: '類型',
-                render: (r) => String(r.kind ?? 'proxy'),
+                render: (r) => {
+                  const k = String(r.kind ?? 'proxy');
+                  if (k === 'proxy') return '反向代理';
+                  if (k === 'static') return '靜態';
+                  if (k === 'php') return 'PHP-FPM';
+                  return k;
+                },
               },
               {
                 key: 'target',
-                header: 'Upstream / Root',
+                header: '上游／根目錄',
                 render: (r) => (
                   <code className="inline u-break-all">
                     {String(r.upstream ?? r.root ?? '—')}
@@ -199,7 +207,7 @@ export function NginxPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="建立 Nginx 站點"
-        description="填寫站點參數後建立"
+        description="建立控制面登記；需再「套用」才寫入 sites-available 並 reload"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCreateOpen(false)}>
@@ -231,6 +239,7 @@ export function NginxPage() {
         open={Boolean(edit)}
         onClose={() => setEdit(null)}
         title="編輯 Nginx 站點"
+        description="儲存後請再套用，written ≠ nginx 已 reload"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setEdit(null)}>
@@ -289,51 +298,84 @@ function SiteForm(props: {
 }) {
   return (
     <div className="feature-form">
-      <FormGrid>
-        <Field label="伺服器名稱" techKey="server_name" htmlFor="sn">
+      <FormLayout columns={2}>
+        <Field
+          label="伺服器名稱"
+          htmlFor="sn"
+          flush
+          required
+          hint="server_name，例如 app.example.com"
+        >
           <input
             id="sn"
             value={props.serverName}
             onChange={(e) => props.setServerName(e.target.value)}
             required
             placeholder="app.example.com"
+            spellCheck={false}
           />
         </Field>
-        <Field label="類型" techKey="kind" htmlFor="kd">
+        <Field label="站點類型" htmlFor="kd" flush required>
           <select
             id="kd"
             value={props.kind}
             onChange={(e) => props.setKind(e.target.value as 'proxy' | 'static' | 'php')}
           >
             <option value="proxy">反向代理</option>
-            <option value="static">靜態</option>
+            <option value="static">靜態檔案</option>
             <option value="php">PHP-FPM</option>
           </select>
         </Field>
-      </FormGrid>
-      {props.kind === 'proxy' ? (
-        <Field label="上游位址" techKey="upstream" htmlFor="up">
-          <input
-            id="up"
-            value={props.upstream}
-            onChange={(e) => props.setUpstream(e.target.value)}
-          />
-        </Field>
-      ) : (
-        <Field label="網站根目錄" techKey="root" htmlFor="rt">
-          <input id="rt" value={props.root} onChange={(e) => props.setRoot(e.target.value)} />
-        </Field>
-      )}
-      <label className="field">
-        <span>
-          <input
-            type="checkbox"
-            checked={props.ssl}
-            onChange={(e) => props.setSsl(e.target.checked)}
-          />{' '}
-          啟用 SSL block
-        </span>
-      </label>
+        {props.kind === 'proxy' ? (
+          <Field
+            label="上游位址"
+            htmlFor="up"
+            fullWidth
+            flush
+            hint="例如 127.0.0.1:3000 或 http://backend:8080"
+          >
+            <input
+              id="up"
+              value={props.upstream}
+              onChange={(e) => props.setUpstream(e.target.value)}
+              placeholder="127.0.0.1:3000"
+              spellCheck={false}
+            />
+          </Field>
+        ) : (
+          <Field
+            label="網站根目錄"
+            htmlFor="rt"
+            fullWidth
+            flush
+            hint={
+              props.kind === 'php'
+                ? 'PHP 專案 document root，例如 /var/www/app/public'
+                : '靜態檔案目錄絕對路徑'
+            }
+          >
+            <input
+              id="rt"
+              value={props.root}
+              onChange={(e) => props.setRoot(e.target.value)}
+              placeholder="/var/www/html"
+              spellCheck={false}
+            />
+          </Field>
+        )}
+      </FormLayout>
+      <div className="form-check-row u-mt-4">
+        <CheckboxField
+          id="ngx-ssl"
+          label="啟用 SSL 區塊"
+          description="產生 listen 443 ssl；憑證需於 SSL 頁就緒後綁定"
+          checked={props.ssl}
+          onChange={props.setSsl}
+        />
+      </div>
+      <FormHint>
+        建立／儲存只更新控制面；列表按「套用」後才寫入 nginx 設定並嘗試 reload。
+      </FormHint>
     </div>
   );
 }

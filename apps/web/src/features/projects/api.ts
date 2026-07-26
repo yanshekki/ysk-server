@@ -22,7 +22,10 @@ export const projectsApi = {
   wordpressDownload: (id: string, force?: boolean) =>
     api.wordpressDownload(id, { force }),
   remove: (id: string) => api.deleteProject(id),
-  deploy: (id: string) => api.deployProject(id),
+  deploy: (
+    id: string,
+    body?: { entry?: string; skipBuild?: boolean; port?: number; nodeVersion?: string },
+  ) => api.deployProject(id, body),
   deployPhp: (
     id: string,
     body?: { phpVersion?: string; preferFpm?: boolean; forceBuiltin?: boolean },
@@ -36,6 +39,23 @@ export const projectsApi = {
       method: 'PATCH',
       body: JSON.stringify({ runtimeVersion }),
     }),
+  setDeployEntry: (id: string, deployEntry: string | null) =>
+    api.requestRaw<{ project: ProjectDto }>(`/api/v1/projects/${id}/runtime`, {
+      method: 'PATCH',
+      body: JSON.stringify({ deployEntry }),
+    }),
+  deployHistory: (id: string, limit = 15) =>
+    api.requestRaw<{
+      items: Array<{
+        id: string;
+        actor: string;
+        action: string;
+        resource?: string;
+        detail: unknown;
+        ok: boolean;
+        created_at: string;
+      }>;
+    }>(`/api/v1/projects/${id}/deploy-history?limit=${limit}`),
   applyPhpFpm: (id: string, body?: { phpVersion?: string; enable?: boolean }) =>
     api.requestRaw(`/api/v1/projects/${id}/php-fpm`, {
       method: 'POST',
@@ -83,8 +103,15 @@ export const projectsApi = {
       notes: string[];
       logPath?: string;
     }>(`/api/v1/projects/${id}/web-stats`),
-  gitDeploy: (id: string, body?: { gitUrl?: string; redeploy?: boolean }) =>
-    api.gitDeploy(id, body),
+  gitDeploy: (
+    id: string,
+    body?: {
+      gitUrl?: string;
+      redeploy?: boolean;
+      entry?: string;
+      skipBuild?: boolean;
+    },
+  ) => api.gitDeploy(id, body),
   setEnv: (id: string, env: Record<string, string>) => api.setProjectEnv(id, env),
   backup: (id: string) => api.backupProject(id),
   logs: (id: string, file?: string, lines = 80) => {

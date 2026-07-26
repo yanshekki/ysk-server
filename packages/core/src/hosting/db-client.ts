@@ -34,7 +34,7 @@ export function probeEndpoint(host: string, port: number, timeoutMs = 3000): Pro
 
 export function validateMysqlIdent(name: string, field: string): void {
   if (!/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(name)) {
-    throw new YskError(ErrorCodes.VALIDATION, `Invalid ${field}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, `欄位 ${field} 無效`, { httpStatus: 400 });
   }
 }
 

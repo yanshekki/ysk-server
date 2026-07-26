@@ -13,6 +13,7 @@ import type { ProjectRepository, ProjectRow } from '../repositories/project-repo
 import type { HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import { getAppTemplate, scaffoldAppTemplate, type AppTemplateId } from './app-templates.js';
+import { normalizeRuntimeVersion } from './runtime.js';
 
 export class ProjectService {
   constructor(
@@ -23,13 +24,23 @@ export class ProjectService {
   ) {}
 
   list(): ProjectDto[] {
-    return this.projects.list().map(toDto);
+    return this.projects.list().map((row) => this.healRuntimeVersion(row));
   }
 
   get(id: string): ProjectDto {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+    }
+    return this.healRuntimeVersion(row);
+  }
+
+  /** Repair PHP projects that were incorrectly stored with Node default "20". */
+  private healRuntimeVersion(row: ProjectRow): ProjectDto {
+    const fixed = normalizeRuntimeVersion(row.runtime, row.runtime_version);
+    if (fixed !== (row.runtime_version ?? '')) {
+      this.projects.updateMeta(row.id, { runtime_version: fixed });
+      row = { ...row, runtime_version: fixed };
     }
     return toDto(row);
   }
@@ -56,7 +67,7 @@ export class ProjectService {
     scaffold?: ReturnType<typeof scaffoldAppTemplate>;
   }> {
     if (!input.name?.trim()) {
-      throw new YskError(ErrorCodes.VALIDATION, 'Project name is required', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '請填寫專案名稱', { httpStatus: 400 });
     }
     let runtime = input.runtime;
     let runtimeVersion = input.runtimeVersion;
@@ -65,6 +76,8 @@ export class ProjectService {
       runtime = tpl.runtime;
       runtimeVersion = runtimeVersion ?? tpl.runtimeVersion;
     }
+    // Never default PHP to Node "20" — resolve by runtime kind
+    runtimeVersion = normalizeRuntimeVersion(runtime, runtimeVersion);
     const id = randomUUID();
     const plan = planProjectIsolation({
       id,
@@ -175,7 +188,7 @@ export class ProjectService {
   }> {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
     }
     // Prefer project home under dataDir for chown target when system home differs
     const homeDir = row.home_dir;
@@ -259,7 +272,7 @@ export class ProjectService {
   ): { project: ProjectDto; scaffold: ReturnType<typeof scaffoldAppTemplate> } {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
     }
     const meta = getAppTemplate(templateId);
     const scaffold = scaffoldAppTemplate({
@@ -286,7 +299,7 @@ export class ProjectService {
   async delete(id: string, actor: string, removeFiles = true): Promise<void> {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
     }
     // Best-effort stop managed process before removing files
     const pid = row.pid;
@@ -338,7 +351,7 @@ export class ProjectService {
   ): ProjectDto {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
     }
     const domain = patch.domain !== undefined ? patch.domain.trim() || undefined : row.domain;
     const aliases =
@@ -402,7 +415,7 @@ function toDto(row: ProjectRow): ProjectDto {
     linuxGroup: row.linux_group,
     homeDir: row.home_dir,
     runtime: row.runtime,
-    runtimeVersion: row.runtime_version,
+    runtimeVersion: normalizeRuntimeVersion(row.runtime, row.runtime_version) || undefined,
     env: row.env,
     status: row.status,
     port: row.port,
@@ -427,6 +440,8 @@ function toDto(row: ProjectRow): ProjectDto {
     quotaMb: row.quota_mb,
     memoryMax: row.memory_max,
     cpuQuotaPercent: row.cpu_quota_percent,
+    deployEntry: row.deploy_entry,
+    lastDeployNotes: row.last_deploy_notes,
   };
 }
 

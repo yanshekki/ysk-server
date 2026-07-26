@@ -99,7 +99,7 @@ export class UsersAdminService {
   ): UserDto {
     const existing = this.users.findById(id);
     if (!existing) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
     }
     const upd: Parameters<UserRepository['update']>[1] = {};
     if (patch.roles) upd.roles = patch.roles;
@@ -115,7 +115,7 @@ export class UsersAdminService {
       upd.password_hash = hashPassword(patch.password, salt);
     }
     const u = this.users.update(id, upd);
-    if (!u) throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+    if (!u) throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
     this.audit?.append({
       actor,
       action: 'users.update',
@@ -161,7 +161,7 @@ export class UsersAdminService {
     }
     const target = this.users.findById(targetUserId);
     if (!target) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
     }
     if (target.suspended) {
       throw new YskError(ErrorCodes.VALIDATION, '目標用戶已暫停', { httpStatus: 400 });
@@ -214,7 +214,7 @@ export class UsersAdminService {
   ): StorePackage {
     const name = input.name.trim();
     if (!name) {
-      throw new YskError(ErrorCodes.VALIDATION, 'package name required', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '請填寫方案名稱', { httpStatus: 400 });
     }
     const now = new Date().toISOString();
     const row: StorePackage = {
@@ -264,7 +264,7 @@ export class UsersAdminService {
   ): StorePackage {
     const p = (this.db.snapshot.packages ?? []).find((x) => x.id === id);
     if (!p) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'Package not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到方案', { httpStatus: 404 });
     }
     Object.assign(p, patch, { updated_at: new Date().toISOString() });
     this.db.persist();

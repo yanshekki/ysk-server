@@ -43,7 +43,7 @@ export async function applyWebmail(input: {
 }): Promise<WebmailApplyResult> {
   const domain = input.domain.trim().toLowerCase();
   if (!domain || domain.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Invalid webmail domain', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, 'Webmail 域名無效', { httpStatus: 400 });
   }
 
   const notes: string[] = [];

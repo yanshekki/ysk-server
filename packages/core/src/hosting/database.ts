@@ -32,7 +32,7 @@ export function planMysqlDatabase(input: {
       `GRANT ${privileges} ON \`${input.dbName}\`.* TO '${input.username}'@'${host}';`,
       'FLUSH PRIVILEGES;',
     ],
-    notes: ['Password must be set via secure secret store', 'Requires MySQL/MariaDB admin privileges'],
+    notes: ['密碼需由安全管道設定', '需要 MySQL／MariaDB 管理員權限'],
     connectionHint: { database: input.dbName, user: input.username, host },
   };
 }
@@ -46,7 +46,7 @@ export function planRedisBinding(input: {
   maxmemoryMb?: number;
 }): DatabasePlan {
   if (!Number.isInteger(input.dbIndex) || input.dbIndex < 0 || input.dbIndex > 15) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Redis dbIndex must be 0-15 for default instance', {
+    throw new YskError(ErrorCodes.VALIDATION, 'Redis dbIndex 須為 0–15', {
       httpStatus: 400,
     });
   }
@@ -58,13 +58,13 @@ export function planRedisBinding(input: {
       `CONFIG SET maxmemory-policy allkeys-lru`,
       `# Optional dedicated instance memory hint: ${maxmem}mb`,
     ],
-    notes: ['Default Redis uses logical DB index isolation', 'For stronger isolation, provision a dedicated Redis instance'],
+    notes: ['預設以 Redis 邏輯 DB 編號隔離', '更強隔離請使用獨立 Redis 實例'],
     connectionHint: { db: input.dbIndex, maxmemoryMb: maxmem },
   };
 }
 
 function assertIdent(value: string, field: string): void {
   if (!/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(value)) {
-    throw new YskError(ErrorCodes.VALIDATION, `Invalid ${field}: ${value}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, `欄位 ${field} 無效：${value}`, { httpStatus: 400 });
   }
 }

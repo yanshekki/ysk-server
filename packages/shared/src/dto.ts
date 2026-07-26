@@ -111,7 +111,7 @@ export interface ProjectDto {
   linuxUser: string;
   linuxGroup: string;
   homeDir: string;
-  runtime: 'node' | 'php' | 'static';
+  runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
   runtimeVersion?: string;
   env: 'staging' | 'production';
   /** Control-plane lifecycle: active | running | stopped | suspended | unhealthy | failed | … */
@@ -144,6 +144,10 @@ export interface ProjectDto {
   quotaMb?: number;
   memoryMax?: string;
   cpuQuotaPercent?: number;
+  /** Last process deploy entry (persisted server-side) */
+  deployEntry?: string;
+  /** Recent deploy notes for UI summary */
+  lastDeployNotes?: string[];
 }
 
 /** Result of real deploy / publish / health ops */

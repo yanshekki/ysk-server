@@ -5,7 +5,7 @@ describe('RBAC three-axis', () => {
   it('rejects unauthorized role/scope/level combinations', () => {
     const denied = checkRbac('viewer', { kind: 'global' }, 'write-low');
     expect(denied.allowed).toBe(false);
-    expect(denied.reason).toMatch(/read-only|cannot perform/i);
+    expect(denied.reason).toMatch(/唯讀|無法執行|read-only|cannot perform/i);
 
     const agentGlobal = checkRbac('agent', { kind: 'global' }, 'write-high');
     expect(agentGlobal.allowed).toBe(false);

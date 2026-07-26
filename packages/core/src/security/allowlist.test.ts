@@ -15,7 +15,7 @@ describe('Allowlist', () => {
   it('denies non-listed tools by default (fail closed)', () => {
     const r = allowlist.evaluate('rm.rf.root');
     expect(r.allowed).toBe(false);
-    expect(r.reason).toMatch(/not on allowlist/i);
+    expect(r.reason).toMatch(/不在允許清單|not on allowlist/i);
   });
 
   it('denies explicitly blocked destructive tools like shell.exec', () => {

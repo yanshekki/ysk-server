@@ -77,18 +77,18 @@ export async function rebuildManagedConfigs(input: {
 
   const confRows = listManagedNginxConfs(input.dataDir);
   const nginxConfs = confRows.map((c) => c.path);
-  notes.push(`managed nginx confs: ${nginxConfs.length}`);
+  notes.push(`管理面 Nginx 設定：${nginxConfs.length} 個`);
 
   if (input.syncNginx) {
     if (!input.host.executeEnabled() || !input.host.isRoot()) {
       return {
         ok: false,
-        notes: [...notes, '無法 sync nginx：需 YSK_EXECUTE + root'],
+        notes: [...notes, '無法同步 Nginx：需開啟系統變更權限與管理員'],
         written,
         exportPath,
         nginxConfs,
         blocked: true,
-        blockMessage: '需要系統變更權限才能 rebuild 系統 nginx',
+        blockMessage: '需要系統變更權限才能重建系統 Nginx',
       };
     }
     const sync = await syncNginxConfigs({
@@ -104,7 +104,7 @@ export async function rebuildManagedConfigs(input: {
         timeoutMs: 15_000,
       });
       notes.push(
-        rel.exitCode === 0 ? 'nginx reloaded' : `nginx reload failed: ${rel.stderr || rel.stdout}`,
+        rel.exitCode === 0 ? '已重載 Nginx' : `nginx reload failed: ${rel.stderr || rel.stdout}`,
       );
     }
   } else {

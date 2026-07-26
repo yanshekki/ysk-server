@@ -13,13 +13,18 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
-  FormGrid,
+  FormLayout,
   OpsResultPanel,
   SummaryStrip,
+  Tabs,
+  FormActions,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { usePageTab } from '../../shared/hooks/usePageTab';
+
+const BK_TABS = ['files', 'ops', 'remote'] as const;
 
 type BackupItem = {
   projectId: string;
@@ -181,6 +186,8 @@ export function BackupsPage() {
   const lastOk = lastRun?.ok;
   const projectCount = new Set(items.map((i) => i.projectId)).size;
 
+  const [tab, setTab] = usePageTab(BK_TABS, 'files');
+
   return (
     <FeaturePageLayout
       title="備份"
@@ -219,201 +226,121 @@ export function BackupsPage() {
         ]}
       />
 
+      <Tabs
+        tabs={[
+          { id: 'files', label: '備份檔', badge: items.length || undefined },
+          { id: 'ops', label: '操作' },
+          { id: 'remote', label: '遠端 / 排除' },
+        ]}
+        active={tab}
+        onChange={setTab}
+        variant="scroll"
+      >
+        {tab === 'files' ? (
+          <div className="tab-panel">
       <Card>
-        <CardSection
-          title="遠端目標 / 排除"
-          description="本地 tar 成功後可 scp 或複製到本機路徑；排除 globs 用於 tar"
-        >
-          <FormGrid>
-            <Field label="啟用遠端推送" htmlFor="bk-en" flush>
-              <select
-                id="bk-en"
-                value={remote.enabled ? 'yes' : 'no'}
-                onChange={(e) =>
-                  setRemote((r) => ({ ...r, enabled: e.target.value === 'yes' }))
-                }
-              >
-                <option value="no">否</option>
-                <option value="yes">是</option>
-              </select>
-            </Field>
-            <Field label="類型" htmlFor="bk-kind" flush>
-              <select
-                id="bk-kind"
-                value={remote.kind}
-                onChange={(e) =>
-                  setRemote((r) => ({
-                    ...r,
-                    kind:
-                      e.target.value === 'local' || e.target.value === 's3'
-                        ? e.target.value
-                        : 'sftp',
-                  }))
-                }
-              >
-                <option value="sftp">SFTP / scp</option>
-                <option value="local">本機路徑鏡像</option>
-                <option value="s3">S3（aws cli）</option>
-              </select>
-            </Field>
-            {remote.kind === 'sftp' ? (
-              <>
-                <Field label="Host" htmlFor="bk-host" flush>
-                  <input
-                    id="bk-host"
-                    value={remote.host ?? ''}
-                    onChange={(e) => setRemote((r) => ({ ...r, host: e.target.value }))}
-                    placeholder="backup.example.com"
-                  />
-                </Field>
-                <Field label="Port" htmlFor="bk-port" flush>
-                  <input
-                    id="bk-port"
-                    value={String(remote.port ?? 22)}
-                    onChange={(e) =>
-                      setRemote((r) => ({ ...r, port: Number(e.target.value) || 22 }))
-                    }
-                  />
-                </Field>
-                <Field label="Username" htmlFor="bk-user" flush>
-                  <input
-                    id="bk-user"
-                    value={remote.username ?? ''}
-                    onChange={(e) => setRemote((r) => ({ ...r, username: e.target.value }))}
-                  />
-                </Field>
-                <Field label="密碼（可選；留空用 SSH key）" htmlFor="bk-pass" flush>
-                  <input
-                    id="bk-pass"
-                    type="password"
-                    value={remote.password ?? ''}
-                    onChange={(e) => setRemote((r) => ({ ...r, password: e.target.value }))}
-                    placeholder="已儲存則留空"
-                  />
-                </Field>
-              </>
-            ) : null}
-            {remote.kind === 's3' ? (
-              <>
-                <Field label="Bucket / s3://…" htmlFor="bk-s3b" flush>
-                  <input
-                    id="bk-s3b"
-                    value={remote.s3Bucket ?? ''}
-                    onChange={(e) => setRemote((r) => ({ ...r, s3Bucket: e.target.value }))}
-                    placeholder="my-bucket/ysk"
-                  />
-                </Field>
-                <Field label="Region" htmlFor="bk-s3r" flush>
-                  <input
-                    id="bk-s3r"
-                    value={remote.s3Region ?? ''}
-                    onChange={(e) => setRemote((r) => ({ ...r, s3Region: e.target.value }))}
-                  />
-                </Field>
-                <Field label="Endpoint（可選）" htmlFor="bk-s3e" flush>
-                  <input
-                    id="bk-s3e"
-                    value={remote.s3Endpoint ?? ''}
-                    onChange={(e) => setRemote((r) => ({ ...r, s3Endpoint: e.target.value }))}
-                  />
-                </Field>
-                <Field label="Access Key" htmlFor="bk-ak" flush>
-                  <input
-                    id="bk-ak"
-                    value={remote.awsAccessKeyId ?? ''}
-                    onChange={(e) =>
-                      setRemote((r) => ({ ...r, awsAccessKeyId: e.target.value }))
-                    }
-                  />
-                </Field>
-                <Field label="Secret Key" htmlFor="bk-sk" flush>
-                  <input
-                    id="bk-sk"
-                    type="password"
-                    value={remote.awsSecretAccessKey ?? ''}
-                    onChange={(e) =>
-                      setRemote((r) => ({ ...r, awsSecretAccessKey: e.target.value }))
-                    }
-                    placeholder="已儲存則留空"
-                  />
-                </Field>
-              </>
-            ) : null}
-            {remote.kind !== 's3' ? (
-              <Field
-                label={remote.kind === 'local' ? '本機鏡像路徑' : '遠端路徑'}
-                htmlFor="bk-path"
-                flush
-              >
-                <input
-                  id="bk-path"
-                  value={remote.path ?? ''}
-                  onChange={(e) => setRemote((r) => ({ ...r, path: e.target.value }))}
-                  placeholder="/backups/ysk"
-                />
-              </Field>
-            ) : null}
-          </FormGrid>
-          <FormGrid>
-            <Field label="restic 增量" htmlFor="rs-en" flush>
-              <select
-                id="rs-en"
-                value={restic.enabled ? 'yes' : 'no'}
-                onChange={(e) =>
-                  setRestic((r) => ({ ...r, enabled: e.target.value === 'yes' }))
-                }
-              >
-                <option value="no">否</option>
-                <option value="yes">是（需 restic 在 PATH）</option>
-              </select>
-            </Field>
-            <Field label="Repo 路徑" htmlFor="rs-path" flush>
-              <input
-                id="rs-path"
-                value={restic.repoPath ?? ''}
-                onChange={(e) => setRestic((r) => ({ ...r, repoPath: e.target.value }))}
-                placeholder="dataDir/restic-repo"
-              />
-            </Field>
-            <Field label="restic 密碼" htmlFor="rs-pw" flush>
-              <input
-                id="rs-pw"
-                type="password"
-                value={restic.password ?? ''}
-                onChange={(e) => setRestic((r) => ({ ...r, password: e.target.value }))}
-              />
-            </Field>
-            <Field label="或 s3: repo URL" htmlFor="rs-s3" flush>
-              <input
-                id="rs-s3"
-                value={restic.s3Repo ?? ''}
-                onChange={(e) => setRestic((r) => ({ ...r, s3Repo: e.target.value }))}
-                placeholder="s3:s3.amazonaws.com/bucket/path"
-              />
-            </Field>
-          </FormGrid>
-          <Field label="排除（每行一個）" htmlFor="bk-ex" flush>
-            <textarea
-              id="bk-ex"
-              rows={4}
-              value={exclusionsText}
-              onChange={(e) => setExclusionsText(e.target.value)}
-              placeholder="node_modules"
+        <CardSection title={`備份檔案 (${items.length})`}>
+          {items.length === 0 ? (
+            <EmptyState
+              title="尚無備份"
+              description="執行「備份所有專案」或於專案詳情 Backup"
             />
-          </Field>
-          <div className="btn-row u-mt-3">
-            <Button
-              variant="primary"
-              size="md"
-              loading={settingsBusy}
-              onClick={() => void saveSettings()}
-            >
-              儲存設定
-            </Button>
-          </div>
+          ) : (
+            <div className="table-wrap">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>專案</th>
+                    <th>檔名</th>
+                    <th>大小</th>
+                    <th>時間</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((b) => (
+                    <tr key={`${b.projectId}:${b.name}`}>
+                      <td>
+                        <code className="inline">{b.projectId.slice(0, 8)}…</code>
+                      </td>
+                      <td>
+                        <code className="inline u-break-all">{b.name}</code>
+                      </td>
+                      <td>{formatBytes(b.bytes)}</td>
+                      <td className="muted u-nowrap">
+                        {b.mtime ? new Date(b.mtime).toLocaleString() : '—'}
+                      </td>
+                      <td>
+                        <div className="btn-row">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              const q = new URLSearchParams({
+                                projectId: b.projectId,
+                                name: b.name,
+                              });
+                              window.open(`/api/v1/backups/download?${q}`, '_blank');
+                            }}
+                          >
+                            下載
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              setRestoreMode('dry-run');
+                              setRestoreTarget(b);
+                            }}
+                          >
+                            預覽
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              setRestoreMode('web');
+                              setRestoreTarget(b);
+                            }}
+                          >
+                            還原 web
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              setRestoreMode('full');
+                              setRestoreTarget(b);
+                            }}
+                          >
+                            完整還原
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => setDeleteTarget(b)}
+                          >
+                            刪除
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardSection>
       </Card>
+          </div>
+        ) : null}
 
+        {tab === 'ops' ? (
+          <div className="tab-panel">
       <Card>
         <CardSection title="操作" description="全部成功才算 ok；部分失敗會顯示失敗">
           <div className="lifecycle-toolbar">
@@ -692,105 +619,248 @@ export function BackupsPage() {
           ) : null}
         </CardSection>
       </Card>
+          </div>
+        ) : null}
 
-      <Card>
-        <CardSection title={`備份檔案 (${items.length})`}>
-          {items.length === 0 ? (
-            <EmptyState
-              title="尚無備份"
-              description="執行「備份所有專案」或於專案詳情 Backup"
-            />
-          ) : (
-            <div className="table-wrap">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th>專案</th>
-                    <th>檔名</th>
-                    <th>大小</th>
-                    <th>時間</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((b) => (
-                    <tr key={`${b.projectId}:${b.name}`}>
-                      <td>
-                        <code className="inline">{b.projectId.slice(0, 8)}…</code>
-                      </td>
-                      <td>
-                        <code className="inline u-break-all">{b.name}</code>
-                      </td>
-                      <td>{formatBytes(b.bytes)}</td>
-                      <td className="muted u-nowrap">
-                        {b.mtime ? new Date(b.mtime).toLocaleString() : '—'}
-                      </td>
-                      <td>
-                        <div className="btn-row">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              const q = new URLSearchParams({
-                                projectId: b.projectId,
-                                name: b.name,
-                              });
-                              window.open(`/api/v1/backups/download?${q}`, '_blank');
-                            }}
-                          >
-                            下載
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              setRestoreMode('dry-run');
-                              setRestoreTarget(b);
-                            }}
-                          >
-                            預覽
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              setRestoreMode('web');
-                              setRestoreTarget(b);
-                            }}
-                          >
-                            還原 web
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              setRestoreMode('full');
-                              setRestoreTarget(b);
-                            }}
-                          >
-                            完整還原
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => setDeleteTarget(b)}
-                          >
-                            刪除
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardSection>
-      </Card>
+        {tab === 'remote' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="遠端推送目標"
+                description="本地 tar 成功後可推送到 SFTP、本機路徑或 S3"
+              >
+                <FormLayout columns={2}>
+                  <Field label="啟用遠端推送" htmlFor="bk-en" flush>
+                    <select
+                      id="bk-en"
+                      value={remote.enabled ? 'yes' : 'no'}
+                      onChange={(e) =>
+                        setRemote((r) => ({ ...r, enabled: e.target.value === 'yes' }))
+                      }
+                    >
+                      <option value="no">否</option>
+                      <option value="yes">是</option>
+                    </select>
+                  </Field>
+                  <Field label="目標類型" htmlFor="bk-kind" flush>
+                    <select
+                      id="bk-kind"
+                      value={remote.kind}
+                      onChange={(e) =>
+                        setRemote((r) => ({
+                          ...r,
+                          kind:
+                            e.target.value === 'local' || e.target.value === 's3'
+                              ? e.target.value
+                              : 'sftp',
+                        }))
+                      }
+                    >
+                      <option value="sftp">SFTP / scp</option>
+                      <option value="local">本機路徑鏡像</option>
+                      <option value="s3">S3（需 aws cli）</option>
+                    </select>
+                  </Field>
+                  {remote.kind === 'sftp' ? (
+                    <>
+                      <Field label="主機" htmlFor="bk-host" flush>
+                        <input
+                          id="bk-host"
+                          value={remote.host ?? ''}
+                          onChange={(e) => setRemote((r) => ({ ...r, host: e.target.value }))}
+                          placeholder="backup.example.com"
+                        />
+                      </Field>
+                      <Field label="埠" htmlFor="bk-port" flush>
+                        <input
+                          id="bk-port"
+                          value={String(remote.port ?? 22)}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, port: Number(e.target.value) || 22 }))
+                          }
+                        />
+                      </Field>
+                      <Field label="用戶名" htmlFor="bk-user" flush>
+                        <input
+                          id="bk-user"
+                          value={remote.username ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, username: e.target.value }))
+                          }
+                        />
+                      </Field>
+                      <Field
+                        label="密碼"
+                        htmlFor="bk-pass"
+                        hint="可留空，改用主機 SSH key"
+                        flush
+                      >
+                        <input
+                          id="bk-pass"
+                          type="password"
+                          value={remote.password ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, password: e.target.value }))
+                          }
+                          placeholder="已儲存則留空"
+                        />
+                      </Field>
+                    </>
+                  ) : null}
+                  {remote.kind === 's3' ? (
+                    <>
+                      <Field label="Bucket 路徑" htmlFor="bk-s3b" flush>
+                        <input
+                          id="bk-s3b"
+                          value={remote.s3Bucket ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, s3Bucket: e.target.value }))
+                          }
+                          placeholder="my-bucket/ysk"
+                        />
+                      </Field>
+                      <Field label="區域" htmlFor="bk-s3r" flush>
+                        <input
+                          id="bk-s3r"
+                          value={remote.s3Region ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, s3Region: e.target.value }))
+                          }
+                        />
+                      </Field>
+                      <Field label="Endpoint（可選）" htmlFor="bk-s3e" flush>
+                        <input
+                          id="bk-s3e"
+                          value={remote.s3Endpoint ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, s3Endpoint: e.target.value }))
+                          }
+                        />
+                      </Field>
+                      <Field label="Access Key" htmlFor="bk-ak" flush>
+                        <input
+                          id="bk-ak"
+                          value={remote.awsAccessKeyId ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, awsAccessKeyId: e.target.value }))
+                          }
+                        />
+                      </Field>
+                      <Field label="Secret Key" htmlFor="bk-sk" flush>
+                        <input
+                          id="bk-sk"
+                          type="password"
+                          value={remote.awsSecretAccessKey ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({
+                              ...r,
+                              awsSecretAccessKey: e.target.value,
+                            }))
+                          }
+                          placeholder="已儲存則留空"
+                        />
+                      </Field>
+                    </>
+                  ) : null}
+                  {remote.kind !== 's3' ? (
+                    <Field
+                      label={remote.kind === 'local' ? '本機鏡像路徑' : '遠端路徑'}
+                      htmlFor="bk-path"
+                      fullWidth
+                      flush
+                    >
+                      <input
+                        id="bk-path"
+                        value={remote.path ?? ''}
+                        onChange={(e) => setRemote((r) => ({ ...r, path: e.target.value }))}
+                        placeholder="/backups/ysk"
+                      />
+                    </Field>
+                  ) : null}
+                </FormLayout>
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title="Restic 增量"
+                description="可選；需主機 PATH 有 restic"
+              >
+                <FormLayout columns={2}>
+                  <Field label="啟用 restic" htmlFor="rs-en" flush>
+                    <select
+                      id="rs-en"
+                      value={restic.enabled ? 'yes' : 'no'}
+                      onChange={(e) =>
+                        setRestic((r) => ({ ...r, enabled: e.target.value === 'yes' }))
+                      }
+                    >
+                      <option value="no">否</option>
+                      <option value="yes">是</option>
+                    </select>
+                  </Field>
+                  <Field label="Repo 路徑" htmlFor="rs-path" flush>
+                    <input
+                      id="rs-path"
+                      value={restic.repoPath ?? ''}
+                      onChange={(e) =>
+                        setRestic((r) => ({ ...r, repoPath: e.target.value }))
+                      }
+                      placeholder="dataDir/restic-repo"
+                    />
+                  </Field>
+                  <Field label="Repo 密碼" htmlFor="rs-pw" flush>
+                    <input
+                      id="rs-pw"
+                      type="password"
+                      value={restic.password ?? ''}
+                      onChange={(e) =>
+                        setRestic((r) => ({ ...r, password: e.target.value }))
+                      }
+                    />
+                  </Field>
+                  <Field label="或 S3 repo URL" htmlFor="rs-s3" flush>
+                    <input
+                      id="rs-s3"
+                      value={restic.s3Repo ?? ''}
+                      onChange={(e) =>
+                        setRestic((r) => ({ ...r, s3Repo: e.target.value }))
+                      }
+                      placeholder="s3:s3.amazonaws.com/bucket/path"
+                    />
+                  </Field>
+                </FormLayout>
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection title="排除規則" description="tar 排除路徑，每行一個 glob">
+                <FormLayout>
+                  <Field label="排除清單" htmlFor="bk-ex" fullWidth flush>
+                    <textarea
+                      id="bk-ex"
+                      rows={5}
+                      value={exclusionsText}
+                      onChange={(e) => setExclusionsText(e.target.value)}
+                      placeholder={'node_modules\n.git'}
+                    />
+                  </Field>
+                </FormLayout>
+                <FormActions>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={settingsBusy}
+                    onClick={() => void saveSettings()}
+                  >
+                    儲存全部設定
+                  </Button>
+                </FormActions>
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+      </Tabs>
 
       <ConfirmDialog
         open={Boolean(restoreTarget)}

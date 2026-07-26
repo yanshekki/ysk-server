@@ -61,7 +61,7 @@ export class AiTaskService {
 
   get(id: string): AiTask {
     const t = this.store.get(id);
-    if (!t) throw new YskError(ErrorCodes.NOT_FOUND, `task not found: ${id}`, { httpStatus: 404 });
+    if (!t) throw new YskError(ErrorCodes.NOT_FOUND, `找不到任務：${id}`, { httpStatus: 404 });
     return t;
   }
 
@@ -129,7 +129,7 @@ export class AiTaskService {
     const task = this.get(id);
     const step = task.steps.find((s) => s.id === stepId);
     if (!step) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'step not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到步驟', { httpStatus: 404 });
     }
     step.status = 'rejected';
     step.error = `rejected by ${actor}`;

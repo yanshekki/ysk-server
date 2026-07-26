@@ -14,6 +14,11 @@ export interface FeaturePageLayoutProps {
   children: ReactNode;
 }
 
+/**
+ * Standard page chrome for every feature route.
+ * Spacing is owned by CSS tokens (.feature-page / .feature-page__body.stack).
+ * Do not add extra margin wrappers around children.
+ */
 export function FeaturePageLayout({
   title,
   subtitle,
@@ -24,14 +29,16 @@ export function FeaturePageLayout({
 }: FeaturePageLayoutProps) {
   return (
     <div className="feature-page">
-      {backTo ? (
-        <div className="feature-page__back">
-          <Link to={backTo} className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            ← {backLabel}
-          </Link>
-        </div>
-      ) : null}
-      <PageHeader title={title} subtitle={subtitle} actions={actions} />
+      <div className="feature-page__head">
+        {backTo ? (
+          <div className="feature-page__back">
+            <Link to={backTo} className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+              ← {backLabel}
+            </Link>
+          </div>
+        ) : null}
+        <PageHeader title={title} subtitle={subtitle} actions={actions} />
+      </div>
       <div className="feature-page__body stack">{children}</div>
     </div>
   );

@@ -12,6 +12,8 @@ import {
   DescriptionList,
   EmptyState,
   FeaturePageLayout,
+  KpiCard,
+  KpiGrid,
   LoadingBlock,
   SummaryStrip,
 } from '../shared/components/ui';
@@ -99,56 +101,66 @@ export function UpdatesPage() {
         ]}
       />
 
-      <div className="grid">
-        <Card>
-          <CardSection title="自身更新" description="由管理面板檢查並套用">
-            {selfUpdate ? (
-              <>
-                <DescriptionList
-                  columns={2}
-                  items={Object.entries(selfUpdate as Record<string, unknown>)
-                    .filter(([, v]) => v == null || typeof v !== 'object')
-                    .filter(([k]) => !/YSK_EXECUTE|command|shasum|registryUrl/i.test(k))
-                    .slice(0, 12)
-                    .map(([k, v]) => ({
-                      label: SELF_LABELS[k] ?? k,
-                      value: Array.isArray(v) ? v.join(', ') : String(v),
-                    }))}
-                />
-                <div className="lifecycle-toolbar u-mt-3">
-                  <Button variant="primary" size="md" loading={busy} onClick={() => void applySelf()}>
-                    套用更新
-                  </Button>
-                </div>
-              </>
+      <KpiGrid cols={2}>
+        <KpiCard
+          label="自身更新"
+          hint="管理面板"
+          footer={
+            <Button variant="primary" size="sm" loading={busy} onClick={() => void applySelf()}>
+              套用更新
+            </Button>
+          }
+        >
+          {selfUpdate ? (
+            <>
+              <p className="dash-kpi__meta">由管理面板檢查並套用</p>
+              <DescriptionList
+                columns={2}
+                items={Object.entries(selfUpdate as Record<string, unknown>)
+                  .filter(([, v]) => v == null || typeof v !== 'object')
+                  .filter(([k]) => !/YSK_EXECUTE|command|shasum|registryUrl/i.test(k))
+                  .slice(0, 8)
+                  .map(([k, v]) => ({
+                    label: SELF_LABELS[k] ?? k,
+                    value: Array.isArray(v) ? v.join(', ') : String(v),
+                  }))}
+              />
+            </>
+          ) : (
+            <LoadingBlock label="載入中…" />
+          )}
+        </KpiCard>
+        <KpiCard
+          label="排程"
+          hint={jobs.length > 0 ? `${jobs.length} 項` : '無'}
+          footer={
+            lastAt ? (
+              <span className="dash-kpi__hint">清點：{lastAt}</span>
             ) : (
-              <LoadingBlock label="載入中…" />
-            )}
-          </CardSection>
-        </Card>
-        <Card>
-          <CardSection title="排程">
-            {jobs.length === 0 ? (
-              <p className="muted">尚無排程（或未啟用）</p>
-            ) : (
-              <ul className="list-plain list-spaced">
-                {jobs.map((j) => (
-                  <li key={String(j.id)}>
-                    <strong>{String(j.id)}</strong>{' '}
-                    <span className="muted">
-                      每 {String(j.intervalMs)}ms · 上次 {String(j.lastRunAt ?? '—')}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {lastAt ? <p className="muted meta-block--top">清點時間：{lastAt}</p> : null}
-          </CardSection>
-        </Card>
-      </div>
+              <span className="dash-kpi__hint">—</span>
+            )
+          }
+        >
+          {jobs.length === 0 ? (
+            <div className="dash-kpi__empty">
+              <p className="dash-kpi__meta">尚無排程（或未啟用）</p>
+            </div>
+          ) : (
+            <ul className="dash-kpi__list">
+              {jobs.map((j) => (
+                <li key={String(j.id)}>
+                  <span className="dash-kpi__list-name">{String(j.id)}</span>
+                  <span className="dash-kpi__hint">
+                    {String(j.intervalMs)}ms
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </KpiCard>
+      </KpiGrid>
 
-      <div className="u-mt-4">
-        <Card>
+      <Card>
           <CardSection title="套件清點">
             {inventory.length === 0 ? (
               <EmptyState
@@ -227,7 +239,6 @@ export function UpdatesPage() {
             )}
           </CardSection>
         </Card>
-      </div>
     </FeaturePageLayout>
   );
 }

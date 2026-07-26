@@ -38,7 +38,7 @@ export async function findFreePort(from = 3100, to = 3999): Promise<number> {
       if (free) return port;
     }
   }
-  throw new Error(`No free port in range ${from}-${to}`);
+  throw new Error(`在 ${from}–${to} 範圍內找不到可用埠`);
 }
 
 function canBind(port: number): Promise<boolean> {

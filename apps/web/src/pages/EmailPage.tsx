@@ -12,10 +12,11 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
-  FormGrid,
+  FormLayout,
   Modal,
   SoftwareInstallBanner,
   SummaryStrip,
+  FormHint,
 } from '../shared/components/ui';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 
@@ -158,7 +159,7 @@ export function EmailPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title={t('email.create')}
-        description="只登記域名；軟件安裝與 DNS 在詳情頁完成"
+        description="只登記郵件域名到控制面；軟件安裝、DNS、郵箱在詳情頁完成"
         footer={
           <>
             <Button
@@ -176,8 +177,14 @@ export function EmailPage() {
         }
       >
         <form id="email-create-form" onSubmit={(e) => void onCreate(e)}>
-          <FormGrid>
-            <Field label={t('email.domain')} techKey="domain" htmlFor="edomain" flush>
+          <FormLayout columns={2}>
+            <Field
+              label={t('email.domain')}
+              htmlFor="edomain"
+              flush
+              required
+              hint="apex 域名，例如 example.com（不含 mail. 前綴）"
+            >
               <input
                 id="edomain"
                 value={domain}
@@ -185,17 +192,32 @@ export function EmailPage() {
                 placeholder="example.com"
                 required
                 autoFocus
+                spellCheck={false}
               />
             </Field>
-            <Field label={t('email.serverIp')} techKey="server_ip" htmlFor="eip" flush>
+            <Field
+              label={t('email.serverIp')}
+              htmlFor="eip"
+              flush
+              required
+              hint="此域名郵件服務對外 IP（常用於 MX／A 建議）"
+            >
               <input
                 id="eip"
                 value={serverIp}
-                onChange={(e) => setServerIp(e.target.value)}
+                onChange={(e) => {
+                  setServerIp(e.target.value);
+                  setServerContext({ serverIp: e.target.value });
+                }}
                 required
+                placeholder="203.0.113.10"
+                spellCheck={false}
               />
             </Field>
-          </FormGrid>
+          </FormLayout>
+          <FormHint>
+            登記成功 ≠ 郵件已可收發。請到域名詳情完成一鍵設定、DNS 與 SSL。
+          </FormHint>
         </form>
       </Modal>
     </FeaturePageLayout>

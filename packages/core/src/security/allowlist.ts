@@ -25,7 +25,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: 'Read a file path',
+    description: '讀取檔案',
     argsSchema: { path: 'string' },
   },
   {
@@ -33,7 +33,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: 'List directory',
+    description: '列出目錄',
     argsSchema: { path: 'string' },
   },
   {
@@ -41,21 +41,21 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: 'Read system information',
+    description: '讀取系統資訊',
   },
   {
     tool: 'process.list',
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: 'List processes',
+    description: '列出行程',
   },
   {
     tool: 'service.status',
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: 'Query service status',
+    description: '查詢服務狀態',
     argsSchema: { name: 'string' },
   },
   {
@@ -63,7 +63,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'medium',
     requiresApproval: true,
-    description: 'Write a file',
+    description: '寫入檔案',
     argsSchema: { path: 'string', content: 'string' },
   },
   {
@@ -71,7 +71,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'high',
     requiresApproval: true,
-    description: 'Restart a system service',
+    description: '重啟系統服務',
     argsSchema: { name: 'string' },
   },
   {
@@ -79,7 +79,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'high',
     requiresApproval: true,
-    description: 'Install a package',
+    description: '安裝套件',
     argsSchema: { name: 'string' },
   },
   {
@@ -87,7 +87,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'critical',
     requiresApproval: true,
-    description: 'Remove a package',
+    description: '移除套件',
     argsSchema: { name: 'string' },
   },
   {
@@ -95,7 +95,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'critical',
     requiresApproval: true,
-    description: 'Delete a file or directory',
+    description: '刪除檔案或目錄',
     argsSchema: { path: 'string' },
   },
   {
@@ -103,21 +103,21 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: false,
     risk: 'critical',
     requiresApproval: true,
-    description: 'Arbitrary shell — denied by default',
+    description: '任意 shell — 預設拒絕',
   },
   {
     tool: 'user.delete',
     allowed: false,
     risk: 'critical',
     requiresApproval: true,
-    description: 'Delete Linux user — denied by default',
+    description: '刪除系統用戶 — 預設拒絕',
   },
   {
     tool: 'firewall.flush',
     allowed: false,
     risk: 'critical',
     requiresApproval: true,
-    description: 'Flush firewall rules — denied by default',
+    description: '清空防火牆規則 — 預設拒絕',
   },
 ];
 
@@ -154,7 +154,7 @@ export class Allowlist {
         allowed: false,
         requiresApproval: false,
         risk: 'critical',
-        reason: `Tool not on allowlist: ${tool}`,
+        reason: `工具不在允許清單：${tool}`,
       };
     }
     if (!entry.allowed) {
@@ -162,7 +162,7 @@ export class Allowlist {
         allowed: false,
         requiresApproval: entry.requiresApproval,
         risk: entry.risk,
-        reason: `Tool explicitly denied: ${tool}`,
+        reason: `工具已明確拒絕：${tool}`,
         entry,
       };
     }
@@ -180,7 +180,7 @@ export class Allowlist {
   assertAllowed(tool: string): AllowlistEntry {
     const result = this.evaluate(tool);
     if (!result.allowed || !result.entry) {
-      throw new YskError(ErrorCodes.ALLOWLIST_DENIED, result.reason ?? 'Denied', {
+      throw new YskError(ErrorCodes.ALLOWLIST_DENIED, result.reason ?? '已拒絕', {
         httpStatus: 403,
         details: { tool },
       });

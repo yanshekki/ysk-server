@@ -82,7 +82,7 @@ export async function backupAllProjects(input: {
       results.push({
         projectId: p.id,
         ok: false,
-        notes: [`skip missing home ${p.home_dir}`],
+        notes: [`略過：家目錄不存在 ${p.home_dir}`],
         commandResults: [],
       });
       continue;
@@ -135,7 +135,7 @@ export async function backupProject(input: {
   excludes?: string[];
 }): Promise<BackupResult> {
   if (!existsSync(input.homeDir)) {
-    throw new YskError(ErrorCodes.NOT_FOUND, `Project home missing: ${input.homeDir}`, {
+    throw new YskError(ErrorCodes.NOT_FOUND, `專案目錄不存在：${input.homeDir}`, {
       httpStatus: 404,
     });
   }
@@ -166,7 +166,7 @@ export async function backupProject(input: {
     if (r2.exitCode !== 0) {
       return {
         ok: false,
-        notes: [`tar failed: ${r2.stderr || r.stderr}`],
+        notes: [`tar 失敗：${r2.stderr || r.stderr}`],
         commandResults: [
           { argv: ['tar', '...'], exitCode: r.exitCode, stderr: r.stderr },
           { argv: ['tar', '...'], exitCode: r2.exitCode, stderr: r2.stderr },
@@ -196,7 +196,7 @@ export async function backupProject(input: {
     ok: true,
     archivePath,
     bytes,
-    notes: [`Backup written ${archivePath}`, `Retention: keep last 10 archives`],
+    notes: [`已寫入備份 ${archivePath}`, '保留策略：最近 10 份'],
     commandResults: [{ argv: ['tar', '-czf', archivePath], exitCode: 0, stderr: '' }],
   };
 }

@@ -30,7 +30,7 @@ export async function applyPackageUpdate(input: {
       applied: false,
       blocked: true,
       blockMessage: '此更新需人工確認（高風險／需審批）。請勾選確認後再套用。',
-      notes: [...notes, 'blocked: needs confirmHighRisk'],
+      notes: [...notes, '已封鎖：需確認高風險更新'],
       commands: plan.commands,
     };
   }
@@ -40,8 +40,8 @@ export async function applyPackageUpdate(input: {
       ok: false,
       applied: false,
       blocked: true,
-      blockMessage: '未開啟系統變更權限（YSK_EXECUTE）',
-      notes: [...notes, 'blocked: no execute'],
+      blockMessage: '未開啟系統變更權限',
+      notes: [...notes, '已封鎖：未開啟系統變更'],
       commands: plan.commands,
     };
   }
@@ -50,8 +50,8 @@ export async function applyPackageUpdate(input: {
       ok: false,
       applied: false,
       blocked: true,
-      blockMessage: '套件更新需要 root',
-      notes: [...notes, 'blocked: no root'],
+      blockMessage: '套件更新需要系統管理員權限',
+      notes: [...notes, '已封鎖：需要管理員權限'],
       commands: plan.commands,
     };
   }

@@ -24,7 +24,7 @@ export interface PackageInventoryItem {
  */
 export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
   if (!item.packageName || !item.currentVersion) {
-    throw new YskError(ErrorCodes.VALIDATION, 'packageName and currentVersion required', {
+    throw new YskError(ErrorCodes.VALIDATION, '請提供套件名稱與目前版本', {
       httpStatus: 400,
     });
   }
@@ -96,7 +96,7 @@ export function buildAdvisoryQueries(
   version: string,
 ): Array<{ source: string; query: string }> {
   if (!packageName) {
-    throw new YskError(ErrorCodes.VALIDATION, 'packageName required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請提供套件名稱', { httpStatus: 400 });
   }
   return [
     { source: 'nvd', query: `cpe:2.3:a:*:${packageName}:${version}:*:*:*:*:*:*:*` },

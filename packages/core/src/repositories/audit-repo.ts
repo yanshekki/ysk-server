@@ -35,4 +35,18 @@ export class AuditRepository {
   listRecent(limit = 50): AuditEvent[] {
     return this.db.snapshot.audit_events.slice(0, limit).map((e) => ({ ...e }));
   }
+
+  /** Filter by resource id and optional action prefix (e.g. project.deploy). */
+  listForResource(
+    resourceId: string,
+    opts?: { actionPrefix?: string; limit?: number },
+  ): AuditEvent[] {
+    const limit = opts?.limit ?? 30;
+    const prefix = opts?.actionPrefix;
+    return this.db.snapshot.audit_events
+      .filter((e) => e.resource === resourceId)
+      .filter((e) => (prefix ? e.action.startsWith(prefix) : true))
+      .slice(0, limit)
+      .map((e) => ({ ...e }));
+  }
 }

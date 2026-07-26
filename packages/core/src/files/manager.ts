@@ -56,12 +56,12 @@ function assertInside(root: string, target: string): string {
   const abs = resolve(rootAbs, target);
   const rel = relative(rootAbs, abs);
   if (rel.startsWith('..') || rel === '..') {
-    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `Path escapes sandbox: ${target}`, {
+    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `路徑超出沙箱範圍：${target}`, {
       httpStatus: 403,
     });
   }
   if (!abs.startsWith(rootAbs)) {
-    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `Path escapes sandbox: ${target}`, {
+    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `路徑超出沙箱範圍：${target}`, {
       httpStatus: 403,
     });
   }
@@ -131,11 +131,11 @@ export class FileManager {
   list(relPath = '.', opts: ListOptions = {}): FileEntry[] {
     const abs = assertInside(this.root, relPath || '.');
     if (!existsSync(abs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${relPath}`, { httpStatus: 404 });
     }
     const st = statSync(abs);
     if (!st.isDirectory()) {
-      throw new YskError(ErrorCodes.VALIDATION, 'Not a directory', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '不是資料夾', { httpStatus: 400 });
     }
     let items = readdirSync(abs)
       .filter((name) => {
@@ -169,11 +169,11 @@ export class FileManager {
   readText(relPath: string, maxBytes = 2_000_000): { path: string; content: string; bytes: number; mime?: string } {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs) || !statSync(abs).isFile()) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `File not found: ${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到檔案：${relPath}`, { httpStatus: 404 });
     }
     const buf = readFileSync(abs);
     if (buf.length > maxBytes) {
-      throw new YskError(ErrorCodes.VALIDATION, `File too large (>${maxBytes} bytes)`, {
+      throw new YskError(ErrorCodes.VALIDATION, `檔案過大（>${maxBytes} bytes）`, {
         httpStatus: 400,
       });
     }
@@ -188,7 +188,7 @@ export class FileManager {
   readBinary(relPath: string): { path: string; buffer: Buffer; mime: string; name: string } {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs) || !statSync(abs).isFile()) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `File not found: ${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到檔案：${relPath}`, { httpStatus: 404 });
     }
     const name = basename(abs);
     return {
@@ -253,7 +253,7 @@ export class FileManager {
   createTextFile(relPath: string, content = ''): { path: string; bytes: number } {
     const abs = assertInside(this.root, relPath);
     if (existsSync(abs)) {
-      throw new YskError(ErrorCodes.VALIDATION, `Already exists: ${relPath}`, { httpStatus: 409 });
+      throw new YskError(ErrorCodes.VALIDATION, `已存在：${relPath}`, { httpStatus: 409 });
     }
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, content, 'utf8');
@@ -263,7 +263,7 @@ export class FileManager {
   /** Permanent delete (used by trash purge) */
   removePermanent(relPath: string): { path: string; deleted: boolean } {
     if (!relPath || relPath === '.' || relPath === '/') {
-      throw new YskError(ErrorCodes.VALIDATION, 'Refusing to delete sandbox root', {
+      throw new YskError(ErrorCodes.VALIDATION, '不可刪除沙箱根目錄', {
         httpStatus: 400,
       });
     }
@@ -281,7 +281,7 @@ export class FileManager {
    */
   remove(relPath: string): { path: string; deleted: boolean; trashId?: string } {
     if (!relPath || relPath === '.' || relPath === '/' || relPath.startsWith(TRASH_DIR)) {
-      throw new YskError(ErrorCodes.VALIDATION, 'Refusing to delete sandbox root or trash path', {
+      throw new YskError(ErrorCodes.VALIDATION, '不可刪除沙箱根目錄或回收桶路徑', {
         httpStatus: 400,
       });
     }
@@ -345,7 +345,7 @@ export class FileManager {
     const dir = join(this.trashRoot(), safe);
     const metaPath = join(dir, 'meta.json');
     if (!existsSync(metaPath)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'Trash item not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到回收項目', { httpStatus: 404 });
     }
     const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as {
       originalPath: string;
@@ -354,7 +354,7 @@ export class FileManager {
     const src = join(dir, meta.name);
     const dest = assertInside(this.root, meta.originalPath);
     if (existsSync(dest)) {
-      throw new YskError(ErrorCodes.VALIDATION, `Target exists: ${meta.originalPath}`, {
+      throw new YskError(ErrorCodes.VALIDATION, `目標已存在：${meta.originalPath}`, {
         httpStatus: 409,
       });
     }
@@ -385,7 +385,7 @@ export class FileManager {
     const fromAbs = assertInside(this.root, fromPath);
     const toAbs = assertInside(this.root, toPath);
     if (!existsSync(fromAbs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${fromPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${fromPath}`, { httpStatus: 404 });
     }
     mkdirSync(dirname(toAbs), { recursive: true });
     renameSync(fromAbs, toAbs);
@@ -400,7 +400,7 @@ export class FileManager {
     const fromAbs = assertInside(this.root, fromPath);
     const toAbs = assertInside(this.root, toPath);
     if (!existsSync(fromAbs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${fromPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${fromPath}`, { httpStatus: 404 });
     }
     mkdirSync(dirname(toAbs), { recursive: true });
     const st = statSync(fromAbs);
@@ -415,7 +415,7 @@ export class FileManager {
   stat(relPath: string): FileEntry {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${relPath}`, { httpStatus: 404 });
     }
     return toEntry(this.root, abs);
   }
@@ -426,11 +426,11 @@ export class FileManager {
   chmod(relPath: string, mode: string): { path: string; mode: string } {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${relPath}`, { httpStatus: 404 });
     }
     const cleaned = String(mode).trim().replace(/^0x/i, '');
     if (!/^[0-7]{3,4}$/.test(cleaned)) {
-      throw new YskError(ErrorCodes.VALIDATION, 'mode must be octal 3–4 digits', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '權限模式須為 3–4 位八進制數字', { httpStatus: 400 });
     }
     const n = parseInt(cleaned, 8);
     chmodSync(abs, n);
@@ -443,18 +443,18 @@ export class FileManager {
    */
   zip(paths: string[], destZip: string): { path: string; bytes: number; notes: string[] } {
     if (!paths.length) {
-      throw new YskError(ErrorCodes.VALIDATION, 'paths required', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
     }
     const destAbs = assertInside(this.root, destZip);
     if (!destZip.toLowerCase().endsWith('.zip')) {
-      throw new YskError(ErrorCodes.VALIDATION, 'dest must end with .zip', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '目的地必須以 .zip 結尾', { httpStatus: 400 });
     }
     mkdirSync(dirname(destAbs), { recursive: true });
     const rels: string[] = [];
     for (const p of paths) {
       const abs = assertInside(this.root, p);
       if (!existsSync(abs)) {
-        throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${p}`, { httpStatus: 404 });
+        throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${p}`, { httpStatus: 404 });
       }
       rels.push(relative(this.root, abs) || '.');
     }
@@ -466,7 +466,7 @@ export class FileManager {
     if (r.error || r.status !== 0) {
       throw new YskError(
         ErrorCodes.INTERNAL,
-        `zip failed: ${r.stderr || r.error?.message || 'exit ' + r.status}`,
+        `壓縮失敗： ${r.stderr || r.error?.message || 'exit ' + r.status}`,
         { httpStatus: 500 },
       );
     }
@@ -481,7 +481,7 @@ export class FileManager {
     const zipAbs = assertInside(this.root, zipPath);
     const destAbs = assertInside(this.root, destDir || '.');
     if (!existsSync(zipAbs) || !statSync(zipAbs).isFile()) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${zipPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${zipPath}`, { httpStatus: 404 });
     }
     mkdirSync(destAbs, { recursive: true });
     const r = spawnSync('unzip', ['-o', '-q', zipAbs, '-d', destAbs], {
@@ -492,7 +492,7 @@ export class FileManager {
       // unzip exit 1 = warnings
       throw new YskError(
         ErrorCodes.INTERNAL,
-        `unzip failed: ${r.stderr || r.error?.message || 'exit ' + r.status}`,
+        `un壓縮失敗： ${r.stderr || r.error?.message || 'exit ' + r.status}`,
         { httpStatus: 500 },
       );
     }

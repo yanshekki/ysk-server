@@ -13,16 +13,24 @@ import {
   Button,
   Card,
   CardSection,
+  EmptyState,
   FeatureIconGrid,
   Field,
-  FormGrid,
+  FormLayout,
   LoadingBlock,
   PageHeader,
   SummaryStrip,
+  Tabs,
   type FeatureTileBadge,
+  FormActions,
+  FormHint,
+  CheckboxField,
 } from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
+import { usePageTab } from '../shared/hooks/usePageTab';
+
+const DASH_TABS = ['overview', 'wizard', 'notifications', 'features'] as const;
 
 /** Map nav key → software feature id (for install probe) */
 const KEY_TO_FEATURE: Record<string, string> = {
@@ -41,6 +49,9 @@ const KEY_TO_FEATURE: Record<string, string> = {
   redisService: 'redis',
   node: 'node',
   php: 'php',
+  python: 'python',
+  go: 'go',
+  rust: 'rust',
   firewall: 'firewall',
   fail2ban: 'fail2ban',
   email: 'email',
@@ -104,7 +115,9 @@ export function DashboardPage() {
   >([]);
   const [wizName, setWizName] = useState('');
   const [wizDomain, setWizDomain] = useState('');
-  const [wizRuntime, setWizRuntime] = useState<'node' | 'php' | 'static'>('node');
+  const [wizRuntime, setWizRuntime] = useState<
+    'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
+  >('node');
   const [wizDns, setWizDns] = useState(true);
   const [wizMail, setWizMail] = useState(true);
   const [wizDb, setWizDb] = useState(false);
@@ -170,6 +183,8 @@ export function DashboardPage() {
   const running = projects.filter((p) => p.processStatus === 'running').length;
   const executeEnabled = health?.executeEnabled;
 
+  const [tab, setTab] = usePageTab(DASH_TABS, 'overview');
+
   const tiles = useMemo(() => {
     return allFeatureTiles()
       .filter((i) => !['systemIndex'].includes(i.key))
@@ -185,8 +200,14 @@ export function DashboardPage() {
       }));
   }, [t, software, executeEnabled, readiness?.productionReady]);
 
+  const notifBadge =
+    notifications.length +
+    (applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0)
+      ? applyAudit.findings.length
+      : 0);
+
   return (
-    <div>
+    <div className="stack stack--lg">
       <PageHeader
         title={t('dashboard.title')}
         subtitle={`${t('dashboard.welcome')}${user ? ` — ${user.username}` : ''}`}
@@ -196,128 +217,6 @@ export function DashboardPage() {
       {wizErr ? <Alert variant="error">{wizErr}</Alert> : null}
       {wizMsg ? <Alert variant="ok">{wizMsg}</Alert> : null}
       {loading ? <LoadingBlock /> : null}
-
-      <Card>
-        <CardSection
-          title="一鍵建立"
-          description="專案 + 可選 DNS / 郵件 / DB（draft 需各頁套用）"
-        >
-          <form onSubmit={(e) => void onWizard(e)}>
-            <FormGrid>
-              <Field label="專案名稱" htmlFor="wiz-name" flush>
-                <input
-                  id="wiz-name"
-                  value={wizName}
-                  onChange={(e) => setWizName(e.target.value)}
-                  required
-                />
-              </Field>
-              <Field label="域名（可空）" htmlFor="wiz-dom" flush>
-                <input
-                  id="wiz-dom"
-                  value={wizDomain}
-                  onChange={(e) => setWizDomain(e.target.value)}
-                  placeholder="app.example.com"
-                />
-              </Field>
-              <Field label="Runtime" htmlFor="wiz-rt" flush>
-                <select
-                  id="wiz-rt"
-                  value={wizRuntime}
-                  onChange={(e) => setWizRuntime(e.target.value as typeof wizRuntime)}
-                >
-                  <option value="node">node</option>
-                  <option value="php">php</option>
-                  <option value="static">static</option>
-                </select>
-              </Field>
-            </FormGrid>
-            <div className="btn-row u-mt-3">
-              <label className="field field--check">
-                <input
-                  type="checkbox"
-                  checked={wizDns}
-                  onChange={(e) => setWizDns(e.target.checked)}
-                  disabled={!wizDomain}
-                />
-                <span>DNS zone</span>
-              </label>
-              <label className="field field--check">
-                <input
-                  type="checkbox"
-                  checked={wizMail}
-                  onChange={(e) => setWizMail(e.target.checked)}
-                  disabled={!wizDomain}
-                />
-                <span>郵件域名</span>
-              </label>
-              <label className="field field--check">
-                <input
-                  type="checkbox"
-                  checked={wizDb}
-                  onChange={(e) => setWizDb(e.target.checked)}
-                />
-                <span>MySQL DB draft</span>
-              </label>
-              <Button type="submit" variant="primary" size="md" loading={wizBusy}>
-                建立
-              </Button>
-            </div>
-          </form>
-        </CardSection>
-      </Card>
-
-      {svcMatrix.length > 0 ? (
-        <Card>
-          <CardSection title="服務健康" description="systemctl 實時探測">
-            <div className="btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
-              {svcMatrix.slice(0, 12).map((s) => (
-                <Link
-                  key={s.id}
-                  to={s.href || '/services'}
-                  className="badge"
-                  style={{ textDecoration: 'none' }}
-                  title={s.active}
-                >
-                  <Badge
-                    tone={
-                      s.active === 'active' ? 'ok' : s.active === 'failed' ? 'danger' : 'warn'
-                    }
-                  >
-                    {s.label}: {s.activeLabel}
-                  </Badge>
-                </Link>
-              ))}
-            </div>
-            <p className="muted u-text-sm u-mt-2">
-              <Link to="/services">完整服務矩陣</Link>
-            </p>
-          </CardSection>
-        </Card>
-      ) : null}
-
-      {readiness ? (
-        <Alert variant={readiness.productionReady ? 'ok' : 'info'}>
-          <strong>就緒檢查：</strong>
-          {readiness.productionReady ? '可作生產' : '尚未完全就緒'} · 模式 {readiness.mode} · 分數{' '}
-          {readiness.score.ready}/{readiness.score.total}
-          {readiness.summary[1] ? ` — ${readiness.summary[1]}` : ''}
-          {' · '}
-          <Link to="/system/readiness">詳情</Link>
-        </Alert>
-      ) : null}
-
-      {expiringCerts && expiringCerts.length > 0 ? (
-        <Alert variant={expiringCerts.some((c) => c.days <= 7) ? 'error' : 'info'}>
-          <strong>憑證到期：</strong>
-          {expiringCerts
-            .slice(0, 4)
-            .map((c) => `${c.domain}（${c.days < 0 ? '已過期' : `${c.days} 日`}）`)
-            .join(' · ')}
-          {' · '}
-          <Link to="/ssl">SSL</Link>
-        </Alert>
-      ) : null}
 
       <SummaryStrip
         items={[
@@ -348,166 +247,455 @@ export function DashboardPage() {
         ]}
       />
 
-      {notifications.length > 0 ? (
-        <Card>
-          <CardSection
-            title={`通知中心（${notifications.length}）`}
-            description={`嚴重 ${notifCounts.critical} · 警告 ${notifCounts.warn} · 資訊 ${notifCounts.info}`}
-          >
-            <ul className="list-plain list-spaced">
-              {notifications.slice(0, 12).map((n) => (
-                <li key={n.id}>
-                  <Badge
-                    tone={
-                      n.level === 'critical' ? 'danger' : n.level === 'warn' ? 'warn' : 'info'
-                    }
-                  >
-                    {n.level}
-                  </Badge>{' '}
-                  <strong>{n.title}</strong>
-                  <span className="muted u-text-sm"> — {n.body}</span>
-                  {n.href ? (
-                    <>
-                      {' '}
-                      <Link to={n.href}>前往</Link>
-                    </>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </CardSection>
-        </Card>
-      ) : null}
+      <Tabs
+        tabs={[
+          { id: 'overview', label: '概覽' },
+          { id: 'wizard', label: '一鍵建立' },
+          {
+            id: 'notifications',
+            label: '通知',
+            badge: notifBadge || undefined,
+          },
+          { id: 'features', label: '功能入口' },
+        ]}
+        active={tab}
+        onChange={setTab}
+        variant="scroll"
+      >
+        {tab === 'overview' ? (
+          <div className="tab-panel">
+            {svcMatrix.length > 0 ? (
+              <Card>
+                <CardSection title="服務健康" description="systemctl 實時探測">
+                  <div className="chip-row">
+                    {svcMatrix.slice(0, 12).map((s) => (
+                      <Link
+                        key={s.id}
+                        to={s.href || '/services'}
+                        className="badge-link"
+                        title={s.active}
+                      >
+                        <Badge
+                          tone={
+                            s.active === 'active'
+                              ? 'ok'
+                              : s.active === 'failed'
+                                ? 'danger'
+                                : 'warn'
+                          }
+                        >
+                          {s.label}: {s.activeLabel}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                  <p className="muted u-text-sm u-mt-4">
+                    <Link to="/services">完整服務矩陣</Link>
+                  </p>
+                </CardSection>
+              </Card>
+            ) : null}
 
-      {applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0) ? (
-        <Card>
-          <CardSection
-            title="Apply 誠實審計"
-            description={`ok ${applyAudit.summary.ok} · warn ${applyAudit.summary.warn} · bad ${applyAudit.summary.bad}`}
-          >
-            <ul className="list-plain list-spaced">
-              {applyAudit.findings.map((f, i) => (
-                <li key={`${f.kind}-${f.name}-${i}`}>
-                  <Badge tone={f.severity === 'bad' ? 'danger' : 'warn'}>{f.severity}</Badge>{' '}
-                  <span className="muted u-text-sm">{f.kind}</span> <strong>{f.name}</strong>
-                  {f.issue ? <span className="muted"> — {f.issue}</span> : null}
-                  {f.href ? (
-                    <>
-                      {' '}
-                      <Link to={f.href}>開啟</Link>
-                    </>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </CardSection>
-        </Card>
-      ) : null}
+            {readiness ? (
+              <Alert variant={readiness.productionReady ? 'ok' : 'info'}>
+                <strong>就緒檢查：</strong>
+                {readiness.productionReady ? '可作生產' : '尚未完全就緒'} · 模式 {readiness.mode} ·
+                分數 {readiness.score.ready}/{readiness.score.total}
+                {readiness.summary[1] ? ` — ${readiness.summary[1]}` : ''}
+                {' · '}
+                <Link to="/system/readiness">詳情</Link>
+              </Alert>
+            ) : null}
 
-      <h2 className="section-title">{t('dashboard.features', { defaultValue: '功能選單' })}</h2>
-      <p className="muted meta-block">
-        {t('dashboard.featuresHint', {
-          defaultValue: '角標：就緒＝軟件已裝；未安裝＝需一鍵安裝；需權限＝未開系統變更。',
-        })}
-      </p>
-      <FeatureIconGrid items={tiles} />
+            {expiringCerts && expiringCerts.length > 0 ? (
+              <Alert variant={expiringCerts.some((c) => c.days <= 7) ? 'error' : 'info'}>
+                <strong>憑證到期：</strong>
+                {expiringCerts
+                  .slice(0, 4)
+                  .map((c) => `${c.domain}（${c.days < 0 ? '已過期' : `${c.days} 日`}）`)
+                  .join(' · ')}
+                {' · '}
+                <Link to="/ssl">SSL</Link>
+              </Alert>
+            ) : null}
 
-      <div className="grid u-mt-4">
-        <div className="card">
-          <h2 className="card__title">{t('dashboard.health')}</h2>
-          {health ? (
-            <>
-              <p className="meta-block">
-                <Badge tone={health.status === 'ok' ? 'ok' : 'warn'}>{health.status}</Badge>
-              </p>
+            {(() => {
+              const memPct =
+                metrics?.memory && typeof metrics.memory === 'object'
+                  ? Math.round(
+                      ((metrics.memory as { usedRatio: number }).usedRatio || 0) * 100,
+                    )
+                  : null;
+              const loadStr = Array.isArray(metrics?.loadavg)
+                ? (metrics!.loadavg as number[])
+                    .map((n) => (typeof n === 'number' ? n.toFixed(2) : String(n)))
+                    .join(' · ')
+                : String(metrics?.loadavg ?? '—');
+              const healthOk = health?.status === 'ok';
+
+              return (
+                <div className="dash-kpi-grid" role="list">
+                  {/* Health */}
+                  <article className="dash-kpi" role="listitem">
+                    <header className="dash-kpi__head">
+                      <span className="dash-kpi__label">{t('dashboard.health')}</span>
+                      <Badge tone={healthOk ? 'ok' : health ? 'warn' : 'neutral'}>
+                        {health?.status ?? '—'}
+                      </Badge>
+                    </header>
+                    <div className="dash-kpi__body">
+                      <p className="dash-kpi__value">
+                        {healthOk ? '正常' : health ? String(health.status) : '—'}
+                      </p>
+                      <p className="dash-kpi__meta">
+                        {health
+                          ? `${health.product} · v${health.version}`
+                          : '尚未取得健康狀態'}
+                      </p>
+                      <dl className="dash-kpi__facts">
+                        <div>
+                          <dt>{t('dashboard.protection')}</dt>
+                          <dd>{health?.protectionMode ?? '—'}</dd>
+                        </div>
+                        <div>
+                          <dt>系統變更</dt>
+                          <dd>
+                            {executeEnabled === true
+                              ? '已開'
+                              : executeEnabled === false
+                                ? '未開'
+                                : '—'}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                    <footer className="dash-kpi__foot">
+                      <Link to="/system/readiness" className="dash-kpi__link">
+                        就緒檢查 →
+                      </Link>
+                    </footer>
+                  </article>
+
+                  {/* Host metrics */}
+                  <article className="dash-kpi" role="listitem">
+                    <header className="dash-kpi__head">
+                      <span className="dash-kpi__label">主機指標</span>
+                      <span className="dash-kpi__hint">
+                        {metrics?.cpuCount != null ? `${String(metrics.cpuCount)} CPU` : '—'}
+                      </span>
+                    </header>
+                    <div className="dash-kpi__body">
+                      <p className="dash-kpi__value dash-kpi__value--sm">{loadStr}</p>
+                      <p className="dash-kpi__meta">Load average（1 · 5 · 15 分）</p>
+                      {memPct != null ? (
+                        <div className="dash-kpi__meter">
+                          <div className="dash-kpi__meter-row">
+                            <span>記憶體</span>
+                            <strong>{memPct}%</strong>
+                          </div>
+                          <div
+                            className="dash-kpi__meter-track"
+                            role="progressbar"
+                            aria-valuenow={memPct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                          >
+                            <div
+                              className={`dash-kpi__meter-fill${
+                                memPct >= 90
+                                  ? ' is-danger'
+                                  : memPct >= 75
+                                    ? ' is-warn'
+                                    : ''
+                              }`}
+                              style={{ width: `${Math.min(100, memPct)}%` }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="dash-kpi__meta">記憶體 —</p>
+                      )}
+                    </div>
+                    <footer className="dash-kpi__foot">
+                      <Link to="/metrics" className="dash-kpi__link">
+                        詳細指標 →
+                      </Link>
+                    </footer>
+                  </article>
+
+                  {/* Projects */}
+                  <article className="dash-kpi" role="listitem">
+                    <header className="dash-kpi__head">
+                      <span className="dash-kpi__label">{t('nav.projects')}</span>
+                      <span className="dash-kpi__hint">
+                        運行 {running}/{projects.length}
+                      </span>
+                    </header>
+                    <div className="dash-kpi__body">
+                      {projects.length === 0 ? (
+                        <div className="dash-kpi__empty">
+                          <p className="dash-kpi__value dash-kpi__value--sm">0</p>
+                          <p className="dash-kpi__meta">尚未有專案</p>
+                        </div>
+                      ) : (
+                        <ul className="dash-kpi__list">
+                          {projects.slice(0, 4).map((p) => (
+                            <li key={p.id}>
+                              <Link to={`/projects/${p.id}`} className="dash-kpi__list-name">
+                                {p.name}
+                              </Link>
+                              <Badge
+                                tone={p.processStatus === 'running' ? 'ok' : 'neutral'}
+                              >
+                                {p.processStatus ?? p.status ?? '—'}
+                              </Badge>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <footer className="dash-kpi__foot">
+                      {projects.length === 0 ? (
+                        <button
+                          type="button"
+                          className="dash-kpi__link btn--link"
+                          onClick={() => setTab('wizard')}
+                        >
+                          一鍵建立 →
+                        </button>
+                      ) : (
+                        <Link to="/projects" className="dash-kpi__link">
+                          全部專案 →
+                        </Link>
+                      )}
+                    </footer>
+                  </article>
+
+                  {/* Audit */}
+                  <article className="dash-kpi" role="listitem">
+                    <header className="dash-kpi__head">
+                      <span className="dash-kpi__label">{t('dashboard.audit')}</span>
+                      <span className="dash-kpi__hint">
+                        {audit.length > 0 ? `最近 ${Math.min(5, audit.length)}` : '—'}
+                      </span>
+                    </header>
+                    <div className="dash-kpi__body">
+                      {audit.length === 0 ? (
+                        <div className="dash-kpi__empty">
+                          <p className="dash-kpi__meta">
+                            {t('dashboard.needLogin', { defaultValue: '尚無審計紀錄' })}
+                          </p>
+                        </div>
+                      ) : (
+                        <ul className="dash-kpi__audit">
+                          {audit.slice(0, 5).map((a) => (
+                            <li key={String(a.id)}>
+                              <code className="inline">{String(a.action)}</code>
+                              <time className="dash-kpi__time">
+                                {String(a.created_at).replace('T', ' ').slice(5, 19)}
+                              </time>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <footer className="dash-kpi__foot">
+                      <span className="dash-kpi__hint">
+                        運行中{' '}
+                        {String((summary?.projects as { running?: number })?.running ?? running)}
+                      </span>
+                      <Link to="/security" className="dash-kpi__link">
+                        安全 →
+                      </Link>
+                    </footer>
+                  </article>
+                </div>
+              );
+            })()}
+          </div>
+        ) : null}
+
+        {tab === 'wizard' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="一鍵建立"
+                description="建立專案，並可選一併登記 DNS／郵件／資料庫草稿（各項需再到對應頁套用）"
+              >
+                <form onSubmit={(e) => void onWizard(e)}>
+                  <FormLayout columns={2}>
+                    <Field
+                      label="專案名稱"
+                      htmlFor="wiz-name"
+                      flush
+                      required
+                      hint="控制台顯示名稱；會產生對應目錄"
+                    >
+                      <input
+                        id="wiz-name"
+                        value={wizName}
+                        onChange={(e) => setWizName(e.target.value)}
+                        required
+                        placeholder="my-app"
+                        spellCheck={false}
+                      />
+                    </Field>
+                    <Field
+                      label="域名（可留空）"
+                      htmlFor="wiz-dom"
+                      flush
+                      hint="填寫後才可勾選 DNS 與郵件"
+                    >
+                      <input
+                        id="wiz-dom"
+                        value={wizDomain}
+                        onChange={(e) => setWizDomain(e.target.value)}
+                        placeholder="app.example.com"
+                        spellCheck={false}
+                      />
+                    </Field>
+                    <Field
+                      label="執行環境"
+                      htmlFor="wiz-rt"
+                      flush
+                      required
+                      hint="決定預設 runtime 版本與部署方式"
+                    >
+                      <select
+                        id="wiz-rt"
+                        value={wizRuntime}
+                        onChange={(e) => setWizRuntime(e.target.value as typeof wizRuntime)}
+                      >
+                        <option value="node">Node.js</option>
+                        <option value="php">PHP</option>
+                        <option value="python">Python</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                        <option value="static">靜態網站</option>
+                      </select>
+                    </Field>
+                  </FormLayout>
+                  <div className="form-check-row u-mt-4">
+                    <CheckboxField
+                      id="wiz-dns"
+                      label="一併建立 DNS 區域"
+                      description="需填寫域名；僅登記，需到 DNS 頁寫入區域檔"
+                      checked={wizDns}
+                      onChange={setWizDns}
+                      disabled={!wizDomain}
+                    />
+                    <CheckboxField
+                      id="wiz-mail"
+                      label="一併登記郵件域名"
+                      description="需填寫域名；軟件安裝與 DNS 在郵件詳情頁完成"
+                      checked={wizMail}
+                      onChange={setWizMail}
+                      disabled={!wizDomain}
+                    />
+                    <CheckboxField
+                      id="wiz-db"
+                      label="一併建立 MySQL 資料庫草稿"
+                      description="控制面登記；需到 SQL 引擎頁套用到系統"
+                      checked={wizDb}
+                      onChange={setWizDb}
+                    />
+                  </div>
+                  <FormHint>
+                    一鍵建立不會自動對外上線。DNS、郵件、資料庫與 SSL 請到各功能頁確認並套用。
+                  </FormHint>
+                  <FormActions>
+                    <Button type="submit" variant="primary" size="md" loading={wizBusy}>
+                      一鍵建立
+                    </Button>
+                  </FormActions>
+                </form>
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+
+        {tab === 'notifications' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title={`通知中心（${notifications.length}）`}
+                description={`嚴重 ${notifCounts.critical} · 警告 ${notifCounts.warn} · 資訊 ${notifCounts.info}`}
+              >
+                {notifications.length === 0 ? (
+                  <EmptyState title="暫無通知" description="系統告警與待辦會顯示於此" />
+                ) : (
+                  <ul className="list-plain list-spaced">
+                    {notifications.slice(0, 20).map((n) => (
+                      <li key={n.id}>
+                        <Badge
+                          tone={
+                            n.level === 'critical'
+                              ? 'danger'
+                              : n.level === 'warn'
+                                ? 'warn'
+                                : 'info'
+                          }
+                        >
+                          {n.level}
+                        </Badge>{' '}
+                        <strong>{n.title}</strong>
+                        <span className="muted u-text-sm"> — {n.body}</span>
+                        {n.href ? (
+                          <>
+                            {' '}
+                            <Link to={n.href}>前往</Link>
+                          </>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardSection>
+            </Card>
+            {applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0) ? (
+              <Card>
+                <CardSection
+                  title="套用狀態審計"
+                  description={`ok ${applyAudit.summary.ok} · warn ${applyAudit.summary.warn} · bad ${applyAudit.summary.bad}`}
+                >
+                  <ul className="list-plain list-spaced">
+                    {applyAudit.findings.map((f, i) => (
+                      <li key={`${f.kind}-${f.name}-${i}`}>
+                        <Badge tone={f.severity === 'bad' ? 'danger' : 'warn'}>{f.severity}</Badge>{' '}
+                        <span className="muted u-text-sm">{f.kind}</span> <strong>{f.name}</strong>
+                        {f.issue ? <span className="muted"> — {f.issue}</span> : null}
+                        {f.href ? (
+                          <>
+                            {' '}
+                            <Link to={f.href}>開啟</Link>
+                          </>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </CardSection>
+              </Card>
+            ) : null}
+          </div>
+        ) : null}
+
+        {tab === 'features' ? (
+          <div className="tab-panel">
+            <div>
+              <h2 className="section-title">
+                {t('dashboard.features', { defaultValue: '功能選單' })}
+              </h2>
               <p className="muted meta-block--tight">
-                {health.product} · v{health.version}
+                {t('dashboard.featuresHint', {
+                  defaultValue:
+                    '角標：就緒＝軟件已裝；未安裝＝需一鍵安裝；需權限＝未開系統變更。',
+                })}
               </p>
-              <p className="meta-block--top">
-                {t('dashboard.protection')}:{' '}
-                <strong className="u-font-bold">{health.protectionMode}</strong>
-              </p>
-            </>
-          ) : (
-            <span className="muted">—</span>
-          )}
-        </div>
-
-        <div className="card">
-          <h2 className="card__title">主機指標</h2>
-          {metrics ? (
-            <>
-              <p className="meta-block">
-                Load:{' '}
-                <strong>
-                  {Array.isArray(metrics.loadavg)
-                    ? (metrics.loadavg as number[])
-                        .map((n) => (typeof n === 'number' ? n.toFixed(2) : String(n)))
-                        .join(' · ')
-                    : String(metrics.loadavg ?? '—')}
-                </strong>
-              </p>
-              <p className="muted meta-block--tight">
-                CPUs: {String(metrics.cpuCount)} · Mem used:{' '}
-                {metrics.memory && typeof metrics.memory === 'object'
-                  ? `${Math.round(((metrics.memory as { usedRatio: number }).usedRatio || 0) * 100)}%`
-                  : '—'}
-              </p>
-              <p className="meta-block--top">
-                <Link to="/metrics">詳細指標</Link>
-              </p>
-            </>
-          ) : (
-            <span className="muted">—</span>
-          )}
-        </div>
-
-        <div className="card">
-          <h2 className="card__title">
-            <Link to="/projects">{t('nav.projects')}</Link>
-          </h2>
-          {projects.length === 0 ? (
-            <p className="muted">尚未有專案</p>
-          ) : (
-            <ul className="list-plain list-spaced">
-              {projects.slice(0, 6).map((p) => (
-                <li key={p.id}>
-                  <Link to={`/projects/${p.id}`}>
-                    <strong>{p.name}</strong>
-                  </Link>{' '}
-                  <Badge tone={p.processStatus === 'running' ? 'ok' : 'neutral'}>
-                    {p.processStatus ?? p.status ?? '—'}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="card">
-          <h2 className="card__title">{t('dashboard.audit')}</h2>
-          {audit.length === 0 ? (
-            <p className="muted">{t('dashboard.needLogin')}</p>
-          ) : (
-            <ul className="list-plain list-spaced">
-              {audit.slice(0, 5).map((a) => (
-                <li key={String(a.id)}>
-                  <code className="inline">{String(a.action)}</code>{' '}
-                  <span className="muted u-text-sm">
-                    {String(a.created_at).replace('T', ' ').slice(0, 19)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {summary ? (
-            <p className="muted meta-block--top">
-              運行中專案{' '}
-              {String((summary.projects as { running?: number })?.running ?? 0)}
-            </p>
-          ) : null}
-        </div>
-      </div>
+            </div>
+            <FeatureIconGrid items={tiles} />
+          </div>
+        ) : null}
+      </Tabs>
     </div>
   );
 }

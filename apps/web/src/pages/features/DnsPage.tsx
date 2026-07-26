@@ -9,10 +9,16 @@ import {
   EmptyState,
   Field,
   FeaturePageLayout,
-  FormGrid,
+  FormLayout,
   Modal,
   SoftwareInstallBanner,
+  Tabs,
+  FormActions,
+  FormHint,
 } from '../../shared/components/ui';
+import { usePageTab } from '../../shared/hooks/usePageTab';
+
+const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec'] as const;
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
@@ -136,13 +142,15 @@ export function DnsPage() {
     setRvalue('');
   }
 
+  const [tab, setTab] = usePageTab(DNS_TABS, 'zones');
+
   return (
     <FeaturePageLayout
       title="DNS 區域"
       subtitle="管理 zone 檔（寫入 ≠ 權威 DNS 已上線）"
       actions={
         <button type="button" className="btn btn--primary" onClick={() => setZoneOpen(true)}>
-          + 建立 Zone
+          + 建立區域
         </button>
       }
     >
@@ -178,274 +186,369 @@ export function DnsPage() {
           ) : null}
         </Alert>
       ) : null}
-      {zones.lastNotes.length > 0 ? (
-        <Card>
-          <CardSection title="最近寫入結果">
-            <ul className="notes-list">
-              {zones.lastNotes.map((n) => (
-                <li key={n} className="muted u-text-sm">
-                  {n}
-                </li>
-              ))}
-            </ul>
-          </CardSection>
-        </Card>
-      ) : null}
-
-      <div className="grid">
-        <Card>
-          <CardSection title={`Zones (${zones.items.length})`}>
-            <ResourceTable
-              columns={[
-                {
-                  key: 'zone',
-                  header: 'Zone',
-                  render: (r) => (
-                    <button
-                      type="button"
-                      className="btn btn--link"
-                      onClick={() => setSelectedZone(r)}
-                    >
-                      <strong>{String(r.zone)}</strong>
-                    </button>
-                  ),
-                },
-                { key: 'ip', header: 'Server IP', render: (r) => String(r.serverIp ?? '—') },
-                {
-                  key: 'tpl',
-                  header: '模板',
-                  render: (r) => String(r.template ?? 'full'),
-                },
-                {
-                  key: 'status',
-                  header: '狀態',
-                  render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
-                },
-              ]}
-              rows={zones.items}
-              empty={
-                <EmptyState
-                  title="尚未有 DNS zone"
-                  action={
-                    <button type="button" className="btn btn--primary" onClick={() => setZoneOpen(true)}>
-                      + 建立 Zone
-                    </button>
-                  }
-                />
-              }
-              rowActions={(r) => (
-                <div className="btn-row">
-                  <button
-                    type="button"
-                    className="btn btn--secondary btn--sm"
-                    disabled={zones.busy}
-                    onClick={() => void zones.apply(r.id)}
-                    title="寫入管理 zone 檔；有權限時 named-checkzone + 嘗試 reload"
-                  >
-                    寫入／套用
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--danger btn--sm"
-                    disabled={zones.busy}
-                    onClick={() => setDelZone(r.id)}
-                  >
-                    刪除
-                  </button>
-                </div>
-              )}
-            />
-          </CardSection>
-        </Card>
-
-        <Card>
-          <CardSection
-            title={
-              selectedLive
-                ? `Records — ${String(selectedLive.zone)}`
-                : 'Records（先選 zone）'
-            }
-          >
-            {selectedLive ? (
-              <>
-                <p className="muted u-text-sm">
-                  狀態 <ResourceStatusBadge status={String(selectedLive.apply_status)} />
-                  {selectedLive.zonePath ? (
-                    <>
-                      {' '}
-                      · <code className="inline">{String(selectedLive.zonePath)}</code>
-                    </>
-                  ) : null}
-                </p>
-                <div className="form-actions btn-row">
-                  <button
-                    type="button"
-                    className="btn btn--secondary btn--sm"
-                    onClick={() => {
-                      setEditRec(null);
-                      setRtype('A');
-                      setRname('@');
-                      setRvalue(String(selectedLive.serverIp ?? ''));
-                      setRecOpen(true);
-                    }}
-                  >
-                    + 新增記錄
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--primary btn--sm"
-                    disabled={zones.busy}
-                    onClick={() => void zones.apply(selectedLive.id)}
-                  >
-                    寫入 zone file
-                  </button>
-                  <Link
-                    to={`/ssl?domain=${encodeURIComponent(String(selectedLive.zone))}&action=le`}
-                    className="btn btn--ghost btn--sm"
-                    title={`申請 ${String(selectedLive.zone)} Let’s Encrypt`}
-                  >
-                    申請本 zone SSL
-                  </Link>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={dnssecBusy}
-                    onClick={() => void onDnssec(String(selectedLive.zone))}
-                    title="產生 DNSSEC 金鑰到 dataDir；唔會自動簽署 zone 或上線"
-                  >
-                    產生 DNSSEC 金鑰
-                  </Button>
-                </div>
+      <Tabs
+        tabs={[
+          { id: 'zones', label: '區域', badge: zones.items.length || undefined },
+          {
+            id: 'records',
+            label: '記錄',
+            badge: selectedLive ? records.items.length || undefined : undefined,
+          },
+          { id: 'cluster', label: '叢集', badge: peers.length || undefined },
+          { id: 'dnssec', label: 'DNSSEC' },
+        ]}
+        active={tab}
+        onChange={(id) => {
+          setTab(id);
+          if (id === 'records' && !selectedZone && zones.items[0]) {
+            setSelectedZone(zones.items[0]);
+          }
+        }}
+        variant="scroll"
+      >
+        {tab === 'zones' ? (
+          <div className="tab-panel">
+            {zones.lastNotes.length > 0 ? (
+              <Card>
+                <CardSection title="最近寫入結果">
+                  <ul className="notes-list">
+                    {zones.lastNotes.map((n) => (
+                      <li key={n} className="muted u-text-sm">
+                        {n}
+                      </li>
+                    ))}
+                  </ul>
+                </CardSection>
+              </Card>
+            ) : null}
+            <Card>
+              <CardSection title={`區域 (${zones.items.length})`}>
                 <ResourceTable
                   columns={[
-                    { key: 'type', header: 'Type', render: (r) => String(r.type) },
-                    { key: 'name', header: 'Name', render: (r) => String(r.name) },
                     {
-                      key: 'value',
-                      header: 'Value',
+                      key: 'zone',
+                      header: '區域名稱',
                       render: (r) => (
-                        <code className="inline u-break-all">{String(r.value)}</code>
+                        <button
+                          type="button"
+                          className="btn btn--link"
+                          onClick={() => {
+                            setSelectedZone(r);
+                            setTab('records');
+                          }}
+                        >
+                          <strong>{String(r.zone)}</strong>
+                        </button>
                       ),
                     },
-                    { key: 'ttl', header: 'TTL', render: (r) => String(r.ttl ?? 300) },
+                    { key: 'ip', header: '伺服器 IP', render: (r) => String(r.serverIp ?? '—') },
+                    {
+                      key: 'tpl',
+                      header: '模板',
+                      render: (r) => String(r.template ?? 'full'),
+                    },
+                    {
+                      key: 'status',
+                      header: '狀態',
+                      render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
+                    },
                   ]}
-                  rows={records.items}
-                  empty={<EmptyState title="無記錄" />}
+                  rows={zones.items}
+                  empty={
+                    <EmptyState
+                      title="尚未有 DNS 區域"
+                      action={
+                        <button type="button" className="btn btn--primary" onClick={() => setZoneOpen(true)}>
+                          + 建立區域
+                        </button>
+                      }
+                    />
+                  }
                   rowActions={(r) => (
                     <div className="btn-row">
                       <button
                         type="button"
                         className="btn btn--secondary btn--sm"
+                        disabled={zones.busy}
+                        onClick={() => void zones.apply(r.id)}
+                        title="寫入管理 zone 檔；有權限時 named-checkzone + 嘗試 reload"
+                      >
+                        寫入／套用
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--secondary btn--sm"
                         onClick={() => {
-                          setEditRec(r);
-                          setRtype(String(r.type ?? 'A'));
-                          setRname(String(r.name ?? '@'));
-                          setRvalue(String(r.value ?? ''));
-                          setRttl(String(r.ttl ?? 300));
-                          setRecOpen(true);
+                          setSelectedZone(r);
+                          setTab('records');
                         }}
                       >
-                        編輯
+                        記錄
                       </button>
                       <button
                         type="button"
                         className="btn btn--danger btn--sm"
-                        onClick={() => setDelRec(r.id)}
+                        disabled={zones.busy}
+                        onClick={() => setDelZone(r.id)}
                       >
                         刪除
                       </button>
                     </div>
                   )}
                 />
-              </>
-            ) : (
-              <p className="muted">喺左表點選 zone 以管理 records</p>
-            )}
-          </CardSection>
-        </Card>
-      </div>
-
-      <Card>
-        <CardSection
-          title="DNS Cluster"
-          description="peer scp zone 檔；written on peer ≠ named reload"
-        >
-          <div className="btn-row u-mb-3">
-            <Button variant="secondary" size="sm" onClick={() => void refreshPeers()}>
-              重新整理 peers
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() =>
-                void api
-                  .requestRaw('/api/v1/dns/cluster/peers', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                      host: peerHost,
-                      username: peerUser,
-                      path: '/var/lib/ysk/dns/zones',
-                    }),
-                  })
-                  .then(() => refreshPeers())
-                  .catch((e: Error) => zones.setMsg?.(e.message))
-              }
-            >
-              新增 peer
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() =>
-                void api
-                  .requestRaw('/api/v1/dns/cluster/push', {
-                    method: 'POST',
-                    body: '{}',
-                  })
-                  .then((r) => {
-                    const notes = (r as { notes?: string[] }).notes;
-                    setDnssecMsg(notes?.join('；') ?? '已推送');
-                  })
-                  .catch((e: Error) => setDnssecMsg(e.message))
-              }
-            >
-              推送 zones 到 peers
-            </Button>
+              </CardSection>
+            </Card>
           </div>
-          <FormGrid>
-            <Field label="Peer host" htmlFor="peer-h" flush>
-              <input
-                id="peer-h"
-                value={peerHost}
-                onChange={(e) => setPeerHost(e.target.value)}
-                placeholder="ns2.example.com"
-              />
-            </Field>
-            <Field label="SSH user" htmlFor="peer-u" flush>
-              <input
-                id="peer-u"
-                value={peerUser}
-                onChange={(e) => setPeerUser(e.target.value)}
-              />
-            </Field>
-          </FormGrid>
-          <ul className="list-plain list-spaced u-mt-2">
-            {peers.map((p) => (
-              <li key={String(p.id)}>
-                <code className="inline">
-                  {String(p.username)}@{String(p.host)}:{String(p.path)}
-                </code>
-              </li>
-            ))}
-          </ul>
-        </CardSection>
-      </Card>
+        ) : null}
+
+        {tab === 'records' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title={
+                  selectedLive
+                    ? `記錄 — ${String(selectedLive.zone)}`
+                    : '記錄（請先在「區域」選取）'
+                }
+              >
+                {selectedLive ? (
+                  <>
+                    <p className="muted u-text-sm">
+                      狀態 <ResourceStatusBadge status={String(selectedLive.apply_status)} />
+                      {selectedLive.zonePath ? (
+                        <>
+                          {' '}
+                          · <code className="inline">{String(selectedLive.zonePath)}</code>
+                        </>
+                      ) : null}
+                    </p>
+                    <FormActions>
+                      <button
+                        type="button"
+                        className="btn btn--secondary btn--sm"
+                        onClick={() => {
+                          setEditRec(null);
+                          setRtype('A');
+                          setRname('@');
+                          setRvalue(String(selectedLive.serverIp ?? ''));
+                          setRttl('300');
+                          setRecOpen(true);
+                        }}
+                      >
+                        + 新增記錄
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--primary btn--sm"
+                        disabled={zones.busy}
+                        onClick={() => void zones.apply(selectedLive.id)}
+                      >
+                        寫入區域檔
+                      </button>
+                      <Link
+                        to={`/ssl?domain=${encodeURIComponent(String(selectedLive.zone))}&action=le`}
+                        className="btn btn--ghost btn--sm"
+                        title={`申請 ${String(selectedLive.zone)} Let’s Encrypt`}
+                      >
+                        申請本區域 SSL
+                      </Link>
+                    </FormActions>
+                    <ResourceTable
+                      columns={[
+                        { key: 'type', header: '類型', render: (r) => String(r.type) },
+                        { key: 'name', header: '名稱', render: (r) => String(r.name) },
+                        {
+                          key: 'value',
+                          header: '值',
+                          render: (r) => (
+                            <code className="inline u-break-all">{String(r.value)}</code>
+                          ),
+                        },
+                        { key: 'ttl', header: 'TTL', render: (r) => String(r.ttl ?? 300) },
+                      ]}
+                      rows={records.items}
+                      empty={<EmptyState title="尚無記錄" />}
+                      rowActions={(r) => (
+                        <div className="btn-row">
+                          <button
+                            type="button"
+                            className="btn btn--secondary btn--sm"
+                            onClick={() => {
+                              setEditRec(r);
+                              setRtype(String(r.type ?? 'A'));
+                              setRname(String(r.name ?? '@'));
+                              setRvalue(String(r.value ?? ''));
+                              setRttl(String(r.ttl ?? 300));
+                              setRecOpen(true);
+                            }}
+                          >
+                            編輯
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn--danger btn--sm"
+                            onClick={() => setDelRec(r.id)}
+                          >
+                            刪除
+                          </button>
+                        </div>
+                      )}
+                    />
+                  </>
+                ) : (
+                  <EmptyState
+                    title="尚未選擇區域"
+                    description="到「區域」分頁點選一個 zone"
+                    action={
+                      <button type="button" className="btn btn--secondary" onClick={() => setTab('zones')}>
+                        前往區域
+                      </button>
+                    }
+                  />
+                )}
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+
+        {tab === 'cluster' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="DNS 叢集"
+                description="以 SCP 推送區域檔到 peer；寫入 peer ≠ named 已 reload"
+              >
+                <FormLayout columns={2}>
+                  <Field
+                    label="Peer 主機"
+                    htmlFor="peer-h"
+                    flush
+                    required
+                    hint="次要 NS 主機名稱或 IP"
+                  >
+                    <input
+                      id="peer-h"
+                      value={peerHost}
+                      onChange={(e) => setPeerHost(e.target.value)}
+                      placeholder="ns2.example.com"
+                    />
+                  </Field>
+                  <Field label="SSH 用戶" htmlFor="peer-u" flush hint="需有目標路徑寫入權限">
+                    <input
+                      id="peer-u"
+                      value={peerUser}
+                      onChange={(e) => setPeerUser(e.target.value)}
+                      placeholder="ysk"
+                    />
+                  </Field>
+                </FormLayout>
+                <FormActions>
+                  <Button variant="secondary" size="sm" onClick={() => void refreshPeers()}>
+                    重新整理
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() =>
+                      void api
+                        .requestRaw('/api/v1/dns/cluster/peers', {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            host: peerHost,
+                            username: peerUser,
+                            path: '/var/lib/ysk/dns/zones',
+                          }),
+                        })
+                        .then(() => refreshPeers())
+                        .catch((e: Error) => zones.setMsg?.(e.message))
+                    }
+                  >
+                    新增 peer
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      void api
+                        .requestRaw('/api/v1/dns/cluster/push', {
+                          method: 'POST',
+                          body: '{}',
+                        })
+                        .then((r) => {
+                          const notes = (r as { notes?: string[] }).notes;
+                          setDnssecMsg(notes?.join('；') ?? '已推送');
+                        })
+                        .catch((e: Error) => setDnssecMsg(e.message))
+                    }
+                  >
+                    推送到 peers
+                  </Button>
+                </FormActions>
+                {peers.length === 0 ? (
+                  <p className="muted u-text-sm u-mt-2">尚未登記任何 peer</p>
+                ) : (
+                  <ul className="list-plain list-spaced u-mt-2">
+                    {peers.map((p) => (
+                      <li key={String(p.id)}>
+                        <code className="inline">
+                          {String(p.username)}@{String(p.host)}:{String(p.path)}
+                        </code>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+
+        {tab === 'dnssec' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="DNSSEC"
+                description="產生金鑰到 dataDir；唔會自動簽署 zone 或上線（誠實 written ≠ applied）"
+              >
+                {selectedLive ? (
+                  <>
+                    <p className="muted u-text-sm">
+                      目前區域：<strong>{String(selectedLive.zone)}</strong>
+                    </p>
+                    <FormHint>
+                      金鑰寫入 dataDir；不會自動簽署 zone 或更新 registrar DS。
+                    </FormHint>
+                    <FormActions>
+                      <Button
+                        variant="primary"
+                        size="md"
+                        loading={dnssecBusy}
+                        onClick={() => void onDnssec(String(selectedLive.zone))}
+                      >
+                        產生 DNSSEC 金鑰
+                      </Button>
+                    </FormActions>
+                  </>
+                ) : (
+                  <EmptyState
+                    title="請先選擇區域"
+                    action={
+                      <button type="button" className="btn btn--secondary" onClick={() => setTab('zones')}>
+                        前往區域
+                      </button>
+                    }
+                  />
+                )}
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+      </Tabs>
 
       <Modal
         open={zoneOpen}
         onClose={() => setZoneOpen(false)}
-        title="建立 DNS Zone"
-        description="依模板種子記錄；可設 SOA NS / TTL；寫入後狀態誠實標示"
+        title="建立 DNS 區域"
+        description="依模板產生種子記錄；寫入後狀態誠實標示（written ≠ 權威已上線）"
         footer={
           <>
             <button type="button" className="btn btn--secondary" onClick={() => setZoneOpen(false)}>
@@ -458,34 +561,63 @@ export function DnsPage() {
         }
       >
         <form id="dz" onSubmit={(e) => void onCreateZone(e)}>
-          <FormGrid>
-            <Field label="區域" techKey="zone" htmlFor="z">
-              <input id="z" value={zone} onChange={(e) => setZone(e.target.value)} required />
+          <FormLayout columns={2}>
+            <Field
+              label="區域名稱"
+              htmlFor="z"
+              flush
+              required
+              hint="例如 example.com（不含結尾點）"
+            >
+              <input
+                id="z"
+                value={zone}
+                onChange={(e) => setZone(e.target.value)}
+                required
+                placeholder="example.com"
+                spellCheck={false}
+              />
             </Field>
-            <Field label="伺服器 IP" techKey="server_ip" htmlFor="sip">
+            <Field
+              label="伺服器 IP"
+              htmlFor="sip"
+              flush
+              required
+              hint="模板 A 記錄使用的位址"
+            >
               <input
                 id="sip"
                 value={serverIp}
                 onChange={(e) => setServerIp(e.target.value)}
                 required
+                placeholder="203.0.113.10"
+                spellCheck={false}
               />
             </Field>
-            <Field label="SOA NS（可空=ns1.zone）" techKey="ns" htmlFor="soa-ns">
+            <Field
+              label="SOA 名稱伺服器"
+              htmlFor="soa-ns"
+              flush
+              hint="可留空，預設 ns1.區域名稱"
+            >
               <input
                 id="soa-ns"
                 value={soaNs}
                 onChange={(e) => setSoaNs(e.target.value)}
                 placeholder="ns1.example.com."
+                spellCheck={false}
               />
             </Field>
-            <Field label="SOA / 預設 TTL" techKey="ttl" htmlFor="soa-ttl">
+            <Field label="預設 TTL（秒）" htmlFor="soa-ttl" flush hint="SOA 與新記錄預設">
               <input
                 id="soa-ttl"
                 value={soaTtl}
                 onChange={(e) => setSoaTtl(e.target.value)}
+                inputMode="numeric"
+                placeholder="300"
               />
             </Field>
-            <Field label="記錄模板" techKey="template" htmlFor="ztpl">
+            <Field label="記錄模板" htmlFor="ztpl" fullWidth flush>
               <select
                 id="ztpl"
                 value={template}
@@ -500,7 +632,8 @@ export function DnsPage() {
                 ))}
               </select>
             </Field>
-          </FormGrid>
+          </FormLayout>
+          <FormHint>建立後請在「記錄」分頁檢視並「寫入區域檔」才會落到磁碟。</FormHint>
         </form>
       </Modal>
 
@@ -508,6 +641,9 @@ export function DnsPage() {
         open={recOpen}
         onClose={() => setRecOpen(false)}
         title={editRec ? '編輯記錄' : '新增記錄'}
+        description={
+          selectedLive ? `區域 ${String(selectedLive.zone)} · 儲存後需再寫入區域檔` : undefined
+        }
         footer={
           <>
             <button type="button" className="btn btn--secondary" onClick={() => setRecOpen(false)}>
@@ -520,8 +656,8 @@ export function DnsPage() {
         }
       >
         <form id="dr" onSubmit={(e) => void onSaveRec(e)}>
-          <FormGrid>
-            <Field label="類型" techKey="type" htmlFor="rt">
+          <FormLayout columns={2}>
+            <Field label="類型" htmlFor="rt" flush required>
               <select id="rt" value={rtype} onChange={(e) => setRtype(e.target.value)}>
                 {['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS'].map((t) => (
                   <option key={t} value={t}>
@@ -530,16 +666,53 @@ export function DnsPage() {
                 ))}
               </select>
             </Field>
-            <Field label="名稱" techKey="name" htmlFor="rn">
-              <input id="rn" value={rname} onChange={(e) => setRname(e.target.value)} required />
+            <Field
+              label="名稱"
+              htmlFor="rn"
+              flush
+              required
+              hint="@ = 根網域；www = 子網域"
+            >
+              <input
+                id="rn"
+                value={rname}
+                onChange={(e) => setRname(e.target.value)}
+                required
+                placeholder="@"
+                spellCheck={false}
+              />
             </Field>
-            <Field label="值" techKey="value" htmlFor="rv">
-              <input id="rv" value={rvalue} onChange={(e) => setRvalue(e.target.value)} required />
+            <Field
+              label="值"
+              htmlFor="rv"
+              fullWidth
+              flush
+              required
+              hint={
+                rtype === 'MX'
+                  ? '例如 10 mail.example.com.'
+                  : rtype === 'TXT'
+                    ? '例如 v=spf1 a mx ~all'
+                    : 'IP、主機名或對應內容'
+              }
+            >
+              <input
+                id="rv"
+                value={rvalue}
+                onChange={(e) => setRvalue(e.target.value)}
+                required
+                spellCheck={false}
+              />
             </Field>
-            <Field label="TTL" techKey="ttl" htmlFor="ttl">
-              <input id="ttl" value={rttl} onChange={(e) => setRttl(e.target.value)} />
+            <Field label="TTL（秒）" htmlFor="ttl" flush hint="快取時間，常用 300">
+              <input
+                id="ttl"
+                value={rttl}
+                onChange={(e) => setRttl(e.target.value)}
+                inputMode="numeric"
+              />
             </Field>
-          </FormGrid>
+          </FormLayout>
         </form>
       </Modal>
 
@@ -553,8 +726,8 @@ export function DnsPage() {
               setDelZone(null);
             });
         }}
-        title="刪除 Zone？"
-        description="會一併刪除其 DNS records 登記。"
+        title="刪除區域？"
+        description="會一併刪除其 DNS 記錄登記。"
         confirmLabel="刪除"
         cancelLabel="取消"
         danger
@@ -567,7 +740,7 @@ export function DnsPage() {
           if (delRec) void records.remove(delRec).then(() => setDelRec(null));
         }}
         title="刪除記錄？"
-        description="從控制面移除；請再「寫入 zone file」。"
+        description="從控制面移除；請再「寫入區域檔」。"
         confirmLabel="刪除"
         cancelLabel="取消"
         danger

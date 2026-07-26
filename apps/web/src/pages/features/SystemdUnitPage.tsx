@@ -10,12 +10,21 @@ import {
   CardSection,
   DescriptionList,
   FeaturePageLayout,
+  FormActions,
+  FormHint,
   OpsResultPanel,
   SummaryStrip,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+
+function enabledLabel(v?: string): string {
+  if (!v) return '—';
+  if (v === 'enabled') return '是';
+  if (v === 'disabled') return '否';
+  return v;
+}
 
 export function SystemdUnitPage() {
   const [status, setStatus] = useState<{
@@ -95,7 +104,7 @@ export function SystemdUnitPage() {
             value: running ? '運行中' : active,
             tone: running ? 'ok' : 'warn',
           },
-          { label: '開機自啟', value: status?.enabled ?? '—' },
+          { label: '開機自啟', value: enabledLabel(status?.enabled) },
           {
             label: '系統變更',
             value: status?.executeEnabled ? '已開啟' : '未開啟',
@@ -120,8 +129,8 @@ export function SystemdUnitPage() {
                   <Badge tone={running ? 'ok' : 'warn'}>{running ? '運行中' : active}</Badge>
                 ),
               },
-              { label: 'unit', value: status?.unit ?? 'ysk-server' },
-              { label: '開機自啟', value: status?.enabled ?? '—' },
+              { label: '單元名稱', value: status?.unit ?? 'ysk-server' },
+              { label: '開機自啟', value: enabledLabel(status?.enabled) },
               { label: '系統路徑', value: status?.unitPathHint ?? '—' },
               {
                 label: '系統變更',
@@ -135,20 +144,20 @@ export function SystemdUnitPage() {
 
       <Card>
         <CardSection
-          title="安裝 / 啟用"
-          description="「僅寫入」只產生管理目錄範本；「安裝並啟用」才會 cp 到 /etc/systemd 並 enable"
+          title="安裝／啟用"
+          description="「僅寫入」只產生管理目錄範本；「安裝並啟用」才會複製到 /etc/systemd 並啟用"
         >
-          <div className="lifecycle-toolbar">
+          <FormHint>
+            寫入範本 ≠ 服務已啟用。未開系統變更或非 root 時，安裝並啟用會明確失敗，不會假裝成功。
+          </FormHint>
+          <FormActions>
             <Button variant="secondary" size="md" loading={busy} onClick={() => void doInstall(false)}>
               僅寫入範本
             </Button>
             <Button variant="primary" size="md" loading={busy} onClick={() => void doInstall(true)}>
               安裝並啟用
             </Button>
-          </div>
-          <p className="muted u-text-sm u-mt-3" style={{ marginBottom: 0 }}>
-            未開系統變更或非 root 時，「安裝並啟用」會明確失敗，不會假裝成功。
-          </p>
+          </FormActions>
         </CardSection>
       </Card>
 

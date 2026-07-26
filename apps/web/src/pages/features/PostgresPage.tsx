@@ -14,11 +14,13 @@ import {
   EmptyState,
   Field,
   FeaturePageLayout,
-  FormGrid,
+  FormLayout,
   Modal,
   OpsResultPanel,
   SoftwareInstallBanner,
   SummaryStrip,
+  FormHint,
+  CheckboxField,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
@@ -279,6 +281,7 @@ export function PostgresPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="建立 PostgreSQL 資料庫"
+        description="寫入控制面登記；需再「套用到系統」才 CREATE DATABASE（written ≠ 已上線）"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCreateOpen(false)}>
@@ -291,25 +294,55 @@ export function PostgresPage() {
         }
       >
         <form id="pg-c" onSubmit={(e) => void onCreate(e)}>
-          <Field label="資料庫名稱" techKey="database" htmlFor="pn">
-            <input id="pn" value={name} onChange={(e) => setName(e.target.value)} required />
-          </Field>
-          <label className="field">
-            <span>
+          <FormLayout columns={2}>
+            <Field
+              label="資料庫名稱"
+              htmlFor="pn"
+              fullWidth
+              flush
+              required
+              hint="小寫英數與底線；建立後請再套用到系統"
+            >
               <input
-                type="checkbox"
-                checked={createUser}
-                onChange={(e) => setCreateUser(e.target.checked)}
-              />{' '}
-              同時建立角色
-            </span>
-          </label>
+                id="pn"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="my_app"
+                spellCheck={false}
+                autoComplete="off"
+              />
+            </Field>
+          </FormLayout>
+          <div className="form-check-row u-mt-4">
+            <CheckboxField
+              id="pg-create-user"
+              label="同時建立角色"
+              description="一併建立登入角色並授予此資料庫權限"
+              checked={createUser}
+              onChange={setCreateUser}
+            />
+          </div>
           {createUser ? (
-            <FormGrid>
-              <Field label="用戶名" techKey="role" htmlFor="pu">
-                <input id="pu" value={username} onChange={(e) => setUsername(e.target.value)} />
+            <FormLayout columns={2}>
+              <Field
+                label="角色名稱"
+                htmlFor="pu"
+                flush
+                required
+                hint="PostgreSQL role／登入用戶"
+              >
+                <input
+                  id="pu"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  placeholder="my_app_user"
+                  spellCheck={false}
+                  autoComplete="off"
+                />
               </Field>
-              <Field label="密碼" techKey="password" htmlFor="pp" hint="至少 8 字元">
+              <Field label="密碼" htmlFor="pp" flush required hint="至少 8 字元">
                 <input
                   id="pp"
                   type="password"
@@ -320,8 +353,11 @@ export function PostgresPage() {
                   autoComplete="new-password"
                 />
               </Field>
-            </FormGrid>
+            </FormLayout>
           ) : null}
+          <FormHint>
+            刪除登記不會自動 DROP 伺服器上的庫；套用成功才代表主機已執行 DDL。
+          </FormHint>
         </form>
       </Modal>
 

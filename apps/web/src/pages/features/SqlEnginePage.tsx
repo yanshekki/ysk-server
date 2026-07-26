@@ -15,11 +15,14 @@ import {
   EmptyState,
   Field,
   FeaturePageLayout,
-  FormGrid,
+  FormLayout,
   Modal,
   OpsResultPanel,
   SummaryStrip,
   Tabs,
+  FormActions,
+  FormHint,
+  CheckboxField,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
@@ -444,7 +447,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   },
                   {
                     key: 'charset',
-                    header: 'Charset',
+                    header: '字元集',
                     render: (r) => String(r.charset ?? 'utf8mb4'),
                   },
                   {
@@ -567,13 +570,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         ) : null}
 
         {tab === 'temp' ? (
+          <div className="tab-panel">
           <Card>
             <CardSection
               title="臨時只讀用戶"
-              description="TTL 到期後控制面標記 expired；系統 DROP 需手動（誠實）"
+              description="到期後控制面標記 expired；系統 DROP 需另開權限操作（誠實標示）"
             >
-              <FormGrid>
-                <Field label="資料庫名" htmlFor="tmp-db" flush>
+              <FormLayout columns={2}>
+                <Field label="資料庫名稱" htmlFor="tmp-db" required flush>
                   <input
                     id="tmp-db"
                     value={tempDb}
@@ -581,15 +585,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     placeholder="app_db"
                   />
                 </Field>
-                <Field label="TTL 小時" htmlFor="tmp-ttl" flush>
+                <Field label="有效時數" htmlFor="tmp-ttl" hint="到期後標記失效" flush>
                   <input
                     id="tmp-ttl"
                     value={tempTtl}
                     onChange={(e) => setTempTtl(e.target.value)}
                   />
                 </Field>
-              </FormGrid>
-              <div className="btn-row u-mt-3">
+              </FormLayout>
+              <FormActions>
                 <Button
                   variant="primary"
                   size="md"
@@ -620,7 +624,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     }, '已建立臨時只讀用戶');
                   }}
                 >
-                  建立只讀（套用系統）
+                  建立只讀用戶
                 </Button>
                 <Button
                   variant="secondary"
@@ -629,7 +633,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 >
                   重新整理
                 </Button>
-              </div>
+              </FormActions>
               <ul className="list-plain list-spaced u-mt-3">
                 {tempUsers.map((u) => (
                   <li key={String(u.id)} className="btn-row">
@@ -655,23 +659,26 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </ul>
             </CardSection>
           </Card>
+          </div>
         ) : null}
 
         {tab === 'remote' ? (
+          <div className="tab-panel">
           <Card>
             <CardSection
-              title="遠端 DB 主機"
-              description="登記連線目標（密碼不回顯）；面板 dump/瀏覽可後續接"
+              title="遠端資料庫主機"
+              description="登記連線目標（密碼不回顯）"
             >
-              <FormGrid>
-                <Field label="標籤" htmlFor="rh-label" flush>
+              <FormLayout columns={2}>
+                <Field label="顯示名稱" htmlFor="rh-label" flush>
                   <input
                     id="rh-label"
                     value={remoteLabel}
                     onChange={(e) => setRemoteLabel(e.target.value)}
+                    placeholder="生產從庫"
                   />
                 </Field>
-                <Field label="Host" htmlFor="rh-host" flush>
+                <Field label="主機" htmlFor="rh-host" required flush>
                   <input
                     id="rh-host"
                     value={remoteHost}
@@ -679,21 +686,21 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     required
                   />
                 </Field>
-                <Field label="Port" htmlFor="rh-port" flush>
+                <Field label="埠" htmlFor="rh-port" flush>
                   <input
                     id="rh-port"
                     value={remotePort}
                     onChange={(e) => setRemotePort(e.target.value)}
                   />
                 </Field>
-                <Field label="Username" htmlFor="rh-user" flush>
+                <Field label="用戶名" htmlFor="rh-user" flush>
                   <input
                     id="rh-user"
                     value={remoteUser}
                     onChange={(e) => setRemoteUser(e.target.value)}
                   />
                 </Field>
-                <Field label="Password" htmlFor="rh-pass" flush>
+                <Field label="密碼" htmlFor="rh-pass" flush>
                   <input
                     id="rh-pass"
                     type="password"
@@ -701,8 +708,8 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     onChange={(e) => setRemotePass(e.target.value)}
                   />
                 </Field>
-              </FormGrid>
-              <div className="btn-row u-mt-3">
+              </FormLayout>
+              <FormActions>
                 <Button
                   variant="primary"
                   size="md"
@@ -730,10 +737,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 >
                   儲存
                 </Button>
-              </div>
-              <ul className="list-plain list-spaced u-mt-3">
+              </FormActions>
+              <ul className="list-plain list-spaced u-mt-4">
                 {remoteHosts.map((h) => (
-                  <li key={String(h.id)} className="btn-row">
+                  <li key={String(h.id)} className="btn-row u-justify-between">
                     <span>
                       <strong>{String(h.label)}</strong> · {String(h.host)}:
                       {String(h.port)} · {String(h.username ?? '—')}
@@ -758,6 +765,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </ul>
             </CardSection>
           </Card>
+          </div>
         ) : null}
       </Tabs>
 
@@ -778,30 +786,45 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         }
       >
         <form id="sql-create" onSubmit={(e) => void onCreateDb(e)}>
-          <Field label="資料庫名稱" htmlFor="dn">
-            <input id="dn" value={name} onChange={(e) => setName(e.target.value)} required />
-          </Field>
-          <label className="field">
-            <span>
+          <FormLayout>
+            <Field
+              label="資料庫名稱"
+              htmlFor="dn"
+              required
+              flush
+              hint="小寫英數與底線；建立後需再套用到系統"
+            >
               <input
-                type="checkbox"
-                checked={createUser}
-                onChange={(e) => setCreateUser(e.target.checked)}
-              />{' '}
-              同時建立用戶
-            </span>
-          </label>
+                id="dn"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="my_app"
+                spellCheck={false}
+              />
+            </Field>
+          </FormLayout>
+          <div className="form-check-row u-mt-3">
+            <CheckboxField
+              id="sql-cu"
+              label="同時建立用戶"
+              description="一併建立可連線此庫的帳號"
+              checked={createUser}
+              onChange={setCreateUser}
+            />
+          </div>
           {createUser ? (
-            <FormGrid>
-              <Field label="用戶名" htmlFor="un">
+            <FormLayout columns={2}>
+              <Field label="用戶名" htmlFor="un" flush>
                 <input
                   id="un"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={name || 'user'}
+                  spellCheck={false}
                 />
               </Field>
-              <Field label="密碼（≥8）" htmlFor="pw">
+              <Field label="密碼" htmlFor="pw" hint="至少 8 位" flush required>
                 <input
                   id="pw"
                   type="password"
@@ -809,13 +832,25 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   onChange={(e) => setPassword(e.target.value)}
                   required={createUser}
                   minLength={8}
+                  autoComplete="new-password"
                 />
               </Field>
-              <Field label="Host" htmlFor="hh">
-                <input id="hh" value={host} onChange={(e) => setHost(e.target.value)} />
+              <Field
+                label="允許連線主機"
+                htmlFor="hh"
+                hint="常用 %（任意）或 localhost"
+                flush
+              >
+                <input
+                  id="hh"
+                  value={host}
+                  onChange={(e) => setHost(e.target.value)}
+                  spellCheck={false}
+                />
               </Field>
-            </FormGrid>
+            </FormLayout>
           ) : null}
+          <FormHint>僅寫入控制面登記；列表按「套用」才會在伺服器 CREATE DATABASE。</FormHint>
         </form>
       </Modal>
 
@@ -823,6 +858,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         open={userOpen}
         onClose={() => setUserOpen(false)}
         title={`建立 ${title} 用戶`}
+        description="建立控制面登記後請套用；written ≠ 伺服器已 CREATE USER"
         footer={
           <>
             <button type="button" className="btn btn--secondary" onClick={() => setUserOpen(false)}>
@@ -835,16 +871,17 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         }
       >
         <form id="sql-user" onSubmit={(e) => void onCreateUser(e)}>
-          <FormGrid>
-            <Field label="用戶名" htmlFor="uun">
+          <FormLayout columns={2}>
+            <Field label="用戶名" htmlFor="uun" required flush>
               <input
                 id="uun"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                spellCheck={false}
               />
             </Field>
-            <Field label="密碼" htmlFor="upw">
+            <Field label="密碼" htmlFor="upw" required hint="至少 8 位" flush>
               <input
                 id="upw"
                 type="password"
@@ -852,12 +889,18 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
+                autoComplete="new-password"
               />
             </Field>
-            <Field label="Host" htmlFor="uh">
-              <input id="uh" value={host} onChange={(e) => setHost(e.target.value)} />
+            <Field label="允許連線主機" htmlFor="uh" flush hint="常用 % 或 localhost">
+              <input
+                id="uh"
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
+                spellCheck={false}
+              />
             </Field>
-            <Field label="綁定資料庫" htmlFor="udb">
+            <Field label="綁定資料庫" htmlFor="udb" flush hint="可選；授權此庫權限">
               <select id="udb" value={dbId} onChange={(e) => setDbId(e.target.value)}>
                 <option value="">— 無 —</option>
                 {dbs.items.map((d) => (
@@ -867,7 +910,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 ))}
               </select>
             </Field>
-          </FormGrid>
+          </FormLayout>
         </form>
       </Modal>
 

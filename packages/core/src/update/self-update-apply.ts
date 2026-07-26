@@ -19,7 +19,7 @@ export async function fetchNpmLatest(packageName = 'ysk-server'): Promise<Regist
   const url = `https://registry.npmjs.org/${encodeURIComponent(packageName)}/latest`;
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!res.ok) {
-    throw new YskError(ErrorCodes.UPDATE_FAILED, `npm registry HTTP ${res.status}`, {
+    throw new YskError(ErrorCodes.UPDATE_FAILED, `npm registry 回應 HTTP ${res.status}`, {
       httpStatus: 502,
     });
   }
@@ -28,7 +28,7 @@ export async function fetchNpmLatest(packageName = 'ysk-server'): Promise<Regist
     dist?: { tarball?: string; shasum?: string };
   };
   if (!body.version) {
-    throw new YskError(ErrorCodes.UPDATE_FAILED, 'npm latest missing version', { httpStatus: 502 });
+    throw new YskError(ErrorCodes.UPDATE_FAILED, 'npm latest 缺少版本資訊', { httpStatus: 502 });
   }
   return {
     latest: body.version,

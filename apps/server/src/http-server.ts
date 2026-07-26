@@ -76,6 +76,7 @@ import {
   provisionRedisBinding,
   downloadWordpressCore,
   provisionPostgresDatabase,
+  normalizeRuntimeVersion,
 } from '@ysk/core';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -202,14 +203,14 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'GET' && url.pathname === '/api/v1/users') {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, message: 'admin only' });
+          return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
         }
         return sendJson(res, 200, { items: ctx.usersAdmin.listUsers() });
       }
       if (method === 'POST' && url.pathname === '/api/v1/users') {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, message: 'admin only' });
+          return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
         }
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
@@ -230,7 +231,7 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/users\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, message: 'admin only' });
+          return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
         }
         const id = url.pathname.split('/')[4];
         const raw = await readBody(req);
@@ -246,7 +247,7 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/users\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, message: 'admin only' });
+          return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
         }
         const id = url.pathname.split('/')[4];
         const ok = ctx.usersAdmin.deleteUser(id, user.username);
@@ -269,7 +270,7 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/packages') {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, message: 'admin only' });
+          return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
         }
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
@@ -302,7 +303,7 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/packages\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, message: 'admin only' });
+          return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
         }
         const id = url.pathname.split('/')[4];
         const raw = await readBody(req);
@@ -327,7 +328,7 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/packages\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, message: 'admin only' });
+          return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
         }
         const id = url.pathname.split('/')[4];
         const ok = ctx.usersAdmin.deletePackage(id, user.username);
@@ -535,6 +536,36 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, { items: ctx.audit.listRecent(100) });
       }
 
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-history$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const limit = Math.min(50, Number(url.searchParams.get('limit') ?? 20) || 20);
+        const items = ctx.audit.listForResource(id, {
+          actionPrefix: 'project.deploy',
+          limit,
+        });
+        // Also include process deploys recorded as project.deploy_process / deploy_node / deploy_php
+        const more = ctx.audit
+          .listForResource(id, { limit: 80 })
+          .filter((e) =>
+            /deploy|git_deploy/.test(e.action),
+          )
+          .slice(0, limit);
+        const merged = [...items, ...more]
+          .filter(
+            (e, i, arr) => arr.findIndex((x) => x.id === e.id) === i,
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          )
+          .slice(0, limit);
+        return sendJson(res, 200, { items: merged });
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/projects') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, { items: ctx.projects.list() });
@@ -546,7 +577,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           projectName?: string;
           domain?: string;
-          runtime?: 'node' | 'php' | 'static';
+          runtime?: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
           serverIp?: string;
           createDns?: boolean;
           createMail?: boolean;
@@ -591,7 +622,7 @@ export function createHttpServer(ctx: AppContext): Server {
           name?: string;
           domain?: string;
           domainAliases?: string[];
-          runtime?: 'node' | 'php' | 'static';
+          runtime?: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
           runtimeVersion?: string;
           env?: 'staging' | 'production';
           templateId?: string;
@@ -604,12 +635,17 @@ export function createHttpServer(ctx: AppContext): Server {
         };
         const { assertCanCreateProject } = await import('@ysk/core');
         assertCanCreateProject(ctx.db, user.id);
+        const runtime = data.runtime ?? 'node';
+        const { defaultRuntimeVersion, normalizeRuntimeVersion } = await import('@ysk/core');
         const created = await ctx.projects.create({
           name: data.name ?? '',
           domain: data.domain,
           domainAliases: data.domainAliases,
-          runtime: data.runtime ?? 'node',
-          runtimeVersion: data.runtimeVersion ?? '20',
+          runtime,
+          runtimeVersion: normalizeRuntimeVersion(
+            runtime,
+            data.runtimeVersion ?? defaultRuntimeVersion(runtime),
+          ),
           env: data.env,
           actor: user.username,
           templateId: data.templateId,
@@ -688,6 +724,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           port?: number;
           entry?: string;
+          skipBuild?: boolean;
           nodeVersion?: string;
           enableSystemd?: boolean;
           preferFpm?: boolean;
@@ -710,13 +747,22 @@ export function createHttpServer(ctx: AppContext): Server {
                   ssl: data.ssl,
                   reload: data.reload,
                 })
-              : await ctx.projectOps.deployNode(id, {
-                  actor: user.username,
-                  port: data.port,
-                  entry: data.entry,
-                  nodeVersion: data.nodeVersion,
-                  enableSystemd: data.enableSystemd,
-                });
+              : proj.runtime === 'python' ||
+                  proj.runtime === 'go' ||
+                  proj.runtime === 'rust'
+                ? await ctx.projectOps.deployProcess(id, {
+                    actor: user.username,
+                    port: data.port,
+                    entry: data.entry,
+                    skipBuild: data.skipBuild,
+                  })
+                : await ctx.projectOps.deployNode(id, {
+                    actor: user.username,
+                    port: data.port,
+                    entry: data.entry,
+                    nodeVersion: data.nodeVersion,
+                    enableSystemd: data.enableSystemd,
+                  });
         return sendJson(res, result.ok ? 200 : 502, result);
       }
 
@@ -1493,15 +1539,26 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
-          kind?: 'node' | 'php';
+          kind?: 'node' | 'php' | 'python' | 'go' | 'rust';
           version?: string;
           install?: boolean;
         };
+        const kind = data.kind ?? 'node';
+        const defaultVer =
+          kind === 'php'
+            ? '8.2'
+            : kind === 'python'
+              ? '3.12'
+              : kind === 'go'
+                ? '1.22'
+                : kind === 'rust'
+                  ? 'stable'
+                  : '20';
         const result = await planOrInstallRuntime({
           dataDir: ctx.dataDir,
           host: ctx.host,
-          kind: data.kind ?? 'node',
-          version: data.version ?? (data.kind === 'php' ? '8.2' : '20'),
+          kind,
+          version: data.version ?? defaultVer,
           install: data.install,
         });
         ctx.audit.append({
@@ -2602,7 +2659,7 @@ export function createHttpServer(ctx: AppContext): Server {
           return sendJson(res, 400, {
             ok: false,
             code: 'YSK_VALIDATION',
-            message: 'ip required',
+            message: '請指定 IP',
           });
         }
         const report = await checkIpDnsbl(ip);
@@ -3014,12 +3071,16 @@ export function createHttpServer(ctx: AppContext): Server {
           gitUrl?: string;
           branch?: string;
           redeploy?: boolean;
+          entry?: string;
+          skipBuild?: boolean;
         };
         const result = await ctx.projectOps.gitDeploy(id, {
           actor: user.username,
           gitUrl: data.gitUrl,
           branch: data.branch,
           redeploy: data.redeploy,
+          entry: data.entry,
+          skipBuild: data.skipBuild,
         });
         return sendJson(res, result.ok ? 200 : 502, result);
       }
@@ -3149,19 +3210,32 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { runtimeVersion?: string };
+        const data = JSON.parse(raw || '{}') as {
+          runtimeVersion?: string;
+          deployEntry?: string | null;
+        };
         const p = ctx.db.snapshot.projects.find((x) => x.id === id);
-        if (!p) return sendJson(res, 404, { ok: false, message: 'not found' });
+        if (!p) return sendJson(res, 404, { ok: false, message: '找不到資源' });
         if (data.runtimeVersion) {
-          p.runtime_version = data.runtimeVersion.trim();
-          p.updated_at = new Date().toISOString();
-          ctx.db.persist();
+          p.runtime_version = normalizeRuntimeVersion(
+            p.runtime,
+            data.runtimeVersion.trim(),
+          );
         }
+        if (data.deployEntry !== undefined) {
+          const v = data.deployEntry?.trim() || undefined;
+          p.deploy_entry = v;
+        }
+        p.updated_at = new Date().toISOString();
+        ctx.db.persist();
         ctx.audit.append({
           actor: user.username,
           action: 'project.runtime_version',
           resource: id,
-          detail: { runtimeVersion: p.runtime_version },
+          detail: {
+            runtimeVersion: p.runtime_version,
+            deployEntry: p.deploy_entry,
+          },
           ok: true,
         });
         return sendJson(res, 200, { project: ctx.projects.get(id) });
@@ -3253,12 +3327,12 @@ export function createHttpServer(ctx: AppContext): Server {
           return sendJson(res, 400, {
             ok: false,
             code: 'YSK_VALIDATION',
-            message: 'enabled boolean required',
+            message: '請指定啟用狀態（是／否）',
           });
         }
         const job = ctx.cron.setEnabled(id, data.enabled);
         if (!job) {
-          return sendJson(res, 404, { ok: false, code: 'YSK_NOT_FOUND', message: 'cron job not found' });
+          return sendJson(res, 404, { ok: false, code: 'YSK_NOT_FOUND', message: '找不到 cron 工作' });
         }
         ctx.audit.append({
           actor: user.username,
@@ -3302,7 +3376,7 @@ export function createHttpServer(ctx: AppContext): Server {
       return sendJson(res, 404, {
         ok: false,
         code: 'YSK_NOT_FOUND',
-        message: `Not found: ${method} ${url.pathname}`,
+        message: `找不到：${method} ${url.pathname}`,
         webUi: Boolean(webRoot),
       });
     } catch (err) {

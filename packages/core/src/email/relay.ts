@@ -44,10 +44,10 @@ export async function applySmtpRelay(input: {
 }): Promise<SmtpRelayApplyResult> {
   const r = input.relay;
   if (!r.host?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, 'relay.host required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫中繼主機', { httpStatus: 400 });
   }
   if (!Number.isInteger(r.port) || r.port < 1 || r.port > 65535) {
-    throw new YskError(ErrorCodes.VALIDATION, 'relay.port invalid', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '中繼埠號無效', { httpStatus: 400 });
   }
   const dir = join(input.dataDir, 'email', 'relay');
   mkdirSync(dir, { recursive: true });
@@ -122,7 +122,7 @@ export async function applySmtpRelay(input: {
       commandResults.push({ argv, exitCode: res.exitCode, stderr: res.stderr });
     }
     appliedToSystem = commandResults.every((c) => c.exitCode === 0);
-    notes.push(appliedToSystem ? 'Relay applied to system Postfix' : 'Some system steps failed');
+    notes.push(appliedToSystem ? '已套用中繼設定到系統 Postfix' : '部分系統步驟失敗');
   }
 
   const publicConfig = {

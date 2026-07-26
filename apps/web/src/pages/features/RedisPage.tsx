@@ -11,6 +11,8 @@ import {
   EmptyState,
   Field,
   FeaturePageLayout,
+  FormHint,
+  FormLayout,
   Modal,
   OpsResultPanel,
   SplitPanel,
@@ -470,7 +472,7 @@ export function RedisPage() {
         open={setOpen}
         onClose={() => setSetOpen(false)}
         title="新增字串鍵"
-        description={`寫入資料庫 ${db}`}
+        description={`寫入 Redis 資料庫 ${db}（即時生效，請謹慎）`}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setSetOpen(false)}>
@@ -483,36 +485,52 @@ export function RedisPage() {
         }
       >
         <form id="redis-set" onSubmit={(e) => void onSetKey(e)}>
-          <Field label="鍵名" htmlFor="nk">
-            <input
-              id="nk"
-              value={newKey}
-              onChange={(e) => setNewKey(e.target.value)}
+          <FormLayout columns={2}>
+            <Field
+              label="鍵名"
+              htmlFor="nk"
+              flush
               required
-              placeholder="例如 session:user:1"
-              pattern="[\w.:@/+\-\[\]{}|=,~-]+"
-            />
-          </Field>
-          <Field label="內容" htmlFor="nv">
-            <textarea
-              id="nv"
-              value={newVal}
-              onChange={(e) => setNewVal(e.target.value)}
-              rows={6}
-              required
-              placeholder="字串值"
-              style={{ width: '100%' }}
-            />
-          </Field>
-          <Field label="過期時間（秒，可留空）" htmlFor="nt">
-            <input
-              id="nt"
-              value={newTtl}
-              onChange={(e) => setNewTtl(e.target.value)}
-              placeholder="例如 3600"
-              inputMode="numeric"
-            />
-          </Field>
+              hint="建議用冒號分層，例如 session:user:1"
+            >
+              <input
+                id="nk"
+                value={newKey}
+                onChange={(e) => setNewKey(e.target.value)}
+                required
+                placeholder="session:user:1"
+                pattern="[\w.:@/+\-\[\]{}|=,~-]+"
+                spellCheck={false}
+                autoComplete="off"
+              />
+            </Field>
+            <Field
+              label="過期時間（秒）"
+              htmlFor="nt"
+              flush
+              hint="可留空表示永不過期"
+            >
+              <input
+                id="nt"
+                value={newTtl}
+                onChange={(e) => setNewTtl(e.target.value)}
+                placeholder="3600"
+                inputMode="numeric"
+              />
+            </Field>
+            <Field label="內容" htmlFor="nv" fullWidth flush required hint="字串值，會以 SET 寫入">
+              <textarea
+                id="nv"
+                value={newVal}
+                onChange={(e) => setNewVal(e.target.value)}
+                rows={6}
+                required
+                placeholder="字串內容"
+                spellCheck={false}
+              />
+            </Field>
+          </FormLayout>
+          <FormHint>此操作直接寫入執行中的 Redis，無法從面板一鍵還原。</FormHint>
         </form>
       </Modal>
 

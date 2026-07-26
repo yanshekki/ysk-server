@@ -2,5 +2,22 @@ export { projectsApi } from './api';
 export { useProjects } from './useProjects';
 export { useProjectOps } from './useProjectOps';
 export { deriveProjectStatus, summarizeProjects } from './model/status';
+export {
+  ProjectStatusBadge,
+  ProjectSummaryStrip,
+  ProjectList,
+  ProjectListItem,
+  ProjectCreateModal,
+  ProjectDetailHeader,
+  ProjectStatusRail,
+  ProjectOverviewTab,
+  ProjectDeployTab,
+  ProjectNetworkTab,
+  ProjectResourcesTab,
+  ProjectLogsTab,
+  ProjectAdvancedTab,
+  ProjectChecklist,
+  ProjectNextStep,
+  HealthSummary,
+} from './ui';
 export type { ProjectDisplayStatus } from './model/status';
-export * from './ui';

@@ -12,11 +12,14 @@ import {
   Button,
   Card,
   CardSection,
+  CheckboxField,
   DescriptionList,
   FeaturePageLayout,
+  Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
-  SettingField,
-  SettingFieldList,
   SummaryStrip,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -202,164 +205,168 @@ export function DbServicePage({ engine }: { engine: DbServiceEngine }) {
         >
           <form id="db-svc-form" onSubmit={(e) => void onSave(e)}>
             {engine === 'redis' ? (
-              <SettingFieldList>
-                <SettingField label="監聽埠" techKey="port" htmlFor="port">
-                  <input
-                    id="port"
-                    type="number"
-                    value={Number(settings.port ?? 6379)}
-                    onChange={(e) => patch('port', Number(e.target.value) || 6379)}
-                  />
-                </SettingField>
-                <SettingField label="Bind 位址" techKey="bind" htmlFor="bind">
-                  <input
-                    id="bind"
-                    value={String(settings.bind ?? '127.0.0.1')}
-                    onChange={(e) => patch('bind', e.target.value)}
-                  />
-                </SettingField>
-                <SettingField
-                  label="資料庫數量"
-                  techKey="databases"
-                  description="編號 0…N−1；改動後需套用並重啟"
-                  htmlFor="databases"
-                >
-                  <input
-                    id="databases"
-                    type="number"
-                    min={1}
-                    max={256}
-                    value={Number(settings.databases ?? 16)}
-                    onChange={(e) => patch('databases', Number(e.target.value) || 16)}
-                  />
-                </SettingField>
-                <SettingField label="記憶體上限" techKey="maxmemory" description="如 256mb，0=不限" htmlFor="maxmemory">
-                  <input
-                    id="maxmemory"
-                    value={String(settings.maxmemory ?? '0')}
-                    onChange={(e) => patch('maxmemory', e.target.value)}
-                  />
-                </SettingField>
-                <SettingField label="淘汰策略" techKey="maxmemory-policy" htmlFor="policy">
-                  <select
-                    id="policy"
-                    value={String(settings.maxmemoryPolicy ?? 'noeviction')}
-                    onChange={(e) => patch('maxmemoryPolicy', e.target.value)}
+              <>
+                <FormLayout columns={2}>
+                  <Field label="監聽埠" htmlFor="port" flush hint="預設 6379">
+                    <input
+                      id="port"
+                      type="number"
+                      value={Number(settings.port ?? 6379)}
+                      onChange={(e) => patch('port', Number(e.target.value) || 6379)}
+                    />
+                  </Field>
+                  <Field label="綁定位址" htmlFor="bind" flush hint="建議 127.0.0.1">
+                    <input
+                      id="bind"
+                      value={String(settings.bind ?? '127.0.0.1')}
+                      onChange={(e) => patch('bind', e.target.value)}
+                      spellCheck={false}
+                    />
+                  </Field>
+                  <Field
+                    label="資料庫數量"
+                    htmlFor="databases"
+                    flush
+                    hint="編號 0…N−1；改動後需套用並重啟"
                   >
-                    <option value="noeviction">noeviction</option>
-                    <option value="allkeys-lru">allkeys-lru</option>
-                    <option value="volatile-lru">volatile-lru</option>
-                    <option value="allkeys-lfu">allkeys-lfu</option>
-                    <option value="volatile-ttl">volatile-ttl</option>
-                  </select>
-                </SettingField>
-                <SettingField label="密碼" techKey="requirepass" htmlFor="pass">
-                  <input
-                    id="pass"
-                    type="password"
-                    value={String(settings.requirepass ?? '')}
-                    onChange={(e) => patch('requirepass', e.target.value)}
-                    autoComplete="new-password"
-                  />
-                </SettingField>
-                <SettingField label="閒置逾時" techKey="timeout" description="秒；0=不限" htmlFor="timeout">
-                  <input
-                    id="timeout"
-                    type="number"
-                    value={Number(settings.timeout ?? 0)}
-                    onChange={(e) => patch('timeout', Number(e.target.value) || 0)}
-                  />
-                </SettingField>
-                <SettingField label="AOF" techKey="appendonly" htmlFor="appendonly">
-                  <select
+                    <input
+                      id="databases"
+                      type="number"
+                      min={1}
+                      max={256}
+                      value={Number(settings.databases ?? 16)}
+                      onChange={(e) => patch('databases', Number(e.target.value) || 16)}
+                    />
+                  </Field>
+                  <Field label="記憶體上限" htmlFor="maxmemory" flush hint="如 256mb；0=不限">
+                    <input
+                      id="maxmemory"
+                      value={String(settings.maxmemory ?? '0')}
+                      onChange={(e) => patch('maxmemory', e.target.value)}
+                      spellCheck={false}
+                    />
+                  </Field>
+                  <Field label="淘汰策略" htmlFor="policy" flush>
+                    <select
+                      id="policy"
+                      value={String(settings.maxmemoryPolicy ?? 'noeviction')}
+                      onChange={(e) => patch('maxmemoryPolicy', e.target.value)}
+                    >
+                      <option value="noeviction">noeviction</option>
+                      <option value="allkeys-lru">allkeys-lru</option>
+                      <option value="volatile-lru">volatile-lru</option>
+                      <option value="allkeys-lfu">allkeys-lfu</option>
+                      <option value="volatile-ttl">volatile-ttl</option>
+                    </select>
+                  </Field>
+                  <Field label="密碼" htmlFor="pass" flush hint="requirepass；可留空">
+                    <input
+                      id="pass"
+                      type="password"
+                      value={String(settings.requirepass ?? '')}
+                      onChange={(e) => patch('requirepass', e.target.value)}
+                      autoComplete="new-password"
+                    />
+                  </Field>
+                  <Field label="閒置逾時（秒）" htmlFor="timeout" flush hint="0=不限">
+                    <input
+                      id="timeout"
+                      type="number"
+                      value={Number(settings.timeout ?? 0)}
+                      onChange={(e) => patch('timeout', Number(e.target.value) || 0)}
+                    />
+                  </Field>
+                </FormLayout>
+                <div className="form-check-row u-mt-4">
+                  <CheckboxField
                     id="appendonly"
-                    value={settings.appendonly ? 'yes' : 'no'}
-                    onChange={(e) => patch('appendonly', e.target.value === 'yes')}
-                  >
-                    <option value="yes">開啟</option>
-                    <option value="no">關閉</option>
-                  </select>
-                </SettingField>
-                <SettingField label="保護模式" techKey="protected-mode" htmlFor="protectedMode">
-                  <select
+                    label="啟用 AOF"
+                    description="appendonly 持久化"
+                    checked={Boolean(settings.appendonly)}
+                    onChange={(v) => patch('appendonly', v)}
+                  />
+                  <CheckboxField
                     id="protectedMode"
-                    value={settings.protectedMode !== false ? 'yes' : 'no'}
-                    onChange={(e) => patch('protectedMode', e.target.value === 'yes')}
-                  >
-                    <option value="yes">開啟</option>
-                    <option value="no">關閉</option>
-                  </select>
-                </SettingField>
-              </SettingFieldList>
+                    label="保護模式"
+                    description="無密碼且非本機綁定時拒絕連線"
+                    checked={settings.protectedMode !== false}
+                    onChange={(v) => patch('protectedMode', v)}
+                  />
+                </div>
+              </>
             ) : engine === 'postgres' ? (
-              <SettingFieldList>
-                <SettingField label="埠" techKey="port" htmlFor="port">
+              <FormLayout columns={2}>
+                <Field label="埠" htmlFor="port" flush>
                   <input
                     id="port"
                     type="number"
                     value={Number(settings.port ?? 5432)}
                     onChange={(e) => patch('port', Number(e.target.value) || 5432)}
                   />
-                </SettingField>
-                <SettingField label="監聽位址" techKey="listen_addresses" htmlFor="listen">
+                </Field>
+                <Field label="監聽位址" htmlFor="listen" flush hint="listen_addresses">
                   <input
                     id="listen"
                     value={String(settings.listenAddresses ?? 'localhost')}
                     onChange={(e) => patch('listenAddresses', e.target.value)}
+                    spellCheck={false}
                   />
-                </SettingField>
-                <SettingField label="最大連線" techKey="max_connections" htmlFor="mc">
+                </Field>
+                <Field label="最大連線" htmlFor="mc" flush>
                   <input
                     id="mc"
                     type="number"
                     value={Number(settings.maxConnections ?? 100)}
                     onChange={(e) => patch('maxConnections', Number(e.target.value) || 100)}
                   />
-                </SettingField>
-              </SettingFieldList>
+                </Field>
+              </FormLayout>
             ) : (
-              <SettingFieldList>
-                <SettingField label="埠" techKey="port" htmlFor="port">
+              <FormLayout columns={2}>
+                <Field label="埠" htmlFor="port" flush>
                   <input
                     id="port"
                     type="number"
                     value={Number(settings.port ?? 3306)}
                     onChange={(e) => patch('port', Number(e.target.value) || 3306)}
                   />
-                </SettingField>
-                <SettingField label="綁定位址" techKey="bind_address" htmlFor="bind">
+                </Field>
+                <Field label="綁定位址" htmlFor="bind" flush>
                   <input
                     id="bind"
                     value={String(settings.bindAddress ?? '127.0.0.1')}
                     onChange={(e) => patch('bindAddress', e.target.value)}
+                    spellCheck={false}
                   />
-                </SettingField>
-                <SettingField label="最大連線" techKey="max_connections" htmlFor="mc">
+                </Field>
+                <Field label="最大連線" htmlFor="mc" flush>
                   <input
                     id="mc"
                     type="number"
                     value={Number(settings.maxConnections ?? 151)}
                     onChange={(e) => patch('maxConnections', Number(e.target.value) || 151)}
                   />
-                </SettingField>
-                <SettingField label="字元集" techKey="character_set_server" htmlFor="cs">
+                </Field>
+                <Field label="字元集" htmlFor="cs" flush hint="建議 utf8mb4">
                   <input
                     id="cs"
                     value={String(settings.characterSetServer ?? 'utf8mb4')}
                     onChange={(e) => patch('characterSetServer', e.target.value)}
+                    spellCheck={false}
                   />
-                </SettingField>
-              </SettingFieldList>
+                </Field>
+              </FormLayout>
             )}
 
-            <div className="setting-actions-bar">
+            <FormHint>儲存只更新面板設定；套用才寫入設定檔並重啟服務。</FormHint>
+            <FormActions>
               <Button type="submit" variant="secondary" size="md" loading={busy}>
                 儲存設定
               </Button>
               <Button type="button" variant="primary" size="md" loading={busy} onClick={() => void onApply()}>
                 套用到系統並重啟
               </Button>
-            </div>
+            </FormActions>
           </form>
         </CardSection>
       </Card>

@@ -83,7 +83,7 @@ function httpRedirectBlock(serverName: string, bindIp?: string): string {
  */
 export function renderNginxProxy(config: NginxProxyConfig): string {
   if (!config.serverName || !config.upstream) {
-    throw new YskError(ErrorCodes.VALIDATION, 'serverName and upstream are required', {
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName 與 upstream', {
       httpStatus: 400,
     });
   }
@@ -177,7 +177,7 @@ export function renderNginxStatic(opts: {
   hsts?: boolean;
 }): string {
   if (!opts.serverName || !opts.docRoot) {
-    throw new YskError(ErrorCodes.VALIDATION, 'serverName and docRoot required', {
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName 與文件根目錄', {
       httpStatus: 400,
     });
   }
@@ -238,7 +238,7 @@ export function renderNginxPhpFpm(opts: {
   hsts?: boolean;
 }): string {
   if (!opts.serverName || !opts.docRoot || !opts.fpmSocket) {
-    throw new YskError(ErrorCodes.VALIDATION, 'serverName, docRoot, fpmSocket required', {
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName、文件根目錄與 FPM socket', {
       httpStatus: 400,
     });
   }
@@ -299,14 +299,14 @@ export function renderNginxSuspended(serverName: string): string {
  */
 export function planLetsEncrypt(plan: SslCertPlan): { commands: string[]; notes: string[] } {
   if (!plan.domain || !plan.email) {
-    throw new YskError(ErrorCodes.VALIDATION, 'domain and email required for SSL', {
+    throw new YskError(ErrorCodes.VALIDATION, '申請 SSL 需要域名與電郵', {
       httpStatus: 400,
     });
   }
   if (plan.provider === 'upload') {
     return {
       commands: [],
-      notes: ['User-uploaded certificate path; place files under /etc/ysk-server/certs'],
+      notes: ['已登記上傳憑證路徑（檔案置於 /etc/ysk-server/certs）'],
     };
   }
   const isWildcard = plan.domain.startsWith('*.');

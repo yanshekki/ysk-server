@@ -64,6 +64,9 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
     items: [
       { to: '/runtimes/node', key: 'node', icon: '⬢' },
       { to: '/runtimes/php', key: 'php', icon: '🐘' },
+      { to: '/runtimes/python', key: 'python', icon: '🐍' },
+      { to: '/runtimes/go', key: 'go', icon: '🐹' },
+      { to: '/runtimes/rust', key: 'rust', icon: '🦀' },
     ],
   },
   {

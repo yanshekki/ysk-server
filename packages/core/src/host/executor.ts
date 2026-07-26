@@ -79,7 +79,7 @@ export class LocalHostExecutor implements HostExecutor {
     try {
       return readFileSync(path, 'utf8');
     } catch (err) {
-      throw new YskError(ErrorCodes.INTERNAL, `Failed to read ${path}`, {
+      throw new YskError(ErrorCodes.INTERNAL, `讀取失敗：${path}`, {
         httpStatus: 500,
         cause: err,
       });
@@ -90,7 +90,7 @@ export class LocalHostExecutor implements HostExecutor {
     try {
       return readdirSync(path);
     } catch (err) {
-      throw new YskError(ErrorCodes.INTERNAL, `Failed to list ${path}`, {
+      throw new YskError(ErrorCodes.INTERNAL, `列出失敗：${path}`, {
         httpStatus: 500,
         cause: err,
       });
@@ -106,7 +106,7 @@ export class LocalHostExecutor implements HostExecutor {
     if (!inManagedRoot && !this.executeOn) {
       throw new YskError(
         ErrorCodes.FORBIDDEN,
-        'Write blocked: set YSK_EXECUTE=1 for paths outside managed dataDir',
+        '寫入被阻擋：未開啟系統變更權限，且路徑在管理資料目錄外',
         { httpStatus: 403, details: { path } },
       );
     }
@@ -123,7 +123,7 @@ export class LocalHostExecutor implements HostExecutor {
     if (!inManagedRoot && !this.executeOn) {
       throw new YskError(
         ErrorCodes.FORBIDDEN,
-        'Delete blocked: set YSK_EXECUTE=1 for paths outside managed dataDir',
+        '刪除被阻擋：未開啟系統變更權限，且路徑在管理資料目錄外',
         { httpStatus: 403, details: { path } },
       );
     }
@@ -158,7 +158,7 @@ export class LocalHostExecutor implements HostExecutor {
 
   async serviceStatus(name: string): Promise<RunResult> {
     if (!/^[a-zA-Z0-9@_.-]+$/.test(name)) {
-      throw new YskError(ErrorCodes.VALIDATION, `Invalid service name: ${name}`, {
+      throw new YskError(ErrorCodes.VALIDATION, `服務名稱無效：${name}`, {
         httpStatus: 400,
       });
     }
@@ -170,7 +170,7 @@ export class LocalHostExecutor implements HostExecutor {
     opts: { dryRun?: boolean; timeoutMs?: number; cwd?: string } = {},
   ): Promise<RunResult> {
     if (!argv.length) {
-      throw new YskError(ErrorCodes.VALIDATION, 'Command argv empty', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '指令參數為空', { httpStatus: 400 });
     }
     if (opts.dryRun) {
       return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: true };
@@ -180,7 +180,7 @@ export class LocalHostExecutor implements HostExecutor {
     if (mutating && !this.executeOn) {
       throw new YskError(
         ErrorCodes.FORBIDDEN,
-        'Command blocked: set YSK_EXECUTE=1 for mutating host commands',
+        '指令被阻擋：變更主機需開啟系統變更權限',
         { httpStatus: 403, details: { argv } },
       );
     }
@@ -219,7 +219,7 @@ export class LocalHostExecutor implements HostExecutor {
   private assertWritable(path: string): void {
     if (!this.writeRoots.length) return;
     if (!this.isUnderWriteRoots(path)) {
-      throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `Path outside allowed write roots: ${path}`, {
+      throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `路徑不在允許寫入範圍：${path}`, {
         httpStatus: 403,
         details: { path, writeRoots: this.writeRoots },
       });

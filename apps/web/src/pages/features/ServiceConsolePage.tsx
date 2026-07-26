@@ -1,6 +1,6 @@
 /**
  * Multi-category DB service console.
- * Overview = DescriptionList (never inputs). Settings = compact SettingField rows.
+ * Overview = DescriptionList (never inputs). Settings = Form Kit (max 2 cols).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -11,9 +11,11 @@ import {
   Card,
   CardSection,
   DescriptionList,
+  Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
-  SettingField,
-  SettingFieldList,
   SummaryStrip,
   Tabs,
   FeaturePageLayout,
@@ -198,19 +200,25 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   function renderSetting(s: ConsoleSetting) {
     const live = displayValue(s.liveValue);
     const dirty = (draft[s.key] ?? live) !== live;
+    const mode = applyModeLabel(s.applyMode);
+    const hintParts = [
+      s.description,
+      mode ? `套用方式：${mode}` : null,
+      dirty ? '已修改，尚未套用' : null,
+      s.danger ? '高風險設定' : null,
+    ].filter(Boolean);
     return (
-      <SettingField
-        key={s.key}
-        label={s.label}
-        techKey={s.key}
-        description={s.description}
-        badge={applyModeLabel(s.applyMode)}
-        badgeTone={s.applyMode === 'restart' ? 'warn' : s.danger ? 'danger' : 'neutral'}
-        dirty={dirty}
-        htmlFor={`sc-${engine}-${s.key}`}
-      >
-        {renderControl(s)}
-      </SettingField>
+      <div key={s.key} className={dirty ? 'field-wrap is-dirty' : 'field-wrap'}>
+        <Field
+          label={s.label}
+          techKey={s.key}
+          htmlFor={`sc-${engine}-${s.key}`}
+          flush
+          hint={hintParts.length ? hintParts.join(' · ') : undefined}
+        >
+          {renderControl(s)}
+        </Field>
+      </div>
     );
   }
 
@@ -222,9 +230,12 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     const catDirty = dirtyKeys.filter((k) => rows.some((r) => r.key === k));
     return (
       <>
-        {cat.description ? <p className="settings-panel__intro">{cat.description}</p> : null}
-        <SettingFieldList>{rows.map(renderSetting)}</SettingFieldList>
-        <div className="setting-actions-bar">
+        {cat.description ? <FormHint>{cat.description}</FormHint> : null}
+        <FormHint>
+          「即時」可在線修改；「需重啟」套用後請到生命週期重啟服務。藍色底為尚未套用的變更。
+        </FormHint>
+        <FormLayout columns={2}>{rows.map(renderSetting)}</FormLayout>
+        <FormActions>
           <Button
             variant="primary"
             size="md"
@@ -243,7 +254,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           >
             套用全部變更{dirtyKeys.length ? `（${dirtyKeys.length}）` : ''}
           </Button>
-        </div>
+        </FormActions>
       </>
     );
   }

@@ -12,13 +12,25 @@ import {
   EmptyState,
   Field,
   FeaturePageLayout,
-  FormGrid,
+  FormLayout,
   OpsResultPanel,
   SummaryStrip,
+  Tabs,
+  FormActions,
 } from '../../shared/components/ui';
+import { usePageTab } from '../../shared/hooks/usePageTab';
+
+const CRON_TABS = ['status', 'jobs', 'create'] as const;
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+
+const SCHEDULE_PRESETS = [
+  { label: '每日 03:00', value: '0 3 * * *' },
+  { label: '每小時', value: '0 * * * *' },
+  { label: '每 5 分鐘', value: '*/5 * * * *' },
+  { label: '每週日 04:00', value: '0 4 * * 0' },
+] as const;
 
 type CronJob = {
   id: string;
@@ -107,6 +119,8 @@ export function CronPage() {
   const hostOk = status?.hostHasYskEntries === true;
   const hostNo = status?.hostHasYskEntries === false;
 
+  const [tab, setTab] = usePageTab(CRON_TABS, 'jobs');
+
   return (
     <FeaturePageLayout
       title="Cron 工作"
@@ -157,81 +171,18 @@ export function CronPage() {
         ]}
       />
 
-      <Card>
-        <CardSection title="安裝狀態" description="誠實對照管理檔 vs 主機">
-          <DescriptionList
-            columns={2}
-            items={[
-              { label: '管理檔', value: status?.managedPath ?? '—' },
-              { label: '管理檔行數', value: String(status?.managedLines ?? '—') },
-              {
-                label: '主機有 YSK 項',
-                value:
-                  status?.hostHasYskEntries == null
-                    ? '—'
-                    : status.hostHasYskEntries
-                      ? '是'
-                      : '否',
-              },
-              {
-                label: '上次安裝',
-                value: status?.lastInstallAt
-                  ? `${status.lastInstallOk ? '成功' : '失敗'} · ${new Date(status.lastInstallAt).toLocaleString()}`
-                  : '尚未',
-              },
-            ]}
-          />
-          <div className="lifecycle-toolbar u-mt-3">
-            <Button variant="primary" size="md" loading={busy} onClick={() => void onInstall()}>
-              安裝到系統 crontab
-            </Button>
-          </div>
-          <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
-            建立／啟用／停用只改管理檔；必須安裝後系統才會執行。
-          </p>
-        </CardSection>
-      </Card>
-
-      <Card>
-        <CardSection title="新增工作" description="標準 cron 五欄語法">
-          <form className="feature-form" onSubmit={(e) => void onCreate(e)}>
-            <FormGrid>
-              <Field label="排程" techKey="schedule" htmlFor="cron-sched" hint="例如 0 3 * * *">
-                <input
-                  id="cron-sched"
-                  value={schedule}
-                  onChange={(e) => setSchedule(e.target.value)}
-                  required
-                />
-              </Field>
-              <Field label="執行用戶" techKey="user" htmlFor="cron-user" hint="記錄用；安裝用目前程序用戶">
-                <input id="cron-user" value={user} onChange={(e) => setUser(e.target.value)} />
-              </Field>
-              <Field label="專案 ID" techKey="project_id" htmlFor="cron-pid" hint="可選過濾">
-                <input
-                  id="cron-pid"
-                  value={projectId}
-                  onChange={(e) => setProjectId(e.target.value)}
-                />
-              </Field>
-            </FormGrid>
-            <Field label="指令" techKey="command" htmlFor="cron-cmd">
-              <input
-                id="cron-cmd"
-                value={command}
-                onChange={(e) => setCommand(e.target.value)}
-                required
-              />
-            </Field>
-            <div className="form-actions btn-row">
-              <Button type="submit" variant="primary" size="md" loading={busy}>
-                建立（管理檔）
-              </Button>
-            </div>
-          </form>
-        </CardSection>
-      </Card>
-
+      <Tabs
+        tabs={[
+          { id: 'jobs', label: '工作' },
+          { id: 'create', label: '新增' },
+          { id: 'status', label: '狀態' },
+        ]}
+        active={tab}
+        onChange={setTab}
+        variant="scroll"
+      >
+        {tab === 'jobs' ? (
+          <div className="tab-panel">
       <Card>
         <CardSection title={`已登記工作 (${items.length})`}>
           {items.length === 0 ? (
@@ -322,6 +273,147 @@ export function CronPage() {
           )}
         </CardSection>
       </Card>
+          </div>
+        ) : null}
+        {tab === 'create' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="新增工作"
+                description="寫入管理檔；需再到「狀態」安裝後系統才會執行"
+              >
+                <form className="feature-form" onSubmit={(e) => void onCreate(e)}>
+                  <FormLayout columns={2}>
+                    <Field
+                      label="排程"
+                      htmlFor="cron-sched"
+                      hint="標準五欄：分 時 日 月 週"
+                      flush
+                      required
+                    >
+                      <input
+                        id="cron-sched"
+                        value={schedule}
+                        onChange={(e) => setSchedule(e.target.value)}
+                        required
+                        placeholder="0 3 * * *"
+                        spellCheck={false}
+                      />
+                    </Field>
+                    <Field
+                      label="執行用戶"
+                      htmlFor="cron-user"
+                      hint="記錄用；實際安裝以程序用戶為準"
+                      flush
+                    >
+                      <input
+                        id="cron-user"
+                        value={user}
+                        onChange={(e) => setUser(e.target.value)}
+                        placeholder="ysk"
+                      />
+                    </Field>
+                    <Field
+                      label="指令"
+                      htmlFor="cron-cmd"
+                      fullWidth
+                      flush
+                      required
+                      hint="建議用絕對路徑，例如 /usr/bin/php /var/www/app/artisan schedule:run"
+                    >
+                      <input
+                        id="cron-cmd"
+                        value={command}
+                        onChange={(e) => setCommand(e.target.value)}
+                        required
+                        placeholder="/usr/bin/true"
+                        spellCheck={false}
+                      />
+                    </Field>
+                    <Field
+                      label="專案 ID"
+                      htmlFor="cron-pid"
+                      flush
+                      hint="可選；用於列表過濾"
+                    >
+                      <input
+                        id="cron-pid"
+                        value={projectId}
+                        onChange={(e) => setProjectId(e.target.value)}
+                        placeholder="（可留空）"
+                      />
+                    </Field>
+                  </FormLayout>
+                  <div className="form-hint" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem' }}>
+                    <span>常用排程：</span>
+                    {SCHEDULE_PRESETS.map((p) => (
+                      <button
+                        key={p.value}
+                        type="button"
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => setSchedule(p.value)}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                  <FormActions>
+                    <Button type="submit" variant="primary" size="md" loading={busy}>
+                      建立（僅管理檔）
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="md"
+                      onClick={() => setTab('status')}
+                    >
+                      前往安裝
+                    </Button>
+                  </FormActions>
+                </form>
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+        {tab === 'status' ? (
+          <div className="tab-panel">
+      <Card>
+        <CardSection title="安裝狀態" description="誠實對照管理檔 vs 主機">
+          <DescriptionList
+            columns={2}
+            items={[
+              { label: '管理檔', value: status?.managedPath ?? '—' },
+              { label: '管理檔行數', value: String(status?.managedLines ?? '—') },
+              {
+                label: '主機有 YSK 項',
+                value:
+                  status?.hostHasYskEntries == null
+                    ? '—'
+                    : status.hostHasYskEntries
+                      ? '是'
+                      : '否',
+              },
+              {
+                label: '上次安裝',
+                value: status?.lastInstallAt
+                  ? `${status.lastInstallOk ? '成功' : '失敗'} · ${new Date(status.lastInstallAt).toLocaleString()}`
+                  : '尚未',
+              },
+            ]}
+          />
+          <div className="lifecycle-toolbar u-mt-3">
+            <Button variant="primary" size="md" loading={busy} onClick={() => void onInstall()}>
+              安裝到系統 crontab
+            </Button>
+          </div>
+          <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
+            建立／啟用／停用只改管理檔；必須安裝後系統才會執行。
+          </p>
+        </CardSection>
+      </Card>
+          </div>
+        ) : null}
+      </Tabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
     </FeaturePageLayout>

@@ -14,7 +14,7 @@ describe('FileManager sandbox', () => {
     const list = fm.list('docs');
     expect(list.some((e) => e.name === 'hello.txt')).toBe(true);
     expect(fm.readText('docs/hello.txt').content).toBe('hello ysk');
-    expect(() => fm.readText('../etc/passwd')).toThrow(/sandbox|escape/i);
+    expect(() => fm.readText('../etc/passwd')).toThrow(/沙箱|sandbox|escape/i);
     fm.remove('docs/hello.txt');
     expect(fm.list('docs')).toHaveLength(0);
     rmSync(dir, { recursive: true, force: true });

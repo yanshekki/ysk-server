@@ -51,7 +51,7 @@ export function planAgentInstall(kind: AgentRuntimeKind): {
 } {
   const entry = CATALOG[kind];
   if (!entry) {
-    throw new YskError(ErrorCodes.VALIDATION, `Unknown agent runtime: ${kind}`, {
+    throw new YskError(ErrorCodes.VALIDATION, `未知 Agent 運行時：${kind}`, {
       httpStatus: 400,
     });
   }
@@ -75,7 +75,7 @@ export function parseAgentKind(value: string): AgentRuntimeKind {
   if (value === 'openclaw' || value === 'hermes' || value === 'ionclaw') {
     return value;
   }
-  throw new YskError(ErrorCodes.VALIDATION, `Unsupported agent kind: ${value}`, {
+  throw new YskError(ErrorCodes.VALIDATION, `不支援的 Agent 類型：${value}`, {
     httpStatus: 400,
   });
 }

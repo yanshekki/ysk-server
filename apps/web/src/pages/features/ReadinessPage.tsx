@@ -1,5 +1,5 @@
 /**
- * Production readiness — DescriptionList + Button standard.
+ * Production readiness — DescriptionList + Form Kit actions.
  */
 import { useState } from 'react';
 import {
@@ -10,6 +10,8 @@ import {
   CardSection,
   DescriptionList,
   FeaturePageLayout,
+  FormActions,
+  FormHint,
   OpsResultPanel,
   SummaryStrip,
 } from '../../shared/components/ui';
@@ -52,57 +54,70 @@ export function ReadinessPage() {
       ) : null}
 
       <Card>
-        <CardSection title="就緒檢查" description="由管理面板探測主機能力">
-          <Button
-            variant="primary"
-            size="md"
-            loading={busy}
-            onClick={() =>
-              void run(async () => {
-                const r = (await systemApi.readiness()) as Record<string, unknown>;
-                const items: Array<{ label: string; value: string }> = [];
-                if (r.productionReady != null) {
-                  setReady(Boolean(r.productionReady));
-                  items.push({
-                    label: '可生產',
-                    value: r.productionReady ? '是' : '否',
-                  });
-                }
-                if (r.mode != null) {
-                  const mode = String(r.mode);
-                  items.push({
-                    label: '模式',
-                    value: mode === 'production_capable' ? '可生產' : mode,
-                  });
-                }
-                if (r.score && typeof r.score === 'object') {
-                  const s = r.score as { ready?: number; total?: number };
-                  items.push({
-                    label: '分數',
-                    value: `${s.ready ?? '?'}/${s.total ?? '?'}`,
-                  });
-                }
-                if (Array.isArray(r.summary)) {
-                  for (const line of sanitizeOperatorNotes(r.summary.map(String))) {
+        <CardSection
+          title="就緒檢查"
+          description="由管理面板探測主機能力（唯讀；不會變更系統）"
+        >
+          <FormHint>
+            結果涵蓋系統變更權限、關鍵軟體與設定完整度。全部通過 ≠ 已對外上線。
+          </FormHint>
+          <FormActions>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busy}
+              onClick={() =>
+                void run(async () => {
+                  const r = (await systemApi.readiness()) as Record<string, unknown>;
+                  const items: Array<{ label: string; value: string }> = [];
+                  if (r.productionReady != null) {
+                    setReady(Boolean(r.productionReady));
                     items.push({
-                      label: '摘要',
-                      value: humanizeOperatorNote(line) ?? line,
+                      label: '可生產',
+                      value: r.productionReady ? '是' : '否',
                     });
                   }
-                }
-                setFacts(items);
-                return {
-                  ...r,
-                  notes: Array.isArray(r.summary)
-                    ? sanitizeOperatorNotes(r.summary.map(String))
-                    : [],
-                  ok: r.productionReady === true,
-                } as OpsResultLike;
-              }, '就緒檢查完成')
-            }
-          >
-            執行就緒檢查
-          </Button>
+                  if (r.mode != null) {
+                    const mode = String(r.mode);
+                    items.push({
+                      label: '模式',
+                      value:
+                        mode === 'production_capable'
+                          ? '可生產'
+                          : mode === 'degraded'
+                            ? '降級'
+                            : mode,
+                    });
+                  }
+                  if (r.score && typeof r.score === 'object') {
+                    const s = r.score as { ready?: number; total?: number };
+                    items.push({
+                      label: '分數',
+                      value: `${s.ready ?? '?'}/${s.total ?? '?'}`,
+                    });
+                  }
+                  if (Array.isArray(r.summary)) {
+                    for (const line of sanitizeOperatorNotes(r.summary.map(String))) {
+                      items.push({
+                        label: '摘要',
+                        value: humanizeOperatorNote(line) ?? line,
+                      });
+                    }
+                  }
+                  setFacts(items);
+                  return {
+                    ...r,
+                    notes: Array.isArray(r.summary)
+                      ? sanitizeOperatorNotes(r.summary.map(String))
+                      : [],
+                    ok: r.productionReady === true,
+                  } as OpsResultLike;
+                }, '就緒檢查完成')
+              }
+            >
+              執行就緒檢查
+            </Button>
+          </FormActions>
           {facts.length > 0 ? (
             <div className="u-mt-4">
               <DescriptionList

@@ -22,8 +22,18 @@ export type { ConfirmDialogProps } from './ConfirmDialog';
 export { Tabs } from './Tabs';
 export type { TabsProps, TabItem } from './Tabs';
 
-export { Field, FormGrid } from './Field';
-export type { FieldProps } from './Field';
+export { KpiGrid, KpiCard } from './KpiCard';
+export type { KpiCardProps, KpiGridCols } from './KpiCard';
+
+export {
+  Field,
+  FormGrid,
+  FormLayout,
+  FormActions,
+  CheckboxField,
+  FormHint,
+} from './Field';
+export type { FieldProps, FormLayoutProps, FormActionsProps, CheckboxFieldProps } from './Field';
 
 export { KeyValueList } from './KeyValueList';
 export type { KeyValueListProps, KeyValueItem } from './KeyValueList';

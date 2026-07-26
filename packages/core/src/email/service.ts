@@ -51,7 +51,7 @@ export class EmailService {
   get(id: string): EmailDomainRecord {
     const row = domains(this.db).find((e) => e.id === id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Email domain not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到郵件域名：${id}`, { httpStatus: 404 });
     }
     return { ...row };
   }
@@ -73,7 +73,7 @@ export class EmailService {
   } {
     const domain = input.domain.trim().toLowerCase();
     if (domains(this.db).some((e) => e.domain === domain)) {
-      throw new YskError(ErrorCodes.VALIDATION, `Domain already registered: ${domain}`, {
+      throw new YskError(ErrorCodes.VALIDATION, `域名已登記：${domain}`, {
         httpStatus: 400,
       });
     }
@@ -150,7 +150,7 @@ export class EmailService {
   ): { domain: EmailDomainRecord; health: EmailHealthReport } {
     const row = domains(this.db).find((e) => e.id === id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Email domain not found: ${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到郵件域名：${id}`, { httpStatus: 404 });
     }
     if (checks.dnsApplied !== undefined) row.dns_applied = checks.dnsApplied;
     if (checks.dmarcPresent !== undefined) row.dmarc_present = checks.dmarcPresent;
@@ -241,14 +241,14 @@ export class EmailService {
     const row = this.get(domainId);
     const local = input.localPart.trim().toLowerCase();
     if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
-      throw new YskError(ErrorCodes.VALIDATION, 'Invalid mailbox local part', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '郵箱本地部分無效', { httpStatus: 400 });
     }
     const address = `${local}@${row.domain}`;
     const existing = this.db.snapshot.mailboxes.find(
       (m) => String(m.address).toLowerCase() === address,
     );
     if (existing) {
-      throw new YskError(ErrorCodes.VALIDATION, `Mailbox already exists: ${address}`, {
+      throw new YskError(ErrorCodes.VALIDATION, `郵箱已存在：${address}`, {
         httpStatus: 409,
       });
     }
@@ -266,7 +266,7 @@ export class EmailService {
       passwordScheme = hashed.scheme;
       notes.push(...hashed.notes);
     } else if (input.password) {
-      notes.push('Password ignored (min 8 chars) — mailbox created without hash');
+      notes.push('密碼過短（至少 8 字）— 郵箱已建立但未寫入雜湊');
     }
 
     if (this.dataDir) {
@@ -289,9 +289,9 @@ export class EmailService {
         'utf8',
       );
       written.push(maildirPath, join(base, 'README.txt'));
-      notes.push(`Maildir provisioned: ${maildirPath}`);
+      notes.push(`已建立 Maildir：${maildirPath}`);
     } else {
-      notes.push('No dataDir on EmailService — DB record only (pass dataDir for Maildir)');
+      notes.push('EmailService 無 dataDir — 只寫資料庫（需 dataDir 才建 Maildir）');
     }
 
     const wantSystem = Boolean(input.provisionSystem);
@@ -326,10 +326,10 @@ export class EmailService {
       });
       if (ua.exitCode === 0) {
         status = 'system_provisioned';
-        notes.push(`System user ${systemUser} created`);
+        notes.push(`已建立系統用戶 ${systemUser}`);
       } else {
         status = 'managed_system_failed';
-        notes.push(`useradd failed: ${ua.stderr || ua.stdout}`);
+        notes.push(`建立系統用戶失敗：${ua.stderr || ua.stdout}`);
       }
     }
 
@@ -357,7 +357,7 @@ export class EmailService {
       const vpath = join(mapDir, 'virtual_mailbox');
       writeFileSync(vpath, vmailbox + '\n', 'utf8');
       written.push(vpath);
-      notes.push(`Virtual mailbox map: ${vpath}`);
+      notes.push(`虛擬郵箱對應：${vpath}`);
     }
 
     const mailbox = {
@@ -391,7 +391,7 @@ export class EmailService {
         written.push(...pd.written);
         notes.push(...pd.notes.filter((n) => !notes.includes(n)));
       } catch (e) {
-        notes.push(`passdb write failed: ${e instanceof Error ? e.message : String(e)}`);
+        notes.push(`寫入 passdb 失敗：${e instanceof Error ? e.message : String(e)}`);
       }
     }
 
@@ -487,7 +487,7 @@ export class EmailService {
       local = '*';
     } else {
       if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
-        throw new YskError(ErrorCodes.VALIDATION, 'Invalid local part', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, '本地部分無效', { httpStatus: 400 });
       }
     }
     const source =
@@ -539,7 +539,7 @@ export class EmailService {
     );
     const ok = this.db.snapshot.email_aliases.length < before;
     if (!ok) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'Alias not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到別名', { httpStatus: 404 });
     }
     this.db.persist();
     const written = this.rewriteVirtualAliasMap(domainId);
@@ -570,7 +570,7 @@ export class EmailService {
     const row = domains(this.db).find((e) => e.id === domainId) as EmailDomainRecord &
       Record<string, unknown>;
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Email domain not found: ${domainId}`, {
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到郵件域名：${domainId}`, {
         httpStatus: 404,
       });
     }

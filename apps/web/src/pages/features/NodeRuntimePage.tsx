@@ -10,6 +10,9 @@ import {
   DescriptionList,
   FeaturePageLayout,
   Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
   SoftwareInstallBanner,
   SummaryStrip,
@@ -110,15 +113,28 @@ export function NodeRuntimePage() {
       ) : null}
 
       <Card>
-        <CardSection title="安裝" description="需系統變更權限與管理員">
-          <Field label="Node 主版本" techKey="version" htmlFor="node-ver">
-            <select id="node-ver" value={version} onChange={(e) => setVersion(e.target.value)}>
-              <option value="18">18</option>
-              <option value="20">20</option>
-              <option value="22">22</option>
-            </select>
-          </Field>
-          <div className="setting-actions-bar">
+        <CardSection title="安裝 Node.js" description="需系統變更權限與管理員">
+          <FormLayout columns={2}>
+            <Field
+              label="Node 主版本"
+              htmlFor="node-ver"
+              flush
+              required
+              hint="LTS 建議 20 或 22；與專案 runtime 對齊"
+            >
+              <select id="node-ver" value={version} onChange={(e) => setVersion(e.target.value)}>
+                <option value="18">18</option>
+                <option value="20">20 LTS</option>
+                <option value="22">22</option>
+              </select>
+            </Field>
+          </FormLayout>
+          {hasNode ? (
+            <FormHint>主機上已偵測到 Node；重裝會依權限執行，可能覆蓋現有安裝。</FormHint>
+          ) : (
+            <FormHint>安裝完成後請再「重新探測」確認 PATH 與版本。</FormHint>
+          )}
+          <FormActions>
             <Button
               variant="primary"
               size="md"
@@ -137,12 +153,7 @@ export function NodeRuntimePage() {
             >
               安裝 Node {version}
             </Button>
-          </div>
-          {hasNode ? (
-            <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
-              主機上已偵測到 Node 相關資訊；重裝會依權限執行。
-            </p>
-          ) : null}
+          </FormActions>
         </CardSection>
       </Card>
 

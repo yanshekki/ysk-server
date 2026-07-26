@@ -85,7 +85,7 @@ export async function applyEmailStack(input: {
   }
 > {
   const domain = input.domain.trim().toLowerCase();
-  if (!domain) throw new YskError(ErrorCodes.VALIDATION, 'domain required', { httpStatus: 400 });
+  if (!domain) throw new YskError(ErrorCodes.VALIDATION, '請填寫域名', { httpStatus: 400 });
   const mailHost = input.mailHostname ?? `mail.${domain}`;
   const dir = join(input.dataDir, 'email', domain);
   mkdirSync(join(dir, 'postfix'), { recursive: true });

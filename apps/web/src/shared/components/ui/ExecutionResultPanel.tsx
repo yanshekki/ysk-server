@@ -1,6 +1,6 @@
 import { Alert } from './Alert';
 import { Badge } from './Badge';
-import { sanitizeOperatorNotes } from '../../lib/operator-messages';
+import { humanizeOperatorMessage, sanitizeOperatorNotes } from '../../lib/operator-messages';
 
 export type ExecutionStep = {
   name: string;
@@ -42,13 +42,15 @@ export function ExecutionResultPanel({
   }
 
   const variant = blocked ? 'info' : ok === false ? 'error' : 'ok';
+  const cleanBlock = blockMessage ? humanizeOperatorMessage(blockMessage) : null;
+  const cleanMessage = message ? humanizeOperatorMessage(message) : null;
   const headline =
-    blockMessage ||
-    message ||
+    cleanBlock ||
+    cleanMessage ||
     (ok === false ? '操作未成功' : ok ? '操作完成' : null);
 
   const cleanNotes = sanitizeOperatorNotes(notes).filter(
-    (n) => n !== blockMessage && n !== message,
+    (n) => n !== cleanBlock && n !== cleanMessage && n !== blockMessage && n !== message,
   );
 
   return (
@@ -72,7 +74,7 @@ export function ExecutionResultPanel({
                   : s.status === 'failed'
                     ? '失敗'
                     : '略過'}
-              {s.detail ? ` — ${s.detail}` : ''}
+              {s.detail ? ` — ${humanizeOperatorMessage(s.detail)}` : ''}
             </li>
           ))}
         </ul>

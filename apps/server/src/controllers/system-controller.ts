@@ -363,7 +363,7 @@ export async function handleSystemRoutes(
     const id = url.pathname.split('/').pop()!;
     const spec = getSoftware(id);
     if (!spec) {
-      sendJson(res, 404, { ok: false, message: 'unknown software' });
+      sendJson(res, 404, { ok: false, message: '未知軟件項目' });
       return true;
     }
     const items = await probeAllSoftware(ctx.host);

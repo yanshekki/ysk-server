@@ -31,7 +31,7 @@ export class AgentComms {
 
   register(agentId: string): AgentSession {
     if (!agentId?.trim()) {
-      throw new YskError(ErrorCodes.VALIDATION, 'agentId required', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '請指定 agentId', { httpStatus: 400 });
     }
     const now = new Date().toISOString();
     const session: AgentSession = {
@@ -70,7 +70,7 @@ export class AgentComms {
   private require(sessionId: string): AgentSession {
     const s = this.sessions.get(sessionId);
     if (!s) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Agent session not found: ${sessionId}`, {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Agent 找不到 session：${sessionId}`, {
         httpStatus: 404,
       });
     }

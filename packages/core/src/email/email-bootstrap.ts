@@ -56,10 +56,10 @@ export async function bootstrapEmailServer(input: {
 }): Promise<EmailBootstrapResult> {
   const domain = input.domain.trim().toLowerCase();
   if (!domain) {
-    throw new YskError(ErrorCodes.VALIDATION, 'domain required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫域名', { httpStatus: 400 });
   }
   if (!input.serverIp?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, 'serverIp required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請指定伺服器 IP', { httpStatus: 400 });
   }
 
   const email = new EmailService(input.db, input.host, input.audit, input.dataDir);
@@ -191,8 +191,8 @@ export async function bootstrapEmailServer(input: {
       id: 'smtp-relay',
       ok: relay.ok,
       detail: relay.appliedToSystem
-        ? 'Relay applied to system'
-        : 'Relay config written under dataDir (system apply needs EXECUTE)',
+        ? '中繼已套用到系統'
+        : '中繼設定已寫入 dataDir（套用到系統需開啟系統變更）',
     });
   }
 

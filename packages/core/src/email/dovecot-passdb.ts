@@ -31,7 +31,7 @@ export function writeDovecotPassdb(input: {
 }): DovecotPassdbResult {
   const domain = input.domain.trim().toLowerCase();
   if (!domain) {
-    throw new YskError(ErrorCodes.VALIDATION, 'domain required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫域名', { httpStatus: 400 });
   }
 
   const mailboxes = input.db.snapshot.mailboxes.filter((m) => {

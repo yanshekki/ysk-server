@@ -68,8 +68,8 @@ export async function generateDnssecKeys(input: {
     meta,
     [
       `YSK DNSSEC for ${zone}`,
-      'Install bind9-dnsutils and enable YSK_EXECUTE for real dnssec-keygen.',
-      'Do not claim DS is live until published at registrar.',
+      '需安裝 bind9-dnsutils 並開啟系統變更權限，才可真正執行 dnssec-keygen。',
+      'DS 在 registrar 發佈前，請勿宣稱已上線。',
       '',
     ].join('\n'),
     'utf8',

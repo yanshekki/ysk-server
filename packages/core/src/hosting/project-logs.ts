@@ -56,12 +56,12 @@ export function tailProjectLog(
 ): LogTailResult {
   const safe = fileName.replace(/[^a-zA-Z0-9._-]/g, '');
   if (!safe || safe !== fileName) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Invalid log file name', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '日誌檔名無效', { httpStatus: 400 });
   }
   const logsDir = join(homeDir, 'logs');
   const path = join(logsDir, safe);
   if (!path.startsWith(logsDir) || !existsSync(path)) {
-    throw new YskError(ErrorCodes.NOT_FOUND, `Log not found: ${safe}`, { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, `找不到日誌：${safe}`, { httpStatus: 404 });
   }
   const raw = readFileSync(path, 'utf8');
   const all = raw.split(/\r?\n/);
@@ -72,6 +72,6 @@ export function tailProjectLog(
     path,
     lines,
     bytes: Buffer.byteLength(raw),
-    notes: [`Showing last ${lines.length} of ${all.length} lines`],
+    notes: [`顯示最後 ${lines.length} 行（共 ${all.length} 行）`],
   };
 }

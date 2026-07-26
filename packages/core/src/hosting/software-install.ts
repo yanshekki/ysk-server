@@ -182,7 +182,13 @@ export async function installSoftware(input: {
   }
 
   // Runtime installers
-  if (spec.installer === 'runtime-node' || spec.installer === 'runtime-php') {
+  if (
+    spec.installer === 'runtime-node' ||
+    spec.installer === 'runtime-php' ||
+    spec.installer === 'runtime-python' ||
+    spec.installer === 'runtime-go' ||
+    spec.installer === 'runtime-rust'
+  ) {
     if (!input.dataDir) {
       notes.push('缺少 dataDir，無法安裝 runtime');
       return {
@@ -196,8 +202,27 @@ export async function installSoftware(input: {
         status: before,
       };
     }
-    const kind = spec.installer === 'runtime-node' ? 'node' : 'php';
-    const version = spec.runtimeVersion ?? (kind === 'node' ? '20' : '8.3');
+    const kind =
+      spec.installer === 'runtime-node'
+        ? 'node'
+        : spec.installer === 'runtime-php'
+          ? 'php'
+          : spec.installer === 'runtime-python'
+            ? 'python'
+            : spec.installer === 'runtime-go'
+              ? 'go'
+              : 'rust';
+    const version =
+      spec.runtimeVersion ??
+      (kind === 'node'
+        ? '20'
+        : kind === 'php'
+          ? '8.3'
+          : kind === 'python'
+            ? '3.12'
+            : kind === 'go'
+              ? '1.22'
+              : 'stable');
     const r = await planOrInstallRuntime({
       host: input.host,
       dataDir: input.dataDir,

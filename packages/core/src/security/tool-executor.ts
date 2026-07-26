@@ -50,7 +50,7 @@ export async function executeToolCall(
   approvalId?: string,
 ): Promise<ToolCallResult> {
   if (!req.tool || typeof req.tool !== 'string') {
-    throw new YskError(ErrorCodes.VALIDATION, 'tool is required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請指定工具名稱', { httpStatus: 400 });
   }
 
   const protection = opts.protection;
@@ -66,7 +66,7 @@ export async function executeToolCall(
 
   const evaluation = opts.allowlist.evaluate(req.tool);
   if (!evaluation.allowed) {
-    return deny(req, opts, evaluation.reason ?? 'Denied by allowlist');
+    return deny(req, opts, evaluation.reason ?? '已拒絕 by allowlist');
   }
 
   const level: OperationLevel = toolImpliedLevel(req.tool, evaluation.risk);
@@ -174,26 +174,26 @@ async function dispatchTool(
   switch (tool) {
     case 'fs.read': {
       const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, 'path required', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
       const content = await host.readFile(path);
       return { path, content, bytes: Buffer.byteLength(content) };
     }
     case 'fs.list': {
       const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, 'path required', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
       const entries = await host.listDir(path);
       return { path, entries };
     }
     case 'fs.write': {
       const path = String(args.path ?? '');
       const content = String(args.content ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, 'path required', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
       await host.writeFile(path, content);
       return { path, bytesWritten: Buffer.byteLength(content) };
     }
     case 'fs.delete': {
       const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, 'path required', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
       await host.deletePath(path);
       return { path, deleted: true };
     }
@@ -213,15 +213,15 @@ async function dispatchTool(
     }
     case 'service.status': {
       const name = String(args.name ?? '');
-      if (!name) throw new YskError(ErrorCodes.VALIDATION, 'name required', { httpStatus: 400 });
+      if (!name) throw new YskError(ErrorCodes.VALIDATION, '請填寫名稱', { httpStatus: 400 });
       const r = await host.serviceStatus(name);
       return { name, ...r };
     }
     case 'service.restart': {
       const name = String(args.name ?? '');
-      if (!name) throw new YskError(ErrorCodes.VALIDATION, 'name required', { httpStatus: 400 });
+      if (!name) throw new YskError(ErrorCodes.VALIDATION, '請填寫名稱', { httpStatus: 400 });
       if (!/^[a-zA-Z0-9@_.-]+$/.test(name)) {
-        throw new YskError(ErrorCodes.VALIDATION, 'invalid service name', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, '服務名稱無效', { httpStatus: 400 });
       }
       const r = await host.runCommand(['systemctl', 'restart', name]);
       return { name, ...r };
@@ -229,7 +229,7 @@ async function dispatchTool(
     case 'pkg.install': {
       const name = String(args.name ?? '');
       if (!name || !/^[a-zA-Z0-9+._-]+$/.test(name)) {
-        throw new YskError(ErrorCodes.VALIDATION, 'invalid package name', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, '套件名稱無效', { httpStatus: 400 });
       }
       const r = await host.runCommand(['apt-get', 'install', '-y', name], { timeoutMs: 120_000 });
       return { package: name, ...r };
@@ -237,13 +237,13 @@ async function dispatchTool(
     case 'pkg.remove': {
       const name = String(args.name ?? '');
       if (!name || !/^[a-zA-Z0-9+._-]+$/.test(name)) {
-        throw new YskError(ErrorCodes.VALIDATION, 'invalid package name', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, '套件名稱無效', { httpStatus: 400 });
       }
       const r = await host.runCommand(['apt-get', 'remove', '-y', name], { timeoutMs: 120_000 });
       return { package: name, ...r };
     }
     default:
-      throw new YskError(ErrorCodes.VALIDATION, `No host dispatcher for tool: ${tool}`, {
+      throw new YskError(ErrorCodes.VALIDATION, `工具無主機執行器：${tool}`, {
         httpStatus: 400,
       });
   }

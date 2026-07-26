@@ -67,7 +67,7 @@ export async function applyPhpFpmPool(input: {
     pmMaxChildren: input.pmMaxChildren,
   });
   writeFileSync(poolPath, content, 'utf8');
-  const notes = [`Pool written ${poolPath}`, `PHP ${rt.version}`];
+  const notes = [`已寫入 FPM pool：${poolPath}`, `PHP ${rt.version}`];
   const written = [poolPath];
   const commandResults: PhpFpmApplyResult['commandResults'] = [];
   let enabled = false;
@@ -94,9 +94,9 @@ export async function applyPhpFpmPool(input: {
         stderr: reload.stderr,
       });
       enabled = cp.exitCode === 0 && reload.exitCode === 0;
-      notes.push(enabled ? `Enabled pool at ${dest}` : 'FPM reload failed');
+      notes.push(enabled ? `已啟用 pool：${dest}` : 'FPM 重載失敗');
     } else {
-      notes.push(`/etc/php/${rt.version}/fpm not found — install php${rt.version}-fpm`);
+      notes.push(`/etc/php/${rt.version}/fpm 找不到 — install php${rt.version}-fpm`);
     }
   }
 

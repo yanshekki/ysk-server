@@ -152,7 +152,7 @@ export function listPlaybooks(): Playbook[] {
 export function getPlaybook(id: string): Playbook {
   const p = BUILTIN_PLAYBOOKS.find((x) => x.id === id);
   if (!p) {
-    throw new YskError(ErrorCodes.NOT_FOUND, `Playbook not found: ${id}`, { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, `找不到 Playbook：${id}`, { httpStatus: 404 });
   }
   return { ...p, steps: p.steps.map((s) => ({ ...s })) };
 }

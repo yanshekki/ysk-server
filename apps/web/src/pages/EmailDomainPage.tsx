@@ -14,14 +14,15 @@ import {
   DescriptionList,
   FeaturePageLayout,
   Field,
-  FormGrid,
+  FormLayout,
   LoadingBlock,
   OpsResultPanel,
-  SettingField,
-  SettingFieldList,
   SoftwareInstallBanner,
   SummaryStrip,
   Tabs,
+  FormActions,
+  CheckboxField,
+  FormHint,
 } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
@@ -144,7 +145,7 @@ export function EmailDomainPage() {
     { id: 'aliases', label: '別名／轉發' },
     { id: 'health', label: '健康' },
     { id: 'relay', label: '中繼' },
-    { id: 'sieve', label: 'Sieve / SSO' },
+    { id: 'sieve', label: '過濾／SSO' },
     { id: 'advanced', label: '進階' },
   ];
 
@@ -318,96 +319,111 @@ export function EmailDomainPage() {
         ) : null}
 
         {tab === 'mailbox' ? (
-          <Card>
-            <CardSection title="郵箱（Maildir）" description="建立後可寫入 Dovecot 密碼庫（需權限）">
-              <FormGrid>
-                <Field label="本地部分" techKey="local_part" htmlFor="mlocal" flush>
-                  <input
-                    id="mlocal"
-                    value={mboxLocal}
-                    onChange={(e) => setMboxLocal(e.target.value)}
-                    placeholder="info"
-                  />
-                </Field>
-                <Field label="密碼" techKey="password" htmlFor="mpass" flush hint="可選，≥8">
-                  <input
-                    id="mpass"
-                    type="password"
-                    value={mboxPass}
-                    onChange={(e) => setMboxPass(e.target.value)}
-                    autoComplete="new-password"
-                  />
-                </Field>
-              </FormGrid>
-              <div className="setting-actions-bar">
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setMboxLog(
-                        await emailApi.createMailbox(domain.id, {
-                          localPart: mboxLocal,
-                          password: mboxPass || undefined,
-                        }),
-                      );
-                      setMailboxes((await emailApi.listMailboxes(domain.id)).items);
-                    })
-                  }
-                >
-                  建立郵箱
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setMailboxes((await emailApi.listMailboxes(domain.id)).items);
-                    })
-                  }
-                >
-                  重新整理列表
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setMboxLog(await emailApi.dovecotPassdb(domain.id));
-                    })
-                  }
-                >
-                  寫入 Dovecot 密碼庫
-                </Button>
-              </div>
-              {mailboxes.length > 0 ? (
-                <ul className="list-plain list-spaced u-mt-4">
-                  {mailboxes.map((m) => (
-                    <li key={String(m.id)}>
-                      <code className="inline">{String(m.address)}</code>{' '}
-                      <Badge tone={String(m.status) === 'active' ? 'ok' : 'neutral'}>
-                        {String(m.status ?? '—')}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted u-mt-3">尚未有郵箱</p>
-              )}
-              <OpsResultPanel title="郵箱操作結果" result={asOps(mboxLog)} busy={busy} />
-            </CardSection>
-          </Card>
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="建立郵箱"
+                description="建立後可寫入 Dovecot 密碼庫（需系統變更權限）"
+              >
+                <FormLayout columns={2}>
+                  <Field
+                    label="本地部分"
+                    htmlFor="mlocal"
+                    hint={`完整位址會是 ${mboxLocal || '…'}@${domain.domain}`}
+                    required
+                    flush
+                  >
+                    <input
+                      id="mlocal"
+                      value={mboxLocal}
+                      onChange={(e) => setMboxLocal(e.target.value)}
+                      placeholder="info"
+                    />
+                  </Field>
+                  <Field label="密碼" htmlFor="mpass" hint="可選；至少 8 位才會寫入雜湊" flush>
+                    <input
+                      id="mpass"
+                      type="password"
+                      value={mboxPass}
+                      onChange={(e) => setMboxPass(e.target.value)}
+                      autoComplete="new-password"
+                    />
+                  </Field>
+                </FormLayout>
+                <FormActions>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setMboxLog(
+                          await emailApi.createMailbox(domain.id, {
+                            localPart: mboxLocal,
+                            password: mboxPass || undefined,
+                          }),
+                        );
+                        setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+                      })
+                    }
+                  >
+                    建立郵箱
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+                      })
+                    }
+                  >
+                    重新整理列表
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setMboxLog(await emailApi.dovecotPassdb(domain.id));
+                      })
+                    }
+                  >
+                    寫入 Dovecot 密碼庫
+                  </Button>
+                </FormActions>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title={`郵箱列表（${mailboxes.length}）`}>
+                {mailboxes.length > 0 ? (
+                  <ul className="list-plain list-spaced">
+                    {mailboxes.map((m) => (
+                      <li key={String(m.id)}>
+                        <code className="inline">{String(m.address)}</code>{' '}
+                        <Badge tone={String(m.status) === 'active' ? 'ok' : 'neutral'}>
+                          {String(m.status ?? '—')}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="muted">尚未有郵箱 — 用上方表單建立</p>
+                )}
+                <OpsResultPanel title="郵箱操作結果" result={asOps(mboxLog)} busy={busy} />
+              </CardSection>
+            </Card>
+          </div>
         ) : null}
 
         {tab === 'aliases' ? (
-          <div className="stack">
+          <div className="tab-panel">
             <Card>
-              <CardSection title="別名／轉發／Catch-all">
-                <FormGrid>
-                  <Field label="類型" htmlFor="al-type">
+              <CardSection title="別名／轉發／Catch-all" description="把地址轉到其他信箱">
+                <FormLayout columns={2}>
+                  <Field label="類型" htmlFor="al-type" flush>
                     <select
                       id="al-type"
                       value={aliasType}
@@ -421,7 +437,7 @@ export function EmailDomainPage() {
                     </select>
                   </Field>
                   {aliasType !== 'catchall' ? (
-                    <Field label="本地部分" htmlFor="al-local">
+                    <Field label="本地部分" htmlFor="al-local" hint="例如 sales" flush>
                       <input
                         id="al-local"
                         value={aliasLocal}
@@ -430,7 +446,13 @@ export function EmailDomainPage() {
                       />
                     </Field>
                   ) : null}
-                  <Field label="目標（逗號分隔）" htmlFor="al-dest">
+                  <Field
+                    label="目標信箱"
+                    htmlFor="al-dest"
+                    hint="可用逗號分隔多個"
+                    fullWidth
+                    flush
+                  >
                     <input
                       id="al-dest"
                       value={aliasDest}
@@ -438,8 +460,8 @@ export function EmailDomainPage() {
                       placeholder={`info@${domain.domain}`}
                     />
                   </Field>
-                </FormGrid>
-                <div className="btn-row u-mt-3">
+                </FormLayout>
+                <FormActions>
                   <Button
                     variant="primary"
                     size="md"
@@ -461,9 +483,9 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    新增
+                    新增別名
                   </Button>
-                </div>
+                </FormActions>
                 {aliases.length > 0 ? (
                   <ul className="list-plain list-spaced u-mt-4">
                     {aliases.map((a) => (
@@ -498,35 +520,36 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
             <Card>
-              <CardSection title="自動回覆">
-                <label className="field field--check">
-                  <input
-                    type="checkbox"
+              <CardSection title="自動回覆" description="寫入域名旗標；真正寄出需 MTA／Sieve 支援">
+                <div className="form-switches">
+                  <CheckboxField
+                    id="ar-on"
+                    label="啟用自動回覆"
+                    description="開啟後儲存主旨與內文"
                     checked={autoreplyOn}
-                    onChange={(e) => setAutoreplyOn(e.target.checked)}
+                    onChange={setAutoreplyOn}
                   />
-                  <span>啟用自動回覆（寫入域名旗標；需 MTA sieve 才真正生效）</span>
-                </label>
-                <FormGrid>
-                  <Field label="主旨" htmlFor="ar-sub">
+                </div>
+                <FormLayout>
+                  <Field label="主旨" htmlFor="ar-sub" flush>
                     <input
                       id="ar-sub"
                       value={autoreplySubject}
                       onChange={(e) => setAutoreplySubject(e.target.value)}
                     />
                   </Field>
-                  <Field label="內文" htmlFor="ar-body">
+                  <Field label="內文" htmlFor="ar-body" fullWidth flush>
                     <textarea
                       id="ar-body"
-                      rows={3}
+                      rows={4}
                       value={autoreplyBody}
                       onChange={(e) => setAutoreplyBody(e.target.value)}
                     />
                   </Field>
-                </FormGrid>
-                <div className="btn-row u-mt-3">
+                </FormLayout>
+                <FormActions>
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     size="md"
                     loading={busy}
                     onClick={() =>
@@ -573,7 +596,7 @@ export function EmailDomainPage() {
                   >
                     恢復域名
                   </Button>
-                </div>
+                </FormActions>
               </CardSection>
             </Card>
           </div>
@@ -585,14 +608,14 @@ export function EmailDomainPage() {
               <SummaryStrip
                 items={[
                   {
-                    label: 'Server IP',
+                    label: '伺服器 IP',
                     value: domain.server_ip || '—',
                   },
                   {
-                    label: 'Live',
+                    label: '即時檢查',
                     value: live
                       ? (live as { ok?: boolean }).ok
-                        ? 'OK'
+                        ? '正常'
                         : '有問題'
                       : '未測',
                     tone: live
@@ -602,7 +625,7 @@ export function EmailDomainPage() {
                       : 'default',
                   },
                   {
-                    label: 'DNSBL',
+                    label: '黑名單',
                     value: dnsbl
                       ? (dnsbl as { ok?: boolean }).ok
                         ? 'Clean'
@@ -759,102 +782,108 @@ export function EmailDomainPage() {
                   SSO 骨架 + 系統 symlink
                 </Button>
               </div>
-              {live ? <OpsResultPanel title="Live 檢查" result={asOps(live)} /> : null}
-              {dnsbl ? <OpsResultPanel title="DNSBL" result={asOps(dnsbl)} /> : null}
+              {live ? <OpsResultPanel title="即時檢查" result={asOps(live)} /> : null}
+              {dnsbl ? <OpsResultPanel title="黑名單（DNSBL）" result={asOps(dnsbl)} /> : null}
               {warmup ? <OpsResultPanel title="暖身" result={asOps(warmup)} /> : null}
             </CardSection>
           </Card>
         ) : null}
 
         {tab === 'relay' ? (
-          <Card>
-            <CardSection
-              title="SMTP 中繼"
-              description="出站中繼；「套用到系統」才會寫 Postfix（需系統變更權限）"
-            >
-              <SettingFieldList>
-                <SettingField label="中繼主機" techKey="relayhost" htmlFor="rh">
-                  <input
-                    id="rh"
-                    value={relayHost}
-                    onChange={(e) => setRelayHost(e.target.value)}
-                  />
-                </SettingField>
-                <SettingField label="用戶名" techKey="username" htmlFor="ru">
-                  <input
-                    id="ru"
-                    value={relayUser}
-                    onChange={(e) => setRelayUser(e.target.value)}
-                  />
-                </SettingField>
-                <SettingField label="密碼" techKey="password" htmlFor="rp">
-                  <input
-                    id="rp"
-                    type="password"
-                    value={relayPass}
-                    onChange={(e) => setRelayPass(e.target.value)}
-                    autoComplete="new-password"
-                  />
-                </SettingField>
-                <SettingField
-                  label="套用到系統"
-                  techKey="apply_system"
-                  description="關閉則只儲存設定"
-                  htmlFor="ras"
-                >
-                  <select
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="SMTP 出站中繼"
+                description="經外部 SMTP 寄信；套用到系統才會寫 Postfix（需系統變更權限）"
+              >
+                <FormLayout columns={2}>
+                  <Field label="中繼主機" htmlFor="rh" required flush>
+                    <input
+                      id="rh"
+                      value={relayHost}
+                      onChange={(e) => setRelayHost(e.target.value)}
+                      placeholder="smtp.example.com"
+                    />
+                  </Field>
+                  <Field label="用戶名" htmlFor="ru" flush>
+                    <input
+                      id="ru"
+                      value={relayUser}
+                      onChange={(e) => setRelayUser(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="密碼" htmlFor="rp" flush>
+                    <input
+                      id="rp"
+                      type="password"
+                      value={relayPass}
+                      onChange={(e) => setRelayPass(e.target.value)}
+                      autoComplete="new-password"
+                    />
+                  </Field>
+                </FormLayout>
+                <div className="form-switches">
+                  <CheckboxField
                     id="ras"
-                    value={relayApplySystem ? 'yes' : 'no'}
-                    onChange={(e) => setRelayApplySystem(e.target.value === 'yes')}
+                    label="套用到系統 Postfix"
+                    description="關閉則只儲存在控制面"
+                    checked={relayApplySystem}
+                    onChange={setRelayApplySystem}
+                  />
+                </div>
+                <FormActions>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setRelayLog(
+                          await emailApi.setRelay({
+                            host: relayHost,
+                            port: 587,
+                            username: relayUser || undefined,
+                            password: relayPass || undefined,
+                            security: 'starttls',
+                            applySystem: relayApplySystem,
+                          }),
+                        );
+                      })
+                    }
                   >
-                    <option value="yes">是（寫 Postfix）</option>
-                    <option value="no">否（只儲存）</option>
-                  </select>
-                </SettingField>
-              </SettingFieldList>
-              <div className="setting-actions-bar">
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setRelayLog(
-                        await emailApi.setRelay({
-                          host: relayHost,
-                          port: 587,
-                          username: relayUser || undefined,
-                          password: relayPass || undefined,
-                          security: 'starttls',
-                          applySystem: relayApplySystem,
-                        }),
-                      );
-                    })
-                  }
-                >
-                  {relayApplySystem ? '儲存並套用到系統' : '只儲存設定'}
-                </Button>
-              </div>
-              <OpsResultPanel title="中繼結果" result={asOps(relayLog)} busy={busy} />
-            </CardSection>
-          </Card>
+                    {relayApplySystem ? '儲存並套用到系統' : '只儲存設定'}
+                  </Button>
+                </FormActions>
+                <OpsResultPanel title="中繼結果" result={asOps(relayLog)} busy={busy} />
+              </CardSection>
+            </Card>
+          </div>
         ) : null}
 
         {tab === 'sieve' ? (
           <div className="stack">
             <Card>
               <CardSection
-                title="Webmail SSO"
-                description="一次性 token；需 webmail 端認 token，唔假稱已接 Roundcube"
+                title="Webmail 單點登入"
+                description="簽發一次性 token；webmail 端需認 token。不假稱已完整整合 Roundcube"
               >
-                <Field label="信箱密碼（可選，用於真自動登入）" htmlFor="sso-pw" flush>
-                  <input
-                    id="sso-pw"
-                    type="password"
-                    placeholder="填寫後 token 可自動 login Roundcube"
-                  />
-                </Field>
-                <div className="btn-row u-mt-2">
+                <FormLayout>
+                  <Field
+                    label="信箱密碼（可選）"
+                    htmlFor="sso-pw"
+                    flush
+                    hint={`用於 postmaster@${domain.domain} 真自動登入；留空則僅簽發 token`}
+                  >
+                    <input
+                      id="sso-pw"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="填寫後 token 可自動登入 Roundcube"
+                    />
+                  </Field>
+                </FormLayout>
+                <FormHint>Token 預設 10 分鐘有效；僅供管理面板測試／對接，非終端使用者流程。</FormHint>
+                <FormActions>
                   <Button
                     variant="primary"
                     size="md"
@@ -874,47 +903,52 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    簽發 SSO（可附密碼自動登入）
+                    簽發 SSO token
                   </Button>
-                </div>
+                </FormActions>
               </CardSection>
             </Card>
             <Card>
               <CardSection
                 title="Sieve 過濾"
-                description="寫入 dataDir/email/sieve；written ≠ Dovecot 已載入"
+                description="寫入 dataDir/email/sieve；寫入 ≠ Dovecot 已載入"
               >
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      const mailbox = `postmaster@${domain.domain}`;
-                      const r = await emailApi.writeSieve({
-                        mailbox,
-                        name: 'default.sieve',
-                        content: `require ["fileinto"];\n# YSK sieve for ${domain.domain}\n# if header :contains "X-Spam-Flag" "YES" { fileinto "Junk"; stop; }\n`,
-                      });
-                      setWebmailLog(r);
-                    })
-                  }
-                >
-                  寫入預設 Sieve（postmaster）
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      const mailbox = `postmaster@${domain.domain}`;
-                      setWebmailLog(await emailApi.listSieve(mailbox));
-                    })
-                  }
-                >
-                  列出 Sieve
-                </Button>
+                <FormHint>
+                  對 postmaster@{domain.domain} 寫入預設範本（含垃圾信 fileinto 註解示例）。
+                </FormHint>
+                <FormActions>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        const mailbox = `postmaster@${domain.domain}`;
+                        const r = await emailApi.writeSieve({
+                          mailbox,
+                          name: 'default.sieve',
+                          content: `require ["fileinto"];\n# YSK sieve for ${domain.domain}\n# if header :contains "X-Spam-Flag" "YES" { fileinto "Junk"; stop; }\n`,
+                        });
+                        setWebmailLog(r);
+                      })
+                    }
+                  >
+                    寫入預設 Sieve
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        const mailbox = `postmaster@${domain.domain}`;
+                        setWebmailLog(await emailApi.listSieve(mailbox));
+                      })
+                    }
+                  >
+                    列出已寫入檔案
+                  </Button>
+                </FormActions>
               </CardSection>
             </Card>
             {webmailLog ? <OpsResultPanel title="結果" result={asOps(webmailLog)} /> : null}
@@ -922,51 +956,62 @@ export function EmailDomainPage() {
         ) : null}
 
         {tab === 'advanced' ? (
-          <>
+          <div className="stack">
             <Card>
-              <CardSection title="此域名 SSL">
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={() =>
-                    navigate(
-                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
-                    )
-                  }
-                >
-                  申請 {domain.domain} Let’s Encrypt
-                </Button>
+              <CardSection
+                title="此域名 SSL"
+                description="跳轉 SSL 頁並預填域名，申請 Let’s Encrypt"
+              >
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() =>
+                      navigate(
+                        `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
+                      )
+                    }
+                  >
+                    申請 {domain.domain} 憑證
+                  </Button>
+                </FormActions>
               </CardSection>
             </Card>
             <Card>
-              <CardSection title="Autodiscover / Autoconfig">
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      const r = await emailApi.autodiscover(domain.id);
-                      setWebmailLog({
-                        ok: true,
-                        notes: r.notes,
-                        mozillaXml: r.mozillaXml.slice(0, 200) + '…',
-                        urls: r.urls,
-                      });
-                      void navigator.clipboard?.writeText(r.mozillaXml);
-                    })
-                  }
-                >
-                  產生並複製 Mozilla XML
-                </Button>
-                <p className="muted u-text-sm u-mt-2">
-                  亦提供 Outlook Autodiscover XML（見操作結果 notes）
-                </p>
+              <CardSection
+                title="用戶端自動設定"
+                description="產生 Mozilla Autoconfig／Outlook Autodiscover XML"
+              >
+                <FormHint>產生後會嘗試複製 Mozilla XML 到剪貼簿；詳情見下方操作結果。</FormHint>
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        const r = await emailApi.autodiscover(domain.id);
+                        setWebmailLog({
+                          ok: true,
+                          notes: r.notes,
+                          mozillaXml: r.mozillaXml.slice(0, 200) + '…',
+                          urls: r.urls,
+                        });
+                        void navigator.clipboard?.writeText(r.mozillaXml);
+                      })
+                    }
+                  >
+                    產生並複製設定 XML
+                  </Button>
+                </FormActions>
               </CardSection>
             </Card>
             <Card>
-              <CardSection title="郵件佇列">
-                <div className="btn-row">
+              <CardSection
+                title="郵件佇列"
+                description="查詢或清空本機 MTA 佇列（需系統變更權限）"
+              >
+                <FormActions>
                   <Button
                     variant="secondary"
                     size="md"
@@ -991,7 +1036,7 @@ export function EmailDomainPage() {
                   >
                     清空佇列
                   </Button>
-                </div>
+                </FormActions>
               </CardSection>
             </Card>
             <Card>
@@ -999,12 +1044,13 @@ export function EmailDomainPage() {
                 title="一鍵設定郵件"
                 description="安裝套件並套用郵件堆疊（需系統變更 + 管理員）。必須自訂管理員密碼。"
               >
-                <SettingFieldList>
-                  <SettingField
+                <FormLayout>
+                  <Field
                     label="管理員密碼"
-                    techKey="admin_password"
-                    description="postmaster 密碼，至少 8 字元"
                     htmlFor="boot-pw"
+                    flush
+                    required
+                    hint="postmaster 密碼，至少 8 字元"
                   >
                     <input
                       id="boot-pw"
@@ -1015,9 +1061,9 @@ export function EmailDomainPage() {
                       autoComplete="new-password"
                       placeholder="至少 8 字元"
                     />
-                  </SettingField>
-                </SettingFieldList>
-                <div className="setting-actions-bar">
+                  </Field>
+                </FormLayout>
+                <FormActions>
                   <Button
                     variant="primary"
                     size="md"
@@ -1045,19 +1091,31 @@ export function EmailDomainPage() {
                   >
                     一鍵設定郵件
                   </Button>
-                </div>
+                </FormActions>
               </CardSection>
             </Card>
             <Card>
-              <CardSection title="Webmail（Roundcube）">
-                <Field label="Webmail 主機名" techKey="server_name" htmlFor="wmd">
-                  <input
-                    id="wmd"
-                    value={webmailDomain}
-                    onChange={(e) => setWebmailDomain(e.target.value)}
-                  />
-                </Field>
-                <div className="setting-actions-bar">
+              <CardSection
+                title="Webmail（Roundcube）"
+                description="下載／套用 Roundcube；written ≠ 虛擬主機已對外服務"
+              >
+                <FormLayout columns={2}>
+                  <Field
+                    label="Webmail 主機名"
+                    htmlFor="wmd"
+                    flush
+                    hint="虛擬主機 server_name，例如 webmail.example.com"
+                  >
+                    <input
+                      id="wmd"
+                      value={webmailDomain}
+                      onChange={(e) => setWebmailDomain(e.target.value)}
+                      placeholder={`webmail.${domain.domain}`}
+                      spellCheck={false}
+                    />
+                  </Field>
+                </FormLayout>
+                <FormActions>
                   <Button
                     variant="secondary"
                     size="md"
@@ -1075,15 +1133,15 @@ export function EmailDomainPage() {
                   >
                     安裝／套用 Webmail
                   </Button>
-                </div>
+                </FormActions>
                 <OpsResultPanel
-                  title="Bootstrap / Webmail 結果"
+                  title="一鍵設定／Webmail 結果"
                   result={asOps(webmailLog)}
                   busy={busy}
                 />
               </CardSection>
             </Card>
-          </>
+          </div>
         ) : null}
       </Tabs>
     </FeaturePageLayout>

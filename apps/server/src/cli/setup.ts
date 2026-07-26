@@ -47,10 +47,10 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     return {
       ok: false,
       code: 'YSK_SETUP_EXISTS',
-      message: `Config already exists at ${configPath}. Use --force to overwrite.`,
+      message: `設定已存在於 ${configPath}。使用 --force 覆寫。`,
       error: {
         code: 'YSK_SETUP_EXISTS',
-        message: `Config already exists at ${configPath}`,
+        message: `設定已存在於 ${configPath}`,
       },
     };
   }

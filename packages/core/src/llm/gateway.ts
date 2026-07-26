@@ -36,7 +36,7 @@ export interface LlmTransport {
  */
 export const nullTransport: LlmTransport = {
   async complete() {
-    throw new YskError(ErrorCodes.VALIDATION, 'No LLM transport configured', { httpStatus: 503 });
+    throw new YskError(ErrorCodes.VALIDATION, '尚未設定 LLM 連線', { httpStatus: 503 });
   },
 };
 
@@ -80,11 +80,11 @@ export class LlmGateway {
    */
   async chat(req: LlmChatRequest): Promise<LlmChatResponse> {
     if (!req.messages?.length) {
-      throw new YskError(ErrorCodes.VALIDATION, 'messages required', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '請提供訊息內容', { httpStatus: 400 });
     }
     for (const m of req.messages) {
       if (!m.role || typeof m.content !== 'string') {
-        throw new YskError(ErrorCodes.VALIDATION, 'invalid message shape', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, '訊息格式無效', { httpStatus: 400 });
       }
     }
 
@@ -102,7 +102,7 @@ export class LlmGateway {
     if (localOnly && req.model && /gpt-|claude|gemini|openai/i.test(req.model)) {
       throw new YskError(
         ErrorCodes.FORBIDDEN,
-        `Protection mode ${this.protection?.mode}: remote model blocked (local LLM only)`,
+        `保護模式 ${this.protection?.mode}：已封鎖遠端模型（僅允許本機 LLM）`,
         { httpStatus: 403, details: { model: req.model, mode: this.protection?.mode } },
       );
     }
@@ -127,7 +127,7 @@ export class LlmGateway {
    */
   assertNotExecutable(response: LlmChatResponse): void {
     if (!response.untrusted) {
-      throw new YskError(ErrorCodes.LLM_UNTRUSTED, 'LLM response missing untrusted marker', {
+      throw new YskError(ErrorCodes.LLM_UNTRUSTED, 'LLM 回應格式異常（缺少安全標記）', {
         httpStatus: 500,
       });
     }

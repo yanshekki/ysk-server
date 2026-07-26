@@ -25,7 +25,7 @@ export const fetchTransport: LlmTransport = {
         }),
       });
     } catch (err) {
-      throw new YskError(ErrorCodes.INTERNAL, `LLM request failed: ${(err as Error).message}`, {
+      throw new YskError(ErrorCodes.INTERNAL, `LLM 請求失敗：${(err as Error).message}`, {
         httpStatus: 502,
         cause: err,
       });

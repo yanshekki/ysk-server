@@ -1,8 +1,8 @@
 /**
- * Project detail — FeaturePageLayout shell + tabs (ops logic unchanged).
+ * Project detail — single chrome (FeaturePageLayout) + KPI status + tabs.
  */
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import {
@@ -13,12 +13,14 @@ import {
   ProjectNetworkTab,
   ProjectOverviewTab,
   ProjectResourcesTab,
+  ProjectStatusBadge,
   ProjectStatusRail,
   projectsApi,
   useProjectOps,
 } from '../features/projects';
-import { envToText } from '../features/projects/model/ops';
+import { envToText, formatRuntimeLabel } from '../features/projects/model/ops';
 import { getProjectUiProfile } from '../features/projects/model/runtime-ui';
+import { deriveProjectStatus } from '../features/projects/model/status';
 import {
   Alert,
   Button,
@@ -28,6 +30,7 @@ import {
   OpsResultPanel,
   Tabs,
 } from '../shared/components/ui';
+import { usePageTab } from '../shared/hooks/usePageTab';
 
 type ConfirmKind = 'stop' | 'delete' | null;
 
@@ -35,12 +38,15 @@ export function ProjectDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [freshChecklist, setFreshChecklist] = useState(
+    () => searchParams.get('fresh') === '1',
+  );
   const [project, setProject] = useState<ProjectDto | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('overview');
   const [gitUrl, setGitUrl] = useState('');
-  const [envText, setEnvText] = useState('NODE_ENV=production\n');
+  const [envText, setEnvText] = useState('');
   const [quotaMb, setQuotaMb] = useState('1024');
   const [memoryMax, setMemoryMax] = useState('512M');
   const [cpuQuota, setCpuQuota] = useState('100');
@@ -58,7 +64,7 @@ export function ProjectDetailPage() {
     setProject(found);
     if (found) {
       setGitUrl(found.gitUrl ?? '');
-      setEnvText(envToText(found.envVars));
+      setEnvText(envToText(found.envVars, found.runtime));
       if (found.quotaMb != null) setQuotaMb(String(found.quotaMb));
       if (found.memoryMax) setMemoryMax(found.memoryMax);
       if (found.cpuQuotaPercent != null) setCpuQuota(String(found.cpuQuotaPercent));
@@ -102,14 +108,12 @@ export function ProjectDetailPage() {
       if (pick) {
         setLogFile(pick);
         const tail = await projectsApi.logs(project.id, pick, 200);
-        setLogTail(
-          `# ${tail.tail?.file ?? pick}\n` + (tail.tail?.lines ?? []).join('\n'),
-        );
+        setLogTail(`# ${tail.tail?.file ?? pick}\n` + (tail.tail?.lines ?? []).join('\n'));
       } else {
         setLogTail(t('projects.logsNoFiles'));
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'logs failed');
+      setError(e instanceof Error ? e.message : '讀取日誌失敗');
     } finally {
       setBusy(false);
     }
@@ -130,15 +134,51 @@ export function ProjectDetailPage() {
         await projectsApi.remove(project.id);
         navigate('/projects', { replace: true });
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'delete failed');
+        setError(e instanceof Error ? e.message : '刪除失敗');
       } finally {
         setBusy(false);
       }
     }
   }
 
+  const ui = project ? getProjectUiProfile(project.runtime) : null;
+  const tabIds = useMemo(() => {
+    if (!ui) return ['overview'] as const;
+    const ids = ['overview'];
+    if (ui.showDeployTab) ids.push('deploy');
+    ids.push('network');
+    if (ui.showResourcesTab) ids.push('resources');
+    if (ui.showLogsTab) ids.push('logs');
+    ids.push('advanced');
+    return ids;
+  }, [ui]);
+
+  const defaultTab =
+    searchParams.get('tab') === 'deploy' && (tabIds as readonly string[]).includes('deploy')
+      ? 'deploy'
+      : 'overview';
+  const [tab, setTab] = usePageTab(tabIds as string[], defaultTab);
+
+  useEffect(() => {
+    if (searchParams.get('fresh') === '1') {
+      setFreshChecklist(true);
+      // Prefer deploy tab for new projects
+      if ((tabIds as readonly string[]).includes('deploy')) {
+        setTab('deploy');
+      }
+      // Drop query so refresh doesn't re-show forever (state keeps checklist until dismiss)
+      const next = new URLSearchParams(searchParams);
+      next.delete('fresh');
+      if (next.get('tab') === 'deploy') {
+        /* keep tab= in URL optional */
+      }
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
   if (loading) return <LoadingBlock label={t('common.loading')} />;
-  if (loadError || !project) {
+  if (loadError || !project || !ui) {
     return (
       <FeaturePageLayout
         title={t('projects.title')}
@@ -153,7 +193,6 @@ export function ProjectDetailPage() {
     );
   }
 
-  const ui = getProjectUiProfile(project.runtime);
   const tabs = [
     { id: 'overview', label: t('projects.tabOverview') },
     ...(ui.showDeployTab ? [{ id: 'deploy', label: t('projects.tabDeploy') }] : []),
@@ -162,41 +201,42 @@ export function ProjectDetailPage() {
     ...(ui.showLogsTab ? [{ id: 'logs', label: t('projects.tabLogs') }] : []),
     { id: 'advanced', label: t('projects.tabAdvanced') },
   ];
-
   const activeTab = tabs.some((x) => x.id === tab) ? tab : 'overview';
+  const display = deriveProjectStatus(project);
+  const statusHint = display.hintKey
+    ? t(display.hintKey, { defaultValue: display.hintFallback ?? '' })
+    : display.hintFallback;
+
+  const subtitle = [
+    project.domain ?? t('projects.noDomain'),
+    formatRuntimeLabel(project.runtime, project.runtimeVersion),
+  ].join(' · ');
 
   return (
     <FeaturePageLayout
       title={project.name}
-      subtitle={
-        project.domain
-          ? `${project.domain} · ${project.runtime}`
-          : `${t('projects.noDomain')} · ${project.runtime}`
-      }
+      subtitle={subtitle}
       backTo="/projects"
       backLabel={t('projects.backToList')}
       actions={
-        <Button
-          variant="secondary"
-          size="md"
-          loading={busy}
-          onClick={() => void refreshProject()}
-        >
-          {t('common.refresh')}
-        </Button>
+        <ProjectDetailHeader
+          project={project}
+          busy={busy}
+          onDeploy={() =>
+            void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
+              phpVersion,
+            }).catch(() => undefined)
+          }
+          onStop={() => setConfirm('stop')}
+          onHealth={() => void run('health', project.id).catch(() => undefined)}
+          onRefresh={() => void refreshProject()}
+        />
       }
     >
-      <ProjectDetailHeader
-        project={project}
-        busy={busy}
-        onDeploy={() =>
-          void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
-            phpVersion,
-          }).catch(() => undefined)
-        }
-        onStop={() => setConfirm('stop')}
-        onHealth={() => void run('health', project.id).catch(() => undefined)}
-      />
+      <div className="project-detail-meta btn-row">
+        <ProjectStatusBadge project={project} />
+        {statusHint ? <span className="muted u-text-sm">{statusHint}</span> : null}
+      </div>
 
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
@@ -229,78 +269,95 @@ export function ProjectDetailPage() {
             setGitUrl={setGitUrl}
             envText={envText}
             setEnvText={setEnvText}
-            onDeploy={() =>
+            onDeploy={(opts) =>
               void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
                 phpVersion,
+                entry: opts?.entry,
+                skipBuild: opts?.skipBuild,
               }).catch(() => undefined)
             }
-            onGitDeploy={() =>
-              void run('git-deploy', project.id, { gitUrl }).catch(() => undefined)
+            onGitDeploy={(opts) =>
+              void run('git-deploy', project.id, {
+                gitUrl,
+                entry: opts?.entry,
+                skipBuild: opts?.skipBuild,
+              }).catch(() => undefined)
             }
             onSaveEnv={() => void run('env', project.id, { envText }).catch(() => undefined)}
             onPhpVersionChange={setPhpVersion}
+            onRuntimeVersionSaved={(v) => {
+              setProject((prev) => (prev ? { ...prev, runtimeVersion: v } : prev));
+              void refreshProject();
+            }}
             onOpsMessage={(m) => setMsg(m)}
+            showFreshChecklist={freshChecklist}
+            onDismissChecklist={() => setFreshChecklist(false)}
           />
         ) : null}
         {activeTab === 'network' ? (
-          <ProjectNetworkTab
-            project={project}
-            busy={busy}
-            onPublish={() => void run('publish-nginx', project.id).catch(() => undefined)}
-            onPublishSsl={() => void run('publish-nginx-ssl', project.id).catch(() => undefined)}
-            onSaved={() => void refreshProject()}
-            onOpsResult={(result, message) => {
-              if (result) {
-                /* show via ops panel after refresh */
-              }
-              if (message) setMsg(message);
-            }}
-          />
+          <div className="tab-panel">
+            <ProjectNetworkTab
+              project={project}
+              busy={busy}
+              onPublish={() => void run('publish-nginx', project.id).catch(() => undefined)}
+              onPublishSsl={() => void run('publish-nginx-ssl', project.id).catch(() => undefined)}
+              onSaved={() => void refreshProject()}
+              onOpsResult={(_result, message) => {
+                if (message) setMsg(message);
+              }}
+            />
+          </div>
         ) : null}
         {activeTab === 'resources' ? (
-          <ProjectResourcesTab
-            busy={busy}
-            quotaMb={quotaMb}
-            setQuotaMb={setQuotaMb}
-            memoryMax={memoryMax}
-            setMemoryMax={setMemoryMax}
-            cpuQuota={cpuQuota}
-            setCpuQuota={setCpuQuota}
-            onSetQuota={() =>
-              void run('quota', project.id, { quotaMb: Number(quotaMb) || 1024 }).catch(
-                () => undefined,
-              )
-            }
-            onSetResources={() =>
-              void run('resources', project.id, {
-                memoryMax,
-                cpuQuotaPercent: Number(cpuQuota) || 100,
-              }).catch(() => undefined)
-            }
-          />
+          <div className="tab-panel">
+            <ProjectResourcesTab
+              busy={busy}
+              quotaMb={quotaMb}
+              setQuotaMb={setQuotaMb}
+              memoryMax={memoryMax}
+              setMemoryMax={setMemoryMax}
+              cpuQuota={cpuQuota}
+              setCpuQuota={setCpuQuota}
+              onSetQuota={() =>
+                void run('quota', project.id, { quotaMb: Number(quotaMb) || 1024 }).catch(
+                  () => undefined,
+                )
+              }
+              onSetResources={() =>
+                void run('resources', project.id, {
+                  memoryMax,
+                  cpuQuotaPercent: Number(cpuQuota) || 100,
+                }).catch(() => undefined)
+              }
+            />
+          </div>
         ) : null}
         {activeTab === 'logs' ? (
-          <ProjectLogsTab
-            busy={busy}
-            logTail={logTail}
-            files={logFiles}
-            selectedFile={logFile}
-            onSelectFile={(name) => void loadLogs(name)}
-            onLoad={() => void loadLogs()}
-            onRefreshFile={() => void loadLogs(logFile)}
-          />
+          <div className="tab-panel">
+            <ProjectLogsTab
+              busy={busy}
+              logTail={logTail}
+              files={logFiles}
+              selectedFile={logFile}
+              onSelectFile={(name) => void loadLogs(name)}
+              onLoad={() => void loadLogs()}
+              onRefreshFile={() => void loadLogs(logFile)}
+            />
+          </div>
         ) : null}
         {activeTab === 'advanced' ? (
-          <ProjectAdvancedTab
-            project={project}
-            busy={busy}
-            onBackup={() => void run('backup', project.id).catch(() => undefined)}
-            onWordpress={() => void run('wordpress', project.id).catch(() => undefined)}
-            onSuspend={() => void run('suspend', project.id).catch(() => undefined)}
-            onUnsuspend={() => void run('unsuspend', project.id).catch(() => undefined)}
-            onDelete={() => setConfirm('delete')}
-            onOpsMessage={(m) => setMsg(m)}
-          />
+          <div className="tab-panel">
+            <ProjectAdvancedTab
+              project={project}
+              busy={busy}
+              onBackup={() => void run('backup', project.id).catch(() => undefined)}
+              onWordpress={() => void run('wordpress', project.id).catch(() => undefined)}
+              onSuspend={() => void run('suspend', project.id).catch(() => undefined)}
+              onUnsuspend={() => void run('unsuspend', project.id).catch(() => undefined)}
+              onDelete={() => setConfirm('delete')}
+              onOpsMessage={(m) => setMsg(m)}
+            />
+          </div>
         ) : null}
       </Tabs>
 

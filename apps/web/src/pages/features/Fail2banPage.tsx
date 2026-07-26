@@ -8,12 +8,21 @@ import {
   Button,
   Card,
   CardSection,
+  CheckboxField,
   DescriptionList,
   FeaturePageLayout,
+  Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
   SoftwareInstallBanner,
   SummaryStrip,
+  Tabs,
 } from '../../shared/components/ui';
+import { usePageTab } from '../../shared/hooks/usePageTab';
+
+const F2B_TABS = ['overview', 'jails', 'settings'] as const;
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -84,6 +93,8 @@ export function Fail2banPage() {
     }, '已套用 fail2ban');
   }
 
+  const [tab, setTab] = usePageTab(F2B_TABS, 'overview');
+
   return (
     <FeaturePageLayout
       title="fail2ban"
@@ -136,6 +147,18 @@ export function Fail2banPage() {
         ]}
       />
 
+      <Tabs
+        tabs={[
+          { id: 'overview', label: '概覽' },
+          { id: 'jails', label: 'Jail / 封鎖' },
+          { id: 'settings', label: '設定' },
+        ]}
+        active={tab}
+        onChange={setTab}
+        variant="scroll"
+      >
+        {tab === 'overview' ? (
+          <div className="tab-panel">
       <Card>
         <CardSection title="服務概覽" description="systemctl + fail2ban-client 探測">
           <DescriptionList
@@ -159,7 +182,10 @@ export function Fail2banPage() {
           />
         </CardSection>
       </Card>
-
+          </div>
+        ) : null}
+        {tab === 'jails' ? (
+          <div className="tab-panel">
       <Card>
         <CardSection title="作用中 Jail" description="目前已封鎖統計">
           {status?.jails?.length ? (
@@ -192,11 +218,10 @@ export function Fail2banPage() {
           )}
         </CardSection>
       </Card>
-
       <Card>
-        <CardSection title="Banned IP" description="即時封鎖列表 · unban">
+        <CardSection title="已封鎖 IP" description="即時封鎖列表 · 可解除封鎖">
           {banned.length === 0 ? (
-            <p className="muted u-text-sm">無 banned IP 或無權限讀取</p>
+            <p className="muted u-text-sm">無已封鎖 IP 或無權限讀取</p>
           ) : (
             <div className="table-wrap">
               <table className="data">
@@ -226,10 +251,10 @@ export function Fail2banPage() {
                               const r = await systemApi.fail2banUnban(b.jail, b.ip);
                               await refresh();
                               return r as OpsResultLike;
-                            }, '已 unban')
+                            }, '已解除封鎖')
                           }
                         >
-                          Unban
+                          解除封鎖
                         </Button>
                       </td>
                     </tr>
@@ -240,64 +265,94 @@ export function Fail2banPage() {
           )}
         </CardSection>
       </Card>
-
-      <Card>
-        <CardSection title="白名單 (ignoreip)" description="寫入管理檔並嘗試套用到 sshd jail">
-          <div className="btn-row">
-            <input
-              value={ignoreIp}
-              onChange={(e) => setIgnoreIp(e.target.value)}
-              placeholder="203.0.113.10"
-              style={{ maxWidth: 220 }}
-            />
-            <Button
-              variant="secondary"
-              size="md"
-              loading={busy}
-              disabled={!ignoreIp.trim()}
-              onClick={() =>
-                void run(async () => {
-                  const r = await systemApi.fail2banIgnoreIp(ignoreIp.trim(), 'add');
-                  setIgnoreIp('');
-                  return r as OpsResultLike;
-                }, '已加入白名單')
-              }
-            >
-              加入
-            </Button>
           </div>
-        </CardSection>
-      </Card>
-
-      <Card>
-        <CardSection title="套用 Jail 設定" description="寫入管理 jail.local 並嘗試安裝／重載">
-          <div className="stack stack--sm">
-            {jailOptions.map((name) => (
-              <label key={name} className="field" style={{ marginBottom: 0 }}>
-                <span>
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(name)}
-                    onChange={() => toggleJail(name)}
-                  />{' '}
-                  <code className="inline">{name}</code>
-                </span>
-              </label>
-            ))}
+        ) : null}
+        {tab === 'settings' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="白名單（ignoreip）"
+                description="寫入管理檔並嘗試套用到 sshd jail；永不封鎖這些 IP"
+              >
+                <FormLayout columns={2}>
+                  <Field
+                    label="IP 位址"
+                    htmlFor="f2b-ignore"
+                    flush
+                    hint="單一 IPv4／IPv6 或 CIDR，例如 203.0.113.10"
+                  >
+                    <input
+                      id="f2b-ignore"
+                      value={ignoreIp}
+                      onChange={(e) => setIgnoreIp(e.target.value)}
+                      placeholder="203.0.113.10"
+                      spellCheck={false}
+                    />
+                  </Field>
+                </FormLayout>
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    disabled={!ignoreIp.trim()}
+                    onClick={() =>
+                      void run(async () => {
+                        const r = await systemApi.fail2banIgnoreIp(ignoreIp.trim(), 'add');
+                        setIgnoreIp('');
+                        return r as OpsResultLike;
+                      }, '已加入白名單')
+                    }
+                  >
+                    加入白名單
+                  </Button>
+                </FormActions>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection
+                title="套用 Jail 設定"
+                description="寫入管理 jail.local 並嘗試安裝／重載 fail2ban"
+              >
+                <FormHint>勾選要啟用的 jail；套用後 written ≠ 全部 jail 已在主機生效。</FormHint>
+                <div className="form-check-row">
+                  {jailOptions.map((name) => (
+                    <CheckboxField
+                      key={name}
+                      id={`f2b-jail-${name}`}
+                      label={name}
+                      description={
+                        name === 'sshd'
+                          ? 'SSH 暴力破解防護'
+                          : name === 'nginx-http-auth'
+                            ? 'Nginx 基本認證失敗'
+                            : name === 'postfix'
+                              ? '郵件 SMTP 濫用'
+                              : name === 'dovecot'
+                                ? 'IMAP／POP3 登入失敗'
+                                : undefined
+                      }
+                      checked={selected.includes(name)}
+                      onChange={() => toggleJail(name)}
+                    />
+                  ))}
+                </div>
+                <FormActions>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    disabled={!selected.length}
+                    onClick={() => void onApply()}
+                  >
+                    套用到系統
+                  </Button>
+                </FormActions>
+              </CardSection>
+            </Card>
           </div>
-          <div className="setting-actions-bar">
-            <Button
-              variant="primary"
-              size="md"
-              loading={busy}
-              disabled={!selected.length}
-              onClick={() => void onApply()}
-            >
-              套用到系統
-            </Button>
-          </div>
-        </CardSection>
-      </Card>
+        ) : null}
+      </Tabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
     </FeaturePageLayout>

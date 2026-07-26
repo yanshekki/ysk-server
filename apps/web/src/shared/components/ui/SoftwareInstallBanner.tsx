@@ -57,18 +57,15 @@ export function SoftwareInstallBanner({
       : null;
 
   return (
-    <div className="software-install-banner u-mb-4">
+    <div className="software-install-banner">
       {!ready && missing.length > 0 ? (
         <CardLike>
-          <div
-            className="btn-row"
-            style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}
-          >
-            <div style={{ flex: '1 1 12rem', minWidth: 0 }}>
-              <h3 className="ops-result__title" style={{ margin: 0 }}>
+          <div className="btn-row u-justify-between u-items-start u-flex-wrap u-gap-4">
+            <div className="u-min-w-0" style={{ flex: '1 1 12rem' }}>
+              <h3 className="ops-result__title u-mt-0 u-mb-0">
                 {title ?? '尚未安裝所需軟件'}
               </h3>
-              <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
+              <p className="muted u-text-sm u-mt-2 u-mb-0">
                 缺少：{names}
               </p>
             </div>
@@ -141,7 +138,7 @@ function CardLike({ children }: { children: ReactNode }) {
         background: 'var(--color-warn-bg, rgba(245, 158, 11, 0.06))',
       }}
     >
-      <div className="card__body" style={{ padding: '1rem 1.25rem' }}>
+      <div className="card__body">
         {children}
       </div>
     </div>

@@ -17,7 +17,7 @@ export type SieveScript = {
 function safeMailbox(m: string): string {
   const s = m.trim().toLowerCase();
   if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s) && !/^[a-z0-9._-]+$/.test(s)) {
-    throw new YskError(ErrorCodes.VALIDATION, 'invalid mailbox id', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '郵箱 ID 無效', { httpStatus: 400 });
   }
   return s.replace(/[^a-z0-9._@+-]/gi, '_');
 }
@@ -54,7 +54,7 @@ export function writeSieveScript(input: {
 }): { ok: boolean; script: SieveScript; notes: string[] } {
   const name = (input.name ?? 'default.sieve').replace(/[^a-zA-Z0-9._-]/g, '');
   if (!name.endsWith('.sieve')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'name must end with .sieve', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '檔名須以 .sieve 結尾', { httpStatus: 400 });
   }
   const dir = sieveDir(input.dataDir, input.mailbox);
   const path = join(dir, name);
@@ -83,7 +83,7 @@ export function readSieveScript(
   const safe = name.replace(/[^a-zA-Z0-9._-]/g, '');
   const path = join(sieveDir(dataDir, mailbox), safe);
   if (!existsSync(path)) {
-    throw new YskError(ErrorCodes.NOT_FOUND, 'sieve not found', { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 Sieve 腳本', { httpStatus: 404 });
   }
   return { content: readFileSync(path, 'utf8'), path };
 }

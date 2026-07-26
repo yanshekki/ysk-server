@@ -109,6 +109,8 @@ export class ProjectRepository {
         | 'quota_mb'
         | 'memory_max'
         | 'cpu_quota_percent'
+        | 'deploy_entry'
+        | 'last_deploy_notes'
       >
     >,
   ): void {
@@ -131,6 +133,8 @@ export class ProjectRepository {
     if (patch.quota_mb !== undefined) p.quota_mb = patch.quota_mb;
     if (patch.memory_max !== undefined) p.memory_max = patch.memory_max;
     if (patch.cpu_quota_percent !== undefined) p.cpu_quota_percent = patch.cpu_quota_percent;
+    if ('deploy_entry' in patch) p.deploy_entry = patch.deploy_entry;
+    if (patch.last_deploy_notes !== undefined) p.last_deploy_notes = patch.last_deploy_notes;
     p.updated_at = new Date().toISOString();
     this.db.persist();
   }

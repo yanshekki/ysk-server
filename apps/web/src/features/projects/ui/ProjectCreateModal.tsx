@@ -1,7 +1,16 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Field, FormGrid, Modal } from '../../../shared/components/ui';
+import {
+  Badge,
+  Button,
+  CheckboxField,
+  Field,
+  FormHint,
+  FormLayout,
+  Modal,
+} from '../../../shared/components/ui';
 import { projectsApi } from '../api';
+import { formatRuntimeName } from '../model/runtime-ui';
 
 export interface ProjectCreateModalProps {
   open: boolean;
@@ -11,7 +20,7 @@ export interface ProjectCreateModalProps {
     name: string;
     domain?: string;
     domainAliases?: string[];
-    runtime: 'node' | 'php' | 'static';
+    runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
     templateId?: string;
     createDnsZone?: boolean;
     createMailDomain?: boolean;
@@ -24,7 +33,9 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [aliases, setAliases] = useState('');
-  const [runtime, setRuntime] = useState<'node' | 'php' | 'static'>('node');
+  const [runtime, setRuntime] = useState<
+    'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
+  >('node');
   const [templateId, setTemplateId] = useState('');
   const [createDns, setCreateDns] = useState(false);
   const [createMail, setCreateMail] = useState(false);
@@ -74,12 +85,24 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
 
   const hasDomain = Boolean(domain.trim());
 
+  const filteredTemplates = useMemo(() => {
+    // Show all templates; selected runtime filters suggestion order
+    return [...templates].sort((a, b) => {
+      const aMatch = a.runtime === runtime ? 0 : 1;
+      const bMatch = b.runtime === runtime ? 0 : 1;
+      return aMatch - bMatch;
+    });
+  }, [templates, runtime]);
+
+  const selectedTpl = templates.find((x) => x.id === templateId);
+
   return (
     <Modal
       open={open}
       onClose={onClose}
       title={t('projects.create')}
       description={t('projects.createHint')}
+      size="lg"
       footer={
         <>
           <Button variant="secondary" size="md" onClick={onClose} loading={busy}>
@@ -99,8 +122,8 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
       }
     >
       <form id="project-create-form" onSubmit={(e) => void handleSubmit(e)}>
-        <FormGrid>
-          <Field label={t('projects.name')} htmlFor="pname" flush>
+        <FormLayout columns={2}>
+          <Field label="專案名稱" htmlFor="pname" required flush>
             <input
               id="pname"
               value={name}
@@ -110,7 +133,32 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               placeholder="my-app"
             />
           </Field>
-          <Field label={t('projects.domain')} htmlFor="pdomain" flush>
+          <Field label="執行環境" htmlFor="pruntime" hint="之後可在詳情調整部署方式" flush>
+            <select
+              id="pruntime"
+              value={runtime}
+              onChange={(e) => {
+                const next = e.target.value as typeof runtime;
+                setRuntime(next);
+                // Clear template if it no longer matches runtime
+                const tpl = templates.find((x) => x.id === templateId);
+                if (tpl && tpl.runtime !== next) setTemplateId('');
+              }}
+            >
+              <option value="node">Node.js</option>
+              <option value="php">PHP</option>
+              <option value="python">Python</option>
+              <option value="go">Go</option>
+              <option value="rust">Rust</option>
+              <option value="static">靜態網站</option>
+            </select>
+          </Field>
+          <Field
+            label="主要域名"
+            htmlFor="pdomain"
+            hint="可稍後再填"
+            flush
+          >
             <input
               id="pdomain"
               value={domain}
@@ -118,7 +166,7 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               placeholder="app.example.com"
             />
           </Field>
-          <Field label="別名（可選，逗號或換行）" htmlFor="paliases" flush>
+          <Field label="別名" htmlFor="paliases" hint="逗號或換行分隔" flush>
             <input
               id="paliases"
               value={aliases}
@@ -126,74 +174,92 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               placeholder="www.example.com"
             />
           </Field>
-          <Field label={t('projects.runtime')} htmlFor="pruntime" flush>
-            <select
-              id="pruntime"
-              value={runtime}
-              onChange={(e) => setRuntime(e.target.value as 'node' | 'php' | 'static')}
-            >
-              <option value="node">Node.js</option>
-              <option value="php">PHP</option>
-              <option value="static">Static</option>
-            </select>
-          </Field>
-          <Field label={t('projects.template')} htmlFor="ptpl" flush>
+          <Field
+            label="範本"
+            htmlFor="ptpl"
+            fullWidth
+            flush
+            hint="選範本會自動帶入對應執行環境"
+          >
             <select
               id="ptpl"
               value={templateId}
               onChange={(e) => {
                 setTemplateId(e.target.value);
                 const tpl = templates.find((x) => x.id === e.target.value);
-                if (tpl?.runtime === 'node' || tpl?.runtime === 'php' || tpl?.runtime === 'static') {
+                if (
+                  tpl?.runtime === 'node' ||
+                  tpl?.runtime === 'php' ||
+                  tpl?.runtime === 'static' ||
+                  tpl?.runtime === 'python' ||
+                  tpl?.runtime === 'go' ||
+                  tpl?.runtime === 'rust'
+                ) {
                   setRuntime(tpl.runtime);
                 }
               }}
             >
               <option value="">{t('projects.templateNone')}</option>
-              {templates.map((tpl) => (
+              {filteredTemplates.map((tpl) => (
                 <option key={tpl.id} value={tpl.id}>
                   {tpl.name}
+                  {tpl.runtime === runtime ? '' : `（${formatRuntimeName(tpl.runtime)}）`}
                 </option>
               ))}
             </select>
           </Field>
-        </FormGrid>
+        </FormLayout>
+
+        {selectedTpl ? (
+          <div className="u-mt-3" style={{ padding: '0.75rem 1rem', background: 'var(--bg-subtle, #f6f8fa)', borderRadius: 8 }}>
+            <div className="btn-row u-gap-2 u-mb-2">
+              <strong>{selectedTpl.name}</strong>
+              <Badge tone="info">{formatRuntimeName(selectedTpl.runtime)}</Badge>
+            </div>
+            <p className="muted u-text-sm u-mb-0">{selectedTpl.description}</p>
+            <p className="muted u-text-sm u-mt-2 u-mb-0">
+              範本只寫入專案目錄骨架；需再「部署」才會 build／啟動。安裝 toolchain 請到執行環境頁。
+            </p>
+          </div>
+        ) : (
+          <FormHint>
+            目前執行環境：<strong>{formatRuntimeName(runtime)}</strong>
+            。可選範本加速起步，或不選直接空白專案。
+          </FormHint>
+        )}
 
         {hasDomain ? (
-          <div className="u-mt-3 stack" style={{ gap: '0.5rem' }}>
-            <label className="field field--check">
-              <input
-                type="checkbox"
+          <div className="u-mt-4">
+            <FormHint>選填：與域名一併建立草稿資源</FormHint>
+            <div className="form-switches">
+              <CheckboxField
+                id="pc-dns"
+                label="同時建立 DNS zone"
+                description="只寫管理檔（draft），唔等於權威 DNS 已上線"
                 checked={createDns}
-                onChange={(e) => setCreateDns(e.target.checked)}
+                onChange={setCreateDns}
               />
-              <span>同時建立 DNS zone（管理檔 draft）</span>
-            </label>
-            <label className="field field--check">
-              <input
-                type="checkbox"
+              <CheckboxField
+                id="pc-mail"
+                label="同時登記郵件域名"
+                description="之後可到郵件頁完成郵箱與套用"
                 checked={createMail}
-                onChange={(e) => setCreateMail(e.target.checked)}
+                onChange={setCreateMail}
               />
-              <span>同時登記郵件域名</span>
-            </label>
+            </div>
             {createDns || createMail ? (
-              <Field label="伺服器 IP（DNS / 郵件）" htmlFor="pserverip" flush>
-                <input
-                  id="pserverip"
-                  value={serverIp}
-                  onChange={(e) => setServerIp(e.target.value)}
-                  placeholder="203.0.113.10"
-                />
-              </Field>
+              <FormLayout>
+                <Field label="伺服器 IP（寫入 DNS 範本）" htmlFor="pc-ip" flush>
+                  <input
+                    id="pc-ip"
+                    value={serverIp}
+                    onChange={(e) => setServerIp(e.target.value)}
+                    placeholder="127.0.0.1"
+                  />
+                </Field>
+              </FormLayout>
             ) : null}
           </div>
-        ) : null}
-
-        {templateId ? (
-          <p className="muted u-text-sm u-mt-3">
-            {templates.find((x) => x.id === templateId)?.description}
-          </p>
         ) : null}
       </form>
     </Modal>

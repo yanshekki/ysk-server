@@ -10,11 +10,13 @@ import {
   CardSection,
   FeaturePageLayout,
   Field,
-  FormGrid,
+  FormLayout,
   Tabs,
+  FormActions,
 } from '../shared/components/ui';
 import { api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
+import { usePageTab } from '../shared/hooks/usePageTab';
 
 type UserRow = {
   id: string;
@@ -37,7 +39,7 @@ type Pkg = {
 };
 
 export function UsersPage() {
-  const [tab, setTab] = useState('users');
+  const [tab, setTab] = usePageTab(['users', 'packages'] as const, 'users');
   const [users, setUsers] = useState<UserRow[]>([]);
   const [packages, setPackages] = useState<Pkg[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -113,7 +115,7 @@ export function UsersPage() {
   }
 
   return (
-    <FeaturePageLayout title="用戶與方案" subtitle="Admin · 配額方案 · 模擬登入" showCapability={false}>
+    <FeaturePageLayout title="用戶與方案" subtitle="管理員 · 配額方案 · 模擬登入" showCapability={false}>
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? <Alert variant="ok">{msg}</Alert> : null}
 
@@ -130,7 +132,7 @@ export function UsersPage() {
             <Card>
               <CardSection title="建立用戶">
                 <form onSubmit={(e) => void onCreateUser(e)}>
-                  <FormGrid>
+                  <FormLayout columns={2}>
                     <Field label="用戶名" htmlFor="u-name" flush>
                       <input
                         id="u-name"
@@ -174,12 +176,12 @@ export function UsersPage() {
                         ))}
                       </select>
                     </Field>
-                  </FormGrid>
-                  <div className="btn-row u-mt-3">
+                  </FormLayout>
+                  <FormActions>
                     <Button type="submit" variant="primary" size="md" loading={busy}>
-                      建立
+                      建立用戶
                     </Button>
-                  </div>
+                  </FormActions>
                 </form>
               </CardSection>
             </Card>
@@ -317,7 +319,7 @@ export function UsersPage() {
             <Card>
               <CardSection title="建立方案">
                 <form onSubmit={(e) => void onCreatePkg(e)}>
-                  <FormGrid>
+                  <FormLayout columns={2}>
                     <Field label="名稱" htmlFor="p-name" flush>
                       <input
                         id="p-name"
@@ -340,12 +342,12 @@ export function UsersPage() {
                         onChange={(e) => setPkgDisk(e.target.value)}
                       />
                     </Field>
-                  </FormGrid>
-                  <div className="btn-row u-mt-3">
+                  </FormLayout>
+                  <FormActions>
                     <Button type="submit" variant="primary" size="md" loading={busy}>
                       建立方案
                     </Button>
-                  </div>
+                  </FormActions>
                 </form>
               </CardSection>
             </Card>

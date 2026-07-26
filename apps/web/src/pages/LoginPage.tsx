@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
-import { Alert } from '../shared/components/ui';
+import { Alert, Field, FormActions, FormLayout } from '../shared/components/ui';
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -30,7 +30,6 @@ export function LoginPage() {
       if (msg.includes('雙重驗證') || msg.includes('TOTP') || msg.includes('2FA')) {
         setNeedsTotp(true);
       }
-      // raw API may return needsTotp in message body
       if (String(msg).includes('needsTotp') || String(msg).includes('驗證碼')) {
         setNeedsTotp(true);
       }
@@ -54,45 +53,51 @@ export function LoginPage() {
         {error ? <Alert variant="error">{error}</Alert> : null}
         {needsTotp ? <Alert variant="info">此帳戶已開啟 2FA，請輸入 6 位驗證碼</Alert> : null}
 
-        <form onSubmit={(e) => void onSubmit(e)}>
-          <div className="field">
-            <label htmlFor="username">{t('login.username')}</label>
-            <input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="password">{t('login.password')}</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </div>
-          {(needsTotp || totp) && (
-            <div className="field">
-              <label htmlFor="totp">雙重驗證碼</label>
+        <form className="login-card__form" onSubmit={(e) => void onSubmit(e)}>
+          <FormLayout>
+            <Field label={t('login.username')} htmlFor="username" flush required>
               <input
-                id="totp"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={totp}
-                onChange={(e) => setTotp(e.target.value)}
-                placeholder="6 位數字"
-                maxLength={6}
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                required
               />
-            </div>
-          )}
-          <button type="submit" className="btn btn--primary btn--block" disabled={loading}>
-            {loading ? '…' : t('login.submit')}
-          </button>
+            </Field>
+            <Field label={t('login.password')} htmlFor="password" flush required>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </Field>
+            {needsTotp || totp ? (
+              <Field
+                label="雙重驗證碼"
+                htmlFor="totp"
+                hint="Authenticator 應用程式中的 6 位數字"
+                flush
+              >
+                <input
+                  id="totp"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={totp}
+                  onChange={(e) => setTotp(e.target.value)}
+                  placeholder="000000"
+                  maxLength={6}
+                />
+              </Field>
+            ) : null}
+          </FormLayout>
+          <FormActions>
+            <button type="submit" className="btn btn--primary btn--block" disabled={loading}>
+              {loading ? '登入中…' : t('login.submit')}
+            </button>
+          </FormActions>
         </form>
 
         <div className="login-card__footer">

@@ -42,7 +42,7 @@ export function planSandbox(
   overrides: Partial<SandboxPolicy> = {},
 ): SandboxPlan {
   if (!command.length) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Sandbox command cannot be empty', {
+    throw new YskError(ErrorCodes.VALIDATION, '沙箱指令不可為空', {
       httpStatus: 400,
     });
   }
@@ -50,7 +50,7 @@ export function planSandbox(
   if (policy.seccompProfile === 'unconfined' && !policy.runAsUser) {
     throw new YskError(
       ErrorCodes.SANDBOX_VIOLATION,
-      'Unconfined seccomp requires explicit runAsUser',
+      '非受限 seccomp 需要明確指定 runAsUser',
       { httpStatus: 400 },
     );
   }

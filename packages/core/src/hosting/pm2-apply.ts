@@ -113,7 +113,7 @@ export async function applyPm2Start(input: {
   const probe = await probePm2(input.host);
 
   if (!probe.available) {
-    notes.push('pm2 not found on PATH — install: npm i -g pm2');
+    notes.push('pm2 找不到 on PATH — install: npm i -g pm2');
     return {
       ok: false,
       appName: eco.appName,
@@ -171,7 +171,7 @@ export async function applyPm2Start(input: {
   });
 
   if (start.exitCode !== 0) {
-    notes.push(`pm2 start failed: ${start.stderr || start.stdout}`);
+    notes.push(`pm2 start 失敗：${start.stderr || start.stdout}`);
     return {
       ok: false,
       appName: eco.appName,
@@ -183,7 +183,7 @@ export async function applyPm2Start(input: {
     };
   }
 
-  notes.push(`pm2 start ok for ${eco.appName}`);
+  notes.push(`pm2 已啟動 ${eco.appName}`);
   // best-effort pid from pm2 jlist
   let pid: number | undefined;
   const jlist = await input.host.runCommand(['pm2', 'jlist'], { timeoutMs: 15_000 });
@@ -239,11 +239,11 @@ export async function applyPm2Stop(input: {
   }
   const probe = await probePm2(input.host);
   if (!probe.available) {
-    notes.push('pm2 not on PATH — nothing to stop via PM2');
+    notes.push('找不到 pm2 — 無法以 PM2 停止');
     return { ok: true, notes, requiresExecute: false };
   }
   const r = await input.host.runCommand(['pm2', 'delete', appName], { timeoutMs: 30_000 });
   notes.push(`pm2 delete ${appName} exit=${r.exitCode}`);
-  // exit 1 when not found is fine
+  // exit 1 when 找不到 is fine
   return { ok: true, notes, requiresExecute: false };
 }

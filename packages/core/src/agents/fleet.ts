@@ -38,7 +38,7 @@ export class FleetService {
 
   register(agentId: string, group?: string, meta?: Record<string, unknown>): FleetAgent {
     if (!agentId?.trim()) {
-      throw new YskError(ErrorCodes.VALIDATION, 'agentId required', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '請指定 agentId', { httpStatus: 400 });
     }
     const now = new Date().toISOString();
     const row: FleetAgent = {
@@ -66,7 +66,7 @@ export class FleetService {
   heartbeat(sessionId: string): FleetAgent {
     const a = agents(this.db).find((x) => x.id === sessionId);
     if (!a) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `session not found: ${sessionId}`, {
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
         httpStatus: 404,
       });
     }
@@ -90,7 +90,7 @@ export class FleetService {
   enqueue(sessionId: string, payload: unknown): FleetCommand {
     const a = agents(this.db).find((x) => x.id === sessionId);
     if (!a) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `session not found: ${sessionId}`, {
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
         httpStatus: 404,
       });
     }

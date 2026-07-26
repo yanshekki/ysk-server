@@ -1,5 +1,5 @@
 /**
- * Public files nginx site — SettingField + DescriptionList pattern.
+ * Public files nginx site — Form Kit + DescriptionList.
  */
 import { useState } from 'react';
 import {
@@ -9,9 +9,11 @@ import {
   CardSection,
   DescriptionList,
   FeaturePageLayout,
+  Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
-  SettingField,
-  SettingFieldList,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
@@ -41,8 +43,8 @@ export function PublicFilesPage() {
           <DescriptionList
             columns={2}
             items={[
-              { label: 'Server name', value: serverName || '—' },
-              { label: 'Quota', value: `${quotaMb || '—'} MiB` },
+              { label: '伺服器名稱', value: serverName || '—' },
+              { label: '配額', value: `${quotaMb || '—'} MiB` },
               { label: '重載 Nginx', value: '套用時嘗試' },
             ]}
           />
@@ -50,9 +52,18 @@ export function PublicFilesPage() {
       </Card>
 
       <Card>
-        <CardSection title="站點設定" description="寫入管理 conf 並可重載 Nginx">
-          <SettingFieldList>
-            <SettingField label="伺服器名稱" techKey="server_name" htmlFor="pf-sn">
+        <CardSection
+          title="站點設定"
+          description="寫入管理 conf；套用時可嘗試 reload Nginx（written ≠ 對外可連）"
+        >
+          <FormLayout columns={2}>
+            <Field
+              label="伺服器名稱"
+              htmlFor="pf-sn"
+              flush
+              required
+              hint="Nginx server_name，例如 files.example.com"
+            >
               <input
                 id="pf-sn"
                 value={serverName}
@@ -60,13 +71,29 @@ export function PublicFilesPage() {
                   setServerName(e.target.value);
                   setServerContext({ domain: e.target.value.replace(/^files\./, '') });
                 }}
+                placeholder="files.example.com"
+                spellCheck={false}
               />
-            </SettingField>
-            <SettingField label="配額" techKey="quota_mb" description="MiB，可選" htmlFor="pf-q">
-              <input id="pf-q" value={quotaMb} onChange={(e) => setQuotaMb(e.target.value)} />
-            </SettingField>
-          </SettingFieldList>
-          <div className="setting-actions-bar">
+            </Field>
+            <Field
+              label="配額（MiB）"
+              htmlFor="pf-q"
+              flush
+              hint="可選；限制公開目錄總量"
+            >
+              <input
+                id="pf-q"
+                value={quotaMb}
+                onChange={(e) => setQuotaMb(e.target.value)}
+                inputMode="numeric"
+                placeholder="1024"
+              />
+            </Field>
+          </FormLayout>
+          <FormHint>
+            套用成功只代表設定已寫入；DNS、SSL 與防火牆需另行就緒才會對外服務。
+          </FormHint>
+          <FormActions>
             <Button
               variant="primary"
               size="md"
@@ -88,7 +115,7 @@ export function PublicFilesPage() {
             >
               套用並重載 Nginx
             </Button>
-          </div>
+          </FormActions>
         </CardSection>
       </Card>
 

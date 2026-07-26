@@ -62,7 +62,7 @@ export class AuthService {
 
   login(req: AuthLoginRequest & { totp?: string }): AuthLoginResponse {
     if (!req.username || !req.password) {
-      throw new YskError(ErrorCodes.VALIDATION, 'username and password required', {
+      throw new YskError(ErrorCodes.VALIDATION, '請輸入使用者名稱與密碼', {
         httpStatus: 400,
       });
     }
@@ -74,7 +74,7 @@ export class AuthService {
         detail: { ok: false },
         ok: false,
       });
-      throw new YskError(ErrorCodes.UNAUTHORIZED, 'Invalid credentials', { httpStatus: 401 });
+      throw new YskError(ErrorCodes.UNAUTHORIZED, '帳號或密碼不正確', { httpStatus: 401 });
     }
     if (user.suspended) {
       throw new YskError(ErrorCodes.FORBIDDEN, '帳戶已暫停', { httpStatus: 403 });
@@ -119,7 +119,7 @@ export class AuthService {
   beginTotp(userId: string): { secret: string; otpauthUrl: string; enabled: boolean } {
     const user = this.users.findById(userId);
     if (!user) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
     }
     const secret = generateTotpSecret();
     this.users.updateTotp(userId, { totp_secret: secret, totp_enabled: false });
@@ -152,7 +152,7 @@ export class AuthService {
   disableTotp(userId: string, code: string): { enabled: boolean } {
     const user = this.users.findById(userId);
     if (!user) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
     }
     if (user.totp_enabled && user.totp_secret) {
       if (!verifyTotp(user.totp_secret, code)) {
@@ -172,7 +172,7 @@ export class AuthService {
   totpStatus(userId: string): { enabled: boolean; enrolled: boolean } {
     const user = this.users.findById(userId);
     if (!user) {
-      throw new YskError(ErrorCodes.NOT_FOUND, 'User not found', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
     }
     return {
       enabled: Boolean(user.totp_enabled),
@@ -197,16 +197,16 @@ export class AuthService {
 
   authenticate(token: string | undefined): UserDto {
     if (!token) {
-      throw new YskError(ErrorCodes.UNAUTHORIZED, 'Missing token', { httpStatus: 401 });
+      throw new YskError(ErrorCodes.UNAUTHORIZED, '缺少登入憑證', { httpStatus: 401 });
     }
     const session = this.sessions.find(token);
     if (!session || session.expires_at < new Date().toISOString()) {
       if (session) this.sessions.delete(token);
-      throw new YskError(ErrorCodes.UNAUTHORIZED, 'Invalid or expired token', { httpStatus: 401 });
+      throw new YskError(ErrorCodes.UNAUTHORIZED, '登入已失效，請重新登入', { httpStatus: 401 });
     }
     const user = this.users.findById(session.user_id);
     if (!user) {
-      throw new YskError(ErrorCodes.UNAUTHORIZED, 'User not found', { httpStatus: 401 });
+      throw new YskError(ErrorCodes.UNAUTHORIZED, '找不到用戶', { httpStatus: 401 });
     }
     return toDto(user);
   }

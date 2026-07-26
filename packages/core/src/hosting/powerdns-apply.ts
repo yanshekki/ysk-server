@@ -48,7 +48,7 @@ export async function probePowerDns(host: HostExecutor): Promise<PowerDnsProbe> 
   if (pdnsControl) notes.push(`pdns_control: ${pdnsControl}`);
   if (pdnsServer) notes.push(`pdns_server: ${pdnsServer}`);
   if (!pdnsutil && !pdnsControl) {
-    notes.push('PowerDNS tools not on PATH — install pdns-server / pdns-tools');
+    notes.push('找不到 PowerDNS 工具 — 請安裝 pdns-server / pdns-tools');
   }
   return {
     pdnsutil,
@@ -79,7 +79,7 @@ export async function applyPowerDnsZone(input: {
 }): Promise<PowerDnsLoadResult> {
   const zone = input.zone.trim().toLowerCase().replace(/\.$/, '');
   if (!zone) {
-    throw new YskError(ErrorCodes.VALIDATION, 'zone required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫 zone', { httpStatus: 400 });
   }
 
   const notes: string[] = [];
@@ -137,7 +137,7 @@ export async function applyPowerDnsZone(input: {
       '  pdnsutil rectify-zone "$ZONE" || true',
       '  echo "loaded $ZONE"',
       'else',
-      '  echo "pdnsutil not found" >&2',
+      '  echo "pdnsutil 找不到" >&2',
       '  exit 1',
       'fi',
       '',
@@ -190,7 +190,7 @@ export async function applyPowerDnsZone(input: {
       mode: 'refused',
       notes: [
         ...notes,
-        'pdnsutil not found — install PowerDNS tools or run helper script as root after install',
+        'pdnsutil 找不到 — install PowerDNS tools or run helper script as root after install',
       ],
       written,
       commandResults,
@@ -211,7 +211,7 @@ export async function applyPowerDnsZone(input: {
   });
 
   if (load.exitCode !== 0) {
-    notes.push(`pdnsutil load-zone failed: ${load.stderr || load.stdout}`);
+    notes.push(`pdnsutil load-zone 失敗：${load.stderr || load.stdout}`);
     return {
       ok: false,
       zone,
@@ -226,7 +226,7 @@ export async function applyPowerDnsZone(input: {
     };
   }
 
-  notes.push(`Loaded zone ${zone} via pdnsutil`);
+  notes.push(`已透過 pdnsutil 載入 zone ${zone}`);
   const rect = await input.host.runCommand(['pdnsutil', 'rectify-zone', zone], {
     timeoutMs: 30_000,
   });
@@ -235,7 +235,7 @@ export async function applyPowerDnsZone(input: {
     exitCode: rect.exitCode,
     stderr: rect.stderr,
   });
-  if (rect.exitCode === 0) notes.push('rectify-zone ok');
+  if (rect.exitCode === 0) notes.push('zone rectify 完成');
   else notes.push(`rectify-zone exit=${rect.exitCode} (non-fatal)`);
 
   return {

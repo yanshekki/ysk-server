@@ -18,7 +18,7 @@ export function deriveLinuxUser(projectName: string): string {
     .replace(/^_+|_+$/g, '')
     .slice(0, 24);
   if (!slug) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Project name yields empty linux user', {
+    throw new YskError(ErrorCodes.VALIDATION, '專案名稱無法產生有效系統用戶名', {
       httpStatus: 400,
     });
   }
@@ -41,7 +41,7 @@ export function planProjectIsolation(input: {
   notes: string[];
 } {
   if (!input.name?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Project name is required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫專案名稱', { httpStatus: 400 });
   }
   const linuxUser = deriveLinuxUser(input.name);
   const linuxGroup = linuxUser;

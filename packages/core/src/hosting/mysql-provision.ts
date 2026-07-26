@@ -42,7 +42,7 @@ export async function provisionMysqlDatabase(input: {
       mysqlClient: false,
       sql: [],
       connectionHint: {},
-      notes: ['password required (min 8 chars)'],
+      notes: ['請提供密碼（至少 8 字元）'],
       commandResults: [],
     };
   }

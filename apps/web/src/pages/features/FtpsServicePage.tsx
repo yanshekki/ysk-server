@@ -9,11 +9,14 @@ import {
   Button,
   Card,
   CardSection,
+  CheckboxField,
   DescriptionList,
   FeaturePageLayout,
+  Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
-  SettingField,
-  SettingFieldList,
   SummaryStrip,
   Tabs,
 } from '../../shared/components/ui';
@@ -224,7 +227,7 @@ export function FtpsServicePage() {
                   { label: '狀態', value: <Badge tone={st.tone}>{st.text}</Badge> },
                   { label: '監聽埠', value: String(settings.listenPort) },
                   { label: '帳戶數', value: status?.accountCount != null ? String(status.accountCount) : '—' },
-                  { label: 'Banner', value: settings.banner || '—' },
+                  { label: '登入橫幅', value: settings.banner || '—' },
                   { label: 'SSL 網域', value: settings.sslDomain || '—' },
                   { label: 'PASV 範圍', value: `${settings.pasvMin}–${settings.pasvMax}` },
                   { label: 'FTPS', value: settings.sslEnable ? '開啟' : '關閉' },
@@ -239,14 +242,23 @@ export function FtpsServicePage() {
 
         {tab === 'network' ? (
           <Card>
-            <CardSection title="網絡設定">
+            <CardSection
+              title="網絡設定"
+              description="監聽埠與 PASV 被動模式；儲存只改管理設定，套用才寫入 vsftpd 並重啟"
+            >
               <form
                 onSubmit={(e) => {
                   void onSave(e);
                 }}
               >
-                <SettingFieldList>
-                  <SettingField label="監聽埠" techKey="listen_port" htmlFor="listenPort">
+                <FormLayout columns={2}>
+                  <Field
+                    label="監聽埠"
+                    htmlFor="listenPort"
+                    flush
+                    required
+                    hint="預設 21；若防火牆另開埠請一併放行"
+                  >
                     <input
                       id="listenPort"
                       type="number"
@@ -255,47 +267,65 @@ export function FtpsServicePage() {
                       value={settings.listenPort}
                       onChange={(e) => patch('listenPort', Number(e.target.value) || 21)}
                     />
-                  </SettingField>
-                  <SettingField label="Banner" techKey="ftpd_banner" htmlFor="banner">
+                  </Field>
+                  <Field
+                    label="登入橫幅"
+                    htmlFor="banner"
+                    flush
+                    hint="連線成功後客戶端可見的歡迎字串"
+                  >
                     <input
                       id="banner"
                       value={settings.banner}
                       onChange={(e) => patch('banner', e.target.value)}
+                      placeholder="YSK FTPS"
                     />
-                  </SettingField>
-                  <SettingField label="PASV 起始" techKey="pasv_min_port" htmlFor="pasvMin">
+                  </Field>
+                  <Field
+                    label="PASV 起始埠"
+                    htmlFor="pasvMin"
+                    flush
+                    hint="被動模式資料通道起始"
+                  >
                     <input
                       id="pasvMin"
                       type="number"
                       value={settings.pasvMin}
                       onChange={(e) => patch('pasvMin', Number(e.target.value) || 30000)}
                     />
-                  </SettingField>
-                  <SettingField label="PASV 結束" techKey="pasv_max_port" htmlFor="pasvMax">
+                  </Field>
+                  <Field
+                    label="PASV 結束埠"
+                    htmlFor="pasvMax"
+                    flush
+                    hint="需 ≥ 起始埠；防火牆需放行此範圍"
+                  >
                     <input
                       id="pasvMax"
                       type="number"
                       value={settings.pasvMax}
                       onChange={(e) => patch('pasvMax', Number(e.target.value) || 30100)}
                     />
-                  </SettingField>
-                  <SettingField
+                  </Field>
+                  <Field
                     label="PASV 公網 IP"
-                    techKey="pasv_address"
-                    description="可選；NAT 環境填公網 IP"
                     htmlFor="pasvAddress"
+                    fullWidth
+                    flush
+                    hint="NAT／雲主機可填公網 IP；本機可留空"
                   >
                     <input
                       id="pasvAddress"
                       value={settings.pasvAddress ?? ''}
                       onChange={(e) => patch('pasvAddress', e.target.value || undefined)}
-                      placeholder="可選"
+                      placeholder="（可留空）"
+                      spellCheck={false}
                     />
-                  </SettingField>
-                </SettingFieldList>
-                <div className="setting-actions-bar">
+                  </Field>
+                </FormLayout>
+                <FormActions>
                   <Button type="submit" variant="secondary" size="md" loading={busy}>
-                    儲存
+                    儲存設定
                   </Button>
                   {installed ? (
                     <Button
@@ -308,7 +338,7 @@ export function FtpsServicePage() {
                       套用並重啟
                     </Button>
                   ) : null}
-                </div>
+                </FormActions>
               </form>
             </CardSection>
           </Card>
@@ -316,14 +346,23 @@ export function FtpsServicePage() {
 
         {tab === 'security' ? (
           <Card>
-            <CardSection title="安全設定">
+            <CardSection
+              title="安全設定"
+              description="TLS、寫入權限與 chroot；變更後請套用並重啟才會生效"
+            >
               <form
                 onSubmit={(e) => {
                   void onSave(e);
                 }}
               >
-                <SettingFieldList>
-                  <SettingField label="SSL 網域" techKey="rsa_cert" htmlFor="sslDomain">
+                <FormLayout columns={2}>
+                  <Field
+                    label="SSL 憑證域名"
+                    htmlFor="sslDomain"
+                    fullWidth
+                    flush
+                    hint="選已上傳／申請的憑證網域"
+                  >
                     <select
                       id="sslDomain"
                       value={settings.sslDomain}
@@ -336,31 +375,49 @@ export function FtpsServicePage() {
                         </option>
                       ))}
                     </select>
-                  </SettingField>
-                  {(
-                    [
-                      ['sslEnable', '啟用 FTPS (SSL)', 'ssl_enable'],
-                      ['forceSsl', '強制 TLS', 'force_local_logins_ssl'],
-                      ['writeEnable', '允許寫入', 'write_enable'],
-                      ['chrootLocalUser', 'Chroot 用戶', 'chroot_local_user'],
-                      ['allowWriteableChroot', '可寫 chroot', 'allow_writeable_chroot'],
-                    ] as const
-                  ).map(([key, label, tech]) => (
-                    <SettingField key={key} label={label} techKey={tech} htmlFor={key}>
-                      <select
-                        id={key}
-                        value={settings[key] ? 'yes' : 'no'}
-                        onChange={(e) => patch(key, e.target.value === 'yes')}
-                      >
-                        <option value="yes">是</option>
-                        <option value="no">否</option>
-                      </select>
-                    </SettingField>
-                  ))}
-                </SettingFieldList>
-                <div className="setting-actions-bar">
+                  </Field>
+                </FormLayout>
+                <div className="form-check-row u-mt-4">
+                  <CheckboxField
+                    id="sslEnable"
+                    label="啟用 FTPS（SSL/TLS）"
+                    description="以 TLS 加密控制通道；建議開啟"
+                    checked={settings.sslEnable}
+                    onChange={(v) => patch('sslEnable', v)}
+                  />
+                  <CheckboxField
+                    id="forceSsl"
+                    label="強制 TLS 登入"
+                    description="拒絕明文 FTP；需客戶端支援 FTPS"
+                    checked={settings.forceSsl}
+                    onChange={(v) => patch('forceSsl', v)}
+                  />
+                  <CheckboxField
+                    id="writeEnable"
+                    label="允許寫入"
+                    description="關閉則帳戶僅能下載／列目錄"
+                    checked={settings.writeEnable}
+                    onChange={(v) => patch('writeEnable', v)}
+                  />
+                  <CheckboxField
+                    id="chrootLocalUser"
+                    label="Chroot 用戶"
+                    description="登入後鎖在家目錄，無法瀏覽系統其他路徑"
+                    checked={settings.chrootLocalUser}
+                    onChange={(v) => patch('chrootLocalUser', v)}
+                  />
+                  <CheckboxField
+                    id="allowWriteableChroot"
+                    label="允許可寫 chroot"
+                    description="家目錄可寫時仍啟用 chroot（vsftpd 常見需求）"
+                    checked={settings.allowWriteableChroot}
+                    onChange={(v) => patch('allowWriteableChroot', v)}
+                  />
+                </div>
+                <FormHint>儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.conf 並重載服務。</FormHint>
+                <FormActions>
                   <Button type="submit" variant="secondary" size="md" loading={busy}>
-                    儲存
+                    儲存設定
                   </Button>
                   {installed ? (
                     <Button
@@ -373,7 +430,7 @@ export function FtpsServicePage() {
                       套用並重啟
                     </Button>
                   ) : null}
-                </div>
+                </FormActions>
               </form>
             </CardSection>
           </Card>

@@ -18,7 +18,7 @@ export function planPublicFileServer(opts: {
   const publicRoot = opts.root ?? '/var/lib/ysk-server/files';
   const quotaMb = opts.quotaMb ?? 1024;
   if (quotaMb < 1) {
-    throw new YskError(ErrorCodes.VALIDATION, 'quotaMb must be >= 1', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '配額須至少 1 MiB', { httpStatus: 400 });
   }
   return {
     publicRoot,
@@ -42,7 +42,7 @@ export interface FtpsPlan {
 
 export function planFtps(opts: { domain: string; pasvMin?: number; pasvMax?: number }): FtpsPlan {
   if (!opts.domain) {
-    throw new YskError(ErrorCodes.VALIDATION, 'domain required for FTPS', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, 'FTPS 需要域名', { httpStatus: 400 });
   }
   const pasvMin = opts.pasvMin ?? 30000;
   const pasvMax = opts.pasvMax ?? 30100;
@@ -100,7 +100,7 @@ export function planDnsZone(opts: {
   template?: DnsZoneTemplate | string;
 }): DnsRecordPlan {
   if (!opts.zone || !opts.serverIp) {
-    throw new YskError(ErrorCodes.VALIDATION, 'zone and serverIp required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫 zone 與 server IP', { httpStatus: 400 });
   }
   const template = normalizeDnsZoneTemplate(opts.template);
   const mail = opts.mailHost ?? `mail.${opts.zone}`;
@@ -160,7 +160,7 @@ export function planFirewall(opts: {
   }
   for (const p of opts.extraTcpPorts ?? []) {
     if (!Number.isInteger(p) || p < 1 || p > 65535) {
-      throw new YskError(ErrorCodes.VALIDATION, `Invalid port ${p}`, { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, `埠號無效：${p}`, { httpStatus: 400 });
     }
     rules.push(`ufw allow ${p}/tcp`);
   }
@@ -178,13 +178,13 @@ export function planCronJob(opts: {
   command: string;
 }): { crontabLine: string; notes: string[] } {
   if (!opts.user || !opts.schedule || !opts.command) {
-    throw new YskError(ErrorCodes.VALIDATION, 'user, schedule, command required', {
+    throw new YskError(ErrorCodes.VALIDATION, '請填寫用戶、排程與指令', {
       httpStatus: 400,
     });
   }
   return {
     crontabLine: `${opts.schedule} ${opts.command} # ysk-server`,
-    notes: [`Install via crontab -u ${opts.user}`, 'Logs should go under project logs dir'],
+    notes: [`以用戶 ${opts.user} 安裝 crontab`, '日誌建議寫入專案 logs 目錄'],
   };
 }
 
@@ -194,7 +194,7 @@ export function planBackup(opts: {
   dest: string;
 }): { commands: string[]; notes: string[] } {
   if (!opts.sources.length) {
-    throw new YskError(ErrorCodes.VALIDATION, 'backup sources required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請指定備份來源', { httpStatus: 400 });
   }
   const stamp = '${STAMP}';
   return {
@@ -203,7 +203,7 @@ export function planBackup(opts: {
       `mkdir -p ${opts.dest}/${opts.projectId}`,
       `tar -czf ${opts.dest}/${opts.projectId}/backup-${stamp}.tar.gz ${opts.sources.join(' ')}`,
     ],
-    notes: ['Retention policy should prune old archives', 'DB dumps should be included separately'],
+    notes: ['應設定保留策略清理舊備份', '資料庫轉儲需另行納入'],
   };
 }
 

@@ -122,7 +122,7 @@ export function ProjectOverviewTab({
                     : 'default',
             },
             {
-              label: 'Document root',
+              label: '文件根目錄',
               value: project.docRoot || 'app/public',
             },
             ...(webStats
@@ -174,14 +174,17 @@ export function ProjectOverviewTab({
       </Card>
 
       <Card>
-        <CardSection title="本專案操作">
+        <CardSection
+          title="站點快捷操作"
+          description="發布與備份（主部署請用頁頂按鈕或「部署」分頁）"
+        >
           <div className="lifecycle-toolbar">
             <Button
               variant="primary"
               size="md"
               loading={busy}
               disabled={!hasDomain || !onPublishNginx}
-              title={!hasDomain ? '請先設定域名' : undefined}
+              title={!hasDomain ? '請先到「網絡」分頁設定域名' : undefined}
               onClick={() => onPublishNginx?.()}
             >
               發布 Nginx
@@ -191,7 +194,7 @@ export function ProjectOverviewTab({
               size="md"
               loading={busy}
               disabled={!hasDomain || !onPublishSsl}
-              title={!hasDomain ? '請先設定域名' : undefined}
+              title={!hasDomain ? '請先到「網絡」分頁設定域名' : undefined}
               onClick={() => onPublishSsl?.()}
             >
               發布 Nginx + SSL
@@ -208,25 +211,20 @@ export function ProjectOverviewTab({
             <Button
               variant="secondary"
               size="md"
-              loading={busy}
-              disabled={!onHealth}
-              onClick={() => onHealth?.()}
-            >
-              健康檢查
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
               onClick={() => navigate(`/files?root=${encodeURIComponent(`project:${project.id}`)}`)}
             >
               開啟專案檔案
             </Button>
           </div>
           {!hasDomain ? (
-            <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
-              未設定域名，無法發布站點
+            <p className="muted u-text-sm u-mt-3 u-mb-0">
+              未設定域名 — 請到「網絡」分頁設定後再發布站點。
             </p>
-          ) : null}
+          ) : (
+            <p className="muted u-text-sm u-mt-3 u-mb-0">
+              發布會寫入管理設定；真正 reload 系統 Nginx 需系統變更權限。
+            </p>
+          )}
         </CardSection>
       </Card>
 
@@ -247,7 +245,24 @@ export function ProjectOverviewTab({
                 label: t('projects.runtime'),
                 value: (
                   <>
-                    <Badge>{project.runtime}</Badge> {project.runtimeVersion ?? ''}
+                    <Badge>
+                      {project.runtime === 'php'
+                        ? 'PHP'
+                        : project.runtime === 'node'
+                          ? 'Node.js'
+                          : project.runtime === 'static'
+                            ? '靜態'
+                            : project.runtime === 'python'
+                              ? 'Python'
+                              : project.runtime === 'go'
+                                ? 'Go'
+                                : project.runtime === 'rust'
+                                  ? 'Rust'
+                                  : project.runtime}
+                    </Badge>
+                    {project.runtime !== 'static' && project.runtimeVersion
+                      ? ` ${project.runtimeVersion}`
+                      : ''}
                   </>
                 ),
               },

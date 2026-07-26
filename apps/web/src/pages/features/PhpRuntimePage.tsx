@@ -8,12 +8,14 @@ import {
   Button,
   Card,
   CardSection,
+  CheckboxField,
   DescriptionList,
   FeaturePageLayout,
   Field,
+  FormActions,
+  FormHint,
+  FormLayout,
   OpsResultPanel,
-  SettingField,
-  SettingFieldList,
   SoftwareInstallBanner,
   SummaryStrip,
 } from '../../shared/components/ui';
@@ -94,8 +96,8 @@ export function PhpRuntimePage() {
       <SummaryStrip
         items={[
           { label: '目標 PHP', value: version },
-          { label: 'Pool', value: poolName || '—' },
-          { label: 'Domain', value: domain || '—' },
+          { label: 'FPM Pool', value: poolName || '—' },
+          { label: '網域', value: domain || '—' },
         ]}
       />
 
@@ -118,7 +120,7 @@ export function PhpRuntimePage() {
           title="Composer / WP-CLI / 模組"
           description="即時探測 PATH 上工具與 php -m（唯讀）"
         >
-          <div className="btn-row u-mb-3">
+          <FormActions>
             <Button
               variant="secondary"
               size="sm"
@@ -136,7 +138,7 @@ export function PhpRuntimePage() {
             >
               重新探測工具
             </Button>
-          </div>
+          </FormActions>
           {tools ? (
             <>
               <DescriptionList
@@ -191,15 +193,23 @@ export function PhpRuntimePage() {
       </Card>
 
       <Card>
-        <CardSection title="安裝 PHP" description="需系統變更權限">
-          <Field label="PHP 版本" techKey="version" htmlFor="php-ver">
-            <select id="php-ver" value={version} onChange={(e) => setVersion(e.target.value)}>
-              <option value="8.1">8.1</option>
-              <option value="8.2">8.2</option>
-              <option value="8.3">8.3</option>
-            </select>
-          </Field>
-          <div className="setting-actions-bar">
+        <CardSection title="安裝 PHP" description="需系統變更權限與管理員；安裝 ≠ 已設定 FPM pool">
+          <FormLayout columns={2}>
+            <Field
+              label="PHP 版本"
+              htmlFor="php-ver"
+              flush
+              required
+              hint="建議 8.2 或 8.3；與專案 runtime 對齊"
+            >
+              <select id="php-ver" value={version} onChange={(e) => setVersion(e.target.value)}>
+                <option value="8.1">8.1</option>
+                <option value="8.2">8.2</option>
+                <option value="8.3">8.3</option>
+              </select>
+            </Field>
+          </FormLayout>
+          <FormActions>
             <Button
               variant="primary"
               size="md"
@@ -218,14 +228,23 @@ export function PhpRuntimePage() {
             >
               安裝 PHP {version}
             </Button>
-          </div>
+          </FormActions>
         </CardSection>
       </Card>
 
       <Card>
-        <CardSection title="PHP 站點 / Pool" description="寫入 pool 與 vhost；可選重載服務">
-          <SettingFieldList>
-            <SettingField label="網域" techKey="domain" htmlFor="php-dom">
+        <CardSection
+          title="PHP 站點 / Pool"
+          description="寫入 FPM pool 與 vhost；可選重載服務"
+        >
+          <FormLayout columns={2}>
+            <Field
+              label="網域"
+              htmlFor="php-dom"
+              flush
+              required
+              hint="虛擬主機 server_name"
+            >
               <input
                 id="php-dom"
                 value={domain}
@@ -233,32 +252,39 @@ export function PhpRuntimePage() {
                   setDomain(e.target.value);
                   setServerContext({ domain: e.target.value.replace(/^php\./, '') });
                 }}
+                placeholder="php.example.com"
+                spellCheck={false}
               />
-            </SettingField>
-            <SettingField label="Pool 名稱" techKey="pool" htmlFor="php-pool">
+            </Field>
+            <Field
+              label="Pool 名稱"
+              htmlFor="php-pool"
+              flush
+              required
+              hint="php-fpm pool 識別名，英數與底線"
+            >
               <input
                 id="php-pool"
                 value={poolName}
                 onChange={(e) => setPoolName(e.target.value)}
+                placeholder="demo"
+                spellCheck={false}
               />
-            </SettingField>
-            <SettingField
-              label="啟用並重載"
-              techKey="enable_site"
-              description="需要系統變更權限"
-              htmlFor="php-en"
-            >
-              <select
-                id="php-en"
-                value={enableSite ? 'yes' : 'no'}
-                onChange={(e) => setEnableSite(e.target.value === 'yes')}
-              >
-                <option value="yes">是</option>
-                <option value="no">否（只寫管理檔）</option>
-              </select>
-            </SettingField>
-          </SettingFieldList>
-          <div className="setting-actions-bar">
+            </Field>
+          </FormLayout>
+          <div className="form-check-row u-mt-4">
+            <CheckboxField
+              id="php-en"
+              label="啟用並重載服務"
+              description="需要系統變更權限；關閉則只寫管理檔"
+              checked={enableSite}
+              onChange={setEnableSite}
+            />
+          </div>
+          <FormHint>
+            套用成功表示檔案已寫入；對外可連仍取決於 nginx／防火牆與 DNS。
+          </FormHint>
+          <FormActions>
             <Button
               variant="primary"
               size="md"
@@ -280,7 +306,7 @@ export function PhpRuntimePage() {
             >
               套用 PHP vhost / pool
             </Button>
-          </div>
+          </FormActions>
         </CardSection>
       </Card>
 

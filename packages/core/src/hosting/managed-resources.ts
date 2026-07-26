@@ -266,19 +266,19 @@ export function revokeManagedNginxSite(
   id: string,
 ): { ok: boolean; notes: string[] } {
   const site = getResource(db, 'nginx_sites', id);
-  if (!site) return { ok: false, notes: ['not found'] };
+  if (!site) return { ok: false, notes: ['找不到'] };
   const confPath = site.confPath ? String(site.confPath) : '';
   const notes: string[] = [];
   if (confPath && existsSync(confPath)) {
     try {
       unlinkSync(confPath);
-      notes.push(`Removed ${confPath}`);
+      notes.push(`已移除 ${confPath}`);
     } catch (e) {
-      notes.push(`Failed to remove conf: ${e instanceof Error ? e.message : String(e)}`);
+      notes.push(`移除設定失敗：${e instanceof Error ? e.message : String(e)}`);
     }
   }
   deleteResource(db, 'nginx_sites', id);
-  notes.push('Removed control-plane registry row');
+  notes.push('已移除控制面登記');
   return { ok: true, notes };
 }
 
@@ -345,7 +345,7 @@ export async function applyPostgresDatabase(
   execute: boolean,
 ): Promise<{ ok: boolean; notes: string[]; result?: unknown }> {
   const row = getResource(db, 'postgres_databases', id);
-  if (!row) return { ok: false, notes: ['database not found'] };
+  if (!row) return { ok: false, notes: ['database 找不到'] };
   const users = listResources(db, 'postgres_users').filter((u) => u.databaseId === id);
   const user = users[0];
   const result = await provisionPostgresDatabase({
@@ -427,7 +427,7 @@ export async function applyDnsZone(
   blockMessage?: string;
 }> {
   const zone = getResource(db, 'dns_zones', id);
-  if (!zone) return { ok: false, notes: ['zone not found'] };
+  if (!zone) return { ok: false, notes: ['zone 找不到'] };
   const zoneName = String(zone.zone);
   const serverIp = String(zone.serverIp ?? '127.0.0.1');
   const records = listResources(db, 'dns_records').filter((r) => r.zoneId === id);
@@ -552,19 +552,19 @@ export function deleteCertificateFiles(
   id: string,
 ): { ok: boolean; notes: string[] } {
   const cert = getResource(db, 'certificates', id);
-  if (!cert) return { ok: false, notes: ['not found'] };
+  if (!cert) return { ok: false, notes: ['找不到'] };
   const notes: string[] = [];
   const domain = String(cert.domain ?? '');
   const certDir = join(dataDir, 'certs', domain);
   if (domain && existsSync(certDir)) {
     try {
       rmSync(certDir, { recursive: true, force: true });
-      notes.push(`Removed ${certDir}`);
+      notes.push(`已移除 ${certDir}`);
     } catch (e) {
-      notes.push(`Could not remove files: ${e instanceof Error ? e.message : String(e)}`);
+      notes.push(`無法移除檔案：${e instanceof Error ? e.message : String(e)}`);
     }
   }
   deleteResource(db, 'certificates', id);
-  notes.push('Removed registry row');
+  notes.push('已移除登記紀錄');
   return { ok: true, notes };
 }

@@ -16,7 +16,12 @@ import { FilesPage } from '../pages/FilesPage';
 import { SystemPage } from '../pages/SystemPage';
 import { NginxPage } from '../pages/features/NginxPage';
 import { PhpRuntimePage } from '../pages/features/PhpRuntimePage';
-import { NodeRuntimePage } from '../pages/features/NodeRuntimePage';
+import {
+  GoRuntimePage,
+  NodeRuntimePage,
+  PythonRuntimePage,
+  RustRuntimePage,
+} from '../pages/features/GenericRuntimePage';
 import { SslPage } from '../pages/features/SslPage';
 import { DnsPage } from '../pages/features/DnsPage';
 import { FtpPage } from '../pages/features/FtpPage';
@@ -79,6 +84,9 @@ export function App() {
           <Route path="nginx" element={<NginxPage />} />
           <Route path="runtimes/node" element={<NodeRuntimePage />} />
           <Route path="runtimes/php" element={<PhpRuntimePage />} />
+          <Route path="runtimes/python" element={<PythonRuntimePage />} />
+          <Route path="runtimes/go" element={<GoRuntimePage />} />
+          <Route path="runtimes/rust" element={<RustRuntimePage />} />
           <Route path="databases/mysql" element={<MysqlPage />} />
           <Route path="databases/mysql/service" element={<MysqlServicePage />} />
           <Route path="databases/mariadb" element={<MariadbPage />} />

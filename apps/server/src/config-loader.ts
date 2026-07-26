@@ -11,10 +11,10 @@ import { ErrorCodes, YskError } from '@ysk/shared';
  */
 export function loadConfigFile(configPath: string): YskConfig {
   if (!configPath) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, 'config path is required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.CONFIG_INVALID, '請指定設定檔路徑', { httpStatus: 400 });
   }
   if (!existsSync(configPath)) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, `Config file not found: ${configPath}`, {
+    throw new YskError(ErrorCodes.CONFIG_INVALID, `找不到設定檔：${configPath}`, {
       httpStatus: 400,
     });
   }
@@ -22,7 +22,7 @@ export function loadConfigFile(configPath: string): YskConfig {
   try {
     raw = JSON.parse(readFileSync(configPath, 'utf8'));
   } catch (err) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, `Failed to parse config: ${configPath}`, {
+    throw new YskError(ErrorCodes.CONFIG_INVALID, `無法解析設定檔：${configPath}`, {
       httpStatus: 400,
       cause: err,
     });

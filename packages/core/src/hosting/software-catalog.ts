@@ -23,7 +23,10 @@ export type SoftwareId =
   | 'pdns-server'
   | 'git'
   | 'node'
-  | 'php';
+  | 'php'
+  | 'python'
+  | 'go'
+  | 'rust';
 
 export type FeatureSoftwareKey =
   | 'ftp'
@@ -39,8 +42,19 @@ export type FeatureSoftwareKey =
   | 'email'
   | 'node'
   | 'php'
+  | 'python'
+  | 'go'
+  | 'rust'
   | 'git'
   | 'all';
+
+export type RuntimeInstaller =
+  | 'apt'
+  | 'runtime-node'
+  | 'runtime-php'
+  | 'runtime-python'
+  | 'runtime-go'
+  | 'runtime-rust';
 
 export interface SoftwareSpec {
   id: SoftwareId;
@@ -53,7 +67,7 @@ export interface SoftwareSpec {
   units?: string[];
   features: FeatureSoftwareKey[];
   /** Use dedicated runtime installer instead of apt */
-  installer?: 'apt' | 'runtime-node' | 'runtime-php';
+  installer?: RuntimeInstaller;
   /** Default runtime version when installer is runtime-* */
   runtimeVersion?: string;
 }
@@ -213,6 +227,33 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     features: ['php'],
     installer: 'runtime-php',
     runtimeVersion: '8.3',
+  },
+  {
+    id: 'python',
+    title: 'Python 3',
+    bins: ['python3'],
+    aptPackages: [],
+    features: ['python'],
+    installer: 'runtime-python',
+    runtimeVersion: '3.12',
+  },
+  {
+    id: 'go',
+    title: 'Go',
+    bins: ['go'],
+    aptPackages: [],
+    features: ['go'],
+    installer: 'runtime-go',
+    runtimeVersion: '1.22',
+  },
+  {
+    id: 'rust',
+    title: 'Rust (cargo)',
+    bins: ['cargo'],
+    aptPackages: [],
+    features: ['rust'],
+    installer: 'runtime-rust',
+    runtimeVersion: 'stable',
   },
 ];
 

@@ -190,7 +190,13 @@ export const api = {
   /** Real Node deploy: spawn + pidfile + listen + HTTP health */
   deployProject(
     id: string,
-    body?: { port?: number; entry?: string; nodeVersion?: string },
+    body?: {
+      port?: number;
+      entry?: string;
+      skipBuild?: boolean;
+      nodeVersion?: string;
+      enableSystemd?: boolean;
+    },
   ): Promise<OpsApplyResultDto> {
     return request(`/api/v1/projects/${id}/deploy`, {
       method: 'POST',
@@ -247,7 +253,13 @@ export const api = {
   },
   gitDeploy(
     id: string,
-    body?: { gitUrl?: string; branch?: string; redeploy?: boolean },
+    body?: {
+      gitUrl?: string;
+      branch?: string;
+      redeploy?: boolean;
+      entry?: string;
+      skipBuild?: boolean;
+    },
   ): Promise<OpsApplyResultDto> {
     return request(`/api/v1/projects/${id}/git-deploy`, {
       method: 'POST',

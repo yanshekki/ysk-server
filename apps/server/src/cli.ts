@@ -57,7 +57,7 @@ Global options:
   --config <path>       Config.json from setup
 
 projects create:
-  --name <n> --domain <d> --runtime node|php|static
+  --name <n> --domain <d> --runtime node|php|static|python|go|rust
   --template node-starter|static-site|wordpress-php
 
 projects deploy|stop|backup|template:
@@ -218,7 +218,7 @@ async function main(argv: string[]): Promise<number> {
     const payload: StructuredResult = {
       ok: true,
       code: 'YSK_TOOLS',
-      message: 'Allowlist tool catalog',
+      message: 'Allowlist 工具清單',
       data: tools,
     };
     printJson(payload);
@@ -249,7 +249,7 @@ async function main(argv: string[]): Promise<number> {
       }
     }
     const data = listAgentRuntimes();
-    if (json) printJson({ ok: true, code: 'YSK_AGENTS', message: 'Agent runtimes', data });
+    if (json) printJson({ ok: true, code: 'YSK_AGENTS', message: 'Agent 運行時', data });
     else {
       for (const a of data) process.stdout.write(`${a.kind}\t${a.name}\t${a.status}\n`);
     }
@@ -343,13 +343,18 @@ async function main(argv: string[]): Promise<number> {
         const name = getOpt(args, '--name');
         if (!name) {
           process.stderr.write(
-            'Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static] [--template id]\n',
+            'Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n',
           );
           return 1;
         }
         const runtimeRaw = getOpt(args, '--runtime') ?? 'node';
         const runtime =
-          runtimeRaw === 'php' || runtimeRaw === 'static' || runtimeRaw === 'node'
+          runtimeRaw === 'php' ||
+          runtimeRaw === 'static' ||
+          runtimeRaw === 'node' ||
+          runtimeRaw === 'python' ||
+          runtimeRaw === 'go' ||
+          runtimeRaw === 'rust'
             ? runtimeRaw
             : 'node';
         const created = await ctx.projects.create({
@@ -383,7 +388,11 @@ async function main(argv: string[]): Promise<number> {
                   actor: 'cli',
                   reload: hasFlag(args, '--reload'),
                 })
-              : await ctx.projectOps.deployNode(id, { actor: 'cli' });
+              : proj.runtime === 'python' ||
+                  proj.runtime === 'go' ||
+                  proj.runtime === 'rust'
+                ? await ctx.projectOps.deployProcess(id, { actor: 'cli' })
+                : await ctx.projectOps.deployNode(id, { actor: 'cli' });
         printJson(result);
         return result.ok ? 0 : 1;
       }
@@ -611,12 +620,25 @@ async function main(argv: string[]): Promise<number> {
       }
       if (sub === 'runtime-install') {
         const { planOrInstallRuntime } = await import('@ysk/core');
-        const kind = (getOpt(args, '--kind') ?? 'node') as 'node' | 'php';
+        const kindRaw = getOpt(args, '--kind') ?? 'node';
+        const kind = (
+          ['node', 'php', 'python', 'go', 'rust'].includes(kindRaw) ? kindRaw : 'node'
+        ) as 'node' | 'php' | 'python' | 'go' | 'rust';
+        const defaultVer =
+          kind === 'php'
+            ? '8.2'
+            : kind === 'python'
+              ? '3.12'
+              : kind === 'go'
+                ? '1.22'
+                : kind === 'rust'
+                  ? 'stable'
+                  : '20';
         const result = await planOrInstallRuntime({
           dataDir: ctx.dataDir,
           host: ctx.host,
           kind,
-          version: getOpt(args, '--version') ?? (kind === 'php' ? '8.2' : '20'),
+          version: getOpt(args, '--version') ?? defaultVer,
           install: hasFlag(args, '--install'),
         });
         printJson(result);
@@ -708,7 +730,7 @@ async function main(argv: string[]): Promise<number> {
           '  email-apply --domain X [--install]',
           '  email-mailbox --domain X --local user [--password P] [--system]',
           '  ftps-apply --domain X [--install]',
-          '  runtimes | runtime-install --kind node|php --version V [--install]',
+          '  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install]',
           '  dovecot-passdb --domain X | --all',
           '  webmail-apply --domain webmail.example.com [--download]',
           '  public-files --domain files.example.com [--reload]',
@@ -803,7 +825,7 @@ async function main(argv: string[]): Promise<number> {
       process.stdout.write(
         webRoot
           ? `Web UI:  http://${addr.host}:${addr.port}/\n`
-          : `Web UI:  not found (build apps/web or set YSK_WEB_ROOT)\n`,
+          : `Web UI:  找不到 (build apps/web or set YSK_WEB_ROOT)\n`,
       );
       if (configPath) {
         process.stdout.write(`Config: ${configPath} (admin=${config?.adminUsername}, locale=${config?.locale})\n`);

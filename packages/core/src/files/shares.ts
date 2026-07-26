@@ -30,7 +30,7 @@ export function createFileShare(
   },
 ): FileShareRecord {
   if (!input.path || input.path === '.') {
-    throw new YskError(ErrorCodes.VALIDATION, 'path required', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
   }
   const row: FileShareRecord = {
     id: newShareToken().slice(0, 12),

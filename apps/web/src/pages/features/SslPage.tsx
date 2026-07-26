@@ -11,9 +11,11 @@ import {
   ExecutionResultPanel,
   Field,
   FeaturePageLayout,
-  FormGrid,
+  FormLayout,
   Modal,
   SoftwareInstallBanner,
+  FormActions,
+  FormHint,
 } from '../../shared/components/ui';
 import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
@@ -180,7 +182,7 @@ export function SslPage() {
             columns={[
               {
                 key: 'domain',
-                header: 'Domain',
+                header: '域名',
                 render: (r) => <strong>{r.domain}</strong>,
               },
               {
@@ -238,7 +240,7 @@ export function SslPage() {
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}
         title="上傳憑證"
-        description="由管理面板寫入伺服器"
+        description="貼上 PEM 內容，由管理面板寫入伺服器"
         size="lg"
         footer={
           <>
@@ -252,27 +254,61 @@ export function SslPage() {
         }
       >
         <form id="ssl-up" onSubmit={(e) => void onUpload(e)}>
-          <Field label="Domain" htmlFor="ud">
-            <input id="ud" value={domain} onChange={(e) => setDomain(e.target.value)} required />
-          </Field>
-          <Field label="fullchain.pem" htmlFor="uf">
-            <textarea
-              id="uf"
-              rows={5}
-              value={fullchain}
-              onChange={(e) => setFullchain(e.target.value)}
+          <FormLayout>
+            <Field
+              label="域名"
+              htmlFor="ud"
+              flush
               required
-            />
-          </Field>
-          <Field label="privkey.pem" htmlFor="up">
-            <textarea
-              id="up"
-              rows={5}
-              value={privkey}
-              onChange={(e) => setPrivkey(e.target.value)}
+              hint="憑證對應的主域名，例如 example.com"
+            >
+              <input
+                id="ud"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                required
+                placeholder="example.com"
+                spellCheck={false}
+              />
+            </Field>
+            <Field
+              label="憑證鏈（fullchain）"
+              htmlFor="uf"
+              fullWidth
+              flush
               required
-            />
-          </Field>
+              hint="含伺服器憑證與中繼 CA 的 PEM"
+            >
+              <textarea
+                id="uf"
+                rows={6}
+                value={fullchain}
+                onChange={(e) => setFullchain(e.target.value)}
+                required
+                placeholder={'-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----'}
+                spellCheck={false}
+              />
+            </Field>
+            <Field
+              label="私鑰（privkey）"
+              htmlFor="up"
+              fullWidth
+              flush
+              required
+              hint="與憑證配對的私鑰 PEM，請妥善保管"
+            >
+              <textarea
+                id="up"
+                rows={5}
+                value={privkey}
+                onChange={(e) => setPrivkey(e.target.value)}
+                required
+                placeholder={'-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----'}
+                spellCheck={false}
+              />
+            </Field>
+          </FormLayout>
+          <FormHint>上傳成功只代表檔案已寫入；請到對應專案／郵件域名綁定後才會生效。</FormHint>
         </form>
       </Modal>
 
@@ -280,7 +316,7 @@ export function SslPage() {
         open={leOpen}
         onClose={() => setLeOpen(false)}
         title="申請 Let’s Encrypt"
-        description="由管理面板在伺服器上申請，無需手動執行指令"
+        description="由管理面板在伺服器上申請，無需手動執行 certbot"
         footer={
           <>
             <button type="button" className="btn btn--secondary" onClick={() => setLeOpen(false)}>
@@ -293,34 +329,48 @@ export function SslPage() {
         }
       >
         <form id="ssl-le" onSubmit={(e) => void onLe(e)}>
-          <FormGrid>
-            <Field label="Domain" htmlFor="ld">
+          <FormLayout columns={2}>
+            <Field
+              label="域名"
+              htmlFor="ld"
+              flush
+              required
+              hint="一般域名或 *.example.com 萬用字元"
+            >
               <input
                 id="ld"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 required
                 placeholder="example.com 或 *.example.com"
+                spellCheck={false}
               />
             </Field>
-            <Field label="Email" htmlFor="le">
+            <Field
+              label="聯絡電郵"
+              htmlFor="le"
+              flush
+              hint="Let’s Encrypt 到期通知用；可留空則用 admin@域名"
+            >
               <input
                 id="le"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@example.com"
+                spellCheck={false}
               />
             </Field>
-          </FormGrid>
+          </FormLayout>
           {domain.trim().startsWith('*.') ? (
-            <p className="muted u-text-sm u-mt-3">
-              Wildcard 使用 dns-01：面板會啟動 certbot manual challenge，需於 DNS
-              提供商完成 TXT；executed ≠ 已上線。
-            </p>
+            <FormHint>
+              萬用字元使用 dns-01：面板會啟動 certbot manual challenge，需於 DNS
+              提供商完成 TXT 驗證。執行完成 ≠ 憑證已上線。
+            </FormHint>
           ) : (
-            <p className="muted u-text-sm u-mt-3">
-              一般域名用 http-01（nginx plugin）。面板 hostname 可從系統工具頁 deep link。
-            </p>
+            <FormHint>
+              一般域名使用 http-01（nginx 外掛）。申請成功後請確認專案／郵件已綁定此域名。
+            </FormHint>
           )}
         </form>
       </Modal>

@@ -46,7 +46,11 @@ export async function provisionRedisBinding(input: {
 
   const reach = await probeEndpoint(host, port, 2000);
   const reachable = reach.ok;
-  notes.push(reachable ? `TCP ${host}:${port} ok (${reach.latencyMs}ms)` : `TCP ${host}:${port} fail: ${reach.detail}`);
+  notes.push(
+    reachable
+      ? `TCP ${host}:${port} 正常（${reach.latencyMs}ms）`
+      : `TCP ${host}:${port} 失敗：${reach.detail}`,
+  );
 
   const which = await input.hostExec.runCommand(
     ['bash', '-c', 'command -v redis-cli || true'],
@@ -91,7 +95,7 @@ export async function provisionRedisBinding(input: {
       redisCli,
       reachable,
       plan,
-      notes: [...notes, 'execute=false — probe only'],
+      notes: [...notes, '未開啟系統變更 — 僅探測'],
       commandResults,
       connectionHint: { host, port, db: dbIndex },
     };
@@ -108,7 +112,7 @@ export async function provisionRedisBinding(input: {
     stdout: ping.stdout.trim(),
   });
   const pong = ping.stdout.trim().toUpperCase() === 'PONG' && ping.exitCode === 0;
-  notes.push(pong ? 'PING => PONG' : `PING failed: ${ping.stderr || ping.stdout}`);
+  notes.push(pong ? 'PING 成功' : `PING 失敗：${ping.stderr || ping.stdout}`);
 
   // Soft binding: SELECT db index and record; avoid destructive CONFIG SET without explicit flag
   const sel = await input.hostExec.runCommand(

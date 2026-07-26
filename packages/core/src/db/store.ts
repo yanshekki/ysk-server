@@ -62,7 +62,7 @@ export interface StoreProject {
   linux_user: string;
   linux_group: string;
   home_dir: string;
-  runtime: 'node' | 'php' | 'static';
+  runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
   runtime_version?: string;
   env: 'staging' | 'production';
   status: string;
@@ -104,6 +104,10 @@ export interface StoreProject {
   memory_max?: string;
   /** systemd CPUQuota percent */
   cpu_quota_percent?: number;
+  /** Last process deploy entry (server.js, main:app, ./app, …) */
+  deploy_entry?: string;
+  /** Last deploy operator notes (short, newest first, max ~8) */
+  last_deploy_notes?: string[];
   created_at: string;
   updated_at: string;
 }

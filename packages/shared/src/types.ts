@@ -37,7 +37,7 @@ export type ProtectionMode = 'normal' | 'degraded' | 'offline' | 'ddos-protectio
 export type AgentRuntimeKind = 'openclaw' | 'hermes' | 'ionclaw';
 
 /** Hosting runtime kinds */
-export type HostingRuntime = 'node' | 'php' | 'static';
+export type HostingRuntime = 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
 
 /** Structured CLI output envelope */
 export interface StructuredResult<T = unknown> {

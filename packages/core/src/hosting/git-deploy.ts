@@ -3,10 +3,11 @@
  * Works without root; only needs `git` on PATH.
  */
 
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
+import { YSK_SCAFFOLD_MARKER } from './app-templates.js';
 
 export interface GitDeployResult {
   ok: boolean;
@@ -36,8 +37,59 @@ export function assertGitUrl(url: string): void {
     !/\s/.test(u) &&
     !(remoteOk && u.includes('..'));
   if (!ok) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Invalid git URL', { httpStatus: 400, details: { url } });
+    throw new YskError(ErrorCodes.VALIDATION, 'Git URL 無效', { httpStatus: 400, details: { url } });
   }
+}
+
+/**
+ * True when app dir looks like a YSK 佔位 skeleton (safe to wipe before git clone).
+ * Prefers `.ysk-scaffold` marker; falls back to legacy node stub / YSK file headers.
+ */
+export function isYskScaffoldAppDir(repoDir: string, entries: string[]): boolean {
+  if (entries.includes(YSK_SCAFFOLD_MARKER) || entries.includes('.ysk-scaffold')) {
+    return true;
+  }
+  const noise = new Set([
+    'server.js',
+    '.env',
+    'logs',
+    'tmp',
+    'node_modules',
+    'public',
+    'venv',
+    'target',
+    '__pycache__',
+    '.ysk-scaffold',
+  ]);
+  if (entries.length > 0 && entries.every((e) => noise.has(e))) {
+    return true;
+  }
+  // Content markers from app-templates (python / go / rust / node / django)
+  const probeRel = [
+    'server.js',
+    'main.py',
+    'app.py',
+    'manage.py',
+    'main.go',
+    'go.mod',
+    'Cargo.toml',
+    join('src', 'main.rs'),
+  ];
+  for (const rel of probeRel) {
+    const p = join(repoDir, rel);
+    if (!existsSync(p)) continue;
+    try {
+      const head = readFileSync(p, 'utf8').slice(0, 240);
+      if (/\bYSK\b/i.test(head) && /(node-starter|python-|go-http|rust-|Django|scaffold)/i.test(head)) {
+        return true;
+      }
+      // shorter YSK banners used in templates
+      if (/^(\/\/|#)\s*YSK\b/m.test(head)) return true;
+    } catch {
+      /* ignore unreadable */
+    }
+  }
+  return false;
 }
 
 /**
@@ -64,32 +116,28 @@ export async function gitSync(input: {
       ok: false,
       action: 'none',
       repoDir,
-      notes: ['git binary not found on PATH'],
+      notes: ['git binary 找不到 on PATH'],
     };
   }
 
   const isRepo = existsSync(join(repoDir, '.git'));
   if (!isRepo) {
-    // If directory has files but no .git, clone into temp then we fail clearly
+    // If directory has files but no .git, wipe only YSK scaffolds / legacy stubs
     const entries = await input.host.listDir(repoDir).catch(() => [] as string[]);
     const nonEmpty = entries.filter((e) => e !== '.' && e !== '..');
     if (nonEmpty.length > 0) {
-      // wipe only if looks like our stub (server.js only) — otherwise refuse
-      const onlyStub =
-        nonEmpty.every((e) => ['server.js', '.env', 'logs', 'tmp', 'node_modules'].includes(e)) ||
-        nonEmpty.length <= 3;
-      if (onlyStub) {
+      if (isYskScaffoldAppDir(repoDir, nonEmpty)) {
         for (const e of nonEmpty) {
           rmSync(join(repoDir, e), { recursive: true, force: true });
         }
-        notes.push('Cleared stub app files before clone');
+        notes.push('clone 前已清除佔位應用檔（YSK scaffold / stub）');
       } else {
         return {
           ok: false,
           action: 'none',
           repoDir,
           notes: [
-            `Target ${repoDir} is not empty and is not a git repo — refuse clone to avoid data loss`,
+            `目標 ${repoDir} 非空且非 git 倉庫 — 拒絕 clone 以免覆寫資料（僅清除帶 .ysk-scaffold 的佔位範本）`,
           ],
         };
       }
@@ -114,7 +162,7 @@ export async function gitSync(input: {
         stderr: r.stderr,
       };
     }
-    notes.push(`Cloned ${input.gitUrl} → ${repoDir}`);
+    notes.push(`已 clone ${input.gitUrl} → ${repoDir}`);
   } else {
     if (input.branch) {
       await input.host.runCommand(['git', '-C', repoDir, 'fetch', 'origin', input.branch], {
@@ -141,7 +189,7 @@ export async function gitSync(input: {
         stderr: r.stderr,
       };
     }
-    notes.push(`Pulled updates in ${repoDir}`);
+    notes.push(`已 pull 更新：${repoDir}`);
   }
 
   const rev = await input.host.runCommand(['git', '-C', repoDir, 'rev-parse', 'HEAD'], {

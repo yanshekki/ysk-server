@@ -56,12 +56,12 @@ const PEM_KEY =
 
 export function validatePemBundle(fullchain: string, privkey: string): void {
   if (!PEM_CERT.test(fullchain)) {
-    throw new YskError(ErrorCodes.VALIDATION, 'fullchain must be PEM certificate(s)', {
+    throw new YskError(ErrorCodes.VALIDATION, 'fullchain 必須是 PEM 憑證', {
       httpStatus: 400,
     });
   }
   if (!PEM_KEY.test(privkey)) {
-    throw new YskError(ErrorCodes.VALIDATION, 'privkey must be PEM private key', {
+    throw new YskError(ErrorCodes.VALIDATION, 'privkey 必須是 PEM 私鑰', {
       httpStatus: 400,
     });
   }
@@ -73,12 +73,12 @@ export function normalizeDomain(domain: string): string {
   if (d.startsWith('*.')) {
     const base = d.slice(2);
     if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(base) || base.length < 3 || base.includes('..')) {
-      throw new YskError(ErrorCodes.VALIDATION, 'Invalid wildcard domain', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, '萬用字元域名無效', { httpStatus: 400 });
     }
     return d;
   }
   if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(d) || d.length < 3 || d.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Invalid domain', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, '域名無效', { httpStatus: 400 });
   }
   return d;
 }
@@ -346,7 +346,7 @@ export function deleteCertificate(
   else if (domain.startsWith('disk-')) domain = domain.slice(5);
 
   if (!domain) {
-    return { ok: false, domain: '', notes: ['domain not found'] };
+    return { ok: false, domain: '', notes: ['domain 找不到'] };
   }
 
   const certDir = join(dataDir, 'certs', domain);

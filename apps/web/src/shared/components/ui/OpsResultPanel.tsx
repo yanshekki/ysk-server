@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Badge } from './Badge';
 import { StructuredFacts, type FactItem } from './StructuredFacts';
-import { sanitizeOperatorNotes } from '../../lib/operator-messages';
+import { humanizeOperatorMessage, sanitizeOperatorNotes } from '../../lib/operator-messages';
 
 export interface OpsResultLike {
   ok: boolean;
@@ -40,9 +40,11 @@ export function OpsResultPanel({
 
   const ok = result?.ok ?? true;
   const blocked = Boolean(result?.blocked || result?.requiresExecute || result?.requiresRoot);
-  const blockMessage = result?.blockMessage;
+  const blockMessage = result?.blockMessage
+    ? humanizeOperatorMessage(result.blockMessage)
+    : undefined;
   const notes = sanitizeOperatorNotes([
-    ...(blockMessage ? [blockMessage] : []),
+    ...(result?.blockMessage ? [result.blockMessage] : []),
     ...(result?.notes ?? []),
   ]).filter((n) => n !== message && n !== blockMessage);
 
@@ -50,10 +52,10 @@ export function OpsResultPanel({
   if (result?.processStatus) {
     autoFacts.push({ label: '狀態', value: result.processStatus });
   }
-  if (result?.port != null) autoFacts.push({ label: 'Port', value: String(result.port) });
+  if (result?.port != null) autoFacts.push({ label: '埠', value: String(result.port) });
   if (result?.url) {
     autoFacts.push({
-      label: 'URL',
+      label: '網址',
       value: (
         <a href={result.url} target="_blank" rel="noreferrer">
           {result.url}
