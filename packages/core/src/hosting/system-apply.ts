@@ -2,7 +2,7 @@
  * System-level apply orchestrators: write configs under dataDir, optionally install/copy with YSK_EXECUTE.
  */
 
-import { mkdirSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, copyFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { planEmailStackInstall } from '../email/dns-records.js';
@@ -634,6 +634,134 @@ export async function probeFail2banStatus(host: HostExecutor): Promise<{
     isRoot: host.isRoot(),
     defaultJails,
   };
+}
+
+/** List banned IPs for a jail (or all jails). */
+export async function fail2banBannedIps(
+  host: HostExecutor,
+  jail?: string,
+): Promise<{
+  ok: boolean;
+  notes: string[];
+  items: Array<{ jail: string; ip: string }>;
+  requiresExecute: boolean;
+  blocked?: boolean;
+}> {
+  if (!host.executeEnabled()) {
+    return {
+      ok: false,
+      blocked: true,
+      requiresExecute: true,
+      items: [],
+      notes: ['無法讀取 banned IP：未開啟系統變更權限'],
+    };
+  }
+  const items: Array<{ jail: string; ip: string }> = [];
+  const jails: string[] = [];
+  if (jail) {
+    jails.push(jail);
+  } else {
+    const st = await probeFail2banStatus(host);
+    jails.push(...st.jails.map((j) => j.name));
+  }
+  for (const j of jails.slice(0, 20)) {
+    const r = await host.runCommand(['fail2ban-client', 'status', j], { timeoutMs: 8_000 });
+    const text = r.stdout || '';
+    const m = text.match(/Banned IP list:\s*(.+)/i);
+    if (!m) continue;
+    const ips = m[1]
+      .split(/[,\s]+/)
+      .map((s) => s.trim())
+      .filter((ip) => /^\d{1,3}(\.\d{1,3}){3}$/.test(ip) || ip.includes(':'));
+    for (const ip of ips) items.push({ jail: j, ip });
+  }
+  return {
+    ok: true,
+    requiresExecute: false,
+    items,
+    notes: [`共 ${items.length} 個 banned IP`],
+  };
+}
+
+export async function fail2banUnban(
+  host: HostExecutor,
+  jail: string,
+  ip: string,
+): Promise<{ ok: boolean; notes: string[]; requiresExecute: boolean; blocked?: boolean }> {
+  if (!host.executeEnabled()) {
+    return {
+      ok: false,
+      blocked: true,
+      requiresExecute: true,
+      notes: ['無法 unban：未開啟系統變更權限'],
+    };
+  }
+  const safeJail = jail.replace(/[^a-zA-Z0-9._-]/g, '');
+  const safeIp = ip.trim();
+  const r = await host.runCommand(['fail2ban-client', 'set', safeJail, 'unbanip', safeIp], {
+    timeoutMs: 10_000,
+  });
+  return {
+    ok: r.exitCode === 0,
+    requiresExecute: false,
+    notes: [
+      r.exitCode === 0
+        ? `已 unban ${safeIp} @ ${safeJail}`
+        : `unban 失敗: ${r.stderr || r.stdout}`,
+    ],
+  };
+}
+
+export async function fail2banIgnoreIp(
+  host: HostExecutor,
+  dataDir: string | undefined,
+  ip: string,
+  action: 'add' | 'remove' = 'add',
+): Promise<{ ok: boolean; notes: string[]; written: string[]; requiresExecute: boolean; blocked?: boolean }> {
+  const written: string[] = [];
+  const notes: string[] = [];
+  const safeIp = ip.trim();
+  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(safeIp) && !safeIp.includes(':')) {
+    return { ok: false, notes: ['無效 IP'], written, requiresExecute: false };
+  }
+  // Persist ignore list under dataDir
+  if (dataDir) {
+    const dir = join(dataDir, 'fail2ban');
+    mkdirSync(dir, { recursive: true });
+    const listPath = join(dir, 'ignoreip.txt');
+    let list: string[] = [];
+    if (existsSync(listPath)) {
+      list = readFileSync(listPath, 'utf8')
+        .split(/\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    if (action === 'add' && !list.includes(safeIp)) list.push(safeIp);
+    if (action === 'remove') list = list.filter((x) => x !== safeIp);
+    writeFileSync(listPath, list.join('\n') + (list.length ? '\n' : ''), 'utf8');
+    written.push(listPath);
+    notes.push(`管理白名單: ${listPath} (${list.length} 項)`);
+  }
+  if (!host.executeEnabled()) {
+    return {
+      ok: true,
+      notes: [...notes, '僅寫入管理檔；套用到 fail2ban 需系統變更權限'],
+      written,
+      requiresExecute: true,
+      blocked: true,
+    };
+  }
+  // Best-effort: set ignoreip on sshd jail
+  const r = await host.runCommand(
+    ['fail2ban-client', 'set', 'sshd', action === 'add' ? 'addignoreip' : 'delignoreip', safeIp],
+    { timeoutMs: 10_000 },
+  );
+  notes.push(
+    r.exitCode === 0
+      ? `sshd ignoreip ${action} ${safeIp}`
+      : `fail2ban-client ignoreip: ${r.stderr || r.stdout || 'failed'}（管理檔已寫）`,
+  );
+  return { ok: true, notes, written, requiresExecute: false };
 }
 
 /**

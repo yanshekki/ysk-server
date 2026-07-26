@@ -328,6 +328,10 @@ export class ProjectService {
       domainAliases?: string[];
       forceHttps?: boolean;
       hsts?: boolean;
+      siteRedirectUrl?: string | null;
+      httpAuthUser?: string | null;
+      httpAuthPass?: string | null;
+      docRoot?: string | null;
     },
     actor: string,
   ): ProjectDto {
@@ -345,12 +349,36 @@ export class ProjectService {
       domain_aliases: aliases,
       force_https: patch.forceHttps !== undefined ? patch.forceHttps : row.force_https,
       hsts: patch.hsts !== undefined ? patch.hsts : row.hsts,
+      site_redirect_url:
+        patch.siteRedirectUrl === null
+          ? undefined
+          : patch.siteRedirectUrl !== undefined
+            ? patch.siteRedirectUrl.trim() || undefined
+            : row.site_redirect_url,
+      http_auth_user:
+        patch.httpAuthUser === null
+          ? undefined
+          : patch.httpAuthUser !== undefined
+            ? patch.httpAuthUser.trim() || undefined
+            : row.http_auth_user,
+      http_auth_pass:
+        patch.httpAuthPass === null
+          ? undefined
+          : patch.httpAuthPass !== undefined
+            ? patch.httpAuthPass || undefined
+            : row.http_auth_pass,
+      doc_root:
+        patch.docRoot === null
+          ? undefined
+          : patch.docRoot !== undefined
+            ? patch.docRoot.trim().replace(/^\//, '') || undefined
+            : row.doc_root,
     });
     this.audit?.append({
       actor,
       action: 'project.update_network',
       resource: id,
-      detail: patch,
+      detail: { ...patch, httpAuthPass: patch.httpAuthPass ? '***' : undefined },
       ok: true,
     });
     return this.get(id);
@@ -376,6 +404,9 @@ function toDto(row: ProjectRow): ProjectDto {
     nginxConfigPath: row.nginx_config_path,
     forceHttps: Boolean(row.force_https),
     hsts: Boolean(row.hsts),
+    siteRedirectUrl: row.site_redirect_url,
+    httpAuthUser: row.http_auth_user,
+    docRoot: row.doc_root,
     lastHealth: row.last_health,
     lastDeployAt: row.last_deploy_at,
     osProvisioned: row.os_provisioned,

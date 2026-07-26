@@ -56,6 +56,10 @@ export class ProjectRepository {
         | 'name'
         | 'force_https'
         | 'hsts'
+        | 'site_redirect_url'
+        | 'http_auth_user'
+        | 'http_auth_pass'
+        | 'doc_root'
         | 'status'
       >
     >,
@@ -69,6 +73,10 @@ export class ProjectRepository {
     if (patch.name !== undefined) p.name = patch.name;
     if (patch.force_https !== undefined) p.force_https = patch.force_https;
     if (patch.hsts !== undefined) p.hsts = patch.hsts;
+    if ('site_redirect_url' in patch) p.site_redirect_url = patch.site_redirect_url;
+    if ('http_auth_user' in patch) p.http_auth_user = patch.http_auth_user;
+    if ('http_auth_pass' in patch) p.http_auth_pass = patch.http_auth_pass;
+    if ('doc_root' in patch) p.doc_root = patch.doc_root;
     if (patch.status !== undefined) p.status = patch.status;
     p.updated_at = new Date().toISOString();
     this.db.persist();

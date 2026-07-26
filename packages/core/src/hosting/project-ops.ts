@@ -680,6 +680,22 @@ export class ProjectOpsService {
       });
     }
     const managed = resolveManagedCertPaths(this.dataDir, primary);
+    let authBasicUserFile: string | undefined;
+    if (row.http_auth_user && row.http_auth_pass) {
+      const htDir = join(this.dataDir, 'nginx', 'htpasswd');
+      mkdirSync(htDir, { recursive: true });
+      authBasicUserFile = join(htDir, `${row.linux_user}.htpasswd`);
+      // openssl passwd -apr1 when available; else plain {PLAIN} for demo (nginx may need auth_basic module)
+      const hashR = await this.host.runCommand(
+        ['openssl', 'passwd', '-apr1', row.http_auth_pass],
+        { timeoutMs: 5_000 },
+      );
+      const hash =
+        hashR.exitCode === 0 && hashR.stdout.trim()
+          ? hashR.stdout.trim()
+          : `{PLAIN}${row.http_auth_pass}`;
+      writeFileSync(authBasicUserFile, `${row.http_auth_user}:${hash}\n`, 'utf8');
+    }
     const conf = renderNginxProxy({
       serverName,
       upstream: `http://127.0.0.1:${port}`,
@@ -689,6 +705,9 @@ export class ProjectOpsService {
       sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
       forceHttps: wantSsl && forceHttps,
       hsts: wantSsl && hsts,
+      siteRedirectUrl: row.site_redirect_url,
+      authBasicUserFile,
+      authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     const systemDir =
@@ -703,6 +722,8 @@ export class ProjectOpsService {
     if (serverName.includes(' ')) notes.push(`server_name: ${serverName}`);
     if (wantSsl && forceHttps) notes.push('Force HTTPS (HTTP→301)');
     if (wantSsl && hsts) notes.push('HSTS enabled');
+    if (row.site_redirect_url) notes.push(`整站 redirect → ${row.site_redirect_url}`);
+    if (authBasicUserFile) notes.push(`HTTP Basic Auth: ${row.http_auth_user}`);
     if (wantSsl && managed.exists) {
       notes.push(`Using uploaded certs: ${managed.fullchain}`);
     } else if (wantSsl) {

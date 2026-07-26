@@ -87,6 +87,7 @@ export function DashboardPage() {
     error,
     loading,
   } = useDashboard();
+
   const [software, setSoftware] = useState<SoftwareStatus[]>([]);
 
   useEffect(() => {
@@ -152,6 +153,11 @@ export function DashboardPage() {
           { label: t('nav.projects'), value: projects.length },
           { label: t('projects.statRunning'), value: running, tone: running > 0 ? 'ok' : 'default' },
           { label: '備份', value: backups },
+          {
+            label: '憑證到期',
+            value: expiringCerts?.length ?? 0,
+            tone: (expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok',
+          },
           {
             label: t('dashboard.health'),
             value: health?.status ?? '—',

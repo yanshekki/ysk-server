@@ -474,6 +474,10 @@ export function createHttpServer(ctx: AppContext): Server {
           domainAliases?: string[];
           forceHttps?: boolean;
           hsts?: boolean;
+          siteRedirectUrl?: string | null;
+          httpAuthUser?: string | null;
+          httpAuthPass?: string | null;
+          docRoot?: string | null;
           publish?: boolean;
           ssl?: boolean;
         };
@@ -484,6 +488,10 @@ export function createHttpServer(ctx: AppContext): Server {
             domainAliases: data.domainAliases,
             forceHttps: data.forceHttps,
             hsts: data.hsts,
+            siteRedirectUrl: data.siteRedirectUrl,
+            httpAuthUser: data.httpAuthUser,
+            httpAuthPass: data.httpAuthPass,
+            docRoot: data.docRoot,
           },
           user.username,
         );

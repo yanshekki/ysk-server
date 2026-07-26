@@ -392,6 +392,81 @@ export function FilesPage() {
                         移動
                       </Button>
                       <Button
+                        variant="secondary"
+                        size="md"
+                        loading={busy}
+                        onClick={() => {
+                          const mode = window.prompt('chmod 八進位（如 644 或 755）', '644');
+                          if (!mode) return;
+                          void (async () => {
+                            setBusy(true);
+                            try {
+                              for (const p of selected) {
+                                await filesApi.chmod(root, p, mode);
+                              }
+                              await refresh();
+                            } catch (e) {
+                              setError(e instanceof Error ? e.message : 'chmod 失敗');
+                            } finally {
+                              setBusy(false);
+                            }
+                          })();
+                        }}
+                      >
+                        chmod
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        loading={busy}
+                        onClick={() => {
+                          const dest =
+                            window.prompt(
+                              '壓縮目標檔名（.zip）',
+                              `archive-${Date.now()}.zip`,
+                            ) || '';
+                          if (!dest.endsWith('.zip')) return;
+                          const destPath = path === '.' ? dest : `${path}/${dest}`;
+                          void (async () => {
+                            setBusy(true);
+                            try {
+                              await filesApi.zip(root, [...selected], destPath);
+                              await refresh();
+                            } catch (e) {
+                              setError(e instanceof Error ? e.message : 'zip 失敗');
+                            } finally {
+                              setBusy(false);
+                            }
+                          })();
+                        }}
+                      >
+                        壓縮 zip
+                      </Button>
+                      {selectedEntries.length === 1 &&
+                      selectedEntries[0]?.name.toLowerCase().endsWith('.zip') ? (
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          loading={busy}
+                          onClick={() => {
+                            const zipPath = selectedEntries[0]!.path;
+                            void (async () => {
+                              setBusy(true);
+                              try {
+                                await filesApi.unzip(root, zipPath, path === '.' ? '.' : path);
+                                await refresh();
+                              } catch (e) {
+                                setError(e instanceof Error ? e.message : 'unzip 失敗');
+                              } finally {
+                                setBusy(false);
+                              }
+                            })();
+                          }}
+                        >
+                          解壓
+                        </Button>
+                      ) : null}
+                      <Button
                         variant="danger"
                         size="md"
                         onClick={() => setDelPaths([...selected])}

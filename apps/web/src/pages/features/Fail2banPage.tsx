@@ -31,6 +31,8 @@ export function Fail2banPage() {
     defaultJails: string[];
   } | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
+  const [banned, setBanned] = useState<Array<{ jail: string; ip: string }>>([]);
+  const [ignoreIp, setIgnoreIp] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
@@ -42,6 +44,12 @@ export function Fail2banPage() {
       setSelected((prev) =>
         prev.length ? prev : [...(s.defaultJails?.length ? s.defaultJails : FALLBACK_JAILS)],
       );
+      try {
+        const b = await systemApi.fail2banBanned();
+        setBanned(b.items ?? []);
+      } catch {
+        setBanned([]);
+      }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : '載入失敗');
     }
@@ -182,6 +190,82 @@ export function Fail2banPage() {
               {status?.installed ? '未讀到 jail（服務可能未啟動）' : '請先安裝 fail2ban'}
             </p>
           )}
+        </CardSection>
+      </Card>
+
+      <Card>
+        <CardSection title="Banned IP" description="即時封鎖列表 · unban">
+          {banned.length === 0 ? (
+            <p className="muted u-text-sm">無 banned IP 或無權限讀取</p>
+          ) : (
+            <div className="table-wrap">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>Jail</th>
+                    <th>IP</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {banned.map((b) => (
+                    <tr key={`${b.jail}-${b.ip}`}>
+                      <td>
+                        <code className="inline">{b.jail}</code>
+                      </td>
+                      <td>
+                        <code className="inline">{b.ip}</code>
+                      </td>
+                      <td>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={busy}
+                          onClick={() =>
+                            void run(async () => {
+                              const r = await systemApi.fail2banUnban(b.jail, b.ip);
+                              await refresh();
+                              return r as OpsResultLike;
+                            }, '已 unban')
+                          }
+                        >
+                          Unban
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardSection>
+      </Card>
+
+      <Card>
+        <CardSection title="白名單 (ignoreip)" description="寫入管理檔並嘗試套用到 sshd jail">
+          <div className="btn-row">
+            <input
+              value={ignoreIp}
+              onChange={(e) => setIgnoreIp(e.target.value)}
+              placeholder="203.0.113.10"
+              style={{ maxWidth: 220 }}
+            />
+            <Button
+              variant="secondary"
+              size="md"
+              loading={busy}
+              disabled={!ignoreIp.trim()}
+              onClick={() =>
+                void run(async () => {
+                  const r = await systemApi.fail2banIgnoreIp(ignoreIp.trim(), 'add');
+                  setIgnoreIp('');
+                  return r as OpsResultLike;
+                }, '已加入白名單')
+              }
+            >
+              加入
+            </Button>
+          </div>
         </CardSection>
       </Card>
 

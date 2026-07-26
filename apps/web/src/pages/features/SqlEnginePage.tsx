@@ -27,6 +27,7 @@ import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { dbEngineApi, type DbEngineKind, type DbEngineStatus } from '../../features/db-engine';
+import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 
 function serviceLabel(s: DbEngineStatus | null): {
@@ -181,6 +182,30 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             }}
           >
             重新整理
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            disabled={busy || !dbs.items[0]}
+            onClick={() => {
+              const name = String(dbs.items[0]?.name ?? '');
+              if (!name) return;
+              setMsg(null);
+              setError(null);
+              void systemApi
+                .dbDump({
+                  engine: engine === 'mariadb' ? 'mariadb' : 'mysql',
+                  dbName: name,
+                })
+                .then((r) => {
+                  const notes = (r as { notes?: string[]; ok?: boolean }).notes;
+                  if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? '已 dump');
+                  else setError(notes?.[0] ?? 'dump 失敗');
+                })
+                .catch((e: Error) => setError(e.message));
+            }}
+          >
+            Dump 首個庫
           </Button>
           <Button
             variant="primary"

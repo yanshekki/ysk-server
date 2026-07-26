@@ -231,6 +231,10 @@ export const api = {
       domainAliases?: string[];
       forceHttps?: boolean;
       hsts?: boolean;
+      siteRedirectUrl?: string | null;
+      httpAuthUser?: string | null;
+      httpAuthPass?: string | null;
+      docRoot?: string | null;
       publish?: boolean;
       ssl?: boolean;
     },

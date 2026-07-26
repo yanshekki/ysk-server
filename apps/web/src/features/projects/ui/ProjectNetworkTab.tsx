@@ -26,6 +26,10 @@ export function ProjectNetworkTab({
   const [aliasesText, setAliasesText] = useState((project.domainAliases ?? []).join('\n'));
   const [forceHttps, setForceHttps] = useState(Boolean(project.forceHttps));
   const [hsts, setHsts] = useState(Boolean(project.hsts));
+  const [redirectUrl, setRedirectUrl] = useState(project.siteRedirectUrl ?? '');
+  const [authUser, setAuthUser] = useState(project.httpAuthUser ?? '');
+  const [authPass, setAuthPass] = useState('');
+  const [docRoot, setDocRoot] = useState(project.docRoot ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -33,7 +37,19 @@ export function ProjectNetworkTab({
     setAliasesText((project.domainAliases ?? []).join('\n'));
     setForceHttps(Boolean(project.forceHttps));
     setHsts(Boolean(project.hsts));
-  }, [project.id, project.domain, project.domainAliases, project.forceHttps, project.hsts]);
+    setRedirectUrl(project.siteRedirectUrl ?? '');
+    setAuthUser(project.httpAuthUser ?? '');
+    setDocRoot(project.docRoot ?? '');
+  }, [
+    project.id,
+    project.domain,
+    project.domainAliases,
+    project.forceHttps,
+    project.hsts,
+    project.siteRedirectUrl,
+    project.httpAuthUser,
+    project.docRoot,
+  ]);
 
   function parseAliases(): string[] {
     return aliasesText
@@ -50,6 +66,10 @@ export function ProjectNetworkTab({
         domainAliases: parseAliases(),
         forceHttps,
         hsts,
+        siteRedirectUrl: redirectUrl.trim() || null,
+        httpAuthUser: authUser.trim() || null,
+        httpAuthPass: authPass || null,
+        docRoot: docRoot.trim() || null,
         publish,
         ssl,
       });
@@ -158,7 +178,47 @@ export function ProjectNetworkTab({
               <span>HSTS</span>
             </label>
           </div>
-          <p className="muted u-text-sm u-mt-2">HTTPS / HSTS 需配合 SSL 發布先生效。</p>
+          <FormGrid>
+            <Field label="整站 301 目標 URL（可空）" htmlFor="net-redir" flush>
+              <input
+                id="net-redir"
+                value={redirectUrl}
+                onChange={(e) => setRedirectUrl(e.target.value)}
+                placeholder="https://www.example.com"
+                disabled={suspended}
+              />
+            </Field>
+            <Field label="Document root（相對 home，可空）" htmlFor="net-doc" flush>
+              <input
+                id="net-doc"
+                value={docRoot}
+                onChange={(e) => setDocRoot(e.target.value)}
+                placeholder="app/public"
+                disabled={suspended}
+              />
+            </Field>
+            <Field label="HTTP Auth 用戶（可空）" htmlFor="net-au" flush>
+              <input
+                id="net-au"
+                value={authUser}
+                onChange={(e) => setAuthUser(e.target.value)}
+                disabled={suspended}
+              />
+            </Field>
+            <Field label="HTTP Auth 密碼" htmlFor="net-ap" flush>
+              <input
+                id="net-ap"
+                type="password"
+                value={authPass}
+                onChange={(e) => setAuthPass(e.target.value)}
+                disabled={suspended}
+                autoComplete="new-password"
+              />
+            </Field>
+          </FormGrid>
+          <p className="muted u-text-sm u-mt-2">
+            HTTPS / HSTS / Auth / Redirect 於發布 Nginx 時寫入。Redirect 會取代 reverse proxy。
+          </p>
           <div className="btn-row u-mt-3">
             <Button
               variant="primary"

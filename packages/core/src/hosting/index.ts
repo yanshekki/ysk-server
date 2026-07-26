@@ -37,5 +37,6 @@ export * from './db-service-config.js';
 export * from './service-catalog/index.js';
 export * from './service-console.js';
 export * from './service-matrix.js';
+export * from './db-dump.js';
 
 

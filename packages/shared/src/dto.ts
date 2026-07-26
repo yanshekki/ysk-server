@@ -124,6 +124,11 @@ export interface ProjectDto {
   forceHttps?: boolean;
   /** HSTS header when SSL published */
   hsts?: boolean;
+  /** Whole-site redirect URL */
+  siteRedirectUrl?: string;
+  httpAuthUser?: string;
+  /** Document root relative to homeDir */
+  docRoot?: string;
   lastHealth?: Record<string, unknown>;
   lastDeployAt?: string;
   osProvisioned?: boolean;
@@ -175,6 +180,11 @@ export interface NginxProxyConfig {
   forceHttps?: boolean;
   /** Strict-Transport-Security when ssl */
   hsts?: boolean;
+  /** Whole-site redirect (takes precedence over proxy) */
+  siteRedirectUrl?: string;
+  /** auth_basic realm user file path */
+  authBasicUserFile?: string;
+  authBasicRealm?: string;
 }
 
 export interface UpdateItemDto {

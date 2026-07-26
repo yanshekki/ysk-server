@@ -61,6 +61,51 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  fail2banBanned: (jail?: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      items: Array<{ jail: string; ip: string }>;
+      notes: string[];
+      blocked?: boolean;
+    }>(`/api/v1/system/fail2ban/banned${jail ? `?jail=${encodeURIComponent(jail)}` : ''}`),
+  fail2banUnban: (jail: string, ip: string) =>
+    api.requestRaw('/api/v1/system/fail2ban/unban', {
+      method: 'POST',
+      body: JSON.stringify({ jail, ip }),
+    }),
+  fail2banIgnoreIp: (ip: string, action: 'add' | 'remove' = 'add') =>
+    api.requestRaw('/api/v1/system/fail2ban/ignoreip', {
+      method: 'POST',
+      body: JSON.stringify({ ip, action }),
+    }),
+  hostIdentity: () =>
+    api.requestRaw<{
+      hostname: string | null;
+      timezone: string | null;
+      executeEnabled: boolean;
+      isRoot: boolean;
+    }>('/api/v1/system/host-identity'),
+  setHostIdentity: (body: { hostname?: string; timezone?: string }) =>
+    api.requestRaw('/api/v1/system/host-identity', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  nginxPurgeCache: () =>
+    api.requestRaw('/api/v1/system/nginx/purge-cache', { method: 'POST', body: '{}' }),
+  dbDump: (body: {
+    engine: 'mysql' | 'mariadb' | 'postgres';
+    dbName: string;
+    username?: string;
+    password?: string;
+  }) =>
+    api.requestRaw('/api/v1/system/db/dump', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  dbDumps: (engine?: string) =>
+    api.requestRaw<{
+      items: Array<{ engine: string; name: string; path: string; bytes: number; mtime: string }>;
+    }>(`/api/v1/system/db/dumps${engine ? `?engine=${engine}` : ''}`),
   systemdInstall: (body: { enable?: boolean }) =>
     api.requestRaw('/api/v1/system/systemd/install', {
       method: 'POST',

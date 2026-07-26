@@ -13,9 +13,11 @@ import {
   renameSync,
   copyFileSync,
   cpSync,
+  chmodSync,
 } from 'node:fs';
 import { join, resolve, relative, dirname, basename, extname } from 'node:path';
 import { createHash, randomBytes } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { ErrorCodes, YskError } from '@ysk/shared';
 
 export interface FileEntry {
@@ -26,6 +28,8 @@ export interface FileEntry {
   mtime: string;
   mime?: string;
   ext?: string;
+  /** octal mode string e.g. 644 */
+  mode?: string;
 }
 
 export type ListSort = 'name' | 'size' | 'mtime';
@@ -104,6 +108,7 @@ function toEntry(root: string, abs: string): FileEntry {
     mtime: s.mtime.toISOString(),
     mime: s.isFile() ? guessMime(name) : undefined,
     ext: s.isFile() ? extname(name).replace(/^\./, '') : undefined,
+    mode: (s.mode & 0o777).toString(8).padStart(3, '0'),
   };
 }
 
@@ -382,6 +387,85 @@ export class FileManager {
       throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${relPath}`, { httpStatus: 404 });
     }
     return toEntry(this.root, abs);
+  }
+
+  /**
+   * chmod path (octal 3–4 digits, e.g. 644 or 0755).
+   */
+  chmod(relPath: string, mode: string): { path: string; mode: string } {
+    const abs = assertInside(this.root, relPath);
+    if (!existsSync(abs)) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${relPath}`, { httpStatus: 404 });
+    }
+    const cleaned = String(mode).trim().replace(/^0x/i, '');
+    if (!/^[0-7]{3,4}$/.test(cleaned)) {
+      throw new YskError(ErrorCodes.VALIDATION, 'mode must be octal 3–4 digits', { httpStatus: 400 });
+    }
+    const n = parseInt(cleaned, 8);
+    chmodSync(abs, n);
+    return { path: relPath, mode: cleaned };
+  }
+
+  /**
+   * Zip one or more relative paths into destZip (relative to root).
+   * Uses system `zip` if available.
+   */
+  zip(paths: string[], destZip: string): { path: string; bytes: number; notes: string[] } {
+    if (!paths.length) {
+      throw new YskError(ErrorCodes.VALIDATION, 'paths required', { httpStatus: 400 });
+    }
+    const destAbs = assertInside(this.root, destZip);
+    if (!destZip.toLowerCase().endsWith('.zip')) {
+      throw new YskError(ErrorCodes.VALIDATION, 'dest must end with .zip', { httpStatus: 400 });
+    }
+    mkdirSync(dirname(destAbs), { recursive: true });
+    const rels: string[] = [];
+    for (const p of paths) {
+      const abs = assertInside(this.root, p);
+      if (!existsSync(abs)) {
+        throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${p}`, { httpStatus: 404 });
+      }
+      rels.push(relative(this.root, abs) || '.');
+    }
+    const r = spawnSync('zip', ['-r', '-q', destAbs, ...rels], {
+      cwd: this.root,
+      encoding: 'utf8',
+      timeout: 120_000,
+    });
+    if (r.error || r.status !== 0) {
+      throw new YskError(
+        ErrorCodes.INTERNAL,
+        `zip failed: ${r.stderr || r.error?.message || 'exit ' + r.status}`,
+        { httpStatus: 500 },
+      );
+    }
+    const bytes = existsSync(destAbs) ? statSync(destAbs).size : 0;
+    return { path: destZip, bytes, notes: [`已壓縮 ${paths.length} 項 → ${destZip}`] };
+  }
+
+  /**
+   * Unzip archive into destDir (relative). Uses system `unzip`.
+   */
+  unzip(zipPath: string, destDir: string): { path: string; notes: string[] } {
+    const zipAbs = assertInside(this.root, zipPath);
+    const destAbs = assertInside(this.root, destDir || '.');
+    if (!existsSync(zipAbs) || !statSync(zipAbs).isFile()) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${zipPath}`, { httpStatus: 404 });
+    }
+    mkdirSync(destAbs, { recursive: true });
+    const r = spawnSync('unzip', ['-o', '-q', zipAbs, '-d', destAbs], {
+      encoding: 'utf8',
+      timeout: 120_000,
+    });
+    if (r.error || (r.status !== 0 && r.status !== 1)) {
+      // unzip exit 1 = warnings
+      throw new YskError(
+        ErrorCodes.INTERNAL,
+        `unzip failed: ${r.stderr || r.error?.message || 'exit ' + r.status}`,
+        { httpStatus: 500 },
+      );
+    }
+    return { path: destDir || '.', notes: [`已解壓 ${zipPath} → ${destDir || '.'}`] };
   }
 
   /** Disk usage under root (excluding .trash for "used") */

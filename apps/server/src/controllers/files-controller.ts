@@ -298,6 +298,75 @@ export async function handleFilesRoutes(
     return true;
   }
 
+  if (method === 'POST' && url.pathname === '/api/v1/files/chmod') {
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { path?: string; mode?: string };
+    if (!data.path || !data.mode) {
+      sendJson(res, 400, { ok: false, message: 'path and mode required' });
+      return true;
+    }
+    const result = fm.chmod(data.path, data.mode);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'files.chmod',
+      resource: data.path,
+      detail: { root: rootKey, mode: data.mode },
+      ok: true,
+    });
+    sendJson(res, 200, result);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/files/zip') {
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { paths?: string[]; dest?: string };
+    if (!data.paths?.length || !data.dest) {
+      sendJson(res, 400, { ok: false, message: 'paths and dest required' });
+      return true;
+    }
+    try {
+      const result = fm.zip(data.paths, data.dest);
+      ctx.audit.append({
+        actor: user.username,
+        action: 'files.zip',
+        detail: { root: rootKey, ...result },
+        ok: true,
+      });
+      sendJson(res, 200, { ok: true, ...result });
+    } catch (e) {
+      sendJson(res, 500, {
+        ok: false,
+        notes: [e instanceof Error ? e.message : String(e)],
+      });
+    }
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/files/unzip') {
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { zipPath?: string; destDir?: string };
+    if (!data.zipPath) {
+      sendJson(res, 400, { ok: false, message: 'zipPath required' });
+      return true;
+    }
+    try {
+      const result = fm.unzip(data.zipPath, data.destDir ?? '.');
+      ctx.audit.append({
+        actor: user.username,
+        action: 'files.unzip',
+        detail: { root: rootKey, ...result },
+        ok: true,
+      });
+      sendJson(res, 200, { ok: true, ...result });
+    } catch (e) {
+      sendJson(res, 500, {
+        ok: false,
+        notes: [e instanceof Error ? e.message : String(e)],
+      });
+    }
+    return true;
+  }
+
   // Trash
   if (method === 'GET' && url.pathname === '/api/v1/files/trash') {
     sendJson(res, 200, { items: fm.listTrash() });

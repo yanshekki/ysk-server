@@ -83,12 +83,33 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
     hsts: config.hsts,
   });
 
+  const auth =
+    config.authBasicUserFile
+      ? `
+  auth_basic "${config.authBasicRealm ?? 'Restricted'}";
+  auth_basic_user_file ${config.authBasicUserFile};
+`
+      : '';
+
+  if (config.siteRedirectUrl) {
+    const target = config.siteRedirectUrl.replace(/"/g, '');
+    const listen = config.ssl ? 'listen 443 ssl http2;\n  listen 80;' : 'listen 80;';
+    return `server {
+  ${listen}
+  server_name ${config.serverName};
+  ${sslBlock}
+  return 301 ${target}$request_uri;
+}
+`;
+  }
+
   if (force) {
     return `${httpRedirectBlock(config.serverName)}server {
   listen 443 ssl http2;
   server_name ${config.serverName};
   ${sslBlock}
   ${realIp}
+  ${auth}
 
   location / {
     proxy_pass ${config.upstream};
@@ -112,6 +133,7 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
   server_name ${config.serverName};
   ${sslBlock}
   ${realIp}
+  ${auth}
 
   location / {
     proxy_pass ${config.upstream};

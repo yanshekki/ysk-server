@@ -56,6 +56,13 @@ export interface StoreProject {
   force_https?: boolean;
   /** Emit HSTS when SSL conf published */
   hsts?: boolean;
+  /** Whole-site 301 target URL (optional) */
+  site_redirect_url?: string;
+  /** HTTP basic auth user (optional) */
+  http_auth_user?: string;
+  http_auth_pass?: string;
+  /** Custom document root relative to home (default app/public or app) */
+  doc_root?: string;
   last_health?: Record<string, unknown>;
   last_deploy_at?: string;
   /** Git remote for deploy */

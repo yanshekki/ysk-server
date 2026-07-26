@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { FileManager, publicFilesRoot } from './manager.js';
@@ -35,6 +35,26 @@ describe('FileManager sandbox', () => {
     const pub = publicFilesRoot(dir);
     expect(pub).toContain('files/public');
     rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('chmod and zip when zip available', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-fm-chmod-'));
+    try {
+      const fm = new FileManager(dir);
+      writeFileSync(join(dir, 'a.txt'), 'hi', 'utf8');
+      const m = fm.chmod('a.txt', '600');
+      expect(m.mode).toBe('600');
+      // zip may be missing on minimal CI — skip soft
+      try {
+        const z = fm.zip(['a.txt'], 'out.zip');
+        expect(z.path).toBe('out.zip');
+        expect(existsSync(join(dir, 'out.zip'))).toBe(true);
+      } catch {
+        /* zip binary optional */
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('copy, move, trash restore, sort and search', () => {

@@ -49,19 +49,19 @@
 
 ### Wave 2 — 體驗拉過兩邊（P1 / Better）
 
-| # | ID | 項 | 範圍 | 估 |
-|---|-----|-----|------|----|
-| 2.1 | G3/G4/G12 | Files chmod + zip/unzip + 搜尋 | manager API + UI | M |
-| 2.2 | I4/I5 | DB dump/import + Adminer 入口 | export/import + optional embed | M |
-| 2.3 | B15–B17 | 快取 purge / HTTP auth / 整站 redirect | nginx + project network | M |
-| 2.4 | E4/E5 | Nginx 模板 + purge | global nginx page | M |
-| 2.5 | N3/N4 | Fail2ban ban 列表 + 白名單 UX | 頁面 | S |
-| 2.6 | A3/A5 | Dashboard 通知中心 + 安全 strip | 聚合 cert/approval/f2b/disk | M |
-| 2.7 | F19 | Email 可投遞健檢 UX 打磨 | 外部待辦結構化 | S |
-| 2.8 | P3 | Per-project 用量 strip | metrics/quota | M |
-| 2.9 | T1 | Hostname / timezone 設定頁 | system | S |
-| 2.10 | L10 | Backup dry-run + 誠實結果 | restore preview | S |
-| 2.11 | 全域 | 剩餘 apply 路徑 written/applied 審計 | 抽樣修 | M |
+| # | ID | 項 | 範圍 | Status |
+|---|-----|-----|------|--------|
+| 2.1 | G3/G4/G12 | Files chmod + zip/unzip（搜尋已有） | manager + UI | **done** |
+| 2.2 | I4/I5 | DB dump（Adminer 入口後做） | dump API + SqlEngine 按鈕 | **done** (dump) |
+| 2.3 | B15–B17 | redirect / HTTP auth / docroot | project network + nginx | **done** |
+| 2.4 | E4/E5 | Nginx purge cache | Nginx 頁 | **done** (purge) |
+| 2.5 | N3/N4 | Fail2ban ban 列表 + 白名單 | 頁面 | **done** |
+| 2.6 | A3/A5 | Dashboard 憑證到期 strip | 已有 + Summary | **done** partial |
+| 2.7 | F19 | Email 健檢 UX | 已有 live check | partial |
+| 2.8 | P3 | Per-project 用量 | | pending |
+| 2.9 | T1 | Hostname / timezone | System 頁 | **done** |
+| 2.10 | L10 | Backup dry-run | Wave1 已做 | **done** |
+| 2.11 | 全域 | apply 審計 | | pending |
 
 ### Wave 3 — 平台級（P2）
 

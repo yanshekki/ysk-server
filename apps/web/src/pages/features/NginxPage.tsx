@@ -16,10 +16,13 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
+import { systemApi } from '../../features/system';
 
 export function NginxPage() {
   const { items, error, busy, msg, setMsg, create, update, remove, apply } =
     useResourceCrud('nginx/sites');
+  const [purgeBusy, setPurgeBusy] = useState(false);
+  const [purgeMsg, setPurgeMsg] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [edit, setEdit] = useState<ResourceRow | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
@@ -78,20 +81,42 @@ export function NginxPage() {
       title="Nginx 站點"
       subtitle="管理反向代理與網站站點"
       actions={
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => {
-            resetForm();
-            setCreateOpen(true);
-          }}
-        >
-          + 建立站點
-        </Button>
+        <div className="btn-row">
+          <Button
+            variant="secondary"
+            size="md"
+            loading={purgeBusy}
+            onClick={() => {
+              setPurgeBusy(true);
+              setPurgeMsg(null);
+              void systemApi
+                .nginxPurgeCache()
+                .then((r) => {
+                  const notes = (r as { notes?: string[] }).notes;
+                  setPurgeMsg(notes?.[0] ?? '已 purge');
+                })
+                .catch((e: Error) => setPurgeMsg(e.message))
+                .finally(() => setPurgeBusy(false));
+            }}
+          >
+            清除 Cache + Reload
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              resetForm();
+              setCreateOpen(true);
+            }}
+          >
+            + 建立站點
+          </Button>
+        </div>
       }
     >
       <SoftwareInstallBanner feature="nginx" title="Nginx 尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
+      {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}

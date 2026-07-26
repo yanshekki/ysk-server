@@ -95,6 +95,30 @@ export const filesApi = {
       body: JSON.stringify({ path, content }),
     }),
 
+  chmod: (root: string, path: string, mode: string) =>
+    api.requestRaw<{ path: string; mode: string }>(`/api/v1/files/chmod?${q(root)}`, {
+      method: 'POST',
+      body: JSON.stringify({ path, mode }),
+    }),
+
+  zip: (root: string, paths: string[], dest: string) =>
+    api.requestRaw<{ ok: boolean; path: string; bytes: number; notes: string[] }>(
+      `/api/v1/files/zip?${q(root)}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ paths, dest }),
+      },
+    ),
+
+  unzip: (root: string, zipPath: string, destDir = '.') =>
+    api.requestRaw<{ ok: boolean; path: string; notes: string[] }>(
+      `/api/v1/files/unzip?${q(root)}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ zipPath, destDir }),
+      },
+    ),
+
   remove: (root: string, path: string, permanent = false) =>
     api.requestRaw(
       `/api/v1/files?${q(root, { path, permanent: permanent ? '1' : undefined })}`,

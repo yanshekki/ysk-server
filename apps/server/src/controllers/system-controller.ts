@@ -921,6 +921,172 @@ export async function handleSystemRoutes(
     return true;
   }
 
+  if (method === 'GET' && url.pathname === '/api/v1/system/fail2ban/banned') {
+    ctx.auth.authenticate(getBearer(req));
+    const jail = url.searchParams.get('jail') ?? undefined;
+    const { fail2banBannedIps } = await import('@ysk/core');
+    sendJson(res, 200, await fail2banBannedIps(ctx.host, jail || undefined));
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/unban') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { jail?: string; ip?: string };
+    const { fail2banUnban } = await import('@ysk/core');
+    const r = await fail2banUnban(ctx.host, data.jail ?? 'sshd', data.ip ?? '');
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.fail2ban.unban',
+      detail: data,
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/ignoreip') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ip?: string; action?: 'add' | 'remove' };
+    const { fail2banIgnoreIp } = await import('@ysk/core');
+    const r = await fail2banIgnoreIp(
+      ctx.host,
+      ctx.dataDir,
+      data.ip ?? '',
+      data.action ?? 'add',
+    );
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.fail2ban.ignoreip',
+      detail: data,
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+
+  if (method === 'GET' && url.pathname === '/api/v1/system/host-identity') {
+    ctx.auth.authenticate(getBearer(req));
+    const hn = await ctx.host.runCommand(['hostname'], { timeoutMs: 3_000 });
+    const tz = await ctx.host.runCommand(['timedatectl', 'show', '-p', 'Timezone', '--value'], {
+      timeoutMs: 5_000,
+    });
+    sendJson(res, 200, {
+      hostname: (hn.stdout || '').trim() || null,
+      timezone: (tz.stdout || '').trim() || null,
+      executeEnabled: ctx.host.executeEnabled(),
+      isRoot: ctx.host.isRoot(),
+    });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/host-identity') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { hostname?: string; timezone?: string };
+    const notes: string[] = [];
+    if (!ctx.host.executeEnabled() || !ctx.host.isRoot()) {
+      sendJson(res, 422, {
+        ok: false,
+        blocked: true,
+        notes: ['無法變更主機名稱／時區：需要系統變更權限與管理員'],
+      });
+      return true;
+    }
+    if (data.hostname?.trim()) {
+      const r = await ctx.host.runCommand(['hostnamectl', 'set-hostname', data.hostname.trim()], {
+        timeoutMs: 10_000,
+      });
+      notes.push(
+        r.exitCode === 0
+          ? `hostname → ${data.hostname.trim()}`
+          : `hostname 失敗: ${r.stderr || r.stdout}`,
+      );
+    }
+    if (data.timezone?.trim()) {
+      const r = await ctx.host.runCommand(['timedatectl', 'set-timezone', data.timezone.trim()], {
+        timeoutMs: 10_000,
+      });
+      notes.push(
+        r.exitCode === 0
+          ? `timezone → ${data.timezone.trim()}`
+          : `timezone 失敗: ${r.stderr || r.stdout}`,
+      );
+    }
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.host_identity',
+      detail: data,
+      ok: true,
+    });
+    sendJson(res, 200, { ok: true, notes });
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/nginx/purge-cache') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const notes: string[] = [];
+    if (!ctx.host.executeEnabled()) {
+      sendJson(res, 422, {
+        ok: false,
+        blocked: true,
+        notes: ['無法 purge：未開啟系統變更權限'],
+      });
+      return true;
+    }
+    // Best-effort: remove common cache dirs + reload
+    const r = await ctx.host.runCommand(
+      [
+        'bash',
+        '-c',
+        'rm -rf /var/cache/nginx/* /var/lib/nginx/cache/* 2>/dev/null; nginx -t && systemctl reload nginx; echo done',
+      ],
+      { timeoutMs: 30_000 },
+    );
+    notes.push(r.exitCode === 0 ? '已嘗試清除 nginx cache 並 reload' : `失敗: ${r.stderr || r.stdout}`);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.nginx.purge_cache',
+      detail: { exit: r.exitCode },
+      ok: r.exitCode === 0,
+    });
+    sendJson(res, r.exitCode === 0 ? 200 : 422, { ok: r.exitCode === 0, notes });
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/db/dump') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      engine?: 'mysql' | 'mariadb' | 'postgres';
+      dbName?: string;
+      username?: string;
+      password?: string;
+    };
+    const { dumpSqlDatabase } = await import('@ysk/core');
+    const r = await dumpSqlDatabase({
+      host: ctx.host,
+      dataDir: ctx.dataDir,
+      engine: data.engine ?? 'mysql',
+      dbName: data.dbName ?? '',
+      username: data.username,
+      password: data.password,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'db.dump',
+      detail: { engine: data.engine, dbName: data.dbName, ok: r.ok },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/system/db/dumps') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listSqlDumps } = await import('@ysk/core');
+    const engine = url.searchParams.get('engine') as 'mysql' | 'mariadb' | 'postgres' | null;
+    sendJson(res, 200, { items: listSqlDumps(ctx.dataDir, engine || undefined) });
+    return true;
+  }
+
   if (method === 'POST' && url.pathname === '/api/v1/system/nginx/site') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
