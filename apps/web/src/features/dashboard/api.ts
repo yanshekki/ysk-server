@@ -14,7 +14,6 @@ export const dashboardApi = {
   summary: () => api.requestRaw<Record<string, unknown>>('/api/v1/dashboard/summary'),
   readiness: async () => {
     // 503 when not productionReady still carries full report body
-    const { authStore } = await import('../../shared/stores/auth-store');
     const t = authStore.getToken();
     const res = await fetch('/api/v1/readiness', {
       headers: {
