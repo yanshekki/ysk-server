@@ -24,6 +24,7 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
         quotaMb?: number;
         memoryMax?: string;
         cpuQuotaPercent?: number;
+        phpVersion?: string;
       },
     ) => {
       setBusy(true);
@@ -36,7 +37,10 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
             result = await projectsApi.deploy(id);
             break;
           case 'deploy-php':
-            result = await projectsApi.deployPhp(id);
+            result = (await projectsApi.deployPhp(id, {
+              phpVersion: opts?.phpVersion,
+              preferFpm: true,
+            })) as OpsApplyResultDto;
             break;
           case 'stop':
             result = await projectsApi.stop(id);

@@ -360,6 +360,52 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, await probeRuntimeTools(ctx.host));
       }
 
+      if (method === 'POST' && url.pathname === '/api/v1/db/adminer/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { domain?: string; download?: boolean };
+        const { applyAdminer } = await import('@ysk/core');
+        const r = await applyAdminer({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          domain: data.domain,
+          download: data.download !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.adminer.apply',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/system/export') {
+        ctx.auth.authenticate(getBearer(req));
+        const { exportControlPlaneSnapshot } = await import('@ysk/core');
+        return sendJson(res, 200, exportControlPlaneSnapshot(ctx.db));
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/system/rebuild') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { syncNginx?: boolean; writeExport?: boolean };
+        const { rebuildManagedConfigs } = await import('@ysk/core');
+        const r = await rebuildManagedConfigs({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          db: ctx.db,
+          syncNginx: data.syncNginx,
+          writeExport: data.writeExport !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'system.rebuild',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const zone = decodeURIComponent(url.pathname.split('/')[5] ?? '');
@@ -2704,11 +2750,20 @@ export function createHttpServer(ctx: AppContext): Server {
         const proj = ctx.projects.get(id);
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { enable?: boolean; phpVersion?: string };
+        const phpVersion = data.phpVersion ?? proj.runtimeVersion ?? '8.2';
+        if (data.phpVersion) {
+          const prow = ctx.db.snapshot.projects.find((p) => p.id === id);
+          if (prow) {
+            prow.runtime_version = phpVersion;
+            prow.updated_at = new Date().toISOString();
+            ctx.db.persist();
+          }
+        }
         const result = await applyPhpFpmPool({
           dataDir: ctx.dataDir,
           poolName: proj.linuxUser,
           linuxUser: proj.linuxUser,
-          phpVersion: data.phpVersion ?? proj.runtimeVersion ?? '8.2',
+          phpVersion,
           host: ctx.host,
           enable: data.enable,
         });
@@ -2716,10 +2771,42 @@ export function createHttpServer(ctx: AppContext): Server {
           actor: user.username,
           action: 'project.php_fpm',
           resource: id,
-          detail: result,
+          detail: { ...result, phpVersion },
           ok: result.ok,
         });
-        return sendJson(res, 200, result);
+        return sendJson(res, result.ok || !data.enable ? 200 : 422, {
+          ...result,
+          phpVersion,
+          project: ctx.projects.get(id),
+        });
+      }
+
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/runtime$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { runtimeVersion?: string };
+        const p = ctx.db.snapshot.projects.find((x) => x.id === id);
+        if (!p) return sendJson(res, 404, { ok: false, message: 'not found' });
+        if (data.runtimeVersion) {
+          p.runtime_version = data.runtimeVersion.trim();
+          p.updated_at = new Date().toISOString();
+          ctx.db.persist();
+        }
+        ctx.audit.append({
+          actor: user.username,
+          action: 'project.runtime_version',
+          resource: id,
+          detail: { runtimeVersion: p.runtime_version },
+          ok: true,
+        });
+        return sendJson(res, 200, { project: ctx.projects.get(id) });
+      }
+
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/usage$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        return sendJson(res, 200, await ctx.projectOps.quotaStatus(id));
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-php$/)) {

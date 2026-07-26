@@ -233,6 +233,39 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             Dump 首個庫
           </Button>
           <Button
+            variant="secondary"
+            size="md"
+            loading={busy}
+            onClick={() => {
+              void run(async () => {
+                const r = await api.requestRaw<{
+                  ok: boolean;
+                  notes?: string[];
+                  blocked?: boolean;
+                  blockMessage?: string;
+                  urlHint?: string;
+                }>('/api/v1/db/adminer/apply', {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    domain: `adminer.${engine}.local`,
+                    download: true,
+                  }),
+                });
+                return {
+                  ok: r.ok,
+                  blocked: r.blocked,
+                  blockMessage: r.blockMessage,
+                  notes: [
+                    ...(r.notes ?? []),
+                    r.urlHint ? `入口提示: ${r.urlHint}` : '',
+                  ].filter(Boolean),
+                } as OpsResultLike;
+              }, 'Adminer 套用完成');
+            }}
+          >
+            Adminer 入口
+          </Button>
+          <Button
             variant="primary"
             size="md"
             disabled={busy || !installed}

@@ -50,6 +50,7 @@ export function ProjectDetailPage() {
   );
   const [logFile, setLogFile] = useState<string>('');
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
+  const [phpVersion, setPhpVersion] = useState('8.2');
 
   const refreshProject = useCallback(async () => {
     const list = await projectsApi.list();
@@ -61,6 +62,7 @@ export function ProjectDetailPage() {
       if (found.quotaMb != null) setQuotaMb(String(found.quotaMb));
       if (found.memoryMax) setMemoryMax(found.memoryMax);
       if (found.cpuQuotaPercent != null) setCpuQuota(String(found.cpuQuotaPercent));
+      if (found.runtimeVersion) setPhpVersion(found.runtimeVersion);
     }
     return found;
   }, [id]);
@@ -188,7 +190,9 @@ export function ProjectDetailPage() {
         project={project}
         busy={busy}
         onDeploy={() =>
-          void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id).catch(() => undefined)
+          void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
+            phpVersion,
+          }).catch(() => undefined)
         }
         onStop={() => setConfirm('stop')}
         onHealth={() => void run('health', project.id).catch(() => undefined)}
@@ -226,12 +230,16 @@ export function ProjectDetailPage() {
             envText={envText}
             setEnvText={setEnvText}
             onDeploy={() =>
-              void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id).catch(() => undefined)
+              void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
+                phpVersion,
+              }).catch(() => undefined)
             }
             onGitDeploy={() =>
               void run('git-deploy', project.id, { gitUrl }).catch(() => undefined)
             }
             onSaveEnv={() => void run('env', project.id, { envText }).catch(() => undefined)}
+            onPhpVersionChange={setPhpVersion}
+            onOpsMessage={(m) => setMsg(m)}
           />
         ) : null}
         {activeTab === 'network' ? (

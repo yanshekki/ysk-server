@@ -41,6 +41,12 @@ export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' 
 
 export type DeployMode = 'systemd' | 'pm2' | 'pidfile' | 'none';
 
+/** Resolve document root: relative doc_root under home, default app/public */
+export function resolveProjectDocRoot(row: ProjectRow): string {
+  const rel = (row.doc_root ?? 'app/public').replace(/^\/+/, '').replace(/\.\./g, '');
+  return join(row.home_dir, rel || 'app/public');
+}
+
 export interface OpsApplyResult {
   ok: boolean;
   projectId: string;
@@ -476,7 +482,7 @@ export class ProjectOpsService {
     }
     const notes: string[] = [];
     const written: string[] = [];
-    const docRoot = join(row.home_dir, 'app', 'public');
+    const docRoot = resolveProjectDocRoot(row);
     mkdirSync(docRoot, { recursive: true });
     const indexPath = join(docRoot, 'index.html');
     if (!existsSync(indexPath)) {
@@ -1124,12 +1130,16 @@ export class ProjectOpsService {
     const notes: string[] = [];
     const written: string[] = [];
     const port = opts.port ?? row.port ?? (await findFreePort(8100, 8999));
-    const docRoot = join(row.home_dir, 'app', 'public');
+    const docRoot = resolveProjectDocRoot(row);
     mkdirSync(docRoot, { recursive: true });
     const domain = row.domain ?? `${row.linux_user}.local`;
 
     const phpVersion = opts.phpVersion ?? row.runtime_version ?? '8.2';
     const phpRt = selectPhpRuntime(phpVersion);
+    if (opts.phpVersion && opts.phpVersion !== row.runtime_version) {
+      this.projects.updateMeta(projectId, { runtime_version: phpRt.version });
+      notes.push(`runtime_version → ${phpRt.version}`);
+    }
     const canProd =
       this.host.executeEnabled() &&
       this.host.isRoot() &&

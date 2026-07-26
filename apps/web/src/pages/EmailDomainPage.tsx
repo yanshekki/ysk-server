@@ -582,6 +582,48 @@ export function EmailDomainPage() {
         {tab === 'health' ? (
           <Card>
             <CardSection title="健康探測" description="Live 埠／DNSBL／暖身檢查（唯讀為主）">
+              <SummaryStrip
+                items={[
+                  {
+                    label: 'Server IP',
+                    value: domain.server_ip || '—',
+                  },
+                  {
+                    label: 'Live',
+                    value: live
+                      ? (live as { ok?: boolean }).ok
+                        ? 'OK'
+                        : '有問題'
+                      : '未測',
+                    tone: live
+                      ? (live as { ok?: boolean }).ok
+                        ? 'ok'
+                        : 'warn'
+                      : 'default',
+                  },
+                  {
+                    label: 'DNSBL',
+                    value: dnsbl
+                      ? (dnsbl as { ok?: boolean }).ok
+                        ? 'Clean'
+                        : 'Listed'
+                      : '未測',
+                    tone: dnsbl
+                      ? (dnsbl as { ok?: boolean }).ok
+                        ? 'ok'
+                        : 'danger'
+                      : 'default',
+                  },
+                  {
+                    label: '外部待辦',
+                    value: 'PTR / Port25',
+                    tone: 'warn',
+                  },
+                ]}
+              />
+              <p className="muted u-text-sm u-mb-3">
+                面板外必須自行處理：供應商 PTR、出站 Port 25、Registrar DS（DNSSEC）。
+              </p>
               <div className="lifecycle-toolbar">
                 <Button
                   variant="primary"

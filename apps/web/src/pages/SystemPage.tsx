@@ -132,6 +132,85 @@ export function SystemPage() {
         </CardSection>
       </Card>
 
+      <Card>
+        <CardSection
+          title="匯出 / Rebuild"
+          description="控制面摘要 JSON + 可選重載 managed nginx（fail-closed）"
+        >
+          <div className="btn-row">
+            <Button
+              variant="secondary"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                setBusy(true);
+                setErr(null);
+                void api
+                  .requestRaw('/api/v1/system/export')
+                  .then((r) => {
+                    setMsg(`已匯出摘要 · projects=${(r as { counts?: { projects?: number } }).counts?.projects ?? '—'}`);
+                  })
+                  .catch((e: Error) => setErr(e.message))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              匯出摘要
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                setBusy(true);
+                setErr(null);
+                void api
+                  .requestRaw<{ ok?: boolean; notes?: string[]; blockMessage?: string }>(
+                    '/api/v1/system/rebuild',
+                    {
+                      method: 'POST',
+                      body: JSON.stringify({ writeExport: true, syncNginx: false }),
+                    },
+                  )
+                  .then((r) => {
+                    setMsg(r.notes?.join('；') ?? (r.ok ? 'rebuild 完成' : 'rebuild 未完成'));
+                    if (r.blockMessage) setErr(r.blockMessage);
+                  })
+                  .catch((e: Error) => setErr(e.message))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              匯出 + 列 managed conf
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                if (!confirm('將嘗試 sync nginx 到系統（需 root + EXECUTE）？')) return;
+                setBusy(true);
+                setErr(null);
+                void api
+                  .requestRaw<{ ok?: boolean; notes?: string[]; blockMessage?: string }>(
+                    '/api/v1/system/rebuild',
+                    {
+                      method: 'POST',
+                      body: JSON.stringify({ writeExport: true, syncNginx: true }),
+                    },
+                  )
+                  .then((r) => {
+                    setMsg(r.notes?.join('；') ?? 'done');
+                    if (r.blockMessage) setErr(r.blockMessage);
+                  })
+                  .catch((e: Error) => setErr(e.message))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Rebuild nginx（系統）
+            </Button>
+          </div>
+        </CardSection>
+      </Card>
+
       <h2 className="section-title u-mt-4">功能入口</h2>
       <FeatureIconGrid items={tiles} />
     </FeaturePageLayout>

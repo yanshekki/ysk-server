@@ -1,6 +1,7 @@
 /**
  * Project overview — facts + real project ops.
  */
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
@@ -10,10 +11,12 @@ import {
   Card,
   CardSection,
   DescriptionList,
+  SummaryStrip,
 } from '../../../shared/components/ui';
 import { HealthSummary } from './HealthSummary';
 import { ProjectChecklist } from './ProjectChecklist';
 import { ProjectNextStep } from './ProjectNextStep';
+import { projectsApi } from '../api';
 
 function PathValue({ value, copyLabel }: { value: string; copyLabel: string }) {
   return (
@@ -51,10 +54,58 @@ export function ProjectOverviewTab({
   const navigate = useNavigate();
   const copy = t('common.copy');
   const hasDomain = Boolean(project.domain?.trim());
+  const [usage, setUsage] = useState<{
+    usedMb: number;
+    quotaMb: number | null;
+    withinQuota: boolean | null;
+  } | null>(null);
+
+  useEffect(() => {
+    void projectsApi
+      .usage(project.id)
+      .then((r) =>
+        setUsage({
+          usedMb: r.usedMb,
+          quotaMb: r.quotaMb,
+          withinQuota: r.withinQuota,
+        }),
+      )
+      .catch(() => setUsage(null));
+  }, [project.id, project.quotaMb]);
 
   return (
     <div className="stack">
       <ProjectNextStep project={project} />
+      {usage ? (
+        <SummaryStrip
+          items={[
+            { label: '已用', value: `${usage.usedMb} MiB` },
+            {
+              label: '配額',
+              value: usage.quotaMb != null ? `${usage.quotaMb} MiB` : '未設',
+            },
+            {
+              label: '配額狀態',
+              value:
+                usage.withinQuota === false
+                  ? '超額'
+                  : usage.withinQuota === true
+                    ? '正常'
+                    : '—',
+              tone:
+                usage.withinQuota === false
+                  ? 'danger'
+                  : usage.withinQuota === true
+                    ? 'ok'
+                    : 'default',
+            },
+            {
+              label: 'Document root',
+              value: project.docRoot || 'app/public',
+            },
+          ]}
+        />
+      ) : null}
       <Card>
         <CardSection title={t('projects.checklist.title')} description={t('projects.checklist.desc')}>
           <ProjectChecklist project={project} />

@@ -23,7 +23,32 @@ export const projectsApi = {
     api.wordpressDownload(id, { force }),
   remove: (id: string) => api.deleteProject(id),
   deploy: (id: string) => api.deployProject(id),
-  deployPhp: (id: string) => api.deployPhp(id),
+  deployPhp: (
+    id: string,
+    body?: { phpVersion?: string; preferFpm?: boolean; forceBuiltin?: boolean },
+  ) =>
+    api.requestRaw(`/api/v1/projects/${id}/deploy-php`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    }),
+  setRuntimeVersion: (id: string, runtimeVersion: string) =>
+    api.requestRaw<{ project: ProjectDto }>(`/api/v1/projects/${id}/runtime`, {
+      method: 'PATCH',
+      body: JSON.stringify({ runtimeVersion }),
+    }),
+  applyPhpFpm: (id: string, body?: { phpVersion?: string; enable?: boolean }) =>
+    api.requestRaw(`/api/v1/projects/${id}/php-fpm`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? { enable: true }),
+    }),
+  usage: (id: string) =>
+    api.requestRaw<{
+      usedMb: number;
+      usedBytes: number;
+      quotaMb: number | null;
+      withinQuota: boolean | null;
+      notes: string[];
+    }>(`/api/v1/projects/${id}/usage`),
   stop: (id: string) => api.stopProject(id),
   health: (id: string) => api.projectHealth(id),
   publishNginx: (

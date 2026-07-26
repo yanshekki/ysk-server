@@ -44,5 +44,7 @@ export * from './global-search.js';
 export * from './sftp-keys.js';
 export * from './runtime-tools.js';
 export * from './temp-db-user.js';
+export * from './adminer.js';
+export * from './rebuild.js';
 
 
