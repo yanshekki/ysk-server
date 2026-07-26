@@ -54,6 +54,18 @@ export const emailApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  bootstrap: (body: {
+    domain: string;
+    serverIp: string;
+    adminLocalPart?: string;
+    adminPassword?: string;
+    installPackages?: boolean;
+    webmail?: boolean;
+  }) =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/email/bootstrap', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   dns: (id: string) => api.requestRaw<EmailBundle>(`/api/v1/email/domains/${id}/dns`),
   liveCheck: (id: string) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/email/domains/${id}/live-check`, {

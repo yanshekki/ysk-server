@@ -34,6 +34,7 @@ import {
   writeAllDovecotPassdbs,
   listSupportedRuntimes,
   applyWebmail,
+  bootstrapEmailServer,
   assessProductionReadiness,
   applyPublicFileServer,
   planFirewall,
@@ -798,6 +799,42 @@ export function createHttpServer(ctx: AppContext): Server {
           ok: result.ok,
         });
         return sendJson(res, result.ok || result.mode === 'plan' ? 200 : 422, result);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/email/bootstrap') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          serverIp?: string;
+          mailHostname?: string;
+          installPackages?: boolean;
+          adminLocalPart?: string;
+          adminPassword?: string;
+          webmail?: boolean;
+          relay?: {
+            host: string;
+            port?: number;
+            username?: string;
+            password?: string;
+          };
+        };
+        const result = await bootstrapEmailServer({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          host: ctx.host,
+          domain: data.domain ?? '',
+          serverIp: data.serverIp ?? '',
+          mailHostname: data.mailHostname,
+          actor: user.username,
+          audit: ctx.audit,
+          installPackages: data.installPackages,
+          adminLocalPart: data.adminLocalPart,
+          adminPassword: data.adminPassword,
+          webmail: data.webmail,
+          relay: data.relay,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes') {

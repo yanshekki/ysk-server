@@ -40,6 +40,7 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - OS isolation via bash -c useradd/chown; re-provision API
 - install.sh embeds Web UI + CLI wrapper; pack includes public/web
 - Dashboard Spec readiness banner; more tool-executor / os-provision tests
+- GitHub CI; Spec §5 email bootstrap; outbound-agent + deployPhp tests
 
 ### Still partial / Spec backlog
 

@@ -662,6 +662,32 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return result.ok ? 0 : 1;
       }
+      if (sub === 'email-bootstrap') {
+        const { bootstrapEmailServer } = await import('@ysk/core');
+        const domain = getOpt(args, '--domain');
+        const serverIp = getOpt(args, '--ip');
+        if (!domain || !serverIp) {
+          process.stderr.write(
+            'Usage: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n',
+          );
+          return 1;
+        }
+        const result = await bootstrapEmailServer({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          host: ctx.host,
+          domain,
+          serverIp,
+          actor: 'cli',
+          audit: ctx.audit,
+          installPackages: hasFlag(args, '--install'),
+          adminLocalPart: getOpt(args, '--admin') ?? 'postmaster',
+          adminPassword: getOpt(args, '--password'),
+          webmail: !hasFlag(args, '--no-webmail'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
       if (sub === 'firewall-apply') {
         const result = await applyFirewall({
           host: ctx.host,
@@ -686,6 +712,7 @@ async function main(argv: string[]): Promise<number> {
           '  dovecot-passdb --domain X | --all',
           '  webmail-apply --domain webmail.example.com [--download]',
           '  public-files --domain files.example.com [--reload]',
+          '  email-bootstrap --domain example.com --ip A.B.C.D [--admin postmaster] [--install]',
           '  firewall-apply [--smtp] [--apply]',
           '',
         ].join('\n'),

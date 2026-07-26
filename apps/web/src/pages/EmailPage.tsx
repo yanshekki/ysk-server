@@ -227,6 +227,45 @@ export function EmailPage() {
       </div>
 
       <div className="card">
+        <h2 className="card__title">一鍵 Email Bootstrap（Spec §5）</h2>
+        <p className="card__desc">
+          DKIM 域名 + MTA 配置 + postmaster 信箱 + passdb + webmail 計劃。系統 apt 需 root+YSK_EXECUTE；DNS/PTR/Port25
+          仍係外部待辦。
+        </p>
+        <div className="form-actions btn-row">
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={busy || !domain || !serverIp}
+            onClick={() => {
+              void (async () => {
+                setBusy(true);
+                setError(null);
+                try {
+                  setWebmailLog(
+                    await emailApi.bootstrap({
+                      domain,
+                      serverIp,
+                      adminLocalPart: 'postmaster',
+                      adminPassword: 'ChangeMe99!',
+                      installPackages: false,
+                      webmail: true,
+                    }),
+                  );
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'bootstrap failed');
+                } finally {
+                  setBusy(false);
+                }
+              })();
+            }}
+          >
+            Bootstrap（計劃模式）
+          </button>
+        </div>
+      </div>
+
+      <div className="card">
         <h2 className="card__title">Webmail (Roundcube)</h2>
         <p className="card__desc">
           Writes config + nginx under dataDir; download needs YSK_EXECUTE (never fake success)

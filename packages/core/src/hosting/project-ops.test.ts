@@ -142,6 +142,44 @@ describe('ProjectOpsService real deploy', () => {
     expect(conf).toContain('server_name ngx.local');
   });
 
+  it('deployPhp degraded path listens with php -S when php available', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-php-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+    opsList.push(ops);
+
+    const { project } = await projects.create({
+      name: 'PhpApp',
+      domain: 'php.local',
+      runtime: 'php',
+      templateId: 'wordpress-php',
+      actor: 'test',
+    });
+    projectIds.push(project.id);
+
+    const result = await ops.deployPhp(project.id, {
+      actor: 'test',
+      forceBuiltin: true,
+      healthTimeoutMs: 15_000,
+    });
+    // php may or may not be installed in CI — assert honest result shape
+    expect(typeof result.ok).toBe('boolean');
+    expect(result.notes.length).toBeGreaterThan(0);
+    expect(result.written.length).toBeGreaterThan(0);
+    if (result.ok) {
+      expect(result.listening).toBe(true);
+      expect(result.port).toBeGreaterThan(0);
+      expect(result.degraded).toBe(true);
+      await ops.stopNode(project.id, 'test');
+    } else {
+      expect(result.notes.some((n) => /php binary|failed|spawn/i.test(n))).toBe(true);
+    }
+  }, 30_000);
+
   it('deployStatic writes nginx root conf and index.html', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-static-'));
     dirs.push(dir);

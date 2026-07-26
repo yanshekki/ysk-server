@@ -7,4 +7,5 @@ export * from './relay.js';
 export * from './dovecot-passdb.js';
 export * from './password-hash.js';
 export * from './webmail-apply.js';
+export * from './email-bootstrap.js';
 

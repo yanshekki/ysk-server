@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultAllowlist } from '../security/allowlist.js';
 import {
+  approveTaskSteps,
   buildRcaReport,
   createAiTask,
   planStepsFromPrompt,
@@ -61,5 +62,31 @@ describe('AI task planner', () => {
     expect(run.status).toBe('pending');
     expect(run.playbookId).toBe('discover-host');
     expect(() => getPlaybook('no-such-playbook')).toThrow(/not found/i);
+  });
+
+  it('approveTaskSteps marks planned steps approved', () => {
+    const store = new MemStore();
+    const task = createAiTask({
+      prompt: 'show system info',
+      actor: 'admin',
+      allowlist: createDefaultAllowlist(),
+      store,
+    });
+    const approved = approveTaskSteps(task, store);
+    expect(approved.steps.every((s) => s.status === 'approved')).toBe(true);
+  });
+
+  it('plans default discovery when prompt unmatched', () => {
+    const plan = planStepsFromPrompt('something vague xyz', createDefaultAllowlist());
+    expect(plan.steps.some((s) => s.tool === 'sys.info')).toBe(true);
+  });
+
+  it('buildRcaReport detects disk and service signals', () => {
+    const down = buildRcaReport({ title: 'x', facts: { status: 'inactive' } });
+    expect(down.hypotheses.some((h) => /service/i.test(h))).toBe(true);
+    const disk = buildRcaReport({ title: 'x', facts: { err: 'ENOSPC no space' } });
+    expect(disk.hypotheses.some((h) => /disk/i.test(h))).toBe(true);
+    const empty = buildRcaReport({ title: 'x', facts: {} });
+    expect(empty.hypotheses.length).toBeGreaterThan(0);
   });
 });

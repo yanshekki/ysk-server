@@ -315,6 +315,13 @@ WM=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/webmail/apply"
 echo "$WM" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||j.mode!=='plan') process.exit(32);})"
 log "Email mailbox + webmail plan OK"
 
+# Spec §5 email bootstrap (plan mode)
+BOOT=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/bootstrap" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d "{\"domain\":\"boot-${NAME}.test\",\"serverIp\":\"203.0.113.10\",\"adminLocalPart\":\"postmaster\",\"adminPassword\":\"longpassword99\",\"installPackages\":false,\"webmail\":true}")
+echo "$BOOT" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.domainId||!j.steps||!j.steps.length) process.exit(36); if(!j.externalTodos||!j.externalTodos.length) process.exit(37);})"
+log "Email bootstrap OK"
+
 # Firewall plan write script
 FW=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/system/firewall/apply" \
   -H "$AUTH" -H 'Content-Type: application/json' \

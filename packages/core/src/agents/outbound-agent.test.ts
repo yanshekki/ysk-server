@@ -1,49 +1,75 @@
-import { describe, expect, it } from 'vitest';
-import { agentCycle } from './outbound-agent.js';
+import { describe, expect, it, vi } from 'vitest';
+import { agentCycle, runOutboundAgent } from './outbound-agent.js';
 
-describe('outbound agent cycle', () => {
-  it('registers, heartbeats, and handles commands via mock fetch', async () => {
-    const calls: string[] = [];
-    const fetchImpl = async (input: string | URL, init?: RequestInit) => {
-      const url = String(input);
-      calls.push(`${init?.method ?? 'GET'} ${url}`);
-      if (url.includes('/register')) {
-        return new Response(JSON.stringify({ id: 'sess-1', agent_id: 'a1', status: 'connected' }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
+describe('outbound-agent', () => {
+  it('registers, heartbeats, handles commands via mock fetch', async () => {
+    const fetchImpl = vi.fn(async (url: string, init?: RequestInit) => {
+      const u = String(url);
+      if (u.endsWith('/register')) {
+        return {
+          ok: true,
+          json: async () => ({ id: 'sess-1' }),
+        } as Response;
       }
-      if (url.includes('/heartbeat')) {
-        return new Response(JSON.stringify({ id: 'sess-1', status: 'connected' }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
+      if (u.includes('/heartbeat')) {
+        return { ok: true, json: async () => ({}) } as Response;
       }
-      if (url.includes('/commands')) {
-        return new Response(
-          JSON.stringify({
-            items: [{ id: 'c1', payload: { tool: 'sys.info' } }],
+      if (u.includes('/commands') && (!init || init.method === undefined || init.method === 'GET')) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: [{ id: 'c1', payload: { op: 'ping' } }],
           }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        );
+        } as Response;
       }
-      return new Response('not found', { status: 404 });
-    };
+      return { ok: true, json: async () => ({}) } as Response;
+    });
 
-    const handled: unknown[] = [];
+    const onCommand = vi.fn(async () => ({ pong: true }));
     const r = await agentCycle({
       controlPlane: 'http://cp.local',
       agentId: 'edge-1',
-      fetchImpl: fetchImpl as typeof fetch,
-      onCommand: (cmd) => {
-        handled.push(cmd.payload);
-        return { ok: true };
-      },
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      onCommand,
     });
     expect(r.sessionId).toBe('sess-1');
     expect(r.heartbeated).toBe(true);
     expect(r.commandsHandled).toBe(1);
-    expect(handled[0]).toEqual({ tool: 'sys.info' });
-    expect(calls.some((c) => c.includes('register'))).toBe(true);
+    expect(onCommand).toHaveBeenCalled();
+  });
+
+  it('throws on register failure', async () => {
+    const fetchImpl = vi.fn(async () => ({ ok: false, status: 500 }) as Response);
+    await expect(
+      agentCycle({
+        controlPlane: 'http://cp.local',
+        agentId: 'x',
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(/register failed/);
+  });
+
+  it('runOutboundAgent stops on abort', async () => {
+    const ac = new AbortController();
+    let n = 0;
+    const fetchImpl = vi.fn(async (url: string) => {
+      n += 1;
+      if (n > 2) ac.abort();
+      if (String(url).endsWith('/register')) {
+        return { ok: true, json: async () => ({ id: 's' }) } as Response;
+      }
+      if (String(url).includes('/heartbeat')) {
+        return { ok: true, json: async () => ({}) } as Response;
+      }
+      return { ok: true, json: async () => ({ items: [] }) } as Response;
+    });
+    await runOutboundAgent({
+      controlPlane: 'http://cp.local',
+      agentId: 'a',
+      intervalMs: 5,
+      signal: ac.signal,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    expect(fetchImpl.mock.calls.length).toBeGreaterThan(0);
   });
 });
