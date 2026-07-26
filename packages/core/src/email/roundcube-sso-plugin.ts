@@ -18,11 +18,9 @@ export function writeRoundcubeSsoPlugin(input: {
 
   const php = `<?php
 /**
- * YSK Webmail SSO — Roundcube plugin skeleton
- * 1) Enable in Roundcube config: $config['plugins'][] = 'ysk_sso';
- * 2) Symlink this dir into Roundcube plugins/ (panel can do enableSystem)
- * 3) Panel issues token via POST /api/v1/email/webmail/sso
- * 4) User hits ?_ysk_sso=<token> — plugin exchanges at panel consume URL
+ * YSK Webmail SSO — Roundcube auto-login plugin
+ * Panel: POST /api/v1/email/webmail/sso with password → user opens ?_ysk_sso=TOKEN
+ * Plugin consumes token and calls $RCMAIL->login(email, password) when password present.
  */
 class ysk_sso extends rcube_plugin {
   public $task = 'login|mail';
@@ -30,22 +28,40 @@ class ysk_sso extends rcube_plugin {
     $this->add_hook('startup', array($this, 'startup'));
   }
   function startup($args) {
-    $token = $_GET['_ysk_sso'] ?? null;
+    $token = isset($_GET['_ysk_sso']) ? $_GET['_ysk_sso'] : null;
     if (!$token) return $args;
     $url = ${JSON.stringify(input.panelBaseUrl.replace(/\/$/, '') + '/api/v1/email/webmail/sso/consume')};
-    $ctx = stream_context_create([
-      'http' => [
+    $ctx = stream_context_create(array(
+      'http' => array(
         'method' => 'POST',
         'header' => "Content-Type: application/json\\r\\n",
-        'content' => json_encode(['token' => $token]),
-        'timeout' => 5,
-      ],
-    ]);
+        'content' => json_encode(array('token' => $token)),
+        'timeout' => 8,
+        'ignore_errors' => true,
+      ),
+    ));
     $raw = @file_get_contents($url, false, $ctx);
     $data = $raw ? json_decode($raw, true) : null;
-    if (!empty($data['ok']) && !empty($data['email'])) {
-      // Operator must wire auto-login carefully; skeleton only logs intent
-      error_log('YSK SSO ok for ' . $data['email']);
+    if (empty($data['ok']) || empty($data['email'])) {
+      error_log('YSK SSO consume failed');
+      return $args;
+    }
+    $email = $data['email'];
+    $pass = isset($data['password']) ? $data['password'] : null;
+    $rcmail = rcube::get_instance();
+    if ($pass && method_exists($rcmail, 'login')) {
+      $auth = $rcmail->login($email, $pass, $rcmail->config->get('default_host'), true);
+      if ($auth) {
+        $rcmail->session->set('user_id', $rcmail->get_user_id());
+        $rcmail->session->set('password', $rcmail->encrypt($pass));
+        header('Location: ./?_task=mail');
+        exit;
+      }
+      error_log('YSK SSO login() failed for ' . $email);
+    } else {
+      // No password — prefill username on login form
+      $_SESSION['ysk_sso_user'] = $email;
+      error_log('YSK SSO verified ' . $email . ' (no password for auto-login)');
     }
     return $args;
   }

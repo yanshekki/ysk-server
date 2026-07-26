@@ -65,6 +65,7 @@ export function ProjectOverviewTab({
     status4xx: number;
     status5xx: number;
     notes: string[];
+    daily?: Array<{ day: string; hits: number; status2xx: number; status5xx: number }>;
   } | null>(null);
 
   useEffect(() => {
@@ -87,6 +88,8 @@ export function ProjectOverviewTab({
           status4xx: r.status4xx,
           status5xx: r.status5xx,
           notes: r.notes ?? [],
+          daily: (r as { daily?: Array<{ day: string; hits: number; status2xx: number; status5xx: number }> })
+            .daily,
         }),
       )
       .catch(() => setWebStats(null));
@@ -138,10 +141,31 @@ export function ProjectOverviewTab({
                           ? ('warn' as const)
                           : ('ok' as const),
                   },
+                  {
+                    label: '日統計天數',
+                    value: String(webStats.daily?.length ?? 0),
+                  },
                 ]
               : []),
           ]}
         />
+      ) : null}
+      {webStats?.daily && webStats.daily.length > 0 ? (
+        <Card>
+          <CardSection title="訪問日統計（最多 60 日）" description="由 access log 樣本滾動記錄">
+            <ul className="list-plain list-spaced">
+              {webStats.daily
+                .slice(-14)
+                .reverse()
+                .map((d) => (
+                  <li key={d.day}>
+                    <strong>{d.day}</strong> · hits {d.hits} · 2xx {d.status2xx} · 5xx{' '}
+                    {d.status5xx}
+                  </li>
+                ))}
+            </ul>
+          </CardSection>
+        </Card>
       ) : null}
       <Card>
         <CardSection title={t('projects.checklist.title')} description={t('projects.checklist.desc')}>

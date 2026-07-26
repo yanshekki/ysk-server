@@ -84,7 +84,12 @@ export const emailApi = {
     }),
   dnsblLast: () =>
     api.requestRaw<{ last: Record<string, unknown> | null }>('/api/v1/email/dnsbl/last'),
-  webmailSso: (body: { email: string; domain: string; ttlMinutes?: number }) =>
+  webmailSso: (body: {
+    email: string;
+    domain: string;
+    ttlMinutes?: number;
+    password?: string;
+  }) =>
     api.requestRaw<{
       ok: boolean;
       token?: string;

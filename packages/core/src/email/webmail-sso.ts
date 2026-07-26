@@ -14,6 +14,8 @@ export type WebmailSsoToken = {
   expiresAt: string;
   createdAt: string;
   usedAt?: string;
+  /** One-time mailbox password for Roundcube auto-login (cleared after consume) */
+  loginPassword?: string;
 };
 
 const KEY = 'webmail_sso_tokens';
@@ -38,6 +40,8 @@ export function issueWebmailSso(input: {
   email: string;
   domain: string;
   ttlMinutes?: number;
+  /** Mailbox password for one-time Roundcube auto-login (not re-displayed) */
+  password?: string;
 }): {
   ok: boolean;
   token?: string;
@@ -60,6 +64,7 @@ export function issueWebmailSso(input: {
     domain,
     expiresAt,
     createdAt: new Date().toISOString(),
+    loginPassword: input.password || undefined,
   };
   const all = load(input.db).filter((t) => !t.usedAt && t.expiresAt > new Date().toISOString());
   all.unshift(row);
@@ -72,7 +77,9 @@ export function issueWebmailSso(input: {
     loginUrl,
     notes: [
       `已簽發一次性 SSO token（${ttl} 分鐘）`,
-      '需 webmail 前端或 reverse proxy 認 token；未接 Roundcube 外掛前僅控制面可用',
+      input.password
+        ? '已附一次性登入密碼 — Roundcube 外掛可自動 login'
+        : '未附密碼 — 僅驗證 email（外掛需另行登入）',
       `loginUrl: ${loginUrl}`,
     ],
   };
@@ -81,7 +88,14 @@ export function issueWebmailSso(input: {
 export function consumeWebmailSso(
   db: JsonStore,
   token: string,
-): { ok: boolean; email?: string; domain?: string; notes: string[] } {
+): {
+  ok: boolean;
+  email?: string;
+  domain?: string;
+  /** One-time password for Roundcube $RCMAIL->login (cleared after this call) */
+  password?: string;
+  notes: string[];
+} {
   const hash = createHash('sha256').update(token).digest('hex');
   const all = load(db);
   const found = all.find((t) => t.tokenHash === hash);
@@ -91,11 +105,16 @@ export function consumeWebmailSso(
     return { ok: false, notes: ['token 已過期'] };
   }
   found.usedAt = new Date().toISOString();
+  const password = found.loginPassword;
+  delete found.loginPassword;
   save(db, all);
   return {
     ok: true,
     email: found.email,
     domain: found.domain,
-    notes: ['SSO 已驗證（單次）'],
+    password,
+    notes: password
+      ? ['SSO 已驗證（單次）· 含自動登入密碼']
+      : ['SSO 已驗證（單次）· 無密碼'],
   };
 }

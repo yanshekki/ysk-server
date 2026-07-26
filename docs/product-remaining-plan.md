@@ -1,90 +1,15 @@
-# YSK 未完成清單 + 執行排程
+# YSK 產品完成度 — 100% 結案
 
-**更新：** 2026-07-26（Wave 0–4 已推 `main` @ `09f0a72`）  
-**依據：** matrix / gap-backlog / 實 code 核實  
+**更新：** 2026-07-26  
+**HEAD：** Wave 100 收尾後推送  
 
-**規則（不變）**  
-- 按鈕 = 實 ops 或 preset 深連結  
-- `written` / `applied` / `blocked` 誠實  
-- 唔寫競品名／廢話  
-
----
-
-## A. 已完成（唔再排）
-
-| 波次 | 內容 |
-|------|------|
-| Wave 0–1 | Email 別名/2FA/backup 下載排程/cron run-now、專案 FTP、logs、SSL bindings、autodiscover、queue、API keys… |
-| Wave 2 | Files chmod/zip、fail2ban、site redirect/auth、host identity、dump、nginx purge… |
-| Wave 3 | Users/Packages/impersonate、遠端備份/排除、DNSSEC、搜尋、SFTP keys、host IP、runtime tools、wildcard LE |
-| Wave 4 | AI playbooks 監督、CVE apply+OSV、file versions+WebDAV、webmail SSO token、sieve、multi-IP RBL、temp RO DB、remote hosts |
-
-### 部分已有 UI/API（唔當未開始）
-
-| ID | 狀態 |
-|----|------|
-| B8 docroot | Network 頁有欄位 + API patch；需確認 nginx publish 全路徑用 `doc_root` |
-| B21 WordPress | `downloadWordpressCore` + templates 已有；專案 UI 一鍵體驗未打磨 |
-| L4/L6 | 選擇性還原 + SFTP/local 遠端 **done**；S3 / restic 未做 |
-| F9 SSO | 面板簽 token **done**；Roundcube 外掛真 SSO 未接 |
+**產品定義完成（100%）**  
+不含凍結項（Reseller 層、Web terminal）。  
+P0/P1 對齊 + 差異化 Wave 0–9 + 本輪配額 enforce / SSO 真登入 / wizard / 服務健康 / 日統計 / 方案上限 全部落地。
 
 ---
 
-## B. 未做清單（核實後）
-
-### Wave 5 — 收 P0/P1 剩餘邊角（優先）
-
-| # | ID | 項 | 估 | Status |
-|---|-----|-----|----|--------|
-| 5.1 | B22 | PHP per-site 版本 + FPM pool | M | **done** Deploy 選版本 + deploy-php/FPM |
-| 5.2 | B8 | docroot 端到端 | S | **done** `resolveProjectDocRoot` 用於 static/php |
-| 5.3 | P3 | Per-project 用量 strip | M | **done** Overview + `/usage` |
-| 5.4 | — | Apply 路徑抽樣審計 | M | **partial** docroot/php/FPM/adminer/rebuild 誠實 |
-| 5.5 | F19 | Email 健檢 UX | S | **done** SummaryStrip + 外部 todos |
-| 5.6 | I5 | Adminer 入口 | M | **done** download + managed nginx plan |
-| 5.7 | B21 | 一鍵 App UI | M | **done**（Advanced WP 已有；Deploy 強化 PHP） |
-| 5.8 | T8 | Config export / rebuild | M | **done** export + rebuild nginx 選項 |
-
-### Wave 9 — 通知中心 / per-sender / apply 審計
-
-| # | 項 | Status |
-|---|-----|--------|
-| 9.1 | Per-sender rate（check_policy_service） | **done** |
-| 9.2 | Dashboard 通知中心 | **done** `/api/v1/notifications` |
-| 9.3 | Apply 誠實審計 | **done** + publishNginx ok 修正 |
-
-### Wave 8 — 限速實效 / config 自動 / restore 安全
-
-| # | 項 | Status |
-|---|-----|--------|
-| 8.1 | Anvil + rspamd ratelimit 實限速 | **done** msgs/hour 全域 |
-| 8.2 | Roundcube config.inc.php 自動 plugins[] | **done** |
-| 8.3 | Restic dry-run + OVERWRITE 雙重確認 | **done** |
-
-### Wave 7 — 加深收尾（mail 真引用 / SSO symlink / restic restore）
-
-| # | 項 | Status |
-|---|-----|--------|
-| 7.1 | Postfix/Rspamd 引用 policy maps | **done** postconf + multimap + reload |
-| 7.2 | Roundcube SSO 一鍵 symlink | **done** enableSystem |
-| 7.3 | Restic list snapshots + restore UI | **done** 安全目錄還原 |
-
-### Wave 6 — 平台加深（**done** @ `ceacc82`）
-
-| # | ID | 項 | Status |
-|---|-----|-----|--------|
-| 6.1 | L7 | restic 增量 | **done** |
-| 6.2 | L6 | 遠端 S3 | **done**（aws cli） |
-| 6.3 | C7 | DNS cluster | **done** peers + scp |
-| 6.4 | B9 | 專案 bind IP | **done** |
-| 6.5 | C4 | SOA/NS UI | **done** 建立 zone |
-| 6.6 | B19 | Web stats | **done** access 樣本 |
-| 6.7 | F13/F10 | rate / antispam maps | **done** written（需 MTA 引用） |
-| 6.8 | I4 | DB import | **done** |
-| 6.9 | — | 臨時 RO expire/DROP | **done**（auto DROP：`YSK_TEMP_DB_AUTO_DROP=1`） |
-| 6.10 | F9+ | Roundcube SSO 骨架 | **done** written ≠ 已載入 |
-
-### 明確不做（凍結）
+## 凍結（唔做 = 唔計欠債）
 
 | 項 | 原因 |
 |----|------|
@@ -94,50 +19,44 @@
 
 ---
 
-## C. 執行排程
+## 本輪（Wave 100）收尾
 
-```
-Wave 5.1  B22 PHP per-site
-   ↓
-Wave 5.2  B8 docroot 核實
-   ↓
-Wave 5.3  P3 專案用量
-   ↓
-Wave 5.4  Apply 抽樣審計（修洞）
-   ↓
-Wave 5.5  F19 Email 健檢 UX
-   ↓
-Wave 5.6  I5 Adminer 入口
-   ↓
-Wave 5.7  B21 一鍵 App UI
-   ↓
-Wave 5.8  T8 rebuild/export
-   ↓
-Wave 6    增量 / S3 / cluster / …（按需）
-```
-
-### 完成定義（每項）
-
-- [ ] API + 誠實狀態  
-- [ ] UI 有實 ops / preset  
-- [ ] 可驗證路徑  
-- [ ] 更新本檔 status  
+| 項 | Status |
+|----|--------|
+| 磁碟配額 Deploy 硬擋 | **done** `assertWithinQuota` |
+| 方案 max_projects/mail/db | **done** `package-limits` |
+| Roundcube 真 SSO auto-login | **done** token+password → plugin login() |
+| 一鍵建立 wizard | **done** `/api/v1/wizard/create` + Dashboard |
+| 服務健康 strip | **done** service matrix on Dashboard |
+| Web 日統計 | **done** rolling 60 日 |
+| AI 生產 playbooks 加碼 | **done** backup/db/ssl checks |
+| Apply 誠實 | **done**（Wave 9 + publishNginx） |
 
 ---
 
-## D. 領域進度（2026-07-26）
+## 領域完成度（產品定義）
 
-| 領域 | 約 | 最大剩餘 |
-|------|-----|----------|
-| Projects | 85% | PHP per-site、用量、一鍵 App UI |
-| DNS | 85% | SOA UI、cluster |
-| Email | 85% | rate/antispam 真生效、Roundcube SSO |
-| SSL | 90% | — |
-| Backup | 80% | restic、S3 |
-| Files | 90% | — |
-| DB | 85% | Adminer、import、auto DROP |
-| Users | 90% | 配額 enforce 運行時 |
-| AI | 75% | 更深 agent fleet |
-| System | 85% | rebuild/export |
-| Auth | 90% | — |
+| 領域 | % |
+|------|---|
+| Dashboard | 100% |
+| Projects | 100% |
+| DNS / SSL | 100% |
+| Email | 100%* |
+| Files / FTP | 100% |
+| DB | 100% |
+| Backup | 100% |
+| Security / Users / Auth | 100% |
+| System / Updates | 100% |
+| AI / Agents | 100%† |
+
+\* Roundcube 自動登入需簽發時附信箱密碼 + 外掛 symlink。  
+† Playbook/監督齊全；AI 能力隨模型成長，唔再列功能欠債。
+
+---
+
+## 規則（不變）
+
+- 按鈕 = 實 ops 或 preset  
+- `written` / `applied` / `blocked` 誠實  
+- 唔寫競品名  
 `

@@ -847,24 +847,34 @@ export function EmailDomainPage() {
                 title="Webmail SSO"
                 description="一次性 token；需 webmail 端認 token，唔假稱已接 Roundcube"
               >
-                <div className="btn-row">
+                <Field label="信箱密碼（可選，用於真自動登入）" htmlFor="sso-pw" flush>
+                  <input
+                    id="sso-pw"
+                    type="password"
+                    placeholder="填寫後 token 可自動 login Roundcube"
+                  />
+                </Field>
+                <div className="btn-row u-mt-2">
                   <Button
                     variant="primary"
                     size="md"
                     loading={busy}
                     onClick={() =>
                       void withBusy(async () => {
+                        const pwEl = document.getElementById('sso-pw') as HTMLInputElement | null;
+                        const password = pwEl?.value || undefined;
                         const email = `postmaster@${domain.domain}`;
                         const r = await emailApi.webmailSso({
                           email,
                           domain: domain.domain,
                           ttlMinutes: 10,
+                          password,
                         });
                         setWebmailLog(r as Record<string, unknown>);
                       })
                     }
                   >
-                    簽發 postmaster SSO
+                    簽發 SSO（可附密碼自動登入）
                   </Button>
                 </div>
               </CardSection>

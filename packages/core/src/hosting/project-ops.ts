@@ -34,7 +34,7 @@ import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
 import { resolveManagedCertPaths } from './ssl-certs.js';
 import { applyPhpFpmPool } from './php-fpm.js';
-import { assertQuotaMb, checkProjectQuota } from './quota.js';
+import { assertQuotaMb, assertWithinQuota, checkProjectQuota } from './quota.js';
 import { applyPm2Start, applyPm2Stop, writePm2Ecosystem } from './pm2-apply.js';
 
 export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' | 'failed';
@@ -110,6 +110,13 @@ export class ProjectOpsService {
         httpStatus: 400,
       });
     }
+    await assertWithinQuota({
+      host: this.host,
+      projectId,
+      homeDir: row.home_dir,
+      quotaMb: row.quota_mb,
+      action: 'Deploy',
+    });
 
     const notes: string[] = [];
     const written: string[] = [];
@@ -480,6 +487,13 @@ export class ProjectOpsService {
         );
       }
     }
+    await assertWithinQuota({
+      host: this.host,
+      projectId,
+      homeDir: row.home_dir,
+      quotaMb: row.quota_mb,
+      action: 'Deploy static',
+    });
     const notes: string[] = [];
     const written: string[] = [];
     const docRoot = resolveProjectDocRoot(row);
@@ -1145,6 +1159,13 @@ export class ProjectOpsService {
         });
       }
     }
+    await assertWithinQuota({
+      host: this.host,
+      projectId,
+      homeDir: row.home_dir,
+      quotaMb: row.quota_mb,
+      action: 'Deploy PHP',
+    });
     const notes: string[] = [];
     const written: string[] = [];
     const port = opts.port ?? row.port ?? (await findFreePort(8100, 8999));

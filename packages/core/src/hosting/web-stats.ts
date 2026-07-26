@@ -2,7 +2,14 @@
  * Lightweight web access stats from managed nginx access logs (honest sample).
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  mkdirSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 
@@ -147,4 +154,70 @@ export function listManagedAccessLogs(
         return { name, path, bytes: 0 };
       }
     });
+}
+
+export type DailyStatPoint = {
+  day: string; // YYYY-MM-DD
+  hits: number;
+  status2xx: number;
+  status4xx: number;
+  status5xx: number;
+};
+
+/**
+ * Merge current tail parse into rolling daily series under dataDir/stats/<projectId>.json
+ */
+export function recordProjectDailyStats(
+  dataDir: string,
+  projectId: string,
+  summary: WebStatsSummary,
+): { written: string; series: DailyStatPoint[] } {
+  const dir = join(dataDir, 'stats');
+  mkdirSync(dir, { recursive: true });
+  const path = join(dir, `${projectId}.json`);
+  let series: DailyStatPoint[] = [];
+  try {
+    if (existsSync(path)) {
+      series = JSON.parse(readFileSync(path, 'utf8')) as DailyStatPoint[];
+    }
+  } catch {
+    series = [];
+  }
+  const day = new Date().toISOString().slice(0, 10);
+  const hits = summary.linesRead;
+  const existing = series.find((s) => s.day === day);
+  if (existing) {
+    existing.hits = Math.max(existing.hits, hits);
+    existing.status2xx = Math.max(existing.status2xx, summary.status2xx);
+    existing.status4xx = Math.max(existing.status4xx, summary.status4xx);
+    existing.status5xx = Math.max(existing.status5xx, summary.status5xx);
+  } else {
+    series.push({
+      day,
+      hits,
+      status2xx: summary.status2xx,
+      status4xx: summary.status4xx,
+      status5xx: summary.status5xx,
+    });
+  }
+  series = series.sort((a, b) => (a.day < b.day ? -1 : 1)).slice(-60);
+  writeFileSync(
+    path,
+    JSON.stringify({ projectId, series, updatedAt: new Date().toISOString() }, null, 2),
+  );
+  return { written: path, series };
+}
+
+export function readProjectDailyStats(
+  dataDir: string,
+  projectId: string,
+): DailyStatPoint[] {
+  const path = join(dataDir, 'stats', `${projectId}.json`);
+  if (!existsSync(path)) return [];
+  try {
+    const j = JSON.parse(readFileSync(path, 'utf8')) as { series?: DailyStatPoint[] };
+    return j.series ?? [];
+  } catch {
+    return [];
+  }
 }

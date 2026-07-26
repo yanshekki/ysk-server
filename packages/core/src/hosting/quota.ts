@@ -75,3 +75,27 @@ export function assertQuotaMb(quotaMb: number): void {
     throw new YskError(ErrorCodes.VALIDATION, 'quotaMb must be 1..1000000', { httpStatus: 400 });
   }
 }
+
+/** Throw if project is over soft disk quota (hard enforce before deploy/write). */
+export async function assertWithinQuota(input: {
+  host: HostExecutor;
+  projectId: string;
+  homeDir: string;
+  quotaMb?: number | null;
+  action?: string;
+}): Promise<void> {
+  if (input.quotaMb == null || input.quotaMb <= 0) return;
+  const st = await checkProjectQuota({
+    host: input.host,
+    projectId: input.projectId,
+    homeDir: input.homeDir,
+    quotaMb: input.quotaMb,
+  });
+  if (st.withinQuota === false) {
+    throw new YskError(
+      ErrorCodes.VALIDATION,
+      `磁碟配額已超限（${st.usedMb} / ${st.quotaMb} MiB），無法${input.action ?? '繼續操作'}`,
+      { httpStatus: 403 },
+    );
+  }
+}

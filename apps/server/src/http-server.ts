@@ -540,6 +540,50 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, { items: ctx.projects.list() });
       }
 
+      if (method === 'POST' && url.pathname === '/api/v1/wizard/create') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          projectName?: string;
+          domain?: string;
+          runtime?: 'node' | 'php' | 'static';
+          serverIp?: string;
+          createDns?: boolean;
+          createMail?: boolean;
+          createDb?: boolean;
+          dbName?: string;
+          templateId?: string;
+        };
+        const { runCreateWizard } = await import('@ysk/core');
+        const r = await runCreateWizard({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          projects: ctx.projects,
+          email: ctx.email,
+          actor: user.username,
+          actorUserId: user.id,
+          body: {
+            projectName: data.projectName ?? '',
+            domain: data.domain,
+            runtime: data.runtime,
+            serverIp: data.serverIp,
+            createDns: data.createDns,
+            createMail: data.createMail,
+            createDb: data.createDb,
+            dbName: data.dbName,
+            templateId: data.templateId,
+          },
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'wizard.create',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 201 : 422, r);
+      }
+
       if (method === 'POST' && url.pathname === '/api/v1/projects') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
@@ -558,6 +602,8 @@ export function createHttpServer(ctx: AppContext): Server {
           createMailDomain?: boolean;
           serverIp?: string;
         };
+        const { assertCanCreateProject } = await import('@ysk/core');
+        assertCanCreateProject(ctx.db, user.id);
         const created = await ctx.projects.create({
           name: data.name ?? '',
           domain: data.domain,
@@ -2181,6 +2227,7 @@ export function createHttpServer(ctx: AppContext): Server {
           email?: string;
           domain?: string;
           ttlMinutes?: number;
+          password?: string;
         };
         const { issueWebmailSso } = await import('@ysk/core');
         const r = issueWebmailSso({
@@ -2188,12 +2235,13 @@ export function createHttpServer(ctx: AppContext): Server {
           email: data.email ?? '',
           domain: data.domain ?? '',
           ttlMinutes: data.ttlMinutes,
+          password: data.password,
         });
         ctx.audit.append({
           actor: user.username,
           action: 'email.webmail.sso',
           resource: data.email,
-          detail: { ok: r.ok, expiresAt: r.expiresAt },
+          detail: { ok: r.ok, expiresAt: r.expiresAt, hasPassword: Boolean(data.password) },
           ok: r.ok,
         });
         return sendJson(res, r.ok ? 200 : 400, r);
@@ -2428,7 +2476,8 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const proj = ctx.projects.get(id);
-        const { collectProjectWebStats } = await import('@ysk/core');
+        const { collectProjectWebStats, recordProjectDailyStats, readProjectDailyStats } =
+          await import('@ysk/core');
         const stats = await collectProjectWebStats({
           host: ctx.host,
           dataDir: ctx.dataDir,
@@ -2436,7 +2485,12 @@ export function createHttpServer(ctx: AppContext): Server {
           homeDir: proj.homeDir,
           linuxUser: proj.linuxUser,
         });
-        return sendJson(res, 200, stats);
+        const daily = recordProjectDailyStats(ctx.dataDir, id, stats);
+        return sendJson(res, 200, {
+          ...stats,
+          daily: daily.series,
+          history: readProjectDailyStats(ctx.dataDir, id),
+        });
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/db/temp-users') {

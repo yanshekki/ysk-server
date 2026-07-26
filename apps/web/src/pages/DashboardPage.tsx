@@ -1,8 +1,8 @@
 /**
  * Dashboard — health strip + feature tiles with capability badges.
  */
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../shared/hooks/useAuth';
 import { useDashboard } from '../features/dashboard';
@@ -10,15 +10,19 @@ import { softwareApi, type SoftwareStatus } from '../features/software';
 import {
   Alert,
   Badge,
+  Button,
   Card,
   CardSection,
   FeatureIconGrid,
+  Field,
+  FormGrid,
   LoadingBlock,
   PageHeader,
   SummaryStrip,
   type FeatureTileBadge,
 } from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
+import { api } from '../shared/services/api';
 
 /** Map nav key → software feature id (for install probe) */
 const KEY_TO_FEATURE: Record<string, string> = {
@@ -77,6 +81,7 @@ function badgeForKey(
 export function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     health,
     audit,
@@ -94,13 +99,73 @@ export function DashboardPage() {
   } = useDashboard();
 
   const [software, setSoftware] = useState<SoftwareStatus[]>([]);
+  const [svcMatrix, setSvcMatrix] = useState<
+    Array<{ id: string; label: string; active: string; activeLabel: string; href?: string }>
+  >([]);
+  const [wizName, setWizName] = useState('');
+  const [wizDomain, setWizDomain] = useState('');
+  const [wizRuntime, setWizRuntime] = useState<'node' | 'php' | 'static'>('node');
+  const [wizDns, setWizDns] = useState(true);
+  const [wizMail, setWizMail] = useState(true);
+  const [wizDb, setWizDb] = useState(false);
+  const [wizBusy, setWizBusy] = useState(false);
+  const [wizMsg, setWizMsg] = useState<string | null>(null);
+  const [wizErr, setWizErr] = useState<string | null>(null);
 
   useEffect(() => {
     void softwareApi
       .list()
       .then((r) => setSoftware(r.items ?? []))
       .catch(() => setSoftware([]));
+    void api
+      .requestRaw<{
+        items: Array<{
+          id: string;
+          label: string;
+          active: string;
+          activeLabel: string;
+          href?: string;
+        }>;
+      }>('/api/v1/system/services/matrix')
+      .then((r) => setSvcMatrix(r.items ?? []))
+      .catch(() => setSvcMatrix([]));
   }, []);
+
+  async function onWizard(e: FormEvent) {
+    e.preventDefault();
+    setWizBusy(true);
+    setWizErr(null);
+    setWizMsg(null);
+    try {
+      const r = await api.requestRaw<{
+        ok: boolean;
+        projectId?: string;
+        notes?: string[];
+        steps?: Array<{ step: string; ok: boolean; notes?: string[] }>;
+      }>('/api/v1/wizard/create', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectName: wizName,
+          domain: wizDomain || undefined,
+          runtime: wizRuntime,
+          createDns: wizDns && Boolean(wizDomain),
+          createMail: wizMail && Boolean(wizDomain),
+          createDb: wizDb,
+        }),
+      });
+      setWizMsg(
+        (r.notes ?? []).join('；') ||
+          (r.ok ? '建立完成' : '部分失敗'),
+      );
+      if (r.projectId) {
+        setTimeout(() => navigate(`/projects/${r.projectId}`), 800);
+      }
+    } catch (err) {
+      setWizErr(err instanceof Error ? err.message : '建立失敗');
+    } finally {
+      setWizBusy(false);
+    }
+  }
 
   const running = projects.filter((p) => p.processStatus === 'running').length;
   const executeEnabled = health?.executeEnabled;
@@ -128,7 +193,108 @@ export function DashboardPage() {
       />
 
       {error ? <Alert variant="error">{error}</Alert> : null}
+      {wizErr ? <Alert variant="error">{wizErr}</Alert> : null}
+      {wizMsg ? <Alert variant="ok">{wizMsg}</Alert> : null}
       {loading ? <LoadingBlock /> : null}
+
+      <Card>
+        <CardSection
+          title="一鍵建立"
+          description="專案 + 可選 DNS / 郵件 / DB（draft 需各頁套用）"
+        >
+          <form onSubmit={(e) => void onWizard(e)}>
+            <FormGrid>
+              <Field label="專案名稱" htmlFor="wiz-name" flush>
+                <input
+                  id="wiz-name"
+                  value={wizName}
+                  onChange={(e) => setWizName(e.target.value)}
+                  required
+                />
+              </Field>
+              <Field label="域名（可空）" htmlFor="wiz-dom" flush>
+                <input
+                  id="wiz-dom"
+                  value={wizDomain}
+                  onChange={(e) => setWizDomain(e.target.value)}
+                  placeholder="app.example.com"
+                />
+              </Field>
+              <Field label="Runtime" htmlFor="wiz-rt" flush>
+                <select
+                  id="wiz-rt"
+                  value={wizRuntime}
+                  onChange={(e) => setWizRuntime(e.target.value as typeof wizRuntime)}
+                >
+                  <option value="node">node</option>
+                  <option value="php">php</option>
+                  <option value="static">static</option>
+                </select>
+              </Field>
+            </FormGrid>
+            <div className="btn-row u-mt-3">
+              <label className="field field--check">
+                <input
+                  type="checkbox"
+                  checked={wizDns}
+                  onChange={(e) => setWizDns(e.target.checked)}
+                  disabled={!wizDomain}
+                />
+                <span>DNS zone</span>
+              </label>
+              <label className="field field--check">
+                <input
+                  type="checkbox"
+                  checked={wizMail}
+                  onChange={(e) => setWizMail(e.target.checked)}
+                  disabled={!wizDomain}
+                />
+                <span>郵件域名</span>
+              </label>
+              <label className="field field--check">
+                <input
+                  type="checkbox"
+                  checked={wizDb}
+                  onChange={(e) => setWizDb(e.target.checked)}
+                />
+                <span>MySQL DB draft</span>
+              </label>
+              <Button type="submit" variant="primary" size="md" loading={wizBusy}>
+                建立
+              </Button>
+            </div>
+          </form>
+        </CardSection>
+      </Card>
+
+      {svcMatrix.length > 0 ? (
+        <Card>
+          <CardSection title="服務健康" description="systemctl 實時探測">
+            <div className="btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
+              {svcMatrix.slice(0, 12).map((s) => (
+                <Link
+                  key={s.id}
+                  to={s.href || '/services'}
+                  className="badge"
+                  style={{ textDecoration: 'none' }}
+                  title={s.active}
+                >
+                  <Badge
+                    tone={
+                      s.active === 'active' ? 'ok' : s.active === 'failed' ? 'danger' : 'warn'
+                    }
+                  >
+                    {s.label}: {s.activeLabel}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+            <p className="muted u-text-sm u-mt-2">
+              <Link to="/services">完整服務矩陣</Link>
+            </p>
+          </CardSection>
+        </Card>
+      ) : null}
 
       {readiness ? (
         <Alert variant={readiness.productionReady ? 'ok' : 'info'}>

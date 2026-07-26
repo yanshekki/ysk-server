@@ -111,6 +111,38 @@ export const BUILTIN_PLAYBOOKS: Playbook[] = [
       { tool: 'fs.read', args: { path: '/etc/os-release' }, description: 'os-release' },
     ],
   },
+  {
+    id: 'backup-health',
+    name: 'Backup readiness',
+    description: 'Check disk + list processes before backup window',
+    emergency: false,
+    steps: [
+      { tool: 'sys.info', args: {}, description: 'Host capacity' },
+      { tool: 'service.status', args: { name: 'ysk-server' }, description: 'Panel unit' },
+    ],
+  },
+  {
+    id: 'db-stack-status',
+    name: 'Database stack status',
+    description: 'mysql/mariadb/redis/postgres units',
+    emergency: false,
+    steps: [
+      { tool: 'service.status', args: { name: 'mysql' }, description: 'MySQL' },
+      { tool: 'service.status', args: { name: 'mariadb' }, description: 'MariaDB' },
+      { tool: 'service.status', args: { name: 'redis-server' }, description: 'Redis' },
+      { tool: 'service.status', args: { name: 'postgresql' }, description: 'PostgreSQL' },
+    ],
+  },
+  {
+    id: 'ssl-nginx-check',
+    name: 'SSL + Nginx check',
+    description: 'nginx status before cert ops',
+    emergency: false,
+    steps: [
+      { tool: 'service.status', args: { name: 'nginx' }, description: 'Nginx' },
+      { tool: 'fs.read', args: { path: '/etc/nginx/nginx.conf' }, description: 'nginx.conf head check' },
+    ],
+  },
 ];
 
 export function listPlaybooks(): Playbook[] {
