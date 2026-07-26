@@ -18,6 +18,16 @@ pnpm install --frozen-lockfile 2>/dev/null || pnpm install
 log "build…"
 pnpm build
 
+log "embed web UI into server public/web for pack…"
+mkdir -p apps/server/public/web
+if [[ -f apps/web/dist/index.html ]]; then
+  rm -rf apps/server/public/web/*
+  cp -a apps/web/dist/. apps/server/public/web/
+  log "web UI embedded ($(du -sh apps/server/public/web | awk '{print $1}'))"
+else
+  log "WARNING: apps/web/dist missing — pack will be API-only"
+fi
+
 log "test…"
 pnpm test
 

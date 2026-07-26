@@ -37,9 +37,13 @@ export function resolveWebRoot(explicit?: string): string | null {
   // apps/server/dist -> ../../../apps/web/dist (from dist/) or ../../web/dist
   const here = fileURLToPath(new URL('.', import.meta.url));
   const candidates = [
+    // Packaged next to server dist (install.sh copies web into apps/server/public/web)
+    join(here, '../public/web'),
+    join(here, '../../public/web'),
     join(here, '../../../web/dist'),
     join(here, '../../../../apps/web/dist'),
     join(process.cwd(), 'apps/web/dist'),
+    join(process.cwd(), 'apps/server/public/web'),
     join(process.cwd(), 'web/dist'),
   ];
   for (const c of candidates) {

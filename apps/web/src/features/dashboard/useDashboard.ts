@@ -14,6 +14,12 @@ export function useDashboard() {
   >([]);
   const [backups, setBackups] = useState(0);
   const [summary, setSummary] = useState<Record<string, unknown> | null>(null);
+  const [readiness, setReadiness] = useState<{
+    productionReady: boolean;
+    mode: string;
+    summary: string[];
+    score: { ready: number; degraded: number; missing: number; total: number };
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,6 +51,12 @@ export function useDashboard() {
         } catch {
           /* optional */
         }
+        try {
+          const r = await dashboardApi.readiness();
+          if (!cancelled) setReadiness(r);
+        } catch {
+          /* optional / 503 still returns body via fetch throw — ignore */
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Error');
       } finally {
@@ -56,5 +68,5 @@ export function useDashboard() {
     };
   }, []);
 
-  return { health, audit, metrics, projects, backups, summary, error, loading };
+  return { health, audit, metrics, projects, backups, summary, readiness, error, loading };
 }

@@ -112,6 +112,20 @@ install_node() {
   log "Node.js $(node -v) / npm $(npm -v)"
 }
 
+embed_web_ui() {
+  local root="$1"
+  local web_dist="$root/apps/web/dist"
+  local target="$root/apps/server/public/web"
+  if [[ -f "$web_dist/index.html" ]]; then
+    log "Embedding Web UI into apps/server/public/web"
+    mkdir -p "$target"
+    rm -rf "${target:?}/"*
+    cp -a "$web_dist"/. "$target"/
+    return 0
+  fi
+  log "Web UI dist missing — run pnpm --filter @ysk/web build (API-only until then)"
+}
+
 install_product() {
   if [[ "$INSTALL_FROM_SOURCE" -eq 1 ]]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -121,12 +135,36 @@ install_product() {
     else
       (cd "$SCRIPT_DIR" && npm install -g pnpm && pnpm install && pnpm build)
     fi
+    embed_web_ui "$SCRIPT_DIR"
     (cd "$SCRIPT_DIR/apps/server" && npm link 2>/dev/null || true)
-    # Prefer local bin
+    # Prefer local bin — wrapper script so node is used correctly
     export PATH="$SCRIPT_DIR/apps/server/dist:$PATH"
-    if [[ -f "$SCRIPT_DIR/apps/server/dist/cli.js" ]]; then
-      $SUDO ln -sfn "$SCRIPT_DIR/apps/server/dist/cli.js" /usr/local/bin/ysk-server 2>/dev/null || \
-        ln -sfn "$SCRIPT_DIR/apps/server/dist/cli.js" "$HOME/.local/bin/ysk-server" 2>/dev/null || true
+    local wrapper="/usr/local/bin/ysk-server"
+    local local_wrapper="$HOME/.local/bin/ysk-server"
+    local cli_js="$SCRIPT_DIR/apps/server/dist/cli.js"
+    if [[ -f "$cli_js" ]]; then
+      mkdir -p "$HOME/.local/bin" 2>/dev/null || true
+      write_cli_wrapper() {
+        local dest="$1"
+        cat > "$dest" <<WRAP
+#!/usr/bin/env bash
+exec node "$cli_js" "\$@"
+WRAP
+        chmod +x "$dest"
+      }
+      if [[ "$(id -u)" -eq 0 ]]; then
+        write_cli_wrapper "$wrapper" || true
+      else
+        write_cli_wrapper "$local_wrapper" 2>/dev/null || true
+        if require_cmd sudo; then
+          sudo bash -c "cat > $wrapper <<'WRAP'
+#!/usr/bin/env bash
+exec node $cli_js \"\$@\"
+WRAP
+chmod +x $wrapper" 2>/dev/null || true
+        fi
+      fi
+      log "CLI wrapper ready (ysk-server). Ensure /usr/local/bin or ~/.local/bin is on PATH"
     fi
     return 0
   fi
@@ -201,14 +239,17 @@ print_next() {
 ============================================================
  Next steps:
    1. $CLI setup --non-interactive --data-dir /var/lib/ysk-server
-   2. $CLI serve --data-dir /var/lib/ysk-server --port 8787
-      or: sudo cp deploy/ysk-server.service /etc/systemd/system/ && systemctl enable --now ysk-server
-   3. Open Web UI → login → Projects → Deploy Node (real listen)
-   4. Production MVP: docs/deploy/production-mvp.md
-   5. Verify: bash scripts/e2e-real-ops.sh
+   2. $CLI readiness --data-dir /var/lib/ysk-server --json   # honest Spec gate
+   3. $CLI serve --data-dir /var/lib/ysk-server --port 8787
+      or: YSK_EXECUTE=1 sudo -E $CLI system unit-install --enable --data-dir /var/lib/ysk-server
+   4. Open Web UI → login → Projects → Deploy Node (real listen)
+   5. Production MVP: docs/deploy/production-mvp.md
+   6. Spec readiness: docs/deploy/spec-readiness.md
+   7. Verify: bash scripts/e2e-real-ops.sh
 
  Commands:
    $CLI --help
+   $CLI readiness --json
    $CLI serve --data-dir .ysk --port 8787
    $CLI update --check
    $CLI update --apply   # needs network + YSK_EXECUTE=1

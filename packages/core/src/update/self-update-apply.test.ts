@@ -41,4 +41,18 @@ describe('runSelfUpdate', () => {
     expect(r.ok).toBe(true);
     expect(r.notes.some((n) => /up to date/i.test(n))).toBe(true);
   });
+
+  it('plan-only without apply when update available', async () => {
+    const host = new LocalHostExecutor({ executeEnabled: true });
+    const r = await runSelfUpdate({
+      currentVersion: '0.1.0',
+      host,
+      apply: false,
+      latestOverride: '0.9.0',
+    });
+    expect(r.plan.status.updateAvailable).toBe(true);
+    expect(r.applied).toBe(false);
+    expect(r.ok).toBe(true);
+    expect(r.commandResults).toHaveLength(0);
+  });
 });

@@ -135,6 +135,7 @@ ysk-server hosting postgres-provision --db app --user appuser --password longpas
 ysk-server hosting dns-zone --zone example.com --ip 203.0.113.10
 ysk-server hosting email-apply --domain example.com
 ysk-server agents --probe
+ysk-server readiness --json
 ysk-server update --check
 ysk-server tools --json
 ysk-server --help

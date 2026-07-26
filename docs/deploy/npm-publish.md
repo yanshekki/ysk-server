@@ -58,10 +58,9 @@ cd ysk-server
 
 - `@ysk/server` depends on `@ysk/core` and `@ysk/shared` (workspace protocol in dev).
 - Before first public publish, ensure `package.json` `dependencies` use semver ranges (not `workspace:*`) via `pnpm publish` which rewrites, or a release script.
-- Ship Web UI by either:
-  1. Building `apps/web` and setting `YSK_WEB_ROOT` / packing `dist` next to server, or
-  2. Documenting `pnpm --filter @ysk/web build` on the host after install.
-- `files` field on `@ysk/server` should include `dist/**` only (no `src`).
+- Ship Web UI by embedding into `apps/server/public/web` (done by `install.sh --from-source` and `prepare-release.sh`).
+- `resolveWebRoot` also looks at `apps/server/public/web` and `YSK_WEB_ROOT`.
+- `files` on `@ysk/server`: `dist/**` + `public/**`.
 
 ## Versioning
 

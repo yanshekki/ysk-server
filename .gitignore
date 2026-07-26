@@ -12,3 +12,4 @@ data/
 .ysk/
 tmp/
 *.tgz
+apps/server/public/

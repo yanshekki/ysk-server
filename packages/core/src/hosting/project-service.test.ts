@@ -40,6 +40,24 @@ describe('ProjectService real lifecycle', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it('os-provision refuses without EXECUTE/root', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-proj-os-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    const created = await svc.create({
+      name: 'OsPend',
+      runtime: 'node',
+      actor: 'admin',
+    });
+    const r = await svc.provisionOsIsolation(created.project.id, 'admin');
+    expect(r.ok).toBe(false);
+    expect(r.requiresExecute || r.requiresRoot).toBe(true);
+    expect(r.osProvision.attempted).toBe(false);
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   it('creates with node-starter template scaffold', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-proj-tpl-'));
     const db = openDatabase(join(dir, 'db.json'));

@@ -5,7 +5,8 @@ import { useDashboard } from '../features/dashboard';
 export function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { health, audit, metrics, projects, backups, summary, error, loading } = useDashboard();
+  const { health, audit, metrics, projects, backups, summary, readiness, error, loading } =
+    useDashboard();
 
   return (
     <div>
@@ -22,6 +23,17 @@ export function DashboardPage() {
         <div className="card loading-row">
           <div className="spinner" />
           <span className="muted">Loading…</span>
+        </div>
+      )}
+
+      {readiness && (
+        <div
+          className={`alert${readiness.productionReady ? ' alert--ok' : ' alert--info'}`}
+        >
+          <strong>Spec readiness:</strong>{' '}
+          {readiness.productionReady ? 'productionReady' : 'not fully production-capable'} · mode=
+          {readiness.mode} · score {readiness.score.ready}/{readiness.score.total} ready
+          {readiness.summary[1] ? ` — ${readiness.summary[1]}` : ''}
         </div>
       )}
 

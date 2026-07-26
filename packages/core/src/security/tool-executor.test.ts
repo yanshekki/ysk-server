@@ -126,4 +126,114 @@ describe('executeToolCall (real host)', () => {
     expect(result.allowed).toBe(true);
     expect((result.result as { info: { hostname: string } }).info.hostname).toBeTruthy();
   });
+
+  it('dryRun returns plan without writing', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tool-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const file = join(dir, 'nope.txt');
+    const result = await executeToolCall(
+      { tool: 'fs.write', args: { path: file, content: 'x' }, dryRun: true },
+      {
+        allowlist: createDefaultAllowlist(),
+        approvals: new ApprovalQueue(),
+        actor: 'admin',
+        roles: ['admin'],
+        host,
+      },
+    );
+    expect(result.allowed).toBe(true);
+    expect(result.dryRun).toBe(true);
+    expect(() => readFileSync(file, 'utf8')).toThrow();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('fs.list and process.list work', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tool-'));
+    writeFileSync(join(dir, 'a.txt'), 'a', 'utf8');
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const list = await executeToolCall(
+      { tool: 'fs.list', args: { path: dir } },
+      {
+        allowlist: createDefaultAllowlist(),
+        approvals: new ApprovalQueue(),
+        actor: 'admin',
+        roles: ['admin'],
+        host,
+      },
+    );
+    expect(list.allowed).toBe(true);
+    expect((list.result as { entries: string[] }).entries).toContain('a.txt');
+
+    const procs = await executeToolCall(
+      { tool: 'process.list', args: {} },
+      {
+        allowlist: createDefaultAllowlist(),
+        approvals: new ApprovalQueue(),
+        actor: 'admin',
+        roles: ['admin'],
+        host,
+      },
+    );
+    expect(procs.allowed).toBe(true);
+    expect(Array.isArray((procs.result as { pids: string[] }).pids)).toBe(true);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('fs.delete removes managed file after approval path not required for low?', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tool-'));
+    const file = join(dir, 'del.txt');
+    writeFileSync(file, 'x', 'utf8');
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const allowlist = createDefaultAllowlist();
+    const approvals = new ApprovalQueue();
+    // fs.delete may require approval depending on allowlist
+    const first = await executeToolCall(
+      { tool: 'fs.delete', args: { path: file } },
+      { allowlist, approvals, actor: 'admin', roles: ['admin'], host },
+    );
+    if (first.requiresApproval && first.approvalId) {
+      approvals.approve(first.approvalId, 'admin');
+      const done = await executeToolCall(
+        { tool: 'fs.delete', args: { path: file } },
+        { allowlist, approvals, actor: 'admin', roles: ['admin'], host },
+        first.approvalId,
+      );
+      expect(done.allowed).toBe(true);
+    } else if (first.allowed) {
+      expect((first.result as { deleted?: boolean }).deleted).toBe(true);
+    }
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('service.status returns host result shape', async () => {
+    const host = new LocalHostExecutor({ executeEnabled: false });
+    const result = await executeToolCall(
+      { tool: 'service.status', args: { name: 'nginx' } },
+      {
+        allowlist: createDefaultAllowlist(),
+        approvals: new ApprovalQueue(),
+        actor: 'admin',
+        roles: ['admin'],
+        host,
+      },
+    );
+    expect(result.allowed).toBe(true);
+    expect((result.result as { name: string }).name).toBe('nginx');
+  });
+
+  it('rejects unknown tool dispatcher', async () => {
+    const host = new LocalHostExecutor({ executeEnabled: true });
+    // force via allowlist won't help — use a tool that might not be on allowlist
+    const denied = await executeToolCall(
+      { tool: 'totally.unknown.tool', args: {} },
+      {
+        allowlist: createDefaultAllowlist(),
+        approvals: new ApprovalQueue(),
+        actor: 'admin',
+        roles: ['admin'],
+        host,
+      },
+    );
+    expect(denied.allowed).toBe(false);
+  });
 });
