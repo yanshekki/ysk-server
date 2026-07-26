@@ -1,15 +1,16 @@
 /**
- * Roundcube SSO plugin skeleton written under dataDir — not auto-installed into system Roundcube.
+ * Roundcube SSO plugin skeleton + optional system symlink into Roundcube plugins/.
  */
 
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import type { HostExecutor } from '../host/executor.js';
 
 export function writeRoundcubeSsoPlugin(input: {
   dataDir: string;
   /** panel public base URL for token consume */
   panelBaseUrl: string;
-}): { ok: boolean; written: string[]; notes: string[] } {
+}): { ok: boolean; written: string[]; notes: string[]; pluginDir: string } {
   const dir = join(input.dataDir, 'email', 'webmail', 'plugins', 'ysk_sso');
   mkdirSync(dir, { recursive: true });
   const written: string[] = [];
@@ -19,7 +20,7 @@ export function writeRoundcubeSsoPlugin(input: {
 /**
  * YSK Webmail SSO — Roundcube plugin skeleton
  * 1) Enable in Roundcube config: $config['plugins'][] = 'ysk_sso';
- * 2) Symlink this dir into Roundcube plugins/
+ * 2) Symlink this dir into Roundcube plugins/ (panel can do enableSystem)
  * 3) Panel issues token via POST /api/v1/email/webmail/sso
  * 4) User hits ?_ysk_sso=<token> — plugin exchanges at panel consume URL
  */
@@ -68,7 +69,7 @@ class ysk_sso extends rcube_plugin {
     [
       'YSK Roundcube SSO plugin skeleton',
       `Panel consume: ${input.panelBaseUrl}/api/v1/email/webmail/sso/consume`,
-      'written ≠ Roundcube 已載入 — 需 symlink 到 roundcube/plugins 並啟用',
+      'written ≠ Roundcube 已載入 — 用 enableSystem 或手動 symlink',
       '',
     ].join('\n'),
     'utf8',
@@ -77,7 +78,145 @@ class ysk_sso extends rcube_plugin {
   notes.push(`已寫入 plugin 骨架 ${dir}`);
   notes.push('狀態：written（非已上線 SSO）');
   if (!existsSync(path)) {
-    return { ok: false, written, notes: [...notes, '寫入失敗'] };
+    return { ok: false, written, notes: [...notes, '寫入失敗'], pluginDir: dir };
   }
-  return { ok: true, written, notes };
+  return { ok: true, written, notes, pluginDir: dir };
 }
+
+/** Common Roundcube plugin directory candidates */
+export const ROUNDCUBE_PLUGIN_CANDIDATES = [
+  '/var/www/ysk-webmail',
+  '/var/lib/roundcube/plugins',
+  '/usr/share/roundcube/plugins',
+  '/var/www/roundcube/plugins',
+  '/opt/roundcube/plugins',
+];
+
+/**
+ * Symlink managed plugin into a Roundcube plugins/ tree (needs EXECUTE+root for system paths).
+ */
+export async function enableRoundcubeSsoPlugin(input: {
+  dataDir: string;
+  host: HostExecutor;
+  panelBaseUrl: string;
+  /** Explicit Roundcube plugins dir; auto-detect if omitted */
+  roundcubePluginsDir?: string;
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  written: string[];
+  symlink?: string;
+  blocked?: boolean;
+  blockMessage?: string;
+  apply_status: 'written' | 'applied' | 'blocked';
+}> {
+  const base = writeRoundcubeSsoPlugin({
+    dataDir: input.dataDir,
+    panelBaseUrl: input.panelBaseUrl,
+  });
+  const notes = [...base.notes];
+  const written = [...base.written];
+
+  if (!input.host.executeEnabled()) {
+    return {
+      ok: false,
+      notes: [...notes, '無法 symlink：未開啟系統變更權限'],
+      written,
+      blocked: true,
+      blockMessage: '需要 YSK_EXECUTE',
+      apply_status: 'blocked',
+    };
+  }
+
+  let pluginsDir = input.roundcubePluginsDir?.trim();
+  if (!pluginsDir) {
+    // Probe candidates: either .../plugins or .../webmail.domain/public/plugins
+    for (const c of ROUNDCUBE_PLUGIN_CANDIDATES) {
+      if (existsSync(c) && c.endsWith('plugins')) {
+        pluginsDir = c;
+        break;
+      }
+      if (existsSync(c)) {
+        // ysk-webmail multi-domain
+        try {
+          for (const name of readdirSync(c)) {
+            const p = join(c, name, 'plugins');
+            if (existsSync(p)) {
+              pluginsDir = p;
+              break;
+            }
+            const p2 = join(c, name, 'public', 'plugins');
+            if (existsSync(p2)) {
+              pluginsDir = p2;
+              break;
+            }
+          }
+        } catch {
+          /* skip */
+        }
+        if (pluginsDir) break;
+      }
+    }
+  }
+
+  // Also check managed download path under dataDir
+  if (!pluginsDir) {
+    const managed = join(input.dataDir, 'email', 'webmail');
+    if (existsSync(managed)) {
+      try {
+        for (const name of readdirSync(managed)) {
+          const p = join(managed, name, 'public', 'plugins');
+          if (existsSync(p)) {
+            pluginsDir = p;
+            break;
+          }
+        }
+      } catch {
+        /* skip */
+      }
+    }
+  }
+
+  if (!pluginsDir) {
+    notes.push(
+      '找不到 Roundcube plugins 目錄 — 已寫骨架；請安裝 Roundcube 或傳 roundcubePluginsDir',
+    );
+    return {
+      ok: true,
+      notes,
+      written,
+      apply_status: 'written',
+    };
+  }
+
+  const linkPath = join(pluginsDir, 'ysk_sso');
+  const r = await input.host.runCommand(
+    [
+      'bash',
+      '-c',
+      `mkdir -p ${JSON.stringify(pluginsDir)} && ln -sfn ${JSON.stringify(base.pluginDir)} ${JSON.stringify(linkPath)} 2>&1`,
+    ],
+    { timeoutMs: 10_000 },
+  );
+  if (r.exitCode !== 0) {
+    notes.push(`symlink 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+    return {
+      ok: false,
+      notes,
+      written,
+      apply_status: 'written',
+    };
+  }
+  notes.push(`已 symlink ${linkPath} → ${base.pluginDir}`);
+  notes.push('仍需在 Roundcube config 加 $config[\'plugins\'][] = \'ysk_sso\';');
+  notes.push('狀態：applied（plugin 目錄已連結；登入流程需自行驗收）');
+  written.push(linkPath);
+  return {
+    ok: true,
+    notes,
+    written,
+    symlink: linkPath,
+    apply_status: 'applied',
+  };
+}
+

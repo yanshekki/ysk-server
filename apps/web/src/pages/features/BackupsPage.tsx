@@ -76,6 +76,10 @@ export function BackupsPage() {
     'node_modules\n.git\nvendor\n.cache',
   );
   const [settingsBusy, setSettingsBusy] = useState(false);
+  const [snapshots, setSnapshots] = useState<
+    Array<{ id: string; time?: string; tags?: string[]; paths?: string[] }>
+  >([]);
+  const [restoreProjectId, setRestoreProjectId] = useState('');
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -465,7 +469,116 @@ export function BackupsPage() {
             >
               只跑 restic 增量
             </Button>
+            <Button
+              variant="ghost"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                void api
+                  .requestRaw<{
+                    ok?: boolean;
+                    snapshots?: Array<{
+                      id: string;
+                      time?: string;
+                      tags?: string[];
+                      paths?: string[];
+                    }>;
+                    notes?: string[];
+                  }>(
+                    `/api/v1/backups/restic/snapshots${
+                      restoreProjectId
+                        ? `?projectId=${encodeURIComponent(restoreProjectId)}`
+                        : ''
+                    }`,
+                  )
+                  .then((r) => {
+                    setSnapshots(r.snapshots ?? []);
+                    setMsg(r.notes?.join('；') ?? `snapshots ${r.snapshots?.length ?? 0}`);
+                  })
+                  .catch((e: Error) => setError(e.message));
+              }}
+            >
+              列出 restic snapshots
+            </Button>
           </div>
+          {snapshots.length > 0 ? (
+            <div className="u-mt-4">
+              <Field label="還原用 projectId（可空=全部 list）" htmlFor="rs-pid" flush>
+                <input
+                  id="rs-pid"
+                  value={restoreProjectId}
+                  onChange={(e) => setRestoreProjectId(e.target.value)}
+                  placeholder="uuid"
+                />
+              </Field>
+              <div className="table-wrap u-mt-2">
+                <table className="data">
+                  <thead>
+                    <tr>
+                      <th>Snapshot</th>
+                      <th>時間</th>
+                      <th>Tags</th>
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {snapshots.map((s) => (
+                      <tr key={s.id}>
+                        <td>
+                          <code className="inline">{s.id}</code>
+                        </td>
+                        <td className="muted">
+                          {s.time ? new Date(s.time).toLocaleString() : '—'}
+                        </td>
+                        <td className="muted u-text-sm">{(s.tags ?? []).join(', ') || '—'}</td>
+                        <td>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              const pid =
+                                restoreProjectId ||
+                                (s.tags ?? [])
+                                  .find((t) => t.startsWith('project:'))
+                                  ?.replace('project:', '') ||
+                                '';
+                              if (!pid) {
+                                setError('請填 projectId 或 snapshot 需有 project: tag');
+                                return;
+                              }
+                              if (
+                                !confirm(
+                                  `還原 ${s.id} 到專案 ${pid.slice(0, 8)}… 的 .restic-restore-* 目錄？`,
+                                )
+                              ) {
+                                return;
+                              }
+                              void run(async () => {
+                                return (await api.requestRaw(
+                                  '/api/v1/backups/restic/restore',
+                                  {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                      projectId: pid,
+                                      snapshotId: s.id,
+                                      overwriteHome: false,
+                                    }),
+                                  },
+                                )) as OpsResultLike;
+                              }, 'restic 還原完成');
+                            }}
+                          >
+                            還原（安全目錄）
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : null}
           {lastRun ? (
             <div className="u-mt-4">
               <DescriptionList

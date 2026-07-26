@@ -1863,6 +1863,49 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendJson(res, ok ? 200 : 422, { ok, results });
       }
+      if (method === 'GET' && url.pathname === '/api/v1/backups/restic/snapshots') {
+        ctx.auth.authenticate(getBearer(req));
+        const projectId = url.searchParams.get('projectId') ?? undefined;
+        const { listResticSnapshots } = await import('@ysk/core');
+        const r = await listResticSnapshots({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          projectId,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/restic/restore') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          projectId?: string;
+          snapshotId?: string;
+          targetDir?: string;
+          overwriteHome?: boolean;
+        };
+        const p = ctx.db.snapshot.projects.find((x) => x.id === data.projectId);
+        if (!p) return sendJson(res, 404, { ok: false, notes: ['專案不存在'] });
+        const { resticRestoreProject } = await import('@ysk/core');
+        const r = await resticRestoreProject({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          projectId: p.id,
+          homeDir: p.home_dir,
+          snapshotId: data.snapshotId ?? '',
+          targetDir: data.targetDir,
+          overwriteHome: data.overwriteHome,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.restic.restore',
+          resource: p.id,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
       if (method === 'POST' && url.pathname === '/api/v1/backups/restore') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
@@ -2247,11 +2290,33 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso-plugin') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { panelBaseUrl?: string };
+        const data = JSON.parse(raw || '{}') as {
+          panelBaseUrl?: string;
+          enableSystem?: boolean;
+          roundcubePluginsDir?: string;
+        };
+        const panelBase =
+          data.panelBaseUrl || `http://127.0.0.1:${process.env.YSK_PORT || 8787}`;
+        if (data.enableSystem) {
+          const { enableRoundcubeSsoPlugin } = await import('@ysk/core');
+          const r = await enableRoundcubeSsoPlugin({
+            dataDir: ctx.dataDir,
+            host: ctx.host,
+            panelBaseUrl: panelBase,
+            roundcubePluginsDir: data.roundcubePluginsDir,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'email.webmail.sso_plugin.enable',
+            detail: r,
+            ok: r.ok,
+          });
+          return sendJson(res, r.ok ? 200 : 422, r);
+        }
         const { writeRoundcubeSsoPlugin } = await import('@ysk/core');
         const r = writeRoundcubeSsoPlugin({
           dataDir: ctx.dataDir,
-          panelBaseUrl: data.panelBaseUrl || `http://127.0.0.1:${process.env.YSK_PORT || 8787}`,
+          panelBaseUrl: panelBase,
         });
         ctx.audit.append({
           actor: user.username,

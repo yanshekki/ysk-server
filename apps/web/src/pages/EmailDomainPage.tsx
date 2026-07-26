@@ -704,6 +704,27 @@ export function EmailDomainPage() {
                   寫入限速/反垃圾（written）
                 </Button>
                 <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setLive(
+                        await api.requestRaw(`/api/v1/email/domains/${domain.id}/policy`, {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            rateLimitPerHour: 200,
+                            antispam: true,
+                            applySystem: true,
+                          }),
+                        }),
+                      );
+                    })
+                  }
+                >
+                  套用限速/反垃圾到系統
+                </Button>
+                <Button
                   variant="ghost"
                   size="md"
                   loading={busy}
@@ -719,6 +740,23 @@ export function EmailDomainPage() {
                   }
                 >
                   寫入 Roundcube SSO 骨架
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setLive(
+                        await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                          method: 'POST',
+                          body: JSON.stringify({ enableSystem: true }),
+                        }),
+                      );
+                    })
+                  }
+                >
+                  SSO 骨架 + 系統 symlink
                 </Button>
               </div>
               {live ? <OpsResultPanel title="Live 檢查" result={asOps(live)} /> : null}

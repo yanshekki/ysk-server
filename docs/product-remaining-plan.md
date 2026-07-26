@@ -45,6 +45,14 @@
 | 5.7 | B21 | 一鍵 App UI | M | **done**（Advanced WP 已有；Deploy 強化 PHP） |
 | 5.8 | T8 | Config export / rebuild | M | **done** export + rebuild nginx 選項 |
 
+### Wave 7 — 加深收尾（mail 真引用 / SSO symlink / restic restore）
+
+| # | 項 | Status |
+|---|-----|--------|
+| 7.1 | Postfix/Rspamd 引用 policy maps | **done** postconf + multimap + reload |
+| 7.2 | Roundcube SSO 一鍵 symlink | **done** enableSystem |
+| 7.3 | Restic list snapshots + restore UI | **done** 安全目錄還原 |
+
 ### Wave 6 — 平台加深（**done** @ `ceacc82`）
 
 | # | ID | 項 | Status |
