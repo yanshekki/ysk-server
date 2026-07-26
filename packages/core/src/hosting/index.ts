@@ -49,5 +49,6 @@ export * from './rebuild.js';
 export * from './backup-restic.js';
 export * from './dns-cluster.js';
 export * from './web-stats.js';
+export * from './apply-audit.js';
 
 

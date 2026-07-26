@@ -930,6 +930,26 @@ export function createHttpServer(ctx: AppContext): Server {
         });
       }
 
+      if (method === 'GET' && url.pathname === '/api/v1/notifications') {
+        ctx.auth.authenticate(getBearer(req));
+        const { collectNotifications } = await import('@ysk/core');
+        const r = await collectNotifications({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          executeEnabled: ctx.host.executeEnabled(),
+          lastBackup: ctx.settings.getJson<Record<string, unknown>>('last_backup_run'),
+          lastDnsbl: ctx.settings.getJson<Record<string, unknown>>('last_dnsbl_run'),
+        });
+        return sendJson(res, 200, r);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/system/apply-audit') {
+        ctx.auth.authenticate(getBearer(req));
+        const { auditApplyStatuses } = await import('@ysk/core');
+        return sendJson(res, 200, auditApplyStatuses(ctx.db));
+      }
+
       if (method === 'POST' && url.pathname === '/api/v1/email/relay') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);

@@ -23,6 +23,28 @@ export function useDashboard() {
     summary: string[];
     score: { ready: number; degraded: number; missing: number; total: number };
   } | null>(null);
+  const [notifications, setNotifications] = useState<
+    Array<{
+      id: string;
+      level: 'critical' | 'warn' | 'info';
+      title: string;
+      body: string;
+      href?: string;
+      source: string;
+      at: string;
+    }>
+  >([]);
+  const [notifCounts, setNotifCounts] = useState({ critical: 0, warn: 0, info: 0 });
+  const [applyAudit, setApplyAudit] = useState<{
+    summary: { ok: number; warn: number; bad: number; total: number };
+    findings: Array<{
+      kind: string;
+      name: string;
+      issue?: string;
+      severity: string;
+      href?: string;
+    }>;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -78,6 +100,26 @@ export function useDashboard() {
         } catch {
           /* optional / 503 still returns body via fetch throw — ignore */
         }
+        try {
+          const n = await dashboardApi.notifications();
+          if (!cancelled) {
+            setNotifications(n.items ?? []);
+            setNotifCounts(n.counts ?? { critical: 0, warn: 0, info: 0 });
+          }
+        } catch {
+          /* optional */
+        }
+        try {
+          const a = await dashboardApi.applyAudit();
+          if (!cancelled) {
+            setApplyAudit({
+              summary: a.summary,
+              findings: (a.findings ?? []).filter((f) => f.severity !== 'ok').slice(0, 12),
+            });
+          }
+        } catch {
+          /* optional */
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Error');
       } finally {
@@ -98,6 +140,9 @@ export function useDashboard() {
     expiringCerts,
     summary,
     readiness,
+    notifications,
+    notifCounts,
+    applyAudit,
     error,
     loading,
   };

@@ -768,21 +768,38 @@ export class ProjectOpsService {
       },
     });
     this.projects.updateNginxPath(projectId, nginxPath);
+    // Honest ok: if reload requested but blocked/failed → not full success
+    const reloadWanted = wantReload;
+    const reloadBlocked = reloadWanted && nginxStatus === 'requires_execute';
+    const reloadFailed =
+      reloadWanted &&
+      (nginxStatus === 'nginx_t_failed' || nginxStatus.startsWith('reload_failed'));
+    const ok = !reloadBlocked && !reloadFailed;
+
     this.audit?.append({
       actor: opts.actor,
       action: 'project.publish_nginx',
       resource: projectId,
-      detail: { nginxPath, port, sync, nginxReloaded, nginxStatus, serverName, forceHttps, hsts },
-      ok: true,
+      detail: { nginxPath, port, sync, nginxReloaded, nginxStatus, serverName, forceHttps, hsts, ok },
+      ok,
     });
     return {
-      ok: true,
+      ok,
       projectId,
       port,
       processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
       listening: port ? await isPortListening(port) : false,
       nginxPath,
-      notes,
+      notes: [
+        ...notes,
+        reloadBlocked
+          ? '狀態：written（conf 已寫；reload blocked）'
+          : reloadFailed
+            ? '狀態：failed（nginx -t 或 reload 失敗）'
+            : nginxReloaded
+              ? '狀態：applied'
+              : '狀態：written',
+      ],
       written: [nginxPath, ...sync.copied],
       nginxReloaded,
       nginxStatus,

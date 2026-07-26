@@ -6,6 +6,7 @@
 import { mkdirSync, writeFileSync, readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
+import { applySenderRatePolicyService, writeSenderRatePolicyDaemon } from './sender-rate-policy.js';
 
 export async function applyMailDomainPolicy(input: {
   dataDir: string;
@@ -53,6 +54,11 @@ export async function applyMailDomainPolicy(input: {
   const snippets = writePolicyIncludeSnippets(input.dataDir);
   written.push(...snippets.written);
   notes.push(...snippets.notes);
+
+  // Per-sender policy daemon files (always written)
+  const senderPol = writeSenderRatePolicyDaemon(input.dataDir);
+  written.push(...senderPol.written);
+  notes.push(...senderPol.notes);
 
   if (!input.applySystem) {
     notes.push('狀態：written（未套用到系統 Postfix/Rspamd）');
@@ -141,10 +147,19 @@ export async function applyMailDomainPolicy(input: {
     notes.push(`postconf 確認: ${check.stdout.trim().replace(/\n/g, ' | ').slice(0, 200)}`);
   }
 
-  const applied = cp.exitCode === 0 && reloadsOk > 0;
+  // Per-sender check_policy_service
+  const senderApply = await applySenderRatePolicyService({
+    dataDir: input.dataDir,
+    host: input.host,
+  });
+  written.push(...senderApply.written);
+  notes.push(...senderApply.notes);
+
+  const applied =
+    (cp.exitCode === 0 && reloadsOk > 0) || senderApply.apply_status === 'applied';
   notes.push(
     applied
-      ? '狀態：applied（anvil 限速 + maps + 至少一個服務 reload）'
+      ? '狀態：applied（anvil + per-sender policy + maps）'
       : '狀態：written/partial（系統複製或 reload 未完全成功）',
   );
   return {

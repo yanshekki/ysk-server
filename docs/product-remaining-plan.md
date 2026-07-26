@@ -45,6 +45,14 @@
 | 5.7 | B21 | 一鍵 App UI | M | **done**（Advanced WP 已有；Deploy 強化 PHP） |
 | 5.8 | T8 | Config export / rebuild | M | **done** export + rebuild nginx 選項 |
 
+### Wave 9 — 通知中心 / per-sender / apply 審計
+
+| # | 項 | Status |
+|---|-----|--------|
+| 9.1 | Per-sender rate（check_policy_service） | **done** |
+| 9.2 | Dashboard 通知中心 | **done** `/api/v1/notifications` |
+| 9.3 | Apply 誠實審計 | **done** + publishNginx ok 修正 |
+
 ### Wave 8 — 限速實效 / config 自動 / restore 安全
 
 | # | 項 | Status |

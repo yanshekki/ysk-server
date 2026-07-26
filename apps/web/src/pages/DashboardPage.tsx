@@ -10,6 +10,8 @@ import { softwareApi, type SoftwareStatus } from '../features/software';
 import {
   Alert,
   Badge,
+  Card,
+  CardSection,
   FeatureIconGrid,
   LoadingBlock,
   PageHeader,
@@ -84,6 +86,9 @@ export function DashboardPage() {
     expiringCerts,
     summary,
     readiness,
+    notifications,
+    notifCounts,
+    applyAudit,
     error,
     loading,
   } = useDashboard();
@@ -159,6 +164,12 @@ export function DashboardPage() {
             tone: (expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok',
           },
           {
+            label: '通知',
+            value: notifications.length,
+            tone:
+              notifCounts.critical > 0 ? 'danger' : notifCounts.warn > 0 ? 'warn' : 'ok',
+          },
+          {
             label: t('dashboard.health'),
             value: health?.status ?? '—',
             tone: health?.status === 'ok' ? 'ok' : 'default',
@@ -170,6 +181,62 @@ export function DashboardPage() {
           },
         ]}
       />
+
+      {notifications.length > 0 ? (
+        <Card>
+          <CardSection
+            title={`通知中心（${notifications.length}）`}
+            description={`嚴重 ${notifCounts.critical} · 警告 ${notifCounts.warn} · 資訊 ${notifCounts.info}`}
+          >
+            <ul className="list-plain list-spaced">
+              {notifications.slice(0, 12).map((n) => (
+                <li key={n.id}>
+                  <Badge
+                    tone={
+                      n.level === 'critical' ? 'danger' : n.level === 'warn' ? 'warn' : 'info'
+                    }
+                  >
+                    {n.level}
+                  </Badge>{' '}
+                  <strong>{n.title}</strong>
+                  <span className="muted u-text-sm"> — {n.body}</span>
+                  {n.href ? (
+                    <>
+                      {' '}
+                      <Link to={n.href}>前往</Link>
+                    </>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </CardSection>
+        </Card>
+      ) : null}
+
+      {applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0) ? (
+        <Card>
+          <CardSection
+            title="Apply 誠實審計"
+            description={`ok ${applyAudit.summary.ok} · warn ${applyAudit.summary.warn} · bad ${applyAudit.summary.bad}`}
+          >
+            <ul className="list-plain list-spaced">
+              {applyAudit.findings.map((f, i) => (
+                <li key={`${f.kind}-${f.name}-${i}`}>
+                  <Badge tone={f.severity === 'bad' ? 'danger' : 'warn'}>{f.severity}</Badge>{' '}
+                  <span className="muted u-text-sm">{f.kind}</span> <strong>{f.name}</strong>
+                  {f.issue ? <span className="muted"> — {f.issue}</span> : null}
+                  {f.href ? (
+                    <>
+                      {' '}
+                      <Link to={f.href}>開啟</Link>
+                    </>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </CardSection>
+        </Card>
+      ) : null}
 
       <h2 className="section-title">{t('dashboard.features', { defaultValue: '功能選單' })}</h2>
       <p className="muted meta-block">
