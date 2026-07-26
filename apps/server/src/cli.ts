@@ -45,6 +45,7 @@ Commands:
   hosting               nginx|nginx-sync|db|dns|powerdns|firewall helpers
   agents                List / probe managed AI agent runtimes
   agent run             Outbound fleet agent (poll control plane)
+  readiness | doctor     Spec production readiness probe (honest)
   version               Print version
   help                  Show this help
 
@@ -647,6 +648,20 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return result.ok ? 0 : 1;
       }
+      if (sub === 'public-files') {
+        const { applyPublicFileServer } = await import('@ysk/core');
+        const result = await applyPublicFileServer({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          serverName: getOpt(args, '--domain') ?? 'files.local',
+          quotaMb: getOpt(args, '--quota-mb')
+            ? Number(getOpt(args, '--quota-mb'))
+            : undefined,
+          reload: hasFlag(args, '--reload'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
       if (sub === 'firewall-apply') {
         const result = await applyFirewall({
           host: ctx.host,
@@ -670,6 +685,7 @@ async function main(argv: string[]): Promise<number> {
           '  runtimes | runtime-install --kind node|php --version V [--install]',
           '  dovecot-passdb --domain X | --all',
           '  webmail-apply --domain webmail.example.com [--download]',
+          '  public-files --domain files.example.com [--reload]',
           '  firewall-apply [--smtp] [--apply]',
           '',
         ].join('\n'),
@@ -784,6 +800,28 @@ async function main(argv: string[]): Promise<number> {
   if (command === 'self-update-plan') {
     printJson(planSelfUpdate({ current: VERSION, latest: getOpt(args, '--latest') ?? VERSION }));
     return 0;
+  }
+
+  if (command === 'readiness' || command === 'doctor') {
+    const { assessProductionReadiness } = await import('@ysk/core');
+    const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
+    const ctx = createAppContext({
+      version: VERSION,
+      dataDir,
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
+    try {
+      const report = await assessProductionReadiness({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+        product: PRODUCT_NAME,
+        version: VERSION,
+      });
+      printJson(report);
+      return report.productionReady ? 0 : 2;
+    } finally {
+      closeAppContext(ctx);
+    }
   }
 
   process.stderr.write(`Unknown command: ${command}\nRun \`${CLI_NAME} help\`\n`);

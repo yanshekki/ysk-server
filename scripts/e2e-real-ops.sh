@@ -322,5 +322,16 @@ FW=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/system/firewall/appl
 echo "$FW" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.ok||!j.written||!j.written.length) process.exit(33);})"
 log "Firewall ufw script OK"
 
+# Production readiness (expect not productionReady without root+EXECUTE)
+READY=$(curl -sS "http://127.0.0.1:${PORT_API}/api/v1/readiness" -H "$AUTH" || true)
+echo "$READY" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d); if(!j.items||!j.score) process.exit(34); if(j.productionReady===true&&j.mode==='degraded') process.exit(35); process.stderr.write('productionReady='+j.productionReady+' mode='+j.mode+'\\n')})"
+log "Readiness probe OK"
+
+# Public file server apply
+curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/files/apply" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"serverName":"files.e2e.local","reload":false}' >/dev/null
+log "Public files apply OK"
+
 log "PASS — real ops vertical verified"
 echo "PASS"

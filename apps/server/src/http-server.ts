@@ -34,6 +34,8 @@ import {
   writeAllDovecotPassdbs,
   listSupportedRuntimes,
   applyWebmail,
+  assessProductionReadiness,
+  applyPublicFileServer,
   planFirewall,
   planPublicFileServer,
   probeEndpoint,
@@ -128,6 +130,22 @@ export function createHttpServer(ctx: AppContext): Server {
           mode: ctx.host.executeEnabled() && ctx.host.isRoot() ? 'production_capable' : 'degraded',
           tools: ctx.allowlist.list().map((t) => t.tool),
         });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/readiness') {
+        // Public-ish for install probes; still auth optional for detail
+        try {
+          ctx.auth.authenticate(getBearer(req));
+        } catch {
+          /* allow unauthenticated summary for health gates */
+        }
+        const report = await assessProductionReadiness({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          product: PRODUCT_NAME,
+          version: VERSION,
+        });
+        return sendJson(res, report.productionReady ? 200 : 503, report);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/auth/login') {
@@ -254,6 +272,13 @@ export function createHttpServer(ctx: AppContext): Server {
           reload: data.reload,
         });
         return sendJson(res, result.ok ? 200 : 502, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-provision$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projects.provisionOsIsolation(id, user.username);
+        return sendJson(res, result.ok ? 200 : 422, result);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/stop$/)) {
@@ -1416,6 +1441,30 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'GET' && url.pathname === '/api/v1/hosting/files/plan') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, planPublicFileServer({}));
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/files/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          serverName?: string;
+          quotaMb?: number;
+          reload?: boolean;
+        };
+        const result = await applyPublicFileServer({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          serverName: data.serverName ?? 'files.local',
+          quotaMb: data.quotaMb,
+          reload: data.reload,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.public_files.apply',
+          resource: result.serverName,
+          detail: { ok: result.ok, nginxPath: result.nginxPath, publicRoot: result.publicRoot },
+          ok: result.ok,
+        });
+        return sendJson(res, 200, result);
       }
 
       // users list (RBAC admin view)

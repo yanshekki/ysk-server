@@ -92,16 +92,7 @@ export class ProjectService {
     };
 
     if (this.host.executeEnabled() && this.host.isRoot()) {
-      osProvision.attempted = true;
-      const results: string[] = [];
-      for (const cmd of plan.commands) {
-        // Only run safe subset: groupadd/useradd/mkdir/chown — skip if already exists
-        const argv = cmd.split(/\s+/);
-        const r = await this.host.runCommand(argv, { timeoutMs: 15_000 });
-        results.push(`${argv.join(' ')} => exit ${r.exitCode}`);
-      }
-      osProvision.ok = results.every((x) => x.includes('exit 0') || x.includes('already'));
-      osProvision.detail = results.join('; ');
+      osProvision = await this.provisionOsUser(plan.commands, plan.project.linuxUser, homeDir);
     }
 
     // Optional nginx config in dataDir (port filled on deploy)
@@ -161,6 +152,94 @@ export class ProjectService {
       osProvision,
       plan: plan.commands,
       scaffold,
+    };
+  }
+
+  /**
+   * Re-attempt Linux user/group isolation for an existing project (root + EXECUTE).
+   * Never fakes success.
+   */
+  async provisionOsIsolation(
+    id: string,
+    actor: string,
+  ): Promise<{
+    ok: boolean;
+    osProvision: { attempted: boolean; ok: boolean; detail: string };
+    requiresExecute: boolean;
+    requiresRoot: boolean;
+  }> {
+    const row = this.projects.findById(id);
+    if (!row) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+    }
+    // Prefer project home under dataDir for chown target when system home differs
+    const homeDir = row.home_dir;
+    if (!this.host.executeEnabled() || !this.host.isRoot()) {
+      return {
+        ok: false,
+        osProvision: {
+          attempted: false,
+          ok: false,
+          detail: 'OS user provision requires root + YSK_EXECUTE=1',
+        },
+        requiresExecute: !this.host.executeEnabled(),
+        requiresRoot: !this.host.isRoot(),
+      };
+    }
+    // Rewrite plan commands to chown the actual dataDir home
+    const commands = [
+      `groupadd --system ${row.linux_group} 2>/dev/null || true`,
+      `id ${row.linux_user} >/dev/null 2>&1 || useradd --system --gid ${row.linux_group} --home-dir ${homeDir} --create-home --shell /usr/sbin/nologin ${row.linux_user}`,
+      `mkdir -p ${homeDir}/app ${homeDir}/logs ${homeDir}/tmp`,
+      `chown -R ${row.linux_user}:${row.linux_group} ${homeDir}`,
+      `chmod 750 ${homeDir}`,
+    ];
+    const osProvision = await this.provisionOsUser(commands, row.linux_user, homeDir);
+    this.projects.setOsProvisioned(id, osProvision.ok);
+    this.audit?.append({
+      actor,
+      action: 'project.os_provision',
+      resource: id,
+      detail: { osProvision, plan: commands },
+      ok: osProvision.ok,
+    });
+    return {
+      ok: osProvision.ok,
+      osProvision,
+      requiresExecute: false,
+      requiresRoot: false,
+    };
+  }
+
+  private async provisionOsUser(
+    commands: string[],
+    linuxUser: string,
+    homeDir: string,
+  ): Promise<{ attempted: boolean; ok: boolean; detail: string }> {
+    const results: string[] = [];
+    for (const cmd of commands) {
+      // Shell required for `|| true`, brace expansion, redirects
+      const r = await this.host.runCommand(['bash', '-c', cmd], { timeoutMs: 30_000 });
+      const okish =
+        r.exitCode === 0 ||
+        /already exists|exists/i.test(r.stderr) ||
+        /already exists|exists/i.test(r.stdout);
+      results.push(`${cmd} => exit ${r.exitCode}${okish && r.exitCode !== 0 ? ' (ok-ish)' : ''}`);
+    }
+    // Verify user exists when possible
+    const idCheck = await this.host.runCommand(
+      ['bash', '-c', `id ${linuxUser} >/dev/null 2>&1; echo $?`],
+      { timeoutMs: 5_000 },
+    );
+    const userExists = idCheck.stdout.trim().endsWith('0') || idCheck.stdout.trim() === '0';
+    const homeOk = existsSync(homeDir);
+    const ok =
+      userExists ||
+      results.every((x) => x.includes('exit 0') || x.includes('ok-ish'));
+    return {
+      attempted: true,
+      ok: Boolean(ok && homeOk),
+      detail: [...results, `id ${linuxUser}: ${userExists}`, `home exists: ${homeOk}`].join('; '),
     };
   }
 

@@ -122,4 +122,11 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  readiness: () =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/readiness'),
+  publicFilesApply: (body: { serverName: string; quotaMb?: number; reload?: boolean }) =>
+    api.requestRaw('/api/v1/hosting/files/apply', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 };

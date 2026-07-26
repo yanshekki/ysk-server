@@ -55,6 +55,9 @@ Base URL: `http://127.0.0.1:8787`
 | PATCH | `/api/v1/cron/:id` | Bearer | Enable/disable cron job |
 | POST | `/api/v1/hosting/dns/zone-file` | Bearer | Write BIND zone under dataDir/dns/zones |
 | GET | `/api/v1/hosting/dns/zone-files` | Bearer | List managed zone files |
+| GET | `/api/v1/readiness` | optional | Spec production readiness (503 if not ready) |
+| POST | `/api/v1/hosting/files/apply` | Bearer | Public file server nginx |
+| POST | `/api/v1/projects/:id/os-provision` | Bearer | Re-run Linux user isolation |
 | GET | `/api/v1/hosting/dns/powerdns/status` | Bearer | Probe pdnsutil + list zones |
 | POST | `/api/v1/hosting/dns/powerdns/install` | Bearer | Write install script / optional apt |
 | POST | `/api/v1/hosting/dns/powerdns/load` | Bearer | Plan or load zone via pdnsutil |

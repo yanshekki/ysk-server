@@ -8,6 +8,16 @@
 | Repository | https://github.com/yanshekki/ysk-server |
 | Spec | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) |
 
+## Production readiness (Spec gate)
+
+```bash
+ysk-server readiness --data-dir .ysk --json
+# HTTP 200 only when productionReady (root + YSK_EXECUTE + nginx + node)
+curl -sS http://127.0.0.1:8787/api/v1/readiness | jq '.productionReady,.summary'
+```
+
+See [docs/deploy/spec-readiness.md](docs/deploy/spec-readiness.md). Degraded mode is intentional fail-closed, not a fake complete product.
+
 ## Honest capability matrix (do not over-claim)
 
 ### Implemented now (usable)
@@ -57,22 +67,23 @@
 - Files manager (sandbox under dataDir)
 - Protection probes, metrics, AI task planner (untrusted LLM gateway)
 - Self-update check / plan (`update --apply` needs EXECUTE)
+- **Production readiness** probe (`readiness` / `GET /api/v1/readiness`) — Spec-aligned, honest score
+- **Public File Server** nginx apply under dataDir/files/public
+- **OS project isolation re-apply** (`POST /projects/:id/os-provision`) via bash useradd/chown
 
 ### Partial / needs root + `YSK_EXECUTE=1`
 
-- Linux `useradd` project isolation
+- Linux `useradd` project isolation (attempted on create + re-apply API)
 - Systemd enable for project units & control plane
 - apt install email stack, certbot run, ufw apply, Apache PHP enable
 - MySQL **real** provision via `mysql` CLI (otherwise returns SQL plan with `ok: false`)
 
 ### Spec backlog (not production-ready yet)
 
-- Bare-metal runtime install polish; Roundcube full auto-login polish
-- Prefer BLF-CRYPT where openssl supports it; default FPM-only site policy knobs
-- FTPS production enable; fail2ban ban-action automation
-- OpenClaw/Hermes/IonClaw full installers (probe/templates exist)
-- ≥90% test coverage; broader integration e2e
-- npm global publish as single package (use `install.sh --from-source` today)
+- Roundcube SSO / full mailbox UX polish
+- Full vendor AI agent installers; PowerDNS apt auto on bare metal polish
+- ≥90% unit coverage (mandatory Spec §2.4 — in progress)
+- Public npm single-package global install (use `install.sh --from-source` today)
 
 See [docs/deploy/production-mvp.md](docs/deploy/production-mvp.md) for the Phase 2 Hosting MVP checklist.
 
@@ -133,6 +144,7 @@ ysk-server --help
 
 | Doc | Path |
 |-----|------|
+| Spec readiness | [docs/deploy/spec-readiness.md](docs/deploy/spec-readiness.md) |
 | Production MVP | [docs/deploy/production-mvp.md](docs/deploy/production-mvp.md) |
 | Real ops vertical | [docs/deploy/real-ops.md](docs/deploy/real-ops.md) |
 | npm publish | [docs/deploy/npm-publish.md](docs/deploy/npm-publish.md) |

@@ -36,11 +36,13 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - deployStatic nginx path; host executor blocks rm/crontab/pm2 without EXECUTE
 - Repo tests (session/project); playbooks startPlaybookRun coverage
 - e2e: static/DNS/PowerDNS/mailbox/webmail/firewall; cron setEnabled; live-checks DNS mocks
+- Spec production readiness probe (`readiness` / doctor); public file server apply
+- OS isolation via bash -c useradd/chown; re-provision API
 
 ### Still partial / Spec backlog
 
-- Bare-metal runtime install matrices polish; Roundcube SSO polish
-- ≥90% coverage target, public npm packages published
+- Roundcube SSO polish; full agent vendor installers
+- ≥90% coverage target (Spec §2.4); public npm packages published
 
 ### Earlier scaffolding notes
 

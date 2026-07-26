@@ -25,5 +25,7 @@ export * from './pm2-apply.js';
 export * from './dns-zone.js';
 export * from './powerdns-apply.js';
 export * from './runtime-probe.js';
+export * from './production-readiness.js';
+export * from './public-files.js';
 
 

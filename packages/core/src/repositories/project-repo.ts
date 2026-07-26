@@ -35,6 +35,15 @@ export class ProjectRepository {
     this.db.persist();
   }
 
+  setOsProvisioned(id: string, ok: boolean): void {
+    const p = this.db.snapshot.projects.find((x) => x.id === id);
+    if (!p) return;
+    p.os_provisioned = ok;
+    p.status = ok ? 'active' : 'active_pending_os';
+    p.updated_at = new Date().toISOString();
+    this.db.persist();
+  }
+
   updateMeta(
     id: string,
     patch: Partial<Pick<ProjectRow, 'runtime' | 'runtime_version' | 'domain' | 'name'>>,

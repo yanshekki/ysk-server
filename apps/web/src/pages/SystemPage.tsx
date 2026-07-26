@@ -296,6 +296,33 @@ export function SystemPage() {
           </button>
         </div>
         <div className="card">
+          <h2 className="card__title">Production readiness (Spec)</h2>
+          <p className="card__desc">Honest gate — never claims productionReady without root+EXECUTE+nginx+node</p>
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={busy}
+            onClick={() => void run(() => api.readiness())}
+          >
+            Run readiness probe
+          </button>
+        </div>
+        <div className="card">
+          <h2 className="card__title">Public File Server</h2>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={busy}
+            onClick={() =>
+              void run(() =>
+                api.publicFilesApply({ serverName: `files.${domain}`, reload: false }),
+              )
+            }
+          >
+            Apply public files nginx
+          </button>
+        </div>
+        <div className="card">
           <h2 className="card__title">Runtimes (Node/PHP)</h2>
           <div className="form-actions btn-row">
             <button
