@@ -49,12 +49,13 @@ import {
   provisionMysqlDatabase,
   listBackups,
   backupAllProjects,
+  restoreProjectBackup,
+  deleteProjectBackup,
   listProjectLogs,
   tailProjectLog,
   lookupOsvVulns,
   uploadCertificate,
   listUploadedCertFiles,
-  applyFtps,
   applyPhpFpmPool,
   applyCloudflareDns,
   persistDnsZoneApply,
@@ -80,6 +81,7 @@ import { VERSION } from './version.js';
 import { getBearer, parseUrl, readBody, sendError, sendJson } from './http/util.js';
 import { handleFilesRoutes } from './controllers/files-controller.js';
 import { handleSystemRoutes } from './controllers/system-controller.js';
+import { handleResourcesRoutes } from './controllers/resources-controller.js';
 import { resolveWebRoot, tryServeStatic } from './http/static.js';
 
 export function createHttpServer(ctx: AppContext): Server {
@@ -101,17 +103,23 @@ export function createHttpServer(ctx: AppContext): Server {
       const url = parseUrl(req);
       const method = req.method ?? 'GET';
 
-      // Modular controllers (files, system apply, protection probe)
+      // Modular controllers (files, managed resources, system apply)
       if (await handleFilesRoutes(ctx, req, res, url, method)) return;
+      if (await handleResourcesRoutes(ctx, req, res, url, method)) return;
       if (await handleSystemRoutes(ctx, req, res, url, method)) return;
 
       if (method === 'GET' && (url.pathname === '/health' || url.pathname === '/api/v1/health')) {
+        const executeEnabled = ctx.host.executeEnabled();
+        const isRoot = ctx.host.isRoot();
         const body: HealthResponse = {
           status: ctx.protection.mode === 'normal' ? 'ok' : 'degraded',
           product: PRODUCT_NAME,
           version: ctx.version || VERSION,
           protectionMode: ctx.protection.mode,
           timestamp: new Date().toISOString(),
+          executeEnabled,
+          isRoot,
+          mode: executeEnabled && isRoot ? 'production_capable' : 'degraded',
         };
         return sendJson(res, 200, body);
       }
@@ -185,15 +193,22 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           name?: string;
           domain?: string;
+          domainAliases?: string[];
           runtime?: 'node' | 'php' | 'static';
           runtimeVersion?: string;
           env?: 'staging' | 'production';
           templateId?: string;
           forceTemplate?: boolean;
+          /** Also create managed DNS zone for domain */
+          createDnsZone?: boolean;
+          /** Also register email domain */
+          createMailDomain?: boolean;
+          serverIp?: string;
         };
         const created = await ctx.projects.create({
           name: data.name ?? '',
           domain: data.domain,
+          domainAliases: data.domainAliases,
           runtime: data.runtime ?? 'node',
           runtimeVersion: data.runtimeVersion ?? '20',
           env: data.env,
@@ -201,7 +216,51 @@ export function createHttpServer(ctx: AppContext): Server {
           templateId: data.templateId,
           forceTemplate: data.forceTemplate,
         });
-        return sendJson(res, 201, created);
+        const extras: { dnsZoneId?: string; emailDomainId?: string; notes: string[] } = {
+          notes: [],
+        };
+        const domain = (data.domain ?? '').trim().toLowerCase();
+        const serverIp = (data.serverIp ?? '127.0.0.1').trim();
+        if (domain && data.createDnsZone) {
+          try {
+            const { createResource, seedDnsZoneRecords } = await import('@ysk/core');
+            const zoneRow = createResource(ctx.db, 'dns_zones', {
+              zone: domain,
+              serverIp,
+              backend: 'bind',
+              template: 'web',
+              apply_status: 'draft',
+              projectId: created.project.id,
+            });
+            seedDnsZoneRecords(ctx.db, String(zoneRow.id), domain, serverIp, 'web');
+            extras.dnsZoneId = String(zoneRow.id);
+            extras.notes.push(`DNS zone 已建立（draft）: ${domain}`);
+          } catch (e) {
+            extras.notes.push(
+              `DNS zone 建立失敗: ${e instanceof Error ? e.message : String(e)}`,
+            );
+          }
+        }
+        if (domain && data.createMailDomain) {
+          try {
+            const mail = ctx.email.create({
+              domain,
+              serverIp,
+              actor: user.username,
+            });
+            extras.emailDomainId = String(
+              (mail as { domain?: { id?: string } }).domain?.id ??
+                (mail as { id?: string }).id ??
+                '',
+            );
+            extras.notes.push(`郵件域名已登記: ${domain}`);
+          } catch (e) {
+            extras.notes.push(
+              `郵件域名建立失敗: ${e instanceof Error ? e.message : String(e)}`,
+            );
+          }
+        }
+        return sendJson(res, 201, { ...created, extras });
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/templates') {
@@ -300,13 +359,68 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { systemConfDir?: string; ssl?: boolean };
+        const data = JSON.parse(raw || '{}') as {
+          systemConfDir?: string;
+          ssl?: boolean;
+          forceHttps?: boolean;
+          hsts?: boolean;
+        };
         const result = await ctx.projectOps.publishNginx(id, {
           actor: user.username,
           systemConfDir: data.systemConfDir,
           ssl: data.ssl,
+          forceHttps: data.forceHttps,
+          hsts: data.hsts,
         });
         return sendJson(res, 200, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/suspend$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.suspend(id, user.username);
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/unsuspend$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.unsuspend(id, user.username);
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/network$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          domainAliases?: string[];
+          forceHttps?: boolean;
+          hsts?: boolean;
+          publish?: boolean;
+          ssl?: boolean;
+        };
+        const project = ctx.projects.updateNetwork(
+          id,
+          {
+            domain: data.domain,
+            domainAliases: data.domainAliases,
+            forceHttps: data.forceHttps,
+            hsts: data.hsts,
+          },
+          user.username,
+        );
+        if (data.publish) {
+          const pub = await ctx.projectOps.publishNginx(id, {
+            actor: user.username,
+            ssl: data.ssl,
+            forceHttps: data.forceHttps ?? project.forceHttps,
+            hsts: data.hsts ?? project.hsts,
+          });
+          return sendJson(res, 200, { project, publish: pub });
+        }
+        return sendJson(res, 200, { project });
       }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+$/)) {
@@ -1098,7 +1212,51 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 500, r);
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/restore') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { projectId?: string; name?: string };
+        if (!data.projectId || !data.name) {
+          return sendJson(res, 400, { ok: false, notes: ['projectId 與 name 必填'] });
+        }
+        const project = ctx.db.snapshot.projects.find((p) => p.id === data.projectId);
+        if (!project) {
+          return sendJson(res, 404, { ok: false, notes: ['找不到專案'] });
+        }
+        const r = await restoreProjectBackup({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          projectId: data.projectId,
+          archiveName: data.name,
+          homeDir: project.home_dir,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.restore',
+          resource: data.projectId,
+          detail: { name: data.name, ...r },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (method === 'DELETE' && url.pathname === '/api/v1/backups') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { projectId?: string; name?: string };
+        if (!data.projectId || !data.name) {
+          return sendJson(res, 400, { ok: false, notes: ['projectId 與 name 必填'] });
+        }
+        const r = deleteProjectBackup(ctx.dataDir, data.projectId, data.name);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.delete',
+          resource: data.projectId,
+          detail: { name: data.name, ...r },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
       }
       if (method === 'GET' && url.pathname === '/api/v1/scheduler') {
         ctx.auth.authenticate(getBearer(req));
@@ -1133,31 +1291,36 @@ export function createHttpServer(ctx: AppContext): Server {
       }
       if (method === 'GET' && url.pathname === '/api/v1/ssl/uploaded') {
         ctx.auth.authenticate(getBearer(req));
+        const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk/core');
+        dedupeCertificatesInStore(ctx.db);
         return sendJson(res, 200, {
           files: listUploadedCertFiles(ctx.dataDir),
-          certificates: ctx.db.snapshot.certificates,
+          certificates: listCertificatesView(ctx.db, ctx.dataDir),
+          items: listCertificatesView(ctx.db, ctx.dataDir),
         });
       }
-
-      // FTPS apply (config under dataDir; install optional)
-      if (method === 'POST' && url.pathname === '/api/v1/system/ftps/apply') {
+      if (method === 'GET' && url.pathname === '/api/v1/ssl/certificates') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk/core');
+        dedupeCertificatesInStore(ctx.db);
+        return sendJson(res, 200, { items: listCertificatesView(ctx.db, ctx.dataDir) });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssl\/certificates\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { domain?: string; install?: boolean };
-        const result = await applyFtps({
-          dataDir: ctx.dataDir,
-          domain: data.domain ?? 'files.local',
-          host: ctx.host,
-          install: data.install,
-        });
+        const idOrDomain = decodeURIComponent(url.pathname.split('/').pop() ?? '');
+        const { deleteCertificate } = await import('@ysk/core');
+        const r = deleteCertificate(ctx.db, ctx.dataDir, idOrDomain);
         ctx.audit.append({
           actor: user.username,
-          action: 'system.ftps.apply',
-          detail: result,
-          ok: result.ok,
+          action: 'ssl.delete',
+          resource: r.domain,
+          detail: r,
+          ok: r.ok,
         });
-        return sendJson(res, 200, result);
+        return sendJson(res, r.ok ? 200 : 404, r);
       }
+
+      // FTPS apply handled by handleSystemRoutes (settings/status/apply)
       if (method === 'GET' && url.pathname === '/api/v1/fleet/agents') {
         ctx.auth.authenticate(getBearer(req));
         const group = url.searchParams.get('group') ?? undefined;
@@ -1759,6 +1922,11 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.auth.authenticate(getBearer(req));
         const projectId = url.searchParams.get('projectId') ?? undefined;
         return sendJson(res, 200, { items: ctx.cron.list(projectId) });
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/cron/status') {
+        ctx.auth.authenticate(getBearer(req));
+        const status = await ctx.cron.probeInstallStatus();
+        return sendJson(res, 200, status);
       }
       if (method === 'POST' && url.pathname === '/api/v1/cron') {
         const user = ctx.auth.authenticate(getBearer(req));

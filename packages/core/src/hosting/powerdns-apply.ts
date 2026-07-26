@@ -156,7 +156,7 @@ export async function applyPowerDnsZone(input: {
       mode: 'plan',
       notes: [
         ...notes,
-        'Plan only — set load:true + YSK_EXECUTE=1 to run pdnsutil load-zone',
+        '尚未載入 zone：請於管理面板重試',
         `Preview (first 400 chars):\n${readFileSync(zonePath, 'utf8').slice(0, 400)}`,
       ],
       written,
@@ -173,7 +173,7 @@ export async function applyPowerDnsZone(input: {
       zone,
       zonePath,
       mode: 'refused',
-      notes: [...notes, 'PowerDNS load skipped: set YSK_EXECUTE=1 (never fake success)'],
+      notes: [...notes, '無法載入 PowerDNS zone：伺服器未開啟系統變更權限'],
       written,
       commandResults,
       requiresExecute: true,
@@ -323,7 +323,7 @@ export async function installPowerDnsPackages(input: {
   }
   const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
   if (want && !execute) {
-    notes.push('PowerDNS apt install skipped: need root + YSK_EXECUTE=1 (never fake success)');
+    notes.push('無法安裝 PowerDNS：需要系統管理員權限');
   }
   if (execute) {
     for (const argv of commands) {

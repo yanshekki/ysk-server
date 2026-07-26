@@ -40,10 +40,10 @@ export const agentsApi = {
       method: 'POST',
       body: '{}',
     }),
-  install: (kind: string, execute = false) =>
+  install: (kind: string, execute = true) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/agents/runtimes/${kind}/install`, {
       method: 'POST',
-      body: JSON.stringify({ execute }),
+      body: JSON.stringify({ execute: execute !== false }),
     }),
   plan: (kind: string) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/agents/runtimes/${kind}/plan`, {

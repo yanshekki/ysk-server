@@ -87,7 +87,7 @@ export async function runSelfUpdate(input: {
 
   if (input.apply && plan.status.updateAvailable) {
     if (!input.host.executeEnabled()) {
-      notes.push('apply skipped: set YSK_EXECUTE=1');
+      notes.push('伺服器未開啟系統變更權限，無法在管理面板完成更新');
     } else {
       const pkg = `${input.packageName ?? 'ysk-server'}@${latest}`;
       const r = await input.host.runCommand(['npm', 'install', '-g', pkg], { timeoutMs: 300_000 });
@@ -98,10 +98,10 @@ export async function runSelfUpdate(input: {
         stderr: r.stderr,
       });
       applied = r.exitCode === 0;
-      notes.push(applied ? `installed ${pkg}` : `npm install failed: ${r.stderr}`);
+      notes.push(applied ? `已安裝 ${pkg}` : `更新失敗：${r.stderr}`);
     }
   } else if (!plan.status.updateAvailable) {
-    notes.push('already up to date');
+    notes.push('已是最新版本');
   }
 
   const ok = input.apply
@@ -109,8 +109,8 @@ export async function runSelfUpdate(input: {
     : true;
   if (input.apply && plan.status.updateAvailable && !applied) {
     // ensure callers can detect refuse without fake success
-    if (!notes.some((n) => /YSK_EXECUTE|failed|already/i.test(n))) {
-      notes.push('apply did not complete');
+    if (!notes.some((n) => /權限|失敗|failed|already|最新/i.test(n))) {
+      notes.push('更新未完成');
     }
   }
 

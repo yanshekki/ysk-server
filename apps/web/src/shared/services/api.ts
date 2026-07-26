@@ -7,6 +7,34 @@ import { authStore } from '../stores/auth-store';
 
 const base = '';
 
+function errorMessageFromBody(data: unknown, status: number): string {
+  if (data && typeof data === 'object') {
+    const o = data as Record<string, unknown>;
+    if (typeof o.blockMessage === 'string' && o.blockMessage.trim()) return o.blockMessage;
+    if (typeof o.message === 'string' && o.message.trim()) return o.message;
+    if (Array.isArray(o.notes) && o.notes.length) {
+      const n = o.notes.map(String).find((x) => x.trim());
+      if (n) return n;
+    }
+    if (Array.isArray(o.results)) {
+      for (const r of o.results) {
+        if (r && typeof r === 'object') {
+          const row = r as Record<string, unknown>;
+          if (typeof row.blockMessage === 'string' && row.blockMessage.trim()) {
+            return row.blockMessage;
+          }
+          if (Array.isArray(row.notes) && row.notes[0]) return String(row.notes[0]);
+        }
+      }
+    }
+  }
+  if (status === 401) return '未登入或工作階段已過期';
+  if (status === 403) return '沒有權限執行此操作';
+  if (status === 404) return '找不到資源';
+  if (status === 422) return '操作無法完成（伺服器拒絕）';
+  return `請求失敗（${status}）`;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = authStore.getToken();
   const res = await fetch(`${base}${path}`, {
@@ -17,11 +45,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
   });
-  const data = (await res.json()) as T & { message?: string; code?: string };
-  if (!res.ok) {
-    throw new Error((data as { message?: string }).message ?? `HTTP ${res.status}`);
+  let data: unknown = {};
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
   }
-  return data;
+  if (!res.ok) {
+    throw new Error(errorMessageFromBody(data, res.status));
+  }
+  return data as T;
 }
 
 export const api = {
@@ -52,9 +85,18 @@ export const api = {
   createProject(body: {
     name: string;
     domain?: string;
+    domainAliases?: string[];
     runtime?: string;
     templateId?: string;
-  }): Promise<{ project: ProjectDto; osProvision: unknown; scaffold?: unknown }> {
+    createDnsZone?: boolean;
+    createMailDomain?: boolean;
+    serverIp?: string;
+  }): Promise<{
+    project: ProjectDto;
+    osProvision: unknown;
+    scaffold?: unknown;
+    extras?: { dnsZoneId?: string; emailDomainId?: string; notes: string[] };
+  }> {
     return request('/api/v1/projects', { method: 'POST', body: JSON.stringify(body) });
   },
   listTemplates(): Promise<{
@@ -124,11 +166,39 @@ export const api = {
   },
   publishNginx(
     id: string,
-    body?: { systemConfDir?: string; ssl?: boolean; reload?: boolean },
+    body?: {
+      systemConfDir?: string;
+      ssl?: boolean;
+      reload?: boolean;
+      forceHttps?: boolean;
+      hsts?: boolean;
+    },
   ): Promise<OpsApplyResultDto> {
     return request(`/api/v1/projects/${id}/publish-nginx`, {
       method: 'POST',
       body: JSON.stringify(body ?? {}),
+    });
+  },
+  suspendProject(id: string): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/suspend`, { method: 'POST', body: '{}' });
+  },
+  unsuspendProject(id: string): Promise<OpsApplyResultDto> {
+    return request(`/api/v1/projects/${id}/unsuspend`, { method: 'POST', body: '{}' });
+  },
+  updateProjectNetwork(
+    id: string,
+    body: {
+      domain?: string;
+      domainAliases?: string[];
+      forceHttps?: boolean;
+      hsts?: boolean;
+      publish?: boolean;
+      ssl?: boolean;
+    },
+  ): Promise<{ project: ProjectDto; publish?: OpsApplyResultDto }> {
+    return request(`/api/v1/projects/${id}/network`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
     });
   },
   gitDeploy(
@@ -170,8 +240,27 @@ export const api = {
   }): Promise<{ job: Record<string, unknown> }> {
     return request('/api/v1/cron', { method: 'POST', body: JSON.stringify(body) });
   },
-  installCron(): Promise<{ ok: boolean; notes: string[]; path: string }> {
+  installCron(): Promise<{
+    ok: boolean;
+    notes: string[];
+    path: string;
+    blocked?: boolean;
+    hostInstalled?: boolean;
+  }> {
     return request('/api/v1/cron/install', { method: 'POST', body: '{}' });
+  },
+  cronStatus(): Promise<{
+    managedPath: string;
+    managedLines: number;
+    enabledJobs: number;
+    totalJobs: number;
+    hostHasYskEntries: boolean | null;
+    hostCrontabPreview: string;
+    executeEnabled: boolean;
+    lastInstallOk: boolean | null;
+    lastInstallAt: string | null;
+  }> {
+    return request('/api/v1/cron/status');
   },
   listSslCertificates(): Promise<{ items: Array<Record<string, unknown>> }> {
     return request('/api/v1/system/ssl/certificates');

@@ -69,26 +69,71 @@ pasv_max_port=${pasvMax}
 export interface DnsRecordPlan {
   records: Array<{ type: string; name: string; value: string; ttl: number }>;
   providerHints: string[];
+  template: DnsZoneTemplate;
+}
+
+/** Zone seed templates (Hestia/DA-style defaults). */
+export type DnsZoneTemplate = 'minimal' | 'web' | 'mail' | 'full';
+
+export const DNS_ZONE_TEMPLATES: Array<{
+  id: DnsZoneTemplate;
+  label: string;
+  description: string;
+}> = [
+  { id: 'minimal', label: '最小', description: '僅 apex A' },
+  { id: 'web', label: '網站', description: 'apex + www' },
+  { id: 'mail', label: '郵件', description: 'apex + mail + MX + SPF' },
+  { id: 'full', label: '完整', description: 'web + mail + ftp + SPF' },
+];
+
+export function normalizeDnsZoneTemplate(raw?: string | null): DnsZoneTemplate {
+  const t = (raw ?? 'full').toLowerCase();
+  if (t === 'minimal' || t === 'web' || t === 'mail' || t === 'full') return t;
+  return 'full';
 }
 
 export function planDnsZone(opts: {
   zone: string;
   serverIp: string;
   mailHost?: string;
+  /** minimal | web | mail | full (default full) */
+  template?: DnsZoneTemplate | string;
 }): DnsRecordPlan {
   if (!opts.zone || !opts.serverIp) {
     throw new YskError(ErrorCodes.VALIDATION, 'zone and serverIp required', { httpStatus: 400 });
   }
+  const template = normalizeDnsZoneTemplate(opts.template);
   const mail = opts.mailHost ?? `mail.${opts.zone}`;
+  const ttl = 300;
+  const ip = opts.serverIp;
+  const records: DnsRecordPlan['records'] = [];
+
+  // Always apex A for usable zone (except we still want apex for all templates)
+  records.push({ type: 'A', name: '@', value: ip, ttl });
+
+  if (template === 'web' || template === 'full') {
+    records.push({ type: 'A', name: 'www', value: ip, ttl });
+  }
+  if (template === 'mail' || template === 'full') {
+    records.push({ type: 'A', name: 'mail', value: ip, ttl });
+    records.push({ type: 'MX', name: '@', value: `10 ${mail}.`, ttl });
+    records.push({
+      type: 'TXT',
+      name: '@',
+      value: `v=spf1 a mx ip4:${ip} ~all`,
+      ttl,
+    });
+  }
+  if (template === 'full') {
+    records.push({ type: 'A', name: 'ftp', value: ip, ttl });
+  }
+
   return {
-    records: [
-      { type: 'A', name: '@', value: opts.serverIp, ttl: 300 },
-      { type: 'A', name: 'mail', value: opts.serverIp, ttl: 300 },
-      { type: 'MX', name: '@', value: `10 ${mail}.`, ttl: 300 },
-    ],
+    template,
+    records,
     providerHints: [
-      'PowerDNS API or Cloudflare API can apply these records',
-      'If using Cloudflare, set MX-related records to DNS-only (grey cloud)',
+      'Managed zone file is not live until nameserver loads it',
+      'External DNS: copy these records to your provider',
     ],
   };
 }

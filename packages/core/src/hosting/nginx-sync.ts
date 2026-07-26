@@ -68,7 +68,7 @@ export async function syncNginxConfigs(opts: {
     }
     notes.push(`Copied ${copied.length} file(s) to ${targetDir}`);
   } else if (targetDir) {
-    notes.push('System sync skipped: set YSK_EXECUTE=1 to copy into system conf dir');
+    notes.push('無法同步到系統 Nginx：需要系統變更權限');
   }
 
   let tested = false;

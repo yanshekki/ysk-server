@@ -47,9 +47,9 @@ export async function probeAgentRuntime(
   if (host.pathExists('/bin/systemctl') || host.pathExists('/usr/bin/systemctl')) {
     const r = await host.runCommand(['systemctl', 'is-active', unitName], { timeoutMs: 5_000 });
     unitActive = (r.stdout || r.stderr || `exit_${r.exitCode}`).trim();
-    notes.push(`systemctl is-active ${unitName}: ${unitActive}`);
+    notes.push(`服務狀態：${unitActive}`);
   } else {
-    notes.push('systemctl not available');
+    notes.push('此主機無 systemd 服務管理');
   }
 
   // npm global bin probe (best-effort)
@@ -58,16 +58,13 @@ export async function probeAgentRuntime(
     { timeoutMs: 5_000 },
   );
   const bin = which.stdout.trim();
-  if (bin) notes.push(`binary on PATH: ${bin}`);
-  else notes.push('CLI binary not found on PATH');
+  if (bin) notes.push('已偵測到可執行檔');
+  else notes.push('伺服器尚未安裝對應程式');
 
   let status: AgentRuntimeDto['status'] = 'unknown';
   if (unitActive === 'active') status = 'running';
   else if (pathExists || bin) status = 'stopped';
   else status = 'not_installed';
-
-  // write unit template path hint
-  notes.push(`Install plan has ${plan.commands.length} command(s)`);
 
   return {
     kind: k,

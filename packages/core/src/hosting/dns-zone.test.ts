@@ -11,17 +11,29 @@ import {
 } from './dns-zone.js';
 
 describe('dns-zone', () => {
-  it('renders SOA/NS/A/MX zone body', () => {
+  it('renders SOA/NS + template records', () => {
     const r = renderBindZoneFile({
       zone: 'example.com',
       serverIp: '203.0.113.10',
-      extraRecords: [{ type: 'TXT', name: '@', value: 'v=spf1 a -all', ttl: 300 }],
+      template: 'full',
     });
     expect(r.body).toContain('IN\tSOA');
     expect(r.body).toContain('203.0.113.10');
     expect(r.body).toContain('IN\tMX');
     expect(r.body).toContain('v=spf1');
+    expect(r.body).toContain('www');
+    expect(r.body).toContain('ftp');
     expect(r.serial).toBeGreaterThan(2020010100);
+  });
+
+  it('minimal template has no MX', () => {
+    const r = renderBindZoneFile({
+      zone: 'example.com',
+      serverIp: '203.0.113.10',
+      template: 'minimal',
+    });
+    expect(r.body).toContain('IN\tA');
+    expect(r.body).not.toContain('IN\tMX');
   });
 
   it('rejects bad zone and IP', () => {
@@ -43,6 +55,8 @@ describe('dns-zone', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.requiresExecute).toBe(true);
+    expect(r.applyStatus).toBe('written');
+    expect(r.reloaded).toBe(false);
     expect(existsSync(r.zonePath)).toBe(true);
     expect(readFileSync(r.zonePath, 'utf8')).toContain('demo.local.');
     const listed = listManagedDnsZones(dir);

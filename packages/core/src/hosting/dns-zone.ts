@@ -1,13 +1,18 @@
 /**
- * Managed BIND-style zone files under dataDir (PowerDNS / BIND path toward Spec §DNS).
- * Never fakes success: optional named-checkzone / pdnsutil only when EXECUTE + binary present.
+ * Managed BIND-style zone files under dataDir.
+ * Never fakes success: named-checkzone / reload only when EXECUTE + binary present.
  */
 
 import { mkdirSync, writeFileSync, readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
-import { planDnsZone, type DnsRecordPlan } from './extras.js';
+import {
+  normalizeDnsZoneTemplate,
+  planDnsZone,
+  type DnsRecordPlan,
+  type DnsZoneTemplate,
+} from './extras.js';
 
 export interface ZoneFileResult {
   ok: boolean;
@@ -20,6 +25,10 @@ export interface ZoneFileResult {
   commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
   requiresExecute: boolean;
   validated?: boolean;
+  /** true only when nameserver reload succeeded */
+  reloaded?: boolean;
+  /** written | applied | failed (honest) */
+  applyStatus: 'written' | 'applied' | 'failed';
 }
 
 function assertZoneName(zone: string): string {
@@ -50,7 +59,7 @@ function assertIpv4(ip: string): void {
 }
 
 /**
- * Render a minimal RFC1035 master zone file.
+ * Render RFC1035 master zone: SOA + NS + ns1 A, then data records.
  */
 export function renderBindZoneFile(input: {
   zone: string;
@@ -59,25 +68,31 @@ export function renderBindZoneFile(input: {
   serial?: number;
   ttl?: number;
   nsName?: string;
-  extraRecords?: DnsRecordPlan['records'];
+  /** Data records (A/MX/TXT/…); if omitted, uses planDnsZone template */
+  records?: DnsRecordPlan['records'];
+  template?: DnsZoneTemplate | string;
 }): { body: string; serial: number; records: DnsRecordPlan['records'] } {
   const zone = assertZoneName(input.zone);
   assertIpv4(input.serverIp);
   const serial =
     input.serial ??
     Number(
-      `${new Date().getUTCFullYear()}${String(new Date().getUTCMonth() + 1).padStart(2, '0')}${String(new Date().getUTCDate()).padStart(2, '0')}01`,
+      `${new Date().getUTCFullYear()}${String(new Date().getUTCMonth() + 1).padStart(2, '0')}${String(new Date().getUTCDate()).padStart(2, '0')}${String(new Date().getUTCHours()).padStart(2, '0')}`,
     );
   const ttl = input.ttl ?? 300;
   const ns = input.nsName ?? `ns1.${zone}.`;
-  const mail = (input.mailHost ?? `mail.${zone}`).replace(/\.$/, '') + '.';
-  const plan = planDnsZone({ zone, serverIp: input.serverIp, mailHost: input.mailHost });
-  const extras = input.extraRecords ?? [];
-  const records = [...plan.records, ...extras];
+  const dataRecords =
+    input.records ??
+    planDnsZone({
+      zone,
+      serverIp: input.serverIp,
+      mailHost: input.mailHost,
+      template: input.template,
+    }).records;
 
   const lines = [
     `; YSK Server managed zone — ${zone}`,
-    `; Do not claim live DNS until nameserver loads this file`,
+    `; written ≠ authoritative until nameserver reloads this file`,
     `$TTL ${ttl}`,
     `$ORIGIN ${zone}.`,
     `@\tIN\tSOA\t${ns}\thostmaster.${zone}.\t(`,
@@ -89,17 +104,12 @@ export function renderBindZoneFile(input: {
     `\t\t)`,
     `@\tIN\tNS\t${ns}`,
     `ns1\tIN\tA\t${input.serverIp}`,
-    `@\tIN\tA\t${input.serverIp}`,
-    `mail\tIN\tA\t${input.serverIp}`,
-    `@\tIN\tMX\t10 ${mail}`,
-    `www\tIN\tA\t${input.serverIp}`,
-    '',
   ];
 
-  for (const r of extras) {
+  for (const r of dataRecords) {
     const name = r.name === '@' ? '@' : r.name.replace(/\.$/, '');
     if (r.type === 'TXT') {
-      lines.push(`${name}\tIN\tTXT\t"${r.value.replace(/"/g, '\\"')}"`);
+      lines.push(`${name}\tIN\tTXT\t"${String(r.value).replace(/"/g, '\\"')}"`);
     } else if (r.type === 'CNAME') {
       const v = r.value.endsWith('.') ? r.value : `${r.value}.`;
       lines.push(`${name}\tIN\tCNAME\t${v}`);
@@ -107,16 +117,21 @@ export function renderBindZoneFile(input: {
       lines.push(`${name}\tIN\t${r.type}\t${r.value}`);
     } else if (r.type === 'MX') {
       lines.push(`${name}\tIN\tMX\t${r.value}`);
+    } else if (r.type === 'NS') {
+      const v = r.value.endsWith('.') ? r.value : `${r.value}.`;
+      lines.push(`${name}\tIN\tNS\t${v}`);
+    } else if (r.type === 'SRV' || r.type === 'CAA') {
+      lines.push(`${name}\tIN\t${r.type}\t${r.value}`);
     }
   }
   lines.push('');
 
-  return { body: lines.join('\n'), serial, records };
+  return { body: lines.join('\n'), serial, records: dataRecords };
 }
 
 /**
  * Write zone file under dataDir/dns/zones/<zone>.zone
- * Optionally run named-checkzone when execute + binary present.
+ * Optionally validate (named-checkzone) and reload nameserver.
  */
 export async function writeManagedDnsZone(input: {
   dataDir: string;
@@ -124,16 +139,21 @@ export async function writeManagedDnsZone(input: {
   serverIp: string;
   mailHost?: string;
   host?: HostExecutor;
-  /** Run named-checkzone / pdnsutil if available (needs EXECUTE) */
+  /** Run named-checkzone if available (needs EXECUTE) */
   validate?: boolean;
-  extraRecords?: DnsRecordPlan['records'];
+  /** Attempt named/bind9/pdns reload when EXECUTE */
+  tryReload?: boolean;
+  records?: DnsRecordPlan['records'];
+  template?: DnsZoneTemplate | string;
 }): Promise<ZoneFileResult> {
   const zone = assertZoneName(input.zone);
+  const template = normalizeDnsZoneTemplate(input.template);
   const rendered = renderBindZoneFile({
     zone,
     serverIp: input.serverIp,
     mailHost: input.mailHost,
-    extraRecords: input.extraRecords,
+    records: input.records,
+    template,
   });
 
   const dir = join(input.dataDir, 'dns', 'zones');
@@ -141,7 +161,6 @@ export async function writeManagedDnsZone(input: {
   const zonePath = join(dir, `${zone}.zone`);
   writeFileSync(zonePath, rendered.body, 'utf8');
 
-  // companion JSON for UI / store
   const metaPath = join(dir, `${zone}.json`);
   writeFileSync(
     metaPath,
@@ -151,6 +170,7 @@ export async function writeManagedDnsZone(input: {
         serverIp: input.serverIp,
         mailHost: input.mailHost ?? `mail.${zone}`,
         serial: rendered.serial,
+        template,
         records: rendered.records,
         zonePath,
         updatedAt: new Date().toISOString(),
@@ -164,16 +184,18 @@ export async function writeManagedDnsZone(input: {
   const notes = [
     `Zone file: ${zonePath}`,
     `Serial: ${rendered.serial}`,
-    'Load via BIND (named) or convert for PowerDNS; Cloudflare path is separate API',
+    `Template data RRs: ${rendered.records.length}`,
   ];
   const written = [zonePath, metaPath];
   const commandResults: ZoneFileResult['commandResults'] = [];
   let validated: boolean | undefined;
+  let reloaded = false;
   const wantValidate = Boolean(input.validate);
+  const wantReload = Boolean(input.tryReload);
   const canExecute = Boolean(input.host?.executeEnabled());
 
-  if (wantValidate && !canExecute) {
-    notes.push('Zone validation skipped: set YSK_EXECUTE=1');
+  if ((wantValidate || wantReload) && !canExecute) {
+    notes.push('未驗證／重載：伺服器未開啟系統變更權限（僅寫入管理檔）');
   }
 
   if (wantValidate && canExecute && input.host) {
@@ -182,10 +204,9 @@ export async function writeManagedDnsZone(input: {
       { timeoutMs: 5_000 },
     );
     if (check.stdout.trim()) {
-      const r = await input.host.runCommand(
-        ['named-checkzone', zone, zonePath],
-        { timeoutMs: 15_000 },
-      );
+      const r = await input.host.runCommand(['named-checkzone', zone, zonePath], {
+        timeoutMs: 15_000,
+      });
       commandResults.push({
         argv: ['named-checkzone', zone, zonePath],
         exitCode: r.exitCode,
@@ -198,19 +219,33 @@ export async function writeManagedDnsZone(input: {
           : `named-checkzone failed: ${r.stderr || r.stdout}`,
       );
     } else {
-      notes.push('named-checkzone not on PATH — file written, syntax not verified');
-      validated = false;
+      notes.push('named-checkzone 不在 PATH — 檔已寫入，語法未驗證');
+      validated = undefined;
     }
   }
 
-  // When validation ran and failed, ok=false; missing binary still ok (file written)
-  const finalOk =
-    wantValidate && canExecute && commandResults.length > 0
-      ? Boolean(validated)
-      : true;
+  // Reload only if validation did not fail
+  if (wantReload && canExecute && input.host && validated !== false) {
+    reloaded = await tryReloadNameserver(input.host, notes, commandResults);
+  } else if (wantReload && canExecute && validated === false) {
+    notes.push('略過 reload：zone 驗證失敗');
+  }
+
+  let applyStatus: ZoneFileResult['applyStatus'] = 'written';
+  let ok = true;
+  if (validated === false) {
+    applyStatus = 'failed';
+    ok = false;
+  } else if (reloaded) {
+    applyStatus = 'applied';
+    notes.push('狀態：已寫入並成功 reload 本機 nameserver');
+  } else {
+    applyStatus = 'written';
+    notes.push('狀態：已寫入管理 zone 檔（尚未成為權威 DNS，除非你已 reload nameserver）');
+  }
 
   return {
-    ok: finalOk,
+    ok,
     zone,
     zonePath,
     serial: rendered.serial,
@@ -218,9 +253,46 @@ export async function writeManagedDnsZone(input: {
     notes,
     written,
     commandResults,
-    requiresExecute: wantValidate && !canExecute,
+    requiresExecute: (wantValidate || wantReload) && !canExecute,
     validated,
+    reloaded,
+    applyStatus,
   };
+}
+
+async function tryReloadNameserver(
+  host: HostExecutor,
+  notes: string[],
+  commandResults: ZoneFileResult['commandResults'],
+): Promise<boolean> {
+  // Prefer rndc, then systemctl units common on Debian/Ubuntu
+  const attempts: string[][] = [
+    ['rndc', 'reload'],
+    ['systemctl', 'reload', 'named'],
+    ['systemctl', 'reload', 'bind9'],
+    ['systemctl', 'reload', 'pdns'],
+  ];
+  for (const argv of attempts) {
+    const binCheck = await host.runCommand(
+      ['bash', '-c', `command -v ${argv[0]} >/dev/null 2>&1 && echo ok || true`],
+      { timeoutMs: 3_000 },
+    );
+    if (!binCheck.stdout.includes('ok') && argv[0] !== 'systemctl') continue;
+    if (argv[0] === 'systemctl') {
+      const unit = argv[2];
+      const active = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });
+      if ((active.stdout || '').trim() !== 'active') continue;
+    }
+    const r = await host.runCommand(argv, { timeoutMs: 15_000 });
+    commandResults.push({ argv, exitCode: r.exitCode, stderr: r.stderr });
+    if (r.exitCode === 0) {
+      notes.push(`nameserver reload OK: ${argv.join(' ')}`);
+      return true;
+    }
+    notes.push(`reload 嘗試失敗 (${argv.join(' ')}): ${(r.stderr || r.stdout).trim()}`);
+  }
+  notes.push('找不到可 reload 的本機 nameserver（rndc/named/bind9/pdns）');
+  return false;
 }
 
 /**
@@ -233,6 +305,7 @@ export function listManagedDnsZones(dataDir: string): Array<{
   serial?: number;
   serverIp?: string;
   updatedAt?: string;
+  template?: string;
 }> {
   const dir = join(dataDir, 'dns', 'zones');
   if (!existsSync(dir)) return [];
@@ -244,16 +317,19 @@ export function listManagedDnsZones(dataDir: string): Array<{
     let serial: number | undefined;
     let serverIp: string | undefined;
     let updatedAt: string | undefined;
+    let template: string | undefined;
     if (existsSync(metaPath)) {
       try {
         const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as {
           serial?: number;
           serverIp?: string;
           updatedAt?: string;
+          template?: string;
         };
         serial = meta.serial;
         serverIp = meta.serverIp;
         updatedAt = meta.updatedAt;
+        template = meta.template;
       } catch {
         /* ignore */
       }
@@ -265,6 +341,7 @@ export function listManagedDnsZones(dataDir: string): Array<{
       serial,
       serverIp,
       updatedAt,
+      template,
     };
   });
 }

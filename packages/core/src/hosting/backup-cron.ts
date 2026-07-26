@@ -103,11 +103,20 @@ export async function backupAllProjects(input: {
       });
     }
   }
-  const ok = results.length === 0 || results.some((r) => r.ok);
+  // Honest ok: every non-skipped project must succeed (not "any one ok")
+  const attempted = results.filter((r) => !r.notes.some((n) => /^skip /i.test(n)));
+  const okCount = results.filter((r) => r.ok).length;
+  const ok = attempted.length > 0 && attempted.every((r) => r.ok);
   return {
     ok,
     results,
-    notes: [`Backed up ${results.filter((r) => r.ok).length}/${results.length} projects`],
+    notes: [
+      `已備份 ${okCount}/${results.length} 個專案` +
+        (attempted.length !== results.length
+          ? `（略過 ${results.length - attempted.length} 個無 home）`
+          : ''),
+      ok ? '全部成功' : '部分或全部失敗 — 請查看 results',
+    ],
   };
 }
 
@@ -177,6 +186,81 @@ export async function backupProject(input: {
     notes: [`Backup written ${archivePath}`, `Retention: keep last 10 archives`],
     commandResults: [{ argv: ['tar', '-czf', archivePath], exitCode: 0, stderr: '' }],
   };
+}
+
+/**
+ * Restore a managed backup archive into the project home.
+ * Path must live under dataDir/backups/<projectId>/ — never accepts arbitrary paths.
+ */
+export async function restoreProjectBackup(input: {
+  host: HostExecutor;
+  dataDir: string;
+  projectId: string;
+  archiveName: string;
+  homeDir: string;
+}): Promise<BackupResult> {
+  const root = join(input.dataDir, 'backups', input.projectId);
+  const safeName = input.archiveName.replace(/[/\\]/g, '');
+  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
+    throw new YskError(ErrorCodes.VALIDATION, '無效的備份檔名', { httpStatus: 400 });
+  }
+  const archivePath = join(root, safeName);
+  if (!existsSync(archivePath) || !archivePath.startsWith(root)) {
+    throw new YskError(ErrorCodes.NOT_FOUND, '找不到備份檔', { httpStatus: 404 });
+  }
+  if (!existsSync(input.homeDir)) {
+    mkdirSync(input.homeDir, { recursive: true });
+  }
+  // Archives are created with -C / relative paths; extract the same way
+  const r = await input.host.runCommand(['tar', '-xzf', archivePath, '-C', '/'], {
+    timeoutMs: 180_000,
+  });
+  if (r.exitCode !== 0) {
+    // Fallback: extract into home parent
+    const r2 = await input.host.runCommand(
+      ['tar', '-xzf', archivePath, '-C', input.homeDir],
+      { timeoutMs: 180_000 },
+    );
+    if (r2.exitCode !== 0) {
+      return {
+        ok: false,
+        notes: [`還原失敗: ${r2.stderr || r.stderr}`],
+        commandResults: [
+          { argv: ['tar', '-xzf', archivePath], exitCode: r.exitCode, stderr: r.stderr },
+          { argv: ['tar', '-xzf', archivePath], exitCode: r2.exitCode, stderr: r2.stderr },
+        ],
+      };
+    }
+  }
+  return {
+    ok: true,
+    archivePath,
+    notes: [`已從 ${safeName} 還原到專案目錄`],
+    commandResults: [{ argv: ['tar', '-xzf', archivePath], exitCode: 0, stderr: '' }],
+  };
+}
+
+/** Delete one managed backup archive (path constrained). */
+export function deleteProjectBackup(
+  dataDir: string,
+  projectId: string,
+  archiveName: string,
+): { ok: boolean; notes: string[] } {
+  const root = join(dataDir, 'backups', projectId);
+  const safeName = archiveName.replace(/[/\\]/g, '');
+  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
+    return { ok: false, notes: ['無效的備份檔名'] };
+  }
+  const archivePath = join(root, safeName);
+  if (!existsSync(archivePath) || !archivePath.startsWith(root)) {
+    return { ok: false, notes: ['找不到備份檔'] };
+  }
+  try {
+    unlinkSync(archivePath);
+    return { ok: true, notes: [`已刪除 ${safeName}`] };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : String(e)] };
+  }
 }
 
 export interface CronJobRecord {
@@ -278,26 +362,86 @@ export class CronJobService {
     path: string;
     requiresExecute: boolean;
     notes: string[];
+    blocked?: boolean;
+    hostInstalled?: boolean;
   }> {
     const path = this.writeManagedCrontab();
-    const notes = [`Managed crontab at ${path}`];
+    const notes = [`管理 crontab 檔：${path}`];
     if (!this.host.executeEnabled()) {
       return {
         ok: false,
         path,
         requiresExecute: true,
-        notes: [...notes, 'Set YSK_EXECUTE=1 to run crontab install'],
+        blocked: true,
+        hostInstalled: false,
+        notes: [...notes, '無法安裝到系統：伺服器未開啟系統變更權限（僅寫入管理檔）'],
       };
     }
     const r = await this.host.runCommand(['crontab', path], { timeoutMs: 10_000 });
     const ok = r.exitCode === 0;
-    notes.push(ok ? 'crontab installed for current user' : `crontab failed: ${r.stderr}`);
-    // stamp jobs
+    notes.push(ok ? '已安裝到目前程序用戶的系統 crontab' : `crontab 失敗: ${r.stderr}`);
     for (const j of this.db.snapshot.cron_jobs) {
       j.last_install = { ok, at: new Date().toISOString(), actor };
     }
     this.db.persist();
-    return { ok, path, requiresExecute: false, notes };
+    return { ok, path, requiresExecute: false, notes, hostInstalled: ok };
+  }
+
+  /** Probe managed file vs host crontab (honest status). */
+  async probeInstallStatus(): Promise<{
+    managedPath: string;
+    managedLines: number;
+    enabledJobs: number;
+    totalJobs: number;
+    hostHasYskEntries: boolean | null;
+    hostCrontabPreview: string;
+    executeEnabled: boolean;
+    lastInstallOk: boolean | null;
+    lastInstallAt: string | null;
+  }> {
+    const path = this.writeManagedCrontab();
+    const all = this.list();
+    const enabledJobs = all.filter((j) => j.enabled).length;
+    let managedLines = 0;
+    try {
+      managedLines = readFileSync(path, 'utf8')
+        .split('\n')
+        .filter((l) => l.trim() && !l.trim().startsWith('#')).length;
+    } catch {
+      managedLines = 0;
+    }
+
+    let hostHasYskEntries: boolean | null = null;
+    let hostCrontabPreview = '';
+    try {
+      const r = await this.host.runCommand(['crontab', '-l'], { timeoutMs: 5_000 });
+      const text = `${r.stdout || ''}`;
+      hostCrontabPreview = text.slice(0, 2000);
+      if (r.exitCode === 0) {
+        hostHasYskEntries = /# ysk:/.test(text) || text.includes('ysk-server');
+      } else {
+        hostHasYskEntries = false;
+        hostCrontabPreview = (r.stderr || text || 'no crontab').slice(0, 500);
+      }
+    } catch {
+      hostHasYskEntries = null;
+    }
+
+    const last = all.map((j) => j.last_install).find((x) => x && typeof x === 'object') as
+      | { ok?: boolean; at?: string }
+      | undefined;
+
+    return {
+      managedPath: path,
+      managedLines,
+      enabledJobs,
+      totalJobs: all.length,
+      hostHasYskEntries,
+      hostCrontabPreview,
+      executeEnabled: this.host.executeEnabled(),
+      lastInstallOk: last?.ok ?? null,
+      lastInstallAt: last?.at ?? null,
+    };
   }
 }
 

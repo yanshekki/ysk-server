@@ -140,10 +140,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
     }),
   );
   written.push(nginxPath);
-  notes.push(
-    `Nginx conf (proxy to php on :8088): ${nginxPath}`,
-    'Start PHP: php -S 127.0.0.1:8088 -t ' + webRoot,
-  );
+  notes.push(`已寫入 Nginx 設定：${nginxPath}`);
 
   const readme = join(base, 'README.txt');
   writeFileSync(
@@ -151,19 +148,18 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
     [
       `YSK Webmail (Roundcube) for ${domain}`,
       `IMAP ${imapHost}:993  SMTP ${smtpHost}:587`,
-      '1. Review config.inc.php',
-      '2. bash install-roundcube.sh  (or API download:true + YSK_EXECUTE=1)',
-      '3. Point DNS A record for domain; publish nginx; TLS via cert upload',
+      'Install and publish via admin panel (Webmail 安裝).',
       '',
     ].join('\n'),
     'utf8',
   );
   written.push(readme);
 
-  const wantDl = Boolean(input.download);
+  // Panel defaults to download/install unless explicitly dry-run
+  const wantDl = input.download !== false;
   const can = wantDl && input.host.executeEnabled();
   if (wantDl && !can) {
-    notes.push('Roundcube download skipped: set YSK_EXECUTE=1 (never fake success)');
+    notes.push('伺服器未開啟系統變更權限，無法在管理面板下載安裝 Webmail');
     return {
       ok: false,
       domain,
@@ -187,7 +183,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
       stderr: r.stderr,
     });
     if (r.exitCode !== 0) {
-      notes.push(`Download/extract failed: ${r.stderr || r.stdout}`);
+      notes.push(`Webmail 下載安裝失敗：${r.stderr || r.stdout}`);
       return {
         ok: false,
         domain,
@@ -202,7 +198,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
         mode: 'refused',
       };
     }
-    notes.push('Roundcube download/extract completed');
+    notes.push('已下載並解壓 Roundcube');
     if (input.systemInstall && input.host.isRoot()) {
       const dest = `/var/www/ysk-webmail/${domain}`;
       const cp = await input.host.runCommand(['bash', '-c', `mkdir -p ${dest} && cp -a ${webRoot}/. ${dest}/`], {
@@ -213,7 +209,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
         exitCode: cp.exitCode,
         stderr: cp.stderr,
       });
-      notes.push(cp.exitCode === 0 ? `Copied to ${dest}` : `system copy failed: ${cp.stderr}`);
+      notes.push(cp.exitCode === 0 ? `已部署至 ${dest}` : `系統部署失敗：${cp.stderr}`);
     }
     return {
       ok: true,
@@ -237,7 +233,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
     configPath,
     nginxPath,
     written,
-    notes: [...notes, 'Plan only — set download:true + YSK_EXECUTE=1 to fetch Roundcube'],
+    notes: [...notes, '已寫入設定檔（未下載套件）'],
     commandResults,
     requiresExecute: !input.host.executeEnabled(),
     requiresRoot: !input.host.isRoot(),

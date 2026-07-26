@@ -102,7 +102,7 @@ export async function applySmtpRelay(input: {
   const want = Boolean(input.applySystem);
   const can = want && input.host.executeEnabled() && input.host.isRoot();
   if (want && !can) {
-    notes.push('System apply skipped: need root + YSK_EXECUTE=1');
+    notes.push('無法套用系統中繼設定：需要系統變更權限');
   }
   if (can) {
     const steps: string[][] = [

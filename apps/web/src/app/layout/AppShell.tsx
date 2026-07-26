@@ -1,24 +1,34 @@
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../shared/hooks/useAuth';
+import { FEATURE_SECTIONS } from '../../shared/nav/features';
 
-const NAV: Array<{ to: string; end?: boolean; key: string; icon: string }> = [
-  { to: '/', end: true, key: 'dashboard', icon: '◉' },
-  { to: '/ai', key: 'ai', icon: '✦' },
-  { to: '/projects', key: 'projects', icon: '▣' },
-  { to: '/security', key: 'security', icon: '⛨' },
-  { to: '/email', key: 'email', icon: '✉' },
-  { to: '/files', key: 'files', icon: '▤' },
-  { to: '/system', key: 'system', icon: '⚙' },
-  { to: '/updates', key: 'updates', icon: '↻' },
-  { to: '/agents', key: 'agents', icon: '⚡' },
-];
+/** All nav paths — used so /ftp does not stay active on /ftp/service */
+const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
+
+/**
+ * Active only for exact match, or for nested routes when no longer sibling nav path matches.
+ * Prevents both「FTPS 帳戶」and「vsftpd 服務」highlighting on /ftp/service.
+ */
+function isNavActive(to: string, pathname: string): boolean {
+  if (to === '/') return pathname === '/';
+  if (pathname === to) return true;
+  if (!pathname.startsWith(`${to}/`)) return false;
+  const hasLongerSibling = NAV_PATHS.some(
+    (other) =>
+      other !== to &&
+      other.startsWith(`${to}/`) &&
+      (pathname === other || pathname.startsWith(`${other}/`)),
+  );
+  return !hasLongerSibling;
+}
 
 export function AppShell() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
 
   async function onLogout() {
@@ -41,19 +51,32 @@ export function AppShell() {
           <span className="gradient-text">YSK Server</span>
         </div>
         <nav className="shell__nav" aria-label="Main">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) => `shell__link${isActive ? ' active' : ''}`}
-              onClick={() => setOpen(false)}
-            >
-              <span className="shell__link-icon" aria-hidden>
-                {item.icon}
-              </span>
-              {t(`nav.${item.key}`)}
-            </NavLink>
+          {FEATURE_SECTIONS.map((section) => (
+            <div key={section.sectionKey} className="shell__nav-section">
+              {section.sectionKey !== 'overview' ? (
+                <span className="shell__nav-section-title">
+                  {t(`nav.sections.${section.sectionKey}`, {
+                    defaultValue: section.sectionKey,
+                  })}
+                </span>
+              ) : null}
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={() =>
+                    `shell__link${isNavActive(item.to, location.pathname) ? ' active' : ''}`
+                  }
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="shell__link-icon" aria-hidden>
+                    {item.icon}
+                  </span>
+                  {t(`nav.${item.key}`, { defaultValue: item.key })}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="shell__footer">

@@ -27,5 +27,15 @@ export * from './powerdns-apply.js';
 export * from './runtime-probe.js';
 export * from './production-readiness.js';
 export * from './public-files.js';
+export * from './managed-resources.js';
+export * from './ftps-service.js';
+export * from './software-catalog.js';
+export * from './software-install.js';
+export * from './db-engine.js';
+export * from './redis-browser.js';
+export * from './db-service-config.js';
+export * from './service-catalog/index.js';
+export * from './service-console.js';
+export * from './service-matrix.js';
 
 

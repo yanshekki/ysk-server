@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildServerNameList,
   planLetsEncrypt,
   renderNginxPhpFpm,
   renderNginxProxy,
   renderNginxStatic,
+  renderNginxSuspended,
 } from './nginx-ssl.js';
 
 describe('nginx + ssl', () => {
@@ -65,5 +67,31 @@ describe('nginx + ssl', () => {
     expect(conf).toContain('root /var/www/static');
     expect(conf).toContain('try_files $uri $uri/ /index.html');
     expect(conf).toContain('expires 7d');
+  });
+
+  it('builds server_name list with aliases', () => {
+    expect(buildServerNameList('app.example.com', ['www.example.com', 'app.example.com'])).toBe(
+      'app.example.com www.example.com',
+    );
+  });
+
+  it('forceHttps + hsts emits redirect and STS header', () => {
+    const conf = renderNginxProxy({
+      serverName: 'app.example.com www.example.com',
+      upstream: 'http://127.0.0.1:3000',
+      ssl: true,
+      cloudflareRealIp: false,
+      forceHttps: true,
+      hsts: true,
+    });
+    expect(conf).toContain('return 301 https://$host$request_uri');
+    expect(conf).toContain('Strict-Transport-Security');
+    expect(conf).toContain('server_name app.example.com www.example.com');
+  });
+
+  it('renders suspended 503 vhost', () => {
+    const conf = renderNginxSuspended('app.example.com www.example.com');
+    expect(conf).toContain('return 503');
+    expect(conf).toContain('app.example.com www.example.com');
   });
 });

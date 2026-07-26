@@ -32,18 +32,71 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  firewallStatus: () =>
+    api.requestRaw<{
+      installed: boolean;
+      active: string;
+      statusText: string;
+      numberedRules: string[];
+      executeEnabled: boolean;
+      isRoot: boolean;
+    }>('/api/v1/system/firewall/status'),
   firewallApply: (body: { allowSmtp?: boolean; apply?: boolean; extraTcpPorts?: number[] }) =>
     api.requestRaw('/api/v1/system/firewall/apply', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
-  fail2banApply: (body: { apply?: boolean }) =>
+  fail2banStatus: () =>
+    api.requestRaw<{
+      installed: boolean;
+      active: string;
+      enabled: string;
+      jails: Array<{ name: string; currentlyBanned?: number; totalBanned?: number }>;
+      executeEnabled: boolean;
+      isRoot: boolean;
+      defaultJails: string[];
+    }>('/api/v1/system/fail2ban/status'),
+  fail2banApply: (body: { apply?: boolean; jails?: string[] }) =>
     api.requestRaw('/api/v1/system/fail2ban/apply', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
   systemdInstall: (body: { enable?: boolean }) =>
     api.requestRaw('/api/v1/system/systemd/install', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  systemdStatus: () =>
+    api.requestRaw<{
+      unit: string;
+      unitPathHint: string;
+      active: string;
+      enabled: string;
+      executeEnabled: boolean;
+      isRoot: boolean;
+    }>('/api/v1/system/systemd/status'),
+  servicesMatrix: () =>
+    api.requestRaw<{
+      items: Array<{
+        id: string;
+        label: string;
+        unit: string;
+        href?: string;
+        category: string;
+        installed: boolean;
+        active: string;
+        enabled: string;
+        activeLabel: string;
+      }>;
+      executeEnabled: boolean;
+      isRoot: boolean;
+      probedAt: string;
+    }>('/api/v1/system/services/matrix'),
+  serviceLifecycle: (body: {
+    unit: string;
+    action: 'start' | 'stop' | 'restart' | 'reload';
+  }) =>
+    api.requestRaw('/api/v1/system/services/lifecycle', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
@@ -114,6 +167,27 @@ export const systemApi = {
     api.requestRaw('/api/v1/hosting/db/redis-provision', {
       method: 'POST',
       body: JSON.stringify(body),
+    }),
+  mysqlProvision: (body: {
+    dbName: string;
+    username: string;
+    password: string;
+    host?: string;
+    execute?: boolean;
+  }) =>
+    api.requestRaw('/api/v1/hosting/db/mysql-provision', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  mysqlPlan: (body: { dbName?: string; username?: string }) =>
+    api.requestRaw('/api/v1/hosting/db/mysql-plan', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  dbProbe: () =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/hosting/db/probe', {
+      method: 'POST',
+      body: '{}',
     }),
   runtimes: () =>
     api.requestRaw<Record<string, unknown>>('/api/v1/hosting/runtimes'),

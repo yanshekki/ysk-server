@@ -37,6 +37,12 @@ export interface HealthResponse {
   version: string;
   protectionMode: ProtectionMode;
   timestamp: string;
+  /** Host can run system mutations (YSK_EXECUTE) */
+  executeEnabled?: boolean;
+  /** Process running as root */
+  isRoot?: boolean;
+  /** production_capable when execute + root */
+  mode?: 'production_capable' | 'degraded';
 }
 
 export interface ApprovalRequestDto {
@@ -96,18 +102,24 @@ export interface ProjectDto {
   id: string;
   name: string;
   domain?: string;
+  /** Extra server_name entries (aliases / www / subdomains) */
+  domainAliases?: string[];
   linuxUser: string;
   linuxGroup: string;
   homeDir: string;
   runtime: 'node' | 'php' | 'static';
   runtimeVersion?: string;
   env: 'staging' | 'production';
-  /** Control-plane lifecycle: active | running | stopped | unhealthy | failed | … */
+  /** Control-plane lifecycle: active | running | stopped | suspended | unhealthy | failed | … */
   status?: string;
   port?: number;
   pid?: number;
   processStatus?: string;
   nginxConfigPath?: string;
+  /** When SSL published: redirect HTTP → HTTPS */
+  forceHttps?: boolean;
+  /** HSTS header when SSL published */
+  hsts?: boolean;
   lastHealth?: Record<string, unknown>;
   lastDeployAt?: string;
   osProvisioned?: boolean;
@@ -147,6 +159,7 @@ export interface SslCertPlan {
 }
 
 export interface NginxProxyConfig {
+  /** Space-separated server_name list (primary + aliases) */
   serverName: string;
   upstream: string;
   ssl: boolean;
@@ -154,6 +167,10 @@ export interface NginxProxyConfig {
   /** Optional paths for uploaded / managed certs (defaults to Let's Encrypt layout) */
   sslCertificate?: string;
   sslCertificateKey?: string;
+  /** Separate :80 → 301 https (requires ssl) */
+  forceHttps?: boolean;
+  /** Strict-Transport-Security when ssl */
+  hsts?: boolean;
 }
 
 export interface UpdateItemDto {

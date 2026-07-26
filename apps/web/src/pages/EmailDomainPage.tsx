@@ -1,0 +1,591 @@
+/**
+ * Email domain detail — professional console layout (aligned with recent UX).
+ */
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { emailApi, type EmailBundle, type EmailDomain } from '../features/email';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardSection,
+  DescriptionList,
+  FeaturePageLayout,
+  Field,
+  FormGrid,
+  LoadingBlock,
+  OpsResultPanel,
+  SettingField,
+  SettingFieldList,
+  SoftwareInstallBanner,
+  SummaryStrip,
+  Tabs,
+} from '../shared/components/ui';
+import type { OpsResultLike } from '../shared/components/ui';
+
+function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
+  if (!r) return null;
+  return {
+    ok: Boolean(r.ok ?? true),
+    blocked: Boolean(r.blocked),
+    blockMessage: typeof r.blockMessage === 'string' ? r.blockMessage : undefined,
+    notes: Array.isArray(r.notes) ? r.notes.map(String) : [],
+    ...r,
+  } as OpsResultLike;
+}
+
+export function EmailDomainPage() {
+  const { id = '' } = useParams<{ id: string }>();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [domain, setDomain] = useState<EmailDomain | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState('dns');
+  const [bundle, setBundle] = useState<EmailBundle | null>(null);
+  const [live, setLive] = useState<Record<string, unknown> | null>(null);
+  const [dnsbl, setDnsbl] = useState<Record<string, unknown> | null>(null);
+  const [warmup, setWarmup] = useState<Record<string, unknown> | null>(null);
+  const [relayHost, setRelayHost] = useState('smtp.example.com');
+  const [relayUser, setRelayUser] = useState('');
+  const [relayPass, setRelayPass] = useState('');
+  const [relayApplySystem, setRelayApplySystem] = useState(true);
+  const [relayLog, setRelayLog] = useState<Record<string, unknown> | null>(null);
+  const [bootstrapPassword, setBootstrapPassword] = useState('');
+  const [mboxLocal, setMboxLocal] = useState('info');
+  const [mboxPass, setMboxPass] = useState('');
+  const [mboxLog, setMboxLog] = useState<Record<string, unknown> | null>(null);
+  const [mailboxes, setMailboxes] = useState<Array<Record<string, unknown>>>([]);
+  const [webmailDomain, setWebmailDomain] = useState('webmail.example.com');
+  const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
+
+  const load = useCallback(async () => {
+    const list = await emailApi.list();
+    const found = list.items.find((d) => d.id === id) ?? null;
+    setDomain(found);
+    if (!found) return null;
+    try {
+      setBundle(await emailApi.dns(found.id));
+      setMailboxes((await emailApi.listMailboxes(found.id)).items);
+      setWebmailDomain(`webmail.${found.domain}`);
+    } catch {
+      /* optional */
+    }
+    return found;
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    void load()
+      .then((found) => {
+        if (cancelled) return;
+        if (!found) setError(t('email.notFound', { defaultValue: '找不到此郵件域名' }));
+      })
+      .catch((e: Error) => {
+        if (!cancelled) setError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [load, t]);
+
+  async function withBusy(fn: () => Promise<void>) {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '操作失敗');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) return <LoadingBlock />;
+  if (!domain) {
+    return (
+      <FeaturePageLayout
+        title={t('email.title')}
+        showCapability={false}
+        backTo="/email"
+        backLabel={t('email.backToList', { defaultValue: '返回郵件域名' })}
+      >
+        <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
+        <Alert variant="error">
+          {error ?? t('email.notFound', { defaultValue: '找不到此郵件域名' })}
+        </Alert>
+        <Button variant="secondary" size="md" onClick={() => navigate('/email')}>
+          {t('email.backToList', { defaultValue: '返回郵件域名' })}
+        </Button>
+      </FeaturePageLayout>
+    );
+  }
+
+  const tabs = [
+    { id: 'dns', label: 'DNS' },
+    { id: 'mailbox', label: '郵箱' },
+    { id: 'health', label: '健康' },
+    { id: 'relay', label: '中繼' },
+    { id: 'advanced', label: '進階' },
+  ];
+
+  const applySt = (domain.apply_status ?? 'draft').toLowerCase();
+
+  return (
+    <FeaturePageLayout
+      title={domain.domain}
+      subtitle={domain.server_ip}
+      showCapability={false}
+      backTo="/email"
+      backLabel={t('email.backToList', { defaultValue: '返回郵件域名' })}
+      actions={
+        <div className="btn-row">
+          <Button
+            variant="secondary"
+            size="md"
+            loading={busy}
+            onClick={() =>
+              void withBusy(async () => {
+                setBundle(await emailApi.dns(domain.id));
+                setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+              })
+            }
+          >
+            重新整理
+          </Button>
+        </div>
+      }
+    >
+      <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
+      {error ? <Alert variant="error">{error}</Alert> : null}
+
+      <SummaryStrip
+        items={[
+          {
+            label: '健康',
+            value: `${domain.health_score}/100`,
+            tone: domain.health_score >= 80 ? 'ok' : 'warn',
+          },
+          {
+            label: '套用狀態',
+            value:
+              applySt === 'applied'
+                ? '已套用'
+                : applySt === 'written'
+                  ? '管理檔'
+                  : '草稿',
+            tone: applySt === 'applied' ? 'ok' : 'warn',
+          },
+          { label: '郵箱', value: mailboxes.length },
+          { label: 'DNS 紀錄', value: bundle?.records.length ?? '—' },
+        ]}
+      />
+
+      <Tabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
+        {tab === 'dns' ? (
+          <Card>
+            <CardSection
+              title="DNS 與待辦"
+              description="此處為管理面板建議紀錄；寫入權威 DNS 需到 DNS 頁或外部供應商（誠實：非自動上線）"
+            >
+              {bundle ? (
+                <>
+                  <DescriptionList
+                    columns={2}
+                    items={[
+                      {
+                        label: '健康分',
+                        value: (
+                          <Badge tone={bundle.health.score >= 80 ? 'ok' : 'warn'}>
+                            {bundle.health.score}/{bundle.health.maxScore}
+                          </Badge>
+                        ),
+                      },
+                      { label: '建議紀錄數', value: String(bundle.records.length) },
+                      { label: '外部待辦', value: String(bundle.externalTodos.length) },
+                    ]}
+                  />
+                  {bundle.health.messages.length > 0 ? (
+                    <ul className="muted list-flush u-mt-3">
+                      {bundle.health.messages.map((m) => (
+                        <li key={m}>{m}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <div className="table-wrap u-mt-4">
+                    <table className="data">
+                      <thead>
+                        <tr>
+                          <th>類型</th>
+                          <th>名稱</th>
+                          <th>值</th>
+                          <th>說明</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bundle.records.map((r, i) => (
+                          <tr key={`${r.type}-${r.name}-${i}`}>
+                            <td>
+                              <Badge>{r.type}</Badge>
+                            </td>
+                            <td>
+                              <code className="inline">{r.name}</code>
+                            </td>
+                            <td className="u-break-all">
+                              <code className="inline">{r.value}</code>
+                            </td>
+                            <td className="muted u-text-sm">{r.description}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {bundle.externalTodos.length > 0 ? (
+                    <ul className="list-plain list-spaced u-mt-4">
+                      {bundle.externalTodos.map((todo) => (
+                        <li key={todo.id}>
+                          <Badge tone={todo.completed ? 'ok' : 'warn'}>
+                            {todo.completed ? '完成' : '待辦'}
+                          </Badge>{' '}
+                          <strong>{todo.title}</strong>
+                          <div className="muted u-text-sm">{todo.description}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </>
+              ) : (
+                <p className="muted" style={{ margin: 0 }}>
+                  按右上角「重新整理」載入 DNS 建議
+                </p>
+              )}
+            </CardSection>
+          </Card>
+        ) : null}
+
+        {tab === 'mailbox' ? (
+          <Card>
+            <CardSection title="郵箱（Maildir）" description="建立後可寫入 Dovecot 密碼庫（需權限）">
+              <FormGrid>
+                <Field label="本地部分" techKey="local_part" htmlFor="mlocal" flush>
+                  <input
+                    id="mlocal"
+                    value={mboxLocal}
+                    onChange={(e) => setMboxLocal(e.target.value)}
+                    placeholder="info"
+                  />
+                </Field>
+                <Field label="密碼" techKey="password" htmlFor="mpass" flush hint="可選，≥8">
+                  <input
+                    id="mpass"
+                    type="password"
+                    value={mboxPass}
+                    onChange={(e) => setMboxPass(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                </Field>
+              </FormGrid>
+              <div className="setting-actions-bar">
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setMboxLog(
+                        await emailApi.createMailbox(domain.id, {
+                          localPart: mboxLocal,
+                          password: mboxPass || undefined,
+                        }),
+                      );
+                      setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+                    })
+                  }
+                >
+                  建立郵箱
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+                    })
+                  }
+                >
+                  重新整理列表
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setMboxLog(await emailApi.dovecotPassdb(domain.id));
+                    })
+                  }
+                >
+                  寫入 Dovecot 密碼庫
+                </Button>
+              </div>
+              {mailboxes.length > 0 ? (
+                <ul className="list-plain list-spaced u-mt-4">
+                  {mailboxes.map((m) => (
+                    <li key={String(m.id)}>
+                      <code className="inline">{String(m.address)}</code>{' '}
+                      <Badge tone={String(m.status) === 'active' ? 'ok' : 'neutral'}>
+                        {String(m.status ?? '—')}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted u-mt-3">尚未有郵箱</p>
+              )}
+              <OpsResultPanel title="郵箱操作結果" result={asOps(mboxLog)} busy={busy} />
+            </CardSection>
+          </Card>
+        ) : null}
+
+        {tab === 'health' ? (
+          <Card>
+            <CardSection title="健康探測" description="Live 埠／DNSBL／暖身檢查（唯讀為主）">
+              <div className="lifecycle-toolbar">
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setLive(await emailApi.liveCheck(domain.id));
+                    })
+                  }
+                >
+                  Live 檢查
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setDnsbl(await emailApi.dnsbl(domain.server_ip));
+                    })
+                  }
+                >
+                  DNSBL
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setWarmup(await emailApi.warmupDomain(domain.id));
+                    })
+                  }
+                >
+                  暖身建議
+                </Button>
+              </div>
+              {live ? <OpsResultPanel title="Live 檢查" result={asOps(live)} /> : null}
+              {dnsbl ? <OpsResultPanel title="DNSBL" result={asOps(dnsbl)} /> : null}
+              {warmup ? <OpsResultPanel title="暖身" result={asOps(warmup)} /> : null}
+            </CardSection>
+          </Card>
+        ) : null}
+
+        {tab === 'relay' ? (
+          <Card>
+            <CardSection
+              title="SMTP 中繼"
+              description="出站中繼；「套用到系統」才會寫 Postfix（需系統變更權限）"
+            >
+              <SettingFieldList>
+                <SettingField label="中繼主機" techKey="relayhost" htmlFor="rh">
+                  <input
+                    id="rh"
+                    value={relayHost}
+                    onChange={(e) => setRelayHost(e.target.value)}
+                  />
+                </SettingField>
+                <SettingField label="用戶名" techKey="username" htmlFor="ru">
+                  <input
+                    id="ru"
+                    value={relayUser}
+                    onChange={(e) => setRelayUser(e.target.value)}
+                  />
+                </SettingField>
+                <SettingField label="密碼" techKey="password" htmlFor="rp">
+                  <input
+                    id="rp"
+                    type="password"
+                    value={relayPass}
+                    onChange={(e) => setRelayPass(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                </SettingField>
+                <SettingField
+                  label="套用到系統"
+                  techKey="apply_system"
+                  description="關閉則只儲存設定"
+                  htmlFor="ras"
+                >
+                  <select
+                    id="ras"
+                    value={relayApplySystem ? 'yes' : 'no'}
+                    onChange={(e) => setRelayApplySystem(e.target.value === 'yes')}
+                  >
+                    <option value="yes">是（寫 Postfix）</option>
+                    <option value="no">否（只儲存）</option>
+                  </select>
+                </SettingField>
+              </SettingFieldList>
+              <div className="setting-actions-bar">
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setRelayLog(
+                        await emailApi.setRelay({
+                          host: relayHost,
+                          port: 587,
+                          username: relayUser || undefined,
+                          password: relayPass || undefined,
+                          security: 'starttls',
+                          applySystem: relayApplySystem,
+                        }),
+                      );
+                    })
+                  }
+                >
+                  {relayApplySystem ? '儲存並套用到系統' : '只儲存設定'}
+                </Button>
+              </div>
+              <OpsResultPanel title="中繼結果" result={asOps(relayLog)} busy={busy} />
+            </CardSection>
+          </Card>
+        ) : null}
+
+        {tab === 'advanced' ? (
+          <>
+            <Card>
+              <CardSection title="此域名 SSL">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() =>
+                    navigate(
+                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
+                    )
+                  }
+                >
+                  申請 {domain.domain} Let’s Encrypt
+                </Button>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection
+                title="一鍵設定郵件"
+                description="安裝套件並套用郵件堆疊（需系統變更 + 管理員）。必須自訂管理員密碼。"
+              >
+                <SettingFieldList>
+                  <SettingField
+                    label="管理員密碼"
+                    techKey="admin_password"
+                    description="postmaster 密碼，至少 8 字元"
+                    htmlFor="boot-pw"
+                  >
+                    <input
+                      id="boot-pw"
+                      type="password"
+                      value={bootstrapPassword}
+                      onChange={(e) => setBootstrapPassword(e.target.value)}
+                      minLength={8}
+                      autoComplete="new-password"
+                      placeholder="至少 8 字元"
+                    />
+                  </SettingField>
+                </SettingFieldList>
+                <div className="setting-actions-bar">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    disabled={bootstrapPassword.trim().length < 8}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        if (bootstrapPassword.trim().length < 8) {
+                          setError('請設定至少 8 字元的管理員密碼');
+                          return;
+                        }
+                        setWebmailLog(
+                          await emailApi.bootstrap({
+                            domain: domain.domain,
+                            serverIp: domain.server_ip,
+                            adminLocalPart: 'postmaster',
+                            adminPassword: bootstrapPassword.trim(),
+                            installPackages: true,
+                            webmail: true,
+                          }),
+                        );
+                        await load();
+                      })
+                    }
+                  >
+                    一鍵設定郵件
+                  </Button>
+                </div>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title="Webmail（Roundcube）">
+                <Field label="Webmail 主機名" techKey="server_name" htmlFor="wmd">
+                  <input
+                    id="wmd"
+                    value={webmailDomain}
+                    onChange={(e) => setWebmailDomain(e.target.value)}
+                  />
+                </Field>
+                <div className="setting-actions-bar">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setWebmailLog(
+                          await emailApi.webmailApply({
+                            domain: webmailDomain,
+                            download: true,
+                          }),
+                        );
+                      })
+                    }
+                  >
+                    安裝／套用 Webmail
+                  </Button>
+                </div>
+                <OpsResultPanel
+                  title="Bootstrap / Webmail 結果"
+                  result={asOps(webmailLog)}
+                  busy={busy}
+                />
+              </CardSection>
+            </Card>
+          </>
+        ) : null}
+      </Tabs>
+    </FeaturePageLayout>
+  );
+}

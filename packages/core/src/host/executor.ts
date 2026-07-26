@@ -231,7 +231,15 @@ function isMutatingArgv(argv: string[]): boolean {
   const bin = argv[0];
   if (bin === 'systemctl') {
     const sub = argv[1];
-    return sub !== 'is-active' && sub !== 'status' && sub !== 'show' && sub !== 'list-units';
+    // read-only probes
+    return (
+      sub !== 'is-active' &&
+      sub !== 'is-enabled' &&
+      sub !== 'status' &&
+      sub !== 'show' &&
+      sub !== 'list-units' &&
+      sub !== 'cat'
+    );
   }
   if (
     bin === 'apt-get' ||
@@ -254,6 +262,7 @@ function isMutatingArgv(argv: string[]): boolean {
     bin === 'a2ensite' ||
     bin === 'a2dissite' ||
     bin === 'mysql' ||
+    bin === 'psql' ||
     bin === 'nginx' ||
     bin === 'pm2' ||
     bin === 'pdnsutil'
@@ -263,6 +272,14 @@ function isMutatingArgv(argv: string[]): boolean {
     // pm2 jlist / list are read-only
     if (bin === 'pm2' && (argv[1] === 'jlist' || argv[1] === 'list' || argv[1] === 'status')) {
       return false;
+    }
+    // mysql/psql read-only: --version, SHOW, SELECT without write keywords
+    if (bin === 'mysql' || bin === 'psql') {
+      const joined = argv.join(' ').toLowerCase();
+      if (argv.includes('--version') || argv.includes('-V')) return false;
+      if (/\b(show|select|status)\b/.test(joined) && !/\b(insert|update|delete|drop|create|alter|set\s+global|grant)\b/.test(joined)) {
+        return false;
+      }
     }
     return true;
   }

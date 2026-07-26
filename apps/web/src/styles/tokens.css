@@ -64,10 +64,12 @@
   --text-lg: 1.05rem;
   --text-xl: 1.5rem;
 
-  /* Layout */
+  /* Layout — control plane uses full width beside sidebar (no narrow article column) */
   --header-height: 64px;
   --sidebar-width: 260px;
-  --container-max: 1200px;
+  --container-max: none;
+  --control-height: 2.5rem;
+  --control-padding-x: 0.85rem;
 
   --font-sans: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);

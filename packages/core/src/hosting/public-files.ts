@@ -120,7 +120,7 @@ export async function applyPublicFileServer(input: {
       notes.push(nginxReloaded ? 'nginx reloaded' : `nginx reload exit=${rel.exitCode}`);
     }
   } else if (wantReload) {
-    notes.push('System nginx reload skipped: need root + YSK_EXECUTE=1');
+    notes.push('無法重載 Nginx：需要系統變更權限');
   }
 
   return {

@@ -1,111 +1,145 @@
+/**
+ * Security allowlist + host probe.
+ */
 import { useTranslation } from 'react-i18next';
 import { useSecurity } from '../features/security';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardSection,
+  DescriptionList,
+  EmptyState,
+  FeaturePageLayout,
+  SummaryStrip,
+} from '../shared/components/ui';
 
 export function SecurityPage() {
   const { t } = useTranslation();
   const { tools, approvals, error, result, busy, runSysInfo, approve } = useSecurity();
 
+  const allowed = tools.filter((tool) => tool.allowed).length;
+  const needsApproval = tools.filter((tool) => tool.requiresApproval).length;
+
+  const probeItems = (() => {
+    if (!result) return [];
+    try {
+      const o = JSON.parse(result) as Record<string, unknown>;
+      return Object.entries(o)
+        .filter(([, v]) => v == null || typeof v !== 'object')
+        .slice(0, 16)
+        .map(([k, v]) => ({ label: k, value: String(v) }));
+    } catch {
+      return [{ label: 'Output', value: result.slice(0, 500) }];
+    }
+  })();
+
   return (
-    <div>
-      <header className="page-header">
-        <h1>{t('security.title')}</h1>
-        <p>{t('security.allowlist')}</p>
-      </header>
-
-      {error && <div className="alert alert--error">{error}</div>}
-
-      <div className="alert alert--info">{t('security.llmUntrusted')}</div>
-
-      <div className="card">
-        <h2 className="card__title">Host probe</h2>
-        <p className="card__desc">Run a real read-only tool against the control-plane host.</p>
-        <button
-          type="button"
-          className="btn btn--primary"
-          disabled={busy}
-          onClick={() => void runSysInfo()}
-        >
+    <FeaturePageLayout
+      title={t('security.title')}
+      subtitle={t('security.allowlist')}
+      showCapability={false}
+      actions={
+        <Button variant="primary" size="md" loading={busy} onClick={() => void runSysInfo()}>
           {t('security.runSysInfo')}
-        </button>
-        {result && <pre className="code code--spaced">{result}</pre>}
-      </div>
+        </Button>
+      }
+    >
+      {error ? <Alert variant="error">{error}</Alert> : null}
+      <Alert variant="info">{t('security.llmUntrusted')}</Alert>
 
-      <div className="card">
-        <h2 className="card__title">{t('security.pending')}</h2>
-        {approvals.length === 0 ? (
-          <div className="empty">
-            <div className="empty__title">{t('security.none')}</div>
-          </div>
-        ) : (
-          <div className="table-wrap">
-            <table className="data">
-              <thead>
-                <tr>
-                  <th>Action</th>
-                  <th>Risk</th>
-                  <th>By</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
+      <SummaryStrip
+        items={[
+          { label: '工具', value: tools.length },
+          { label: '允許', value: allowed, tone: 'ok' },
+          { label: '需批准', value: needsApproval, tone: 'warn' },
+          {
+            label: '待批',
+            value: approvals.length,
+            tone: approvals.length > 0 ? 'danger' : 'default',
+          },
+        ]}
+      />
+
+      <div className="stack">
+        <Card>
+          <CardSection title="主機探測" description="讀取主機資訊（allowlist 工具）">
+            {probeItems.length > 0 ? (
+              <DescriptionList columns={2} items={probeItems} />
+            ) : (
+              <p className="muted">尚未執行 — 按右上角「{t('security.runSysInfo')}」</p>
+            )}
+          </CardSection>
+        </Card>
+
+        <Card>
+          <CardSection title={t('security.pending')}>
+            {approvals.length === 0 ? (
+              <EmptyState title={t('security.none')} />
+            ) : (
+              <div className="list-panel">
                 {approvals.map((a) => (
-                  <tr key={String(a.id)}>
-                    <td>
-                      <code className="inline">{String(a.action)}</code>
-                    </td>
-                    <td>
-                      <span className="badge badge--warn">{String(a.risk)}</span>
-                    </td>
-                    <td>{String(a.requestedBy ?? a.requested_by ?? '—')}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn btn--primary btn--sm"
-                        disabled={busy}
+                  <div key={String(a.id)} className="list-row list-row--static">
+                    <div className="list-row__main">
+                      <div className="list-row__title">
+                        <code className="inline">{String(a.action)}</code>
+                        <Badge tone="warn">{String(a.risk)}</Badge>
+                      </div>
+                      <div className="list-row__meta">
+                        <span>{String(a.requestedBy ?? a.requested_by ?? '—')}</span>
+                      </div>
+                    </div>
+                    <div className="list-row__side">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={busy}
                         onClick={() => void approve(String(a.id))}
                       >
-                        Approve
-                      </button>
-                    </td>
-                  </tr>
+                        批准
+                      </Button>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              </div>
+            )}
+          </CardSection>
+        </Card>
 
-      <div className="card">
-        <h2 className="card__title">Allowlist ({tools.length})</h2>
-        <div className="table-wrap">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Tool</th>
-                <th>Allowed</th>
-                <th>Risk</th>
-                <th>Approval</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tools.map((tool) => (
-                <tr key={String(tool.tool)}>
-                  <td>
-                    <code className="inline">{String(tool.tool)}</code>
-                  </td>
-                  <td>
-                    <span className={`badge${tool.allowed ? ' badge--ok' : ' badge--danger'}`}>
-                      {String(tool.allowed)}
-                    </span>
-                  </td>
-                  <td>{String(tool.risk)}</td>
-                  <td>{String(tool.requiresApproval)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card>
+          <CardSection title={`Allowlist (${tools.length})`}>
+            <div className="table-wrap">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>Tool</th>
+                    <th>Allowed</th>
+                    <th>Risk</th>
+                    <th>Approval</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tools.map((tool) => (
+                    <tr key={String(tool.tool)}>
+                      <td>
+                        <code className="inline">{String(tool.tool)}</code>
+                      </td>
+                      <td>
+                        <Badge tone={tool.allowed ? 'ok' : 'danger'}>
+                          {String(tool.allowed)}
+                        </Badge>
+                      </td>
+                      <td>{String(tool.risk)}</td>
+                      <td>{String(tool.requiresApproval)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardSection>
+        </Card>
       </div>
-    </div>
+    </FeaturePageLayout>
   );
 }

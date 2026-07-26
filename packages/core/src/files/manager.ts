@@ -1,5 +1,5 @@
 /**
- * Sandboxed file manager under a root directory (project home or public files).
+ * Sandboxed file manager — ownCloud-style ops under a root directory.
  */
 
 import {
@@ -10,8 +10,12 @@ import {
   rmSync,
   statSync,
   existsSync,
+  renameSync,
+  copyFileSync,
+  cpSync,
 } from 'node:fs';
-import { join, resolve, relative, dirname, basename } from 'node:path';
+import { join, resolve, relative, dirname, basename, extname } from 'node:path';
+import { createHash, randomBytes } from 'node:crypto';
 import { ErrorCodes, YskError } from '@ysk/shared';
 
 export interface FileEntry {
@@ -20,18 +24,37 @@ export interface FileEntry {
   type: 'file' | 'dir';
   size: number;
   mtime: string;
+  mime?: string;
+  ext?: string;
 }
+
+export type ListSort = 'name' | 'size' | 'mtime';
+export type ListOrder = 'asc' | 'desc';
+
+export interface ListOptions {
+  sort?: ListSort;
+  order?: ListOrder;
+  q?: string;
+}
+
+export interface TrashEntry extends FileEntry {
+  originalPath: string;
+  deletedAt: string;
+  trashId: string;
+}
+
+const TRASH_DIR = '.trash';
+const HIDDEN_PREFIXES = ['.trash', '.versions', '.ysk'];
 
 function assertInside(root: string, target: string): string {
   const rootAbs = resolve(root);
   const abs = resolve(rootAbs, target);
   const rel = relative(rootAbs, abs);
-  if (rel.startsWith('..') || rel === '..' || abs === rootAbs + '/..') {
+  if (rel.startsWith('..') || rel === '..') {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `Path escapes sandbox: ${target}`, {
       httpStatus: 403,
     });
   }
-  // also reject absolute that left root
   if (!abs.startsWith(rootAbs)) {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `Path escapes sandbox: ${target}`, {
       httpStatus: 403,
@@ -40,12 +63,66 @@ function assertInside(root: string, target: string): string {
   return abs;
 }
 
+function guessMime(name: string): string {
+  const ext = extname(name).toLowerCase();
+  const map: Record<string, string> = {
+    '.txt': 'text/plain',
+    '.md': 'text/markdown',
+    '.json': 'application/json',
+    '.js': 'text/javascript',
+    '.ts': 'text/typescript',
+    '.css': 'text/css',
+    '.html': 'text/html',
+    '.htm': 'text/html',
+    '.xml': 'application/xml',
+    '.csv': 'text/csv',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.pdf': 'application/pdf',
+    '.zip': 'application/zip',
+    '.gz': 'application/gzip',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.mp3': 'audio/mpeg',
+  };
+  return map[ext] ?? 'application/octet-stream';
+}
+
+function toEntry(root: string, abs: string): FileEntry {
+  const s = statSync(abs);
+  const name = basename(abs);
+  const path = relative(root, abs).replace(/\\/g, '/') || name;
+  return {
+    name,
+    path,
+    type: s.isDirectory() ? 'dir' : 'file',
+    size: s.size,
+    mtime: s.mtime.toISOString(),
+    mime: s.isFile() ? guessMime(name) : undefined,
+    ext: s.isFile() ? extname(name).replace(/^\./, '') : undefined,
+  };
+}
+
 export class FileManager {
   constructor(private readonly root: string) {
     mkdirSync(this.root, { recursive: true });
   }
 
-  list(relPath = '.'): FileEntry[] {
+  getRoot(): string {
+    return this.root;
+  }
+
+  trashRoot(): string {
+    const t = join(this.root, TRASH_DIR);
+    mkdirSync(t, { recursive: true });
+    return t;
+  }
+
+  list(relPath = '.', opts: ListOptions = {}): FileEntry[] {
     const abs = assertInside(this.root, relPath || '.');
     if (!existsSync(abs)) {
       throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${relPath}`, { httpStatus: 404 });
@@ -54,20 +131,36 @@ export class FileManager {
     if (!st.isDirectory()) {
       throw new YskError(ErrorCodes.VALIDATION, 'Not a directory', { httpStatus: 400 });
     }
-    return readdirSync(abs).map((name) => {
-      const p = join(abs, name);
-      const s = statSync(p);
-      return {
-        name,
-        path: relative(this.root, p).replace(/\\/g, '/') || name,
-        type: s.isDirectory() ? ('dir' as const) : ('file' as const),
-        size: s.size,
-        mtime: s.mtime.toISOString(),
-      };
+    let items = readdirSync(abs)
+      .filter((name) => {
+        if (relPath === '.' || relPath === '') {
+          return !HIDDEN_PREFIXES.some((h) => name === h || name.startsWith(h + '/'));
+        }
+        return true;
+      })
+      .map((name) => toEntry(this.root, join(abs, name)));
+
+    const q = (opts.q ?? '').trim().toLowerCase();
+    if (q) {
+      items = items.filter((e) => e.name.toLowerCase().includes(q));
+    }
+
+    const sort = opts.sort ?? 'name';
+    const order = opts.order ?? 'asc';
+    const dir = order === 'desc' ? -1 : 1;
+    items.sort((a, b) => {
+      // dirs first
+      if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+      let cmp = 0;
+      if (sort === 'size') cmp = a.size - b.size;
+      else if (sort === 'mtime') cmp = a.mtime.localeCompare(b.mtime);
+      else cmp = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+      return cmp * dir;
     });
+    return items;
   }
 
-  readText(relPath: string, maxBytes = 512_000): { path: string; content: string; bytes: number } {
+  readText(relPath: string, maxBytes = 2_000_000): { path: string; content: string; bytes: number; mime?: string } {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs) || !statSync(abs).isFile()) {
       throw new YskError(ErrorCodes.NOT_FOUND, `File not found: ${relPath}`, { httpStatus: 404 });
@@ -82,6 +175,21 @@ export class FileManager {
       path: relPath,
       content: buf.toString('utf8'),
       bytes: buf.length,
+      mime: guessMime(basename(abs)),
+    };
+  }
+
+  readBinary(relPath: string): { path: string; buffer: Buffer; mime: string; name: string } {
+    const abs = assertInside(this.root, relPath);
+    if (!existsSync(abs) || !statSync(abs).isFile()) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `File not found: ${relPath}`, { httpStatus: 404 });
+    }
+    const name = basename(abs);
+    return {
+      path: relPath,
+      buffer: readFileSync(abs),
+      mime: guessMime(name),
+      name,
     };
   }
 
@@ -106,7 +214,18 @@ export class FileManager {
     return { path: relPath };
   }
 
-  remove(relPath: string): { path: string; deleted: boolean } {
+  createTextFile(relPath: string, content = ''): { path: string; bytes: number } {
+    const abs = assertInside(this.root, relPath);
+    if (existsSync(abs)) {
+      throw new YskError(ErrorCodes.VALIDATION, `Already exists: ${relPath}`, { httpStatus: 409 });
+    }
+    mkdirSync(dirname(abs), { recursive: true });
+    writeFileSync(abs, content, 'utf8');
+    return { path: relPath, bytes: Buffer.byteLength(content) };
+  }
+
+  /** Permanent delete (used by trash purge) */
+  removePermanent(relPath: string): { path: string; deleted: boolean } {
     if (!relPath || relPath === '.' || relPath === '/') {
       throw new YskError(ErrorCodes.VALIDATION, 'Refusing to delete sandbox root', {
         httpStatus: 400,
@@ -120,19 +239,172 @@ export class FileManager {
     return { path: relPath, deleted: true };
   }
 
+  /**
+   * Soft-delete → .trash/<id>/ with meta.json
+   * Legacy remove() now soft-deletes.
+   */
+  remove(relPath: string): { path: string; deleted: boolean; trashId?: string } {
+    if (!relPath || relPath === '.' || relPath === '/' || relPath.startsWith(TRASH_DIR)) {
+      throw new YskError(ErrorCodes.VALIDATION, 'Refusing to delete sandbox root or trash path', {
+        httpStatus: 400,
+      });
+    }
+    const abs = assertInside(this.root, relPath);
+    if (!existsSync(abs)) {
+      return { path: relPath, deleted: false };
+    }
+    const trashId = `${Date.now()}-${randomBytes(4).toString('hex')}`;
+    const destDir = join(this.trashRoot(), trashId);
+    mkdirSync(destDir, { recursive: true });
+    const dest = join(destDir, basename(abs));
+    renameSync(abs, dest);
+    const meta = {
+      trashId,
+      originalPath: relPath.replace(/\\/g, '/'),
+      name: basename(abs),
+      deletedAt: new Date().toISOString(),
+      type: statSync(dest).isDirectory() ? 'dir' : 'file',
+    };
+    writeFileSync(join(destDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf8');
+    return { path: relPath, deleted: true, trashId };
+  }
+
+  listTrash(): TrashEntry[] {
+    const root = this.trashRoot();
+    const out: TrashEntry[] = [];
+    for (const id of readdirSync(root)) {
+      const dir = join(root, id);
+      if (!statSync(dir).isDirectory()) continue;
+      const metaPath = join(dir, 'meta.json');
+      if (!existsSync(metaPath)) continue;
+      try {
+        const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as {
+          trashId: string;
+          originalPath: string;
+          name: string;
+          deletedAt: string;
+          type: 'file' | 'dir';
+        };
+        const itemPath = join(dir, meta.name);
+        const s = existsSync(itemPath) ? statSync(itemPath) : null;
+        out.push({
+          trashId: meta.trashId || id,
+          name: meta.name,
+          path: `${TRASH_DIR}/${id}/${meta.name}`,
+          originalPath: meta.originalPath,
+          type: meta.type,
+          size: s?.size ?? 0,
+          mtime: s?.mtime.toISOString() ?? meta.deletedAt,
+          deletedAt: meta.deletedAt,
+        });
+      } catch {
+        /* skip corrupt */
+      }
+    }
+    return out.sort((a, b) => (a.deletedAt < b.deletedAt ? 1 : -1));
+  }
+
+  restoreTrash(trashId: string): { path: string; originalPath: string } {
+    const safe = trashId.replace(/[^a-zA-Z0-9._-]/g, '');
+    const dir = join(this.trashRoot(), safe);
+    const metaPath = join(dir, 'meta.json');
+    if (!existsSync(metaPath)) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'Trash item not found', { httpStatus: 404 });
+    }
+    const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as {
+      originalPath: string;
+      name: string;
+    };
+    const src = join(dir, meta.name);
+    const dest = assertInside(this.root, meta.originalPath);
+    if (existsSync(dest)) {
+      throw new YskError(ErrorCodes.VALIDATION, `Target exists: ${meta.originalPath}`, {
+        httpStatus: 409,
+      });
+    }
+    mkdirSync(dirname(dest), { recursive: true });
+    renameSync(src, dest);
+    rmSync(dir, { recursive: true, force: true });
+    return { path: meta.originalPath, originalPath: meta.originalPath };
+  }
+
+  purgeTrash(trashId?: string): { ok: boolean; purged: number } {
+    const root = this.trashRoot();
+    if (trashId) {
+      const safe = trashId.replace(/[^a-zA-Z0-9._-]/g, '');
+      const dir = join(root, safe);
+      if (!existsSync(dir)) return { ok: false, purged: 0 };
+      rmSync(dir, { recursive: true, force: true });
+      return { ok: true, purged: 1 };
+    }
+    let n = 0;
+    for (const id of readdirSync(root)) {
+      rmSync(join(root, id), { recursive: true, force: true });
+      n++;
+    }
+    return { ok: true, purged: n };
+  }
+
+  rename(fromPath: string, toPath: string): { from: string; to: string } {
+    const fromAbs = assertInside(this.root, fromPath);
+    const toAbs = assertInside(this.root, toPath);
+    if (!existsSync(fromAbs)) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${fromPath}`, { httpStatus: 404 });
+    }
+    mkdirSync(dirname(toAbs), { recursive: true });
+    renameSync(fromAbs, toAbs);
+    return { from: fromPath, to: toPath };
+  }
+
+  move(fromPath: string, toPath: string): { from: string; to: string } {
+    return this.rename(fromPath, toPath);
+  }
+
+  copy(fromPath: string, toPath: string): { from: string; to: string } {
+    const fromAbs = assertInside(this.root, fromPath);
+    const toAbs = assertInside(this.root, toPath);
+    if (!existsSync(fromAbs)) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${fromPath}`, { httpStatus: 404 });
+    }
+    mkdirSync(dirname(toAbs), { recursive: true });
+    const st = statSync(fromAbs);
+    if (st.isDirectory()) {
+      cpSync(fromAbs, toAbs, { recursive: true });
+    } else {
+      copyFileSync(fromAbs, toAbs);
+    }
+    return { from: fromPath, to: toPath };
+  }
+
   stat(relPath: string): FileEntry {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs)) {
       throw new YskError(ErrorCodes.NOT_FOUND, `Not found: ${relPath}`, { httpStatus: 404 });
     }
-    const s = statSync(abs);
-    return {
-      name: basename(abs),
-      path: relative(this.root, abs).replace(/\\/g, '/') || '.',
-      type: s.isDirectory() ? 'dir' : 'file',
-      size: s.size,
-      mtime: s.mtime.toISOString(),
+    return toEntry(this.root, abs);
+  }
+
+  /** Disk usage under root (excluding .trash for "used") */
+  usage(): { bytes: number; fileCount: number; dirCount: number } {
+    let bytes = 0;
+    let fileCount = 0;
+    let dirCount = 0;
+    const walk = (abs: string) => {
+      for (const name of readdirSync(abs)) {
+        if (name === TRASH_DIR) continue;
+        const p = join(abs, name);
+        const s = statSync(p);
+        if (s.isDirectory()) {
+          dirCount++;
+          walk(p);
+        } else {
+          fileCount++;
+          bytes += s.size;
+        }
+      }
     };
+    walk(this.root);
+    return { bytes, fileCount, dirCount };
   }
 }
 
@@ -140,4 +412,25 @@ export function publicFilesRoot(dataDir: string): string {
   const root = join(dataDir, 'files', 'public');
   mkdirSync(root, { recursive: true });
   return root;
+}
+
+/** Public share link store helpers */
+export type FileShareRecord = {
+  id: string;
+  token: string;
+  root: string; // public | project:id
+  path: string;
+  passwordHash?: string;
+  expiresAt?: string;
+  createdAt: string;
+  createdBy: string;
+  downloadCount: number;
+};
+
+export function hashSharePassword(password: string): string {
+  return createHash('sha256').update(password).digest('hex');
+}
+
+export function newShareToken(): string {
+  return randomBytes(16).toString('hex');
 }

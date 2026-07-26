@@ -78,7 +78,7 @@ export async function applyAgentInstall(input: {
   let enabled = false;
 
   if (want && !can) {
-    notes.push('Install commands skipped: set YSK_EXECUTE=1');
+    notes.push('伺服器未開啟系統變更權限，無法在管理面板完成安裝');
   }
 
   if (can) {
@@ -131,7 +131,7 @@ export async function applyAgentInstall(input: {
       enabled = cp.exitCode === 0 && en.exitCode === 0;
       notes.push(enabled ? `systemd enabled ${unitName}` : `systemd enable failed: ${en.stderr}`);
     } else if (input.enableUnit !== false) {
-      notes.push('Unit enable skipped: not root');
+      notes.push('無法啟用服務：需要系統管理員權限');
     }
   }
 

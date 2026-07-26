@@ -73,13 +73,13 @@ export async function assessProductionReadiness(input: {
   push({
     id: 'execute-policy',
     category: 'security',
-    title: 'YSK_EXECUTE host mutations',
+    title: '系統變更權限',
     level: executeEnabled ? 'ready' : 'degraded',
     detail: executeEnabled
-      ? 'EXECUTE enabled — host mutations allowed'
-      : 'EXECUTE off — configs written under dataDir only (fail-closed)',
+      ? '已開啟系統變更權限'
+      : '未開啟系統變更權限（僅寫入控制面設定）',
     spec: '§3.2',
-    fixHint: 'export YSK_EXECUTE=1 (and run as root for system paths)',
+    fixHint: '於伺服器進程開啟系統變更權限（並以管理員執行）',
   });
 
   push({
@@ -89,7 +89,7 @@ export async function assessProductionReadiness(input: {
     level: isRoot ? 'ready' : 'degraded',
     detail: isRoot ? 'Running as root' : 'Non-root — useradd/systemd/nginx system paths limited',
     spec: '§4.1',
-    fixHint: 'sudo -E ysk-server serve …',
+    fixHint: '以系統管理員權限啟動管理服務',
   });
 
   const bins: Array<{ id: string; bin: string; title: string; spec: string; critical?: boolean }> =
@@ -213,17 +213,17 @@ export async function assessProductionReadiness(input: {
     items.find((i) => i.id === 'bin-node')?.level === 'ready';
 
   const summary: string[] = [
-    `Mode: ${mode}`,
+    mode === 'production_capable' ? '模式：可生產' : `模式：${mode}`,
     productionReady
-      ? 'Production gates: PASS (root+EXECUTE+nginx+node)'
-      : 'Production gates: NOT fully met — see missing/degraded items',
-    `Score ready=${ready} degraded=${degraded} missing=${missing} / ${items.length}`,
+      ? '生產門檻：通過（權限、Nginx、Node 就緒）'
+      : '生產門檻：尚未完全達標，請查看下方缺項',
+    `就緒 ${ready} / 降級 ${degraded} / 缺少 ${missing}（共 ${items.length} 項）`,
   ];
   if (!executeEnabled) {
-    summary.push('Set YSK_EXECUTE=1 for system mutations (never faked).');
+    summary.push('伺服器未開啟系統變更權限，管理面板無法完成系統層操作');
   }
   if (!isRoot) {
-    summary.push('Run as root for useradd, systemd, nginx system conf.d.');
+    summary.push('目前非系統管理員權限，部分系統設定無法套用');
   }
 
   return {

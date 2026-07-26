@@ -48,14 +48,11 @@ export async function downloadWordpressCore(input: {
     };
   }
 
-  const manual = `curl -fsSL ${WP_URL} | tar xz -C ${docRoot} --strip-components=1`;
   if (!input.host.executeEnabled()) {
-    notes.push('Set YSK_EXECUTE=1 to download WordPress core');
-    notes.push(`Manual: ${manual}`);
-    // still write marker plan
+    notes.push('無法下載 WordPress：伺服器未開啟系統變更權限');
     writeFileSync(
       join(input.homeDir, 'app', 'WORDPRESS_DOWNLOAD.txt'),
-      `Run with YSK_EXECUTE=1 via API or:\n${manual}\n`,
+      'Download WordPress via admin panel when host mutations are enabled.\n',
       'utf8',
     );
     return {

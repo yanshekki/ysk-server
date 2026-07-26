@@ -27,8 +27,16 @@
   margin-bottom: 0;
 }
 
+.u-mt-3 {
+  margin-top: var(--space-3);
+}
+
 .u-mt-4 {
   margin-top: var(--space-4);
+}
+
+.u-text-sm {
+  font-size: var(--text-sm);
 }
 
 .u-mb-4 {
@@ -37,10 +45,6 @@
 
 .u-w-full {
   width: 100%;
-}
-
-.u-text-sm {
-  font-size: var(--text-sm);
 }
 
 .u-font-semibold {

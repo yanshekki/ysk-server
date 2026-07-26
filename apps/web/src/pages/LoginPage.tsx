@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
+import { Alert } from '../shared/components/ui';
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ export function LoginPage() {
           <p>{t('login.subtitle')}</p>
         </div>
 
-        {error && <div className="alert alert--error">{error}</div>}
+        {error ? <Alert variant="error">{error}</Alert> : null}
 
         <form onSubmit={(e) => void onSubmit(e)}>
           <div className="field">

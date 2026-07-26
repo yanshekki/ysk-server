@@ -104,8 +104,10 @@ export async function provisionPostgresDatabase(input: {
     timeoutMs: 5_000,
   });
   const psqlClient = which.stdout.trim().length > 0;
-  if (!psqlClient) notes.push('psql client not found on PATH');
-  if (!input.hostExec.executeEnabled()) notes.push('YSK_EXECUTE not enabled');
+  if (!psqlClient) notes.push('伺服器未安裝 PostgreSQL 客戶端');
+  if (!input.hostExec.executeEnabled()) {
+    notes.push('伺服器未開啟系統變更權限，無法在管理面板完成此操作');
+  }
 
   const want = input.execute !== false;
   const can = want && input.hostExec.executeEnabled() && psqlClient && reachable;
@@ -121,7 +123,7 @@ export async function provisionPostgresDatabase(input: {
       connectionHint,
       notes: [
         ...notes,
-        'NOT provisioned. Install psql, ensure PostgreSQL is up, set YSK_EXECUTE=1, or run SQL as superuser.',
+        '資料庫尚未建立。請在管理面板重試。',
       ],
       commandResults: [],
     };

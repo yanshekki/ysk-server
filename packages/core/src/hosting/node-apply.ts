@@ -104,7 +104,7 @@ server.listen(port, host, () => {
     enabled = r1.exitCode === 0 && r2.exitCode === 0 && r3.exitCode === 0;
     notes.push(enabled ? 'systemd enabled' : 'systemd enable failed — check privileges');
   } else {
-    notes.push('systemd enable skipped (need root + YSK_EXECUTE=1)');
+    notes.push('無法啟用 systemd 服務：需要系統管理員權限');
   }
 
   return { envPath, unitPath, appDir, runtime, enabled, notes };

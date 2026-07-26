@@ -130,6 +130,7 @@ describe('ProjectOpsService real deploy', () => {
     const { project } = await projects.create({
       name: 'NgxOnly',
       domain: 'ngx.local',
+      domainAliases: ['www.ngx.local'],
       runtime: 'node',
       actor: 'test',
     });
@@ -139,7 +140,34 @@ describe('ProjectOpsService real deploy', () => {
     expect(pub.nginxPath).toBeTruthy();
     const conf = readFileSync(pub.nginxPath!, 'utf8');
     expect(conf).toContain('proxy_pass http://127.0.0.1:3123');
-    expect(conf).toContain('server_name ngx.local');
+    expect(conf).toContain('server_name ngx.local www.ngx.local');
+  });
+
+  it('suspend publishes 503 and unsuspend restores', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-sus-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+
+    const { project } = await projects.create({
+      name: 'SusApp',
+      domain: 'sus.local',
+      runtime: 'node',
+      actor: 'test',
+    });
+    const sus = await ops.suspend(project.id, 'test');
+    expect(sus.ok).toBe(true);
+    expect(repo.findById(project.id)?.status).toBe('suspended');
+    const conf = readFileSync(sus.nginxPath!, 'utf8');
+    expect(conf).toContain('return 503');
+    const uns = await ops.unsuspend(project.id, 'test');
+    expect(uns.ok).toBe(true);
+    expect(repo.findById(project.id)?.status).toBe('stopped');
+    const conf2 = readFileSync(uns.nginxPath!, 'utf8');
+    expect(conf2).not.toContain('return 503');
   });
 
   it('deployPhp degraded path listens with php -S when php available', async () => {

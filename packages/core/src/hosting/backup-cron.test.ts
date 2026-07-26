@@ -42,10 +42,32 @@ describe('backup + cron', () => {
       dataDir: dir,
       projects: [{ id: 'p1', home_dir: home, name: 'P1' }],
     });
-    expect(r.results.some((x) => x.ok)).toBe(true);
+    expect(r.ok).toBe(true);
+    expect(r.results.every((x) => x.ok)).toBe(true);
     const list = listBackups(dir);
     expect(list.length).toBeGreaterThan(0);
     expect(list[0].projectId).toBe('p1');
+  });
+
+  it('backupAllProjects fails when any attempted project fails', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bakfail-'));
+    dirs.push(dir);
+    const home = join(dir, 'projects', 'p1');
+    mkdirSync(join(home, 'app'), { recursive: true });
+    writeFileSync(join(home, 'app', 'x.txt'), 'x', 'utf8');
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const r = await backupAllProjects({
+      host,
+      dataDir: dir,
+      projects: [
+        { id: 'p1', home_dir: home, name: 'P1' },
+        { id: 'missing', home_dir: join(dir, 'nope'), name: 'X' },
+      ],
+    });
+    // missing home is skip — only p1 attempted; should still ok if p1 ok
+    expect(r.results.find((x) => x.projectId === 'p1')?.ok).toBe(true);
+    expect(r.results.find((x) => x.projectId === 'missing')?.ok).toBe(false);
+    expect(r.ok).toBe(true);
   });
 
   it('writes managed crontab and refuses install without EXECUTE', async () => {

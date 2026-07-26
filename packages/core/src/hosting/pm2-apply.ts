@@ -127,7 +127,7 @@ export async function applyPm2Start(input: {
   notes.push(`pm2 binary: ${probe.path}`);
 
   if (want && !can) {
-    notes.push('pm2 start skipped: set YSK_EXECUTE=1');
+    notes.push('無法啟動 PM2：伺服器未開啟系統變更權限');
     return {
       ok: false,
       appName: eco.appName,
@@ -140,7 +140,7 @@ export async function applyPm2Start(input: {
   }
 
   if (!can) {
-    notes.push('PM2 config only (no execute) — use pidfile path or set YSK_EXECUTE=1');
+    notes.push('僅寫入 PM2 設定，未啟動程序');
     return {
       ok: false,
       appName: eco.appName,
@@ -234,7 +234,7 @@ export async function applyPm2Stop(input: {
   const appName = pm2AppName(input.linuxUser);
   const notes: string[] = [];
   if (!input.host.executeEnabled()) {
-    notes.push('pm2 stop skipped: set YSK_EXECUTE=1');
+    notes.push('無法停止 PM2：伺服器未開啟系統變更權限');
     return { ok: false, notes, requiresExecute: true };
   }
   const probe = await probePm2(input.host);

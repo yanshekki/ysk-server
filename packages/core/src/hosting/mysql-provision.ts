@@ -62,9 +62,9 @@ export async function provisionMysqlDatabase(input: {
   const canExecute = wantsExecute && input.hostExec.executeEnabled() && mysqlClient;
 
   const notes: string[] = [];
-  if (!mysqlClient) notes.push('mysql client not found on PATH');
-  if (!input.hostExec.executeEnabled()) notes.push('YSK_EXECUTE not enabled — refusing to mutate MySQL');
-  if (!wantsExecute) notes.push('execute=false — returning plan only');
+  if (!mysqlClient) notes.push('伺服器未安裝 MySQL 客戶端');
+  if (!input.hostExec.executeEnabled()) notes.push('伺服器未開啟系統變更權限，無法在管理面板建立資料庫');
+  if (!wantsExecute) notes.push('未要求執行系統變更');
 
   if (!canExecute) {
     return {
@@ -77,7 +77,7 @@ export async function provisionMysqlDatabase(input: {
       connectionHint,
       notes: [
         ...notes,
-        'NOT provisioned. Copy SQL below and run as DB admin, or set YSK_EXECUTE=1 with mysql client.',
+        '資料庫尚未建立。請在管理面板重試，或於伺服器開啟系統變更權限後再執行。',
       ],
       commandResults: [],
     };

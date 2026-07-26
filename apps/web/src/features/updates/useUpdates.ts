@@ -1,8 +1,9 @@
 /**
- * Updates feature — inventory + self-update hook.
+ * Updates feature — inventory + self-update hook (panel apply).
  */
 import { useCallback, useEffect, useState } from 'react';
 import { updatesApi, type AdviceRow } from './api';
+import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
 export function useUpdates() {
   const [inventory, setInventory] = useState<AdviceRow[]>([]);
@@ -21,7 +22,7 @@ export function useUpdates() {
         const inv = await updatesApi.refresh(false);
         setInventory(inv.advice.slice(0, 40));
         setLastAt(inv.collectedAt ?? new Date().toISOString());
-        setMsg(`Refreshed ${inv.inventory.length} packages`);
+        setMsg(`已掃描 ${inv.inventory.length} 個套件`);
       } else {
         const inv = await updatesApi.inventory();
         const merged =
@@ -43,7 +44,30 @@ export function useUpdates() {
         /* optional */
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'failed');
+      setError(e instanceof Error ? e.message : '載入失敗');
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  const applySelf = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    setMsg(null);
+    try {
+      const r = await updatesApi.selfApply();
+      const notes = sanitizeOperatorNotes(r.notes);
+      if (r.ok === false || (r.applied === false && notes.length)) {
+        setError(notes[0] ?? '更新未完成');
+      } else {
+        setMsg(notes[0] ?? (r.applied ? '已套用更新' : '已是最新版本'));
+      }
+      const self = await updatesApi.self();
+      setSelfUpdate(self);
+      return r;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '更新失敗');
+      throw e;
     } finally {
       setBusy(false);
     }
@@ -53,5 +77,5 @@ export function useUpdates() {
     void load(false);
   }, [load]);
 
-  return { inventory, selfUpdate, lastAt, jobs, error, busy, msg, setMsg, load };
+  return { inventory, selfUpdate, lastAt, jobs, error, busy, msg, setMsg, load, applySelf };
 }

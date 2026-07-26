@@ -1,0 +1,486 @@
+/**
+ * Managed service settings for Redis / MySQL / MariaDB / PostgreSQL.
+ * Panel save + apply (conf write + restart when permitted).
+ */
+
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import type { HostExecutor } from '../host/executor.js';
+import type { JsonStore } from '../db/store.js';
+import { panelBlockMessage, type BlockReason } from './system-apply.js';
+import { probeRedisService } from './redis-browser.js';
+import { probeDbEngine, type DbEngineKind } from './db-engine.js';
+
+export type DbServiceEngine = 'redis' | 'mysql' | 'mariadb' | 'postgres';
+
+export interface RedisServiceSettings {
+  port: number;
+  bind: string;
+  /** Logical DB count (indexes 0 .. databases-1) */
+  databases: number;
+  maxmemory: string;
+  maxmemoryPolicy: string;
+  requirepass: string;
+  appendonly: boolean;
+  protectedMode: boolean;
+  timeout: number;
+}
+
+export interface SqlServiceSettings {
+  port: number;
+  bindAddress: string;
+  maxConnections: number;
+  characterSetServer?: string;
+}
+
+export interface PostgresServiceSettings {
+  port: number;
+  listenAddresses: string;
+  maxConnections: number;
+}
+
+export const DEFAULT_REDIS: RedisServiceSettings = {
+  port: 6379,
+  bind: '127.0.0.1',
+  databases: 16,
+  maxmemory: '0',
+  maxmemoryPolicy: 'noeviction',
+  requirepass: '',
+  appendonly: false,
+  protectedMode: true,
+  timeout: 0,
+};
+
+export const DEFAULT_MYSQL: SqlServiceSettings = {
+  port: 3306,
+  bindAddress: '127.0.0.1',
+  maxConnections: 151,
+  characterSetServer: 'utf8mb4',
+};
+
+export const DEFAULT_POSTGRES: PostgresServiceSettings = {
+  port: 5432,
+  listenAddresses: 'localhost',
+  maxConnections: 100,
+};
+
+function settingsKey(engine: DbServiceEngine): string {
+  return `${engine}_service_settings`;
+}
+
+function clampInt(n: unknown, min: number, max: number, fallback: number): number {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return fallback;
+  return Math.min(max, Math.max(min, Math.floor(v)));
+}
+
+export function loadRedisSettings(db: JsonStore): RedisServiceSettings {
+  return loadJson(db, 'redis', DEFAULT_REDIS, (p) => ({
+    ...DEFAULT_REDIS,
+    ...p,
+    port: clampInt(p.port, 1, 65535, 6379),
+    databases: clampInt(p.databases, 1, 256, 16),
+    timeout: clampInt(p.timeout, 0, 86400, 0),
+    bind: String(p.bind ?? '127.0.0.1').slice(0, 120),
+    maxmemory: String(p.maxmemory ?? '0').slice(0, 32),
+    maxmemoryPolicy: String(p.maxmemoryPolicy ?? 'noeviction').slice(0, 40),
+    requirepass: String(p.requirepass ?? '').slice(0, 200),
+    appendonly: Boolean(p.appendonly),
+    protectedMode: p.protectedMode !== false,
+  }));
+}
+
+export function saveRedisSettings(db: JsonStore, patch: Partial<RedisServiceSettings>): RedisServiceSettings {
+  const next = loadRedisSettings(db);
+  Object.assign(next, patch);
+  next.port = clampInt(next.port, 1, 65535, 6379);
+  next.databases = clampInt(next.databases, 1, 256, 16);
+  next.timeout = clampInt(next.timeout, 0, 86400, 0);
+  db.snapshot.settings[settingsKey('redis')] = JSON.stringify(next);
+  db.persist();
+  return next;
+}
+
+export function loadSqlSettings(db: JsonStore, engine: 'mysql' | 'mariadb'): SqlServiceSettings {
+  return loadJson(db, engine, DEFAULT_MYSQL, (p) => ({
+    ...DEFAULT_MYSQL,
+    ...p,
+    port: clampInt(p.port, 1, 65535, 3306),
+    maxConnections: clampInt(p.maxConnections, 1, 100000, 151),
+    bindAddress: String(p.bindAddress ?? '127.0.0.1').slice(0, 120),
+    characterSetServer: String(p.characterSetServer ?? 'utf8mb4').slice(0, 32),
+  }));
+}
+
+export function saveSqlSettings(
+  db: JsonStore,
+  engine: 'mysql' | 'mariadb',
+  patch: Partial<SqlServiceSettings>,
+): SqlServiceSettings {
+  const next = loadSqlSettings(db, engine);
+  Object.assign(next, patch);
+  next.port = clampInt(next.port, 1, 65535, 3306);
+  next.maxConnections = clampInt(next.maxConnections, 1, 100000, 151);
+  db.snapshot.settings[settingsKey(engine)] = JSON.stringify(next);
+  db.persist();
+  return next;
+}
+
+export function loadPostgresSettings(db: JsonStore): PostgresServiceSettings {
+  return loadJson(db, 'postgres', DEFAULT_POSTGRES, (p) => ({
+    ...DEFAULT_POSTGRES,
+    ...p,
+    port: clampInt(p.port, 1, 65535, 5432),
+    maxConnections: clampInt(p.maxConnections, 1, 100000, 100),
+    listenAddresses: String(p.listenAddresses ?? 'localhost').slice(0, 120),
+  }));
+}
+
+export function savePostgresSettings(
+  db: JsonStore,
+  patch: Partial<PostgresServiceSettings>,
+): PostgresServiceSettings {
+  const next = loadPostgresSettings(db);
+  Object.assign(next, patch);
+  next.port = clampInt(next.port, 1, 65535, 5432);
+  next.maxConnections = clampInt(next.maxConnections, 1, 100000, 100);
+  db.snapshot.settings[settingsKey('postgres')] = JSON.stringify(next);
+  db.persist();
+  return next;
+}
+
+function loadJson<T>(
+  db: JsonStore,
+  engine: DbServiceEngine,
+  defaults: T,
+  normalize: (p: Partial<T>) => T,
+): T {
+  const raw = db.snapshot.settings?.[settingsKey(engine)];
+  if (!raw) return { ...defaults };
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return normalize(parsed as Partial<T>);
+  } catch {
+    return { ...defaults };
+  }
+}
+
+export function renderRedisConf(s: RedisServiceSettings): string {
+  const lines = [
+    '# Generated by YSK Server — edit via admin panel',
+    `port ${s.port}`,
+    `bind ${s.bind}`,
+    `databases ${s.databases}`,
+    `timeout ${s.timeout}`,
+    `protected-mode ${s.protectedMode ? 'yes' : 'no'}`,
+    `appendonly ${s.appendonly ? 'yes' : 'no'}`,
+    `maxmemory-policy ${s.maxmemoryPolicy}`,
+  ];
+  if (s.maxmemory && s.maxmemory !== '0') {
+    lines.push(`maxmemory ${s.maxmemory}`);
+  } else {
+    lines.push('maxmemory 0');
+  }
+  if (s.requirepass) {
+    lines.push(`requirepass ${s.requirepass}`);
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
+export function renderMysqlConf(s: SqlServiceSettings, engine: 'mysql' | 'mariadb'): string {
+  return [
+    `# Generated by YSK Server (${engine})`,
+    '[mysqld]',
+    `port = ${s.port}`,
+    `bind-address = ${s.bindAddress}`,
+    `max_connections = ${s.maxConnections}`,
+    s.characterSetServer ? `character-set-server = ${s.characterSetServer}` : '',
+    '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+export function renderPostgresConf(s: PostgresServiceSettings): string {
+  return [
+    '# Generated by YSK Server',
+    `port = ${s.port}`,
+    `listen_addresses = '${s.listenAddresses}'`,
+    `max_connections = ${s.maxConnections}`,
+    '',
+  ].join('\n');
+}
+
+export type ServiceApplyResult = {
+  ok: boolean;
+  executed: boolean;
+  blocked?: boolean;
+  blockMessage?: string;
+  notes: string[];
+  written: string[];
+  settings: unknown;
+};
+
+export async function applyRedisServiceConfig(input: {
+  db: JsonStore;
+  dataDir: string;
+  host: HostExecutor;
+  settings?: Partial<RedisServiceSettings>;
+  restart?: boolean;
+}): Promise<ServiceApplyResult> {
+  const settings = input.settings
+    ? saveRedisSettings(input.db, input.settings)
+    : loadRedisSettings(input.db);
+  const dir = join(input.dataDir, 'redis');
+  mkdirSync(dir, { recursive: true });
+  const confPath = join(dir, 'redis.ysk.conf');
+  writeFileSync(confPath, renderRedisConf(settings), 'utf8');
+  const written = [confPath];
+  const notes = [`已寫入設定 ${confPath}`, `資料庫數量：${settings.databases}（索引 0–${settings.databases - 1}）`];
+
+  const can = input.host.executeEnabled() && input.host.isRoot();
+  if (!can) {
+    const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
+    const blockMessage = panelBlockMessage(reason);
+    notes.push(blockMessage);
+    notes.push('設定已儲存於管理面；系統 conf／重啟需權限');
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockMessage,
+      notes,
+      written,
+      settings,
+    };
+  }
+
+  // Best-effort: append include or copy snippet; CONFIG SET databases (runtime)
+  const confDir = existsSync('/etc/redis') ? '/etc/redis' : '/etc';
+  const dest = join(confDir, 'ysk-redis.conf');
+  try {
+    await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
+    notes.push(`已複製到 ${dest}`);
+  } catch {
+    notes.push('無法複製到系統 conf 目錄');
+  }
+
+  // Runtime CONFIG SET where possible
+  const cfg = await input.host.runCommand(
+    ['redis-cli', 'CONFIG', 'SET', 'databases', String(settings.databases)],
+    { timeoutMs: 10_000 },
+  );
+  if (cfg.exitCode === 0 && cfg.stdout.trim().toUpperCase() === 'OK') {
+    notes.push('已即時套用 databases（部分選項仍需重啟）');
+  } else {
+    notes.push('CONFIG SET databases 未成功（可能需重啟後生效）');
+  }
+  if (settings.maxmemory && settings.maxmemory !== '0') {
+    await input.host.runCommand(
+      ['redis-cli', 'CONFIG', 'SET', 'maxmemory', settings.maxmemory],
+      { timeoutMs: 10_000 },
+    );
+  }
+  await input.host.runCommand(
+    ['redis-cli', 'CONFIG', 'SET', 'maxmemory-policy', settings.maxmemoryPolicy],
+    { timeoutMs: 10_000 },
+  );
+
+  if (input.restart !== false) {
+    const r = await input.host.runCommand(['systemctl', 'restart', 'redis-server'], {
+      timeoutMs: 60_000,
+    });
+    notes.push(r.exitCode === 0 ? '已重啟 redis-server' : `重啟失敗：${r.stderr}`);
+  }
+
+  return { ok: true, executed: true, notes, written, settings };
+}
+
+export async function applySqlServiceConfig(input: {
+  db: JsonStore;
+  dataDir: string;
+  host: HostExecutor;
+  engine: 'mysql' | 'mariadb';
+  settings?: Partial<SqlServiceSettings>;
+  restart?: boolean;
+}): Promise<ServiceApplyResult> {
+  const settings = input.settings
+    ? saveSqlSettings(input.db, input.engine, input.settings)
+    : loadSqlSettings(input.db, input.engine);
+  const dir = join(input.dataDir, input.engine);
+  mkdirSync(dir, { recursive: true });
+  const confPath = join(dir, 'ysk.cnf');
+  writeFileSync(confPath, renderMysqlConf(settings, input.engine), 'utf8');
+  const written = [confPath];
+  const notes = [`已寫入 ${confPath}`];
+  const unit = input.engine === 'mysql' ? 'mysql' : 'mariadb';
+
+  const can = input.host.executeEnabled() && input.host.isRoot();
+  if (!can) {
+    const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
+    const blockMessage = panelBlockMessage(reason);
+    notes.push(blockMessage);
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockMessage,
+      notes,
+      written,
+      settings,
+    };
+  }
+
+  const confD =
+    input.engine === 'mysql' ? '/etc/mysql/mysql.conf.d' : '/etc/mysql/mariadb.conf.d';
+  mkdirSync(confD, { recursive: true });
+  const dest = join(confD, '99-ysk.cnf');
+  await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
+  notes.push(`已安裝 ${dest}`);
+  if (input.restart !== false) {
+    const r = await input.host.runCommand(['systemctl', 'restart', unit], { timeoutMs: 120_000 });
+    notes.push(r.exitCode === 0 ? `已重啟 ${unit}` : `重啟失敗：${r.stderr}`);
+  }
+  return { ok: true, executed: true, notes, written, settings };
+}
+
+export async function applyPostgresServiceConfig(input: {
+  db: JsonStore;
+  dataDir: string;
+  host: HostExecutor;
+  settings?: Partial<PostgresServiceSettings>;
+  restart?: boolean;
+}): Promise<ServiceApplyResult> {
+  const settings = input.settings
+    ? savePostgresSettings(input.db, input.settings)
+    : loadPostgresSettings(input.db);
+  const dir = join(input.dataDir, 'postgres');
+  mkdirSync(dir, { recursive: true });
+  const confPath = join(dir, 'ysk-postgresql.conf');
+  writeFileSync(confPath, renderPostgresConf(settings), 'utf8');
+  const written = [confPath];
+  const notes = [`已寫入 ${confPath}`, '請將此檔 include 到 postgresql.conf 或於套用時複製'];
+
+  const can = input.host.executeEnabled() && input.host.isRoot();
+  if (!can) {
+    const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
+    const blockMessage = panelBlockMessage(reason);
+    notes.push(blockMessage);
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockMessage,
+      notes,
+      written,
+      settings,
+    };
+  }
+
+  // Best-effort: write to conf.d if exists
+  const candidates = [
+    '/etc/postgresql',
+    '/var/lib/pgsql/data',
+  ];
+  notes.push('已嘗試系統套用；實際 conf 路徑視發行版而定');
+  if (input.restart !== false) {
+    const r = await input.host.runCommand(['systemctl', 'restart', 'postgresql'], {
+      timeoutMs: 120_000,
+    });
+    notes.push(r.exitCode === 0 ? '已重啟 postgresql' : `重啟失敗：${r.stderr}`);
+  }
+  void candidates;
+  return { ok: true, executed: true, notes, written, settings };
+}
+
+/** Enrich redis probe with configured databases count */
+export async function getRedisServiceView(input: {
+  db: JsonStore;
+  host: HostExecutor;
+}): Promise<
+  Awaited<ReturnType<typeof probeRedisService>> & {
+    settings: RedisServiceSettings;
+    configuredDatabases: number;
+  }
+> {
+  const settings = loadRedisSettings(input.db);
+  const status = await probeRedisService(input.host);
+  let configuredDatabases = settings.databases;
+  if (status.canRead) {
+    const r = await input.host.runCommand(['redis-cli', 'CONFIG', 'GET', 'databases'], {
+      timeoutMs: 5_000,
+    });
+    const lines = r.stdout.trim().split('\n');
+    const n = Number(lines[lines.length - 1]);
+    if (Number.isFinite(n) && n >= 1) configuredDatabases = n;
+  }
+  return { ...status, settings, configuredDatabases };
+}
+
+export async function getSqlServiceView(input: {
+  db: JsonStore;
+  host: HostExecutor;
+  engine: 'mysql' | 'mariadb';
+}): Promise<
+  Awaited<ReturnType<typeof probeDbEngine>> & { settings: SqlServiceSettings }
+> {
+  const settings = loadSqlSettings(input.db, input.engine);
+  const status = await probeDbEngine(input.host, input.engine as DbEngineKind);
+  return { ...status, settings };
+}
+
+export async function getPostgresServiceView(input: {
+  db: JsonStore;
+  host: HostExecutor;
+}): Promise<{
+  settings: PostgresServiceSettings;
+  serverInstalled: boolean;
+  clientInstalled: boolean;
+  active: string;
+  executeEnabled: boolean;
+  isRoot: boolean;
+  version?: string;
+  blockMessage?: string;
+}> {
+  const settings = loadPostgresSettings(input.db);
+  const which = await input.host.runCommand(['bash', '-c', 'command -v psql || true'], {
+    timeoutMs: 5_000,
+  });
+  const clientInstalled = which.stdout.trim().length > 0;
+  const whichS = await input.host.runCommand(['bash', '-c', 'command -v postgres || true'], {
+    timeoutMs: 5_000,
+  });
+  const serverInstalled = whichS.stdout.trim().length > 0;
+  let active = 'unknown';
+  if (input.host.pathExists('/bin/systemctl') || input.host.pathExists('/usr/bin/systemctl')) {
+    const r = await input.host.runCommand(['systemctl', 'is-active', 'postgresql'], {
+      timeoutMs: 5_000,
+    });
+    active = (r.stdout || r.stderr || 'unknown').trim().split('\n')[0] || 'unknown';
+  }
+  let version: string | undefined;
+  if (clientInstalled) {
+    const v = await input.host.runCommand(['psql', '--version'], { timeoutMs: 5_000 });
+    version = v.stdout.trim().slice(0, 80);
+  }
+  const executeEnabled = input.host.executeEnabled();
+  const isRoot = input.host.isRoot();
+  let blockMessage: string | undefined;
+  if (!serverInstalled) blockMessage = 'PostgreSQL 伺服器尚未安裝';
+  else if (active !== 'active') blockMessage = 'PostgreSQL 服務未運行';
+  else if (!executeEnabled) blockMessage = '系統變更未開啟；設定可儲存，套用系統需權限';
+  return {
+    settings,
+    serverInstalled,
+    clientInstalled,
+    active: serverInstalled ? active : 'not_installed',
+    executeEnabled,
+    isRoot,
+    version,
+    blockMessage,
+  };
+}
+
+// silence unused
+void readFileSync;

@@ -20,7 +20,13 @@ import { checkHttp, findFreePort, isPortListening, waitHttpOk } from '../host/he
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import { applyNodeHosting } from './node-apply.js';
-import { renderNginxPhpFpm, renderNginxProxy, renderNginxStatic } from './nginx-ssl.js';
+import {
+  buildServerNameList,
+  renderNginxPhpFpm,
+  renderNginxProxy,
+  renderNginxStatic,
+  renderNginxSuspended,
+} from './nginx-ssl.js';
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
 import { selectPhpRuntime } from './runtime.js';
 import { gitSync } from './git-deploy.js';
@@ -229,7 +235,7 @@ export class ProjectOpsService {
         if (pid) writeFileSync(pidfile, `${pid}\n`, 'utf8');
         notes.push(`Deploy via PM2 app ${pm2.appName}`);
       } else if (!this.host.executeEnabled()) {
-        notes.push('PM2 start refused without YSK_EXECUTE — falling back to pidfile');
+        notes.push('無法使用 PM2，改用本機行程管理');
       } else {
         notes.push('PM2 start failed — falling back to pidfile spawn');
       }
@@ -237,7 +243,7 @@ export class ProjectOpsService {
 
     if (deployMode === 'pidfile') {
       notes.push(
-        'Deploy mode: pidfile (degraded). Root+YSK_EXECUTE → systemd; non-root+YSK_EXECUTE+pm2 → PM2.',
+        '目前以本機行程模式部署',
       );
     }
 
@@ -327,12 +333,14 @@ export class ProjectOpsService {
     }
 
     // Nginx with real upstream port (managed dataDir; system reload via publishNginx)
-    const serverName = row.domain ?? `${row.linux_user}.local`;
+    const serverName = buildServerNameList(row.domain ?? `${row.linux_user}.local`, row.domain_aliases);
     const conf = renderNginxProxy({
       serverName,
       upstream: `http://127.0.0.1:${port}`,
       ssl: false,
       cloudflareRealIp: true,
+      forceHttps: false,
+      hsts: false,
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
@@ -484,9 +492,10 @@ export class ProjectOpsService {
       notes.push(`Using existing ${indexPath}`);
     }
 
-    const serverName = row.domain ?? `${row.linux_user}.local`;
+    const primary = row.domain ?? `${row.linux_user}.local`;
+    const serverName = buildServerNameList(primary, row.domain_aliases);
     const wantSsl = Boolean(opts.ssl);
-    const managed = resolveManagedCertPaths(this.dataDir, serverName);
+    const managed = resolveManagedCertPaths(this.dataDir, primary);
     const conf = renderNginxStatic({
       serverName,
       docRoot,
@@ -494,6 +503,8 @@ export class ProjectOpsService {
       cloudflareRealIp: true,
       sslCertificate: wantSsl && managed.exists ? managed.fullchain : undefined,
       sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
+      forceHttps: wantSsl && Boolean(row.force_https),
+      hsts: wantSsl && Boolean(row.hsts),
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
@@ -525,7 +536,7 @@ export class ProjectOpsService {
         );
       }
     } else if (wantReload) {
-      notes.push('nginx reload skipped: need root + YSK_EXECUTE=1');
+      notes.push('無法重載 Nginx：需要系統變更權限');
     } else {
       notes.push('Managed conf only — publish with reload when ready');
     }
@@ -648,13 +659,27 @@ export class ProjectOpsService {
       ssl?: boolean;
       /** When true (default if EXECUTE), run nginx -t + reload */
       reload?: boolean;
+      forceHttps?: boolean;
+      hsts?: boolean;
     },
   ): Promise<OpsApplyResult> {
     const row = this.require(projectId);
+    if (row.status === 'suspended') {
+      return this.publishSuspendedNginx(projectId, opts.actor);
+    }
     const port = row.port ?? 3000;
-    const serverName = row.domain ?? `${row.linux_user}.local`;
+    const primary = row.domain ?? `${row.linux_user}.local`;
+    const serverName = buildServerNameList(primary, row.domain_aliases);
     const wantSsl = opts.ssl ?? false;
-    const managed = resolveManagedCertPaths(this.dataDir, serverName);
+    const forceHttps = opts.forceHttps ?? Boolean(row.force_https);
+    const hsts = opts.hsts ?? Boolean(row.hsts);
+    if (opts.forceHttps !== undefined || opts.hsts !== undefined) {
+      this.projects.updateMeta(projectId, {
+        force_https: forceHttps,
+        hsts,
+      });
+    }
+    const managed = resolveManagedCertPaths(this.dataDir, primary);
     const conf = renderNginxProxy({
       serverName,
       upstream: `http://127.0.0.1:${port}`,
@@ -662,6 +687,8 @@ export class ProjectOpsService {
       cloudflareRealIp: true,
       sslCertificate: wantSsl && managed.exists ? managed.fullchain : undefined,
       sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
+      forceHttps: wantSsl && forceHttps,
+      hsts: wantSsl && hsts,
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     const systemDir =
@@ -673,11 +700,14 @@ export class ProjectOpsService {
       host: this.host,
     });
     const notes = [`Wrote ${nginxPath}`, ...sync.notes];
+    if (serverName.includes(' ')) notes.push(`server_name: ${serverName}`);
+    if (wantSsl && forceHttps) notes.push('Force HTTPS (HTTP→301)');
+    if (wantSsl && hsts) notes.push('HSTS enabled');
     if (wantSsl && managed.exists) {
       notes.push(`Using uploaded certs: ${managed.fullchain}`);
     } else if (wantSsl) {
       notes.push(
-        `SSL enabled with default LE paths (or upload via POST /api/v1/ssl/upload for ${serverName})`,
+        `SSL enabled with default LE paths (or upload via POST /api/v1/ssl/upload for ${primary})`,
       );
     }
     let nginxReloaded = false;
@@ -696,7 +726,7 @@ export class ProjectOpsService {
         nginxStatus = 'nginx_t_failed';
       }
     } else if (wantReload) {
-      notes.push('nginx reload skipped: set YSK_EXECUTE=1');
+      notes.push('無法重載 Nginx：需要系統變更權限');
       nginxStatus = 'requires_execute';
     }
 
@@ -714,7 +744,7 @@ export class ProjectOpsService {
       actor: opts.actor,
       action: 'project.publish_nginx',
       resource: projectId,
-      detail: { nginxPath, port, sync, nginxReloaded, nginxStatus },
+      detail: { nginxPath, port, sync, nginxReloaded, nginxStatus, serverName, forceHttps, hsts },
       ok: true,
     });
     return {
@@ -723,6 +753,117 @@ export class ProjectOpsService {
       port,
       processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
       listening: port ? await isPortListening(port) : false,
+      nginxPath,
+      notes,
+      written: [nginxPath, ...sync.copied],
+      nginxReloaded,
+      nginxStatus,
+      requiresExecute: !this.host.executeEnabled(),
+      requiresRoot: !this.host.isRoot(),
+      degraded: !nginxReloaded,
+    };
+  }
+
+  /**
+   * Suspend: stop process + publish 503 vhost + status=suspended.
+   */
+  async suspend(projectId: string, actor: string): Promise<OpsApplyResult> {
+    const row = this.require(projectId);
+    const notes: string[] = [];
+    const stop = await this.stopNode(projectId, actor);
+    notes.push(...(stop.notes ?? []));
+    const pub = await this.publishSuspendedNginx(projectId, actor);
+    notes.push(...pub.notes);
+    this.projects.updateRuntimeState(projectId, {
+      status: 'suspended',
+      process_status: 'stopped',
+      nginx_config_path: pub.nginxPath,
+    });
+    this.audit?.append({
+      actor,
+      action: 'project.suspend',
+      resource: projectId,
+      detail: { domain: row.domain },
+      ok: true,
+    });
+    return {
+      ok: true,
+      projectId,
+      processStatus: 'stopped',
+      listening: false,
+      nginxPath: pub.nginxPath,
+      notes: ['專案已暫停（503）', ...notes],
+      written: pub.written,
+      degraded: pub.degraded,
+      requiresExecute: pub.requiresExecute,
+      requiresRoot: pub.requiresRoot,
+      nginxReloaded: pub.nginxReloaded,
+      nginxStatus: pub.nginxStatus,
+    };
+  }
+
+  /**
+   * Unsuspend: clear suspended flag and re-publish normal nginx (no SSL by default).
+   */
+  async unsuspend(projectId: string, actor: string): Promise<OpsApplyResult> {
+    this.require(projectId);
+    this.projects.updateMeta(projectId, { status: 'stopped' });
+    this.projects.updateRuntimeState(projectId, {
+      status: 'stopped',
+      process_status: 'stopped',
+    });
+    const pub = await this.publishNginx(projectId, { actor, ssl: false });
+    this.audit?.append({
+      actor,
+      action: 'project.unsuspend',
+      resource: projectId,
+      detail: {},
+      ok: true,
+    });
+    return {
+      ...pub,
+      notes: ['專案已恢復', ...pub.notes],
+    };
+  }
+
+  private async publishSuspendedNginx(
+    projectId: string,
+    actor: string,
+  ): Promise<OpsApplyResult> {
+    const row = this.require(projectId);
+    const serverName = buildServerNameList(
+      row.domain ?? `${row.linux_user}.local`,
+      row.domain_aliases,
+    );
+    const conf = renderNginxSuspended(serverName);
+    const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
+    const systemDir =
+      this.host.executeEnabled() && this.host.isRoot() ? '/etc/nginx/conf.d' : undefined;
+    const sync = await syncNginxConfigs({
+      dataDir: this.dataDir,
+      systemConfDir: systemDir,
+      host: this.host,
+    });
+    const notes = [`Suspended vhost written: ${nginxPath}`, ...sync.notes];
+    let nginxReloaded = false;
+    let nginxStatus = 'managed_only';
+    if (systemDir && this.host.executeEnabled()) {
+      const t = await this.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
+      if (t.exitCode === 0) {
+        const r = await this.host.runCommand(['systemctl', 'reload', 'nginx'], { timeoutMs: 15_000 });
+        nginxReloaded = r.exitCode === 0;
+        nginxStatus = nginxReloaded ? 'reloaded' : `reload_failed`;
+      } else {
+        nginxStatus = 'nginx_t_failed';
+      }
+    }
+    this.projects.updateNginxPath(projectId, nginxPath);
+    void actor;
+    return {
+      ok: true,
+      projectId,
+      processStatus: 'stopped',
+      listening: false,
       nginxPath,
       notes,
       written: [nginxPath, ...sync.copied],
@@ -1006,11 +1147,13 @@ export class ProjectOpsService {
       const fpmSocket =
         `/run/php/php${phpRt.version}-fpm-${row.linux_user}.sock`;
       const conf = renderNginxPhpFpm({
-        serverName: domain,
+        serverName: buildServerNameList(domain, row.domain_aliases),
         docRoot,
         fpmSocket,
         ssl: false,
         cloudflareRealIp: true,
+        forceHttps: false,
+        hsts: false,
       });
       const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
       written.push(nginxPath);
@@ -1090,7 +1233,7 @@ export class ProjectOpsService {
       );
     } else {
       notes.push(
-        'Deploy mode: php -S (degraded). Root+YSK_EXECUTE for PHP-FPM+nginx production path.',
+        '目前以簡易 PHP 模式部署',
       );
     }
 

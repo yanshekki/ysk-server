@@ -75,7 +75,7 @@ export async function applyPhpFpmPool(input: {
   const want = Boolean(input.enable);
   const can = want && input.host.executeEnabled() && input.host.isRoot();
   if (want && !can) {
-    notes.push('FPM enable skipped: need root + YSK_EXECUTE=1');
+    notes.push('無法啟用 PHP-FPM：需要系統管理員權限');
   }
   if (can) {
     const destDir = `/etc/php/${rt.version}/fpm/pool.d`;

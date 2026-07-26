@@ -57,8 +57,10 @@ export async function provisionRedisBinding(input: {
   const want = input.execute !== false;
   const can = want && input.hostExec.executeEnabled() && redisCli && reachable;
 
-  if (!redisCli) notes.push('redis-cli not on PATH');
-  if (!input.hostExec.executeEnabled()) notes.push('YSK_EXECUTE not enabled');
+  if (!redisCli) notes.push('伺服器未安裝 Redis 客戶端');
+  if (!input.hostExec.executeEnabled()) {
+    notes.push('伺服器未開啟系統變更權限，無法在管理面板完成此操作');
+  }
   if (want && !can) {
     return {
       ok: false,
@@ -69,7 +71,7 @@ export async function provisionRedisBinding(input: {
       plan,
       notes: [
         ...notes,
-        'NOT provisioned. Install redis-cli, ensure Redis is up, set YSK_EXECUTE=1',
+        '尚未在伺服器建立 Redis 資源，請確認服務與權限後於面板重試',
       ],
       commandResults,
       connectionHint: {

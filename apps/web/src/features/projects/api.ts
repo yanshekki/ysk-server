@@ -6,8 +6,16 @@ import { api } from '../../shared/services/api';
 
 export const projectsApi = {
   list: () => api.listProjects(),
-  create: (body: { name: string; domain?: string; runtime?: string; templateId?: string }) =>
-    api.createProject(body),
+  create: (body: {
+    name: string;
+    domain?: string;
+    domainAliases?: string[];
+    runtime?: string;
+    templateId?: string;
+    createDnsZone?: boolean;
+    createMailDomain?: boolean;
+    serverIp?: string;
+  }) => api.createProject(body),
   listTemplates: () => api.listTemplates(),
   applyTemplate: (id: string, body: { templateId: string; force?: boolean }) =>
     api.applyTemplate(id, body),
@@ -18,7 +26,23 @@ export const projectsApi = {
   deployPhp: (id: string) => api.deployPhp(id),
   stop: (id: string) => api.stopProject(id),
   health: (id: string) => api.projectHealth(id),
-  publishNginx: (id: string, body?: { ssl?: boolean }) => api.publishNginx(id, body),
+  publishNginx: (
+    id: string,
+    body?: { ssl?: boolean; forceHttps?: boolean; hsts?: boolean },
+  ) => api.publishNginx(id, body),
+  suspend: (id: string) => api.suspendProject(id),
+  unsuspend: (id: string) => api.unsuspendProject(id),
+  updateNetwork: (
+    id: string,
+    body: {
+      domain?: string;
+      domainAliases?: string[];
+      forceHttps?: boolean;
+      hsts?: boolean;
+      publish?: boolean;
+      ssl?: boolean;
+    },
+  ) => api.updateProjectNetwork(id, body),
   gitDeploy: (id: string, body?: { gitUrl?: string; redeploy?: boolean }) =>
     api.gitDeploy(id, body),
   setEnv: (id: string, env: Record<string, string>) => api.setProjectEnv(id, env),

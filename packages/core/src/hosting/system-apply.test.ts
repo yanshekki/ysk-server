@@ -36,7 +36,10 @@ describe('system-level apply writers', () => {
       installPackages: true,
     });
     expect(installSkip.ok).toBe(false);
-    expect(installSkip.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+    expect(
+      installSkip.blocked ||
+        installSkip.notes.some((n) => /YSK_EXECUTE|系統變更|權限/i.test(n)),
+    ).toBe(true);
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -69,7 +72,9 @@ describe('system-level apply writers', () => {
       install: true,
     });
     expect(ftpsInstall.ok).toBe(false);
-    expect(ftpsInstall.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+    expect(ftpsInstall.blocked || ftpsInstall.notes.some((n) => /權限|系統變更/i.test(n))).toBe(
+      true,
+    );
     const unit = writeControlPlaneSystemdUnit({
       dataDir: dir,
       cliPath: '/usr/bin/ysk-server',
@@ -93,7 +98,10 @@ describe('system-level apply writers', () => {
       allowSmtp: true,
     });
     expect(fwApplySkip.ok).toBe(false);
-    expect(fwApplySkip.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+    expect(
+      fwApplySkip.blocked ||
+        fwApplySkip.notes.some((n) => /YSK_EXECUTE|系統變更|權限/i.test(n)),
+    ).toBe(true);
     rmSync(dir, { recursive: true, force: true });
   });
 });

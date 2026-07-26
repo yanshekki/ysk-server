@@ -1,0 +1,105 @@
+import { useState } from 'react';
+import { Badge } from './Badge';
+import { StructuredFacts, type FactItem } from './StructuredFacts';
+import { sanitizeOperatorNotes } from '../../lib/operator-messages';
+
+export interface OpsResultLike {
+  ok: boolean;
+  notes?: string[];
+  url?: string;
+  processStatus?: string;
+  requiresRoot?: boolean;
+  requiresExecute?: boolean;
+  blocked?: boolean;
+  blockMessage?: string;
+  port?: number;
+  pid?: number;
+}
+
+export interface OpsResultPanelProps {
+  title?: string;
+  result: OpsResultLike | null;
+  message?: string | null;
+  facts?: FactItem[];
+  onRetry?: () => void;
+  busy?: boolean;
+}
+
+/**
+ * Operator result panel — human notes only, never shell homework or raw JSON.
+ */
+export function OpsResultPanel({
+  title = '操作結果',
+  result,
+  message,
+  facts = [],
+  onRetry,
+  busy,
+}: OpsResultPanelProps) {
+  if (!result && !message && facts.length === 0) return null;
+
+  const ok = result?.ok ?? true;
+  const blocked = Boolean(result?.blocked || result?.requiresExecute || result?.requiresRoot);
+  const blockMessage = result?.blockMessage;
+  const notes = sanitizeOperatorNotes([
+    ...(blockMessage ? [blockMessage] : []),
+    ...(result?.notes ?? []),
+  ]).filter((n) => n !== message && n !== blockMessage);
+
+  const autoFacts: FactItem[] = [...facts];
+  if (result?.processStatus) {
+    autoFacts.push({ label: '狀態', value: result.processStatus });
+  }
+  if (result?.port != null) autoFacts.push({ label: 'Port', value: String(result.port) });
+  if (result?.url) {
+    autoFacts.push({
+      label: 'URL',
+      value: (
+        <a href={result.url} target="_blank" rel="noreferrer">
+          {result.url}
+        </a>
+      ),
+    });
+  }
+
+  return (
+    <div className="ops-result" role="status">
+      <div className="ops-result__head">
+        <h3 className="ops-result__title">{title}</h3>
+        {blocked ? (
+          <Badge tone="warn">無法執行</Badge>
+        ) : (
+          <Badge tone={ok ? 'ok' : 'danger'}>{ok ? '成功' : '失敗'}</Badge>
+        )}
+      </div>
+      {message ? <p className="meta-block">{message}</p> : null}
+      {blockMessage && blockMessage !== message ? (
+        <p className="meta-block">{blockMessage}</p>
+      ) : null}
+      {autoFacts.length > 0 ? (
+        <div className="u-mt-3">
+          <StructuredFacts items={autoFacts} />
+        </div>
+      ) : null}
+      {notes.length > 0 ? (
+        <ul className="ops-result__notes">
+          {notes.map((n, i) => (
+            <li key={`${i}-${n.slice(0, 24)}`}>{n}</li>
+          ))}
+        </ul>
+      ) : null}
+      {blocked && onRetry ? (
+        <div className="btn-row u-mt-3">
+          <button
+            type="button"
+            className="btn btn--primary btn--sm"
+            disabled={busy}
+            onClick={onRetry}
+          >
+            再試
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}

@@ -300,7 +300,7 @@ export class EmailService {
     let status = 'managed';
 
     if (wantSystem && !canSystem) {
-      notes.push('System user provision skipped: need root + YSK_EXECUTE=1 (never fake success)');
+      notes.push('無法建立系統郵件用戶：需要系統管理員權限');
       status = 'managed_pending_system';
     }
 
@@ -486,7 +486,7 @@ export class EmailService {
         ok: false,
         plan,
         result: {
-          error: 'Set YSK_EXECUTE=1 and install sendmail/postfix to send real test mail',
+          error: '無法寄送測試信：伺服器未開啟系統變更權限或未安裝郵件服務',
           domain: row.domain,
         },
       };

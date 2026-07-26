@@ -46,14 +46,30 @@ export class ProjectRepository {
 
   updateMeta(
     id: string,
-    patch: Partial<Pick<ProjectRow, 'runtime' | 'runtime_version' | 'domain' | 'name'>>,
+    patch: Partial<
+      Pick<
+        ProjectRow,
+        | 'runtime'
+        | 'runtime_version'
+        | 'domain'
+        | 'domain_aliases'
+        | 'name'
+        | 'force_https'
+        | 'hsts'
+        | 'status'
+      >
+    >,
   ): void {
     const p = this.db.snapshot.projects.find((x) => x.id === id);
     if (!p) return;
     if (patch.runtime !== undefined) p.runtime = patch.runtime;
     if (patch.runtime_version !== undefined) p.runtime_version = patch.runtime_version;
     if (patch.domain !== undefined) p.domain = patch.domain;
+    if (patch.domain_aliases !== undefined) p.domain_aliases = patch.domain_aliases;
     if (patch.name !== undefined) p.name = patch.name;
+    if (patch.force_https !== undefined) p.force_https = patch.force_https;
+    if (patch.hsts !== undefined) p.hsts = patch.hsts;
+    if (patch.status !== undefined) p.status = patch.status;
     p.updated_at = new Date().toISOString();
     this.db.persist();
   }

@@ -8,15 +8,49 @@ import type { HostExecutor } from '../host/executor.js';
 import { planEmailStackInstall } from '../email/dns-records.js';
 import { planLetsEncrypt, renderNginxProxy } from './nginx-ssl.js';
 import { renderPhpVhost, selectPhpRuntime } from './runtime.js';
-import { planFtps, planFirewall } from './extras.js';
+import { planFirewall } from './extras.js';
 import { ErrorCodes, YskError } from '@ysk/shared';
+
+export type BlockReason =
+  | 'no_execute'
+  | 'no_root'
+  | 'missing_binary'
+  | 'network'
+  | 'validation'
+  | 'other';
 
 export interface ApplyResult {
   ok: boolean;
+  /** True when system commands were actually run */
+  executed?: boolean;
+  /** True when panel action could not run due to environment */
+  blocked?: boolean;
+  blockReason?: BlockReason;
+  /** Human message for panel — never "run this in your shell" */
+  blockMessage?: string;
   written: string[];
+  /** Internal only — not for user homework */
   commands: string[];
   commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
   notes: string[];
+  steps?: Array<{ name: string; status: 'ok' | 'skipped' | 'failed' | 'blocked'; detail?: string }>;
+}
+
+export function panelBlockMessage(reason: BlockReason): string {
+  switch (reason) {
+    case 'no_execute':
+      return '伺服器未開啟系統變更權限，無法在管理面板完成此操作';
+    case 'no_root':
+      return '需要系統管理員（root）權限才能完成';
+    case 'missing_binary':
+      return '伺服器未安裝必要元件，無法在管理面板完成此操作';
+    case 'network':
+      return '網路條件不足（例如網域驗證所需埠無法使用）';
+    case 'validation':
+      return '輸入資料無效';
+    default:
+      return '操作無法完成';
+  }
 }
 
 async function runAll(
@@ -160,7 +194,7 @@ export async function applyEmailStack(input: {
       `YSK Server managed mail configs for ${domain}`,
       `Mail host: ${mailHost}`,
       'Always review before copy to /etc.',
-      'System apply install needs: root + YSK_EXECUTE=1',
+      '伺服器未開啟系統變更權限或缺少 root，無法在管理面板完成安裝',
       `Helper: ${written[6]}`,
       `Ports: ${plan.ports.join(', ')}`,
       'External: SPF/DKIM/DMARC/PTR + Port 25 or SMTP relay',
@@ -188,7 +222,7 @@ export async function applyEmailStack(input: {
   const wantInstall = Boolean(input.installPackages);
   const execute = Boolean(wantInstall && input.host.executeEnabled() && input.host.isRoot());
   if (wantInstall && !execute) {
-    notes.push('Package install skipped: need root + YSK_EXECUTE=1 (never fake success)');
+    notes.push('套件安裝未能執行：需要系統變更權限');
   }
   const commandResults = await runAll(input.host, commands, execute);
   const ranOk = commandResults.every((c) => c.exitCode === 0);
@@ -215,12 +249,14 @@ export async function applyEmailStack(input: {
 }
 
 /**
- * Certbot plan + optional run for a domain.
+ * Issue / renew cert via panel: always attempts real execution when allowed.
+ * Never instructs the operator to copy shell commands.
  */
 export async function applyLetsEncrypt(input: {
   domain: string;
   email: string;
   host: HostExecutor;
+  /** Default true — panel always tries to run */
   run?: boolean;
 }): Promise<ApplyResult> {
   const plan = planLetsEncrypt({
@@ -229,21 +265,67 @@ export async function applyLetsEncrypt(input: {
     provider: 'letsencrypt',
     challenge: 'http-01',
   });
-  const notes = [...plan.notes];
-  const commands = plan.commands.map((c) => ['bash', '-c', c]);
-  const want = Boolean(input.run);
-  const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
-  if (want && !execute) {
-    notes.push('certbot run skipped: need root + YSK_EXECUTE=1 (never fake success)');
+  const want = input.run !== false;
+  const hasExecute = input.host.executeEnabled();
+  const isRoot = input.host.isRoot();
+  const execute = Boolean(want && hasExecute && isRoot);
+
+  let blocked = false;
+  let blockReason: BlockReason | undefined;
+  let blockMessage: string | undefined;
+  const notes: string[] = [];
+  const steps: NonNullable<ApplyResult['steps']> = [];
+
+  if (want && !hasExecute) {
+    blocked = true;
+    blockReason = 'no_execute';
+    blockMessage = panelBlockMessage('no_execute');
+    notes.push(blockMessage);
+    steps.push({ name: '申請憑證', status: 'blocked', detail: blockMessage });
+  } else if (want && !isRoot) {
+    blocked = true;
+    blockReason = 'no_root';
+    blockMessage = panelBlockMessage('no_root');
+    notes.push(blockMessage);
+    steps.push({ name: '申請憑證', status: 'blocked', detail: blockMessage });
   }
+
+  const commands = plan.commands.map((c) => ['bash', '-c', c]);
   const commandResults = await runAll(input.host, commands, execute);
-  const ranOk = commandResults.every((c) => c.exitCode === 0);
+  if (execute) {
+    const ranOk = commandResults.length > 0 && commandResults.every((c) => c.exitCode === 0);
+    if (ranOk) {
+      notes.push('已在伺服器完成憑證申請流程');
+      steps.push({ name: '申請憑證', status: 'ok' });
+      steps.push({ name: '重載網頁服務', status: 'ok' });
+    } else {
+      const err = commandResults.map((c) => c.stderr).filter(Boolean).join('; ').slice(0, 400);
+      notes.push(err || '憑證申請失敗');
+      steps.push({ name: '申請憑證', status: 'failed', detail: err || undefined });
+    }
+    return {
+      ok: ranOk,
+      executed: true,
+      blocked: false,
+      written: [],
+      commands: plan.commands,
+      commandResults,
+      notes,
+      steps,
+    };
+  }
+
   return {
-    ok: want ? execute && ranOk : true,
+    ok: false,
+    executed: false,
+    blocked,
+    blockReason,
+    blockMessage,
     written: [],
     commands: plan.commands,
     commandResults,
     notes,
+    steps,
   };
 }
 
@@ -283,7 +365,7 @@ export async function applyPhpHosting(input: {
     commands.push(['systemctl', 'reload', 'apache2']);
   }
   const execute = Boolean(input.enableSite && input.host.executeEnabled() && input.host.isRoot());
-  if (input.enableSite && !execute) notes.push('Apache enable skipped: need root + YSK_EXECUTE=1');
+  if (input.enableSite && !execute) notes.push('無法啟用 Apache 站點：需要系統變更權限');
   const commandResults = await runAll(input.host, commands, execute);
   const ranOk = commandResults.every((c) => c.exitCode === 0);
   let phpActive: string | undefined;
@@ -304,7 +386,8 @@ export async function applyPhpHosting(input: {
 }
 
 /**
- * Write FTPS (vsftpd) snippet under dataDir; optional install.
+ * Write FTPS (vsftpd) under dataDir; install/start when requested + privileged.
+ * Prefer applyFtpsService when JsonStore is available (full panel flow).
  * Never fakes ok when install requested but skipped/failed.
  */
 export async function applyFtps(input: {
@@ -312,55 +395,244 @@ export async function applyFtps(input: {
   domain: string;
   host: HostExecutor;
   install?: boolean;
+  settings?: {
+    pasvMin?: number;
+    pasvMax?: number;
+    listenPort?: number;
+    sslEnable?: boolean;
+    forceSsl?: boolean;
+    pasvAddress?: string;
+    writeEnable?: boolean;
+    banner?: string;
+  };
 }): Promise<ApplyResult & { requiresExecute: boolean; requiresRoot: boolean }> {
-  const plan = planFtps({ domain: input.domain });
-  const dir = join(input.dataDir, 'ftps');
-  mkdirSync(dir, { recursive: true });
-  const confPath = join(dir, 'vsftpd.conf');
-  writeFileSync(confPath, plan.configSnippet + '\n', 'utf8');
-  const helper = join(dir, 'install-ftps.sh');
-  writeFileSync(
-    helper,
-    [
-      '#!/usr/bin/env bash',
-      '# YSK Server FTPS install helper',
-      'set -euo pipefail',
-      'export DEBIAN_FRONTEND=noninteractive',
-      'apt-get update',
-      'apt-get install -y vsftpd',
-      `cp ${JSON.stringify(confPath)} /etc/vsftpd.conf`,
-      'systemctl enable --now vsftpd',
-      '',
-    ].join('\n'),
-    'utf8',
-  );
+  const { buildVsftpdConf, ftpsPaths, DEFAULT_FTPS_SETTINGS } = await import('./ftps-service.js');
+  const paths = ftpsPaths(input.dataDir);
+  mkdirSync(paths.root, { recursive: true });
+  const settings = {
+    ...DEFAULT_FTPS_SETTINGS,
+    sslDomain: input.domain,
+    ...(input.settings ?? {}),
+  };
+  const confBody = buildVsftpdConf({ dataDir: input.dataDir, settings });
+  writeFileSync(paths.conf, confBody, 'utf8');
   const notes = [
-    `Config ${confPath}`,
-    `PASV ${plan.pasvMin}-${plan.pasvMax}`,
-    `Helper: ${helper}`,
+    `已寫入設定 ${paths.conf}`,
+    `PASV ${settings.pasvMin}-${settings.pasvMax}`,
   ];
-  const want = Boolean(input.install);
-  const commands: string[][] = want
-    ? [
-        ...plan.commands.map((c) => ['bash', '-c', c] as string[]),
-        ['cp', confPath, '/etc/vsftpd.conf'],
-        ['systemctl', 'enable', '--now', 'vsftpd'],
-      ]
-    : [];
+  const steps: NonNullable<ApplyResult['steps']> = [
+    { name: '寫入 vsftpd 設定', status: 'ok', detail: paths.conf },
+  ];
+  // install only when explicitly requested (never default true)
+  const want = input.install === true;
   const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
   if (want && !execute) {
-    notes.push('FTPS install skipped: need root + YSK_EXECUTE=1 (never fake success)');
+    const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
+    const blockMessage = panelBlockMessage(reason);
+    notes.push(blockMessage);
+    steps.push({ name: '啟動 vsftpd', status: 'blocked', detail: blockMessage });
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockReason: reason,
+      blockMessage,
+      written: [paths.conf],
+      commands: [],
+      commandResults: [],
+      notes,
+      steps,
+      requiresExecute: !input.host.executeEnabled(),
+      requiresRoot: !input.host.isRoot(),
+    };
   }
-  const commandResults = await runAll(input.host, commands, execute);
+  if (!want) {
+    notes.push('已儲存設定（未要求套用系統）');
+    return {
+      ok: true,
+      executed: false,
+      written: [paths.conf],
+      commands: [],
+      commandResults: [],
+      notes,
+      steps,
+      requiresExecute: !input.host.executeEnabled(),
+      requiresRoot: !input.host.isRoot(),
+    };
+  }
+  const commands: string[][] = [
+    [
+      'bash',
+      '-c',
+      'export DEBIAN_FRONTEND=noninteractive; command -v vsftpd >/dev/null || (apt-get update && apt-get install -y vsftpd db-util)',
+    ],
+    ['cp', paths.conf, '/etc/vsftpd.conf'],
+    ['systemctl', 'enable', '--now', 'vsftpd'],
+  ];
+  const commandResults = await runAll(input.host, commands, true);
   const ranOk = commandResults.every((c) => c.exitCode === 0);
+  if (ranOk) {
+    notes.push('vsftpd 已啟動');
+    steps.push({ name: '啟動 vsftpd', status: 'ok' });
+  } else {
+    notes.push('vsftpd 啟動失敗');
+    steps.push({ name: '啟動 vsftpd', status: 'failed' });
+  }
   return {
-    ok: want ? execute && ranOk : true,
-    written: [confPath, helper],
-    commands: commands.map((c) => c.join(' ')),
+    ok: ranOk,
+    executed: true,
+    written: [paths.conf],
+    commands: [],
     commandResults,
     notes,
-    requiresExecute: !input.host.executeEnabled(),
-    requiresRoot: !input.host.isRoot(),
+    steps,
+    requiresExecute: false,
+    requiresRoot: false,
+  };
+}
+
+/** Live ufw status for panel (honest probe, no mutation). */
+export async function probeFirewallStatus(host: HostExecutor): Promise<{
+  installed: boolean;
+  active: string;
+  statusText: string;
+  numberedRules: string[];
+  executeEnabled: boolean;
+  isRoot: boolean;
+}> {
+  const installed =
+    host.pathExists('/usr/sbin/ufw') ||
+    host.pathExists('/usr/bin/ufw') ||
+    (await host
+      .runCommand(['bash', '-c', 'command -v ufw >/dev/null && echo yes || echo no'], {
+        timeoutMs: 3_000,
+      })
+      .then((r) => (r.stdout || '').trim() === 'yes')
+      .catch(() => false));
+
+  let active = 'unknown';
+  let statusText = '';
+  const numberedRules: string[] = [];
+
+  if (installed) {
+    try {
+      const st = await host.runCommand(['ufw', 'status'], { timeoutMs: 8_000 });
+      statusText = `${st.stdout || ''}\n${st.stderr || ''}`.trim();
+      const first = statusText.split('\n')[0] || '';
+      if (/inactive/i.test(first)) active = 'inactive';
+      else if (/active/i.test(first)) active = 'active';
+      else active = first.slice(0, 40) || 'unknown';
+    } catch {
+      statusText = '';
+      active = 'unknown';
+    }
+    try {
+      const num = await host.runCommand(['ufw', 'status', 'numbered'], { timeoutMs: 8_000 });
+      const body = `${num.stdout || ''}`.trim();
+      for (const line of body.split('\n')) {
+        const t = line.trim();
+        if (/^\[\s*\d+\]/.test(t) || t.includes('ALLOW') || t.includes('DENY')) {
+          numberedRules.push(t);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return {
+    installed,
+    active,
+    statusText: statusText.slice(0, 4000),
+    numberedRules: numberedRules.slice(0, 80),
+    executeEnabled: host.executeEnabled(),
+    isRoot: host.isRoot(),
+  };
+}
+
+/** Live fail2ban status for panel. */
+export async function probeFail2banStatus(host: HostExecutor): Promise<{
+  installed: boolean;
+  active: string;
+  enabled: string;
+  jails: Array<{ name: string; currentlyBanned?: number; totalBanned?: number; raw?: string }>;
+  executeEnabled: boolean;
+  isRoot: boolean;
+  defaultJails: string[];
+}> {
+  const defaultJails = planFirewall({}).fail2banJails;
+  const installed =
+    host.pathExists('/usr/bin/fail2ban-client') ||
+    (await host
+      .runCommand(['bash', '-c', 'command -v fail2ban-client >/dev/null && echo yes || echo no'], {
+        timeoutMs: 3_000,
+      })
+      .then((r) => (r.stdout || '').trim() === 'yes')
+      .catch(() => false));
+
+  let active = 'unknown';
+  let enabled = 'unknown';
+  try {
+    const a = await host.runCommand(['systemctl', 'is-active', 'fail2ban'], { timeoutMs: 4_000 });
+    active = (a.stdout || a.stderr || 'unknown').trim().split(/\s+/)[0] || 'unknown';
+  } catch {
+    active = installed ? 'unknown' : 'not-found';
+  }
+  try {
+    const e = await host.runCommand(['systemctl', 'is-enabled', 'fail2ban'], { timeoutMs: 4_000 });
+    enabled = (e.stdout || e.stderr || 'unknown').trim().split(/\s+/)[0] || 'unknown';
+  } catch {
+    enabled = 'unknown';
+  }
+
+  const jails: Array<{
+    name: string;
+    currentlyBanned?: number;
+    totalBanned?: number;
+    raw?: string;
+  }> = [];
+  if (installed) {
+    try {
+      const list = await host.runCommand(['fail2ban-client', 'status'], { timeoutMs: 8_000 });
+      const text = `${list.stdout || ''}\n${list.stderr || ''}`;
+      const m = text.match(/Jail list:\s*(.+)/i);
+      const names = m
+        ? m[1]
+            .split(/[,\s]+/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+      for (const name of names.slice(0, 24)) {
+        try {
+          const js = await host.runCommand(['fail2ban-client', 'status', name], {
+            timeoutMs: 5_000,
+          });
+          const raw = `${js.stdout || ''}`.trim();
+          const cur = raw.match(/Currently banned:\s*(\d+)/i);
+          const tot = raw.match(/Total banned:\s*(\d+)/i);
+          jails.push({
+            name,
+            currentlyBanned: cur ? Number(cur[1]) : undefined,
+            totalBanned: tot ? Number(tot[1]) : undefined,
+            raw: raw.slice(0, 500),
+          });
+        } catch {
+          jails.push({ name });
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return {
+    installed,
+    active,
+    enabled,
+    jails,
+    executeEnabled: host.executeEnabled(),
+    isRoot: host.isRoot(),
+    defaultJails,
   };
 }
 
@@ -400,16 +672,33 @@ export async function applyFirewall(input: {
   const want = Boolean(input.apply);
   const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
   if (want && !execute) {
-    notes.push('Firewall apply skipped: need root + YSK_EXECUTE=1 (never fake success)');
+    const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
+    notes.push(panelBlockMessage(reason));
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockReason: reason,
+      blockMessage: panelBlockMessage(reason),
+      written,
+      commands: plan.commands,
+      commandResults: [],
+      notes,
+      requiresExecute: !input.host.executeEnabled(),
+      requiresRoot: !input.host.isRoot(),
+    };
   }
   const commandResults = await runAll(input.host, commands, execute);
   const ranOk = commandResults.every((c) => c.exitCode === 0);
+  if (want && !ranOk) notes.push('ufw 指令執行失敗');
+  else if (want) notes.push('已套用防火牆規則');
   return {
     ok: want ? execute && ranOk : true,
+    executed: execute,
     written,
     commands: plan.commands,
     commandResults,
-    notes: [...notes, `fail2ban jails: ${plan.fail2banJails.join(', ')}`],
+    notes: [...notes, `建議 fail2ban jails: ${plan.fail2banJails.join(', ')}`],
     requiresExecute: !input.host.executeEnabled(),
     requiresRoot: !input.host.isRoot(),
   };
@@ -457,7 +746,21 @@ export async function applyFail2ban(input: {
   }
   const execute = Boolean(input.apply && input.host.executeEnabled() && input.host.isRoot());
   if (input.apply && !execute) {
-    notes.push('fail2ban install skipped: need root + YSK_EXECUTE=1');
+    const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
+    notes.push(panelBlockMessage(reason));
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockReason: reason,
+      blockMessage: panelBlockMessage(reason),
+      written: [jailPath],
+      commands: commands.map((c) => c.join(' ')),
+      commandResults: [],
+      notes,
+      requiresExecute: !input.host.executeEnabled(),
+      requiresRoot: !input.host.isRoot(),
+    };
   }
   const commandResults = await runAll(input.host, commands, execute);
   let serviceActive: string | undefined;
@@ -473,8 +776,12 @@ export async function applyFail2ban(input: {
     }
   }
   const ranOk = commandResults.every((c) => c.exitCode === 0);
+  if (input.apply && !ranOk) notes.push('fail2ban 套用指令失敗');
+  else if (input.apply) notes.push('已套用 fail2ban');
+  else notes.push('已寫入管理 jail.local（未要求套用系統）');
   return {
     ok: input.apply ? execute && ranOk : true,
+    executed: execute,
     written: [jailPath],
     commands: commands.map((c) => c.join(' ')),
     commandResults,
@@ -506,7 +813,7 @@ export async function applyNginxSite(input: {
   mkdirSync(dir, { recursive: true });
   const path = join(dir, `${input.serverName.replace(/[^a-z0-9.-]+/gi, '_')}.conf`);
   writeFileSync(path, conf, 'utf8');
-  const notes = [`Wrote ${path}`];
+  const notes = [`已寫入管理檔 ${path}`];
   const commands: string[][] = [];
   if (input.reload) {
     commands.push(['nginx', '-t']);
@@ -514,11 +821,31 @@ export async function applyNginxSite(input: {
   }
   const execute = Boolean(input.reload && input.host.executeEnabled());
   if (input.reload && !input.host.executeEnabled()) {
-    notes.push('nginx reload skipped: set YSK_EXECUTE=1');
+    notes.push('無法重載 Nginx：需要系統變更權限');
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockReason: 'no_execute',
+      blockMessage: panelBlockMessage('no_execute'),
+      written: [path],
+      commands: commands.map((c) => c.join(' ')),
+      commandResults: [],
+      notes,
+    };
   }
   const commandResults = await runAll(input.host, commands, execute);
+  const failed = commandResults.some((r) => r.exitCode !== 0);
+  if (input.reload && failed) {
+    notes.push('nginx -t 或 reload 失敗');
+  } else if (input.reload && execute) {
+    notes.push('已重載 Nginx');
+  } else if (!input.reload) {
+    notes.push('僅寫入管理檔（未要求重載）');
+  }
   return {
-    ok: true,
+    ok: !failed,
+    executed: execute,
     written: [path],
     commands: commands.map((c) => c.join(' ')),
     commandResults,
@@ -570,22 +897,76 @@ export async function installControlPlaneSystemd(input: {
     dataDir: input.dataDir,
     cliPath: input.cliPath,
   });
-  const notes = [`Unit template at ${unitPath}`];
+  const notes = [`已寫入 unit 範本 ${unitPath}`];
   const commands: string[][] = [];
   if (input.enable) {
     commands.push(['cp', unitPath, '/etc/systemd/system/ysk-server.service']);
     commands.push(['systemctl', 'daemon-reload']);
     commands.push(['systemctl', 'enable', '--now', 'ysk-server']);
   }
-  const execute = Boolean(input.enable && input.host.executeEnabled() && input.host.isRoot());
-  if (input.enable && !execute) notes.push('systemd install skipped: need root + YSK_EXECUTE=1');
+  const canExecute = Boolean(input.host.executeEnabled() && input.host.isRoot());
+  const execute = Boolean(input.enable && canExecute);
+  if (input.enable && !execute) {
+    const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
+    notes.push('systemd 啟用未能執行：需要系統變更權限與管理員');
+    return {
+      ok: false,
+      executed: false,
+      blocked: true,
+      blockReason: reason,
+      blockMessage: panelBlockMessage(reason),
+      written: [unitPath],
+      commands: commands.map((c) => c.join(' ')),
+      commandResults: [],
+      notes,
+    };
+  }
   const commandResults = await runAll(input.host, commands, execute);
+  const failed = commandResults.some((r) => r.exitCode !== 0);
+  if (input.enable && failed) notes.push('systemctl 指令失敗');
+  else if (input.enable) notes.push('已安裝並嘗試啟用 ysk-server.service');
+  else notes.push('僅寫入範本（未要求 enable）');
   return {
-    ok: true,
+    ok: !failed,
+    executed: execute,
     written: [unitPath],
     commands: commands.map((c) => c.join(' ')),
     commandResults,
     notes,
+  };
+}
+
+/** Probe control-plane unit active/enabled state (honest status for panel). */
+export async function probeControlPlaneSystemd(host: HostExecutor): Promise<{
+  unit: string;
+  unitPathHint: string;
+  active: string;
+  enabled: string;
+  executeEnabled: boolean;
+  isRoot: boolean;
+}> {
+  const unit = 'ysk-server';
+  let active = 'unknown';
+  let enabled = 'unknown';
+  try {
+    const a = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });
+    active = (a.stdout || a.stderr || 'unknown').trim().split('\n')[0] || 'unknown';
+  } catch {
+    active = 'unknown';
+  }
+  try {
+    const e = await host.runCommand(['systemctl', 'is-enabled', unit], { timeoutMs: 5_000 });
+    enabled = (e.stdout || e.stderr || 'unknown').trim().split('\n')[0] || 'unknown';
+  } catch {
+    enabled = 'unknown';
+  }
+  return {
+    unit,
+    unitPathHint: '/etc/systemd/system/ysk-server.service',
+    active,
+    enabled,
+    executeEnabled: host.executeEnabled(),
+    isRoot: host.isRoot(),
   };
 }
 

@@ -21,13 +21,22 @@ export function useProjects() {
   }, [refresh]);
 
   const create = useCallback(
-    async (input: { name: string; domain?: string; runtime?: string; templateId?: string }) => {
+    async (input: {
+      name: string;
+      domain?: string;
+      domainAliases?: string[];
+      runtime?: string;
+      templateId?: string;
+      createDnsZone?: boolean;
+      createMailDomain?: boolean;
+      serverIp?: string;
+    }) => {
       setBusy(true);
       setError(null);
       try {
         const r = await projectsApi.create(input);
         await refresh();
-        return r.project;
+        return r;
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'create failed';
         setError(msg);

@@ -29,6 +29,11 @@ export const updatesApi = {
       body: JSON.stringify({ osv }),
     }),
   self: () => api.requestRaw<Record<string, unknown>>('/api/v1/updates/self'),
+  selfApply: () =>
+    api.requestRaw<{ ok?: boolean; notes?: string[]; applied?: boolean }>(
+      '/api/v1/updates/self/apply',
+      { method: 'POST', body: JSON.stringify({ apply: true }) },
+    ),
   scheduler: () =>
     api.requestRaw<{ jobs: Array<Record<string, unknown>> }>('/api/v1/scheduler'),
 };

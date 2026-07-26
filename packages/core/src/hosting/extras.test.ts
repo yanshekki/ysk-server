@@ -20,8 +20,18 @@ describe('phase3 hosting extras', () => {
     expect(ftps.configSnippet).toContain('ssl_enable=YES');
     expect(ftps.configSnippet).toContain('pasv_min_port');
 
-    const dns = planDnsZone({ zone: 'example.com', serverIp: '1.2.3.4' });
+    const dns = planDnsZone({ zone: 'example.com', serverIp: '1.2.3.4', template: 'full' });
     expect(dns.records.some((r) => r.type === 'MX')).toBe(true);
+    expect(dns.records.some((r) => r.name === 'www')).toBe(true);
+    expect(dns.records.some((r) => r.name === 'ftp')).toBe(true);
+
+    const minimal = planDnsZone({ zone: 'example.com', serverIp: '1.2.3.4', template: 'minimal' });
+    expect(minimal.records).toHaveLength(1);
+    expect(minimal.records[0].name).toBe('@');
+
+    const web = planDnsZone({ zone: 'example.com', serverIp: '1.2.3.4', template: 'web' });
+    expect(web.records.some((r) => r.name === 'www')).toBe(true);
+    expect(web.records.some((r) => r.type === 'MX')).toBe(false);
 
     const fw = planFirewall({ allowSmtp: true, extraTcpPorts: [2222] });
     expect(fw.rules.some((r) => r.includes('25/tcp'))).toBe(true);

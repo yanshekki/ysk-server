@@ -25,6 +25,45 @@ set_real_ip_from 131.0.72.0/22;
 real_ip_header CF-Connecting-IP;
 `.trim();
 
+/** Build space-separated server_name from primary + aliases. */
+export function buildServerNameList(primary?: string, aliases?: string[]): string {
+  const names = [primary, ...(aliases ?? [])]
+    .map((s) => (s ?? '').trim().toLowerCase())
+    .filter(Boolean);
+  const uniq = [...new Set(names)];
+  return uniq.join(' ') || 'localhost';
+}
+
+function sslLines(opts: {
+  ssl?: boolean;
+  sslCertificate?: string;
+  sslCertificateKey?: string;
+  serverName: string;
+  hsts?: boolean;
+}): string {
+  if (!opts.ssl) return '';
+  const primary = opts.serverName.split(/\s+/)[0] || 'localhost';
+  const cert = opts.sslCertificate ?? `/etc/letsencrypt/live/${primary}/fullchain.pem`;
+  const key = opts.sslCertificateKey ?? `/etc/letsencrypt/live/${primary}/privkey.pem`;
+  const hsts = opts.hsts
+    ? '\n  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;'
+    : '';
+  return `
+  ssl_certificate ${cert};
+  ssl_certificate_key ${key};
+  ssl_protocols TLSv1.2 TLSv1.3;${hsts}
+`.trim();
+}
+
+function httpRedirectBlock(serverName: string): string {
+  return `server {
+  listen 80;
+  server_name ${serverName};
+  return 301 https://$host$request_uri;
+}
+`;
+}
+
 /**
  * Render an Nginx server block for reverse proxy.
  */
@@ -34,21 +73,40 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
       httpStatus: 400,
     });
   }
-  const listen = config.ssl
-    ? 'listen 443 ssl http2;\n  listen 80;\n  # prefer HTTPS when certs present'
-    : 'listen 80;';
-  const cert =
-    config.sslCertificate ?? `/etc/letsencrypt/live/${config.serverName}/fullchain.pem`;
-  const key =
-    config.sslCertificateKey ?? `/etc/letsencrypt/live/${config.serverName}/privkey.pem`;
-  const sslBlock = config.ssl
-    ? `
-  ssl_certificate ${cert};
-  ssl_certificate_key ${key};
-  ssl_protocols TLSv1.2 TLSv1.3;
-`.trim()
-    : '';
   const realIp = config.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
+  const force = Boolean(config.ssl && config.forceHttps);
+  const sslBlock = sslLines({
+    ssl: config.ssl,
+    sslCertificate: config.sslCertificate,
+    sslCertificateKey: config.sslCertificateKey,
+    serverName: config.serverName,
+    hsts: config.hsts,
+  });
+
+  if (force) {
+    return `${httpRedirectBlock(config.serverName)}server {
+  listen 443 ssl http2;
+  server_name ${config.serverName};
+  ${sslBlock}
+  ${realIp}
+
+  location / {
+    proxy_pass ${config.upstream};
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+}
+`;
+  }
+
+  const listen = config.ssl
+    ? 'listen 443 ssl http2;\n  listen 80;'
+    : 'listen 80;';
   return `server {
   ${listen}
   server_name ${config.serverName};
@@ -79,28 +137,25 @@ export function renderNginxStatic(opts: {
   cloudflareRealIp?: boolean;
   sslCertificate?: string;
   sslCertificateKey?: string;
+  forceHttps?: boolean;
+  hsts?: boolean;
 }): string {
   if (!opts.serverName || !opts.docRoot) {
     throw new YskError(ErrorCodes.VALIDATION, 'serverName and docRoot required', {
       httpStatus: 400,
     });
   }
-  const listen = opts.ssl
-    ? 'listen 443 ssl http2;\n  listen 80;'
-    : 'listen 80;';
-  const cert =
-    opts.sslCertificate ?? `/etc/letsencrypt/live/${opts.serverName}/fullchain.pem`;
-  const key =
-    opts.sslCertificateKey ?? `/etc/letsencrypt/live/${opts.serverName}/privkey.pem`;
-  const sslBlock = opts.ssl
-    ? `
-  ssl_certificate ${cert};
-  ssl_certificate_key ${key};
-  ssl_protocols TLSv1.2 TLSv1.3;
-`.trim()
-    : '';
   const realIp = opts.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
-  return `server {
+  const force = Boolean(opts.ssl && opts.forceHttps);
+  const sslBlock = sslLines({
+    ssl: opts.ssl,
+    sslCertificate: opts.sslCertificate,
+    sslCertificateKey: opts.sslCertificateKey,
+    serverName: opts.serverName,
+    hsts: opts.hsts,
+  });
+
+  const body = (listen: string) => `server {
   ${listen}
   server_name ${opts.serverName};
   root ${opts.docRoot};
@@ -123,6 +178,12 @@ export function renderNginxStatic(opts: {
   }
 }
 `;
+
+  if (force) {
+    return `${httpRedirectBlock(opts.serverName)}${body('listen 443 ssl http2;')}`;
+  }
+  const listen = opts.ssl ? 'listen 443 ssl http2;\n  listen 80;' : 'listen 80;';
+  return body(listen);
 }
 
 /**
@@ -137,28 +198,25 @@ export function renderNginxPhpFpm(opts: {
   cloudflareRealIp?: boolean;
   sslCertificate?: string;
   sslCertificateKey?: string;
+  forceHttps?: boolean;
+  hsts?: boolean;
 }): string {
   if (!opts.serverName || !opts.docRoot || !opts.fpmSocket) {
     throw new YskError(ErrorCodes.VALIDATION, 'serverName, docRoot, fpmSocket required', {
       httpStatus: 400,
     });
   }
-  const listen = opts.ssl
-    ? 'listen 443 ssl http2;\n  listen 80;'
-    : 'listen 80;';
-  const cert =
-    opts.sslCertificate ?? `/etc/letsencrypt/live/${opts.serverName}/fullchain.pem`;
-  const key =
-    opts.sslCertificateKey ?? `/etc/letsencrypt/live/${opts.serverName}/privkey.pem`;
-  const sslBlock = opts.ssl
-    ? `
-  ssl_certificate ${cert};
-  ssl_certificate_key ${key};
-  ssl_protocols TLSv1.2 TLSv1.3;
-`.trim()
-    : '';
   const realIp = opts.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
-  return `server {
+  const force = Boolean(opts.ssl && opts.forceHttps);
+  const sslBlock = sslLines({
+    ssl: opts.ssl,
+    sslCertificate: opts.sslCertificate,
+    sslCertificateKey: opts.sslCertificateKey,
+    serverName: opts.serverName,
+    hsts: opts.hsts,
+  });
+
+  const body = (listen: string) => `server {
   ${listen}
   server_name ${opts.serverName};
   root ${opts.docRoot};
@@ -180,6 +238,22 @@ export function renderNginxPhpFpm(opts: {
   location ~ /\\. {
     deny all;
   }
+}
+`;
+
+  if (force) {
+    return `${httpRedirectBlock(opts.serverName)}${body('listen 443 ssl http2;')}`;
+  }
+  const listen = opts.ssl ? 'listen 443 ssl http2;\n  listen 80;' : 'listen 80;';
+  return body(listen);
+}
+
+/** Suspended site: refuse traffic with 503. */
+export function renderNginxSuspended(serverName: string): string {
+  return `server {
+  listen 80;
+  server_name ${serverName};
+  return 503;
 }
 `;
 }

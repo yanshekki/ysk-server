@@ -30,6 +30,8 @@ export interface StoreProject {
   id: string;
   name: string;
   domain?: string;
+  /** Extra hostnames for server_name */
+  domain_aliases?: string[];
   linux_user: string;
   linux_group: string;
   home_dir: string;
@@ -46,6 +48,10 @@ export interface StoreProject {
   pidfile?: string;
   /** stopped | starting | running | unhealthy | failed */
   process_status?: string;
+  /** Redirect HTTP→HTTPS when SSL conf published */
+  force_https?: boolean;
+  /** Emit HSTS when SSL conf published */
+  hsts?: boolean;
   last_health?: Record<string, unknown>;
   last_deploy_at?: string;
   /** Git remote for deploy */
@@ -108,10 +114,23 @@ export interface StoreData {
   certificates: Array<Record<string, unknown>>;
   mailboxes: Array<Record<string, unknown>>;
   cron_jobs: Array<Record<string, unknown>>;
+  /** Managed control-plane resource registries (CRUD entities) */
+  nginx_sites: Array<Record<string, unknown>>;
+  ftp_accounts: Array<Record<string, unknown>>;
+  mysql_databases: Array<Record<string, unknown>>;
+  mysql_users: Array<Record<string, unknown>>;
+  postgres_databases: Array<Record<string, unknown>>;
+  postgres_users: Array<Record<string, unknown>>;
+  redis_instances: Array<Record<string, unknown>>;
+  dns_records: Array<Record<string, unknown>>;
+  /** Public file share links (ownCloud-style) */
+  file_shares: Array<Record<string, unknown>>;
+  /** File favorites paths per root */
+  file_favorites: Array<Record<string, unknown>>;
 }
 
 const EMPTY: StoreData = {
-  version: 2,
+  version: 3,
   users: [],
   sessions: [],
   projects: [],
@@ -129,6 +148,16 @@ const EMPTY: StoreData = {
   certificates: [],
   mailboxes: [],
   cron_jobs: [],
+  nginx_sites: [],
+  ftp_accounts: [],
+  mysql_databases: [],
+  mysql_users: [],
+  postgres_databases: [],
+  postgres_users: [],
+  redis_instances: [],
+  dns_records: [],
+  file_shares: [],
+  file_favorites: [],
 };
 
 export class JsonStore {
@@ -158,6 +187,14 @@ export class JsonStore {
       this.data.certificates = this.data.certificates ?? [];
       this.data.mailboxes = this.data.mailboxes ?? [];
       this.data.cron_jobs = this.data.cron_jobs ?? [];
+      this.data.nginx_sites = this.data.nginx_sites ?? [];
+      this.data.ftp_accounts = this.data.ftp_accounts ?? [];
+      this.data.mysql_databases = this.data.mysql_databases ?? [];
+      this.data.mysql_users = this.data.mysql_users ?? [];
+      this.data.postgres_databases = this.data.postgres_databases ?? [];
+      this.data.postgres_users = this.data.postgres_users ?? [];
+      this.data.redis_instances = this.data.redis_instances ?? [];
+      this.data.dns_records = this.data.dns_records ?? [];
       this.data.version = this.data.version ?? EMPTY.version;
     } else {
       this.data = structuredClone(EMPTY);

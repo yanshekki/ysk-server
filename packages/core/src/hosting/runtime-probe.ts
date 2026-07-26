@@ -215,7 +215,7 @@ export async function planOrInstallRuntime(input: {
       `ln -sfn "$(command -v node)" ${plan.binaryPath} || true`,
       '',
     ].join('\n');
-    notes.push(`Node ${plan.version} install plan (nodesource)`);
+    notes.push(`準備安裝 Node ${plan.version}`);
   } else {
     const plan = selectPhpRuntime(input.version);
     script = [
@@ -232,18 +232,22 @@ export async function planOrInstallRuntime(input: {
       'systemctl enable --now php' + plan.version + '-fpm || true',
       '',
     ].join('\n');
-    notes.push(`PHP ${plan.version} install plan (ondrej PPA)`);
+    notes.push(`準備安裝 PHP ${plan.version}`);
   }
 
   const scriptPath = join(dir, 'install.sh');
   writeFileSync(scriptPath, script, 'utf8');
   written.push(scriptPath);
-  notes.push(`Helper: ${scriptPath}`);
+  notes.push('已寫入安裝腳本');
 
   const want = Boolean(input.install);
   const can = want && input.host.executeEnabled() && input.host.isRoot();
   if (want && !can) {
-    notes.push('Install skipped: need root + YSK_EXECUTE=1 (never fake success)');
+    if (!input.host.executeEnabled()) {
+      notes.push('伺服器未開啟系統變更權限，無法在管理面板完成安裝');
+    } else if (!input.host.isRoot()) {
+      notes.push('需要系統管理員權限才能完成安裝');
+    }
   }
 
   if (can) {
@@ -253,8 +257,8 @@ export async function planOrInstallRuntime(input: {
       exitCode: r.exitCode,
       stderr: r.stderr,
     });
-    if (r.exitCode === 0) notes.push('Install script completed');
-    else notes.push(`Install script failed: ${r.stderr || r.stdout}`);
+    if (r.exitCode === 0) notes.push('安裝完成');
+    else notes.push(`安裝失敗：${r.stderr || r.stdout}`);
   }
 
   const ranOk = commandResults.every((c) => c.exitCode === 0);

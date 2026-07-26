@@ -1,8 +1,11 @@
 /**
- * Files feature — browse / edit under dataDir/files/public.
+ * Legacy hook — thin wrapper over public root.
+ * Prefer FilesPage direct filesApi usage for full ownCloud features.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { filesApi, type FileEntry } from './api';
+
+const ROOT = 'public';
 
 export function useFiles() {
   const [path, setPath] = useState('.');
@@ -12,15 +15,17 @@ export function useFiles() {
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const refresh = useCallback(async (p = path) => {
-    const r = await filesApi.list(p);
-    setItems(r.items);
-    setPath(p);
-  }, [path]);
+  const refresh = useCallback(
+    async (p = path) => {
+      const r = await filesApi.list(ROOT, p);
+      setItems(r.items);
+      setPath(p);
+    },
+    [path],
+  );
 
   useEffect(() => {
     void refresh('.').catch((e: Error) => setError(e.message));
-    // initial only
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -31,7 +36,7 @@ export function useFiles() {
         await refresh(e.path);
         return;
       }
-      const r = await filesApi.read(e.path);
+      const r = await filesApi.read(ROOT, e.path);
       setEditPath(r.path);
       setContent(r.content);
     },
@@ -42,7 +47,7 @@ export function useFiles() {
     async (targetPath: string, body: string) => {
       setError(null);
       try {
-        await filesApi.write(targetPath, body);
+        await filesApi.write(ROOT, targetPath, body);
         setMsg(`Saved ${targetPath}`);
         await refresh(path);
       } catch (e) {
@@ -56,7 +61,7 @@ export function useFiles() {
   const mkdir = useCallback(async () => {
     const name = `folder-${Date.now()}`;
     const p = path === '.' ? name : `${path}/${name}`;
-    await filesApi.mkdir(p);
+    await filesApi.mkdir(ROOT, p);
     await refresh(path);
   }, [path, refresh]);
 

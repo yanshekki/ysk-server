@@ -15,7 +15,7 @@ describe('applyFail2ban', () => {
       expect(readFileSync(r.written[0], 'utf8')).toContain('[sshd]');
       expect(r.ok).toBe(false);
       expect(r.requiresExecute).toBe(true);
-      expect(r.notes.join(' ')).toMatch(/YSK_EXECUTE|root/i);
+      expect(r.notes.join(' ')).toMatch(/YSK_EXECUTE|root|系統變更|權限/i);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

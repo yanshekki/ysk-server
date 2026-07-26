@@ -41,6 +41,7 @@ export class ProjectService {
   async create(input: {
     name: string;
     domain?: string;
+    domainAliases?: string[];
     runtime: ProjectDto['runtime'];
     runtimeVersion?: string;
     env?: 'staging' | 'production';
@@ -88,7 +89,7 @@ export class ProjectService {
     let osProvision = {
       attempted: false,
       ok: false,
-      detail: 'OS user not provisioned (needs root + YSK_EXECUTE=1)',
+      detail: '尚未建立系統用戶（需要系統管理員權限）',
     };
 
     if (this.host.executeEnabled() && this.host.isRoot()) {
@@ -121,11 +122,13 @@ export class ProjectService {
       });
     }
 
+    const aliases = normalizeAliases(input.domainAliases, input.domain);
     const now = new Date().toISOString();
     const row: ProjectRow = {
       id,
       name: plan.project.name,
       domain: input.domain,
+      domain_aliases: aliases,
       linux_user: plan.project.linuxUser,
       linux_group: plan.project.linuxGroup,
       home_dir: homeDir,
@@ -135,6 +138,8 @@ export class ProjectService {
       status: osProvision.ok ? 'active' : 'active_pending_os',
       nginx_config_path: nginxPath,
       os_provisioned: osProvision.ok,
+      force_https: false,
+      hsts: false,
       created_at: now,
       updated_at: now,
     };
@@ -180,7 +185,7 @@ export class ProjectService {
         osProvision: {
           attempted: false,
           ok: false,
-          detail: 'OS user provision requires root + YSK_EXECUTE=1',
+          detail: '建立系統用戶需要系統管理員權限',
         },
         requiresExecute: !this.host.executeEnabled(),
         requiresRoot: !this.host.isRoot(),
@@ -314,6 +319,42 @@ export class ProjectService {
       ok: true,
     });
   }
+
+  /** Update network fields (domain, aliases, HTTPS flags). Does not publish nginx. */
+  updateNetwork(
+    id: string,
+    patch: {
+      domain?: string;
+      domainAliases?: string[];
+      forceHttps?: boolean;
+      hsts?: boolean;
+    },
+    actor: string,
+  ): ProjectDto {
+    const row = this.projects.findById(id);
+    if (!row) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `Project not found: ${id}`, { httpStatus: 404 });
+    }
+    const domain = patch.domain !== undefined ? patch.domain.trim() || undefined : row.domain;
+    const aliases =
+      patch.domainAliases !== undefined
+        ? normalizeAliases(patch.domainAliases, domain)
+        : (row.domain_aliases ?? []);
+    this.projects.updateMeta(id, {
+      domain,
+      domain_aliases: aliases,
+      force_https: patch.forceHttps !== undefined ? patch.forceHttps : row.force_https,
+      hsts: patch.hsts !== undefined ? patch.hsts : row.hsts,
+    });
+    this.audit?.append({
+      actor,
+      action: 'project.update_network',
+      resource: id,
+      detail: patch,
+      ok: true,
+    });
+    return this.get(id);
+  }
 }
 
 function toDto(row: ProjectRow): ProjectDto {
@@ -321,6 +362,7 @@ function toDto(row: ProjectRow): ProjectDto {
     id: row.id,
     name: row.name,
     domain: row.domain,
+    domainAliases: row.domain_aliases ?? [],
     linuxUser: row.linux_user,
     linuxGroup: row.linux_group,
     homeDir: row.home_dir,
@@ -332,6 +374,8 @@ function toDto(row: ProjectRow): ProjectDto {
     pid: row.pid,
     processStatus: row.process_status,
     nginxConfigPath: row.nginx_config_path,
+    forceHttps: Boolean(row.force_https),
+    hsts: Boolean(row.hsts),
     lastHealth: row.last_health,
     lastDeployAt: row.last_deploy_at,
     osProvisioned: row.os_provisioned,
@@ -348,3 +392,14 @@ function toDto(row: ProjectRow): ProjectDto {
 }
 
 export { deriveLinuxUser };
+
+function normalizeAliases(aliases: string[] | undefined, primary?: string): string[] {
+  const primaryNorm = (primary ?? '').trim().toLowerCase();
+  const out: string[] = [];
+  for (const a of aliases ?? []) {
+    const n = a.trim().toLowerCase();
+    if (!n || n === primaryNorm) continue;
+    if (!out.includes(n)) out.push(n);
+  }
+  return out;
+}
