@@ -17,6 +17,15 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { ftpApi, type SelectOption } from '../../features/ftp';
+import { api } from '../../shared/services/api';
+
+type SftpKey = {
+  id: string;
+  username: string;
+  comment?: string;
+  publicKey: string;
+  created_at: string;
+};
 
 export function FtpPage() {
   const crud = useResourceCrud('ftp/accounts');
@@ -29,6 +38,13 @@ export function FtpPage() {
   const [domain, setDomain] = useState('');
   const [domains, setDomains] = useState<SelectOption[]>([]);
   const [homes, setHomes] = useState<SelectOption[]>([]);
+  const [sftpKeys, setSftpKeys] = useState<SftpKey[]>([]);
+  const [keyUser, setKeyUser] = useState('');
+  const [keyPub, setKeyPub] = useState('');
+  const [keyComment, setKeyComment] = useState('');
+  const [keyBusy, setKeyBusy] = useState(false);
+  const [keyMsg, setKeyMsg] = useState<string | null>(null);
+  const [keyErr, setKeyErr] = useState<string | null>(null);
 
   const loadOptions = useCallback(async (user?: string) => {
     try {
@@ -43,9 +59,15 @@ export function FtpPage() {
     }
   }, []);
 
+  const refreshKeys = useCallback(async () => {
+    const r = await api.requestRaw<{ items: SftpKey[] }>('/api/v1/sftp/keys');
+    setSftpKeys(r.items ?? []);
+  }, []);
+
   useEffect(() => {
     void loadOptions();
-  }, [loadOptions]);
+    void refreshKeys().catch(() => undefined);
+  }, [loadOptions, refreshKeys]);
 
   useEffect(() => {
     if (!open) return;
@@ -102,8 +124,8 @@ export function FtpPage() {
       }
     >
       <SoftwareInstallBanner feature="ftp" title="尚未安裝 FTPS 服務軟件" />
-      {crud.error ? <Alert variant="error">{crud.error}</Alert> : null}
-      {crud.msg ? <Alert variant="ok">{crud.msg}</Alert> : null}
+      {crud.error || keyErr ? <Alert variant="error">{crud.error ?? keyErr}</Alert> : null}
+      {crud.msg || keyMsg ? <Alert variant="ok">{crud.msg ?? keyMsg}</Alert> : null}
       {crud.lastNotes?.length ? (
         <Alert variant="info">
           <ul className="list-plain">
@@ -286,6 +308,128 @@ export function FtpPage() {
           ) : null}
         </form>
       </Modal>
+
+      <Card>
+        <CardSection
+          title={`SFTP 公鑰 (${sftpKeys.length})`}
+          description="寫入 dataDir/ftps/ssh/<user>/authorized_keys；需系統 sshd Match 才真正生效"
+        >
+          <FormGrid>
+            <Field label="FTP 用戶名" htmlFor="sk-user" flush>
+              <input
+                id="sk-user"
+                value={keyUser}
+                onChange={(e) => setKeyUser(e.target.value)}
+                placeholder="與 FTP 帳戶相同"
+              />
+            </Field>
+            <Field label="備註" htmlFor="sk-cmt" flush>
+              <input
+                id="sk-cmt"
+                value={keyComment}
+                onChange={(e) => setKeyComment(e.target.value)}
+                placeholder="laptop"
+              />
+            </Field>
+          </FormGrid>
+          <Field label="SSH 公鑰（ssh-ed25519 / ssh-rsa …）" htmlFor="sk-pub" flush>
+            <textarea
+              id="sk-pub"
+              rows={3}
+              value={keyPub}
+              onChange={(e) => setKeyPub(e.target.value)}
+              placeholder="ssh-ed25519 AAAA… comment"
+            />
+          </Field>
+          <div className="btn-row u-mt-3">
+            <Button
+              variant="primary"
+              size="md"
+              loading={keyBusy}
+              onClick={() => {
+                setKeyBusy(true);
+                setKeyErr(null);
+                setKeyMsg(null);
+                void api
+                  .requestRaw<{ ok: boolean; notes?: string[] }>('/api/v1/sftp/keys', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      username: keyUser,
+                      publicKey: keyPub,
+                      comment: keyComment || undefined,
+                    }),
+                  })
+                  .then((r) => {
+                    setKeyMsg(r.notes?.join('；') ?? '已新增公鑰');
+                    setKeyPub('');
+                    setKeyComment('');
+                    return refreshKeys();
+                  })
+                  .catch((e: Error) => setKeyErr(e.message))
+                  .finally(() => setKeyBusy(false));
+              }}
+            >
+              新增公鑰
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={keyBusy}
+              onClick={() => void refreshKeys().catch((e: Error) => setKeyErr(e.message))}
+            >
+              重新整理
+            </Button>
+          </div>
+          {sftpKeys.length === 0 ? (
+            <EmptyState title="尚未有 SFTP 公鑰" description="為 FTP 用戶登錄 ssh 公鑰" />
+          ) : (
+            <div className="table-wrap u-mt-3">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>用戶</th>
+                    <th>備註</th>
+                    <th>金鑰</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {sftpKeys.map((k) => (
+                    <tr key={k.id}>
+                      <td>
+                        <strong>{k.username}</strong>
+                      </td>
+                      <td className="muted">{k.comment ?? '—'}</td>
+                      <td>
+                        <code className="inline u-break-all">
+                          {k.publicKey.slice(0, 48)}…
+                        </code>
+                      </td>
+                      <td>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          loading={keyBusy}
+                          onClick={() => {
+                            setKeyBusy(true);
+                            void api
+                              .requestRaw(`/api/v1/sftp/keys/${k.id}`, { method: 'DELETE' })
+                              .then(() => refreshKeys())
+                              .catch((e: Error) => setKeyErr(e.message))
+                              .finally(() => setKeyBusy(false));
+                          }}
+                        >
+                          刪除
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardSection>
+      </Card>
 
       <ConfirmDialog
         open={Boolean(delId)}

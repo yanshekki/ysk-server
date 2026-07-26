@@ -70,6 +70,7 @@ export async function backupAllProjects(input: {
   host: HostExecutor;
   dataDir: string;
   projects: Array<{ id: string; home_dir: string; name?: string }>;
+  excludes?: string[];
 }): Promise<{
   ok: boolean;
   results: Array<BackupResult & { projectId: string }>;
@@ -92,6 +93,7 @@ export async function backupAllProjects(input: {
         dataDir: input.dataDir,
         projectId: p.id,
         homeDir: p.home_dir,
+        excludes: input.excludes,
       });
       results.push({ projectId: p.id, ...r });
     } catch (e) {
@@ -129,6 +131,8 @@ export async function backupProject(input: {
   projectId: string;
   homeDir: string;
   extraSources?: string[];
+  /** tar --exclude patterns e.g. node_modules, .git */
+  excludes?: string[];
 }): Promise<BackupResult> {
   if (!existsSync(input.homeDir)) {
     throw new YskError(ErrorCodes.NOT_FOUND, `Project home missing: ${input.homeDir}`, {
@@ -140,9 +144,18 @@ export async function backupProject(input: {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const archivePath = join(destDir, `backup-${stamp}.tar.gz`);
   const sources = [input.homeDir, ...(input.extraSources ?? [])];
+  const excludeArgs = (input.excludes ?? []).flatMap((e) => ['--exclude', e]);
   // tar from parent with relative paths when possible
   const r = await input.host.runCommand(
-    ['tar', '-czf', archivePath, '-C', '/', ...sources.map((s) => s.replace(/^\//, ''))],
+    [
+      'tar',
+      '-czf',
+      archivePath,
+      ...excludeArgs,
+      '-C',
+      '/',
+      ...sources.map((s) => s.replace(/^\//, '')),
+    ],
     { timeoutMs: 120_000 },
   );
   if (r.exitCode !== 0) {

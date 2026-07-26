@@ -12,6 +12,8 @@ import {
   DescriptionList,
   EmptyState,
   FeaturePageLayout,
+  Field,
+  FormGrid,
   OpsResultPanel,
   SummaryStrip,
 } from '../../shared/components/ui';
@@ -25,6 +27,16 @@ type BackupItem = {
   path: string;
   bytes: number;
   mtime: string;
+};
+
+type RemoteSettings = {
+  enabled: boolean;
+  kind: 'sftp' | 'local';
+  host?: string;
+  port?: number;
+  username?: string;
+  path?: string;
+  password?: string;
 };
 
 function formatBytes(n?: number): string {
@@ -41,20 +53,82 @@ export function BackupsPage() {
   const [restoreTarget, setRestoreTarget] = useState<BackupItem | null>(null);
   const [restoreMode, setRestoreMode] = useState<'full' | 'web' | 'dry-run'>('full');
   const [deleteTarget, setDeleteTarget] = useState<BackupItem | null>(null);
+  const [remote, setRemote] = useState<RemoteSettings>({
+    enabled: false,
+    kind: 'sftp',
+    port: 22,
+    path: '/backups/ysk',
+  });
+  const [exclusionsText, setExclusionsText] = useState(
+    'node_modules\n.git\nvendor\n.cache',
+  );
+  const [settingsBusy, setSettingsBusy] = useState(false);
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
 
   const refresh = useCallback(async () => {
-    const r = await api.requestRaw<{
-      items: BackupItem[];
-      lastRun?: Record<string, unknown> | null;
-    }>('/api/v1/backups');
+    const [r, s] = await Promise.all([
+      api.requestRaw<{
+        items: BackupItem[];
+        lastRun?: Record<string, unknown> | null;
+      }>('/api/v1/backups'),
+      api.requestRaw<{ remote?: RemoteSettings; exclusions?: string[] }>(
+        '/api/v1/backups/settings',
+      ),
+    ]);
     setItems(r.items ?? []);
     setLastRun(r.lastRun ?? null);
+    if (s.remote) {
+      setRemote({
+        enabled: Boolean(s.remote.enabled),
+        kind: s.remote.kind === 'local' ? 'local' : 'sftp',
+        host: s.remote.host ?? '',
+        port: s.remote.port ?? 22,
+        username: s.remote.username ?? '',
+        path: s.remote.path ?? '/backups/ysk',
+        password: s.remote.password === '***' ? '' : (s.remote.password ?? ''),
+      });
+    }
+    if (s.exclusions?.length) {
+      setExclusionsText(s.exclusions.join('\n'));
+    }
   }, []);
 
   useEffect(() => {
     void refresh().catch((e: Error) => setError(e.message));
   }, [refresh]);
+
+  async function saveSettings() {
+    setSettingsBusy(true);
+    setError(null);
+    try {
+      const exclusions = exclusionsText
+        .split(/[\n,]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const body: { remote: RemoteSettings; exclusions: string[] } = {
+        remote: {
+          enabled: remote.enabled,
+          kind: remote.kind,
+          host: remote.host || undefined,
+          port: Number(remote.port) || 22,
+          username: remote.username || undefined,
+          path: remote.path || undefined,
+          ...(remote.password ? { password: remote.password } : {}),
+        },
+        exclusions,
+      };
+      await api.requestRaw('/api/v1/backups/settings', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      setMsg('已儲存備份設定');
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '儲存失敗');
+    } finally {
+      setSettingsBusy(false);
+    }
+  }
 
   const lastOk = lastRun?.ok;
   const projectCount = new Set(items.map((i) => i.projectId)).size;
@@ -96,6 +170,111 @@ export function BackupsPage() {
           },
         ]}
       />
+
+      <Card>
+        <CardSection
+          title="遠端目標 / 排除"
+          description="本地 tar 成功後可 scp 或複製到本機路徑；排除 globs 用於 tar"
+        >
+          <FormGrid>
+            <Field label="啟用遠端推送" htmlFor="bk-en" flush>
+              <select
+                id="bk-en"
+                value={remote.enabled ? 'yes' : 'no'}
+                onChange={(e) =>
+                  setRemote((r) => ({ ...r, enabled: e.target.value === 'yes' }))
+                }
+              >
+                <option value="no">否</option>
+                <option value="yes">是</option>
+              </select>
+            </Field>
+            <Field label="類型" htmlFor="bk-kind" flush>
+              <select
+                id="bk-kind"
+                value={remote.kind}
+                onChange={(e) =>
+                  setRemote((r) => ({
+                    ...r,
+                    kind: e.target.value === 'local' ? 'local' : 'sftp',
+                  }))
+                }
+              >
+                <option value="sftp">SFTP / scp</option>
+                <option value="local">本機路徑鏡像</option>
+              </select>
+            </Field>
+            {remote.kind === 'sftp' ? (
+              <>
+                <Field label="Host" htmlFor="bk-host" flush>
+                  <input
+                    id="bk-host"
+                    value={remote.host ?? ''}
+                    onChange={(e) => setRemote((r) => ({ ...r, host: e.target.value }))}
+                    placeholder="backup.example.com"
+                  />
+                </Field>
+                <Field label="Port" htmlFor="bk-port" flush>
+                  <input
+                    id="bk-port"
+                    value={String(remote.port ?? 22)}
+                    onChange={(e) =>
+                      setRemote((r) => ({ ...r, port: Number(e.target.value) || 22 }))
+                    }
+                  />
+                </Field>
+                <Field label="Username" htmlFor="bk-user" flush>
+                  <input
+                    id="bk-user"
+                    value={remote.username ?? ''}
+                    onChange={(e) => setRemote((r) => ({ ...r, username: e.target.value }))}
+                  />
+                </Field>
+                <Field label="密碼（可選；留空用 SSH key）" htmlFor="bk-pass" flush>
+                  <input
+                    id="bk-pass"
+                    type="password"
+                    value={remote.password ?? ''}
+                    onChange={(e) => setRemote((r) => ({ ...r, password: e.target.value }))}
+                    placeholder="已儲存則留空"
+                  />
+                </Field>
+              </>
+            ) : null}
+            <Field
+              label={remote.kind === 'local' ? '本機鏡像路徑' : '遠端路徑'}
+              htmlFor="bk-path"
+              flush
+            >
+              <input
+                id="bk-path"
+                value={remote.path ?? ''}
+                onChange={(e) => setRemote((r) => ({ ...r, path: e.target.value }))}
+                placeholder="/backups/ysk"
+              />
+            </Field>
+          </FormGrid>
+          <Field label="排除（每行一個）" htmlFor="bk-ex" flush>
+            <textarea
+              id="bk-ex"
+              rows={4}
+              value={exclusionsText}
+              onChange={(e) => setExclusionsText(e.target.value)}
+              placeholder="node_modules"
+            />
+          </Field>
+          <div className="btn-row u-mt-3">
+            <Button
+              variant="primary"
+              size="md"
+              loading={settingsBusy}
+              onClick={() => void saveSettings()}
+            >
+              儲存設定
+            </Button>
+          </div>
+        </CardSection>
+      </Card>
 
       <Card>
         <CardSection title="操作" description="全部成功才算 ok；部分失敗會顯示失敗">

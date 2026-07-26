@@ -69,6 +69,14 @@ export function validatePemBundle(fullchain: string, privkey: string): void {
 
 export function normalizeDomain(domain: string): string {
   const d = domain.trim().toLowerCase().replace(/\.$/, '');
+  // Allow single-label wildcard: *.example.com
+  if (d.startsWith('*.')) {
+    const base = d.slice(2);
+    if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(base) || base.length < 3 || base.includes('..')) {
+      throw new YskError(ErrorCodes.VALIDATION, 'Invalid wildcard domain', { httpStatus: 400 });
+    }
+    return d;
+  }
   if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(d) || d.length < 3 || d.includes('..')) {
     throw new YskError(ErrorCodes.VALIDATION, 'Invalid domain', { httpStatus: 400 });
   }

@@ -65,17 +65,17 @@
 
 ### Wave 3 — 平台級（P2）
 
-| # | ID | 項 |
-|---|-----|-----|
-| 3.1 | Q1–Q3 | Users + Packages + impersonate |
-| 3.2 | L6 | 遠端備份 SFTP/S3 |
-| 3.3 | L5/L7 | 排除清單 + 增量（restic 類） |
-| 3.4 | C6/C7 | DNSSEC · cluster |
-| 3.5 | B21/B9 | 一鍵 App / 多 IP |
-| 3.6 | J4/J5 | Composer/WP-CLI · PHP modules |
-| 3.7 | T2/T3/T7/T8 | Panel SSL/port · IP · 全域搜尋 · rebuild |
-| 3.8 | H6 | SFTP keys |
-| 3.9 | D3/D6 | Wildcard LE · panel hostname cert |
+| # | ID | 項 | Status |
+|---|-----|-----|--------|
+| 3.1 | Q1–Q3 | Users + Packages + impersonate | **done** |
+| 3.2 | L6 | 遠端備份 SFTP / 本機鏡像 | **done** (S3 後做) |
+| 3.3 | L5/L7 | 排除清單 + 增量 | **done** exclusions；增量 restic 後做 |
+| 3.4 | C6/C7 | DNSSEC · cluster | **done** DNSSEC keys；cluster 後做 |
+| 3.5 | B21/B9 | 一鍵 App / 多 IP | partial（host IP 列表） |
+| 3.6 | J4/J5 | Composer/WP-CLI · PHP modules | **done** probe |
+| 3.7 | T2/T3/T7/T8 | Panel SSL · IP · 全域搜尋 · rebuild | **done** SSL deep-link + IP + search；rebuild 後做 |
+| 3.8 | H6 | SFTP keys | **done** |
+| 3.9 | D3/D6 | Wildcard LE · panel hostname cert | **done** |
 
 ### Wave 4 — 差異化加深
 

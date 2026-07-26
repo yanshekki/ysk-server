@@ -197,6 +197,236 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, { user });
       }
 
+      // —— Users & packages (admin) ——
+      if (method === 'GET' && url.pathname === '/api/v1/users') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: 'admin only' });
+        }
+        return sendJson(res, 200, { items: ctx.usersAdmin.listUsers() });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/users') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: 'admin only' });
+        }
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          username?: string;
+          password?: string;
+          roles?: Array<'admin' | 'operator' | 'viewer' | 'agent'>;
+          packageId?: string;
+        };
+        const created = ctx.usersAdmin.createUser({
+          username: data.username ?? '',
+          password: data.password ?? '',
+          roles: data.roles,
+          packageId: data.packageId,
+          actor: user.username,
+        });
+        return sendJson(res, 201, { user: created });
+      }
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/users\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: 'admin only' });
+        }
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          roles?: Array<'admin' | 'operator' | 'viewer' | 'agent'>;
+          packageId?: string | null;
+          suspended?: boolean;
+          password?: string;
+        };
+        const updated = ctx.usersAdmin.updateUser(id, data, user.username);
+        return sendJson(res, 200, { user: updated });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/users\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: 'admin only' });
+        }
+        const id = url.pathname.split('/')[4];
+        const ok = ctx.usersAdmin.deleteUser(id, user.username);
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/users\/[^/]+\/impersonate$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = ctx.usersAdmin.impersonate(id, {
+          id: user.id,
+          username: user.username,
+          roles: user.roles,
+        });
+        return sendJson(res, 200, result);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/packages') {
+        ctx.auth.authenticate(getBearer(req));
+        return sendJson(res, 200, { items: ctx.usersAdmin.listPackages() });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/packages') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: 'admin only' });
+        }
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          maxProjects?: number;
+          maxMailboxes?: number;
+          maxDatabases?: number;
+          diskMb?: number;
+          bandwidthMb?: number;
+          allowSsh?: boolean;
+          allowFtp?: boolean;
+          notes?: string;
+        };
+        const pkg = ctx.usersAdmin.createPackage(
+          {
+            name: data.name ?? '',
+            maxProjects: data.maxProjects,
+            maxMailboxes: data.maxMailboxes,
+            maxDatabases: data.maxDatabases,
+            diskMb: data.diskMb,
+            bandwidthMb: data.bandwidthMb,
+            allowSsh: data.allowSsh,
+            allowFtp: data.allowFtp,
+            notes: data.notes,
+          },
+          user.username,
+        );
+        return sendJson(res, 201, { package: pkg });
+      }
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/packages\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: 'admin only' });
+        }
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+        const pkg = ctx.usersAdmin.updatePackage(
+          id,
+          {
+            name: data.name as string | undefined,
+            max_projects: data.max_projects as number | undefined,
+            max_mailboxes: data.max_mailboxes as number | undefined,
+            max_databases: data.max_databases as number | undefined,
+            disk_mb: data.disk_mb as number | undefined,
+            bandwidth_mb: data.bandwidth_mb as number | undefined,
+            allow_ssh: data.allow_ssh as boolean | undefined,
+            allow_ftp: data.allow_ftp as boolean | undefined,
+            notes: data.notes as string | undefined,
+          },
+          user.username,
+        );
+        return sendJson(res, 200, { package: pkg });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/packages\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: 'admin only' });
+        }
+        const id = url.pathname.split('/')[4];
+        const ok = ctx.usersAdmin.deletePackage(id, user.username);
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/search') {
+        ctx.auth.authenticate(getBearer(req));
+        const q = url.searchParams.get('q') ?? '';
+        const { globalSearch } = await import('@ysk/core');
+        return sendJson(res, 200, { items: globalSearch(ctx.db, q) });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/system/ips') {
+        ctx.auth.authenticate(getBearer(req));
+        const r = await ctx.host.runCommand(
+          ['bash', '-c', "hostname -I 2>/dev/null || ip -4 -o addr show | awk '{print $4}'"],
+          { timeoutMs: 5_000 },
+        );
+        const ips = (r.stdout || '')
+          .split(/\s+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        return sendJson(res, 200, { items: ips });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/runtimes/tools') {
+        ctx.auth.authenticate(getBearer(req));
+        const { probeRuntimeTools } = await import('@ysk/core');
+        return sendJson(res, 200, await probeRuntimeTools(ctx.host));
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const zone = decodeURIComponent(url.pathname.split('/')[5] ?? '');
+        const { generateDnssecKeys } = await import('@ysk/core');
+        const r = await generateDnssecKeys({
+          dataDir: ctx.dataDir,
+          zone,
+          host: ctx.host,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.dnssec.generate',
+          resource: zone,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const zone = decodeURIComponent(url.pathname.split('/')[5] ?? '');
+        const { listDnssecMaterial } = await import('@ysk/core');
+        return sendJson(res, 200, listDnssecMaterial(ctx.dataDir, zone));
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/sftp/keys') {
+        ctx.auth.authenticate(getBearer(req));
+        const username = url.searchParams.get('username') ?? undefined;
+        const { listSftpKeys } = await import('@ysk/core');
+        return sendJson(res, 200, { items: listSftpKeys(ctx.db, username || undefined) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/sftp/keys') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          username?: string;
+          publicKey?: string;
+          comment?: string;
+        };
+        const { addSftpKey } = await import('@ysk/core');
+        const r = addSftpKey(ctx.db, ctx.dataDir, {
+          username: data.username ?? '',
+          publicKey: data.publicKey ?? '',
+          comment: data.comment,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'sftp.key.add',
+          detail: { username: data.username, ok: r.ok },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 201 : 422, r);
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/sftp\/keys\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { removeSftpKey } = await import('@ysk/core');
+        const r = removeSftpKey(ctx.db, ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'sftp.key.remove',
+          resource: id,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 404, r);
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/auth/totp') {
         const user = ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, ctx.auth.totpStatus(user.id));
@@ -1371,6 +1601,8 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/backups/run-all') {
         const user = ctx.auth.authenticate(getBearer(req));
         const projects = ctx.db.snapshot.projects;
+        const { getBackupExclusions, pushBackupRemote } = await import('@ysk/core');
+        const excludes = getBackupExclusions(ctx.db);
         const r = await backupAllProjects({
           host: ctx.host,
           dataDir: ctx.dataDir,
@@ -1379,7 +1611,11 @@ export function createHttpServer(ctx: AppContext): Server {
             home_dir: p.home_dir,
             name: p.name,
           })),
+          excludes: excludes.length
+            ? excludes
+            : ['node_modules', '.git', 'vendor', '.cache'],
         });
+        const remoteNotes: string[] = [];
         for (const item of r.results) {
           if (item.ok && item.archivePath) {
             const p = projects.find((x) => x.id === item.projectId);
@@ -1388,17 +1624,68 @@ export function createHttpServer(ctx: AppContext): Server {
               p.last_backup_at = new Date().toISOString();
               p.updated_at = new Date().toISOString();
             }
+            try {
+              const push = await pushBackupRemote({
+                host: ctx.host,
+                db: ctx.db,
+                localArchivePath: item.archivePath,
+              });
+              remoteNotes.push(...push.notes.map((n) => `[${item.projectId.slice(0, 8)}] ${n}`));
+            } catch {
+              /* ignore remote push errors per project */
+            }
           }
         }
         ctx.db.persist();
-        ctx.settings.setJson('last_backup_run', { at: new Date().toISOString(), ...r });
+        const payload = {
+          at: new Date().toISOString(),
+          ...r,
+          notes: [...r.notes, ...remoteNotes.slice(0, 20)],
+        };
+        ctx.settings.setJson('last_backup_run', payload);
         ctx.audit.append({
           actor: user.username,
           action: 'backup.run_all',
-          detail: r,
+          detail: payload,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendJson(res, r.ok ? 200 : 422, payload);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/backups/settings') {
+        ctx.auth.authenticate(getBearer(req));
+        const { getBackupRemotePublic, getBackupExclusions } = await import('@ysk/core');
+        return sendJson(res, 200, {
+          remote: getBackupRemotePublic(ctx.db),
+          exclusions: getBackupExclusions(ctx.db),
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/settings') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          remote?: Record<string, unknown>;
+          exclusions?: string[];
+        };
+        const {
+          setBackupRemote,
+          setBackupExclusions,
+          getBackupRemotePublic,
+          getBackupExclusions,
+        } = await import('@ysk/core');
+        if (data.remote) setBackupRemote(ctx.db, data.remote as never);
+        if (data.exclusions) setBackupExclusions(ctx.db, data.exclusions);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.settings',
+          detail: { hasRemote: Boolean(data.remote), exclusions: data.exclusions?.length },
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          remote: getBackupRemotePublic(ctx.db),
+          exclusions: getBackupExclusions(ctx.db),
+        });
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/restore') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -1935,21 +2222,6 @@ export function createHttpServer(ctx: AppContext): Server {
           ok: result.ok,
         });
         return sendJson(res, 200, result);
-      }
-
-      // users list (RBAC admin view)
-      if (method === 'GET' && url.pathname === '/api/v1/users') {
-        const user = ctx.auth.authenticate(getBearer(req));
-        if (!user.roles.includes('admin')) {
-          return sendJson(res, 403, { ok: false, code: 'YSK_FORBIDDEN', message: 'admin only' });
-        }
-        const users = ctx.db.snapshot.users.map((u) => ({
-          id: u.id,
-          username: u.username,
-          roles: u.roles,
-          locale: u.locale,
-        }));
-        return sendJson(res, 200, { items: users });
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/hosting/db/redis-provision') {

@@ -76,6 +76,9 @@ export class AuthService {
       });
       throw new YskError(ErrorCodes.UNAUTHORIZED, 'Invalid credentials', { httpStatus: 401 });
     }
+    if (user.suspended) {
+      throw new YskError(ErrorCodes.FORBIDDEN, '帳戶已暫停', { httpStatus: 403 });
+    }
     if (user.totp_enabled && user.totp_secret) {
       if (!req.totp || !verifyTotp(user.totp_secret, req.totp)) {
         this.audit?.append({

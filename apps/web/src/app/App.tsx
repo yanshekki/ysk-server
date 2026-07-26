@@ -38,6 +38,7 @@ import { PublicFilesPage } from '../pages/features/PublicFilesPage';
 import { CronPage } from '../pages/features/CronPage';
 import { BackupsPage } from '../pages/features/BackupsPage';
 import { MetricsPage } from '../pages/features/MetricsPage';
+import { UsersPage } from '../pages/UsersPage';
 
 /**
  * Each major capability has its own route/page.
@@ -66,6 +67,7 @@ export function App() {
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/:id" element={<ProjectDetailPage />} />
           <Route path="security" element={<SecurityPage />} />
+          <Route path="users" element={<UsersPage />} />
           <Route path="email" element={<EmailPage />} />
           <Route path="email/domains/:id" element={<EmailDomainPage />} />
           <Route path="files" element={<FilesPage />} />

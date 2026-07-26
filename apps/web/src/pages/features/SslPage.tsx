@@ -295,7 +295,13 @@ export function SslPage() {
         <form id="ssl-le" onSubmit={(e) => void onLe(e)}>
           <FormGrid>
             <Field label="Domain" htmlFor="ld">
-              <input id="ld" value={domain} onChange={(e) => setDomain(e.target.value)} required />
+              <input
+                id="ld"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                required
+                placeholder="example.com 或 *.example.com"
+              />
             </Field>
             <Field label="Email" htmlFor="le">
               <input
@@ -306,6 +312,16 @@ export function SslPage() {
               />
             </Field>
           </FormGrid>
+          {domain.trim().startsWith('*.') ? (
+            <p className="muted u-text-sm u-mt-3">
+              Wildcard 使用 dns-01：面板會啟動 certbot manual challenge，需於 DNS
+              提供商完成 TXT；executed ≠ 已上線。
+            </p>
+          ) : (
+            <p className="muted u-text-sm u-mt-3">
+              一般域名用 http-01（nginx plugin）。面板 hostname 可從系統工具頁 deep link。
+            </p>
+          )}
         </form>
       </Modal>
 

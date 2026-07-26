@@ -9,6 +9,7 @@ import {
   ApprovalRepository,
   AuditRepository,
   AuthService,
+  UsersAdminService,
   LocalHostExecutor,
   LlmGateway,
   ProjectRepository,
@@ -41,6 +42,7 @@ import {
 export interface AppContext {
   db: YskDatabase;
   auth: AuthService;
+  usersAdmin: UsersAdminService;
   allowlist: Allowlist;
   approvals: ApprovalQueue;
   agents: AgentComms;
@@ -102,6 +104,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   const settings = new SettingsRepository(db);
 
   const auth = new AuthService(users, sessions, audit);
+  const usersAdmin = new UsersAdminService(users, sessions, db, audit);
   const adminUsername = opts.config?.adminUsername ?? 'admin';
   const locale = opts.config?.locale ?? 'zh-TW';
   const password = opts.adminPassword ?? process.env.YSK_ADMIN_PASSWORD ?? 'admin';
@@ -128,6 +131,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   const ctx: AppContext = {
     db,
     auth,
+    usersAdmin,
     allowlist,
     approvals,
     agents: new AgentComms(),

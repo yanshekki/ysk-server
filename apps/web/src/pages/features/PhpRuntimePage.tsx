@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
+  Badge,
   Button,
   Card,
   CardSection,
@@ -20,6 +21,14 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { api } from '../../shared/services/api';
+
+type ToolsProbe = {
+  php?: { version?: string; modules: string[] };
+  composer?: { available: boolean; version?: string };
+  wpCli?: { available: boolean; version?: string };
+  notes?: string[];
+};
 
 export function PhpRuntimePage() {
   const ctx = getServerContext();
@@ -28,11 +37,17 @@ export function PhpRuntimePage() {
   const [version, setVersion] = useState('8.2');
   const [enableSite, setEnableSite] = useState(false);
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
+  const [tools, setTools] = useState<ToolsProbe | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
     try {
       setProbe((await systemApi.runtimes()) as Record<string, unknown>);
+    } catch {
+      /* optional */
+    }
+    try {
+      setTools(await api.requestRaw<ToolsProbe>('/api/v1/runtimes/tools'));
     } catch {
       /* optional */
     }
@@ -97,6 +112,83 @@ export function PhpRuntimePage() {
           </CardSection>
         </Card>
       ) : null}
+
+      <Card>
+        <CardSection
+          title="Composer / WP-CLI / 模組"
+          description="即時探測 PATH 上工具與 php -m（唯讀）"
+        >
+          <div className="btn-row u-mb-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={busy}
+              onClick={() =>
+                void run(async () => {
+                  const t = await api.requestRaw<ToolsProbe>('/api/v1/runtimes/tools');
+                  setTools(t);
+                  return {
+                    ok: true,
+                    notes: t.notes ?? ['已探測工具'],
+                  } as OpsResultLike;
+                }, '已探測工具')
+              }
+            >
+              重新探測工具
+            </Button>
+          </div>
+          {tools ? (
+            <>
+              <DescriptionList
+                columns={2}
+                items={[
+                  {
+                    label: 'PHP',
+                    value: tools.php?.version ?? '未找到',
+                  },
+                  {
+                    label: 'Composer',
+                    value: tools.composer?.available ? (
+                      <Badge tone="ok">{tools.composer.version ?? '可用'}</Badge>
+                    ) : (
+                      <Badge tone="warn">不可用</Badge>
+                    ),
+                  },
+                  {
+                    label: 'WP-CLI',
+                    value: tools.wpCli?.available ? (
+                      <Badge tone="ok">{tools.wpCli.version ?? '可用'}</Badge>
+                    ) : (
+                      <Badge tone="warn">不可用</Badge>
+                    ),
+                  },
+                  {
+                    label: '模組數',
+                    value: String(tools.php?.modules?.length ?? 0),
+                  },
+                ]}
+              />
+              {tools.php?.modules?.length ? (
+                <p className="muted u-text-sm u-mt-3 u-break-all">
+                  {tools.php.modules.slice(0, 40).join(', ')}
+                  {tools.php.modules.length > 40 ? '…' : ''}
+                </p>
+              ) : null}
+              {tools.notes?.length ? (
+                <ul className="list-plain u-mt-2">
+                  {tools.notes.map((n) => (
+                    <li key={n} className="muted u-text-sm">
+                      {n}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </>
+          ) : (
+            <p className="muted">按「重新探測工具」載入</p>
+          )}
+        </CardSection>
+      </Card>
 
       <Card>
         <CardSection title="安裝 PHP" description="需系統變更權限">

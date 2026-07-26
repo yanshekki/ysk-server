@@ -38,5 +38,10 @@ export * from './service-catalog/index.js';
 export * from './service-console.js';
 export * from './service-matrix.js';
 export * from './db-dump.js';
+export * from './backup-remote.js';
+export * from './dnssec.js';
+export * from './global-search.js';
+export * from './sftp-keys.js';
+export * from './runtime-tools.js';
 
 

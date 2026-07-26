@@ -70,6 +70,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
     sectionKey: 'security',
     items: [
       { to: '/security', key: 'security', icon: '⛨' },
+      { to: '/users', key: 'users', icon: '👤' },
       { to: '/firewall', key: 'firewall', icon: '🔥' },
       { to: '/fail2ban', key: 'fail2ban', icon: '🛡' },
     ],

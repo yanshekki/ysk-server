@@ -15,10 +15,33 @@ export interface StoreUser {
   password_salt: string;
   roles: SystemRole[];
   locale: string;
+  /** Package template id */
+  package_id?: string;
+  /** Suspended panel user */
+  suspended?: boolean;
   /** Base32 TOTP secret when 2FA enrolled */
   totp_secret?: string;
   /** true only after user confirms a valid code */
   totp_enabled?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Hosting package quotas (Hestia/DA style) */
+export interface StorePackage {
+  id: string;
+  name: string;
+  /** max projects / sites */
+  max_projects: number;
+  max_mailboxes: number;
+  max_databases: number;
+  /** disk MiB, 0 = unlimited */
+  disk_mb: number;
+  /** bandwidth MiB/month, 0 = unlimited */
+  bandwidth_mb: number;
+  allow_ssh: boolean;
+  allow_ftp: boolean;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -108,6 +131,7 @@ export interface StoreAudit {
 export interface StoreData {
   version: number;
   users: StoreUser[];
+  packages: StorePackage[];
   sessions: StoreSession[];
   projects: StoreProject[];
   approvals: StoreApproval[];
@@ -142,11 +166,26 @@ export interface StoreData {
   file_favorites: Array<Record<string, unknown>>;
   /** Panel API access keys (token hash) */
   api_keys: Array<Record<string, unknown>>;
+  /** Remote backup destination settings */
+  backup_remote?: {
+    enabled: boolean;
+    kind: 'sftp' | 'local';
+    host?: string;
+    port?: number;
+    username?: string;
+    /** path on remote or local extra mirror */
+    path?: string;
+    /** not ideal — store for MVP panel ops; prefer key later */
+    password?: string;
+  };
+  /** Global backup exclusion globs */
+  backup_exclusions?: string[];
 }
 
 const EMPTY: StoreData = {
   version: 3,
   users: [],
+  packages: [],
   sessions: [],
   projects: [],
   approvals: [],
@@ -188,8 +227,10 @@ export class JsonStore {
       this.data = { ...EMPTY, ...JSON.parse(readFileSync(path, 'utf8')) };
       // ensure arrays / maps
       this.data.users = this.data.users ?? [];
+      this.data.packages = this.data.packages ?? [];
       this.data.sessions = this.data.sessions ?? [];
       this.data.projects = this.data.projects ?? [];
+      this.data.backup_exclusions = this.data.backup_exclusions ?? [];
       this.data.approvals = this.data.approvals ?? [];
       this.data.audit_events = this.data.audit_events ?? [];
       this.data.settings = this.data.settings ?? {};

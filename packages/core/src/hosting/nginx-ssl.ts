@@ -295,15 +295,26 @@ export function planLetsEncrypt(plan: SslCertPlan): { commands: string[]; notes:
       notes: ['User-uploaded certificate path; place files under /etc/ysk-server/certs'],
     };
   }
-  const challenge =
-    plan.challenge === 'dns-01'
-      ? `certbot certonly --manual --preferred-challenges dns -d ${plan.domain} --email ${plan.email} --agree-tos --non-interactive`
-      : `certbot --nginx -d ${plan.domain} --email ${plan.email} --agree-tos --non-interactive --redirect`;
+  const isWildcard = plan.domain.startsWith('*.');
+  const useDns01 = plan.challenge === 'dns-01' || isWildcard;
+  // Wildcard requires dns-01; include apex + wildcard when operator requests *.example.com
+  const names = isWildcard
+    ? [`-d ${plan.domain.slice(2)} -d ${plan.domain}`]
+    : [`-d ${plan.domain}`];
+  const challenge = useDns01
+    ? `certbot certonly --manual --preferred-challenges dns ${names.join(' ')} --email ${plan.email} --agree-tos --non-interactive`
+    : `certbot --nginx -d ${plan.domain} --email ${plan.email} --agree-tos --non-interactive --redirect`;
   return {
-    commands: [challenge, 'systemctl reload nginx'],
-    notes: [
-      'Requires root and port 80/443 reachable for http-01',
-      'Renewal via certbot.timer',
-    ],
+    commands: useDns01 ? [challenge] : [challenge, 'systemctl reload nginx'],
+    notes: useDns01
+      ? [
+          'Wildcard／dns-01：certbot 需手動 TXT；面板會啟動流程但 DS/TXT 需於 DNS 提供商完成',
+          '狀態：executed ≠ 已上線，直到 certbot 完成且 reload',
+          'Renewal via certbot.timer（dns-01 續期需自動化插件）',
+        ]
+      : [
+          'Requires root and port 80/443 reachable for http-01',
+          'Renewal via certbot.timer',
+        ],
   };
 }

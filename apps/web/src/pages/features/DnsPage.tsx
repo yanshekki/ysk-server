@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Alert,
+  Button,
   Card,
   CardSection,
   ConfirmDialog,
@@ -16,6 +17,7 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
+import { api } from '../../shared/services/api';
 
 const ZONE_TEMPLATES = [
   { id: 'minimal', label: '最小 — 僅 apex A' },
@@ -44,12 +46,50 @@ export function DnsPage() {
   const [rname, setRname] = useState('@');
   const [rvalue, setRvalue] = useState('');
   const [rttl, setRttl] = useState('300');
+  const [dnssecBusy, setDnssecBusy] = useState(false);
+  const [dnssecMsg, setDnssecMsg] = useState<string | null>(null);
+  const [dnssecNotes, setDnssecNotes] = useState<string[]>([]);
+  const [dnssecDs, setDnssecDs] = useState<string | null>(null);
 
   // Keep selected zone row in sync after apply/refresh
   const selectedLive = useMemo(() => {
     if (!selectedZone) return null;
     return zones.items.find((z) => z.id === selectedZone.id) ?? selectedZone;
   }, [zones.items, selectedZone]);
+
+  async function onDnssec(zoneName: string) {
+    setDnssecBusy(true);
+    setDnssecMsg(null);
+    setDnssecDs(null);
+    setDnssecNotes([]);
+    try {
+      const r = await api.requestRaw<{
+        ok: boolean;
+        notes?: string[];
+        dsRecord?: string;
+        publicKey?: string;
+        files?: string[];
+      }>(`/api/v1/dns/zones/${encodeURIComponent(zoneName)}/dnssec`, {
+        method: 'POST',
+        body: '{}',
+      });
+      setDnssecNotes(r.notes ?? []);
+      setDnssecDs(r.dsRecord ?? null);
+      setDnssecMsg(
+        r.ok
+          ? '已產生 DNSSEC 金鑰（written ≠ 已簽署／已上線）'
+          : 'DNSSEC 產生未完成',
+      );
+      const listed = await api.requestRaw<{ files?: string[]; notes?: string[] }>(
+        `/api/v1/dns/zones/${encodeURIComponent(zoneName)}/dnssec`,
+      );
+      if (listed.notes?.length) setDnssecNotes((n) => [...n, ...listed.notes!]);
+    } catch (e) {
+      setDnssecMsg(e instanceof Error ? e.message : 'DNSSEC 失敗');
+    } finally {
+      setDnssecBusy(false);
+    }
+  }
 
   async function onCreateZone(e: FormEvent) {
     e.preventDefault();
@@ -102,6 +142,26 @@ export function DnsPage() {
           <button type="button" className="btn btn--ghost btn--sm" onClick={() => zones.setMsg(null)}>
             關閉
           </button>
+        </Alert>
+      ) : null}
+      {dnssecMsg ? (
+        <Alert variant={dnssecMsg.includes('失敗') || dnssecMsg.includes('未完成') ? 'error' : 'ok'}>
+          {dnssecMsg}
+          {dnssecDs ? (
+            <p className="u-mt-2">
+              DS（供 registrar，未自動發佈）：
+              <code className="inline u-break-all">{dnssecDs}</code>
+            </p>
+          ) : null}
+          {dnssecNotes.length ? (
+            <ul className="list-plain u-mt-2">
+              {dnssecNotes.map((n) => (
+                <li key={n} className="muted u-text-sm">
+                  {n}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </Alert>
       ) : null}
       {zones.lastNotes.length > 0 ? (
@@ -232,6 +292,15 @@ export function DnsPage() {
                   >
                     申請本 zone SSL
                   </Link>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={dnssecBusy}
+                    onClick={() => void onDnssec(String(selectedLive.zone))}
+                    title="產生 DNSSEC 金鑰到 dataDir；唔會自動簽署 zone 或上線"
+                  >
+                    產生 DNSSEC 金鑰
+                  </Button>
                 </div>
                 <ResourceTable
                   columns={[

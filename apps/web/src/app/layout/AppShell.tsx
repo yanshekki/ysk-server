@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../shared/hooks/useAuth';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
+import { api } from '../../shared/services/api';
 
 /** All nav paths — used so /ftp does not stay active on /ftp/service */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
@@ -30,10 +31,30 @@ export function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [searchQ, setSearchQ] = useState('');
+  const [searchHits, setSearchHits] = useState<
+    Array<{ kind: string; title: string; subtitle?: string; href: string }>
+  >([]);
 
   async function onLogout() {
     await logout();
     navigate('/login', { replace: true });
+  }
+
+  async function onSearch(q: string) {
+    setSearchQ(q);
+    if (q.trim().length < 1) {
+      setSearchHits([]);
+      return;
+    }
+    try {
+      const r = await api.requestRaw<{
+        items: Array<{ kind: string; title: string; subtitle?: string; href: string }>;
+      }>(`/api/v1/search?q=${encodeURIComponent(q.trim())}`);
+      setSearchHits(r.items ?? []);
+    } catch {
+      setSearchHits([]);
+    }
   }
 
   function cycleLang() {
@@ -97,6 +118,54 @@ export function AppShell() {
           >
             ☰
           </button>
+          <div className="shell__search" style={{ position: 'relative', flex: '1 1 12rem', maxWidth: 320 }}>
+            <input
+              type="search"
+              placeholder="全域搜尋…"
+              value={searchQ}
+              onChange={(e) => void onSearch(e.target.value)}
+              aria-label="全域搜尋"
+              style={{ width: '100%' }}
+            />
+            {searchHits.length > 0 ? (
+              <div
+                className="card"
+                style={{
+                  position: 'absolute',
+                  zIndex: 50,
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: 4,
+                  maxHeight: 280,
+                  overflow: 'auto',
+                }}
+              >
+                <ul className="list-plain" style={{ margin: 0, padding: '0.5rem' }}>
+                  {searchHits.map((h, i) => (
+                    <li key={`${h.kind}-${h.href}-${i}`}>
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm"
+                        style={{ width: '100%', justifyContent: 'flex-start' }}
+                        onClick={() => {
+                          setSearchHits([]);
+                          setSearchQ('');
+                          navigate(h.href);
+                        }}
+                      >
+                        <span className="badge">{h.kind}</span>{' '}
+                        {h.title}
+                        {h.subtitle ? (
+                          <span className="muted u-text-sm"> · {h.subtitle}</span>
+                        ) : null}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
           <button type="button" className="btn btn--ghost btn--sm" onClick={cycleLang}>
             {i18n.language}
           </button>

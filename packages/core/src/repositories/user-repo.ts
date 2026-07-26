@@ -23,8 +23,42 @@ export class UserRepository {
     this.db.persist();
   }
 
+  list(): UserRow[] {
+    return this.db.snapshot.users.map((u) => ({ ...u }));
+  }
+
   count(): number {
     return this.db.snapshot.users.length;
+  }
+
+  update(
+    id: string,
+    patch: Partial<
+      Pick<
+        UserRow,
+        'username' | 'roles' | 'locale' | 'package_id' | 'suspended' | 'password_hash' | 'password_salt'
+      >
+    >,
+  ): UserRow | undefined {
+    const u = this.db.snapshot.users.find((x) => x.id === id);
+    if (!u) return undefined;
+    if (patch.username !== undefined) u.username = patch.username;
+    if (patch.roles !== undefined) u.roles = [...patch.roles] as SystemRole[];
+    if (patch.locale !== undefined) u.locale = patch.locale;
+    if ('package_id' in patch) u.package_id = patch.package_id;
+    if (patch.suspended !== undefined) u.suspended = patch.suspended;
+    if (patch.password_hash !== undefined) u.password_hash = patch.password_hash;
+    if (patch.password_salt !== undefined) u.password_salt = patch.password_salt;
+    u.updated_at = new Date().toISOString();
+    this.db.persist();
+    return { ...u };
+  }
+
+  delete(id: string): boolean {
+    const before = this.db.snapshot.users.length;
+    this.db.snapshot.users = this.db.snapshot.users.filter((u) => u.id !== id);
+    this.db.persist();
+    return this.db.snapshot.users.length < before;
   }
 
   updateTotp(

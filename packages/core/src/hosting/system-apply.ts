@@ -258,12 +258,18 @@ export async function applyLetsEncrypt(input: {
   host: HostExecutor;
   /** Default true — panel always tries to run */
   run?: boolean;
+  /** Force dns-01 (auto when domain is wildcard) */
+  challenge?: 'http-01' | 'dns-01';
 }): Promise<ApplyResult> {
+  const domain = input.domain.trim().toLowerCase();
+  const isWildcard = domain.startsWith('*.');
+  const challenge =
+    input.challenge ?? (isWildcard ? 'dns-01' : 'http-01');
   const plan = planLetsEncrypt({
-    domain: input.domain,
+    domain,
     email: input.email,
     provider: 'letsencrypt',
-    challenge: 'http-01',
+    challenge,
   });
   const want = input.run !== false;
   const hasExecute = input.host.executeEnabled();

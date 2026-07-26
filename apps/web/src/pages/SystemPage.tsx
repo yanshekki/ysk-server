@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -12,6 +13,7 @@ import {
 } from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
 import { systemApi } from '../features/system';
+import { api } from '../shared/services/api';
 
 /**
  * System index — host identity + feature launcher.
@@ -28,14 +30,19 @@ export function SystemPage() {
 
   const [hostname, setHostname] = useState('');
   const [timezone, setTimezone] = useState('');
+  const [ips, setIps] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const r = await systemApi.hostIdentity();
+    const [r, ipRes] = await Promise.all([
+      systemApi.hostIdentity(),
+      api.requestRaw<{ items: string[] }>('/api/v1/system/ips').catch(() => ({ items: [] as string[] })),
+    ]);
     setHostname(r.hostname ?? '');
     setTimezone(r.timezone ?? '');
+    setIps(ipRes.items ?? []);
   }, []);
 
   useEffect(() => {
@@ -96,7 +103,32 @@ export function SystemPage() {
             <Button variant="secondary" size="md" loading={busy} onClick={() => void refresh()}>
               重新整理
             </Button>
+            {hostname ? (
+              <Link
+                to={`/ssl?domain=${encodeURIComponent(hostname)}&action=le`}
+                className="btn btn--ghost btn--md"
+                title="為面板 hostname 申請 Let’s Encrypt"
+              >
+                面板 hostname SSL
+              </Link>
+            ) : null}
           </div>
+        </CardSection>
+      </Card>
+
+      <Card>
+        <CardSection title="主機 IP" description="hostname -I / 本機 IPv4（唯讀）">
+          {ips.length === 0 ? (
+            <p className="muted">無法讀取或尚未有 IP</p>
+          ) : (
+            <ul className="list-plain list-spaced">
+              {ips.map((ip) => (
+                <li key={ip}>
+                  <code className="inline">{ip}</code>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardSection>
       </Card>
 
