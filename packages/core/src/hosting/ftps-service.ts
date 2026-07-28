@@ -5,10 +5,55 @@
 
 import { existsSync, mkdirSync, writeFileSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { createHash, randomBytes } from 'node:crypto';
 import type { HostExecutor } from '../host/executor.js';
 import type { JsonStore } from '../db/store.js';
 import { panelBlockMessage, type ApplyResult, type BlockReason } from './system-apply.js';
 import { createResource, listResources, updateResource } from './managed-resources.js';
+
+/**
+ * crypt(3)-compatible hash for pam_userdb (crypt=crypt).
+ * Prefer openssl passwd -6; fallback MD5-crypt-like is not ideal — use $6$ when possible.
+ */
+export function hashFtpPassword(plain: string): string {
+  const p = String(plain);
+  try {
+    const out = execFileSync('openssl', ['passwd', '-6', '-stdin'], {
+      input: p + '\n',
+      encoding: 'utf8',
+      timeout: 5_000,
+    });
+    const line = out.trim().split('\n').filter(Boolean).pop();
+    if (line && line.startsWith('$')) return line;
+  } catch {
+    /* fall through */
+  }
+  try {
+    const out = execFileSync('openssl', ['passwd', '-1', '-stdin'], {
+      input: p + '\n',
+      encoding: 'utf8',
+      timeout: 5_000,
+    });
+    const line = out.trim().split('\n').filter(Boolean).pop();
+    if (line && line.startsWith('$')) return line;
+  } catch {
+    /* fall through */
+  }
+  // Last resort: not standard crypt — mark so apply notes warn
+  const salt = randomBytes(8).toString('hex');
+  return `{SHA256}${createHash('sha256').update(salt + p).digest('hex')}`;
+}
+
+export function isCryptPasswordHash(value: string): boolean {
+  return (
+    value.startsWith('$1$') ||
+    value.startsWith('$5$') ||
+    value.startsWith('$6$') ||
+    value.startsWith('$y$') ||
+    value.startsWith('$2') // bcrypt unlikely for pam_userdb but keep
+  );
+}
 
 export const FTPS_SETTINGS_KEY = 'ftps_settings';
 
@@ -130,9 +175,20 @@ export function createProjectFtpAccount(
         ? appDir
         : input.projectHome;
   mkdirSync(homePath, { recursive: true });
+  const password_hash = hashFtpPassword(password);
+  if (!isCryptPasswordHash(password_hash)) {
+    return {
+      ok: false,
+      account: {},
+      notes: ['無法產生 crypt 密碼雜湊（需要 openssl passwd）'],
+      written: [],
+    };
+  }
   const account = createResource(db, 'ftp_accounts', {
     username,
-    password_plain: password,
+    password_hash,
+    // never persist plaintext after create
+    password_plain: undefined,
     homePath,
     projectId: input.projectId,
     linuxUser,
@@ -150,10 +206,12 @@ export function createProjectFtpAccount(
       linuxUser,
       linuxGroup,
       apply_status: 'draft',
+      passwordHashed: true,
     },
     notes: [
       `已建立 FTP 帳戶 ${username}`,
       `Jail 路徑: ${homePath}`,
+      `密碼已以 crypt 雜湊儲存（唔存明文）`,
       `上傳檔將以專案 Linux 用戶擁有：${linuxUser}（套用 vsftpd 後生效）`,
       '狀態 draft — 請到 FTP 服務頁「套用」才會寫入 vsftpd',
     ],
@@ -338,13 +396,34 @@ export function writeManagedFtpAccounts(input: {
     }
     const home = String(a.homePath || join(paths.homes, username));
     mkdirSync(home, { recursive: true });
-    const password = String(a.password_plain ?? a.password ?? '');
+    // Prefer password_hash (crypt); migrate legacy password_plain once
+    let passwordHash = String(a.password_hash ?? '').trim();
+    const plainLegacy = String(a.password_plain ?? a.password ?? '').trim();
+    if (!passwordHash && plainLegacy) {
+      passwordHash = hashFtpPassword(plainLegacy);
+      if (isCryptPasswordHash(passwordHash) && a.id) {
+        try {
+          updateResource(input.db, 'ftp_accounts', String(a.id), {
+            password_hash: passwordHash,
+            password_plain: '',
+          });
+          notes.push(`帳戶 ${username}：已遷移明文密碼 → crypt 雜湊`);
+        } catch {
+          /* best-effort */
+        }
+      }
+    }
     mapLines.push(`${username}:*:***:${home}`);
-    // vsftpd pam_userdb crypt format: username\\npassword\\n pairs for db_load
-    if (password) {
-      dbLines.push(username, password);
+    // pam_userdb crypt=crypt expects username\\nhash\\n pairs for db_load
+    if (passwordHash && isCryptPasswordHash(passwordHash)) {
+      dbLines.push(username, passwordHash);
+    } else if (passwordHash.startsWith('{SHA256}')) {
+      notes.push(
+        `帳戶 ${username} 雜湊格式非 crypt（openssl 不可用）— 登入可能失敗`,
+      );
+      dbLines.push(username, passwordHash);
     } else {
-      notes.push(`帳戶 ${username} 無密碼，無法登入直至重設`);
+      notes.push(`帳戶 ${username} 無密碼雜湊，無法登入直至重設`);
     }
 
     // Resolve project Linux user for ownership of uploaded files

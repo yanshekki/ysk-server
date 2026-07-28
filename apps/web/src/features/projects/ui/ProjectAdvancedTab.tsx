@@ -77,7 +77,7 @@ export function ProjectAdvancedTab({
             </Button>
             {ui.showWordpress ? (
               <Button variant="secondary" size="md" loading={busy} onClick={onWordpress}>
-                {t('projects.downloadWp', { defaultValue: '下載 WordPress' })}
+                {t('projects.downloadWp', { defaultValue: '一鍵 WordPress（下載+設定）' })}
               </Button>
             ) : null}
             {suspended ? (

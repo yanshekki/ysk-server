@@ -35,10 +35,10 @@ Ship order:
 | B5 | Subdomains as first-class or alias helper | via aliases | **done** (alias) |
 | B7–B8 | Rename domain / custom docroot | domain via network tab; docroot later | partial |
 | B11 | Force HTTPS + HSTS toggles | network tab + publish | **done** |
-| B18 | Create jailed FTP from project | preset path | pending |
-| B20 | Access/error log viewer polish | | pending |
-| B22 | Per-site PHP version when runtime=php | | pending |
-| B26 | Apply mem/cpu/disk quotas honestly | | existing |
+| B18 | Create jailed FTP from project | preset path + project linuxUser guest | **done** |
+| B20 | Access/error log viewer polish | logs tab exists | partial |
+| B22 | Per-site PHP version when runtime=php | deploy/FPM version | **done** |
+| B26 | Apply mem/cpu/disk quotas honestly | soft + panel limits + setquota try | **done** (hard FS-dependent) |
 | B27 | Create modal: also create DNS zone / mail domain | checkboxes | **done** |
 
 ### 1.2 DNS
@@ -47,7 +47,7 @@ Ship order:
 | C3 | Zone templates (minimal/web/mail/full) | seed records | **done** |
 | C4 | SOA/TTL/NS edit | SOA fixed in zone file; TTL per-record | partial |
 | C5 | Real apply: write + named-check + reload **or** honest `written` | no fake applied | **done** |
-| C8 | External DNS record checklist share with email | | pending |
+| C8 | External DNS record checklist share with email | GET /dns/external-checklist | **done** |
 | C9 | Validate zone (named-checkzone) | Better | **done** |
 
 ### 1.3 Email
@@ -59,8 +59,8 @@ Ship order:
 | F6–F7 | DKIM/SPF/DMARC complete panel | existing DNS tab | partial |
 | F10 | Antispam per domain toggle | flag field | partial |
 | F13 | Outbound rate limits | flag field | partial |
-| F17 | Autodiscover/autoconfig endpoints | | pending |
-| F18 | Mail queue list + flush | | pending |
+| F17 | Autodiscover/autoconfig endpoints | public XML + domain panel | **done** |
+| F18 | Mail queue list + flush | postqueue UI list + flush | **done** |
 | F20–F22 | Bootstrap honesty · mail SSL · suspend | suspend flags | partial |
 
 ### 1.4 SSL
@@ -69,7 +69,7 @@ Ship order:
 | D5 | Show auto-renew job status | bindings.renewJobs | **done** (API) |
 | D7 | Mail domain SSL integration | LE deep-link | partial |
 | D8 | Binding overview (cert → projects/mail) | GET /ssl/bindings | **done** |
-| D9 | Expiry warnings on dashboard | | pending |
+| D9 | Expiry warnings on dashboard | KPI + alert + notifications | **done** |
 
 ### 1.5 Backups
 | ID | Work | Notes | Status |
@@ -84,7 +84,7 @@ Ship order:
 | ID | Work | Notes | Status |
 |----|------|-------|--------|
 | R2 | Operator 2FA (TOTP) | pure crypto TOTP | **done** |
-| R5 | API access keys management | | pending |
+| R5 | API access keys management | Security tab + Bearer ysk_ auth | **done** |
 | Q4 | same 2FA foundation | | **done** |
 
 ### 1.7 Cron
@@ -119,7 +119,7 @@ Ship order:
 | Users/Packages | Q1–Q3 CRUD, quotas, impersonate |
 | DNS | DNSSEC (C6) · cluster optional (C7) |
 | Backup | Incremental restic-class (L7) · exclusions (L5) |
-| Sites | One-click apps / WordPress (B21) · multi-IP (B9) |
+| Sites | One-click apps / WordPress (B21 setup path) · multi-IP (B9) |
 | Runtimes | Composer/WP-CLI flags (J4) · PHP modules (J5) |
 | System | Panel SSL/port (T2) · IP mgmt (T3) · global search (T7) · rebuild (T8) |
 | FTP | SFTP keys (H6) |

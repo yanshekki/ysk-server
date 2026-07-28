@@ -47,6 +47,8 @@ export * from './backup-remote.js';
 export * from './dnssec.js';
 export * from './global-search.js';
 export * from './sftp-keys.js';
+export * from './sshd-sftp-snippet.js';
+export * from './wordpress-setup.js';
 export * from './runtime-tools.js';
 export * from './temp-db-user.js';
 export * from './adminer.js';

@@ -32,10 +32,20 @@ describe('email DNS + external checklist', () => {
     });
     const ptr = todos.find((t) => t.id === 'ptr');
     const p25 = todos.find((t) => t.id === 'port25');
-    expect(ptr?.description).toMatch(/PTR|Reverse DNS/i);
-    expect(ptr?.description).toMatch(/VPS|provider/i);
-    expect(p25?.description).toMatch(/Port 25/i);
-    expect(p25?.description).toMatch(/relay|unblock/i);
+    expect(ptr?.description).toMatch(/PTR|反向 DNS/i);
+    expect(ptr?.description).toMatch(/VPS|供應商|雲端/i);
+    expect(p25?.description).toMatch(/Port 25|TCP 25/i);
+    expect(p25?.description).toMatch(/中繼|relay|解鎖/i);
+  });
+
+  it('web scope checklist has A/SSL items without mail-only todos', () => {
+    const web = buildExternalTodos({
+      domain: 'example.com',
+      mailHostname: 'mail.example.com',
+      scope: 'web',
+    });
+    expect(web.some((t) => t.id === 'dns-a-www')).toBe(true);
+    expect(web.some((t) => t.id === 'port25')).toBe(false);
   });
 
   it('scores health and plans stack install', () => {

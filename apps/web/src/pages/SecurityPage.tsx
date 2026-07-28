@@ -23,7 +23,7 @@ import {
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
-const TAB_IDS = ['account', 'keys', 'approvals', 'allowlist'] as const;
+const TAB_IDS = ['account', 'keys', 'sftp', 'approvals', 'allowlist'] as const;
 
 export function SecurityPage() {
   const { t } = useTranslation();
@@ -112,6 +112,7 @@ export function SecurityPage() {
         tabs={[
           { id: 'account', label: '帳戶安全' },
           { id: 'keys', label: 'API 金鑰', badge: apiKeys.length || undefined },
+          { id: 'sftp', label: 'SFTP / sshd' },
           { id: 'approvals', label: '審批', badge: approvals.length || undefined },
           { id: 'allowlist', label: '允許清單', badge: tools.length || undefined },
         ]}
@@ -254,13 +255,19 @@ export function SecurityPage() {
             <Card>
               <CardSection
                 title="API 存取金鑰"
-                description="建立後完整 token 只顯示一次，請立即複製保存"
+                description="建立後完整 token 只顯示一次。請求時：Authorization: Bearer ysk_…"
               >
                 {newKeyToken ? (
                   <Alert variant="ok">
-                    新金鑰：<code className="inline">{newKeyToken}</code>
+                    新金鑰（僅顯示一次）：<code className="inline">{newKeyToken}</code>
+                    <FormHint>
+                      curl 範例：Authorization: Bearer {newKeyToken.slice(0, 12)}…
+                    </FormHint>
                   </Alert>
                 ) : null}
+                <FormHint>
+                  API key 與登入 session 同等權限（所屬用戶角色）。請勿提交到 git 或公開日誌。
+                </FormHint>
                 <FormLayout columns={2}>
                   <Field
                     label="名稱"
@@ -324,6 +331,80 @@ export function SecurityPage() {
                 ) : (
                   <EmptyState title="尚未有 API key" description="上方輸入名稱後建立" />
                 )}
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+
+        {tab === 'sftp' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="sshd SFTP 片段（專案 Linux 用戶）"
+                description="Match ysks_*/ysk_* + internal-sftp + home/.ssh/authorized_keys"
+              >
+                <FormHint>
+                  專案資源頁或 SFTP 金鑰可綁 projectId 寫入 home/.ssh。此處安裝系統
+                  sshd_config.d 片段（需 root）。
+                </FormHint>
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={totpBusy}
+                    onClick={() => {
+                      setTotpBusy(true);
+                      setTotpErr(null);
+                      void api
+                        .requestRaw<{ snippet: string; notes: string[] }>(
+                          '/api/v1/sftp/sshd-snippet',
+                        )
+                        .then((r) => {
+                          setTotpMsg(
+                            (r.notes ?? []).join('；') +
+                              '\n\n' +
+                              (r.snippet ?? '').slice(0, 800),
+                          );
+                          void navigator.clipboard?.writeText(r.snippet ?? '');
+                        })
+                        .catch((e: Error) => setTotpErr(e.message))
+                        .finally(() => setTotpBusy(false));
+                    }}
+                  >
+                    預覽並複製片段
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={totpBusy}
+                    onClick={() => {
+                      if (
+                        !window.confirm(
+                          '將片段寫入 /etc/ssh/sshd_config.d 並 reload sshd？需 root + YSK_EXECUTE',
+                        )
+                      ) {
+                        return;
+                      }
+                      setTotpBusy(true);
+                      setTotpErr(null);
+                      void api
+                        .requestRaw<{ ok: boolean; notes: string[]; snippet?: string }>(
+                          '/api/v1/sftp/sshd-snippet/apply',
+                          {
+                            method: 'POST',
+                            body: JSON.stringify({ installSystem: true, chroot: false }),
+                          },
+                        )
+                        .then((r) => {
+                          setTotpMsg((r.notes ?? []).join('；') || (r.ok ? '已套用' : '未完成'));
+                        })
+                        .catch((e: Error) => setTotpErr(e.message))
+                        .finally(() => setTotpBusy(false));
+                    }}
+                  >
+                    安裝到系統並 reload
+                  </Button>
+                </FormActions>
               </CardSection>
             </Card>
           </div>

@@ -65,6 +65,8 @@
 | **Nginx 靜態** | 群組 `ysk-web`：專案 user + www-data；home `750`、public `g+rX` |
 | **Cron（專案）** | 指令包 `runuser -u {linuxUser} -- bash -lc '…'` |
 | **SFTP 公鑰** | 可綁 `projectId` → 寫入 `{home}/.ssh/authorized_keys` 並 chown |
+| **sshd 片段** | `GET/POST /api/v1/sftp/sshd-snippet` → Match ysks_*/ysk_* + internal-sftp |
+| **FTPS 密碼** | crypt 雜湊（openssl passwd -6）；唔存 `password_plain` |
 
 degraded（無 root）時仍可寫控制面，但 **不會假裝** 已對齊 owner。
 

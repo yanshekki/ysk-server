@@ -103,7 +103,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   const projectRepo = new ProjectRepository(db);
   const settings = new SettingsRepository(db);
 
-  const auth = new AuthService(users, sessions, audit);
+  const auth = new AuthService(users, sessions, audit, db);
   const usersAdmin = new UsersAdminService(users, sessions, db, audit);
   const adminUsername = opts.config?.adminUsername ?? 'admin';
   const locale = opts.config?.locale ?? 'zh-TW';

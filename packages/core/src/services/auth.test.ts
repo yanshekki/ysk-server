@@ -8,6 +8,7 @@ import { openDatabase, closeDatabase } from '../db/database.js';
 import { UserRepository } from '../repositories/user-repo.js';
 import { SessionRepository } from '../repositories/session-repo.js';
 import { AuditRepository } from '../repositories/audit-repo.js';
+import { createApiKey } from '../security/api-keys.js';
 
 describe('auth + protection (persistent)', () => {
   it('logs in and authenticates tokens across reopen', () => {
@@ -31,6 +32,22 @@ describe('auth + protection (persistent)', () => {
     auth2.logout(login.token);
     expect(() => auth2.authenticate(login.token)).toThrow();
     closeDatabase(db2);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('authenticates API access keys as the owning user', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-apikey-'));
+    const dbPath = join(dir, 't.json');
+    const db = openDatabase(dbPath);
+    const users = new UserRepository(db);
+    const auth = new AuthService(users, new SessionRepository(db), new AuditRepository(db), db);
+    auth.ensureAdmin('admin', 'secret', 'zh-TW');
+    const admin = users.findByUsername('admin')!;
+    const { token } = createApiKey(db, { name: 'ci', userId: admin.id });
+    expect(token.startsWith('ysk_')).toBe(true);
+    expect(auth.authenticate(token).username).toBe('admin');
+    expect(() => auth.authenticate('ysk_invalid_token_xxxxxxxxxxxx')).toThrow();
+    closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });
   });
 

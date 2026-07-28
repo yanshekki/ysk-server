@@ -76,6 +76,7 @@ export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord
 
 /**
  * Build external todo list (PTR, Port 25, DNS, reputation) — items user must handle outside server.
+ * Shared by email domain health + optional DNS panel checklist (scope=web|mail|full).
  */
 export function buildExternalTodos(input: {
   domain: string;
@@ -84,52 +85,81 @@ export function buildExternalTodos(input: {
   port25Open?: boolean | null;
   dnsApplied?: boolean;
   dmarcPresent?: boolean;
+  /** mail (default) | web | full */
+  scope?: 'mail' | 'web' | 'full';
 }): EmailExternalTodo[] {
-  const todos: EmailExternalTodo[] = [
-    {
-      id: 'dns-mx-spf-dkim',
-      category: 'dns',
-      title: '新增 MX／SPF／DKIM DNS 記錄',
-      description:
-        '於 DNS 供應商新增產生的 MX、SPF（TXT）與 DKIM（TXT）。Cloudflare：郵件相關記錄請用僅 DNS（灰雲）。',
-      required: true,
-      completed: Boolean(input.dnsApplied),
-    },
-    {
-      id: 'dns-dmarc',
-      category: 'dns',
-      title: '新增 DMARC TXT 記錄',
-      description: '新增 _dmarc TXT 以改善投遞與回報。',
-      required: false,
-      completed: Boolean(input.dmarcPresent),
-    },
-    {
-      id: 'ptr',
-      category: 'ptr',
-      title: '設定反向 DNS（PTR）',
-      description: `PTR 須由 VPS／雲端 IP 擁有者設定，並與 HELO/EHLO（${input.mailHostname}）一致。請於供應商控制台申請（AWS/GCP 常需工單）。`,
-      required: true,
-      completed: Boolean(input.ptrOk),
-    },
-    {
-      id: 'port25',
-      category: 'port25',
-      title: '確認出站 Port 25 已開放',
-      description:
-        '許多雲供應商封鎖出站 TCP 25。請申請解鎖，或改用外部 SMTP 中繼。',
-      required: true,
-      completed: input.port25Open === true,
-    },
-    {
-      id: 'reputation',
-      category: 'reputation',
-      title: '監控 IP／域名聲譽並暖機',
-      description:
-        '新 IP／域名不宜立刻高量出站。請檢查 Spamhaus 等黑名單，並遵循暖機指引。',
-      required: false,
-      completed: false,
-    },
-  ];
+  const scope = input.scope ?? 'mail';
+  const todos: EmailExternalTodo[] = [];
+
+  if (scope === 'web' || scope === 'full') {
+    todos.push(
+      {
+        id: 'dns-a-www',
+        category: 'dns',
+        title: '新增 A／AAAA（apex 與 www）',
+        description: `將 ${input.domain} 與 www.${input.domain} 指到伺服器公開 IP。CDN（Cloudflare）可灰雲或橙雲。`,
+        required: true,
+        completed: Boolean(input.dnsApplied),
+      },
+      {
+        id: 'dns-ssl-http01',
+        category: 'dns',
+        title: '確認 80／443 可從公網到達（LE HTTP-01）',
+        description: 'Let’s Encrypt HTTP-01 需要 80 可達；DNS-01 則需 API token。',
+        required: true,
+        completed: false,
+      },
+    );
+  }
+
+  if (scope === 'mail' || scope === 'full') {
+    todos.push(
+      {
+        id: 'dns-mx-spf-dkim',
+        category: 'dns',
+        title: '新增 MX／SPF／DKIM DNS 記錄',
+        description:
+          '於 DNS 供應商新增產生的 MX、SPF（TXT）與 DKIM（TXT）。Cloudflare：郵件相關記錄請用僅 DNS（灰雲）。',
+        required: true,
+        completed: Boolean(input.dnsApplied),
+      },
+      {
+        id: 'dns-dmarc',
+        category: 'dns',
+        title: '新增 DMARC TXT 記錄',
+        description: '新增 _dmarc TXT 以改善投遞與回報。',
+        required: false,
+        completed: Boolean(input.dmarcPresent),
+      },
+      {
+        id: 'ptr',
+        category: 'ptr',
+        title: '設定反向 DNS（PTR）',
+        description: `PTR 須由 VPS／雲端 IP 擁有者設定，並與 HELO/EHLO（${input.mailHostname}）一致。請於供應商控制台申請（AWS/GCP 常需工單）。`,
+        required: true,
+        completed: Boolean(input.ptrOk),
+      },
+      {
+        id: 'port25',
+        category: 'port25',
+        title: '確認出站 Port 25 已開放',
+        description:
+          '許多雲供應商封鎖出站 TCP 25。請申請解鎖，或改用外部 SMTP 中繼。',
+        required: true,
+        completed: input.port25Open === true,
+      },
+      {
+        id: 'reputation',
+        category: 'reputation',
+        title: '監控 IP／域名聲譽並暖機',
+        description:
+          '新 IP／域名不宜立刻高量出站。請檢查 Spamhaus 等黑名單，並遵循暖機指引。',
+        required: false,
+        completed: false,
+      },
+    );
+  }
+
   return todos;
 }
 

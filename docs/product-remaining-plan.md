@@ -1,11 +1,9 @@
-# YSK 產品完成度 — 100% 結案
+# YSK 產品完成度 — 定義結案 + 後續債
 
-**更新：** 2026-07-26  
-**HEAD：** Wave 100 收尾後推送  
+**更新：** 2026-07-28  
 
-**產品定義完成（100%）**  
-不含凍結項（Reseller 層、Web terminal）。  
-P0/P1 對齊 + 差異化 Wave 0–9 + 本輪配額 enforce / SSO 真登入 / wizard / 服務健康 / 日統計 / 方案上限 全部落地。
+**產品定義完成（100%）**＝當初劃定之 Admin 控制面功能集已齊（不含凍結項）。  
+**唔等於** Hestia 全量。後續增量：多 runtime、Linux user 隔離、API key 真認證、公開 Autoconfig、佇列 UI 等見 git log。
 
 ---
 

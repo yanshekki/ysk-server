@@ -1009,7 +1009,7 @@ export function EmailDomainPage() {
             <Card>
               <CardSection
                 title="郵件佇列"
-                description="查詢或清空本機 MTA 佇列（需系統變更權限）"
+                description="查詢或清空本機 MTA 佇列（亦可在郵件首頁操作；需系統變更權限）"
               >
                 <FormActions>
                   <Button
@@ -1018,7 +1018,11 @@ export function EmailDomainPage() {
                     loading={busy}
                     onClick={() =>
                       void withBusy(async () => {
-                        setWebmailLog(await emailApi.mailQueue());
+                        const r = await emailApi.mailQueue();
+                        setWebmailLog({
+                          ...r,
+                          items: (r.items ?? []).slice(0, 20),
+                        });
                       })
                     }
                   >
@@ -1037,6 +1041,12 @@ export function EmailDomainPage() {
                     清空佇列
                   </Button>
                 </FormActions>
+                <FormHint>
+                  公開 Autoconfig：
+                  <code className="inline">
+                    /mail/config-v1.1.xml?domain={domain.domain}
+                  </code>
+                </FormHint>
               </CardSection>
             </Card>
             <Card>

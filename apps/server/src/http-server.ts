@@ -129,6 +129,62 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, body);
       }
 
+      // —— Public mail client autodiscover (no auth) ——
+      // Mozilla: /.well-known/autoconfig/mail/config-v1.1.xml?domain=
+      //          /mail/config-v1.1.xml?domain=
+      // Outlook: /autodiscover/autodiscover.xml?email=
+      if (
+        method === 'GET' &&
+        (url.pathname === '/mail/config-v1.1.xml' ||
+          url.pathname === '/.well-known/autoconfig/mail/config-v1.1.xml' ||
+          url.pathname === '/autodiscover/autodiscover.xml' ||
+          url.pathname.toLowerCase() === '/autodiscover/autodiscover.xml')
+      ) {
+        const { renderMozillaAutoconfig, renderOutlookAutodiscover } = await import('@ysk/core');
+        let domain =
+          url.searchParams.get('domain')?.trim().toLowerCase() ||
+          url.searchParams.get('emailaddress')?.split('@')[1]?.toLowerCase() ||
+          url.searchParams.get('email')?.split('@')[1]?.toLowerCase() ||
+          '';
+        if (!domain) {
+          // Outlook sometimes POSTs; GET with empty → 400
+          res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+          res.end('domain or email query required');
+          return;
+        }
+        const known = ctx.email.list().find((d) => d.domain === domain);
+        const mailHost = known?.mail_hostname || `mail.${domain}`;
+        if (url.pathname.includes('autodiscover')) {
+          const email =
+            url.searchParams.get('email') ||
+            url.searchParams.get('emailaddress') ||
+            `user@${domain}`;
+          const xml = renderOutlookAutodiscover({
+            domain,
+            email,
+            imapHost: mailHost,
+            smtpHost: mailHost,
+          });
+          res.writeHead(200, {
+            'Content-Type': 'application/xml; charset=utf-8',
+            'Cache-Control': 'public, max-age=300',
+          });
+          res.end(xml);
+          return;
+        }
+        const xml = renderMozillaAutoconfig({
+          domain,
+          imapHost: mailHost,
+          smtpHost: mailHost,
+        });
+        res.writeHead(200, {
+          'Content-Type': 'text/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=300',
+        });
+        res.end(xml);
+        return;
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/status') {
         return sendJson(res, 200, {
           product: PRODUCT_NAME,
@@ -506,6 +562,44 @@ export function createHttpServer(ctx: AppContext): Server {
           ok: r.ok,
         });
         return sendJson(res, r.ok ? 200 : 404, r);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/sftp/sshd-snippet') {
+        ctx.auth.authenticate(getBearer(req));
+        const { buildSshdSftpSnippet } = await import('@ysk/core');
+        const chroot = url.searchParams.get('chroot') === '1';
+        const snippet = buildSshdSftpSnippet({ chroot });
+        return sendJson(res, 200, {
+          snippet,
+          notes: [
+            '將片段 Include 到 sshd_config，或 POST /api/v1/sftp/sshd-snippet/apply 安裝',
+            'Match User ysks_*,ysk_* + internal-sftp + AuthorizedKeysFile .ssh/authorized_keys',
+          ],
+        });
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/sftp/sshd-snippet/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          chroot?: boolean;
+          installSystem?: boolean;
+        };
+        const { applySshdSftpSnippet } = await import('@ysk/core');
+        const r = await applySshdSftpSnippet({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          db: ctx.db,
+          chroot: data.chroot,
+          installSystem: data.installSystem !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'sftp.sshd_snippet.apply',
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok || r.written.length ? 200 : 422, r);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/auth/totp') {
@@ -2554,6 +2648,29 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, r.ok ? 200 : 422, r);
       }
 
+      if (method === 'GET' && url.pathname === '/api/v1/dns/external-checklist') {
+        ctx.auth.authenticate(getBearer(req));
+        const domain = (url.searchParams.get('domain') ?? '').trim().toLowerCase();
+        const scope = (url.searchParams.get('scope') ?? 'full') as 'mail' | 'web' | 'full';
+        if (!domain) {
+          return sendJson(res, 400, { ok: false, message: 'domain 必填' });
+        }
+        const { buildExternalTodos } = await import('@ysk/core');
+        const mailHostname =
+          ctx.email.list().find((d) => d.domain === domain)?.mail_hostname || `mail.${domain}`;
+        const items = buildExternalTodos({
+          domain,
+          mailHostname,
+          scope: scope === 'web' || scope === 'mail' ? scope : 'full',
+        });
+        return sendJson(res, 200, {
+          domain,
+          scope,
+          items,
+          notes: ['此清單為站外待辦（DNS 供應商／IP 擁有者）；控制面無法代勞 PTR／解封 25'],
+        });
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/dns/cluster/peers') {
         ctx.auth.authenticate(getBearer(req));
         const { listDnsClusterPeers } = await import('@ysk/core');
@@ -3104,7 +3221,40 @@ export function createHttpServer(ctx: AppContext): Server {
         const id = url.pathname.split('/')[4];
         const proj = ctx.projects.get(id);
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { force?: boolean };
+        const data = JSON.parse(raw || '{}') as {
+          force?: boolean;
+          forceConfig?: boolean;
+          setup?: boolean;
+          dbName?: string;
+          dbUser?: string;
+          dbPassword?: string;
+          dbHost?: string;
+        };
+        // Default to full setup path (download + wp-config + chown + checklist)
+        const useSetup = data.setup !== false;
+        if (useSetup) {
+          const { setupWordpress } = await import('@ysk/core');
+          const result = await setupWordpress({
+            host: ctx.host,
+            homeDir: proj.homeDir,
+            linuxUser: proj.linuxUser,
+            linuxGroup: proj.linuxGroup || proj.linuxUser,
+            force: data.force,
+            forceConfig: data.forceConfig,
+            dbName: data.dbName,
+            dbUser: data.dbUser,
+            dbPassword: data.dbPassword,
+            dbHost: data.dbHost,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'project.wordpress_setup',
+            resource: id,
+            detail: { ...result, dbPassword: undefined },
+            ok: result.ok,
+          });
+          return sendJson(res, result.ok ? 200 : 422, result);
+        }
         const result = await downloadWordpressCore({
           host: ctx.host,
           homeDir: proj.homeDir,

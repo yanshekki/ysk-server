@@ -1,17 +1,21 @@
 /**
  * Email domains list — FeaturePageLayout + honest status (registry vs applied).
+ * Global mail queue probe at top of page.
  */
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEmailDomains } from '../features/email';
+import { emailApi, useEmailDomains } from '../features/email';
 import {
   Alert,
   Badge,
   Button,
+  Card,
+  CardSection,
   EmptyState,
   FeaturePageLayout,
   Field,
+  FormActions,
   FormLayout,
   Modal,
   SoftwareInstallBanner,
@@ -37,6 +41,9 @@ export function EmailPage() {
   const [domain, setDomain] = useState('');
   const [serverIp, setServerIp] = useState(ctx.serverIp);
   const [query, setQuery] = useState('');
+  const [queueBusy, setQueueBusy] = useState(false);
+  const [queueMsg, setQueueMsg] = useState<string | null>(null);
+  const [queueItems, setQueueItems] = useState<Array<{ id: string; raw: string }>>([]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -105,6 +112,82 @@ export function EmailPage() {
       <Alert variant="info">
         列表僅為控制面<strong>登記</strong>。要真正安裝 Postfix／Dovecot／Webmail，請進入域名詳情使用「一鍵設定郵件」。
       </Alert>
+
+      <Card>
+        <CardSection
+          title="本機郵件佇列"
+          description="postqueue / postsuper（需 YSK_EXECUTE；未安裝 MTA 會誠實失敗）"
+        >
+          {queueMsg ? <Alert variant="info">{queueMsg}</Alert> : null}
+          <FormActions>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={queueBusy}
+              onClick={() => {
+                setQueueBusy(true);
+                setQueueMsg(null);
+                void emailApi
+                  .mailQueue()
+                  .then((r) => {
+                    setQueueItems(r.items ?? []);
+                    setQueueMsg((r.notes ?? []).join('；') || `佇列 ${(r.items ?? []).length} 封`);
+                  })
+                  .catch((e: Error) => setQueueMsg(e.message))
+                  .finally(() => setQueueBusy(false));
+              }}
+            >
+              查看佇列
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              loading={queueBusy}
+              onClick={() => {
+                if (!window.confirm('確定清空全部郵件佇列？')) return;
+                setQueueBusy(true);
+                void emailApi
+                  .flushQueue({ all: true })
+                  .then((r) => {
+                    setQueueItems([]);
+                    setQueueMsg((r as { notes?: string[] }).notes?.join('；') || '已請求清空');
+                  })
+                  .catch((e: Error) => setQueueMsg(e.message))
+                  .finally(() => setQueueBusy(false));
+              }}
+            >
+              清空佇列
+            </Button>
+          </FormActions>
+          {queueItems.length > 0 ? (
+            <ul className="list-plain list-spaced u-mt-3">
+              {queueItems.slice(0, 40).map((it) => (
+                <li key={it.id} className="btn-row u-justify-between u-flex-wrap">
+                  <code className="inline u-text-sm">{it.raw}</code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={queueBusy}
+                    onClick={() => {
+                      setQueueBusy(true);
+                      void emailApi
+                        .flushQueue({ id: it.id })
+                        .then((r) => {
+                          setQueueMsg((r as { notes?: string[] }).notes?.join('；') || `已刪 ${it.id}`);
+                          setQueueItems((prev) => prev.filter((x) => x.id !== it.id));
+                        })
+                        .catch((e: Error) => setQueueMsg(e.message))
+                        .finally(() => setQueueBusy(false));
+                    }}
+                  >
+                    刪除此 ID
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </CardSection>
+      </Card>
 
       <div className="page-toolbar">
         <div className="page-toolbar__search">

@@ -8,11 +8,13 @@ import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { UserRepository } from '../repositories/user-repo.js';
 import type { SessionRepository } from '../repositories/session-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
+import type { JsonStore } from '../db/store.js';
 import {
   buildOtpAuthUrl,
   generateTotpSecret,
   verifyTotp,
 } from '../security/totp.js';
+import { verifyApiKey } from '../security/api-keys.js';
 
 const SCRYPT_KEYLEN = 64;
 
@@ -21,6 +23,8 @@ export class AuthService {
     private readonly users: UserRepository,
     private readonly sessions: SessionRepository,
     private readonly audit?: AuditRepository,
+    /** When set, Bearer ysk_* API keys authenticate as the owning user */
+    private readonly db?: JsonStore,
   ) {}
 
   /**
@@ -198,6 +202,23 @@ export class AuthService {
   authenticate(token: string | undefined): UserDto {
     if (!token) {
       throw new YskError(ErrorCodes.UNAUTHORIZED, '缺少登入憑證', { httpStatus: 401 });
+    }
+    // API access keys (ysk_…) — hash lookup, no session cookie
+    if (this.db && token.startsWith('ysk_')) {
+      const userId = verifyApiKey(this.db, token);
+      if (userId) {
+        const user = this.users.findById(userId);
+        if (!user) {
+          throw new YskError(ErrorCodes.UNAUTHORIZED, 'API 金鑰對應用戶不存在', {
+            httpStatus: 401,
+          });
+        }
+        if (user.suspended) {
+          throw new YskError(ErrorCodes.FORBIDDEN, '帳戶已暫停', { httpStatus: 403 });
+        }
+        return toDto(user);
+      }
+      throw new YskError(ErrorCodes.UNAUTHORIZED, 'API 金鑰無效', { httpStatus: 401 });
     }
     const session = this.sessions.find(token);
     if (!session || session.expires_at < new Date().toISOString()) {
