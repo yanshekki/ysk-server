@@ -22,7 +22,7 @@ describe('ApprovalQueue', () => {
       payload: { path: '/tmp/x' },
     });
     expect(pending.status).toBe('pending');
-    expect(() => q.assertApproved(pending.id, 'fs.delete')).toThrow(/pending/i);
+    expect(() => q.assertApproved(pending.id, 'fs.delete')).toThrow(/pending|等待/i);
 
     const approved = q.approve(pending.id, 'admin');
     expect(approved.status).toBe('approved');

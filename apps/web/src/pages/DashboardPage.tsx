@@ -19,7 +19,7 @@ import {
   FormLayout,
   LoadingBlock,
   PageHeader,
-  SummaryStrip,
+  OpsHero,
   Tabs,
   type FeatureTileBadge,
   FormActions,
@@ -218,33 +218,92 @@ export function DashboardPage() {
       {wizMsg ? <Alert variant="ok">{wizMsg}</Alert> : null}
       {loading ? <LoadingBlock /> : null}
 
-      <SummaryStrip
-        items={[
+      <OpsHero
+        eyebrow="Dashboard"
+        title={t('dashboard.title')}
+        pill={
+          health?.status === 'ok'
+            ? '健康'
+            : readiness?.productionReady
+              ? '可生產'
+              : '需檢查'
+        }
+        pillTone={
+          health?.status === 'ok'
+            ? 'ok'
+            : notifCounts.critical > 0
+              ? 'danger'
+              : 'warn'
+        }
+        tone={
+          notifCounts.critical > 0
+            ? 'danger'
+            : executeEnabled === false
+              ? 'warn'
+              : 'ok'
+        }
+        hint={`${t('dashboard.welcome')}${user ? ` — ${user.username}` : ''}`}
+        cta={
+          <>
+            <Link to="/system/readiness" className="btn btn--primary btn--md">
+              就緒探測
+            </Link>
+            <Link to="/projects" className="btn btn--secondary btn--md">
+              專案
+            </Link>
+            <Link to="/services" className="btn btn--ghost btn--md">
+              服務
+            </Link>
+          </>
+        }
+        stats={[
           { label: t('nav.projects'), value: projects.length },
-          { label: t('projects.statRunning'), value: running, tone: running > 0 ? 'ok' : 'default' },
+          {
+            label: t('projects.statRunning'),
+            value: (
+              <Badge tone={running > 0 ? 'ok' : 'neutral'}>{running}</Badge>
+            ),
+          },
           { label: '備份', value: backups },
           {
-            label: '憑證到期',
-            value: expiringCerts?.length ?? 0,
-            tone: (expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok',
-          },
-          {
             label: '通知',
-            value: notifications.length,
-            tone:
-              notifCounts.critical > 0 ? 'danger' : notifCounts.warn > 0 ? 'warn' : 'ok',
-          },
-          {
-            label: t('dashboard.health'),
-            value: health?.status ?? '—',
-            tone: health?.status === 'ok' ? 'ok' : 'default',
-          },
-          {
-            label: '系統變更',
-            value: executeEnabled === true ? '已開' : executeEnabled === false ? '未開' : '—',
-            tone: executeEnabled === true ? 'ok' : executeEnabled === false ? 'warn' : 'default',
+            value: (
+              <Badge
+                tone={
+                  notifCounts.critical > 0
+                    ? 'danger'
+                    : notifCounts.warn > 0
+                      ? 'warn'
+                      : 'ok'
+                }
+              >
+                {notifications.length}
+              </Badge>
+            ),
           },
         ]}
+        rail={
+          <>
+            <li>
+              <span className="ops-rail__k">Health</span>
+              <Badge tone={health?.status === 'ok' ? 'ok' : 'warn'}>
+                {health?.status ?? '—'}
+              </Badge>
+            </li>
+            <li>
+              <span className="ops-rail__k">EXECUTE</span>
+              <Badge tone={executeEnabled === true ? 'ok' : 'warn'}>
+                {executeEnabled === true ? '開' : executeEnabled === false ? '關' : '—'}
+              </Badge>
+            </li>
+            <li>
+              <span className="ops-rail__k">憑證到期</span>
+              <Badge tone={(expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok'}>
+                {expiringCerts?.length ?? 0}
+              </Badge>
+            </li>
+          </>
+        }
       />
 
       <Tabs

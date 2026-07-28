@@ -48,8 +48,6 @@ import {
   installServiceEngine,
   applyFirewall,
   applyFail2ban,
-  probeFirewallStatus,
-  probeFail2banStatus,
   applyNginxSite,
   installControlPlaneSystemd,
   probeControlPlaneSystemd,
@@ -86,6 +84,488 @@ export async function handleSystemRoutes(
       ok: true,
     });
     sendJson(res, 200, probe);
+    return true;
+  }
+
+  // —— Defense Center (DDoS / attack protection) ——
+  if (method === 'GET' && url.pathname === '/api/v1/defense/status') {
+    ctx.auth.authenticate(getBearer(req));
+    const { getDefenseStatus } = await import('@ysk/core');
+    const status = await getDefenseStatus({
+      host: ctx.host,
+      db: ctx.db,
+      dataDir: ctx.dataDir,
+      requestCountLastMinute: ctx.requestHits?.length ?? 0,
+    });
+    sendJson(res, 200, status);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/probe') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const { getDefenseStatus } = await import('@ysk/core');
+    await ctx.runAutoProtection();
+    const status = await getDefenseStatus({
+      host: ctx.host,
+      db: ctx.db,
+      dataDir: ctx.dataDir,
+      requestCountLastMinute: ctx.requestHits?.length ?? 0,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.probe',
+      detail: { threatLevel: status.threatLevel, score: status.score },
+      ok: true,
+    });
+    sendJson(res, 200, status);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/preset') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      preset?: string;
+      apply?: boolean;
+      confirm?: string;
+    };
+    const { applyDefensePreset } = await import('@ysk/core');
+    const preset = (data.preset ?? 'daily') as
+      | 'daily'
+      | 'hardened'
+      | 'under_attack'
+      | 'emergency';
+    const r = await applyDefensePreset({
+      host: ctx.host,
+      db: ctx.db,
+      dataDir: ctx.dataDir,
+      preset,
+      apply: data.apply !== false,
+      confirm: data.confirm,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.preset',
+      detail: { preset, ok: r.ok, applied: r.applied },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/defense/bans') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listDefenseBans } = await import('@ysk/core');
+    sendJson(res, 200, await listDefenseBans({ host: ctx.host, db: ctx.db }));
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/ban') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      ip?: string;
+      reason?: string;
+      method?: 'fail2ban' | 'ufw' | 'both';
+      jail?: string;
+    };
+    const { defenseBanIp } = await import('@ysk/core');
+    const r = await defenseBanIp({
+      host: ctx.host,
+      db: ctx.db,
+      ip: data.ip ?? '',
+      reason: data.reason,
+      method: data.method,
+      jail: data.jail,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.ban',
+      detail: { ip: data.ip, ...r },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/unban') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      ip?: string;
+      method?: 'fail2ban' | 'ufw' | 'both';
+      jail?: string;
+    };
+    const { defenseUnbanIp } = await import('@ysk/core');
+    const r = await defenseUnbanIp({
+      host: ctx.host,
+      db: ctx.db,
+      ip: data.ip ?? '',
+      method: data.method,
+      jail: data.jail,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.unban',
+      detail: { ip: data.ip, ...r },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/defense/timeline') {
+    ctx.auth.authenticate(getBearer(req));
+    const hours = Number(url.searchParams.get('hours') ?? '24') || 24;
+    const { listDefenseTimeline } = await import('@ysk/core');
+    sendJson(res, 200, { items: listDefenseTimeline(ctx.db, hours) });
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/defense/suspects') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listSuspectIps } = await import('@ysk/core');
+    sendJson(
+      res,
+      200,
+      await listSuspectIps({ host: ctx.host, db: ctx.db, dataDir: ctx.dataDir }),
+    );
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/ban-batch') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      ips?: string[];
+      reason?: string;
+      method?: 'fail2ban' | 'ufw' | 'both';
+    };
+    const { defenseBanBatch } = await import('@ysk/core');
+    const r = await defenseBanBatch({
+      host: ctx.host,
+      db: ctx.db,
+      ips: data.ips ?? [],
+      reason: data.reason,
+      method: data.method,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.ban_batch',
+      detail: { count: data.ips?.length, ok: r.ok, blocked: r.blocked },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/defense/auto-ban') {
+    ctx.auth.authenticate(getBearer(req));
+    const { loadAutoBanPolicy, countAutoBansLastHour } = await import('@ysk/core');
+    const policy = loadAutoBanPolicy(ctx.db);
+    sendJson(res, 200, {
+      ...policy,
+      autoBansLastHour: countAutoBansLastHour(policy),
+    });
+    return true;
+  }
+  if (method === 'PUT' && url.pathname === '/api/v1/defense/auto-ban') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+    const { updateAutoBanPolicy, countAutoBansLastHour } = await import('@ysk/core');
+    const policy = updateAutoBanPolicy(ctx.db, {
+      enabled: data.enabled as boolean | undefined,
+      mode: data.mode as 'off' | 'soft' | 'normal' | 'aggressive' | undefined,
+      method: data.method as 'fail2ban' | 'ufw' | 'both' | undefined,
+      cooldownMinutes: data.cooldownMinutes as number | undefined,
+      maxAutoBansPerHour: data.maxAutoBansPerHour as number | undefined,
+      whitelist: data.whitelist as string[] | undefined,
+      pausedReason: data.pausedReason === null ? undefined : (data.pausedReason as string | undefined),
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.auto_ban.update',
+      detail: { enabled: policy.enabled, mode: policy.mode },
+      ok: true,
+    });
+    sendJson(res, 200, {
+      ...policy,
+      autoBansLastHour: countAutoBansLastHour(policy),
+    });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/whitelist') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ip?: string; action?: 'add' | 'remove' };
+    const {
+      loadAutoBanPolicy,
+      updateAutoBanPolicy,
+      updateDefenseAutomation,
+      loadDefenseAutomation,
+      syncWhitelistToFail2banIgnore,
+    } = await import('@ysk/core');
+    const cur = loadAutoBanPolicy(ctx.db);
+    const ip = (data.ip ?? '').trim();
+    if (!ip) {
+      sendJson(res, 400, { ok: false, notes: ['需要 ip'] });
+      return true;
+    }
+    let whitelist = [...cur.whitelist];
+    if (data.action === 'remove') {
+      whitelist = whitelist.filter((w) => w !== ip);
+    } else if (!whitelist.includes(ip)) {
+      whitelist.unshift(ip);
+      whitelist = whitelist.slice(0, 200);
+    }
+    const policy = updateAutoBanPolicy(ctx.db, { whitelist });
+    // Keep automation autoBan.whitelist in lockstep (avoid dual-source drift)
+    try {
+      const auto = loadDefenseAutomation(ctx.db);
+      updateDefenseAutomation(ctx.db, {
+        autoBan: { ...auto.autoBan, whitelist },
+      });
+      if (auto.autoBan.syncFail2banIgnoreip !== false) {
+        syncWhitelistToFail2banIgnore(ctx.dataDir, whitelist);
+      }
+    } catch {
+      /* best-effort */
+    }
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.whitelist',
+      detail: { ip, action: data.action ?? 'add' },
+      ok: true,
+    });
+    sendJson(res, 200, { ok: true, whitelist: policy.whitelist });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/auto-ban/tick') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const { runDefenseAutomationTick } = await import('@ysk/core');
+    const r = await runDefenseAutomationTick({
+      host: ctx.host,
+      db: ctx.db,
+      dataDir: ctx.dataDir,
+      requestCountLastMinute: ctx.requestHits?.length ?? 0,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.automation.tick',
+      detail: {
+        banned: r.banned.length,
+        presetChanged: r.presetChanged,
+        score: r.score,
+        ok: r.ok,
+      },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/defense/automation') {
+    ctx.auth.authenticate(getBearer(req));
+    const {
+      loadDefenseAutomation,
+      AUTOMATION_MECHANISM_ROWS,
+      countAutoBansLastHour,
+      loadAutoBanPolicy,
+    } = await import('@ysk/core');
+    const automation = loadDefenseAutomation(ctx.db);
+    const legacy = loadAutoBanPolicy(ctx.db);
+    const job = ctx.scheduler.get?.('defense-auto-ban') ??
+      ctx.scheduler.list().find((j) => j.id === 'defense-auto-ban');
+    sendJson(res, 200, {
+      automation,
+      mechanisms: AUTOMATION_MECHANISM_ROWS,
+      autoBansLastHour: countAutoBansLastHour(legacy),
+      scheduler: job
+        ? {
+            intervalMs: job.intervalMs,
+            lastRunAt: job.lastRunAt,
+            nextRunAt: job.nextRunAt,
+            running: job.running,
+          }
+        : null,
+      hasCfToken: Boolean(process.env.CF_API_TOKEN?.trim()),
+    });
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/defense/intel') {
+    ctx.auth.authenticate(getBearer(req));
+    const { collectTopIps, listVhostDefenseMarkers } = await import('@ysk/core');
+    const top = collectTopIps(ctx.dataDir, 40);
+    const vhosts = listVhostDefenseMarkers(ctx.dataDir);
+    sendJson(res, 200, {
+      topIps: top.items,
+      topNotes: top.notes,
+      vhosts: vhosts.items,
+      vhostsWithLimit: vhosts.withLimit,
+      vhostsTotal: vhosts.total,
+    });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/cloudflare/under-attack') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      zones?: string[];
+      enable?: boolean;
+      dryRun?: boolean;
+      level?: string;
+    };
+    const {
+      enableCloudflareUnderAttack,
+      disableCloudflareUnderAttack,
+      loadDefenseAutomation,
+    } = await import('@ysk/core');
+    const auto = loadDefenseAutomation(ctx.db);
+    const zones =
+      data.zones?.length ? data.zones : auto.cloudflare.zones;
+    const enable = data.enable !== false;
+    const r = enable
+      ? await enableCloudflareUnderAttack({
+          zones,
+          dryRun: data.dryRun === true || !ctx.host.executeEnabled(),
+        })
+      : await disableCloudflareUnderAttack({
+          zones,
+          level: (data.level as 'high') || 'high',
+          dryRun: data.dryRun === true || !ctx.host.executeEnabled(),
+        });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.cloudflare.under_attack',
+      detail: { enable, zones, ok: r.ok },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'PUT' && url.pathname === '/api/v1/defense/automation') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+    const {
+      updateDefenseAutomation,
+      AUTOMATION_MECHANISM_ROWS,
+      syncWhitelistToFail2banIgnore,
+    } = await import('@ysk/core');
+    const automation = updateDefenseAutomation(ctx.db, data as never);
+    if (automation.autoBan.syncFail2banIgnoreip) {
+      try {
+        syncWhitelistToFail2banIgnore(ctx.dataDir, automation.autoBan.whitelist);
+      } catch {
+        /* best-effort */
+      }
+    }
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.automation.update',
+      detail: {
+        enabled: automation.enabled,
+        autoPreset: automation.autoPreset.enabled,
+        autoBan: automation.autoBan.enabled,
+      },
+      ok: true,
+    });
+    sendJson(res, 200, { automation, mechanisms: AUTOMATION_MECHANISM_ROWS });
+    return true;
+  }
+
+  // —— GeoIP / IP 准入（國家·大陸·ASN）——
+  if (method === 'GET' && url.pathname === '/api/v1/defense/geoip/status') {
+    ctx.auth.authenticate(getBearer(req));
+    const { getGeoipStatus } = await import('@ysk/core');
+    const status = await getGeoipStatus(ctx.dataDir, ctx.db);
+    const job =
+      ctx.scheduler.get?.('defense-geoip-update') ??
+      ctx.scheduler.list().find((j) => j.id === 'defense-geoip-update');
+    sendJson(res, 200, {
+      ...status,
+      scheduler: job
+        ? {
+            intervalMs: job.intervalMs,
+            lastRunAt: job.lastRunAt,
+            nextRunAt: job.nextRunAt,
+            running: job.running,
+          }
+        : null,
+    });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/geoip/update') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const { updateGeoipDatabases, resetGeoipReaders, getGeoipStatus } = await import(
+      '@ysk/core'
+    );
+    const r = await updateGeoipDatabases(ctx.dataDir);
+    resetGeoipReaders();
+    const status = await getGeoipStatus(ctx.dataDir, ctx.db);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.geoip.update',
+      detail: { ok: r.ok, notes: r.notes.slice(0, 8) },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, { ...r, status });
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/defense/geoip/policy') {
+    ctx.auth.authenticate(getBearer(req));
+    const { loadIpAccessPolicy } = await import('@ysk/core');
+    sendJson(res, 200, { policy: loadIpAccessPolicy(ctx.db, ctx.dataDir) });
+    return true;
+  }
+  if (method === 'PUT' && url.pathname === '/api/v1/defense/geoip/policy') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+    const { updateIpAccessPolicy, applyIpAccessNginx } = await import('@ysk/core');
+    const policy = updateIpAccessPolicy(ctx.db, ctx.dataDir, data as never);
+    let applyNotes: string[] = [];
+    if (policy.enforce.nginx) {
+      const a = applyIpAccessNginx(ctx.dataDir, ctx.db);
+      applyNotes = a.notes;
+    }
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.geoip.policy',
+      detail: {
+        enabled: policy.enabled,
+        mode: policy.mode,
+        countries: policy.countries.length,
+        asns: policy.asns.length,
+      },
+      ok: true,
+    });
+    sendJson(res, 200, { policy, applyNotes });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/geoip/lookup') {
+    ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ip?: string };
+    const { lookupIpWithPolicy, loadAutoBanPolicy, loadDefenseAutomation } =
+      await import('@ysk/core');
+    const auto = loadDefenseAutomation(ctx.db);
+    const legacy = loadAutoBanPolicy(ctx.db);
+    const whitelist = [
+      ...new Set([...(auto.autoBan.whitelist ?? []), ...(legacy.whitelist ?? [])]),
+    ];
+    const r = await lookupIpWithPolicy(
+      ctx.dataDir,
+      ctx.db,
+      data.ip ?? '',
+      whitelist,
+    );
+    sendJson(res, 200, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/geoip/apply') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const { applyIpAccessNginx, getGeoipStatus } = await import('@ysk/core');
+    const a = applyIpAccessNginx(ctx.dataDir, ctx.db);
+    const status = await getGeoipStatus(ctx.dataDir, ctx.db);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.geoip.apply',
+      detail: { ok: a.ok, path: a.path },
+      ok: a.ok,
+    });
+    sendJson(res, a.ok ? 200 : 422, { ...a, status });
     return true;
   }
 
@@ -864,8 +1344,8 @@ export async function handleSystemRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/system/firewall/status') {
     ctx.auth.authenticate(getBearer(req));
-    const status = await probeFirewallStatus(ctx.host);
-    sendJson(res, 200, status);
+    const { probeFirewallDeep } = await import('@ysk/core');
+    sendJson(res, 200, await probeFirewallDeep(ctx.host));
     return true;
   }
 
@@ -893,23 +1373,111 @@ export async function handleSystemRoutes(
     sendJson(res, result.ok || !data.apply ? 200 : 422, result);
     return true;
   }
+  if (method === 'POST' && url.pathname === '/api/v1/system/firewall/enable') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { enabled?: boolean };
+    const { firewallSetEnabled } = await import('@ysk/core');
+    const r = await firewallSetEnabled(ctx.host, data.enabled !== false);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.firewall.enable',
+      detail: { enabled: data.enabled !== false, ...r },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/firewall/deny') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ip?: string };
+    const { firewallDenyIp } = await import('@ysk/core');
+    const r = await firewallDenyIp(ctx.host, data.ip ?? '');
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.firewall.deny',
+      detail: { ip: data.ip, ...r },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/firewall/delete-deny') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ip?: string };
+    const { firewallDeleteDenyIp } = await import('@ysk/core');
+    const r = await firewallDeleteDenyIp(ctx.host, data.ip ?? '');
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.firewall.delete_deny',
+      detail: { ip: data.ip, ...r },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/firewall/delete-rule') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { num?: number };
+    const { firewallDeleteRuleNumber } = await import('@ysk/core');
+    const r = await firewallDeleteRuleNumber(ctx.host, Number(data.num));
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.firewall.delete_rule',
+      detail: { num: data.num, ...r },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/firewall/allow-port') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { port?: number; proto?: 'tcp' | 'udp' };
+    const { firewallAllowPort } = await import('@ysk/core');
+    const r = await firewallAllowPort(ctx.host, Number(data.port), data.proto ?? 'tcp');
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.firewall.allow_port',
+      detail: data,
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
 
   if (method === 'GET' && url.pathname === '/api/v1/system/fail2ban/status') {
     ctx.auth.authenticate(getBearer(req));
-    const status = await probeFail2banStatus(ctx.host);
-    sendJson(res, 200, status);
+    const { getFail2banDeepStatus } = await import('@ysk/core');
+    sendJson(
+      res,
+      200,
+      await getFail2banDeepStatus({ host: ctx.host, dataDir: ctx.dataDir }),
+    );
     return true;
   }
 
   if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/apply') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { apply?: boolean; jails?: string[] };
+    const data = JSON.parse(raw || '{}') as {
+      apply?: boolean;
+      jails?: string[];
+      bantime?: string;
+      findtime?: string;
+      maxretry?: number;
+    };
     const result = await applyFail2ban({
       dataDir: ctx.dataDir,
       host: ctx.host,
       apply: data.apply,
       jails: data.jails,
+      bantime: data.bantime,
+      findtime: data.findtime,
+      maxretry: data.maxretry,
     });
     ctx.audit.append({
       actor: user.username,
@@ -918,6 +1486,38 @@ export async function handleSystemRoutes(
       ok: result.ok,
     });
     sendJson(res, result.ok || !data.apply ? 200 : 422, result);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/service') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      action?: 'start' | 'stop' | 'restart' | 'reload' | 'enable';
+    };
+    const { fail2banService } = await import('@ysk/core');
+    const r = await fail2banService(ctx.host, data.action ?? 'reload');
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.fail2ban.service',
+      detail: { action: data.action, ...r },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/ban') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { jail?: string; ip?: string };
+    const { fail2banBanIp } = await import('@ysk/core');
+    const r = await fail2banBanIp(ctx.host, data.jail ?? 'sshd', data.ip ?? '');
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.fail2ban.ban',
+      detail: data,
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
     return true;
   }
 
@@ -943,6 +1543,12 @@ export async function handleSystemRoutes(
     sendJson(res, r.ok ? 200 : 422, r);
     return true;
   }
+  if (method === 'GET' && url.pathname === '/api/v1/system/fail2ban/ignoreip') {
+    ctx.auth.authenticate(getBearer(req));
+    const { readIgnoreIpList } = await import('@ysk/core');
+    sendJson(res, 200, { items: readIgnoreIpList(ctx.dataDir) });
+    return true;
+  }
   if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/ignoreip') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
@@ -964,30 +1570,40 @@ export async function handleSystemRoutes(
     return true;
   }
 
+  if (method === 'GET' && url.pathname === '/api/v1/system/host') {
+    ctx.auth.authenticate(getBearer(req));
+    const { collectHostOverview } = await import('@ysk/core');
+    sendJson(res, 200, await collectHostOverview(ctx.host));
+    return true;
+  }
+
   if (method === 'GET' && url.pathname === '/api/v1/system/host-identity') {
     ctx.auth.authenticate(getBearer(req));
-    const hn = await ctx.host.runCommand(['hostname'], { timeoutMs: 3_000 });
-    const tz = await ctx.host.runCommand(['timedatectl', 'show', '-p', 'Timezone', '--value'], {
-      timeoutMs: 5_000,
-    });
+    const { collectHostOverview } = await import('@ysk/core');
+    const o = await collectHostOverview(ctx.host);
     sendJson(res, 200, {
-      hostname: (hn.stdout || '').trim() || null,
-      timezone: (tz.stdout || '').trim() || null,
-      executeEnabled: ctx.host.executeEnabled(),
-      isRoot: ctx.host.isRoot(),
+      hostname: o.identity.hostname,
+      timezone: o.identity.timezone,
+      prettyHostname: o.identity.prettyHostname,
+      executeEnabled: o.caps.executeEnabled,
+      isRoot: o.caps.isRoot,
     });
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/host-identity') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { hostname?: string; timezone?: string };
+    const data = JSON.parse(raw || '{}') as {
+      hostname?: string;
+      timezone?: string;
+      prettyHostname?: string;
+    };
     const notes: string[] = [];
     if (!ctx.host.executeEnabled() || !ctx.host.isRoot()) {
       sendJson(res, 422, {
         ok: false,
         blocked: true,
-        notes: ['無法變更主機名稱／時區：需要系統變更權限與管理員'],
+        notes: ['無法變更主機名稱／時區：需要系統變更權限與 root'],
       });
       return true;
     }
@@ -999,6 +1615,18 @@ export async function handleSystemRoutes(
         r.exitCode === 0
           ? `hostname → ${data.hostname.trim()}`
           : `hostname 失敗: ${r.stderr || r.stdout}`,
+      );
+    }
+    if (data.prettyHostname !== undefined) {
+      const pretty = data.prettyHostname.trim();
+      const r = await ctx.host.runCommand(
+        ['hostnamectl', 'set-hostname', '--pretty', pretty || ' '],
+        { timeoutMs: 10_000 },
+      );
+      notes.push(
+        r.exitCode === 0
+          ? `pretty hostname → ${pretty || '(cleared)'}`
+          : `pretty hostname 失敗: ${r.stderr || r.stdout}`,
       );
     }
     if (data.timezone?.trim()) {
@@ -1021,34 +1649,76 @@ export async function handleSystemRoutes(
     return true;
   }
 
-  if (method === 'POST' && url.pathname === '/api/v1/system/nginx/purge-cache') {
+  if (method === 'POST' && url.pathname === '/api/v1/system/host/ntp-sync') {
     const user = ctx.auth.authenticate(getBearer(req));
-    const notes: string[] = [];
-    if (!ctx.host.executeEnabled()) {
-      sendJson(res, 422, {
-        ok: false,
-        blocked: true,
-        notes: ['無法 purge：未開啟系統變更權限'],
-      });
+    const { enableHostNtp } = await import('@ysk/core');
+    const r = await enableHostNtp(ctx.host);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.host.ntp_sync',
+      detail: r,
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/host/power') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    if (!user.roles.includes('admin')) {
+      sendJson(res, 403, { ok: false, notes: ['僅 admin 可執行整機電源操作'] });
       return true;
     }
-    // Best-effort: remove common cache dirs + reload
-    const r = await ctx.host.runCommand(
-      [
-        'bash',
-        '-c',
-        'rm -rf /var/cache/nginx/* /var/lib/nginx/cache/* 2>/dev/null; nginx -t && systemctl reload nginx; echo done',
-      ],
-      { timeoutMs: 30_000 },
-    );
-    notes.push(r.exitCode === 0 ? '已嘗試清除 nginx cache 並 reload' : `失敗: ${r.stderr || r.stdout}`);
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      action?: 'reboot' | 'poweroff' | 'cancel';
+      confirm?: string;
+      delaySec?: number;
+    };
+    const action = data.action;
+    if (action !== 'reboot' && action !== 'poweroff' && action !== 'cancel') {
+      sendJson(res, 400, { ok: false, notes: ['action 須為 reboot | poweroff | cancel'] });
+      return true;
+    }
+    const { hostPowerAction } = await import('@ysk/core');
+    const r = await hostPowerAction({
+      host: ctx.host,
+      action,
+      confirm: data.confirm,
+      delaySec: data.delaySec,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action:
+        action === 'reboot'
+          ? 'system.host.reboot'
+          : action === 'poweroff'
+            ? 'system.host.poweroff'
+            : 'system.host.power_cancel',
+      detail: {
+        ok: r.ok,
+        blocked: r.blocked,
+        delaySec: r.delaySec,
+        scheduledAt: r.scheduledAt,
+        notes: r.notes,
+      },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : r.blocked ? 422 : 422, r);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/nginx/purge-cache') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const { purgeNginxCache } = await import('@ysk/core');
+    const r = await purgeNginxCache({ host: ctx.host });
     ctx.audit.append({
       actor: user.username,
       action: 'system.nginx.purge_cache',
-      detail: { exit: r.exitCode },
-      ok: r.exitCode === 0,
+      detail: r,
+      ok: r.ok,
     });
-    sendJson(res, r.exitCode === 0 ? 200 : 422, { ok: r.exitCode === 0, notes });
+    sendJson(res, r.ok ? 200 : 422, r);
     return true;
   }
 
@@ -1171,7 +1841,7 @@ export async function handleSystemRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/system/systemd/status') {
     ctx.auth.authenticate(getBearer(req));
-    const status = await probeControlPlaneSystemd(ctx.host);
+    const status = await probeControlPlaneSystemd(ctx.host, ctx.dataDir);
     sendJson(res, 200, status);
     return true;
   }
@@ -1224,6 +1894,84 @@ export async function handleSystemRoutes(
       ok: result.applied || !apply,
     });
     sendJson(res, 200, result);
+    return true;
+  }
+
+  // —— Control-plane export + managed nginx + rebuild ——
+  // Must live here: handleSystemRoutes is invoked before inline http-server routes.
+  if (method === 'GET' && url.pathname === '/api/v1/system/export') {
+    ctx.auth.authenticate(getBearer(req));
+    const { exportControlPlaneSnapshot } = await import('@ysk/core');
+    sendJson(res, 200, exportControlPlaneSnapshot(ctx.db));
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/system/exports') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listControlPlaneExports } = await import('@ysk/core');
+    sendJson(res, 200, { items: listControlPlaneExports(ctx.dataDir) });
+    return true;
+  }
+  if (method === 'GET' && url.pathname.startsWith('/api/v1/system/exports/')) {
+    ctx.auth.authenticate(getBearer(req));
+    const name = decodeURIComponent(url.pathname.split('/').pop() || '');
+    const { resolveExportFile } = await import('@ysk/core');
+    const { createReadStream, existsSync } = await import('node:fs');
+    const r = resolveExportFile(ctx.dataDir, name);
+    if (!r.ok || !existsSync(r.path)) {
+      sendJson(res, 404, { ok: false, notes: r.ok ? ['不存在'] : r.notes });
+      return true;
+    }
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${name}"`,
+    });
+    createReadStream(r.path).pipe(res);
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/system/managed-nginx') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listManagedNginxDetailed } = await import('@ysk/core');
+    sendJson(res, 200, { items: listManagedNginxDetailed(ctx.dataDir) });
+    return true;
+  }
+  if (method === 'GET' && url.pathname.startsWith('/api/v1/system/managed-nginx/')) {
+    ctx.auth.authenticate(getBearer(req));
+    const name = decodeURIComponent(url.pathname.split('/').pop() || '');
+    const { readManagedNginxConf } = await import('@ysk/core');
+    const r = readManagedNginxConf(ctx.dataDir, name);
+    sendJson(res, r.ok ? 200 : 404, r);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/rebuild') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      syncNginx?: boolean;
+      writeExport?: boolean;
+      dryRun?: boolean;
+    };
+    const { rebuildManagedConfigs } = await import('@ysk/core');
+    const r = await rebuildManagedConfigs({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      db: ctx.db,
+      syncNginx: data.syncNginx,
+      writeExport: data.writeExport !== false,
+      dryRun: data.dryRun === true,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.rebuild',
+      detail: {
+        ok: r.ok,
+        mode: r.mode,
+        blocked: r.blocked,
+        dryRun: r.dryRun,
+        confCount: r.nginxConfs?.length,
+      },
+      ok: r.ok,
+    });
+    sendJson(res, r.ok ? 200 : 422, r);
     return true;
   }
 

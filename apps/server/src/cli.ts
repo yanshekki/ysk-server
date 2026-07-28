@@ -41,6 +41,7 @@ Commands:
   tools                 List tools; tools run --tool <name>
   ask                   Plan AI task from natural language
   projects              list|create|deploy|stop|backup|template
+  backup all            Backup every project home (cron-friendly)
   templates             List one-click app templates
   hosting               nginx|nginx-sync|db|dns|powerdns|firewall helpers
   agents                List / probe managed AI agent runtimes
@@ -316,6 +317,63 @@ async function main(argv: string[]): Promise<number> {
     const { listAppTemplates } = await import('@ysk/core');
     printJson({ ok: true, items: listAppTemplates() });
     return 0;
+  }
+
+  if (command === 'backup') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'all';
+    if (sub !== 'all') {
+      process.stderr.write('Usage: ysk-server backup all [--data-dir <path>] [--config <path>]\n');
+      return 1;
+    }
+    const configPath = getOpt(args, '--config');
+    const dataDir = getOpt(args, '--data-dir');
+    let config = configPath ? loadConfigFile(configPath) : undefined;
+    if (dataDir) {
+      config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
+    }
+    const { createAppContext, closeAppContext } = await import('./app-context.js');
+    const { backupAllProjects, getBackupExclusions } = await import('@ysk/core');
+    const ctx = createAppContext({
+      version: VERSION,
+      config,
+      configPath,
+      dataDir: dataDir ?? config?.dataDir,
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
+    try {
+      const projects = ctx.db.snapshot.projects.map((p) => ({
+        id: p.id,
+        home_dir: p.home_dir,
+        name: p.name,
+      }));
+      const excludes = getBackupExclusions(ctx.db);
+      const r = await backupAllProjects({
+        host: ctx.host,
+        dataDir: ctx.dataDir,
+        projects,
+        excludes: excludes.length ? excludes : ['node_modules', '.git', 'vendor', '.cache'],
+      });
+      for (const item of r.results) {
+        if (item.ok && item.archivePath && !item.skipped) {
+          const p = ctx.db.snapshot.projects.find((x) => x.id === item.projectId);
+          if (p) {
+            p.last_backup_path = item.archivePath;
+            p.last_backup_at = new Date().toISOString();
+            p.updated_at = new Date().toISOString();
+          }
+        }
+      }
+      ctx.db.persist();
+      ctx.settings.setJson('last_backup_run', {
+        at: new Date().toISOString(),
+        ...r,
+        via: 'cli',
+      });
+      printJson({ ...r, ok: r.ok });
+      return r.ok ? 0 : 1;
+    } finally {
+      closeAppContext(ctx);
+    }
   }
 
   if (command === 'projects') {

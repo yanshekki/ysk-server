@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Alert,
   Badge,
@@ -13,6 +14,7 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
+  OpsHero,
   SoftwareInstallBanner,
   FormActions,
   FormHint,
@@ -129,6 +131,53 @@ export function SslPage() {
       <SoftwareInstallBanner feature="ssl" title="Certbot 尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
 
+      <OpsHero
+        eyebrow="SSL"
+        title="憑證管理"
+        pill={`${items.length} 張`}
+        pillTone={items.length ? 'ok' : 'warn'}
+        tone={items.length ? 'ok' : 'warn'}
+        hint="上傳或 Let’s Encrypt 申請。檔案存在 ≠ 網站已綁定；綁定後需 Nginx reload。"
+        cta={
+          <>
+            <Button variant="primary" size="md" onClick={() => setLeOpen(true)}>
+              申請 Let’s Encrypt
+            </Button>
+            <Button variant="secondary" size="md" onClick={() => setUploadOpen(true)}>
+              + 上傳憑證
+            </Button>
+            <Link to="/nginx" className="btn btn--ghost btn--md">
+              Nginx
+            </Link>
+            <Link to="/dns" className="btn btn--ghost btn--md">
+              DNS
+            </Link>
+          </>
+        }
+        stats={[
+          { label: '憑證', value: items.length },
+          {
+            label: '有檔案',
+            value: items.filter((c) => c.files_exist).length,
+          },
+          { label: '綁定', value: bindings.length },
+          {
+            label: '失敗',
+            value: (
+              <Badge
+                tone={
+                  items.some((c) => (c.status || '').toLowerCase() === 'failed')
+                    ? 'danger'
+                    : 'ok'
+                }
+              >
+                {items.filter((c) => (c.status || '').toLowerCase() === 'failed').length}
+              </Badge>
+            ),
+          },
+        ]}
+      />
+
       <ExecutionResultPanel
         message={msg}
         ok={ok}
@@ -217,12 +266,7 @@ export function SslPage() {
             empty={
               <EmptyState
                 title="尚未有憑證"
-                description="上傳 PEM 或在面板申請 Let’s Encrypt"
-                action={
-                  <Button variant="primary" size="md" onClick={() => setUploadOpen(true)}>
-                    + 上傳憑證
-                  </Button>
-                }
+                description="用右上角「上傳憑證」或「申請 Let’s Encrypt」"
               />
             }
             rowActions={(r) => (

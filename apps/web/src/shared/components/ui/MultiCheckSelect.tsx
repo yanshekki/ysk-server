@@ -1,0 +1,174 @@
+/**
+ * Searchable multi-select with checkboxes + selected chips.
+ */
+import { useMemo, useState } from 'react';
+
+export type MultiCheckOption = {
+  value: string;
+  label: string;
+  hint?: string;
+};
+
+export type MultiCheckSelectProps = {
+  id: string;
+  options: MultiCheckOption[];
+  value: string[];
+  onChange: (next: string[]) => void;
+  /** Extra values not in options (e.g. custom ASN) still shown as selected */
+  allowCustom?: boolean;
+  customPlaceholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
+  maxVisible?: number;
+  disabled?: boolean;
+};
+
+export function MultiCheckSelect({
+  id,
+  options,
+  value,
+  onChange,
+  allowCustom = false,
+  customPlaceholder = '自訂代碼',
+  searchPlaceholder = '搜尋…',
+  emptyText = '無符合項目',
+  maxVisible = 12,
+  disabled = false,
+}: MultiCheckSelectProps) {
+  const [q, setQ] = useState('');
+  const [custom, setCustom] = useState('');
+  const selected = useMemo(() => new Set(value), [value]);
+
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return options;
+    return options.filter(
+      (o) =>
+        o.value.toLowerCase().includes(needle) ||
+        o.label.toLowerCase().includes(needle) ||
+        (o.hint ?? '').toLowerCase().includes(needle),
+    );
+  }, [options, q]);
+
+  const labelByValue = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const o of options) m.set(o.value, o.label);
+    return m;
+  }, [options]);
+
+  function toggle(v: string) {
+    if (disabled) return;
+    if (selected.has(v)) onChange(value.filter((x) => x !== v));
+    else onChange([...value, v]);
+  }
+
+  function addCustom() {
+    const raw = custom.trim().toUpperCase();
+    if (!raw) return;
+    const v = raw.startsWith('AS') || /^[A-Z]{2}$/.test(raw) ? raw : raw;
+    if (!selected.has(v)) onChange([...value, v]);
+    setCustom('');
+  }
+
+  const shown = filtered.slice(0, maxVisible);
+
+  return (
+    <div className="mcs" id={id}>
+      {value.length > 0 ? (
+        <div className="mcs__chips" role="list">
+          {value.map((v) => (
+            <button
+              key={v}
+              type="button"
+              className="mcs__chip"
+              role="listitem"
+              disabled={disabled}
+              onClick={() => toggle(v)}
+              title="點擊移除"
+            >
+              <span className="mcs__chip-lab">
+                {labelByValue.get(v) ?? v}
+                {labelByValue.has(v) ? (
+                  <span className="mcs__chip-code"> {v}</span>
+                ) : null}
+              </span>
+              <span className="mcs__chip-x" aria-hidden>
+                ×
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="mcs__empty muted u-text-sm">尚未選擇</p>
+      )}
+
+      <input
+        type="search"
+        className="mcs__search"
+        value={q}
+        disabled={disabled}
+        placeholder={searchPlaceholder}
+        onChange={(e) => setQ(e.target.value)}
+        aria-label={searchPlaceholder}
+      />
+
+      <div className="mcs__list" role="group" aria-label="選項">
+        {shown.length === 0 ? (
+          <p className="mcs__empty muted u-text-sm">{emptyText}</p>
+        ) : (
+          shown.map((o) => {
+            const on = selected.has(o.value);
+            return (
+              <label
+                key={o.value}
+                className={`mcs__opt${on ? ' is-on' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={on}
+                  disabled={disabled}
+                  onChange={() => toggle(o.value)}
+                />
+                <span className="mcs__opt-main">
+                  <span className="mcs__opt-lab">{o.label}</span>
+                  <code className="mcs__opt-code">{o.hint ?? o.value}</code>
+                </span>
+              </label>
+            );
+          })
+        )}
+        {filtered.length > maxVisible ? (
+          <p className="mcs__more muted u-text-sm">
+            仲有 {filtered.length - maxVisible} 項 — 用搜尋收窄
+          </p>
+        ) : null}
+      </div>
+
+      {allowCustom ? (
+        <div className="mcs__custom">
+          <input
+            value={custom}
+            disabled={disabled}
+            placeholder={customPlaceholder}
+            onChange={(e) => setCustom(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addCustom();
+              }
+            }}
+            spellCheck={false}
+          />
+          <button
+            type="button"
+            className="btn btn--secondary btn--sm"
+            disabled={disabled || !custom.trim()}
+            onClick={addCustom}
+          >
+            加入
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}

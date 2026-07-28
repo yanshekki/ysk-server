@@ -16,7 +16,7 @@ import {
   Modal,
   OpsResultPanel,
   SplitPanel,
-  SummaryStrip,
+  OpsHero,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
@@ -295,7 +295,32 @@ export function RedisPage() {
         </Alert>
       ) : null}
 
-      {summaryItems.length > 0 ? <SummaryStrip items={summaryItems} /> : null}
+      <OpsHero
+        eyebrow="Redis"
+        title="資料瀏覽"
+        pill={online ? '已連線' : '未連線'}
+        pillTone={online ? 'ok' : 'warn'}
+        tone={online ? 'ok' : 'warn'}
+        hint="瀏覽／編輯鍵值。服務安裝與設定請到服務頁。"
+        cta={
+          <Link to="/databases/redis/service" className="btn btn--secondary btn--md">
+            服務設定
+          </Link>
+        }
+        stats={
+          summaryItems.length
+            ? summaryItems.slice(0, 4).map((s) => ({
+                label: s.label,
+                value: s.value,
+              }))
+            : [
+                { label: '狀態', value: online ? 'online' : 'offline' },
+                { label: 'DB', value: db },
+                { label: '鍵', value: keys.length },
+                { label: '選中', value: selectedKey ? '1' : '0' },
+              ]
+        }
+      />
 
       {!online ? (
         <EmptyState

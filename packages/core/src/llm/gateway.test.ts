@@ -22,7 +22,7 @@ describe('LlmGateway', () => {
       { baseUrl: 'http://x', defaultModel: 'm' },
       echoTransport,
     );
-    await expect(gw.chat({ messages: [] })).rejects.toThrow(/messages/);
+    await expect(gw.chat({ messages: [] })).rejects.toThrow(/messages|訊息/i);
   });
 
   it('enforces localLlmOnly under offline/ddos protection', async () => {

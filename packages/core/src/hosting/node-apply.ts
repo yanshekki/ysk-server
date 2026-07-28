@@ -66,6 +66,7 @@ export async function applyNodeHosting(input: {
     memoryMax: input.memoryMax,
     cpuQuotaPercent: input.cpuQuotaPercent,
     limitNOFILE: input.limitNOFILE,
+    env: input.env,
   });
   writeFileSync(unitPath, unit, 'utf8');
 

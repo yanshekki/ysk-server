@@ -61,10 +61,29 @@ export async function resticBackupProject(input: {
   db: JsonStore;
   projectId: string;
   homeDir: string;
-}): Promise<{ ok: boolean; notes: string[]; snapshotId?: string; blocked?: boolean }> {
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  snapshotId?: string;
+  blocked?: boolean;
+  /** true = not run (disabled) — not a hard failure for tar-only run-all */
+  skipped?: boolean;
+}> {
   const settings = getResticSettings(input.db);
   if (!settings.enabled) {
-    return { ok: true, notes: ['restic 未啟用（略過增量）'] };
+    return {
+      ok: true,
+      skipped: true,
+      notes: ['restic 未啟用（略過增量）'],
+    };
+  }
+  if (!settings.password?.trim()) {
+    return {
+      ok: false,
+      notes: [
+        'restic 已啟用但未設定 password — 拒絕使用內建預設密碼（請在備份設定填寫）',
+      ],
+    };
   }
   if (!input.host.executeEnabled()) {
     return {
@@ -85,7 +104,7 @@ export async function resticBackupProject(input: {
 
   const defaultRepo = join(input.dataDir, 'restic-repo');
   const repo = settings.s3Repo || settings.repoPath || defaultRepo;
-  const password = settings.password || 'ysk-restic-change-me';
+  const password = settings.password.trim();
   mkdirSync(defaultRepo, { recursive: true });
 
   const envPrefix = buildResticEnv(settings, password, repo);
@@ -175,7 +194,18 @@ export async function listResticSnapshots(input: {
 }): Promise<{ ok: boolean; snapshots: ResticSnapshot[]; notes: string[]; blocked?: boolean }> {
   const settings = getResticSettings(input.db);
   if (!settings.enabled) {
-    return { ok: true, snapshots: [], notes: ['restic 未啟用'] };
+    return {
+      ok: false,
+      snapshots: [],
+      notes: ['restic 未啟用 — 無法列出 snapshots'],
+    };
+  }
+  if (!settings.password?.trim()) {
+    return {
+      ok: false,
+      snapshots: [],
+      notes: ['restic 已啟用但未設定 password'],
+    };
   }
   if (!input.host.executeEnabled()) {
     return {
@@ -193,7 +223,7 @@ export async function listResticSnapshots(input: {
   }
   const defaultRepo = join(input.dataDir, 'restic-repo');
   const repo = settings.s3Repo || settings.repoPath || defaultRepo;
-  const password = settings.password || 'ysk-restic-change-me';
+  const password = settings.password.trim();
   const envPrefix = buildResticEnv(settings, password, repo);
   const tagArg = input.projectId
     ? ` --tag ${JSON.stringify(`project:${input.projectId}`)}`
@@ -261,6 +291,9 @@ export async function resticRestoreProject(input: {
   if (!settings.enabled) {
     return { ok: false, notes: ['restic 未啟用'] };
   }
+  if (!settings.password?.trim()) {
+    return { ok: false, notes: ['restic 已啟用但未設定 password'] };
+  }
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
@@ -293,7 +326,7 @@ export async function resticRestoreProject(input: {
 
   const defaultRepo = join(input.dataDir, 'restic-repo');
   const repo = settings.s3Repo || settings.repoPath || defaultRepo;
-  const password = settings.password || 'ysk-restic-change-me';
+  const password = settings.password.trim();
   const envPrefix = buildResticEnv(settings, password, repo);
 
   // Dry-run: restic ls snapshot (paths only)

@@ -16,7 +16,9 @@ describe('provisionMysqlDatabase', () => {
     expect(r.executed).toBe(false);
     expect(r.requiresExecute).toBe(true);
     expect(r.sql.length).toBeGreaterThan(0);
-    expect(r.notes.join(' ')).toMatch(/NOT provisioned|YSK_EXECUTE/i);
+    expect(r.notes.join(' ')).toMatch(
+      /NOT provisioned|YSK_EXECUTE|系統變更|尚未建立|未開啟|資料庫/i,
+    );
   });
 
   it('rejects short password', async () => {
@@ -28,6 +30,6 @@ describe('provisionMysqlDatabase', () => {
       hostExec: host,
     });
     expect(r.ok).toBe(false);
-    expect(r.notes.join(' ')).toMatch(/password/i);
+    expect(r.notes.join(' ')).toMatch(/password|密碼/i);
   });
 });

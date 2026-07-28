@@ -2,6 +2,92 @@
  * System feature — apply wizards API surface.
  */
 import { api } from '../../shared/services/api';
+import { authStore } from '../../shared/stores/auth-store';
+
+export type ReadinessLevel = 'ready' | 'degraded' | 'missing' | 'unknown';
+
+export type ReadinessItemDto = {
+  id: string;
+  category: string;
+  title: string;
+  level: ReadinessLevel;
+  detail: string;
+  spec?: string;
+  fixHint?: string;
+  fixHref?: string;
+  severity?: 'critical' | 'recommended' | 'optional';
+};
+
+export type ProductionReadinessDto = {
+  product: string;
+  generatedAt: string;
+  mode: 'production_capable' | 'degraded' | string;
+  executeEnabled: boolean;
+  isRoot: boolean;
+  score: { ready: number; degraded: number; missing: number; total: number };
+  items: ReadinessItemDto[];
+  summary: string[];
+  productionReady: boolean;
+  blockers?: ReadinessItemDto[];
+  categories?: string[];
+};
+
+export type HostOverviewDto = {
+  identity: {
+    hostname: string | null;
+    prettyHostname: string | null;
+    timezone: string | null;
+  };
+  os: {
+    platform: string;
+    arch: string;
+    release: string;
+    kernel: string | null;
+  };
+  runtime: {
+    uptimeSec: number;
+    loadavg: number[];
+    cpus: number;
+    memory: { total: number; free: number; usedRatio: number };
+    node: string;
+    pid: number;
+    uid: number | null;
+  };
+  time: {
+    utc: string;
+    local: string;
+    ntpEnabled: boolean | null;
+    ntpSynchronized: boolean | null;
+    timeSource: string | null;
+  };
+  network: {
+    ips: string[];
+    interfaces: Array<{ name: string; addrs: string[] }>;
+    resolvers: string[];
+  };
+  disks: Array<{
+    filesystem: string;
+    type: string;
+    size: string;
+    used: string;
+    avail: string;
+    usePct: number | null;
+    mount: string;
+  }>;
+  power: {
+    pending: { raw: string; actionHint: string | null } | null;
+  };
+  boot: {
+    defaultTarget: string | null;
+  };
+  caps: {
+    executeEnabled: boolean;
+    isRoot: boolean;
+    canPower: boolean;
+    canIdentity: boolean;
+  };
+  collectedAt: string;
+};
 
 export const systemApi = {
   post: <T = Record<string, unknown>>(path: string, body: unknown) =>
@@ -36,30 +122,92 @@ export const systemApi = {
     api.requestRaw<{
       installed: boolean;
       active: string;
+      activeLabel: string;
       statusText: string;
       numberedRules: string[];
+      rules: Array<{
+        num?: number;
+        action: string;
+        direction?: string;
+        to?: string;
+        from?: string;
+        raw: string;
+      }>;
+      denyFromIps: string[];
+      allowCount: number;
+      denyCount: number;
+      defaultIncoming?: string;
+      defaultOutgoing?: string;
       executeEnabled: boolean;
       isRoot: boolean;
+      notes: string[];
     }>('/api/v1/system/firewall/status'),
   firewallApply: (body: { allowSmtp?: boolean; apply?: boolean; extraTcpPorts?: number[] }) =>
     api.requestRaw('/api/v1/system/firewall/apply', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  firewallEnable: (enabled: boolean) =>
+    api.requestRaw('/api/v1/system/firewall/enable', {
+      method: 'POST',
+      body: JSON.stringify({ enabled }),
+    }),
+  firewallDeny: (ip: string) =>
+    api.requestRaw('/api/v1/system/firewall/deny', {
+      method: 'POST',
+      body: JSON.stringify({ ip }),
+    }),
+  firewallDeleteDeny: (ip: string) =>
+    api.requestRaw('/api/v1/system/firewall/delete-deny', {
+      method: 'POST',
+      body: JSON.stringify({ ip }),
+    }),
+  firewallDeleteRule: (num: number) =>
+    api.requestRaw('/api/v1/system/firewall/delete-rule', {
+      method: 'POST',
+      body: JSON.stringify({ num }),
+    }),
+  firewallAllowPort: (port: number, proto: 'tcp' | 'udp' = 'tcp') =>
+    api.requestRaw('/api/v1/system/firewall/allow-port', {
+      method: 'POST',
+      body: JSON.stringify({ port, proto }),
+    }),
   fail2banStatus: () =>
     api.requestRaw<{
       installed: boolean;
       active: string;
       enabled: string;
+      activeLabel: string;
       jails: Array<{ name: string; currentlyBanned?: number; totalBanned?: number }>;
+      banned: Array<{ jail: string; ip: string }>;
+      ignoreIps: string[];
+      catalog: Array<{ id: string; label: string; desc: string; group: string }>;
       executeEnabled: boolean;
       isRoot: boolean;
-      defaultJails: string[];
+      notes: string[];
+      /** legacy compat */
+      defaultJails?: string[];
     }>('/api/v1/system/fail2ban/status'),
-  fail2banApply: (body: { apply?: boolean; jails?: string[] }) =>
+  fail2banApply: (body: {
+    apply?: boolean;
+    jails?: string[];
+    bantime?: string;
+    findtime?: string;
+    maxretry?: number;
+  }) =>
     api.requestRaw('/api/v1/system/fail2ban/apply', {
       method: 'POST',
       body: JSON.stringify(body),
+    }),
+  fail2banService: (action: 'start' | 'stop' | 'restart' | 'reload' | 'enable') =>
+    api.requestRaw('/api/v1/system/fail2ban/service', {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    }),
+  fail2banBan: (jail: string, ip: string) =>
+    api.requestRaw('/api/v1/system/fail2ban/ban', {
+      method: 'POST',
+      body: JSON.stringify({ jail, ip }),
     }),
   fail2banBanned: (jail?: string) =>
     api.requestRaw<{
@@ -82,11 +230,39 @@ export const systemApi = {
     api.requestRaw<{
       hostname: string | null;
       timezone: string | null;
+      prettyHostname?: string | null;
       executeEnabled: boolean;
       isRoot: boolean;
     }>('/api/v1/system/host-identity'),
-  setHostIdentity: (body: { hostname?: string; timezone?: string }) =>
+  hostOverview: () => api.requestRaw<HostOverviewDto>('/api/v1/system/host'),
+  setHostIdentity: (body: {
+    hostname?: string;
+    timezone?: string;
+    prettyHostname?: string;
+  }) =>
     api.requestRaw('/api/v1/system/host-identity', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  hostNtpSync: () =>
+    api.requestRaw<{ ok: boolean; blocked?: boolean; notes?: string[]; blockMessage?: string }>(
+      '/api/v1/system/host/ntp-sync',
+      { method: 'POST', body: '{}' },
+    ),
+  hostPower: (body: {
+    action: 'reboot' | 'poweroff' | 'cancel';
+    confirm?: string;
+    delaySec?: number;
+  }) =>
+    api.requestRaw<{
+      ok: boolean;
+      blocked?: boolean;
+      blockMessage?: string;
+      notes?: string[];
+      action?: string;
+      delaySec?: number;
+      scheduledAt?: string;
+    }>('/api/v1/system/host/power', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
@@ -131,6 +307,16 @@ export const systemApi = {
       enabled: string;
       executeEnabled: boolean;
       isRoot: boolean;
+      canInstall?: boolean;
+      systemUnitExists?: boolean;
+      managedUnitPath?: string | null;
+      managedUnitExists?: boolean;
+      show?: {
+        mainPid: string | null;
+        activeEnterTimestamp: string | null;
+        fragmentPath: string | null;
+        description: string | null;
+      };
     }>('/api/v1/system/systemd/status'),
   servicesMatrix: () =>
     api.requestRaw<{
@@ -257,8 +443,111 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
-  readiness: () =>
-    api.requestRaw<Record<string, unknown>>('/api/v1/readiness'),
+  phpIniGet: (version = '8.2') =>
+    api.requestRaw<{
+      version: string;
+      catalog: Array<{
+        id: string;
+        title: string;
+        description?: string;
+        fields: Array<{
+          key: string;
+          label: string;
+          type: string;
+          default: string | number | boolean;
+          hint?: string;
+          danger?: boolean;
+          options?: Array<{ value: string; label: string }>;
+        }>;
+      }>;
+      settings: {
+        version: string;
+        values: Record<string, string | number | boolean>;
+        extra: Record<string, string>;
+        rawAppend?: string;
+        updatedAt?: string;
+      };
+      managedIniPath: string;
+      notes: string[];
+    }>(`/api/v1/hosting/php/ini?version=${encodeURIComponent(version)}`),
+  phpIniSave: (body: {
+    version?: string;
+    values: Record<string, string | number | boolean>;
+    extra?: Record<string, string>;
+    rawAppend?: string;
+  }) =>
+    api.requestRaw('/api/v1/hosting/php/ini', {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  phpIniApply: (version = '8.2') =>
+    api.requestRaw('/api/v1/hosting/php/ini/apply', {
+      method: 'POST',
+      body: JSON.stringify({ version }),
+    }),
+  runtimeTuningGet: (
+    kind: 'node' | 'python' | 'go' | 'rust',
+    version = 'default',
+  ) =>
+    api.requestRaw<{
+      kind: string;
+      version: string;
+      catalog: Array<{
+        id: string;
+        title: string;
+        fields: Array<{
+          key: string;
+          label: string;
+          type: string;
+          default: string | number | boolean;
+          hint?: string;
+          options?: Array<{ value: string; label: string }>;
+        }>;
+      }>;
+      settings: {
+        kind: string;
+        version: string;
+        values: Record<string, string | number | boolean>;
+        env: Record<string, string>;
+        updatedAt?: string;
+      };
+      envPreview: Record<string, string>;
+      notes: string[];
+    }>(
+      `/api/v1/hosting/runtimes/${kind}/tuning?version=${encodeURIComponent(version)}`,
+    ),
+  runtimeTuningSave: (
+    kind: 'node' | 'python' | 'go' | 'rust',
+    body: {
+      version?: string;
+      values: Record<string, string | number | boolean>;
+      env?: Record<string, string>;
+    },
+  ) =>
+    api.requestRaw(`/api/v1/hosting/runtimes/${kind}/tuning`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  /**
+   * Full production readiness report.
+   * HTTP 503 when not productionReady still returns the JSON body (honest gate).
+   */
+  readiness: async (): Promise<ProductionReadinessDto> => {
+    const token = authStore.getToken();
+    const res = await fetch('/api/v1/readiness', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    const data = (await res.json()) as ProductionReadinessDto;
+    if (!data || typeof data !== 'object' || !Array.isArray(data.items)) {
+      throw new Error(
+        res.ok ? '就緒報告格式錯誤' : `就緒檢查失敗（${res.status}）`,
+      );
+    }
+    return data;
+  },
   publicFilesApply: (body: { serverName: string; quotaMb?: number; reload?: boolean }) =>
     api.requestRaw('/api/v1/hosting/files/apply', {
       method: 'POST',

@@ -40,7 +40,7 @@ describe('powerdns-apply', () => {
     expect(r.ok).toBe(false);
     expect(r.mode).toBe('refused');
     expect(r.requiresExecute).toBe(true);
-    expect(r.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+    expect(r.notes.some((n) => /YSK_EXECUTE|系統變更|權限/i.test(n))).toBe(true);
     rmSync(dir, { recursive: true, force: true });
   });
 

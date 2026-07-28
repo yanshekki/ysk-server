@@ -16,6 +16,8 @@ import {
   Field,
   FormLayout,
   LoadingBlock,
+  Modal,
+  OpsHero,
   OpsResultPanel,
   SoftwareInstallBanner,
   SummaryStrip,
@@ -60,6 +62,7 @@ export function EmailDomainPage() {
   const [mboxLocal, setMboxLocal] = useState('info');
   const [mboxPass, setMboxPass] = useState('');
   const [mboxLog, setMboxLog] = useState<Record<string, unknown> | null>(null);
+  const [createMboxOpen, setCreateMboxOpen] = useState(false);
   const [mailboxes, setMailboxes] = useState<Array<Record<string, unknown>>>([]);
   const [aliases, setAliases] = useState<Array<Record<string, unknown>>>([]);
   const [aliasLocal, setAliasLocal] = useState('sales');
@@ -179,22 +182,39 @@ export function EmailDomainPage() {
       <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <SummaryStrip
-        items={[
+      <OpsHero
+        eyebrow="Mail domain"
+        title={domain.domain}
+        pill={
+          applySt === 'applied'
+            ? '已套用'
+            : applySt === 'written'
+              ? '管理檔'
+              : '草稿'
+        }
+        pillTone={applySt === 'applied' ? 'ok' : 'warn'}
+        tone={domain.health_score >= 80 ? 'ok' : 'warn'}
+        hint={`IP ${domain.server_ip} · written ≠ 可收發（DNS/PTR/Port25 另計）`}
+        stats={[
           {
             label: '健康',
-            value: `${domain.health_score}/100`,
-            tone: domain.health_score >= 80 ? 'ok' : 'warn',
+            value: (
+              <Badge tone={domain.health_score >= 80 ? 'ok' : 'warn'}>
+                {domain.health_score}/100
+              </Badge>
+            ),
           },
           {
-            label: '套用狀態',
-            value:
-              applySt === 'applied'
-                ? '已套用'
-                : applySt === 'written'
-                  ? '管理檔'
-                  : '草稿',
-            tone: applySt === 'applied' ? 'ok' : 'warn',
+            label: '套用',
+            value: (
+              <Badge tone={applySt === 'applied' ? 'ok' : 'warn'}>
+                {applySt === 'applied'
+                  ? 'applied'
+                  : applySt === 'written'
+                    ? 'written'
+                    : 'draft'}
+              </Badge>
+            ),
           },
           { label: '郵箱', value: mailboxes.length },
           { label: 'DNS 紀錄', value: bundle?.records.length ?? '—' },
@@ -296,17 +316,39 @@ export function EmailDomainPage() {
                     </table>
                   </div>
                   {bundle.externalTodos.length > 0 ? (
-                    <ul className="list-plain list-spaced u-mt-4">
-                      {bundle.externalTodos.map((todo) => (
-                        <li key={todo.id}>
-                          <Badge tone={todo.completed ? 'ok' : 'warn'}>
-                            {todo.completed ? '完成' : '待辦'}
-                          </Badge>{' '}
-                          <strong>{todo.title}</strong>
-                          <div className="muted u-text-sm">{todo.description}</div>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="u-mt-4">
+                      <h4 className="u-mb-2">外部待辦（面板無法代勞）</h4>
+                      <FormHint>
+                        PTR、Port 25、registrar DNS、信譽 — 要喺主機商／域名商完成；複製 SPF/DKIM 後到 DNS 頁或外部面板新增。
+                      </FormHint>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="u-mb-3"
+                        onClick={() => {
+                          const text = bundle.externalTodos
+                            .map(
+                              (t) =>
+                                `- ${t.completed ? '[x]' : '[ ]'} ${t.title}: ${t.description}`,
+                            )
+                            .join('\n');
+                          void navigator.clipboard?.writeText(text);
+                        }}
+                      >
+                        複製外部待辦清單
+                      </Button>
+                      <ul className="list-plain list-spaced">
+                        {bundle.externalTodos.map((todo) => (
+                          <li key={todo.id}>
+                            <Badge tone={todo.completed ? 'ok' : 'warn'}>
+                              {todo.completed ? '完成' : '待辦'}
+                            </Badge>{' '}
+                            <strong>{todo.title}</strong>
+                            <div className="muted u-text-sm">{todo.description}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ) : null}
                 </>
               ) : (
@@ -322,68 +364,38 @@ export function EmailDomainPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="建立郵箱"
+                title={`郵箱列表（${mailboxes.length}）`}
                 description="建立後可寫入 Dovecot 密碼庫（需系統變更權限）"
               >
-                <FormLayout columns={2}>
-                  <Field
-                    label="本地部分"
-                    htmlFor="mlocal"
-                    hint={`完整位址會是 ${mboxLocal || '…'}@${domain.domain}`}
-                    required
-                    flush
-                  >
-                    <input
-                      id="mlocal"
-                      value={mboxLocal}
-                      onChange={(e) => setMboxLocal(e.target.value)}
-                      placeholder="info"
-                    />
-                  </Field>
-                  <Field label="密碼" htmlFor="mpass" hint="可選；至少 8 位才會寫入雜湊" flush>
-                    <input
-                      id="mpass"
-                      type="password"
-                      value={mboxPass}
-                      onChange={(e) => setMboxPass(e.target.value)}
-                      autoComplete="new-password"
-                    />
-                  </Field>
-                </FormLayout>
-                <FormActions>
+                <div className="btn-row u-mb-3">
                   <Button
                     variant="primary"
-                    size="md"
-                    loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        setMboxLog(
-                          await emailApi.createMailbox(domain.id, {
-                            localPart: mboxLocal,
-                            password: mboxPass || undefined,
-                          }),
-                        );
-                        setMailboxes((await emailApi.listMailboxes(domain.id)).items);
-                      })
-                    }
+                    size="sm"
+                    onClick={() => {
+                      setMboxLocal('info');
+                      setMboxPass('');
+                      setCreateMboxOpen(true);
+                    }}
                   >
-                    建立郵箱
+                    + 建立郵箱
                   </Button>
                   <Button
                     variant="secondary"
-                    size="md"
+                    size="sm"
                     loading={busy}
                     onClick={() =>
                       void withBusy(async () => {
-                        setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+                        setMailboxes(
+                          (await emailApi.listMailboxes(domain.id)).items,
+                        );
                       })
                     }
                   >
-                    重新整理列表
+                    重新整理
                   </Button>
                   <Button
                     variant="ghost"
-                    size="md"
+                    size="sm"
                     loading={busy}
                     onClick={() =>
                       void withBusy(async () => {
@@ -393,11 +405,7 @@ export function EmailDomainPage() {
                   >
                     寫入 Dovecot 密碼庫
                   </Button>
-                </FormActions>
-              </CardSection>
-            </Card>
-            <Card>
-              <CardSection title={`郵箱列表（${mailboxes.length}）`}>
+                </div>
                 {mailboxes.length > 0 ? (
                   <ul className="list-plain list-spaced">
                     {mailboxes.map((m) => (
@@ -410,7 +418,7 @@ export function EmailDomainPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="muted">尚未有郵箱 — 用上方表單建立</p>
+                  <p className="muted">尚未有郵箱 — 按「建立郵箱」開啟對話框</p>
                 )}
                 <OpsResultPanel title="郵箱操作結果" result={asOps(mboxLog)} busy={busy} />
               </CardSection>
@@ -1154,6 +1162,77 @@ export function EmailDomainPage() {
           </div>
         ) : null}
       </Tabs>
+
+      <Modal
+        open={createMboxOpen}
+        onClose={() => setCreateMboxOpen(false)}
+        title="建立郵箱"
+        description={`完整位址會是 ${mboxLocal || '…'}@${domain.domain}`}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setCreateMboxOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busy}
+              onClick={() =>
+                void withBusy(async () => {
+                  setMboxLog(
+                    await emailApi.createMailbox(domain.id, {
+                      localPart: mboxLocal,
+                      password: mboxPass || undefined,
+                    }),
+                  );
+                  setMailboxes(
+                    (await emailApi.listMailboxes(domain.id)).items,
+                  );
+                  setCreateMboxOpen(false);
+                  setMboxPass('');
+                })
+              }
+            >
+              建立郵箱
+            </Button>
+          </>
+        }
+      >
+        <FormLayout columns={1}>
+          <Field
+            label="本地部分"
+            htmlFor="mlocal"
+            hint={`完整位址會是 ${mboxLocal || '…'}@${domain.domain}`}
+            required
+            flush
+          >
+            <input
+              id="mlocal"
+              value={mboxLocal}
+              onChange={(e) => setMboxLocal(e.target.value)}
+              placeholder="info"
+            />
+          </Field>
+          <Field
+            label="密碼"
+            htmlFor="mpass"
+            hint="可選；至少 8 位才會寫入雜湊"
+            flush
+          >
+            <input
+              id="mpass"
+              type="password"
+              value={mboxPass}
+              onChange={(e) => setMboxPass(e.target.value)}
+              autoComplete="new-password"
+            />
+          </Field>
+        </FormLayout>
+      </Modal>
     </FeaturePageLayout>
   );
 }

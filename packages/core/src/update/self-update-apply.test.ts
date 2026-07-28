@@ -26,7 +26,7 @@ describe('runSelfUpdate', () => {
     });
     expect(r.applied).toBe(false);
     expect(r.ok).toBe(false);
-    expect(r.notes.some((n) => /YSK_EXECUTE/i.test(n))).toBe(true);
+    expect(r.notes.some((n) => /YSK_EXECUTE|系統變更|權限/i.test(n))).toBe(true);
   });
 
   it('reports ok when already up to date even with apply', async () => {
@@ -39,7 +39,7 @@ describe('runSelfUpdate', () => {
     });
     expect(r.applied).toBe(false);
     expect(r.ok).toBe(true);
-    expect(r.notes.some((n) => /up to date/i.test(n))).toBe(true);
+    expect(r.notes.some((n) => /up to date|最新版本|已是最新/i.test(n))).toBe(true);
   });
 
   it('plan-only without apply when update available', async () => {

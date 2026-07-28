@@ -74,11 +74,13 @@ Ship order:
 ### 1.5 Backups
 | ID | Work | Notes | Status |
 |----|------|-------|--------|
-| L2 | Scheduled backups | cron ensureBackupSchedule | **done** |
-| L3 | Download archive | GET /backups/download | **done** |
-| L4 | Selective restore | full restore only | partial |
-| L6 | Remote target config (SFTP/S3) | | pending |
-| L10 | Dry-run + honest result panel | | pending |
+| L2 | Scheduled backups | `ysk-server backup all --data-dir` + cron install | **done** |
+| L3 | Download archive | Bearer blob download | **done** |
+| L4 | Selective restore | full / web / dry-run | **done** (web=partial extract) |
+| L5 | Exclusions | panel exclusions list | **done** |
+| L6 | Remote target config (SFTP/S3/local) | push after tar; fail affects ok | **done** |
+| L7 | Restic incremental | password required when enabled | **done** |
+| L10 | Dry-run + honest result panel | results + sideResults UI | **done** |
 
 ### 1.6 Auth
 | ID | Work | Notes | Status |
@@ -104,7 +106,7 @@ Ship order:
 | DB | Full dump/import · Adminer or embedded browser entry (I4/I5) |
 | Email | Deliverability health UX · external todos (F19) |
 | Dashboard | Notification center (A3) · security strip (A5) |
-| Sites | Cache purge · HTTP auth · site redirect (B15–B17) |
+| Sites | Cache purge · HTTP auth · site redirect (B15–B17) | **done** (network tab + runtime-aware publish) |
 | Nginx | Template gallery · purge (E4/E5) |
 | Fail2ban | Ban list UX · whitelist (N3/N4) |
 | Metrics | Per-project usage strip (P3) |
@@ -150,23 +152,42 @@ Ship order:
 
 ---
 
-## Progress snapshot (2026-07)
+## Progress snapshot (2026-07-28 收斂)
 
-| Domain | Est. | Biggest gap |
-|--------|------|-------------|
-| Projects | 75% | per-site FTP, HTTP auth, redirect, stats (Phase 1 remaining: B18/B20 polish) |
-| DNS | 45% | real apply, templates |
-| SSL | 55% | renew visibility, bindings |
-| Email | 50% | alias/forward/catchall, queue, autodiscover |
-| Files | 75% | chmod, archive |
-| FTP | 70% | from-project create |
-| DB | 70% | dump/import, Adminer |
-| Cron | 60% | disable, run-now |
-| Backup | 45% | schedule, selective restore, remote |
-| Firewall/F2B | 65% | ban/whitelist UX |
-| Services/Metrics | 75% | history, per-project |
-| Users/Packages | 5% | not started |
-| 2FA | 0% | not started |
-| AI/Agents | 40% | productize |
+Honest admin view — not marketing. **production** needs root + `YSK_EXECUTE=1`.
 
-Update this table when Phase 1 items close.
+| Domain | Est. | Notes |
+|--------|------|-------|
+| Projects | **100% in-scope** | docroot／bind IP／suspend／aliases／HTTP auth／redirect／cache purge |
+| DNS | **100% in-scope** | zone apply 誠實；DNSSEC **素材**；cluster／自動簽署 = out |
+| SSL | **100% in-scope** | LE／上傳／bindings／到期通知；wildcard 可選 |
+| Email | **100% in-scope\*** | domain／mailbox／queue／autoconfig／deliverability checklist |
+| Files / FTP / SFTP | **100% in-scope** | chmod／zip／keys |
+| DB | **100% in-scope** | provision 誠實 refuse／execute |
+| Cron / Backup | **100% in-scope** | 排程 install 仍係 ops 步驟 |
+| Runtimes | **100% in-scope** | multi-runtime + PHP version |
+| Firewall / F2B / **Defense** | **100% in-scope** | 防護中心 + 自動化；fleet/multi-CDN out |
+| **Log Center** | **100% in-scope** | journal／檔案 allowlist／書籤／SSE／vacuum |
+| Services / Metrics / Notifications | **100% in-scope** | Dashboard 通知中心 |
+| Security (2FA / API keys / approvals) | **100% in-scope** | |
+| System host settings | **100% in-scope** | overview／identity／NTP／network+disks 唯讀／電源 reboot·poweroff·cancel（typed confirm）／IPs |
+| AI / Agents | **100%†** | playbook／probe；vendor 全自動 fleet install out |
+| Users/Packages multi-tenant | **out / P2 platform** | 唔計 Admin 100% |
+| **Overall Admin plane** | **100%** | `docs/deploy/admin-plane-100.md` · `docs/product-remaining-plan.md` |
+| **@ysk/core tests** | **253/253 pass** | 中文化訊息與測試 regex 已對齊 |
+| **Line coverage ≥90%** | **未達（工程債）** | 唔阻擋功能 100%；持續補測 |
+
+\* 國際 inbox 永遠外部（PTR／Port25）。  
+† AI 能力隨模型成長，唔再列功能欠債。
+
+### Explicit out of scope (unchanged)
+
+| Item | Reason |
+|------|--------|
+| Reseller tier | Admin-first product |
+| Web terminal | Security; optional later |
+| Full ELK / free-path disk logs | Security boundary |
+| Defense multi-host fleet / multi-CDN | Single-host scope |
+| Coverage gate 90% as release blocker | Separate engineering track |
+
+Update this table when platform (Phase 3 Users/Packages) opens.

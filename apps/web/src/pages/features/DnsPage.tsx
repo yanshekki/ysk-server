@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Alert,
+  Badge,
   Button,
   Card,
   CardSection,
@@ -11,6 +12,7 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
+  OpsHero,
   SoftwareInstallBanner,
   Tabs,
   FormActions,
@@ -148,13 +150,58 @@ export function DnsPage() {
     <FeaturePageLayout
       title="DNS 區域"
       subtitle="管理 zone 檔（寫入 ≠ 權威 DNS 已上線）"
+      showCapability={false}
       actions={
-        <button type="button" className="btn btn--primary" onClick={() => setZoneOpen(true)}>
-          + 建立區域
-        </button>
+        <>
+          <Button variant="primary" size="md" onClick={() => setZoneOpen(true)}>
+            + 建立區域
+          </Button>
+          <Link to="/ssl" className="btn btn--ghost btn--md">
+            SSL
+          </Link>
+        </>
       }
     >
       <SoftwareInstallBanner feature="dns" title="DNS 所需軟件尚未安裝" />
+      <OpsHero
+        eyebrow="DNS"
+        title="區域與紀錄"
+        pill={`${zones.items.length} zones`}
+        pillTone={zones.items.length ? 'ok' : 'warn'}
+        tone={zones.items.length ? 'ok' : 'warn'}
+        hint="面板寫入 zone 素材；權威伺服器上線／註冊商 NS 仍需運維確認。written ≠ 互聯網已解析。"
+        cta={
+          <>
+            <Button variant="primary" size="md" onClick={() => setZoneOpen(true)}>
+              + 建立區域
+            </Button>
+            <Button variant="secondary" size="md" onClick={() => setTab('records')}>
+              紀錄
+            </Button>
+            <Button variant="ghost" size="md" onClick={() => setTab('dnssec')}>
+              DNSSEC
+            </Button>
+          </>
+        }
+        stats={[
+          { label: 'Zones', value: zones.items.length },
+          {
+            label: '紀錄',
+            value: records.items.length,
+          },
+          { label: 'Peers', value: peers.length },
+          {
+            label: '選中',
+            value: selectedLive ? String(selectedLive.zone ?? selectedLive.id) : '—',
+          },
+        ]}
+        rail={
+          <li>
+            <span className="ops-rail__k">誠實</span>
+            <Badge tone="neutral">written ≠ live DNS</Badge>
+          </li>
+        }
+      />
       {zones.error || records.error ? (
         <Alert variant="error">{zones.error ?? records.error}</Alert>
       ) : null}
@@ -257,11 +304,7 @@ export function DnsPage() {
                   empty={
                     <EmptyState
                       title="尚未有 DNS 區域"
-                      action={
-                        <button type="button" className="btn btn--primary" onClick={() => setZoneOpen(true)}>
-                          + 建立區域
-                        </button>
-                      }
+                      description="用右上角「建立區域」新增"
                     />
                   }
                   rowActions={(r) => (

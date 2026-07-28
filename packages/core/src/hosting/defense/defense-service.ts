@@ -1,0 +1,555 @@
+/**
+ * Defense Center service — status, presets, ban/unban.
+ */
+
+import type { HostExecutor } from '../../host/executor.js';
+import type { JsonStore } from '../../db/store.js';
+import { applyFail2ban, fail2banBannedIps, fail2banUnban } from '../system-apply.js';
+import { syncNginxConfigs } from '../nginx-sync.js';
+import { buildPresetActions, getDefensePreset, listDefensePresets } from './presets.js';
+import { writeDefenseNginxLimits, readActiveNginxLimitNotes } from './nginx-limits.js';
+import { collectDefenseSignals } from './signals.js';
+import {
+  countAutoBansLastHour,
+  humanizeFail2ban,
+  humanizeFirewall,
+  ipMatchesWhitelist,
+  loadAutoBanPolicy,
+  suggestedAutoBanForPreset,
+  updateAutoBanPolicy,
+} from './auto-ban.js';
+import type {
+  DefenseApplyResult,
+  DefensePresetId,
+  DefenseStatus,
+  BanEntry,
+} from './types.js';
+
+const SETTINGS_KEY = 'defense_active_preset';
+const TIMELINE_KEY = 'defense_timeline';
+
+function loadPresetId(db: JsonStore): DefensePresetId {
+  const v = db.snapshot.settings?.[SETTINGS_KEY];
+  if (v === 'hardened' || v === 'under_attack' || v === 'emergency' || v === 'daily') return v;
+  return 'daily';
+}
+
+function savePresetId(db: JsonStore, id: DefensePresetId): void {
+  db.snapshot.settings[SETTINGS_KEY] = id;
+  db.persist();
+}
+
+function pushTimeline(
+  db: JsonStore,
+  entry: { at: string; kind: string; title: string; detail?: string },
+): void {
+  let list: Array<Record<string, unknown>> = [];
+  try {
+    const raw = db.snapshot.settings?.[TIMELINE_KEY];
+    if (raw) list = JSON.parse(raw) as Array<Record<string, unknown>>;
+  } catch {
+    list = [];
+  }
+  list.unshift(entry);
+  db.snapshot.settings[TIMELINE_KEY] = JSON.stringify(list.slice(0, 200));
+  db.persist();
+}
+
+export function listDefenseTimeline(
+  db: JsonStore,
+  hours = 24,
+): Array<{ at: string; kind: string; title: string; detail?: string }> {
+  let list: Array<{ at: string; kind: string; title: string; detail?: string }> = [];
+  try {
+    const raw = db.snapshot.settings?.[TIMELINE_KEY];
+    if (raw) list = JSON.parse(raw);
+  } catch {
+    list = [];
+  }
+  const cut = Date.now() - hours * 3600_000;
+  return list.filter((e) => new Date(e.at).getTime() >= cut).slice(0, 100);
+}
+
+export async function getDefenseStatus(input: {
+  host: HostExecutor;
+  db: JsonStore;
+  dataDir: string;
+  requestCountLastMinute?: number;
+}): Promise<DefenseStatus> {
+  let weights: import('./signals.js').SignalWeights | undefined;
+  let threatThresholds: import('./signals.js').ThreatLevelThresholds | undefined;
+  try {
+    const { loadDefenseAutomation } = await import('./automation.js');
+    const { threatThresholdsFromAutoPreset } = await import('./signals.js');
+    const auto = loadDefenseAutomation(input.db);
+    weights = auto.signalWeights;
+    threatThresholds = threatThresholdsFromAutoPreset(auto.autoPreset);
+  } catch {
+    /* */
+  }
+  const sig = await collectDefenseSignals({
+    host: input.host,
+    requestCountLastMinute: input.requestCountLastMinute,
+    weights,
+    threatThresholds,
+  });
+  const activePreset = loadPresetId(input.db);
+  const preset = getDefensePreset(activePreset);
+  const ngx = readActiveNginxLimitNotes(input.dataDir);
+
+  const suggestions: DefenseStatus['suggestions'] = [];
+  if (sig.threatLevel === 'under_attack' || sig.threatLevel === 'critical') {
+    suggestions.push({
+      id: 'switch-ua',
+      title: '建議切換至「受攻擊」防護檔',
+      body: '收緊 Nginx 限速並強化 fail2ban',
+      action: 'preset:under_attack',
+    });
+  }
+  if (sig.fail2ban.active !== 'active' && sig.fail2ban.installed) {
+    suggestions.push({
+      id: 'start-f2b',
+      title: 'fail2ban 未在跑',
+      body: '到 fail2ban 頁套用並 enable 服務',
+      action: 'href:/fail2ban',
+    });
+  }
+  if (!input.host.executeEnabled()) {
+    suggestions.push({
+      id: 'exec',
+      title: '系統變更未開啟',
+      body: '套用防護檔只會寫管理檔；需 YSK_EXECUTE=1 + root 才 applied',
+      action: 'href:/system/readiness',
+    });
+  }
+  if (sig.threatLevel === 'low' && activePreset === 'under_attack') {
+    suggestions.push({
+      id: 'relax',
+      title: '威脅已回落',
+      body: '可考慮切回「日常」或「加固」',
+      action: 'preset:daily',
+    });
+  }
+
+  const autoBan = loadAutoBanPolicy(input.db);
+  const autoBansLastHour = countAutoBansLastHour(autoBan);
+  if (autoBan.enabled && autoBan.pausedReason === 'circuit_breaker') {
+    suggestions.push({
+      id: 'auto-ban-cb',
+      title: '自動 ban 已熔斷',
+      body: `本小時已達上限（${autoBan.maxAutoBansPerHour}）`,
+    });
+  } else if (!autoBan.enabled && (sig.threatLevel === 'under_attack' || sig.threatLevel === 'critical')) {
+    suggestions.push({
+      id: 'enable-auto-ban',
+      title: '建議開啟自動 ban',
+      body: '到封禁頁一鍵開啟（soft／normal）',
+      action: 'tab:bans',
+    });
+  }
+
+  // Persist last threat for dashboard notifications
+  try {
+    input.db.snapshot.settings.defense_last_threat = sig.threatLevel;
+    input.db.persist();
+  } catch {
+    /* ignore */
+  }
+
+  const exec = input.host.executeEnabled();
+  const root = input.host.isRoot();
+  const fwLabel = humanizeFirewall(sig.firewall.active, sig.firewall.installed, root);
+  const f2bLabel = humanizeFail2ban(sig.fail2ban.active, sig.fail2ban.installed);
+  const applyLabel = exec
+    ? root
+      ? { short: '可套用系統', tone: 'ok' as const }
+      : { short: '需 root', tone: 'warn' as const, detail: '有 EXECUTE 但非 root' }
+    : {
+        short: '只寫管理檔',
+        tone: 'warn' as const,
+        detail: 'YSK_EXECUTE 未開 — written ≠ applied',
+      };
+  const autoLabel = !autoBan.enabled
+    ? { short: '關閉', tone: 'default' as const }
+    : autoBan.pausedReason
+      ? { short: '已暫停', tone: 'warn' as const, detail: autoBan.pausedReason }
+      : { short: autoBan.mode, tone: 'ok' as const, detail: `本小時 ${autoBansLastHour} 次` };
+
+  return {
+    at: new Date().toISOString(),
+    threatLevel: sig.threatLevel,
+    score: sig.score,
+    signals: sig.signals,
+    activePreset,
+    presets: listDefensePresets().map((p) => ({
+      id: p.id,
+      label: p.label,
+      short: p.short,
+      bullets: p.bullets,
+      danger: p.danger,
+    })),
+    bans: { count: sig.bans.length, items: sig.bans.slice(0, 50) },
+    nginxLimits: {
+      ...preset.nginx,
+      confPath: ngx.confPath,
+      exists: ngx.exists,
+    },
+    firewall: sig.firewall,
+    fail2ban: sig.fail2ban,
+    labels: {
+      firewall: fwLabel,
+      fail2ban: f2bLabel,
+      apply: applyLabel,
+      autoBan: autoLabel,
+    },
+    autoBan: { ...autoBan, autoBansLastHour },
+    protectionMode: sig.protectionMode,
+    executeEnabled: exec,
+    isRoot: root,
+    suggestions,
+    notes: sig.notes,
+  };
+}
+
+export async function applyDefensePreset(input: {
+  host: HostExecutor;
+  db: JsonStore;
+  dataDir: string;
+  preset: DefensePresetId;
+  /** false = preview only (still writes nothing if false) */
+  apply: boolean;
+  confirm?: string;
+  systemNginx?: boolean;
+  /** When true (default for hardened+), align auto-ban with preset suggestion */
+  enableAutoBan?: boolean;
+}): Promise<DefenseApplyResult> {
+  const preset = getDefensePreset(input.preset);
+  const actions = buildPresetActions(preset);
+  const notes: string[] = [];
+  const written: string[] = [];
+
+  if (preset.requireConfirm && input.apply) {
+    if (input.confirm !== preset.requireConfirm) {
+      return {
+        ok: false,
+        blocked: true,
+        applied: false,
+        written: [],
+        actions,
+        notes: [
+          `緊急檔需 confirm="${preset.requireConfirm}"`,
+          '預覽可用 apply:false',
+        ],
+        preset: preset.id,
+      };
+    }
+  }
+
+  if (!input.apply) {
+    return {
+      ok: true,
+      applied: false,
+      written: [],
+      actions,
+      notes: ['預覽模式 — 未寫入任何檔案', ...actions.map((a) => `• ${a.title}: ${a.detail}`)],
+      preset: preset.id,
+    };
+  }
+
+  // Write nginx zones + inject limit_req into managed vhosts
+  const ngx = writeDefenseNginxLimits(input.dataDir, preset.nginx);
+  written.push(...ngx.written);
+  notes.push(`已寫 Nginx 限速：${ngx.confPath}`);
+  if (ngx.vhostsUpdated?.length) {
+    notes.push(`已注入 ${ngx.vhostsUpdated.length} 個 vhost 限速標記`);
+  }
+
+  // Write fail2ban jail preference + apply management file
+  const f2b = await applyFail2ban({
+    dataDir: input.dataDir,
+    host: input.host,
+    jails: preset.fail2banJails,
+    apply: Boolean(input.host.executeEnabled() && input.host.isRoot()),
+  });
+  if (Array.isArray(f2b.written)) written.push(...f2b.written);
+  notes.push(...(f2b.notes ?? []).slice(0, 6));
+
+  savePresetId(input.db, preset.id);
+  notes.push(`作用中防護檔 → ${preset.label}`);
+
+  // Align auto-ban with preset when requested or for non-daily danger presets
+  const wantAuto =
+    input.enableAutoBan === true ||
+    (input.enableAutoBan !== false &&
+      (preset.id === 'hardened' || preset.id === 'under_attack' || preset.id === 'emergency'));
+  if (wantAuto && preset.id !== 'daily') {
+    const sug = suggestedAutoBanForPreset(preset.id);
+    updateAutoBanPolicy(input.db, sug);
+    notes.push(
+      `自動 ban → ${sug.enabled ? '開' : '關'}（${sug.mode ?? 'soft'} / ${sug.method ?? 'fail2ban'}）`,
+    );
+  } else if (preset.id === 'daily' && input.enableAutoBan === false) {
+    updateAutoBanPolicy(input.db, { enabled: false, mode: 'soft' });
+    notes.push('自動 ban → 關（日常檔）');
+  }
+
+  // Cloudflare Under Attack + optional CF-only UFW when human applies under_attack / emergency
+  if (input.apply && (preset.id === 'under_attack' || preset.id === 'emergency')) {
+    try {
+      const { loadDefenseAutomation } = await import('./automation.js');
+      const { enableCloudflareUnderAttack } = await import('./cloudflare-ua.js');
+      const { writeAndMaybeApplyCfOnlyUfw } = await import('./cf-ufw.js');
+      const auto = loadDefenseAutomation(input.db);
+      if (auto.cloudflare.enabled && auto.cloudflare.zones.length) {
+        const cf = await enableCloudflareUnderAttack({
+          zones: auto.cloudflare.zones,
+          dryRun: !(input.host.executeEnabled() && input.host.isRoot()),
+        });
+        notes.push(...cf.notes.slice(0, 4));
+        for (const row of cf.results ?? []) {
+          if (row.errors?.length) notes.push(...row.errors.slice(0, 1));
+        }
+      } else if (auto.cloudflare.enabled) {
+        notes.push('提示：填 Cloudflare zones + CF_API_TOKEN 先可 Under Attack API');
+      }
+      if (auto.cloudflare.ufwAllowOnlyCf) {
+        const u = await writeAndMaybeApplyCfOnlyUfw({
+          dataDir: input.dataDir,
+          host: input.host,
+          keepTcpPorts: auto.cloudflare.ufwKeepTcpPorts,
+          apply: Boolean(input.host.executeEnabled() && input.host.isRoot()),
+        });
+        notes.push(...u.notes.slice(0, 5));
+      }
+    } catch {
+      /* optional */
+    }
+  }
+
+  let applied = false;
+  const canSys = input.host.executeEnabled() && input.host.isRoot();
+  if (canSys && input.systemNginx !== false) {
+    const sync = await syncNginxConfigs({
+      dataDir: input.dataDir,
+      systemConfDir: '/etc/nginx/conf.d',
+      host: input.host,
+      dryRun: false,
+    });
+    written.push(...sync.copied);
+    notes.push(...sync.notes.slice(0, 4));
+    if (sync.tested) {
+      const rel = await input.host.runCommand(['systemctl', 'reload', 'nginx'], {
+        timeoutMs: 15_000,
+      });
+      applied = rel.exitCode === 0;
+      notes.push(applied ? '已 reload nginx' : `nginx reload 失敗：${rel.stderr || rel.stdout}`);
+    }
+  } else {
+    notes.push('未套用到系統 nginx（需 YSK_EXECUTE + root）— 狀態：written');
+  }
+
+  pushTimeline(input.db, {
+    at: new Date().toISOString(),
+    kind: 'preset',
+    title: `套用防護檔：${preset.label}`,
+    detail: notes.slice(0, 3).join('；'),
+  });
+
+  const blocked = !canSys;
+  return {
+    ok: !blocked || written.length > 0,
+    blocked,
+    applied,
+    written,
+    actions,
+    notes: [
+      ...notes,
+      blocked
+        ? '狀態：written（blocked system apply）'
+        : applied
+          ? '狀態：applied'
+          : '狀態：written',
+    ],
+    preset: preset.id,
+    requiresExecute: !input.host.executeEnabled(),
+    requiresRoot: !input.host.isRoot(),
+  };
+}
+
+function isValidIp(ip: string): boolean {
+  // basic IPv4 / simple IPv6 check
+  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+    return ip.split('.').every((o) => {
+      const n = Number(o);
+      return n >= 0 && n <= 255;
+    });
+  }
+  if (ip.includes(':') && ip.length < 46) return true;
+  return false;
+}
+
+export async function defenseBanIp(input: {
+  host: HostExecutor;
+  db: JsonStore;
+  ip: string;
+  reason?: string;
+  method?: 'fail2ban' | 'ufw' | 'both';
+  jail?: string;
+}): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
+  const ip = input.ip.trim();
+  if (!isValidIp(ip)) return { ok: false, notes: ['無效 IP'] };
+  const policy = loadAutoBanPolicy(input.db);
+  if (ipMatchesWhitelist(ip, policy.whitelist)) {
+    return { ok: false, notes: ['白名單 IP：拒絕封禁'] };
+  }
+  // Also respect automation whitelist
+  try {
+    const { loadDefenseAutomation } = await import('./automation.js');
+    const auto = loadDefenseAutomation(input.db);
+    if (ipMatchesWhitelist(ip, auto.autoBan.whitelist)) {
+      return { ok: false, notes: ['自動化白名單 IP：拒絕封禁'] };
+    }
+  } catch {
+    /* */
+  }
+  const method = input.method ?? 'fail2ban';
+  const notes: string[] = [];
+  if (!input.host.executeEnabled()) {
+    // still record panel ban intent
+    recordPanelBan(input.db, ip, input.reason);
+    return {
+      ok: false,
+      blocked: true,
+      notes: ['無法 ban 到系統：需 YSK_EXECUTE；已記到面板 ban 清單'],
+    };
+  }
+  let ok = true;
+  if (method === 'fail2ban' || method === 'both') {
+    const jail = input.jail || 'sshd';
+    const r = await input.host.runCommand(
+      ['fail2ban-client', 'set', jail, 'banip', ip],
+      { timeoutMs: 10_000 },
+    );
+    const banOk = r.exitCode === 0;
+    ok = ok && banOk;
+    notes.push(banOk ? `fail2ban ban ${ip} @ ${jail}` : `fail2ban 失敗：${r.stderr || r.stdout}`);
+  }
+  if (method === 'ufw' || method === 'both') {
+    const r = await input.host.runCommand(
+      ['ufw', 'deny', 'from', ip],
+      { timeoutMs: 10_000 },
+    );
+    const uOk = r.exitCode === 0;
+    ok = ok && uOk;
+    notes.push(uOk ? `ufw deny from ${ip}` : `ufw 失敗：${r.stderr || r.stdout}`);
+  }
+  recordPanelBan(input.db, ip, input.reason);
+  pushTimeline(input.db, {
+    at: new Date().toISOString(),
+    kind: 'ban',
+    title: `封禁 ${ip}`,
+    detail: input.reason,
+  });
+  return { ok, notes };
+}
+
+export async function defenseUnbanIp(input: {
+  host: HostExecutor;
+  db: JsonStore;
+  ip: string;
+  method?: 'fail2ban' | 'ufw' | 'both';
+  jail?: string;
+}): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
+  const ip = input.ip.trim();
+  if (!isValidIp(ip)) return { ok: false, notes: ['無效 IP'] };
+  if (!input.host.executeEnabled()) {
+    return { ok: false, blocked: true, notes: ['無法 unban：需 YSK_EXECUTE'] };
+  }
+  const notes: string[] = [];
+  let ok = true;
+  const method = input.method ?? 'fail2ban';
+  if (method === 'fail2ban' || method === 'both') {
+    const r = await fail2banUnban(input.host, input.jail || 'sshd', ip);
+    ok = ok && r.ok;
+    notes.push(...(r.notes ?? []));
+  }
+  if (method === 'ufw' || method === 'both') {
+    const r = await input.host.runCommand(['ufw', 'delete', 'deny', 'from', ip], {
+      timeoutMs: 10_000,
+    });
+    ok = ok && r.exitCode === 0;
+    notes.push(
+      r.exitCode === 0 ? `ufw delete deny ${ip}` : `ufw delete 失敗：${r.stderr || r.stdout}`,
+    );
+  }
+  // Drop panel ban intent so list stays honest
+  try {
+    const key = 'defense_panel_bans';
+    const raw = input.db.snapshot.settings?.[key];
+    if (raw) {
+      const list = (JSON.parse(raw) as BanEntry[]).filter((b) => b.ip !== ip);
+      input.db.snapshot.settings[key] = JSON.stringify(list.slice(0, 500));
+      input.db.persist();
+    }
+  } catch {
+    /* ignore */
+  }
+  pushTimeline(input.db, {
+    at: new Date().toISOString(),
+    kind: 'unban',
+    title: `解封 ${ip}`,
+  });
+  return { ok, notes };
+}
+
+function recordPanelBan(db: JsonStore, ip: string, reason?: string): void {
+  const key = 'defense_panel_bans';
+  let list: BanEntry[] = [];
+  try {
+    const raw = db.snapshot.settings?.[key];
+    if (raw) list = JSON.parse(raw) as BanEntry[];
+  } catch {
+    list = [];
+  }
+  list = list.filter((b) => b.ip !== ip);
+  list.unshift({
+    ip,
+    source: 'panel',
+    reason,
+    at: new Date().toISOString(),
+  });
+  db.snapshot.settings[key] = JSON.stringify(list.slice(0, 500));
+  db.persist();
+}
+
+export async function listDefenseBans(input: {
+  host: HostExecutor;
+  db: JsonStore;
+}): Promise<{ items: BanEntry[]; notes: string[] }> {
+  const notes: string[] = [];
+  let items: BanEntry[] = [];
+  try {
+    const f = await fail2banBannedIps(input.host);
+    items.push(
+      ...(f.items ?? []).map((b) => ({
+        ip: b.ip,
+        source: 'fail2ban' as const,
+        jail: b.jail,
+      })),
+    );
+  } catch {
+    notes.push('讀取 fail2ban bans 失敗');
+  }
+  try {
+    const raw = input.db.snapshot.settings?.defense_panel_bans;
+    if (raw) {
+      const panel = JSON.parse(raw) as BanEntry[];
+      for (const b of panel) {
+        if (!items.some((x) => x.ip === b.ip && x.source === 'panel')) items.push(b);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return { items: items.slice(0, 100), notes };
+}

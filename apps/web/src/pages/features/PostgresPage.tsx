@@ -16,9 +16,9 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
+  OpsHero,
   OpsResultPanel,
   SoftwareInstallBanner,
-  SummaryStrip,
   FormHint,
   CheckboxField,
 } from '../../shared/components/ui';
@@ -147,24 +147,44 @@ export function PostgresPage() {
         </Alert>
       ) : null}
 
-      <SummaryStrip
-        items={[
+      <OpsHero
+        eyebrow="PostgreSQL"
+        title="資料庫"
+        pill={svc?.activeLabel ?? (installed ? '已裝' : '未裝')}
+        pillTone={running ? 'ok' : installed ? 'warn' : 'danger'}
+        tone={running ? 'ok' : 'warn'}
+        hint="資料庫 CRUD 與服務狀態。套用設定請到服務控制台。"
+        cta={
+          <Link to="/databases/postgres/service" className="btn btn--secondary btn--md">
+            服務控制台
+          </Link>
+        }
+        stats={[
           {
             label: '狀態',
-            value: svc?.activeLabel ?? '—',
-            tone: running ? 'ok' : installed ? 'warn' : 'danger',
+            value: (
+              <Badge tone={running ? 'ok' : installed ? 'warn' : 'danger'}>
+                {svc?.activeLabel ?? '—'}
+              </Badge>
+            ),
           },
           {
-            label: '系統變更',
-            value: svc?.executeEnabled ? '已開啟' : '未開啟',
-            tone: svc?.executeEnabled ? 'ok' : 'warn',
+            label: 'EXECUTE',
+            value: (
+              <Badge tone={svc?.executeEnabled ? 'ok' : 'warn'}>
+                {svc?.executeEnabled ? '開' : '關'}
+              </Badge>
+            ),
           },
           {
-            label: '管理員',
-            value: svc?.isRoot ? '是' : '否',
-            tone: svc?.isRoot ? 'ok' : 'warn',
+            label: 'Root',
+            value: (
+              <Badge tone={svc?.isRoot ? 'ok' : 'warn'}>
+                {svc?.isRoot ? '是' : '否'}
+              </Badge>
+            ),
           },
-          { label: '資料庫', value: String(dbs.items.length) },
+          { label: '資料庫', value: dbs.items.length },
         ]}
       />
 

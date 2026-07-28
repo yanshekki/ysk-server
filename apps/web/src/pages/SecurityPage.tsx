@@ -18,10 +18,12 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-  SummaryStrip,
+  Modal,
+  OpsHero,
   Tabs,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { Link } from 'react-router-dom';
 
 const TAB_IDS = ['account', 'keys', 'sftp', 'approvals', 'allowlist'] as const;
 
@@ -29,6 +31,8 @@ export function SecurityPage() {
   const { t } = useTranslation();
   const { tools, approvals, error, result, busy, runSysInfo, approve } = useSecurity();
   const [tab, setTab] = usePageTab(TAB_IDS, 'account');
+  const [createKeyOpen, setCreateKeyOpen] = useState(false);
+  const [createSftpOpen, setCreateSftpOpen] = useState(false);
   const [totpStatus, setTotpStatus] = useState<{ enabled: boolean; enrolled: boolean } | null>(
     null,
   );
@@ -44,6 +48,29 @@ export function SecurityPage() {
   const [newKeyName, setNewKeyName] = useState('panel-api');
   const [newKeyToken, setNewKeyToken] = useState<string | null>(null);
 
+  type SftpKeyRow = {
+    id: string;
+    username: string;
+    comment?: string;
+    publicKey: string;
+    created_at: string;
+    projectId?: string;
+    linuxUser?: string;
+    homeDir?: string;
+  };
+  const [sftpKeys, setSftpKeys] = useState<SftpKeyRow[]>([]);
+  const [sftpProjects, setSftpProjects] = useState<
+    Array<{ id: string; name: string; linuxUser: string; homeDir: string }>
+  >([]);
+  const [sftpProjectId, setSftpProjectId] = useState('');
+  const [sftpPubKey, setSftpPubKey] = useState('');
+  const [sftpComment, setSftpComment] = useState('');
+  const [sshdSnippet, setSshdSnippet] = useState('');
+  const [sshdNotes, setSshdNotes] = useState<string[]>([]);
+  const [sftpBusy, setSftpBusy] = useState(false);
+  const [sftpMsg, setSftpMsg] = useState<string | null>(null);
+  const [sftpErr, setSftpErr] = useState<string | null>(null);
+
   const refreshTotp = useCallback(async () => {
     setTotpStatus(await api.totpStatus());
   }, []);
@@ -53,10 +80,39 @@ export function SecurityPage() {
     setApiKeys(r.items ?? []);
   }, []);
 
+  const refreshSftp = useCallback(async () => {
+    const [keysRes, projRes] = await Promise.all([
+      api.requestRaw<{ items: SftpKeyRow[] }>('/api/v1/sftp/keys'),
+      api.listProjects(),
+    ]);
+    setSftpKeys(keysRes.items ?? []);
+    setSftpProjects(
+      (projRes.items ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        linuxUser: p.linuxUser,
+        homeDir: p.homeDir,
+      })),
+    );
+  }, []);
+
   useEffect(() => {
     void refreshTotp().catch(() => undefined);
     void refreshKeys().catch(() => undefined);
   }, [refreshTotp, refreshKeys]);
+
+  useEffect(() => {
+    if (tab !== 'sftp') return;
+    setSftpErr(null);
+    void refreshSftp().catch((e: Error) => setSftpErr(e.message));
+    void api
+      .requestRaw<{ snippet: string; notes: string[] }>('/api/v1/sftp/sshd-snippet')
+      .then((r) => {
+        setSshdSnippet(r.snippet ?? '');
+        setSshdNotes(r.notes ?? []);
+      })
+      .catch((e: Error) => setSftpErr(e.message));
+  }, [tab, refreshSftp]);
 
   const allowed = tools.filter((tool) => tool.allowed).length;
   const needsApproval = tools.filter((tool) => tool.requiresApproval).length;
@@ -80,32 +136,99 @@ export function SecurityPage() {
       subtitle={t('security.allowlist')}
       showCapability={false}
       actions={
-        <Button variant="primary" size="md" loading={busy} onClick={() => void runSysInfo()}>
-          {t('security.runSysInfo')}
-        </Button>
+        <>
+          <Button variant="primary" size="md" loading={busy} onClick={() => void runSysInfo()}>
+            {t('security.runSysInfo')}
+          </Button>
+          <Link to="/users" className="btn btn--ghost btn--md">
+            用戶
+          </Link>
+          <Link to="/protection" className="btn btn--ghost btn--md">
+            防護
+          </Link>
+        </>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
       {totpErr ? <Alert variant="error">{totpErr}</Alert> : null}
       {totpMsg ? <Alert variant="ok">{totpMsg}</Alert> : null}
-      <Alert variant="info">{t('security.llmUntrusted')}</Alert>
+      {sftpErr ? <Alert variant="error">{sftpErr}</Alert> : null}
+      {sftpMsg ? (
+        <Alert variant="ok">
+          {sftpMsg}{' '}
+          <Button variant="ghost" size="sm" onClick={() => setSftpMsg(null)}>
+            關閉
+          </Button>
+        </Alert>
+      ) : null}
 
-      <SummaryStrip
-        items={[
+      <OpsHero
+        eyebrow="Security"
+        title="帳戶 · 金鑰 · 審批"
+        pill={approvals.length > 0 ? `${approvals.length} 待批` : '就緒'}
+        pillTone={approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn'}
+        tone={approvals.length > 0 ? 'warn' : 'ok'}
+        hint={t('security.llmUntrusted')}
+        meta={
+          <>
+            <span>
+              工具 <strong>{tools.length}</strong>
+            </span>
+            <span className="ops-hero__dot" />
+            <span>
+              允許 <strong>{allowed}</strong>
+            </span>
+            <span className="ops-hero__dot" />
+            <span>
+              2FA <strong>{totpStatus?.enabled ? '開' : '關'}</strong>
+            </span>
+          </>
+        }
+        cta={
+          <>
+            <Button variant="primary" size="md" loading={busy} onClick={() => void runSysInfo()}>
+              {t('security.runSysInfo')}
+            </Button>
+            <Button variant="secondary" size="md" onClick={() => setTab('approvals')}>
+              審批
+            </Button>
+            <Button variant="ghost" size="md" onClick={() => setTab('account')}>
+              2FA
+            </Button>
+          </>
+        }
+        stats={[
           { label: '工具', value: tools.length },
-          { label: '允許', value: allowed, tone: 'ok' },
-          { label: '需批准', value: needsApproval, tone: 'warn' },
+          { label: '允許', value: <Badge tone="ok">{allowed}</Badge> },
+          {
+            label: '需批准',
+            value: <Badge tone={needsApproval ? 'warn' : 'neutral'}>{needsApproval}</Badge>,
+          },
           {
             label: '待批',
-            value: approvals.length,
-            tone: approvals.length > 0 ? 'danger' : 'default',
-          },
-          {
-            label: '2FA',
-            value: totpStatus?.enabled ? '已啟用' : '未啟用',
-            tone: totpStatus?.enabled ? 'ok' : 'warn',
+            value: (
+              <Badge tone={approvals.length > 0 ? 'danger' : 'ok'}>{approvals.length}</Badge>
+            ),
           },
         ]}
+        rail={
+          <>
+            <li>
+              <span className="ops-rail__k">2FA</span>
+              <Badge tone={totpStatus?.enabled ? 'ok' : 'warn'}>
+                {totpStatus?.enabled ? '已啟用' : '未啟用'}
+              </Badge>
+            </li>
+            <li>
+              <span className="ops-rail__k">API keys</span>
+              <span className="ops-rail__text">{apiKeys.length}</span>
+            </li>
+            <li>
+              <span className="ops-rail__k">SFTP keys</span>
+              <span className="ops-rail__text">{sftpKeys.length}</span>
+            </li>
+          </>
+        }
       />
 
       <Tabs
@@ -268,46 +391,20 @@ export function SecurityPage() {
                 <FormHint>
                   API key 與登入 session 同等權限（所屬用戶角色）。請勿提交到 git 或公開日誌。
                 </FormHint>
-                <FormLayout columns={2}>
-                  <Field
-                    label="名稱"
-                    htmlFor="ak-name"
-                    flush
-                    required
-                    hint="方便辨識，例如 CI／備份腳本"
-                  >
-                    <input
-                      id="ak-name"
-                      value={newKeyName}
-                      onChange={(e) => setNewKeyName(e.target.value)}
-                      placeholder="ci-deploy"
-                      spellCheck={false}
-                    />
-                  </Field>
-                </FormLayout>
-                <FormActions>
+                <div className="btn-row u-mb-3">
                   <Button
                     variant="primary"
-                    size="md"
-                    loading={totpBusy}
+                    size="sm"
                     onClick={() => {
-                      setTotpBusy(true);
-                      void api
-                        .createApiKey(newKeyName)
-                        .then((r) => {
-                          setNewKeyToken(r.token);
-                          setTotpMsg('API 金鑰已建立');
-                          return refreshKeys();
-                        })
-                        .catch((e: Error) => setTotpErr(e.message))
-                        .finally(() => setTotpBusy(false));
+                      setNewKeyName('');
+                      setCreateKeyOpen(true);
                     }}
                   >
-                    建立金鑰
+                    + 建立金鑰
                   </Button>
-                </FormActions>
+                </div>
                 {apiKeys.length > 0 ? (
-                  <ul className="list-plain list-spaced u-mt-4">
+                  <ul className="list-plain list-spaced">
                     {apiKeys.map((k) => (
                       <li key={k.id} className="btn-row u-justify-between">
                         <span>
@@ -329,7 +426,22 @@ export function SecurityPage() {
                     ))}
                   </ul>
                 ) : (
-                  <EmptyState title="尚未有 API key" description="上方輸入名稱後建立" />
+                  <EmptyState
+                    title="尚未有 API key"
+                    description="按「建立金鑰」開啟對話框"
+                    action={
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={() => {
+                          setNewKeyName('');
+                          setCreateKeyOpen(true);
+                        }}
+                      >
+                        + 建立金鑰
+                      </Button>
+                    }
+                  />
                 )}
               </CardSection>
             </Card>
@@ -340,43 +452,191 @@ export function SecurityPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="sshd SFTP 片段（專案 Linux 用戶）"
-                description="Match ysks_*/ysk_* + internal-sftp + home/.ssh/authorized_keys"
+                title="SFTP 說明"
+                description="跟專案 Linux 用戶隔離，唔係共用一個全局 SFTP 帳戶"
+              >
+                <ul className="list-plain list-spaced u-mb-0">
+                  <li>
+                    每個專案有自己嘅 <code className="inline">ysks_*</code> 用戶與{' '}
+                    <code className="inline">/home/ysk-server-{'{id}'}</code>
+                  </li>
+                  <li>SSH 公鑰寫入該專案 home 的 <code className="inline">.ssh/authorized_keys</code></li>
+                  <li>
+                    系統 sshd 需安裝 Match 片段（下方）先允許專案用戶用{' '}
+                    <code className="inline">internal-sftp</code>
+                  </li>
+                  <li>
+                    寫入 ≠ 線上生效：安裝片段需 <strong>root + YSK_EXECUTE</strong>
+                  </li>
+                </ul>
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title="SSH 公鑰（綁專案）"
+                description="選擇專案後，金鑰會寫入該專案 home/.ssh"
+              >
+                <div className="btn-row u-mb-3">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setSftpPubKey('');
+                      setSftpComment('');
+                      setCreateSftpOpen(true);
+                    }}
+                  >
+                    + 新增公鑰
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={sftpBusy}
+                    onClick={() => {
+                      setSftpBusy(true);
+                      void refreshSftp()
+                        .catch((e: Error) => setSftpErr(e.message))
+                        .finally(() => setSftpBusy(false));
+                    }}
+                  >
+                    重新整理
+                  </Button>
+                </div>
+                {sftpProjects.length === 0 ? (
+                  <EmptyState
+                    title="尚未有專案"
+                    description="請先建立專案並（建議）建立系統用戶，再綁 SFTP 金鑰"
+                  />
+                ) : null}
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title={`已登記金鑰（${sftpKeys.length}）`}
+                description="面板管理記錄；實際登入仍取決於 sshd 與檔案權限"
+              >
+                {sftpKeys.length === 0 ? (
+                  <EmptyState
+                    title="尚未有 SFTP 公鑰"
+                    description="按「新增公鑰」開啟對話框"
+                    action={
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={() => {
+                          setSftpPubKey('');
+                          setSftpComment('');
+                          setCreateSftpOpen(true);
+                        }}
+                      >
+                        + 新增公鑰
+                      </Button>
+                    }
+                  />
+                ) : (
+                  <ul className="list-plain list-spaced u-mb-0">
+                    {sftpKeys.map((k) => (
+                      <li key={k.id} className="btn-row u-justify-between u-flex-wrap">
+                        <span>
+                          <strong>{k.username}</strong>
+                          {k.comment ? (
+                            <span className="muted"> · {k.comment}</span>
+                          ) : null}
+                          {k.projectId ? (
+                            <Badge tone="info">專案</Badge>
+                          ) : (
+                            <Badge tone="neutral">無專案</Badge>
+                          )}
+                          <div className="muted u-text-sm u-break-all">
+                            {k.publicKey.slice(0, 72)}
+                            {k.publicKey.length > 72 ? '…' : ''}
+                          </div>
+                          {k.homeDir ? (
+                            <div className="muted u-text-sm">{k.homeDir}/.ssh</div>
+                          ) : null}
+                        </span>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          loading={sftpBusy}
+                          onClick={() => {
+                            setSftpBusy(true);
+                            void api
+                              .requestRaw(`/api/v1/sftp/keys/${k.id}`, { method: 'DELETE' })
+                              .then(() => {
+                                setSftpMsg('已刪除金鑰');
+                                return refreshSftp();
+                              })
+                              .catch((e: Error) => setSftpErr(e.message))
+                              .finally(() => setSftpBusy(false));
+                          }}
+                        >
+                          刪除
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title="sshd 系統片段"
+                description="Match ysks_* / ysk_* → internal-sftp；寫入 /etc/ssh/sshd_config.d"
               >
                 <FormHint>
-                  專案資源頁或 SFTP 金鑰可綁 projectId 寫入 home/.ssh。此處安裝系統
-                  sshd_config.d 片段（需 root）。
+                  預覽在下方。安裝會複製到系統並嘗試 reload sshd（需 root + YSK_EXECUTE）。未安裝時專案用戶可能無法 SFTP。
                 </FormHint>
+                {sshdNotes.length > 0 ? (
+                  <ul className="list-plain u-mb-3">
+                    {sshdNotes.map((n) => (
+                      <li key={n} className="muted u-text-sm">
+                        {n}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                <Field label="片段預覽" htmlFor="sshd-snip" flush fullWidth>
+                  <textarea
+                    id="sshd-snip"
+                    rows={12}
+                    readOnly
+                    value={sshdSnippet || '（載入中或失敗 — 按重新載入片段）'}
+                    spellCheck={false}
+                    className="u-font-mono"
+                  />
+                </Field>
                 <FormActions>
                   <Button
                     variant="secondary"
                     size="md"
-                    loading={totpBusy}
+                    loading={sftpBusy}
                     onClick={() => {
-                      setTotpBusy(true);
-                      setTotpErr(null);
+                      setSftpBusy(true);
+                      setSftpErr(null);
                       void api
                         .requestRaw<{ snippet: string; notes: string[] }>(
                           '/api/v1/sftp/sshd-snippet',
                         )
                         .then((r) => {
-                          setTotpMsg(
-                            (r.notes ?? []).join('；') +
-                              '\n\n' +
-                              (r.snippet ?? '').slice(0, 800),
-                          );
+                          setSshdSnippet(r.snippet ?? '');
+                          setSshdNotes(r.notes ?? []);
                           void navigator.clipboard?.writeText(r.snippet ?? '');
+                          setSftpMsg('已重新載入並複製片段到剪貼簿');
                         })
-                        .catch((e: Error) => setTotpErr(e.message))
-                        .finally(() => setTotpBusy(false));
+                        .catch((e: Error) => setSftpErr(e.message))
+                        .finally(() => setSftpBusy(false));
                     }}
                   >
-                    預覽並複製片段
+                    重新載入並複製
                   </Button>
                   <Button
                     variant="primary"
                     size="md"
-                    loading={totpBusy}
+                    loading={sftpBusy}
                     onClick={() => {
                       if (
                         !window.confirm(
@@ -385,10 +645,10 @@ export function SecurityPage() {
                       ) {
                         return;
                       }
-                      setTotpBusy(true);
-                      setTotpErr(null);
+                      setSftpBusy(true);
+                      setSftpErr(null);
                       void api
-                        .requestRaw<{ ok: boolean; notes: string[]; snippet?: string }>(
+                        .requestRaw<{ ok: boolean; notes: string[] }>(
                           '/api/v1/sftp/sshd-snippet/apply',
                           {
                             method: 'POST',
@@ -396,10 +656,12 @@ export function SecurityPage() {
                           },
                         )
                         .then((r) => {
-                          setTotpMsg((r.notes ?? []).join('；') || (r.ok ? '已套用' : '未完成'));
+                          setSftpMsg(
+                            (r.notes ?? []).join('；') || (r.ok ? '已套用 sshd 片段' : '未完成'),
+                          );
                         })
-                        .catch((e: Error) => setTotpErr(e.message))
-                        .finally(() => setTotpBusy(false));
+                        .catch((e: Error) => setSftpErr(e.message))
+                        .finally(() => setSftpBusy(false));
                     }}
                   >
                     安裝到系統並 reload
@@ -485,6 +747,166 @@ export function SecurityPage() {
           </div>
         ) : null}
       </Tabs>
+
+      <Modal
+        open={createKeyOpen}
+        onClose={() => setCreateKeyOpen(false)}
+        title="建立 API 金鑰"
+        description="建立後完整 token 只顯示一次"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setCreateKeyOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={totpBusy}
+              onClick={() => {
+                setTotpBusy(true);
+                void api
+                  .createApiKey(newKeyName)
+                  .then((r) => {
+                    setNewKeyToken(r.token);
+                    setTotpMsg('API 金鑰已建立');
+                    setCreateKeyOpen(false);
+                    return refreshKeys();
+                  })
+                  .catch((e: Error) => setTotpErr(e.message))
+                  .finally(() => setTotpBusy(false));
+              }}
+            >
+              建立金鑰
+            </Button>
+          </>
+        }
+      >
+        <FormLayout columns={1}>
+          <Field
+            label="名稱"
+            htmlFor="ak-name"
+            flush
+            required
+            hint="方便辨識，例如 CI／備份腳本"
+          >
+            <input
+              id="ak-name"
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value)}
+              placeholder="ci-deploy"
+              spellCheck={false}
+            />
+          </Field>
+        </FormLayout>
+      </Modal>
+
+      <Modal
+        open={createSftpOpen}
+        onClose={() => setCreateSftpOpen(false)}
+        title="新增 SSH 公鑰"
+        description="選擇專案後，金鑰會寫入該專案 home/.ssh"
+        size="lg"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setCreateSftpOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={sftpBusy}
+              disabled={!sftpProjectId || !sftpPubKey.trim()}
+              onClick={() => {
+                setSftpBusy(true);
+                setSftpErr(null);
+                void api
+                  .requestRaw<{ ok: boolean; notes?: string[] }>('/api/v1/sftp/keys', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      projectId: sftpProjectId,
+                      publicKey: sftpPubKey.trim(),
+                      comment: sftpComment.trim() || undefined,
+                    }),
+                  })
+                  .then((r) => {
+                    setSftpMsg(
+                      (r.notes ?? []).join('；') || (r.ok ? '已加入公鑰' : '未完成'),
+                    );
+                    setSftpPubKey('');
+                    setCreateSftpOpen(false);
+                    return refreshSftp();
+                  })
+                  .catch((e: Error) => setSftpErr(e.message))
+                  .finally(() => setSftpBusy(false));
+              }}
+            >
+              加入公鑰
+            </Button>
+          </>
+        }
+      >
+        <FormLayout columns={1}>
+          <Field
+            label="專案"
+            htmlFor="sftp-proj"
+            flush
+            required
+            hint="綁定 linux 用戶與 home"
+          >
+            <select
+              id="sftp-proj"
+              value={sftpProjectId}
+              onChange={(e) => setSftpProjectId(e.target.value)}
+            >
+              <option value="">— 選擇專案 —</option>
+              {sftpProjects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} · {p.linuxUser}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="SSH 公鑰"
+            htmlFor="sftp-pub"
+            flush
+            required
+            hint="一整行 ssh-ed25519 / ssh-rsa …"
+          >
+            <textarea
+              id="sftp-pub"
+              rows={3}
+              value={sftpPubKey}
+              onChange={(e) => setSftpPubKey(e.target.value)}
+              placeholder="ssh-ed25519 AAAA… comment"
+              spellCheck={false}
+            />
+          </Field>
+          <Field label="備註" htmlFor="sftp-cmt" flush>
+            <input
+              id="sftp-cmt"
+              value={sftpComment}
+              onChange={(e) => setSftpComment(e.target.value)}
+              placeholder="筆電 / CI"
+              spellCheck={false}
+            />
+          </Field>
+        </FormLayout>
+        {sftpProjects.length === 0 ? (
+          <EmptyState
+            title="尚未有專案"
+            description="請先建立專案並（建議）建立系統用戶，再綁 SFTP 金鑰"
+          />
+        ) : null}
+      </Modal>
     </FeaturePageLayout>
   );
 }

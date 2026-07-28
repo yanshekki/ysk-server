@@ -15,8 +15,8 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  OpsHero,
   OpsResultPanel,
-  SummaryStrip,
   Tabs,
   FeaturePageLayout,
 } from '../../shared/components/ui';
@@ -330,42 +330,82 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       ) : null}
 
       {console ? (
-        <SummaryStrip
-          items={[
+        <>
+        <OpsHero
+          eyebrow={`${engine} service`}
+          title={console.title ?? engine}
+          pill={console.activeLabel}
+          pillTone={
+            console.active === 'active' ? 'ok' : console.installed ? 'warn' : 'danger'
+          }
+          tone={console.active === 'active' ? 'ok' : 'warn'}
+          hint="生命週期與設定套用需 EXECUTE + root。儲存草稿 ≠ 已寫入系統。"
+          cta={
+            <>
+              <Link to={link.path} className="btn btn--secondary btn--md">
+                {link.label}
+              </Link>
+              <Button variant="ghost" size="md" loading={busy} onClick={() => void refresh()}>
+                重新整理
+              </Button>
+            </>
+          }
+          stats={[
             {
               label: '狀態',
-              value: console.activeLabel,
-              tone: console.active === 'active' ? 'ok' : console.installed ? 'warn' : 'danger',
+              value: (
+                <Badge
+                  tone={
+                    console.active === 'active'
+                      ? 'ok'
+                      : console.installed
+                        ? 'warn'
+                        : 'danger'
+                  }
+                >
+                  {console.activeLabel}
+                </Badge>
+              ),
             },
             {
               label: '版本',
-              value: console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 36) ?? '—',
+              value: (
+                <span className="ops-stat__val--sm">
+                  {console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 28) ?? '—'}
+                </span>
+              ),
             },
             {
-              label: '系統變更',
-              value: console.executeEnabled ? '已開啟' : '未開啟',
-              tone: console.executeEnabled ? 'ok' : 'warn',
+              label: 'EXECUTE',
+              value: (
+                <Badge tone={console.executeEnabled ? 'ok' : 'warn'}>
+                  {console.executeEnabled ? '開' : '關'}
+                </Badge>
+              ),
             },
             {
-              label: '管理員',
-              value: console.isRoot ? '是' : '否',
-              tone: console.isRoot ? 'ok' : 'warn',
+              label: '變更',
+              value: dirtyKeys.length,
             },
-            { label: '開機自啟', value: console.enabled === 'enabled' ? '是' : console.enabled ?? '—' },
-            ...(console.metrics.Threads_connected
-              ? [{ label: '連線', value: console.metrics.Threads_connected }]
-              : []),
-            ...(console.metrics.connected_clients
-              ? [{ label: '客戶端', value: console.metrics.connected_clients }]
-              : []),
-            ...(console.metrics.used_memory
-              ? [{ label: '記憶體', value: console.metrics.used_memory }]
-              : []),
-            ...(dirtyKeys.length
-              ? [{ label: '未套用', value: String(dirtyKeys.length), tone: 'warn' as const }]
-              : []),
           ]}
+          rail={
+            <>
+              <li>
+                <span className="ops-rail__k">Root</span>
+                <Badge tone={console.isRoot ? 'ok' : 'warn'}>
+                  {console.isRoot ? '是' : '否'}
+                </Badge>
+              </li>
+              <li>
+                <span className="ops-rail__k">開機自啟</span>
+                <span className="ops-rail__text">
+                  {console.enabled === 'enabled' ? '是' : console.enabled ?? '—'}
+                </span>
+              </li>
+            </>
+          }
         />
+        </>
       ) : null}
 
       {console?.blockMessage ? <Alert variant="info">{console.blockMessage}</Alert> : null}

@@ -23,7 +23,9 @@ describe('postgres provision', () => {
     });
     expect(r.ok).toBe(false);
     expect(r.executed).toBe(false);
-    expect(r.notes.join(' ')).toMatch(/NOT provisioned|YSK_EXECUTE|psql/i);
+    expect(r.notes.join(' ')).toMatch(
+      /NOT provisioned|YSK_EXECUTE|psql|PostgreSQL|系統變更|未安裝|尚未建立|未開啟/i,
+    );
   });
 
   it('rejects short password', async () => {

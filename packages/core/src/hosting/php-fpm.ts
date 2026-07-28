@@ -13,10 +13,16 @@ export function renderPhpFpmPool(opts: {
   phpVersion: string;
   listen?: string;
   pmMaxChildren?: number;
+  /** Extra lines e.g. php_admin_value[...] from panel ini */
+  adminValueLines?: string[];
 }): string {
   const listen =
     opts.listen ?? `/run/php/php${opts.phpVersion}-fpm-${opts.poolName}.sock`;
   const max = opts.pmMaxChildren ?? 5;
+  const admin =
+    opts.adminValueLines?.length ?
+      ['', '; --- YSK panel php.ini (php_admin_*) ---', ...opts.adminValueLines, ''].join('\n')
+    : '';
   // Pool MUST run as the project Linux user (isolation). Socket owned by www-data for nginx.
   return `; YSK Server PHP-FPM pool for ${opts.poolName} (project user isolation)
 [${opts.poolName}]
@@ -32,7 +38,7 @@ pm.process_idle_timeout = 10s
 chdir = /
 php_admin_value[error_log] = /var/log/php${opts.phpVersion}-fpm-${opts.poolName}.log
 php_admin_flag[log_errors] = on
-; open_basedir optional — home is enforced by OS user permissions
+${admin}; open_basedir optional — home is enforced by OS user permissions
 `;
 }
 
@@ -58,6 +64,7 @@ export async function applyPhpFpmPool(input: {
   host: HostExecutor;
   enable?: boolean;
   pmMaxChildren?: number;
+  adminValueLines?: string[];
 }): Promise<PhpFpmApplyResult> {
   const rt = selectPhpRuntime(input.phpVersion);
   const dir = join(input.dataDir, 'php', rt.version, 'pool.d');
@@ -68,6 +75,7 @@ export async function applyPhpFpmPool(input: {
     linuxUser: input.linuxUser,
     phpVersion: rt.version,
     pmMaxChildren: input.pmMaxChildren,
+    adminValueLines: input.adminValueLines,
   });
   writeFileSync(poolPath, content, 'utf8');
   const notes = [`已寫入 FPM pool：${poolPath}`, `PHP ${rt.version}`];

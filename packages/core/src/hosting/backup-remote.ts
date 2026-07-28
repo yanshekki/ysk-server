@@ -85,10 +85,14 @@ export async function pushBackupRemote(input: {
   host: HostExecutor;
   db: JsonStore;
   localArchivePath: string;
-}): Promise<{ ok: boolean; notes: string[] }> {
+}): Promise<{ ok: boolean; notes: string[]; skipped?: boolean }> {
   const remote = getBackupRemote(input.db);
   if (!remote.enabled) {
-    return { ok: true, notes: ['遠端備份未啟用'] };
+    return {
+      ok: true,
+      skipped: true,
+      notes: ['遠端備份未啟用（略過推送）'],
+    };
   }
   if (!existsSync(input.localArchivePath)) {
     return { ok: false, notes: ['本地備份檔不存在'] };

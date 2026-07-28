@@ -16,7 +16,7 @@ import {
   FormLayout,
   Modal,
   SoftwareInstallBanner,
-  SummaryStrip,
+  OpsHero,
   Tabs,
   FormHint,
 } from '../../shared/components/ui';
@@ -181,25 +181,30 @@ export function FtpPage() {
         </Alert>
       ) : null}
 
-      <SummaryStrip
-        items={[
+      <OpsHero
+        eyebrow="FTPS"
+        title="帳戶與 SFTP 公鑰"
+        pill={`${crud.items.length} 帳戶`}
+        pillTone={crud.items.length ? 'ok' : 'warn'}
+        tone={draft > 0 ? 'warn' : 'ok'}
+        hint="虛擬帳戶寫入控制面後需套用 vsftpd。written ≠ 可登入。"
+        stats={[
           { label: '帳戶', value: crud.items.length },
           {
             label: '已套用',
-            value: applied,
-            tone: applied > 0 ? 'ok' : 'default',
+            value: <Badge tone={applied > 0 ? 'ok' : 'neutral'}>{applied}</Badge>,
           },
           {
             label: '待套用',
-            value: draft,
-            tone: draft > 0 ? 'warn' : 'default',
+            value: <Badge tone={draft > 0 ? 'warn' : 'ok'}>{draft}</Badge>,
           },
-          {
-            label: 'SFTP 公鑰',
-            value: sftpKeys.length,
-            tone: sftpKeys.length > 0 ? 'ok' : 'default',
-          },
+          { label: 'SFTP 鑰', value: sftpKeys.length },
         ]}
+        cta={
+          <Link to="/ftp/service" className="btn btn--secondary btn--md">
+            vsftpd 服務
+          </Link>
+        }
       />
 
       <Tabs

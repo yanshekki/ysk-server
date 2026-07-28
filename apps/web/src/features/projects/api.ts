@@ -61,6 +61,53 @@ export const projectsApi = {
       method: 'POST',
       body: JSON.stringify(body ?? { enable: true }),
     }),
+  phpIniGet: (id: string, version?: string) =>
+    api.requestRaw<{
+      version: string;
+      catalog: Array<{
+        id: string;
+        title: string;
+        fields: Array<{
+          key: string;
+          label: string;
+          type: string;
+          default: string | number | boolean;
+          hint?: string;
+          danger?: boolean;
+          options?: Array<{ value: string; label: string }>;
+        }>;
+      }>;
+      global: {
+        values: Record<string, string | number | boolean>;
+        extra: Record<string, string>;
+      };
+      project: {
+        values: Record<string, string | number | boolean>;
+        extra: Record<string, string>;
+        rawAppend?: string;
+      };
+      effective: {
+        values: Record<string, string | number | boolean>;
+        extra: Record<string, string>;
+      };
+      adminValuePreview: string[];
+      notes: string[];
+    }>(
+      `/api/v1/projects/${id}/php-ini${version ? `?version=${encodeURIComponent(version)}` : ''}`,
+    ),
+  phpIniSave: (
+    id: string,
+    body: {
+      version?: string;
+      values: Record<string, string | number | boolean>;
+      extra?: Record<string, string>;
+      rawAppend?: string;
+    },
+  ) =>
+    api.requestRaw(`/api/v1/projects/${id}/php-ini`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
   usage: (id: string) =>
     api.requestRaw<{
       usedMb: number;
@@ -185,6 +232,11 @@ export const projectsApi = {
       ssl?: boolean;
     },
   ) => api.updateProjectNetwork(id, body),
+  purgeCache: (id: string) =>
+    api.requestRaw<{ ok: boolean; notes?: string[]; blocked?: boolean }>(
+      `/api/v1/projects/${id}/purge-cache`,
+      { method: 'POST', body: '{}' },
+    ),
   webStats: (id: string) =>
     api.requestRaw<{
       linesRead: number;

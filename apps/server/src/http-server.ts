@@ -86,6 +86,7 @@ import { getBearer, parseUrl, readBody, sendError, sendJson } from './http/util.
 import { handleFilesRoutes } from './controllers/files-controller.js';
 import { handleSystemRoutes } from './controllers/system-controller.js';
 import { handleResourcesRoutes } from './controllers/resources-controller.js';
+import { handleLogsRoutes } from './controllers/logs-controller.js';
 import { resolveWebRoot, tryServeStatic } from './http/static.js';
 
 export function createHttpServer(ctx: AppContext): Server {
@@ -111,6 +112,7 @@ export function createHttpServer(ctx: AppContext): Server {
       }
 
       if (await handleResourcesRoutes(ctx, req, res, url, method)) return;
+      if (await handleLogsRoutes(ctx, req, res, url, method)) return;
       if (await handleSystemRoutes(ctx, req, res, url, method)) return;
 
       if (method === 'GET' && (url.pathname === '/health' || url.pathname === '/api/v1/health')) {
@@ -445,31 +447,7 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, r.ok ? 200 : 422, r);
       }
 
-      if (method === 'GET' && url.pathname === '/api/v1/system/export') {
-        ctx.auth.authenticate(getBearer(req));
-        const { exportControlPlaneSnapshot } = await import('@ysk/core');
-        return sendJson(res, 200, exportControlPlaneSnapshot(ctx.db));
-      }
-      if (method === 'POST' && url.pathname === '/api/v1/system/rebuild') {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { syncNginx?: boolean; writeExport?: boolean };
-        const { rebuildManagedConfigs } = await import('@ysk/core');
-        const r = await rebuildManagedConfigs({
-          dataDir: ctx.dataDir,
-          host: ctx.host,
-          db: ctx.db,
-          syncNginx: data.syncNginx,
-          writeExport: data.writeExport !== false,
-        });
-        ctx.audit.append({
-          actor: user.username,
-          action: 'system.rebuild',
-          detail: r,
-          ok: r.ok,
-        });
-        return sendJson(res, r.ok ? 200 : 422, r);
-      }
+      // system/export|exports|managed-nginx|rebuild → handleSystemRoutes (system-controller)
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -1003,6 +981,28 @@ export function createHttpServer(ctx: AppContext): Server {
           hsts: data.hsts,
         });
         return sendJson(res, 200, result);
+      }
+
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/purge-cache$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const { purgeNginxCache } = await import('@ysk/core');
+        const r = await purgeNginxCache({ host: ctx.host });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'project.purge_cache',
+          resource: id,
+          detail: r,
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, {
+          ...r,
+          projectId: id,
+          notes: [
+            ...r.notes,
+            '專案級 purge 目前清主機共用 nginx cache 目錄（非 per-vhost zone）',
+          ],
+        });
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/suspend$/)) {
@@ -1760,6 +1760,126 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, result.ok || !data.install ? 200 : 422, result);
       }
 
+      // —— Global PHP php.ini (panel-managed) ——
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/php/ini') {
+        ctx.auth.authenticate(getBearer(req));
+        const { getPhpIni } = await import('@ysk/core');
+        const version = url.searchParams.get('version') ?? '8.2';
+        return sendJson(res, 200, getPhpIni(ctx.dataDir, version));
+      }
+      if (method === 'PUT' && url.pathname === '/api/v1/hosting/php/ini') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          version?: string;
+          values?: Record<string, string | number | boolean>;
+          extra?: Record<string, string>;
+          rawAppend?: string;
+        };
+        const { savePhpIniSettings } = await import('@ysk/core');
+        const result = savePhpIniSettings(ctx.dataDir, {
+          version: data.version ?? '8.2',
+          values: data.values ?? {},
+          extra: data.extra ?? {},
+          rawAppend: data.rawAppend ?? '',
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.php.ini.save',
+          detail: { version: result.settings.version, written: result.written },
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          settings: result.settings,
+          managedIniPath: result.managedIniPath,
+          written: result.written,
+          notes: [
+            '已寫入管理檔；尚未套用到系統 conf.d',
+            '請用「套用到系統」或重新部署 PHP 專案（pool php_admin_*）',
+          ],
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/php/ini/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { version?: string };
+        const { applyPhpIniSystem } = await import('@ysk/core');
+        const result = await applyPhpIniSystem({
+          dataDir: ctx.dataDir,
+          version: data.version ?? '8.2',
+          host: ctx.host,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.php.ini.apply',
+          detail: result,
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
+      // —— Runtime tuning (node/python/go/rust) ——
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/hosting\/runtimes\/(node|python|go|rust)\/tuning$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = url.pathname.split('/')[5] as 'node' | 'python' | 'go' | 'rust';
+        const version = url.searchParams.get('version') ?? 'default';
+        const {
+          loadRuntimeTuning,
+          listTuningCatalog,
+          tuningToEnv,
+        } = await import('@ysk/core');
+        const settings = loadRuntimeTuning(ctx.dataDir, kind, version);
+        return sendJson(res, 200, {
+          kind,
+          version: settings.version,
+          catalog: listTuningCatalog(kind),
+          settings,
+          envPreview: tuningToEnv(settings),
+          notes: [
+            '儲存後會於下次部署寫入 systemd Environment / 行程 env',
+            'written ≠ 線上行程已重載',
+          ],
+        });
+      }
+      if (
+        method === 'PUT' &&
+        url.pathname.match(/^\/api\/v1\/hosting\/runtimes\/(node|python|go|rust)\/tuning$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const kind = url.pathname.split('/')[5] as 'node' | 'python' | 'go' | 'rust';
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          version?: string;
+          values?: Record<string, string | number | boolean>;
+          env?: Record<string, string>;
+        };
+        const { saveRuntimeTuning, tuningToEnv, listTuningCatalog } = await import('@ysk/core');
+        const result = saveRuntimeTuning(ctx.dataDir, {
+          kind,
+          version: data.version ?? 'default',
+          values: data.values ?? {},
+          env: data.env ?? {},
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.runtime.tuning.save',
+          detail: { kind, version: result.settings.version, written: result.written },
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          catalog: listTuningCatalog(kind),
+          settings: result.settings,
+          envPreview: tuningToEnv(result.settings),
+          written: result.written,
+          notes: ['已寫入調校檔；重新部署專案後才會進線上行程'],
+        });
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/hosting/nginx') {
         ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, {
@@ -2043,10 +2163,18 @@ export function createHttpServer(ctx: AppContext): Server {
             ? excludes
             : ['node_modules', '.git', 'vendor', '.cache'],
         });
-        const remoteNotes: string[] = [];
+        const sideNotes: string[] = [];
+        const sideResults: Array<{
+          projectId: string;
+          kind: 'remote' | 'restic';
+          ok: boolean;
+          skipped?: boolean;
+          notes: string[];
+        }> = [];
+        let sideOk = true;
         const resticOn = getResticSettings(ctx.db).enabled;
         for (const item of r.results) {
-          if (item.ok && item.archivePath) {
+          if (item.ok && item.archivePath && !item.skipped) {
             const p = projects.find((x) => x.id === item.projectId);
             if (p) {
               p.last_backup_path = item.archivePath;
@@ -2059,9 +2187,27 @@ export function createHttpServer(ctx: AppContext): Server {
                 db: ctx.db,
                 localArchivePath: item.archivePath,
               });
-              remoteNotes.push(...push.notes.map((n) => `[${item.projectId.slice(0, 8)}] ${n}`));
-            } catch {
-              /* ignore remote push errors per project */
+              sideResults.push({
+                projectId: item.projectId,
+                kind: 'remote',
+                ok: push.ok,
+                skipped: push.skipped,
+                notes: push.notes,
+              });
+              sideNotes.push(
+                ...push.notes.map((n) => `[remote ${item.projectId.slice(0, 8)}] ${n}`),
+              );
+              if (!push.skipped && !push.ok) sideOk = false;
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              sideOk = false;
+              sideResults.push({
+                projectId: item.projectId,
+                kind: 'remote',
+                ok: false,
+                notes: [msg],
+              });
+              sideNotes.push(`[remote ${item.projectId.slice(0, 8)}] ${msg}`);
             }
             if (resticOn && p) {
               try {
@@ -2072,29 +2218,64 @@ export function createHttpServer(ctx: AppContext): Server {
                   projectId: p.id,
                   homeDir: p.home_dir,
                 });
-                remoteNotes.push(
+                sideResults.push({
+                  projectId: item.projectId,
+                  kind: 'restic',
+                  ok: rs.ok,
+                  skipped: rs.skipped,
+                  notes: rs.notes,
+                });
+                sideNotes.push(
                   ...rs.notes.map((n) => `[restic ${item.projectId.slice(0, 8)}] ${n}`),
                 );
-              } catch {
-                /* ignore */
+                if (!rs.skipped && !rs.ok) sideOk = false;
+              } catch (e) {
+                const msg = e instanceof Error ? e.message : String(e);
+                sideOk = false;
+                sideResults.push({
+                  projectId: item.projectId,
+                  kind: 'restic',
+                  ok: false,
+                  notes: [msg],
+                });
+                sideNotes.push(`[restic ${item.projectId.slice(0, 8)}] ${msg}`);
               }
             }
           }
         }
         ctx.db.persist();
+        const overallOk = r.ok && sideOk;
         const payload = {
           at: new Date().toISOString(),
           ...r,
-          notes: [...r.notes, ...remoteNotes.slice(0, 30)],
+          ok: overallOk,
+          tarOk: r.ok,
+          sideOk,
+          sideResults,
+          notes: [
+            ...r.notes,
+            ...sideNotes.slice(0, 40),
+            !sideOk
+              ? '遠端推送或 restic 有失敗 — 本地 tar 可能已成功，請看 sideResults'
+              : resticOn
+                ? '遠端／restic 步驟已處理'
+                : 'restic 未啟用（僅 tar）',
+          ],
         };
         ctx.settings.setJson('last_backup_run', payload);
         ctx.audit.append({
           actor: user.username,
           action: 'backup.run_all',
-          detail: payload,
-          ok: r.ok,
+          detail: {
+            ok: overallOk,
+            tarOk: r.ok,
+            sideOk,
+            projectCount: projects.length,
+            resultCount: r.results.length,
+          },
+          ok: overallOk,
         });
-        return sendJson(res, r.ok ? 200 : 422, payload);
+        return sendJson(res, overallOk ? 200 : 422, payload);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/backups/settings') {
@@ -2148,9 +2329,33 @@ export function createHttpServer(ctx: AppContext): Server {
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/restic/run') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { resticBackupProject } = await import('@ysk/core');
+        const { resticBackupProject, getResticSettings } = await import('@ysk/core');
+        const rs = getResticSettings(ctx.db);
+        if (!rs.enabled) {
+          return sendJson(res, 422, {
+            ok: false,
+            notes: ['restic 未啟用 — 請先在「遠端／排除」開啟並設定 password'],
+            results: [],
+          });
+        }
+        if (!rs.password?.trim()) {
+          return sendJson(res, 422, {
+            ok: false,
+            notes: ['restic 已啟用但未設定 password'],
+            results: [],
+          });
+        }
+        const projects = ctx.db.snapshot.projects.slice(0, 40);
+        if (projects.length === 0) {
+          return sendJson(res, 200, {
+            ok: true,
+            empty: true,
+            notes: ['沒有專案可做 restic 增量'],
+            results: [],
+          });
+        }
         const results = [];
-        for (const p of ctx.db.snapshot.projects.slice(0, 40)) {
+        for (const p of projects) {
           results.push({
             projectId: p.id,
             ...(await resticBackupProject({
@@ -2162,14 +2367,23 @@ export function createHttpServer(ctx: AppContext): Server {
             })),
           });
         }
-        const ok = results.every((r) => r.ok);
+        const attempted = results.filter((row) => !row.skipped);
+        const ok =
+          attempted.length === 0 ? true : attempted.every((row) => row.ok);
         ctx.audit.append({
           actor: user.username,
           action: 'backup.restic.run',
           detail: { count: results.length, ok },
           ok,
         });
-        return sendJson(res, ok ? 200 : 422, { ok, results });
+        return sendJson(res, ok ? 200 : 422, {
+          ok,
+          results,
+          notes: [
+            `restic ${attempted.filter((x) => x.ok).length}/${attempted.length} 成功`,
+            ok ? '完成' : '有失敗 — 請查看 results',
+          ],
+        });
       }
       if (method === 'GET' && url.pathname === '/api/v1/backups/restic/snapshots') {
         ctx.auth.authenticate(getBearer(req));
@@ -2423,9 +2637,26 @@ export function createHttpServer(ctx: AppContext): Server {
       }
       if (method === 'POST' && url.pathname === '/api/v1/fleet/agents/register') {
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { agentId?: string; group?: string };
-        const session = ctx.fleet.register(data.agentId ?? '', data.group);
+        const data = JSON.parse(raw || '{}') as {
+          agentId?: string;
+          group?: string;
+          meta?: Record<string, unknown>;
+        };
+        const session = ctx.fleet.register(data.agentId ?? '', data.group, data.meta);
         return sendJson(res, 200, session);
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/fleet\/agents\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const r = ctx.fleet.remove(id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'fleet.remove',
+          resource: id,
+          detail: r,
+          ok: true,
+        });
+        return sendJson(res, 200, r);
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/fleet\/agents\/[^/]+\/heartbeat$/)) {
         const id = url.pathname.split('/')[5];
@@ -2446,9 +2677,25 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendJson(res, 200, cmd);
       }
+      // Edge pull: only queued. Panel history: ?history=1
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/fleet\/agents\/[^/]+\/commands$/)) {
         const id = url.pathname.split('/')[5];
+        const history = url.searchParams.get('history') === '1';
+        if (history) {
+          ctx.auth.authenticate(getBearer(req));
+          return sendJson(res, 200, { items: ctx.fleet.listCommands(id) });
+        }
         return sendJson(res, 200, { items: ctx.fleet.pullCommands(id) });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/fleet\/commands\/[^/]+\/ack$/)) {
+        const cmdId = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { result?: unknown; error?: boolean };
+        const cmd = ctx.fleet.ack(cmdId, data.result, Boolean(data.error));
+        if (!cmd) {
+          return sendJson(res, 404, { error: 'command not found' });
+        }
+        return sendJson(res, 200, cmd);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/live-check$/)) {
@@ -3450,6 +3697,18 @@ export function createHttpServer(ctx: AppContext): Server {
             ctx.db.persist();
           }
         }
+        const {
+          loadPhpIniSettings,
+          loadProjectPhpIni,
+          mergePhpIni,
+          renderPhpAdminValueLines,
+        } = await import('@ysk/core');
+        const adminValueLines = renderPhpAdminValueLines(
+          mergePhpIni(
+            loadPhpIniSettings(ctx.dataDir, phpVersion),
+            loadProjectPhpIni(ctx.dataDir, id, phpVersion),
+          ),
+        );
         const result = await applyPhpFpmPool({
           dataDir: ctx.dataDir,
           poolName: proj.linuxUser,
@@ -3457,18 +3716,84 @@ export function createHttpServer(ctx: AppContext): Server {
           phpVersion,
           host: ctx.host,
           enable: data.enable,
+          adminValueLines,
         });
         ctx.audit.append({
           actor: user.username,
           action: 'project.php_fpm',
           resource: id,
-          detail: { ...result, phpVersion },
+          detail: { ...result, phpVersion, adminValueCount: adminValueLines.length },
           ok: result.ok,
         });
         return sendJson(res, result.ok || !data.enable ? 200 : 422, {
           ...result,
           phpVersion,
+          adminValueCount: adminValueLines.length,
           project: ctx.projects.get(id),
+        });
+      }
+
+      // —— Project-level PHP ini overrides ——
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/php-ini$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const version =
+          url.searchParams.get('version') ?? proj.runtimeVersion ?? '8.2';
+        const {
+          getPhpIni,
+          loadProjectPhpIni,
+          mergePhpIni,
+          loadPhpIniSettings,
+          listPhpIniCatalog,
+          renderPhpAdminValueLines,
+        } = await import('@ysk/core');
+        const global = getPhpIni(ctx.dataDir, version);
+        const project = loadProjectPhpIni(ctx.dataDir, id, version);
+        const effective = mergePhpIni(loadPhpIniSettings(ctx.dataDir, version), project);
+        return sendJson(res, 200, {
+          version,
+          catalog: listPhpIniCatalog(),
+          global: global.settings,
+          project,
+          effective,
+          adminValuePreview: renderPhpAdminValueLines(effective),
+          notes: [
+            '專案覆寫只填要改的鍵；空白＝沿用全域',
+            '部署／套用 FPM pool 時寫入 php_admin_value',
+          ],
+        });
+      }
+      if (method === 'PUT' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/php-ini$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          version?: string;
+          values?: Record<string, string | number | boolean>;
+          extra?: Record<string, string>;
+          rawAppend?: string;
+        };
+        const { saveProjectPhpIni } = await import('@ysk/core');
+        const result = saveProjectPhpIni(ctx.dataDir, id, {
+          version: data.version ?? proj.runtimeVersion ?? '8.2',
+          values: data.values ?? {},
+          extra: data.extra ?? {},
+          rawAppend: data.rawAppend ?? '',
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'project.php_ini.save',
+          resource: id,
+          detail: { written: result.written },
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          settings: result.settings,
+          written: result.written,
+          notes: ['已儲存專案 php.ini 覆寫；重新套用 FPM／部署後生效'],
         });
       }
 

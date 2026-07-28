@@ -7,7 +7,7 @@ import { FleetService } from './fleet.js';
 import { YskError } from '@ysk/shared';
 
 describe('FleetService', () => {
-  it('registers, lists, heartbeat, enqueue, pull, ack', () => {
+  it('registers (panel), lists, heartbeat, enqueue, pull, ack, remove', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-fleet-'));
     const db = openDatabase(join(dir, 'db.json'));
     const fleet = new FleetService(db);
@@ -15,11 +15,15 @@ describe('FleetService', () => {
     expect(() => fleet.register('')).toThrow(YskError);
     const s = fleet.register('edge-1', 'default', { region: 'hk' });
     expect(s.agent_id).toBe('edge-1');
-    expect(s.status).toBe('connected');
+    // Panel register is not live
+    expect(s.status).toBe('registered');
+
+    const edge = fleet.register('edge-2', 'dc', { source: 'edge' });
+    expect(edge.status).toBe('connected');
 
     const listed = fleet.list();
     expect(listed.some((a) => a.id === s.id)).toBe(true);
-    expect(fleet.list('default')).toHaveLength(1);
+    expect(fleet.list('default').some((a) => a.id === s.id)).toBe(true);
     expect(fleet.list('other')).toHaveLength(0);
 
     const hb = fleet.heartbeat(s.id);
@@ -30,13 +34,22 @@ describe('FleetService', () => {
     const pulled = fleet.pullCommands(s.id);
     expect(pulled.some((c) => c.id === cmd.id)).toBe(true);
 
-    fleet.ack(cmd.id, { pong: true });
-    // after ack still appears as queued filter excludes done — pull should not return done
+    const hist = fleet.listCommands(s.id);
+    expect(hist.some((c) => c.id === cmd.id)).toBe(true);
+
+    const acked = fleet.ack(cmd.id, { pong: true });
+    expect(acked?.status).toBe('done');
+    expect(acked?.result).toEqual({ pong: true });
+
     const after = fleet.pullCommands(s.id);
-    expect(after.every((c) => c.id !== cmd.id || c.status === 'queued')).toBe(true);
+    expect(after.every((c) => c.id !== cmd.id)).toBe(true);
 
     expect(() => fleet.heartbeat('missing')).toThrow(YskError);
     expect(() => fleet.enqueue('missing', {})).toThrow(YskError);
+
+    const removed = fleet.remove(s.id);
+    expect(removed.ok).toBe(true);
+    expect(fleet.list().every((a) => a.id !== s.id)).toBe(true);
 
     closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });

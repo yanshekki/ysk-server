@@ -16,8 +16,8 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  OpsHero,
   OpsResultPanel,
-  SummaryStrip,
   Tabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -174,9 +174,25 @@ export function FtpsServicePage() {
         </Alert>
       ) : null}
 
-      <SummaryStrip
-        items={[
-          { label: '狀態', value: st.text, tone: st.tone === 'neutral' ? 'default' : st.tone },
+      <OpsHero
+        eyebrow="vsftpd"
+        title="FTPS 服務"
+        pill={st.text}
+        pillTone={st.tone === 'neutral' ? 'warn' : st.tone}
+        tone={status?.active === 'active' ? 'ok' : 'warn'}
+        hint="生命週期與 vsftpd 設定。儲存草稿 ≠ 已套用到系統。"
+        cta={
+          <Link to="/ftp" className="btn btn--secondary btn--md">
+            帳戶
+          </Link>
+        }
+        stats={[
+          {
+            label: '狀態',
+            value: (
+              <Badge tone={st.tone === 'neutral' ? 'neutral' : st.tone}>{st.text}</Badge>
+            ),
+          },
           { label: '埠', value: String(settings.listenPort) },
           {
             label: '帳戶',
@@ -184,8 +200,11 @@ export function FtpsServicePage() {
           },
           {
             label: 'FTPS',
-            value: settings.sslEnable ? '開啟' : '關閉',
-            tone: settings.sslEnable ? 'ok' : 'warn',
+            value: (
+              <Badge tone={settings.sslEnable ? 'ok' : 'warn'}>
+                {settings.sslEnable ? '開' : '關'}
+              </Badge>
+            ),
           },
         ]}
       />

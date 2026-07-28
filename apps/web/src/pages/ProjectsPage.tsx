@@ -2,7 +2,7 @@
  * Projects list — FeaturePageLayout aligned with recent UX.
  */
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ProjectCreateModal,
@@ -10,7 +10,7 @@ import {
   ProjectSummaryStrip,
   useProjects,
 } from '../features/projects';
-import { Alert, Button, FeaturePageLayout } from '../shared/components/ui';
+import { Alert, Badge, Button, FeaturePageLayout, OpsHero } from '../shared/components/ui';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
@@ -66,11 +66,73 @@ export function ProjectsPage() {
         </Alert>
       ) : null}
 
-      <ProjectSummaryStrip items={items} />
+      <OpsHero
+        eyebrow="Sites"
+        title="專案託管"
+        pill={`${items.length} 專案`}
+        pillTone={items.length ? 'ok' : 'warn'}
+        tone={items.length ? 'ok' : 'warn'}
+        hint={
+          <>
+            部署／發布需<strong>系統變更權限</strong>。Nginx 發布會寫管理 conf，
+            成功 reload 才算真正上線（written ≠ 對外可連）。
+          </>
+        }
+        meta={
+          <>
+            <span>
+              顯示 <strong>{filtered.length}</strong> / {items.length}
+            </span>
+            <span className="ops-hero__dot" />
+            <span>
+              篩選 <strong>{runtimeFilter}</strong>
+            </span>
+          </>
+        }
+        cta={
+          <>
+            <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
+              + 建立專案
+            </Button>
+            <Link to="/nginx" className="btn btn--secondary btn--md">
+              Nginx
+            </Link>
+            <Link to="/ssl" className="btn btn--ghost btn--md">
+              SSL
+            </Link>
+            <Link to="/system/readiness" className="btn btn--ghost btn--md">
+              就緒
+            </Link>
+          </>
+        }
+        stats={[
+          { label: '專案', value: items.length },
+          {
+            label: 'Node',
+            value: items.filter((p) => p.runtime === 'node').length,
+          },
+          {
+            label: 'PHP',
+            value: items.filter((p) => p.runtime === 'php').length,
+          },
+          {
+            label: '其他',
+            value: items.filter(
+              (p) => !['node', 'php'].includes(p.runtime),
+            ).length,
+          },
+        ]}
+        rail={
+          <>
+            <li>
+              <span className="ops-rail__k">篩選結果</span>
+              <Badge tone="neutral">{filtered.length}</Badge>
+            </li>
+          </>
+        }
+      />
 
-      <Alert variant="info">
-        專案詳情內部署／發布需<strong>系統變更權限</strong>；Nginx 發布會寫管理 conf，成功 reload 才算真正上線。
-      </Alert>
+      <ProjectSummaryStrip items={items} />
 
       <div className="page-toolbar">
         <div className="page-toolbar__search">
@@ -102,13 +164,6 @@ export function ProjectsPage() {
         emptyTitle={items.length === 0 ? t('projects.empty') : t('projects.emptyFilter')}
         emptyDescription={
           items.length === 0 ? t('projects.emptyHint') : t('projects.emptyFilterHint')
-        }
-        emptyAction={
-          items.length === 0 ? (
-            <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
-              + {t('projects.create')}
-            </Button>
-          ) : undefined
         }
       />
 

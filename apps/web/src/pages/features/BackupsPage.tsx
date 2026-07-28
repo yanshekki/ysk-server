@@ -6,8 +6,6 @@ import {
   Alert,
   Badge,
   Button,
-  Card,
-  CardSection,
   ConfirmDialog,
   DescriptionList,
   EmptyState,
@@ -15,7 +13,6 @@ import {
   Field,
   FormLayout,
   OpsResultPanel,
-  SummaryStrip,
   Tabs,
   FormActions,
 } from '../../shared/components/ui';
@@ -66,6 +63,7 @@ function formatBytes(n?: number): string {
 export function BackupsPage() {
   const [items, setItems] = useState<BackupItem[]>([]);
   const [lastRun, setLastRun] = useState<Record<string, unknown> | null>(null);
+  const [liveProjectCount, setLiveProjectCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<BackupItem | null>(null);
   const [restoreMode, setRestoreMode] = useState<'full' | 'web' | 'dry-run'>('full');
@@ -77,6 +75,8 @@ export function BackupsPage() {
     path: '/backups/ysk',
   });
   const [restic, setRestic] = useState<ResticSettings>({ enabled: false });
+  /** true when server already has a password (masked as ***) */
+  const [resticPasswordSet, setResticPasswordSet] = useState(false);
   const [exclusionsText, setExclusionsText] = useState(
     'node_modules\n.git\nvendor\n.cache',
   );
@@ -88,7 +88,7 @@ export function BackupsPage() {
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
 
   const refresh = useCallback(async () => {
-    const [r, s] = await Promise.all([
+    const [r, s, proj] = await Promise.all([
       api.requestRaw<{
         items: BackupItem[];
         lastRun?: Record<string, unknown> | null;
@@ -98,9 +98,11 @@ export function BackupsPage() {
         exclusions?: string[];
         restic?: ResticSettings;
       }>('/api/v1/backups/settings'),
+      api.listProjects().catch(() => ({ items: [] })),
     ]);
     setItems(r.items ?? []);
     setLastRun(r.lastRun ?? null);
+    setLiveProjectCount(proj.items?.length ?? 0);
     if (s.remote) {
       const kind =
         s.remote.kind === 'local' || s.remote.kind === 's3' ? s.remote.kind : 'sftp';
@@ -121,6 +123,10 @@ export function BackupsPage() {
       });
     }
     if (s.restic) {
+      const hasPw =
+        s.restic.password === '***' ||
+        Boolean(s.restic.password && s.restic.password !== '***');
+      setResticPasswordSet(hasPw);
       setRestic({
         enabled: Boolean(s.restic.enabled),
         repoPath: s.restic.repoPath ?? '',
@@ -184,23 +190,97 @@ export function BackupsPage() {
   }
 
   const lastOk = lastRun?.ok;
-  const projectCount = new Set(items.map((i) => i.projectId)).size;
+  /** Unique project ids that have archives — not live hosting project count */
+  const archiveProjectCount = new Set(items.map((i) => i.projectId)).size;
+  const lastResults = Array.isArray(lastRun?.results)
+    ? (lastRun!.results as Array<{
+        projectId?: string;
+        ok?: boolean;
+        skipped?: boolean;
+        notes?: string[];
+        archivePath?: string;
+      }>)
+    : [];
+  const sideResults = Array.isArray(lastRun?.sideResults)
+    ? (lastRun!.sideResults as Array<{
+        projectId?: string;
+        kind?: string;
+        ok?: boolean;
+        skipped?: boolean;
+        notes?: string[];
+      }>)
+    : [];
 
   const [tab, setTab] = usePageTab(BK_TABS, 'files');
+
+  async function downloadBackup(b: BackupItem) {
+    setError(null);
+    try {
+      const q = new URLSearchParams({ projectId: b.projectId, name: b.name });
+      await api.downloadAuthenticated(`/api/v1/backups/download?${q}`, b.name);
+      setMsg(`已開始下載 ${b.name}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '下載失敗');
+    }
+  }
+
+  const lastLabel =
+    lastOk === true
+      ? lastRun?.empty
+        ? '無事可做'
+        : lastRun?.sideOk === false
+          ? 'tar OK／副步驟有問題'
+          : '成功'
+      : lastOk === false
+        ? '有失敗'
+        : '尚未';
+  const lastTone =
+    lastOk === true
+      ? lastRun?.sideOk === false
+        ? 'warn'
+        : 'ok'
+      : lastOk === false
+        ? 'danger'
+        : 'ok';
+  const resticLabel = restic.enabled
+    ? resticPasswordSet || restic.password
+      ? '已啟用'
+      : '缺 password'
+    : '關閉';
+  const resticTone = restic.enabled
+    ? resticPasswordSet || restic.password
+      ? 'ok'
+      : 'warn'
+    : 'neutral';
+  const heroTone =
+    lastOk === false || (restic.enabled && !(resticPasswordSet || restic.password))
+      ? 'warn'
+      : 'ok';
 
   return (
     <FeaturePageLayout
       title="備份"
-      subtitle="專案 tar 備份 · 還原 · 刪除"
+      subtitle="專案 tar · 還原 · 遠端 / restic · 誠實結果"
+      showCapability={false}
       actions={
-        <Button
-          variant="secondary"
-          size="md"
-          loading={busy}
-          onClick={() => void refresh().catch((e: Error) => setError(e.message))}
-        >
-          重新整理
-        </Button>
+        <>
+          <Button
+            variant="secondary"
+            size="md"
+            loading={busy}
+            onClick={() => void refresh().catch((e: Error) => setError(e.message))}
+          >
+            重新整理
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            loading={busy}
+            onClick={() => setTab('ops')}
+          >
+            操作
+          </Button>
+        </>
       }
     >
       {error || actErr ? <Alert variant="error">{error ?? actErr}</Alert> : null}
@@ -213,18 +293,110 @@ export function BackupsPage() {
         </Alert>
       ) : null}
 
-      <SummaryStrip
-        items={[
-          { label: '備份檔', value: String(items.length) },
-          { label: '專案數', value: String(projectCount) },
-          {
-            label: '上次全部備份',
-            value:
-              lastOk === true ? '全部成功' : lastOk === false ? '有失敗' : '尚未',
-            tone: lastOk === true ? 'ok' : lastOk === false ? 'warn' : 'default',
-          },
-        ]}
-      />
+      <div className="ops">
+        <section className={`ops-hero ops-hero--${heroTone}`}>
+          <div className="ops-hero__main">
+            <div className="ops-hero__copy">
+              <div className="ops-hero__eyebrow">Backups</div>
+              <h2 className="ops-hero__title">
+                <span className={`ops-hero__pill ops-hero__pill--${lastTone === 'danger' ? 'danger' : lastTone === 'warn' ? 'warn' : 'ok'}`}>
+                  上次 {lastLabel}
+                </span>
+                專案備份中心
+              </h2>
+              <p className="ops-hero__hint">
+                tar 歸檔於管理目錄；還原可 dry-run／web／完整。遠端與 restic
+                為可選。written／上傳失敗會誠實標示，唔會假成功。
+              </p>
+              <div className="ops-hero__meta">
+                <span>
+                  檔案 <strong>{items.length}</strong>
+                </span>
+                <span className="ops-hero__dot" />
+                <span>
+                  面板專案 <strong>{liveProjectCount}</strong>
+                </span>
+                <span className="ops-hero__dot" />
+                <span>
+                  有備份專案 <strong>{archiveProjectCount}</strong>
+                </span>
+                <span className="ops-hero__dot" />
+                <span>
+                  restic <strong>{resticLabel}</strong>
+                </span>
+              </div>
+              <div className="ops-hero__cta">
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => setTab('ops')}
+                >
+                  備份／還原操作
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setTab('files')}
+                >
+                  瀏覽備份檔
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  onClick={() => setTab('remote')}
+                >
+                  遠端設定
+                </Button>
+              </div>
+            </div>
+            <div className="ops-hero__stats">
+              <div className="ops-stat">
+                <span className="ops-stat__lab">備份檔</span>
+                <span className="ops-stat__val">{items.length}</span>
+              </div>
+              <div className="ops-stat">
+                <span className="ops-stat__lab">專案</span>
+                <span className="ops-stat__val">{liveProjectCount}</span>
+              </div>
+              <div className="ops-stat">
+                <span className="ops-stat__lab">上次全部</span>
+                <span className="ops-stat__val">
+                  <Badge
+                    tone={
+                      lastTone === 'danger'
+                        ? 'danger'
+                        : lastTone === 'warn'
+                          ? 'warn'
+                          : 'ok'
+                    }
+                  >
+                    {lastLabel}
+                  </Badge>
+                </span>
+              </div>
+              <div className="ops-stat">
+                <span className="ops-stat__lab">restic</span>
+                <span className="ops-stat__val">
+                  <Badge tone={resticTone as 'ok' | 'warn' | 'neutral'}>
+                    {resticLabel}
+                  </Badge>
+                </span>
+              </div>
+            </div>
+          </div>
+          <ul className="ops-rail">
+            <li>
+              <span className="ops-rail__k">遠端</span>
+              <Badge tone={remote.enabled ? 'ok' : 'neutral'}>
+                {remote.enabled ? remote.kind : '關閉'}
+              </Badge>
+            </li>
+            <li>
+              <span className="ops-rail__k">有備份專案</span>
+              <span className="ops-rail__text">{archiveProjectCount}</span>
+            </li>
+          </ul>
+        </section>
 
       <Tabs
         tabs={[
@@ -238,50 +410,54 @@ export function BackupsPage() {
       >
         {tab === 'files' ? (
           <div className="tab-panel">
-      <Card>
-        <CardSection title={`備份檔案 (${items.length})`}>
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <div>
+                  <h3 className="ops-panel__title">備份檔案 ({items.length})</h3>
+                  <p className="ops-panel__sub">
+                    管理目錄 tar · 下載需登入 · 還原有 dry-run／web／完整
+                  </p>
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => setTab('ops')}>
+                  全部備份
+                </Button>
+              </header>
           {items.length === 0 ? (
             <EmptyState
               title="尚無備份"
               description="執行「備份所有專案」或於專案詳情 Backup"
+              action={
+                <Button variant="primary" size="md" onClick={() => setTab('ops')}>
+                  去操作
+                </Button>
+              }
             />
           ) : (
-            <div className="table-wrap">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th>專案</th>
-                    <th>檔名</th>
-                    <th>大小</th>
-                    <th>時間</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <div className="ops-svc-list">
                   {items.map((b) => (
-                    <tr key={`${b.projectId}:${b.name}`}>
-                      <td>
-                        <code className="inline">{b.projectId.slice(0, 8)}…</code>
-                      </td>
-                      <td>
-                        <code className="inline u-break-all">{b.name}</code>
-                      </td>
-                      <td>{formatBytes(b.bytes)}</td>
-                      <td className="muted u-nowrap">
-                        {b.mtime ? new Date(b.mtime).toLocaleString() : '—'}
-                      </td>
-                      <td>
-                        <div className="btn-row">
+                    <article key={`${b.projectId}:${b.name}`} className="ops-svc ops-svc--ok">
+                      <div className="ops-svc__body">
+                        <div className="ops-svc__head">
+                          <h4 className="ops-svc__name">{b.name}</h4>
+                          <Badge tone="neutral">{formatBytes(b.bytes)}</Badge>
+                        </div>
+                        <div className="ops-svc__meta">
+                          <span>
+                            專案 <code>{b.projectId.slice(0, 10)}…</code>
+                          </span>
+                          <span>
+                            {b.mtime
+                              ? new Date(b.mtime).toLocaleString('zh-TW')
+                              : '—'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ops-svc__actions">
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => {
-                              const q = new URLSearchParams({
-                                projectId: b.projectId,
-                                name: b.name,
-                              });
-                              window.open(`/api/v1/backups/download?${q}`, '_blank');
-                            }}
+                            loading={busy}
+                            onClick={() => void downloadBackup(b)}
                           >
                             下載
                           </Button>
@@ -326,23 +502,26 @@ export function BackupsPage() {
                           >
                             刪除
                           </Button>
-                        </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </article>
                   ))}
-                </tbody>
-              </table>
             </div>
           )}
-        </CardSection>
-      </Card>
+            </section>
           </div>
         ) : null}
 
         {tab === 'ops' ? (
           <div className="tab-panel">
-      <Card>
-        <CardSection title="操作" description="全部成功才算 ok；部分失敗會顯示失敗">
+      <section className="ops-panel">
+        <header className="ops-panel__head">
+          <div>
+            <h3 className="ops-panel__title">操作</h3>
+            <p className="ops-panel__sub">
+              0 個專案或全部略過 = 成功；真正有試過備而失敗先算失敗
+            </p>
+          </div>
+        </header>
           <div className="lifecycle-toolbar">
             <Button
               variant="primary"
@@ -353,9 +532,29 @@ export function BackupsPage() {
                   try {
                     const r = (await api.requestRaw('/api/v1/backups/run-all', {
                       method: 'POST',
-                    })) as OpsResultLike;
+                    })) as OpsResultLike & {
+                      results?: Array<{
+                        projectId?: string;
+                        ok?: boolean;
+                        skipped?: boolean;
+                        notes?: string[];
+                      }>;
+                      empty?: boolean;
+                    };
                     await refresh();
-                    return r;
+                    const extra =
+                      r.empty
+                        ? '（沒有專案）'
+                        : Array.isArray(r.results)
+                          ? ` · ${r.results.filter((x) => x.ok && !x.skipped).length}/${r.results.filter((x) => !x.skipped).length} 成功`
+                          : '';
+                    return {
+                      ...r,
+                      notes: [
+                        ...(r.notes ?? []),
+                        extra ? `摘要${extra}` : '',
+                      ].filter(Boolean),
+                    };
                   } catch (e) {
                     const m = e instanceof Error ? e.message : '備份失敗';
                     return { ok: false, notes: [m], blockMessage: m };
@@ -375,7 +574,14 @@ export function BackupsPage() {
                     method: 'POST',
                     body: JSON.stringify({ schedule: '0 3 * * *' }),
                   })) as OpsResultLike;
-                  return r;
+                  return {
+                    ...r,
+                    notes: [
+                      ...(r.notes ?? []),
+                      '指令：ysk-server backup all --data-dir …',
+                      '記得到「Cron」頁安裝到系統 crontab 才會真正跑',
+                    ],
+                  };
                 }, '已登記每日 03:00 排程')
               }
             >
@@ -385,12 +591,23 @@ export function BackupsPage() {
               variant="secondary"
               size="md"
               loading={busy}
+              disabled={!restic.enabled}
+              title={
+                !restic.enabled
+                  ? '請先在「遠端／排除」啟用 restic 並設定 password'
+                  : undefined
+              }
               onClick={() =>
                 void run(async () => {
-                  return (await api.requestRaw('/api/v1/backups/restic/run', {
-                    method: 'POST',
-                    body: '{}',
-                  })) as OpsResultLike;
+                  try {
+                    return (await api.requestRaw('/api/v1/backups/restic/run', {
+                      method: 'POST',
+                      body: '{}',
+                    })) as OpsResultLike;
+                  } catch (e) {
+                    const m = e instanceof Error ? e.message : 'restic 失敗';
+                    return { ok: false, notes: [m], blockMessage: m };
+                  }
                 }, 'restic 增量完成')
               }
             >
@@ -428,6 +645,126 @@ export function BackupsPage() {
               列出 restic snapshots
             </Button>
           </div>
+
+          {lastRun ? (
+            <div className="u-mt-4">
+              <h4 className="u-mb-2" style={{ marginTop: 0 }}>
+                上次全部備份明細
+              </h4>
+              <DescriptionList
+                columns={2}
+                items={[
+                  {
+                    label: '時間',
+                    value: lastRun.at
+                      ? new Date(String(lastRun.at)).toLocaleString()
+                      : '—',
+                  },
+                  {
+                    label: '結果',
+                    value:
+                      lastOk === true
+                        ? lastRun.empty
+                          ? '無事可做（0 專案）'
+                          : '成功'
+                        : lastOk === false
+                          ? '有失敗'
+                          : '—',
+                  },
+                  {
+                    label: '備註',
+                    value: Array.isArray(lastRun.notes)
+                      ? (lastRun.notes as string[]).join('；')
+                      : '—',
+                  },
+                ]}
+              />
+              {lastResults.length > 0 ? (
+                <div className="table-wrap u-mt-3">
+                  <table className="data">
+                    <thead>
+                      <tr>
+                        <th>專案</th>
+                        <th>狀態</th>
+                        <th>備註</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lastResults.map((row, i) => (
+                        <tr key={`${row.projectId ?? i}`}>
+                          <td>
+                            <code className="inline">
+                              {(row.projectId ?? '—').slice(0, 8)}
+                              {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
+                            </code>
+                          </td>
+                          <td>
+                            {row.skipped ? (
+                              <Badge tone="neutral">略過</Badge>
+                            ) : row.ok ? (
+                              <Badge tone="ok">成功</Badge>
+                            ) : (
+                              <Badge tone="danger">失敗</Badge>
+                            )}
+                          </td>
+                          <td className="muted u-text-sm">
+                            {(row.notes ?? []).join('；') || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="muted u-text-sm u-mt-2">
+                  {lastRun.empty
+                    ? '上次沒有專案需要備份。'
+                    : '沒有 per-project results。'}
+                </p>
+              )}
+              {sideResults.length > 0 ? (
+                <div className="table-wrap u-mt-3">
+                  <h4 className="u-mb-2">遠端／restic 副步驟</h4>
+                  <table className="data">
+                    <thead>
+                      <tr>
+                        <th>專案</th>
+                        <th>步驟</th>
+                        <th>狀態</th>
+                        <th>備註</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sideResults.map((row, i) => (
+                        <tr key={`side-${row.projectId ?? i}-${row.kind ?? i}`}>
+                          <td>
+                            <code className="inline">
+                              {(row.projectId ?? '—').slice(0, 8)}
+                              {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
+                            </code>
+                          </td>
+                          <td>{row.kind === 'restic' ? 'restic' : '遠端'}</td>
+                          <td>
+                            {row.skipped ? (
+                              <Badge tone="neutral">略過</Badge>
+                            ) : row.ok ? (
+                              <Badge tone="ok">成功</Badge>
+                            ) : (
+                              <Badge tone="danger">失敗</Badge>
+                            )}
+                          </td>
+                          <td className="muted u-text-sm">
+                            {(row.notes ?? []).slice(0, 3).join('；') || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
           {snapshots.length > 0 ? (
             <div className="u-mt-4">
               <Field label="還原用 projectId（可空=全部 list）" htmlFor="rs-pid" flush>
@@ -617,18 +954,24 @@ export function BackupsPage() {
               />
             </div>
           ) : null}
-        </CardSection>
-      </Card>
+      </section>
           </div>
         ) : null}
 
         {tab === 'remote' ? (
           <div className="tab-panel">
-            <Card>
-              <CardSection
-                title="遠端推送目標"
-                description="本地 tar 成功後可推送到 SFTP、本機路徑或 S3"
-              >
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <div>
+                  <h3 className="ops-panel__title">遠端推送目標</h3>
+                  <p className="ops-panel__sub">
+                    本地 tar 成功後可推送到 SFTP、本機路徑或 S3
+                  </p>
+                </div>
+                <Badge tone={remote.enabled ? 'ok' : 'neutral'}>
+                  {remote.enabled ? remote.kind : '關閉'}
+                </Badge>
+              </header>
                 <FormLayout columns={2}>
                   <Field label="啟用遠端推送" htmlFor="bk-en" flush>
                     <select
@@ -778,14 +1121,20 @@ export function BackupsPage() {
                     </Field>
                   ) : null}
                 </FormLayout>
-              </CardSection>
-            </Card>
+            </section>
 
-            <Card>
-              <CardSection
-                title="Restic 增量"
-                description="可選；需主機 PATH 有 restic"
-              >
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <div>
+                  <h3 className="ops-panel__title">Restic 增量</h3>
+                  <p className="ops-panel__sub">
+                    可選；需 PATH 有 restic。啟用後必須設定 password（唔會用預設密碼）
+                  </p>
+                </div>
+                <Badge tone={resticTone as 'ok' | 'warn' | 'neutral'}>
+                  {resticLabel}
+                </Badge>
+              </header>
                 <FormLayout columns={2}>
                   <Field label="啟用 restic" htmlFor="rs-en" flush>
                     <select
@@ -809,14 +1158,27 @@ export function BackupsPage() {
                       placeholder="dataDir/restic-repo"
                     />
                   </Field>
-                  <Field label="Repo 密碼" htmlFor="rs-pw" flush>
+                  <Field
+                    label="Repo 密碼"
+                    htmlFor="rs-pw"
+                    flush
+                    required={restic.enabled}
+                    hint={
+                      resticPasswordSet
+                        ? '已儲存；留空＝不改。啟用後必填。'
+                        : '啟用 restic 時必填（唔會用預設密碼）'
+                    }
+                  >
                     <input
                       id="rs-pw"
                       type="password"
                       value={restic.password ?? ''}
-                      onChange={(e) =>
-                        setRestic((r) => ({ ...r, password: e.target.value }))
-                      }
+                      onChange={(e) => {
+                        setRestic((r) => ({ ...r, password: e.target.value }));
+                        if (e.target.value) setResticPasswordSet(true);
+                      }}
+                      placeholder={resticPasswordSet ? '已儲存（留空不改）' : '必填'}
+                      autoComplete="new-password"
                     />
                   </Field>
                   <Field label="或 S3 repo URL" htmlFor="rs-s3" flush>
@@ -830,11 +1192,15 @@ export function BackupsPage() {
                     />
                   </Field>
                 </FormLayout>
-              </CardSection>
-            </Card>
+            </section>
 
-            <Card>
-              <CardSection title="排除規則" description="tar 排除路徑，每行一個 glob">
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <div>
+                  <h3 className="ops-panel__title">排除規則</h3>
+                  <p className="ops-panel__sub">tar 排除路徑，每行一個 glob</p>
+                </div>
+              </header>
                 <FormLayout>
                   <Field label="排除清單" htmlFor="bk-ex" fullWidth flush>
                     <textarea
@@ -856,8 +1222,7 @@ export function BackupsPage() {
                     儲存全部設定
                   </Button>
                 </FormActions>
-              </CardSection>
-            </Card>
+            </section>
           </div>
         ) : null}
       </Tabs>
@@ -940,6 +1305,7 @@ export function BackupsPage() {
       />
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      </div>
     </FeaturePageLayout>
   );
 }

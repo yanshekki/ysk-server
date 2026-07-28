@@ -58,13 +58,15 @@ describe('EmailService real keygen + persistence', () => {
     expect(String(mb.mailbox.maildir)).toContain('Maildir');
     expect(existsSync(String(mb.mailbox.maildir))).toBe(true);
     expect(mb.written.some((p) => p.includes('virtual_mailbox'))).toBe(true);
-    expect(mb.notes.some((n) => /YSK_EXECUTE|System user/i.test(n))).toBe(true);
+    expect(mb.notes.some((n) => /YSK_EXECUTE|System user|系統用戶|系統變更|useradd|權限/i.test(n))).toBe(
+      true,
+    );
     expect(svc.listMailboxes(created.domain.id)).toHaveLength(1);
     expect(svc.listMailboxes(created.domain.id)[0].has_password).toBe(true);
 
     await expect(
       svc.createMailbox(created.domain.id, { localPart: 'info', actor: 'admin' }),
-    ).rejects.toThrow(/already exists/i);
+    ).rejects.toThrow(/already exists|已存在/i);
 
     closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });

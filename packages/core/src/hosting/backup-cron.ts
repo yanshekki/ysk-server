@@ -11,12 +11,37 @@ import {
   statSync,
   unlinkSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { YskDatabase } from '../db/database.js';
 import { planCronJob } from './extras.js';
+
+/** Constrain archive under dataDir/backups/<projectId>/ */
+export function resolveManagedBackupArchive(
+  dataDir: string,
+  projectId: string,
+  archiveName: string,
+): { ok: true; root: string; path: string; name: string } | { ok: false; notes: string[] } {
+  const id = String(projectId ?? '')
+    .replace(/[^a-zA-Z0-9_-]/g, '')
+    .slice(0, 80);
+  if (!id) return { ok: false, notes: ['無效的 projectId'] };
+  const safeName = String(archiveName ?? '')
+    .replace(/[/\\]/g, '')
+    .replace(/\0/g, '');
+  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
+    return { ok: false, notes: ['無效的備份檔名'] };
+  }
+  const root = resolve(join(dataDir, 'backups', id));
+  const archivePath = resolve(join(root, safeName));
+  const rootPrefix = root.endsWith(sep) ? root : root + sep;
+  if (archivePath !== root && !archivePath.startsWith(rootPrefix)) {
+    return { ok: false, notes: ['路徑越界拒絕'] };
+  }
+  return { ok: true, root, path: archivePath, name: safeName };
+}
 
 export interface BackupResult {
   ok: boolean;
@@ -63,8 +88,31 @@ export function listBackups(dataDir: string): BackupListItem[] {
   return out.sort((a, b) => (a.mtime < b.mtime ? 1 : -1));
 }
 
+/** Notes that mean "not attempted" (skip) — Chinese or English */
+export function isBackupSkipNote(note: string): boolean {
+  const n = note.trim();
+  return (
+    /^skip\b/i.test(n) ||
+    /^skipped\b/i.test(n) ||
+    n.startsWith('略過') ||
+    n.startsWith('跳過')
+  );
+}
+
+export function isBackupSkippedResult(r: {
+  ok: boolean;
+  notes: string[];
+  skipped?: boolean;
+}): boolean {
+  if (r.skipped === true) return true;
+  return r.notes.some(isBackupSkipNote);
+}
+
 /**
  * Backup every project that has a home_dir on disk.
+ * - 0 projects → ok (nothing to do)
+ * - missing home → skipped (not a failure)
+ * - ok only if every *attempted* backup succeeds
  */
 export async function backupAllProjects(input: {
   host: HostExecutor;
@@ -73,15 +121,26 @@ export async function backupAllProjects(input: {
   excludes?: string[];
 }): Promise<{
   ok: boolean;
-  results: Array<BackupResult & { projectId: string }>;
+  results: Array<BackupResult & { projectId: string; skipped?: boolean }>;
   notes: string[];
+  empty?: boolean;
 }> {
-  const results: Array<BackupResult & { projectId: string }> = [];
+  if (input.projects.length === 0) {
+    return {
+      ok: true,
+      empty: true,
+      results: [],
+      notes: ['沒有專案可備份（0 個）— 不視為失敗'],
+    };
+  }
+
+  const results: Array<BackupResult & { projectId: string; skipped?: boolean }> = [];
   for (const p of input.projects) {
     if (!existsSync(p.home_dir)) {
       results.push({
         projectId: p.id,
-        ok: false,
+        ok: true, // skip is not a hard failure of the job
+        skipped: true,
         notes: [`略過：家目錄不存在 ${p.home_dir}`],
         commandResults: [],
       });
@@ -105,21 +164,29 @@ export async function backupAllProjects(input: {
       });
     }
   }
-  // Honest ok: every non-skipped project must succeed (not "any one ok")
-  const attempted = results.filter((r) => !r.notes.some((n) => /^skip /i.test(n)));
-  const okCount = results.filter((r) => r.ok).length;
-  const ok = attempted.length > 0 && attempted.every((r) => r.ok);
-  return {
-    ok,
-    results,
-    notes: [
-      `已備份 ${okCount}/${results.length} 個專案` +
-        (attempted.length !== results.length
-          ? `（略過 ${results.length - attempted.length} 個無 home）`
-          : ''),
-      ok ? '全部成功' : '部分或全部失敗 — 請查看 results',
-    ],
-  };
+
+  const skipped = results.filter((r) => isBackupSkippedResult(r));
+  const attempted = results.filter((r) => !isBackupSkippedResult(r));
+  const okCount = attempted.filter((r) => r.ok).length;
+  // No attempts (all skipped) → ok; otherwise every attempt must succeed
+  const ok =
+    attempted.length === 0 ? true : attempted.every((r) => r.ok);
+
+  const notes: string[] = [
+    `已備份 ${okCount}/${attempted.length} 個專案` +
+      (skipped.length
+        ? `（略過 ${skipped.length} 個無 home）`
+        : ''),
+  ];
+  if (attempted.length === 0) {
+    notes.push('全部略過（沒有可備份的 home）— 不視為失敗');
+  } else if (ok) {
+    notes.push('全部成功');
+  } else {
+    notes.push('部分或全部失敗 — 請查看 results');
+  }
+
+  return { ok, results, notes };
 }
 
 /**
@@ -146,6 +213,7 @@ export async function backupProject(input: {
   const sources = [input.homeDir, ...(input.extraSources ?? [])];
   const excludeArgs = (input.excludes ?? []).flatMap((e) => ['--exclude', e]);
   // tar from parent with relative paths when possible
+  const tarTimeoutMs = 600_000; // large homes
   const r = await input.host.runCommand(
     [
       'tar',
@@ -156,12 +224,12 @@ export async function backupProject(input: {
       '/',
       ...sources.map((s) => s.replace(/^\//, '')),
     ],
-    { timeoutMs: 120_000 },
+    { timeoutMs: tarTimeoutMs },
   );
   if (r.exitCode !== 0) {
     // fallback: tar with absolute paths
     const r2 = await input.host.runCommand(['tar', '-czf', archivePath, ...sources], {
-      timeoutMs: 120_000,
+      timeoutMs: tarTimeoutMs,
     });
     if (r2.exitCode !== 0) {
       return {
@@ -176,7 +244,7 @@ export async function backupProject(input: {
   }
   let bytes = 0;
   try {
-    bytes = Buffer.byteLength(readFileSync(archivePath));
+    bytes = statSync(archivePath).size;
   } catch {
     /* ignore */
   }
@@ -221,13 +289,18 @@ export async function restoreProjectBackup(input: {
    */
   mode?: 'full' | 'web' | 'dry-run';
 }): Promise<BackupResult> {
-  const root = join(input.dataDir, 'backups', input.projectId);
-  const safeName = input.archiveName.replace(/[/\\]/g, '');
-  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, '無效的備份檔名', { httpStatus: 400 });
+  const resolved = resolveManagedBackupArchive(
+    input.dataDir,
+    input.projectId,
+    input.archiveName,
+  );
+  if (!resolved.ok) {
+    throw new YskError(ErrorCodes.VALIDATION, resolved.notes[0] ?? '無效備份', {
+      httpStatus: 400,
+    });
   }
-  const archivePath = join(root, safeName);
-  if (!existsSync(archivePath) || !archivePath.startsWith(root)) {
+  const { path: archivePath, name: safeName } = resolved;
+  if (!existsSync(archivePath)) {
     throw new YskError(ErrorCodes.NOT_FOUND, '找不到備份檔', { httpStatus: 404 });
   }
   const mode = input.mode ?? 'full';
@@ -335,18 +408,14 @@ export function deleteProjectBackup(
   projectId: string,
   archiveName: string,
 ): { ok: boolean; notes: string[] } {
-  const root = join(dataDir, 'backups', projectId);
-  const safeName = archiveName.replace(/[/\\]/g, '');
-  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
-    return { ok: false, notes: ['無效的備份檔名'] };
-  }
-  const archivePath = join(root, safeName);
-  if (!existsSync(archivePath) || !archivePath.startsWith(root)) {
+  const resolved = resolveManagedBackupArchive(dataDir, projectId, archiveName);
+  if (!resolved.ok) return { ok: false, notes: resolved.notes };
+  if (!existsSync(resolved.path)) {
     return { ok: false, notes: ['找不到備份檔'] };
   }
   try {
-    unlinkSync(archivePath);
-    return { ok: true, notes: [`已刪除 ${safeName}`] };
+    unlinkSync(resolved.path);
+    return { ok: true, notes: [`已刪除 ${resolved.name}`] };
   } catch (e) {
     return { ok: false, notes: [e instanceof Error ? e.message : String(e)] };
   }
@@ -358,16 +427,12 @@ export function resolveBackupDownloadPath(
   projectId: string,
   archiveName: string,
 ): { ok: true; path: string } | { ok: false; notes: string[] } {
-  const root = join(dataDir, 'backups', projectId);
-  const safeName = archiveName.replace(/[/\\]/g, '');
-  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
-    return { ok: false, notes: ['無效的備份檔名'] };
-  }
-  const archivePath = join(root, safeName);
-  if (!existsSync(archivePath) || !archivePath.startsWith(root)) {
+  const resolved = resolveManagedBackupArchive(dataDir, projectId, archiveName);
+  if (!resolved.ok) return { ok: false, notes: resolved.notes };
+  if (!existsSync(resolved.path)) {
     return { ok: false, notes: ['找不到備份檔'] };
   }
-  return { ok: true, path: archivePath };
+  return { ok: true, path: resolved.path };
 }
 
 export interface CronJobRecord {
@@ -522,14 +587,39 @@ export class CronJobService {
   ensureBackupSchedule(schedule = '0 3 * * *'): CronJobRecord {
     const marker = 'ysk-backup-all';
     const existing = cronRows(this.db).find((j) => j.command.includes(marker));
-    if (existing) return { ...existing };
+    if (existing) {
+      // Repair legacy broken command `ysk-server backup all` without data-dir
+      if (
+        existing.command.includes(marker) &&
+        !existing.command.includes('--data-dir') &&
+        existing.command.includes('backup all')
+      ) {
+        const fixed = this.backupAllCliCommand(marker);
+        const row = this.db.snapshot.cron_jobs.find((j) => j.id === existing.id);
+        if (row) {
+          row.command = fixed;
+          row.updated_at = new Date().toISOString();
+          this.db.persist();
+          this.writeManagedCrontab();
+          return { ...(row as unknown as CronJobRecord) };
+        }
+      }
+      return { ...existing };
+    }
     return this.create({
       user: 'root',
       schedule,
-      command: `ysk-server backup all # ${marker}`,
+      command: this.backupAllCliCommand(marker),
       actor: 'system',
       skipRunuserWrap: true,
     });
+  }
+
+  /** Absolute-ish CLI for scheduled full backup (must match apps/server cli). */
+  private backupAllCliCommand(marker: string): string {
+    // Prefer PATH ysk-server; pass dataDir so cron has correct store
+    const data = this.dataDir.replace(/'/g, `'\\''`);
+    return `ysk-server backup all --data-dir '${data}' # ${marker}`;
   }
 
   /** Write all enabled jobs to dataDir/cron/ysk.crontab */

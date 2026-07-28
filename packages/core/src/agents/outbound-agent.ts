@@ -28,7 +28,11 @@ export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: stri
     const reg = await fetchFn(`${base}/api/v1/fleet/agents/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ agentId: opts.agentId, group: opts.group }),
+      body: JSON.stringify({
+        agentId: opts.agentId,
+        group: opts.group,
+        meta: { source: 'edge' },
+      }),
     });
     if (!reg.ok) {
       throw new Error(`register failed: HTTP ${reg.status}`);
@@ -54,17 +58,22 @@ export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: stri
 
   let handled = 0;
   for (const cmd of items ?? []) {
+    let result: unknown;
+    let err = false;
     try {
-      const result = opts.onCommand
+      result = opts.onCommand
         ? await opts.onCommand(cmd)
-        : { echo: cmd.payload, agentId: opts.agentId };
-      // control plane ack is via internal store; for HTTP we POST result if endpoint exists
-      // Best-effort: re-enqueue done status by registering message — use tools path not required
-      void result;
-      handled += 1;
-    } catch {
-      handled += 1;
+        : { echo: cmd.payload, agentId: opts.agentId, ok: true };
+    } catch (e) {
+      err = true;
+      result = { error: e instanceof Error ? e.message : String(e) };
     }
+    await fetchFn(`${base}/api/v1/fleet/commands/${cmd.id}/ack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ result, error: err }),
+    }).catch(() => undefined);
+    handled += 1;
   }
 
   return { sessionId, heartbeated: true, commandsHandled: handled };

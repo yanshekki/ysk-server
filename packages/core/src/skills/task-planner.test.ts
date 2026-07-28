@@ -61,7 +61,7 @@ describe('AI task planner', () => {
     const run = startPlaybookRun('discover-host', 'admin');
     expect(run.status).toBe('pending');
     expect(run.playbookId).toBe('discover-host');
-    expect(() => getPlaybook('no-such-playbook')).toThrow(/not found/i);
+    expect(() => getPlaybook('no-such-playbook')).toThrow(/not found|找不到/i);
   });
 
   it('approveTaskSteps marks planned steps approved', () => {

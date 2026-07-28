@@ -306,6 +306,142 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       },
     );
 
+    // Defense automation — interval follows panel policy (fallback env / 120s)
+    scheduler.everyDynamic(
+      'defense-auto-ban',
+      () => {
+        try {
+          const raw = db.snapshot.settings?.defense_automation;
+          if (raw) {
+            const p = JSON.parse(raw) as { autoBan?: { intervalSeconds?: number } };
+            const sec = Number(p.autoBan?.intervalSeconds) || 120;
+            return Math.max(30_000, Math.min(600_000, sec * 1000));
+          }
+        } catch {
+          /* fall through */
+        }
+        const envMs = Number(process.env.YSK_AUTO_BAN_INTERVAL_MS ?? 120_000);
+        return Number.isFinite(envMs) && envMs >= 15_000 ? envMs : 120_000;
+      },
+      async () => {
+        try {
+          const { runDefenseAutomationTick, loadDefenseAutomation } = await import('@ysk/core');
+          const pol = loadDefenseAutomation(db);
+          if (!pol.enabled) return;
+          if (!pol.autoBan.enabled && !pol.autoPreset.enabled) return;
+          const r = await runDefenseAutomationTick({
+            host,
+            db,
+            dataDir,
+            requestCountLastMinute: ctx.requestHits?.length ?? 0,
+          });
+          if (r.banned.length > 0 || r.presetChanged || r.suggestEmergency) {
+            audit.append({
+              actor: 'system',
+              action: 'defense.automation.scheduled',
+              detail: {
+                banned: r.banned,
+                presetChanged: r.presetChanged,
+                preset: r.preset,
+                score: r.score,
+                notes: r.notes.slice(0, 8),
+                suggestEmergency: r.suggestEmergency,
+              },
+              ok: r.ok,
+            });
+          }
+        } catch (e) {
+          audit.append({
+            actor: 'system',
+            action: 'defense.automation.scheduled',
+            detail: { error: e instanceof Error ? e.message : String(e) },
+            ok: false,
+          });
+        }
+      },
+    );
+
+    // GeoIP DB refresh — daily (or 12–48h); fail-soft keeps previous MMDB
+    scheduler.everyDynamic(
+      'defense-geoip-update',
+      () => {
+        const envMs = Number(process.env.YSK_GEOIP_UPDATE_MS ?? 24 * 60 * 60 * 1000);
+        return Number.isFinite(envMs) && envMs >= 60 * 60 * 1000
+          ? Math.min(envMs, 48 * 60 * 60 * 1000)
+          : 24 * 60 * 60 * 1000;
+      },
+      async () => {
+        try {
+          const {
+            loadIpAccessPolicy,
+            updateGeoipDatabases,
+            resetGeoipReaders,
+          } = await import('@ysk/core');
+          const pol = loadIpAccessPolicy(db, dataDir);
+          if (pol.autoUpdate === false) return;
+          const r = await updateGeoipDatabases(dataDir);
+          resetGeoipReaders();
+          audit.append({
+            actor: 'system',
+            action: 'defense.geoip.update.scheduled',
+            detail: { ok: r.ok, notes: r.notes.slice(0, 6) },
+            ok: r.ok,
+          });
+        } catch (e) {
+          audit.append({
+            actor: 'system',
+            action: 'defense.geoip.update.scheduled',
+            detail: { error: e instanceof Error ? e.message : String(e) },
+            ok: false,
+          });
+        }
+      },
+    );
+
+    // Log Center: auto vacuum (checks window every 15m) + disk hint for notifications
+    scheduler.every(
+      'log-auto-vacuum',
+      15 * 60_000,
+      async () => {
+        try {
+          const {
+            runLogAutoVacuumTick,
+            getLogOverview,
+          } = await import('@ysk/core');
+          // refresh disk hint for dashboard notifications
+          try {
+            const ov = await getLogOverview({ host, dataDir, db });
+            if (ov.journalDiskMb != null) {
+              db.snapshot.settings.log_center_disk_hint = JSON.stringify({
+                journalDiskMb: ov.journalDiskMb,
+                varLogMb: ov.varLogMb,
+                at: ov.at,
+              });
+              db.persist();
+            }
+          } catch {
+            /* non-fatal */
+          }
+          const r = await runLogAutoVacuumTick({ host, db });
+          if (r.ran) {
+            audit.append({
+              actor: 'system',
+              action: 'logs.journal.auto_vacuum',
+              detail: { notes: r.notes.slice(0, 6) },
+              ok: true,
+            });
+          }
+        } catch (e) {
+          audit.append({
+            actor: 'system',
+            action: 'logs.journal.auto_vacuum',
+            detail: { error: e instanceof Error ? e.message : String(e) },
+            ok: false,
+          });
+        }
+      },
+    );
+
     // Periodic DNSBL reputation check for registered email domains
     const dnsblMs = Number(process.env.YSK_DNSBL_INTERVAL_MS ?? 12 * 60 * 60_000);
     scheduler.every(

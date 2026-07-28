@@ -1,16 +1,19 @@
 /**
  * Persistent fleet agent registry (backed by JsonStore arrays).
+ * Panel register ≠ live agent: only heartbeat promotes to connected.
  */
 
 import { randomUUID } from 'node:crypto';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import type { YskDatabase } from '../db/database.js';
 
+export type FleetAgentStatus = 'registered' | 'connected' | 'stale' | 'disconnected';
+
 export interface FleetAgent {
   id: string;
   agent_id: string;
   group?: string;
-  status: 'connected' | 'stale' | 'disconnected';
+  status: FleetAgentStatus;
   connected_at: string;
   last_seen_at: string;
   meta?: Record<string, unknown>;
@@ -23,6 +26,7 @@ export interface FleetCommand {
   status: 'queued' | 'acked' | 'done' | 'error';
   created_at: string;
   result?: unknown;
+  finished_at?: string;
 }
 
 function agents(db: YskDatabase): FleetAgent[] {
@@ -33,19 +37,31 @@ function messages(db: YskDatabase): Array<Record<string, unknown>> {
   return db.snapshot.agent_messages;
 }
 
+function normalizeStatus(raw: string | undefined): FleetAgentStatus {
+  if (raw === 'connected' || raw === 'stale' || raw === 'disconnected' || raw === 'registered') {
+    return raw;
+  }
+  return 'registered';
+}
+
 export class FleetService {
   constructor(private readonly db: YskDatabase) {}
 
+  /**
+   * Control-plane registration only. Does not mean the edge process is online.
+   * Real agents call heartbeat after register (or re-register themselves).
+   */
   register(agentId: string, group?: string, meta?: Record<string, unknown>): FleetAgent {
     if (!agentId?.trim()) {
       throw new YskError(ErrorCodes.VALIDATION, '請指定 agentId', { httpStatus: 400 });
     }
     const now = new Date().toISOString();
+    const fromEdge = Boolean(meta && (meta as { source?: string }).source === 'edge');
     const row: FleetAgent = {
       id: randomUUID(),
       agent_id: agentId.trim(),
-      group,
-      status: 'connected',
+      group: group?.trim() || 'default',
+      status: fromEdge ? 'connected' : 'registered',
       connected_at: now,
       last_seen_at: now,
       meta,
@@ -56,7 +72,7 @@ export class FleetService {
       session_id: row.id,
       direction: 'inbound',
       type: 'register',
-      payload: { agentId, group },
+      payload: { agentId, group: row.group, source: fromEdge ? 'edge' : 'panel' },
       created_at: now,
     });
     this.db.persist();
@@ -72,19 +88,61 @@ export class FleetService {
     }
     a.last_seen_at = new Date().toISOString();
     a.status = 'connected';
+    messages(this.db).push({
+      id: randomUUID(),
+      session_id: sessionId,
+      direction: 'inbound',
+      type: 'heartbeat',
+      payload: {},
+      created_at: a.last_seen_at,
+    });
     this.db.persist();
-    return { ...a };
+    return { ...a, status: 'connected' };
   }
 
   list(group?: string): FleetAgent[] {
     const now = Date.now();
     const all = agents(this.db).map((a) => {
-      const stale = now - new Date(a.last_seen_at).getTime() > 60_000;
-      if (stale && a.status === 'connected') a.status = 'stale';
+      a.status = normalizeStatus(a.status);
+      const age = now - new Date(a.last_seen_at).getTime();
+      if (a.status === 'connected' && age > 60_000) {
+        a.status = 'stale';
+      }
+      // panel-only register never heartbeated → stay registered (or stale if old)
+      if (a.status === 'registered' && age > 300_000) {
+        a.status = 'stale';
+      }
       return { ...a };
     });
     this.db.persist();
     return group ? all.filter((a) => a.group === group) : all;
+  }
+
+  get(sessionId: string): FleetAgent {
+    const a = this.list().find((x) => x.id === sessionId);
+    if (!a) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
+        httpStatus: 404,
+      });
+    }
+    return a;
+  }
+
+  remove(sessionId: string): { ok: true; id: string } {
+    const list = agents(this.db);
+    const idx = list.findIndex((x) => x.id === sessionId);
+    if (idx < 0) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
+        httpStatus: 404,
+      });
+    }
+    list.splice(idx, 1);
+    const msgs = messages(this.db);
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i]?.session_id === sessionId) msgs.splice(i, 1);
+    }
+    this.db.persist();
+    return { ok: true, id: sessionId };
   }
 
   enqueue(sessionId: string, payload: unknown): FleetCommand {
@@ -114,6 +172,7 @@ export class FleetService {
     return cmd;
   }
 
+  /** Queued commands only — for edge agent pull. */
   pullCommands(sessionId: string): FleetCommand[] {
     return messages(this.db)
       .filter(
@@ -132,11 +191,48 @@ export class FleetService {
       }));
   }
 
-  ack(commandId: string, result?: unknown, error?: boolean): void {
+  /** Full command history for panel (queued / done / error). */
+  listCommands(sessionId: string): FleetCommand[] {
+    const a = agents(this.db).find((x) => x.id === sessionId);
+    if (!a) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
+        httpStatus: 404,
+      });
+    }
+    return messages(this.db)
+      .filter(
+        (m) =>
+          m.session_id === sessionId &&
+          m.direction === 'outbound' &&
+          m.type === 'command',
+      )
+      .map((m) => ({
+        id: String(m.id),
+        agent_session_id: sessionId,
+        payload: m.payload,
+        status: (String(m.status || 'queued') as FleetCommand['status']),
+        created_at: String(m.created_at),
+        result: m.result,
+        finished_at: m.finished_at ? String(m.finished_at) : undefined,
+      }))
+      .sort((x, y) => (x.created_at < y.created_at ? 1 : -1));
+  }
+
+  ack(commandId: string, result?: unknown, error?: boolean): FleetCommand | null {
     const m = messages(this.db).find((x) => x.id === commandId);
-    if (!m) return;
+    if (!m) return null;
     m.status = error ? 'error' : 'done';
     m.result = result;
+    m.finished_at = new Date().toISOString();
     this.db.persist();
+    return {
+      id: String(m.id),
+      agent_session_id: String(m.session_id),
+      payload: m.payload,
+      status: m.status as FleetCommand['status'],
+      created_at: String(m.created_at),
+      result: m.result,
+      finished_at: String(m.finished_at),
+    };
   }
 }

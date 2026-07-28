@@ -2,7 +2,7 @@
  * Project detail — single chrome (FeaturePageLayout) + KPI status + tabs.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import {
@@ -27,6 +27,7 @@ import {
   ConfirmDialog,
   FeaturePageLayout,
   LoadingBlock,
+  OpsHero,
   OpsResultPanel,
   Tabs,
 } from '../shared/components/ui';
@@ -233,11 +234,6 @@ export function ProjectDetailPage() {
         />
       }
     >
-      <div className="project-detail-meta btn-row">
-        <ProjectStatusBadge project={project} />
-        {statusHint ? <span className="muted u-text-sm">{statusHint}</span> : null}
-      </div>
-
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
@@ -247,6 +243,74 @@ export function ProjectDetailPage() {
           </Button>
         </Alert>
       ) : null}
+
+      <OpsHero
+        eyebrow="Project"
+        title={project.name}
+        pill={project.runtime}
+        pillTone="ok"
+        tone="ok"
+        hint={
+          <>
+            {project.domain ?? t('projects.noDomain')} · 發布 Nginx 後需 reload
+            才算上線 · written ≠ live
+          </>
+        }
+        meta={
+          <>
+            <ProjectStatusBadge project={project} />
+            {statusHint ? (
+              <>
+                <span className="ops-hero__dot" />
+                <span>{statusHint}</span>
+              </>
+            ) : null}
+          </>
+        }
+        cta={
+          <>
+            <Link
+              to={`/files?root=project:${project.id}`}
+              className="btn btn--secondary btn--md"
+            >
+              檔案
+            </Link>
+            <Link
+              to={`/ssl?domain=${encodeURIComponent(project.domain || '')}&action=le`}
+              className="btn btn--ghost btn--md"
+            >
+              SSL
+            </Link>
+            <Link to="/logs" className="btn btn--ghost btn--md">
+              日誌
+            </Link>
+          </>
+        }
+        stats={[
+          {
+            label: 'Runtime',
+            value: formatRuntimeLabel(project.runtime, project.runtimeVersion),
+          },
+          {
+            label: 'Port',
+            value: project.port != null ? String(project.port) : '—',
+          },
+          {
+            label: '狀態',
+            value: project.status ?? project.processStatus ?? '—',
+          },
+          {
+            label: '用戶',
+            value: project.linuxUser || '—',
+          },
+        ]}
+        rail={
+          <li>
+            <span className="ops-rail__k">home</span>
+            <code className="ops-rail__code">{project.homeDir}</code>
+          </li>
+        }
+      />
 
       <ProjectStatusRail project={project} />
 
@@ -363,6 +427,7 @@ export function ProjectDetailPage() {
               logTail={logTail}
               files={logFiles}
               selectedFile={logFile}
+              projectId={project?.id}
               onSelectFile={(name) => void loadLogs(name)}
               onLoad={() => void loadLogs()}
               onRefreshFile={() => void loadLogs(logFile)}

@@ -14,8 +14,15 @@ describe('assessProductionReadiness', () => {
     expect(r.productionReady).toBe(false);
     expect(r.items.length).toBeGreaterThan(10);
     expect(r.score.total).toBe(r.items.length);
-    expect(r.summary.some((s) => /YSK_EXECUTE|Mode/i.test(s))).toBe(true);
+    expect(
+      r.summary.some((s) => /YSK_EXECUTE|Mode|模式|系統變更|degraded|降級|生產/i.test(s)),
+    ).toBe(true);
     expect(r.items.some((i) => i.id === 'control-plane')).toBe(true);
+    expect(Array.isArray(r.blockers)).toBe(true);
+    expect(r.blockers.length).toBeGreaterThan(0);
+    expect(r.categories.length).toBeGreaterThan(0);
+    expect(r.items.some((i) => i.fixHref === '/system')).toBe(true);
+    expect(r.items.some((i) => i.id === 'ops-memory' || i.id === 'ops-disk')).toBe(true);
     rmSync(dir, { recursive: true, force: true });
   });
 });

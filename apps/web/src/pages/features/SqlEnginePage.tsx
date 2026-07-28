@@ -17,8 +17,8 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
+  OpsHero,
   OpsResultPanel,
-  SummaryStrip,
   Tabs,
   FormActions,
   FormHint,
@@ -190,6 +190,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     <FeaturePageLayout
       title={title}
       subtitle={`${title} 資料庫與用戶`}
+      showCapability={false}
       actions={
         <div className="btn-row">
           <Link to={servicePath}>
@@ -340,27 +341,50 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       {error ? <Alert variant="error">{error}</Alert> : null}
       {dbs.msg || users.msg ? <Alert variant="ok">{dbs.msg ?? users.msg}</Alert> : null}
 
-      <SummaryStrip
-        items={[
-          { label: '狀態', value: st.text, tone: st.tone === 'neutral' ? 'default' : st.tone },
+      <OpsHero
+        eyebrow={title}
+        title={`${title} 資料`}
+        pill={st.text}
+        pillTone={st.tone === 'neutral' ? 'warn' : st.tone}
+        tone={running ? 'ok' : 'warn'}
+        hint="資料庫／用戶 CRUD 與服務狀態。安裝與套用設定需 EXECUTE + root。"
+        cta={
+          <Link to={servicePath} className="btn btn--secondary btn--md">
+            服務設定
+          </Link>
+        }
+        stats={[
           {
-            label: '系統變更',
-            value: svc?.executeEnabled ? '已開啟' : '未開啟',
-            tone: svc?.executeEnabled ? 'ok' : 'warn',
+            label: '狀態',
+            value: <Badge tone={st.tone === 'neutral' ? 'neutral' : st.tone}>{st.text}</Badge>,
           },
           {
-            label: '管理員',
-            value: svc?.isRoot ? '是' : '否',
-            tone: svc?.isRoot ? 'ok' : 'warn',
+            label: 'EXECUTE',
+            value: (
+              <Badge tone={svc?.executeEnabled ? 'ok' : 'warn'}>
+                {svc?.executeEnabled ? '開' : '關'}
+              </Badge>
+            ),
           },
-          {
-            label: '客戶端',
-            value: svc?.clientInstalled ? '有' : '無',
-            tone: svc?.clientInstalled ? 'ok' : 'danger',
-          },
-          { label: '資料庫', value: String(dbs.items.length) },
-          { label: '用戶', value: String(users.items.length) },
+          { label: '資料庫', value: dbs.items.length },
+          { label: '用戶', value: users.items.length },
         ]}
+        rail={
+          <>
+            <li>
+              <span className="ops-rail__k">Root</span>
+              <Badge tone={svc?.isRoot ? 'ok' : 'warn'}>
+                {svc?.isRoot ? '是' : '否'}
+              </Badge>
+            </li>
+            <li>
+              <span className="ops-rail__k">客戶端</span>
+              <Badge tone={svc?.clientInstalled ? 'ok' : 'danger'}>
+                {svc?.clientInstalled ? '有' : '無'}
+              </Badge>
+            </li>
+          </>
+        }
       />
 
       <Card>
@@ -462,30 +486,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     title="尚未有資料庫"
                     description={
                       !installed
-                        ? `請先一鍵安裝 ${title}`
+                        ? `請先一鍵安裝 ${title}，再用右上角「建立資料庫」`
                         : !svc?.canProvision
                           ? svc?.blockMessage ?? '目前無法在伺服器建立資料庫'
-                          : '建立後按「套用」寫入伺服器'
-                    }
-                    action={
-                      installed ? (
-                        <button
-                          type="button"
-                          className="btn btn--primary"
-                          onClick={() => setCreateOpen(true)}
-                        >
-                          + 建立資料庫
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="btn btn--primary"
-                          disabled={busy}
-                          onClick={() => void onInstall()}
-                        >
-                          一鍵安裝 {title}
-                        </button>
-                      )
+                          : '用右上角「建立資料庫」新增；建立後請再按「套用」'
                     }
                   />
                 }

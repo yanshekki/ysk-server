@@ -98,24 +98,18 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
   });
   const bindIp = config.bindIp;
 
-  const auth =
-    config.authBasicUserFile
-      ? `
-  auth_basic "${config.authBasicRealm ?? 'Restricted'}";
-  auth_basic_user_file ${config.authBasicUserFile};
-`
-      : '';
+  const auth = authBasicBlock(config);
 
-  if (config.siteRedirectUrl) {
-    const target = config.siteRedirectUrl.replace(/"/g, '');
-    const listen = nginxListenLines({ ssl: config.ssl, bindIp });
-    return `server {
-  ${listen}
-  server_name ${config.serverName};
-  ${sslBlock}
-  return 301 ${target}$request_uri;
-}
-`;
+  if (config.siteRedirectUrl?.trim()) {
+    return siteRedirectOnly({
+      serverName: config.serverName,
+      siteRedirectUrl: config.siteRedirectUrl.trim(),
+      ssl: config.ssl,
+      sslCertificate: config.sslCertificate,
+      sslCertificateKey: config.sslCertificateKey,
+      hsts: config.hsts,
+      bindIp,
+    });
   }
 
   if (force) {
@@ -166,6 +160,44 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
 /**
  * Render Nginx server block for pure static site (root + try_files).
  */
+function authBasicBlock(opts: {
+  authBasicUserFile?: string;
+  authBasicRealm?: string;
+}): string {
+  if (!opts.authBasicUserFile) return '';
+  return `
+  auth_basic "${opts.authBasicRealm ?? 'Restricted'}";
+  auth_basic_user_file ${opts.authBasicUserFile};
+`;
+}
+
+function siteRedirectOnly(opts: {
+  serverName: string;
+  siteRedirectUrl: string;
+  ssl?: boolean;
+  sslCertificate?: string;
+  sslCertificateKey?: string;
+  hsts?: boolean;
+  bindIp?: string;
+}): string {
+  const target = opts.siteRedirectUrl.replace(/"/g, '');
+  const listen = nginxListenLines({ ssl: opts.ssl, bindIp: opts.bindIp });
+  const sslBlock = sslLines({
+    ssl: opts.ssl,
+    sslCertificate: opts.sslCertificate,
+    sslCertificateKey: opts.sslCertificateKey,
+    serverName: opts.serverName,
+    hsts: opts.hsts,
+  });
+  return `server {
+  ${listen}
+  server_name ${opts.serverName};
+  ${sslBlock}
+  return 301 ${target}$request_uri;
+}
+`;
+}
+
 export function renderNginxStatic(opts: {
   serverName: string;
   docRoot: string;
@@ -175,10 +207,27 @@ export function renderNginxStatic(opts: {
   sslCertificateKey?: string;
   forceHttps?: boolean;
   hsts?: boolean;
+  siteRedirectUrl?: string;
+  authBasicUserFile?: string;
+  authBasicRealm?: string;
+  bindIp?: string;
+  /** Static asset cache max-age (default 7d) */
+  staticCache?: boolean;
 }): string {
   if (!opts.serverName || !opts.docRoot) {
     throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName 與文件根目錄', {
       httpStatus: 400,
+    });
+  }
+  if (opts.siteRedirectUrl?.trim()) {
+    return siteRedirectOnly({
+      serverName: opts.serverName,
+      siteRedirectUrl: opts.siteRedirectUrl.trim(),
+      ssl: opts.ssl,
+      sslCertificate: opts.sslCertificate,
+      sslCertificateKey: opts.sslCertificateKey,
+      hsts: opts.hsts,
+      bindIp: opts.bindIp,
     });
   }
   const realIp = opts.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
@@ -190,6 +239,8 @@ export function renderNginxStatic(opts: {
     serverName: opts.serverName,
     hsts: opts.hsts,
   });
+  const auth = authBasicBlock(opts);
+  const assetCache = opts.staticCache !== false;
 
   const body = (listen: string) => `server {
   ${listen}
@@ -198,6 +249,7 @@ export function renderNginxStatic(opts: {
   index index.html index.htm;
   ${sslBlock}
   ${realIp}
+  ${auth}
 
   location / {
     try_files $uri $uri/ /index.html;
@@ -208,17 +260,17 @@ export function renderNginxStatic(opts: {
   }
 
   location ~* \\.(css|js|jpg|jpeg|png|gif|ico|svg|woff2?)$ {
-    expires 7d;
-    add_header Cache-Control "public";
+    ${assetCache ? 'expires 7d;\n    add_header Cache-Control "public";' : 'expires off;'}
     try_files $uri =404;
   }
 }
 `;
 
   if (force) {
-    return `${httpRedirectBlock(opts.serverName)}${body('listen 443 ssl http2;')}`;
+    const sslListen = nginxListenLines({ ssl: true, bindIp: opts.bindIp }).split('\n')[0];
+    return `${httpRedirectBlock(opts.serverName, opts.bindIp)}${body(sslListen)}`;
   }
-  const listen = opts.ssl ? 'listen 443 ssl http2;\n  listen 80;' : 'listen 80;';
+  const listen = nginxListenLines({ ssl: opts.ssl, bindIp: opts.bindIp });
   return body(listen);
 }
 
@@ -236,10 +288,25 @@ export function renderNginxPhpFpm(opts: {
   sslCertificateKey?: string;
   forceHttps?: boolean;
   hsts?: boolean;
+  siteRedirectUrl?: string;
+  authBasicUserFile?: string;
+  authBasicRealm?: string;
+  bindIp?: string;
 }): string {
   if (!opts.serverName || !opts.docRoot || !opts.fpmSocket) {
     throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName、文件根目錄與 FPM socket', {
       httpStatus: 400,
+    });
+  }
+  if (opts.siteRedirectUrl?.trim()) {
+    return siteRedirectOnly({
+      serverName: opts.serverName,
+      siteRedirectUrl: opts.siteRedirectUrl.trim(),
+      ssl: opts.ssl,
+      sslCertificate: opts.sslCertificate,
+      sslCertificateKey: opts.sslCertificateKey,
+      hsts: opts.hsts,
+      bindIp: opts.bindIp,
     });
   }
   const realIp = opts.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
@@ -251,6 +318,7 @@ export function renderNginxPhpFpm(opts: {
     serverName: opts.serverName,
     hsts: opts.hsts,
   });
+  const auth = authBasicBlock(opts);
 
   const body = (listen: string) => `server {
   ${listen}
@@ -259,6 +327,7 @@ export function renderNginxPhpFpm(opts: {
   index index.php index.html;
   ${sslBlock}
   ${realIp}
+  ${auth}
 
   location / {
     try_files $uri $uri/ /index.php?$query_string;
@@ -274,14 +343,56 @@ export function renderNginxPhpFpm(opts: {
   location ~ /\\. {
     deny all;
   }
+
+  location ~* \\.(css|js|jpg|jpeg|png|gif|ico|svg|woff2?)$ {
+    expires 7d;
+    add_header Cache-Control "public";
+    try_files $uri =404;
+  }
 }
 `;
 
   if (force) {
-    return `${httpRedirectBlock(opts.serverName)}${body('listen 443 ssl http2;')}`;
+    const sslListen = nginxListenLines({ ssl: true, bindIp: opts.bindIp }).split('\n')[0];
+    return `${httpRedirectBlock(opts.serverName, opts.bindIp)}${body(sslListen)}`;
   }
-  const listen = opts.ssl ? 'listen 443 ssl http2;\n  listen 80;' : 'listen 80;';
+  const listen = nginxListenLines({ ssl: opts.ssl, bindIp: opts.bindIp });
   return body(listen);
+}
+
+/**
+ * Best-effort purge of common nginx cache dirs + reload.
+ * Honest: needs EXECUTE; may no-op if dirs empty.
+ */
+export async function purgeNginxCache(input: {
+  host: import('../host/executor.js').HostExecutor;
+}): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
+  if (!input.host.executeEnabled()) {
+    return {
+      ok: false,
+      blocked: true,
+      notes: ['無法 purge cache：未開啟系統變更權限（YSK_EXECUTE）'],
+    };
+  }
+  const r = await input.host.runCommand(
+    [
+      'bash',
+      '-c',
+      'rm -rf /var/cache/nginx/* /var/lib/nginx/cache/* /var/cache/nginx/proxy_temp/* 2>/dev/null; nginx -t 2>&1 && systemctl reload nginx 2>&1; echo EXIT:$?',
+    ],
+    { timeoutMs: 30_000 },
+  );
+  const out = `${r.stdout || ''}${r.stderr || ''}`;
+  const ok = r.exitCode === 0 && !/nginx: configuration file .+ test failed/i.test(out);
+  return {
+    ok,
+    notes: [
+      ok
+        ? '已嘗試清除 nginx cache 目錄並 reload（若主機未開 proxy_cache 則可能無檔可清）'
+        : `purge／reload 失敗：${out.slice(0, 400)}`,
+      '狀態：' + (ok ? 'applied（best-effort）' : 'failed'),
+    ],
+  };
 }
 
 /** Suspended site: refuse traffic with 503. */

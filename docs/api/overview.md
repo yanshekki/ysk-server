@@ -132,6 +132,49 @@ Base URL: `http://127.0.0.1:9287`
 | GET | `/api/v1/protection/status` | Bearer | Current mode, scheduler jobs, last probe/inventory |
 | POST | `/api/v1/protection/emergency` | Bearer | Apply protection + run emergency playbook |
 
+## Log Center
+
+UI: `/logs`
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/logs/overview` | Bearer | Disk MB + logrotate + settings + source counts |
+| GET | `/api/v1/logs/sources` | Bearer | Catalog + custom allow paths |
+| GET | `/api/v1/logs/journal/units` | Bearer | systemd service units |
+| GET | `/api/v1/logs/journal/query` | Bearer | Safe journalctl query |
+| GET | `/api/v1/logs/query` | Bearer | `source=journal:…\|file:…\|project:…` |
+| GET | `/api/v1/logs/stream` | Bearer | SSE follow (poll under the hood) |
+| GET | `/api/v1/logs/projects` | Bearer | All project log files index |
+| POST | `/api/v1/logs/export` | Bearer | Export text/jsonl under dataDir |
+| GET | `/api/v1/logs/export/:id` | Bearer | Download export (Bearer required) |
+| POST | `/api/v1/logs/journal/vacuum` | Bearer | journal vacuum (EXECUTE+root) |
+| GET/PUT | `/api/v1/logs/settings` | Bearer | Follow interval, auto-vacuum, paths, … |
+| GET/POST | `/api/v1/logs/bookmarks` | Bearer | Saved queries |
+| DELETE | `/api/v1/logs/bookmarks/:id` | Bearer | Remove bookmark |
+| GET | `/api/v1/logs/logrotate` | Bearer | logrotate status tail |
+
+## Defense Center (DDoS / attack)
+
+UI: `/protection`
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/defense/status` | Bearer | Threat level, signals, active preset, bans |
+| POST | `/api/v1/defense/probe` | Bearer | Re-run probes + return status |
+| POST | `/api/v1/defense/preset` | Bearer | Apply/preview preset (`daily`/`hardened`/`under_attack`/`emergency`) |
+| GET | `/api/v1/defense/bans` | Bearer | List fail2ban + panel bans |
+| POST | `/api/v1/defense/ban` | Bearer | Ban IP (`method`: fail2ban\|ufw\|both) |
+| POST | `/api/v1/defense/unban` | Bearer | Unban IP |
+| GET | `/api/v1/defense/timeline` | Bearer | Event timeline (`?hours=24`) |
+| GET | `/api/v1/defense/suspects` | Bearer | Suspect IPs from access logs |
+| POST | `/api/v1/defense/ban-batch` | Bearer | Batch ban IPs |
+| GET/PUT | `/api/v1/defense/auto-ban` | Bearer | Auto-ban policy (legacy) |
+| GET/PUT | `/api/v1/defense/automation` | Bearer | Full automation (preset + ban + weights + CF) |
+| GET | `/api/v1/defense/intel` | Bearer | Top IPs + vhost limit markers |
+| POST | `/api/v1/defense/cloudflare/under-attack` | Bearer | CF security_level under_attack |
+| POST | `/api/v1/defense/whitelist` | Bearer | Add/remove whitelist IP |
+| POST | `/api/v1/defense/auto-ban/tick` | Bearer | Run full automation tick |
+
 ## Files (sandbox)
 
 | Method | Path | Auth | Description |

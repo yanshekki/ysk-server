@@ -20,6 +20,9 @@ export * from './backup-cron.js';
 export * from './project-logs.js';
 export * from './ssl-certs.js';
 export * from './php-fpm.js';
+export * from './php-ini-catalog.js';
+export * from './php-ini.js';
+export * from './runtime-tuning.js';
 export * from './quota.js';
 export * from './cloudflare-dns.js';
 export * from './app-templates.js';
@@ -59,5 +62,10 @@ export * from './web-stats.js';
 export * from './apply-audit.js';
 export * from './package-limits.js';
 export * from './wizard.js';
+export * from './defense/index.js';
+export * from './firewall-ops.js';
+export * from './fail2ban-ops.js';
+export * from './log-center/index.js';
+
 
 

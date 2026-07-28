@@ -13,12 +13,14 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  OpsHero,
   OpsResultPanel,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { Link } from 'react-router-dom';
 
 export function PublicFilesPage() {
   const ctx = getServerContext();
@@ -27,7 +29,16 @@ export function PublicFilesPage() {
   const { busy, error, result, msg, run, setMsg } = useFeatureAction();
 
   return (
-    <FeaturePageLayout title="公用檔案伺服器" subtitle="Nginx 公開檔案站點">
+    <FeaturePageLayout
+      title="公用檔案伺服器"
+      subtitle="Nginx 公開檔案站點"
+      showCapability={false}
+      actions={
+        <Link to="/files" className="btn btn--ghost btn--md">
+          檔案管理
+        </Link>
+      }
+    >
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
@@ -37,6 +48,26 @@ export function PublicFilesPage() {
           </Button>
         </Alert>
       ) : null}
+
+      <OpsHero
+        eyebrow="Public files"
+        title="公開檔案站點"
+        pill={serverName || '未設定'}
+        pillTone={serverName ? 'ok' : 'warn'}
+        tone="ok"
+        hint="寫入管理 conf；套用時可嘗試 reload Nginx。written ≠ 對外可連。"
+        stats={[
+          { label: 'server_name', value: <span className="ops-stat__val--sm">{serverName || '—'}</span> },
+          { label: '配額', value: `${quotaMb || '—'} MiB` },
+          { label: 'Reload', value: '套用時' },
+          { label: '路徑', value: 'dataDir/files' },
+        ]}
+        cta={
+          <Link to="/nginx" className="btn btn--secondary btn--md">
+            Nginx
+          </Link>
+        }
+      />
 
       <Card>
         <CardSection title="概覽" description="即將套用的設定（唯讀摘要）">

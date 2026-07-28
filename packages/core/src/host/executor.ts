@@ -229,6 +229,31 @@ export class LocalHostExecutor implements HostExecutor {
 
 function isMutatingArgv(argv: string[]): boolean {
   const bin = argv[0];
+  // Whole-host power / identity — always mutating
+  if (
+    bin === 'shutdown' ||
+    bin === 'reboot' ||
+    bin === 'poweroff' ||
+    bin === 'halt' ||
+    bin === 'init'
+  ) {
+    return true;
+  }
+  if (bin === 'hostnamectl') {
+    const sub = argv[1];
+    // show / status / help are read-only
+    return sub !== 'show' && sub !== 'status' && sub !== '--help' && sub !== 'help';
+  }
+  if (bin === 'timedatectl') {
+    const sub = argv[1];
+    return (
+      sub !== 'show' &&
+      sub !== 'status' &&
+      sub !== 'list-timezones' &&
+      sub !== '--help' &&
+      sub !== 'help'
+    );
+  }
   if (bin === 'systemctl') {
     const sub = argv[1];
     // read-only probes
@@ -238,7 +263,8 @@ function isMutatingArgv(argv: string[]): boolean {
       sub !== 'status' &&
       sub !== 'show' &&
       sub !== 'list-units' &&
-      sub !== 'cat'
+      sub !== 'cat' &&
+      sub !== 'get-default'
     );
   }
   if (

@@ -104,6 +104,41 @@ export async function collectNotifications(input: {
     });
   }
 
+  // Projects missing OS isolation (only warn when EXECUTE on — otherwise always true)
+  if (exec) {
+    const bare = input.db.snapshot.projects.filter(
+      (p) => !p.os_provisioned && p.status !== 'suspended',
+    );
+    if (bare.length) {
+      push({
+        id: 'proj-no-os',
+        level: 'warn',
+        title: `${bare.length} 個專案未建立系統用戶`,
+        body: '生產隔離：到專案「資源」建立 Linux 用戶與 home',
+        href: '/projects',
+        source: 'projects',
+      });
+    }
+  }
+
+  // Pending human approvals
+  const pendingApprovals = (input.db.snapshot.approvals ?? []).filter(
+    (a) => a.status === 'pending',
+  );
+  if (pendingApprovals.length) {
+    push({
+      id: 'approvals-pending',
+      level: pendingApprovals.length >= 5 ? 'critical' : 'warn',
+      title: `${pendingApprovals.length} 項待審批`,
+      body: pendingApprovals
+        .slice(0, 3)
+        .map((a) => a.action)
+        .join('、'),
+      href: '/security?tab=approvals',
+      source: 'security',
+    });
+  }
+
   // Certs expiring ≤ 30d
   const nowMs = Date.now();
   for (const c of input.db.snapshot.certificates ?? []) {
@@ -126,7 +161,7 @@ export async function collectNotifications(input: {
     }
   }
 
-  // Last backup failed
+  // Last backup failed (or side steps failed while tar ok)
   const lastBackup = input.lastBackup;
   if (lastBackup && lastBackup.ok === false) {
     push({
@@ -134,7 +169,16 @@ export async function collectNotifications(input: {
       level: 'warn',
       title: '上次全部備份有失敗',
       body: lastBackup.at ? `時間 ${String(lastBackup.at)}` : '請到備份頁查看',
-      href: '/backups',
+      href: '/backups?tab=ops',
+      source: 'backup',
+    });
+  } else if (lastBackup && lastBackup.ok === true && lastBackup.sideOk === false) {
+    push({
+      id: 'backup-side-fail',
+      level: 'warn',
+      title: '備份 tar 成功但遠端／restic 有問題',
+      body: '請到備份操作頁查看 sideResults',
+      href: '/backups?tab=ops',
       source: 'backup',
     });
   }
@@ -158,6 +202,81 @@ export async function collectNotifications(input: {
     }
   }
 
+  // Defense threat from last status snapshot (optional settings)
+  try {
+    const def = input.db.snapshot.settings?.defense_last_threat;
+    if (def === 'under_attack' || def === 'critical') {
+      push({
+        id: 'defense-threat',
+        level: def === 'critical' ? 'critical' : 'warn',
+        title: def === 'critical' ? '防護：危急' : '防護：疑似受攻擊',
+        body: '請到防護中心檢視訊號並切換防護檔',
+        href: '/protection',
+        source: 'defense',
+      });
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // Auto-ban circuit breaker / pause
+  try {
+    const raw = input.db.snapshot.settings?.defense_auto_ban;
+    if (raw) {
+      const pol = JSON.parse(raw) as { enabled?: boolean; pausedReason?: string; mode?: string };
+      if (pol.enabled && pol.pausedReason === 'circuit_breaker') {
+        push({
+          id: 'defense-auto-ban-cb',
+          level: 'warn',
+          title: '自動 ban 已熔斷',
+          body: '本小時封禁次數達上限 — 到防護中心檢查',
+          href: '/protection',
+          source: 'defense',
+        });
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // Automation: suggest emergency / last escalate
+  try {
+    const raw = input.db.snapshot.settings?.defense_automation;
+    if (raw) {
+      const a = JSON.parse(raw) as {
+        enabled?: boolean;
+        suggestEmergency?: boolean;
+        lastPresetId?: string;
+        lastTickNotes?: string[];
+      };
+      if (a.enabled && a.suggestEmergency) {
+        push({
+          id: 'defense-suggest-emergency',
+          level: 'critical',
+          title: '防護：建議緊急檔',
+          body: '分數極高 — 緊急檔需人手確認（永不自動）',
+          href: '/protection',
+          source: 'defense',
+        });
+      }
+      if (a.enabled && a.lastPresetId && a.lastPresetId !== 'daily') {
+        const note = (a.lastTickNotes ?? []).find((n) => n.includes('自動防護檔'));
+        if (note) {
+          push({
+            id: 'defense-auto-preset',
+            level: 'warn',
+            title: `自動防護檔：${a.lastPresetId}`,
+            body: note,
+            href: '/protection',
+            source: 'defense',
+          });
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
   // Failed audit in last 20
   const failedAudit = (input.db.snapshot.audit_events ?? [])
     .filter((e) => e.ok === false)
@@ -172,6 +291,38 @@ export async function collectNotifications(input: {
       source: 'audit',
       at: e.created_at,
     });
+  }
+
+  // Journal / log disk pressure from log-center settings snapshot (optional live probe)
+  try {
+    const raw = input.db.snapshot.settings?.log_center;
+    let warnMb = 1024;
+    if (raw) {
+      const p = JSON.parse(raw) as { journalWarnMb?: number };
+      if (p.journalWarnMb && p.journalWarnMb > 0) warnMb = Number(p.journalWarnMb);
+    }
+    // Prefer cached overview-style hint if present
+    const hint = input.db.snapshot.settings?.log_center_disk_hint;
+    if (hint) {
+      try {
+        const h = JSON.parse(hint) as { journalDiskMb?: number; at?: string };
+        if (h.journalDiskMb != null && h.journalDiskMb >= warnMb) {
+          push({
+            id: 'journal-disk-high',
+            level: h.journalDiskMb >= warnMb * 2 ? 'critical' : 'warn',
+            title: `Journal 磁碟偏高：≈${h.journalDiskMb} MB`,
+            body: `閾值 ${warnMb} MB — 可到日誌中心 vacuum 或調整保留`,
+            href: '/logs?tab=maintain',
+            source: 'logs',
+            at: h.at,
+          });
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  } catch {
+    /* ignore */
   }
 
   // Sort: critical > warn > info

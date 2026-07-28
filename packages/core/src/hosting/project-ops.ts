@@ -41,6 +41,13 @@ import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
 import { resolveManagedCertPaths } from './ssl-certs.js';
 import { applyPhpFpmPool } from './php-fpm.js';
+import {
+  loadPhpIniSettings,
+  loadProjectPhpIni,
+  mergePhpIni,
+  renderPhpAdminValueLines,
+} from './php-ini.js';
+import { loadRuntimeTuning, tuningToEnv, type TuningKind } from './runtime-tuning.js';
 import { assertQuotaMb, assertWithinQuota, checkProjectQuota } from './quota.js';
 import { applyPm2Start, applyPm2Stop, writePm2Ecosystem } from './pm2-apply.js';
 import {
@@ -157,6 +164,12 @@ export class ProjectOpsService {
     const port = opts.port ?? row.port ?? (await findFreePort(3100, 3999));
     notes.push(`目標埠：${port}`);
 
+    const nodeVer = opts.nodeVersion ?? row.runtime_version ?? '20';
+    const tuningEnv = tuningToEnv(loadRuntimeTuning(this.dataDir, 'node', nodeVer));
+    if (Object.keys(tuningEnv).length) {
+      notes.push(`已套用面板 Node 調校（${Object.keys(tuningEnv).join(', ')}）`);
+    }
+
     // Stop any previous process for this project
     await this.stopProcess(row, notes);
 
@@ -172,7 +185,7 @@ export class ProjectOpsService {
       projectName: row.name,
       linuxUser: row.linux_user,
       homeDir: row.home_dir,
-      nodeVersion: opts.nodeVersion ?? row.runtime_version ?? '20',
+      nodeVersion: nodeVer,
       entry,
       port,
       host: this.host,
@@ -181,6 +194,7 @@ export class ProjectOpsService {
       memoryMax,
       cpuQuotaPercent,
       limitNOFILE: 65535,
+      env: tuningEnv,
     });
     written.push(apply.envPath, apply.unitPath, apply.appDir);
     notes.push(...apply.notes);
@@ -221,6 +235,7 @@ export class ProjectOpsService {
       entry,
       port,
       nodeBinary,
+      env: tuningEnv,
     });
     written.push(eco.ecosystemPath);
     notes.push(...eco.notes);
@@ -271,6 +286,7 @@ export class ProjectOpsService {
         port,
         nodeBinary,
         execute: true,
+        env: tuningEnv,
       });
       notes.push(...pm2.notes);
       if (pm2.ok) {
@@ -310,6 +326,7 @@ export class ProjectOpsService {
             NODE_ENV: 'production',
             PORT: String(port),
             HOST: '127.0.0.1',
+            ...tuningEnv,
           },
           logOutFd: outFd,
           logErrFd: errFd,
@@ -557,6 +574,7 @@ export class ProjectOpsService {
     const serverName = buildServerNameList(primary, row.domain_aliases);
     const wantSsl = Boolean(opts.ssl);
     const managed = resolveManagedCertPaths(this.dataDir, primary);
+    const auth = await this.writeProjectHtpasswd(row);
     const conf = renderNginxStatic({
       serverName,
       docRoot,
@@ -566,7 +584,12 @@ export class ProjectOpsService {
       sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
       forceHttps: wantSsl && Boolean(row.force_https),
       hsts: wantSsl && Boolean(row.hsts),
+      siteRedirectUrl: row.site_redirect_url,
+      authBasicUserFile: auth.path,
+      authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
+      bindIp: row.bind_ip,
     });
+    notes.push(...auth.notes);
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
     notes.push(`靜態 Nginx 設定：${nginxPath}`);
@@ -709,8 +732,34 @@ export class ProjectOpsService {
     };
   }
 
+  /** Write htpasswd under dataDir when project has HTTP basic auth credentials. */
+  private async writeProjectHtpasswd(
+    row: ProjectRow,
+  ): Promise<{ path?: string; notes: string[] }> {
+    if (!row.http_auth_user?.trim() || !row.http_auth_pass) {
+      return { notes: [] };
+    }
+    const htDir = join(this.dataDir, 'nginx', 'htpasswd');
+    mkdirSync(htDir, { recursive: true });
+    const path = join(htDir, `${row.linux_user}.htpasswd`);
+    const hashR = await this.host.runCommand(
+      ['openssl', 'passwd', '-apr1', row.http_auth_pass],
+      { timeoutMs: 5_000 },
+    );
+    const hash =
+      hashR.exitCode === 0 && hashR.stdout.trim()
+        ? hashR.stdout.trim()
+        : `{PLAIN}${row.http_auth_pass}`;
+    writeFileSync(path, `${row.http_auth_user.trim()}:${hash}\n`, 'utf8');
+    return {
+      path,
+      notes: [`HTTP 基本認證：${row.http_auth_user.trim()}（${path}）`],
+    };
+  }
+
   /**
    * Write/update nginx conf for project and optionally sync to system conf.d.
+   * Runtime-aware: static / php-fpm / reverse-proxy.
    */
   async publishNginx(
     projectId: string,
@@ -741,36 +790,53 @@ export class ProjectOpsService {
       });
     }
     const managed = resolveManagedCertPaths(this.dataDir, primary);
-    let authBasicUserFile: string | undefined;
-    if (row.http_auth_user && row.http_auth_pass) {
-      const htDir = join(this.dataDir, 'nginx', 'htpasswd');
-      mkdirSync(htDir, { recursive: true });
-      authBasicUserFile = join(htDir, `${row.linux_user}.htpasswd`);
-      // openssl passwd -apr1 when available; else plain {PLAIN} for demo (nginx may need auth_basic module)
-      const hashR = await this.host.runCommand(
-        ['openssl', 'passwd', '-apr1', row.http_auth_pass],
-        { timeoutMs: 5_000 },
-      );
-      const hash =
-        hashR.exitCode === 0 && hashR.stdout.trim()
-          ? hashR.stdout.trim()
-          : `{PLAIN}${row.http_auth_pass}`;
-      writeFileSync(authBasicUserFile, `${row.http_auth_user}:${hash}\n`, 'utf8');
-    }
-    const conf = renderNginxProxy({
-      serverName,
-      upstream: `http://127.0.0.1:${port}`,
+    const auth = await this.writeProjectHtpasswd(row);
+    const authBasicUserFile = auth.path;
+    const sslCert = wantSsl && managed.exists ? managed.fullchain : undefined;
+    const sslKey = wantSsl && managed.exists ? managed.privkey : undefined;
+    const commonSsl = {
       ssl: wantSsl,
-      cloudflareRealIp: true,
-      sslCertificate: wantSsl && managed.exists ? managed.fullchain : undefined,
-      sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
+      cloudflareRealIp: true as const,
+      sslCertificate: sslCert,
+      sslCertificateKey: sslKey,
       forceHttps: wantSsl && forceHttps,
       hsts: wantSsl && hsts,
       siteRedirectUrl: row.site_redirect_url,
       authBasicUserFile,
       authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
       bindIp: row.bind_ip,
-    });
+    };
+
+    let conf: string;
+    let kind = 'proxy';
+    if (row.runtime === 'static') {
+      kind = 'static';
+      const rel = (row.doc_root || 'app').replace(/^\//, '');
+      const docRoot = join(row.home_dir, rel);
+      conf = renderNginxStatic({
+        serverName,
+        docRoot,
+        ...commonSsl,
+      });
+    } else if (row.runtime === 'php') {
+      kind = 'php-fpm';
+      const phpVer = selectPhpRuntime(row.runtime_version || '8.2').version;
+      const rel = (row.doc_root || 'app').replace(/^\//, '');
+      const docRoot = join(row.home_dir, rel);
+      const fpmSocket = `/run/php/php${phpVer}-fpm-${row.linux_user}.sock`;
+      conf = renderNginxPhpFpm({
+        serverName,
+        docRoot,
+        fpmSocket,
+        ...commonSsl,
+      });
+    } else {
+      conf = renderNginxProxy({
+        serverName,
+        upstream: `http://127.0.0.1:${port}`,
+        ...commonSsl,
+      });
+    }
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     const systemDir =
       opts.systemConfDir ??
@@ -780,12 +846,16 @@ export class ProjectOpsService {
       systemConfDir: systemDir,
       host: this.host,
     });
-    const notes = [`已寫入 Nginx 設定：${nginxPath}`, ...sync.notes];
+    const notes = [
+      `已寫入 Nginx 設定：${nginxPath}`,
+      `類型：${kind}`,
+      ...sync.notes,
+      ...auth.notes,
+    ];
     if (serverName.includes(' ')) notes.push(`server_name：${serverName}`);
     if (wantSsl && forceHttps) notes.push('強制 HTTPS（HTTP→301）');
     if (wantSsl && hsts) notes.push('已啟用 HSTS');
     if (row.site_redirect_url) notes.push(`整站重新導向 → ${row.site_redirect_url}`);
-    if (authBasicUserFile) notes.push(`HTTP 基本認證：${row.http_auth_user}`);
     if (wantSsl && managed.exists) {
       notes.push(`使用已上傳憑證：${managed.fullchain}`);
     } else if (wantSsl) {
@@ -839,7 +909,17 @@ export class ProjectOpsService {
       actor: opts.actor,
       action: 'project.publish_nginx',
       resource: projectId,
-      detail: { nginxPath, port, sync, nginxReloaded, nginxStatus, serverName, forceHttps, hsts, ok },
+      detail: {
+        nginxPath,
+        port,
+        kind,
+        nginxReloaded,
+        nginxStatus,
+        serverName,
+        forceHttps,
+        hsts,
+        ok,
+      },
       ok,
     });
     return {
@@ -1270,6 +1350,14 @@ export class ProjectOpsService {
     written.push(...apply.written);
     notes.push(...apply.notes);
 
+    const mergedIni = mergePhpIni(
+      loadPhpIniSettings(this.dataDir, phpVersion),
+      loadProjectPhpIni(this.dataDir, projectId, phpVersion),
+    );
+    const adminValueLines = renderPhpAdminValueLines(mergedIni);
+    if (adminValueLines.length) {
+      notes.push(`已合併面板 php.ini（${adminValueLines.length} 條 php_admin_*）`);
+    }
     const fpm = await applyPhpFpmPool({
       dataDir: this.dataDir,
       poolName: row.linux_user,
@@ -1277,6 +1365,7 @@ export class ProjectOpsService {
       phpVersion,
       host: this.host,
       enable: canProd,
+      adminValueLines,
     });
     written.push(...fpm.written);
     notes.push(...fpm.notes);
@@ -1287,15 +1376,21 @@ export class ProjectOpsService {
     if (fpm.enabled) {
       const fpmSocket =
         `/run/php/php${phpRt.version}-fpm-${row.linux_user}.sock`;
+      const authPhp = await this.writeProjectHtpasswd(row);
       const conf = renderNginxPhpFpm({
         serverName: buildServerNameList(domain, row.domain_aliases),
         docRoot,
         fpmSocket,
         ssl: false,
         cloudflareRealIp: true,
-        forceHttps: false,
-        hsts: false,
+        forceHttps: Boolean(row.force_https),
+        hsts: Boolean(row.hsts),
+        siteRedirectUrl: row.site_redirect_url,
+        authBasicUserFile: authPhp.path,
+        authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
+        bindIp: row.bind_ip,
       });
+      notes.push(...authPhp.notes);
       const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
       written.push(nginxPath);
       notes.push(`PHP-FPM 生產 Nginx 設定：${nginxPath}`);
@@ -1886,6 +1981,19 @@ export class ProjectOpsService {
       await chownProjectHome(this.host, row, notes);
     }
 
+    const rtKind = row.runtime as TuningKind;
+    const tuningEnv = tuningToEnv(
+      loadRuntimeTuning(this.dataDir, rtKind, row.runtime_version ?? 'default'),
+    );
+    if (Object.keys(tuningEnv).length) {
+      notes.push(`已套用面板 ${row.runtime} 調校（${Object.keys(tuningEnv).join(', ')}）`);
+    }
+    const processEnv = {
+      PORT: String(port),
+      HOST: '127.0.0.1',
+      ...tuningEnv,
+    };
+
     const unitBody = renderProcessUnit({
       projectName: row.name,
       linuxUser: row.linux_user,
@@ -1893,7 +2001,7 @@ export class ProjectOpsService {
       homeDir: row.home_dir,
       execStart: cmds.execStart,
       port,
-      env: { PORT: String(port), HOST: '127.0.0.1' },
+      env: processEnv,
       memoryMax: row.memory_max,
       cpuQuotaPercent: row.cpu_quota_percent,
       tasksMax: row.tasks_max,
@@ -1950,8 +2058,7 @@ export class ProjectOpsService {
           cwd: appDir,
           env: {
             ...process.env,
-            PORT: String(port),
-            HOST: '127.0.0.1',
+            ...processEnv,
           },
           logOutFd: outFd,
           logErrFd: errFd,

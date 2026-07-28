@@ -89,6 +89,48 @@ describe('nginx + ssl', () => {
     expect(conf).toContain('server_name app.example.com www.example.com');
   });
 
+  it('site redirect + auth_basic on proxy', () => {
+    const redir = renderNginxProxy({
+      serverName: 'old.example.com',
+      upstream: 'http://127.0.0.1:3000',
+      ssl: false,
+      cloudflareRealIp: false,
+      siteRedirectUrl: 'https://new.example.com',
+    });
+    expect(redir).toContain('return 301 https://new.example.com$request_uri');
+    expect(redir).not.toContain('proxy_pass');
+
+    const auth = renderNginxProxy({
+      serverName: 'app.example.com',
+      upstream: 'http://127.0.0.1:3000',
+      ssl: false,
+      cloudflareRealIp: false,
+      authBasicUserFile: '/data/nginx/htpasswd/demo.htpasswd',
+      authBasicRealm: 'Restricted',
+    });
+    expect(auth).toContain('auth_basic "Restricted"');
+    expect(auth).toContain('auth_basic_user_file /data/nginx/htpasswd/demo.htpasswd');
+  });
+
+  it('php/static carry auth and site redirect', () => {
+    const php = renderNginxPhpFpm({
+      serverName: 'php.example.com',
+      docRoot: '/home/p/app',
+      fpmSocket: '/run/php/php8.2-fpm-x.sock',
+      authBasicUserFile: '/data/ht/x',
+    });
+    expect(php).toContain('auth_basic_user_file /data/ht/x');
+    expect(php).toContain('expires 7d');
+
+    const st = renderNginxStatic({
+      serverName: 's.example.com',
+      docRoot: '/home/p/app',
+      siteRedirectUrl: 'https://elsewhere.example.com',
+    });
+    expect(st).toContain('return 301 https://elsewhere.example.com$request_uri');
+    expect(st).not.toContain('try_files');
+  });
+
   it('renders suspended 503 vhost', () => {
     const conf = renderNginxSuspended('app.example.com www.example.com');
     expect(conf).toContain('return 503');

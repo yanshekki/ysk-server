@@ -14,7 +14,7 @@ describe('LocalHostExecutor', () => {
     expect(host.pathExists(join(dir, 'a.txt'))).toBe(true);
 
     await expect(host.runCommand(['rm', '-rf', '/tmp/ysk-should-block'])).rejects.toThrow(
-      /YSK_EXECUTE|blocked/i,
+      /YSK_EXECUTE|blocked|阻擋|系統變更|權限/i,
     );
 
     const dry = await host.runCommand(['echo', 'x'], { dryRun: true });

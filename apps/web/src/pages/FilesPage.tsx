@@ -16,7 +16,7 @@ import {
   FormHint,
   FormLayout,
   Modal,
-  SummaryStrip,
+  OpsHero,
   Tabs,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -293,13 +293,46 @@ export function FilesPage() {
         </Alert>
       ) : null}
 
-      <SummaryStrip
-        items={[
-          { label: '檔案', value: String(usage?.fileCount ?? items.filter((i) => i.type === 'file').length) },
-          { label: '資料夾', value: String(usage?.dirCount ?? items.filter((i) => i.type === 'dir').length) },
+      <OpsHero
+        eyebrow="Files"
+        title="檔案管理"
+        pill={`${items.filter((i) => i.type === 'file').length} 檔`}
+        pillTone="ok"
+        tone="ok"
+        hint="公用／專案根 · 回收桶 · 分享 · WebDAV。刪除進回收桶（可還原）。"
+        cta={
+          <Link to="/files/public" className="btn btn--secondary btn--md">
+            公用站設定
+          </Link>
+        }
+        stats={[
+          {
+            label: '檔案',
+            value: String(
+              usage?.fileCount ?? items.filter((i) => i.type === 'file').length,
+            ),
+          },
+          {
+            label: '資料夾',
+            value: String(
+              usage?.dirCount ?? items.filter((i) => i.type === 'dir').length,
+            ),
+          },
           { label: '用量', value: formatBytes(usage?.bytes ?? 0) },
           { label: '已選', value: String(selected.size) },
         ]}
+        rail={
+          <>
+            <li>
+              <span className="ops-rail__k">回收桶</span>
+              <span className="ops-rail__text">{trash.length}</span>
+            </li>
+            <li>
+              <span className="ops-rail__k">分享</span>
+              <span className="ops-rail__text">{shares.length}</span>
+            </li>
+          </>
+        }
       />
 
       <Tabs

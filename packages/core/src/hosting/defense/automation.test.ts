@@ -1,0 +1,169 @@
+/**
+ * Integration-style tests for defense automation tick (mock host).
+ */
+import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { JsonStore } from '../../db/store.js';
+import type { HostExecutor, RunResult } from '../../host/executor.js';
+import {
+  loadDefenseAutomation,
+  runDefenseAutomationTick,
+  saveDefenseAutomation,
+  desiredPresetFromScore,
+  DEFAULT_AUTOMATION,
+} from './automation.js';
+import { scoreToThreatLevel, threatThresholdsFromAutoPreset } from './signals.js';
+import { renderCfOnlyUfwScript, CLOUDFLARE_IPV4_RANGES } from './cf-ufw.js';
+
+function mockHost(opts?: {
+  execute?: boolean;
+  root?: boolean;
+  commands?: string[][];
+}): HostExecutor {
+  const log = opts?.commands ?? [];
+  return {
+    executeEnabled: () => Boolean(opts?.execute),
+    isRoot: () => Boolean(opts?.root),
+    pathExists: () => false,
+    readFile: async () => '',
+    listDir: async () => [],
+    writeFile: async () => {},
+    deletePath: async () => {},
+    mkdirp: async () => {},
+    sysInfo: async () => ({}),
+    serviceStatus: async (name) => result(['systemctl', 'status', name], 0, 'inactive'),
+    runCommand: async (argv) => {
+      log.push([...argv]);
+      const joined = argv.join(' ');
+      if (joined.includes('fail2ban-client status')) {
+        return result(argv, 0, 'Jail list:\n');
+      }
+      if (joined.includes('ufw status')) {
+        return result(argv, 0, 'Status: inactive\n');
+      }
+      if (joined.includes('systemctl is-active')) {
+        return result(argv, 0, 'inactive\n');
+      }
+      if (joined.includes('systemctl is-enabled')) {
+        return result(argv, 0, 'disabled\n');
+      }
+      return result(argv, 0, 'ok\n');
+    },
+  };
+}
+
+function result(argv: string[], exitCode: number, stdout: string): RunResult {
+  return { argv, exitCode, stdout, stderr: '', dryRun: false };
+}
+
+describe('defense automation integration', () => {
+  it('unifies threat display thresholds with autoPreset knobs', () => {
+    const ap = {
+      escalateToHardenedAt: 25,
+      escalateToUnderAttackAt: 50,
+      suggestEmergencyAt: 90,
+      criticalAt: 75,
+    };
+    const t = threatThresholdsFromAutoPreset(ap);
+    expect(t.elevatedAt).toBe(25);
+    expect(t.underAttackAt).toBe(50);
+    expect(t.criticalAt).toBe(75);
+    expect(scoreToThreatLevel(24, t)).toBe('low');
+    expect(scoreToThreatLevel(25, t)).toBe('elevated');
+    expect(scoreToThreatLevel(50, t)).toBe('under_attack');
+    expect(scoreToThreatLevel(75, t)).toBe('critical');
+    expect(desiredPresetFromScore(50, { ...DEFAULT_AUTOMATION.autoPreset, ...ap })).toBe(
+      'under_attack',
+    );
+    expect(desiredPresetFromScore(99, { ...DEFAULT_AUTOMATION.autoPreset, ...ap })).toBe(
+      'under_attack',
+    ); // never emergency
+  });
+
+  it('renders CF-only UFW script with keep ports and CF ranges', () => {
+    const body = renderCfOnlyUfwScript({ keepTcpPorts: [22, 2222] });
+    expect(body).toContain('ufw allow 22/tcp');
+    expect(body).toContain('ufw allow 2222/tcp');
+    expect(body).toContain(CLOUDFLARE_IPV4_RANGES[0]);
+    expect(body).toContain('default deny incoming');
+  });
+
+  it('runDefenseAutomationTick respects master off and never auto-emergency', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-autotick-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      db.snapshot.settings = db.snapshot.settings ?? {};
+      const auto = {
+        ...DEFAULT_AUTOMATION,
+        enabled: false,
+        autoPreset: { ...DEFAULT_AUTOMATION.autoPreset, enabled: true },
+        autoBan: { ...DEFAULT_AUTOMATION.autoBan, enabled: true },
+      };
+      saveDefenseAutomation(db, auto);
+      const host = mockHost({ execute: false, root: false });
+      const r = await runDefenseAutomationTick({
+        host,
+        db,
+        dataDir: dir,
+        requestCountLastMinute: 0,
+      });
+      expect(r.ok).toBe(true);
+      expect(r.notes.some((n) => /主開關關閉/.test(n))).toBe(true);
+      expect(r.presetChanged).toBeFalsy();
+      expect(r.banned).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('runDefenseAutomationTick with autoPreset on does not apply emergency', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-autotick2-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      db.snapshot.settings = db.snapshot.settings ?? {};
+      saveDefenseAutomation(db, {
+        ...DEFAULT_AUTOMATION,
+        enabled: true,
+        autoPreset: {
+          ...DEFAULT_AUTOMATION.autoPreset,
+          enabled: true,
+          escalateToHardenedAt: 1,
+          escalateToUnderAttackAt: 2,
+          suggestEmergencyAt: 3,
+          criticalAt: 3,
+        },
+        autoBan: { ...DEFAULT_AUTOMATION.autoBan, enabled: false },
+        signalWeights: {
+          networkDown: 3,
+          highReqRate: 3,
+          ddosHeuristic: 3,
+          tcpInuse: 3,
+          ufwInactive: 3,
+          f2bBans: 3,
+        },
+      });
+      const cmds: string[][] = [];
+      const host = mockHost({ execute: false, root: false, commands: cmds });
+      const r = await runDefenseAutomationTick({
+        host,
+        db,
+        dataDir: dir,
+        requestCountLastMinute: 9999,
+      });
+      expect(r.ok).toBe(true);
+      // If high score, may suggest emergency but preset never emergency
+      if (r.suggestEmergency) {
+        expect(r.preset).not.toBe('emergency');
+      }
+      if (r.presetChanged) {
+        expect(['daily', 'hardened', 'under_attack']).toContain(r.preset);
+      }
+      const loaded = loadDefenseAutomation(db);
+      expect(loaded.lastTickAt).toBeTruthy();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

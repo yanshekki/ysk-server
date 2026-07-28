@@ -28,6 +28,7 @@ import { FtpPage } from '../pages/features/FtpPage';
 import { FtpsServicePage } from '../pages/features/FtpsServicePage';
 import { FirewallPage } from '../pages/features/FirewallPage';
 import { Fail2banPage } from '../pages/features/Fail2banPage';
+import { ProtectionPage } from '../pages/features/ProtectionPage';
 import { MysqlPage } from '../pages/features/MysqlPage';
 import { MariadbPage } from '../pages/features/MariadbPage';
 import { MysqlServicePage } from '../pages/features/MysqlServicePage';
@@ -43,6 +44,7 @@ import { PublicFilesPage } from '../pages/features/PublicFilesPage';
 import { CronPage } from '../pages/features/CronPage';
 import { BackupsPage } from '../pages/features/BackupsPage';
 import { MetricsPage } from '../pages/features/MetricsPage';
+import { LogsPage } from '../pages/features/LogsPage';
 import { UsersPage } from '../pages/UsersPage';
 
 /**
@@ -95,10 +97,12 @@ export function App() {
           <Route path="databases/postgres/service" element={<PostgresServicePage />} />
           <Route path="databases/redis" element={<RedisPage />} />
           <Route path="databases/redis/service" element={<RedisServicePage />} />
+          <Route path="protection" element={<ProtectionPage />} />
           <Route path="firewall" element={<FirewallPage />} />
           <Route path="fail2ban" element={<Fail2banPage />} />
           <Route path="services" element={<ServicesPage />} />
           <Route path="metrics" element={<MetricsPage />} />
+          <Route path="logs" element={<LogsPage />} />
           <Route path="cron" element={<CronPage />} />
           <Route path="backups" element={<BackupsPage />} />
           <Route path="system" element={<SystemPage />} />

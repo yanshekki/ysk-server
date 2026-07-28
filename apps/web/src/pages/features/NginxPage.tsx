@@ -1,6 +1,8 @@
 import { FormEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alert,
+  Badge,
   Button,
   Card,
   CardSection,
@@ -10,6 +12,7 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
+  OpsHero,
   SoftwareInstallBanner,
   FormHint,
   CheckboxField,
@@ -128,6 +131,56 @@ export function NginxPage() {
         </Alert>
       ) : null}
 
+      <OpsHero
+        eyebrow="Nginx"
+        title="站點與反向代理"
+        pill={`${items.length} 站點`}
+        pillTone={items.length ? 'ok' : 'warn'}
+        tone={items.length ? 'ok' : 'warn'}
+        hint="管理 conf 寫入 dataDir；套用／reload 成功才算對外生效。written ≠ 已上線。"
+        cta={
+          <>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                resetForm();
+                setCreateOpen(true);
+              }}
+            >
+              + 建立站點
+            </Button>
+            <Link to="/ssl" className="btn btn--secondary btn--md">
+              SSL
+            </Link>
+            <Link to="/projects" className="btn btn--ghost btn--md">
+              專案
+            </Link>
+          </>
+        }
+        stats={[
+          { label: '站點', value: items.length },
+          {
+            label: 'Proxy',
+            value: items.filter((r) => r.kind === 'proxy').length,
+          },
+          {
+            label: 'Static/PHP',
+            value: items.filter((r) => r.kind !== 'proxy').length,
+          },
+          {
+            label: 'SSL 標記',
+            value: items.filter((r) => r.ssl).length,
+          },
+        ]}
+        rail={
+          <li>
+            <span className="ops-rail__k">Cache</span>
+            <Badge tone="neutral">purge 可重載</Badge>
+          </li>
+        }
+      />
+
       <Card>
         <CardSection title={`站點列表 (${items.length})`}>
           <ResourceTable
@@ -172,12 +225,7 @@ export function NginxPage() {
             empty={
               <EmptyState
                 title="尚未有 Nginx 站點"
-                description="尚未有站點"
-                action={
-                  <Button variant="primary" size="md" onClick={() => { resetForm(); setCreateOpen(true); }}>
-                    + 建立站點
-                  </Button>
-                }
+                description="用右上角「建立站點」新增；建立後請再按「套用」"
               />
             }
             rowActions={(r) => (

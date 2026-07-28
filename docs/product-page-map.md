@@ -36,8 +36,10 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | Security | `/security` | Allowlist / approvals | R |
 | Security | `/firewall` | Firewall | M |
 | Security | `/fail2ban` | Fail2ban | N |
+| System | `/users` | Users & packages | T |
 | System | `/services` | Service matrix | O |
 | System | `/metrics` | Metrics | P |
+| System | `/logs` | Log Center | T |
 | System | `/cron` | Cron | K |
 | System | `/backups` | Backups | L |
 | System | `/updates` | Updates | S |
@@ -254,13 +256,31 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 
 ---
 
-### `/system` · `/system/unit` · `/system/readiness`
+### System section UX contract (ops console)
+
+All **sidebar System** pages share:
+
+1. **Hero** — English eyebrow · status pill · honest one-liner · meta · primary CTA  
+2. **KPI strip / stats** — 4 key numbers  
+3. **Rail** — EXECUTE / root / path / sync as applicable  
+4. **Body** — card rows (not bare tables as primary UX) · chips + search when list > ~8  
+5. **OpsResultPanel** when mutations exist · typed confirm for destructive ops  
 
 | Page | Actions |
 |------|---------|
-| Index | links to system tools only (nav hub OK) |
-| Unit | install/enable/start control-plane service |
-| Readiness | run checks · show blockers |
+| `/system` 主機 | identity · NTP · network/disks · **電源** REBOOT/POWEROFF · 捷徑 |
+| `/system` 匯出 | export JSON · managed nginx · rebuild dry-run/sync |
+| `/system/unit` | write template vs install+enable · blockers steps |
+| `/system/readiness` | auto-probe · blockers · filter · fixHref · download JSON |
+| `/updates` | scan · OSV · self-update · risk chips · apply package |
+| `/users` | create user/package · suspend · impersonate · delete |
+| `/services` | matrix lifecycle · category filter · protection probe tab |
+| `/metrics` | load/mem/disk meters · alerts · refresh |
+| `/logs` | Log Center explore/ops/settings · allowlist · SSE · vacuum |
+| `/cron` | jobs cards · create · install to system crontab honesty |
+| `/backups` | archive cards · run-all · restore/delete · remote/restic |
+
+**Power policy:** 整機電源只在 `/system` 主機 tab；服務 lifecycle 在 `/services`；監控在 `/metrics`。無「開機」按鈕（需實體／hypervisor）。
 
 ---
 

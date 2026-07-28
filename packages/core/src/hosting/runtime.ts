@@ -234,6 +234,8 @@ export function renderNodeProcessUnit(opts: {
   memoryMax?: string;
   cpuQuotaPercent?: number;
   limitNOFILE?: number;
+  /** Extra env (e.g. panel runtime tuning → NODE_OPTIONS) */
+  env?: Record<string, string>;
 }): string {
   return renderProcessUnit({
     projectName: opts.projectName,
@@ -241,7 +243,11 @@ export function renderNodeProcessUnit(opts: {
     appDir: opts.appDir,
     execStart: `${opts.nodeBinary} ${opts.entry}`,
     port: opts.port,
-    env: { NODE_ENV: 'production', PORT: String(opts.port) },
+    env: {
+      NODE_ENV: 'production',
+      PORT: String(opts.port),
+      ...(opts.env ?? {}),
+    },
     memoryMax: opts.memoryMax,
     cpuQuotaPercent: opts.cpuQuotaPercent,
     limitNOFILE: opts.limitNOFILE,

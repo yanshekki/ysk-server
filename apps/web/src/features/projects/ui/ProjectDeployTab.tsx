@@ -135,6 +135,11 @@ export function ProjectDeployTab({
     project.runtimeVersion || defaultRuntimeInstallVersion(project.runtime) || '',
   );
   const [phpBusy, setPhpBusy] = useState(false);
+  const [phpIniBusy, setPhpIniBusy] = useState(false);
+  const [phpIniMem, setPhpIniMem] = useState('');
+  const [phpIniExec, setPhpIniExec] = useState('');
+  const [phpIniUpload, setPhpIniUpload] = useState('');
+  const [phpIniDisplay, setPhpIniDisplay] = useState<boolean | null>(null);
   const [verBusy, setVerBusy] = useState(false);
   const [chainBusy, setChainBusy] = useState(false);
   const [history, setHistory] = useState<
@@ -176,6 +181,32 @@ export function ProjectDeployTab({
       project.runtimeVersion || defaultRuntimeInstallVersion(project.runtime) || '',
     );
   }, [project.id, project.runtimeVersion, project.runtime]);
+
+  useEffect(() => {
+    if (project.runtime !== 'php') return;
+    void projectsApi
+      .phpIniGet(project.id, project.runtimeVersion ?? '8.2')
+      .then((r) => {
+        const v = r.project?.values ?? {};
+        setPhpIniMem(v.memory_limit != null ? String(v.memory_limit) : '');
+        setPhpIniExec(v.max_execution_time != null ? String(v.max_execution_time) : '');
+        setPhpIniUpload(v.upload_max_filesize != null ? String(v.upload_max_filesize) : '');
+        if (v.display_errors === true || v.display_errors === 1 || v.display_errors === '1') {
+          setPhpIniDisplay(true);
+        } else if (
+          v.display_errors === false ||
+          v.display_errors === 0 ||
+          v.display_errors === '0'
+        ) {
+          setPhpIniDisplay(false);
+        } else {
+          setPhpIniDisplay(null);
+        }
+      })
+      .catch(() => {
+        /* optional */
+      });
+  }, [project.id, project.runtime, project.runtimeVersion]);
 
   useEffect(() => {
     void projectsApi
@@ -529,6 +560,88 @@ export function ProjectDeployTab({
           </CardSection>
         </Card>
       )}
+
+      {ui.deployIsPhp ? (
+        <Card>
+          <CardSection
+            title="專案 php.ini 覆寫"
+            description="只填要改的鍵；空白＝沿用全域（執行環境 → PHP → php.ini）。部署／套用 FPM 時寫入 php_admin_*"
+          >
+            <FormLayout columns={2}>
+              <Field label="memory_limit" htmlFor="pini-mem" flush hint="例如 256M；留空用全域">
+                <input
+                  id="pini-mem"
+                  value={phpIniMem}
+                  onChange={(e) => setPhpIniMem(e.target.value)}
+                  placeholder="（全域）"
+                  spellCheck={false}
+                />
+              </Field>
+              <Field label="max_execution_time" htmlFor="pini-exec" flush>
+                <input
+                  id="pini-exec"
+                  value={phpIniExec}
+                  onChange={(e) => setPhpIniExec(e.target.value)}
+                  placeholder="（全域）"
+                  spellCheck={false}
+                />
+              </Field>
+              <Field label="upload_max_filesize" htmlFor="pini-up" flush>
+                <input
+                  id="pini-up"
+                  value={phpIniUpload}
+                  onChange={(e) => setPhpIniUpload(e.target.value)}
+                  placeholder="（全域）"
+                  spellCheck={false}
+                />
+              </Field>
+              <Field label="display_errors" htmlFor="pini-disp" flush>
+                <select
+                  id="pini-disp"
+                  value={phpIniDisplay === null ? '' : phpIniDisplay ? '1' : '0'}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setPhpIniDisplay(v === '' ? null : v === '1');
+                  }}
+                >
+                  <option value="">（全域）</option>
+                  <option value="0">關閉</option>
+                  <option value="1">開啟（勿用於生產）</option>
+                </select>
+              </Field>
+            </FormLayout>
+            <FormHint>
+              完整目錄與 opcache／session 等請到{' '}
+              <Link to="/runtimes/php?tab=ini">PHP 執行環境 → php.ini</Link>。
+            </FormHint>
+            <FormActions>
+              <Button
+                variant="primary"
+                size="md"
+                loading={phpIniBusy}
+                onClick={() => {
+                  setPhpIniBusy(true);
+                  const values: Record<string, string | number | boolean> = {};
+                  if (phpIniMem.trim()) values.memory_limit = phpIniMem.trim();
+                  if (phpIniExec.trim()) {
+                    const n = Number(phpIniExec);
+                    values.max_execution_time = Number.isFinite(n) ? n : phpIniExec.trim();
+                  }
+                  if (phpIniUpload.trim()) values.upload_max_filesize = phpIniUpload.trim();
+                  if (phpIniDisplay !== null) values.display_errors = phpIniDisplay;
+                  void projectsApi
+                    .phpIniSave(project.id, { version: phpVer, values })
+                    .then(() => onOpsMessage?.('已儲存專案 php.ini 覆寫；請再部署或套用 FPM'))
+                    .catch((e: Error) => onOpsMessage?.(e.message))
+                    .finally(() => setPhpIniBusy(false));
+                }}
+              >
+                儲存 php.ini 覆寫
+              </Button>
+            </FormActions>
+          </CardSection>
+        </Card>
+      ) : null}
 
       {history.length > 0 ? (
         <Card>

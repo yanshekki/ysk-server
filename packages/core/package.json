@@ -11,8 +11,12 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
-  "publishConfig": { "access": "public" },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -27,7 +31,8 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@ysk/shared": "workspace:*"
+    "@ysk/shared": "workspace:*",
+    "maxmind": "^5.0.6"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",

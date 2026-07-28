@@ -1,21 +1,44 @@
-import { useCallback, useEffect, useState } from 'react';
+/**
+ * Host metrics — professional ops console.
+ */
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alert,
+  Badge,
   Button,
-  Card,
-  CardSection,
-  DescriptionList,
   FeaturePageLayout,
-  KpiCard,
-  KpiGrid,
   LoadingBlock,
-  SummaryStrip,
 } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 
-/**
- * Host metrics — load, memory, alerts (equal-height KPI panels).
- */
+function formatBytes(n?: number): string {
+  if (n == null || !Number.isFinite(n)) return '—';
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  if (n < 1024 ** 3) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(n / 1024 ** 3).toFixed(2)} GB`;
+}
+
+function formatUptime(sec?: number): string {
+  if (sec == null || !Number.isFinite(sec)) return '—';
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function alertLabel(a: string): string {
+  const map: Record<string, string> = {
+    memory_high: '記憶體偏高',
+    load_high: '負載偏高',
+    disk_high: '磁碟偏高',
+  };
+  return map[a] ?? a;
+}
+
 export function MetricsPage() {
   const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,178 +61,421 @@ export function MetricsPage() {
     void refresh();
   }, [refresh]);
 
-  const loadavg = Array.isArray(metrics?.loadavg) ? (metrics!.loadavg as number[]) : null;
+  const loadavg = Array.isArray(metrics?.loadavg)
+    ? (metrics!.loadavg as number[])
+    : null;
   const mem =
     metrics?.memory && typeof metrics.memory === 'object'
       ? (metrics.memory as { usedRatio?: number; total?: number; free?: number })
       : null;
-  const alerts = Array.isArray(metrics?.alerts) ? (metrics!.alerts as string[]) : [];
+  const disk =
+    metrics?.disk && typeof metrics.disk === 'object'
+      ? (metrics.disk as {
+          path?: string;
+          free?: number;
+          total?: number;
+          usedRatio?: number;
+        })
+      : null;
+  const alerts = Array.isArray(metrics?.alerts)
+    ? (metrics!.alerts as string[])
+    : [];
   const memPct = mem?.usedRatio != null ? Math.round(mem.usedRatio * 100) : null;
+  const diskPct =
+    disk?.usedRatio != null ? Math.round(disk.usedRatio * 100) : null;
+  const cpuCount = Number(metrics?.cpuCount) || 0;
+  const uptimeSec =
+    typeof metrics?.uptimeSec === 'number' ? metrics.uptimeSec : undefined;
 
-  const facts: Array<{ label: string; value: string }> = [];
-  if (metrics) {
+  const load1 = loadavg?.[0];
+  const loadPressure =
+    load1 != null && cpuCount > 0 ? load1 / cpuCount : null;
+
+  const heroTone =
+    alerts.length > 0 ||
+    (memPct != null && memPct >= 90) ||
+    (diskPct != null && diskPct >= 90)
+      ? 'danger'
+      : (memPct != null && memPct >= 75) ||
+          (diskPct != null && diskPct >= 75) ||
+          (loadPressure != null && loadPressure > 1.5)
+        ? 'warn'
+        : 'ok';
+
+  const facts = useMemo(() => {
+    const out: Array<{ label: string; value: string }> = [];
+    if (!metrics) return out;
     for (const [k, v] of Object.entries(metrics)) {
-      if (k === 'loadavg' || k === 'memory' || k === 'alerts') continue;
+      if (k === 'loadavg' || k === 'memory' || k === 'alerts' || k === 'disk')
+        continue;
       if (v == null || typeof v === 'object') continue;
-      facts.push({ label: k, value: String(v) });
+      if (k === 'uptimeSec') {
+        out.push({ label: 'uptime', value: formatUptime(Number(v)) });
+        continue;
+      }
+      out.push({ label: k, value: String(v) });
     }
-  }
+    return out;
+  }, [metrics]);
 
   return (
     <FeaturePageLayout
       title="主機指標"
-      subtitle="負載、記憶體與告警"
+      subtitle="負載 · 記憶體 · 磁碟 · 告警（唯讀快照）"
       showCapability={false}
       actions={
-        <Button variant="secondary" size="md" onClick={() => void refresh()}>
-          重新整理
-        </Button>
+        <>
+          <Button
+            variant="secondary"
+            size="md"
+            loading={loading}
+            onClick={() => void refresh()}
+          >
+            重新整理
+          </Button>
+          <Link to="/system" className="btn btn--ghost btn--md">
+            主機設定
+          </Link>
+          <Link to="/system/readiness" className="btn btn--ghost btn--md">
+            就緒探測
+          </Link>
+        </>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {loading && !metrics ? <LoadingBlock /> : null}
+      {loading && !metrics ? <LoadingBlock label="載入指標…" /> : null}
 
-      <SummaryStrip
-        items={[
-          {
-            label: '負載 1 分',
-            value: loadavg?.[0] != null ? loadavg[0].toFixed(2) : '—',
-          },
-          {
-            label: '負載 5 分',
-            value: loadavg?.[1] != null ? loadavg[1].toFixed(2) : '—',
-          },
-          {
-            label: '負載 15 分',
-            value: loadavg?.[2] != null ? loadavg[2].toFixed(2) : '—',
-          },
-          {
-            label: '記憶體',
-            value: memPct != null ? `${memPct}%` : '—',
-            tone:
-              memPct != null && memPct > 90
-                ? 'danger'
-                : memPct != null && memPct > 75
-                  ? 'warn'
-                  : 'default',
-          },
-          { label: 'CPU 數', value: String(metrics?.cpuCount ?? '—') },
-        ]}
-      />
-
-      {alerts.length > 0 ? (
-        <Alert variant="info">
-          <div className="chip-row">
-            {alerts.map((a) => (
-              <span key={a} className="badge badge--warn">
-                {a}
-              </span>
-            ))}
-          </div>
-        </Alert>
-      ) : null}
-
-      <KpiGrid cols={3}>
-        <KpiCard
-          label="負載"
-          hint={metrics?.cpuCount != null ? `${String(metrics.cpuCount)} CPU` : '—'}
-        >
-          <p className="dash-kpi__value dash-kpi__value--sm">
-            {loadavg
-              ? loadavg.map((n) => (typeof n === 'number' ? n.toFixed(2) : String(n))).join(' · ')
-              : '—'}
-          </p>
-          <p className="dash-kpi__meta">Load average（1 · 5 · 15 分）</p>
-          <dl className="dash-kpi__facts">
-            <div>
-              <dt>1 分</dt>
-              <dd>{loadavg?.[0] != null ? loadavg[0].toFixed(2) : '—'}</dd>
-            </div>
-            <div>
-              <dt>15 分</dt>
-              <dd>{loadavg?.[2] != null ? loadavg[2].toFixed(2) : '—'}</dd>
-            </div>
-          </dl>
-        </KpiCard>
-
-        <KpiCard
-          label="記憶體"
-          badge={
-            memPct != null
-              ? {
-                  label: `${memPct}%`,
-                  tone: memPct >= 90 ? 'danger' : memPct >= 75 ? 'warn' : 'ok',
-                }
-              : undefined
-          }
-        >
-          <p className="dash-kpi__value">{memPct != null ? `${memPct}%` : '—'}</p>
-          <p className="dash-kpi__meta">使用率</p>
-          {memPct != null ? (
-            <div className="dash-kpi__meter">
-              <div
-                className="dash-kpi__meter-track"
-                role="progressbar"
-                aria-valuenow={memPct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div
-                  className={`dash-kpi__meter-fill${
-                    memPct >= 90 ? ' is-danger' : memPct >= 75 ? ' is-warn' : ''
-                  }`}
-                  style={{ width: `${Math.min(100, memPct)}%` }}
-                />
+      {metrics ? (
+        <div className="ops">
+          <section className={`ops-hero ops-hero--${heroTone}`} aria-label="指標總覽">
+            <div className="ops-hero__main">
+              <div className="ops-hero__copy">
+                <div className="ops-hero__eyebrow">Host metrics</div>
+                <h2 className="ops-hero__title">
+                  <span className={`ops-hero__pill ops-hero__pill--${heroTone}`}>
+                    {alerts.length > 0
+                      ? `${alerts.length} 則告警`
+                      : heroTone === 'warn'
+                        ? '需留意'
+                        : '正常'}
+                  </span>
+                  即時資源快照
+                </h2>
+                <p className="ops-hero__hint">
+                  由控制面收集 loadavg／記憶體／磁碟使用率。非歷史圖表；告警為閾值提示，唔會自動改系統。
+                </p>
+                <div className="ops-hero__meta">
+                  <span>
+                    CPU ×<strong>{cpuCount || '—'}</strong>
+                  </span>
+                  <span className="ops-hero__dot" />
+                  <span>
+                    Uptime <strong>{formatUptime(uptimeSec)}</strong>
+                  </span>
+                  <span className="ops-hero__dot" />
+                  <span>
+                    採樣{' '}
+                    <strong>
+                      {metrics.at
+                        ? new Date(String(metrics.at)).toLocaleString('zh-TW')
+                        : '—'}
+                    </strong>
+                  </span>
+                </div>
+                <div className="ops-hero__cta">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={loading}
+                    onClick={() => void refresh()}
+                  >
+                    重新採樣
+                  </Button>
+                  <Link to="/services" className="btn btn--secondary btn--md">
+                    服務狀態
+                  </Link>
+                  <Link to="/logs" className="btn btn--ghost btn--md">
+                    日誌中心
+                  </Link>
+                </div>
+              </div>
+              <div className="ops-hero__stats">
+                <div className="ops-stat">
+                  <span className="ops-stat__lab">Load 1m</span>
+                  <span className="ops-stat__val">
+                    {load1 != null ? load1.toFixed(2) : '—'}
+                  </span>
+                </div>
+                <div className="ops-stat">
+                  <span className="ops-stat__lab">記憶體</span>
+                  <span className="ops-stat__val">
+                    <Badge
+                      tone={
+                        memPct != null && memPct >= 90
+                          ? 'danger'
+                          : memPct != null && memPct >= 75
+                            ? 'warn'
+                            : 'ok'
+                      }
+                    >
+                      {memPct != null ? `${memPct}%` : '—'}
+                    </Badge>
+                  </span>
+                </div>
+                <div className="ops-stat">
+                  <span className="ops-stat__lab">磁碟</span>
+                  <span className="ops-stat__val">
+                    <Badge
+                      tone={
+                        diskPct != null && diskPct >= 90
+                          ? 'danger'
+                          : diskPct != null && diskPct >= 75
+                            ? 'warn'
+                            : 'ok'
+                      }
+                    >
+                      {diskPct != null ? `${diskPct}%` : '—'}
+                    </Badge>
+                  </span>
+                </div>
+                <div className="ops-stat">
+                  <span className="ops-stat__lab">告警</span>
+                  <span className="ops-stat__val">
+                    <Badge tone={alerts.length ? 'warn' : 'ok'}>
+                      {alerts.length}
+                    </Badge>
+                  </span>
+                </div>
               </div>
             </div>
-          ) : null}
-          <dl className="dash-kpi__facts">
-            <div>
-              <dt>總量</dt>
-              <dd>{mem?.total != null ? String(mem.total) : '—'}</dd>
-            </div>
-            <div>
-              <dt>可用</dt>
-              <dd>{mem?.free != null ? String(mem.free) : '—'}</dd>
-            </div>
-          </dl>
-        </KpiCard>
-
-        <KpiCard
-          label="告警"
-          hint={alerts.length > 0 ? `${alerts.length} 則` : '無'}
-          badge={
-            alerts.length > 0
-              ? { label: String(alerts.length), tone: 'warn' }
-              : { label: '0', tone: 'ok' }
-          }
-        >
-          {alerts.length === 0 ? (
-            <div className="dash-kpi__empty">
-              <p className="dash-kpi__value dash-kpi__value--sm">正常</p>
-              <p className="dash-kpi__meta">目前沒有指標告警</p>
-            </div>
-          ) : (
-            <ul className="dash-kpi__list">
-              {alerts.slice(0, 6).map((a) => (
-                <li key={a}>
-                  <span className="dash-kpi__list-name">{a}</span>
+            <ul className="ops-rail">
+              <li>
+                <span className="ops-rail__k">1 / 5 / 15</span>
+                <code className="ops-rail__code">
+                  {loadavg
+                    ? loadavg.map((n) => n.toFixed(2)).join(' · ')
+                    : '—'}
+                </code>
+              </li>
+              <li>
+                <span className="ops-rail__k">Mem</span>
+                <span className="ops-rail__text">
+                  {formatBytes(mem?.total)} · 可用 {formatBytes(mem?.free)}
+                </span>
+              </li>
+              {disk ? (
+                <li>
+                  <span className="ops-rail__k">Disk</span>
+                  <span className="ops-rail__text">
+                    {disk.path ?? '/'} · {formatBytes(disk.total)} · 可用{' '}
+                    {formatBytes(disk.free)}
+                  </span>
                 </li>
-              ))}
+              ) : null}
             </ul>
-          )}
-        </KpiCard>
-      </KpiGrid>
+          </section>
 
-      <Card>
-        <CardSection title="詳細指標" description="其餘主機欄位（唯讀）">
-          {facts.length > 0 ? (
-            <DescriptionList columns={2} items={facts} />
-          ) : (
-            <p className="muted">無額外指標欄位</p>
-          )}
-        </CardSection>
-      </Card>
+          <div className="ops-grid ops-grid--3">
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <h3 className="ops-panel__title">負載</h3>
+                <Badge
+                  tone={
+                    loadPressure != null && loadPressure > 2
+                      ? 'danger'
+                      : loadPressure != null && loadPressure > 1
+                        ? 'warn'
+                        : 'ok'
+                  }
+                >
+                  {loadPressure != null
+                    ? `${loadPressure.toFixed(2)}×CPU`
+                    : '—'}
+                </Badge>
+              </header>
+              <div className="ops-meters">
+                {[
+                  { lab: '1 分', v: loadavg?.[0] },
+                  { lab: '5 分', v: loadavg?.[1] },
+                  { lab: '15 分', v: loadavg?.[2] },
+                ].map((row) => {
+                  const pct =
+                    row.v != null && cpuCount > 0
+                      ? Math.min(100, (row.v / (cpuCount * 2)) * 100)
+                      : 0;
+                  return (
+                    <div key={row.lab} className="ops-meter">
+                      <div className="ops-meter__head">
+                        <span>{row.lab}</span>
+                        <strong>
+                          {row.v != null ? row.v.toFixed(2) : '—'}
+                        </strong>
+                      </div>
+                      <div className="ops-meter__track">
+                        <div
+                          className="ops-meter__fill"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="ops-footnote">
+                相對 {cpuCount || '?'} CPU；高於 1.0× 表示可能排隊。
+              </p>
+            </section>
+
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <h3 className="ops-panel__title">記憶體</h3>
+                <Badge
+                  tone={
+                    memPct != null && memPct >= 90
+                      ? 'danger'
+                      : memPct != null && memPct >= 75
+                        ? 'warn'
+                        : 'ok'
+                  }
+                >
+                  {memPct != null ? `${memPct}%` : '—'}
+                </Badge>
+              </header>
+              <div className="ops-meter ops-meter--lg">
+                <div className="ops-meter__track ops-meter__track--lg">
+                  <div
+                    className={`ops-meter__fill${
+                      memPct != null && memPct >= 90
+                        ? ' ops-meter__fill--danger'
+                        : memPct != null && memPct >= 75
+                          ? ' ops-meter__fill--warn'
+                          : ''
+                    }`}
+                    style={{ width: `${Math.min(100, memPct ?? 0)}%` }}
+                  />
+                </div>
+              </div>
+              <dl className="ops-dl">
+                <div>
+                  <dt>總量</dt>
+                  <dd>{formatBytes(mem?.total)}</dd>
+                </div>
+                <div>
+                  <dt>可用</dt>
+                  <dd>{formatBytes(mem?.free)}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <h3 className="ops-panel__title">磁碟</h3>
+                <Badge
+                  tone={
+                    diskPct != null && diskPct >= 90
+                      ? 'danger'
+                      : diskPct != null && diskPct >= 75
+                        ? 'warn'
+                        : 'ok'
+                  }
+                >
+                  {diskPct != null ? `${diskPct}%` : '—'}
+                </Badge>
+              </header>
+              {disk ? (
+                <>
+                  <div className="ops-meter ops-meter--lg">
+                    <div className="ops-meter__track ops-meter__track--lg">
+                      <div
+                        className={`ops-meter__fill${
+                          diskPct != null && diskPct >= 90
+                            ? ' ops-meter__fill--danger'
+                            : diskPct != null && diskPct >= 75
+                              ? ' ops-meter__fill--warn'
+                              : ''
+                        }`}
+                        style={{ width: `${Math.min(100, diskPct ?? 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <dl className="ops-dl">
+                    <div>
+                      <dt>路徑</dt>
+                      <dd>
+                        <code>{disk.path ?? '/'}</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>總量</dt>
+                      <dd>{formatBytes(disk.total)}</dd>
+                    </div>
+                    <div>
+                      <dt>可用</dt>
+                      <dd>{formatBytes(disk.free)}</dd>
+                    </div>
+                  </dl>
+                </>
+              ) : (
+                <p className="ops-muted">無法讀取 statfs</p>
+              )}
+            </section>
+          </div>
+
+          <div className="ops-grid">
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <h3 className="ops-panel__title">告警</h3>
+                <Badge tone={alerts.length ? 'warn' : 'ok'}>
+                  {alerts.length}
+                </Badge>
+              </header>
+              {alerts.length === 0 ? (
+                <div className="ops-empty ops-empty--ok">
+                  <strong>目前正常</strong>
+                  <p>沒有記憶體／負載／磁碟閾值告警。</p>
+                </div>
+              ) : (
+                <ul className="ops-alert-list">
+                  {alerts.map((a) => (
+                    <li key={a}>
+                      <Badge tone="warn">{alertLabel(a)}</Badge>
+                      <code>{a}</code>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <h3 className="ops-panel__title">其他欄位</h3>
+              </header>
+              {facts.length === 0 ? (
+                <p className="ops-muted">無額外指標</p>
+              ) : (
+                <dl className="ops-dl">
+                  {facts.map((f) => (
+                    <div key={f.label}>
+                      <dt>{f.label}</dt>
+                      <dd>{f.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              <nav className="ops-shortcuts">
+                <Link to="/system" className="ops-shortcut">
+                  <span className="ops-shortcut__t">主機設定</span>
+                  <span className="ops-shortcut__d">磁碟一覽 · 電源</span>
+                </Link>
+                <Link to="/services" className="ops-shortcut">
+                  <span className="ops-shortcut__t">服務狀態</span>
+                  <span className="ops-shortcut__d">systemd 矩陣</span>
+                </Link>
+              </nav>
+            </section>
+          </div>
+        </div>
+      ) : null}
     </FeaturePageLayout>
   );
 }

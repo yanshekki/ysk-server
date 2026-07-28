@@ -6,6 +6,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFi
 import { join } from 'node:path';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
+import { injectDefenseLimitsIntoConf } from './defense/nginx-limits.js';
 
 export interface NginxSyncResult {
   sourceDir: string;
@@ -40,6 +41,9 @@ export async function syncNginxConfigs(opts: {
   const files = existsSync(sourceDir)
     ? readdirSync(sourceDir).filter((f) => f.endsWith('.conf'))
     : [];
+  const includes = existsSync(sourceDir)
+    ? readdirSync(sourceDir).filter((f) => f.endsWith('.inc'))
+    : [];
   const notes: string[] = [
     `Managed configs live in ${sourceDir}`,
     `Include them from nginx: include ${sourceDir}/*.conf;`,
@@ -66,6 +70,14 @@ export async function syncNginxConfigs(opts: {
       copyFileSync(src, dest);
       copied.push(dest);
     }
+    // Defense / shared includes (server-context snippets)
+    for (const f of includes) {
+      const src = join(sourceDir, f);
+      // Keep stable name for ysk-defense-limits.inc so vhosts can include it
+      const dest = join(targetDir, f.startsWith('ysk-') ? f : `ysk-${f}`);
+      copyFileSync(src, dest);
+      copied.push(dest);
+    }
     notes.push(`已複製 ${copied.length} 個設定檔到系統目錄`);
   } else if (targetDir) {
     notes.push('無法同步到系統 Nginx：需要系統變更權限');
@@ -89,6 +101,7 @@ export async function syncNginxConfigs(opts: {
 
 /**
  * Write a single server block into managed conf.d.
+ * If Defense Center limits are active, inject YSK_DEFENSE include marker.
  */
 export function writeManagedNginxConf(dataDir: string, filename: string, content: string): string {
   if (!filename.endsWith('.conf')) {
@@ -97,7 +110,12 @@ export function writeManagedNginxConf(dataDir: string, filename: string, content
   const dir = join(dataDir, 'nginx', 'conf.d');
   mkdirSync(dir, { recursive: true });
   const path = join(dir, filename);
-  writeFileSync(path, content, 'utf8');
+  let body = content;
+  const limitsInc = join(dir, 'ysk-defense-limits.inc');
+  if (existsSync(limitsInc) && /server\s*\{/.test(body) && !body.includes('BEGIN YSK_DEFENSE')) {
+    body = injectDefenseLimitsIntoConf(body);
+  }
+  writeFileSync(path, body, 'utf8');
   return path;
 }
 

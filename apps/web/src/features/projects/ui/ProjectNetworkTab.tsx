@@ -183,17 +183,17 @@ export function ProjectNetworkTab({
         </CardSection>
       </Card>
 
-      {/* 2. HTTPS */}
+      {/* 2. HTTPS + whole-site redirect */}
       <Card>
         <CardSection
-          title="HTTPS 與重新導向"
-          description="於發布 Nginx 時寫入；需已有 SSL 憑證才生效"
+          title="HTTPS 與整站重新導向"
+          description="儲存後請發布 Nginx。整站 301 會蓋過 proxy／PHP／static 內容"
         >
           <div className="form-switches">
             <CheckboxField
               id="net-https"
               label="強制使用 HTTPS"
-              description="把 HTTP 自動轉到 HTTPS（301）"
+              description="HTTP → HTTPS（301）；需已有 SSL 憑證並用 SSL 發布"
               checked={forceHttps}
               onChange={setForceHttps}
               disabled={suspended}
@@ -211,8 +211,9 @@ export function ProjectNetworkTab({
             <Field
               label="整站重新導向網址"
               htmlFor="net-redir"
-              hint="可留空。填寫後整站會 301 到此網址（會取代反向代理）"
+              hint="可留空。填寫後整站 301 到此網址（例如搬站／apex→www）"
               flush
+              fullWidth
             >
               <input
                 id="net-redir"
@@ -231,18 +232,117 @@ export function ProjectNetworkTab({
               disabled={suspended}
               onClick={() => void saveNetwork(false)}
             >
-              儲存 HTTPS 設定
+              儲存
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={localBusy}
+              disabled={suspended || !hasDomain}
+              onClick={() => void saveNetwork(true, forceHttps)}
+            >
+              儲存並發布
             </Button>
           </FormActions>
         </CardSection>
       </Card>
 
-      {/* 3. Advanced */}
+      {/* 3. HTTP Basic Auth */}
       <Card>
         <CardSection
-          title="進階"
-          description="網站目錄、綁定 IP、瀏覽器登入保護"
+          title="HTTP 基本認證（瀏覽器登入保護）"
+          description="發布時寫入 htpasswd；用戶名留空 = 關閉。密碼留空 = 沿用已存密碼"
         >
+          <FormLayout columns={2}>
+            <Field label="用戶名" htmlFor="net-au" flush hint="留空關閉認證">
+              <input
+                id="net-au"
+                value={authUser}
+                onChange={(e) => setAuthUser(e.target.value)}
+                disabled={suspended}
+                autoComplete="username"
+                placeholder="admin"
+              />
+            </Field>
+            <Field label="密碼" htmlFor="net-ap" flush hint="首次設定必填；之後不改可留空">
+              <input
+                id="net-ap"
+                type="password"
+                value={authPass}
+                onChange={(e) => setAuthPass(e.target.value)}
+                disabled={suspended}
+                autoComplete="new-password"
+                placeholder={authUser ? '設定或更新密碼' : '—'}
+              />
+            </Field>
+          </FormLayout>
+          <FormActions>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={localBusy}
+              disabled={suspended}
+              onClick={() => void saveNetwork(false)}
+            >
+              儲存認證
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={localBusy}
+              disabled={suspended || !hasDomain}
+              onClick={() => void saveNetwork(true, false)}
+            >
+              儲存並發布 Nginx
+            </Button>
+          </FormActions>
+        </CardSection>
+      </Card>
+
+      {/* 4. Cache */}
+      <Card>
+        <CardSection
+          title="Cache"
+          description="靜態／PHP 靜態資源預設 Cache-Control 7d；purge 清主機 nginx cache 目錄（需 YSK_EXECUTE）"
+        >
+          <FormHint>
+            完整 FastCGI／proxy_cache zone 需主機 nginx.conf 先定義 keys_zone；面板提供 best-effort 清除。
+          </FormHint>
+          <FormActions>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={localBusy}
+              disabled={suspended}
+              onClick={() => {
+                setSaving(true);
+                void projectsApi
+                  .purgeCache(project.id)
+                  .then((r) => {
+                    onOpsResult?.(
+                      {
+                        ok: r.ok,
+                        notes: r.notes ?? [],
+                        projectId: project.id,
+                        processStatus: 'stopped',
+                        listening: false,
+                      } as OpsApplyResultDto,
+                      r.ok ? '已嘗試 purge cache' : r.notes?.join('；') ?? 'purge 失敗',
+                    );
+                  })
+                  .catch((e: Error) => onOpsResult?.(null, e.message))
+                  .finally(() => setSaving(false));
+              }}
+            >
+              清除 Nginx cache
+            </Button>
+          </FormActions>
+        </CardSection>
+      </Card>
+
+      {/* 5. Advanced + publish */}
+      <Card>
+        <CardSection title="進階與發布" description="網站目錄、綁定 IP、發布到系統 Nginx">
           <FormHint>
             Nginx 管理檔：{' '}
             {project.nginxConfigPath ? (
@@ -250,6 +350,8 @@ export function ProjectNetworkTab({
             ) : (
               <span className="muted">{t('projects.nginxNone')}</span>
             )}
+            {' · '}
+            發布會依 runtime 產生 proxy／PHP-FPM／static conf（含認證與導向）
           </FormHint>
 
           <button
@@ -257,78 +359,35 @@ export function ProjectNetworkTab({
             className="btn btn--ghost btn--sm u-mb-4"
             onClick={() => setAdvancedOpen((v) => !v)}
           >
-            {advancedOpen ? '收起進階選項' : '展開進階選項'}
+            {advancedOpen ? '收起進階選項' : '展開進階選項（docroot／IP）'}
           </button>
 
           {advancedOpen ? (
-            <>
-              <FormLayout columns={2}>
-                <Field
-                  label="網站目錄"
-                  htmlFor="net-doc"
-                  hint="相對專案 home，例如 app/public"
-                  flush
-                >
-                  <input
-                    id="net-doc"
-                    value={docRoot}
-                    onChange={(e) => setDocRoot(e.target.value)}
-                    placeholder="app/public"
-                    disabled={suspended}
-                  />
-                </Field>
-                <Field
-                  label="綁定 IP"
-                  htmlFor="net-ip"
-                  hint="留空 = 聽全部網卡"
-                  flush
-                >
-                  <input
-                    id="net-ip"
-                    value={bindIp}
-                    onChange={(e) => setBindIp(e.target.value)}
-                    placeholder="留空或 203.0.113.10"
-                    disabled={suspended}
-                  />
-                </Field>
-                <Field
-                  label="瀏覽器登入保護 · 用戶名"
-                  htmlFor="net-au"
-                  hint="可留空以關閉 HTTP Basic Auth"
-                  flush
-                >
-                  <input
-                    id="net-au"
-                    value={authUser}
-                    onChange={(e) => setAuthUser(e.target.value)}
-                    disabled={suspended}
-                    autoComplete="username"
-                  />
-                </Field>
-                <Field label="瀏覽器登入保護 · 密碼" htmlFor="net-ap" flush>
-                  <input
-                    id="net-ap"
-                    type="password"
-                    value={authPass}
-                    onChange={(e) => setAuthPass(e.target.value)}
-                    disabled={suspended}
-                    autoComplete="new-password"
-                    placeholder="不改請留空"
-                  />
-                </Field>
-              </FormLayout>
-              <FormActions>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={localBusy}
+            <FormLayout columns={2}>
+              <Field
+                label="網站目錄"
+                htmlFor="net-doc"
+                hint="相對專案 home，例如 app/public"
+                flush
+              >
+                <input
+                  id="net-doc"
+                  value={docRoot}
+                  onChange={(e) => setDocRoot(e.target.value)}
+                  placeholder="app/public"
                   disabled={suspended}
-                  onClick={() => void saveNetwork(false)}
-                >
-                  儲存進階設定
-                </Button>
-              </FormActions>
-            </>
+                />
+              </Field>
+              <Field label="綁定 IP" htmlFor="net-ip" hint="留空 = 聽全部網卡" flush>
+                <input
+                  id="net-ip"
+                  value={bindIp}
+                  onChange={(e) => setBindIp(e.target.value)}
+                  placeholder="留空或 203.0.113.10"
+                  disabled={suspended}
+                />
+              </Field>
+            </FormLayout>
           ) : null}
 
           <FormActions>
@@ -371,7 +430,7 @@ export function ProjectNetworkTab({
             </Button>
           </FormActions>
           <p className="muted u-text-sm u-mt-3 u-mb-0">
-            「發布」會寫入管理 conf；真正同步到系統 Nginx 需系統變更權限。
+            「發布」寫入管理 conf；同步到 /etc/nginx 並 reload 需系統變更權限。
           </p>
         </CardSection>
       </Card>

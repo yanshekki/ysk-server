@@ -1,15 +1,14 @@
 /**
- * Firewall (UFW) — live status + panel apply (fail-closed).
+ * Firewall (UFW) — port policy & permanent deny.
+ * Not fail2ban (log bans) · not Defense Center (attack orchestration).
  */
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alert,
   Badge,
   Button,
-  Card,
-  CardSection,
-  CheckboxField,
-  DescriptionList,
+  EmptyState,
   FeaturePageLayout,
   Field,
   FormActions,
@@ -17,7 +16,6 @@ import {
   FormLayout,
   OpsResultPanel,
   SoftwareInstallBanner,
-  SummaryStrip,
   Tabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -25,20 +23,58 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const FW_TABS = ['overview', 'rules', 'apply'] as const;
+const FW_TABS = ['rules', 'ports', 'deny', 'profiles'] as const;
+
+type FwStatus = Awaited<ReturnType<typeof systemApi.firewallStatus>>;
+
+const PROFILES = [
+  {
+    id: 'web',
+    label: 'Web 主機',
+    short: 'SSH · 80 · 443',
+    allowSmtp: false,
+    extra: '',
+  },
+  {
+    id: 'mail',
+    label: 'Web + 郵件',
+    short: '另開 25/465/587/993',
+    allowSmtp: true,
+    extra: '',
+  },
+  {
+    id: 'ftps',
+    label: 'Web + FTPS',
+    short: '21 + PASV 30000–30100',
+    allowSmtp: false,
+    extra: '21,30000:30100',
+  },
+] as const;
+
+function parsePorts(extraPorts: string): number[] {
+  const out: number[] = [];
+  for (const part of extraPorts.split(/[,\s]+/).filter(Boolean)) {
+    if (part.includes(':')) {
+      const [a, b] = part.split(':').map(Number);
+      if (Number.isFinite(a) && Number.isFinite(b)) {
+        for (let p = Math.min(a, b); p <= Math.max(a, b) && out.length < 40; p++) out.push(p);
+      }
+    } else {
+      const n = Number(part);
+      if (Number.isInteger(n) && n > 0 && n < 65536) out.push(n);
+    }
+  }
+  return [...new Set(out)].slice(0, 40);
+}
 
 export function FirewallPage() {
-  const [allowSmtp, setAllowSmtp] = useState(true);
-  const [extraPorts, setExtraPorts] = useState('21,30000:30100');
-  const [status, setStatus] = useState<{
-    installed: boolean;
-    active: string;
-    statusText: string;
-    numberedRules: string[];
-    executeEnabled: boolean;
-    isRoot: boolean;
-  } | null>(null);
+  const [tab, setTab] = usePageTab(FW_TABS, 'rules');
+  const [status, setStatus] = useState<FwStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [extraPorts, setExtraPorts] = useState('21,30000:30100');
+  const [allowSmtp, setAllowSmtp] = useState(false);
+  const [denyIp, setDenyIp] = useState('');
+  const [portInput, setPortInput] = useState('');
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -54,62 +90,69 @@ export function FirewallPage() {
     void refresh();
   }, [refresh]);
 
-  function parsePorts(): number[] {
-    const out: number[] = [];
-    for (const part of extraPorts.split(/[,\s]+/).filter(Boolean)) {
-      if (part.includes(':')) {
-        const [a, b] = part.split(':').map(Number);
-        if (Number.isFinite(a) && Number.isFinite(b)) {
-          for (let p = Math.min(a, b); p <= Math.max(a, b) && out.length < 40; p++) out.push(p);
-        }
-      } else {
-        const n = Number(part);
-        if (Number.isInteger(n) && n > 0 && n < 65536) out.push(n);
-      }
-    }
-    return [...new Set(out)].slice(0, 40);
-  }
-
-  async function onApply() {
-    await run(async () => {
-      try {
-        const r = await systemApi.firewallApply({
-          allowSmtp,
-          apply: true,
-          extraTcpPorts: parsePorts(),
-        });
-        await refresh();
-        return r as OpsResultLike;
-      } catch (e) {
-        const m = e instanceof Error ? e.message : '套用失敗';
-        return { ok: false, blocked: true, blockMessage: m, notes: [m] };
-      }
-    }, '已套用防火牆');
-  }
-
   const active = status?.active === 'active';
-  const [tab, setTab] = usePageTab(FW_TABS, 'overview');
+
+  async function applyProfile(p: (typeof PROFILES)[number]) {
+    await run(async () => {
+      const r = (await systemApi.firewallApply({
+        allowSmtp: p.allowSmtp,
+        apply: true,
+        extraTcpPorts: parsePorts(p.extra),
+      })) as OpsResultLike;
+      await refresh();
+      return r;
+    }, `已套用設定檔：${p.label}`);
+  }
 
   return (
     <FeaturePageLayout
       title="防火牆"
-      subtitle="UFW 規則與即時狀態"
+      subtitle="UFW · 埠策略與永久拒絕 — 唔係 fail2ban 臨時 ban"
+      backTo="/protection"
+      backLabel="防護中心"
       actions={
-        <Button
-          variant="secondary"
-          size="md"
-          loading={busy}
-          onClick={() => {
-            setError(null);
-            setMsg(null);
-            void refresh();
-          }}
-        >
-          重新整理
-        </Button>
+        <div className="def-head-actions">
+          <Button
+            variant="secondary"
+            size="md"
+            loading={busy}
+            onClick={() => {
+              setError(null);
+              setMsg(null);
+              void refresh();
+            }}
+          >
+            重新整理
+          </Button>
+          {status?.installed ? (
+            <Button
+              variant={active ? 'ghost' : 'primary'}
+              size="md"
+              loading={busy}
+              onClick={() =>
+                void run(async () => {
+                  const r = (await systemApi.firewallEnable(!active)) as OpsResultLike;
+                  await refresh();
+                  return r;
+                }, active ? '已停用 UFW' : '已啟用 UFW')
+              }
+            >
+              {active ? '停用 UFW' : '啟用 UFW'}
+            </Button>
+          ) : null}
+        </div>
       }
     >
       <SoftwareInstallBanner feature="firewall" title="UFW 尚未安裝" />
+
+      <div className="stack-role">
+        <Alert variant="info">
+          <strong>分工：</strong> UFW = 埠／永久規則 ·{' '}
+          <Link to="/fail2ban">fail2ban</Link> = 日誌臨時 ban ·{' '}
+          <Link to="/protection">防護中心</Link> = 攻擊時總控（限速 + 自動 ban）
+        </Alert>
+      </div>
+
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
@@ -121,135 +164,329 @@ export function FirewallPage() {
         </Alert>
       ) : null}
 
-      <SummaryStrip
-        items={[
-          {
-            label: 'UFW',
-            value: status?.installed ? (active ? '啟用中' : status?.active ?? '—') : '未安裝',
-            tone: active ? 'ok' : status?.installed ? 'warn' : 'danger',
-          },
-          {
-            label: '規則列',
-            value: String(status?.numberedRules?.length ?? 0),
-          },
-          {
-            label: '系統變更',
-            value: status?.executeEnabled ? '已開啟' : '未開啟',
-            tone: status?.executeEnabled ? 'ok' : 'warn',
-          },
-          {
-            label: '管理員',
-            value: status?.isRoot ? '是' : '否',
-            tone: status?.isRoot ? 'ok' : 'warn',
-          },
-        ]}
-      />
+      {!status?.executeEnabled ? (
+        <Alert variant="info">
+          系統變更未開 — 可睇狀態，改規則需 root + <code className="inline">YSK_EXECUTE=1</code>
+        </Alert>
+      ) : null}
+
+      <section className="fw-hero">
+        <div>
+          <div className="fw-hero__eyebrow">UFW 狀態</div>
+          <h2 className="fw-hero__title">
+            <Badge tone={active ? 'ok' : status?.installed ? 'warn' : 'danger'}>
+              {status?.activeLabel ?? '—'}
+            </Badge>
+            {status?.installed ? (active ? '入站受控' : '未攔截入站') : '請先安裝'}
+          </h2>
+          <p className="muted u-text-sm">
+            預設入站 {status?.defaultIncoming ?? '—'} · 出站 {status?.defaultOutgoing ?? '—'} ·
+            允許 {status?.allowCount ?? 0} · 拒絕 {status?.denyCount ?? 0}
+          </p>
+        </div>
+        <div className="fw-hero__stats">
+          <div>
+            <strong>{status?.rules?.length ?? status?.numberedRules?.length ?? 0}</strong>
+            <span>規則</span>
+          </div>
+          <div>
+            <strong>{status?.denyFromIps?.length ?? 0}</strong>
+            <span>永久拒 IP</span>
+          </div>
+        </div>
+      </section>
 
       <Tabs
         tabs={[
-          { id: 'overview', label: '概覽' },
           {
             id: 'rules',
-            label: '規則',
-            badge: status?.numberedRules?.length || undefined,
+            label: '規則表',
+            badge: status?.rules?.length || status?.numberedRules?.length || undefined,
           },
-          { id: 'apply', label: '套用' },
+          { id: 'ports', label: '開埠' },
+          { id: 'deny', label: '永久拒 IP', badge: status?.denyFromIps?.length || undefined },
+          { id: 'profiles', label: '設定檔' },
         ]}
         active={tab}
         onChange={setTab}
         variant="scroll"
       >
-        {tab === 'overview' ? (
-          <div className="tab-panel">
-            <Card>
-              <CardSection title="服務概覽" description="即時探測（唯讀）">
-                <DescriptionList
-                  columns={2}
-                  items={[
-                    {
-                      label: '狀態',
-                      value: (
-                        <Badge tone={active ? 'ok' : status?.installed ? 'warn' : 'danger'}>
-                          {status?.installed ? status.active : '未安裝'}
-                        </Badge>
-                      ),
-                    },
-                    { label: '已安裝', value: status?.installed ? '是' : '否' },
-                    {
-                      label: '系統變更',
-                      value: status?.executeEnabled ? '已開啟' : '未開啟',
-                    },
-                    { label: '管理員', value: status?.isRoot ? '是' : '否' },
-                  ]}
-                />
-              </CardSection>
-            </Card>
-          </div>
-        ) : null}
-
         {tab === 'rules' ? (
-          <div className="tab-panel">
-            <Card>
-              <CardSection title="目前規則" description="來自 ufw status numbered">
-                {status?.numberedRules?.length ? (
-                  <pre className="code code--spaced" style={{ maxHeight: 280, overflow: 'auto' }}>
-                    {status.numberedRules.join('\n')}
-                  </pre>
-                ) : (
-                  <p className="muted u-text-sm u-mb-0">
-                    {status?.installed
-                      ? '未讀到規則（可能未啟用或無權讀取）'
-                      : '請先安裝 UFW'}
-                  </p>
-                )}
-              </CardSection>
-            </Card>
+          <div className="tab-panel def-panel">
+            <div className="def-panel-card">
+              <div className="def-section-head">
+                <h3 className="def-section-head__title">目前規則</h3>
+                <span className="muted u-text-sm">ufw status numbered</span>
+              </div>
+              {!status?.rules?.length && !status?.numberedRules?.length ? (
+                <EmptyState
+                  title="無規則或無權讀取"
+                  description={
+                    status?.installed
+                      ? 'UFW inactive 或需 root 讀取'
+                      : '安裝 UFW 後再整理'
+                  }
+                />
+              ) : (
+                <div className="table-wrap">
+                  <table className="data">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>動作</th>
+                        <th>目標</th>
+                        <th>來源</th>
+                        <th />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(status.rules?.length
+                        ? status.rules.map((r) => ({
+                            num: r.num,
+                            action: r.action,
+                            to: r.to,
+                            from: r.from,
+                            raw: r.raw,
+                          }))
+                        : (status.numberedRules ?? []).map((raw) => ({
+                            num: undefined as number | undefined,
+                            action: '?',
+                            to: raw,
+                            from: '—',
+                            raw,
+                          }))
+                      ).map((r, i) => (
+                        <tr key={r.raw + i}>
+                          <td className="muted">{r.num ?? '—'}</td>
+                          <td>
+                            <Badge
+                              tone={
+                                /DENY|REJECT/i.test(r.action)
+                                  ? 'danger'
+                                  : /ALLOW/i.test(r.action)
+                                    ? 'ok'
+                                    : 'neutral'
+                              }
+                            >
+                              {r.action}
+                            </Badge>
+                          </td>
+                          <td>
+                            <code className="inline">{r.to ?? r.raw}</code>
+                          </td>
+                          <td className="u-text-sm">{r.from ?? '—'}</td>
+                          <td>
+                            {r.num ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                loading={busy}
+                                onClick={() => {
+                                  if (!window.confirm(`刪規則 #${r.num}？`)) return;
+                                  void run(async () => {
+                                    const res = (await systemApi.firewallDeleteRule(
+                                      r.num!,
+                                    )) as OpsResultLike;
+                                    await refresh();
+                                    return res;
+                                  }, `已刪 #${r.num}`);
+                                }}
+                              >
+                                刪
+                              </Button>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         ) : null}
 
-        {tab === 'apply' ? (
-          <div className="tab-panel">
-            <Card>
-              <CardSection
-                title="套用規則集"
-                description="寫入管理腳本並在有權限時執行 ufw（需系統變更 + root）"
-              >
-                <div className="form-check-row">
-                  <CheckboxField
-                    id="fw-smtp"
-                    label="允許 SMTP 相關埠"
-                    description="放行 25 / 465 / 587 / 993（郵件常用）"
-                    checked={allowSmtp}
-                    onChange={setAllowSmtp}
+        {tab === 'ports' ? (
+          <div className="tab-panel def-panel">
+            <div className="def-panel-card">
+              <div className="def-section-head">
+                <h3 className="def-section-head__title">允許埠</h3>
+              </div>
+              <FormLayout columns={2}>
+                <Field label="TCP 埠" htmlFor="fw-port" flush hint="例如 8080">
+                  <input
+                    id="fw-port"
+                    value={portInput}
+                    onChange={(e) => setPortInput(e.target.value)}
+                    placeholder="8080"
+                    inputMode="numeric"
                   />
-                </div>
-                <FormLayout columns={2}>
-                  <Field
-                    label="額外 TCP 埠"
-                    htmlFor="fw-extra"
-                    fullWidth
-                    flush
-                    hint="逗號分隔；可用 30000:30100 範圍（最多 40 個）。預設含 FTPS 與 PASV"
+                </Field>
+              </FormLayout>
+              <FormActions>
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  disabled={!portInput.trim()}
+                  onClick={() =>
+                    void run(async () => {
+                      const n = Number(portInput);
+                      const r = (await systemApi.firewallAllowPort(n, 'tcp')) as OpsResultLike;
+                      setPortInput('');
+                      await refresh();
+                      return r;
+                    }, '已允許埠')
+                  }
+                >
+                  允許此埠
+                </Button>
+              </FormActions>
+              <FormHint>預設 Web 主機應保留 22／80／443；勿隨便 allow 0.0.0.0 全部。</FormHint>
+            </div>
+          </div>
+        ) : null}
+
+        {tab === 'deny' ? (
+          <div className="tab-panel def-panel">
+            <div className="def-panel-card">
+              <div className="def-section-head">
+                <h3 className="def-section-head__title">永久拒絕 IP</h3>
+                <span className="muted u-text-sm">UFW DENY · 與 fail2ban 臨時 ban 不同</span>
+              </div>
+              <FormLayout columns={2}>
+                <Field label="IP" htmlFor="fw-deny" flush>
+                  <input
+                    id="fw-deny"
+                    value={denyIp}
+                    onChange={(e) => setDenyIp(e.target.value)}
+                    placeholder="203.0.113.10"
+                    spellCheck={false}
+                  />
+                </Field>
+              </FormLayout>
+              <FormActions>
+                <Button
+                  variant="danger"
+                  size="md"
+                  loading={busy}
+                  disabled={!denyIp.trim()}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = (await systemApi.firewallDeny(denyIp.trim())) as OpsResultLike;
+                      setDenyIp('');
+                      await refresh();
+                      return r;
+                    }, '已永久拒絕')
+                  }
+                >
+                  DENY from IP
+                </Button>
+              </FormActions>
+              {(status?.denyFromIps?.length ?? 0) > 0 ? (
+                <ul className="def-ban-list u-mt-3">
+                  {status!.denyFromIps.map((ip) => (
+                    <li key={ip}>
+                      <code>{ip}</code>
+                      <span className="muted">DENY</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            const r = (await systemApi.firewallDeleteDeny(ip)) as OpsResultLike;
+                            await refresh();
+                            return r;
+                          }, '已移除 DENY')
+                        }
+                      >
+                        移除
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted u-text-sm u-mt-3">未有永久拒 IP 規則</p>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {tab === 'profiles' ? (
+          <div className="tab-panel def-panel">
+            <div className="def-section-head">
+              <div>
+                <h3 className="def-section-head__title">一鍵設定檔</h3>
+                <p className="def-section-head__desc">
+                  寫入管理腳本並套用 UFW（唔會裝 fail2ban — 請到 fail2ban 頁）
+                </p>
+              </div>
+            </div>
+            <div className="fw-profiles">
+              {PROFILES.map((p) => (
+                <article key={p.id} className="fw-profile">
+                  <h4>{p.label}</h4>
+                  <p>{p.short}</p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => void applyProfile(p)}
                   >
-                    <input
-                      id="fw-extra"
-                      value={extraPorts}
-                      onChange={(e) => setExtraPorts(e.target.value)}
-                      placeholder="21, 30000:30100"
-                      spellCheck={false}
-                    />
-                  </Field>
-                </FormLayout>
-                <FormHint>
-                  預設會保留 SSH／80／443。無權限時會明確失敗，不會假裝成功。
-                </FormHint>
-                <FormActions>
-                  <Button variant="primary" size="md" loading={busy} onClick={() => void onApply()}>
-                    套用到系統
+                    套用
                   </Button>
-                </FormActions>
-              </CardSection>
-            </Card>
+                </article>
+              ))}
+            </div>
+            <div className="def-panel-card">
+              <div className="def-section-head">
+                <h3 className="def-section-head__title">自訂套用</h3>
+              </div>
+              <label className="def-switch">
+                <input
+                  type="checkbox"
+                  checked={allowSmtp}
+                  onChange={(e) => setAllowSmtp(e.target.checked)}
+                />
+                <span>允許 SMTP／IMAP 埠</span>
+              </label>
+              <FormLayout columns={2}>
+                <Field
+                  label="額外 TCP 埠"
+                  htmlFor="fw-extra"
+                  flush
+                  hint="逗號分隔；可用 30000:30100（最多 40）"
+                >
+                  <input
+                    id="fw-extra"
+                    value={extraPorts}
+                    onChange={(e) => setExtraPorts(e.target.value)}
+                    spellCheck={false}
+                  />
+                </Field>
+              </FormLayout>
+              <FormActions>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = (await systemApi.firewallApply({
+                        allowSmtp,
+                        apply: true,
+                        extraTcpPorts: parsePorts(extraPorts),
+                      })) as OpsResultLike;
+                      await refresh();
+                      return r;
+                    }, '已套用自訂規則')
+                  }
+                >
+                  套用到系統
+                </Button>
+              </FormActions>
+            </div>
           </div>
         ) : null}
       </Tabs>

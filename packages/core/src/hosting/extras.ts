@@ -165,10 +165,19 @@ export function planFirewall(opts: {
     rules.push(`ufw allow ${p}/tcp`);
   }
   rules.push('ufw --force enable');
+  // UFW only — fail2ban is a separate stack (do not couple install into firewall apply)
   return {
     rules,
-    fail2banJails: ['sshd', 'nginx-http-auth', 'postfix', 'dovecot'],
-    commands: [...rules, 'apt-get install -y fail2ban', 'systemctl enable --now fail2ban'],
+    fail2banJails: [
+      'sshd',
+      'nginx-http-auth',
+      'nginx-botsearch',
+      'nginx-badbots',
+      'nginx-limit-req',
+      'postfix',
+      'dovecot',
+    ],
+    commands: [...rules],
   };
 }
 

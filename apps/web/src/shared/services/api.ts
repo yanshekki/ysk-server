@@ -61,6 +61,37 @@ export const api = {
   requestRaw<T>(path: string, init?: RequestInit): Promise<T> {
     return request<T>(path, init);
   },
+  /**
+   * Authenticated binary download (Bearer). Saves via blob + object URL.
+   * Do not use window.open — it will not send Authorization.
+   */
+  async downloadAuthenticated(path: string, filename: string): Promise<void> {
+    const token = authStore.getToken();
+    const res = await fetch(`${base}${path}`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) {
+      let data: unknown = {};
+      try {
+        data = await res.json();
+      } catch {
+        /* ignore */
+      }
+      throw new Error(errorMessageFromBody(data, res.status));
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
   health(): Promise<HealthResponse> {
     return request<HealthResponse>('/health');
   },
