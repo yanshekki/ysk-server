@@ -1069,6 +1069,9 @@ export class ProjectOpsService {
       git_commit: git.commit,
     });
     const notes = [...git.notes];
+    if (git.ok) {
+      await chownProjectHome(this.host, row, notes);
+    }
     const savedEntry = opts.entry?.trim() || row.deploy_entry?.trim() || undefined;
     let redeployResult: OpsApplyResult | undefined;
     if (git.ok && opts.redeploy !== false) {

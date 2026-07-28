@@ -1,0 +1,62 @@
+/**
+ * After any write into a project home, restore ownership to project linux user.
+ */
+
+import { join } from 'node:path';
+import type { HostExecutor } from '../host/executor.js';
+import { shellQuote } from './project-user-run.js';
+
+export interface ProjectOwnerRef {
+  linuxUser: string;
+  linuxGroup?: string;
+  homeDir: string;
+}
+
+/**
+ * chown one absolute path (file or dir) to project user when root+execute.
+ */
+export async function chownProjectPath(
+  host: HostExecutor,
+  owner: ProjectOwnerRef,
+  absPath: string,
+): Promise<{ ok: boolean; notes: string[] }> {
+  const notes: string[] = [];
+  if (!host.executeEnabled() || !host.isRoot()) {
+    return {
+      ok: false,
+      notes: ['略過 chown（需 YSK_EXECUTE + root）— 檔案可能為控制面用戶擁有'],
+    };
+  }
+  const u = owner.linuxUser?.trim();
+  if (!u) return { ok: false, notes: ['無 linuxUser'] };
+  const g = (owner.linuxGroup || u).trim();
+  // Stay under home when possible
+  const home = owner.homeDir.replace(/\/+$/, '');
+  const target = absPath.startsWith(home) ? absPath : join(home, absPath);
+  const r = await host.runCommand(
+    [
+      'bash',
+      '-c',
+      `chown -R ${shellQuote(u)}:${shellQuote(g)} ${shellQuote(target)} 2>&1`,
+    ],
+    { timeoutMs: 60_000 },
+  );
+  if (r.exitCode === 0) {
+    notes.push(`chown ${u}:${g} → ${target}`);
+    return { ok: true, notes };
+  }
+  return {
+    ok: false,
+    notes: [`chown 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`],
+  };
+}
+
+/**
+ * chown entire project home tree.
+ */
+export async function chownProjectTree(
+  host: HostExecutor,
+  owner: ProjectOwnerRef,
+): Promise<{ ok: boolean; notes: string[] }> {
+  return chownProjectPath(host, owner, owner.homeDir);
+}

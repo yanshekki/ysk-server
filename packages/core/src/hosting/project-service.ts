@@ -14,6 +14,7 @@ import {
   projectHomeDir,
 } from './project.js';
 import { planIsolationMigration } from './project-isolation-status.js';
+import { webGroupProvisionCommands } from './project-web-group.js';
 import { renderNginxProxy } from './nginx-ssl.js';
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
 import type { HostExecutor } from '../host/executor.js';
@@ -292,6 +293,8 @@ export class ProjectService {
       `chown -R ${row.linux_user}:${row.linux_group} ${canonicalHome}`,
       `chmod 750 ${canonicalHome}`,
     );
+    // Nginx/static: ysk-web group so www-data can read without world-readable home
+    commands.push(...webGroupProvisionCommands(row.linux_user, canonicalHome));
 
     const osProvision = await this.provisionOsUser(commands, row.linux_user, canonicalHome);
     if (osProvision.ok) {

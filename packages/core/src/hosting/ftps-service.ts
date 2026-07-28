@@ -65,6 +65,7 @@ export interface FtpsStatus {
 
 /**
  * Create a jailed FTP account rooted at a project home (or home/app).
+ * Virtual user maps to project linuxUser on apply (guest_username per user_conf).
  * Does not apply vsftpd until panel apply — status draft/written honestly.
  */
 export function createProjectFtpAccount(
@@ -73,6 +74,7 @@ export function createProjectFtpAccount(
     projectId: string;
     projectHome: string;
     linuxUser: string;
+    linuxGroup?: string;
     username?: string;
     password: string;
     /** default: projectHome/app if exists, else projectHome */
@@ -93,9 +95,21 @@ export function createProjectFtpAccount(
       written: [],
     };
   }
+  const linuxUser = String(input.linuxUser || '').trim();
+  if (!linuxUser) {
+    return {
+      ok: false,
+      account: {},
+      notes: ['專案缺少 linuxUser — 無法建立對齊隔離的 FTP 帳戶'],
+      written: [],
+    };
+  }
+  const linuxGroup = (input.linuxGroup || linuxUser).trim();
+  // Strip ysk_ / ysks_ prefixes for virtual login name
+  const stripped = linuxUser.replace(/^ysks?_/, '');
   const baseUser =
-    (input.username || `p_${input.linuxUser.replace(/^ysk_/, '')}`).toLowerCase().replace(/[^a-z0-9._-]/g, '') ||
-    `p${input.projectId.slice(0, 8)}`;
+    (input.username || `p_${stripped}`).toLowerCase().replace(/[^a-z0-9._-]/g, '') ||
+    `p${input.projectId.replace(/-/g, '').slice(0, 8)}`;
   const username = baseUser.slice(0, 32);
   const existing = listResources(db, 'ftp_accounts').find(
     (a) => String(a.username).toLowerCase() === username,
@@ -121,6 +135,8 @@ export function createProjectFtpAccount(
     password_plain: password,
     homePath,
     projectId: input.projectId,
+    linuxUser,
+    linuxGroup,
     chroot: true,
     apply_status: 'draft',
   });
@@ -131,11 +147,14 @@ export function createProjectFtpAccount(
       username,
       homePath,
       projectId: input.projectId,
+      linuxUser,
+      linuxGroup,
       apply_status: 'draft',
     },
     notes: [
       `已建立 FTP 帳戶 ${username}`,
       `Jail 路徑: ${homePath}`,
+      `上傳檔將以專案 Linux 用戶擁有：${linuxUser}（套用 vsftpd 後生效）`,
       '狀態 draft — 請到 FTP 服務頁「套用」才會寫入 vsftpd',
     ],
     written: [homePath],
@@ -308,6 +327,9 @@ export function writeManagedFtpAccounts(input: {
   const notes: string[] = [];
   const written: string[] = [];
 
+  const settings = loadFtpsSettings(input.db);
+  const projects = (input.db.snapshot.projects ?? []) as unknown as Array<Record<string, unknown>>;
+
   for (const a of accounts) {
     const username = String(a.username ?? '').trim();
     if (!username || !/^[a-zA-Z0-9._-]+$/.test(username)) {
@@ -324,14 +346,45 @@ export function writeManagedFtpAccounts(input: {
     } else {
       notes.push(`帳戶 ${username} 無密碼，無法登入直至重設`);
     }
+
+    // Resolve project Linux user for ownership of uploaded files
+    let linuxUser = String(a.linuxUser ?? a.linux_user ?? '').trim();
+    const projectId = String(a.projectId ?? a.project_id ?? '').trim();
+    if (!linuxUser && projectId) {
+      const proj = projects.find((p) => String(p.id) === projectId);
+      if (proj) {
+        linuxUser = String(proj.linux_user ?? proj.linuxUser ?? '').trim();
+      }
+    }
+    if (!linuxUser) {
+      linuxUser = settings.guestUsername;
+      if (projectId) {
+        notes.push(
+          `帳戶 ${username} 綁專案但無 linuxUser — 暫用全域 guest「${linuxUser}」（請重建 FTP 帳戶）`,
+        );
+      }
+    }
+
     const uc = join(paths.userConfDir, username);
-    writeFileSync(
-      uc,
-      [`local_root=${home}`, input.db ? '' : '', 'write_enable=YES', ''].filter(Boolean).join('\n'),
-      'utf8',
-    );
+    // Per-user guest_username overrides global guest — files owned by project user
+    const confLines = [
+      `local_root=${home}`,
+      `guest_username=${linuxUser}`,
+      'write_enable=YES',
+      'local_umask=022',
+      '',
+    ];
+    writeFileSync(uc, confLines.join('\n'), 'utf8');
     written.push(uc);
     list.push({ username, home });
+    // Persist resolved linuxUser for apply chown
+    if (a.linuxUser !== linuxUser && projectId) {
+      try {
+        updateResource(input.db, 'ftp_accounts', String(a.id), { linuxUser });
+      } catch {
+        /* best-effort */
+      }
+    }
   }
 
   writeFileSync(paths.mapPath, mapLines.join('\n') + (mapLines.length ? '\n' : ''), 'utf8');
@@ -554,11 +607,14 @@ export async function applyFtpsService(input: {
       status: cpPam.exitCode === 0 ? 'ok' : 'failed',
     });
 
-    // homes ownership
-    await input.host.runCommand(
-      ['bash', '-c', `chown -R ${gu}:${gu} ${JSON.stringify(paths.homes)} 2>/dev/null || true`],
-      { timeoutMs: 30_000 },
-    );
+    // Ownership: project-bound jails → project linuxUser; FTPS-only homes → guest
+    const chownNotes = await chownFtpAccountHomes(input.host, input.db, settings.guestUsername);
+    notes.push(...chownNotes);
+    steps.push({
+      name: '對齊 jail 擁有權',
+      status: 'ok',
+      detail: chownNotes.slice(0, 3).join('；') || '完成',
+    });
 
     const en = await input.host.runCommand(['systemctl', 'enable', '--now', 'vsftpd'], {
       timeoutMs: 60_000,
@@ -670,6 +726,11 @@ export async function applyFtpAccountReal(input: {
   const steps: FtpsStep[] = [
     { name: '寫入帳戶檔', status: 'ok', detail: home },
   ];
+  if (input.host.executeEnabled() && input.host.isRoot()) {
+    const settings = loadFtpsSettings(input.db);
+    const ch = await chownFtpAccountHomes(input.host, input.db, settings.guestUsername);
+    notes.push(...ch);
+  }
 
   // If system already applied before, try reload
   const can = input.host.executeEnabled() && input.host.isRoot();
@@ -748,6 +809,52 @@ export async function applyFtpAccountReal(input: {
     executed: full.executed,
     steps: full.steps as FtpsStep[],
   };
+}
+
+/**
+ * chown each FTP jail to its project linuxUser (or guest for unbound accounts).
+ */
+export async function chownFtpAccountHomes(
+  host: HostExecutor,
+  db: JsonStore,
+  fallbackGuest: string,
+): Promise<string[]> {
+  const notes: string[] = [];
+  const projects = (db.snapshot.projects ?? []) as unknown as Array<Record<string, unknown>>;
+  for (const a of listResources(db, 'ftp_accounts')) {
+    const home = String(a.homePath ?? '').trim();
+    if (!home || !existsSync(home)) continue;
+    let user = String(a.linuxUser ?? a.linux_user ?? '').trim();
+    const projectId = String(a.projectId ?? a.project_id ?? '').trim();
+    if (!user && projectId) {
+      const proj = projects.find((p) => String(p.id) === projectId);
+      user = String(proj?.linux_user ?? proj?.linuxUser ?? '').trim();
+    }
+    if (!user) user = fallbackGuest;
+    // Verify system user exists
+    const idCheck = await host.runCommand(
+      ['bash', '-c', `id ${JSON.stringify(user)} >/dev/null 2>&1; echo $?`],
+      { timeoutMs: 5_000 },
+    );
+    if (!idCheck.stdout.trim().endsWith('0') && idCheck.stdout.trim() !== '0') {
+      notes.push(`略過 chown ${home}：系統用戶「${user}」不存在（請先建立專案系統用戶）`);
+      continue;
+    }
+    const r = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        `chown -R ${JSON.stringify(user)}:${JSON.stringify(user)} ${JSON.stringify(home)} 2>&1; chmod u+rwX,g+rX,o-rwx ${JSON.stringify(home)} 2>/dev/null || true`,
+      ],
+      { timeoutMs: 60_000 },
+    );
+    if (r.exitCode === 0) {
+      notes.push(`chown ${user} → ${home}`);
+    } else {
+      notes.push(`chown 失敗 ${home}：${(r.stderr || r.stdout).slice(0, 120)}`);
+    }
+  }
+  return notes;
 }
 
 /** Home path options for panel select */

@@ -153,6 +153,12 @@ export function planProjectIsolation(input: {
     `mkdir -p ${homeDir}/app ${homeDir}/logs ${homeDir}/tmp`,
     `chown -R ${linuxUser}:${linuxGroup} ${homeDir}`,
     `chmod 750 ${homeDir}`,
+    // ysk-web: allow www-data to read static trees (see project-web-group.ts)
+    `groupadd --system ysk-web 2>/dev/null || true`,
+    `id www-data >/dev/null 2>&1 && usermod -aG ysk-web www-data 2>/dev/null || true`,
+    `usermod -aG ysk-web ${linuxUser} 2>/dev/null || true`,
+    `chgrp -R ysk-web ${homeDir} 2>/dev/null || true`,
+    `chmod -R g+rX ${homeDir}/app ${homeDir}/app/public ${homeDir}/public 2>/dev/null || true`,
   ];
   return {
     project,
@@ -161,6 +167,7 @@ export function planProjectIsolation(input: {
       '每個專案以獨立 Linux 用戶／群組運作',
       `home：${homeDir}`,
       `user：${linuxUser}`,
+      'ysk-web 群組供 Nginx/www-data 讀靜態（非 world-readable）',
       '需 root + YSK_EXECUTE 才會真正 useradd；控制面不會假裝成功',
     ],
   };

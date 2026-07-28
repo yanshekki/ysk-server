@@ -52,3 +52,32 @@
 - 刪 home 僅允許白名單路徑（canonical / 陰影 / legacy dataDir）
 - 指令皆模板化，無任意 shell 注入
 - 預設 shell：`/usr/sbin/nologin`
+
+## FTPS／檔案／備份（與專案 user 對齊）
+
+| 入口 | 行為 |
+|------|------|
+| **專案 FTP 帳戶** | 虛擬用戶 `user_conf` 設 `guest_username={linuxUser}`，上傳檔 owner = 專案用戶 |
+| **套用 FTPS** | 對每個 jail `chown` 到對應 `linuxUser`（缺 user 則 notes） |
+| **檔案管理 project:** | 寫入／上傳後 `chown`（root 模式）；response 含 `chowned` |
+| **Git 同步** | 成功後 `chown` home |
+| **備份還原** | 成功後 `chown` home（傳入 linuxUser） |
+| **Nginx 靜態** | 群組 `ysk-web`：專案 user + www-data；home `750`、public `g+rX` |
+| **Cron（專案）** | 指令包 `runuser -u {linuxUser} -- bash -lc '…'` |
+| **SFTP 公鑰** | 可綁 `projectId` → 寫入 `{home}/.ssh/authorized_keys` 並 chown |
+
+degraded（無 root）時仍可寫控制面，但 **不會假裝** 已對齊 owner。
+
+### Nginx 讀取（ysk-web）
+
+provision 時自動：
+
+```bash
+groupadd --system ysk-web
+usermod -aG ysk-web www-data
+usermod -aG ysk-web $linuxUser
+chgrp -R ysk-web $home && chmod 750 $home
+chmod -R g+rX $home/app/public   # 等
+```
+
+www-data 需重新登入/session 才載入新群組（重啟 php-fpm/nginx 或重開 session）。

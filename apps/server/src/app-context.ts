@@ -114,7 +114,8 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
 
   const host = new LocalHostExecutor({
     executeEnabled: opts.executeEnabled,
-    allowedWriteRoots: [dataDir, '/tmp'],
+    // Project homes live under /home/ysk-server-{id}; allow control-plane chown/writes
+    allowedWriteRoots: [dataDir, '/tmp', '/home'],
   });
 
   const projects = new ProjectService(projectRepo, host, dataDir, audit);

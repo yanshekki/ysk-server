@@ -453,17 +453,42 @@ export function createHttpServer(ctx: AppContext): Server {
           username?: string;
           publicKey?: string;
           comment?: string;
+          projectId?: string;
         };
-        const { addSftpKey } = await import('@ysk/core');
+        const { addSftpKey, chownSftpProjectKeys } = await import('@ysk/core');
+        let linuxUser: string | undefined;
+        let homeDir: string | undefined;
+        let username = data.username ?? '';
+        if (data.projectId) {
+          try {
+            const proj = ctx.projects.get(data.projectId);
+            linuxUser = proj.linuxUser;
+            homeDir = proj.homeDir;
+            username = username || proj.linuxUser;
+          } catch {
+            /* invalid project */
+          }
+        }
         const r = addSftpKey(ctx.db, ctx.dataDir, {
-          username: data.username ?? '',
+          username,
           publicKey: data.publicKey ?? '',
           comment: data.comment,
+          projectId: data.projectId,
+          linuxUser,
+          homeDir,
         });
+        if (r.ok && homeDir && linuxUser) {
+          const ch = await chownSftpProjectKeys(ctx.host, homeDir, linuxUser);
+          r.notes.push(...ch);
+        }
         ctx.audit.append({
           actor: user.username,
           action: 'sftp.key.add',
-          detail: { username: data.username, ok: r.ok },
+          detail: {
+            username: data.username,
+            projectId: data.projectId,
+            ok: r.ok,
+          },
           ok: r.ok,
         });
         return sendJson(res, r.ok ? 201 : 422, r);
@@ -2125,6 +2150,8 @@ export function createHttpServer(ctx: AppContext): Server {
           projectId: data.projectId,
           archiveName: data.name,
           homeDir: project.home_dir,
+          linuxUser: project.linux_user,
+          linuxGroup: project.linux_group || project.linux_user,
           mode: data.mode,
         });
         ctx.audit.append({
@@ -3197,10 +3224,31 @@ export function createHttpServer(ctx: AppContext): Server {
           projectId: proj.id,
           projectHome: proj.homeDir,
           linuxUser: proj.linuxUser,
+          linuxGroup: proj.linuxGroup || proj.linuxUser,
           username: data.username,
           password: data.password ?? '',
           homeSubdir: data.homeSubdir,
         });
+        // Best-effort chown jail when root (before vsftpd apply)
+        if (
+          result.ok &&
+          ctx.host.executeEnabled() &&
+          ctx.host.isRoot() &&
+          proj.linuxUser &&
+          result.account?.homePath
+        ) {
+          const { chownProjectPath } = await import('@ysk/core');
+          const ch = await chownProjectPath(
+            ctx.host,
+            {
+              linuxUser: proj.linuxUser,
+              linuxGroup: proj.linuxGroup || proj.linuxUser,
+              homeDir: proj.homeDir,
+            },
+            String(result.account.homePath),
+          );
+          result.notes.push(...ch.notes);
+        }
         ctx.audit.append({
           actor: user.username,
           action: 'project.ftp.create',

@@ -211,6 +211,9 @@ export async function restoreProjectBackup(input: {
   projectId: string;
   archiveName: string;
   homeDir: string;
+  /** When set, chown home to project user after restore (root+execute) */
+  linuxUser?: string;
+  linuxGroup?: string;
   /**
    * full = entire archive (default)
    * web = only files under project home (strip to app/ when possible)
@@ -255,13 +258,17 @@ export async function restoreProjectBackup(input: {
       ['tar', '-xzf', archivePath, '-C', input.homeDir],
       { timeoutMs: 180_000 },
     );
+    const notes =
+      r2.exitCode === 0
+        ? [`已選擇性還原 (web) 到 ${input.homeDir}`]
+        : [`web 還原失敗: ${r2.stderr}`];
+    if (r2.exitCode === 0) {
+      notes.push(...(await chownAfterRestore(input)));
+    }
     return {
       ok: r2.exitCode === 0,
       archivePath,
-      notes:
-        r2.exitCode === 0
-          ? [`已選擇性還原 (web) 到 ${input.homeDir}`]
-          : [`web 還原失敗: ${r2.stderr}`],
+      notes,
       commandResults: [
         { argv: ['tar', '-xzf', archivePath, '-C', input.homeDir], exitCode: r2.exitCode, stderr: r2.stderr },
       ],
@@ -288,12 +295,38 @@ export async function restoreProjectBackup(input: {
       };
     }
   }
+  const notes = [`已從 ${safeName} 完整還原到專案目錄`, ...(await chownAfterRestore(input))];
   return {
     ok: true,
     archivePath,
-    notes: [`已從 ${safeName} 完整還原到專案目錄`],
+    notes,
     commandResults: [{ argv: ['tar', '-xzf', archivePath], exitCode: 0, stderr: '' }],
   };
+}
+
+async function chownAfterRestore(input: {
+  host: HostExecutor;
+  homeDir: string;
+  linuxUser?: string;
+  linuxGroup?: string;
+}): Promise<string[]> {
+  const u = input.linuxUser?.trim();
+  if (!u) return [];
+  if (!input.host.executeEnabled() || !input.host.isRoot()) {
+    return ['還原後未 chown（需 root + YSK_EXECUTE）'];
+  }
+  const g = (input.linuxGroup || u).trim();
+  const r = await input.host.runCommand(
+    [
+      'bash',
+      '-c',
+      `chown -R ${JSON.stringify(u)}:${JSON.stringify(g)} ${JSON.stringify(input.homeDir)} 2>&1`,
+    ],
+    { timeoutMs: 120_000 },
+  );
+  return r.exitCode === 0
+    ? [`已 chown ${u}:${g} → ${input.homeDir}`]
+    : [`chown 失敗：${(r.stderr || r.stdout).slice(0, 120)}`];
 }
 
 /** Delete one managed backup archive (path constrained). */
@@ -349,6 +382,20 @@ export interface CronJobRecord {
   last_install?: Record<string, unknown>;
 }
 
+/**
+ * Wrap project-scoped cron command to run as project Linux user.
+ * Avoid double-wrapping if already uses runuser.
+ */
+export function wrapCronCommandAsLinuxUser(command: string, linuxUser: string): string {
+  const cmd = command.trim();
+  const u = linuxUser.trim();
+  if (!u || !cmd) return cmd;
+  if (/\brunuser\s+-u\b/.test(cmd) || cmd.includes(`-u ${u}`)) return cmd;
+  // Single-quote for bash -lc
+  const quoted = `'${cmd.replace(/'/g, `'\\''`)}'`;
+  return `runuser -u ${u} -- bash -lc ${quoted}`;
+}
+
 export class CronJobService {
   constructor(
     private readonly db: YskDatabase,
@@ -362,25 +409,41 @@ export class CronJobService {
     return all.filter((j) => j.project_id === projectId).map((j) => ({ ...j }));
   }
 
+  /** Resolve project linux_user from DB when projectId set */
+  private resolveProjectLinuxUser(projectId?: string): string | undefined {
+    if (!projectId) return undefined;
+    const p = this.db.snapshot.projects.find((x) => x.id === projectId);
+    return p?.linux_user?.trim() || undefined;
+  }
+
   create(input: {
     projectId?: string;
     user: string;
     schedule: string;
     command: string;
     actor: string;
+    /** Skip auto runuser wrap (e.g. system backup jobs) */
+    skipRunuserWrap?: boolean;
   }): CronJobRecord {
+    const projectLinux = this.resolveProjectLinuxUser(input.projectId);
+    let command = input.command;
+    let user = input.user;
+    if (input.projectId && projectLinux && !input.skipRunuserWrap) {
+      command = wrapCronCommandAsLinuxUser(command, projectLinux);
+      user = projectLinux;
+    }
     planCronJob({
-      user: input.user,
+      user,
       schedule: input.schedule,
-      command: input.command,
+      command,
     });
     const now = new Date().toISOString();
     const row: CronJobRecord = {
       id: randomUUID(),
       project_id: input.projectId,
-      user: input.user,
+      user,
       schedule: input.schedule,
-      command: input.command,
+      command,
       enabled: true,
       created_at: now,
       updated_at: now,
@@ -465,6 +528,7 @@ export class CronJobService {
       schedule,
       command: `ysk-server backup all # ${marker}`,
       actor: 'system',
+      skipRunuserWrap: true,
     });
   }
 

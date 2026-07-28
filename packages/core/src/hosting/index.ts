@@ -4,6 +4,8 @@ export * from './project-ops.js';
 export * from './project-user-run.js';
 export * from './project-os-user.js';
 export * from './project-isolation-status.js';
+export * from './project-ownership.js';
+export * from './project-web-group.js';
 export * from './runtime.js';
 export * from './database.js';
 export * from './nginx-ssl.js';

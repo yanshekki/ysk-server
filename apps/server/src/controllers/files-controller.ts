@@ -1,8 +1,10 @@
 /**
  * File manager routes — ownCloud-style sandboxed API.
+ * Project roots: after write, chown to project linuxUser when root+execute.
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { join } from 'node:path';
 import {
   FileManager,
   publicFilesRoot,
@@ -14,20 +16,54 @@ import {
   bumpShareDownload,
   listFavorites,
   toggleFavorite,
+  chownProjectPath,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson } from '../http/util.js';
 
-function resolveRoot(ctx: AppContext, rootParam: string): { root: string; rootKey: string } {
+function resolveRoot(
+  ctx: AppContext,
+  rootParam: string,
+): {
+  root: string;
+  rootKey: string;
+  owner?: { linuxUser: string; linuxGroup: string; homeDir: string };
+} {
   if (rootParam === 'public' || !rootParam) {
     return { root: publicFilesRoot(ctx.dataDir), rootKey: 'public' };
   }
   if (rootParam.startsWith('project:')) {
     const projectId = rootParam.slice('project:'.length);
     const proj = ctx.projects.get(projectId);
-    return { root: proj.homeDir, rootKey: rootParam };
+    return {
+      root: proj.homeDir,
+      rootKey: rootParam,
+      owner: {
+        linuxUser: proj.linuxUser,
+        linuxGroup: proj.linuxGroup || proj.linuxUser,
+        homeDir: proj.homeDir,
+      },
+    };
   }
   throw Object.assign(new Error('root must be public or project:<id>'), { httpStatus: 400 });
+}
+
+async function chownProjectRels(
+  ctx: AppContext,
+  owner: { linuxUser: string; linuxGroup: string; homeDir: string } | undefined,
+  relPaths: string[],
+): Promise<{ chowned: boolean; notes: string[] }> {
+  if (!owner?.linuxUser) return { chowned: false, notes: [] };
+  const notes: string[] = [];
+  let any = false;
+  for (const rel of relPaths) {
+    if (!rel || rel === '.' || rel === '/') continue;
+    const abs = join(owner.homeDir, rel.replace(/^\/+/, ''));
+    const r = await chownProjectPath(ctx.host, owner, abs);
+    notes.push(...r.notes);
+    if (r.ok) any = true;
+  }
+  return { chowned: any, notes };
 }
 
 export async function handleFilesRoutes(
@@ -160,8 +196,9 @@ export async function handleFilesRoutes(
   const rootParam = url.searchParams.get('root') ?? 'public';
   let root: string;
   let rootKey: string;
+  let owner: { linuxUser: string; linuxGroup: string; homeDir: string } | undefined;
   try {
-    ({ root, rootKey } = resolveRoot(ctx, rootParam));
+    ({ root, rootKey, owner } = resolveRoot(ctx, rootParam));
   } catch (e) {
     sendJson(res, 400, {
       ok: false,
@@ -230,14 +267,15 @@ export async function handleFilesRoutes(
     const result = data.base64
       ? fm.writeBase64(data.path, data.base64)
       : fm.writeText(data.path, data.content ?? '');
+    const own = await chownProjectRels(ctx, owner, [data.path]);
     ctx.audit.append({
       actor: user.username,
       action: 'files.write',
       resource: data.path,
-      detail: { root: rootKey, bytes: result.bytes },
+      detail: { root: rootKey, bytes: result.bytes, chowned: own.chowned },
       ok: true,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
 
@@ -254,19 +292,22 @@ export async function handleFilesRoutes(
       return true;
     }
     const results: Array<{ path: string; bytes: number }> = [];
+    const paths: string[] = [];
     for (const f of files.slice(0, 50)) {
       const name = f.name.replace(/[/\\]/g, '');
       if (!name) continue;
       const path = dir === '.' ? name : `${dir}/${name}`;
       results.push(fm.writeBase64(path, f.base64));
+      paths.push(path);
     }
+    const own = await chownProjectRels(ctx, owner, paths);
     ctx.audit.append({
       actor: user.username,
       action: 'files.upload',
-      detail: { root: rootKey, count: results.length, dir },
+      detail: { root: rootKey, count: results.length, dir, chowned: own.chowned },
       ok: true,
     });
-    sendJson(res, 200, { ok: true, results });
+    sendJson(res, 200, { ok: true, results, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
 
@@ -278,14 +319,15 @@ export async function handleFilesRoutes(
       return true;
     }
     const result = fm.mkdir(data.path.trim());
+    const own = await chownProjectRels(ctx, owner, [data.path.trim()]);
     ctx.audit.append({
       actor: user.username,
       action: 'files.mkdir',
       resource: data.path,
-      detail: { root: rootKey },
+      detail: { root: rootKey, chowned: own.chowned },
       ok: true,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
 
@@ -297,14 +339,15 @@ export async function handleFilesRoutes(
       return true;
     }
     const result = fm.createTextFile(data.path.trim(), data.content ?? '');
+    const own = await chownProjectRels(ctx, owner, [data.path.trim()]);
     ctx.audit.append({
       actor: user.username,
       action: 'files.create_text',
       resource: data.path,
-      detail: { root: rootKey },
+      detail: { root: rootKey, chowned: own.chowned },
       ok: true,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
 
@@ -331,14 +374,15 @@ export async function handleFilesRoutes(
       return true;
     }
     const result = fm.rename(data.from, data.to);
+    const own = await chownProjectRels(ctx, owner, [data.to]);
     ctx.audit.append({
       actor: user.username,
       action: 'files.rename',
       resource: data.from,
-      detail: { root: rootKey, to: data.to },
+      detail: { root: rootKey, to: data.to, chowned: own.chowned },
       ok: true,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, chowned: own.chowned });
     return true;
   }
 
@@ -350,14 +394,15 @@ export async function handleFilesRoutes(
       return true;
     }
     const result = fm.copy(data.from, data.to);
+    const own = await chownProjectRels(ctx, owner, [data.to]);
     ctx.audit.append({
       actor: user.username,
       action: 'files.copy',
       resource: data.from,
-      detail: { root: rootKey, to: data.to },
+      detail: { root: rootKey, to: data.to, chowned: own.chowned },
       ok: true,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, chowned: own.chowned });
     return true;
   }
 
@@ -369,14 +414,15 @@ export async function handleFilesRoutes(
       return true;
     }
     const result = fm.move(data.from, data.to);
+    const own = await chownProjectRels(ctx, owner, [data.to]);
     ctx.audit.append({
       actor: user.username,
       action: 'files.move',
       resource: data.from,
-      detail: { root: rootKey, to: data.to },
+      detail: { root: rootKey, to: data.to, chowned: own.chowned },
       ok: true,
     });
-    sendJson(res, 200, result);
+    sendJson(res, 200, { ...result, chowned: own.chowned });
     return true;
   }
 
