@@ -3,7 +3,7 @@
  * and Nginx publish with correct upstream port.
  */
 
-import { spawn, type ChildProcess } from 'node:child_process';
+import { type ChildProcess } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -43,6 +43,21 @@ import { resolveManagedCertPaths } from './ssl-certs.js';
 import { applyPhpFpmPool } from './php-fpm.js';
 import { assertQuotaMb, assertWithinQuota, checkProjectQuota } from './quota.js';
 import { applyPm2Start, applyPm2Stop, writePm2Ecosystem } from './pm2-apply.js';
+import {
+  assertOsIsolationForDeploy,
+  canRunAsProjectUser,
+  chownProjectHome,
+  runAsProjectUser,
+  shellQuote,
+  spawnAsProjectUser,
+} from './project-user-run.js';
+import {
+  applyOsUserLimits,
+  chownHomeNow,
+  probeOsUser,
+  type ApplyOsLimitsResult,
+  type OsUserLive,
+} from './project-os-user.js';
 
 export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' | 'failed';
 
@@ -117,6 +132,7 @@ export class ProjectOpsService {
         httpStatus: 400,
       });
     }
+    assertOsIsolationForDeploy(row, this.host, 'Deploy Node');
     await assertWithinQuota({
       host: this.host,
       projectId,
@@ -127,6 +143,13 @@ export class ProjectOpsService {
 
     const notes: string[] = [];
     const written: string[] = [];
+    if (!canRunAsProjectUser(row, this.host)) {
+      notes.push(
+        '隔離模式：degraded — 行程可能以控制面用戶執行；生產請 root + YSK_EXECUTE 並建立系統用戶',
+      );
+    } else {
+      notes.push(`隔離模式：以專案用戶 ${row.linux_user} 運作`);
+    }
     const entry = opts.entry ?? 'server.js';
     const nodeBinary = resolveNodeBinary();
     notes.push(`使用 Node 執行檔：${nodeBinary}`);
@@ -161,6 +184,7 @@ export class ProjectOpsService {
     });
     written.push(apply.envPath, apply.unitPath, apply.appDir);
     notes.push(...apply.notes);
+    await chownProjectHome(this.host, row, notes);
 
     const appDir = apply.appDir;
     const entryPath = join(appDir, entry);
@@ -201,6 +225,7 @@ export class ProjectOpsService {
     written.push(eco.ecosystemPath);
     notes.push(...eco.notes);
     pm2App = eco.appName;
+    await chownProjectHome(this.host, row, notes);
 
     if (preferSystemd && this.host.executeEnabled() && this.host.isRoot()) {
       // Production path: install unit and start via systemd
@@ -274,7 +299,11 @@ export class ProjectOpsService {
       try {
         const outFd = openSync(logOut, 'a');
         const errFd = openSync(logErr, 'a');
-        child = spawn(nodeBinary, [entry], {
+        const shellCmd = `${shellQuote(nodeBinary)} ${shellQuote(entry)}`;
+        const spawned = spawnAsProjectUser({
+          row,
+          host: this.host,
+          shellCmd,
           cwd: appDir,
           env: {
             ...process.env,
@@ -282,9 +311,12 @@ export class ProjectOpsService {
             PORT: String(port),
             HOST: '127.0.0.1',
           },
-          detached: true,
-          stdio: ['ignore', outFd, errFd],
+          logOutFd: outFd,
+          logErrFd: errFd,
+          notes,
         });
+        child = spawned.child;
+        if (spawned.mode === 'degraded') degraded = true;
         closeSync(outFd);
         closeSync(errFd);
       } catch (err) {
@@ -1185,6 +1217,10 @@ export class ProjectOpsService {
         });
       }
     }
+    // PHP production paths require OS user (FPM pool runs as project user)
+    if (row.runtime === 'php') {
+      assertOsIsolationForDeploy(row, this.host, 'Deploy PHP');
+    }
     await assertWithinQuota({
       host: this.host,
       projectId,
@@ -1194,6 +1230,11 @@ export class ProjectOpsService {
     });
     const notes: string[] = [];
     const written: string[] = [];
+    if (row.runtime === 'php' && canRunAsProjectUser(row, this.host)) {
+      notes.push(`PHP-FPM pool 用戶：${row.linux_user}（專案隔離）`);
+    } else if (row.runtime === 'php') {
+      notes.push('PHP 隔離 degraded — 未以專案 Linux 用戶（需 root + 建立系統用戶）');
+    }
     const port = opts.port ?? row.port ?? (await findFreePort(8100, 8999));
     const docRoot = resolveProjectDocRoot(row);
     mkdirSync(docRoot, { recursive: true });
@@ -1222,6 +1263,7 @@ export class ProjectOpsService {
       host: this.host,
       enableSite: Boolean(canProd && opts.enableApache),
     });
+    await chownProjectHome(this.host, row, notes);
     written.push(...apply.written);
     notes.push(...apply.notes);
 
@@ -1361,11 +1403,16 @@ export class ProjectOpsService {
 
     const outFd = openSync(logOut, 'a');
     const errFd = openSync(logErr, 'a');
-    const child = spawn(phpBin, ['-S', `127.0.0.1:${port}`, '-t', docRoot], {
+    const phpShell = `${shellQuote(phpBin)} -S 127.0.0.1:${port} -t ${shellQuote(docRoot)}`;
+    const { child, mode: phpMode } = spawnAsProjectUser({
+      row,
+      host: this.host,
+      shellCmd: phpShell,
       cwd: docRoot,
       env: { ...process.env, PORT: String(port) },
-      detached: true,
-      stdio: ['ignore', outFd, errFd],
+      logOutFd: outFd,
+      logErrFd: errFd,
+      notes,
     });
     closeSync(outFd);
     closeSync(errFd);
@@ -1385,7 +1432,11 @@ export class ProjectOpsService {
     }
     child.unref();
     writeFileSync(pidfile, `${pid}\n`, 'utf8');
-    notes.push(`PHP 內建伺服器 pid=${pid} @ 127.0.0.1:${port}`);
+    notes.push(
+      `PHP 內建伺服器 pid=${pid} @ 127.0.0.1:${port}` +
+        (phpMode === 'isolated' ? `（user=${row.linux_user}）` : '（degraded）'),
+    );
+    await chownProjectHome(this.host, row, notes);
 
     const url = `http://127.0.0.1:${port}/`;
     const health = await waitHttpOk(url, { timeoutMs: opts.healthTimeoutMs ?? 12_000 });
@@ -1459,11 +1510,16 @@ export class ProjectOpsService {
   }
 
   /**
-   * Set systemd resource limits (MemoryMax / CPUQuota) stored for next deploy.
+   * Set systemd resource limits stored for next deploy (+ optional live set-property via applyOsLimits).
    */
   setResources(
     projectId: string,
-    resources: { memoryMax?: string; cpuQuotaPercent?: number },
+    resources: {
+      memoryMax?: string;
+      cpuQuotaPercent?: number;
+      tasksMax?: number;
+      limitNofile?: number;
+    },
     actor: string,
   ): OpsApplyResult {
     const row = this.require(projectId);
@@ -1480,9 +1536,29 @@ export class ProjectOpsService {
     ) {
       throw new YskError(ErrorCodes.VALIDATION, 'CPU 配額須為 1–10000', { httpStatus: 400 });
     }
+    if (
+      resources.tasksMax != null &&
+      (!Number.isFinite(resources.tasksMax) ||
+        resources.tasksMax < 1 ||
+        resources.tasksMax > 1_000_000)
+    ) {
+      throw new YskError(ErrorCodes.VALIDATION, 'TasksMax 須為 1–1000000', { httpStatus: 400 });
+    }
+    if (
+      resources.limitNofile != null &&
+      (!Number.isFinite(resources.limitNofile) ||
+        resources.limitNofile < 64 ||
+        resources.limitNofile > 10_000_000)
+    ) {
+      throw new YskError(ErrorCodes.VALIDATION, 'LimitNOFILE 須為 64–10000000', {
+        httpStatus: 400,
+      });
+    }
     this.projects.updateRuntimeState(projectId, {
       memory_max: resources.memoryMax,
       cpu_quota_percent: resources.cpuQuotaPercent,
+      tasks_max: resources.tasksMax,
+      limit_nofile: resources.limitNofile,
     });
     this.audit?.append({
       actor,
@@ -1499,14 +1575,16 @@ export class ProjectOpsService {
       notes: [
         `memoryMax=${resources.memoryMax ?? row.memory_max ?? 'unset'}`,
         `cpuQuota=${resources.cpuQuotaPercent ?? row.cpu_quota_percent ?? 'unset'}%`,
-        'Re-deploy Node to rewrite systemd unit with limits',
+        `tasksMax=${resources.tasksMax ?? row.tasks_max ?? 'unset'}`,
+        `limitNofile=${resources.limitNofile ?? row.limit_nofile ?? 'unset'}`,
+        '已寫入控制面；請用「套用限制到 OS」或重新 Deploy 寫入 unit',
       ],
       written: [],
     };
   }
 
   /**
-   * Set soft disk quota (MiB) and return current usage.
+   * Set soft disk quota (MiB); hard setquota runs on applyOsLimits when available.
    */
   async setQuota(
     projectId: string,
@@ -1534,10 +1612,125 @@ export class ProjectOpsService {
       projectId,
       processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
       listening: false,
-      notes: [`quota=${quotaMb}MB`, `used=${quota.usedMb}MB`, ...quota.notes],
+      notes: [
+        `quota=${quotaMb}MB`,
+        `used=${quota.usedMb}MB`,
+        ...quota.notes,
+        '軟配額已存；硬 setquota 請「套用限制到 OS」',
+      ],
       written: [],
       quota,
     };
+  }
+
+  async getOsUser(projectId: string): Promise<{
+    live: OsUserLive;
+    limits: {
+      quotaMb?: number;
+      memoryMax?: string;
+      cpuQuotaPercent?: number;
+      tasksMax?: number;
+      limitNofile?: number;
+      shell?: string;
+      accountLocked?: boolean;
+    };
+  }> {
+    const row = this.require(projectId);
+    const live = await probeOsUser(this.host, row);
+    return {
+      live,
+      limits: {
+        quotaMb: row.quota_mb,
+        memoryMax: row.memory_max,
+        cpuQuotaPercent: row.cpu_quota_percent,
+        tasksMax: row.tasks_max,
+        limitNofile: row.limit_nofile,
+        shell: row.shell ?? '/usr/sbin/nologin',
+        accountLocked: row.account_locked,
+      },
+    };
+  }
+
+  /**
+   * Patch shell / lock + resource fields then apply to OS (best-effort).
+   */
+  async patchOsUser(
+    projectId: string,
+    patch: {
+      shell?: string;
+      accountLocked?: boolean;
+      memoryMax?: string;
+      cpuQuotaPercent?: number;
+      tasksMax?: number;
+      limitNofile?: number;
+      quotaMb?: number;
+    },
+    actor: string,
+  ): Promise<ApplyOsLimitsResult & { projectId: string }> {
+    this.require(projectId);
+    if (patch.shell != null) {
+      const s = patch.shell.trim();
+      if (!s.startsWith('/') || s.includes('..') || s.length > 128) {
+        throw new YskError(ErrorCodes.VALIDATION, 'shell 路徑無效', { httpStatus: 400 });
+      }
+    }
+    if (patch.quotaMb != null) assertQuotaMb(patch.quotaMb);
+    this.projects.updateRuntimeState(projectId, {
+      shell: patch.shell?.trim(),
+      account_locked: patch.accountLocked,
+      memory_max: patch.memoryMax,
+      cpu_quota_percent: patch.cpuQuotaPercent,
+      tasks_max: patch.tasksMax,
+      limit_nofile: patch.limitNofile,
+      quota_mb: patch.quotaMb,
+    });
+    const fresh = this.require(projectId);
+    const result = await applyOsUserLimits({
+      host: this.host,
+      row: fresh,
+      dataDir: this.dataDir,
+    });
+    this.audit?.append({
+      actor,
+      action: 'project.os_user_patch',
+      resource: projectId,
+      detail: { patch, result },
+      ok: result.ok,
+    });
+    return { ...result, projectId };
+  }
+
+  async applyOsLimits(projectId: string, actor: string): Promise<ApplyOsLimitsResult & { projectId: string }> {
+    const row = this.require(projectId);
+    const result = await applyOsUserLimits({
+      host: this.host,
+      row,
+      dataDir: this.dataDir,
+    });
+    this.audit?.append({
+      actor,
+      action: 'project.os_user_apply_limits',
+      resource: projectId,
+      detail: result,
+      ok: result.ok,
+    });
+    return { ...result, projectId };
+  }
+
+  async chownOsHome(
+    projectId: string,
+    actor: string,
+  ): Promise<{ ok: boolean; notes: string[]; projectId: string }> {
+    const row = this.require(projectId);
+    const r = await chownHomeNow(this.host, row);
+    this.audit?.append({
+      actor,
+      action: 'project.os_user_chown',
+      resource: projectId,
+      detail: r,
+      ok: r.ok,
+    });
+    return { ...r, projectId };
   }
 
   async quotaStatus(projectId: string) {
@@ -1617,6 +1810,7 @@ export class ProjectOpsService {
       );
     }
 
+    assertOsIsolationForDeploy(row, this.host, 'Deploy');
     await assertWithinQuota({
       host: this.host,
       projectId,
@@ -1627,6 +1821,13 @@ export class ProjectOpsService {
 
     const notes: string[] = [];
     const written: string[] = [];
+    if (!canRunAsProjectUser(row, this.host)) {
+      notes.push(
+        '隔離模式：degraded — build／行程可能以控制面用戶執行；生產請建立系統用戶',
+      );
+    } else {
+      notes.push(`隔離模式：以專案用戶 ${row.linux_user} 建置與啟動`);
+    }
     const appDir = join(row.home_dir, 'app');
     mkdirSync(appDir, { recursive: true });
     mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
@@ -1653,51 +1854,47 @@ export class ProjectOpsService {
 
     if (cmds.build && !opts.skipBuild) {
       notes.push(`建置：${cmds.build}`);
-      const build = await this.host.runCommand(['bash', '-lc', cmds.build], {
+      const build = await runAsProjectUser(this.host, row, cmds.build, {
         timeoutMs: 600_000,
         cwd: appDir,
-      } as { timeoutMs: number });
-      // HostExecutor may not support cwd — fallback via bash -c
+        notes,
+      });
       if (build.exitCode !== 0) {
-        const build2 = await this.host.runCommand(
-          ['bash', '-c', `cd ${JSON.stringify(appDir)} && ${cmds.build}`],
-          { timeoutMs: 600_000 },
-        );
-        if (build2.exitCode !== 0) {
-          notes.push(`建置失敗：${(build2.stderr || build2.stdout || build.stderr).slice(0, 400)}`);
-          this.projects.updateRuntimeState(projectId, {
-            process_status: 'failed',
-            status: 'failed',
-            port,
-          });
-          return {
-            ok: false,
-            projectId,
-            port,
-            processStatus: 'failed',
-            listening: false,
-            notes,
-            written,
-            degraded: true,
-            requiresRoot: !this.host.isRoot(),
-            requiresExecute: !this.host.executeEnabled(),
-          };
-        }
-        notes.push('建置完成');
-      } else {
-        notes.push('建置完成');
+        notes.push(`建置失敗：${(build.stderr || build.stdout || '').slice(0, 400)}`);
+        this.projects.updateRuntimeState(projectId, {
+          process_status: 'failed',
+          status: 'failed',
+          port,
+        });
+        return {
+          ok: false,
+          projectId,
+          port,
+          processStatus: 'failed',
+          listening: false,
+          notes,
+          written,
+          degraded: true,
+          requiresRoot: !this.host.isRoot(),
+          requiresExecute: !this.host.executeEnabled(),
+        };
       }
+      notes.push('建置完成');
+      await chownProjectHome(this.host, row, notes);
     }
 
     const unitBody = renderProcessUnit({
       projectName: row.name,
       linuxUser: row.linux_user,
       appDir,
+      homeDir: row.home_dir,
       execStart: cmds.execStart,
       port,
       env: { PORT: String(port), HOST: '127.0.0.1' },
       memoryMax: row.memory_max,
       cpuQuotaPercent: row.cpu_quota_percent,
+      tasksMax: row.tasks_max,
+      limitNOFILE: row.limit_nofile,
     });
     const unitManaged = join(this.dataDir, 'systemd', `ysk-project-${row.linux_user}.service`);
     mkdirSync(join(this.dataDir, 'systemd'), { recursive: true });
@@ -1705,7 +1902,8 @@ export class ProjectOpsService {
     written.push(unitManaged);
     notes.push(`已寫入 systemd 範本：${unitManaged}`);
 
-    if (this.host.executeEnabled() && this.host.isRoot()) {
+    let unitActive = false;
+    if (this.host.executeEnabled() && this.host.isRoot() && row.os_provisioned) {
       const systemUnit = `/etc/systemd/system/ysk-project-${row.linux_user}.service`;
       try {
         writeFileSync(systemUnit, unitBody, 'utf8');
@@ -1715,23 +1913,26 @@ export class ProjectOpsService {
           ['systemctl', 'enable', '--now', `ysk-project-${row.linux_user}.service`],
           { timeoutMs: 30_000 },
         );
-        if (en.exitCode === 0) notes.push('已 enable --now 專案 unit');
-        else notes.push(`systemctl 啟動失敗：${en.stderr || en.stdout}`);
+        if (en.exitCode === 0) {
+          notes.push(`已 enable --now 專案 unit（User=${row.linux_user}）`);
+          unitActive = true;
+        } else notes.push(`systemctl 啟動失敗：${en.stderr || en.stdout}`);
       } catch (e) {
         notes.push(`寫入系統 unit 失敗：${e instanceof Error ? e.message : String(e)}`);
       }
     } else {
-      notes.push('未以系統 unit 啟動（需系統變更 + 管理員）— 改用 pidfile');
+      notes.push('未以系統 unit 啟動（需 root + 已隔離）— 改用 pidfile');
     }
 
     const pidfile = join(row.home_dir, 'app.pid');
     let pid: number | undefined;
-    // pidfile fallback if unit not running
-    const active = await this.host.runCommand(
-      ['systemctl', 'is-active', `ysk-project-${row.linux_user}.service`],
-      { timeoutMs: 5_000 },
-    );
-    const unitActive = active.stdout.trim() === 'active';
+    if (!unitActive) {
+      const active = await this.host.runCommand(
+        ['systemctl', 'is-active', `ysk-project-${row.linux_user}.service`],
+        { timeoutMs: 5_000 },
+      );
+      unitActive = active.stdout.trim() === 'active';
+    }
 
     if (!unitActive) {
       const logOut = join(row.home_dir, 'logs', 'app.out.log');
@@ -1739,15 +1940,19 @@ export class ProjectOpsService {
       try {
         const outFd = openSync(logOut, 'a');
         const errFd = openSync(logErr, 'a');
-        const child = spawn('bash', ['-lc', cmds.execStart], {
+        const { child, mode } = spawnAsProjectUser({
+          row,
+          host: this.host,
+          shellCmd: cmds.execStart,
           cwd: appDir,
           env: {
             ...process.env,
             PORT: String(port),
             HOST: '127.0.0.1',
           },
-          detached: true,
-          stdio: ['ignore', outFd, errFd],
+          logOutFd: outFd,
+          logErrFd: errFd,
+          notes,
         });
         closeSync(outFd);
         closeSync(errFd);
@@ -1755,7 +1960,9 @@ export class ProjectOpsService {
         if (pid) {
           child.unref();
           writeFileSync(pidfile, `${pid}\n`, 'utf8');
-          notes.push(`pidfile 啟動 pid=${pid}`);
+          notes.push(
+            `pidfile 啟動 pid=${pid}${mode === 'isolated' ? `（user=${row.linux_user}）` : '（degraded）'}`,
+          );
         } else {
           notes.push('pidfile 啟動未取得 pid');
         }
@@ -1763,6 +1970,7 @@ export class ProjectOpsService {
         notes.push(`pidfile 啟動失敗：${err instanceof Error ? err.message : String(err)}`);
       }
     }
+    await chownProjectHome(this.host, row, notes);
 
     const url = `http://127.0.0.1:${port}/`;
     const health = await waitHttpOk(url, { timeoutMs: opts.healthTimeoutMs ?? 15_000 });

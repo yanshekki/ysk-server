@@ -10,6 +10,7 @@ import { listSupportedRuntimes } from './runtime.js';
 import { probeRuntimes } from './runtime-probe.js';
 import { probePowerDns } from './powerdns-apply.js';
 import { probePm2 } from './pm2-apply.js';
+import { buildProjectIsolationReadinessItems } from './project-isolation-status.js';
 
 export type ReadinessLevel = 'ready' | 'degraded' | 'missing' | 'unknown';
 
@@ -52,6 +53,14 @@ export async function assessProductionReadiness(input: {
   host: HostExecutor;
   product?: string;
   version?: string;
+  /** Optional project list for isolation gate */
+  projects?: Array<{
+    id: string;
+    name: string;
+    linuxUser: string;
+    homeDir: string;
+    osProvisioned: boolean;
+  }>;
 }): Promise<ProductionReadinessReport> {
   const items: ReadinessItem[] = [];
   const push = (item: ReadinessItem) => items.push(item);
@@ -241,6 +250,13 @@ export async function assessProductionReadiness(input: {
     spec: '§5',
     fixHint: '建立郵件域名並於詳情頁套用',
   });
+
+  // Per-project OS isolation (independent Linux user + /home/ysk-server-{id})
+  if (input.projects) {
+    for (const item of buildProjectIsolationReadinessItems(input.projects)) {
+      push(item);
+    }
+  }
 
   const ready = items.filter((i) => i.level === 'ready').length;
   const degraded = items.filter((i) => i.level === 'degraded').length;

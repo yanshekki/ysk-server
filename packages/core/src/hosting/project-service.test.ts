@@ -20,10 +20,13 @@ describe('ProjectService real lifecycle', () => {
       runtimeVersion: '20',
       actor: 'admin',
     });
-    expect(created.project.linuxUser).toMatch(/^ysk_/);
+    expect(created.project.linuxUser).toMatch(/^ysks_[a-f0-9]{12}$/);
     expect(existsSync(created.project.homeDir)).toBe(true);
     expect(existsSync(join(created.project.homeDir, 'project.json'))).toBe(true);
-    expect(created.project.homeDir.startsWith(join(dir, 'projects'))).toBe(true);
+    // degraded: shadow under dataDir/homes/ysk-server-{id}
+    expect(created.project.homeDir.startsWith(join(dir, 'homes', 'ysk-server-'))).toBe(true);
+    expect(created.osProvision.ok).toBe(false);
+    expect(created.project.osProvisioned).toBe(false);
     const list = svc.list();
     expect(list).toHaveLength(1);
     expect(list[0].name).toBe('Demo Site');

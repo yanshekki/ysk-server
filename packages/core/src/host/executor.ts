@@ -249,6 +249,7 @@ function isMutatingArgv(argv: string[]): boolean {
     bin === 'groupadd' ||
     bin === 'groupdel' ||
     bin === 'usermod' ||
+    bin === 'runuser' ||
     bin === 'chown' ||
     bin === 'chmod' ||
     bin === 'cp' ||

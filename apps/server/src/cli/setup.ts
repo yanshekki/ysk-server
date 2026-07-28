@@ -59,7 +59,7 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     const config = buildConfigFromSetup({
       dataDir,
       listenHost: opts.listenHost ?? '127.0.0.1',
-      listenPort: opts.listenPort ?? 8787,
+      listenPort: opts.listenPort ?? 9287,
       adminUsername: opts.adminUsername ?? 'admin',
       locale: opts.locale ?? 'zh-TW',
       nonInteractive: Boolean(opts.nonInteractive),

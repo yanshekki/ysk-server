@@ -153,11 +153,19 @@ export function createHttpServer(ctx: AppContext): Server {
         } catch {
           /* allow unauthenticated summary for health gates */
         }
+        const projects = ctx.projects.list().map((p) => ({
+          id: p.id,
+          name: p.name,
+          linuxUser: p.linuxUser,
+          homeDir: p.homeDir,
+          osProvisioned: Boolean(p.osProvisioned),
+        }));
         const report = await assessProductionReadiness({
           dataDir: ctx.dataDir,
           host: ctx.host,
           product: PRODUCT_NAME,
           version: VERSION,
+          projects,
         });
         return sendJson(res, report.productionReady ? 200 : 503, report);
       }
@@ -783,6 +791,64 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const result = await ctx.projects.provisionOsIsolation(id, user.username);
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.getOsUser(id);
+        return sendJson(res, 200, result);
+      }
+
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          shell?: string;
+          accountLocked?: boolean;
+          memoryMax?: string;
+          cpuQuotaPercent?: number;
+          tasksMax?: number;
+          limitNofile?: number;
+          quotaMb?: number;
+        };
+        const result = await ctx.projectOps.patchOsUser(id, data, user.username);
+        return sendJson(res, result.ok || result.written ? 200 : 422, result);
+      }
+
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user\/apply-limits$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.applyOsLimits(id, user.username);
+        return sendJson(res, result.ok || result.written ? 200 : 422, result);
+      }
+
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user\/chown-home$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.chownOsHome(id, user.username);
+        return sendJson(res, result.ok ? 200 : 422, result);
+      }
+
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user\/migrate$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { removePreviousHome?: boolean };
+        const result = await ctx.projects.migrateOsIsolation(id, user.username, {
+          removePreviousHome: data.removePreviousHome !== false,
+        });
         return sendJson(res, result.ok ? 200 : 422, result);
       }
 
@@ -2430,7 +2496,7 @@ export function createHttpServer(ctx: AppContext): Server {
           roundcubePluginsDir?: string;
         };
         const panelBase =
-          data.panelBaseUrl || `http://127.0.0.1:${process.env.YSK_PORT || 8787}`;
+          data.panelBaseUrl || `http://127.0.0.1:${process.env.YSK_PORT || process.env.PORT || 9287}`;
         if (data.enableSystem) {
           const { enableRoundcubeSsoPlugin } = await import('@ysk/core');
           const r = await enableRoundcubeSsoPlugin({
@@ -3152,6 +3218,8 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           memoryMax?: string;
           cpuQuotaPercent?: number;
+          tasksMax?: number;
+          limitNofile?: number;
         };
         const result = ctx.projectOps.setResources(id, data, user.username);
         return sendJson(res, 200, result);

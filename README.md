@@ -13,7 +13,7 @@
 ```bash
 ysk-server readiness --data-dir .ysk --json
 # HTTP 200 only when productionReady (root + YSK_EXECUTE + nginx + node)
-curl -sS http://127.0.0.1:8787/api/v1/readiness | jq '.productionReady,.summary'
+curl -sS http://127.0.0.1:9287/api/v1/readiness | jq '.productionReady,.summary'
 ```
 
 See [docs/deploy/spec-readiness.md](docs/deploy/spec-readiness.md). Degraded mode is intentional fail-closed, not a fake complete product.
@@ -96,8 +96,8 @@ pnpm install
 pnpm build
 export YSK_ADMIN_PASSWORD=admin
 node apps/server/dist/cli.js setup --data-dir .ysk --non-interactive --force
-node apps/server/dist/cli.js serve --data-dir .ysk --port 8787
-# Open http://127.0.0.1:8787/  (Web UI + API)
+node apps/server/dist/cli.js serve --data-dir .ysk --port 9287
+# Open http://127.0.0.1:9287/  (Web UI + API)
 ```
 
 ## Install script (Ubuntu 22.04 / 24.04)
@@ -126,7 +126,7 @@ pnpm e2e:real-ops
 
 ```bash
 ysk-server setup --non-interactive
-ysk-server serve --data-dir .ysk --port 8787
+ysk-server serve --data-dir .ysk --port 9287
 ysk-server system unit-install --data-dir .ysk
 ysk-server templates --json
 ysk-server projects create --name demo --template node-starter --data-dir .ysk
@@ -160,3 +160,7 @@ ysk-server --help
 ## License
 
 MIT
+
+## 專案隔離
+
+見 [docs/deploy/project-isolation.md](./docs/deploy/project-isolation.md) — 每專案獨立 Linux 用戶與 `/home/ysk-server-{id}`。

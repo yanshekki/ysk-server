@@ -262,7 +262,7 @@ async function main(argv: string[]): Promise<number> {
       process.stderr.write('Usage: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n');
       return 1;
     }
-    const controlPlane = getOpt(args, '--control-plane') ?? 'http://127.0.0.1:8787';
+    const controlPlane = getOpt(args, '--control-plane') ?? 'http://127.0.0.1:9287';
     const agentId = getOpt(args, '--id') ?? `agent-${process.pid}`;
     const group = getOpt(args, '--group');
     const intervalMs = Number(getOpt(args, '--interval') ?? 5000);
@@ -791,7 +791,7 @@ async function main(argv: string[]): Promise<number> {
     }
     const host = getOpt(args, '--host') ?? config?.listenHost ?? '127.0.0.1';
     const port = Number(
-      getOpt(args, '--port') ?? process.env.PORT ?? config?.listenPort ?? 8787,
+      getOpt(args, '--port') ?? process.env.PORT ?? config?.listenPort ?? 9287,
     );
     const webRoot = resolveWebRoot(getOpt(args, '--web-root'));
     const ctx = createAppContext({

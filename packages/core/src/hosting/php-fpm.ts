@@ -17,19 +17,22 @@ export function renderPhpFpmPool(opts: {
   const listen =
     opts.listen ?? `/run/php/php${opts.phpVersion}-fpm-${opts.poolName}.sock`;
   const max = opts.pmMaxChildren ?? 5;
-  return `; YSK Server PHP-FPM pool for ${opts.poolName}
+  // Pool MUST run as the project Linux user (isolation). Socket owned by www-data for nginx.
+  return `; YSK Server PHP-FPM pool for ${opts.poolName} (project user isolation)
 [${opts.poolName}]
 user = ${opts.linuxUser}
 group = ${opts.linuxUser}
 listen = ${listen}
 listen.owner = www-data
 listen.group = www-data
+listen.mode = 0660
 pm = ondemand
 pm.max_children = ${max}
 pm.process_idle_timeout = 10s
 chdir = /
 php_admin_value[error_log] = /var/log/php${opts.phpVersion}-fpm-${opts.poolName}.log
 php_admin_flag[log_errors] = on
+; open_basedir optional — home is enforced by OS user permissions
 `;
 }
 

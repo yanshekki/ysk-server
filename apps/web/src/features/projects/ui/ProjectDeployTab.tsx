@@ -79,8 +79,10 @@ function envPlaceholder(runtime: string, deployIsPhp: boolean): string {
 }
 
 function checklistItems(runtime: string): string[] {
+  const osFirst = '獨立 Linux 用戶 + /home/ysk-server-{專案 id}（資源分頁可建立）';
   if (runtime === 'python') {
     return [
+      osFirst,
       'Python 執行環境已就緒',
       '有 requirements.txt 時需外網 pip',
       '部署後檢查埠與 /health',
@@ -89,6 +91,7 @@ function checklistItems(runtime: string): string[] {
   }
   if (runtime === 'go' || runtime === 'rust') {
     return [
+      osFirst,
       `${runtime === 'go' ? 'Go' : 'Rust'} toolchain 已就緒`,
       '首次部署會 build（可能較久）',
       'build 成功後才有可執行檔',
@@ -96,12 +99,13 @@ function checklistItems(runtime: string): string[] {
     ];
   }
   if (runtime === 'php') {
-    return ['PHP-FPM 版本正確', '部署 PHP／套用 pool', '發布 Nginx + 可選 SSL'];
+    return [osFirst, 'PHP-FPM 版本正確', '部署 PHP／套用 pool', '發布 Nginx + 可選 SSL'];
   }
   if (runtime === 'static') {
-    return ['確認 public/ 有內容', '到「網絡」發布 Nginx'];
+    return [osFirst, '確認 public/ 有內容', '到「網絡」發布 Nginx'];
   }
   return [
+    osFirst,
     '確認執行環境頁已安裝對應 toolchain（或主機已有）',
     '確認 app/ 內有程式碼（範本或 Git）',
     '按「部署」啟動；成功後到「網絡」發布 Nginx',

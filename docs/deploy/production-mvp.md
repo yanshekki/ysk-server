@@ -27,13 +27,13 @@ sudo YSK_ADMIN_PASSWORD='change-me' node apps/server/dist/cli.js setup \
 ```bash
 sudo YSK_EXECUTE=1 node apps/server/dist/cli.js system unit-install \
   --enable --data-dir /var/lib/ysk-server
-# or: ysk-server serve --data-dir /var/lib/ysk-server --port 8787
+# or: ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 ```
 
 ### 3. Open Web UI
 
 ```text
-http://SERVER_IP:8787/
+http://SERVER_IP:9287/
 ```
 
 Login with setup admin. **Projects → Create → Deploy Node**.

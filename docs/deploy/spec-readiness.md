@@ -7,7 +7,7 @@ This product is evaluated against [AI-Secure-Linux-Server-Manager-Spec.md](../AI
 ```bash
 ysk-server readiness --data-dir /var/lib/ysk-server --json
 # or
-curl -sS http://127.0.0.1:8787/api/v1/readiness | jq .
+curl -sS http://127.0.0.1:9287/api/v1/readiness | jq .
 ```
 
 Exit codes (CLI): `0` = `productionReady`, `2` = not fully production-capable.

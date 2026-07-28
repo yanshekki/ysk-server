@@ -2,13 +2,13 @@
 # Demo system-level apply paths (dry by default).
 # Usage:
 #   ./scripts/demo-system-apply.sh
-#   YSK_API=http://127.0.0.1:8787 ADMIN_PASS=admin ./scripts/demo-system-apply.sh
+#   YSK_API=http://127.0.0.1:9287 ADMIN_PASS=admin ./scripts/demo-system-apply.sh
 # With real mutations (DANGEROUS — needs root):
 #   YSK_EXECUTE=1 APPLY_SYSTEM=1 ./scripts/demo-system-apply.sh
 
 set -euo pipefail
 
-API="${YSK_API:-http://127.0.0.1:8787}"
+API="${YSK_API:-http://127.0.0.1:9287}"
 USER="${ADMIN_USER:-admin}"
 PASS="${ADMIN_PASS:-admin}"
 DOMAIN="${DEMO_DOMAIN:-demo.local}"

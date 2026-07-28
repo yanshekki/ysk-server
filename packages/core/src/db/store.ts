@@ -104,6 +104,14 @@ export interface StoreProject {
   memory_max?: string;
   /** systemd CPUQuota percent */
   cpu_quota_percent?: number;
+  /** systemd TasksMax (process count cap) */
+  tasks_max?: number;
+  /** systemd LimitNOFILE */
+  limit_nofile?: number;
+  /** login shell (default /usr/sbin/nologin) */
+  shell?: string;
+  /** usermod -L lock */
+  account_locked?: boolean;
   /** Last process deploy entry (server.js, main:app, ./app, …) */
   deploy_entry?: string;
   /** Last deploy operator notes (short, newest first, max ~8) */

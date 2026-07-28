@@ -42,7 +42,7 @@ Start HTTP API + packaged Web UI (if `apps/web/dist` built).
 
 ```bash
 ysk-server serve [--config PATH] [--data-dir PATH]
-                 [--host 127.0.0.1] [--port 8787] [--web-root PATH]
+                 [--host 127.0.0.1] [--port 9287] [--web-root PATH]
 ```
 
 ## update

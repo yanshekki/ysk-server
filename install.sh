@@ -240,7 +240,7 @@ print_next() {
  Next steps:
    1. $CLI setup --non-interactive --data-dir /var/lib/ysk-server
    2. $CLI readiness --data-dir /var/lib/ysk-server --json   # honest Spec gate
-   3. $CLI serve --data-dir /var/lib/ysk-server --port 8787
+   3. $CLI serve --data-dir /var/lib/ysk-server --port 9287
       or: YSK_EXECUTE=1 sudo -E $CLI system unit-install --enable --data-dir /var/lib/ysk-server
    4. Open Web UI → login → Projects → Deploy Node (real listen)
    5. Production MVP: docs/deploy/production-mvp.md
@@ -250,7 +250,7 @@ print_next() {
  Commands:
    $CLI --help
    $CLI readiness --json
-   $CLI serve --data-dir .ysk --port 8787
+   $CLI serve --data-dir .ysk --port 9287
    $CLI update --check
    $CLI update --apply   # needs network + YSK_EXECUTE=1
    $CLI ask "show system info"

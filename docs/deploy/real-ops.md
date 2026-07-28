@@ -48,18 +48,18 @@ bash scripts/e2e-real-ops.sh
 pnpm build
 export YSK_ADMIN_PASSWORD=admin
 node apps/server/dist/cli.js setup --data-dir .ysk --non-interactive
-node apps/server/dist/cli.js serve --data-dir .ysk --port 8787
+node apps/server/dist/cli.js serve --data-dir .ysk --port 9287
 
 # 另一終端
-TOKEN=$(curl -s -X POST http://127.0.0.1:8787/api/v1/auth/login \
+TOKEN=$(curl -s -X POST http://127.0.0.1:9287/api/v1/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"admin"}' | jq -r .token)
 
-PID=$(curl -s -X POST http://127.0.0.1:8787/api/v1/projects \
+PID=$(curl -s -X POST http://127.0.0.1:9287/api/v1/projects \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d '{"name":"demo","domain":"demo.local","runtime":"node"}' | jq -r .project.id)
 
-curl -s -X POST "http://127.0.0.1:8787/api/v1/projects/$PID/deploy" \
+curl -s -X POST "http://127.0.0.1:9287/api/v1/projects/$PID/deploy" \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' | jq .
 ```
 

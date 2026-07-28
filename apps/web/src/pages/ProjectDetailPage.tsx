@@ -312,12 +312,36 @@ export function ProjectDetailPage() {
           <div className="tab-panel">
             <ProjectResourcesTab
               busy={busy}
+              project={project}
               quotaMb={quotaMb}
               setQuotaMb={setQuotaMb}
               memoryMax={memoryMax}
               setMemoryMax={setMemoryMax}
               cpuQuota={cpuQuota}
               setCpuQuota={setCpuQuota}
+              onOpsMessage={(m) => setMsg(m)}
+              onProjectRefresh={() => void refreshProject()}
+              onProvisionOs={() => {
+                setBusy(true);
+                setError(null);
+                void projectsApi
+                  .osProvision(project.id)
+                  .then((r) => {
+                    const d = r.osProvision?.detail ?? '';
+                    if (r.ok) {
+                      setMsg(`系統用戶已就緒。${d}`);
+                    } else {
+                      setMsg(
+                        r.requiresRoot || r.requiresExecute
+                          ? `無法建立系統用戶：需要 YSK_EXECUTE + root。${d}`
+                          : d || '系統用戶建立未完成',
+                      );
+                    }
+                    return refreshProject();
+                  })
+                  .catch((e: Error) => setError(e.message))
+                  .finally(() => setBusy(false));
+              }}
               onSetQuota={() =>
                 void run('quota', project.id, { quotaMb: Number(quotaMb) || 1024 }).catch(
                   () => undefined,

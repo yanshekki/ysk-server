@@ -4,7 +4,7 @@
 
 ```bash
 # 寫入 dataDir/systemd/ysk-server.service
-curl -X POST http://127.0.0.1:8787/api/v1/system/systemd/install \
+curl -X POST http://127.0.0.1:9287/api/v1/system/systemd/install \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"enable":false}'

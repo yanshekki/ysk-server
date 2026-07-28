@@ -20,7 +20,8 @@ const DEFAULTS = {
   version: 1 as const,
   product: 'ysk-server' as const,
   listenHost: '127.0.0.1',
-  listenPort: 8787,
+  /** 4-digit control-plane port; avoid common 3000/5173/8080/8787 */
+  listenPort: 9287,
   adminUsername: 'admin',
   locale: 'zh-TW',
 };

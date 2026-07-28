@@ -4,10 +4,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173,
+    // 4-digit; avoid common Vite 5173 / other tools
+    port: 9173,
+    strictPort: true,
+    host: '127.0.0.1',
     proxy: {
-      '/api': 'http://127.0.0.1:8787',
-      '/health': 'http://127.0.0.1:8787',
+      '/api': 'http://127.0.0.1:9287',
+      '/health': 'http://127.0.0.1:9287',
     },
   },
   test: {

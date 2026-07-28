@@ -248,17 +248,22 @@ export function renderNodeProcessUnit(opts: {
   });
 }
 
-/** Generic process unit for node/python/go/rust. */
+/** Generic process unit for node/python/go/rust — runs as project Linux user. */
 export function renderProcessUnit(opts: {
   projectName: string;
   linuxUser: string;
   appDir: string;
+  /** Project home for ReadWritePaths (defaults to parent of appDir) */
+  homeDir?: string;
   execStart: string;
   port: number;
   env?: Record<string, string>;
   memoryMax?: string;
   cpuQuotaPercent?: number;
   limitNOFILE?: number;
+  tasksMax?: number;
+  /** Harden unit (default true) */
+  harden?: boolean;
 }): string {
   const limits: string[] = [];
   if (opts.memoryMax) {
@@ -271,6 +276,26 @@ export function renderProcessUnit(opts: {
   if (opts.limitNOFILE != null && opts.limitNOFILE > 0) {
     limits.push(`LimitNOFILE=${opts.limitNOFILE}`);
   }
+  if (opts.tasksMax != null && opts.tasksMax > 0) {
+    limits.push(`TasksMax=${Math.floor(opts.tasksMax)}`);
+  }
+  const home =
+    opts.homeDir ??
+    (opts.appDir.endsWith('/app') ? opts.appDir.slice(0, -4) : opts.appDir);
+  const harden = opts.harden !== false;
+  const hardenLines = harden
+    ? [
+        'NoNewPrivileges=yes',
+        'PrivateTmp=yes',
+        'ProtectSystem=strict',
+        // WorkingDirectory is under home; allow RW only there
+        `ReadWritePaths=${home}`,
+        // ProtectHome would block /home — we pin RW paths instead
+        'ProtectKernelTunables=yes',
+        'ProtectControlGroups=yes',
+        'RestrictSUIDSGID=yes',
+      ].join('\n') + '\n'
+    : '';
   const limitBlock = limits.length ? limits.join('\n') + '\n' : '';
   const envLines = Object.entries({
     PORT: String(opts.port),
@@ -285,12 +310,13 @@ After=network.target
 [Service]
 Type=simple
 User=${opts.linuxUser}
+Group=${opts.linuxUser}
 WorkingDirectory=${opts.appDir}
 ${envLines}
 ExecStart=${opts.execStart}
 Restart=on-failure
 RestartSec=5
-${limitBlock}
+${hardenLines}${limitBlock}
 [Install]
 WantedBy=multi-user.target
 `;

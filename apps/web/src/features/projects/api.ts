@@ -71,6 +71,98 @@ export const projectsApi = {
     }>(`/api/v1/projects/${id}/usage`),
   stop: (id: string) => api.stopProject(id),
   health: (id: string) => api.projectHealth(id),
+  /** Create/repair per-project Linux user + /home/ysk-server-{id} */
+  osProvision: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      osProvision: { attempted: boolean; ok: boolean; detail: string };
+      requiresExecute?: boolean;
+      requiresRoot?: boolean;
+      homeDir?: string;
+    }>(`/api/v1/projects/${id}/os-provision`, { method: 'POST', body: '{}' }),
+  getOsUser: (id: string) =>
+    api.requestRaw<{
+      live: {
+        linuxUser: string;
+        linuxGroup: string;
+        homeDir: string;
+        canonicalHome: string;
+        osProvisioned: boolean;
+        userExists: boolean;
+        uid?: number;
+        gid?: number;
+        shellLive?: string;
+        homeExists: boolean;
+        homeMode?: string;
+        locked?: boolean | null;
+        notes: string[];
+      };
+      limits: {
+        quotaMb?: number;
+        memoryMax?: string;
+        cpuQuotaPercent?: number;
+        tasksMax?: number;
+        limitNofile?: number;
+        shell?: string;
+        accountLocked?: boolean;
+      };
+    }>(`/api/v1/projects/${id}/os-user`),
+  patchOsUser: (
+    id: string,
+    body: {
+      shell?: string;
+      accountLocked?: boolean;
+      memoryMax?: string;
+      cpuQuotaPercent?: number;
+      tasksMax?: number;
+      limitNofile?: number;
+      quotaMb?: number;
+    },
+  ) =>
+    api.requestRaw<{
+      ok: boolean;
+      written?: boolean;
+      applied?: boolean;
+      blocked?: boolean;
+      notes: string[];
+    }>(`/api/v1/projects/${id}/os-user`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+  applyOsLimits: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      written?: boolean;
+      applied?: boolean;
+      blocked?: boolean;
+      notes: string[];
+    }>(`/api/v1/projects/${id}/os-user/apply-limits`, {
+      method: 'POST',
+      body: '{}',
+    }),
+  chownOsHome: (id: string) =>
+    api.requestRaw<{ ok: boolean; notes: string[] }>(
+      `/api/v1/projects/${id}/os-user/chown-home`,
+      { method: 'POST', body: '{}' },
+    ),
+  migrateOsIsolation: (id: string, body?: { removePreviousHome?: boolean }) =>
+    api.requestRaw<{
+      ok: boolean;
+      notes: string[];
+      requiresExecute?: boolean;
+      requiresRoot?: boolean;
+      homeDir?: string;
+      plan?: {
+        needsMigration: boolean;
+        targetHome: string;
+        currentHome: string;
+        reasons: string[];
+      };
+    }>(`/api/v1/projects/${id}/os-user/migrate`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? { removePreviousHome: true }),
+    }),
+
   publishNginx: (
     id: string,
     body?: { ssl?: boolean; forceHttps?: boolean; hsts?: boolean },
@@ -140,7 +232,15 @@ export const projectsApi = {
       method: 'POST',
       body: JSON.stringify({ quotaMb }),
     }),
-  setResources: (id: string, body: { memoryMax?: string; cpuQuotaPercent?: number }) =>
+  setResources: (
+    id: string,
+    body: {
+      memoryMax?: string;
+      cpuQuotaPercent?: number;
+      tasksMax?: number;
+      limitNofile?: number;
+    },
+  ) =>
     api.requestRaw<OpsApplyResultDto>(`/api/v1/projects/${id}/resources`, {
       method: 'POST',
       body: JSON.stringify(body),

@@ -1,6 +1,6 @@
 # YSK Server API Overview
 
-Base URL: `http://127.0.0.1:8787`
+Base URL: `http://127.0.0.1:9287`
 
 ## Core
 

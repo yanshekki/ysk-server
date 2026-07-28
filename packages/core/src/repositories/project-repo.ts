@@ -62,6 +62,9 @@ export class ProjectRepository {
         | 'doc_root'
         | 'bind_ip'
         | 'status'
+        | 'home_dir'
+        | 'linux_user'
+        | 'linux_group'
       >
     >,
   ): void {
@@ -80,6 +83,9 @@ export class ProjectRepository {
     if ('doc_root' in patch) p.doc_root = patch.doc_root;
     if ('bind_ip' in patch) p.bind_ip = patch.bind_ip;
     if (patch.status !== undefined) p.status = patch.status;
+    if (patch.home_dir !== undefined) p.home_dir = patch.home_dir;
+    if (patch.linux_user !== undefined) p.linux_user = patch.linux_user;
+    if (patch.linux_group !== undefined) p.linux_group = patch.linux_group;
     p.updated_at = new Date().toISOString();
     this.db.persist();
   }
@@ -109,6 +115,10 @@ export class ProjectRepository {
         | 'quota_mb'
         | 'memory_max'
         | 'cpu_quota_percent'
+        | 'tasks_max'
+        | 'limit_nofile'
+        | 'shell'
+        | 'account_locked'
         | 'deploy_entry'
         | 'last_deploy_notes'
       >
@@ -133,6 +143,10 @@ export class ProjectRepository {
     if (patch.quota_mb !== undefined) p.quota_mb = patch.quota_mb;
     if (patch.memory_max !== undefined) p.memory_max = patch.memory_max;
     if (patch.cpu_quota_percent !== undefined) p.cpu_quota_percent = patch.cpu_quota_percent;
+    if (patch.tasks_max !== undefined) p.tasks_max = patch.tasks_max;
+    if (patch.limit_nofile !== undefined) p.limit_nofile = patch.limit_nofile;
+    if (patch.shell !== undefined) p.shell = patch.shell;
+    if (patch.account_locked !== undefined) p.account_locked = patch.account_locked;
     if ('deploy_entry' in patch) p.deploy_entry = patch.deploy_entry;
     if (patch.last_deploy_notes !== undefined) p.last_deploy_notes = patch.last_deploy_notes;
     p.updated_at = new Date().toISOString();

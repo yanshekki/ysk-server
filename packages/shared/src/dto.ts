@@ -144,10 +144,46 @@ export interface ProjectDto {
   quotaMb?: number;
   memoryMax?: string;
   cpuQuotaPercent?: number;
+  /** systemd TasksMax */
+  tasksMax?: number;
+  /** systemd LimitNOFILE */
+  limitNofile?: number;
+  /** Linux login shell */
+  shell?: string;
+  /** Account locked via usermod -L */
+  accountLocked?: boolean;
   /** Last process deploy entry (persisted server-side) */
   deployEntry?: string;
   /** Recent deploy notes for UI summary */
   lastDeployNotes?: string[];
+}
+
+/** Live OS user probe for a project (GET /os-user) */
+export interface ProjectOsUserLiveDto {
+  linuxUser: string;
+  linuxGroup: string;
+  homeDir: string;
+  canonicalHome: string;
+  osProvisioned: boolean;
+  userExists: boolean;
+  uid?: number;
+  gid?: number;
+  shellLive?: string;
+  homeExists: boolean;
+  homeMode?: string;
+  homeOwner?: string;
+  locked?: boolean | null;
+  notes: string[];
+}
+
+export interface ProjectOsUserLimitsDto {
+  quotaMb?: number;
+  memoryMax?: string;
+  cpuQuotaPercent?: number;
+  tasksMax?: number;
+  limitNofile?: number;
+  shell?: string;
+  accountLocked?: boolean;
 }
 
 /** Result of real deploy / publish / health ops */

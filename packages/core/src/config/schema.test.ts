@@ -5,7 +5,7 @@ describe('config schema', () => {
   it('builds and parses ysk-server config', () => {
     const cfg = buildConfigFromSetup({
       dataDir: '/var/lib/ysk-server',
-      listenPort: 8787,
+      listenPort: 9287,
       adminUsername: 'admin',
       locale: 'zh-TW',
       nonInteractive: true,

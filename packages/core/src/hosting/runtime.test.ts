@@ -85,11 +85,16 @@ describe('multi-version runtimes', () => {
     const py = renderProcessUnit({
       projectName: 'py',
       linuxUser: 'ysk_py',
-      appDir: '/home/py/app',
-      execStart: '/home/py/app/venv/bin/python app.py',
+      appDir: '/home/ysk-server-id/app',
+      homeDir: '/home/ysk-server-id',
+      execStart: '/home/ysk-server-id/app/venv/bin/python app.py',
       port: 3200,
     });
-    expect(py).toContain('ExecStart=/home/py/app/venv/bin/python app.py');
+    expect(py).toContain('ExecStart=/home/ysk-server-id/app/venv/bin/python app.py');
+    expect(py).toContain('User=ysk_py');
+    expect(py).toContain('Group=ysk_py');
+    expect(py).toContain('NoNewPrivileges=yes');
+    expect(py).toContain('ReadWritePaths=/home/ysk-server-id');
 
     const vhost = renderPhpVhost({
       domain: 'app.example.com',
