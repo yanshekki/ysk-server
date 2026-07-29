@@ -29,6 +29,7 @@ export async function runCreateWizard(input: {
     projectName: string;
     domain?: string;
     runtime?: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+    runtimeVersion?: string;
     serverIp?: string;
     serverIpv6?: string;
     createDns?: boolean;
@@ -65,6 +66,7 @@ export async function runCreateWizard(input: {
       name: input.body.projectName,
       domain,
       runtime,
+      runtimeVersion: input.body.runtimeVersion,
       actor: input.actor,
       templateId: input.body.templateId,
     });

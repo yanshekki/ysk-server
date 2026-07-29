@@ -1,7 +1,8 @@
 /**
  * Shared defaults for hosting tools (domain / server IP).
  */
-const KEY = 'ysk_server_context';
+/** v2: stop shipping documentation TEST-NET as default serverIp */
+const KEY = 'ysk_server_context_v2';
 
 export type ServerContext = {
   domain: string;
@@ -11,8 +12,9 @@ export type ServerContext = {
 };
 
 const DEFAULT: ServerContext = {
-  domain: 'demo.local',
-  serverIp: '203.0.113.10',
+  domain: '',
+  /** 空字串：勿預填文件用假 IP，避免用戶當成真實公網位址 */
+  serverIp: '',
   serverIpv6: '',
 };
 

@@ -2051,7 +2051,7 @@ export function ProtectionPage() {
                       id="def-ip"
                       value={banIp}
                       onChange={(e) => setBanIp(e.target.value)}
-                      placeholder="203.0.113.10 或 2001:db8::1"
+                      placeholder="要封禁的 IPv4 或 IPv6"
                       spellCheck={false}
                     />
                   </Field>
@@ -2679,7 +2679,7 @@ export function ProtectionPage() {
                     id="geo-lip"
                     value={lookupIp}
                     onChange={(e) => setLookupIp(e.target.value)}
-                    placeholder="1.1.1.1 或 2606:4700:4700::1111"
+                    placeholder="要查詢的 IPv4 或 IPv6"
                     spellCheck={false}
                   />
                 </Field>

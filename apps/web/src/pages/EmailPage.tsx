@@ -536,7 +536,7 @@ export function EmailPage() {
                   setServerContext({ serverIp: e.target.value });
                 }}
                 required
-                placeholder="203.0.113.10"
+                placeholder="此主機公網 IPv4"
                 spellCheck={false}
               />
             </Field>
@@ -553,7 +553,7 @@ export function EmailPage() {
                   setServerIpv6(e.target.value);
                   setServerContext({ serverIpv6: e.target.value });
                 }}
-                placeholder="2001:db8::1"
+                placeholder="此主機公網 IPv6（可留空）"
                 spellCheck={false}
               />
             </Field>

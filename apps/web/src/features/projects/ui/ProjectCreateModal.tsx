@@ -12,6 +12,10 @@ import {
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import { formatRuntimeName } from '../model/runtime-ui';
+import {
+  defaultRuntimeInstallVersion,
+  runtimeVersionChoices,
+} from '../model/deploy-prefs';
 
 export interface ProjectCreateModalProps {
   open: boolean;
@@ -22,6 +26,7 @@ export interface ProjectCreateModalProps {
     domain?: string;
     domainAliases?: string[];
     runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+    runtimeVersion?: string;
     templateId?: string;
     createDnsZone?: boolean;
     createMailDomain?: boolean;
@@ -38,14 +43,22 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
   const [runtime, setRuntime] = useState<
     'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
   >('node');
+  const [runtimeVersion, setRuntimeVersion] = useState(() =>
+    defaultRuntimeInstallVersion('node'),
+  );
   const [templateId, setTemplateId] = useState('');
   const [createDns, setCreateDns] = useState(false);
   const [createMail, setCreateMail] = useState(false);
-  const [serverIp, setServerIp] = useState('203.0.113.10');
+  const [serverIp, setServerIp] = useState('');
   const [serverIpv6, setServerIpv6] = useState('');
   const [templates, setTemplates] = useState<
     Array<{ id: string; name: string; description: string; runtime: string }>
   >([]);
+
+  const versionChoices = useMemo(
+    () => runtimeVersionChoices(runtime),
+    [runtime],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -61,13 +74,23 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
       setDomain('');
       setAliases('');
       setRuntime('node');
+      setRuntimeVersion(defaultRuntimeInstallVersion('node'));
       setTemplateId('');
       setCreateDns(false);
       setCreateMail(false);
-      setServerIp('203.0.113.10');
+      setServerIp('');
       setServerIpv6('');
     }
   }, [open]);
+
+  function applyRuntime(next: typeof runtime) {
+    setRuntime(next);
+    const choices = runtimeVersionChoices(next);
+    const def = defaultRuntimeInstallVersion(next);
+    setRuntimeVersion(choices.includes(def) ? def : choices[0] ?? '');
+    const tpl = templates.find((x) => x.id === templateId);
+    if (tpl && tpl.runtime !== next) setTemplateId('');
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -80,6 +103,10 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
       domain: domain || undefined,
       domainAliases: domainAliases.length ? domainAliases : undefined,
       runtime,
+      runtimeVersion:
+        runtime !== 'static' && runtimeVersion
+          ? runtimeVersion
+          : undefined,
       templateId: templateId || undefined,
       createDnsZone: Boolean(domain && createDns),
       createMailDomain: Boolean(domain && createMail),
@@ -146,11 +173,7 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               name="pruntime"
               aria-label="執行環境"
               value={runtime}
-              onChange={(next) => {
-                setRuntime(next as typeof runtime);
-                const tpl = templates.find((x) => x.id === templateId);
-                if (tpl && tpl.runtime !== next) setTemplateId('');
-              }}
+              onChange={(next) => applyRuntime(next as typeof runtime)}
               options={[
                 { value: 'node', label: 'Node' },
                 { value: 'php', label: 'PHP' },
@@ -161,6 +184,35 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               ]}
             />
           </Field>
+          {versionChoices.length > 0 ? (
+            <Field
+              label="版本"
+              htmlFor="pver"
+              flush
+              required
+              hint="寫入專案 runtime_version；部署／FPM 會參考此版本"
+            >
+              <SegRadio
+                name="pver"
+                aria-label="執行環境版本"
+                value={
+                  versionChoices.includes(runtimeVersion)
+                    ? runtimeVersion
+                    : versionChoices[0]!
+                }
+                onChange={setRuntimeVersion}
+                options={versionChoices.map((v) => ({
+                  value: v,
+                  label:
+                    runtime === 'node' && v === '20'
+                      ? '20 LTS'
+                      : runtime === 'rust' && v === 'stable'
+                        ? 'stable'
+                        : v,
+                }))}
+              />
+            </Field>
+          ) : null}
           <Field
             label="主要域名"
             htmlFor="pdomain"
@@ -203,7 +255,7 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
                   tpl?.runtime === 'go' ||
                   tpl?.runtime === 'rust'
                 ) {
-                  setRuntime(tpl.runtime);
+                  applyRuntime(tpl.runtime);
                 }
               }}
             >
@@ -262,7 +314,7 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
                     id="pc-ip"
                     value={serverIp}
                     onChange={(e) => setServerIp(e.target.value)}
-                    placeholder="203.0.113.10"
+                    placeholder="此主機公網 IPv4"
                   />
                 </Field>
                 <Field label="伺服器 IPv6（可選）" htmlFor="pc-ip6" flush>
@@ -270,7 +322,7 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
                     id="pc-ip6"
                     value={serverIpv6}
                     onChange={(e) => setServerIpv6(e.target.value)}
-                    placeholder="2001:db8::1"
+                    placeholder="公網 IPv6（可留空）"
                   />
                 </Field>
               </FormLayout>

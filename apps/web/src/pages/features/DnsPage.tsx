@@ -50,7 +50,7 @@ export function DnsPage() {
   const [delZone, setDelZone] = useState<string | null>(null);
   const [delRec, setDelRec] = useState<string | null>(null);
   const [zone, setZone] = useState('');
-  const [serverIp, setServerIp] = useState('203.0.113.10');
+  const [serverIp, setServerIp] = useState('');
   const [serverIpv6, setServerIpv6] = useState('');
   const [template, setTemplate] = useState<(typeof ZONE_TEMPLATES)[number]['id']>('full');
   const [rtype, setRtype] = useState('A');
@@ -137,11 +137,11 @@ export function DnsPage() {
     if (!selectedZone) return;
     const val = rvalue.trim();
     if (rtype === 'A' && !/^(\d{1,3}\.){3}\d{1,3}$/.test(val)) {
-      alert('A 記錄值必須是 IPv4（例 203.0.113.10）');
+      alert('A 記錄值必須是 IPv4（請填伺服器公網 IPv4）');
       return;
     }
     if (rtype === 'AAAA' && !(val.includes(':') && val.length >= 2 && val.length < 46)) {
-      alert('AAAA 記錄值必須是 IPv6（例 2001:db8::1）');
+      alert('AAAA 記錄值必須是 IPv6（請填伺服器公網 IPv6）');
       return;
     }
     const body = {
@@ -647,7 +647,7 @@ export function DnsPage() {
                 value={serverIp}
                 onChange={(e) => setServerIp(e.target.value)}
                 required
-                placeholder="203.0.113.10"
+                placeholder="此主機公網 IPv4"
                 spellCheck={false}
               />
             </Field>
@@ -661,7 +661,7 @@ export function DnsPage() {
                 id="sip6"
                 value={serverIpv6}
                 onChange={(e) => setServerIpv6(e.target.value)}
-                placeholder="2001:db8::1"
+                placeholder="此主機公網 IPv6（可留空）"
                 spellCheck={false}
               />
             </Field>
@@ -771,9 +771,9 @@ export function DnsPage() {
                   : rtype === 'TXT'
                     ? '例如 v=spf1 a mx ip4:… ip6:… ~all'
                     : rtype === 'AAAA'
-                      ? 'IPv6，例如 2001:db8::1'
+                      ? '請填 IPv6 位址'
                       : rtype === 'A'
-                        ? 'IPv4，例如 203.0.113.10'
+                        ? '請填 IPv4 位址'
                         : 'IP、主機名或對應內容'
               }
             >
@@ -784,9 +784,9 @@ export function DnsPage() {
                 required
                 placeholder={
                   rtype === 'AAAA'
-                    ? '2001:db8::1'
+                    ? 'IPv6 位址'
                     : rtype === 'A'
-                      ? '203.0.113.10'
+                      ? 'IPv4 位址'
                       : undefined
                 }
                 spellCheck={false}

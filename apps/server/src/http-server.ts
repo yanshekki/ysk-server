@@ -683,6 +683,7 @@ export function createHttpServer(ctx: AppContext): Server {
           projectName?: string;
           domain?: string;
           runtime?: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+          runtimeVersion?: string;
           serverIp?: string;
           serverIpv6?: string;
           createDns?: boolean;
@@ -704,6 +705,7 @@ export function createHttpServer(ctx: AppContext): Server {
             projectName: data.projectName ?? '',
             domain: data.domain,
             runtime: data.runtime,
+            runtimeVersion: data.runtimeVersion,
             serverIp: data.serverIp,
             serverIpv6: data.serverIpv6,
             createDns: data.createDns,

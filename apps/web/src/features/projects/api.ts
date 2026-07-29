@@ -11,6 +11,7 @@ export const projectsApi = {
     domain?: string;
     domainAliases?: string[];
     runtime?: string;
+    runtimeVersion?: string;
     templateId?: string;
     createDnsZone?: boolean;
     createMailDomain?: boolean;

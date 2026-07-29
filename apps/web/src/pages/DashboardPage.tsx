@@ -30,6 +30,10 @@ import {
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import {
+  defaultRuntimeInstallVersion,
+  runtimeVersionChoices,
+} from '../features/projects/model/deploy-prefs';
 
 const DASH_TABS = ['overview', 'wizard', 'notifications', 'features'] as const;
 
@@ -119,10 +123,13 @@ export function DashboardPage() {
   const [wizRuntime, setWizRuntime] = useState<
     'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
   >('node');
+  const [wizRuntimeVersion, setWizRuntimeVersion] = useState(() =>
+    defaultRuntimeInstallVersion('node'),
+  );
   const [wizDns, setWizDns] = useState(true);
   const [wizMail, setWizMail] = useState(true);
   const [wizDb, setWizDb] = useState(false);
-  const [wizServerIp, setWizServerIp] = useState('203.0.113.10');
+  const [wizServerIp, setWizServerIp] = useState('');
   const [wizServerIpv6, setWizServerIpv6] = useState('');
   const [wizBusy, setWizBusy] = useState(false);
   const [wizMsg, setWizMsg] = useState<string | null>(null);
@@ -164,6 +171,10 @@ export function DashboardPage() {
           projectName: wizName,
           domain: wizDomain || undefined,
           runtime: wizRuntime,
+          runtimeVersion:
+            wizRuntime !== 'static' && wizRuntimeVersion
+              ? wizRuntimeVersion
+              : undefined,
           serverIp: wizServerIp || undefined,
           serverIpv6: wizServerIpv6.trim() || undefined,
           createDns: wizDns && Boolean(wizDomain),
@@ -629,7 +640,15 @@ export function DashboardPage() {
                         name="wiz-rt"
                         aria-label="執行環境"
                         value={wizRuntime}
-                        onChange={(v) => setWizRuntime(v as typeof wizRuntime)}
+                        onChange={(v) => {
+                          const next = v as typeof wizRuntime;
+                          setWizRuntime(next);
+                          const choices = runtimeVersionChoices(next);
+                          const def = defaultRuntimeInstallVersion(next);
+                          setWizRuntimeVersion(
+                            choices.includes(def) ? def : choices[0] ?? '',
+                          );
+                        }}
                         options={[
                           { value: 'node', label: 'Node' },
                           { value: 'php', label: 'PHP' },
@@ -640,6 +659,33 @@ export function DashboardPage() {
                         ]}
                       />
                     </Field>
+                    {runtimeVersionChoices(wizRuntime).length > 0 ? (
+                      <Field
+                        label="版本"
+                        htmlFor="wiz-ver"
+                        flush
+                        required
+                        hint="寫入專案 runtime_version"
+                      >
+                        <SegRadio
+                          name="wiz-ver"
+                          aria-label="執行環境版本"
+                          value={
+                            runtimeVersionChoices(wizRuntime).includes(
+                              wizRuntimeVersion,
+                            )
+                              ? wizRuntimeVersion
+                              : runtimeVersionChoices(wizRuntime)[0]!
+                          }
+                          onChange={setWizRuntimeVersion}
+                          options={runtimeVersionChoices(wizRuntime).map((v) => ({
+                            value: v,
+                            label:
+                              wizRuntime === 'node' && v === '20' ? '20 LTS' : v,
+                          }))}
+                        />
+                      </Field>
+                    ) : null}
                   </FormLayout>
                   {(wizDns || wizMail) && wizDomain ? (
                     <FormLayout columns={2}>
@@ -653,7 +699,7 @@ export function DashboardPage() {
                           id="wiz-ip"
                           value={wizServerIp}
                           onChange={(e) => setWizServerIp(e.target.value)}
-                          placeholder="203.0.113.10"
+                          placeholder="此主機公網 IPv4"
                           spellCheck={false}
                         />
                       </Field>
@@ -667,7 +713,7 @@ export function DashboardPage() {
                           id="wiz-ip6"
                           value={wizServerIpv6}
                           onChange={(e) => setWizServerIpv6(e.target.value)}
-                          placeholder="2001:db8::1"
+                          placeholder="公網 IPv6（可留空）"
                           spellCheck={false}
                         />
                       </Field>
