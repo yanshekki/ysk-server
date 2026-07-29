@@ -49,11 +49,12 @@ export function renderMysqlReplicaCnf(c: DbCluster, m: DbClusterMember, index: n
   const sid = serverIdFor(c, index);
   const p = primary(c);
   return `# YSK Server managed — MySQL replica
-# cluster: ${c.id} · primary=${p?.host ?? '?'}
+# cluster: ${c.id} · this=${m.host} · primary=${p?.host ?? '?'}
 # After conf: CHANGE REPLICATION SOURCE / START REPLICA (see scripts)
 
 [mysqld]
 server-id=${sid}
+report_host=${m.host}
 log_bin=mysql-bin
 binlog_format=ROW
 gtid_mode=ON
