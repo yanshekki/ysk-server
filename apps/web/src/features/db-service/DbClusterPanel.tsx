@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   CardSection,
+  ConfirmDialog,
   DescriptionList,
   EmptyState,
   Field,
@@ -17,7 +18,6 @@ import {
   FormLayout,
   Modal,
   OpsResultPanel,
-  PresetChips,
   SegRadio,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -56,6 +56,11 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   const [sst, setSst] = useState('mariabackup');
   const [lastPlan, setLastPlan] = useState<ClusterPlan | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [applyTarget, setApplyTarget] = useState<{
+    id: string;
+    bootstrap: boolean;
+  } | null>(null);
+  const [probeFacts, setProbeFacts] = useState<Record<string, string> | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -128,6 +133,55 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
     }, '已更新計劃');
   }
 
+  /** Dry-run apply: materialize + mark local written (no system) */
+  async function applyDry(id: string) {
+    await run(async () => {
+      const r = await dbClusterApi.apply(id, { execute: false });
+      setActiveId(id);
+      await refresh();
+      return {
+        ok: r.ok,
+        dryRun: r.dryRun,
+        notes: r.notes,
+        written: r.written,
+      } as OpsResultLike;
+    }, '已寫管理檔（dry-run）');
+  }
+
+  async function applySystem(id: string, bootstrap: boolean) {
+    await run(async () => {
+      const r = await dbClusterApi.apply(id, { execute: true, bootstrap });
+      setActiveId(id);
+      await refresh();
+      return {
+        ok: r.ok,
+        dryRun: r.dryRun,
+        blocked: r.blocked,
+        notes: r.notes,
+        written: r.written,
+        requiresExecute: r.requiresExecute,
+        requiresRoot: r.requiresRoot,
+      } as OpsResultLike;
+    }, bootstrap ? '已嘗試 bootstrap' : '已嘗試套用系統 conf');
+  }
+
+  async function doProbe(id: string) {
+    await run(async () => {
+      const r = await dbClusterApi.probe(id);
+      setActiveId(id);
+      setProbeFacts(r.facts ?? null);
+      await refresh();
+      return {
+        ok: r.ok || r.localOk,
+        notes: [
+          ...(r.notes ?? []),
+          `status=${r.cluster.status}`,
+          r.localOk ? '本機 wsrep 可讀' : '本機 probe 未過',
+        ],
+      } as OpsResultLike;
+    }, '已探測');
+  }
+
   async function removeCluster(id: string) {
     if (!confirm('刪除叢集登記？系統 conf 唔會自動清（v1）。')) return;
     await run(async () => {
@@ -135,6 +189,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       if (activeId === id) {
         setActiveId(null);
         setLastPlan(null);
+        setProbeFacts(null);
       }
       await refresh();
       return { ok: r.ok, notes: r.notes ?? [] } as OpsResultLike;
@@ -236,6 +291,38 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                             計劃
                           </Button>
                           <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => void applyDry(c.id)}
+                          >
+                            寫檔
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => setApplyTarget({ id: c.id, bootstrap: false })}
+                          >
+                            套用本機
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => setApplyTarget({ id: c.id, bootstrap: true })}
+                          >
+                            Bootstrap
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => void doProbe(c.id)}
+                          >
+                            探測
+                          </Button>
+                          <Button
                             variant="danger"
                             size="sm"
                             loading={busy}
@@ -253,6 +340,22 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           )}
         </CardSection>
       </Card>
+
+      {probeFacts && Object.keys(probeFacts).length > 0 ? (
+        <Card>
+          <CardSection title="最近 probe（本機 wsrep）" description="healthy 必須 probe 通過">
+            <DescriptionList
+              columns={2}
+              items={Object.entries(probeFacts)
+                .filter(([k]) =>
+                  /wsrep_(ready|connected|cluster_size|local_state)/i.test(k),
+                )
+                .slice(0, 8)
+                .map(([k, v]) => ({ label: k, value: v }))}
+            />
+          </CardSection>
+        </Card>
+      ) : null}
 
       {lastPlan ? (
         <Card>
@@ -384,22 +487,33 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             </Field>
             <FormHint>
               禁止示範 IP（203.0.113.x）。防火牆只對內網開 3306 / 4567 / 4444 /
-              4568。套用系統 conf 需 YSK_EXECUTE（後續版本）。
+              4568。套用系統 conf 需 YSK_EXECUTE=1 + root。
             </FormHint>
-            <PresetChips
-              options={[
-                { value: 'hint', label: '最少 2 節點' },
-                { value: 'hint2', label: '先計劃後 bootstrap' },
-              ]}
-              value=""
-              onChange={() => undefined}
-            />
           </FormLayout>
           <FormActions>
             <span className="muted u-text-sm">拓撲：{kind}</span>
           </FormActions>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(applyTarget)}
+        onClose={() => setApplyTarget(null)}
+        title="套用本機系統 conf？"
+        description={
+          applyTarget?.bootstrap
+            ? '會安裝 Galera drop-in 並 bootstrap（galera_new_cluster）。僅第一個節點用一次。'
+            : '會安裝 Galera drop-in 並 systemctl restart mariadb。需 YSK_EXECUTE=1 + root。首節點請改用「Bootstrap」。'
+        }
+        confirmLabel="確認套用"
+        danger
+        onConfirm={() => {
+          if (!applyTarget) return;
+          const t = applyTarget;
+          setApplyTarget(null);
+          void applySystem(t.id, t.bootstrap);
+        }}
+      />
     </div>
   );
 }

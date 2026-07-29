@@ -85,6 +85,24 @@
       "example": "ysk-server db-cluster plan --id UUID --json"
     },
     {
+      "name": "db-cluster apply",
+      "risk": "execute-host",
+      "summary": "Default dry-run write; --execute installs Galera drop-in + restart/bootstrap",
+      "args": ["--id", "--execute", "--bootstrap"],
+      "example": "ysk-server db-cluster apply --id UUID --json",
+      "exitCodes": {
+        "0": "ok or dry-run written",
+        "3": "blocked without EXECUTE/root when --execute"
+      }
+    },
+    {
+      "name": "db-cluster probe",
+      "risk": "read",
+      "summary": "Probe local wsrep; update cluster status honest",
+      "args": ["--id"],
+      "example": "ysk-server db-cluster probe --id UUID --json"
+    },
+    {
       "name": "ssl list",
       "risk": "read",
       "summary": "List managed SSL certificates",

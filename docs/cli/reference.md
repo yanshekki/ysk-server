@@ -181,11 +181,16 @@ ysk-server db-cluster get --id UUID [--json]
 ysk-server db-cluster create --name g1 --engine mariadb --kind mariadb-galera \
   --member 10.0.0.1=node:local --member 10.0.0.2=node:ssh [--sst mariabackup] [--json]
 ysk-server db-cluster plan --id UUID [--json]    # always dry-run; writes dataDir/clusters/
+ysk-server db-cluster apply --id UUID [--execute] [--bootstrap] [--json]
+ysk-server db-cluster probe --id UUID [--json]   # local wsrep status
 ysk-server db-cluster delete --id UUID [--json]  # registry only
 ```
 
-v1 planner: **MariaDB Galera**. Other kinds return honest not-implemented plan.  
-No TEST-NET default hosts. Panel: **MariaDB 服務 → 叢集**.
+- `apply` without `--execute`: materialize + mark local `written` (exit 0, dryRun)
+- `apply --execute`: needs `YSK_EXECUTE=1` + root → system drop-in + restart/bootstrap
+- `probe`: never claims healthy without real wsrep facts
+
+v1 planner/apply/probe: **MariaDB Galera**. Panel: **MariaDB 服務 → 叢集**.
 
 ## hosting
 

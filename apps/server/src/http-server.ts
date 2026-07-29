@@ -3219,6 +3219,62 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendJson(res, plan.ok ? 200 : 422, { ok: plan.ok, cluster, plan });
       }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/apply$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          execute?: boolean;
+          bootstrap?: boolean;
+        };
+        const { applyDbClusterLocal } = await import('@ysk/core');
+        const result = await applyDbClusterLocal({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          clusterId: id,
+          // Panel: omit execute → dry-run write artifacts; explicit true → system
+          execute: data.execute === true,
+          bootstrap: data.bootstrap === true,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.apply',
+          resource: id,
+          detail: {
+            ok: result.ok,
+            dryRun: result.dryRun,
+            executed: result.executed,
+            blocked: result.blocked,
+            written: result.written,
+          },
+          ok: result.ok,
+        });
+        return sendJson(res, result.ok || result.dryRun ? 200 : result.blocked ? 403 : 422, result);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/probe$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { probeDbCluster } = await import('@ysk/core');
+        const result = await probeDbCluster({
+          db: ctx.db,
+          host: ctx.host,
+          clusterId: id,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.probe',
+          resource: id,
+          detail: {
+            ok: result.ok,
+            localOk: result.localOk,
+            status: result.cluster.status,
+            facts: result.facts,
+          },
+          ok: result.ok || result.localOk,
+        });
+        return sendJson(res, 200, result);
+      }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/check') {
         ctx.auth.authenticate(getBearer(req));

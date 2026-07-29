@@ -89,4 +89,28 @@ export const dbClusterApi = {
       `/api/v1/db/clusters/${id}/plan`,
       { method: 'POST', body: '{}' },
     ),
+  apply: (id: string, body?: { execute?: boolean; bootstrap?: boolean }) =>
+    api.requestRaw<{
+      ok: boolean;
+      dryRun: boolean;
+      executed: boolean;
+      blocked?: boolean;
+      cluster: DbCluster;
+      written: string[];
+      notes: string[];
+      requiresExecute: boolean;
+      requiresRoot: boolean;
+      systemConf?: string;
+    }>(`/api/v1/db/clusters/${id}/apply`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    }),
+  probe: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      localOk: boolean;
+      cluster: DbCluster;
+      facts: Record<string, string>;
+      notes: string[];
+    }>(`/api/v1/db/clusters/${id}/probe`, { method: 'POST', body: '{}' }),
 };

@@ -11,6 +11,9 @@ import {
 } from './store.js';
 import { planAndMaterializeDbCluster, planDbCluster } from './plan.js';
 import { galeraAddressList, planMariadbGalera, renderGaleraCnf } from './plan-mariadb-galera.js';
+import { evaluateGaleraHealth, parseWsrepStatus } from './probe.js';
+import { applyDbClusterLocal } from './apply-local.js';
+import type { HostExecutor } from '../../host/executor.js';
 
 function memDb(): JsonStore {
   const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-'));
@@ -125,5 +128,132 @@ describe('mariadb galera plan', () => {
     const plan = planDbCluster(c);
     expect(plan.ok).toBe(false);
     expect(plan.notes.join(' ')).toMatch(/尚未實作/);
+  });
+});
+
+describe('galera probe parse', () => {
+  it('parses wsrep status lines', () => {
+    const out = [
+      'wsrep_cluster_size\t3',
+      'wsrep_ready\tON',
+      'wsrep_connected\tON',
+      'wsrep_local_state_comment\tSynced',
+    ].join('\n');
+    const facts = parseWsrepStatus(out);
+    expect(facts.wsrep_cluster_size).toBe('3');
+    expect(facts.wsrep_ready).toBe('ON');
+    const h = evaluateGaleraHealth(facts, 3);
+    expect(h.ok).toBe(true);
+  });
+
+  it('degraded when size too small', () => {
+    const facts = parseWsrepStatus('wsrep_cluster_size\t1\nwsrep_ready\tON\nwsrep_connected\tON\n');
+    const h = evaluateGaleraHealth(facts, 3);
+    expect(h.ok).toBe(false);
+  });
+});
+
+describe('apply local dry-run', () => {
+  it('writes artifacts and marks partial without EXECUTE', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-apply-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const c = createDbCluster(db, {
+      name: 'apply1',
+      engine: 'mariadb',
+      kind: 'mariadb-galera',
+      members: [
+        { host: '10.4.0.1', access: 'local' },
+        { host: '10.4.0.2', access: 'ssh' },
+      ],
+    });
+    const host: HostExecutor = {
+      executeEnabled: () => false,
+      isRoot: () => false,
+      pathExists: () => false,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      }),
+    };
+    const r = await applyDbClusterLocal({
+      db,
+      dataDir: dir,
+      host,
+      clusterId: c.id,
+      execute: false,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.dryRun).toBe(true);
+    expect(r.cluster.status).toBe('partial');
+    expect(r.cluster.members.find((m) => m.access === 'local')?.applyStatus).toBe(
+      'written',
+    );
+    expect(existsSync(join(dir, 'clusters', c.id, 'conf', '99-ysk-galera.cnf'))).toBe(
+      true,
+    );
+  });
+
+  it('blocked when execute without YSK_EXECUTE', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-block-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const c = createDbCluster(db, {
+      name: 'block1',
+      engine: 'mariadb',
+      kind: 'mariadb-galera',
+      members: [
+        { host: '10.5.0.1', access: 'local' },
+        { host: '10.5.0.2', access: 'ssh' },
+      ],
+    });
+    const host: HostExecutor = {
+      executeEnabled: () => false,
+      isRoot: () => true,
+      pathExists: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      }),
+    };
+    const r = await applyDbClusterLocal({
+      db,
+      dataDir: dir,
+      host,
+      clusterId: c.id,
+      execute: true,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.blocked).toBe(true);
   });
 });

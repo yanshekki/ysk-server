@@ -1183,6 +1183,8 @@ async function main(argv: string[]): Promise<number> {
       createDbCluster,
       planAndMaterializeDbCluster,
       deleteDbCluster,
+      applyDbClusterLocal,
+      probeDbCluster,
     } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
@@ -1283,6 +1285,39 @@ async function main(argv: string[]): Promise<number> {
         printJson({ ok: plan.ok, dryRun: true, cluster, plan });
         return plan.ok ? 0 : 1;
       }
+      if (sub === 'apply') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n`,
+          );
+          return 2;
+        }
+        const result = await applyDbClusterLocal({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          clusterId: id,
+          execute: wantsHostExecute(args),
+          bootstrap: hasFlag(args, '--bootstrap'),
+        });
+        printJson(result);
+        return exitFromResult(result);
+      }
+      if (sub === 'probe') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} db-cluster probe --id UUID [--json]\n`);
+          return 2;
+        }
+        const result = await probeDbCluster({
+          db: ctx.db,
+          host: ctx.host,
+          clusterId: id,
+        });
+        printJson(result);
+        return result.ok ? 0 : result.localOk ? 0 : 1;
+      }
       if (sub === 'delete' || sub === 'rm') {
         const id = getOpt(args, '--id');
         if (!id) {
@@ -1299,7 +1334,7 @@ async function main(argv: string[]): Promise<number> {
         return ok ? 0 : 4;
       }
       process.stderr.write(
-        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|delete [--engine mariadb] [--json]\n`,
+        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|delete [--execute] [--bootstrap] [--json]\n`,
       );
       return 2;
     } finally {
