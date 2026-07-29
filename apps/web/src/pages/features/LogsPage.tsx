@@ -1263,7 +1263,7 @@ export function LogsPage() {
                   </Button>
                 </FormActions>
                 <FormHint>
-                  無 EXECUTE 會誠實 blocked。自動 vacuum 見「設定」。建議至少保留 7 日。
+                  無 EXECUTE 會 blocked。建議保留 ≥7 日。
                 </FormHint>
               </div>
 

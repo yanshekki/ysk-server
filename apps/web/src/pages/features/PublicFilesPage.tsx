@@ -52,12 +52,9 @@ export function PublicFilesPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Public files"
-        title="公開檔案站點"
         pill={serverName || '未設定'}
         pillTone={serverName ? 'ok' : 'warn'}
         tone="ok"
-        hint="寫入管理 conf；套用時可嘗試 reload Nginx。written ≠ 對外可連。"
         stats={[
           { label: 'server_name', value: <span className="ops-stat__val--sm">{serverName || '—'}</span> },
           { label: '配額', value: `${quotaMb || '—'} MiB` },
@@ -87,7 +84,7 @@ export function PublicFilesPage() {
       <Card>
         <CardSection
           title="站點設定"
-          description="寫入管理 conf；套用時可嘗試 reload Nginx（written ≠ 對外可連）"
+          description="寫入管理 conf；套用時可嘗試 reload Nginx（套用後才可連）"
         >
           <FormLayout columns={2}>
             <Field

@@ -149,12 +149,9 @@ export function PostgresPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="PostgreSQL"
-        title="資料庫"
         pill={svc?.activeLabel ?? (installed ? '已裝' : '未裝')}
         pillTone={running ? 'ok' : installed ? 'warn' : 'danger'}
         tone={running ? 'ok' : 'warn'}
-        hint="資料庫 CRUD 與服務狀態。套用設定請到服務控制台。"
         cta={
           <Link to="/databases/postgres/service" className="btn btn--secondary btn--md">
             服務控制台
@@ -302,7 +299,7 @@ export function PostgresPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="建立 PostgreSQL 資料庫"
-        description="寫入控制面登記；需再「套用到系統」才 CREATE DATABASE（written ≠ 已上線）"
+        description="寫入控制面登記；需再「套用到系統」才 CREATE DATABASE（套用後才上線）"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCreateOpen(false)}>

@@ -288,7 +288,7 @@ export function ReadinessPage() {
                 </h2>
                 <p className="rdy-hero__hint">
                   門檻 = root + <code>YSK_EXECUTE</code> + nginx／node 在 PATH + dataDir。
-                  全部就緒 <strong>≠</strong> 已對外上線；written ≠ 系統已套用。
+                  就緒 ≠ 已對外；需套用後才上線。
                 </p>
                 <div className="rdy-hero__meta">
                   <span>
@@ -487,7 +487,7 @@ export function ReadinessPage() {
               </section>
 
               <p className="rdy-footnote">
-                誠實政策：郵件 PTR／Port 25／域名商 DNS 永不自動宣稱完成。
+                政策：郵件 PTR／Port 25／域名商 DNS 永不自動宣稱完成。
                 HTTP 503 = 未達標但仍有完整報告（非假成功）。
               </p>
             </aside>

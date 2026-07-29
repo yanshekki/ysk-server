@@ -921,7 +921,7 @@ export function ProtectionPage() {
                     ? status.isRoot
                       ? '可以套用到系統（EXECUTE + root）'
                       : '有 EXECUTE，但仍需 root 先完整套用'
-                    : '只寫管理檔 · written ≠ applied'}
+                    : '只寫管理檔'}
                 </p>
               </KpiCard>
               <KpiCard

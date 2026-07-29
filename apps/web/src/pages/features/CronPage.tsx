@@ -377,7 +377,7 @@ export function CronPage() {
               </h2>
               <p className="ops-hero__hint">
                 先寫入管理 crontab，再「安裝到系統」才真正生效。專案工作以 runuser
-                隔離。無 EXECUTE／root 時安裝會誠實失敗。
+                無 EXECUTE／root 時安裝會失敗。
               </p>
               <div className="ops-hero__meta">
                 <span>
@@ -640,7 +640,7 @@ export function CronPage() {
                 <header className="ops-panel__head">
                   <div>
                     <h3 className="ops-panel__title">安裝狀態</h3>
-                    <p className="ops-panel__sub">誠實對照管理檔 vs 主機</p>
+                    <p className="ops-panel__sub">管理檔 vs 主機</p>
                   </div>
                 </header>
                 <dl className="ops-dl">

@@ -95,7 +95,7 @@ export function DnsPage() {
       setDnssecDs(r.dsRecord ?? null);
       setDnssecMsg(
         r.ok
-          ? '已產生 DNSSEC 金鑰（written ≠ 已簽署／已上線）'
+          ? '已產生 DNSSEC 金鑰（未上線）'
           : 'DNSSEC 產生未完成',
       );
       const listed = await api.requestRaw<{ files?: string[]; notes?: string[] }>(
@@ -209,8 +209,8 @@ export function DnsPage() {
         ]}
         rail={
           <li>
-            <span className="ops-rail__k">誠實</span>
-            <Badge tone="neutral">written ≠ live DNS</Badge>
+            <span className="ops-rail__k">狀態</span>
+            <Badge tone="neutral">未上線 DNS</Badge>
           </li>
         }
       />
@@ -562,7 +562,7 @@ export function DnsPage() {
             <Card>
               <CardSection
                 title="DNSSEC"
-                description="產生金鑰到 dataDir；唔會自動簽署 zone 或上線（誠實 written ≠ applied）"
+                description="產生金鑰；不自動上線"
               >
                 {selectedLive ? (
                   <>
@@ -603,7 +603,7 @@ export function DnsPage() {
         open={zoneOpen}
         onClose={() => setZoneOpen(false)}
         title="建立 DNS 區域"
-        description="依模板產生種子記錄；寫入後狀態誠實標示（written ≠ 權威已上線）"
+        description="依模板產生記錄"
         footer={
           <>
             <button type="button" className="btn btn--secondary" onClick={() => setZoneOpen(false)}>
@@ -833,7 +833,7 @@ export function DnsPage() {
           if (delRec) void records.remove(delRec).then(() => setDelRec(null));
         }}
         title="刪除記錄？"
-        description="從控制面移除；請再「寫入區域檔」。"
+        description="移除後請寫入區域檔"
         confirmLabel="刪除"
         cancelLabel="取消"
         danger

@@ -298,12 +298,9 @@ export function RedisPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Redis"
-        title="資料瀏覽"
         pill={online ? '已連線' : '未連線'}
         pillTone={online ? 'ok' : 'warn'}
         tone={online ? 'ok' : 'warn'}
-        hint="瀏覽／編輯鍵值。服務安裝與設定請到服務頁。"
         cta={
           <Link to="/databases/redis/service" className="btn btn--secondary btn--md">
             服務設定

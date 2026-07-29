@@ -342,12 +342,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       {dbs.msg || users.msg ? <Alert variant="ok">{dbs.msg ?? users.msg}</Alert> : null}
 
       <OpsHero
-        eyebrow={title}
-        title={`${title} 資料`}
         pill={st.text}
         pillTone={st.tone === 'neutral' ? 'warn' : st.tone}
         tone={running ? 'ok' : 'warn'}
-        hint="資料庫／用戶 CRUD 與服務狀態。安裝與套用設定需 EXECUTE + root。"
         cta={
           <Link to={servicePath} className="btn btn--secondary btn--md">
             服務設定
@@ -578,7 +575,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <Card>
             <CardSection
               title="臨時只讀用戶"
-              description="到期後控制面標記 expired；系統 DROP 需另開權限操作（誠實標示）"
+              description="到期後控制面標記 expired；系統 DROP 需另開權限操作（標示）"
             >
               <FormLayout columns={2}>
                 <Field label="資料庫名稱" htmlFor="tmp-db" required flush>
@@ -875,7 +872,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         open={userOpen}
         onClose={() => setUserOpen(false)}
         title={`建立 ${title} 用戶`}
-        description="建立控制面登記後請套用；written ≠ 伺服器已 CREATE USER"
+        description="建立後請套用"
         footer={
           <>
             <button type="button" className="btn btn--secondary" onClick={() => setUserOpen(false)}>

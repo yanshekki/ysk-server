@@ -406,7 +406,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             <Card>
               <CardSection
                 title="面板調校"
-                description="寫入 dataDir；部署時轉成 Environment=／行程 env（written ≠ 線上已重載）"
+                description="寫入管理檔；部署時注入 env"
               >
                 <FormLayout columns={2}>
                   <Field label="綁定版本" htmlFor={`tune-${kind}-ver`} flush>

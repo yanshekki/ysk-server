@@ -73,26 +73,20 @@ export function ProjectsPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Sites"
-        title="專案託管"
-        pill={`${items.length} 專案`}
+        pill={`${items.length}`}
         pillTone={items.length ? 'ok' : 'warn'}
         tone={items.length ? 'ok' : 'warn'}
-        hint={
-          <>
-            部署／發布需<strong>系統變更權限</strong>。Nginx 發布會寫管理 conf，
-            成功 reload 才算真正上線（written ≠ 對外可連）。
-          </>
-        }
         meta={
           <>
             <span>
-              顯示 <strong>{filtered.length}</strong> / {items.length}
+              {filtered.length}/{items.length}
             </span>
-            <span className="ops-hero__dot" />
-            <span>
-              篩選 <strong>{runtimeFilter}</strong>
-            </span>
+            {runtimeFilter !== 'all' ? (
+              <>
+                <span className="ops-hero__dot" />
+                <span>{runtimeFilter}</span>
+              </>
+            ) : null}
           </>
         }
         cta={
@@ -128,14 +122,6 @@ export function ProjectsPage() {
             ).length,
           },
         ]}
-        rail={
-          <>
-            <li>
-              <span className="ops-rail__k">篩選結果</span>
-              <Badge tone="neutral">{filtered.length}</Badge>
-            </li>
-          </>
-        }
       />
 
       <ProjectSummaryStrip items={items} />

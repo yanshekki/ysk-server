@@ -920,7 +920,7 @@ export function SystemPage() {
                     <strong>匯出</strong> = 面板 DB 摘要 JSON。
                     <strong> Rebuild</strong> = managed conf →{' '}
                     <code>/etc/nginx/conf.d</code> + reload。
-                    written ≠ 系統已套用；同步需 root + EXECUTE。
+                    同步需 root + EXECUTE
                   </p>
                   <div className="sys-hero__cta">
                     <Button
@@ -1260,7 +1260,7 @@ export function SystemPage() {
                   </Button>
                 </div>
                 <p className="sys-footnote">
-                  Dry-run 唔會改系統。正式同步失敗會誠實 blocked（無假成功）。
+                  Dry-run 不改系統。
                 </p>
               </section>
 

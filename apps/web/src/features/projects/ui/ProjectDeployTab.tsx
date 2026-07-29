@@ -62,7 +62,7 @@ function processDeployHint(runtime: string): string {
   if (runtime === 'node') {
     return '依 Node 啟動行程（entry 預設 server.js）；生產環境建議 systemd。';
   }
-  return '會依 runtime 設定啟動；written ≠ 已對外。';
+  return '依 runtime 啟動；套用後才對外。';
 }
 
 function defaultEntryHint(runtime: string): string {

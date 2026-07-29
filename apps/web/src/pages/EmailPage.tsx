@@ -267,7 +267,7 @@ export function EmailPage() {
                 <div>
                   <h3 className="mail-card__title">本機郵件佇列</h3>
                   <p className="mail-card__desc muted u-text-sm">
-                    postqueue / postsuper · 需 YSK_EXECUTE · 未安裝 MTA 會誠實失敗
+                    需 YSK_EXECUTE
                   </p>
                 </div>
                 <div className="btn-row">
@@ -365,7 +365,7 @@ export function EmailPage() {
                   <h3 className="mail-card__title">域名設定路徑</h3>
                 </div>
                 <ol className="mail-steps">
-                  <li>右上角登記域名（控制面 draft）</li>
+                  <li>右上角登記域名</li>
                   <li>進入域名詳情 → 一鍵設定郵件</li>
                   <li>DNS 頁或外部 checklist 加 MX／SPF／DKIM／DMARC</li>
                   <li>SSL 綁定 mail／webmail 主機名</li>
@@ -415,11 +415,11 @@ export function EmailPage() {
               </div>
               <div className="mail-card mail-card--muted">
                 <div className="mail-card__head">
-                  <h3 className="mail-card__title">誠實狀態</h3>
+                  <h3 className="mail-card__title">狀態</h3>
                 </div>
                 <ul className="mail-bullets">
                   <li>
-                    <code>draft</code>：只在控制面
+                    <code>draft</code>：僅面板
                   </li>
                   <li>
                     <code>written</code>：已寫管理檔，未必套到系統
@@ -439,7 +439,7 @@ export function EmailPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title={t('email.create')}
-        description="只登記郵件域名到控制面；軟件安裝、DNS、郵箱在詳情頁完成"
+        description="詳情頁完成安裝與 DNS"
         footer={
           <>
             <Button

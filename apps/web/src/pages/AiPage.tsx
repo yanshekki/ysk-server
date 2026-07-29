@@ -186,12 +186,9 @@ export function AiPage() {
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <OpsHero
-        eyebrow="AI Console"
-        title="受控自動化"
         pill={stats.active > 0 ? `${stats.active} 進行中` : `${tasks.length} 任務`}
         pillTone={stats.failed ? 'warn' : stats.active ? 'ok' : 'neutral'}
         tone={stats.failed ? 'warn' : 'ok'}
-        hint="自然語言只會產生計劃；要執行必須人工批准。工具不可繞過 allowlist。"
         cta={
           <>
             <Button variant="primary" size="md" onClick={openCreate}>

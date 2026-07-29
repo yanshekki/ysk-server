@@ -133,12 +133,9 @@ export function SslPage() {
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <OpsHero
-        eyebrow="SSL"
-        title="憑證管理"
         pill={`${items.length} 張`}
         pillTone={items.length ? 'ok' : 'warn'}
         tone={items.length ? 'ok' : 'warn'}
-        hint="上傳或 Let’s Encrypt 申請。檔案存在 ≠ 網站已綁定；綁定後需 Nginx reload。"
         cta={
           <>
             <Button variant="primary" size="md" onClick={() => setLeOpen(true)}>

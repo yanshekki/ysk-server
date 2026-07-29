@@ -287,7 +287,7 @@ export function PhpRuntimePage() {
         {tab === 'overview' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title="安裝 PHP" description="需系統變更權限；安裝 ≠ 已設定 FPM／ini">
+              <CardSection title="安裝 PHP" description="需系統變更權限；安裝後需設定 FPM">
                 <FormLayout columns={2}>
                   <Field label="PHP 版本" htmlFor="php-ver" flush required>
                     <SegRadio

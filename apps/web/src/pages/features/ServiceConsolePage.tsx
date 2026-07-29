@@ -388,14 +388,11 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       {console ? (
         <>
         <OpsHero
-          eyebrow={`${engine} service`}
-          title={console.title ?? engine}
           pill={console.activeLabel}
           pillTone={
             console.active === 'active' ? 'ok' : console.installed ? 'warn' : 'danger'
           }
           tone={console.active === 'active' ? 'ok' : 'warn'}
-          hint="生命週期與設定套用需 EXECUTE + root。儲存草稿 ≠ 已寫入系統。"
           cta={
             <>
               <Link to={link.path} className="btn btn--secondary btn--md">

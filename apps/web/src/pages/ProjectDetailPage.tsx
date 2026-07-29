@@ -245,20 +245,18 @@ export function ProjectDetailPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Project"
-        title={project.name}
         pill={project.runtime}
         pillTone="ok"
         tone="ok"
-        hint={
-          <>
-            {project.domain ?? t('projects.noDomain')} · 發布 Nginx 後需 reload
-            才算上線 · written ≠ live
-          </>
-        }
         meta={
           <>
             <ProjectStatusBadge project={project} />
+            {project.domain ? (
+              <>
+                <span className="ops-hero__dot" />
+                <span>{project.domain}</span>
+              </>
+            ) : null}
             {statusHint ? (
               <>
                 <span className="ops-hero__dot" />

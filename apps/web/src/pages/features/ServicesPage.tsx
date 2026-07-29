@@ -185,7 +185,7 @@ export function ServicesPage() {
                 </h2>
                 <p className="ops-hero__hint">
                   systemctl is-active／is-enabled 探測。啟動／停止／重啟需{' '}
-                  <code>YSK_EXECUTE</code> + root；否則誠實 blocked。
+                  <code>YSK_EXECUTE</code> + root；否則blocked。
                 </p>
                 <div className="ops-hero__meta">
                   <span>

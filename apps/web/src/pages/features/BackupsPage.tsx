@@ -308,7 +308,7 @@ export function BackupsPage() {
               </h2>
               <p className="ops-hero__hint">
                 tar 歸檔於管理目錄；還原可 dry-run／web／完整。遠端與 restic
-                為可選。written／上傳失敗會誠實標示，唔會假成功。
+                失敗會標示。
               </p>
               <div className="ops-hero__meta">
                 <span>

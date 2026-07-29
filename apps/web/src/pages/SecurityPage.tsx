@@ -162,12 +162,9 @@ export function SecurityPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Security"
-        title="帳戶 · 金鑰 · 審批"
         pill={approvals.length > 0 ? `${approvals.length} 待批` : '就緒'}
         pillTone={approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn'}
         tone={approvals.length > 0 ? 'warn' : 'ok'}
-        hint={t('security.llmUntrusted')}
         meta={
           <>
             <span>

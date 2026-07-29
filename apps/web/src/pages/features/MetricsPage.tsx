@@ -163,7 +163,7 @@ export function MetricsPage() {
                   即時資源快照
                 </h2>
                 <p className="ops-hero__hint">
-                  由控制面收集 loadavg／記憶體／磁碟使用率。非歷史圖表；告警為閾值提示，唔會自動改系統。
+                  即時快照；告警不改系統。
                 </p>
                 <div className="ops-hero__meta">
                   <span>

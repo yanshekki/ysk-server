@@ -183,12 +183,9 @@ export function FtpPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="FTPS"
-        title="帳戶與 SFTP 公鑰"
         pill={`${crud.items.length} 帳戶`}
         pillTone={crud.items.length ? 'ok' : 'warn'}
         tone={draft > 0 ? 'warn' : 'ok'}
-        hint="虛擬帳戶寫入控制面後需套用 vsftpd。written ≠ 可登入。"
         stats={[
           { label: '帳戶', value: crud.items.length },
           {
@@ -693,7 +690,7 @@ export function FtpPage() {
           if (delId) void crud.remove(delId).then(() => setDelId(null));
         }}
         title="刪除 FTP 帳戶？"
-        description="會移除控制面登記；請再「套用」其他帳戶或於服務頁重載。"
+        description="移除後請再套用"
         confirmLabel="刪除"
         cancelLabel="取消"
         danger

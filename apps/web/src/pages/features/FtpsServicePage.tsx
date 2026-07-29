@@ -179,12 +179,9 @@ export function FtpsServicePage() {
       ) : null}
 
       <OpsHero
-        eyebrow="vsftpd"
-        title="FTPS 服務"
         pill={st.text}
         pillTone={st.tone === 'neutral' ? 'warn' : st.tone}
         tone={status?.active === 'active' ? 'ok' : 'warn'}
-        hint="生命週期與 vsftpd 設定。儲存草稿 ≠ 已套用到系統。"
         cta={
           <Link to="/ftp" className="btn btn--secondary btn--md">
             帳戶

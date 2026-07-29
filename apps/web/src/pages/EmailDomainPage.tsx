@@ -184,8 +184,6 @@ export function EmailDomainPage() {
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <OpsHero
-        eyebrow="Mail domain"
-        title={domain.domain}
         pill={
           applySt === 'applied'
             ? '已套用'
@@ -195,7 +193,6 @@ export function EmailDomainPage() {
         }
         pillTone={applySt === 'applied' ? 'ok' : 'warn'}
         tone={domain.health_score >= 80 ? 'ok' : 'warn'}
-        hint={`IP ${domain.server_ip} · written ≠ 可收發（DNS/PTR/Port25 另計）`}
         stats={[
           {
             label: '健康',
@@ -837,7 +834,7 @@ export function EmailDomainPage() {
                   <CheckboxField
                     id="ras"
                     label="套用到系統 Postfix"
-                    description="關閉則只儲存在控制面"
+                    description="關閉則只存面板"
                     checked={relayApplySystem}
                     onChange={setRelayApplySystem}
                   />
@@ -1118,7 +1115,7 @@ export function EmailDomainPage() {
             <Card>
               <CardSection
                 title="Webmail（Roundcube）"
-                description="下載／套用 Roundcube；written ≠ 虛擬主機已對外服務"
+                description="下載／套用 Roundcube"
               >
                 <FormLayout columns={2}>
                   <Field

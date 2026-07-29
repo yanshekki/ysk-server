@@ -181,8 +181,6 @@ export function AgentsPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Agents"
-        title="邊緣代理與運行時"
         pill={
           liveAgents > 0
             ? `${liveAgents} 上線`
@@ -192,7 +190,6 @@ export function AgentsPage() {
         }
         pillTone={liveAgents > 0 ? 'ok' : agents.length ? 'warn' : 'warn'}
         tone={liveAgents > 0 ? 'ok' : 'warn'}
-        hint="面板登記只寫清單；真正上線要邊緣進程 heartbeat。下指令會排隊，等 agent pull 後先執行。"
         cta={
           <>
             <Button variant="primary" size="md" onClick={openRegister}>
@@ -243,7 +240,7 @@ export function AgentsPage() {
               <strong>刪除</strong>：移除 session 同相關訊息
             </li>
             <li>
-              <strong>誠實狀態</strong>：僅登記 → 上線（heartbeat）→ 逾時（&gt;60s 無心跳）
+              <strong>狀態</strong>：僅登記 → 上線（heartbeat）→ 逾時（&gt;60s 無心跳）
             </li>
           </ul>
         </CardSection>

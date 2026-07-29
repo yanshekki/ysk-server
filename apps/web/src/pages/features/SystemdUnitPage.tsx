@@ -150,7 +150,7 @@ export function SystemdUnitPage() {
         title: '安裝到 /etc/systemd 並啟用',
         detail: canInstall
           ? '複製 unit → daemon-reload → enable --now'
-          : '需 YSK_EXECUTE=1 與 root；否則會誠實失敗',
+          : '需 YSK_EXECUTE 與 root',
         action: 'install',
         done: false,
       });
@@ -243,7 +243,7 @@ export function SystemdUnitPage() {
                 </h2>
                 <p className="sdu-hero__hint">
                   {status.show?.description ||
-                    'YSK 控制面 API／排程進程。寫入 dataDir 範本 ≠ /etc 已安裝 ≠ 已在跑。'}
+                    '控制面 API／排程'}
                 </p>
                 <div className="sdu-hero__meta">
                   <span>
@@ -367,7 +367,7 @@ export function SystemdUnitPage() {
                 <div>
                   <h3 className="sdu-panel__title">建議步驟</h3>
                   <p className="sdu-panel__sub">
-                    按順序處理；每步會誠實回報 blocked／失敗
+                    按步回報
                   </p>
                 </div>
               </header>
@@ -489,7 +489,7 @@ export function SystemdUnitPage() {
 
               <section className="sdu-panel">
                 <header className="sdu-panel__head">
-                  <h3 className="sdu-panel__title">誠實政策</h3>
+                  <h3 className="sdu-panel__title">政策</h3>
                 </header>
                 <ul className="sdu-bullets">
                   <li>

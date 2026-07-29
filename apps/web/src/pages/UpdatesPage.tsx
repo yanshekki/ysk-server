@@ -179,7 +179,7 @@ export function UpdatesPage() {
               </h2>
               <p className="upd-hero__hint">
                 由管理面板掃描主機套件、標風險／CVE、審批後套用。高風險需確認；無
-                EXECUTE／root 會誠實 blocked。OSV 需外網、只查前 12 項。
+                EXECUTE／root 會 blocked。OSV 需外網、只查前 12 項。
               </p>
               <div className="upd-hero__meta">
                 <span>
@@ -348,7 +348,7 @@ export function UpdatesPage() {
                   </Button>
                 </div>
                 <p className="upd-footnote">
-                  會走控制面 self-update 路徑；失敗時誠實 notes，唔會假成功。
+                  控制面 self-update；失敗見 notes。
                 </p>
               </>
             )}
@@ -391,7 +391,7 @@ export function UpdatesPage() {
 
             <section className="upd-panel">
               <header className="upd-panel__head">
-                <h3 className="upd-panel__title">誠實政策</h3>
+                <h3 className="upd-panel__title">政策</h3>
               </header>
               <ul className="upd-bullets">
                 <li>掃描 ≠ 已升級；套用才會改系統</li>

@@ -134,12 +134,9 @@ export function NginxPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Nginx"
-        title="站點與反向代理"
         pill={`${items.length} 站點`}
         pillTone={items.length ? 'ok' : 'warn'}
         tone={items.length ? 'ok' : 'warn'}
-        hint="管理 conf 寫入 dataDir；套用／reload 成功才算對外生效。written ≠ 已上線。"
         cta={
           <>
             <Button
@@ -257,7 +254,7 @@ export function NginxPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="建立 Nginx 站點"
-        description="建立控制面登記；需再「套用」才寫入 sites-available 並 reload"
+        description="建立後需套用"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCreateOpen(false)}>
@@ -289,7 +286,7 @@ export function NginxPage() {
         open={Boolean(edit)}
         onClose={() => setEdit(null)}
         title="編輯 Nginx 站點"
-        description="儲存後請再套用，written ≠ nginx 已 reload"
+        description="儲存後需套用"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setEdit(null)}>
@@ -426,7 +423,7 @@ function SiteForm(props: {
         />
       </div>
       <FormHint>
-        建立／儲存只更新控制面；列表按「套用」後才寫入 nginx 設定並嘗試 reload。
+        儲存後按「套用」寫入 nginx
       </FormHint>
     </div>
   );
