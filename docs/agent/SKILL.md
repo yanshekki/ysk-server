@@ -12,8 +12,9 @@ You manage a Linux host through **YSK Server** control plane. Prefer the CLI ove
 ## First steps
 
 1. `ysk-server readiness --json` — honest production gate  
-2. `ysk-server projects list --json`  
-3. `ysk-server tools --json` — only use listed tools  
+2. `ysk-server host --json` / `ysk-server host metrics --json`  
+3. `ysk-server projects list --json`  
+4. `ysk-server tools --json` — only use listed tools  
 
 ## Project lifecycle
 
@@ -53,4 +54,5 @@ Only if operator explicitly wants multi-host poll:
 ysk-server agent run --control-plane URL --id AGENT_ID
 ```
 
-Prefer local CLI for this machine.
+Queue work as `{ "cli": ["host", "overview"] }` (auto `--json` on edge).  
+Prefer local CLI for this machine when single-host.

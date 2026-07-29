@@ -32,8 +32,10 @@
 ## 5 分鐘 runbook
 
 ```bash
-# 健康
+# 健康 / 主機
 ysk-server readiness --data-dir .ysk --json
+ysk-server host --json
+ysk-server host metrics --json
 
 # 專案
 ysk-server projects list --json
@@ -80,7 +82,7 @@ ysk-server ask "check system info" --json
 
 ---
 
-## 面板「AI Agent」
+## 面板「AI Agent」（實驗）
 
 控制面可 **登記／排隊**；邊緣要跑：
 
@@ -88,8 +90,16 @@ ysk-server ask "check system info" --json
 ysk-server agent run --control-plane http://127.0.0.1:9287 --id edge-1
 ```
 
-**而家 `onCommand` 只 echo**（除非已接 CLI 包裝）。  
-真實運維請直接用上方 CLI，唔好靠面板 fleet。
+排隊 payload 優先用 CLI 包裝（edge 已支援）：
+
+```json
+{ "cli": ["host", "overview", "--json"] }
+{ "cli": ["projects", "list"] }
+{ "cli": ["logs", "query", "--source", "journal:", "--lines", "50"] }
+```
+
+面板「下指令」預設亦係呢啲 CLI preset。  
+本機運維仍直接 call `ysk-server … --json` 最快；fleet 只係多機分發。
 
 ---
 

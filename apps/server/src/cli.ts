@@ -44,6 +44,7 @@ const CLI_COMMANDS = [
   'hosting',
   'dns',
   'logs',
+  'host',
   'services',
   'defense',
   'protection',
@@ -182,6 +183,7 @@ Commands:
   hosting               nginx|dns|db|firewall helpers
   dns                   zone|zones (AI alias → hosting dns-*)
   logs                  sources|query|journal|overview
+  host                  overview|metrics (read-only)
   services              Host service matrix (systemctl probe)
   defense | protection  status|ban|unban|whitelist
   agents                List/probe agent runtimes (experimental)
@@ -199,10 +201,11 @@ Exit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host erro
 
 Examples:
   ${CLI_NAME} readiness --json
+  ${CLI_NAME} host --json
   ${CLI_NAME} projects list --json
   ${CLI_NAME} projects create --name demo --runtime node --json
   ${CLI_NAME} logs query --source journal: --lines 100 --json
-  ${CLI_NAME} dns zone --zone example.com --ip 203.0.113.10 --json
+  ${CLI_NAME} dns zone --zone example.com --ip YOUR.PUBLIC.IP --json
   ${CLI_NAME} tools --json
 `.trim();
   process.stdout.write(`${text}\n`);
@@ -1068,6 +1071,39 @@ async function main(argv: string[]): Promise<number> {
       }
       process.stderr.write(
         `Usage: ${CLI_NAME} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** Host overview / metrics — read-only, AI-friendly */
+  if (command === 'host') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'overview';
+    const { collectHostOverview, collectMetrics } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'overview' || sub === 'status' || sub === 'info') {
+        const overview = await collectHostOverview(ctx.host);
+        printJson({ ok: true, ...overview });
+        return 0;
+      }
+      if (sub === 'metrics' || sub === 'load') {
+        const path = getOpt(args, '--path') ?? '/';
+        const metrics = collectMetrics(path);
+        printJson({
+          ok: true,
+          ...metrics,
+          caps: {
+            executeEnabled: ctx.host.executeEnabled(),
+            isRoot: ctx.host.isRoot(),
+          },
+        });
+        return metrics.alerts.length ? 1 : 0;
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} host overview|metrics [--path /] [--json]\n`,
       );
       return 2;
     } finally {

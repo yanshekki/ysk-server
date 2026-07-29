@@ -84,6 +84,16 @@ List one-click app templates (`node-starter`, `static-site`, `wordpress-php`).
 ysk-server templates [--json]
 ```
 
+## host
+
+Read-only host overview (identity, OS, load, memory, disks, network, caps).
+
+```bash
+ysk-server host [--json]                 # = overview
+ysk-server host overview [--json]
+ysk-server host metrics [--path /] [--json]   # exit 1 if alerts (memory/disk/load high)
+```
+
 ## services
 
 Host service matrix (real `systemctl` probe). Lifecycle needs `YSK_EXECUTE=1` + root.

@@ -86,10 +86,35 @@ export function AgentsPage() {
   const [registerOpen, setRegisterOpen] = useState(false);
 
   const [cmdAgent, setCmdAgent] = useState<FleetAgent | null>(null);
-  const [cmdPreset, setCmdPreset] = useState<'ping' | 'echo' | 'sysinfo'>('ping');
-  const [cmdEcho, setCmdEcho] = useState('hello from panel');
+  /** Prefer CLI payloads — edge agent runs ysk-server with these argv */
+  type CmdPreset =
+    | 'cli-readiness'
+    | 'cli-host'
+    | 'cli-projects'
+    | 'cli-services'
+    | 'cli-defense'
+    | 'cli-logs'
+    | 'ping'
+    | 'custom';
+  const [cmdPreset, setCmdPreset] = useState<CmdPreset>('cli-readiness');
+  const [cmdCustom, setCmdCustom] = useState('projects list --json');
 
   const [histAgent, setHistAgent] = useState<FleetAgent | null>(null);
+
+  function buildCliPayload(cli: string[]): { cli: string[] } {
+    const argv = cli.map(String);
+    if (!argv.includes('--json')) argv.push('--json');
+    return { cli: argv };
+  }
+
+  function parseCustomCli(line: string): string[] {
+    // simple split; quote-aware not required for our presets
+    return line
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter((t) => t !== 'ysk-server');
+  }
 
   const runtimeList = runtimes;
   const running = runtimeList.filter((r) => r.status === 'running').length;
@@ -132,12 +157,37 @@ export function AgentsPage() {
   async function onSendCommand(e: FormEvent) {
     e.preventDefault();
     if (!cmdAgent) return;
-    const payload =
-      cmdPreset === 'ping'
-        ? { op: 'ping', at: new Date().toISOString() }
-        : cmdPreset === 'sysinfo'
-          ? { op: 'sysinfo' }
-          : { op: 'echo', message: cmdEcho };
+    let payload: unknown;
+    switch (cmdPreset) {
+      case 'cli-readiness':
+        payload = buildCliPayload(['readiness']);
+        break;
+      case 'cli-host':
+        payload = buildCliPayload(['host', 'overview']);
+        break;
+      case 'cli-projects':
+        payload = buildCliPayload(['projects', 'list']);
+        break;
+      case 'cli-services':
+        payload = buildCliPayload(['services', 'matrix']);
+        break;
+      case 'cli-defense':
+        payload = buildCliPayload(['defense', 'status']);
+        break;
+      case 'cli-logs':
+        payload = buildCliPayload(['logs', 'query', '--source', 'journal:', '--lines', '50']);
+        break;
+      case 'custom': {
+        const parts = parseCustomCli(cmdCustom);
+        if (!parts.length) return;
+        payload = buildCliPayload(parts);
+        break;
+      }
+      case 'ping':
+      default:
+        payload = { op: 'ping', at: new Date().toISOString() };
+        break;
+    }
     try {
       await enqueueCommand(cmdAgent.id, payload);
       setCmdAgent(null);
@@ -638,33 +688,47 @@ intervalMs: 5000`}
       >
         <form id="agent-cmd" onSubmit={(e) => void onSendCommand(e)}>
           <FormLayout columns={1}>
-            <Field label="指令類型" htmlFor="cmd-preset" flush>
+            <Field label="指令（CLI 優先）" htmlFor="cmd-preset" flush>
               <SegRadio
                 name="cmd-preset"
                 aria-label="指令類型"
                 value={cmdPreset}
-                onChange={(v) => setCmdPreset(v as 'ping' | 'echo' | 'sysinfo')}
+                onChange={(v) => setCmdPreset(v as CmdPreset)}
                 options={[
+                  { value: 'cli-readiness', label: 'readiness' },
+                  { value: 'cli-host', label: 'host' },
+                  { value: 'cli-projects', label: 'projects' },
+                  { value: 'cli-services', label: 'services' },
+                  { value: 'cli-defense', label: 'defense' },
+                  { value: 'cli-logs', label: 'logs' },
+                  { value: 'custom', label: '自訂 CLI' },
                   { value: 'ping', label: 'ping' },
-                  { value: 'echo', label: 'echo' },
-                  { value: 'sysinfo', label: 'sysinfo' },
                 ]}
               />
             </Field>
-            {cmdPreset === 'echo' ? (
-              <Field label="訊息" htmlFor="cmd-echo" flush required>
+            {cmdPreset === 'custom' ? (
+              <Field
+                label="CLI 參數"
+                htmlFor="cmd-custom"
+                flush
+                required
+                hint="唔使寫 ysk-server；例：logs journal --unit nginx.service"
+              >
                 <input
-                  id="cmd-echo"
-                  value={cmdEcho}
-                  onChange={(e) => setCmdEcho(e.target.value)}
+                  id="cmd-custom"
+                  value={cmdCustom}
+                  onChange={(e) => setCmdCustom(e.target.value)}
+                  spellCheck={false}
+                  autoComplete="off"
                   required
                 />
               </Field>
             ) : null}
           </FormLayout>
           <FormHint>
-            實際執行取決於邊緣 agent 的 <code className="inline">onCommand</code>{' '}
-            handler；預設會 echo payload。
+            Edge <code className="inline">ysk-server agent run</code> 收到{' '}
+            <code className="inline">{`{ "cli": ["…"] }`}</code> 會喺本機執行 CLI（自動加
+            --json）。改系統仍要邊緣設 <code className="inline">YSK_EXECUTE=1</code>。
           </FormHint>
         </form>
       </Modal>

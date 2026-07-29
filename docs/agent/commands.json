@@ -128,6 +128,20 @@
       "example": "ysk-server logs overview --json"
     },
     {
+      "name": "host",
+      "aliases": ["host overview", "host status"],
+      "risk": "read",
+      "summary": "Host identity/OS/load/disks/network (read-only)",
+      "example": "ysk-server host --json"
+    },
+    {
+      "name": "host metrics",
+      "risk": "read",
+      "summary": "CPU load / memory / disk snapshot; exit 1 if alerts",
+      "args": ["--path"],
+      "example": "ysk-server host metrics --json"
+    },
+    {
       "name": "services",
       "risk": "read",
       "summary": "systemctl matrix; start|stop|restart|reload needs EXECUTE+root",
