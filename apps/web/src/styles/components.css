@@ -1099,7 +1099,23 @@ button.dash-kpi__link {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) 0;
+  /* block-only — never zero horizontal padding (overrides .card when combined) */
+  padding-block: var(--space-3);
+  padding-inline: 0;
+}
+
+/* Standalone loading card (e.g. Dashboard) — keep card side padding */
+.card.loading-row {
+  padding: var(--space-4) var(--space-card);
+  padding-left: var(--space-card);
+  padding-right: var(--space-card);
+  min-height: 3rem;
+}
+
+/* Nested loading row inside a padded parent */
+.card > .loading-row:not(.card) {
+  padding-inline: 0;
+  padding-block: var(--space-3);
 }
 
 /* —— Code —— */
