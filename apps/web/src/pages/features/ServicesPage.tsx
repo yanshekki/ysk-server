@@ -16,6 +16,7 @@ import {
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { dbClusterApi } from '../../features/db-service/cluster-api';
 
 function enabledLabel(v: string): string {
   if (v === 'enabled') return '自啟';
@@ -65,6 +66,10 @@ export function ServicesPage() {
   const [catFilter, setCatFilter] = useState('all');
   const [q, setQ] = useState('');
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
+  const [haOverview, setHaOverview] = useState<{
+    count: number;
+    items: Array<{ name: string; engine: string; status: string; id: string }>;
+  } | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -77,6 +82,20 @@ export function ServicesPage() {
         isRoot: r.isRoot,
         probedAt: r.probedAt,
       });
+      try {
+        const ha = await dbClusterApi.overview();
+        setHaOverview({
+          count: ha.count,
+          items: (ha.items ?? []).map((x) => ({
+            id: x.id,
+            name: x.name,
+            engine: x.engine,
+            status: x.status,
+          })),
+        });
+      } catch {
+        setHaOverview(null);
+      }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : '載入失敗');
     }
@@ -166,6 +185,23 @@ export function ServicesPage() {
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
             關閉
           </Button>
+        </Alert>
+      ) : null}
+
+      {haOverview && haOverview.count > 0 ? (
+        <Alert variant="info">
+          <strong>資料庫 HA</strong>：{haOverview.count} 個叢集 ·{' '}
+          {haOverview.items
+            .slice(0, 4)
+            .map((x) => `${x.name}(${x.status})`)
+            .join(' · ')}
+          {haOverview.count > 4 ? ' …' : ''}{' '}
+          <Link to="/databases/mariadb/service" className="btn btn--ghost btn--sm">
+            MariaDB 叢集
+          </Link>{' '}
+          <Link to="/databases/mysql/service" className="btn btn--ghost btn--sm">
+            MySQL
+          </Link>
         </Alert>
       ) : null}
 

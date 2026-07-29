@@ -452,13 +452,55 @@ async function main(argv: string[]): Promise<number> {
       signal: ac.signal,
       onCommand: async (cmd) => {
         process.stdout.write(`[cmd ${cmd.id}] ${JSON.stringify(cmd.payload)}\n`);
-        // Preferred payload: { "cli": ["projects", "list", "--json"] } — runs this binary only
-        const payload = cmd.payload as { cli?: string[]; op?: string };
+        const payload = cmd.payload as {
+          cli?: string[];
+          op?: string;
+          cluster?: unknown;
+        };
+        // Fleet cluster sync: upsert registry + plan on edge
+        if (payload?.op === 'clusterSync' && payload.cluster) {
+          const { importDbClusterSync } = await import('@ysk/core');
+          const dataDir =
+            getOpt(args, '--data-dir') ??
+            process.env.YSK_DATA_DIR ??
+            join(process.cwd(), '.ysk');
+          const ctxSync = openCliContext([
+            ...args.filter((a) => a.startsWith('--')),
+            '--data-dir',
+            dataDir,
+          ]);
+          try {
+            const r = importDbClusterSync({
+              db: ctxSync.db,
+              dataDir: ctxSync.dataDir,
+              cluster: payload.cluster as import('@ysk/core').DbCluster,
+            });
+            return {
+              ok: r.ok,
+              exitCode: r.ok ? 0 : 1,
+              op: 'clusterSync',
+              result: r,
+              at: new Date().toISOString(),
+            };
+          } finally {
+            closeAppContext(ctxSync);
+          }
+        }
+        // Preferred payload: { "cli": ["projects", "list", "--json"] }
         if (Array.isArray(payload?.cli) && payload.cli.length > 0) {
           const { spawnSync } = await import('node:child_process');
           const bin = process.argv[1] ?? 'ysk-server';
           const argv = payload.cli.map(String);
           if (!argv.includes('--json')) argv.push('--json');
+          // strip import-sync alone — handled via clusterSync
+          if (argv[0] === 'db-cluster' && argv[1] === 'import-sync') {
+            return {
+              ok: false,
+              exitCode: 2,
+              note: 'Use payload.op=clusterSync with cluster snapshot',
+              at: new Date().toISOString(),
+            };
+          }
           const r = spawnSync(process.execPath, [bin, ...argv], {
             encoding: 'utf8',
             env: process.env,
@@ -480,7 +522,6 @@ async function main(argv: string[]): Promise<number> {
             at: new Date().toISOString(),
           };
         }
-        // Legacy demos
         if (payload?.op === 'ping') {
           return { ok: true, exitCode: 0, op: 'pong', at: new Date().toISOString() };
         }
@@ -488,7 +529,7 @@ async function main(argv: string[]): Promise<number> {
           ok: true,
           exitCode: 0,
           echo: cmd.payload,
-          note: 'Pass { "cli": ["projects", "list"] } to run ysk-server CLI',
+          note: 'Pass { "cli": [...] } or { "op":"clusterSync", "cluster":{...} }',
           at: new Date().toISOString(),
         };
       },
@@ -1185,10 +1226,14 @@ async function main(argv: string[]): Promise<number> {
       deleteDbCluster,
       applyDbClusterLocal,
       probeDbCluster,
+      probeDbClusterFull,
       bundleDbClusterArtifacts,
       listDbClusterArtifacts,
       pushDbClusterToPeers,
       dispatchDbClusterFleet,
+      installDbClusterOnPeers,
+      firewallPortsForCluster,
+      importDbClusterSync,
     } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
@@ -1318,16 +1363,94 @@ async function main(argv: string[]): Promise<number> {
       if (sub === 'probe') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} db-cluster probe --id UUID [--json]\n`);
+          process.stderr.write(
+            `Usage: ${CLI_NAME} db-cluster probe --id UUID [--peers] [--json]\n`,
+          );
           return 2;
         }
-        const result = await probeDbCluster({
-          db: ctx.db,
-          host: ctx.host,
-          clusterId: id,
-        });
+        const result = hasFlag(args, '--peers')
+          ? await probeDbClusterFull({
+              db: ctx.db,
+              host: ctx.host,
+              clusterId: id,
+            })
+          : await probeDbCluster({
+              db: ctx.db,
+              host: ctx.host,
+              clusterId: id,
+            });
         printJson(result);
         return result.ok ? 0 : result.localOk ? 0 : 1;
+      }
+      if (sub === 'install-peers' || sub === 'remote-install') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} db-cluster install-peers --id UUID [--execute] [--no-restart] [--json]\n`,
+          );
+          return 2;
+        }
+        const result = await installDbClusterOnPeers({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          clusterId: id,
+          memberId: getOpt(args, '--member'),
+          execute: wantsHostExecute(args),
+          restart: !hasFlag(args, '--no-restart'),
+        });
+        printJson(result);
+        return exitFromResult(result);
+      }
+      if (sub === 'overview' || sub === 'summary') {
+        const items = listDbClusters(ctx.db);
+        printJson({
+          ok: true,
+          count: items.length,
+          byStatus: items.reduce(
+            (acc, c) => {
+              acc[c.status] = (acc[c.status] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>,
+          ),
+          items: items.map((c) => ({
+            id: c.id,
+            name: c.name,
+            engine: c.engine,
+            kind: c.kind,
+            status: c.status,
+            members: c.members.length,
+            firewallPorts: firewallPortsForCluster(c.kind),
+          })),
+        });
+        return 0;
+      }
+      if (sub === 'import-sync') {
+        // stdin JSON { cluster: {...} } or --file
+        const file = getOpt(args, '--file');
+        let raw = '';
+        if (file) {
+          const { readFileSync } = await import('node:fs');
+          raw = readFileSync(file, 'utf8');
+        } else {
+          process.stderr.write(
+            'import-sync prefers fleet clusterSync payload; or --file snapshot.json\n',
+          );
+          return 2;
+        }
+        const data = JSON.parse(raw) as { cluster?: import('@ysk/core').DbCluster };
+        if (!data.cluster) {
+          printJson({ ok: false, notes: ['need { cluster }'] });
+          return 2;
+        }
+        const r = importDbClusterSync({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          cluster: data.cluster,
+        });
+        printJson(r);
+        return r.ok ? 0 : 1;
       }
       if (sub === 'artifacts' || sub === 'files') {
         const id = getOpt(args, '--id');
@@ -1391,7 +1514,12 @@ async function main(argv: string[]): Promise<number> {
         }
         const opRaw = getOpt(args, '--op') ?? 'apply';
         const op =
-          opRaw === 'probe' || opRaw === 'plan' || opRaw === 'apply' ? opRaw : 'apply';
+          opRaw === 'probe' ||
+          opRaw === 'plan' ||
+          opRaw === 'apply' ||
+          opRaw === 'sync'
+            ? opRaw
+            : 'apply';
         const result = dispatchDbClusterFleet({
           db: ctx.db,
           clusterId: id,
@@ -1422,7 +1550,7 @@ async function main(argv: string[]): Promise<number> {
         return ok ? 0 : 4;
       }
       process.stderr.write(
-        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|artifacts|bundle|push|fleet|delete [--execute] [--json]\n`,
+        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n`,
       );
       return 2;
     } finally {

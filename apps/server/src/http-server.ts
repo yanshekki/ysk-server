@@ -3124,7 +3124,26 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, ok ? 200 : 404, { ok });
       }
 
-      // —— DB HA clusters (engine HA; v1 plan-first) ——
+      // —— DB HA clusters ——
+      if (method === 'GET' && url.pathname === '/api/v1/db/clusters/overview') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listDbClusters, firewallPortsForCluster } = await import('@ysk/core');
+        const items = listDbClusters(ctx.db);
+        return sendJson(res, 200, {
+          ok: true,
+          count: items.length,
+          items: items.map((c) => ({
+            id: c.id,
+            name: c.name,
+            engine: c.engine,
+            kind: c.kind,
+            status: c.status,
+            members: c.members.length,
+            firewallPorts: firewallPortsForCluster(c.kind),
+            updatedAt: c.updatedAt,
+          })),
+        });
+      }
       if (method === 'GET' && url.pathname === '/api/v1/db/clusters') {
         ctx.auth.authenticate(getBearer(req));
         const { listDbClusters } = await import('@ysk/core');
@@ -3155,6 +3174,7 @@ export function createHttpServer(ctx: AppContext): Server {
             port?: number;
             access?: 'local' | 'ssh' | 'fleet';
             label?: string;
+            fleetAgentId?: string;
           }>;
           params?: Record<string, string | number | boolean>;
         };
@@ -3178,8 +3198,51 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { getDbCluster } = await import('@ysk/core');
-        return sendJson(res, 200, { ok: true, cluster: getDbCluster(ctx.db, id) });
+        const { getDbCluster, firewallPortsForCluster } = await import('@ysk/core');
+        const cluster = getDbCluster(ctx.db, id);
+        return sendJson(res, 200, {
+          ok: true,
+          cluster,
+          firewallPorts: firewallPortsForCluster(cluster.kind),
+        });
+      }
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          params?: Record<string, string | number | boolean>;
+          members?: Array<{
+            id?: string;
+            host: string;
+            role?: string;
+            port?: number;
+            access?: 'local' | 'ssh' | 'fleet';
+            label?: string;
+            fleetAgentId?: string;
+          }>;
+          notes?: string[];
+        };
+        const { updateDbCluster, firewallPortsForCluster } = await import('@ysk/core');
+        const cluster = updateDbCluster(ctx.db, id, {
+          name: data.name,
+          params: data.params,
+          members: data.members as never,
+          notes: data.notes,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.patch',
+          resource: id,
+          detail: { name: cluster.name, members: cluster.members.length },
+          ok: true,
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          cluster,
+          firewallPorts: firewallPortsForCluster(cluster.kind),
+        });
       }
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -3255,12 +3318,22 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/probe$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { probeDbCluster } = await import('@ysk/core');
-        const result = await probeDbCluster({
-          db: ctx.db,
-          host: ctx.host,
-          clusterId: id,
-        });
+        const raw = await readBody(req).catch(() => '{}');
+        const data = JSON.parse(raw || '{}') as { peers?: boolean };
+        const peers =
+          data.peers === true || url.searchParams.get('peers') === '1';
+        const { probeDbCluster, probeDbClusterFull } = await import('@ysk/core');
+        const result = peers
+          ? await probeDbClusterFull({
+              db: ctx.db,
+              host: ctx.host,
+              clusterId: id,
+            })
+          : await probeDbCluster({
+              db: ctx.db,
+              host: ctx.host,
+              clusterId: id,
+            });
         ctx.audit.append({
           actor: user.username,
           action: 'db.cluster.probe',
@@ -3268,12 +3341,48 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: {
             ok: result.ok,
             localOk: result.localOk,
+            peers,
             status: result.cluster.status,
-            facts: result.facts,
           },
           ok: result.ok || result.localOk,
         });
         return sendJson(res, 200, result);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/install-peers$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          execute?: boolean;
+          memberId?: string;
+          restart?: boolean;
+        };
+        const { installDbClusterOnPeers } = await import('@ysk/core');
+        const result = await installDbClusterOnPeers({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          clusterId: id,
+          memberId: data.memberId,
+          execute: data.execute === true,
+          restart: data.restart !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.install_peers',
+          resource: id,
+          detail: {
+            ok: result.ok,
+            dryRun: result.dryRun,
+            installed: result.installed.length,
+          },
+          ok: result.ok || result.dryRun,
+        });
+        return sendJson(
+          res,
+          result.ok || result.dryRun ? 200 : result.blocked ? 403 : 422,
+          result,
+        );
       }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/artifacts$/)) {
         ctx.auth.authenticate(getBearer(req));
@@ -3383,7 +3492,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           execute?: boolean;
           memberId?: string;
-          op?: 'apply' | 'probe' | 'plan';
+          op?: 'apply' | 'probe' | 'plan' | 'sync';
           edgeExecute?: boolean;
         };
         const { dispatchDbClusterFleet } = await import('@ysk/core');

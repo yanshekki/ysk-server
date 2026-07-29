@@ -186,19 +186,24 @@ ysk-server db-cluster probe --id UUID [--json]   # local wsrep status
 ysk-server db-cluster artifacts --id UUID [--json]
 ysk-server db-cluster bundle --id UUID [--json]  # tar.gz under dataDir
 ysk-server db-cluster push --id UUID [--member ID] [--execute] [--json]
-ysk-server db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]
-ysk-server db-cluster delete --id UUID [--json]  # registry only
+ysk-server db-cluster probe --id UUID [--peers] [--json]
+ysk-server db-cluster install-peers --id UUID [--execute] [--json]
+ysk-server db-cluster fleet --id UUID [--op apply|probe|plan|sync] [--execute] [--edge-execute]
+ysk-server db-cluster overview [--json]
+ysk-server db-cluster delete --id UUID [--json]
 ```
 
-Member syntax: `--member HOST=role:access` or fleet  
-`--member 10.0.0.3=replica:fleet:AGENT_SESSION_UUID`
+Member: `--member HOST=role:access` · fleet `--member 10.0.0.3=replica:fleet:SESSION_UUID`
 
-- `apply` without `--execute`: materialize + mark local `written`
-- `push` / `fleet` default dry-run; `--execute` scp or enqueue CLI
-- `fleet`: payload `{ "cli": ["db-cluster","apply","--id",…] }` for edge agents
+| 命令 | 說明 |
+|------|------|
+| `probe --peers` | 本機 + SSH peer 探測 → 可達 `healthy` |
+| `install-peers --execute` | scp conf 後 peer 上 install + restart |
+| `fleet --op sync --execute` | 同步 cluster 快照到邊緣（edge agent 支援 clusterSync） |
+| `push --execute` | 只 scp 到 `/tmp` |
+| `bundle` | 下載用 tar.gz |
 
-Planners: **MariaDB Galera** · **MySQL/Postgres replica** · **Redis replica/sentinel**.  
-Panel: 各引擎 **服務 → 叢集**.
+Panel: 各引擎 **服務 → 叢集**（全節點探測 / 遠端安裝 / Fleet 同步）.
 
 ## hosting
 

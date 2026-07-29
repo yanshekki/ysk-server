@@ -1,6 +1,6 @@
 /**
  * Dispatch cluster ops to fleet agents (access=fleet members).
- * Enqueues { cli: [...] } — edge runs ysk-server with --json.
+ * Enqueues { cli: [...] } and/or { clusterSync: {...} } for edge bootstrap.
  */
 
 import { ErrorCodes, YskError } from '@ysk/shared';
@@ -22,7 +22,8 @@ export type FleetDispatchResult = {
     host: string;
     fleetAgentId: string;
     commandId?: string;
-    cli: string[];
+    cli?: string[];
+    payload?: unknown;
   }>;
   notes: string[];
 };
@@ -36,42 +37,49 @@ function fleetMembers(c: DbCluster, memberId?: string): DbClusterMember[] {
   );
 }
 
-/**
- * Build CLI argv for a peer apply hint (edge runs full apply on that host's dataDir).
- * Edge should already have cluster registry synced or re-create — we pass plan artifact ops.
- */
 export function buildFleetCliForMember(
   cluster: DbCluster,
   _member: DbClusterMember,
-  op: 'apply' | 'probe' | 'plan',
+  op: 'apply' | 'probe' | 'plan' | 'sync',
+  edgeExecute?: boolean,
 ): string[] {
   if (op === 'probe') {
     return ['db-cluster', 'probe', '--id', cluster.id, '--json'];
   }
-  if (op === 'plan') {
+  if (op === 'plan' || op === 'sync') {
     return ['db-cluster', 'plan', '--id', cluster.id, '--json'];
   }
-  // apply dry-run on edge by default; operator can re-queue with execute via custom CLI
+  if (edgeExecute) {
+    return ['db-cluster', 'apply', '--id', cluster.id, '--execute', '--json'];
+  }
   return ['db-cluster', 'apply', '--id', cluster.id, '--json'];
 }
 
-/**
- * Queue fleet commands. execute=false → dry-run list only.
- * execute=true → enqueue via FleetService.enqueue (session id = fleetAgentId).
- *
- * Note: cluster id must exist on edge dataDir for probe/apply to work there.
- * PR6 documents this; optional future: ship create payload in cli args.
- */
+/** Snapshot safe for edge re-create (no secrets) */
+export function clusterSyncPayload(cluster: DbCluster): {
+  op: 'clusterSync';
+  cluster: DbCluster;
+  cli: string[];
+} {
+  const params = { ...cluster.params };
+  delete params.replPassword;
+  delete params.__password;
+  const sanitized: DbCluster = { ...cluster, params };
+  return {
+    op: 'clusterSync',
+    cluster: sanitized,
+    // edge import-sync upserts registry then plan
+    cli: ['db-cluster', 'import-sync', '--json'],
+  };
+}
+
 export function dispatchDbClusterFleet(input: {
   db: JsonStore;
   clusterId: string;
-  op?: 'apply' | 'probe' | 'plan';
+  op?: 'apply' | 'probe' | 'plan' | 'sync';
   memberId?: string;
-  /** when true, actually enqueue; else plan only */
   execute?: boolean;
-  /** required when execute=true */
   enqueue?: FleetEnqueueFn;
-  /** pass --execute to edge apply */
   edgeExecute?: boolean;
 }): FleetDispatchResult {
   const cluster = getDbCluster(input.db, input.clusterId);
@@ -88,32 +96,42 @@ export function dispatchDbClusterFleet(input: {
       queued: [],
       notes: [
         '無 access=fleet 且填了 fleetAgentId 的成員',
-        '建立時例如：--member 10.0.0.3=replica:fleet --fleet-agent SESSION_UUID',
+        '例：--member 10.0.0.3=replica:fleet:SESSION_UUID',
       ],
     };
   }
 
   for (const m of members) {
-    let cli = buildFleetCliForMember(cluster, m, op);
-    if (op === 'apply' && input.edgeExecute) {
-      cli = ['db-cluster', 'apply', '--id', cluster.id, '--execute', '--json'];
+    if (op === 'sync') {
+      const payload = clusterSyncPayload(cluster);
+      queued.push({
+        memberId: m.id,
+        host: m.host,
+        fleetAgentId: m.fleetAgentId!,
+        payload,
+        cli: payload.cli,
+      });
+    } else {
+      const cli = buildFleetCliForMember(cluster, m, op, input.edgeExecute);
+      queued.push({
+        memberId: m.id,
+        host: m.host,
+        fleetAgentId: m.fleetAgentId!,
+        cli,
+        payload: { cli },
+      });
     }
-    queued.push({
-      memberId: m.id,
-      host: m.host,
-      fleetAgentId: m.fleetAgentId!,
-      cli,
-    });
   }
 
   if (!input.execute) {
     notes.push(
       'dry-run fleet dispatch（未入佇列）',
-      `${queued.length} 個 agent 目標`,
-      'execute 後會 enqueue { cli: [...] }；edge 需同一 cluster id 或先 create',
+      `${queued.length} 個 agent · op=${op}`,
     );
     for (const q of queued) {
-      notes.push(`${q.host} → agent ${q.fleetAgentId.slice(0, 8)}… ${q.cli.join(' ')}`);
+      notes.push(
+        `${q.host} → ${q.fleetAgentId.slice(0, 8)}… ${q.cli?.join(' ') ?? 'clusterSync'}`,
+      );
     }
     return { ok: true, dryRun: true, cluster, queued, notes };
   }
@@ -127,7 +145,7 @@ export function dispatchDbClusterFleet(input: {
   let anyFail = false;
   for (const q of queued) {
     try {
-      const cmd = input.enqueue(q.fleetAgentId, { cli: q.cli });
+      const cmd = input.enqueue(q.fleetAgentId, q.payload ?? { cli: q.cli });
       q.commandId = cmd.id;
       notes.push(`queued ${q.host} → cmd ${cmd.id.slice(0, 8)}…`);
     } catch (e) {
@@ -150,7 +168,7 @@ export function dispatchDbClusterFleet(input: {
     queued,
     notes: [
       ...notes,
-      'queued ≠ edge 已執行 — 睇 Agents 指令紀錄 exit/JSON',
+      'queued ≠ edge 已執行 — Agents 紀錄睇 exit/JSON',
     ],
   };
 }

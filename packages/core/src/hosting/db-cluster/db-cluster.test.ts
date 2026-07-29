@@ -28,6 +28,11 @@ import {
   pushDbClusterToPeers,
 } from './push-peer.js';
 import { dispatchDbClusterFleet } from './fleet-dispatch.js';
+import {
+  firewallPortsForCluster,
+  installDbClusterOnPeers,
+} from './peer-ops.js';
+import { importDbClusterSync } from './import-sync.js';
 import type { HostExecutor } from '../../host/executor.js';
 
 function memDb(): JsonStore {
@@ -380,6 +385,79 @@ describe('apply local dry-run', () => {
     expect(blocked.blocked).toBe(true);
   });
 
+  it('firewall ports and import-sync', () => {
+    expect(firewallPortsForCluster('mariadb-galera')).toContain(4567);
+    expect(firewallPortsForCluster('postgres-replica')).toEqual([5432]);
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-imp-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const src = createDbCluster(db, {
+      name: 'imp',
+      engine: 'mariadb',
+      kind: 'mariadb-galera',
+      members: [
+        { host: '10.80.0.1', access: 'local' },
+        { host: '10.80.0.2', access: 'ssh' },
+      ],
+    });
+    const db2 = new JsonStore(join(dir, 'db2.json'));
+    const r = importDbClusterSync({
+      db: db2,
+      dataDir: dir,
+      cluster: src,
+    });
+    expect(r.ok).toBe(true);
+    expect(listDbClusters(db2)).toHaveLength(1);
+  });
+
+  it('install-peers dry-run', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-inst-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const c = createDbCluster(db, {
+      name: 'inst',
+      engine: 'mariadb',
+      kind: 'mariadb-galera',
+      members: [
+        { host: '10.81.0.1', access: 'local' },
+        { host: '10.81.0.2', access: 'ssh' },
+      ],
+    });
+    planAndMaterializeDbCluster({ db, dataDir: dir, clusterId: c.id });
+    const host: HostExecutor = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      }),
+    };
+    const dry = await installDbClusterOnPeers({
+      db,
+      dataDir: dir,
+      host,
+      clusterId: c.id,
+      execute: false,
+    });
+    expect(dry.dryRun).toBe(true);
+    expect(dry.installed?.length).toBe(1);
+  });
+
   it('fleet dispatch dry-run and enqueue', () => {
     const db = memDb();
     const agentId = 'agent-session-uuid-1';
@@ -404,7 +482,7 @@ describe('apply local dry-run', () => {
     });
     expect(dry.dryRun).toBe(true);
     expect(dry.queued).toHaveLength(1);
-    expect(dry.queued[0].cli.join(' ')).toMatch(/db-cluster apply/);
+    expect(dry.queued[0]?.cli?.join(' ')).toMatch(/db-cluster apply/);
 
     const enqueued: unknown[] = [];
     const run = dispatchDbClusterFleet({

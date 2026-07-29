@@ -70,6 +70,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   const [name, setName] = useState('ysk-cluster');
   const [localHost, setLocalHost] = useState('');
   const [peerHost, setPeerHost] = useState('');
+  const [peer3Host, setPeer3Host] = useState('');
   const [sst, setSst] = useState('mariabackup');
   const [lastPlan, setLastPlan] = useState<ClusterPlan | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -112,18 +113,23 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
     await run(async () => {
       const primaryRole =
         kind === 'redis-replica' || kind === 'redis-sentinel' ? 'master' : 'primary';
-      const members = isGalera
+      const members: Array<{
+        host: string;
+        role: string;
+        access: 'local' | 'ssh' | 'fleet';
+        label: string;
+      }> = isGalera
         ? [
             {
               host: localHost.trim(),
               role: 'node',
-              access: 'local' as const,
+              access: 'local',
               label: 'local',
             },
             {
               host: peerHost.trim(),
               role: 'node',
-              access: 'ssh' as const,
+              access: 'ssh',
               label: 'peer-1',
             },
           ]
@@ -131,16 +137,24 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             {
               host: localHost.trim(),
               role: primaryRole,
-              access: 'local' as const,
+              access: 'local',
               label: primaryRole,
             },
             {
               host: peerHost.trim(),
               role: 'replica',
-              access: 'ssh' as const,
+              access: 'ssh',
               label: 'replica-1',
             },
           ];
+      if (peer3Host.trim()) {
+        members.push({
+          host: peer3Host.trim(),
+          role: isGalera ? 'node' : 'replica',
+          access: 'ssh',
+          label: isGalera ? 'peer-2' : 'replica-2',
+        });
+      }
       const params: Record<string, string | number | boolean> = {};
       if (isGalera) {
         params.clusterName = name.trim() || 'ysk-galera';
@@ -226,9 +240,9 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
     }, bootstrap ? '已嘗試 bootstrap' : '已嘗試套用系統 conf');
   }
 
-  async function doProbe(id: string) {
+  async function doProbe(id: string, peers = false) {
     await run(async () => {
-      const r = await dbClusterApi.probe(id);
+      const r = await dbClusterApi.probe(id, { peers });
       setActiveId(id);
       setProbeFacts(r.facts ?? null);
       await refresh();
@@ -237,10 +251,14 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         notes: [
           ...(r.notes ?? []),
           `status=${r.cluster.status}`,
-          r.localOk ? '本機 wsrep 可讀' : '本機 probe 未過',
+          peers
+            ? `peersProbed=${r.peersProbed ?? 0}`
+            : r.localOk
+              ? '本機 OK'
+              : '本機 probe 未過',
         ],
       } as OpsResultLike;
-    }, '已探測');
+    }, peers ? '已探測（含 peer）' : '已探測本機');
   }
 
   async function downloadBundle(id: string) {
@@ -407,9 +425,60 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                             variant="secondary"
                             size="sm"
                             loading={busy}
-                            onClick={() => void doProbe(c.id)}
+                            onClick={() => void doProbe(c.id, false)}
                           >
                             探測
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => void doProbe(c.id, true)}
+                          >
+                            全節點探測
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() =>
+                              void run(async () => {
+                                const r = await dbClusterApi.installPeers(c.id, {
+                                  execute: false,
+                                });
+                                return {
+                                  ok: r.ok || r.dryRun,
+                                  dryRun: r.dryRun,
+                                  notes: r.notes,
+                                } as OpsResultLike;
+                              }, '遠端安裝計劃')
+                            }
+                          >
+                            遠端安裝計劃
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              if (
+                                !confirm(
+                                  '在 peer 上 install conf + restart？需 YSK_EXECUTE + SSH。',
+                                )
+                              )
+                                return;
+                              void run(async () => {
+                                const r = await dbClusterApi.installPeers(c.id, {
+                                  execute: true,
+                                });
+                                return {
+                                  ok: r.ok,
+                                  notes: r.notes,
+                                } as OpsResultLike;
+                              }, '遠端已安裝');
+                            }}
+                          >
+                            遠端安裝
                           </Button>
                           <Button
                             variant="secondary"
@@ -451,17 +520,17 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                               void run(async () => {
                                 const r = await dbClusterApi.fleet(c.id, {
                                   execute: false,
-                                  op: 'apply',
+                                  op: 'sync',
                                 });
                                 return {
                                   ok: r.ok || r.dryRun,
                                   dryRun: r.dryRun,
                                   notes: r.notes,
                                 } as OpsResultLike;
-                              }, 'Fleet 計劃')
+                              }, 'Fleet sync 計劃')
                             }
                           >
-                            Fleet 計劃
+                            Fleet 同步計劃
                           </Button>
                           <Button
                             variant="primary"
@@ -470,24 +539,44 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                             onClick={() => {
                               if (
                                 !confirm(
-                                  '對 access=fleet 成員 enqueue CLI？邊緣需同一 cluster id。',
+                                  '同步 cluster 快照到 fleet 邊緣，再可 apply？',
                                 )
                               )
                                 return;
                               void run(async () => {
+                                const sync = await dbClusterApi.fleet(c.id, {
+                                  execute: true,
+                                  op: 'sync',
+                                });
+                                return {
+                                  ok: sync.ok,
+                                  notes: sync.notes,
+                                } as OpsResultLike;
+                              }, 'Fleet 已同步排隊');
+                            }}
+                          >
+                            Fleet 同步
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              if (!confirm('enqueue apply 到 fleet 成員？')) return;
+                              void run(async () => {
                                 const r = await dbClusterApi.fleet(c.id, {
                                   execute: true,
                                   op: 'apply',
+                                  edgeExecute: true,
                                 });
                                 return {
                                   ok: r.ok,
-                                  dryRun: r.dryRun,
                                   notes: r.notes,
                                 } as OpsResultLike;
-                              }, 'Fleet 已排隊');
+                              }, 'Fleet apply 已排隊');
                             }}
                           >
-                            Fleet 排隊
+                            Fleet Apply
                           </Button>
                           <Button
                             variant="danger"
@@ -634,8 +723,8 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               required
               hint={
                 isRepl
-                  ? '從庫節點；之後可再加更多 replica / sentinel'
-                  : '第二節點；生產建議再加第三節點'
+                  ? '從庫節點'
+                  : '第二節點（Galera 建議 3 節點）'
               }
             >
               <input
@@ -644,6 +733,21 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 onChange={(e) => setPeerHost(e.target.value)}
                 placeholder="例如 10.0.0.2"
                 required
+                spellCheck={false}
+                autoComplete="off"
+              />
+            </Field>
+            <Field
+              label="第 3 節點（可選）"
+              htmlFor="dbc-peer3"
+              flush
+              hint="Galera / 多 replica 建議填"
+            >
+              <input
+                id="dbc-peer3"
+                value={peer3Host}
+                onChange={(e) => setPeer3Host(e.target.value)}
+                placeholder="例如 10.0.0.3"
                 spellCheck={false}
                 autoComplete="off"
               />

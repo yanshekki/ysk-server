@@ -200,7 +200,7 @@ export function planMariadbGalera(c: DbCluster): ClusterPlan {
   notes.push(
     'dry-run：此計劃未改系統',
     `wsrep_cluster_address=gcomm://${galeraAddressList(c)}`,
-    '防火牆請只對內網開 3306 / 4567 / 4444 / 4568',
+    '防火牆（內網）：TCP 3306, 4567, 4444, 4568',
     sstMethod(c) === 'mariabackup'
       ? 'SST=mariabackup：各節點需 mariadb-backup'
       : 'SST=rsync',

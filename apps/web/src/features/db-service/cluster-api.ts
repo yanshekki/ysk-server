@@ -105,14 +105,64 @@ export const dbClusterApi = {
       method: 'POST',
       body: JSON.stringify(body ?? {}),
     }),
-  probe: (id: string) =>
+  probe: (id: string, body?: { peers?: boolean }) =>
     api.requestRaw<{
       ok: boolean;
       localOk: boolean;
+      peersProbed?: number;
       cluster: DbCluster;
       facts: Record<string, string>;
       notes: string[];
-    }>(`/api/v1/db/clusters/${id}/probe`, { method: 'POST', body: '{}' }),
+    }>(`/api/v1/db/clusters/${id}/probe`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    }),
+  installPeers: (
+    id: string,
+    body?: { execute?: boolean; memberId?: string; restart?: boolean },
+  ) =>
+    api.requestRaw<{
+      ok: boolean;
+      dryRun: boolean;
+      notes: string[];
+      installed: Array<{ host: string; ok: boolean; detail: string }>;
+      cluster: DbCluster;
+    }>(`/api/v1/db/clusters/${id}/install-peers`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    }),
+  overview: () =>
+    api.requestRaw<{
+      ok: boolean;
+      count: number;
+      items: Array<{
+        id: string;
+        name: string;
+        engine: string;
+        kind: string;
+        status: string;
+        members: number;
+        firewallPorts: number[];
+      }>;
+    }>('/api/v1/db/clusters/overview'),
+  patch: (
+    id: string,
+    body: {
+      name?: string;
+      params?: Record<string, string | number | boolean>;
+      members?: Array<{
+        host: string;
+        role?: string;
+        access?: string;
+        fleetAgentId?: string;
+        label?: string;
+      }>;
+    },
+  ) =>
+    api.requestRaw<{ ok: boolean; cluster: DbCluster }>(
+      `/api/v1/db/clusters/${id}`,
+      { method: 'PATCH', body: JSON.stringify(body) },
+    ),
   artifacts: (id: string) =>
     api.requestRaw<{
       ok: boolean;
@@ -152,7 +202,7 @@ export const dbClusterApi = {
     body?: {
       execute?: boolean;
       memberId?: string;
-      op?: 'apply' | 'probe' | 'plan';
+      op?: 'apply' | 'probe' | 'plan' | 'sync';
       edgeExecute?: boolean;
     },
   ) =>
