@@ -183,15 +183,20 @@ ysk-server db-cluster create --name g1 --engine mariadb --kind mariadb-galera \
 ysk-server db-cluster plan --id UUID [--json]    # always dry-run; writes dataDir/clusters/
 ysk-server db-cluster apply --id UUID [--execute] [--bootstrap] [--json]
 ysk-server db-cluster probe --id UUID [--json]   # local wsrep status
+ysk-server db-cluster artifacts --id UUID [--json]
+ysk-server db-cluster bundle --id UUID [--json]  # tar.gz under dataDir
+ysk-server db-cluster push --id UUID [--member ID] [--execute] [--json]
 ysk-server db-cluster delete --id UUID [--json]  # registry only
 ```
 
 - `apply` without `--execute`: materialize + mark local `written` (exit 0, dryRun)
 - `apply --execute`: needs `YSK_EXECUTE=1` + root → system drop-in + restart/bootstrap
 - `probe`: never claims healthy without real wsrep facts
+- `push` default dry-run plan; `--execute` scp to ssh peers (BatchMode) → `/tmp/ysk-cluster-*`
+- `bundle`: peer-ready `.tar.gz` (manual copy)
 
 Planners: **MariaDB Galera** · **MySQL primary→replica**.  
-Panel: **MariaDB / MySQL 服務 → 叢集**.
+Panel: **MariaDB / MySQL 服務 → 叢集**（下載包 / Push 計劃 / Push 執行）.
 
 ## hosting
 

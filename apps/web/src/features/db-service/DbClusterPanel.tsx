@@ -29,6 +29,7 @@ import {
   type DbClusterKind,
 } from './cluster-api';
 import { useFeatureAction } from '../system/useFeatureAction';
+import { api } from '../../shared/services/api';
 
 function statusTone(
   s: string,
@@ -212,6 +213,39 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
     }, '已探測');
   }
 
+  async function downloadBundle(id: string) {
+    await run(async () => {
+      await dbClusterApi.bundle(id);
+      await api.downloadAuthenticated(
+        dbClusterApi.bundleDownloadUrl(id),
+        `ysk-cluster-${id.slice(0, 8)}.tar.gz`,
+      );
+      return {
+        ok: true,
+        notes: ['已下載 peer 打包（.tar.gz）— 解壓後喺 peer 上安裝 conf'],
+      } as OpsResultLike;
+    }, '已下載');
+  }
+
+  async function pushPeers(id: string, execute: boolean) {
+    await run(async () => {
+      const r = await dbClusterApi.push(id, { execute });
+      setActiveId(id);
+      await refresh();
+      return {
+        ok: r.ok || r.dryRun,
+        dryRun: r.dryRun,
+        blocked: r.blocked,
+        notes: [
+          ...(r.notes ?? []),
+          ...r.targets.map(
+            (t) => `${t.host}: ${t.files.length} files → ${t.remotePath}`,
+          ),
+        ],
+      } as OpsResultLike;
+    }, execute ? '已推送 peer' : '已產生 push 計劃');
+  }
+
   async function removeCluster(id: string) {
     if (!confirm('刪除叢集登記？系統 conf 唔會自動清（v1）。')) return;
     await run(async () => {
@@ -355,6 +389,38 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                             onClick={() => void doProbe(c.id)}
                           >
                             探測
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => void downloadBundle(c.id)}
+                          >
+                            下載包
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => void pushPeers(c.id, false)}
+                          >
+                            Push 計劃
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              if (
+                                !confirm(
+                                  'scp 檔案到 peer /tmp？需 YSK_EXECUTE=1 與 SSH key。成功 ≠ peer 已 restart。',
+                                )
+                              )
+                                return;
+                              void pushPeers(c.id, true);
+                            }}
+                          >
+                            Push 執行
                           </Button>
                           <Button
                             variant="danger"

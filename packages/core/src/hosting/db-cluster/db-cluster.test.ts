@@ -21,6 +21,12 @@ import {
   parseWsrepStatus,
 } from './probe.js';
 import { applyDbClusterLocal } from './apply-local.js';
+import {
+  bundleDbClusterArtifacts,
+  listDbClusterArtifacts,
+  planDbClusterPeerPush,
+  pushDbClusterToPeers,
+} from './push-peer.js';
 import type { HostExecutor } from '../../host/executor.js';
 
 function memDb(): JsonStore {
@@ -287,6 +293,80 @@ describe('apply local dry-run', () => {
     expect(existsSync(join(dir, 'clusters', c.id, 'conf', '99-ysk-galera.cnf'))).toBe(
       true,
     );
+  });
+
+  it('lists and bundles peer artifacts', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-bundle-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const c = createDbCluster(db, {
+      name: 'bund1',
+      engine: 'mariadb',
+      kind: 'mariadb-galera',
+      members: [
+        { host: '10.40.0.1', access: 'local' },
+        { host: '10.40.0.2', access: 'ssh' },
+      ],
+    });
+    planAndMaterializeDbCluster({ db, dataDir: dir, clusterId: c.id });
+    const listed = listDbClusterArtifacts({ db, dataDir: dir, clusterId: c.id });
+    expect(listed.files.length).toBeGreaterThan(2);
+    const bundled = bundleDbClusterArtifacts({ db, dataDir: dir, clusterId: c.id });
+    expect(bundled.ok).toBe(true);
+    expect(bundled.bundlePath).toMatch(/\.tar\.gz$/);
+    expect(existsSync(bundled.bundlePath!)).toBe(true);
+  });
+
+  it('peer push dry-run lists ssh targets', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-push-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const c = createDbCluster(db, {
+      name: 'push1',
+      engine: 'mysql',
+      kind: 'mysql-replica',
+      members: [
+        { host: '10.41.0.1', role: 'primary', access: 'local' },
+        { host: '10.41.0.2', role: 'replica', access: 'ssh' },
+      ],
+    });
+    const plan = planDbClusterPeerPush({ db, dataDir: dir, clusterId: c.id });
+    expect(plan.targets).toHaveLength(1);
+    expect(plan.targets[0].host).toBe('10.41.0.2');
+    expect(plan.targets[0].files.length).toBeGreaterThan(0);
+    expect(plan.dryRun).toBe(true);
+
+    const host: HostExecutor = {
+      executeEnabled: () => false,
+      isRoot: () => false,
+      pathExists: () => false,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      }),
+    };
+    const blocked = await pushDbClusterToPeers({
+      db,
+      dataDir: dir,
+      host,
+      clusterId: c.id,
+      execute: true,
+    });
+    expect(blocked.blocked).toBe(true);
   });
 
   it('blocked when execute without YSK_EXECUTE', async () => {

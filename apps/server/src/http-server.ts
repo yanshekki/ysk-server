@@ -3275,6 +3275,107 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendJson(res, 200, result);
       }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/artifacts$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { listDbClusterArtifacts } = await import('@ysk/core');
+        const r = listDbClusterArtifacts({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          clusterId: id,
+        });
+        return sendJson(res, r.ok ? 200 : 404, {
+          ok: r.ok,
+          cluster: r.cluster,
+          artifactDir: r.artifactDir,
+          files: r.files.map((f) => ({
+            relativePath: f.relativePath,
+            bytes: f.bytes,
+          })),
+          notes: r.notes,
+        });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/bundle$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { bundleDbClusterArtifacts } = await import('@ysk/core');
+        const r = bundleDbClusterArtifacts({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          clusterId: id,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.bundle',
+          resource: id,
+          detail: { ok: r.ok, bytes: r.bytes, path: r.bundlePath },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/bundle\/download$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { bundleDbClusterArtifacts } = await import('@ysk/core');
+        const r = bundleDbClusterArtifacts({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          clusterId: id,
+        });
+        if (!r.ok || !r.bundlePath) {
+          return sendJson(res, 404, { ok: false, notes: r.notes });
+        }
+        // Path must stay under dataDir/clusters
+        if (!r.bundlePath.startsWith(ctx.dataDir) || r.bundlePath.includes('..')) {
+          return sendJson(res, 403, { ok: false, notes: ['invalid path'] });
+        }
+        const { createReadStream, statSync } = await import('node:fs');
+        const st = statSync(r.bundlePath);
+        const fname = `ysk-cluster-${id.slice(0, 8)}.tar.gz`;
+        res.writeHead(200, {
+          'Content-Type': 'application/gzip',
+          'Content-Length': st.size,
+          'Content-Disposition': `attachment; filename="${fname}"`,
+        });
+        createReadStream(r.bundlePath).pipe(res);
+        return;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/push$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          execute?: boolean;
+          memberId?: string;
+        };
+        const { pushDbClusterToPeers } = await import('@ysk/core');
+        const result = await pushDbClusterToPeers({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          clusterId: id,
+          memberId: data.memberId,
+          execute: data.execute === true,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.push',
+          resource: id,
+          detail: {
+            ok: result.ok,
+            dryRun: result.dryRun,
+            executed: result.executed,
+            blocked: result.blocked,
+            targets: result.targets.length,
+          },
+          ok: result.ok || result.dryRun,
+        });
+        return sendJson(
+          res,
+          result.ok || result.dryRun ? 200 : result.blocked ? 403 : 422,
+          result,
+        );
+      }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/check') {
         ctx.auth.authenticate(getBearer(req));

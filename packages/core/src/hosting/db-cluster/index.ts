@@ -5,3 +5,4 @@ export * from './plan-mysql-replica.js';
 export * from './plan.js';
 export * from './apply-local.js';
 export * from './probe.js';
+export * from './push-peer.js';

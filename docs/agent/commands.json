@@ -106,6 +106,24 @@
       "example": "ysk-server db-cluster probe --id UUID --json"
     },
     {
+      "name": "db-cluster bundle",
+      "risk": "write-panel",
+      "summary": "Create peer tar.gz under dataDir/clusters/.../bundle/",
+      "args": ["--id"],
+      "example": "ysk-server db-cluster bundle --id UUID --json"
+    },
+    {
+      "name": "db-cluster push",
+      "risk": "execute-host",
+      "summary": "Default dry-run scp plan; --execute scp conf/scripts to ssh peers",
+      "args": ["--id", "--member", "--execute"],
+      "example": "ysk-server db-cluster push --id UUID --json",
+      "exitCodes": {
+        "0": "ok or dry-run",
+        "3": "blocked without YSK_EXECUTE when --execute"
+      }
+    },
+    {
       "name": "ssl list",
       "risk": "read",
       "summary": "List managed SSL certificates",

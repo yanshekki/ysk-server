@@ -1185,6 +1185,9 @@ async function main(argv: string[]): Promise<number> {
       deleteDbCluster,
       applyDbClusterLocal,
       probeDbCluster,
+      bundleDbClusterArtifacts,
+      listDbClusterArtifacts,
+      pushDbClusterToPeers,
     } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
@@ -1318,6 +1321,58 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return result.ok ? 0 : result.localOk ? 0 : 1;
       }
+      if (sub === 'artifacts' || sub === 'files') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} db-cluster artifacts --id UUID [--json]\n`);
+          return 2;
+        }
+        const r = listDbClusterArtifacts({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          clusterId: id,
+        });
+        printJson({
+          ok: r.ok,
+          artifactDir: r.artifactDir,
+          files: r.files.map((f) => ({ path: f.relativePath, bytes: f.bytes })),
+          notes: r.notes,
+        });
+        return r.ok ? 0 : 4;
+      }
+      if (sub === 'bundle') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} db-cluster bundle --id UUID [--json]\n`);
+          return 2;
+        }
+        const r = bundleDbClusterArtifacts({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          clusterId: id,
+        });
+        printJson(r);
+        return r.ok ? 0 : 1;
+      }
+      if (sub === 'push') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} db-cluster push --id UUID [--member ID] [--execute] [--json]\n`,
+          );
+          return 2;
+        }
+        const result = await pushDbClusterToPeers({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          clusterId: id,
+          memberId: getOpt(args, '--member'),
+          execute: wantsHostExecute(args),
+        });
+        printJson(result);
+        return exitFromResult(result);
+      }
       if (sub === 'delete' || sub === 'rm') {
         const id = getOpt(args, '--id');
         if (!id) {
@@ -1334,7 +1389,7 @@ async function main(argv: string[]): Promise<number> {
         return ok ? 0 : 4;
       }
       process.stderr.write(
-        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|delete [--execute] [--bootstrap] [--json]\n`,
+        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|artifacts|bundle|push|delete [--execute] [--json]\n`,
       );
       return 2;
     } finally {

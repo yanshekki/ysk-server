@@ -113,4 +113,38 @@ export const dbClusterApi = {
       facts: Record<string, string>;
       notes: string[];
     }>(`/api/v1/db/clusters/${id}/probe`, { method: 'POST', body: '{}' }),
+  artifacts: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      artifactDir: string;
+      files: Array<{ relativePath: string; bytes: number }>;
+      notes: string[];
+    }>(`/api/v1/db/clusters/${id}/artifacts`),
+  bundle: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      bundlePath?: string;
+      bytes?: number;
+      notes: string[];
+    }>(`/api/v1/db/clusters/${id}/bundle`, { method: 'POST', body: '{}' }),
+  /** Relative path for browser download (Bearer via cookie/session may not apply — use token query if needed) */
+  bundleDownloadUrl: (id: string) => `/api/v1/db/clusters/${id}/bundle/download`,
+  push: (id: string, body?: { execute?: boolean; memberId?: string }) =>
+    api.requestRaw<{
+      ok: boolean;
+      dryRun: boolean;
+      executed: boolean;
+      blocked?: boolean;
+      notes: string[];
+      targets: Array<{
+        host: string;
+        role: string;
+        files: string[];
+        remotePath: string;
+      }>;
+      cluster: DbCluster;
+    }>(`/api/v1/db/clusters/${id}/push`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    }),
 };
