@@ -75,7 +75,10 @@
       "risk": "write-panel",
       "summary": "Register HA topology (draft)",
       "args": ["--name", "--engine", "--kind", "--member"],
-      "example": "ysk-server db-cluster create --name g1 --engine mariadb --kind mariadb-galera --member 10.0.0.1=node:local --member 10.0.0.2=node:ssh --json"
+      "example": "ysk-server db-cluster create --name g1 --engine mariadb --kind mariadb-galera --member 10.0.0.1=node:local --member 10.0.0.2=node:ssh --json",
+      "examples": [
+        "ysk-server db-cluster create --name r1 --engine mysql --kind mysql-replica --member 10.0.0.1=primary:local --member 10.0.0.2=replica:ssh --json"
+      ]
     },
     {
       "name": "db-cluster plan",

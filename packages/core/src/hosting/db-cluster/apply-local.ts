@@ -17,6 +17,11 @@ const SYSTEM_GALERA_DROPINS = [
   '/etc/mysql/conf.d/99-ysk-galera.cnf',
 ];
 
+const SYSTEM_MYSQL_DROPINS = [
+  '/etc/mysql/mysql.conf.d/99-ysk-mysql-repl.cnf',
+  '/etc/mysql/conf.d/99-ysk-mysql-repl.cnf',
+];
+
 export interface ClusterApplyResult {
   ok: boolean;
   dryRun: boolean;
@@ -89,14 +94,27 @@ export async function applyDbClusterLocal(input: {
 
   const artifactDir =
     planned.artifactDir ?? join(input.dataDir, 'clusters', planned.id);
-  const confSrc = join(artifactDir, 'conf', '99-ysk-galera.cnf');
-  if (planned.kind === 'mariadb-galera' && existsSync(confSrc)) {
+  const local = localMember(planned);
+  const localRole = (local?.role || '').toLowerCase();
+  const confSrc =
+    planned.kind === 'mariadb-galera'
+      ? join(artifactDir, 'conf', '99-ysk-galera.cnf')
+      : planned.kind === 'mysql-replica'
+        ? localRole === 'replica' || localRole === 'slave'
+          ? join(
+              artifactDir,
+              'conf',
+              'peers',
+              `${(local?.host || 'replica').replace(/[^a-zA-Z0-9._-]/g, '_')}-replica.cnf`,
+            )
+          : join(artifactDir, 'conf', '99-ysk-mysql-primary.cnf')
+        : '';
+  if (confSrc && existsSync(confSrc)) {
     written.push(confSrc);
-  } else if (planned.kind === 'mariadb-galera') {
-    notes.push('找不到 99-ysk-galera.cnf 產物');
+  } else if (planned.kind === 'mariadb-galera' || planned.kind === 'mysql-replica') {
+    notes.push(`找不到 conf 產物：${confSrc || planned.kind}`);
   }
 
-  const local = localMember(planned);
   const requiresExecute = true;
   const requiresRoot = true;
 
@@ -167,20 +185,28 @@ export async function applyDbClusterLocal(input: {
     };
   }
 
-  if (planned.kind !== 'mariadb-galera') {
+  if (planned.kind !== 'mariadb-galera' && planned.kind !== 'mysql-replica') {
     return {
       ok: false,
       dryRun: false,
       executed: false,
       cluster: planned,
       written,
-      notes: [`本機 apply 暫只支援 mariadb-galera（而家係 ${planned.kind}）`],
+      notes: [
+        `本機 apply 暫支援 mariadb-galera / mysql-replica（而家係 ${planned.kind}）`,
+      ],
       requiresExecute,
       requiresRoot,
     };
   }
 
-  if (!existsSync(confSrc)) {
+  // Resolve conf source (mysql replica may use peer file if local is replica)
+  let src = confSrc;
+  if (planned.kind === 'mysql-replica' && (!src || !existsSync(src))) {
+    const primaryPath = join(artifactDir, 'conf', '99-ysk-mysql-primary.cnf');
+    if (existsSync(primaryPath)) src = primaryPath;
+  }
+  if (!src || !existsSync(src)) {
     return {
       ok: false,
       dryRun: false,
@@ -193,14 +219,26 @@ export async function applyDbClusterLocal(input: {
     };
   }
 
-  // Prefer mariadb.conf.d if present
-  let dest = SYSTEM_GALERA_DROPINS[0];
-  if (!existsSync(dirname(dest)) && existsSync(dirname(SYSTEM_GALERA_DROPINS[1]))) {
-    dest = SYSTEM_GALERA_DROPINS[1];
+  // System drop-in destination
+  let dest: string;
+  let unit = 'mysql';
+  if (planned.kind === 'mariadb-galera') {
+    dest = SYSTEM_GALERA_DROPINS[0];
+    if (!existsSync(dirname(dest)) && existsSync(dirname(SYSTEM_GALERA_DROPINS[1]))) {
+      dest = SYSTEM_GALERA_DROPINS[1];
+    }
+    unit = 'mariadb';
+  } else {
+    dest = SYSTEM_MYSQL_DROPINS[0];
+    if (!existsSync(dirname(dest)) && existsSync(dirname(SYSTEM_MYSQL_DROPINS[1]))) {
+      dest = SYSTEM_MYSQL_DROPINS[1];
+    }
+    unit = 'mysql';
   }
+
   try {
     mkdirSync(dirname(dest), { recursive: true });
-    copyFileSync(confSrc, dest);
+    copyFileSync(src, dest);
     written.push(dest);
     notes.push(`已安裝系統 drop-in：${dest}`);
   } catch (e) {
@@ -223,9 +261,9 @@ export async function applyDbClusterLocal(input: {
     };
   }
 
-  // Lifecycle: bootstrap vs restart (fixed argv only)
+  // Lifecycle
   let cmdOk = true;
-  if (input.bootstrap) {
+  if (planned.kind === 'mariadb-galera' && input.bootstrap) {
     const which = await input.host.runCommand(
       ['bash', '-c', 'command -v galera_new_cluster || true'],
       { timeoutMs: 5_000 },
@@ -241,26 +279,33 @@ export async function applyDbClusterLocal(input: {
           : `galera_new_cluster 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
       );
     } else {
-      // Fallback: mysqld_safe path not used — document only
-      const r = await input.host.runCommand(['systemctl', 'restart', 'mariadb'], {
+      const r = await input.host.runCommand(['systemctl', 'restart', unit], {
         timeoutMs: 120_000,
       });
       cmdOk = r.exitCode === 0;
       notes.push(
-        '無 galera_new_cluster 指令；已 restart mariadb（首節點 bootstrap 可能需人手）',
+        '無 galera_new_cluster；已 restart mariadb',
         cmdOk ? 'restart OK' : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
       );
     }
   } else {
-    const r = await input.host.runCommand(['systemctl', 'restart', 'mariadb'], {
+    const r = await input.host.runCommand(['systemctl', 'restart', unit], {
       timeoutMs: 120_000,
     });
     cmdOk = r.exitCode === 0;
-    notes.push(
-      cmdOk
-        ? '已 systemctl restart mariadb（join 時用；首節點請加 bootstrap）'
-        : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
-    );
+    if (planned.kind === 'mysql-replica') {
+      notes.push(
+        cmdOk
+          ? `已 systemctl restart ${unit}（replication SQL 仍需人手執行 scripts/*.sql）`
+          : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
+      );
+    } else {
+      notes.push(
+        cmdOk
+          ? `已 systemctl restart ${unit}`
+          : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
+      );
+    }
   }
 
   const members = markLocal(

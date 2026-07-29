@@ -1,6 +1,6 @@
 /**
- * Engine HA cluster panel — plan-first Galera wizard (v1).
- * Mounted inside ServiceConsole «叢集» tab.
+ * Engine HA cluster panel — plan-first wizard.
+ * MariaDB Galera + MySQL primary/replica. Mounted in ServiceConsole «叢集» tab.
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import {
@@ -78,7 +78,9 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   }, [refresh]);
 
   const kind = defaultKind(engine);
-  const galeraReady = engine === 'mariadb';
+  const wizardReady = engine === 'mariadb' || engine === 'mysql';
+  const isGalera = kind === 'mariadb-galera';
+  const isMysqlRepl = kind === 'mysql-replica';
 
   async function onCreatePlan(e: FormEvent) {
     e.preventDefault();
@@ -87,17 +89,45 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       return;
     }
     await run(async () => {
+      const members =
+        isMysqlRepl
+          ? [
+              {
+                host: localHost.trim(),
+                role: 'primary',
+                access: 'local' as const,
+                label: 'primary',
+              },
+              {
+                host: peerHost.trim(),
+                role: 'replica',
+                access: 'ssh' as const,
+                label: 'replica-1',
+              },
+            ]
+          : [
+              {
+                host: localHost.trim(),
+                role: 'node',
+                access: 'local' as const,
+                label: 'local',
+              },
+              {
+                host: peerHost.trim(),
+                role: 'node',
+                access: 'ssh' as const,
+                label: 'peer-1',
+              },
+            ];
       const created = await dbClusterApi.create({
         name: name.trim() || 'ysk-cluster',
         engine,
         kind,
-        members: [
-          { host: localHost.trim(), role: 'node', access: 'local', label: 'local' },
-          { host: peerHost.trim(), role: 'node', access: 'ssh', label: 'peer-1' },
-        ],
-        params:
-          kind === 'mariadb-galera'
-            ? { clusterName: name.trim() || 'ysk-galera', sstMethod: sst }
+        members,
+        params: isGalera
+          ? { clusterName: name.trim() || 'ysk-galera', sstMethod: sst }
+          : isMysqlRepl
+            ? { replUser: 'ysk_repl', serverIdBase: 100 }
             : {},
       });
       const planned = await dbClusterApi.plan(created.cluster.id);
@@ -209,10 +239,10 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         </Alert>
       ) : null}
 
-      {!galeraReady ? (
+      {!wizardReady ? (
         <Alert variant="info">
-          此引擎的簡易 HA（{kind}）計劃器會喺後續版本開放。而家可先用{' '}
-          <strong>MariaDB 服務 → 叢集</strong> 做 Galera 計劃。
+          此引擎（{kind}）計劃器稍後開放。而家可用{' '}
+          <strong>MariaDB Galera</strong> 或 <strong>MySQL 主從</strong>。
         </Alert>
       ) : null}
 
@@ -225,13 +255,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             <Button
               variant="primary"
               size="md"
-              disabled={busy || !galeraReady}
+              disabled={busy || !wizardReady}
               onClick={() => {
                 setError(null);
                 setWizOpen(true);
               }}
             >
-              建立簡易 Galera
+              {isGalera ? '建立簡易 Galera' : isMysqlRepl ? '建立主從複製' : '建立叢集'}
             </Button>
             <Button
               variant="secondary"
@@ -246,11 +276,15 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           {items.length === 0 ? (
             <EmptyState
               title="目前：單機"
-              description="未登記 HA。加 peer 節點後產生 conf 計劃，再分步 bootstrap / join。"
+              description={
+                isMysqlRepl
+                  ? '未登記主從。指定 primary + replica 後產生 conf 與 SQL 腳本。'
+                  : '未登記 HA。加 peer 節點後產生 conf 計劃，再分步 bootstrap / join。'
+              }
               action={
-                galeraReady ? (
+                wizardReady ? (
                   <Button variant="primary" size="md" onClick={() => setWizOpen(true)}>
-                    建立簡易 Galera
+                    {isGalera ? '建立簡易 Galera' : '建立主從複製'}
                   </Button>
                 ) : undefined
               }
@@ -409,7 +443,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       <Modal
         open={wizOpen}
         onClose={() => setWizOpen(false)}
-        title="簡易 Galera"
+        title={isGalera ? '簡易 Galera' : 'MySQL 主從複製'}
         description="選擇節點 → 產生計劃（唔會自動改 peer 系統）"
         footer={
           <>
@@ -440,11 +474,15 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               />
             </Field>
             <Field
-              label="本機 IP／主機"
+              label={isMysqlRepl ? 'Primary IP／主機' : '本機 IP／主機'}
               htmlFor="dbc-local"
               flush
               required
-              hint="控制面所在機（access=local）"
+              hint={
+                isMysqlRepl
+                  ? '通常係控制面所在機（primary + access=local）'
+                  : '控制面所在機（access=local）'
+              }
             >
               <input
                 id="dbc-local"
@@ -457,11 +495,15 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               />
             </Field>
             <Field
-              label="Peer IP／主機"
+              label={isMysqlRepl ? 'Replica IP／主機' : 'Peer IP／主機'}
               htmlFor="dbc-peer"
               flush
               required
-              hint="第二節點；生產建議再加第三節點（稍後可擴）"
+              hint={
+                isMysqlRepl
+                  ? '從庫節點；之後可再加更多 replica'
+                  : '第二節點；生產建議再加第三節點'
+              }
             >
               <input
                 id="dbc-peer"
@@ -473,21 +515,26 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 autoComplete="off"
               />
             </Field>
-            <Field label="SST 方式" htmlFor="dbc-sst" flush>
-              <SegRadio
-                name="dbc-sst"
-                aria-label="SST"
-                value={sst}
-                onChange={setSst}
-                options={[
-                  { value: 'mariabackup', label: 'mariabackup' },
-                  { value: 'rsync', label: 'rsync' },
-                ]}
-              />
-            </Field>
+            {isGalera ? (
+              <Field label="SST 方式" htmlFor="dbc-sst" flush>
+                <SegRadio
+                  name="dbc-sst"
+                  aria-label="SST"
+                  value={sst}
+                  onChange={setSst}
+                  options={[
+                    { value: 'mariabackup', label: 'mariabackup' },
+                    { value: 'rsync', label: 'rsync' },
+                  ]}
+                />
+              </Field>
+            ) : null}
             <FormHint>
-              禁止示範 IP（203.0.113.x）。防火牆只對內網開 3306 / 4567 / 4444 /
-              4568。套用系統 conf 需 YSK_EXECUTE=1 + root。
+              禁止示範 IP（203.0.113.x）。
+              {isGalera
+                ? '防火牆內網開 3306 / 4567 / 4444 / 4568。'
+                : '主從需內網 3306；SQL 腳本內密碼請改 CHANGE_ME。'}
+              套用系統 conf 需 YSK_EXECUTE=1 + root。
             </FormHint>
           </FormLayout>
           <FormActions>

@@ -190,7 +190,8 @@ ysk-server db-cluster delete --id UUID [--json]  # registry only
 - `apply --execute`: needs `YSK_EXECUTE=1` + root → system drop-in + restart/bootstrap
 - `probe`: never claims healthy without real wsrep facts
 
-v1 planner/apply/probe: **MariaDB Galera**. Panel: **MariaDB 服務 → 叢集**.
+Planners: **MariaDB Galera** · **MySQL primary→replica**.  
+Panel: **MariaDB / MySQL 服務 → 叢集**.
 
 ## hosting
 

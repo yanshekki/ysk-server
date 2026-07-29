@@ -176,6 +176,23 @@ export function createDbCluster(db: JsonStore, input: CreateDbClusterInput): DbC
     if (!row.params.sstMethod) row.params.sstMethod = 'mariabackup';
     if (!row.params.galeraPort) row.params.galeraPort = 4567;
   }
+  if (kind === 'mysql-replica') {
+    if (!row.params.replUser) row.params.replUser = 'ysk_repl';
+    if (!row.params.serverIdBase) row.params.serverIdBase = 100;
+    // Ensure first member is primary if roles missing
+    if (row.members[0] && row.members[0].role === 'replica') {
+      row.members[0] = { ...row.members[0], role: 'primary' };
+    }
+    if (row.members[0] && !['primary', 'master'].includes(row.members[0].role)) {
+      row.members[0] = { ...row.members[0], role: 'primary' };
+    }
+    for (let i = 1; i < row.members.length; i++) {
+      if (row.members[i].role === 'primary' || row.members[i].role === 'master') continue;
+      if (!row.members[i].role || row.members[i].role === 'node') {
+        row.members[i] = { ...row.members[i], role: 'replica' };
+      }
+    }
+  }
 
   const all = listDbClusters(db);
   saveAll(db, [row, ...all]);

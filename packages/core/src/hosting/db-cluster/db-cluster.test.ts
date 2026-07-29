@@ -11,7 +11,15 @@ import {
 } from './store.js';
 import { planAndMaterializeDbCluster, planDbCluster } from './plan.js';
 import { galeraAddressList, planMariadbGalera, renderGaleraCnf } from './plan-mariadb-galera.js';
-import { evaluateGaleraHealth, parseWsrepStatus } from './probe.js';
+import {
+  planMysqlReplica,
+  renderMysqlPrimaryCnf,
+} from './plan-mysql-replica.js';
+import {
+  evaluateGaleraHealth,
+  evaluateMysqlReplicaLocal,
+  parseWsrepStatus,
+} from './probe.js';
 import { applyDbClusterLocal } from './apply-local.js';
 import type { HostExecutor } from '../../host/executor.js';
 
@@ -128,6 +136,78 @@ describe('mariadb galera plan', () => {
     const plan = planDbCluster(c);
     expect(plan.ok).toBe(false);
     expect(plan.notes.join(' ')).toMatch(/尚未實作/);
+  });
+});
+
+describe('mysql replica plan', () => {
+  it('plans primary conf and replica SQL', () => {
+    const db = memDb();
+    const c = createDbCluster(db, {
+      name: 'repl1',
+      engine: 'mysql',
+      kind: 'mysql-replica',
+      members: [
+        { host: '10.20.0.1', role: 'primary', access: 'local' },
+        { host: '10.20.0.2', role: 'replica', access: 'ssh' },
+      ],
+    });
+    expect(c.members[0].role).toBe('primary');
+    expect(c.members[1].role).toBe('replica');
+    const plan = planMysqlReplica(c);
+    expect(plan.ok).toBe(true);
+    expect(plan.dryRun).toBe(true);
+    expect(plan.files.some((f) => f.relativePath.includes('primary'))).toBe(true);
+    expect(plan.files.some((f) => f.relativePath.includes('change-source'))).toBe(true);
+    const cnf = renderMysqlPrimaryCnf(c, c.members[0], 0);
+    expect(cnf).toContain('gtid_mode=ON');
+    expect(cnf).toContain('server-id=');
+  });
+
+  it('materializes mysql-replica artifacts', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-mysql-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const c = createDbCluster(db, {
+      name: 'repl2',
+      engine: 'mysql',
+      kind: 'mysql-replica',
+      members: [
+        { host: '10.21.0.1', access: 'local' },
+        { host: '10.21.0.2', access: 'ssh' },
+      ],
+    });
+    const { plan, cluster } = planAndMaterializeDbCluster({
+      db,
+      dataDir: dir,
+      clusterId: c.id,
+    });
+    expect(plan.ok).toBe(true);
+    expect(cluster.status).toBe('planned');
+    expect(
+      existsSync(join(dir, 'clusters', c.id, 'conf', '99-ysk-mysql-primary.cnf')),
+    ).toBe(true);
+  });
+});
+
+describe('mysql replica health eval', () => {
+  it('primary needs binlog file', () => {
+    expect(
+      evaluateMysqlReplicaLocal('primary', { master_has_binlog: 'yes' }).ok,
+    ).toBe(true);
+    expect(evaluateMysqlReplicaLocal('primary', {}).ok).toBe(false);
+  });
+  it('replica needs IO+SQL yes', () => {
+    expect(
+      evaluateMysqlReplicaLocal('replica', {
+        Replica_IO_Running: 'Yes',
+        Replica_SQL_Running: 'Yes',
+      }).ok,
+    ).toBe(true);
+    expect(
+      evaluateMysqlReplicaLocal('replica', {
+        Replica_IO_Running: 'No',
+        Replica_SQL_Running: 'Yes',
+      }).ok,
+    ).toBe(false);
   });
 });
 

@@ -108,9 +108,96 @@ async function runWsrepShow(host: HostExecutor): Promise<{
   };
 }
 
+/** Parse SHOW MASTER STATUS / SHOW BINARY LOG STATUS */
+export function parseMasterStatus(stdout: string): Record<string, string> {
+  const facts: Record<string, string> = {};
+  const lines = stdout.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (lines.length >= 2) {
+    const headers = lines[0].split(/\t/);
+    const values = lines[1].split(/\t/);
+    headers.forEach((h, i) => {
+      if (h) facts[`master_${h}`] = values[i] ?? '';
+    });
+  }
+  // also key: value from \G style
+  for (const line of lines) {
+    const m = line.match(/^(\w+):\s*(.*)$/);
+    if (m) facts[`master_${m[1]}`] = m[2];
+  }
+  if (facts.master_File || facts.master_file) facts.master_has_binlog = 'yes';
+  return facts;
+}
+
+/** Parse SHOW REPLICA STATUS / SHOW SLAVE STATUS */
+export function parseReplicaStatus(stdout: string): Record<string, string> {
+  const facts: Record<string, string> = {};
+  for (const line of stdout.split('\n')) {
+    const m = line.trim().match(/^(\w+):\s*(.*)$/);
+    if (m) facts[m[1]] = m[2];
+    const tab = line.trim().match(/^(Replica_|Slave_|Source_|Master_)(\w+)\t(.*)$/i);
+    if (tab) facts[`${tab[1]}${tab[2]}`] = tab[3];
+  }
+  // tabular two-line
+  const lines = stdout.split('\n').filter((l) => l.trim());
+  if (lines.length >= 2 && /\t/.test(lines[0])) {
+    const h = lines[0].split(/\t/);
+    const v = lines[1].split(/\t/);
+    h.forEach((name, i) => {
+      if (name) facts[name] = v[i] ?? '';
+    });
+  }
+  return facts;
+}
+
+export function evaluateMysqlReplicaLocal(
+  role: string,
+  facts: Record<string, string>,
+): { ok: boolean; notes: string[] } {
+  const notes: string[] = [];
+  const r = role.toLowerCase();
+  if (r === 'primary' || r === 'master') {
+    const has =
+      facts.master_has_binlog === 'yes' ||
+      Boolean(facts.master_File || facts.master_file || facts.File);
+    if (!has) notes.push('primary 無 binlog / MASTER STATUS 空');
+    return { ok: has, notes: notes.length ? notes : ['primary binlog OK'] };
+  }
+  // replica
+  const io =
+    (facts.Replica_IO_Running || facts.Slave_IO_Running || '').toLowerCase() === 'yes';
+  const sql =
+    (facts.Replica_SQL_Running || facts.Slave_SQL_Running || '').toLowerCase() ===
+    'yes';
+  if (!io) notes.push(`IO_Running=${facts.Replica_IO_Running || facts.Slave_IO_Running || '—'}`);
+  if (!sql)
+    notes.push(`SQL_Running=${facts.Replica_SQL_Running || facts.Slave_SQL_Running || '—'}`);
+  const err = facts.Last_Error || facts.Last_SQL_Error || facts.Last_IO_Error;
+  if (err) notes.push(`error: ${err.slice(0, 120)}`);
+  return {
+    ok: io && sql,
+    notes: notes.length ? notes : ['replica IO+SQL running'],
+  };
+}
+
+async function runMysqlQuery(
+  host: HostExecutor,
+  sql: string,
+): Promise<{ stdout: string; exitCode: number; stderr: string }> {
+  const r = await host.runCommand(['mysql', '-e', sql], { timeoutMs: 15_000 });
+  if (r.exitCode === 0) return { stdout: r.stdout, exitCode: 0, stderr: r.stderr };
+  const r2 = await host.runCommand(['mysql', '-e', sql.replace(/REPLICA/g, 'SLAVE').replace(/SOURCE/g, 'MASTER')], {
+    timeoutMs: 15_000,
+  });
+  return {
+    stdout: r2.stdout || r.stdout,
+    exitCode: r2.exitCode,
+    stderr: r2.stderr || r.stderr,
+  };
+}
+
 /**
- * Probe local node for Galera; update registry.
- * Peer probes via SSH are out of scope for PR2 (notes only).
+ * Probe local node; update registry.
+ * Peer probes via SSH out of scope (notes only).
  */
 export async function probeDbCluster(input: {
   db: JsonStore;
@@ -121,8 +208,8 @@ export async function probeDbCluster(input: {
   const notes: string[] = [];
   const at = new Date().toISOString();
 
-  if (cluster.kind !== 'mariadb-galera') {
-    notes.push(`probe 暫只支援 mariadb-galera（${cluster.kind}）`);
+  if (cluster.kind !== 'mariadb-galera' && cluster.kind !== 'mysql-replica') {
+    notes.push(`probe 暫支援 mariadb-galera / mysql-replica（${cluster.kind}）`);
     const next = updateDbCluster(input.db, cluster.id, {
       status: 'degraded',
       notes,
@@ -134,68 +221,136 @@ export async function probeDbCluster(input: {
   const local =
     localIdx >= 0 ? cluster.members[localIdx] : cluster.members[0];
 
-  const r = await runWsrepShow(input.host);
   let facts: Record<string, string> = {};
   let localOk = false;
   let localProbe: DbClusterMemberProbe;
 
-  if (r.exitCode !== 0) {
-    localProbe = {
-      at,
-      ok: false,
-      facts: {},
-      notes: [
-        `mysql/mariadb 查詢失敗：${(r.stderr || r.stdout || 'exit ' + r.exitCode).slice(0, 160)}`,
-      ],
-    };
-    notes.push(...localProbe.notes);
+  if (cluster.kind === 'mariadb-galera') {
+    const r = await runWsrepShow(input.host);
+    if (r.exitCode !== 0) {
+      localProbe = {
+        at,
+        ok: false,
+        facts: {},
+        notes: [
+          `mysql/mariadb 查詢失敗：${(r.stderr || r.stdout || 'exit ' + r.exitCode).slice(0, 160)}`,
+        ],
+      };
+      notes.push(...localProbe.notes);
+    } else {
+      facts = parseWsrepStatus(r.stdout);
+      const evaled = evaluateGaleraHealth(facts, cluster.members.length);
+      localOk = evaled.ok;
+      localProbe = { at, ok: localOk, facts, notes: evaled.notes };
+      notes.push(...evaled.notes);
+    }
   } else {
-    facts = parseWsrepStatus(r.stdout);
-    const evaled = evaluateGaleraHealth(facts, cluster.members.length);
-    localOk = evaled.ok;
-    localProbe = {
-      at,
-      ok: localOk,
-      facts,
-      notes: evaled.notes,
-    };
-    notes.push(...evaled.notes);
+    // mysql-replica
+    const role = (local?.role || 'primary').toLowerCase();
+    if (role === 'replica' || role === 'slave') {
+      const r = await runMysqlQuery(input.host, 'SHOW REPLICA STATUS\\G');
+      if (r.exitCode !== 0) {
+        const r2 = await runMysqlQuery(input.host, 'SHOW SLAVE STATUS\\G');
+        if (r2.exitCode !== 0) {
+          localProbe = {
+            at,
+            ok: false,
+            facts: {},
+            notes: [
+              `SHOW REPLICA/SLAVE 失敗：${(r2.stderr || r.stderr || '').slice(0, 160)}`,
+            ],
+          };
+          notes.push(...localProbe.notes);
+        } else {
+          facts = parseReplicaStatus(r2.stdout);
+          const evaled = evaluateMysqlReplicaLocal('replica', facts);
+          localOk = evaled.ok;
+          localProbe = { at, ok: localOk, facts, notes: evaled.notes };
+          notes.push(...evaled.notes);
+        }
+      } else {
+        facts = parseReplicaStatus(r.stdout);
+        const evaled = evaluateMysqlReplicaLocal('replica', facts);
+        localOk = evaled.ok;
+        localProbe = { at, ok: localOk, facts, notes: evaled.notes };
+        notes.push(...evaled.notes);
+      }
+    } else {
+      const r = await runMysqlQuery(input.host, 'SHOW MASTER STATUS');
+      if (r.exitCode !== 0) {
+        const r2 = await runMysqlQuery(input.host, 'SHOW BINARY LOG STATUS');
+        if (r2.exitCode !== 0) {
+          localProbe = {
+            at,
+            ok: false,
+            facts: {},
+            notes: [
+              `SHOW MASTER 失敗：${(r2.stderr || r.stderr || '').slice(0, 160)}`,
+            ],
+          };
+          notes.push(...localProbe.notes);
+        } else {
+          facts = parseMasterStatus(r2.stdout);
+          const evaled = evaluateMysqlReplicaLocal('primary', facts);
+          localOk = evaled.ok;
+          localProbe = { at, ok: localOk, facts, notes: evaled.notes };
+          notes.push(...evaled.notes);
+        }
+      } else {
+        facts = parseMasterStatus(r.stdout);
+        const evaled = evaluateMysqlReplicaLocal('primary', facts);
+        localOk = evaled.ok;
+        localProbe = { at, ok: localOk, facts, notes: evaled.notes };
+        notes.push(...evaled.notes);
+      }
+    }
   }
 
   const members: DbClusterMember[] = cluster.members.map((m) => {
     if (local && m.id === local.id) {
-      return {
-        ...m,
-        lastProbe: localProbe,
-      };
+      return { ...m, lastProbe: localProbe };
     }
-    // Peers: no remote probe yet
     return {
       ...m,
       lastProbe: m.lastProbe ?? {
         at,
         ok: false,
         facts: {},
-        notes: ['peer 未探測（PR2 只 probe 本機）'],
+        notes: ['peer 未探測（只 probe 本機）'],
       },
     };
   });
 
   let status: DbClusterStatus = 'degraded';
-  if (localOk && cluster.members.length >= 2) {
-    const size = Number(facts.wsrep_cluster_size || 0);
-    if (size >= cluster.members.length) status = 'healthy';
-    else if (size >= 2) {
+  if (cluster.kind === 'mariadb-galera') {
+    if (localOk && cluster.members.length >= 2) {
+      const size = Number(facts.wsrep_cluster_size || 0);
+      if (size >= cluster.members.length) status = 'healthy';
+      else if (size >= 2) {
+        status = 'partial';
+        notes.push('本機 wsrep 尚可，但 size 未達全部登記節點');
+      } else status = 'degraded';
+    } else if (localOk && cluster.members.length === 1) {
       status = 'partial';
-      notes.push('本機 wsrep 尚可，但 size 未達全部登記節點');
-    } else status = 'degraded';
-  } else if (localOk && cluster.members.length === 1) {
-    status = 'partial';
-    notes.push('單節點有 wsrep，但 HA 需 ≥2 節點');
-  } else if (!localOk) {
-    status = cluster.members.some((m) => m.applyStatus === 'applied')
-      ? 'degraded'
-      : 'failed';
+      notes.push('單節點有 wsrep，但 HA 需 ≥2 節點');
+    } else if (!localOk) {
+      status = cluster.members.some((m) => m.applyStatus === 'applied')
+        ? 'degraded'
+        : 'failed';
+    }
+  } else {
+    // mysql-replica: healthy only if local primary has binlog OR local replica IO+SQL
+    // full multi-node healthy needs peer probe later → partial when only local ok
+    if (localOk && cluster.members.length >= 2) {
+      status = 'partial';
+      notes.push('本機 replication 指標 OK；完整 healthy 需 peer probe（未做）');
+    } else if (localOk) {
+      status = 'partial';
+    } else {
+      status = cluster.members.some((m) => m.applyStatus === 'applied')
+        ? 'degraded'
+        : 'failed';
+    }
   }
 
   const next = updateDbCluster(input.db, cluster.id, {

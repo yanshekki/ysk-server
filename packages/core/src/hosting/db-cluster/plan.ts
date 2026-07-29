@@ -6,12 +6,16 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { JsonStore } from '../../db/store.js';
 import { planMariadbGalera } from './plan-mariadb-galera.js';
+import { planMysqlReplica } from './plan-mysql-replica.js';
 import { getDbCluster, updateDbCluster } from './store.js';
 import type { ClusterPlan, DbCluster } from './types.js';
 
 export function planDbCluster(cluster: DbCluster): ClusterPlan {
   if (cluster.kind === 'mariadb-galera') {
     return planMariadbGalera(cluster);
+  }
+  if (cluster.kind === 'mysql-replica') {
+    return planMysqlReplica(cluster);
   }
   // Stubs for later engines — honest not-implemented plan
   return {
@@ -23,8 +27,8 @@ export function planDbCluster(cluster: DbCluster): ClusterPlan {
     steps: [],
     files: [],
     notes: [
-      `拓撲 ${cluster.kind} 計劃器尚未實作（v1 先支援 mariadb-galera）`,
-      '請先用 MariaDB Galera，或等待後續 PR',
+      `拓撲 ${cluster.kind} 計劃器尚未實作（已支援：mariadb-galera、mysql-replica）`,
+      'Postgres / Redis 稍後',
     ],
     requiresExecute: true,
     requiresRoot: true,
