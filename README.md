@@ -8,6 +8,23 @@
 | Repository | https://github.com/yanshekki/ysk-server |
 | Spec | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) |
 
+## AI agents (CLI-first)
+
+Prefer **CLI + docs**, not the experimental fleet UI:
+
+- [docs/agent/README.md](docs/agent/README.md) — rules + runbooks  
+- [docs/agent/SKILL.md](docs/agent/SKILL.md) — paste into Cursor/Claude/Codex  
+- [docs/agent/commands.json](docs/agent/commands.json) — machine catalog  
+- [docs/cli/reference.md](docs/cli/reference.md) — full CLI  
+
+```bash
+ysk-server readiness --json
+ysk-server projects list --json
+ysk-server tools --json
+```
+
+Panel **AI Agent** is experimental (register/queue only). Edge poller: `ysk-server agent run`. Real ops = CLI.
+
 ## Production readiness (Spec gate)
 
 ```bash

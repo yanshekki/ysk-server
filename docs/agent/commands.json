@@ -1,0 +1,107 @@
+{
+  "product": "ysk-server",
+  "version": "0.1",
+  "exitCodes": {
+    "0": "ok",
+    "1": "error",
+    "2": "validation",
+    "3": "blocked (EXECUTE/root/permissions)",
+    "4": "not_found",
+    "5": "host_error"
+  },
+  "globalFlags": ["--json", "--data-dir", "--config", "--help", "--version"],
+  "commands": [
+    {
+      "name": "readiness",
+      "aliases": ["doctor"],
+      "risk": "read",
+      "summary": "Production readiness probe (honest)",
+      "example": "ysk-server readiness --json"
+    },
+    {
+      "name": "projects list",
+      "risk": "read",
+      "summary": "List projects",
+      "example": "ysk-server projects list --json"
+    },
+    {
+      "name": "projects create",
+      "risk": "write-panel",
+      "summary": "Create project (+ optional template)",
+      "args": ["--name", "--domain", "--runtime", "--runtime-version", "--template"],
+      "example": "ysk-server projects create --name demo --runtime node --json"
+    },
+    {
+      "name": "projects deploy",
+      "risk": "execute-host",
+      "summary": "Deploy by runtime (needs EXECUTE for full apply)",
+      "args": ["--id"],
+      "example": "ysk-server projects deploy --id UUID --json"
+    },
+    {
+      "name": "projects stop",
+      "risk": "execute-host",
+      "summary": "Stop project process",
+      "args": ["--id"]
+    },
+    {
+      "name": "projects health",
+      "risk": "read",
+      "summary": "HTTP/process health for project",
+      "args": ["--id"]
+    },
+    {
+      "name": "templates",
+      "risk": "read",
+      "summary": "List app templates"
+    },
+    {
+      "name": "tools",
+      "risk": "read",
+      "summary": "List allowlisted tools"
+    },
+    {
+      "name": "tools run",
+      "risk": "varies",
+      "summary": "Run tool (prefer --dry-run first)",
+      "args": ["--tool", "--arg", "--dry-run"]
+    },
+    {
+      "name": "ask",
+      "risk": "write-panel",
+      "summary": "NL → AI plan (add --execute only with approval)",
+      "example": "ysk-server ask \"check system info\" --json"
+    },
+    {
+      "name": "hosting",
+      "risk": "varies",
+      "summary": "nginx/dns/db/firewall helpers — see cli/reference.md"
+    },
+    {
+      "name": "agents",
+      "risk": "read",
+      "summary": "List/probe experimental agent runtimes"
+    },
+    {
+      "name": "agent run",
+      "risk": "execute-host",
+      "summary": "Outbound fleet poller (experimental)",
+      "args": ["--control-plane", "--id", "--group", "--interval"]
+    },
+    {
+      "name": "setup",
+      "risk": "write-panel",
+      "summary": "Init dataDir + admin"
+    },
+    {
+      "name": "serve",
+      "risk": "execute-host",
+      "summary": "Start API + web"
+    },
+    {
+      "name": "update",
+      "risk": "execute-host",
+      "summary": "Self-update check/apply"
+    }
+  ]
+}

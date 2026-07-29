@@ -1,7 +1,8 @@
 # YSK Server CLI Reference
 
 **Binary**: `ysk-server`  
-**Package**: `@ysk/server` (monorepo) / root bin after `pnpm build`
+**Package**: `@ysk/server` (monorepo) / root bin after `pnpm build`  
+**For AI agents**: [docs/agent/README.md](../agent/README.md) · [commands.json](../agent/commands.json)
 
 ## Global
 
@@ -13,6 +14,19 @@ ysk-server <command> --json          # structured JSON for AI agents
 ysk-server <command> --data-dir PATH # many commands accept dataDir
 ysk-server <command> --config PATH   # config.json from setup
 ```
+
+### Exit codes (AI contract)
+
+| Code | Meaning |
+|------|---------|
+| 0 | ok |
+| 1 | error |
+| 2 | validation / bad args |
+| 3 | blocked (no EXECUTE / root / permission) |
+| 4 | not found |
+| 5 | host command failed |
+
+Prefer `--json`; parse `ok`, `blocked`, `message`, `notes`.
 
 Environment:
 

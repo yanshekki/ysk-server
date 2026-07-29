@@ -1,36 +1,30 @@
 # AI Agent Guide
 
-## CLI for agents
+> **Canonical docs moved to [docs/agent/README.md](../agent/README.md)**  
+> CLI reference: [docs/cli/reference.md](../cli/reference.md) · Catalog: [docs/agent/commands.json](../agent/commands.json)
 
-Always prefer structured JSON:
+## CLI for agents (short)
 
 ```bash
+ysk-server readiness --json
+ysk-server projects list --json
 ysk-server tools --json
-ysk-server setup --dry-run --json
-ysk-server update --check --json
+ysk-server tools run --tool sys.info --dry-run --json
 ```
 
 ## Tool execution policy
 
-1. Discover tools via `ysk-server tools --json` or `GET /api/v1/status`
-2. Dry-run: `POST /api/v1/tools/execute` with `"dryRun": true`
-3. High-risk tools return `approvalId` — wait for human approval
-4. Never execute raw LLM text as shell
+1. Discover tools via `ysk-server tools --json`
+2. Prefer `--dry-run` first
+3. High-risk → approval; never raw LLM shell
+4. Host mutate needs `YSK_EXECUTE=1`
 
-## Managed runtimes
+## Fleet (experimental)
 
-| Runtime | Kind |
-|---------|------|
-| OpenClaw | `openclaw` |
-| Hermes | `hermes` |
-| IonClaw | `ionclaw` |
+Panel register ≠ online. Edge:
 
 ```bash
-ysk-server agents --json
+ysk-server agent run --control-plane http://127.0.0.1:9287 --id edge-1
 ```
 
-All runtimes are supervised: tool calls go through Allowlist + Approval; agent RBAC max is write-low.
-
-## Outbound fleet agents
-
-Agents register with the control plane and receive commands over the outbound session channel (`AgentComms`).
+Prefer local CLI for real ops. OpenClaw/Hermes/IonClaw install paths are **placeholders** until a real binary is wired.

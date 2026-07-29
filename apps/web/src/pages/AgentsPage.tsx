@@ -170,6 +170,15 @@ export function AgentsPage() {
         </div>
       }
     >
+      <Alert variant="info">
+        <strong>實驗。</strong> 登記 ≠ 上線。真實運維用 CLI：
+        <code className="inline"> ysk-server … --json</code>
+        。文件：repo <code className="inline">docs/agent/README.md</code>
+        。Edge：
+        <code className="inline">ysk-server agent run --id …</code>
+        ；指令 payload 建議{' '}
+        <code className="inline">{`{ "cli": ["projects", "list"] }`}</code>。
+      </Alert>
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
         <Alert variant="ok">

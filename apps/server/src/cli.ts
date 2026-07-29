@@ -24,52 +24,64 @@ function printJson(data: unknown): void {
   process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
 }
 
+/** Commands listed for humans + AI (`--json` help). */
+const CLI_COMMANDS = [
+  'setup',
+  'update',
+  'serve',
+  'system',
+  'tools',
+  'ask',
+  'projects',
+  'backup',
+  'templates',
+  'hosting',
+  'agents',
+  'agent',
+  'readiness',
+  'doctor',
+  'version',
+  'help',
+] as const;
+
 function printHelp(): void {
   const text = `
 ${PRODUCT_NAME} (${CLI_NAME}) v${VERSION}
 
-AI-secure Linux server manager with web hosting control panel.
+Control plane CLI — prefer --json for AI agents.
+Docs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json
 
 Usage:
   ${CLI_NAME} <command> [options]
 
 Commands:
-  setup                 Initialize control plane + database
-  update                Check / plan self-update
-  serve                 Start HTTP API + Web UI (if built)
+  setup                 Init dataDir + admin
+  update                Self-update check/apply
+  serve                 HTTP API + Web UI
   system unit-install   Install ysk-server.service [--enable]
-  tools                 List tools; tools run --tool <name>
-  ask                   Plan AI task from natural language
-  projects              list|create|deploy|stop|backup|template
-  backup all            Backup every project home (cron-friendly)
-  templates             List one-click app templates
-  hosting               nginx|nginx-sync|db|dns|powerdns|firewall helpers
-  agents                List / probe managed AI agent runtimes
-  agent run             Outbound fleet agent (poll control plane)
-  readiness | doctor     Spec production readiness probe (honest)
-  version               Print version
-  help                  Show this help
+  tools                 List tools; tools run --tool <name> [--dry-run]
+  ask                   NL → AI plan [--execute]
+  projects              list|create|deploy|stop|health|backup|template
+  backup all            Backup all project homes
+  templates             App templates
+  hosting               nginx|dns|db|firewall helpers
+  agents                List/probe agent runtimes (experimental)
+  agent run             Outbound fleet poller (experimental)
+  readiness | doctor    Production readiness (honest)
+  version | help
 
-Global options:
-  --json                Structured JSON output (AI-agent friendly)
-  --help, -h            Show help
-  --version, -V         Show version
-  --data-dir <path>     Data directory (many commands)
-  --config <path>       Config.json from setup
+Global:
+  --json                JSON stdout (AI)
+  --data-dir PATH
+  --config PATH
+  --help | --version
 
-projects create:
-  --name <n> --domain <d> --runtime node|php|static|python|go|rust
-  --template node-starter|static-site|wordpress-php
-
-projects deploy|stop|backup|template:
-  --id <projectId>   [--template <id>] [--force]
+Exit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error
 
 Examples:
-  ${CLI_NAME} setup --non-interactive --dry-run
-  ${CLI_NAME} serve --config .ysk/config.json
-  ${CLI_NAME} projects create --name demo --template node-starter
-  ${CLI_NAME} projects deploy --id <uuid>
-  ${CLI_NAME} templates --json
+  ${CLI_NAME} readiness --json
+  ${CLI_NAME} projects list --json
+  ${CLI_NAME} projects create --name demo --runtime node --json
   ${CLI_NAME} tools --json
 `.trim();
   process.stdout.write(`${text}\n`);
@@ -111,7 +123,9 @@ async function main(argv: string[]): Promise<number> {
         product: PRODUCT_NAME,
         cli: CLI_NAME,
         version: VERSION,
-        commands: ['setup', 'update', 'serve', 'tools', 'agents', 'version', 'help'],
+        commands: [...CLI_COMMANDS],
+        docs: ['docs/agent/README.md', 'docs/cli/reference.md', 'docs/agent/commands.json'],
+        exitCodes: { 0: 'ok', 1: 'error', 2: 'validation', 3: 'blocked', 4: 'not_found', 5: 'host_error' },
       });
     } else {
       printHelp();
@@ -126,7 +140,9 @@ async function main(argv: string[]): Promise<number> {
         product: PRODUCT_NAME,
         cli: CLI_NAME,
         version: VERSION,
-        commands: ['setup', 'update', 'serve', 'tools', 'agents', 'version', 'help'],
+        commands: [...CLI_COMMANDS],
+        docs: ['docs/agent/README.md', 'docs/cli/reference.md', 'docs/agent/commands.json'],
+        exitCodes: { 0: 'ok', 1: 'error', 2: 'validation', 3: 'blocked', 4: 'not_found', 5: 'host_error' },
       });
     } else {
       printHelp();
@@ -282,7 +298,42 @@ async function main(argv: string[]): Promise<number> {
       signal: ac.signal,
       onCommand: async (cmd) => {
         process.stdout.write(`[cmd ${cmd.id}] ${JSON.stringify(cmd.payload)}\n`);
-        return { ok: true, echo: cmd.payload, at: new Date().toISOString() };
+        // Preferred payload: { "cli": ["projects", "list", "--json"] } — runs this binary only
+        const payload = cmd.payload as { cli?: string[]; op?: string };
+        if (Array.isArray(payload?.cli) && payload.cli.length > 0) {
+          const { spawnSync } = await import('node:child_process');
+          const bin = process.argv[1] ?? 'ysk-server';
+          const argv = payload.cli.map(String);
+          if (!argv.includes('--json')) argv.push('--json');
+          const r = spawnSync(process.execPath, [bin, ...argv], {
+            encoding: 'utf8',
+            env: process.env,
+            timeout: 120_000,
+          });
+          let parsed: unknown = r.stdout;
+          try {
+            parsed = JSON.parse(r.stdout || 'null');
+          } catch {
+            /* raw */
+          }
+          return {
+            ok: r.status === 0,
+            exitCode: r.status ?? 1,
+            result: parsed,
+            stderr: (r.stderr || '').slice(0, 4000),
+            at: new Date().toISOString(),
+          };
+        }
+        // Legacy demos
+        if (payload?.op === 'ping') {
+          return { ok: true, op: 'pong', at: new Date().toISOString() };
+        }
+        return {
+          ok: true,
+          echo: cmd.payload,
+          note: 'Pass { "cli": ["projects", "list"] } to run ysk-server CLI',
+          at: new Date().toISOString(),
+        };
       },
     });
     return 0;
