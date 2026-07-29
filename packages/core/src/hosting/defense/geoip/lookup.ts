@@ -5,6 +5,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import maxmind, { type Reader } from 'maxmind';
+import { isPrivateOrLocalIp, isValidIp, normalizeIp } from '../../../net/ip.js';
 import { geoipDir, listGeoipSourceStatus } from './downloader.js';
 import { makeCityKey, makeRegionKey, normalizeAsn } from './types.js';
 import type { GeoLookupResult } from './types.js';
@@ -164,25 +165,16 @@ export function resetGeoipReaders(): void {
   openedDir = null;
 }
 
-function isPrivateIp(ip: string): boolean {
-  if (ip === '127.0.0.1' || ip === '::1' || ip === '0.0.0.0') return true;
-  if (ip.startsWith('10.') || ip.startsWith('192.168.') || ip.startsWith('169.254.'))
-    return true;
-  const m = /^172\.(\d+)\./.exec(ip);
-  if (m) {
-    const n = Number(m[1]);
-    if (n >= 16 && n <= 31) return true;
-  }
-  return false;
-}
-
 export async function lookupIp(dataDir: string, ip: string): Promise<GeoLookupResult> {
-  const trimmed = ip.trim();
   const notes: string[] = [];
+  const trimmed = normalizeIp(ip.trim()) ?? ip.trim();
   if (!trimmed) {
     return { ip: '', ok: false, notes: ['請提供 IP'] };
   }
-  if (isPrivateIp(trimmed)) {
+  if (!isValidIp(trimmed)) {
+    return { ip: trimmed, ok: false, notes: ['無效 IPv4／IPv6'] };
+  }
+  if (isPrivateOrLocalIp(trimmed)) {
     return {
       ip: trimmed,
       ok: true,

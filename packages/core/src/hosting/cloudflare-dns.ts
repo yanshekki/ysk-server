@@ -106,6 +106,7 @@ export async function resolveCloudflareZoneId(
 export async function applyCloudflareDns(input: {
   zone: string;
   serverIp: string;
+  serverIpv6?: string;
   mailHost?: string;
   token?: string;
   dryRun?: boolean;
@@ -119,6 +120,7 @@ export async function applyCloudflareDns(input: {
   const plan = planDnsZone({
     zone,
     serverIp: input.serverIp,
+    serverIpv6: input.serverIpv6,
     mailHost: input.mailHost,
   });
   const planned = [

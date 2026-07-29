@@ -30,6 +30,7 @@ export function useProjects() {
       createDnsZone?: boolean;
       createMailDomain?: boolean;
       serverIp?: string;
+      serverIpv6?: string;
     }) => {
       setBusy(true);
       setError(null);

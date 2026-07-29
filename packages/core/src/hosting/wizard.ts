@@ -30,6 +30,7 @@ export async function runCreateWizard(input: {
     domain?: string;
     runtime?: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
     serverIp?: string;
+    serverIpv6?: string;
     createDns?: boolean;
     createMail?: boolean;
     createDb?: boolean;
@@ -86,6 +87,7 @@ export async function runCreateWizard(input: {
 
   const projectId = steps[0]?.id;
   const serverIp = input.body.serverIp?.trim() || '127.0.0.1';
+  const serverIpv6 = input.body.serverIpv6?.trim() || undefined;
 
   // 2) DNS zone (control-plane resource)
   if (input.body.createDns && domain) {
@@ -97,16 +99,27 @@ export async function runCreateWizard(input: {
         id,
         zone: domain,
         serverIp,
+        ...(serverIpv6 ? { serverIpv6 } : {}),
         template: 'full',
         apply_status: 'draft',
         created_at: new Date().toISOString(),
       });
+      // seed A/AAAA template records for honesty in records tab
+      try {
+        const { seedDnsZoneRecords } = await import('./managed-resources.js');
+        seedDnsZoneRecords(input.db, id, domain, serverIp, 'full', serverIpv6);
+      } catch {
+        /* seed optional if import cycle */
+      }
       input.db.persist();
       steps.push({
         step: 'dns',
         ok: true,
         id,
-        notes: [`DNS zone draft ${domain}（需到 DNS 頁寫入/套用）`],
+        notes: [
+          `DNS zone draft ${domain}（需到 DNS 頁寫入/套用）`,
+          ...(serverIpv6 ? [`已含 IPv6 ${serverIpv6}`] : []),
+        ],
       });
     } catch (e) {
       steps.push({
@@ -123,6 +136,7 @@ export async function runCreateWizard(input: {
       const d = input.email.create({
         domain,
         serverIp,
+        serverIpv6,
         actor: input.actor,
       });
       steps.push({

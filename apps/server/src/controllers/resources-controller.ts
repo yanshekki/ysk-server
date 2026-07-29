@@ -122,6 +122,9 @@ export async function handleResourcesRoutes(
     if (key === 'dns_zones') {
       const zone = String(data.zone ?? '').trim();
       const serverIp = String(data.serverIp ?? '127.0.0.1');
+      const serverIpv6 = data.serverIpv6
+        ? String(data.serverIpv6).trim()
+        : undefined;
       const template = String(data.template ?? 'full');
       if (!zone) {
         sendJson(res, 400, { ok: false, message: '請填寫 zone 名稱' });
@@ -130,12 +133,20 @@ export async function handleResourcesRoutes(
       const row = createResource(ctx.db, key, {
         zone,
         serverIp,
+        ...(serverIpv6 ? { serverIpv6 } : {}),
         mailHost: data.mailHost,
         backend: data.backend ?? 'bind',
         template,
         apply_status: 'draft',
       });
-      seedDnsZoneRecords(ctx.db, String(row.id), zone, serverIp, template);
+      seedDnsZoneRecords(
+        ctx.db,
+        String(row.id),
+        zone,
+        serverIp,
+        template,
+        serverIpv6,
+      );
       ctx.audit.append({
         actor: user.username,
         action: 'resources.create',

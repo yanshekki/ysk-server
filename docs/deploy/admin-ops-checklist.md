@@ -36,6 +36,22 @@ ysk-server readiness --data-dir /var/lib/ysk-server --json
 
 **勿用**「執行環境 → PHP → FPM／站點」當每站主流程（嗰個係系統 demo／工具）。
 
+## 2b. IPv4 + IPv6 雙棧
+
+公網邊緣（Nginx／UFW／DNS／防護）支援 **IPv4 與 IPv6**；專案應用進程仍綁 `127.0.0.1`（本機上游，刻意不做公網 `::`）。
+
+- [ ] 主機已獲公網 IPv6（或至少 loopback `::1` 測本地）
+- [ ] `/etc/default/ufw` 內 **`IPV6=yes`**（否則 UFW 規則可能只寫 v4）
+- [ ] Nginx 站點 conf 含 `listen 80` **與** `listen [::]:80`（HTTPS 同理 443）— `nginx -t` 後 reload
+- [ ] DNS：有 v6 時 apex／www／mail 加 **AAAA**；SPF 可加 `ip6:`
+- [ ] 防護中心：白名單／手動 ban 可填 v6 或 CIDR（例 `2001:db8::/32`）
+- [ ] CF-only 檔含 **IPv4 + IPv6** CF 段（腳本 notes 會標段數）
+- [ ] FTPS：預設僅 IPv4；要 v6 時在服務頁選「IPv6（可 mapped）」再套用
+- [ ] 郵件 Postfix 管理檔 `inet_protocols = all`
+- [ ] 驗證：`curl -4` / `curl -6` 打站；`ufw status` 見 v6 規則
+
+**勿**把 Node／PHP 上游改成公網 IPv6 listen；保持 reverse proxy → `127.0.0.1:PORT`。
+
 ## 3. DNS／外網
 
 - [ ] 面板 zone 已寫；**權威** named/pdns 已 reload（或 registrar 指到本機）

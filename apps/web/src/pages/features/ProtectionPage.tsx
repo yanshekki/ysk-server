@@ -1558,7 +1558,8 @@ export function ProtectionPage() {
                 <span>受攻擊時 UFW 只放 CF 網段（+SSH）</span>
               </label>
               <FormHint>
-                慎用：會 reset UFW 再寫入 CF IPv4 段 + 保留埠。需 root + YSK_EXECUTE 先 applied。
+                慎用：會 reset UFW 再寫入 CF IPv4+IPv6 段 + 保留埠。需 root + YSK_EXECUTE 先
+                applied；並確認 /etc/default/ufw 內 IPV6=yes。
               </FormHint>
               <FormActions>
                 <Button
@@ -1968,8 +1969,16 @@ export function ProtectionPage() {
                   </Button>
                 </div>
                 <div className="def-wl">
-                  {(ab?.whitelist ?? []).map((w) => (
+                  {(ab?.whitelist ?? []).map((w) => {
+                    const fam =
+                      w.includes('/') && w.includes(':')
+                        ? 'v6'
+                        : w.includes(':')
+                          ? 'v6'
+                          : 'v4';
+                    return (
                     <span key={w} className="def-wl__chip">
+                      <Badge tone="neutral">{fam}</Badge>
                       <code>{w}</code>
                       <button
                         type="button"
@@ -1990,7 +1999,8 @@ export function ProtectionPage() {
                         ×
                       </button>
                     </span>
-                  ))}
+                    );
+                  })}
                   {!ab?.whitelist?.length ? (
                     <span className="muted u-text-sm">未設定（建議加入你嘅 IP）</span>
                   ) : null}
@@ -2000,7 +2010,7 @@ export function ProtectionPage() {
                     <input
                       value={wlInput}
                       onChange={(e) => setWlInput(e.target.value)}
-                      placeholder="IP 或 CIDR"
+                      placeholder="IPv4／IPv6 或 CIDR"
                       spellCheck={false}
                     />
                     <Button
@@ -2041,7 +2051,7 @@ export function ProtectionPage() {
                       id="def-ip"
                       value={banIp}
                       onChange={(e) => setBanIp(e.target.value)}
-                      placeholder="203.0.113.10"
+                      placeholder="203.0.113.10 或 2001:db8::1"
                       spellCheck={false}
                     />
                   </Field>
@@ -2669,7 +2679,7 @@ export function ProtectionPage() {
                     id="geo-lip"
                     value={lookupIp}
                     onChange={(e) => setLookupIp(e.target.value)}
-                    placeholder="1.1.1.1"
+                    placeholder="1.1.1.1 或 2606:4700:4700::1111"
                     spellCheck={false}
                   />
                 </Field>

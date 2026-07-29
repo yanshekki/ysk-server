@@ -383,7 +383,7 @@ export function ProjectNetworkTab({
                   id="net-ip"
                   value={bindIp}
                   onChange={(e) => setBindIp(e.target.value)}
-                  placeholder="留空或 203.0.113.10"
+                  placeholder="留空、203.0.113.10 或 2001:db8::1"
                   disabled={suspended}
                 />
               </Field>

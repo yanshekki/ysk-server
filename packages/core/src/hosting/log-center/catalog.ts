@@ -105,19 +105,8 @@ export const LOG_PATH_ROOTS = [
   '/run/log',
 ] as const;
 
-/** Extract first IPv4 from a log line (for ban deep-link). */
-export function extractIpFromLogLine(line: string): string | null {
-  const m = line.match(
-    /\b((?:\d{1,3}\.){3}\d{1,3})\b/,
-  );
-  if (!m) return null;
-  const ip = m[1];
-  const parts = ip.split('.').map(Number);
-  if (parts.some((n) => n > 255)) return null;
-  // skip obvious non-public noise
-  if (ip.startsWith('127.') || ip.startsWith('0.')) return null;
-  return ip;
-}
+/** Extract first public-ish IPv4/IPv6 from a log line (for ban deep-link). */
+export { extractIpFromLogLine } from '../../net/ip.js';
 
 const FORBIDDEN_SEGMENTS = [
   '/.ssh/',

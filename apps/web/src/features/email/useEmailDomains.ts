@@ -17,7 +17,7 @@ export function useEmailDomains() {
   }, [refresh]);
 
   const create = useCallback(
-    async (input: { domain: string; serverIp: string }) => {
+    async (input: { domain: string; serverIp: string; serverIpv6?: string }) => {
       setBusy(true);
       setError(null);
       try {

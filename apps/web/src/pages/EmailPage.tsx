@@ -45,6 +45,7 @@ export function EmailPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [domain, setDomain] = useState('');
   const [serverIp, setServerIp] = useState(ctx.serverIp);
+  const [serverIpv6, setServerIpv6] = useState(ctx.serverIpv6 ?? '');
   const [query, setQuery] = useState('');
   const [queueBusy, setQueueBusy] = useState(false);
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
@@ -68,10 +69,18 @@ export function EmailPage() {
     e.preventDefault();
     setError(null);
     try {
-      const created = await create({ domain, serverIp });
+      const created = await create({
+        domain,
+        serverIp,
+        ...(serverIpv6.trim() ? { serverIpv6: serverIpv6.trim() } : {}),
+      });
       setDomain('');
       setCreateOpen(false);
-      setServerContext({ domain, serverIp });
+      setServerContext({
+        domain,
+        serverIp,
+        serverIpv6: serverIpv6.trim() || undefined,
+      });
       const domainName =
         typeof created.domain === 'string' ? created.domain : created.domain.domain;
       const list = await refresh();
@@ -517,7 +526,7 @@ export function EmailPage() {
               htmlFor="eip"
               flush
               required
-              hint="此域名郵件服務對外 IP（常用於 MX／A 建議）"
+              hint="此域名郵件服務對外 IPv4（MX／A／SPF ip4:）"
             >
               <input
                 id="eip"
@@ -528,6 +537,23 @@ export function EmailPage() {
                 }}
                 required
                 placeholder="203.0.113.10"
+                spellCheck={false}
+              />
+            </Field>
+            <Field
+              label="伺服器 IPv6（可選）"
+              htmlFor="eip6"
+              flush
+              hint="有公網 v6 時寫入 AAAA 與 SPF ip6:"
+            >
+              <input
+                id="eip6"
+                value={serverIpv6}
+                onChange={(e) => {
+                  setServerIpv6(e.target.value);
+                  setServerContext({ serverIpv6: e.target.value });
+                }}
+                placeholder="2001:db8::1"
                 spellCheck={false}
               />
             </Field>

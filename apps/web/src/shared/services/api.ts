@@ -161,6 +161,7 @@ export const api = {
     createDnsZone?: boolean;
     createMailDomain?: boolean;
     serverIp?: string;
+    serverIpv6?: string;
   }): Promise<{
     project: ProjectDto;
     osProvision: unknown;

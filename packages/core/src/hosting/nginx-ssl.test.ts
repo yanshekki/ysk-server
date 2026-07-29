@@ -17,6 +17,8 @@ describe('nginx + ssl', () => {
       cloudflareRealIp: true,
     });
     expect(conf).toContain('listen 443 ssl');
+    expect(conf).toContain('listen [::]:443');
+    expect(conf).toContain('listen [::]:80');
     expect(conf).toContain('proxy_pass http://127.0.0.1:3000');
     expect(conf).toContain('CF-Connecting-IP');
     expect(conf).toContain('letsencrypt');

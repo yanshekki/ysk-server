@@ -4,7 +4,8 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseAccessLogSuspects, isValidIp } from './auto-ban.js';
+import { parseAccessLogSuspects } from './auto-ban.js';
+import { extractIpsFromText, isPrivateOrLocalIp, isValidIp, normalizeIp } from '../../net/ip.js';
 
 export type TopIpRow = {
   ip: string;
@@ -67,16 +68,26 @@ function readLogChunks(dataDir: string): string {
   return chunks.join('\n');
 }
 
-/** Parse sshd/auth failures into IP hit map extras. */
+/** Parse sshd/auth failures into IP hit map extras (IPv4 + IPv6). */
 export function parseAuthFailIps(content: string): Map<string, number> {
   const map = new Map<string, number>();
   for (const line of content.split('\n')) {
-    if (!/Failed password|Invalid user|authentication failure/i.test(line)) continue;
-    const m =
-      line.match(/from\s+(\d{1,3}(?:\.\d{1,3}){3})/) ||
-      line.match(/rhost=(\d{1,3}(?:\.\d{1,3}){3})/);
-    if (!m || !isValidIp(m[1])) continue;
-    map.set(m[1], (map.get(m[1]) ?? 0) + 1);
+    if (!/Failed password|Invalid user|authentication failure|Connection closed by/i.test(line))
+      continue;
+    // Prefer "from <ip>" then fall back to any public IP on the line
+    const fromM =
+      line.match(/\bfrom\s+(\S+)/i) ||
+      line.match(/\brhost=(\S+)/i);
+    let ip: string | null = null;
+    if (fromM) {
+      const cand = fromM[1].replace(/[\[\],;]+$/g, '');
+      ip = normalizeIp(cand);
+    }
+    if (!ip) {
+      ip = extractIpsFromText(line).find((x) => !isPrivateOrLocalIp(x)) ?? null;
+    }
+    if (!ip || !isValidIp(ip) || isPrivateOrLocalIp(ip)) continue;
+    map.set(ip, (map.get(ip) ?? 0) + 1);
   }
   return map;
 }

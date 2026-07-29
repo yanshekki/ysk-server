@@ -26,6 +26,7 @@ export interface ProjectCreateModalProps {
     createDnsZone?: boolean;
     createMailDomain?: boolean;
     serverIp?: string;
+    serverIpv6?: string;
   }) => Promise<void>;
 }
 
@@ -40,7 +41,8 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
   const [templateId, setTemplateId] = useState('');
   const [createDns, setCreateDns] = useState(false);
   const [createMail, setCreateMail] = useState(false);
-  const [serverIp, setServerIp] = useState('127.0.0.1');
+  const [serverIp, setServerIp] = useState('203.0.113.10');
+  const [serverIpv6, setServerIpv6] = useState('');
   const [templates, setTemplates] = useState<
     Array<{ id: string; name: string; description: string; runtime: string }>
   >([]);
@@ -62,7 +64,8 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
       setTemplateId('');
       setCreateDns(false);
       setCreateMail(false);
-      setServerIp('127.0.0.1');
+      setServerIp('203.0.113.10');
+      setServerIpv6('');
     }
   }, [open]);
 
@@ -81,6 +84,10 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
       createDnsZone: Boolean(domain && createDns),
       createMailDomain: Boolean(domain && createMail),
       serverIp: createDns || createMail ? serverIp : undefined,
+      serverIpv6:
+        createDns || createMail
+          ? serverIpv6.trim() || undefined
+          : undefined,
     });
   }
 
@@ -249,13 +256,21 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               />
             </div>
             {createDns || createMail ? (
-              <FormLayout>
-                <Field label="伺服器 IP（寫入 DNS 範本）" htmlFor="pc-ip" flush>
+              <FormLayout columns={2}>
+                <Field label="伺服器 IPv4（DNS／郵件範本）" htmlFor="pc-ip" flush>
                   <input
                     id="pc-ip"
                     value={serverIp}
                     onChange={(e) => setServerIp(e.target.value)}
-                    placeholder="127.0.0.1"
+                    placeholder="203.0.113.10"
+                  />
+                </Field>
+                <Field label="伺服器 IPv6（可選）" htmlFor="pc-ip6" flush>
+                  <input
+                    id="pc-ip6"
+                    value={serverIpv6}
+                    onChange={(e) => setServerIpv6(e.target.value)}
+                    placeholder="2001:db8::1"
                   />
                 </Field>
               </FormLayout>

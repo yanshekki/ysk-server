@@ -4,6 +4,7 @@
  */
 
 import type { HostExecutor } from '../host/executor.js';
+import { isValidIp, normalizeIp } from '../net/ip.js';
 
 export type UfwRule = {
   num?: number;
@@ -75,9 +76,9 @@ export function extractDenyFromIps(rules: UfwRule[]): string[] {
   for (const r of rules) {
     if (!/^DENY/i.test(r.action)) continue;
     const from = (r.from || '').replace(/\s*\(v6\)\s*/i, '').trim();
-    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(from) || from.includes(':')) {
-      ips.push(from);
-    }
+    // UFW may show "Anywhere (v6)" — skip non-IP labels
+    const n = normalizeIp(from);
+    if (n && isValidIp(n)) ips.push(n);
   }
   return [...new Set(ips)];
 }
@@ -201,9 +202,9 @@ export async function firewallDenyIp(
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
   const block = needExec(host);
   if (block) return block;
-  const safe = ip.trim();
-  if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(safe) && !safe.includes(':')) {
-    return { ok: false, notes: ['無效 IP'] };
+  const safe = normalizeIp(ip.trim()) ?? '';
+  if (!safe || !isValidIp(safe)) {
+    return { ok: false, notes: ['無效 IPv4／IPv6'] };
   }
   const r = await host.runCommand(['ufw', 'deny', 'from', safe], { timeoutMs: 12_000 });
   return {
@@ -222,7 +223,10 @@ export async function firewallDeleteDenyIp(
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
   const block = needExec(host);
   if (block) return block;
-  const safe = ip.trim();
+  const safe = normalizeIp(ip.trim()) ?? ip.trim();
+  if (!safe || !isValidIp(safe)) {
+    return { ok: false, notes: ['無效 IPv4／IPv6'] };
+  }
   const r = await host.runCommand(['ufw', 'delete', 'deny', 'from', safe], {
     timeoutMs: 12_000,
   });

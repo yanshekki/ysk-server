@@ -78,6 +78,7 @@ export async function applyAdminer(input: {
 
   const conf = `server {
   listen 80;
+  listen [::]:80;
   server_name ${domain};
   root ${dir};
   index adminer.php;

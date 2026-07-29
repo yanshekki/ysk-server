@@ -13,6 +13,14 @@ import type {
   BanMethod,
   SuspectIp,
 } from './types.js';
+import {
+  extractIpsFromText,
+  isPrivateOrLocalIp,
+  isValidIp,
+  ipMatchesList,
+  normalizeIp,
+  normalizeIpOrCidr,
+} from '../../net/ip.js';
 
 const POLICY_KEY = 'defense_auto_ban';
 const TIMELINE_KEY = 'defense_timeline';
@@ -29,51 +37,15 @@ export const DEFAULT_AUTO_BAN: AutoBanPolicy = {
   whitelist: ['127.0.0.1', '::1'],
 };
 
-export function isValidIp(ip: string): boolean {
-  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
-    return ip.split('.').every((o) => {
-      const n = Number(o);
-      return n >= 0 && n <= 255;
-    });
-  }
-  if (ip.includes(':') && ip.length < 46) return true;
-  return false;
+export { isValidIp, normalizeIp, normalizeIpOrCidr };
+
+/** Dual-stack exact + CIDR whitelist match. */
+export function ipMatchesWhitelist(ip: string, whitelist: string[]): boolean {
+  return ipMatchesList(ip, whitelist);
 }
 
 function isPrivateOrLocal(ip: string): boolean {
-  if (ip === '127.0.0.1' || ip === '::1') return true;
-  if (ip.startsWith('10.')) return true;
-  if (ip.startsWith('192.168.')) return true;
-  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(ip)) return true;
-  return false;
-}
-
-/** Simple IPv4 CIDR or exact match. */
-export function ipMatchesWhitelist(ip: string, whitelist: string[]): boolean {
-  const trimmed = ip.trim();
-  for (const w of whitelist) {
-    const rule = w.trim();
-    if (!rule) continue;
-    if (rule === trimmed) return true;
-    if (rule.includes('/')) {
-      const [base, bitsStr] = rule.split('/');
-      const bits = Number(bitsStr);
-      if (!base || !Number.isFinite(bits) || bits < 0 || bits > 32) continue;
-      if (!isValidIp(base) || !isValidIp(trimmed)) continue;
-      if (ipv4InCidr(trimmed, base, bits)) return true;
-    }
-  }
-  return false;
-}
-
-function ipv4ToInt(ip: string): number {
-  return ip.split('.').reduce((a, o) => (a << 8) + Number(o), 0) >>> 0;
-}
-
-function ipv4InCidr(ip: string, base: string, bits: number): boolean {
-  if (bits === 0) return true;
-  const mask = bits === 32 ? 0xffffffff : (~0 << (32 - bits)) >>> 0;
-  return (ipv4ToInt(ip) & mask) === (ipv4ToInt(base) & mask);
+  return isPrivateOrLocalIp(ip);
 }
 
 export function loadAutoBanPolicy(db: JsonStore): AutoBanPolicy {
@@ -90,7 +62,10 @@ export function loadAutoBanPolicy(db: JsonStore): AutoBanPolicy {
       cooldownMinutes: Math.max(5, Math.min(24 * 60, Number(p.cooldownMinutes) || 60)),
       maxAutoBansPerHour: Math.max(1, Math.min(500, Number(p.maxAutoBansPerHour) || 40)),
       whitelist: Array.isArray(p.whitelist)
-        ? p.whitelist.map(String).filter(Boolean).slice(0, 200)
+        ? p.whitelist
+            .map((w) => normalizeIpOrCidr(String(w)) || String(w).trim())
+            .filter(Boolean)
+            .slice(0, 200)
         : [...DEFAULT_AUTO_BAN.whitelist],
       recentAutoBanAts: Array.isArray(p.recentAutoBanAts)
         ? p.recentAutoBanAts.map(String).slice(0, 500)
@@ -107,7 +82,10 @@ export function loadAutoBanPolicy(db: JsonStore): AutoBanPolicy {
 export function saveAutoBanPolicy(db: JsonStore, policy: AutoBanPolicy): AutoBanPolicy {
   const next: AutoBanPolicy = {
     ...policy,
-    whitelist: (policy.whitelist ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 200),
+    whitelist: (policy.whitelist ?? [])
+      .map((s) => normalizeIpOrCidr(String(s)) || String(s).trim())
+      .filter(Boolean)
+      .slice(0, 200),
     recentAutoBanAts: (policy.recentAutoBanAts ?? []).slice(0, 500),
   };
   db.snapshot.settings[POLICY_KEY] = JSON.stringify(next);
@@ -210,9 +188,9 @@ export function parseAccessLogSuspects(content: string, maxLines = 4000): Map<st
   const lines = content.split('\n').filter(Boolean).slice(-maxLines);
   const now = Date.now();
   for (const line of lines) {
-    const ipM = line.match(/^(\d{1,3}(?:\.\d{1,3}){3}|[a-fA-F0-9:]+)\s/);
-    if (!ipM) continue;
-    const ip = ipM[1];
+    const extracted = extractIpsFromText(line)[0];
+    if (!extracted) continue;
+    const ip = normalizeIp(extracted) ?? extracted;
     if (!isValidIp(ip) || isPrivateOrLocal(ip)) continue;
     const a = ensureAcc(map, ip);
     a.hits += 1;
@@ -407,7 +385,13 @@ export async function defenseBanBatch(input: {
   results: Array<{ ip: string; ok: boolean; notes: string[] }>;
   notes: string[];
 }> {
-  const ips = [...new Set(input.ips.map((i) => i.trim()).filter(isValidIp))].slice(0, 50);
+  const ips = [
+    ...new Set(
+      input.ips
+        .map((i) => normalizeIp(i.trim()))
+        .filter((x): x is string => x != null && isValidIp(x)),
+    ),
+  ].slice(0, 50);
   if (!ips.length) return { ok: false, results: [], notes: ['無有效 IP'] };
   const policy = loadAutoBanPolicy(input.db);
   const results: Array<{ ip: string; ok: boolean; notes: string[] }> = [];

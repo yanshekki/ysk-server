@@ -95,6 +95,8 @@ export function normalizeDnsZoneTemplate(raw?: string | null): DnsZoneTemplate {
 export function planDnsZone(opts: {
   zone: string;
   serverIp: string;
+  /** Optional public IPv6 → AAAA + SPF ip6: */
+  serverIpv6?: string;
   mailHost?: string;
   /** minimal | web | mail | full (default full) */
   template?: DnsZoneTemplate | string;
@@ -106,26 +108,34 @@ export function planDnsZone(opts: {
   const mail = opts.mailHost ?? `mail.${opts.zone}`;
   const ttl = 300;
   const ip = opts.serverIp;
+  const ip6 = opts.serverIpv6?.trim() || undefined;
   const records: DnsRecordPlan['records'] = [];
 
   // Always apex A for usable zone (except we still want apex for all templates)
   records.push({ type: 'A', name: '@', value: ip, ttl });
+  if (ip6) records.push({ type: 'AAAA', name: '@', value: ip6, ttl });
 
   if (template === 'web' || template === 'full') {
     records.push({ type: 'A', name: 'www', value: ip, ttl });
+    if (ip6) records.push({ type: 'AAAA', name: 'www', value: ip6, ttl });
   }
   if (template === 'mail' || template === 'full') {
     records.push({ type: 'A', name: 'mail', value: ip, ttl });
+    if (ip6) records.push({ type: 'AAAA', name: 'mail', value: ip6, ttl });
     records.push({ type: 'MX', name: '@', value: `10 ${mail}.`, ttl });
+    const spf = ip6
+      ? `v=spf1 a mx ip4:${ip} ip6:${ip6} ~all`
+      : `v=spf1 a mx ip4:${ip} ~all`;
     records.push({
       type: 'TXT',
       name: '@',
-      value: `v=spf1 a mx ip4:${ip} ~all`,
+      value: spf,
       ttl,
     });
   }
   if (template === 'full') {
     records.push({ type: 'A', name: 'ftp', value: ip, ttl });
+    if (ip6) records.push({ type: 'AAAA', name: 'ftp', value: ip6, ttl });
   }
 
   return {
@@ -134,6 +144,7 @@ export function planDnsZone(opts: {
     providerHints: [
       'Managed zone file is not live until nameserver loads it',
       'External DNS: copy these records to your provider',
+      ...(ip6 ? ['IPv6 AAAA records included for dual-stack'] : []),
     ],
   };
 }

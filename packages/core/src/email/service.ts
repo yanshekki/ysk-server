@@ -22,6 +22,8 @@ export interface EmailDomainRecord {
   id: string;
   domain: string;
   server_ip: string;
+  /** Optional public IPv6 for AAAA / SPF ip6: */
+  server_ipv6?: string;
   mail_hostname: string;
   dkim_selector: string;
   dkim_public_key: string;
@@ -62,6 +64,7 @@ export class EmailService {
   create(input: {
     domain: string;
     serverIp: string;
+    serverIpv6?: string;
     mailHostname?: string;
     actor: string;
   }): {
@@ -87,10 +90,12 @@ export class EmailService {
     const selector = 'default';
     const mailHostname = input.mailHostname ?? `mail.${domain}`;
     const now = new Date().toISOString();
+    const serverIpv6 = input.serverIpv6?.trim() || undefined;
 
     const health = scoreEmailHealth({
       domain,
       serverIp: input.serverIp,
+      serverIpv6,
       dkimPublicKey: dkimPublic,
       mailHostname,
       ptrOk: false,
@@ -103,6 +108,7 @@ export class EmailService {
       id: randomUUID(),
       domain,
       server_ip: input.serverIp,
+      ...(serverIpv6 ? { server_ipv6: serverIpv6 } : {}),
       mail_hostname: mailHostname,
       dkim_selector: selector,
       dkim_public_key: dkimPublic,
@@ -161,6 +167,7 @@ export class EmailService {
     const health = scoreEmailHealth({
       domain: row.domain,
       serverIp: row.server_ip,
+      serverIpv6: row.server_ipv6,
       dkimPublicKey: row.dkim_public_key,
       mailHostname: row.mail_hostname,
       ptrOk: row.ptr_ok,
@@ -194,6 +201,7 @@ export class EmailService {
     const health = scoreEmailHealth({
       domain: row.domain,
       serverIp: row.server_ip,
+      serverIpv6: row.server_ipv6,
       dkimPublicKey: row.dkim_public_key,
       mailHostname: row.mail_hostname,
       ptrOk: row.ptr_ok,

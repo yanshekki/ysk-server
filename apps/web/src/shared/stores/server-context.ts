@@ -6,11 +6,14 @@ const KEY = 'ysk_server_context';
 export type ServerContext = {
   domain: string;
   serverIp: string;
+  /** Optional public IPv6 for dual-stack DNS/mail templates */
+  serverIpv6?: string;
 };
 
 const DEFAULT: ServerContext = {
   domain: 'demo.local',
   serverIp: '203.0.113.10',
+  serverIpv6: '',
 };
 
 function read(): ServerContext {

@@ -7,6 +7,7 @@ import { mkdirSync, writeFileSync, readdirSync, existsSync, readFileSync } from 
 import { join } from 'node:path';
 import { ErrorCodes, YskError } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
+import { ipFamily, isValidIp, normalizeIp } from '../net/ip.js';
 import {
   normalizeDnsZoneTemplate,
   planDnsZone,
@@ -42,28 +43,37 @@ function assertZoneName(zone: string): string {
   return z;
 }
 
-function assertIpv4(ip: string): void {
-  const parts = ip.trim().split('.');
-  if (
-    parts.length !== 4 ||
-    !parts.every((p) => {
-      const n = Number(p);
-      return Number.isInteger(n) && n >= 0 && n <= 255 && String(n) === p;
-    })
-  ) {
+function assertIpv4(ip: string): string {
+  const n = normalizeIp(ip);
+  if (!n || ipFamily(n) !== 4) {
     throw new YskError(ErrorCodes.VALIDATION, 'server IP 必須是 IPv4', {
       httpStatus: 400,
       details: { ip },
     });
   }
+  return n;
+}
+
+function assertIpv6Optional(ip: string | undefined): string | undefined {
+  if (ip == null || !String(ip).trim()) return undefined;
+  const n = normalizeIp(ip);
+  if (!n || ipFamily(n) !== 6) {
+    throw new YskError(ErrorCodes.VALIDATION, 'server IPv6 無效', {
+      httpStatus: 400,
+      details: { ip },
+    });
+  }
+  return n;
 }
 
 /**
- * Render RFC1035 master zone: SOA + NS + ns1 A, then data records.
+ * Render RFC1035 master zone: SOA + NS + ns1 A[/AAAA], then data records.
  */
 export function renderBindZoneFile(input: {
   zone: string;
   serverIp: string;
+  /** Optional public IPv6 for AAAA (ns1 + apex template) */
+  serverIpv6?: string;
   mailHost?: string;
   serial?: number;
   ttl?: number;
@@ -73,7 +83,8 @@ export function renderBindZoneFile(input: {
   template?: DnsZoneTemplate | string;
 }): { body: string; serial: number; records: DnsRecordPlan['records'] } {
   const zone = assertZoneName(input.zone);
-  assertIpv4(input.serverIp);
+  const serverIp = assertIpv4(input.serverIp);
+  const serverIpv6 = assertIpv6Optional(input.serverIpv6);
   const serial =
     input.serial ??
     Number(
@@ -85,7 +96,7 @@ export function renderBindZoneFile(input: {
     input.records ??
     planDnsZone({
       zone,
-      serverIp: input.serverIp,
+      serverIp,
       mailHost: input.mailHost,
       template: input.template,
     }).records;
@@ -103,8 +114,11 @@ export function renderBindZoneFile(input: {
     `\t\t${ttl}\t\t; minimum`,
     `\t\t)`,
     `@\tIN\tNS\t${ns}`,
-    `ns1\tIN\tA\t${input.serverIp}`,
+    `ns1\tIN\tA\t${serverIp}`,
   ];
+  if (serverIpv6) {
+    lines.push(`ns1\tIN\tAAAA\t${serverIpv6}`);
+  }
 
   for (const r of dataRecords) {
     const name = r.name === '@' ? '@' : r.name.replace(/\.$/, '');
@@ -114,6 +128,19 @@ export function renderBindZoneFile(input: {
       const v = r.value.endsWith('.') ? r.value : `${r.value}.`;
       lines.push(`${name}\tIN\tCNAME\t${v}`);
     } else if (r.type === 'A' || r.type === 'AAAA') {
+      // Validate address family for safety
+      if (r.type === 'A' && isValidIp(r.value) && ipFamily(r.value) !== 4) {
+        throw new YskError(ErrorCodes.VALIDATION, 'A 記錄值必須是 IPv4', {
+          httpStatus: 400,
+          details: { value: r.value },
+        });
+      }
+      if (r.type === 'AAAA' && isValidIp(r.value) && ipFamily(r.value) !== 6) {
+        throw new YskError(ErrorCodes.VALIDATION, 'AAAA 記錄值必須是 IPv6', {
+          httpStatus: 400,
+          details: { value: r.value },
+        });
+      }
       lines.push(`${name}\tIN\t${r.type}\t${r.value}`);
     } else if (r.type === 'MX') {
       lines.push(`${name}\tIN\tMX\t${r.value}`);
@@ -123,6 +150,11 @@ export function renderBindZoneFile(input: {
     } else if (r.type === 'SRV' || r.type === 'CAA') {
       lines.push(`${name}\tIN\t${r.type}\t${r.value}`);
     }
+  }
+  // Optional apex/www AAAA when serverIpv6 set and template records lack AAAA
+  if (serverIpv6 && !dataRecords.some((r) => r.type === 'AAAA')) {
+    lines.push(`@\tIN\tAAAA\t${serverIpv6}`);
+    lines.push(`www\tIN\tAAAA\t${serverIpv6}`);
   }
   lines.push('');
 
@@ -137,6 +169,7 @@ export async function writeManagedDnsZone(input: {
   dataDir: string;
   zone: string;
   serverIp: string;
+  serverIpv6?: string;
   mailHost?: string;
   host?: HostExecutor;
   /** Run named-checkzone if available (needs EXECUTE) */
@@ -153,6 +186,7 @@ export async function writeManagedDnsZone(input: {
   const rendered = renderBindZoneFile({
     zone,
     serverIp: input.serverIp,
+    serverIpv6: input.serverIpv6,
     mailHost: input.mailHost,
     records: input.records,
     template,

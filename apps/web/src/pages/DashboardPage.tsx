@@ -122,6 +122,8 @@ export function DashboardPage() {
   const [wizDns, setWizDns] = useState(true);
   const [wizMail, setWizMail] = useState(true);
   const [wizDb, setWizDb] = useState(false);
+  const [wizServerIp, setWizServerIp] = useState('203.0.113.10');
+  const [wizServerIpv6, setWizServerIpv6] = useState('');
   const [wizBusy, setWizBusy] = useState(false);
   const [wizMsg, setWizMsg] = useState<string | null>(null);
   const [wizErr, setWizErr] = useState<string | null>(null);
@@ -162,6 +164,8 @@ export function DashboardPage() {
           projectName: wizName,
           domain: wizDomain || undefined,
           runtime: wizRuntime,
+          serverIp: wizServerIp || undefined,
+          serverIpv6: wizServerIpv6.trim() || undefined,
           createDns: wizDns && Boolean(wizDomain),
           createMail: wizMail && Boolean(wizDomain),
           createDb: wizDb,
@@ -637,6 +641,38 @@ export function DashboardPage() {
                       />
                     </Field>
                   </FormLayout>
+                  {(wizDns || wizMail) && wizDomain ? (
+                    <FormLayout columns={2}>
+                      <Field
+                        label="伺服器 IPv4"
+                        htmlFor="wiz-ip"
+                        flush
+                        hint="DNS A／郵件 SPF"
+                      >
+                        <input
+                          id="wiz-ip"
+                          value={wizServerIp}
+                          onChange={(e) => setWizServerIp(e.target.value)}
+                          placeholder="203.0.113.10"
+                          spellCheck={false}
+                        />
+                      </Field>
+                      <Field
+                        label="伺服器 IPv6（可選）"
+                        htmlFor="wiz-ip6"
+                        flush
+                        hint="有則寫 AAAA／ip6:"
+                      >
+                        <input
+                          id="wiz-ip6"
+                          value={wizServerIpv6}
+                          onChange={(e) => setWizServerIpv6(e.target.value)}
+                          placeholder="2001:db8::1"
+                          spellCheck={false}
+                        />
+                      </Field>
+                    </FormLayout>
+                  ) : null}
                   <div className="form-check-row u-mt-4">
                     <CheckboxField
                       id="wiz-dns"

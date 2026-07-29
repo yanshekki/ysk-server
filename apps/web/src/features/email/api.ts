@@ -20,7 +20,7 @@ export type EmailBundle = {
 
 export const emailApi = {
   list: () => api.requestRaw<{ items: EmailDomain[] }>('/api/v1/email/domains'),
-  create: (body: { domain: string; serverIp: string }) =>
+  create: (body: { domain: string; serverIp: string; serverIpv6?: string }) =>
     api.requestRaw<EmailBundle & { domain: EmailDomain }>('/api/v1/email/domains', {
       method: 'POST',
       body: JSON.stringify(body),

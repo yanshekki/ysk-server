@@ -4,6 +4,7 @@
 
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
+import { isValidIp, normalizeIp } from '../../net/ip.js';
 import { applyFail2ban, fail2banBannedIps, fail2banUnban } from '../system-apply.js';
 import { syncNginxConfigs } from '../nginx-sync.js';
 import { buildPresetActions, getDefensePreset, listDefensePresets } from './presets.js';
@@ -376,18 +377,6 @@ export async function applyDefensePreset(input: {
   };
 }
 
-function isValidIp(ip: string): boolean {
-  // basic IPv4 / simple IPv6 check
-  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
-    return ip.split('.').every((o) => {
-      const n = Number(o);
-      return n >= 0 && n <= 255;
-    });
-  }
-  if (ip.includes(':') && ip.length < 46) return true;
-  return false;
-}
-
 export async function defenseBanIp(input: {
   host: HostExecutor;
   db: JsonStore;
@@ -396,8 +385,8 @@ export async function defenseBanIp(input: {
   method?: 'fail2ban' | 'ufw' | 'both';
   jail?: string;
 }): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
-  const ip = input.ip.trim();
-  if (!isValidIp(ip)) return { ok: false, notes: ['無效 IP'] };
+  const ip = normalizeIp(input.ip.trim()) ?? '';
+  if (!ip || !isValidIp(ip)) return { ok: false, notes: ['無效 IPv4／IPv6'] };
   const policy = loadAutoBanPolicy(input.db);
   if (ipMatchesWhitelist(ip, policy.whitelist)) {
     return { ok: false, notes: ['白名單 IP：拒絕封禁'] };
@@ -460,8 +449,8 @@ export async function defenseUnbanIp(input: {
   method?: 'fail2ban' | 'ufw' | 'both';
   jail?: string;
 }): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
-  const ip = input.ip.trim();
-  if (!isValidIp(ip)) return { ok: false, notes: ['無效 IP'] };
+  const ip = normalizeIp(input.ip.trim()) ?? '';
+  if (!ip || !isValidIp(ip)) return { ok: false, notes: ['無效 IPv4／IPv6'] };
   if (!input.host.executeEnabled()) {
     return { ok: false, blocked: true, notes: ['無法 unban：需 YSK_EXECUTE'] };
   }

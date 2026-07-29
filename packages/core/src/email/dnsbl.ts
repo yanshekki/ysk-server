@@ -3,6 +3,7 @@
  */
 
 import { resolve4 } from 'node:dns/promises';
+import { ipFamily, normalizeIp, reverseDnsblName } from '../net/ip.js';
 
 export interface DnsblListResult {
   list: string;
@@ -32,38 +33,42 @@ export const DEFAULT_DNSBL_ZONES = [
 
 /**
  * Reverse IPv4 for DNSBL query (e.g. 1.2.3.4 → 4.3.2.1).
+ * @deprecated prefer reverseDnsblName (dual-stack)
  */
 export function reverseIpv4(ip: string): string | null {
-  const parts = ip.trim().split('.');
-  if (parts.length !== 4 || !parts.every((p) => /^\d{1,3}$/.test(p))) return null;
-  return parts.reverse().join('.');
+  const n = normalizeIp(ip);
+  if (!n || ipFamily(n) !== 4) return null;
+  return reverseDnsblName(n);
 }
 
 /**
  * Check a single DNSBL zone. A successful A record usually means listed
  * (or policy response). NXDOMAIN / errors → treat as not listed.
+ * IPv6 uses nibble reverse (RFC 5782); some lists may not support IPv6.
  */
 export async function checkDnsblZone(
   ip: string,
   zone: string,
   resolve: typeof resolve4 = resolve4,
 ): Promise<DnsblListResult> {
-  const rev = reverseIpv4(ip);
+  const n = normalizeIp(ip);
+  const rev = n ? reverseDnsblName(n) : null;
   if (!rev) {
     return {
       list: zone,
       listed: false,
-      detail: 'invalid IPv4',
+      detail: 'invalid IPv4／IPv6',
       query: '',
     };
   }
+  const fam = n ? ipFamily(n) : 0;
   const query = `${rev}.${zone}`;
   try {
     const addrs = await resolve(query);
     return {
       list: zone,
       listed: true,
-      detail: `LISTED (A ${addrs.join(', ')})`,
+      detail: `LISTED (A ${addrs.join(', ')})${fam === 6 ? ' · IPv6' : ''}`,
       query,
     };
   } catch (e) {
@@ -72,7 +77,10 @@ export async function checkDnsblZone(
       return {
         list: zone,
         listed: false,
-        detail: 'not listed',
+        detail:
+          fam === 6
+            ? 'not listed (or list may not support IPv6)'
+            : 'not listed',
         query,
       };
     }
@@ -86,29 +94,36 @@ export async function checkDnsblZone(
 }
 
 /**
- * Run multi-list DNSBL checks for an IP.
+ * Run multi-list DNSBL checks for an IP (IPv4 or IPv6).
  */
 export async function checkIpDnsbl(
   ip: string,
   zones: readonly string[] = DEFAULT_DNSBL_ZONES,
   resolve: typeof resolve4 = resolve4,
 ): Promise<DnsblReport> {
+  const n = normalizeIp(ip) ?? ip.trim();
   const results: DnsblListResult[] = [];
   for (const zone of zones) {
-    results.push(await checkDnsblZone(ip, zone, resolve));
+    results.push(await checkDnsblZone(n, zone, resolve));
   }
   const listedOn = results.filter((r) => r.listed).map((r) => r.list);
   const cleanOn = results.filter((r) => !r.listed).map((r) => r.list);
+  const fam = ipFamily(n);
   const notes =
     listedOn.length > 0
       ? [
-          `IP ${ip} appears listed on: ${listedOn.join(', ')}`,
+          `IP ${n} appears listed on: ${listedOn.join(', ')}`,
           'Request delisting at the DNSBL operator; avoid bulk mail until clean',
         ]
-      : [`IP ${ip} not listed on ${zones.length} checked DNSBLs`];
+      : [
+          `IP ${n} not listed on ${zones.length} checked DNSBLs`,
+          ...(fam === 6
+            ? ['部分 DNSBL 未必完整支援 IPv6；結果僅供參考']
+            : []),
+        ];
   return {
     ok: listedOn.length === 0,
-    ip,
+    ip: n,
     listedOn,
     cleanOn,
     results,

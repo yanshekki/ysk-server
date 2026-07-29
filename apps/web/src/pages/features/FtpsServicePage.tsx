@@ -19,6 +19,7 @@ import {
   OpsHero,
   OpsResultPanel,
   PresetChips,
+  SegRadio,
   Tabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -29,6 +30,7 @@ import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
 const empty: FtpsSettings = {
   listen: true,
+  listenIpv6: false,
   listenPort: 21,
   sslEnable: true,
   forceSsl: true,
@@ -289,6 +291,29 @@ export function FtpsServicePage() {
                       onChange={(v) => patch('listenPort', Number(v) || 21)}
                       allowCustom
                       customPlaceholder="自訂埠"
+                    />
+                  </Field>
+                  <Field
+                    label="IP 棧"
+                    htmlFor="listenStack"
+                    flush
+                    hint="vsftpd 多數版本 listen 與 listen_ipv6 互斥；IPv6 用 listen_ipv6=YES"
+                  >
+                    <SegRadio
+                      name="listenStack"
+                      aria-label="IP 棧"
+                      value={settings.listenIpv6 ? 'ipv6' : 'ipv4'}
+                      onChange={(v) => {
+                        setSettings((prev) =>
+                          v === 'ipv6'
+                            ? { ...prev, listenIpv6: true, listen: false }
+                            : { ...prev, listenIpv6: false, listen: true },
+                        );
+                      }}
+                      options={[
+                        { value: 'ipv4', label: '僅 IPv4' },
+                        { value: 'ipv6', label: 'IPv6（可 mapped）' },
+                      ]}
                     />
                   </Field>
                   <Field

@@ -6,6 +6,8 @@ import { resourcesApi } from '../resources/api';
 
 export type FtpsSettings = {
   listen: boolean;
+  /** vsftpd listen_ipv6; mutually exclusive with classic listen on many builds */
+  listenIpv6?: boolean;
   listenPort: number;
   sslEnable: boolean;
   forceSsl: boolean;

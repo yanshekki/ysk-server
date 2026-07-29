@@ -15,6 +15,7 @@ export const projectsApi = {
     createDnsZone?: boolean;
     createMailDomain?: boolean;
     serverIp?: string;
+    serverIpv6?: string;
   }) => api.createProject(body),
   listTemplates: () => api.listTemplates(),
   applyTemplate: (id: string, body: { templateId: string; force?: boolean }) =>

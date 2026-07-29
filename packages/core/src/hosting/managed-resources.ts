@@ -430,6 +430,7 @@ export async function applyDnsZone(
   if (!zone) return { ok: false, notes: ['zone 找不到'] };
   const zoneName = String(zone.zone);
   const serverIp = String(zone.serverIp ?? '127.0.0.1');
+  const serverIpv6 = zone.serverIpv6 ? String(zone.serverIpv6).trim() : undefined;
   const records = listResources(db, 'dns_records').filter((r) => r.zoneId === id);
   const dataRecords = records.map((r) => ({
     type: String(r.type ?? 'A'),
@@ -446,6 +447,7 @@ export async function applyDnsZone(
       dataDir,
       zone: zoneName,
       serverIp,
+      serverIpv6: serverIpv6 || undefined,
       mailHost: zone.mailHost ? String(zone.mailHost) : undefined,
       host,
       validate,
@@ -495,8 +497,9 @@ export function seedDnsZoneRecords(
   zone: string,
   serverIp: string,
   template?: string,
+  serverIpv6?: string,
 ): void {
-  const plan = planDnsZone({ zone, serverIp, template });
+  const plan = planDnsZone({ zone, serverIp, serverIpv6, template });
   for (const rec of plan.records) {
     createResource(db, 'dns_records', {
       zoneId,

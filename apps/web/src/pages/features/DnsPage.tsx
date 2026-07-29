@@ -51,6 +51,7 @@ export function DnsPage() {
   const [delRec, setDelRec] = useState<string | null>(null);
   const [zone, setZone] = useState('');
   const [serverIp, setServerIp] = useState('203.0.113.10');
+  const [serverIpv6, setServerIpv6] = useState('');
   const [template, setTemplate] = useState<(typeof ZONE_TEMPLATES)[number]['id']>('full');
   const [rtype, setRtype] = useState('A');
   const [rname, setRname] = useState('@');
@@ -111,6 +112,7 @@ export function DnsPage() {
     const item = await zones.create({
       zone,
       serverIp,
+      ...(serverIpv6.trim() ? { serverIpv6: serverIpv6.trim() } : {}),
       backend: 'bind',
       template,
       nsName: soaNs.trim() || undefined,
@@ -119,6 +121,7 @@ export function DnsPage() {
     setZoneOpen(false);
     setSelectedZone(item);
     setZone('');
+    setServerIpv6('');
     setTemplate('full');
   }
 
@@ -132,11 +135,20 @@ export function DnsPage() {
   async function onSaveRec(e: FormEvent) {
     e.preventDefault();
     if (!selectedZone) return;
+    const val = rvalue.trim();
+    if (rtype === 'A' && !/^(\d{1,3}\.){3}\d{1,3}$/.test(val)) {
+      alert('A 記錄值必須是 IPv4（例 203.0.113.10）');
+      return;
+    }
+    if (rtype === 'AAAA' && !(val.includes(':') && val.length >= 2 && val.length < 46)) {
+      alert('AAAA 記錄值必須是 IPv6（例 2001:db8::1）');
+      return;
+    }
     const body = {
       zoneId: selectedZone.id,
       type: rtype,
       name: rname,
-      value: rvalue,
+      value: val,
       ttl: Number(rttl) || 300,
     };
     if (editRec) await records.update(editRec.id, body);
@@ -624,7 +636,7 @@ export function DnsPage() {
               />
             </Field>
             <Field
-              label="伺服器 IP"
+              label="伺服器 IPv4"
               htmlFor="sip"
               flush
               required
@@ -636,6 +648,20 @@ export function DnsPage() {
                 onChange={(e) => setServerIp(e.target.value)}
                 required
                 placeholder="203.0.113.10"
+                spellCheck={false}
+              />
+            </Field>
+            <Field
+              label="伺服器 IPv6（可選）"
+              htmlFor="sip6"
+              flush
+              hint="有公網 v6 時寫入 AAAA；可留空"
+            >
+              <input
+                id="sip6"
+                value={serverIpv6}
+                onChange={(e) => setServerIpv6(e.target.value)}
+                placeholder="2001:db8::1"
                 spellCheck={false}
               />
             </Field>
@@ -743,8 +769,12 @@ export function DnsPage() {
                 rtype === 'MX'
                   ? '例如 10 mail.example.com.'
                   : rtype === 'TXT'
-                    ? '例如 v=spf1 a mx ~all'
-                    : 'IP、主機名或對應內容'
+                    ? '例如 v=spf1 a mx ip4:… ip6:… ~all'
+                    : rtype === 'AAAA'
+                      ? 'IPv6，例如 2001:db8::1'
+                      : rtype === 'A'
+                        ? 'IPv4，例如 203.0.113.10'
+                        : 'IP、主機名或對應內容'
               }
             >
               <input
@@ -752,6 +782,13 @@ export function DnsPage() {
                 value={rvalue}
                 onChange={(e) => setRvalue(e.target.value)}
                 required
+                placeholder={
+                  rtype === 'AAAA'
+                    ? '2001:db8::1'
+                    : rtype === 'A'
+                      ? '203.0.113.10'
+                      : undefined
+                }
                 spellCheck={false}
               />
             </Field>

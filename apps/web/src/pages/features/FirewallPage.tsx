@@ -396,7 +396,7 @@ export function FirewallPage() {
                     id="fw-deny"
                     value={denyIp}
                     onChange={(e) => setDenyIp(e.target.value)}
-                    placeholder="203.0.113.10"
+                    placeholder="203.0.113.10 或 2001:db8::1"
                     spellCheck={false}
                   />
                 </Field>

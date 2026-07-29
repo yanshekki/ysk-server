@@ -8,6 +8,8 @@ import { ErrorCodes, YskError } from '@ysk/shared';
 export interface EmailDomainInput {
   domain: string;
   serverIp: string;
+  /** Optional public IPv6 for mail AAAA + SPF ip6: */
+  serverIpv6?: string;
   mailHostname?: string;
   dkimPublicKey: string;
   dmarcPolicy?: 'none' | 'quarantine' | 'reject';
@@ -30,11 +32,14 @@ export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord
   const selector = input.selector ?? 'default';
   const dmarcPolicy = input.dmarcPolicy ?? 'none';
   const rua = input.dmarcRua ?? `mailto:dmarc@${input.domain}`;
-  const spf = `v=spf1 mx a ip4:${input.serverIp} ~all`;
+  const v6 = input.serverIpv6?.trim();
+  const spf = v6
+    ? `v=spf1 mx a ip4:${input.serverIp} ip6:${v6} ~all`
+    : `v=spf1 mx a ip4:${input.serverIp} ~all`;
   const dkim = `v=DKIM1; k=rsa; p=${input.dkimPublicKey.replace(/\s+/g, '')}`;
   const dmarc = `v=DMARC1; p=${dmarcPolicy}; rua=${rua}; fo=1`;
 
-  return [
+  const records: EmailDnsRecord[] = [
     {
       type: 'A',
       name: mailHost.replace(`.${input.domain}`, '') === mailHost ? mailHost : 'mail',
@@ -72,6 +77,16 @@ export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord
       description: 'DMARC 政策',
     },
   ];
+  if (v6) {
+    records.splice(1, 0, {
+      type: 'AAAA',
+      name: mailHost.replace(`.${input.domain}`, '') === mailHost ? mailHost : 'mail',
+      value: v6,
+      importance: 'recommended',
+      description: '郵件主機 AAAA 記錄（IPv6）',
+    });
+  }
+  return records;
 }
 
 /**
@@ -169,6 +184,7 @@ export function buildExternalTodos(input: {
 export function scoreEmailHealth(input: {
   domain: string;
   serverIp: string;
+  serverIpv6?: string;
   dkimPublicKey: string;
   mailHostname?: string;
   ptrOk?: boolean;
@@ -181,6 +197,7 @@ export function scoreEmailHealth(input: {
   const records = generateEmailDnsRecords({
     domain: input.domain,
     serverIp: input.serverIp,
+    serverIpv6: input.serverIpv6,
     mailHostname,
     dkimPublicKey: input.dkimPublicKey,
     dmarcPolicy: input.dmarcPolicy,

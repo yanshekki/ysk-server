@@ -55,17 +55,32 @@ function sslLines(opts: {
 `.trim();
 }
 
-/** listen directives with optional bind IP */
+/** listen directives with optional bind IP (dual-stack when unbound). */
 export function nginxListenLines(opts: {
   ssl?: boolean;
   bindIp?: string;
 }): string {
   const ip = opts.bindIp?.trim();
-  const prefix = ip ? `${ip}:` : '';
-  if (opts.ssl) {
-    return `listen ${prefix}443 ssl http2;\n  listen ${prefix}80;`;
+  if (ip) {
+    // IPv6 literal needs brackets: [2001:db8::1]:80
+    const isV6 = ip.includes(':') && !ip.startsWith('[');
+    const host = isV6 ? `[${ip}]` : ip;
+    const prefix = `${host}:`;
+    if (opts.ssl) {
+      return `listen ${prefix}443 ssl http2;\n  listen ${prefix}80;`;
+    }
+    return `listen ${prefix}80;`;
   }
-  return `listen ${prefix}80;`;
+  // Dual-stack public listeners (IPv4 + IPv6)
+  if (opts.ssl) {
+    return [
+      'listen 443 ssl http2;',
+      'listen [::]:443 ssl http2;',
+      'listen 80;',
+      'listen [::]:80;',
+    ].join('\n  ');
+  }
+  return 'listen 80;\n  listen [::]:80;';
 }
 
 function httpRedirectBlock(serverName: string, bindIp?: string): string {

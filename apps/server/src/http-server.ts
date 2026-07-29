@@ -684,6 +684,7 @@ export function createHttpServer(ctx: AppContext): Server {
           domain?: string;
           runtime?: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
           serverIp?: string;
+          serverIpv6?: string;
           createDns?: boolean;
           createMail?: boolean;
           createDb?: boolean;
@@ -704,6 +705,7 @@ export function createHttpServer(ctx: AppContext): Server {
             domain: data.domain,
             runtime: data.runtime,
             serverIp: data.serverIp,
+            serverIpv6: data.serverIpv6,
             createDns: data.createDns,
             createMail: data.createMail,
             createDb: data.createDb,
@@ -737,6 +739,7 @@ export function createHttpServer(ctx: AppContext): Server {
           /** Also register email domain */
           createMailDomain?: boolean;
           serverIp?: string;
+          serverIpv6?: string;
         };
         const { assertCanCreateProject } = await import('@ysk/core');
         assertCanCreateProject(ctx.db, user.id);
@@ -761,18 +764,27 @@ export function createHttpServer(ctx: AppContext): Server {
         };
         const domain = (data.domain ?? '').trim().toLowerCase();
         const serverIp = (data.serverIp ?? '127.0.0.1').trim();
+        const serverIpv6 = data.serverIpv6?.trim() || undefined;
         if (domain && data.createDnsZone) {
           try {
             const { createResource, seedDnsZoneRecords } = await import('@ysk/core');
             const zoneRow = createResource(ctx.db, 'dns_zones', {
               zone: domain,
               serverIp,
+              ...(serverIpv6 ? { serverIpv6 } : {}),
               backend: 'bind',
               template: 'web',
               apply_status: 'draft',
               projectId: created.project.id,
             });
-            seedDnsZoneRecords(ctx.db, String(zoneRow.id), domain, serverIp, 'web');
+            seedDnsZoneRecords(
+              ctx.db,
+              String(zoneRow.id),
+              domain,
+              serverIp,
+              'web',
+              serverIpv6,
+            );
             extras.dnsZoneId = String(zoneRow.id);
             extras.notes.push(`DNS zone 已建立（draft）: ${domain}`);
           } catch (e) {
@@ -786,6 +798,7 @@ export function createHttpServer(ctx: AppContext): Server {
             const mail = ctx.email.create({
               domain,
               serverIp,
+              serverIpv6,
               actor: user.username,
             });
             extras.emailDomainId = String(
@@ -1439,11 +1452,13 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           domain?: string;
           serverIp?: string;
+          serverIpv6?: string;
           mailHostname?: string;
         };
         const created = ctx.email.create({
           domain: data.domain ?? '',
           serverIp: data.serverIp ?? '',
+          serverIpv6: data.serverIpv6,
           mailHostname: data.mailHostname,
           actor: user.username,
         });
@@ -3216,11 +3231,19 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/plan') {
         ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { zone?: string; serverIp?: string };
+        const data = JSON.parse(raw || '{}') as {
+          zone?: string;
+          serverIp?: string;
+          serverIpv6?: string;
+        };
         return sendJson(
           res,
           200,
-          planDnsZone({ zone: data.zone ?? 'example.com', serverIp: data.serverIp ?? '1.2.3.4' }),
+          planDnsZone({
+            zone: data.zone ?? 'example.com',
+            serverIp: data.serverIp ?? '1.2.3.4',
+            serverIpv6: data.serverIpv6,
+          }),
         );
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/zone-file') {
@@ -3229,6 +3252,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           zone?: string;
           serverIp?: string;
+          serverIpv6?: string;
           mailHost?: string;
           validate?: boolean;
         };
@@ -3236,6 +3260,7 @@ export function createHttpServer(ctx: AppContext): Server {
           dataDir: ctx.dataDir,
           zone: data.zone ?? 'example.com',
           serverIp: data.serverIp ?? '203.0.113.10',
+          serverIpv6: data.serverIpv6,
           mailHost: data.mailHost,
           host: ctx.host,
           validate: data.validate,
@@ -3340,6 +3365,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           zone?: string;
           serverIp?: string;
+          serverIpv6?: string;
           mailHost?: string;
           token?: string;
           dryRun?: boolean;
@@ -3347,6 +3373,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const result = await applyCloudflareDns({
           zone: data.zone ?? 'example.com',
           serverIp: data.serverIp ?? '203.0.113.10',
+          serverIpv6: data.serverIpv6,
           mailHost: data.mailHost,
           token: data.token,
           dryRun: data.dryRun,

@@ -197,7 +197,7 @@ export function Fail2banPage() {
                     id="f2b-ban-ip"
                     value={banIp}
                     onChange={(e) => setBanIp(e.target.value)}
-                    placeholder="203.0.113.10"
+                    placeholder="203.0.113.10 或 2001:db8::1"
                     spellCheck={false}
                   />
                 </Field>
@@ -348,7 +348,7 @@ export function Fail2banPage() {
                     id="f2b-ignore"
                     value={ignoreIp}
                     onChange={(e) => setIgnoreIp(e.target.value)}
-                    placeholder="203.0.113.10"
+                    placeholder="203.0.113.10 或 2001:db8::1"
                     spellCheck={false}
                   />
                 </Field>
