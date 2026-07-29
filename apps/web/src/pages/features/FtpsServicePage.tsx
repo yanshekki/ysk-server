@@ -18,6 +18,7 @@ import {
   FormLayout,
   OpsHero,
   OpsResultPanel,
+  PresetChips,
   Tabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -278,13 +279,16 @@ export function FtpsServicePage() {
                     required
                     hint="預設 21；若防火牆另開埠請一併放行"
                   >
-                    <input
-                      id="listenPort"
-                      type="number"
-                      min={1}
-                      max={65535}
-                      value={settings.listenPort}
-                      onChange={(e) => patch('listenPort', Number(e.target.value) || 21)}
+                    <PresetChips
+                      options={[
+                        { value: '21', label: '21' },
+                        { value: '2121', label: '2121' },
+                        { value: '990', label: '990 FTPS' },
+                      ]}
+                      value={String(settings.listenPort)}
+                      onChange={(v) => patch('listenPort', Number(v) || 21)}
+                      allowCustom
+                      customPlaceholder="自訂埠"
                     />
                   </Field>
                   <Field
@@ -306,11 +310,16 @@ export function FtpsServicePage() {
                     flush
                     hint="被動模式資料通道起始"
                   >
-                    <input
-                      id="pasvMin"
-                      type="number"
-                      value={settings.pasvMin}
-                      onChange={(e) => patch('pasvMin', Number(e.target.value) || 30000)}
+                    <PresetChips
+                      options={[
+                        { value: '30000', label: '30000' },
+                        { value: '40000', label: '40000' },
+                        { value: '50000', label: '50000' },
+                      ]}
+                      value={String(settings.pasvMin)}
+                      onChange={(v) => patch('pasvMin', Number(v) || 30000)}
+                      allowCustom
+                      customPlaceholder="自訂起始"
                     />
                   </Field>
                   <Field
@@ -319,11 +328,16 @@ export function FtpsServicePage() {
                     flush
                     hint="需 ≥ 起始埠；防火牆需放行此範圍"
                   >
-                    <input
-                      id="pasvMax"
-                      type="number"
-                      value={settings.pasvMax}
-                      onChange={(e) => patch('pasvMax', Number(e.target.value) || 30100)}
+                    <PresetChips
+                      options={[
+                        { value: '30100', label: '30100' },
+                        { value: '40100', label: '40100' },
+                        { value: '50100', label: '50100' },
+                      ]}
+                      value={String(settings.pasvMax)}
+                      onChange={(v) => patch('pasvMax', Number(v) || 30100)}
+                      allowCustom
+                      customPlaceholder="自訂結束"
                     />
                   </Field>
                   <Field

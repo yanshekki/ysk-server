@@ -17,6 +17,7 @@ import {
   FormLayout,
   Modal,
   OpsHero,
+  SegRadio,
   Tabs,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -548,22 +549,25 @@ export function FilesPage() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                   />
-                  <select
+                  <SegRadio
+                    name="fm-sort"
+                    aria-label="排序"
+                    size="sm"
                     value={`${sort}:${order}`}
-                    onChange={(e) => {
-                      const [s, o] = e.target.value.split(':') as [SortKey, 'asc' | 'desc'];
+                    onChange={(v) => {
+                      const [s, o] = v.split(':') as [SortKey, 'asc' | 'desc'];
                       setSort(s);
                       setOrder(o);
                     }}
-                    aria-label="排序"
-                  >
-                    <option value="name:asc">名稱 ↑</option>
-                    <option value="name:desc">名稱 ↓</option>
-                    <option value="size:asc">大小 ↑</option>
-                    <option value="size:desc">大小 ↓</option>
-                    <option value="mtime:desc">最新</option>
-                    <option value="mtime:asc">最舊</option>
-                  </select>
+                    options={[
+                      { value: 'name:asc', label: '名↑' },
+                      { value: 'name:desc', label: '名↓' },
+                      { value: 'size:asc', label: '小↑' },
+                      { value: 'size:desc', label: '小↓' },
+                      { value: 'mtime:desc', label: '最新' },
+                      { value: 'mtime:asc', label: '最舊' },
+                    ]}
+                  />
                   <Button
                     variant={view === 'list' ? 'primary' : 'ghost'}
                     size="sm"

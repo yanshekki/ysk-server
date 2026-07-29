@@ -10,7 +10,14 @@ import {
   ProjectSummaryStrip,
   useProjects,
 } from '../features/projects';
-import { Alert, Badge, Button, FeaturePageLayout, OpsHero } from '../shared/components/ui';
+import {
+  Alert,
+  Badge,
+  Button,
+  FeaturePageLayout,
+  OpsHero,
+  SegRadio,
+} from '../shared/components/ui';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
@@ -144,19 +151,22 @@ export function ProjectsPage() {
             aria-label={t('projects.searchPlaceholder')}
           />
         </div>
-        <select
-          value={runtimeFilter}
-          onChange={(e) => setRuntimeFilter(e.target.value as typeof runtimeFilter)}
+        <SegRadio
+          name="proj-rt-filter"
           aria-label={t('projects.runtime')}
-        >
-          <option value="all">{t('projects.filterAll')}</option>
-          <option value="node">Node.js</option>
-          <option value="php">PHP</option>
-          <option value="python">Python</option>
-          <option value="go">Go</option>
-          <option value="rust">Rust</option>
-          <option value="static">靜態</option>
-        </select>
+          size="sm"
+          value={runtimeFilter}
+          onChange={(v) => setRuntimeFilter(v as typeof runtimeFilter)}
+          options={[
+            { value: 'all', label: t('projects.filterAll') },
+            { value: 'node', label: 'Node' },
+            { value: 'php', label: 'PHP' },
+            { value: 'python', label: 'Python' },
+            { value: 'go', label: 'Go' },
+            { value: 'rust', label: 'Rust' },
+            { value: 'static', label: '靜態' },
+          ]}
+        />
       </div>
 
       <ProjectList

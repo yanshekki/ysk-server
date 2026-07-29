@@ -17,6 +17,8 @@ import {
   FormLayout,
   OpsHero,
   OpsResultPanel,
+  PresetChips,
+  SegRadio,
   Tabs,
   FeaturePageLayout,
 } from '../../shared/components/ui';
@@ -163,18 +165,30 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           s.enumValues.includes('no')))
     ) {
       const opts = s.enumValues ?? ['ON', 'OFF'];
+      const current = opts.includes(val) ? val : opts[0]!;
       return (
-        <select id={id} value={val} onChange={(e) => onChange(e.target.value)} aria-label={s.label}>
-          {val === '' ? <option value="">— 未取得 —</option> : null}
-          {opts.map((x) => (
-            <option key={x} value={x}>
-              {x}
-            </option>
-          ))}
-        </select>
+        <SegRadio
+          name={id}
+          aria-label={s.label}
+          value={current}
+          onChange={onChange}
+          options={opts.map((x) => ({ value: x, label: x }))}
+        />
       );
     }
     if (s.enumValues?.length) {
+      if (s.enumValues.length <= 12) {
+        const current = s.enumValues.includes(val) ? val : s.enumValues[0]!;
+        return (
+          <SegRadio
+            name={id}
+            aria-label={s.label}
+            value={current}
+            onChange={onChange}
+            options={s.enumValues.map((x) => ({ value: x, label: x }))}
+          />
+        );
+      }
       return (
         <select id={id} value={val} onChange={(e) => onChange(e.target.value)} aria-label={s.label}>
           {val === '' ? <option value="">— 未取得 —</option> : null}
@@ -185,6 +199,49 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           ))}
         </select>
       );
+    }
+    if (s.type === 'int' || s.type === 'number' || /port|timeout|conn|size|memory|buffer|worker|pool/i.test(s.key)) {
+      const numish = val === '' || /^-?\d+(\.\d+)?$/.test(val.trim());
+      if (numish) {
+        const presets = /port/i.test(s.key)
+          ? [
+              { value: '3306', label: '3306' },
+              { value: '5432', label: '5432' },
+              { value: '6379', label: '6379' },
+              { value: '8080', label: '8080' },
+            ]
+          : /timeout|idle/i.test(s.key)
+            ? [
+                { value: '0', label: '0' },
+                { value: '30', label: '30' },
+                { value: '60', label: '60' },
+                { value: '300', label: '300' },
+              ]
+            : /conn|client|worker|pool/i.test(s.key)
+              ? [
+                  { value: '50', label: '50' },
+                  { value: '100', label: '100' },
+                  { value: '200', label: '200' },
+                  { value: '500', label: '500' },
+                ]
+              : [
+                  { value: '0', label: '0' },
+                  { value: '1', label: '1' },
+                  { value: '16', label: '16' },
+                  { value: '64', label: '64' },
+                  { value: '128', label: '128' },
+                  { value: '256', label: '256' },
+                ];
+        return (
+          <PresetChips
+            options={presets}
+            value={val}
+            onChange={onChange}
+            allowCustom
+            customPlaceholder="自訂"
+          />
+        );
+      }
     }
     return (
       <input

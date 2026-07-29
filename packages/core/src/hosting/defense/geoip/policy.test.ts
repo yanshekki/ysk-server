@@ -7,6 +7,11 @@ const baseLookup = (over: Partial<GeoLookupResult> = {}): GeoLookupResult => ({
   ok: true,
   country: 'CN',
   continent: 'AS',
+  regionCode: 'GD',
+  regionName: 'Guangdong',
+  regionKey: 'CN-GD',
+  city: 'Guangzhou',
+  cityKey: 'CN|Guangzhou',
   asn: 'AS4134',
   asName: 'Chinanet',
   notes: [],
@@ -42,6 +47,37 @@ describe('evaluateIpAccess', () => {
     expect(r.matched.some((m) => m.startsWith('asn:'))).toBe(true);
   });
 
+  it('deny_list blocks region', () => {
+    const policy = sanitizePolicy({
+      enabled: true,
+      mode: 'deny_list',
+      regions: ['CN-GD'],
+    });
+    const r = evaluateIpAccess(baseLookup(), policy);
+    expect(r.blocked).toBe(true);
+    expect(r.matched).toContain('region:CN-GD');
+  });
+
+  it('city only blocks when cityPolicyEnabled', () => {
+    const off = sanitizePolicy({
+      enabled: true,
+      mode: 'deny_list',
+      cities: ['CN|Guangzhou'],
+      cityPolicyEnabled: false,
+    });
+    expect(evaluateIpAccess(baseLookup(), off).blocked).toBe(false);
+
+    const on = sanitizePolicy({
+      enabled: true,
+      mode: 'deny_list',
+      cities: ['CN|Guangzhou'],
+      cityPolicyEnabled: true,
+    });
+    const r = evaluateIpAccess(baseLookup(), on);
+    expect(r.blocked).toBe(true);
+    expect(r.matched.some((m) => m.startsWith('city:'))).toBe(true);
+  });
+
   it('deny_list allows non-matching', () => {
     const policy = sanitizePolicy({
       enabled: true,
@@ -64,7 +100,13 @@ describe('evaluateIpAccess', () => {
     ).toBe(false);
     expect(
       evaluateIpAccess(
-        baseLookup({ country: undefined, continent: undefined, asn: undefined }),
+        baseLookup({
+          country: undefined,
+          continent: undefined,
+          asn: undefined,
+          regionKey: undefined,
+          cityKey: undefined,
+        }),
         policy,
       ).blocked,
     ).toBe(true);

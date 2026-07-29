@@ -16,6 +16,8 @@ import {
   FormLayout,
   LogViewer,
   OpsResultPanel,
+  PresetChips,
+  SegRadio,
   Tabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -1016,26 +1018,37 @@ export function LogsPage() {
                       <>
                         <label className="lc-field">
                           <span>時間</span>
-                          <select value={since} onChange={(e) => setSince(e.target.value)}>
-                            <option value="15m">15 分</option>
-                            <option value="1h">1 小時</option>
-                            <option value="6h">6 小時</option>
-                            <option value="24h">24 小時</option>
-                            <option value="7d">7 日</option>
-                            <option value="">不限</option>
-                          </select>
+                          <SegRadio
+                            name="lc-since"
+                            aria-label="時間範圍"
+                            size="sm"
+                            value={since || 'all'}
+                            onChange={(v) => setSince(v === 'all' ? '' : v)}
+                            options={[
+                              { value: '15m', label: '15m' },
+                              { value: '1h', label: '1h' },
+                              { value: '6h', label: '6h' },
+                              { value: '24h', label: '24h' },
+                              { value: '7d', label: '7d' },
+                              { value: 'all', label: '不限' },
+                            ]}
+                          />
                         </label>
                         <label className="lc-field">
                           <span>優先級</span>
-                          <select
-                            value={priority}
-                            onChange={(e) => setPriority(e.target.value)}
-                          >
-                            <option value="">全部</option>
-                            <option value="err">err+</option>
-                            <option value="warning">warn+</option>
-                            <option value="info">info+</option>
-                          </select>
+                          <SegRadio
+                            name="lc-prio"
+                            aria-label="優先級"
+                            size="sm"
+                            value={priority || 'all'}
+                            onChange={(v) => setPriority(v === 'all' ? '' : v)}
+                            options={[
+                              { value: 'all', label: '全部' },
+                              { value: 'err', label: 'err+' },
+                              { value: 'warning', label: 'warn+' },
+                              { value: 'info', label: 'info+' },
+                            ]}
+                          />
                         </label>
                       </>
                     ) : null}
@@ -1050,14 +1063,22 @@ export function LogsPage() {
                         }}
                       />
                     </label>
-                    <label className="lc-field lc-field--sm">
+                    <label className="lc-field">
                       <span>行數</span>
-                      <input
-                        type="number"
-                        min={50}
-                        max={5000}
-                        value={lines}
-                        onChange={(e) => setLines(Number(e.target.value) || 300)}
+                      <PresetChips
+                        options={[
+                          { value: '100', label: '100' },
+                          { value: '300', label: '300' },
+                          { value: '500', label: '500' },
+                          { value: '1000', label: '1000' },
+                          { value: '2000', label: '2000' },
+                        ]}
+                        value={String(lines)}
+                        onChange={(v) =>
+                          setLines(Math.max(50, Math.min(5000, Number(v) || 300)))
+                        }
+                        allowCustom
+                        customPlaceholder="自訂"
                       />
                     </label>
                   </div>
@@ -1296,46 +1317,53 @@ export function LogsPage() {
                 </div>
                 <FormLayout columns={2}>
                   <Field label="預設行數" htmlFor="set-lines" flush>
-                    <input
-                      id="set-lines"
-                      type="number"
-                      min={50}
-                      max={5000}
-                      value={settingsDraft.maxLines ?? 500}
-                      onChange={(e) =>
+                    <PresetChips
+                      options={[
+                        { value: '200', label: '200' },
+                        { value: '500', label: '500' },
+                        { value: '1000', label: '1000' },
+                        { value: '2000', label: '2000' },
+                      ]}
+                      value={String(settingsDraft.maxLines ?? 500)}
+                      onChange={(v) =>
                         setSettingsDraft((d) => ({
                           ...d,
-                          maxLines: Number(e.target.value) || 500,
+                          maxLines: Number(v) || 500,
                         }))
                       }
                     />
                   </Field>
-                  <Field label="跟隨間隔（秒）" htmlFor="set-follow" flush>
-                    <input
-                      id="set-follow"
-                      type="number"
-                      min={1}
-                      max={30}
-                      value={settingsDraft.followIntervalSec ?? 3}
-                      onChange={(e) =>
+                  <Field label="跟隨間隔" htmlFor="set-follow" flush>
+                    <PresetChips
+                      options={[
+                        { value: '1', label: '1s' },
+                        { value: '2', label: '2s' },
+                        { value: '3', label: '3s' },
+                        { value: '5', label: '5s' },
+                        { value: '10', label: '10s' },
+                      ]}
+                      value={String(settingsDraft.followIntervalSec ?? 3)}
+                      onChange={(v) =>
                         setSettingsDraft((d) => ({
                           ...d,
-                          followIntervalSec: Number(e.target.value) || 3,
+                          followIntervalSec: Number(v) || 3,
                         }))
                       }
                     />
                   </Field>
                   <Field label="最大字節" htmlFor="set-bytes" flush>
-                    <input
-                      id="set-bytes"
-                      type="number"
-                      min={65536}
-                      max={10485760}
-                      value={settingsDraft.maxBytes ?? 2097152}
-                      onChange={(e) =>
+                    <PresetChips
+                      options={[
+                        { value: '524288', label: '512 KiB' },
+                        { value: '1048576', label: '1 MiB' },
+                        { value: '2097152', label: '2 MiB' },
+                        { value: '5242880', label: '5 MiB' },
+                      ]}
+                      value={String(settingsDraft.maxBytes ?? 2097152)}
+                      onChange={(v) =>
                         setSettingsDraft((d) => ({
                           ...d,
-                          maxBytes: Number(e.target.value) || 2097152,
+                          maxBytes: Number(v) || 2097152,
                         }))
                       }
                     />
@@ -1362,30 +1390,35 @@ export function LogsPage() {
                 </div>
                 <FormLayout columns={2}>
                   <Field label="預設 vacuum 天數" htmlFor="set-vac-d" flush>
-                    <input
-                      id="set-vac-d"
-                      type="number"
-                      min={1}
-                      max={365}
-                      value={settingsDraft.vacuumDefaultDays ?? 14}
-                      onChange={(e) =>
+                    <PresetChips
+                      options={[
+                        { value: '7', label: '7 日' },
+                        { value: '14', label: '14 日' },
+                        { value: '30', label: '30 日' },
+                        { value: '90', label: '90 日' },
+                      ]}
+                      value={String(settingsDraft.vacuumDefaultDays ?? 14)}
+                      onChange={(v) =>
                         setSettingsDraft((d) => ({
                           ...d,
-                          vacuumDefaultDays: Number(e.target.value) || 14,
+                          vacuumDefaultDays: Number(v) || 14,
                         }))
                       }
                     />
                   </Field>
-                  <Field label="Journal 告警 MB" htmlFor="set-warn" flush>
-                    <input
-                      id="set-warn"
-                      type="number"
-                      min={64}
-                      value={settingsDraft.journalWarnMb ?? 1024}
-                      onChange={(e) =>
+                  <Field label="Journal 告警" htmlFor="set-warn" flush>
+                    <PresetChips
+                      options={[
+                        { value: '512', label: '512 MB' },
+                        { value: '1024', label: '1 GB' },
+                        { value: '2048', label: '2 GB' },
+                        { value: '4096', label: '4 GB' },
+                      ]}
+                      value={String(settingsDraft.journalWarnMb ?? 1024)}
+                      onChange={(v) =>
                         setSettingsDraft((d) => ({
                           ...d,
-                          journalWarnMb: Number(e.target.value) || 1024,
+                          journalWarnMb: Number(v) || 1024,
                         }))
                       }
                     />
@@ -1406,13 +1439,20 @@ export function LogsPage() {
                       <span>每日（需 root + EXECUTE）</span>
                     </label>
                   </Field>
-                  <Field label="時間 HH:MM" htmlFor="set-auto-t" flush>
-                    <input
-                      id="set-auto-t"
-                      value={settingsDraft.autoVacuumTime ?? '03:00'}
-                      onChange={(e) =>
-                        setSettingsDraft((d) => ({ ...d, autoVacuumTime: e.target.value }))
+                  <Field label="時間" htmlFor="set-auto-t" flush>
+                    <PresetChips
+                      options={[
+                        { value: '01:00', label: '01:00' },
+                        { value: '03:00', label: '03:00' },
+                        { value: '04:30', label: '04:30' },
+                        { value: '05:00', label: '05:00' },
+                      ]}
+                      value={String(settingsDraft.autoVacuumTime ?? '03:00')}
+                      onChange={(v) =>
+                        setSettingsDraft((d) => ({ ...d, autoVacuumTime: v }))
                       }
+                      allowCustom
+                      customPlaceholder="HH:MM"
                     />
                   </Field>
                 </FormLayout>

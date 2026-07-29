@@ -18,6 +18,8 @@ import {
   FormLayout,
   OpsHero,
   OpsResultPanel,
+  PresetChips,
+  SegRadio,
   SoftwareInstallBanner,
   Tabs,
 } from '../../shared/components/ui';
@@ -351,19 +353,34 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               >
                 <FormLayout columns={2}>
                   <Field label="目標版本" htmlFor={`rt-${kind}-ver`} flush required>
-                    <select
-                      id={`rt-${kind}-ver`}
-                      value={version}
-                      onChange={(e) => setVersion(e.target.value)}
-                    >
-                      {(probeData.supported.length ? probeData.supported : meta.versions).map(
-                        (v) => (
-                          <option key={v} value={v}>
-                            {v}
-                          </option>
-                        ),
-                      )}
-                    </select>
+                    {(() => {
+                      const vers =
+                        probeData.supported.length ? probeData.supported : meta.versions;
+                      if (vers.length <= 8) {
+                        return (
+                          <SegRadio
+                            name={`rt-${kind}-ver`}
+                            aria-label="目標版本"
+                            value={version}
+                            onChange={setVersion}
+                            options={vers.map((v) => ({ value: v, label: v }))}
+                          />
+                        );
+                      }
+                      return (
+                        <select
+                          id={`rt-${kind}-ver`}
+                          value={version}
+                          onChange={(e) => setVersion(e.target.value)}
+                        >
+                          {vers.map((v) => (
+                            <option key={v} value={v}>
+                              {v}
+                            </option>
+                          ))}
+                        </select>
+                      );
+                    })()}
                   </Field>
                 </FormLayout>
                 <FormHint>
@@ -403,19 +420,34 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               >
                 <FormLayout columns={2}>
                   <Field label="綁定版本" htmlFor={`tune-${kind}-ver`} flush>
-                    <select
-                      id={`tune-${kind}-ver`}
-                      value={version}
-                      onChange={(e) => setVersion(e.target.value)}
-                    >
-                      {(probeData.supported.length ? probeData.supported : meta.versions).map(
-                        (v) => (
-                          <option key={v} value={v}>
-                            {v}
-                          </option>
-                        ),
-                      )}
-                    </select>
+                    {(() => {
+                      const vers =
+                        probeData.supported.length ? probeData.supported : meta.versions;
+                      if (vers.length <= 8) {
+                        return (
+                          <SegRadio
+                            name={`tune-${kind}-ver`}
+                            aria-label="綁定版本"
+                            value={version}
+                            onChange={setVersion}
+                            options={vers.map((v) => ({ value: v, label: v }))}
+                          />
+                        );
+                      }
+                      return (
+                        <select
+                          id={`tune-${kind}-ver`}
+                          value={version}
+                          onChange={(e) => setVersion(e.target.value)}
+                        >
+                          {vers.map((v) => (
+                            <option key={v} value={v}>
+                              {v}
+                            </option>
+                          ))}
+                        </select>
+                      );
+                    })()}
                   </Field>
                 </FormLayout>
                 <FormHint>
@@ -449,23 +481,71 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                               onChange={(c) => setValue(f.key, c)}
                             />
                           ) : f.type === 'select' && f.options ? (
-                            <select
-                              id={id}
-                              value={String(val)}
-                              onChange={(e) => setValue(f.key, e.target.value)}
-                            >
-                              {f.options.map((o) => (
-                                <option key={o.value} value={o.value}>
-                                  {o.label}
-                                </option>
-                              ))}
-                            </select>
+                            f.options.length <= 8 ? (
+                              <SegRadio
+                                name={id}
+                                aria-label={f.label}
+                                value={String(val)}
+                                onChange={(v) => setValue(f.key, v)}
+                                options={f.options.map((o) => ({
+                                  value: o.value,
+                                  label: o.label,
+                                }))}
+                              />
+                            ) : (
+                              <select
+                                id={id}
+                                value={String(val)}
+                                onChange={(e) => setValue(f.key, e.target.value)}
+                              >
+                                {f.options.map((o) => (
+                                  <option key={o.value} value={o.value}>
+                                    {o.label}
+                                  </option>
+                                ))}
+                              </select>
+                            )
                           ) : f.type === 'int' ? (
-                            <input
-                              id={id}
-                              type="number"
-                              value={Number(val)}
-                              onChange={(e) => setValue(f.key, Number(e.target.value))}
+                            <PresetChips
+                              options={
+                                f.key.includes('old_space') || f.key.includes('memory')
+                                  ? [
+                                      { value: '256', label: '256' },
+                                      { value: '512', label: '512' },
+                                      { value: '1024', label: '1024' },
+                                      { value: '2048', label: '2048' },
+                                    ]
+                                  : f.key.includes('worker') || f.key.includes('thread')
+                                    ? [
+                                        { value: '1', label: '1' },
+                                        { value: '2', label: '2' },
+                                        { value: '4', label: '4' },
+                                        { value: '8', label: '8' },
+                                      ]
+                                    : f.key === 'gogc'
+                                      ? [
+                                          { value: '50', label: '50' },
+                                          { value: '100', label: '100' },
+                                          { value: '200', label: '200' },
+                                        ]
+                                      : f.key === 'gomaxprocs'
+                                        ? [
+                                            { value: '0', label: '0 全' },
+                                            { value: '1', label: '1' },
+                                            { value: '2', label: '2' },
+                                            { value: '4', label: '4' },
+                                          ]
+                                        : [
+                                            { value: '0', label: '0' },
+                                            { value: '1', label: '1' },
+                                            { value: '4', label: '4' },
+                                            { value: '16', label: '16' },
+                                          ]
+                              }
+                              value={String(val ?? f.default ?? '')}
+                              onChange={(v) => setValue(f.key, Number(v))}
+                              allowCustom
+                              customPlaceholder="自訂"
                             />
                           ) : (
                             <input

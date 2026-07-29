@@ -16,6 +16,8 @@ import {
   FormHint,
   FormLayout,
   OpsResultPanel,
+  PresetChips,
+  SegRadio,
   SoftwareInstallBanner,
   Tabs,
 } from '../../shared/components/ui';
@@ -200,20 +202,35 @@ export function Fail2banPage() {
                   />
                 </Field>
                 <Field label="Jail" htmlFor="f2b-ban-jail" flush>
-                  <select
-                    id="f2b-ban-jail"
-                    value={banJail}
-                    onChange={(e) => setBanJail(e.target.value)}
-                  >
-                    {(status?.jails?.length
+                  {(() => {
+                    const jails = status?.jails?.length
                       ? status.jails.map((j) => j.name)
-                      : jailOptions
-                    ).map((j) => (
-                      <option key={j} value={j}>
-                        {j}
-                      </option>
-                    ))}
-                  </select>
+                      : jailOptions;
+                    if (jails.length <= 10) {
+                      return (
+                        <SegRadio
+                          name="f2b-ban-jail"
+                          aria-label="Jail"
+                          value={jails.includes(banJail) ? banJail : jails[0] ?? banJail}
+                          onChange={setBanJail}
+                          options={jails.map((j) => ({ value: j, label: j }))}
+                        />
+                      );
+                    }
+                    return (
+                      <select
+                        id="f2b-ban-jail"
+                        value={banJail}
+                        onChange={(e) => setBanJail(e.target.value)}
+                      >
+                        {jails.map((j) => (
+                          <option key={j} value={j}>
+                            {j}
+                          </option>
+                        ))}
+                      </select>
+                    );
+                  })()}
                 </Field>
               </FormLayout>
               <FormActions>
@@ -411,24 +428,50 @@ export function Fail2banPage() {
                 </div>
               </div>
               <FormLayout columns={2}>
-                <Field label="bantime" htmlFor="f2b-bt" flush hint="例如 1h · 24h · 3600">
-                  <input id="f2b-bt" value={bantime} onChange={(e) => setBantime(e.target.value)} />
+                <Field label="bantime" htmlFor="f2b-bt" flush hint="封鎖時長">
+                  <PresetChips
+                    options={[
+                      { value: '10m', label: '10 分' },
+                      { value: '1h', label: '1 時' },
+                      { value: '6h', label: '6 時' },
+                      { value: '24h', label: '24 時' },
+                      { value: '1w', label: '1 週' },
+                      { value: '3600', label: '3600s' },
+                    ]}
+                    value={bantime}
+                    onChange={setBantime}
+                    allowCustom
+                    customPlaceholder="自訂，例 2h"
+                  />
                 </Field>
-                <Field label="findtime" htmlFor="f2b-ft" flush hint="統計窗口，例如 10m">
-                  <input
-                    id="f2b-ft"
+                <Field label="findtime" htmlFor="f2b-ft" flush hint="統計窗口">
+                  <PresetChips
+                    options={[
+                      { value: '5m', label: '5 分' },
+                      { value: '10m', label: '10 分' },
+                      { value: '30m', label: '30 分' },
+                      { value: '1h', label: '1 時' },
+                      { value: '600', label: '600s' },
+                    ]}
                     value={findtime}
-                    onChange={(e) => setFindtime(e.target.value)}
+                    onChange={setFindtime}
+                    allowCustom
+                    customPlaceholder="自訂，例 15m"
                   />
                 </Field>
                 <Field label="maxretry" htmlFor="f2b-mr" flush hint="窗口內最多失敗次數">
-                  <input
-                    id="f2b-mr"
-                    type="number"
-                    min={1}
-                    max={50}
-                    value={maxretry}
-                    onChange={(e) => setMaxretry(Number(e.target.value) || 5)}
+                  <PresetChips
+                    options={[
+                      { value: '3', label: '3' },
+                      { value: '5', label: '5' },
+                      { value: '8', label: '8' },
+                      { value: '10', label: '10' },
+                      { value: '15', label: '15' },
+                    ]}
+                    value={String(maxretry)}
+                    onChange={(v) => setMaxretry(Math.max(1, Math.min(50, Number(v) || 5)))}
+                    allowCustom
+                    customPlaceholder="自訂 1–50"
                   />
                 </Field>
               </FormLayout>

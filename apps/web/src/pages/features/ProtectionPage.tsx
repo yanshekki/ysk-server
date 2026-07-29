@@ -18,6 +18,8 @@ import {
   LoadingBlock,
   MultiCheckSelect,
   OpsResultPanel,
+  PresetChips,
+  SegRadio,
   Tabs,
   buttonClassName,
 } from '../../shared/components/ui';
@@ -30,6 +32,7 @@ import {
   GEO_CONTINENTS,
   GEO_COUNTRIES,
   normalizeAsnInput,
+  regionsForCountries,
 } from '../../features/defense/geo-options';
 
 const TABS = ['command', 'automation', 'bans', 'geo', 'stack', 'intel'] as const;
@@ -39,6 +42,9 @@ type IpAccessPolicy = {
   mode: 'deny_list' | 'allow_list';
   countries: string[];
   continents: string[];
+  regions: string[];
+  cities: string[];
+  cityPolicyEnabled: boolean;
   asns: string[];
   enforce: { autoBan: boolean; nginx: boolean; ufw: boolean };
   autoUpdate: boolean;
@@ -50,6 +56,8 @@ type GeoipStatus = {
   dir: string;
   ready: boolean;
   stale: boolean;
+  cityReady?: boolean;
+  maxGranularity?: string;
   notes: string[];
   attribution: string[];
   policy: IpAccessPolicy;
@@ -307,8 +315,14 @@ export function ProtectionPage() {
     Array<{ at: string; kind: string; title: string; detail?: string }>
   >([]);
   const [geoStatus, setGeoStatus] = useState<GeoipStatus | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoErr, setGeoErr] = useState<string | null>(null);
   const [geoCountries, setGeoCountries] = useState<string[]>([]);
   const [geoContinents, setGeoContinents] = useState<string[]>([]);
+  const [geoRegions, setGeoRegions] = useState<string[]>([]);
+  const [geoCities, setGeoCities] = useState<string[]>([]);
+  const [geoCityPolicy, setGeoCityPolicy] = useState(false);
+  const [geoCityDraft, setGeoCityDraft] = useState('');
   const [geoAsns, setGeoAsns] = useState<string[]>([]);
   const [geoMode, setGeoMode] = useState<'deny_list' | 'allow_list'>('deny_list');
   const [geoEnabled, setGeoEnabled] = useState(false);
@@ -321,20 +335,40 @@ export function ProtectionPage() {
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const loadGeo = useCallback(async () => {
-    const s = await api.requestRaw<GeoipStatus>('/api/v1/defense/geoip/status');
-    setGeoStatus(s);
-    const p = s.policy;
-    setGeoEnabled(Boolean(p.enabled));
-    setGeoMode(p.mode === 'allow_list' ? 'allow_list' : 'deny_list');
-    setGeoAutoUpdate(p.autoUpdate !== false);
-    setGeoCountries([...(p.countries ?? [])]);
-    setGeoContinents([...(p.continents ?? [])]);
-    setGeoAsns([...(p.asns ?? [])]);
+    setGeoLoading(true);
+    setGeoErr(null);
+    try {
+      const s = await api.requestRaw<GeoipStatus>('/api/v1/defense/geoip/status');
+      setGeoStatus(s);
+      const p = s.policy;
+      setGeoEnabled(Boolean(p.enabled));
+      setGeoMode(p.mode === 'allow_list' ? 'allow_list' : 'deny_list');
+      setGeoAutoUpdate(p.autoUpdate !== false);
+      setGeoCountries([...(p.countries ?? [])]);
+      setGeoContinents([...(p.continents ?? [])]);
+      setGeoRegions([...(p.regions ?? [])]);
+      setGeoCities([...(p.cities ?? [])]);
+      setGeoCityPolicy(Boolean(p.cityPolicyEnabled));
+      setGeoAsns([...(p.asns ?? [])]);
+    } catch (e) {
+      const m =
+        e instanceof Error
+          ? e.message === 'Failed to fetch'
+            ? '無法連線 API（Web proxy／後端可能未啟動）'
+            : e.message
+          : '載入 GeoIP 失敗';
+      setGeoErr(m);
+      throw e;
+    } finally {
+      setGeoLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     if (tab !== 'geo') return;
-    void loadGeo().catch((e: Error) => setLoadErr(e.message));
+    void loadGeo().catch(() => {
+      /* geoErr set in loadGeo */
+    });
   }, [tab, loadGeo]);
 
   // Deep link from Log Center: /protection?tab=bans&ip=x.x.x.x
@@ -988,125 +1022,113 @@ export function ProtectionPage() {
               </p>
               <FormLayout columns={2}>
                 <Field label="加固 ≥ 分數" htmlFor="ap-h" flush>
-                  <input
-                    id="ap-h"
-                    type="number"
-                    min={1}
-                    max={99}
-                    value={automation?.autoPreset.escalateToHardenedAt ?? 20}
+                  <PresetChips
+                    options={[
+                      { value: '15', label: '15' },
+                      { value: '20', label: '20' },
+                      { value: '30', label: '30' },
+                      { value: '40', label: '40' },
+                      { value: '50', label: '50' },
+                    ]}
+                    value={String(automation?.autoPreset.escalateToHardenedAt ?? 20)}
                     disabled={busy}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 20;
                       setAutomation((a) =>
                         a
                           ? {
                               ...a,
-                              autoPreset: {
-                                ...a.autoPreset,
-                                escalateToHardenedAt: Number(e.target.value) || 20,
-                              },
+                              autoPreset: { ...a.autoPreset, escalateToHardenedAt: n },
                             }
                           : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoPreset: {
-                          escalateToHardenedAt: automation.autoPreset.escalateToHardenedAt,
-                        },
-                      })
-                    }
+                      );
+                      void saveAutomation({ autoPreset: { escalateToHardenedAt: n } });
+                    }}
                   />
                 </Field>
                 <Field label="受攻擊 ≥ 分數" htmlFor="ap-u" flush>
-                  <input
-                    id="ap-u"
-                    type="number"
-                    min={1}
-                    max={99}
-                    value={automation?.autoPreset.escalateToUnderAttackAt ?? 45}
+                  <PresetChips
+                    options={[
+                      { value: '35', label: '35' },
+                      { value: '45', label: '45' },
+                      { value: '55', label: '55' },
+                      { value: '65', label: '65' },
+                      { value: '80', label: '80' },
+                    ]}
+                    value={String(automation?.autoPreset.escalateToUnderAttackAt ?? 45)}
                     disabled={busy}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 45;
                       setAutomation((a) =>
                         a
                           ? {
                               ...a,
                               autoPreset: {
                                 ...a.autoPreset,
-                                escalateToUnderAttackAt: Number(e.target.value) || 45,
+                                escalateToUnderAttackAt: n,
                               },
                             }
                           : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
+                      );
                       void saveAutomation({
-                        autoPreset: {
-                          escalateToUnderAttackAt: automation.autoPreset.escalateToUnderAttackAt,
-                        },
-                      })
-                    }
+                        autoPreset: { escalateToUnderAttackAt: n },
+                      });
+                    }}
                   />
                 </Field>
                 <Field label="回落日常 &lt; 分數" htmlFor="ap-d" flush>
-                  <input
-                    id="ap-d"
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={automation?.autoPreset.deescalateToDailyBelow ?? 10}
+                  <PresetChips
+                    options={[
+                      { value: '5', label: '5' },
+                      { value: '10', label: '10' },
+                      { value: '15', label: '15' },
+                      { value: '20', label: '20' },
+                      { value: '0', label: '0 關' },
+                    ]}
+                    value={String(automation?.autoPreset.deescalateToDailyBelow ?? 10)}
                     disabled={busy}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 0;
                       setAutomation((a) =>
                         a
                           ? {
                               ...a,
                               autoPreset: {
                                 ...a.autoPreset,
-                                deescalateToDailyBelow: Number(e.target.value) || 0,
+                                deescalateToDailyBelow: n,
                               },
                             }
                           : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
+                      );
                       void saveAutomation({
-                        autoPreset: {
-                          deescalateToDailyBelow: automation.autoPreset.deescalateToDailyBelow,
-                        },
-                      })
-                    }
+                        autoPreset: { deescalateToDailyBelow: n },
+                      });
+                    }}
                   />
                 </Field>
-                <Field label="升檔後最少維持（分）" htmlFor="ap-hold" flush>
-                  <input
-                    id="ap-hold"
-                    type="number"
-                    min={1}
-                    max={240}
-                    value={automation?.autoPreset.holdMinutes ?? 15}
+                <Field label="升檔後最少維持" htmlFor="ap-hold" flush>
+                  <PresetChips
+                    options={[
+                      { value: '5', label: '5 分' },
+                      { value: '15', label: '15 分' },
+                      { value: '30', label: '30 分' },
+                      { value: '60', label: '1 時' },
+                      { value: '120', label: '2 時' },
+                    ]}
+                    value={String(automation?.autoPreset.holdMinutes ?? 15)}
                     disabled={busy}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 15;
                       setAutomation((a) =>
                         a
                           ? {
                               ...a,
-                              autoPreset: {
-                                ...a.autoPreset,
-                                holdMinutes: Number(e.target.value) || 15,
-                              },
+                              autoPreset: { ...a.autoPreset, holdMinutes: n },
                             }
                           : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoPreset: { holdMinutes: automation.autoPreset.holdMinutes },
-                      })
-                    }
+                      );
+                      void saveAutomation({ autoPreset: { holdMinutes: n } });
+                    }}
                   />
                 </Field>
               </FormLayout>
@@ -1144,230 +1166,194 @@ export function ProtectionPage() {
               </div>
               <FormLayout columns={2}>
                 <Field label="預設檔 / 自訂" htmlFor="ab-mode2" flush>
-                  <select
-                    id="ab-mode2"
-                    value={automation?.autoBan.mode ?? 'soft'}
+                  <SegRadio
+                    name="ab-mode2"
+                    aria-label="自動封禁模式"
+                    value={(automation?.autoBan.mode ?? 'soft') as string}
                     disabled={busy}
-                    onChange={(e) => {
-                      const mode = e.target.value as DefenseAutomation['autoBan']['mode'];
-                      void saveAutomation({ autoBan: { mode, enabled: true } });
-                    }}
-                  >
-                    <option value="soft">寬鬆 soft</option>
-                    <option value="normal">標準 normal</option>
-                    <option value="aggressive">積極 aggressive</option>
-                    <option value="custom">自訂閾值</option>
-                  </select>
-                </Field>
-                <Field label="方式" htmlFor="ab-meth2" flush>
-                  <select
-                    id="ab-meth2"
-                    value={automation?.autoBan.method ?? 'fail2ban'}
-                    disabled={busy}
-                    onChange={(e) =>
+                    onChange={(mode) => {
                       void saveAutomation({
                         autoBan: {
-                          method: e.target.value as 'fail2ban' | 'ufw' | 'both',
+                          mode: mode as DefenseAutomation['autoBan']['mode'],
+                          enabled: true,
                         },
-                      })
-                    }
-                  >
-                    <option value="fail2ban">fail2ban 臨時</option>
-                    <option value="ufw">UFW 永久</option>
-                    <option value="both">兩者（慎用）</option>
-                  </select>
+                      });
+                    }}
+                    options={[
+                      { value: 'soft', label: '寬鬆' },
+                      { value: 'normal', label: '標準' },
+                      { value: 'aggressive', label: '積極' },
+                      { value: 'custom', label: '自訂' },
+                    ]}
+                  />
+                </Field>
+                <Field label="方式" htmlFor="ab-meth2" flush>
+                  <SegRadio
+                    name="ab-meth2"
+                    aria-label="封禁方式"
+                    value={(automation?.autoBan.method ?? 'fail2ban') as string}
+                    disabled={busy}
+                    onChange={(method) => {
+                      void saveAutomation({
+                        autoBan: {
+                          method: method as 'fail2ban' | 'ufw' | 'both',
+                        },
+                      });
+                    }}
+                    options={[
+                      { value: 'fail2ban', label: 'fail2ban' },
+                      { value: 'ufw', label: 'UFW' },
+                      { value: 'both', label: '兩者' },
+                    ]}
+                  />
                 </Field>
                 <Field label="分數 ≥" htmlFor="ab-sc" flush>
-                  <input
-                    id="ab-sc"
-                    type="number"
-                    value={automation?.autoBan.minScore ?? 55}
+                  <PresetChips
+                    options={[
+                      { value: '40', label: '40' },
+                      { value: '55', label: '55' },
+                      { value: '70', label: '70' },
+                      { value: '85', label: '85' },
+                    ]}
+                    value={String(automation?.autoBan.minScore ?? 55)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 55;
                       setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoBan: {
-                                ...a.autoBan,
-                                minScore: Number(e.target.value) || 1,
-                              },
-                            }
-                          : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoBan: { minScore: automation.autoBan.minScore },
-                      })
-                    }
+                        a ? { ...a, autoBan: { ...a.autoBan, minScore: n } } : a,
+                      );
+                      void saveAutomation({ autoBan: { minScore: n } });
+                    }}
                   />
                 </Field>
                 <Field label="請求 hits ≥" htmlFor="ab-hi" flush>
-                  <input
-                    id="ab-hi"
-                    type="number"
-                    value={automation?.autoBan.minHits ?? 100}
+                  <PresetChips
+                    options={[
+                      { value: '50', label: '50' },
+                      { value: '100', label: '100' },
+                      { value: '200', label: '200' },
+                      { value: '500', label: '500' },
+                    ]}
+                    value={String(automation?.autoBan.minHits ?? 100)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 100;
                       setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoBan: {
-                                ...a.autoBan,
-                                minHits: Number(e.target.value) || 1,
-                              },
-                            }
-                          : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoBan: { minHits: automation.autoBan.minHits },
-                      })
-                    }
+                        a ? { ...a, autoBan: { ...a.autoBan, minHits: n } } : a,
+                      );
+                      void saveAutomation({ autoBan: { minHits: n } });
+                    }}
                   />
                 </Field>
                 <Field label="429 相關 hits ≥" htmlFor="ab-429" flush>
-                  <input
-                    id="ab-429"
-                    type="number"
-                    value={automation?.autoBan.min429 ?? 50}
+                  <PresetChips
+                    options={[
+                      { value: '20', label: '20' },
+                      { value: '50', label: '50' },
+                      { value: '100', label: '100' },
+                      { value: '200', label: '200' },
+                    ]}
+                    value={String(automation?.autoBan.min429 ?? 50)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 50;
                       setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoBan: {
-                                ...a.autoBan,
-                                min429: Number(e.target.value) || 1,
-                              },
-                            }
-                          : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoBan: { min429: automation.autoBan.min429 },
-                      })
-                    }
+                        a ? { ...a, autoBan: { ...a.autoBan, min429: n } } : a,
+                      );
+                      void saveAutomation({ autoBan: { min429: n } });
+                    }}
                   />
                 </Field>
                 <Field label="掃描路徑 hits ≥" htmlFor="ab-scan" flush>
-                  <input
-                    id="ab-scan"
-                    type="number"
-                    value={automation?.autoBan.minScan ?? 20}
+                  <PresetChips
+                    options={[
+                      { value: '10', label: '10' },
+                      { value: '20', label: '20' },
+                      { value: '40', label: '40' },
+                      { value: '80', label: '80' },
+                    ]}
+                    value={String(automation?.autoBan.minScan ?? 20)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 20;
                       setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoBan: {
-                                ...a.autoBan,
-                                minScan: Number(e.target.value) || 1,
-                              },
-                            }
-                          : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoBan: { minScan: automation.autoBan.minScan },
-                      })
-                    }
+                        a ? { ...a, autoBan: { ...a.autoBan, minScan: n } } : a,
+                      );
+                      void saveAutomation({ autoBan: { minScan: n } });
+                    }}
                   />
                 </Field>
-                <Field label="冷卻（分）" htmlFor="ab-cd" flush>
-                  <input
-                    id="ab-cd"
-                    type="number"
-                    value={automation?.autoBan.cooldownMinutes ?? 60}
+                <Field label="冷卻" htmlFor="ab-cd" flush>
+                  <PresetChips
+                    options={[
+                      { value: '15', label: '15 分' },
+                      { value: '30', label: '30 分' },
+                      { value: '60', label: '1 時' },
+                      { value: '120', label: '2 時' },
+                      { value: '360', label: '6 時' },
+                    ]}
+                    value={String(automation?.autoBan.cooldownMinutes ?? 60)}
                     disabled={busy}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 60;
                       setAutomation((a) =>
                         a
-                          ? {
-                              ...a,
-                              autoBan: {
-                                ...a.autoBan,
-                                cooldownMinutes: Number(e.target.value) || 5,
-                              },
-                            }
+                          ? { ...a, autoBan: { ...a.autoBan, cooldownMinutes: n } }
                           : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoBan: { cooldownMinutes: automation.autoBan.cooldownMinutes },
-                      })
-                    }
+                      );
+                      void saveAutomation({ autoBan: { cooldownMinutes: n } });
+                    }}
                   />
                 </Field>
                 <Field label="每小時上限" htmlFor="ab-max" flush>
-                  <input
-                    id="ab-max"
-                    type="number"
-                    value={automation?.autoBan.maxAutoBansPerHour ?? 40}
+                  <PresetChips
+                    options={[
+                      { value: '5', label: '5' },
+                      { value: '10', label: '10' },
+                      { value: '20', label: '20' },
+                      { value: '40', label: '40' },
+                      { value: '80', label: '80' },
+                    ]}
+                    value={String(automation?.autoBan.maxAutoBansPerHour ?? 40)}
                     disabled={busy}
-                    onChange={(e) =>
+                    onChange={(v) => {
+                      const n = Number(v) || 40;
                       setAutomation((a) =>
                         a
                           ? {
                               ...a,
-                              autoBan: {
-                                ...a.autoBan,
-                                maxAutoBansPerHour: Number(e.target.value) || 1,
-                              },
+                              autoBan: { ...a.autoBan, maxAutoBansPerHour: n },
                             }
                           : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoBan: {
-                          maxAutoBansPerHour: automation.autoBan.maxAutoBansPerHour,
-                        },
-                      })
-                    }
+                      );
+                      void saveAutomation({ autoBan: { maxAutoBansPerHour: n } });
+                    }}
                   />
                 </Field>
-                <Field label="掃描間隔（秒）" htmlFor="ab-iv" flush hint="30–600；scheduler 預設 120">
-                  <input
-                    id="ab-iv"
-                    type="number"
-                    min={30}
-                    max={600}
-                    value={automation?.autoBan.intervalSeconds ?? 120}
-                    disabled={busy}
-                    onChange={(e) =>
+                <Field label="掃描間隔" htmlFor="ab-iv" flush hint="scheduler 預設 120s">
+                  <PresetChips
+                    options={[
+                      { value: '30', label: '30s' },
+                      { value: '60', label: '1m' },
+                      { value: '120', label: '2m' },
+                      { value: '180', label: '3m' },
+                      { value: '300', label: '5m' },
+                      { value: '600', label: '10m' },
+                    ]}
+                    value={String(automation?.autoBan.intervalSeconds ?? 120)}
+                    onChange={(v) => {
+                      const n = Math.max(30, Math.min(600, Number(v) || 120));
                       setAutomation((a) =>
                         a
                           ? {
                               ...a,
-                              autoBan: {
-                                ...a.autoBan,
-                                intervalSeconds: Number(e.target.value) || 120,
-                              },
+                              autoBan: { ...a.autoBan, intervalSeconds: n },
                             }
                           : a,
-                      )
-                    }
-                    onBlur={() =>
-                      automation &&
-                      void saveAutomation({
-                        autoBan: { intervalSeconds: automation.autoBan.intervalSeconds },
-                      })
-                    }
+                      );
+                      void saveAutomation({ autoBan: { intervalSeconds: n } });
+                    }}
+                    disabled={busy}
                   />
                 </Field>
               </FormLayout>
@@ -1743,37 +1729,41 @@ export function ProtectionPage() {
                   />
                   <span>{ab?.enabled ? '開啟' : '關閉'}</span>
                 </label>
-                <select
-                  className="def-select"
-                  value={ab?.mode ?? 'soft'}
+                <SegRadio
+                  name="cmd-ab-mode"
+                  aria-label="自動 ban 模式"
+                  size="sm"
+                  value={(ab?.mode ?? 'soft') as string}
                   disabled={busy || !ab?.enabled}
-                  onChange={(e) =>
+                  onChange={(mode) =>
                     void saveAutoBan({
-                      mode: e.target.value as AutoBanPolicy['mode'],
-                      enabled: e.target.value !== 'off',
+                      mode: mode as AutoBanPolicy['mode'],
+                      enabled: mode !== 'off',
                     })
                   }
-                  aria-label="自動 ban 模式"
-                >
-                  <option value="soft">寬鬆</option>
-                  <option value="normal">標準</option>
-                  <option value="aggressive">積極</option>
-                </select>
-                <select
-                  className="def-select"
-                  value={ab?.method ?? banMethod}
-                  disabled={busy}
-                  onChange={(e) => {
-                    const m = e.target.value as 'fail2ban' | 'ufw' | 'both';
-                    setBanMethod(m);
-                    if (ab?.enabled) void saveAutoBan({ method: m });
-                  }}
+                  options={[
+                    { value: 'soft', label: '寬鬆' },
+                    { value: 'normal', label: '標準' },
+                    { value: 'aggressive', label: '積極' },
+                  ]}
+                />
+                <SegRadio
+                  name="cmd-ab-meth"
                   aria-label="封禁方式"
-                >
-                  <option value="fail2ban">fail2ban 臨時</option>
-                  <option value="ufw">UFW 永久</option>
-                  <option value="both">兩者（慎用）</option>
-                </select>
+                  size="sm"
+                  value={(ab?.method ?? banMethod) as string}
+                  disabled={busy}
+                  onChange={(m) => {
+                    const method = m as 'fail2ban' | 'ufw' | 'both';
+                    setBanMethod(method);
+                    if (ab?.enabled) void saveAutoBan({ method });
+                  }}
+                  options={[
+                    { value: 'fail2ban', label: 'fail2ban' },
+                    { value: 'ufw', label: 'UFW' },
+                    { value: 'both', label: '兩者' },
+                  ]}
+                />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -2274,9 +2264,32 @@ export function ProtectionPage() {
                 <code className="inline">IPINFO_TOKEN</code> 可改用 IPinfo Lite（國家 + 大陸 +
                 ASN 一檔）。查詢只讀本地 MMDB，唔打線上 API 做攔截。
               </FormHint>
-              {!geoStatus ? (
-                <LoadingBlock label="載入 GeoIP 狀態…" />
-              ) : (
+              {geoErr ? (
+                <div className="geo-status-box geo-status-box--err">
+                  <Alert variant="error">{geoErr}</Alert>
+                  <div className="btn-row u-mt-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      loading={geoLoading || busy}
+                      onClick={() =>
+                        void loadGeo().catch(() => {
+                          /* geoErr set */
+                        })
+                      }
+                    >
+                      重試
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              {geoLoading && !geoStatus ? (
+                <div className="geo-status-box geo-status-box--loading" role="status">
+                  <span className="spinner" aria-hidden />
+                  <span className="muted">載入 GeoIP 狀態…</span>
+                </div>
+              ) : null}
+              {geoStatus ? (
                 <>
                   <div className="kpi-grid kpi-grid--4 u-mb-3">
                     <div className="ops-stat">
@@ -2342,7 +2355,23 @@ export function ProtectionPage() {
                     </FormHint>
                   ) : null}
                 </>
-              )}
+              ) : null}
+              {!geoLoading && !geoStatus && !geoErr ? (
+                <div className="geo-status-box">
+                  <p className="muted u-mb-2">尚未載入狀態</p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      void loadGeo().catch(() => {
+                        /* geoErr */
+                      })
+                    }
+                  >
+                    載入
+                  </Button>
+                </div>
+              ) : null}
             </div>
 
             <div className="def-panel-card">
@@ -2358,8 +2387,8 @@ export function ProtectionPage() {
                 </label>
               </div>
               <FormHint>
-                用下方<strong>多選</strong>揀國家／地區／供應商（點 chip 可移除）。
-                地區 = 大陸／洲，唔係省市；供應商 = ASN。Whitelist 永遠豁免。
+                免費最高細分：<strong>國家 + 省／州 + ASN</strong>；城市可選政策（預設關，準確率較低）。
+                供應商 = ASN。Whitelist 永遠豁免。點 chip 移除。
               </FormHint>
               {geoMode === 'allow_list' ? (
                 <Alert variant="error">
@@ -2369,16 +2398,16 @@ export function ProtectionPage() {
               ) : null}
               <FormLayout columns={2}>
                 <Field label="模式" htmlFor="geo-mode" flush>
-                  <select
-                    id="geo-mode"
+                  <SegRadio
+                    name="geo-mode"
+                    aria-label="Geo 准入模式"
                     value={geoMode}
-                    onChange={(e) =>
-                      setGeoMode(e.target.value as 'deny_list' | 'allow_list')
-                    }
-                  >
-                    <option value="deny_list">封鎖名單（deny）</option>
-                    <option value="allow_list">允許名單（allow · 高危）</option>
-                  </select>
+                    onChange={(v) => setGeoMode(v as 'deny_list' | 'allow_list')}
+                    options={[
+                      { value: 'deny_list', label: '封鎖名單' },
+                      { value: 'allow_list', label: '允許名單 · 高危' },
+                    ]}
+                  />
                 </Field>
                 <Field label="自動更新庫" htmlFor="geo-au" flush>
                   <label className="def-switch">
@@ -2393,38 +2422,58 @@ export function ProtectionPage() {
                 </Field>
               </FormLayout>
 
-              <div className="stack u-mt-3" style={{ gap: '1rem' }}>
+              <div className="geo-select-grid geo-select-grid--4 u-mt-3">
                 <Field
                   label={`國家（已選 ${geoCountries.length}）`}
                   htmlFor="geo-cc"
                   flush
                   fullWidth
-                  hint="搜尋中文名或 ISO 代碼，勾選加入"
+                  hint="搜尋中文名或 ISO"
                 >
                   <MultiCheckSelect
                     id="geo-cc"
                     options={GEO_COUNTRIES}
                     value={geoCountries}
                     onChange={setGeoCountries}
-                    searchPlaceholder="搜尋國家… 例：中國、CN、Russia"
-                    maxVisible={16}
+                    searchPlaceholder="中國 / CN"
                     disabled={busy}
                   />
                 </Field>
                 <Field
-                  label={`地區／大陸（已選 ${geoContinents.length}）`}
+                  label={`省／州（已選 ${geoRegions.length}）`}
+                  htmlFor="geo-reg"
+                  flush
+                  fullWidth
+                  hint={
+                    geoCountries.length
+                      ? '依已選國家顯示；可自訂 CN-GD'
+                      : '建議先選國家以收窄列表'
+                  }
+                >
+                  <MultiCheckSelect
+                    id="geo-reg"
+                    options={regionsForCountries(geoCountries)}
+                    value={geoRegions}
+                    onChange={setGeoRegions}
+                    allowCustom
+                    customPlaceholder="自訂，例 CN-GD"
+                    searchPlaceholder="廣東 / CA / 東京"
+                    disabled={busy}
+                  />
+                </Field>
+                <Field
+                  label={`大陸（已選 ${geoContinents.length}）`}
                   htmlFor="geo-cont"
                   flush
                   fullWidth
-                  hint="Phase1：洲際，唔係省／市"
+                  hint="洲際（可選）"
                 >
                   <MultiCheckSelect
                     id="geo-cont"
                     options={GEO_CONTINENTS}
                     value={geoContinents}
                     onChange={setGeoContinents}
-                    searchPlaceholder="搜尋地區…"
-                    maxVisible={10}
+                    searchPlaceholder="亞洲 / EU"
                     disabled={busy}
                   />
                 </Field>
@@ -2433,7 +2482,7 @@ export function ProtectionPage() {
                   htmlFor="geo-asn"
                   flush
                   fullWidth
-                  hint="常見雲／ISP；亦可輸入自訂 ASN 加入"
+                  hint="雲／ISP；可自訂 ASN"
                 >
                   <MultiCheckSelect
                     id="geo-asn"
@@ -2447,12 +2496,98 @@ export function ProtectionPage() {
                       )
                     }
                     allowCustom
-                    customPlaceholder="自訂 ASN，例 13335 或 AS13335"
-                    searchPlaceholder="搜尋供應商… 例：Cloudflare、電信、AWS"
-                    maxVisible={14}
+                    customPlaceholder="自訂 ASN，例 13335"
+                    searchPlaceholder="Cloudflare / 電信"
                     disabled={busy}
                   />
                 </Field>
+              </div>
+
+              <div className="def-panel-card def-panel-card--muted u-mt-3">
+                <div className="def-section-head">
+                  <h4 className="def-section-head__title" style={{ fontSize: '0.95rem' }}>
+                    城市政策（低置信 · 可選）
+                  </h4>
+                  <label className="def-switch">
+                    <input
+                      type="checkbox"
+                      checked={geoCityPolicy}
+                      onChange={(e) => setGeoCityPolicy(e.target.checked)}
+                    />
+                    用城市做准入
+                  </label>
+                </div>
+                <FormHint>
+                  免費庫城市準確率有限。格式 <code className="inline">CN|Guangzhou</code>
+                  ；未勾選時城市只作查詢展示。
+                </FormHint>
+                {geoCityPolicy ? (
+                  <>
+                    <div className="mcs__chips u-mb-2">
+                      {geoCities.length === 0 ? (
+                        <span className="muted u-text-sm">尚未加入城市</span>
+                      ) : (
+                        geoCities.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            className="mcs__chip"
+                            onClick={() =>
+                              setGeoCities((prev) => prev.filter((x) => x !== c))
+                            }
+                          >
+                            {c}
+                            <span className="mcs__chip-x">×</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                    <div className="mcs__custom">
+                      <input
+                        value={geoCityDraft}
+                        onChange={(e) => setGeoCityDraft(e.target.value)}
+                        placeholder="例：CN|Shenzhen 或 US|Ashburn"
+                        spellCheck={false}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const v = geoCityDraft.trim();
+                            if (!v) return;
+                            const key = v.includes('|')
+                              ? v
+                              : geoCountries[0]
+                                ? `${geoCountries[0]}|${v}`
+                                : v;
+                            if (!geoCities.includes(key)) {
+                              setGeoCities((prev) => [...prev, key]);
+                            }
+                            setGeoCityDraft('');
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          const v = geoCityDraft.trim();
+                          if (!v) return;
+                          const key = v.includes('|')
+                            ? v
+                            : geoCountries[0]
+                              ? `${geoCountries[0]}|${v}`
+                              : v;
+                          if (!geoCities.includes(key)) {
+                            setGeoCities((prev) => [...prev, key]);
+                          }
+                          setGeoCityDraft('');
+                        }}
+                      >
+                        加入
+                      </Button>
+                    </div>
+                  </>
+                ) : null}
               </div>
 
               <FormActions>
@@ -2472,6 +2607,9 @@ export function ProtectionPage() {
                           mode: geoMode,
                           countries: geoCountries,
                           continents: geoContinents,
+                          regions: geoRegions,
+                          cities: geoCities,
+                          cityPolicyEnabled: geoCityPolicy,
                           asns: geoAsns.map((a) => normalizeAsnInput(a) || a),
                           autoUpdate: geoAutoUpdate,
                           enforce: {
@@ -2485,7 +2623,7 @@ export function ProtectionPage() {
                       return {
                         ok: true,
                         notes: [
-                          `政策已儲存 · 國 ${r.policy.countries.length} · 洲 ${r.policy.continents.length} · ASN ${r.policy.asns.length}`,
+                          `政策已儲存 · 國 ${r.policy.countries.length} · 省 ${r.policy.regions?.length ?? 0} · ASN ${r.policy.asns.length}`,
                           ...(r.applyNotes ?? []),
                         ],
                       };
@@ -2573,32 +2711,112 @@ export function ProtectionPage() {
                 </Button>
               </FormActions>
               {lookupResult?.lookup ? (
-                <div className="table-wrap u-mt-3">
-                  <table className="data">
-                    <tbody>
-                      {(
-                        [
-                          ['IP', lookupResult.lookup.ip],
-                          ['國家', lookupResult.lookup.country],
-                          ['大陸', lookupResult.lookup.continent],
-                          ['ASN', lookupResult.lookup.asn],
-                          ['供應商', lookupResult.lookup.asName],
-                          ['來源', lookupResult.lookup.source],
+                <>
+                  <div className="btn-row u-mt-3 u-mb-2">
+                    {lookupResult.lookup.country ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          const cc = String(lookupResult.lookup!.country);
+                          if (!geoCountries.includes(cc)) {
+                            setGeoCountries((p) => [...p, cc]);
+                          }
+                        }}
+                      >
+                        + 國家 {String(lookupResult.lookup.country)}
+                      </Button>
+                    ) : null}
+                    {lookupResult.lookup.regionKey ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          const rk = String(lookupResult.lookup!.regionKey);
+                          if (!geoRegions.includes(rk)) {
+                            setGeoRegions((p) => [...p, rk]);
+                          }
+                        }}
+                      >
+                        + 省 {String(lookupResult.lookup.regionKey)}
+                      </Button>
+                    ) : null}
+                    {lookupResult.lookup.cityKey ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          const ck = String(lookupResult.lookup!.cityKey);
+                          setGeoCityPolicy(true);
+                          if (!geoCities.includes(ck)) {
+                            setGeoCities((p) => [...p, ck]);
+                          }
+                        }}
+                      >
+                        + 城市 {String(lookupResult.lookup.city)}
+                      </Button>
+                    ) : null}
+                    {lookupResult.lookup.asn ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          const a = String(lookupResult.lookup!.asn);
+                          if (!geoAsns.includes(a)) {
+                            setGeoAsns((p) => [...p, a]);
+                          }
+                        }}
+                      >
+                        + ASN {String(lookupResult.lookup.asn)}
+                      </Button>
+                    ) : null}
+                  </div>
+                  <div className="table-wrap">
+                    <table className="data">
+                      <tbody>
+                        {(
                           [
-                            '政策',
-                            lookupResult.access?.blocked ? '攔截' : '放行',
-                          ],
-                          ['命中', lookupResult.access?.matched?.join(', ') || '—'],
-                        ] as const
-                      ).map(([k, v]) => (
-                        <tr key={k}>
-                          <th>{k}</th>
-                          <td>{String(v ?? '—')}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                            ['IP', lookupResult.lookup.ip],
+                            ['國家', lookupResult.lookup.country],
+                            [
+                              '省／州',
+                              lookupResult.lookup.regionKey ||
+                                lookupResult.lookup.regionName,
+                            ],
+                            ['城市', lookupResult.lookup.city],
+                            ['大陸', lookupResult.lookup.continent],
+                            [
+                              '座標',
+                              lookupResult.lookup.latitude != null
+                                ? `${lookupResult.lookup.latitude}, ${lookupResult.lookup.longitude}`
+                                : '—',
+                            ],
+                            ['ASN', lookupResult.lookup.asn],
+                            ['供應商', lookupResult.lookup.asName],
+                            ['來源', lookupResult.lookup.source],
+                            [
+                              '政策',
+                              lookupResult.access?.blocked ? '攔截' : '放行',
+                            ],
+                            [
+                              '命中',
+                              lookupResult.access?.matched?.join(', ') || '—',
+                            ],
+                          ] as const
+                        ).map(([k, v]) => (
+                          <tr key={k}>
+                            <th>{k}</th>
+                            <td>{String(v ?? '—')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               ) : null}
             </div>
           </div>

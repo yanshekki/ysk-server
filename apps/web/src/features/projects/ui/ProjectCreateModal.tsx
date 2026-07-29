@@ -8,6 +8,7 @@ import {
   FormHint,
   FormLayout,
   Modal,
+  SegRadio,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import { formatRuntimeName } from '../model/runtime-ui';
@@ -134,24 +135,24 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
             />
           </Field>
           <Field label="執行環境" htmlFor="pruntime" hint="之後可在詳情調整部署方式" flush>
-            <select
-              id="pruntime"
+            <SegRadio
+              name="pruntime"
+              aria-label="執行環境"
               value={runtime}
-              onChange={(e) => {
-                const next = e.target.value as typeof runtime;
-                setRuntime(next);
-                // Clear template if it no longer matches runtime
+              onChange={(next) => {
+                setRuntime(next as typeof runtime);
                 const tpl = templates.find((x) => x.id === templateId);
                 if (tpl && tpl.runtime !== next) setTemplateId('');
               }}
-            >
-              <option value="node">Node.js</option>
-              <option value="php">PHP</option>
-              <option value="python">Python</option>
-              <option value="go">Go</option>
-              <option value="rust">Rust</option>
-              <option value="static">靜態網站</option>
-            </select>
+              options={[
+                { value: 'node', label: 'Node' },
+                { value: 'php', label: 'PHP' },
+                { value: 'python', label: 'Python' },
+                { value: 'go', label: 'Go' },
+                { value: 'rust', label: 'Rust' },
+                { value: 'static', label: '靜態' },
+              ]}
+            />
           </Field>
           <Field
             label="主要域名"

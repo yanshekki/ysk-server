@@ -15,6 +15,7 @@ import {
   FormLayout,
   Modal,
   OpsResultPanel,
+  PresetChips,
   SplitPanel,
   OpsHero,
 } from '../../shared/components/ui';
@@ -535,12 +536,19 @@ export function RedisPage() {
               flush
               hint="可留空表示永不過期"
             >
-              <input
-                id="nt"
+              <PresetChips
+                options={[
+                  { value: '', label: '永不過期' },
+                  { value: '60', label: '1 分' },
+                  { value: '300', label: '5 分' },
+                  { value: '3600', label: '1 時' },
+                  { value: '86400', label: '1 日' },
+                  { value: '604800', label: '7 日' },
+                ]}
                 value={newTtl}
-                onChange={(e) => setNewTtl(e.target.value)}
-                placeholder="3600"
-                inputMode="numeric"
+                onChange={setNewTtl}
+                allowCustom
+                customPlaceholder="自訂秒數"
               />
             </Field>
             <Field label="內容" htmlFor="nv" fullWidth flush required hint="字串值，會以 SET 寫入">

@@ -2,7 +2,7 @@
  * Human-friendly cron schedule builder → standard 5-field expression.
  */
 import { useMemo } from 'react';
-import { Field, FormLayout } from '../../shared/components/ui';
+import { Field, FormLayout, PresetChips, SegRadio } from '../../shared/components/ui';
 
 export type ScheduleMode =
   | 'every_n_min'
@@ -172,11 +172,8 @@ function clamp(n: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, Math.floor(n)));
 }
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const MINUTES = Array.from({ length: 60 }, (_, i) => i);
 const MINUTE_STEPS = [0, 5, 10, 15, 20, 30, 45];
 const EVERY_N = [1, 5, 10, 15, 20, 30];
-const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
 
 export interface CronScheduleBuilderProps {
   value: ScheduleState;
@@ -228,70 +225,74 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
       <div className="cron-sched__body">
         {value.mode === 'every_n_min' ? (
           <Field label="間隔" htmlFor="cron-every" flush hint="由整點起算">
-            <select
-              id="cron-every"
-              value={value.everyMinutes}
-              onChange={(e) => patch({ everyMinutes: Number(e.target.value) })}
-            >
-              {EVERY_N.map((n) => (
-                <option key={n} value={n}>
-                  {n === 1 ? '每 1 分鐘' : `每 ${n} 分鐘`}
-                </option>
-              ))}
-            </select>
+            <SegRadio
+              name="cron-every"
+              aria-label="間隔分鐘"
+              value={String(value.everyMinutes)}
+              onChange={(v) => patch({ everyMinutes: Number(v) })}
+              options={EVERY_N.map((n) => ({
+                value: String(n),
+                label: n === 1 ? '1 分' : `${n} 分`,
+              }))}
+            />
           </Field>
         ) : null}
 
         {showMinuteOnly ? (
           <Field label="在每小時的第幾分" htmlFor="cron-min-h" flush>
-            <select
-              id="cron-min-h"
-              value={value.minute}
-              onChange={(e) => patch({ minute: Number(e.target.value) })}
-            >
-              {MINUTES.map((n) => (
-                <option key={n} value={n}>
-                  {String(n).padStart(2, '0')} 分
-                </option>
-              ))}
-            </select>
+            <PresetChips
+              options={MINUTE_STEPS.map((n) => ({
+                value: String(n),
+                label: `${String(n).padStart(2, '0')} 分`,
+              }))}
+              value={String(value.minute)}
+              onChange={(v) => patch({ minute: Number(v) || 0 })}
+              allowCustom
+              customPlaceholder="0–59"
+            />
           </Field>
         ) : null}
 
         {showTime ? (
           <FormLayout columns={2}>
             <Field label="小時" htmlFor="cron-hour" flush>
-              <select
-                id="cron-hour"
-                value={value.hour}
-                onChange={(e) => patch({ hour: Number(e.target.value) })}
-              >
-                {HOURS.map((n) => (
-                  <option key={n} value={n}>
-                    {String(n).padStart(2, '0')} 時
-                  </option>
-                ))}
-              </select>
+              <PresetChips
+                options={[
+                  { value: '0', label: '00' },
+                  { value: '1', label: '01' },
+                  { value: '2', label: '02' },
+                  { value: '3', label: '03' },
+                  { value: '4', label: '04' },
+                  { value: '6', label: '06' },
+                  { value: '8', label: '08' },
+                  { value: '9', label: '09' },
+                  { value: '12', label: '12' },
+                  { value: '18', label: '18' },
+                  { value: '21', label: '21' },
+                  { value: '22', label: '22' },
+                  { value: '23', label: '23' },
+                ]}
+                value={String(value.hour)}
+                onChange={(v) =>
+                  patch({ hour: Math.max(0, Math.min(23, Number(v) || 0)) })
+                }
+                allowCustom
+                customPlaceholder="0–23"
+              />
             </Field>
             <Field label="分鐘" htmlFor="cron-min" flush>
-              <select
-                id="cron-min"
-                value={value.minute}
-                onChange={(e) => patch({ minute: Number(e.target.value) })}
-              >
-                {/* common first, then all */}
-                {MINUTE_STEPS.map((n) => (
-                  <option key={`s-${n}`} value={n}>
-                    {String(n).padStart(2, '0')} 分
-                  </option>
-                ))}
-                <option disabled>────</option>
-                {MINUTES.filter((n) => !MINUTE_STEPS.includes(n)).map((n) => (
-                  <option key={n} value={n}>
-                    {String(n).padStart(2, '0')} 分
-                  </option>
-                ))}
-              </select>
+              <PresetChips
+                options={MINUTE_STEPS.map((n) => ({
+                  value: String(n),
+                  label: String(n).padStart(2, '0'),
+                }))}
+                value={String(value.minute)}
+                onChange={(v) =>
+                  patch({ minute: Math.max(0, Math.min(59, Number(v) || 0)) })
+                }
+                allowCustom
+                customPlaceholder="0–59"
+              />
             </Field>
           </FormLayout>
         ) : null}
@@ -320,17 +321,24 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
         {value.mode === 'monthly' ? (
           <Field label="每月第幾日" htmlFor="cron-dom" flush hint="31 日月份沒有該日則跳過">
-            <select
-              id="cron-dom"
-              value={value.dayOfMonth}
-              onChange={(e) => patch({ dayOfMonth: Number(e.target.value) })}
-            >
-              {DAYS_OF_MONTH.map((n) => (
-                <option key={n} value={n}>
-                  {n} 日
-                </option>
-              ))}
-            </select>
+            <PresetChips
+              options={[
+                { value: '1', label: '1' },
+                { value: '5', label: '5' },
+                { value: '10', label: '10' },
+                { value: '15', label: '15' },
+                { value: '20', label: '20' },
+                { value: '25', label: '25' },
+                { value: '28', label: '28' },
+                { value: '31', label: '31' },
+              ]}
+              value={String(value.dayOfMonth)}
+              onChange={(v) =>
+                patch({ dayOfMonth: Math.max(1, Math.min(31, Number(v) || 1)) })
+              }
+              allowCustom
+              customPlaceholder="1–31"
+            />
           </Field>
         ) : null}
 

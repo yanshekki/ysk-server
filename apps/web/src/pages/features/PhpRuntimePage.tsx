@@ -16,6 +16,8 @@ import {
   FormHint,
   FormLayout,
   OpsResultPanel,
+  PresetChips,
+  SegRadio,
   SoftwareInstallBanner,
   OpsHero,
   Tabs,
@@ -33,6 +35,104 @@ type ToolsProbe = {
   wpCli?: { available: boolean; version?: string };
   notes?: string[];
 };
+
+/** Common int / bytes presets for selection-first php.ini rows */
+function phpIniPresets(
+  key: string,
+  kind: 'int' | 'bytes',
+): Array<{ value: string; label: string }> {
+  if (kind === 'bytes') {
+    if (key.includes('memory') || key === 'memory_limit') {
+      return [
+        { value: '128M', label: '128M' },
+        { value: '256M', label: '256M' },
+        { value: '512M', label: '512M' },
+        { value: '1G', label: '1G' },
+        { value: '-1', label: '無限' },
+      ];
+    }
+    return [
+      { value: '8M', label: '8M' },
+      { value: '32M', label: '32M' },
+      { value: '64M', label: '64M' },
+      { value: '128M', label: '128M' },
+      { value: '256M', label: '256M' },
+    ];
+  }
+  switch (key) {
+    case 'max_execution_time':
+    case 'max_input_time':
+      return [
+        { value: '0', label: '0 無限' },
+        { value: '30', label: '30' },
+        { value: '60', label: '60' },
+        { value: '120', label: '120' },
+        { value: '300', label: '300' },
+      ];
+    case 'max_input_vars':
+      return [
+        { value: '1000', label: '1000' },
+        { value: '2500', label: '2500' },
+        { value: '5000', label: '5000' },
+        { value: '10000', label: '10000' },
+      ];
+    case 'max_input_nesting_level':
+      return [
+        { value: '32', label: '32' },
+        { value: '64', label: '64' },
+        { value: '128', label: '128' },
+      ];
+    case 'max_file_uploads':
+      return [
+        { value: '5', label: '5' },
+        { value: '20', label: '20' },
+        { value: '50', label: '50' },
+        { value: '100', label: '100' },
+      ];
+    case 'session.gc_maxlifetime':
+      return [
+        { value: '1440', label: '24 分' },
+        { value: '3600', label: '1 時' },
+        { value: '86400', label: '1 日' },
+        { value: '604800', label: '7 日' },
+      ];
+    case 'opcache.memory_consumption':
+      return [
+        { value: '64', label: '64' },
+        { value: '128', label: '128' },
+        { value: '256', label: '256' },
+        { value: '512', label: '512' },
+      ];
+    case 'opcache.interned_strings_buffer':
+      return [
+        { value: '8', label: '8' },
+        { value: '16', label: '16' },
+        { value: '32', label: '32' },
+        { value: '64', label: '64' },
+      ];
+    case 'opcache.max_accelerated_files':
+      return [
+        { value: '4000', label: '4k' },
+        { value: '10000', label: '10k' },
+        { value: '20000', label: '20k' },
+        { value: '100000', label: '100k' },
+      ];
+    case 'opcache.revalidate_freq':
+      return [
+        { value: '0', label: '0' },
+        { value: '2', label: '2' },
+        { value: '10', label: '10' },
+        { value: '60', label: '60' },
+      ];
+    default:
+      return [
+        { value: '0', label: '0' },
+        { value: '1', label: '1' },
+        { value: '10', label: '10' },
+        { value: '100', label: '100' },
+      ];
+  }
+}
 
 type IniCatalogGroup = {
   id: string;
@@ -193,15 +293,17 @@ export function PhpRuntimePage() {
               <CardSection title="安裝 PHP" description="需系統變更權限；安裝 ≠ 已設定 FPM／ini">
                 <FormLayout columns={2}>
                   <Field label="PHP 版本" htmlFor="php-ver" flush required>
-                    <select
-                      id="php-ver"
+                    <SegRadio
+                      name="php-ver"
+                      aria-label="PHP 版本"
                       value={version}
-                      onChange={(e) => setVersion(e.target.value)}
-                    >
-                      <option value="8.1">8.1</option>
-                      <option value="8.2">8.2</option>
-                      <option value="8.3">8.3</option>
-                    </select>
+                      onChange={setVersion}
+                      options={[
+                        { value: '8.1', label: '8.1' },
+                        { value: '8.2', label: '8.2' },
+                        { value: '8.3', label: '8.3' },
+                      ]}
+                    />
                   </Field>
                 </FormLayout>
                 <FormActions>
@@ -269,15 +371,17 @@ export function PhpRuntimePage() {
               >
                 <FormLayout columns={2}>
                   <Field label="PHP 版本" htmlFor="ini-ver" flush required>
-                    <select
-                      id="ini-ver"
+                    <SegRadio
+                      name="ini-ver"
+                      aria-label="PHP 版本"
                       value={version}
-                      onChange={(e) => setVersion(e.target.value)}
-                    >
-                      <option value="8.1">8.1</option>
-                      <option value="8.2">8.2</option>
-                      <option value="8.3">8.3</option>
-                    </select>
+                      onChange={setVersion}
+                      options={[
+                        { value: '8.1', label: '8.1' },
+                        { value: '8.2', label: '8.2' },
+                        { value: '8.3', label: '8.3' },
+                      ]}
+                    />
                   </Field>
                   <Field label="管理檔路徑" htmlFor="ini-path" flush>
                     <input id="ini-path" value={managedPath || '—'} readOnly spellCheck={false} />
@@ -349,17 +453,30 @@ export function PhpRuntimePage() {
                               onChange={(c) => setValue(f.key, c)}
                             />
                           ) : f.type === 'select' && f.options ? (
-                            <select
-                              id={id}
-                              value={String(val)}
-                              onChange={(e) => setValue(f.key, e.target.value)}
-                            >
-                              {f.options.map((o) => (
-                                <option key={o.value} value={o.value}>
-                                  {o.label}
-                                </option>
-                              ))}
-                            </select>
+                            f.options.length <= 8 ? (
+                              <SegRadio
+                                name={id}
+                                aria-label={f.label}
+                                value={String(val)}
+                                onChange={(v) => setValue(f.key, v)}
+                                options={f.options.map((o) => ({
+                                  value: o.value,
+                                  label: o.label,
+                                }))}
+                              />
+                            ) : (
+                              <select
+                                id={id}
+                                value={String(val)}
+                                onChange={(e) => setValue(f.key, e.target.value)}
+                              >
+                                {f.options.map((o) => (
+                                  <option key={o.value} value={o.value}>
+                                    {o.label}
+                                  </option>
+                                ))}
+                              </select>
+                            )
                           ) : f.type === 'textarea' ? (
                             <textarea
                               id={id}
@@ -369,11 +486,20 @@ export function PhpRuntimePage() {
                               spellCheck={false}
                             />
                           ) : f.type === 'int' ? (
-                            <input
-                              id={id}
-                              type="number"
-                              value={Number(val)}
-                              onChange={(e) => setValue(f.key, Number(e.target.value))}
+                            <PresetChips
+                              options={phpIniPresets(f.key, 'int')}
+                              value={String(val ?? f.default ?? '')}
+                              onChange={(v) => setValue(f.key, Number(v))}
+                              allowCustom
+                              customPlaceholder="自訂數字"
+                            />
+                          ) : f.type === 'bytes' ? (
+                            <PresetChips
+                              options={phpIniPresets(f.key, 'bytes')}
+                              value={String(val ?? f.default ?? '')}
+                              onChange={(v) => setValue(f.key, v)}
+                              allowCustom
+                              customPlaceholder="自訂，例 768M"
                             />
                           ) : (
                             <input

@@ -23,6 +23,7 @@ import {
   FormActions,
   FormHint,
   CheckboxField,
+  SegRadio,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
@@ -590,10 +591,23 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   />
                 </Field>
                 <Field label="有效時數" htmlFor="tmp-ttl" hint="到期後標記失效" flush>
-                  <input
-                    id="tmp-ttl"
-                    value={tempTtl}
-                    onChange={(e) => setTempTtl(e.target.value)}
+                  <SegRadio
+                    name="tmp-ttl"
+                    aria-label="有效時數"
+                    value={String(
+                      [1, 6, 12, 24, 48, 72].includes(Number(tempTtl))
+                        ? Number(tempTtl)
+                        : 24,
+                    )}
+                    onChange={(v) => setTempTtl(v)}
+                    options={[
+                      { value: '1', label: '1h' },
+                      { value: '6', label: '6h' },
+                      { value: '12', label: '12h' },
+                      { value: '24', label: '24h' },
+                      { value: '48', label: '48h' },
+                      { value: '72', label: '72h' },
+                    ]}
                   />
                 </Field>
               </FormLayout>

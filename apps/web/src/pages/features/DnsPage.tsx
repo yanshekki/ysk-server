@@ -17,6 +17,8 @@ import {
   Tabs,
   FormActions,
   FormHint,
+  PresetChips,
+  SegRadio,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
@@ -651,29 +653,32 @@ export function DnsPage() {
                 spellCheck={false}
               />
             </Field>
-            <Field label="預設 TTL（秒）" htmlFor="soa-ttl" flush hint="SOA 與新記錄預設">
-              <input
-                id="soa-ttl"
+            <Field label="預設 TTL" htmlFor="soa-ttl" flush hint="SOA 與新記錄預設">
+              <PresetChips
+                options={[
+                  { value: '60', label: '1 分' },
+                  { value: '300', label: '5 分' },
+                  { value: '600', label: '10 分' },
+                  { value: '3600', label: '1 時' },
+                  { value: '86400', label: '1 日' },
+                ]}
                 value={soaTtl}
-                onChange={(e) => setSoaTtl(e.target.value)}
-                inputMode="numeric"
-                placeholder="300"
+                onChange={setSoaTtl}
+                allowCustom
+                customPlaceholder="自訂秒數"
               />
             </Field>
             <Field label="記錄模板" htmlFor="ztpl" fullWidth flush>
-              <select
-                id="ztpl"
+              <SegRadio
+                name="ztpl"
+                aria-label="記錄模板"
                 value={template}
-                onChange={(e) =>
-                  setTemplate(e.target.value as (typeof ZONE_TEMPLATES)[number]['id'])
-                }
-              >
-                {ZONE_TEMPLATES.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setTemplate(v as (typeof ZONE_TEMPLATES)[number]['id'])}
+                options={ZONE_TEMPLATES.map((t) => ({
+                  value: t.id,
+                  label: t.label,
+                }))}
+              />
             </Field>
           </FormLayout>
           <FormHint>建立後請在「記錄」分頁檢視並「寫入區域檔」才會落到磁碟。</FormHint>
@@ -701,13 +706,16 @@ export function DnsPage() {
         <form id="dr" onSubmit={(e) => void onSaveRec(e)}>
           <FormLayout columns={2}>
             <Field label="類型" htmlFor="rt" flush required>
-              <select id="rt" value={rtype} onChange={(e) => setRtype(e.target.value)}>
-                {['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS'].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+              <SegRadio
+                name="rt"
+                aria-label="DNS 記錄類型"
+                value={rtype}
+                onChange={setRtype}
+                options={['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS'].map((t) => ({
+                  value: t,
+                  label: t,
+                }))}
+              />
             </Field>
             <Field
               label="名稱"
@@ -747,12 +755,19 @@ export function DnsPage() {
                 spellCheck={false}
               />
             </Field>
-            <Field label="TTL（秒）" htmlFor="ttl" flush hint="快取時間，常用 300">
-              <input
-                id="ttl"
+            <Field label="TTL" htmlFor="ttl" flush hint="快取時間">
+              <PresetChips
+                options={[
+                  { value: '60', label: '1 分' },
+                  { value: '300', label: '5 分' },
+                  { value: '600', label: '10 分' },
+                  { value: '3600', label: '1 時' },
+                  { value: '86400', label: '1 日' },
+                ]}
                 value={rttl}
-                onChange={(e) => setRttl(e.target.value)}
-                inputMode="numeric"
+                onChange={setRttl}
+                allowCustom
+                customPlaceholder="自訂秒數"
               />
             </Field>
           </FormLayout>

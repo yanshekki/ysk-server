@@ -15,6 +15,7 @@ import {
   OpsResultPanel,
   Tabs,
   FormActions,
+  SegRadio,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
@@ -974,35 +975,36 @@ export function BackupsPage() {
               </header>
                 <FormLayout columns={2}>
                   <Field label="啟用遠端推送" htmlFor="bk-en" flush>
-                    <select
-                      id="bk-en"
+                    <SegRadio
+                      name="bk-en"
+                      aria-label="啟用遠端推送"
                       value={remote.enabled ? 'yes' : 'no'}
-                      onChange={(e) =>
-                        setRemote((r) => ({ ...r, enabled: e.target.value === 'yes' }))
+                      onChange={(v) =>
+                        setRemote((r) => ({ ...r, enabled: v === 'yes' }))
                       }
-                    >
-                      <option value="no">否</option>
-                      <option value="yes">是</option>
-                    </select>
+                      options={[
+                        { value: 'no', label: '否' },
+                        { value: 'yes', label: '是' },
+                      ]}
+                    />
                   </Field>
                   <Field label="目標類型" htmlFor="bk-kind" flush>
-                    <select
-                      id="bk-kind"
+                    <SegRadio
+                      name="bk-kind"
+                      aria-label="遠端目標類型"
                       value={remote.kind}
-                      onChange={(e) =>
+                      onChange={(v) =>
                         setRemote((r) => ({
                           ...r,
-                          kind:
-                            e.target.value === 'local' || e.target.value === 's3'
-                              ? e.target.value
-                              : 'sftp',
+                          kind: v === 'local' || v === 's3' ? v : 'sftp',
                         }))
                       }
-                    >
-                      <option value="sftp">SFTP / scp</option>
-                      <option value="local">本機路徑鏡像</option>
-                      <option value="s3">S3（需 aws cli）</option>
-                    </select>
+                      options={[
+                        { value: 'sftp', label: 'SFTP / scp' },
+                        { value: 'local', label: '本機路徑' },
+                        { value: 's3', label: 'S3' },
+                      ]}
+                    />
                   </Field>
                   {remote.kind === 'sftp' ? (
                     <>
@@ -1137,16 +1139,18 @@ export function BackupsPage() {
               </header>
                 <FormLayout columns={2}>
                   <Field label="啟用 restic" htmlFor="rs-en" flush>
-                    <select
-                      id="rs-en"
+                    <SegRadio
+                      name="rs-en"
+                      aria-label="啟用 restic"
                       value={restic.enabled ? 'yes' : 'no'}
-                      onChange={(e) =>
-                        setRestic((r) => ({ ...r, enabled: e.target.value === 'yes' }))
+                      onChange={(v) =>
+                        setRestic((r) => ({ ...r, enabled: v === 'yes' }))
                       }
-                    >
-                      <option value="no">否</option>
-                      <option value="yes">是</option>
-                    </select>
+                      options={[
+                        { value: 'no', label: '否' },
+                        { value: 'yes', label: '是' },
+                      ]}
+                    />
                   </Field>
                   <Field label="Repo 路徑" htmlFor="rs-path" flush>
                     <input

@@ -25,6 +25,7 @@ import {
   FormActions,
   CheckboxField,
   FormHint,
+  SegRadio,
 } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
@@ -432,17 +433,19 @@ export function EmailDomainPage() {
               <CardSection title="別名／轉發／Catch-all" description="把地址轉到其他信箱">
                 <FormLayout columns={2}>
                   <Field label="類型" htmlFor="al-type" flush>
-                    <select
-                      id="al-type"
+                    <SegRadio
+                      name="al-type"
+                      aria-label="別名類型"
                       value={aliasType}
-                      onChange={(e) =>
-                        setAliasType(e.target.value as 'forward' | 'alias' | 'catchall')
+                      onChange={(v) =>
+                        setAliasType(v as 'forward' | 'alias' | 'catchall')
                       }
-                    >
-                      <option value="forward">轉發</option>
-                      <option value="alias">別名</option>
-                      <option value="catchall">Catch-all（@domain）</option>
-                    </select>
+                      options={[
+                        { value: 'forward', label: '轉發' },
+                        { value: 'alias', label: '別名' },
+                        { value: 'catchall', label: 'Catch-all' },
+                      ]}
+                    />
                   </Field>
                   {aliasType !== 'catchall' ? (
                     <Field label="本地部分" htmlFor="al-local" hint="例如 sales" flush>

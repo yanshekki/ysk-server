@@ -1,9 +1,20 @@
 /**
  * Download GeoIP MMDB files into dataDir/geoip with fail-soft (keep old on error).
+ * Supports gzip (.mmdb.gz) for DB-IP City Lite.
  */
 
-import { createWriteStream, existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
+import { createGunzip } from 'node:zlib';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import { resolveGeoipSources, type GeoipSource } from './providers.js';
@@ -48,9 +59,20 @@ async function downloadOne(
       throw new Error(`HTTP ${res.status} for ${src.filename}`);
     }
     const etag = res.headers.get('etag') ?? undefined;
-    // Node 18+ fetch body is web stream — convert
-    const nodeStream = Readable.fromWeb(res.body as import('stream/web').ReadableStream);
-    await pipeline(nodeStream, createWriteStream(tmp));
+    const nodeStream = Readable.fromWeb(
+      res.body as import('stream/web').ReadableStream,
+    );
+    const useGzip =
+      src.gzip ||
+      /\.gz(\?|$)/i.test(src.url) ||
+      (res.headers.get('content-encoding') || '').includes('gzip') ||
+      (res.headers.get('content-type') || '').includes('gzip');
+
+    if (useGzip) {
+      await pipeline(nodeStream, createGunzip(), createWriteStream(tmp));
+    } else {
+      await pipeline(nodeStream, createWriteStream(tmp));
+    }
     const st = statSync(tmp);
     if (st.size < 1024) {
       throw new Error(`檔案過細（${st.size} B），可能下載失敗`);
@@ -66,10 +88,7 @@ async function downloadOne(
     };
   } catch (e) {
     try {
-      if (existsSync(tmp)) {
-        const { unlinkSync } = await import('node:fs');
-        unlinkSync(tmp);
-      }
+      if (existsSync(tmp)) unlinkSync(tmp);
     } catch {
       /* ignore */
     }
@@ -98,43 +117,74 @@ export async function updateGeoipDatabases(
   const prev = loadGeoipMeta(dataDir);
   const files: GeoipMetaFile['files'] = [];
   const notes: string[] = [];
+  const okFiles = new Set<string>();
 
   for (const src of sources) {
+    // City lite has primary + fallback same filename — skip if already ok
+    if (okFiles.has(src.filename)) {
+      notes.push(`略過 ${src.filename} fallback（已成功）`);
+      continue;
+    }
     const r = await downloadOne(src, dir);
-    files.push(r);
-    if (r.ok) notes.push(`已更新 ${r.filename}（${r.bytes} B）`);
-    else {
-      notes.push(`更新失敗 ${r.filename}：${r.error}${existsSync(join(dir, src.filename)) ? '（保留舊庫）' : ''}`);
+    if (r.ok) {
+      okFiles.add(src.filename);
+      files.push(r);
+      notes.push(`已更新 ${r.filename}（${r.bytes} B）`);
+    } else {
+      // Only record last failure for this filename if never succeeded this run
+      const prevFail = files.find((f) => f.filename === src.filename && !f.ok);
+      if (prevFail) {
+        prevFail.error = r.error;
+        prevFail.url = r.url;
+      } else {
+        files.push(r);
+      }
+      notes.push(
+        `更新失敗 ${r.filename}：${r.error}${existsSync(join(dir, src.filename)) ? '（保留舊庫）' : ''}`,
+      );
     }
   }
 
-  const anyOk = files.some((f) => f.ok);
-  const allPresent = sources.every((s) => existsSync(join(dir, s.filename)));
+  const anyOk = files.some((f) => f.ok) || sources.some((s) => existsSync(join(dir, s.filename)));
+  const attrs = [
+    ...new Set(sources.map((s) => s.attribution).filter(Boolean)),
+  ];
   const meta: GeoipMetaFile = {
     provider,
     files,
     lastAttemptAt: new Date().toISOString(),
-    lastSuccessAt: anyOk
+    lastSuccessAt: files.some((f) => f.ok)
       ? new Date().toISOString()
       : prev?.lastSuccessAt,
-    lastError: files.filter((f) => !f.ok).map((f) => f.error).filter(Boolean).join('; ') || undefined,
-    attribution: sources.map((s) => s.attribution).filter(Boolean).join(' · ') || undefined,
+    lastError:
+      files
+        .filter((f) => !f.ok)
+        .map((f) => f.error)
+        .filter(Boolean)
+        .join('; ') || undefined,
+    attribution: attrs.join(' · ') || undefined,
   };
   saveGeoipMeta(dataDir, meta);
 
-  return {
-    ok: anyOk || allPresent,
-    meta,
-    notes,
-  };
+  return { ok: anyOk, meta, notes };
 }
 
-export function listGeoipSourceStatus(dataDir: string, env: NodeJS.ProcessEnv = process.env) {
+export function listGeoipSourceStatus(
+  dataDir: string,
+  env: NodeJS.ProcessEnv = process.env,
+) {
   const { provider, sources } = resolveGeoipSources(env);
   const dir = geoipDir(dataDir);
+  // Dedupe by filename for status display
+  const seen = new Set<string>();
+  const unique = sources.filter((s) => {
+    if (seen.has(s.filename)) return false;
+    seen.add(s.filename);
+    return true;
+  });
   return {
     provider,
-    sources: sources.map((s) => {
+    sources: unique.map((s) => {
       const p = join(dir, s.filename);
       const present = existsSync(p);
       let mtime: string | undefined;

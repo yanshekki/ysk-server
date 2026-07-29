@@ -11,6 +11,8 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  PresetChips,
+  SegRadio,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 
@@ -304,12 +306,19 @@ export function ProjectResourcesTab({
               hint="例如 1024 = 1 GiB"
               flush
             >
-              <input
-                id="qmb"
-                inputMode="numeric"
+              <PresetChips
+                options={[
+                  { value: '512', label: '512' },
+                  { value: '1024', label: '1G' },
+                  { value: '2048', label: '2G' },
+                  { value: '5120', label: '5G' },
+                  { value: '10240', label: '10G' },
+                  { value: '20480', label: '20G' },
+                ]}
                 value={quotaMb}
-                onChange={(e) => setQuotaMb(e.target.value)}
-                placeholder="1024"
+                onChange={setQuotaMb}
+                allowCustom
+                customPlaceholder="MiB"
               />
             </Field>
           </FormLayout>
@@ -328,46 +337,76 @@ export function ProjectResourcesTab({
         >
           <FormLayout columns={2}>
             <Field label="記憶體上限" htmlFor="mem" hint="例如 512M 或 1G" flush>
-              <input
-                id="mem"
+              <PresetChips
+                options={[
+                  { value: '256M', label: '256M' },
+                  { value: '512M', label: '512M' },
+                  { value: '1G', label: '1G' },
+                  { value: '2G', label: '2G' },
+                  { value: '4G', label: '4G' },
+                ]}
                 value={memoryMax}
-                onChange={(e) => setMemoryMax(e.target.value)}
-                placeholder="512M"
+                onChange={setMemoryMax}
+                allowCustom
+                customPlaceholder="自訂"
               />
             </Field>
             <Field label="CPU 配額 %" htmlFor="cpuq" hint="100 = 一顆 CPU" flush>
-              <input
-                id="cpuq"
-                inputMode="numeric"
+              <PresetChips
+                options={[
+                  { value: '25', label: '25%' },
+                  { value: '50', label: '50%' },
+                  { value: '100', label: '100%' },
+                  { value: '200', label: '200%' },
+                  { value: '400', label: '400%' },
+                ]}
                 value={cpuQuota}
-                onChange={(e) => setCpuQuota(e.target.value)}
-                placeholder="100"
+                onChange={setCpuQuota}
+                allowCustom
+                customPlaceholder="自訂 %"
               />
             </Field>
             <Field label="TasksMax" htmlFor="tmax" hint="行程數上限" flush>
-              <input
-                id="tmax"
-                inputMode="numeric"
+              <PresetChips
+                options={[
+                  { value: '128', label: '128' },
+                  { value: '256', label: '256' },
+                  { value: '512', label: '512' },
+                  { value: '1024', label: '1024' },
+                  { value: '4096', label: '4096' },
+                ]}
                 value={tasksMax}
-                onChange={(e) => setTasksMax(e.target.value)}
-                placeholder="512"
+                onChange={setTasksMax}
+                allowCustom
+                customPlaceholder="自訂"
               />
             </Field>
             <Field label="LimitNOFILE" htmlFor="nofile" hint="開檔上限" flush>
-              <input
-                id="nofile"
-                inputMode="numeric"
+              <PresetChips
+                options={[
+                  { value: '1024', label: '1024' },
+                  { value: '4096', label: '4096' },
+                  { value: '8192', label: '8192' },
+                  { value: '65535', label: '65535' },
+                ]}
                 value={limitNofile}
-                onChange={(e) => setLimitNofile(e.target.value)}
-                placeholder="4096"
+                onChange={setLimitNofile}
+                allowCustom
+                customPlaceholder="自訂"
               />
             </Field>
             <Field label="Shell" htmlFor="shell" hint="預設 nologin" flush>
-              <select id="shell" value={shell} onChange={(e) => setShell(e.target.value)}>
-                <option value="/usr/sbin/nologin">/usr/sbin/nologin</option>
-                <option value="/bin/false">/bin/false</option>
-                <option value="/bin/bash">/bin/bash（進階・風險）</option>
-              </select>
+              <SegRadio
+                name="shell"
+                aria-label="Shell"
+                value={shell}
+                onChange={setShell}
+                options={[
+                  { value: '/usr/sbin/nologin', label: 'nologin' },
+                  { value: '/bin/false', label: 'false' },
+                  { value: '/bin/bash', label: 'bash · 風險' },
+                ]}
+              />
             </Field>
           </FormLayout>
           <div className="form-check-row u-mt-3">

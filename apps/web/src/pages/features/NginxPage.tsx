@@ -16,6 +16,7 @@ import {
   SoftwareInstallBanner,
   FormHint,
   CheckboxField,
+  SegRadio,
 } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { ResourceTable } from '../../shared/components/resource/ResourceTable';
@@ -364,15 +365,17 @@ function SiteForm(props: {
           />
         </Field>
         <Field label="站點類型" htmlFor="kd" flush required>
-          <select
-            id="kd"
+          <SegRadio
+            name="kd"
+            aria-label="站點類型"
             value={props.kind}
-            onChange={(e) => props.setKind(e.target.value as 'proxy' | 'static' | 'php')}
-          >
-            <option value="proxy">反向代理</option>
-            <option value="static">靜態檔案</option>
-            <option value="php">PHP-FPM</option>
-          </select>
+            onChange={(v) => props.setKind(v as 'proxy' | 'static' | 'php')}
+            options={[
+              { value: 'proxy', label: '反向代理' },
+              { value: 'static', label: '靜態' },
+              { value: 'php', label: 'PHP-FPM' },
+            ]}
+          />
         </Field>
         {props.kind === 'proxy' ? (
           <Field

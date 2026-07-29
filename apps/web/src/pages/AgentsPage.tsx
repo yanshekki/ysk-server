@@ -21,6 +21,7 @@ import {
   FormLayout,
   Modal,
   OpsHero,
+  SegRadio,
 } from '../shared/components/ui';
 
 function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
@@ -633,17 +634,17 @@ intervalMs: 5000`}
         <form id="agent-cmd" onSubmit={(e) => void onSendCommand(e)}>
           <FormLayout columns={1}>
             <Field label="指令類型" htmlFor="cmd-preset" flush>
-              <select
-                id="cmd-preset"
+              <SegRadio
+                name="cmd-preset"
+                aria-label="指令類型"
                 value={cmdPreset}
-                onChange={(e) =>
-                  setCmdPreset(e.target.value as 'ping' | 'echo' | 'sysinfo')
-                }
-              >
-                <option value="ping">ping — 存活探測</option>
-                <option value="echo">echo — 回顯字串</option>
-                <option value="sysinfo">sysinfo — 請節點回報摘要</option>
-              </select>
+                onChange={(v) => setCmdPreset(v as 'ping' | 'echo' | 'sysinfo')}
+                options={[
+                  { value: 'ping', label: 'ping' },
+                  { value: 'echo', label: 'echo' },
+                  { value: 'sysinfo', label: 'sysinfo' },
+                ]}
+              />
             </Field>
             {cmdPreset === 'echo' ? (
               <Field label="訊息" htmlFor="cmd-echo" flush required>

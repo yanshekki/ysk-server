@@ -25,6 +25,7 @@ import {
   FormActions,
   FormHint,
   CheckboxField,
+  SegRadio,
 } from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
@@ -620,18 +621,20 @@ export function DashboardPage() {
                       required
                       hint="決定預設 runtime 版本與部署方式"
                     >
-                      <select
-                        id="wiz-rt"
+                      <SegRadio
+                        name="wiz-rt"
+                        aria-label="執行環境"
                         value={wizRuntime}
-                        onChange={(e) => setWizRuntime(e.target.value as typeof wizRuntime)}
-                      >
-                        <option value="node">Node.js</option>
-                        <option value="php">PHP</option>
-                        <option value="python">Python</option>
-                        <option value="go">Go</option>
-                        <option value="rust">Rust</option>
-                        <option value="static">靜態網站</option>
-                      </select>
+                        onChange={(v) => setWizRuntime(v as typeof wizRuntime)}
+                        options={[
+                          { value: 'node', label: 'Node' },
+                          { value: 'php', label: 'PHP' },
+                          { value: 'python', label: 'Python' },
+                          { value: 'go', label: 'Go' },
+                          { value: 'rust', label: 'Rust' },
+                          { value: 'static', label: '靜態' },
+                        ]}
+                      />
                     </Field>
                   </FormLayout>
                   <div className="form-check-row u-mt-4">

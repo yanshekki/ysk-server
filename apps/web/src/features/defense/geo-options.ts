@@ -153,3 +153,89 @@ export function filterGeoOptions(options: GeoOption[], q: string): GeoOption[] {
       (o.hint ?? '').toLowerCase().includes(needle),
   );
 }
+
+/** Region options (country-regionKey) for free-tier province/state policy */
+export type GeoRegionOption = GeoOption & { country: string };
+
+export const GEO_REGIONS: GeoRegionOption[] = [
+  // China
+  { value: 'CN-BJ', label: '北京', country: 'CN', hint: 'Beijing' },
+  { value: 'CN-SH', label: '上海', country: 'CN', hint: 'Shanghai' },
+  { value: 'CN-TJ', label: '天津', country: 'CN', hint: 'Tianjin' },
+  { value: 'CN-CQ', label: '重慶', country: 'CN', hint: 'Chongqing' },
+  { value: 'CN-GD', label: '廣東', country: 'CN', hint: 'Guangdong' },
+  { value: 'CN-ZJ', label: '浙江', country: 'CN', hint: 'Zhejiang' },
+  { value: 'CN-JS', label: '江蘇', country: 'CN', hint: 'Jiangsu' },
+  { value: 'CN-SD', label: '山東', country: 'CN', hint: 'Shandong' },
+  { value: 'CN-HN', label: '河南', country: 'CN', hint: 'Henan' },
+  { value: 'CN-HB', label: '湖北', country: 'CN', hint: 'Hubei' },
+  { value: 'CN-HU', label: '湖南', country: 'CN', hint: 'Hunan' },
+  { value: 'CN-SC', label: '四川', country: 'CN', hint: 'Sichuan' },
+  { value: 'CN-HE', label: '河北', country: 'CN', hint: 'Hebei' },
+  { value: 'CN-FJ', label: '福建', country: 'CN', hint: 'Fujian' },
+  { value: 'CN-AH', label: '安徽', country: 'CN', hint: 'Anhui' },
+  { value: 'CN-JX', label: '江西', country: 'CN', hint: 'Jiangxi' },
+  { value: 'CN-LN', label: '遼寧', country: 'CN', hint: 'Liaoning' },
+  { value: 'CN-JL', label: '吉林', country: 'CN', hint: 'Jilin' },
+  { value: 'CN-HL', label: '黑龍江', country: 'CN', hint: 'Heilongjiang' },
+  { value: 'CN-SX', label: '山西', country: 'CN', hint: 'Shanxi' },
+  { value: 'CN-SN', label: '陝西', country: 'CN', hint: 'Shaanxi' },
+  { value: 'CN-GS', label: '甘肅', country: 'CN', hint: 'Gansu' },
+  { value: 'CN-QH', label: '青海', country: 'CN', hint: 'Qinghai' },
+  { value: 'CN-HA', label: '海南', country: 'CN', hint: 'Hainan' },
+  { value: 'CN-YN', label: '雲南', country: 'CN', hint: 'Yunnan' },
+  { value: 'CN-GZ', label: '貴州', country: 'CN', hint: 'Guizhou' },
+  { value: 'CN-GX', label: '廣西', country: 'CN', hint: 'Guangxi' },
+  { value: 'CN-NX', label: '寧夏', country: 'CN', hint: 'Ningxia' },
+  { value: 'CN-XJ', label: '新疆', country: 'CN', hint: 'Xinjiang' },
+  { value: 'CN-XZ', label: '西藏', country: 'CN', hint: 'Tibet' },
+  { value: 'CN-NM', label: '內蒙古', country: 'CN', hint: 'Inner Mongolia' },
+  // Taiwan / HK / MO as regions under own country codes often
+  { value: 'TW-TPE', label: '台北', country: 'TW', hint: 'Taipei' },
+  { value: 'TW-TXG', label: '台中', country: 'TW', hint: 'Taichung' },
+  { value: 'TW-KHH', label: '高雄', country: 'TW', hint: 'Kaohsiung' },
+  { value: 'HK-HK', label: '香港', country: 'HK', hint: 'Hong Kong' },
+  { value: 'MO-MO', label: '澳門', country: 'MO', hint: 'Macao' },
+  // US states (subset + common)
+  { value: 'US-CA', label: 'California', country: 'US', hint: 'CA' },
+  { value: 'US-NY', label: 'New York', country: 'US', hint: 'NY' },
+  { value: 'US-TX', label: 'Texas', country: 'US', hint: 'TX' },
+  { value: 'US-FL', label: 'Florida', country: 'US', hint: 'FL' },
+  { value: 'US-WA', label: 'Washington', country: 'US', hint: 'WA' },
+  { value: 'US-IL', label: 'Illinois', country: 'US', hint: 'IL' },
+  { value: 'US-VA', label: 'Virginia', country: 'US', hint: 'VA' },
+  { value: 'US-OR', label: 'Oregon', country: 'US', hint: 'OR' },
+  { value: 'US-GA', label: 'Georgia', country: 'US', hint: 'GA' },
+  { value: 'US-NJ', label: 'New Jersey', country: 'US', hint: 'NJ' },
+  { value: 'US-MA', label: 'Massachusetts', country: 'US', hint: 'MA' },
+  { value: 'US-OH', label: 'Ohio', country: 'US', hint: 'OH' },
+  { value: 'US-PA', label: 'Pennsylvania', country: 'US', hint: 'PA' },
+  { value: 'US-AZ', label: 'Arizona', country: 'US', hint: 'AZ' },
+  { value: 'US-CO', label: 'Colorado', country: 'US', hint: 'CO' },
+  { value: 'US-NC', label: 'North Carolina', country: 'US', hint: 'NC' },
+  { value: 'US-MI', label: 'Michigan', country: 'US', hint: 'MI' },
+  { value: 'US-NV', label: 'Nevada', country: 'US', hint: 'NV' },
+  // JP
+  { value: 'JP-13', label: '東京', country: 'JP', hint: 'Tokyo' },
+  { value: 'JP-27', label: '大阪', country: 'JP', hint: 'Osaka' },
+  { value: 'JP-14', label: '神奈川', country: 'JP', hint: 'Kanagawa' },
+  { value: 'JP-23', label: '愛知', country: 'JP', hint: 'Aichi' },
+  // KR
+  { value: 'KR-11', label: '首爾', country: 'KR', hint: 'Seoul' },
+  { value: 'KR-26', label: '釜山', country: 'KR', hint: 'Busan' },
+  // SG / AU / GB / DE / RU sample
+  { value: 'SG-01', label: 'Singapore', country: 'SG', hint: 'SG' },
+  { value: 'AU-NSW', label: 'New South Wales', country: 'AU', hint: 'NSW' },
+  { value: 'AU-VIC', label: 'Victoria', country: 'AU', hint: 'VIC' },
+  { value: 'GB-ENG', label: 'England', country: 'GB', hint: 'ENG' },
+  { value: 'DE-BE', label: 'Berlin', country: 'DE', hint: 'BE' },
+  { value: 'DE-BY', label: 'Bayern', country: 'DE', hint: 'BY' },
+  { value: 'RU-MOW', label: 'Moscow', country: 'RU', hint: 'MOW' },
+  { value: 'RU-SPE', label: 'St Petersburg', country: 'RU', hint: 'SPE' },
+];
+
+export function regionsForCountries(countries: string[]): GeoRegionOption[] {
+  if (!countries.length) return GEO_REGIONS;
+  const set = new Set(countries.map((c) => c.toUpperCase()));
+  return GEO_REGIONS.filter((r) => set.has(r.country));
+}

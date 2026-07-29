@@ -15,6 +15,8 @@ import {
   FormHint,
   FormLayout,
   OpsResultPanel,
+  PresetChips,
+  SegRadio,
   SoftwareInstallBanner,
   Tabs,
 } from '../../shared/components/ui';
@@ -74,7 +76,8 @@ export function FirewallPage() {
   const [extraPorts, setExtraPorts] = useState('21,30000:30100');
   const [allowSmtp, setAllowSmtp] = useState(false);
   const [denyIp, setDenyIp] = useState('');
-  const [portInput, setPortInput] = useState('');
+  const [portInput, setPortInput] = useState('8080');
+  const [portProto, setPortProto] = useState<'tcp' | 'udp'>('tcp');
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -313,13 +316,44 @@ export function FirewallPage() {
                 <h3 className="def-section-head__title">允許埠</h3>
               </div>
               <FormLayout columns={2}>
-                <Field label="TCP 埠" htmlFor="fw-port" flush hint="例如 8080">
-                  <input
-                    id="fw-port"
+                <Field label="協議" htmlFor="fw-proto" flush>
+                  <SegRadio
+                    name="fw-proto"
+                    aria-label="協議"
+                    value={portProto}
+                    onChange={setPortProto}
+                    options={[
+                      { value: 'tcp', label: 'TCP' },
+                      { value: 'udp', label: 'UDP' },
+                    ]}
+                    disabled={busy}
+                  />
+                </Field>
+                <Field
+                  label="埠"
+                  htmlFor="fw-port"
+                  flush
+                  hint="揀常用埠，或下面自訂"
+                >
+                  <PresetChips
+                    options={[
+                      { value: '22', label: '22 SSH' },
+                      { value: '80', label: '80 HTTP' },
+                      { value: '443', label: '443 HTTPS' },
+                      { value: '21', label: '21 FTP' },
+                      { value: '25', label: '25 SMTP' },
+                      { value: '587', label: '587' },
+                      { value: '993', label: '993 IMAPS' },
+                      { value: '3306', label: '3306 MySQL' },
+                      { value: '5432', label: '5432 PG' },
+                      { value: '6379', label: '6379 Redis' },
+                      { value: '8080', label: '8080' },
+                    ]}
                     value={portInput}
-                    onChange={(e) => setPortInput(e.target.value)}
-                    placeholder="8080"
-                    inputMode="numeric"
+                    onChange={setPortInput}
+                    allowCustom
+                    customPlaceholder="自訂埠號"
+                    disabled={busy}
                   />
                 </Field>
               </FormLayout>
@@ -328,21 +362,23 @@ export function FirewallPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  disabled={!portInput.trim()}
+                  disabled={!portInput.trim() || !Number(portInput)}
                   onClick={() =>
                     void run(async () => {
                       const n = Number(portInput);
-                      const r = (await systemApi.firewallAllowPort(n, 'tcp')) as OpsResultLike;
-                      setPortInput('');
+                      const r = (await systemApi.firewallAllowPort(
+                        n,
+                        portProto,
+                      )) as OpsResultLike;
                       await refresh();
                       return r;
-                    }, '已允許埠')
+                    }, `已允許 ${portProto.toUpperCase()}/${portInput}`)
                   }
                 >
                   允許此埠
                 </Button>
               </FormActions>
-              <FormHint>預設 Web 主機應保留 22／80／443；勿隨便 allow 0.0.0.0 全部。</FormHint>
+              <FormHint>預設 Web 主機應保留 22／80／443；勿隨便 allow 全部。</FormHint>
             </div>
           </div>
         ) : null}
@@ -451,18 +487,29 @@ export function FirewallPage() {
                 />
                 <span>允許 SMTP／IMAP 埠</span>
               </label>
-              <FormLayout columns={2}>
+              <FormLayout columns={1}>
                 <Field
                   label="額外 TCP 埠"
                   htmlFor="fw-extra"
                   flush
-                  hint="逗號分隔；可用 30000:30100（最多 40）"
+                  hint="點選預設組合；可再自訂逗號／範圍"
                 >
-                  <input
-                    id="fw-extra"
+                  <PresetChips
+                    options={[
+                      { value: '', label: '無額外' },
+                      { value: '21', label: '21 FTP' },
+                      { value: '21,30000:30100', label: 'FTPS+PASV' },
+                      { value: '25,465,587,993', label: '郵件組' },
+                      { value: '3306', label: 'MySQL' },
+                      { value: '5432', label: 'Postgres' },
+                      { value: '6379', label: 'Redis' },
+                      { value: '8080,8443', label: 'Alt HTTP' },
+                    ]}
                     value={extraPorts}
-                    onChange={(e) => setExtraPorts(e.target.value)}
-                    spellCheck={false}
+                    onChange={setExtraPorts}
+                    allowCustom
+                    customPlaceholder="自訂：8080,9000:9010"
+                    disabled={busy}
                   />
                 </Field>
               </FormLayout>

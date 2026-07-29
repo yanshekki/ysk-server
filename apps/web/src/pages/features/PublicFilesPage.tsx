@@ -15,6 +15,7 @@ import {
   FormLayout,
   OpsHero,
   OpsResultPanel,
+  PresetChips,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
@@ -112,12 +113,19 @@ export function PublicFilesPage() {
               flush
               hint="可選；限制公開目錄總量"
             >
-              <input
-                id="pf-q"
+              <PresetChips
+                options={[
+                  { value: '', label: '不限' },
+                  { value: '512', label: '512' },
+                  { value: '1024', label: '1G' },
+                  { value: '5120', label: '5G' },
+                  { value: '10240', label: '10G' },
+                  { value: '51200', label: '50G' },
+                ]}
                 value={quotaMb}
-                onChange={(e) => setQuotaMb(e.target.value)}
-                inputMode="numeric"
-                placeholder="1024"
+                onChange={setQuotaMb}
+                allowCustom
+                customPlaceholder="MiB"
               />
             </Field>
           </FormLayout>

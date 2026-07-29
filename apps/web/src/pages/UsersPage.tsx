@@ -13,6 +13,8 @@ import {
   Tabs,
   LoadingBlock,
   Modal,
+  PresetChips,
+  SegRadio,
 } from '../shared/components/ui';
 import { api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
@@ -566,15 +568,17 @@ export function UsersPage() {
               />
             </Field>
             <Field label="角色" htmlFor="u-role" flush>
-              <select
-                id="u-role"
+              <SegRadio
+                name="u-role"
+                aria-label="用戶角色"
                 value={role}
-                onChange={(e) => setRole(e.target.value as typeof role)}
-              >
-                <option value="operator">operator</option>
-                <option value="viewer">viewer</option>
-                <option value="admin">admin</option>
-              </select>
+                onChange={(v) => setRole(v as typeof role)}
+                options={[
+                  { value: 'operator', label: 'operator' },
+                  { value: 'viewer', label: 'viewer' },
+                  { value: 'admin', label: 'admin' },
+                ]}
+              />
             </Field>
             <Field label="方案" htmlFor="u-pkg" flush>
               <select
@@ -631,19 +635,34 @@ export function UsersPage() {
               />
             </Field>
             <Field label="最大專案數" htmlFor="p-proj" flush>
-              <input
-                id="p-proj"
+              <PresetChips
+                options={[
+                  { value: '1', label: '1' },
+                  { value: '3', label: '3' },
+                  { value: '5', label: '5' },
+                  { value: '10', label: '10' },
+                  { value: '20', label: '20' },
+                  { value: '50', label: '50' },
+                ]}
                 value={pkgProjects}
-                onChange={(e) => setPkgProjects(e.target.value)}
-                inputMode="numeric"
+                onChange={setPkgProjects}
+                allowCustom
+                customPlaceholder="自訂"
               />
             </Field>
             <Field label="磁碟 MiB" htmlFor="p-disk" flush>
-              <input
-                id="p-disk"
+              <PresetChips
+                options={[
+                  { value: '1024', label: '1G' },
+                  { value: '5120', label: '5G' },
+                  { value: '10240', label: '10G' },
+                  { value: '20480', label: '20G' },
+                  { value: '51200', label: '50G' },
+                ]}
                 value={pkgDisk}
-                onChange={(e) => setPkgDisk(e.target.value)}
-                inputMode="numeric"
+                onChange={setPkgDisk}
+                allowCustom
+                customPlaceholder="MiB"
               />
             </Field>
           </FormLayout>

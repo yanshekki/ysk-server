@@ -14,6 +14,7 @@ import {
   FormHint,
   FormLayout,
   OpsResultPanel,
+  SegRadio,
   SoftwareInstallBanner,
   SummaryStrip,
 } from '../../shared/components/ui';
@@ -122,11 +123,17 @@ export function NodeRuntimePage() {
               required
               hint="LTS 建議 20 或 22；與專案 runtime 對齊"
             >
-              <select id="node-ver" value={version} onChange={(e) => setVersion(e.target.value)}>
-                <option value="18">18</option>
-                <option value="20">20 LTS</option>
-                <option value="22">22</option>
-              </select>
+              <SegRadio
+                name="node-ver"
+                aria-label="Node 主版本"
+                value={version}
+                onChange={setVersion}
+                options={[
+                  { value: '18', label: '18' },
+                  { value: '20', label: '20 LTS' },
+                  { value: '22', label: '22' },
+                ]}
+              />
             </Field>
           </FormLayout>
           {hasNode ? (

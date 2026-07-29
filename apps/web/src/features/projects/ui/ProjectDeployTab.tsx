@@ -15,6 +15,8 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  PresetChips,
+  SegRadio,
 } from '../../../shared/components/ui';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
 import {
@@ -363,20 +365,33 @@ export function ProjectDeployTab({
                   hint="本站使用的 PHP 版本（需主機已安裝對應 FPM）"
                   flush
                 >
-                  <select
-                    id="php-ver"
-                    value={phpVer}
-                    onChange={(e) => {
-                      setPhpVer(e.target.value);
-                      onPhpVersionChange?.(e.target.value);
-                    }}
-                  >
-                    {versionChoices.map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
+                  {versionChoices.length <= 8 ? (
+                    <SegRadio
+                      name="php-ver"
+                      aria-label="PHP 版本"
+                      value={phpVer}
+                      onChange={(v) => {
+                        setPhpVer(v);
+                        onPhpVersionChange?.(v);
+                      }}
+                      options={versionChoices.map((v) => ({ value: v, label: v }))}
+                    />
+                  ) : (
+                    <select
+                      id="php-ver"
+                      value={phpVer}
+                      onChange={(e) => {
+                        setPhpVer(e.target.value);
+                        onPhpVersionChange?.(e.target.value);
+                      }}
+                    >
+                      {versionChoices.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </Field>
               ) : versionChoices.length > 0 ? (
                 <Field
@@ -389,20 +404,32 @@ export function ProjectDeployTab({
                   }
                   flush
                 >
-                  <select
-                    id="rt-ver"
-                    value={rtVer}
-                    disabled={verBusy || anyBusy}
-                    onChange={(e) => {
-                      void saveRuntimeVersion(e.target.value);
-                    }}
-                  >
-                    {versionChoices.map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
+                  {versionChoices.length <= 8 ? (
+                    <SegRadio
+                      name="rt-ver"
+                      aria-label={`${runtimeLabel} 版本`}
+                      value={rtVer}
+                      onChange={(v) => {
+                        if (!(verBusy || anyBusy)) void saveRuntimeVersion(v);
+                      }}
+                      options={versionChoices.map((v) => ({ value: v, label: v }))}
+                    />
+                  ) : (
+                    <select
+                      id="rt-ver"
+                      value={rtVer}
+                      disabled={verBusy || anyBusy}
+                      onChange={(e) => {
+                        void saveRuntimeVersion(e.target.value);
+                      }}
+                    >
+                      {versionChoices.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </Field>
               ) : (
                 <Field label="Runtime 版本" htmlFor="rt-ver-ro" flush>
@@ -569,45 +596,62 @@ export function ProjectDeployTab({
           >
             <FormLayout columns={2}>
               <Field label="memory_limit" htmlFor="pini-mem" flush hint="例如 256M；留空用全域">
-                <input
-                  id="pini-mem"
+                <PresetChips
+                  options={[
+                    { value: '', label: '全域' },
+                    { value: '128M', label: '128M' },
+                    { value: '256M', label: '256M' },
+                    { value: '512M', label: '512M' },
+                    { value: '1G', label: '1G' },
+                  ]}
                   value={phpIniMem}
-                  onChange={(e) => setPhpIniMem(e.target.value)}
-                  placeholder="（全域）"
-                  spellCheck={false}
+                  onChange={setPhpIniMem}
+                  allowCustom
+                  customPlaceholder="自訂"
                 />
               </Field>
               <Field label="max_execution_time" htmlFor="pini-exec" flush>
-                <input
-                  id="pini-exec"
+                <PresetChips
+                  options={[
+                    { value: '', label: '全域' },
+                    { value: '30', label: '30' },
+                    { value: '60', label: '60' },
+                    { value: '120', label: '120' },
+                    { value: '300', label: '300' },
+                  ]}
                   value={phpIniExec}
-                  onChange={(e) => setPhpIniExec(e.target.value)}
-                  placeholder="（全域）"
-                  spellCheck={false}
+                  onChange={setPhpIniExec}
+                  allowCustom
+                  customPlaceholder="自訂"
                 />
               </Field>
               <Field label="upload_max_filesize" htmlFor="pini-up" flush>
-                <input
-                  id="pini-up"
+                <PresetChips
+                  options={[
+                    { value: '', label: '全域' },
+                    { value: '32M', label: '32M' },
+                    { value: '64M', label: '64M' },
+                    { value: '128M', label: '128M' },
+                    { value: '256M', label: '256M' },
+                  ]}
                   value={phpIniUpload}
-                  onChange={(e) => setPhpIniUpload(e.target.value)}
-                  placeholder="（全域）"
-                  spellCheck={false}
+                  onChange={setPhpIniUpload}
+                  allowCustom
+                  customPlaceholder="自訂"
                 />
               </Field>
               <Field label="display_errors" htmlFor="pini-disp" flush>
-                <select
-                  id="pini-disp"
+                <SegRadio
+                  name="pini-disp"
+                  aria-label="display_errors"
                   value={phpIniDisplay === null ? '' : phpIniDisplay ? '1' : '0'}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setPhpIniDisplay(v === '' ? null : v === '1');
-                  }}
-                >
-                  <option value="">（全域）</option>
-                  <option value="0">關閉</option>
-                  <option value="1">開啟（勿用於生產）</option>
-                </select>
+                  onChange={(v) => setPhpIniDisplay(v === '' ? null : v === '1')}
+                  options={[
+                    { value: '', label: '全域' },
+                    { value: '0', label: '關' },
+                    { value: '1', label: '開 · 慎' },
+                  ]}
+                />
               </Field>
             </FormLayout>
             <FormHint>

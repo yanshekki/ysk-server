@@ -32,7 +32,8 @@ export function MultiCheckSelect({
   customPlaceholder = '自訂代碼',
   searchPlaceholder = '搜尋…',
   emptyText = '無符合項目',
-  maxVisible = 12,
+  /** Only truncate when option count exceeds this (default 100). */
+  maxVisible = 100,
   disabled = false,
 }: MultiCheckSelectProps) {
   const [q, setQ] = useState('');
@@ -70,7 +71,9 @@ export function MultiCheckSelect({
     setCustom('');
   }
 
-  const shown = filtered.slice(0, maxVisible);
+  // Few options → show all; only cap when over maxVisible (default 100)
+  const shouldCap = filtered.length > maxVisible;
+  const shown = shouldCap ? filtered.slice(0, maxVisible) : filtered;
 
   return (
     <div className="mcs" id={id}>
@@ -137,9 +140,9 @@ export function MultiCheckSelect({
             );
           })
         )}
-        {filtered.length > maxVisible ? (
+        {shouldCap ? (
           <p className="mcs__more muted u-text-sm">
-            仲有 {filtered.length - maxVisible} 項 — 用搜尋收窄
+            顯示前 {maxVisible}／共 {filtered.length} 項 — 用搜尋收窄
           </p>
         ) : null}
       </div>

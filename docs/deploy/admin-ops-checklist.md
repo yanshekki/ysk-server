@@ -86,3 +86,8 @@ online   — 埠聽緊、HTTP 200、郵件可投
 - [project-isolation.md](./project-isolation.md)  
 - [backup.md](./backup.md)  
 - [runtime-tuning.md](./runtime-tuning.md)  
+
+## Selection-first 表單
+- 可枚舉用 radio/checkbox/select；禁止無必要手打
+- 密碼／域名／IP／指令／PEM 才用 text
+

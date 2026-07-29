@@ -16,6 +16,8 @@ export interface FieldProps {
 
 /**
  * Standard form field — label above control, full width inside FormLayout.
+ * Selection-first: prefer radio / checkbox / select / MultiCheckSelect / SegRadio
+ * for closed option sets; use text only for free-form values (password, domain, IP, PEM…).
  */
 export function Field({
   label,
