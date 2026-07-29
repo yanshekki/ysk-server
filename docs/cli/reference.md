@@ -135,19 +135,38 @@ ysk-server hosting nginx-sync [--system-dir PATH] [--dry-run]
 ysk-server hosting redis-provision [--project-id ID] [--db N] [--execute]
 ysk-server hosting postgres-provision --db NAME --user USER --password PASS [--execute]
 ysk-server hosting mysql-provision --db NAME --user USER --password PASS [--execute]
-ysk-server hosting dns-zone --zone example.com --ip 203.0.113.10 [--validate]
+ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]
 ysk-server hosting dns-zones
 ysk-server hosting powerdns-status
 ysk-server hosting powerdns-install [--install]
-ysk-server hosting powerdns-load --zone example.com --ip 203.0.113.10 [--load]
+ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load]
 ysk-server hosting email-apply --domain example.com [--install]
-ysk-server hosting email-mailbox --domain example.com --local info [--password P] [--system]
+ysk-server hosting email-mailbox --domain example.com --local info [--password P] [--ip A.B.C.D] [--system]
 ysk-server hosting ftps-apply --domain files.example.com [--install]
 ysk-server hosting runtimes
 ysk-server hosting runtime-install --kind node --version 20
 ysk-server hosting dovecot-passdb --domain example.com
 ysk-server hosting webmail-apply --domain webmail.example.com
 ysk-server hosting firewall-apply [--smtp] [--apply]
+```
+
+`--zone` / `--ip` are **required** (no TEST-NET / example.com defaults). Optional `--ipv6` writes dual-stack AAAA.
+
+### dns (AI alias)
+
+```bash
+ysk-server dns zones [--json]
+ysk-server dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload] [--json]
+```
+
+### logs
+
+```bash
+ysk-server logs sources [--json]
+ysk-server logs overview [--json]
+ysk-server logs units [--json]
+ysk-server logs journal [--unit nginx.service] [--lines N] [--grep G] [--since 1h] [--priority err]
+ysk-server logs query --source journal:|file:…|project:<uuid> [--lines N] [--grep G] [--since 1h]
 ```
 
 `--execute` still requires `YSK_EXECUTE=1` and the matching client (`redis-cli` / `psql` / `mysql`). Without it, commands return structured failure + plan (never fake success).

@@ -151,7 +151,8 @@ ysk-server projects deploy --id <uuid> --data-dir .ysk
 ysk-server projects backup --id <uuid> --data-dir .ysk
 ysk-server hosting redis-provision --db 1
 ysk-server hosting postgres-provision --db app --user appuser --password longpass99
-ysk-server hosting dns-zone --zone example.com --ip 203.0.113.10
+ysk-server dns zone --zone example.com --ip YOUR.PUBLIC.IP [--ipv6 …]
+ysk-server logs query --source journal: --lines 50 --json
 ysk-server hosting email-apply --domain example.com
 ysk-server agents --probe
 ysk-server readiness --json

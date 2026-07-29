@@ -19,12 +19,13 @@
 2. **禁止** 把 LLM 原文當 shell 執行
 3. 改系統要 `YSK_EXECUTE=1`（+ 多數情況 root）；否則結果係 `blocked`，唔係假成功
 4. 高風險 tool：先 dry-run / 等人批（`ysk-server tools` / API approval）
-5. Exit code：
+5. Exit code（嚴格）：
    - `0` ok  
    - `1` 一般失敗  
-   - `2` 參數／validation  
-   - `3` blocked（無權限／無 EXECUTE）  
+   - `2` 參數／validation（缺 flag、zone 名無效）  
+   - `3` blocked（無權限／無 EXECUTE／allowlist）  
    - `4` not found  
+   - `5` host command 失敗
 
 ---
 
@@ -45,6 +46,17 @@ ysk-server defense status --json
 ysk-server defense whitelist --action list --json
 # ban 需 EXECUTE： ysk-server defense ban --ip 1.2.3.4 --json
 
+# DNS zone（寫管理檔；--validate/--reload 需 EXECUTE）
+ysk-server dns zones --json
+ysk-server dns zone --zone example.com --ip YOUR.PUBLIC.IP [--ipv6 2001:db8::1] --json
+# 等同：ysk-server hosting dns-zone --zone … --ip …
+
+# Logs（journal / 白名單 path / 專案 log）
+ysk-server logs sources --json
+ysk-server logs query --source journal: --lines 100 --grep error --json
+ysk-server logs journal --unit nginx.service --lines 50 --json
+ysk-server logs overview --json
+
 # 工具（allowlist）
 ysk-server tools --json
 ysk-server tools run --tool sys.info --dry-run --json
@@ -61,9 +73,10 @@ ysk-server ask "check system info" --json
 | 能 | 唔能 |
 |----|------|
 | list / create / deploy 專案 | 任意 `rm -rf` / 無白名單 shell |
-| readiness、hosting helpers | 假裝 applied（無 EXECUTE 時） |
+| readiness、hosting / dns / logs | 假裝 applied（無 EXECUTE 時） |
 | tools dry-run + 審批流 | 繞過 allowlist |
 | 讀狀態、寫管理檔（panel） | 當 root 萬能 |
+| 查 journal／log 來源 | 讀任意 path（只限 catalog allowlist） |
 
 ---
 

@@ -3,7 +3,13 @@
  * YSK Server CLI — AI-agent friendly structured output.
  */
 
-import { CLI_NAME, PRODUCT_NAME, type StructuredResult } from '@ysk/shared';
+import {
+  CLI_NAME,
+  PRODUCT_NAME,
+  ErrorCodes,
+  YskError,
+  type StructuredResult,
+} from '@ysk/shared';
 import {
   createDefaultAllowlist,
   installControlPlaneSystemd,
@@ -36,6 +42,8 @@ const CLI_COMMANDS = [
   'backup',
   'templates',
   'hosting',
+  'dns',
+  'logs',
   'services',
   'defense',
   'protection',
@@ -47,17 +55,92 @@ const CLI_COMMANDS = [
   'help',
 ] as const;
 
-/** Map process failure shape → CLI exit code */
+/**
+ * Map structured result → CLI exit code.
+ * Contract: 0 ok · 1 error · 2 validation · 3 blocked · 4 not_found · 5 host_error
+ */
 function exitFromResult(r: {
   ok?: boolean;
   blocked?: boolean;
   code?: string;
   status?: string;
+  requiresExecute?: boolean;
+  requiresRoot?: boolean;
+  allowed?: boolean;
+  applyStatus?: string;
 }): number {
   if (r.blocked) return 3;
-  if (r.ok === false) return 1;
-  if (r.status && ['failed', 'error'].includes(r.status)) return 1;
+  const code = r.code ?? '';
+  if (
+    code === ErrorCodes.VALIDATION ||
+    code === ErrorCodes.CONFIG_INVALID ||
+    code === 'YSK_VALIDATION' ||
+    code === 'validation'
+  ) {
+    return 2;
+  }
+  if (code === ErrorCodes.NOT_FOUND || code === 'YSK_NOT_FOUND' || code === 'not_found') {
+    return 4;
+  }
+  if (
+    code === ErrorCodes.FORBIDDEN ||
+    code === ErrorCodes.ALLOWLIST_DENIED ||
+    code === ErrorCodes.APPROVAL_REQUIRED ||
+    code === ErrorCodes.UNAUTHORIZED ||
+    code === 'blocked'
+  ) {
+    return 3;
+  }
+  if (code === 'host_error' || code === 'YSK_HOST_ERROR') return 5;
+  if (r.allowed === false) return 3;
+  if (r.ok === false) {
+    // Honest “written only / needs EXECUTE” is still success for file write paths
+    if (r.applyStatus === 'written' && r.requiresExecute) return 0;
+    return 1;
+  }
+  if (r.status && ['failed', 'error'].includes(String(r.status))) return 1;
+  if (r.applyStatus === 'failed') return 1;
   return 0;
+}
+
+/** Map thrown YskError → exit code */
+function exitFromError(err: unknown): number {
+  if (err instanceof YskError) {
+    if (err.code === ErrorCodes.VALIDATION || err.code === ErrorCodes.CONFIG_INVALID) return 2;
+    if (err.code === ErrorCodes.NOT_FOUND) return 4;
+    if (
+      err.code === ErrorCodes.FORBIDDEN ||
+      err.code === ErrorCodes.ALLOWLIST_DENIED ||
+      err.code === ErrorCodes.APPROVAL_REQUIRED ||
+      err.code === ErrorCodes.UNAUTHORIZED ||
+      err.code === ErrorCodes.SANDBOX_VIOLATION
+    ) {
+      return 3;
+    }
+    return 1;
+  }
+  return 1;
+}
+
+function printCliError(err: unknown, json: boolean): number {
+  if (err instanceof YskError) {
+    if (json) {
+      printJson({
+        ok: false,
+        code: err.code,
+        message: err.message,
+        details: err.details ?? null,
+        httpStatus: err.httpStatus,
+      });
+    } else {
+      process.stderr.write(`${err.code}: ${err.message}\n`);
+    }
+    return exitFromError(err);
+  }
+  const msg = err instanceof Error ? err.message : String(err);
+  if (json) printJson({ ok: false, code: ErrorCodes.INTERNAL, message: msg });
+  else process.stderr.write(`${msg}\n`);
+  return 1;
 }
 
 function openCliContext(args: string[]) {
@@ -97,6 +180,8 @@ Commands:
   backup all            Backup all project homes
   templates             App templates
   hosting               nginx|dns|db|firewall helpers
+  dns                   zone|zones (AI alias → hosting dns-*)
+  logs                  sources|query|journal|overview
   services              Host service matrix (systemctl probe)
   defense | protection  status|ban|unban|whitelist
   agents                List/probe agent runtimes (experimental)
@@ -116,6 +201,8 @@ Examples:
   ${CLI_NAME} readiness --json
   ${CLI_NAME} projects list --json
   ${CLI_NAME} projects create --name demo --runtime node --json
+  ${CLI_NAME} logs query --source journal: --lines 100 --json
+  ${CLI_NAME} dns zone --zone example.com --ip 203.0.113.10 --json
   ${CLI_NAME} tools --json
 `.trim();
   process.stdout.write(`${text}\n`);
@@ -260,7 +347,12 @@ async function main(argv: string[]): Promise<number> {
           },
         );
         printJson(result);
-        return result.allowed ? 0 : 1;
+        return exitFromResult({
+          ok: result.allowed,
+          blocked: !result.allowed,
+          code: result.allowed ? undefined : 'blocked',
+          allowed: result.allowed,
+        });
       } finally {
         closeAppContext(ctx);
       }
@@ -311,7 +403,7 @@ async function main(argv: string[]): Promise<number> {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'run';
     if (sub !== 'run') {
       process.stderr.write('Usage: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n');
-      return 1;
+      return 2;
     }
     const controlPlane = getOpt(args, '--control-plane') ?? 'http://127.0.0.1:9287';
     const agentId = getOpt(args, '--id') ?? `agent-${process.pid}`;
@@ -377,7 +469,7 @@ async function main(argv: string[]): Promise<number> {
     const prompt = args.filter((a) => !a.startsWith('-')).slice(1).join(' ');
     if (!prompt) {
       process.stderr.write('Usage: ysk-server ask "check system info"\n');
-      return 1;
+      return 2;
     }
     const configPath = getOpt(args, '--config');
     const config = configPath ? loadConfigFile(configPath) : undefined;
@@ -408,7 +500,7 @@ async function main(argv: string[]): Promise<number> {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'all';
     if (sub !== 'all') {
       process.stderr.write('Usage: ysk-server backup all [--data-dir <path>] [--config <path>]\n');
-      return 1;
+      return 2;
     }
     const configPath = getOpt(args, '--config');
     const dataDir = getOpt(args, '--data-dir');
@@ -488,7 +580,7 @@ async function main(argv: string[]): Promise<number> {
           process.stderr.write(
             'Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n',
           );
-          return 1;
+          return 2;
         }
         const runtimeRaw = getOpt(args, '--runtime') ?? 'node';
         const runtime =
@@ -516,7 +608,7 @@ async function main(argv: string[]): Promise<number> {
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write('Usage: ysk-server projects deploy --id <projectId>\n');
-          return 1;
+          return 2;
         }
         const proj = ctx.projects.get(id);
         const result =
@@ -537,26 +629,27 @@ async function main(argv: string[]): Promise<number> {
                 ? await ctx.projectOps.deployProcess(id, { actor: 'cli' })
                 : await ctx.projectOps.deployNode(id, { actor: 'cli' });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'stop') {
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write('Usage: ysk-server projects stop --id <projectId>\n');
-          return 1;
+          return 2;
         }
-        printJson(await ctx.projectOps.stopNode(id, 'cli'));
-        return 0;
+        const result = await ctx.projectOps.stopNode(id, 'cli');
+        printJson(result);
+        return exitFromResult(result);
       }
       if (sub === 'backup') {
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write('Usage: ysk-server projects backup --id <projectId>\n');
-          return 1;
+          return 2;
         }
         const result = await ctx.projectOps.backup(id, 'cli');
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'template') {
         const id = getOpt(args, '--id');
@@ -565,7 +658,7 @@ async function main(argv: string[]): Promise<number> {
           process.stderr.write(
             'Usage: ysk-server projects template --id <projectId> --template <id> [--force]\n',
           );
-          return 1;
+          return 2;
         }
         printJson(ctx.projects.applyTemplate(id, templateId, 'cli', hasFlag(args, '--force')));
         return 0;
@@ -574,16 +667,16 @@ async function main(argv: string[]): Promise<number> {
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write('Usage: ysk-server projects health --id <projectId>\n');
-          return 1;
+          return 2;
         }
         const result = await ctx.projectOps.health(id);
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       process.stderr.write(
         'Usage: ysk-server projects list|create|deploy|stop|backup|template|health [options]\n',
       );
-      return 1;
+      return 2;
     } finally {
       closeAppContext(ctx);
     }
@@ -642,7 +735,7 @@ async function main(argv: string[]): Promise<number> {
           execute: hasFlag(args, '--execute'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'postgres-provision') {
         const result = await provisionPostgresDatabase({
@@ -653,7 +746,7 @@ async function main(argv: string[]): Promise<number> {
           execute: hasFlag(args, '--execute'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'mysql-provision') {
         const result = await provisionMysqlDatabase({
@@ -664,21 +757,33 @@ async function main(argv: string[]): Promise<number> {
           execute: hasFlag(args, '--execute'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'dns-zone') {
+        const zone = getOpt(args, '--zone');
+        const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
+        if (!zone || !serverIp) {
+          process.stderr.write(
+            'Usage: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n',
+          );
+          return 2;
+        }
         const result = await writeManagedDnsZone({
           dataDir: ctx.dataDir,
-          zone: getOpt(args, '--zone') ?? 'example.com',
-          serverIp: getOpt(args, '--ip') ?? '203.0.113.10',
+          zone,
+          serverIp,
+          serverIpv6: getOpt(args, '--ipv6') ?? getOpt(args, '--server-ipv6'),
+          mailHost: getOpt(args, '--mail'),
           host: ctx.host,
           validate: hasFlag(args, '--validate'),
+          tryReload: hasFlag(args, '--reload'),
+          template: getOpt(args, '--template'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'dns-zones') {
-        printJson({ items: listManagedDnsZones(ctx.dataDir) });
+        printJson({ ok: true, items: listManagedDnsZones(ctx.dataDir) });
         return 0;
       }
       if (sub === 'powerdns-status') {
@@ -692,43 +797,64 @@ async function main(argv: string[]): Promise<number> {
           install: hasFlag(args, '--install'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'powerdns-load') {
+        const zone = getOpt(args, '--zone');
+        const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
+        if (!zone || !serverIp) {
+          process.stderr.write(
+            'Usage: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load]\n',
+          );
+          return 2;
+        }
         const result = await applyPowerDnsZone({
           dataDir: ctx.dataDir,
           host: ctx.host,
-          zone: getOpt(args, '--zone') ?? 'example.com',
-          serverIp: getOpt(args, '--ip') ?? '203.0.113.10',
+          zone,
+          serverIp,
+          serverIpv6: getOpt(args, '--ipv6') ?? getOpt(args, '--server-ipv6'),
           load: hasFlag(args, '--load'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'email-apply') {
+        const domain = getOpt(args, '--domain');
+        if (!domain) {
+          process.stderr.write('Usage: ysk-server hosting email-apply --domain example.com [--install]\n');
+          return 2;
+        }
         const result = await applyEmailStack({
           dataDir: ctx.dataDir,
-          domain: getOpt(args, '--domain') ?? 'example.com',
+          domain,
           host: ctx.host,
           installPackages: hasFlag(args, '--install'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'email-mailbox') {
         const domainName = getOpt(args, '--domain');
         const localPart = getOpt(args, '--local') ?? getOpt(args, '--user');
         if (!domainName || !localPart) {
           process.stderr.write(
-            'Usage: ysk-server hosting email-mailbox --domain X --local user [--password P]\n',
+            'Usage: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n',
           );
-          return 1;
+          return 2;
         }
         let domainId = ctx.email.list().find((d) => d.domain === domainName)?.id;
         if (!domainId) {
+          const serverIp = getOpt(args, '--ip');
+          if (!serverIp) {
+            process.stderr.write(
+              'New domain requires --ip A.B.C.D (no placeholder defaults)\n',
+            );
+            return 2;
+          }
           const created = ctx.email.create({
             domain: domainName,
-            serverIp: getOpt(args, '--ip') ?? '203.0.113.10',
+            serverIp,
             actor: 'cli',
           });
           domainId = created.domain.id;
@@ -740,18 +866,23 @@ async function main(argv: string[]): Promise<number> {
           actor: 'cli',
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'ftps-apply') {
         const { applyFtps } = await import('@ysk/core');
+        const domain = getOpt(args, '--domain');
+        if (!domain) {
+          process.stderr.write('Usage: ysk-server hosting ftps-apply --domain files.example.com [--install]\n');
+          return 2;
+        }
         const result = await applyFtps({
           dataDir: ctx.dataDir,
-          domain: getOpt(args, '--domain') ?? 'files.example.com',
+          domain,
           host: ctx.host,
           install: hasFlag(args, '--install'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'runtimes' || sub === 'runtimes-probe') {
         const { probeRuntimes, listSupportedRuntimes } = await import('@ysk/core');
@@ -785,7 +916,7 @@ async function main(argv: string[]): Promise<number> {
           install: hasFlag(args, '--install'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'dovecot-passdb') {
         const { writeDovecotPassdb, writeAllDovecotPassdbs } = await import('@ysk/core');
@@ -801,31 +932,45 @@ async function main(argv: string[]): Promise<number> {
       }
       if (sub === 'webmail-apply') {
         const { applyWebmail } = await import('@ysk/core');
+        const domain = getOpt(args, '--domain');
+        if (!domain) {
+          process.stderr.write(
+            'Usage: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n',
+          );
+          return 2;
+        }
         const result = await applyWebmail({
           dataDir: ctx.dataDir,
           host: ctx.host,
-          domain: getOpt(args, '--domain') ?? 'webmail.example.com',
+          domain,
           imapHost: getOpt(args, '--imap'),
           smtpHost: getOpt(args, '--smtp'),
           download: hasFlag(args, '--download'),
           systemInstall: hasFlag(args, '--system'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'public-files') {
         const { applyPublicFileServer } = await import('@ysk/core');
+        const domain = getOpt(args, '--domain');
+        if (!domain) {
+          process.stderr.write(
+            'Usage: ysk-server hosting public-files --domain files.example.com [--reload]\n',
+          );
+          return 2;
+        }
         const result = await applyPublicFileServer({
           dataDir: ctx.dataDir,
           host: ctx.host,
-          serverName: getOpt(args, '--domain') ?? 'files.local',
+          serverName: domain,
           quotaMb: getOpt(args, '--quota-mb')
             ? Number(getOpt(args, '--quota-mb'))
             : undefined,
           reload: hasFlag(args, '--reload'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'email-bootstrap') {
         const { bootstrapEmailServer } = await import('@ysk/core');
@@ -835,7 +980,7 @@ async function main(argv: string[]): Promise<number> {
           process.stderr.write(
             'Usage: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n',
           );
-          return 1;
+          return 2;
         }
         const result = await bootstrapEmailServer({
           dataDir: ctx.dataDir,
@@ -851,7 +996,7 @@ async function main(argv: string[]): Promise<number> {
           webmail: !hasFlag(args, '--no-webmail'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       if (sub === 'firewall-apply') {
         const result = await applyFirewall({
@@ -861,17 +1006,17 @@ async function main(argv: string[]): Promise<number> {
           apply: hasFlag(args, '--apply'),
         });
         printJson(result);
-        return result.ok ? 0 : 1;
+        return exitFromResult(result);
       }
       process.stderr.write(
         [
           'Usage: ysk-server hosting <sub>',
           '  nginx | nginx-sync | redis-provision | postgres-provision | mysql-provision',
-          '  dns-zone --zone X --ip A.B.C.D [--validate]',
+          '  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]',
           '  dns-zones | powerdns-status | powerdns-install [--install]',
-          '  powerdns-load --zone X --ip A.B.C.D [--load]',
+          '  powerdns-load --zone X --ip A.B.C.D [--ipv6 X:X::X] [--load]',
           '  email-apply --domain X [--install]',
-          '  email-mailbox --domain X --local user [--password P] [--system]',
+          '  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]',
           '  ftps-apply --domain X [--install]',
           '  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install]',
           '  dovecot-passdb --domain X | --all',
@@ -882,7 +1027,143 @@ async function main(argv: string[]): Promise<number> {
           '',
         ].join('\n'),
       );
-      return 1;
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** Top-level DNS alias for AI agents → hosting dns-zone / dns-zones */
+  if (command === 'dns') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'zones';
+    const { writeManagedDnsZone, listManagedDnsZones } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'zones' || sub === 'list') {
+        printJson({ ok: true, items: listManagedDnsZones(ctx.dataDir) });
+        return 0;
+      }
+      if (sub === 'zone' || sub === 'write' || sub === 'apply') {
+        const zone = getOpt(args, '--zone');
+        const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
+        if (!zone || !serverIp) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n`,
+          );
+          return 2;
+        }
+        const result = await writeManagedDnsZone({
+          dataDir: ctx.dataDir,
+          zone,
+          serverIp,
+          serverIpv6: getOpt(args, '--ipv6') ?? getOpt(args, '--server-ipv6'),
+          mailHost: getOpt(args, '--mail'),
+          host: ctx.host,
+          validate: hasFlag(args, '--validate'),
+          tryReload: hasFlag(args, '--reload'),
+          template: getOpt(args, '--template'),
+        });
+        printJson(result);
+        return exitFromResult(result);
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** Log Center query for AI agents */
+  if (command === 'logs') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'query';
+    const {
+      queryLogSource,
+      listSourceStatuses,
+      getLogOverview,
+      loadLogSettings,
+      listJournalUnits,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'sources' || sub === 'list') {
+        const settings = loadLogSettings(ctx.db);
+        const items = listSourceStatuses({
+          disabledIds: settings.disabledSources,
+          extraManagedLogDirs: [join(ctx.dataDir, 'nginx', 'logs')],
+          customAllowPaths: settings.customAllowPaths,
+        });
+        printJson({ ok: true, items });
+        return 0;
+      }
+      if (sub === 'overview' || sub === 'status') {
+        const r = await getLogOverview({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+        });
+        printJson({ ok: true, ...r });
+        return 0;
+      }
+      if (sub === 'units' || sub === 'journal-units') {
+        const r = await listJournalUnits(ctx.host);
+        printJson({ ok: true, ...r });
+        return 0;
+      }
+      if (sub === 'journal') {
+        const unit = getOpt(args, '--unit') ?? '';
+        const source = unit ? `journal:${unit}` : 'journal:';
+        const linesRaw = getOpt(args, '--lines');
+        const r = await queryLogSource({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          source,
+          lines: linesRaw ? Number(linesRaw) : undefined,
+          since: getOpt(args, '--since'),
+          priority: getOpt(args, '--priority'),
+          grep: getOpt(args, '--grep'),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'query' || sub === 'tail' || sub === 'read') {
+        const source =
+          getOpt(args, '--source') ??
+          (getOpt(args, '--unit')
+            ? `journal:${getOpt(args, '--unit')}`
+            : undefined);
+        if (!source) {
+          process.stderr.write(
+            [
+              `Usage: ${CLI_NAME} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]`,
+              '  source examples: journal:  journal:nginx.service  file:syslog  project:<uuid>',
+              `  ${CLI_NAME} logs sources --json`,
+              `  ${CLI_NAME} logs journal [--unit nginx.service] --json`,
+              '',
+            ].join('\n'),
+          );
+          return 2;
+        }
+        const linesRaw = getOpt(args, '--lines');
+        const r = await queryLogSource({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          source,
+          lines: linesRaw ? Number(linesRaw) : undefined,
+          since: getOpt(args, '--since'),
+          priority: getOpt(args, '--priority'),
+          grep: getOpt(args, '--grep'),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} logs sources|overview|units|journal|query [--source id] [--json]\n`,
+      );
+      return 2;
     } finally {
       closeAppContext(ctx);
     }
@@ -1164,7 +1445,7 @@ async function main(argv: string[]): Promise<number> {
   }
 
   process.stderr.write(`Unknown command: ${command}\nRun \`${CLI_NAME} help\`\n`);
-  return 1;
+  return 2;
 }
 
 // Only auto-run when executed as CLI entry (not when imported by tests)
@@ -1180,8 +1461,8 @@ if (isDirectRun) {
       if (code !== 0) process.exitCode = code;
     },
     (err) => {
-      process.stderr.write(`${err instanceof Error ? err.stack ?? err.message : err}\n`);
-      process.exitCode = 1;
+      const json = process.argv.includes('--json');
+      process.exitCode = printCliError(err, json);
     },
   );
 }

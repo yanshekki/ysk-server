@@ -78,6 +78,56 @@
       "summary": "nginx/dns/db/firewall helpers — see cli/reference.md"
     },
     {
+      "name": "dns zones",
+      "aliases": ["hosting dns-zones"],
+      "risk": "read",
+      "summary": "List managed DNS zone files under dataDir",
+      "example": "ysk-server dns zones --json"
+    },
+    {
+      "name": "dns zone",
+      "aliases": ["hosting dns-zone"],
+      "risk": "write-panel",
+      "summary": "Write managed BIND zone (A + optional AAAA). --validate/--reload need EXECUTE",
+      "args": ["--zone", "--ip", "--ipv6", "--validate", "--reload", "--template", "--mail"],
+      "example": "ysk-server dns zone --zone example.com --ip 203.0.113.10 --ipv6 2001:db8::1 --json",
+      "exitCodes": {
+        "2": "missing --zone/--ip or invalid zone/IP",
+        "0": "zone file written (applyStatus written|applied)"
+      }
+    },
+    {
+      "name": "logs sources",
+      "risk": "read",
+      "summary": "List Log Center sources (journal/file/project)",
+      "example": "ysk-server logs sources --json"
+    },
+    {
+      "name": "logs query",
+      "risk": "read",
+      "summary": "Query a log source (journal:, file:, project:)",
+      "args": ["--source", "--lines", "--grep", "--since", "--priority"],
+      "example": "ysk-server logs query --source journal: --lines 100 --grep error --json",
+      "exitCodes": {
+        "2": "missing --source",
+        "3": "source blocked / unavailable",
+        "1": "query failed"
+      }
+    },
+    {
+      "name": "logs journal",
+      "risk": "read",
+      "summary": "Tail journalctl (optional --unit)",
+      "args": ["--unit", "--lines", "--grep", "--since", "--priority"],
+      "example": "ysk-server logs journal --unit nginx.service --lines 50 --json"
+    },
+    {
+      "name": "logs overview",
+      "risk": "read",
+      "summary": "Log Center overview (disk, units, counts)",
+      "example": "ysk-server logs overview --json"
+    },
+    {
       "name": "services",
       "risk": "read",
       "summary": "systemctl matrix; start|stop|restart|reload needs EXECUTE+root",

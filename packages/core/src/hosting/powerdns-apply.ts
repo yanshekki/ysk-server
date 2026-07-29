@@ -71,6 +71,8 @@ export async function applyPowerDnsZone(input: {
   host: HostExecutor;
   zone: string;
   serverIp: string;
+  /** Optional public IPv6 for dual-stack zone */
+  serverIpv6?: string;
   mailHost?: string;
   /** When true, attempt pdnsutil load-zone (needs EXECUTE) */
   load?: boolean;
@@ -94,6 +96,7 @@ export async function applyPowerDnsZone(input: {
       dataDir: input.dataDir,
       zone,
       serverIp: input.serverIp,
+      serverIpv6: input.serverIpv6,
       mailHost: input.mailHost,
       host: input.host,
       validate: false,

@@ -97,6 +97,7 @@ export function renderBindZoneFile(input: {
     planDnsZone({
       zone,
       serverIp,
+      serverIpv6,
       mailHost: input.mailHost,
       template: input.template,
     }).records;
@@ -206,6 +207,7 @@ export async function writeManagedDnsZone(input: {
       {
         zone,
         serverIp: input.serverIp,
+        ...(input.serverIpv6 ? { serverIpv6: input.serverIpv6 } : {}),
         mailHost: input.mailHost ?? `mail.${zone}`,
         serial: rendered.serial,
         template,
