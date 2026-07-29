@@ -7,6 +7,8 @@ import { dirname, join } from 'node:path';
 import type { JsonStore } from '../../db/store.js';
 import { planMariadbGalera } from './plan-mariadb-galera.js';
 import { planMysqlReplica } from './plan-mysql-replica.js';
+import { planPostgresReplica } from './plan-postgres-replica.js';
+import { planRedisReplica } from './plan-redis-replica.js';
 import { getDbCluster, updateDbCluster } from './store.js';
 import type { ClusterPlan, DbCluster } from './types.js';
 
@@ -17,7 +19,12 @@ export function planDbCluster(cluster: DbCluster): ClusterPlan {
   if (cluster.kind === 'mysql-replica') {
     return planMysqlReplica(cluster);
   }
-  // Stubs for later engines — honest not-implemented plan
+  if (cluster.kind === 'postgres-replica') {
+    return planPostgresReplica(cluster);
+  }
+  if (cluster.kind === 'redis-replica' || cluster.kind === 'redis-sentinel') {
+    return planRedisReplica(cluster);
+  }
   return {
     ok: false,
     dryRun: true,
@@ -26,10 +33,7 @@ export function planDbCluster(cluster: DbCluster): ClusterPlan {
     engine: cluster.engine,
     steps: [],
     files: [],
-    notes: [
-      `拓撲 ${cluster.kind} 計劃器尚未實作（已支援：mariadb-galera、mysql-replica）`,
-      'Postgres / Redis 稍後',
-    ],
+    notes: [`未知拓撲 ${cluster.kind}`],
     requiresExecute: true,
     requiresRoot: true,
   };

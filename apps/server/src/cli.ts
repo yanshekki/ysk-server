@@ -1188,6 +1188,7 @@ async function main(argv: string[]): Promise<number> {
       bundleDbClusterArtifacts,
       listDbClusterArtifacts,
       pushDbClusterToPeers,
+      dispatchDbClusterFleet,
     } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
@@ -1233,17 +1234,24 @@ async function main(argv: string[]): Promise<number> {
           return 2;
         }
         const members = memberArgs.map((spec, idx) => {
-          // HOST or HOST=role or HOST=role:access
+          // HOST | HOST=role | HOST=role:access | HOST=role:fleet:AGENT_SESSION_ID
           const [hostPart, rest] = spec.split('=');
           const host = hostPart.trim();
           let role: string | undefined;
           let access: 'local' | 'ssh' | 'fleet' | undefined = idx === 0 ? 'local' : 'ssh';
+          let fleetAgentId: string | undefined;
           if (rest) {
-            const [r, a] = rest.split(':');
-            role = r || undefined;
-            if (a === 'local' || a === 'ssh' || a === 'fleet') access = a;
+            const parts = rest.split(':');
+            role = parts[0] || undefined;
+            if (parts[1] === 'local' || parts[1] === 'ssh' || parts[1] === 'fleet') {
+              access = parts[1];
+            }
+            if (parts[1] === 'fleet' && parts[2]) fleetAgentId = parts[2];
+            if (parts[2] && parts[1] !== 'fleet') {
+              // role:access only
+            }
           }
-          return { host, role, access };
+          return { host, role, access, fleetAgentId };
         });
         const engine = (
           ['mysql', 'mariadb', 'postgres', 'redis'].includes(engineRaw)
@@ -1373,6 +1381,31 @@ async function main(argv: string[]): Promise<number> {
         printJson(result);
         return exitFromResult(result);
       }
+      if (sub === 'fleet') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n`,
+          );
+          return 2;
+        }
+        const opRaw = getOpt(args, '--op') ?? 'apply';
+        const op =
+          opRaw === 'probe' || opRaw === 'plan' || opRaw === 'apply' ? opRaw : 'apply';
+        const result = dispatchDbClusterFleet({
+          db: ctx.db,
+          clusterId: id,
+          memberId: getOpt(args, '--member'),
+          op,
+          execute: wantsHostExecute(args),
+          edgeExecute: hasFlag(args, '--edge-execute'),
+          enqueue: wantsHostExecute(args)
+            ? (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload)
+            : undefined,
+        });
+        printJson(result);
+        return result.ok || result.dryRun ? 0 : 1;
+      }
       if (sub === 'delete' || sub === 'rm') {
         const id = getOpt(args, '--id');
         if (!id) {
@@ -1389,7 +1422,7 @@ async function main(argv: string[]): Promise<number> {
         return ok ? 0 : 4;
       }
       process.stderr.write(
-        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|artifacts|bundle|push|delete [--execute] [--json]\n`,
+        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|artifacts|bundle|push|fleet|delete [--execute] [--json]\n`,
       );
       return 2;
     } finally {

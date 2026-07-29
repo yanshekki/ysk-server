@@ -186,17 +186,19 @@ ysk-server db-cluster probe --id UUID [--json]   # local wsrep status
 ysk-server db-cluster artifacts --id UUID [--json]
 ysk-server db-cluster bundle --id UUID [--json]  # tar.gz under dataDir
 ysk-server db-cluster push --id UUID [--member ID] [--execute] [--json]
+ysk-server db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]
 ysk-server db-cluster delete --id UUID [--json]  # registry only
 ```
 
-- `apply` without `--execute`: materialize + mark local `written` (exit 0, dryRun)
-- `apply --execute`: needs `YSK_EXECUTE=1` + root → system drop-in + restart/bootstrap
-- `probe`: never claims healthy without real wsrep facts
-- `push` default dry-run plan; `--execute` scp to ssh peers (BatchMode) → `/tmp/ysk-cluster-*`
-- `bundle`: peer-ready `.tar.gz` (manual copy)
+Member syntax: `--member HOST=role:access` or fleet  
+`--member 10.0.0.3=replica:fleet:AGENT_SESSION_UUID`
 
-Planners: **MariaDB Galera** · **MySQL primary→replica**.  
-Panel: **MariaDB / MySQL 服務 → 叢集**（下載包 / Push 計劃 / Push 執行）.
+- `apply` without `--execute`: materialize + mark local `written`
+- `push` / `fleet` default dry-run; `--execute` scp or enqueue CLI
+- `fleet`: payload `{ "cli": ["db-cluster","apply","--id",…] }` for edge agents
+
+Planners: **MariaDB Galera** · **MySQL/Postgres replica** · **Redis replica/sentinel**.  
+Panel: 各引擎 **服務 → 叢集**.
 
 ## hosting
 

@@ -124,6 +124,13 @@
       }
     },
     {
+      "name": "db-cluster fleet",
+      "risk": "execute-host",
+      "summary": "Queue {cli:[…]} to access=fleet members (Agents history for results)",
+      "args": ["--id", "--op", "--execute", "--edge-execute", "--member"],
+      "example": "ysk-server db-cluster fleet --id UUID --json"
+    },
+    {
       "name": "ssl list",
       "risk": "read",
       "summary": "List managed SSL certificates",

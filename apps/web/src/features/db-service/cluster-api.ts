@@ -147,4 +147,28 @@ export const dbClusterApi = {
       method: 'POST',
       body: JSON.stringify(body ?? {}),
     }),
+  fleet: (
+    id: string,
+    body?: {
+      execute?: boolean;
+      memberId?: string;
+      op?: 'apply' | 'probe' | 'plan';
+      edgeExecute?: boolean;
+    },
+  ) =>
+    api.requestRaw<{
+      ok: boolean;
+      dryRun: boolean;
+      notes: string[];
+      queued: Array<{
+        host: string;
+        fleetAgentId: string;
+        cli: string[];
+        commandId?: string;
+      }>;
+      cluster: DbCluster;
+    }>(`/api/v1/db/clusters/${id}/fleet`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    }),
 };

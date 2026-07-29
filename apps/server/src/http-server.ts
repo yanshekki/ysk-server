@@ -3376,6 +3376,43 @@ export function createHttpServer(ctx: AppContext): Server {
           result,
         );
       }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/fleet$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          execute?: boolean;
+          memberId?: string;
+          op?: 'apply' | 'probe' | 'plan';
+          edgeExecute?: boolean;
+        };
+        const { dispatchDbClusterFleet } = await import('@ysk/core');
+        const result = dispatchDbClusterFleet({
+          db: ctx.db,
+          clusterId: id,
+          memberId: data.memberId,
+          op: data.op ?? 'apply',
+          execute: data.execute === true,
+          edgeExecute: data.edgeExecute === true,
+          enqueue:
+            data.execute === true
+              ? (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload)
+              : undefined,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.fleet',
+          resource: id,
+          detail: {
+            ok: result.ok,
+            dryRun: result.dryRun,
+            queued: result.queued.length,
+            op: data.op ?? 'apply',
+          },
+          ok: result.ok || result.dryRun,
+        });
+        return sendJson(res, result.ok || result.dryRun ? 200 : 422, result);
+      }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/check') {
         ctx.auth.authenticate(getBearer(req));

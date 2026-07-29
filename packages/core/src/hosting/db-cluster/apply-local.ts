@@ -96,23 +96,36 @@ export async function applyDbClusterLocal(input: {
     planned.artifactDir ?? join(input.dataDir, 'clusters', planned.id);
   const local = localMember(planned);
   const localRole = (local?.role || '').toLowerCase();
-  const confSrc =
-    planned.kind === 'mariadb-galera'
-      ? join(artifactDir, 'conf', '99-ysk-galera.cnf')
-      : planned.kind === 'mysql-replica'
-        ? localRole === 'replica' || localRole === 'slave'
-          ? join(
-              artifactDir,
-              'conf',
-              'peers',
-              `${(local?.host || 'replica').replace(/[^a-zA-Z0-9._-]/g, '_')}-replica.cnf`,
-            )
-          : join(artifactDir, 'conf', '99-ysk-mysql-primary.cnf')
-        : '';
+  const safeHost = (local?.host || 'node').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const confSrc = (() => {
+    if (planned.kind === 'mariadb-galera') {
+      return join(artifactDir, 'conf', '99-ysk-galera.cnf');
+    }
+    if (planned.kind === 'mysql-replica') {
+      return localRole === 'replica' || localRole === 'slave'
+        ? join(artifactDir, 'conf', 'peers', `${safeHost}-replica.cnf`)
+        : join(artifactDir, 'conf', '99-ysk-mysql-primary.cnf');
+    }
+    if (planned.kind === 'postgres-replica') {
+      return localRole === 'replica'
+        ? join(artifactDir, 'conf', 'peers', `${safeHost}-replica.conf`)
+        : join(artifactDir, 'conf', '99-ysk-postgres-primary.conf');
+    }
+    if (planned.kind === 'redis-replica' || planned.kind === 'redis-sentinel') {
+      if (localRole === 'sentinel') {
+        return join(artifactDir, 'conf', 'peers', `${safeHost}-sentinel.conf`);
+      }
+      if (localRole === 'replica') {
+        return join(artifactDir, 'conf', 'peers', `${safeHost}-replica.conf`);
+      }
+      return join(artifactDir, 'conf', '99-ysk-redis-master.conf');
+    }
+    return '';
+  })();
   if (confSrc && existsSync(confSrc)) {
     written.push(confSrc);
-  } else if (planned.kind === 'mariadb-galera' || planned.kind === 'mysql-replica') {
-    notes.push(`找不到 conf 產物：${confSrc || planned.kind}`);
+  } else if (confSrc) {
+    notes.push(`找不到 conf 產物：${confSrc}`);
   }
 
   const requiresExecute = true;
@@ -185,26 +198,39 @@ export async function applyDbClusterLocal(input: {
     };
   }
 
-  if (planned.kind !== 'mariadb-galera' && planned.kind !== 'mysql-replica') {
+  const supported = [
+    'mariadb-galera',
+    'mysql-replica',
+    'postgres-replica',
+    'redis-replica',
+    'redis-sentinel',
+  ];
+  if (!supported.includes(planned.kind)) {
     return {
       ok: false,
       dryRun: false,
       executed: false,
       cluster: planned,
       written,
-      notes: [
-        `本機 apply 暫支援 mariadb-galera / mysql-replica（而家係 ${planned.kind}）`,
-      ],
+      notes: [`本機 apply 不支援 ${planned.kind}`],
       requiresExecute,
       requiresRoot,
     };
   }
 
-  // Resolve conf source (mysql replica may use peer file if local is replica)
+  // Resolve conf source (fallbacks)
   let src = confSrc;
-  if (planned.kind === 'mysql-replica' && (!src || !existsSync(src))) {
+  if ((!src || !existsSync(src)) && planned.kind === 'mysql-replica') {
     const primaryPath = join(artifactDir, 'conf', '99-ysk-mysql-primary.cnf');
     if (existsSync(primaryPath)) src = primaryPath;
+  }
+  if ((!src || !existsSync(src)) && planned.kind === 'postgres-replica') {
+    const p = join(artifactDir, 'conf', '99-ysk-postgres-primary.conf');
+    if (existsSync(p)) src = p;
+  }
+  if ((!src || !existsSync(src)) && planned.kind.startsWith('redis')) {
+    const p = join(artifactDir, 'conf', '99-ysk-redis-master.conf');
+    if (existsSync(p)) src = p;
   }
   if (!src || !existsSync(src)) {
     return {
@@ -219,7 +245,7 @@ export async function applyDbClusterLocal(input: {
     };
   }
 
-  // System drop-in destination
+  // System drop-in destination + unit
   let dest: string;
   let unit = 'mysql';
   if (planned.kind === 'mariadb-galera') {
@@ -228,12 +254,30 @@ export async function applyDbClusterLocal(input: {
       dest = SYSTEM_GALERA_DROPINS[1];
     }
     unit = 'mariadb';
-  } else {
+  } else if (planned.kind === 'mysql-replica') {
     dest = SYSTEM_MYSQL_DROPINS[0];
     if (!existsSync(dirname(dest)) && existsSync(dirname(SYSTEM_MYSQL_DROPINS[1]))) {
       dest = SYSTEM_MYSQL_DROPINS[1];
     }
     unit = 'mysql';
+  } else if (planned.kind === 'postgres-replica') {
+    dest = '/etc/postgresql/ysk-repl.conf';
+    // Prefer conf.d under common versions
+    for (const v of ['16', '15', '14', '13']) {
+      const d = `/etc/postgresql/${v}/main/conf.d`;
+      if (existsSync(d)) {
+        dest = `${d}/99-ysk-repl.conf`;
+        break;
+      }
+    }
+    unit = 'postgresql';
+  } else {
+    // redis
+    dest =
+      localRole === 'sentinel'
+        ? '/etc/redis/sentinel-ysk.conf'
+        : '/etc/redis/redis-ysk-repl.conf';
+    unit = localRole === 'sentinel' ? 'redis-sentinel' : 'redis-server';
   }
 
   try {
@@ -293,10 +337,14 @@ export async function applyDbClusterLocal(input: {
       timeoutMs: 120_000,
     });
     cmdOk = r.exitCode === 0;
-    if (planned.kind === 'mysql-replica') {
+    if (
+      planned.kind === 'mysql-replica' ||
+      planned.kind === 'postgres-replica' ||
+      planned.kind.startsWith('redis')
+    ) {
       notes.push(
         cmdOk
-          ? `已 systemctl restart ${unit}（replication SQL 仍需人手執行 scripts/*.sql）`
+          ? `已 systemctl restart ${unit}（從庫/slot/sentinel 後續步驟見 scripts/）`
           : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
       );
     } else {

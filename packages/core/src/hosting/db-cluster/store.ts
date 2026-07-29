@@ -81,6 +81,12 @@ function normalizeMember(
     : index === 0
       ? 'local'
       : 'ssh';
+  if (access === 'fleet' && !raw.fleetAgentId?.trim()) {
+    throw new YskError(ErrorCodes.VALIDATION, 'access=fleet 需要 fleetAgentId', {
+      httpStatus: 400,
+      details: { host: raw.host },
+    });
+  }
   return {
     id: raw.id ?? randomUUID(),
     role,
@@ -88,7 +94,7 @@ function normalizeMember(
     port: typeof raw.port === 'number' && raw.port > 0 ? raw.port : defaultPort(engine, role),
     label: raw.label?.trim() || undefined,
     access,
-    fleetAgentId: raw.fleetAgentId,
+    fleetAgentId: raw.fleetAgentId?.trim() || undefined,
     ssh: raw.ssh
       ? {
           username: String(raw.ssh.username || 'root').trim() || 'root',
@@ -176,21 +182,34 @@ export function createDbCluster(db: JsonStore, input: CreateDbClusterInput): DbC
     if (!row.params.sstMethod) row.params.sstMethod = 'mariabackup';
     if (!row.params.galeraPort) row.params.galeraPort = 4567;
   }
-  if (kind === 'mysql-replica') {
+  if (kind === 'mysql-replica' || kind === 'postgres-replica') {
     if (!row.params.replUser) row.params.replUser = 'ysk_repl';
-    if (!row.params.serverIdBase) row.params.serverIdBase = 100;
-    // Ensure first member is primary if roles missing
-    if (row.members[0] && row.members[0].role === 'replica') {
-      row.members[0] = { ...row.members[0], role: 'primary' };
+    if (kind === 'mysql-replica' && !row.params.serverIdBase) {
+      row.params.serverIdBase = 100;
     }
     if (row.members[0] && !['primary', 'master'].includes(row.members[0].role)) {
       row.members[0] = { ...row.members[0], role: 'primary' };
     }
     for (let i = 1; i < row.members.length; i++) {
-      if (row.members[i].role === 'primary' || row.members[i].role === 'master') continue;
+      if (['primary', 'master', 'sentinel'].includes(row.members[i].role)) continue;
       if (!row.members[i].role || row.members[i].role === 'node') {
         row.members[i] = { ...row.members[i], role: 'replica' };
       }
+    }
+  }
+  if (kind === 'redis-replica' || kind === 'redis-sentinel') {
+    if (!row.params.port) row.params.port = 6379;
+    if (row.members[0] && !['master', 'primary'].includes(row.members[0].role)) {
+      row.members[0] = { ...row.members[0], role: 'master' };
+    }
+    for (let i = 1; i < row.members.length; i++) {
+      if (row.members[i].role === 'sentinel') continue;
+      if (!row.members[i].role || row.members[i].role === 'node') {
+        row.members[i] = { ...row.members[i], role: 'replica' };
+      }
+    }
+    if (kind === 'redis-sentinel' && !row.params.sentinelName) {
+      row.params.sentinelName = name.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 32) || 'ysk-redis';
     }
   }
 

@@ -47,6 +47,22 @@ function defaultKind(engine: DbServiceEngine): DbClusterKind {
   return 'redis-replica';
 }
 
+function wizardTitle(kind: DbClusterKind): string {
+  if (kind === 'mariadb-galera') return '簡易 Galera';
+  if (kind === 'mysql-replica') return 'MySQL 主從複製';
+  if (kind === 'postgres-replica') return 'PostgreSQL 串流複製';
+  if (kind === 'redis-sentinel') return 'Redis Sentinel';
+  return 'Redis 主從';
+}
+
+function ctaLabel(kind: DbClusterKind): string {
+  if (kind === 'mariadb-galera') return '建立簡易 Galera';
+  if (kind === 'mysql-replica') return '建立主從複製';
+  if (kind === 'postgres-replica') return '建立串流複製';
+  if (kind === 'redis-sentinel') return '建立 Sentinel';
+  return '建立 Redis 主從';
+}
+
 export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   const [items, setItems] = useState<DbCluster[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -79,9 +95,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   }, [refresh]);
 
   const kind = defaultKind(engine);
-  const wizardReady = engine === 'mariadb' || engine === 'mysql';
+  const wizardReady = true;
   const isGalera = kind === 'mariadb-galera';
-  const isMysqlRepl = kind === 'mysql-replica';
+  const isRepl =
+    kind === 'mysql-replica' ||
+    kind === 'postgres-replica' ||
+    kind === 'redis-replica' ||
+    kind === 'redis-sentinel';
 
   async function onCreatePlan(e: FormEvent) {
     e.preventDefault();
@@ -90,46 +110,56 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       return;
     }
     await run(async () => {
-      const members =
-        isMysqlRepl
-          ? [
-              {
-                host: localHost.trim(),
-                role: 'primary',
-                access: 'local' as const,
-                label: 'primary',
-              },
-              {
-                host: peerHost.trim(),
-                role: 'replica',
-                access: 'ssh' as const,
-                label: 'replica-1',
-              },
-            ]
-          : [
-              {
-                host: localHost.trim(),
-                role: 'node',
-                access: 'local' as const,
-                label: 'local',
-              },
-              {
-                host: peerHost.trim(),
-                role: 'node',
-                access: 'ssh' as const,
-                label: 'peer-1',
-              },
-            ];
+      const primaryRole =
+        kind === 'redis-replica' || kind === 'redis-sentinel' ? 'master' : 'primary';
+      const members = isGalera
+        ? [
+            {
+              host: localHost.trim(),
+              role: 'node',
+              access: 'local' as const,
+              label: 'local',
+            },
+            {
+              host: peerHost.trim(),
+              role: 'node',
+              access: 'ssh' as const,
+              label: 'peer-1',
+            },
+          ]
+        : [
+            {
+              host: localHost.trim(),
+              role: primaryRole,
+              access: 'local' as const,
+              label: primaryRole,
+            },
+            {
+              host: peerHost.trim(),
+              role: 'replica',
+              access: 'ssh' as const,
+              label: 'replica-1',
+            },
+          ];
+      const params: Record<string, string | number | boolean> = {};
+      if (isGalera) {
+        params.clusterName = name.trim() || 'ysk-galera';
+        params.sstMethod = sst;
+      } else if (kind === 'mysql-replica') {
+        params.replUser = 'ysk_repl';
+        params.serverIdBase = 100;
+      } else if (kind === 'postgres-replica') {
+        params.replUser = 'ysk_repl';
+      } else if (kind.startsWith('redis')) {
+        params.port = 6379;
+        params.sentinelName = name.trim() || 'ysk-redis';
+      }
       const created = await dbClusterApi.create({
         name: name.trim() || 'ysk-cluster',
         engine,
         kind,
         members,
-        params: isGalera
-          ? { clusterName: name.trim() || 'ysk-galera', sstMethod: sst }
-          : isMysqlRepl
-            ? { replUser: 'ysk_repl', serverIdBase: 100 }
-            : {},
+        params,
       });
       const planned = await dbClusterApi.plan(created.cluster.id);
       setActiveId(created.cluster.id);
@@ -273,17 +303,10 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         </Alert>
       ) : null}
 
-      {!wizardReady ? (
-        <Alert variant="info">
-          此引擎（{kind}）計劃器稍後開放。而家可用{' '}
-          <strong>MariaDB Galera</strong> 或 <strong>MySQL 主從</strong>。
-        </Alert>
-      ) : null}
-
       <Card>
         <CardSection
           title="叢集"
-          description="計劃 → 寫管理檔 → 套用 → 探測。預設 dry-run，唔會假 healthy。"
+          description="計劃 → 寫管理檔 → 套用 → 探測 → peer 分發 / fleet。預設 dry-run。"
         >
           <div className="btn-row u-mb-3">
             <Button
@@ -295,7 +318,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 setWizOpen(true);
               }}
             >
-              {isGalera ? '建立簡易 Galera' : isMysqlRepl ? '建立主從複製' : '建立叢集'}
+              {ctaLabel(kind)}
             </Button>
             <Button
               variant="secondary"
@@ -311,16 +334,14 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             <EmptyState
               title="目前：單機"
               description={
-                isMysqlRepl
-                  ? '未登記主從。指定 primary + replica 後產生 conf 與 SQL 腳本。'
+                isRepl
+                  ? '未登記主從／串流。指定 primary/master + replica 後產生 conf 與腳本。'
                   : '未登記 HA。加 peer 節點後產生 conf 計劃，再分步 bootstrap / join。'
               }
               action={
-                wizardReady ? (
-                  <Button variant="primary" size="md" onClick={() => setWizOpen(true)}>
-                    {isGalera ? '建立簡易 Galera' : '建立主從複製'}
-                  </Button>
-                ) : undefined
+                <Button variant="primary" size="md" onClick={() => setWizOpen(true)}>
+                  {ctaLabel(kind)}
+                </Button>
               }
             />
           ) : (
@@ -423,6 +444,52 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                             Push 執行
                           </Button>
                           <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() =>
+                              void run(async () => {
+                                const r = await dbClusterApi.fleet(c.id, {
+                                  execute: false,
+                                  op: 'apply',
+                                });
+                                return {
+                                  ok: r.ok || r.dryRun,
+                                  dryRun: r.dryRun,
+                                  notes: r.notes,
+                                } as OpsResultLike;
+                              }, 'Fleet 計劃')
+                            }
+                          >
+                            Fleet 計劃
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => {
+                              if (
+                                !confirm(
+                                  '對 access=fleet 成員 enqueue CLI？邊緣需同一 cluster id。',
+                                )
+                              )
+                                return;
+                              void run(async () => {
+                                const r = await dbClusterApi.fleet(c.id, {
+                                  execute: true,
+                                  op: 'apply',
+                                });
+                                return {
+                                  ok: r.ok,
+                                  dryRun: r.dryRun,
+                                  notes: r.notes,
+                                } as OpsResultLike;
+                              }, 'Fleet 已排隊');
+                            }}
+                          >
+                            Fleet 排隊
+                          </Button>
+                          <Button
                             variant="danger"
                             size="sm"
                             loading={busy}
@@ -509,7 +576,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       <Modal
         open={wizOpen}
         onClose={() => setWizOpen(false)}
-        title={isGalera ? '簡易 Galera' : 'MySQL 主從複製'}
+        title={wizardTitle(kind)}
         description="選擇節點 → 產生計劃（唔會自動改 peer 系統）"
         footer={
           <>
@@ -540,13 +607,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               />
             </Field>
             <Field
-              label={isMysqlRepl ? 'Primary IP／主機' : '本機 IP／主機'}
+              label={isRepl ? 'Primary / Master IP' : '本機 IP／主機'}
               htmlFor="dbc-local"
               flush
               required
               hint={
-                isMysqlRepl
-                  ? '通常係控制面所在機（primary + access=local）'
+                isRepl
+                  ? '控制面所在機（primary/master + access=local）'
                   : '控制面所在機（access=local）'
               }
             >
@@ -561,13 +628,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               />
             </Field>
             <Field
-              label={isMysqlRepl ? 'Replica IP／主機' : 'Peer IP／主機'}
+              label={isRepl ? 'Replica IP／主機' : 'Peer IP／主機'}
               htmlFor="dbc-peer"
               flush
               required
               hint={
-                isMysqlRepl
-                  ? '從庫節點；之後可再加更多 replica'
+                isRepl
+                  ? '從庫節點；之後可再加更多 replica / sentinel'
                   : '第二節點；生產建議再加第三節點'
               }
             >
@@ -599,7 +666,11 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               禁止示範 IP（203.0.113.x）。
               {isGalera
                 ? '防火牆內網開 3306 / 4567 / 4444 / 4568。'
-                : '主從需內網 3306；SQL 腳本內密碼請改 CHANGE_ME。'}
+                : kind === 'postgres-replica'
+                  ? '串流需內網 5432；腳本密碼改 CHANGE_ME。'
+                  : kind.startsWith('redis')
+                    ? 'Redis 內網 6379（sentinel 26379）。'
+                    : '主從需內網對應埠；腳本密碼改 CHANGE_ME。'}
               套用系統 conf 需 YSK_EXECUTE=1 + root。
             </FormHint>
           </FormLayout>

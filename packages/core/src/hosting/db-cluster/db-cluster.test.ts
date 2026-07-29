@@ -27,6 +27,7 @@ import {
   planDbClusterPeerPush,
   pushDbClusterToPeers,
 } from './push-peer.js';
+import { dispatchDbClusterFleet } from './fleet-dispatch.js';
 import type { HostExecutor } from '../../host/executor.js';
 
 function memDb(): JsonStore {
@@ -128,9 +129,9 @@ describe('mariadb galera plan', () => {
     expect(readFileSync(join(dir, 'clusters', c.id, 'plan.md'), 'utf8')).toMatch(/Galera/);
   });
 
-  it('stub planner for other kinds', () => {
+  it('plans postgres and redis', () => {
     const db = memDb();
-    const c = createDbCluster(db, {
+    const pg = createDbCluster(db, {
       name: 'pg',
       engine: 'postgres',
       kind: 'postgres-replica',
@@ -139,9 +140,19 @@ describe('mariadb galera plan', () => {
         { host: '10.3.0.2', access: 'ssh' },
       ],
     });
-    const plan = planDbCluster(c);
-    expect(plan.ok).toBe(false);
-    expect(plan.notes.join(' ')).toMatch(/尚未實作/);
+    expect(planDbCluster(pg).ok).toBe(true);
+    expect(pg.members[0].role).toBe('primary');
+    const rd = createDbCluster(db, {
+      name: 'rd',
+      engine: 'redis',
+      kind: 'redis-replica',
+      members: [
+        { host: '10.3.1.1', access: 'local' },
+        { host: '10.3.1.2', access: 'ssh' },
+      ],
+    });
+    expect(planDbCluster(rd).ok).toBe(true);
+    expect(rd.members[0].role).toBe('master');
   });
 });
 
@@ -367,6 +378,50 @@ describe('apply local dry-run', () => {
       execute: true,
     });
     expect(blocked.blocked).toBe(true);
+  });
+
+  it('fleet dispatch dry-run and enqueue', () => {
+    const db = memDb();
+    const agentId = 'agent-session-uuid-1';
+    const c = createDbCluster(db, {
+      name: 'fleet1',
+      engine: 'redis',
+      kind: 'redis-replica',
+      members: [
+        { host: '10.60.0.1', role: 'master', access: 'local' },
+        {
+          host: '10.60.0.2',
+          role: 'replica',
+          access: 'fleet',
+          fleetAgentId: agentId,
+        },
+      ],
+    });
+    const dry = dispatchDbClusterFleet({
+      db,
+      clusterId: c.id,
+      execute: false,
+    });
+    expect(dry.dryRun).toBe(true);
+    expect(dry.queued).toHaveLength(1);
+    expect(dry.queued[0].cli.join(' ')).toMatch(/db-cluster apply/);
+
+    const enqueued: unknown[] = [];
+    const run = dispatchDbClusterFleet({
+      db,
+      clusterId: c.id,
+      execute: true,
+      enqueue: (sid, payload) => {
+        enqueued.push({ sid, payload });
+        return {
+          id: 'cmd-1',
+          agent_session_id: sid,
+          status: 'queued',
+        };
+      },
+    });
+    expect(run.ok).toBe(true);
+    expect(enqueued).toHaveLength(1);
   });
 
   it('blocked when execute without YSK_EXECUTE', async () => {

@@ -182,29 +182,46 @@ function filesForMember(
     if (!paths.includes(r)) paths.push(r);
   }
 
+  const safe = member.host.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const role = (member.role || '').toLowerCase();
+
   if (cluster.kind === 'mariadb-galera') {
-    // Peer-specific conf if present, else shared galera conf
-    const safe = member.host.replace(/[^a-zA-Z0-9._-]/g, '_');
     const peerCnf = `conf/peers/${safe}.cnf`;
     if (rels.includes(peerCnf)) paths.push(peerCnf);
     else if (rels.includes('conf/99-ysk-galera.cnf')) {
       paths.push('conf/99-ysk-galera.cnf');
     }
   } else if (cluster.kind === 'mysql-replica') {
-    const role = (member.role || '').toLowerCase();
     if (role === 'primary' || role === 'master') {
       if (rels.includes('conf/99-ysk-mysql-primary.cnf')) {
         paths.push('conf/99-ysk-mysql-primary.cnf');
       }
     } else {
-      const safe = member.host.replace(/[^a-zA-Z0-9._-]/g, '_');
       const peerCnf = `conf/peers/${safe}-replica.cnf`;
       if (rels.includes(peerCnf)) paths.push(peerCnf);
       else {
-        // any replica conf
         const any = rels.find((x) => x.startsWith('conf/peers/') && x.endsWith('-replica.cnf'));
         if (any) paths.push(any);
       }
+    }
+  } else if (cluster.kind === 'postgres-replica') {
+    if (role === 'primary' || role === 'master') {
+      if (rels.includes('conf/99-ysk-postgres-primary.conf')) {
+        paths.push('conf/99-ysk-postgres-primary.conf');
+      }
+    } else {
+      const peerCnf = `conf/peers/${safe}-replica.conf`;
+      if (rels.includes(peerCnf)) paths.push(peerCnf);
+    }
+  } else if (cluster.kind === 'redis-replica' || cluster.kind === 'redis-sentinel') {
+    if (role === 'sentinel') {
+      const sc = `conf/peers/${safe}-sentinel.conf`;
+      if (rels.includes(sc)) paths.push(sc);
+    } else if (role === 'replica') {
+      const rc = `conf/peers/${safe}-replica.conf`;
+      if (rels.includes(rc)) paths.push(rc);
+    } else if (rels.includes('conf/99-ysk-redis-master.conf')) {
+      paths.push('conf/99-ysk-redis-master.conf');
     }
   }
 

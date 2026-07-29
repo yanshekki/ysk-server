@@ -208,8 +208,15 @@ export async function probeDbCluster(input: {
   const notes: string[] = [];
   const at = new Date().toISOString();
 
-  if (cluster.kind !== 'mariadb-galera' && cluster.kind !== 'mysql-replica') {
-    notes.push(`probe 暫支援 mariadb-galera / mysql-replica（${cluster.kind}）`);
+  const supported = [
+    'mariadb-galera',
+    'mysql-replica',
+    'postgres-replica',
+    'redis-replica',
+    'redis-sentinel',
+  ];
+  if (!supported.includes(cluster.kind)) {
+    notes.push(`probe 不支援 ${cluster.kind}`);
     const next = updateDbCluster(input.db, cluster.id, {
       status: 'degraded',
       notes,
@@ -223,7 +230,12 @@ export async function probeDbCluster(input: {
 
   let facts: Record<string, string> = {};
   let localOk = false;
-  let localProbe: DbClusterMemberProbe;
+  let localProbe: DbClusterMemberProbe = {
+    at,
+    ok: false,
+    facts: {},
+    notes: ['未探測'],
+  };
 
   if (cluster.kind === 'mariadb-galera') {
     const r = await runWsrepShow(input.host);
@@ -244,8 +256,7 @@ export async function probeDbCluster(input: {
       localProbe = { at, ok: localOk, facts, notes: evaled.notes };
       notes.push(...evaled.notes);
     }
-  } else {
-    // mysql-replica
+  } else if (cluster.kind === 'mysql-replica') {
     const role = (local?.role || 'primary').toLowerCase();
     if (role === 'replica' || role === 'slave') {
       const r = await runMysqlQuery(input.host, 'SHOW REPLICA STATUS\\G');
@@ -304,6 +315,88 @@ export async function probeDbCluster(input: {
         notes.push(...evaled.notes);
       }
     }
+  } else if (cluster.kind === 'postgres-replica') {
+    const role = (local?.role || 'primary').toLowerCase();
+    const r = await input.host.runCommand(
+      ['psql', '-tAc', 'SELECT pg_is_in_recovery();'],
+      { timeoutMs: 15_000 },
+    );
+    if (r.exitCode !== 0) {
+      localProbe = {
+        at,
+        ok: false,
+        facts: {},
+        notes: [
+          `psql 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
+        ],
+      };
+      notes.push(...localProbe.notes);
+    } else {
+      const recovery = r.stdout.trim().toLowerCase();
+      facts.pg_is_in_recovery = recovery;
+      if (role === 'replica') {
+        localOk = recovery === 't' || recovery === 'true';
+        notes.push(
+          localOk
+            ? 'replica: pg_is_in_recovery=true'
+            : `replica 應為 recovery，實際=${recovery}`,
+        );
+      } else {
+        localOk = recovery === 'f' || recovery === 'false';
+        notes.push(
+          localOk
+            ? 'primary: pg_is_in_recovery=false'
+            : `primary 不應 recovery，實際=${recovery}`,
+        );
+      }
+      localProbe = { at, ok: localOk, facts, notes: [...notes] };
+    }
+  } else {
+    // redis
+    const role = (local?.role || 'master').toLowerCase();
+    const r = await input.host.runCommand(
+      ['redis-cli', 'INFO', 'replication'],
+      { timeoutMs: 10_000 },
+    );
+    if (r.exitCode !== 0) {
+      localProbe = {
+        at,
+        ok: false,
+        facts: {},
+        notes: [
+          `redis-cli 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
+        ],
+      };
+      notes.push(...localProbe.notes);
+    } else {
+      for (const line of r.stdout.split('\n')) {
+        const m = line.trim().match(/^([^:]+):(.+)$/);
+        if (m) facts[m[1]] = m[2].trim();
+      }
+      const redisRole = (facts.role || '').toLowerCase();
+      if (role === 'replica') {
+        localOk =
+          redisRole === 'slave' ||
+          redisRole === 'replica' ||
+          facts.master_link_status === 'up';
+        notes.push(
+          localOk
+            ? `replica role=${facts.role} link=${facts.master_link_status ?? '—'}`
+            : `replica 異常 role=${facts.role ?? '—'}`,
+        );
+      } else if (role === 'sentinel') {
+        localOk = true;
+        notes.push('sentinel：INFO replication 僅作參考；請查 sentinel masters');
+      } else {
+        localOk = redisRole === 'master';
+        notes.push(
+          localOk
+            ? `master role=${facts.role} connected_slaves=${facts.connected_slaves ?? '—'}`
+            : `期望 master，實際 role=${facts.role ?? '—'}`,
+        );
+      }
+      localProbe = { at, ok: localOk, facts, notes: notes.slice(-3) };
+    }
   }
 
   const members: DbClusterMember[] = cluster.members.map((m) => {
@@ -339,11 +432,10 @@ export async function probeDbCluster(input: {
         : 'failed';
     }
   } else {
-    // mysql-replica: healthy only if local primary has binlog OR local replica IO+SQL
-    // full multi-node healthy needs peer probe later → partial when only local ok
+    // mysql / postgres / redis: local OK → partial until peer probe
     if (localOk && cluster.members.length >= 2) {
       status = 'partial';
-      notes.push('本機 replication 指標 OK；完整 healthy 需 peer probe（未做）');
+      notes.push('本機指標 OK；完整 healthy 需 peer probe（未做）');
     } else if (localOk) {
       status = 'partial';
     } else {
