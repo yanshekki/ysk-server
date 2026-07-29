@@ -30,6 +30,7 @@ import {
   type ConsoleSetting,
   type ServiceConsole,
 } from '../../features/db-service/console-api';
+import { DbClusterPanel } from '../../features/db-service/DbClusterPanel';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 
 const DATA_LINK: Record<DbServiceEngine, { path: string; label: string }> = {
@@ -97,6 +98,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     const base = [
       { id: 'lifecycle', label: '生命週期' },
       { id: 'overview', label: '概覽' },
+      { id: 'cluster', label: '叢集' },
     ];
     if (!console) return base;
     return [...base, ...console.categories.map((c) => ({ id: c.id, label: c.label }))];
@@ -512,6 +514,8 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             </CardSection>
           </Card>
         ) : null}
+
+        {tab === 'cluster' ? <DbClusterPanel engine={engine} /> : null}
 
         {console?.categories.map((cat) =>
           tab === cat.id ? (

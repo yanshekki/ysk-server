@@ -58,6 +58,7 @@ export * from './adminer.js';
 export * from './rebuild.js';
 export * from './backup-restic.js';
 export * from './dns-cluster.js';
+export * from './db-cluster/index.js';
 export * from './web-stats.js';
 export * from './apply-audit.js';
 export * from './package-limits.js';

@@ -3124,6 +3124,102 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, ok ? 200 : 404, { ok });
       }
 
+      // —— DB HA clusters (engine HA; v1 plan-first) ——
+      if (method === 'GET' && url.pathname === '/api/v1/db/clusters') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listDbClusters } = await import('@ysk/core');
+        const engine = url.searchParams.get('engine') as
+          | 'mysql'
+          | 'mariadb'
+          | 'postgres'
+          | 'redis'
+          | null;
+        const items = listDbClusters(
+          ctx.db,
+          engine && ['mysql', 'mariadb', 'postgres', 'redis'].includes(engine)
+            ? engine
+            : undefined,
+        );
+        return sendJson(res, 200, { ok: true, items });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/db/clusters') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          engine?: 'mysql' | 'mariadb' | 'postgres' | 'redis';
+          kind?: string;
+          members?: Array<{
+            host: string;
+            role?: string;
+            port?: number;
+            access?: 'local' | 'ssh' | 'fleet';
+            label?: string;
+          }>;
+          params?: Record<string, string | number | boolean>;
+        };
+        const { createDbCluster } = await import('@ysk/core');
+        const cluster = createDbCluster(ctx.db, {
+          name: data.name ?? '',
+          engine: data.engine ?? 'mariadb',
+          kind: (data.kind ?? 'mariadb-galera') as 'mariadb-galera',
+          members: data.members,
+          params: data.params,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.create',
+          resource: cluster.id,
+          detail: { name: cluster.name, kind: cluster.kind, members: cluster.members.length },
+          ok: true,
+        });
+        return sendJson(res, 201, { ok: true, cluster });
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getDbCluster } = await import('@ysk/core');
+        return sendJson(res, 200, { ok: true, cluster: getDbCluster(ctx.db, id) });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { deleteDbCluster } = await import('@ysk/core');
+        const ok = deleteDbCluster(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.delete',
+          resource: id,
+          detail: { ok, note: 'registry only; conf on disk not auto-removed' },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 404, {
+          ok,
+          notes: ok
+            ? ['已刪除叢集登記；系統 conf 需人手清理（v1 不自動拆除）']
+            : ['找不到叢集'],
+        });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/plan$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { planAndMaterializeDbCluster } = await import('@ysk/core');
+        const { cluster, plan } = planAndMaterializeDbCluster({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          clusterId: id,
+          writeArtifacts: true,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.cluster.plan',
+          resource: id,
+          detail: { ok: plan.ok, steps: plan.steps.length, dryRun: true },
+          ok: plan.ok,
+        });
+        return sendJson(res, plan.ok ? 200 : 422, { ok: plan.ok, cluster, plan });
+      }
+
       if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/check') {
         ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);

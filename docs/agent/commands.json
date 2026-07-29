@@ -64,6 +64,27 @@
       "exitCodes": { "5": "config test failed", "4": "nginx binary missing" }
     },
     {
+      "name": "db-cluster list",
+      "risk": "read",
+      "summary": "List DB HA clusters (engine HA registry)",
+      "args": ["--engine"],
+      "example": "ysk-server db-cluster list --engine mariadb --json"
+    },
+    {
+      "name": "db-cluster create",
+      "risk": "write-panel",
+      "summary": "Register HA topology (draft)",
+      "args": ["--name", "--engine", "--kind", "--member"],
+      "example": "ysk-server db-cluster create --name g1 --engine mariadb --kind mariadb-galera --member 10.0.0.1=node:local --member 10.0.0.2=node:ssh --json"
+    },
+    {
+      "name": "db-cluster plan",
+      "risk": "write-panel",
+      "summary": "Materialize dry-run conf/scripts under dataDir/clusters",
+      "args": ["--id"],
+      "example": "ysk-server db-cluster plan --id UUID --json"
+    },
+    {
       "name": "ssl list",
       "risk": "read",
       "summary": "List managed SSL certificates",

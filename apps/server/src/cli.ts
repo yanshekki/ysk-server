@@ -47,6 +47,7 @@ const CLI_COMMANDS = [
   'host',
   'nginx',
   'ssl',
+  'db-cluster',
   'services',
   'defense',
   'protection',
@@ -192,6 +193,7 @@ Commands:
   host                  overview|metrics (read-only)
   nginx                 status|list|test|sync
   ssl                   list|get (certificates)
+  db-cluster            list|get|create|plan (HA plan-first)
   services              Host service matrix (systemctl probe)
   defense | protection  status|ban|unban|whitelist
   agents                List/probe agent runtimes (experimental)
@@ -1165,6 +1167,139 @@ async function main(argv: string[]): Promise<number> {
       }
       process.stderr.write(
         `Usage: ${CLI_NAME} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** DB engine HA clusters — plan-first (MariaDB Galera v1) */
+  if (command === 'db-cluster') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const {
+      listDbClusters,
+      getDbCluster,
+      createDbCluster,
+      planAndMaterializeDbCluster,
+      deleteDbCluster,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'list' || sub === 'ls') {
+        const engineRaw = getOpt(args, '--engine');
+        const engine =
+          engineRaw === 'mysql' ||
+          engineRaw === 'mariadb' ||
+          engineRaw === 'postgres' ||
+          engineRaw === 'redis'
+            ? engineRaw
+            : undefined;
+        printJson({ ok: true, items: listDbClusters(ctx.db, engine) });
+        return 0;
+      }
+      if (sub === 'get' || sub === 'show') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} db-cluster get --id UUID [--json]\n`);
+          return 2;
+        }
+        printJson({ ok: true, cluster: getDbCluster(ctx.db, id) });
+        return 0;
+      }
+      if (sub === 'create') {
+        const name = getOpt(args, '--name');
+        const engineRaw = getOpt(args, '--engine') ?? 'mariadb';
+        const kindRaw = getOpt(args, '--kind') ?? 'mariadb-galera';
+        if (!name) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n`,
+          );
+          return 2;
+        }
+        const memberArgs: string[] = [];
+        for (let i = 0; i < args.length; i++) {
+          if (args[i] === '--member' && args[i + 1] && !args[i + 1].startsWith('-')) {
+            memberArgs.push(args[i + 1]);
+          }
+        }
+        if (memberArgs.length < 1) {
+          process.stderr.write('Need at least one --member HOST[=role][:access]\n');
+          return 2;
+        }
+        const members = memberArgs.map((spec, idx) => {
+          // HOST or HOST=role or HOST=role:access
+          const [hostPart, rest] = spec.split('=');
+          const host = hostPart.trim();
+          let role: string | undefined;
+          let access: 'local' | 'ssh' | 'fleet' | undefined = idx === 0 ? 'local' : 'ssh';
+          if (rest) {
+            const [r, a] = rest.split(':');
+            role = r || undefined;
+            if (a === 'local' || a === 'ssh' || a === 'fleet') access = a;
+          }
+          return { host, role, access };
+        });
+        const engine = (
+          ['mysql', 'mariadb', 'postgres', 'redis'].includes(engineRaw)
+            ? engineRaw
+            : 'mariadb'
+        ) as 'mysql' | 'mariadb' | 'postgres' | 'redis';
+        const kind = kindRaw as
+          | 'mariadb-galera'
+          | 'mysql-replica'
+          | 'postgres-replica'
+          | 'redis-replica'
+          | 'redis-sentinel';
+        const cluster = createDbCluster(ctx.db, {
+          name,
+          engine,
+          kind,
+          members,
+          params: {
+            ...(getOpt(args, '--sst')
+              ? { sstMethod: getOpt(args, '--sst')! }
+              : {}),
+            ...(getOpt(args, '--cluster-name')
+              ? { clusterName: getOpt(args, '--cluster-name')! }
+              : {}),
+          },
+        });
+        printJson({ ok: true, cluster });
+        return 0;
+      }
+      if (sub === 'plan') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} db-cluster plan --id UUID [--json]\n`);
+          return 2;
+        }
+        const { cluster, plan } = planAndMaterializeDbCluster({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          clusterId: id,
+          writeArtifacts: true,
+        });
+        printJson({ ok: plan.ok, dryRun: true, cluster, plan });
+        return plan.ok ? 0 : 1;
+      }
+      if (sub === 'delete' || sub === 'rm') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} db-cluster delete --id UUID [--json]\n`);
+          return 2;
+        }
+        const ok = deleteDbCluster(ctx.db, id);
+        printJson({
+          ok,
+          notes: ok
+            ? ['registry removed; system conf not auto-cleaned']
+            : ['not found'],
+        });
+        return ok ? 0 : 4;
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|delete [--engine mariadb] [--json]\n`,
       );
       return 2;
     } finally {

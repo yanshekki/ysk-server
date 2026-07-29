@@ -173,6 +173,20 @@ ysk-server ssl get --domain example.com [--json]
 
 Read-only views of managed certs (`dataDir/certs` + registry). No LE apply here.
 
+## db-cluster (engine HA, plan-first)
+
+```bash
+ysk-server db-cluster list [--engine mariadb] [--json]
+ysk-server db-cluster get --id UUID [--json]
+ysk-server db-cluster create --name g1 --engine mariadb --kind mariadb-galera \
+  --member 10.0.0.1=node:local --member 10.0.0.2=node:ssh [--sst mariabackup] [--json]
+ysk-server db-cluster plan --id UUID [--json]    # always dry-run; writes dataDir/clusters/
+ysk-server db-cluster delete --id UUID [--json]  # registry only
+```
+
+v1 planner: **MariaDB Galera**. Other kinds return honest not-implemented plan.  
+No TEST-NET default hosts. Panel: **MariaDB 服務 → 叢集**.
+
 ## hosting
 
 ```bash
