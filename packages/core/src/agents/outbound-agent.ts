@@ -64,9 +64,11 @@ export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: stri
       result = opts.onCommand
         ? await opts.onCommand(cmd)
         : { echo: cmd.payload, agentId: opts.agentId, ok: true };
+      // CLI / handler results: non-zero exit or ok:false → error status in history
+      if (isCommandFailure(result)) err = true;
     } catch (e) {
       err = true;
-      result = { error: e instanceof Error ? e.message : String(e) };
+      result = { error: e instanceof Error ? e.message : String(e), ok: false };
     }
     await fetchFn(`${base}/api/v1/fleet/commands/${cmd.id}/ack`, {
       method: 'POST',
@@ -111,4 +113,14 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
       resolve();
     });
   });
+}
+
+/** Detect failed CLI/handler payload so fleet history marks status=error. */
+export function isCommandFailure(result: unknown): boolean {
+  if (result == null || typeof result !== 'object') return false;
+  const r = result as Record<string, unknown>;
+  if (r.ok === false) return true;
+  if (typeof r.exitCode === 'number' && r.exitCode !== 0) return true;
+  if (typeof r.error === 'string' && r.error.length > 0 && r.ok !== true) return true;
+  return false;
 }

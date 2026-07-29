@@ -69,4 +69,5 @@ ysk-server agent run --control-plane URL --id AGENT_ID
 ```
 
 Queue work as `{ "cli": ["host", "overview"] }` (auto `--json` on edge).  
+Ack includes `exitCode` + nested CLI JSON; panel history shows both.  
 Prefer local CLI for this machine when single-host.

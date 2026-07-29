@@ -1,8 +1,9 @@
 /**
  * Agents — fleet ops (register / command / history / remove) + runtime probe/install.
  * Panel register ≠ online; commands queue until edge agent pulls.
+ * History shows CLI exit codes + pretty JSON when edge acks { cli: [...] }.
  */
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAgents } from '../features/agents';
@@ -51,12 +52,88 @@ function cmdStatusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info'
   return 'neutral';
 }
 
-function formatPayload(p: unknown): string {
+function prettyJson(p: unknown, max = 12_000): string {
   try {
-    return JSON.stringify(p);
+    const s = JSON.stringify(p, null, 2);
+    return s.length > max ? `${s.slice(0, max)}\n…` : s;
   } catch {
     return String(p);
   }
+}
+
+/** Human summary of queued payload */
+function summarizePayload(p: unknown): string {
+  if (p == null) return '—';
+  if (typeof p !== 'object') return String(p);
+  const o = p as Record<string, unknown>;
+  if (Array.isArray(o.cli)) {
+    return `ysk-server ${o.cli.map(String).join(' ')}`;
+  }
+  if (typeof o.op === 'string') {
+    return o.op === 'echo' && o.message != null
+      ? `op:echo ${String(o.message)}`
+      : `op:${o.op}`;
+  }
+  try {
+    const s = JSON.stringify(p);
+    return s.length > 80 ? `${s.slice(0, 80)}…` : s;
+  } catch {
+    return '…';
+  }
+}
+
+type CliAckShape = {
+  ok?: boolean;
+  exitCode?: number;
+  result?: unknown;
+  stderr?: string;
+  blocked?: boolean;
+  dryRun?: boolean;
+  error?: string;
+  at?: string;
+  op?: string;
+  echo?: unknown;
+  note?: string;
+};
+
+function asCliAck(result: unknown): CliAckShape | null {
+  if (result == null || typeof result !== 'object') return null;
+  return result as CliAckShape;
+}
+
+/** Nested CLI JSON stdout when edge wraps spawnSync output */
+function unwrapCliBody(ack: CliAckShape | null): unknown {
+  if (!ack) return null;
+  if (ack.result !== undefined) return ack.result;
+  return ack;
+}
+
+function exitCodeOf(cmd: FleetCommand): number | null {
+  const ack = asCliAck(cmd.result);
+  if (ack && typeof ack.exitCode === 'number') return ack.exitCode;
+  if (cmd.status === 'error') return 1;
+  if (cmd.status === 'done') return 0;
+  return null;
+}
+
+function exitTone(code: number | null): 'ok' | 'warn' | 'danger' | 'neutral' {
+  if (code === null) return 'neutral';
+  if (code === 0) return 'ok';
+  if (code === 2 || code === 3 || code === 4) return 'warn';
+  return 'danger';
+}
+
+function exitHint(code: number | null): string {
+  if (code === null) return '';
+  const map: Record<number, string> = {
+    0: 'ok',
+    1: 'error',
+    2: 'validation',
+    3: 'blocked',
+    4: 'not_found',
+    5: 'host_error',
+  };
+  return map[code] ?? `code ${code}`;
 }
 
 export function AgentsPage() {
@@ -100,6 +177,7 @@ export function AgentsPage() {
   const [cmdCustom, setCmdCustom] = useState('projects list --json');
 
   const [histAgent, setHistAgent] = useState<FleetAgent | null>(null);
+  const [resultCmd, setResultCmd] = useState<FleetCommand | null>(null);
 
   function buildCliPayload(cli: string[]): { cli: string[] } {
     const argv = cli.map(String);
@@ -153,6 +231,15 @@ export function AgentsPage() {
       /* hook */
     }
   }
+
+  // Auto-refresh command history while open (edge may ack shortly after queue)
+  useEffect(() => {
+    if (!histAgent) return;
+    const t = window.setInterval(() => {
+      void loadCommands(histAgent.id);
+    }, 4000);
+    return () => window.clearInterval(t);
+  }, [histAgent, loadCommands]);
 
   async function onSendCommand(e: FormEvent) {
     e.preventDefault();
@@ -290,10 +377,11 @@ export function AgentsPage() {
               <strong>登記</strong>：寫入控制面清單（狀態「僅登記」）— 唔代表進程已跑
             </li>
             <li>
-              <strong>下指令</strong>：ping / echo / sysinfo 排隊；邊緣 agent pull 後執行並 ack
+              <strong>下指令</strong>：CLI preset（readiness / host / projects…）或自訂；邊緣 pull 後跑{' '}
+              <code className="inline">ysk-server</code> 並 ack
             </li>
             <li>
-              <strong>指令紀錄</strong>：睇 queued / done / error 同 result
+              <strong>指令紀錄</strong>：queued / done / error、exit code、pretty JSON result
             </li>
             <li>
               <strong>刪除</strong>：移除 session 同相關訊息
@@ -404,7 +492,7 @@ export function AgentsPage() {
         <Card>
           <CardSection
             title={`指令紀錄 · ${histAgent.agent_id}`}
-            description="queued 等節點 pull；done/error 為 ack 後結果"
+            description="queued 等節點 pull；done/error 為 ack。CLI 結果含 exit code + JSON（約 4s 自動刷新）"
           >
             <div className="btn-row u-mb-3">
               <Button
@@ -419,7 +507,7 @@ export function AgentsPage() {
                 variant="primary"
                 size="sm"
                 onClick={() => {
-                  setCmdPreset('ping');
+                  setCmdPreset('cli-readiness');
                   setCmdAgent(histAgent);
                 }}
               >
@@ -445,29 +533,83 @@ export function AgentsPage() {
                     <tr>
                       <th>時間</th>
                       <th>狀態</th>
-                      <th>payload</th>
-                      <th>result</th>
+                      <th>exit</th>
+                      <th>指令</th>
+                      <th>結果摘要</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
-                    {commands.map((c: FleetCommand) => (
-                      <tr key={c.id}>
-                        <td className="muted u-nowrap">
-                          {c.created_at?.slice(0, 19).replace('T', ' ')}
-                        </td>
-                        <td>
-                          <Badge tone={cmdStatusTone(c.status)}>{c.status}</Badge>
-                        </td>
-                        <td>
-                          <code className="inline u-break-all">
-                            {formatPayload(c.payload)}
-                          </code>
-                        </td>
-                        <td className="muted u-break-all">
-                          {c.result != null ? formatPayload(c.result) : '—'}
-                        </td>
-                      </tr>
-                    ))}
+                    {commands.map((c: FleetCommand) => {
+                      const code = exitCodeOf(c);
+                      const ack = asCliAck(c.result);
+                      const body = unwrapCliBody(ack);
+                      const flags: string[] = [];
+                      if (ack?.dryRun) flags.push('dry-run');
+                      if (ack?.blocked) flags.push('blocked');
+                      if (ack && ack.ok === false) flags.push('ok:false');
+                      if (
+                        body &&
+                        typeof body === 'object' &&
+                        (body as { dryRun?: boolean }).dryRun
+                      ) {
+                        flags.push('plan');
+                      }
+                      const summary =
+                        c.result == null
+                          ? '—'
+                          : ack?.error
+                            ? String(ack.error)
+                            : flags.length
+                              ? flags.join(' · ')
+                              : code === 0
+                                ? 'ok'
+                                : code != null
+                                  ? exitHint(code)
+                                  : '有結果';
+                      return (
+                        <tr key={c.id}>
+                          <td className="muted u-nowrap">
+                            {c.created_at?.slice(0, 19).replace('T', ' ')}
+                            {c.finished_at ? (
+                              <div className="muted u-text-sm">
+                                完成 {c.finished_at.slice(0, 19).replace('T', ' ')}
+                              </div>
+                            ) : null}
+                          </td>
+                          <td>
+                            <Badge tone={cmdStatusTone(c.status)}>{c.status}</Badge>
+                          </td>
+                          <td>
+                            {code != null ? (
+                              <Badge tone={exitTone(code)}>
+                                {code}
+                                {exitHint(code) ? ` · ${exitHint(code)}` : ''}
+                              </Badge>
+                            ) : (
+                              <span className="muted">—</span>
+                            )}
+                          </td>
+                          <td>
+                            <code className="inline u-break-all">
+                              {summarizePayload(c.payload)}
+                            </code>
+                          </td>
+                          <td className="muted u-break-all">{summary}</td>
+                          <td>
+                            {c.result != null ? (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setResultCmd(c)}
+                              >
+                                JSON
+                              </Button>
+                            ) : null}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -729,8 +871,78 @@ intervalMs: 5000`}
             Edge <code className="inline">ysk-server agent run</code> 收到{' '}
             <code className="inline">{`{ "cli": ["…"] }`}</code> 會喺本機執行 CLI（自動加
             --json）。改系統仍要邊緣設 <code className="inline">YSK_EXECUTE=1</code>。
+            完成後喺「紀錄」睇 exit code 同 JSON。
           </FormHint>
         </form>
+      </Modal>
+
+      <Modal
+        open={Boolean(resultCmd)}
+        onClose={() => setResultCmd(null)}
+        title={
+          resultCmd
+            ? `指令結果 · exit ${exitCodeOf(resultCmd) ?? '—'}`
+            : '指令結果'
+        }
+        description={
+          resultCmd ? summarizePayload(resultCmd.payload) : undefined
+        }
+        footer={
+          <Button variant="primary" size="md" onClick={() => setResultCmd(null)}>
+            關閉
+          </Button>
+        }
+      >
+        {resultCmd ? (
+          <div className="stack-gap">
+            <div className="btn-row">
+              <Badge tone={cmdStatusTone(resultCmd.status)}>{resultCmd.status}</Badge>
+              {exitCodeOf(resultCmd) != null ? (
+                <Badge tone={exitTone(exitCodeOf(resultCmd))}>
+                  exit {exitCodeOf(resultCmd)} · {exitHint(exitCodeOf(resultCmd))}
+                </Badge>
+              ) : null}
+              {asCliAck(resultCmd.result)?.dryRun ? (
+                <Badge tone="warn">dry-run</Badge>
+              ) : null}
+              {asCliAck(resultCmd.result)?.blocked ? (
+                <Badge tone="warn">blocked</Badge>
+              ) : null}
+            </div>
+            <FormHint>
+              外層：edge ack（exitCode / stderr）。內層 <code className="inline">result</code>：
+              CLI --json stdout。
+            </FormHint>
+            {asCliAck(resultCmd.result)?.stderr ? (
+              <div>
+                <div className="muted u-text-sm u-mb-1">stderr</div>
+                <pre className="ops-pre" style={{ whiteSpace: 'pre-wrap', maxHeight: 160 }}>
+                  {String(asCliAck(resultCmd.result)?.stderr).slice(0, 4000)}
+                </pre>
+              </div>
+            ) : null}
+            <div>
+              <div className="muted u-text-sm u-mb-1">ack + CLI JSON</div>
+              <pre
+                className="ops-pre"
+                style={{ whiteSpace: 'pre-wrap', maxHeight: 420, overflow: 'auto' }}
+              >
+                {prettyJson(resultCmd.result)}
+              </pre>
+            </div>
+            {unwrapCliBody(asCliAck(resultCmd.result)) !== resultCmd.result ? (
+              <div>
+                <div className="muted u-text-sm u-mb-1">CLI stdout body</div>
+                <pre
+                  className="ops-pre"
+                  style={{ whiteSpace: 'pre-wrap', maxHeight: 320, overflow: 'auto' }}
+                >
+                  {prettyJson(unwrapCliBody(asCliAck(resultCmd.result)))}
+                </pre>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </Modal>
     </FeaturePageLayout>
   );

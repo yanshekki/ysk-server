@@ -468,9 +468,11 @@ async function main(argv: string[]): Promise<number> {
           } catch {
             /* raw */
           }
+          const exitCode = r.status ?? 1;
           return {
-            ok: r.status === 0,
-            exitCode: r.status ?? 1,
+            ok: exitCode === 0,
+            exitCode,
+            cli: argv,
             result: parsed,
             stderr: (r.stderr || '').slice(0, 4000),
             at: new Date().toISOString(),
@@ -478,10 +480,11 @@ async function main(argv: string[]): Promise<number> {
         }
         // Legacy demos
         if (payload?.op === 'ping') {
-          return { ok: true, op: 'pong', at: new Date().toISOString() };
+          return { ok: true, exitCode: 0, op: 'pong', at: new Date().toISOString() };
         }
         return {
           ok: true,
+          exitCode: 0,
           echo: cmd.payload,
           note: 'Pass { "cli": ["projects", "list"] } to run ysk-server CLI',
           at: new Date().toISOString(),

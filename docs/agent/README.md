@@ -113,8 +113,21 @@ ysk-server agent run --control-plane http://127.0.0.1:9287 --id edge-1
 { "cli": ["logs", "query", "--source", "journal:", "--lines", "50"] }
 ```
 
-面板「下指令」預設亦係呢啲 CLI preset。  
-本機運維仍直接 call `ysk-server … --json` 最快；fleet 只係多機分發。
+Edge ack 形狀（面板「紀錄 → JSON」可見）：
+
+```json
+{
+  "ok": true,
+  "exitCode": 0,
+  "cli": ["projects", "list", "--json"],
+  "result": { "ok": true, "items": [] },
+  "stderr": "",
+  "at": "…"
+}
+```
+
+`exitCode !== 0` 或 `ok: false` → 歷史狀態 **error**。  
+面板「下指令」預設 CLI preset；本機運維仍直接 call `ysk-server … --json` 最快。
 
 ---
 
