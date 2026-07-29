@@ -2,6 +2,7 @@
  * Server-wide backups — list / run-all / restore / delete (honest ok).
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Badge,
@@ -62,6 +63,7 @@ function formatBytes(n?: number): string {
 }
 
 export function BackupsPage() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<BackupItem[]>([]);
   const [lastRun, setLastRun] = useState<Record<string, unknown> | null>(null);
   const [liveProjectCount, setLiveProjectCount] = useState(0);
@@ -260,8 +262,7 @@ export function BackupsPage() {
 
   return (
     <FeaturePageLayout
-      title="備份"
-      subtitle="專案 tar · 還原 · 遠端 / restic · 誠實結果"
+      title={t('nav.backups', { defaultValue: '備份' })}
       showCapability={false}
       actions={
         <>

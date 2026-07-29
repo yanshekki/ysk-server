@@ -2,6 +2,7 @@
  * Control-plane systemd unit — professional ops console (honest write vs enable).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -68,6 +69,7 @@ function enabledTone(v?: string): 'ok' | 'warn' | 'neutral' {
 }
 
 export function SystemdUnitPage() {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<SystemdStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -187,8 +189,7 @@ export function SystemdUnitPage() {
 
   return (
     <FeaturePageLayout
-      title="systemd 單元"
-      subtitle="控制面 ysk-server.service · 誠實寫入 ≠ 啟用"
+      title={t('nav.systemd', { defaultValue: 'systemd' })}
       showCapability={false}
       actions={
         <>

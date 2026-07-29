@@ -4,6 +4,7 @@
  * Create always in Modal.
  */
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAiTasks } from '../features/llm';
 import type { AiTask } from '../features/llm';
@@ -83,6 +84,7 @@ function stepCount(task: AiTask) {
 }
 
 export function AiPage() {
+  const { t } = useTranslation();
   const {
     prompt,
     setPrompt,
@@ -160,8 +162,7 @@ export function AiPage() {
 
   return (
     <FeaturePageLayout
-      title="AI 任務"
-      subtitle="計劃 → 審批 → 執行 · 工具受 allowlist 監督"
+      title={t('nav.ai', { defaultValue: 'AI 任務' })}
       showCapability={false}
       actions={
         <div className="btn-row">

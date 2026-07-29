@@ -3,6 +3,7 @@
  * Not UFW (ports) · Defense Center orchestrates both under attack.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -31,6 +32,7 @@ const F2B_TABS = ['bans', 'jails', 'policy', 'service'] as const;
 type F2bStatus = Awaited<ReturnType<typeof systemApi.fail2banStatus>>;
 
 export function Fail2banPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = usePageTab(F2B_TABS, 'bans');
   const [status, setStatus] = useState<F2bStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -92,8 +94,7 @@ export function Fail2banPage() {
 
   return (
     <FeaturePageLayout
-      title="fail2ban"
-      subtitle="日誌觸發 · 臨時封禁 — 唔係 UFW 永久拒埠"
+      title={t('nav.fail2ban', { defaultValue: 'fail2ban' })}
       backTo="/protection"
       backLabel="防護中心"
       actions={

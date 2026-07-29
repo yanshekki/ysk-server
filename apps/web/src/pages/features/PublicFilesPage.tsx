@@ -2,6 +2,7 @@
  * Public files nginx site — Form Kit + DescriptionList.
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Button,
@@ -24,6 +25,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { Link } from 'react-router-dom';
 
 export function PublicFilesPage() {
+  const { t } = useTranslation();
   const ctx = getServerContext();
   const [serverName, setServerName] = useState(`files.${ctx.domain}`);
   const [quotaMb, setQuotaMb] = useState('1024');
@@ -31,8 +33,7 @@ export function PublicFilesPage() {
 
   return (
     <FeaturePageLayout
-      title="公用檔案伺服器"
-      subtitle="Nginx 公開檔案站點"
+      title={t('nav.publicFiles', { defaultValue: '公用檔案' })}
       showCapability={false}
       actions={
         <Link to="/files" className="btn btn--ghost btn--md">

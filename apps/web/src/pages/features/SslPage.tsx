@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -35,6 +36,7 @@ function statusBadge(status: string, filesExist: boolean) {
 }
 
 export function SslPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     items,
@@ -115,8 +117,7 @@ export function SslPage() {
 
   return (
     <FeaturePageLayout
-      title="SSL 憑證"
-      subtitle="在面板上傳或申請憑證"
+      title={t('nav.ssl', { defaultValue: 'SSL 憑證' })}
       actions={
         <div className="btn-row">
           <Button variant="secondary" size="md" onClick={() => setLeOpen(true)}>

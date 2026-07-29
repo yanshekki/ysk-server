@@ -2,6 +2,7 @@
  * Redis — service metrics + professional DB picker + equal-height key browser.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -71,6 +72,7 @@ function keysInDb(svc: RedisServiceStatus | null, db: number): number {
 }
 
 export function RedisPage() {
+  const { t } = useTranslation();
   const [svc, setSvc] = useState<RedisServiceStatus | null>(null);
   const [db, setDb] = useState(0);
   const [pattern, setPattern] = useState('*');
@@ -255,8 +257,7 @@ export function RedisPage() {
 
   return (
     <FeaturePageLayout
-      title="Redis"
-      subtitle="瀏覽與管理快取資料"
+      title={t('nav.redis', { defaultValue: 'Redis' })}
       actions={
         <div className="btn-row">
           <Link to="/databases/redis/service">

@@ -2,6 +2,7 @@
  * PostgreSQL databases — parity with SqlEngine (status strip + install/start + apply honesty).
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -30,6 +31,7 @@ import { consoleApi, type ServiceConsole } from '../../features/db-service/conso
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 
 export function PostgresPage() {
+  const { t } = useTranslation();
   const dbs = useResourceCrud('postgres/databases');
   const [svc, setSvc] = useState<ServiceConsole | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -101,8 +103,7 @@ export function PostgresPage() {
 
   return (
     <FeaturePageLayout
-      title="PostgreSQL"
-      subtitle="PostgreSQL 資料庫與服務狀態"
+      title={t('nav.postgres', { defaultValue: 'PostgreSQL' })}
       actions={
         <div className="btn-row">
           <Link to="/databases/postgres/service">

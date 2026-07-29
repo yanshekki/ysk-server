@@ -132,8 +132,7 @@ export function SecurityPage() {
 
   return (
     <FeaturePageLayout
-      title={t('security.title')}
-      subtitle={t('security.allowlist')}
+      title={t('nav.security', { defaultValue: '帳號安全' })}
       showCapability={false}
       actions={
         <>

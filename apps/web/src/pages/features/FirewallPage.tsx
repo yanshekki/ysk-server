@@ -3,6 +3,7 @@
  * Not fail2ban (log bans) · not Defense Center (attack orchestration).
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -70,6 +71,7 @@ function parsePorts(extraPorts: string): number[] {
 }
 
 export function FirewallPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = usePageTab(FW_TABS, 'rules');
   const [status, setStatus] = useState<FwStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -109,8 +111,7 @@ export function FirewallPage() {
 
   return (
     <FeaturePageLayout
-      title="防火牆"
-      subtitle="UFW · 埠策略與永久拒絕 — 唔係 fail2ban 臨時 ban"
+      title={t('nav.firewall', { defaultValue: '防火牆' })}
       backTo="/protection"
       backLabel="防護中心"
       actions={

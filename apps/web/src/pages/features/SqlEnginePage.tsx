@@ -190,7 +190,6 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   return (
     <FeaturePageLayout
       title={title}
-      subtitle={`${title} 資料庫與用戶`}
       showCapability={false}
       actions={
         <div className="btn-row">

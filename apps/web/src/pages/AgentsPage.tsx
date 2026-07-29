@@ -150,8 +150,7 @@ export function AgentsPage() {
 
   return (
     <FeaturePageLayout
-      title={t('agents.title')}
-      subtitle={t('agents.body')}
+      title={t('nav.agents', { defaultValue: 'AI Agent' })}
       actions={
         <div className="btn-row">
           <Button variant="primary" size="md" onClick={openRegister}>

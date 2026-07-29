@@ -3,6 +3,7 @@
  * Explore (sources + viewer) · Ops (vacuum/disk) · Settings
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Alert,
@@ -163,6 +164,7 @@ function groupLabel(g: string): string {
 }
 
 export function LogsPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = usePageTab(TABS, 'explore');
   const [overview, setOverview] = useState<Overview | null>(null);
@@ -689,8 +691,7 @@ export function LogsPage() {
 
   return (
     <FeaturePageLayout
-      title="日誌中心"
-      subtitle="即時觀測 journal · 系統檔 · 專案 log — allowlist 安全 · 誠實權限"
+      title={t('nav.logs', { defaultValue: '日誌中心' })}
       showCapability={false}
       actions={
         <div className="lc-head-actions">

@@ -2,6 +2,7 @@
  * Admin users + packages — professional ops console.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -41,6 +42,7 @@ type Pkg = {
 };
 
 export function UsersPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = usePageTab(['users', 'packages'] as const, 'users');
   const [users, setUsers] = useState<UserRow[]>([]);
   const [packages, setPackages] = useState<Pkg[]>([]);
@@ -166,8 +168,7 @@ export function UsersPage() {
 
   return (
     <FeaturePageLayout
-      title="用戶與方案"
-      subtitle="管理員 · 角色 · 配額方案 · 模擬登入"
+      title={t('nav.users', { defaultValue: '用戶與方案' })}
       showCapability={false}
       actions={
         <>

@@ -2,6 +2,7 @@
  * Node.js runtime — probe + install with standard UX.
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Button,
@@ -23,6 +24,7 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 
 export function NodeRuntimePage() {
+  const { t } = useTranslation();
   const [version, setVersion] = useState('20');
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
@@ -51,8 +53,7 @@ export function NodeRuntimePage() {
 
   return (
     <FeaturePageLayout
-      title="Node.js 執行環境"
-      subtitle="探測與安裝 Node 主版本"
+      title={t('nav.node', { defaultValue: 'Node.js' })}
       actions={
         <Button
           variant="secondary"

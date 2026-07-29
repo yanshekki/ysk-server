@@ -2,6 +2,7 @@
  * ownCloud-style file manager — public + project roots, trash, shares, upload.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Alert,
@@ -56,6 +57,7 @@ function joinPath(dir: string, name: string): string {
 }
 
 export function FilesPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const rootFromQuery = searchParams.get('root') || 'public';
   const [root, setRoot] = useState(rootFromQuery);
@@ -269,8 +271,7 @@ export function FilesPage() {
 
   return (
     <FeaturePageLayout
-      title="檔案"
-      subtitle="公用 / 專案 · 版本 · WebDAV · 分享"
+      title={t('nav.files', { defaultValue: '檔案' })}
       actions={
         <div className="btn-row">
           <Link to="/files/public">
@@ -295,17 +296,9 @@ export function FilesPage() {
       ) : null}
 
       <OpsHero
-        eyebrow="Files"
-        title="檔案管理"
         pill={`${items.filter((i) => i.type === 'file').length} 檔`}
         pillTone="ok"
         tone="ok"
-        hint="公用／專案根 · 回收桶 · 分享 · WebDAV。刪除進回收桶（可還原）。"
-        cta={
-          <Link to="/files/public" className="btn btn--secondary btn--md">
-            公用站設定
-          </Link>
-        }
         stats={[
           {
             label: '檔案',

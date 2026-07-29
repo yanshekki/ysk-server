@@ -2,6 +2,7 @@
  * Host service matrix — professional ops console.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -51,6 +52,7 @@ function toneFor(active: string, installed: boolean): 'ok' | 'warn' | 'danger' |
 }
 
 export function ServicesPage() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<MatrixItem[]>([]);
   const [meta, setMeta] = useState<{
     executeEnabled?: boolean;
@@ -130,8 +132,7 @@ export function ServicesPage() {
 
   return (
     <FeaturePageLayout
-      title="服務狀態"
-      subtitle="systemd 服務矩陣 · 真實探測 · 生命週期操作"
+      title={t('nav.services', { defaultValue: '服務狀態' })}
       showCapability={false}
       actions={
         <>

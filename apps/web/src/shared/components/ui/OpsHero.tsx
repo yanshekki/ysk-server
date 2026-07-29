@@ -11,11 +11,13 @@ export type OpsHeroStat = {
 };
 
 export type OpsHeroProps = {
-  eyebrow: string;
-  /** Main heading text (after optional pill) */
-  title: ReactNode;
+  /** Optional small label above title — omit when same as page title */
+  eyebrow?: string;
+  /** Main heading; omit when FeaturePageLayout already shows the same title */
+  title?: ReactNode;
   pill?: string;
   pillTone?: OpsHeroTone;
+  /** Prefer omit; keep only critical one-line fact */
   hint?: ReactNode;
   meta?: ReactNode;
   cta?: ReactNode;
@@ -39,24 +41,29 @@ export function OpsHero({
   className,
 }: OpsHeroProps) {
   const toneCls = tone === 'neutral' ? 'ok' : tone;
+  const hasCopy = Boolean(eyebrow || title || pill || hint || meta || cta);
   return (
     <section
       className={['ops-hero', `ops-hero--${toneCls}`, className].filter(Boolean).join(' ')}
-      aria-label={typeof title === 'string' ? title : eyebrow}
+      aria-label={typeof title === 'string' ? title : eyebrow || '概覽'}
     >
       <div className="ops-hero__main">
+        {hasCopy ? (
         <div className="ops-hero__copy">
-          <div className="ops-hero__eyebrow">{eyebrow}</div>
+          {eyebrow ? <div className="ops-hero__eyebrow">{eyebrow}</div> : null}
+          {title || pill ? (
           <h2 className="ops-hero__title">
             {pill ? (
               <span className={`ops-hero__pill ops-hero__pill--${pillTone}`}>{pill}</span>
             ) : null}
             {title}
           </h2>
+          ) : null}
           {hint ? <p className="ops-hero__hint">{hint}</p> : null}
           {meta ? <div className="ops-hero__meta">{meta}</div> : null}
           {cta ? <div className="ops-hero__cta">{cta}</div> : null}
         </div>
+        ) : null}
         {stats && stats.length > 0 ? (
           <div className="ops-hero__stats" aria-label="關鍵指標">
             {stats.map((s) => (

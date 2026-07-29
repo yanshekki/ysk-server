@@ -2,6 +2,7 @@
  * vsftpd service page — professional console layout.
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -53,6 +54,7 @@ function statusLabel(s?: FtpsStatus | null): { text: string; tone: 'ok' | 'warn'
 }
 
 export function FtpsServicePage() {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState<FtpsSettings>(empty);
   const [status, setStatus] = useState<FtpsStatus | null>(null);
   const [domains, setDomains] = useState<Array<{ value: string; label: string }>>([]);
@@ -142,8 +144,7 @@ export function FtpsServicePage() {
 
   return (
     <FeaturePageLayout
-      title="vsftpd 服務"
-      subtitle="FTPS 服務控制台"
+      title={t('nav.ftpService', { defaultValue: 'vsftpd 服務' })}
       actions={
         <div className="btn-row">
           <Link to="/ftp">

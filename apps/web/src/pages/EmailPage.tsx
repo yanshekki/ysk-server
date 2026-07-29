@@ -145,8 +145,7 @@ export function EmailPage() {
 
   return (
     <FeaturePageLayout
-      title={t('email.title')}
-      subtitle="控制面登記 · 本機 MTA · 誠實權限（written ≠ 可收發）"
+      title={t('nav.email', { defaultValue: '郵件' })}
       actions={
         <div className="btn-row">
           <Button
@@ -163,59 +162,20 @@ export function EmailPage() {
         </div>
       }
     >
-      {/* Hero */}
-      <section className="mail-hero" aria-label="郵件總覽">
-        <div className="mail-hero__main">
-          <div className="mail-hero__eyebrow">Mail Control Plane</div>
-          <h2 className="mail-hero__title">
-            郵件伺服器
-            <Badge tone={items.length > 0 ? 'ok' : 'neutral'}>
-              {items.length} 域名
-            </Badge>
-            {applied > 0 ? (
-              <Badge tone="ok">{applied} 已套用</Badge>
-            ) : (
-              <Badge tone="warn">尚未套用系統</Badge>
-            )}
-          </h2>
-          <p className="mail-hero__hint">
-            本頁管理域名登記與本機佇列。真正安裝 Postfix／Dovecot／Webmail、DNS
-            與 SSL 請進入域名詳情「一鍵設定郵件」。
-          </p>
-        </div>
-        <KpiGrid cols={4} className="mail-hero__kpis">
-          <KpiCard label="已登記域名">
-            <span className="mail-kpi-value">{items.length}</span>
-            <span className="mail-kpi-sub">控制面列表</span>
-          </KpiCard>
-          <KpiCard
-            label="健康 ≥80"
-            badge={
-              healthy > 0
-                ? { label: 'OK', tone: 'ok' }
-                : { label: '—', tone: 'neutral' }
-            }
-          >
-            <span className="mail-kpi-value">{healthy}</span>
-            <span className="mail-kpi-sub">health score</span>
-          </KpiCard>
-          <KpiCard
-            label="已套用系統"
-            badge={
-              applied > 0
-                ? { label: 'applied', tone: 'ok' }
-                : { label: 'draft', tone: 'warn' }
-            }
-          >
-            <span className="mail-kpi-value">{applied}</span>
-            <span className="mail-kpi-sub">apply_status</span>
-          </KpiCard>
-          <KpiCard label="草稿／寫入">
-            <span className="mail-kpi-value">{draft}</span>
-            <span className="mail-kpi-sub">尚未 applied</span>
-          </KpiCard>
-        </KpiGrid>
-      </section>
+      <KpiGrid cols={4}>
+        <KpiCard label="域名">
+          <span className="mail-kpi-value">{items.length}</span>
+        </KpiCard>
+        <KpiCard label="健康 ≥80">
+          <span className="mail-kpi-value">{healthy}</span>
+        </KpiCard>
+        <KpiCard label="已套用">
+          <span className="mail-kpi-value">{applied}</span>
+        </KpiCard>
+        <KpiCard label="草稿">
+          <span className="mail-kpi-value">{draft}</span>
+        </KpiCard>
+      </KpiGrid>
 
       <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}

@@ -39,7 +39,7 @@ const commonZhCn = {
 
 const projectsZhTw = {
   title: '專案',
-  subtitle: '管理網站與應用專案',
+  subtitle: '',
   create: '建立專案',
   createHint: '建立後可進入詳情完成 Deploy、網路與資源設定',
   empty: '尚未建立專案',
@@ -192,7 +192,7 @@ const projectsZhTw = {
 
 const projectsEn = {
   title: 'Projects',
-  subtitle: 'Manage sites and apps',
+  subtitle: '',
   create: 'Create project',
   createHint: 'After create, open detail to deploy, publish, and tune resources',
   empty: 'No projects yet',
@@ -346,7 +346,7 @@ const projectsEn = {
 
 const projectsZhCn = {
   title: '项目',
-  subtitle: '管理网站与应用项目',
+  subtitle: '',
   create: '创建项目',
   createHint: '创建后可进入详情完成 Deploy、网络与资源设置',
   empty: '尚未创建项目',
@@ -562,7 +562,7 @@ const resources = {
       },
       login: {
         title: '登入 YSK Server',
-        subtitle: 'YSK Limited 企業級伺服器控制平面',
+        subtitle: '伺服器控制台',
         username: '使用者名稱',
         password: '密碼',
         submit: '登入控制台',
@@ -675,7 +675,7 @@ const resources = {
       },
       login: {
         title: 'Sign in to YSK Server',
-        subtitle: 'Enterprise control plane by YSK Limited',
+        subtitle: 'Server console',
         username: 'Username',
         password: 'Password',
         submit: 'Sign in',
@@ -716,11 +716,11 @@ const resources = {
       projects: projectsEn,
       updates: {
         title: 'Intelligent updates',
-        body: 'Daily inventory, CVE lookup, structured risk advice, and approval-gated execution.',
+        body: '',
       },
       agents: {
         title: 'AI Agent runtimes',
-        body: 'OpenClaw / Hermes / IonClaw install & supervision; all tool calls go through Allowlist + Approval.',
+        body: '',
       },
     },
   },
@@ -788,7 +788,7 @@ const resources = {
       },
       login: {
         title: '登录 YSK Server',
-        subtitle: 'YSK Limited 企业级服务器控制平面',
+        subtitle: '服务器控制台',
         username: '用户名',
         password: '密码',
         submit: '登录控制台',

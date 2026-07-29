@@ -2,6 +2,7 @@
  * PHP runtime — Overview · php.ini · FPM/站點 · 工具
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Badge,
@@ -152,6 +153,7 @@ type IniCatalogGroup = {
 const PHP_TABS = ['overview', 'ini', 'site', 'tools'] as const;
 
 export function PhpRuntimePage() {
+  const { t } = useTranslation();
   const ctx = getServerContext();
   const [tab, setTab] = usePageTab(PHP_TABS, 'overview');
   const [domain, setDomain] = useState(`php.${ctx.domain}`);
@@ -226,8 +228,7 @@ export function PhpRuntimePage() {
 
   return (
     <FeaturePageLayout
-      title="PHP 執行環境"
-      subtitle="版本、php.ini、FPM pool 與站點 — 寫入 ≠ 已套用到系統"
+      title={t('nav.php', { defaultValue: 'PHP' })}
       actions={
         <Button
           variant="secondary"
@@ -259,20 +260,16 @@ export function PhpRuntimePage() {
       ) : null}
 
       <OpsHero
-        eyebrow="PHP"
-        title="PHP 執行環境"
         pill={version}
         pillTone="ok"
         tone="ok"
-        hint="版本、php.ini、FPM pool 與站點。寫入 ≠ 已套用到系統。"
         stats={[
-          { label: '目標 PHP', value: version },
-          { label: 'FPM Pool', value: poolName || '—' },
+          { label: 'PHP', value: version },
+          { label: 'Pool', value: poolName || '—' },
           {
             label: 'php.ini',
             value: iniLoaded ? (iniUpdatedAt ? '已載入' : '預設') : '—',
           },
-          { label: '網域', value: domain || '—' },
         ]}
       />
 

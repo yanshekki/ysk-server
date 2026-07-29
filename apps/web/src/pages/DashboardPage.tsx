@@ -224,10 +224,7 @@ export function DashboardPage() {
 
   return (
     <div className="stack stack--lg">
-      <PageHeader
-        title={t('dashboard.title')}
-        subtitle={`${t('dashboard.welcome')}${user ? ` — ${user.username}` : ''}`}
-      />
+      <PageHeader title={t('nav.dashboard', { defaultValue: t('dashboard.title') })} />
 
       {error ? <Alert variant="error">{error}</Alert> : null}
       {wizErr ? <Alert variant="error">{wizErr}</Alert> : null}
@@ -235,8 +232,6 @@ export function DashboardPage() {
       {loading ? <LoadingBlock /> : null}
 
       <OpsHero
-        eyebrow="Dashboard"
-        title={t('dashboard.title')}
         pill={
           health?.status === 'ok'
             ? '健康'
@@ -258,7 +253,6 @@ export function DashboardPage() {
               ? 'warn'
               : 'ok'
         }
-        hint={`${t('dashboard.welcome')}${user ? ` — ${user.username}` : ''}`}
         cta={
           <>
             <Link to="/system/readiness" className="btn btn--primary btn--md">

@@ -215,10 +215,7 @@ export function SystemPage() {
 
   return (
     <FeaturePageLayout
-      title={t('system.indexTitle', { defaultValue: '系統工具' })}
-      subtitle={t('system.indexSubtitle', {
-        defaultValue: '主機控制台 · 電源 · 控制面匯出 · nginx 重建',
-      })}
+      title={t('nav.systemIndex', { defaultValue: '系統工具' })}
       showCapability={false}
       actions={
         <>

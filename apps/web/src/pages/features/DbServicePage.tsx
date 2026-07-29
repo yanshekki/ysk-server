@@ -32,10 +32,10 @@ const META: Record<
   DbServiceEngine,
   { title: string; dataPath: string; dataLabel: string }
 > = {
-  redis: { title: 'Redis 服務', dataPath: '/databases/redis', dataLabel: '資料瀏覽' },
-  mysql: { title: 'MySQL 服務', dataPath: '/databases/mysql', dataLabel: '資料庫管理' },
-  mariadb: { title: 'MariaDB 服務', dataPath: '/databases/mariadb', dataLabel: '資料庫管理' },
-  postgres: { title: 'PostgreSQL 服務', dataPath: '/databases/postgres', dataLabel: '資料庫管理' },
+  redis: { title: 'Redis 服務', dataPath: '/databases/redis', dataLabel: '資料' },
+  mysql: { title: 'MySQL 服務', dataPath: '/databases/mysql', dataLabel: '資料庫' },
+  mariadb: { title: 'MariaDB 服務', dataPath: '/databases/mariadb', dataLabel: '資料庫' },
+  postgres: { title: 'PostgreSQL 服務', dataPath: '/databases/postgres', dataLabel: '資料庫' },
 };
 
 export function DbServicePage({ engine }: { engine: DbServiceEngine }) {
@@ -94,7 +94,6 @@ export function DbServicePage({ engine }: { engine: DbServiceEngine }) {
   return (
     <FeaturePageLayout
       title={meta.title}
-      subtitle="服務狀態與系統設定"
       actions={
         <div className="btn-row">
           <Link to={meta.dataPath}>

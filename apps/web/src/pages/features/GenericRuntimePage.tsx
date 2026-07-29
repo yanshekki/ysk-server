@@ -36,7 +36,6 @@ const META: Record<
   HostingRuntimeKind,
   {
     title: string;
-    subtitle: string;
     defaultVersion: string;
     versions: string[];
     installLabel: (v: string) => string;
@@ -44,40 +43,35 @@ const META: Record<
   }
 > = {
   node: {
-    title: 'Node.js 執行環境',
-    subtitle: '探測、安裝與執行調校（NODE_OPTIONS 等）',
+    title: 'Node.js',
     defaultVersion: '20',
     versions: ['18', '20', '22'],
     installLabel: (v) => `安裝 Node ${v}`,
     bannerTitle: 'Node.js 尚未安裝',
   },
   php: {
-    title: 'PHP 執行環境',
-    subtitle: 'PHP 版本、FPM 與探測',
+    title: 'PHP',
     defaultVersion: '8.2',
     versions: ['8.1', '8.2', '8.3'],
     installLabel: (v) => `安裝 PHP ${v}`,
     bannerTitle: 'PHP 尚未安裝',
   },
   python: {
-    title: 'Python 執行環境',
-    subtitle: '探測、安裝與 PYTHON* 調校',
+    title: 'Python',
     defaultVersion: '3.12',
     versions: ['3.10', '3.11', '3.12'],
     installLabel: (v) => `安裝 Python ${v}`,
     bannerTitle: 'Python 尚未安裝',
   },
   go: {
-    title: 'Go 執行環境',
-    subtitle: '探測、安裝與 GOMAXPROCS／GOGC 等調校',
+    title: 'Go',
     defaultVersion: '1.22',
     versions: ['1.21', '1.22', '1.23'],
     installLabel: (v) => `安裝 Go ${v}`,
     bannerTitle: 'Go 尚未安裝',
   },
   rust: {
-    title: 'Rust 執行環境',
-    subtitle: '探測、安裝與 RUST_LOG／RUSTFLAGS 調校',
+    title: 'Rust',
     defaultVersion: 'stable',
     versions: ['stable', '1.78', '1.81'],
     installLabel: (v) => `安裝 Rust ${v}`,
@@ -196,7 +190,6 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   return (
     <FeaturePageLayout
       title={meta.title}
-      subtitle={meta.subtitle}
       actions={
         <Button
           variant="secondary"
@@ -228,8 +221,6 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       ) : null}
 
       <OpsHero
-        eyebrow="Runtime"
-        title={meta.title}
         pill={
           probeData.available.length
             ? `${probeData.available.length} 可用`
@@ -237,7 +228,6 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         }
         pillTone={probeData.available.length ? 'ok' : 'warn'}
         tone={probeData.available.length ? 'ok' : 'warn'}
-        hint={meta.subtitle}
         cta={
           <>
             <Button

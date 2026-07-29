@@ -2,6 +2,7 @@
  * Production readiness — professional ops console (honest gate).
  */
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -124,6 +125,7 @@ function ItemRow({
 }
 
 export function ReadinessPage() {
+  const { t } = useTranslation();
   const [report, setReport] = useState<ProductionReadinessDto | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -238,8 +240,7 @@ export function ReadinessPage() {
 
   return (
     <FeaturePageLayout
-      title="生產就緒探測"
-      subtitle="誠實閘門 · 唯讀探測 · 優先修復路徑"
+      title={t('nav.readiness', { defaultValue: '就緒探測' })}
       showCapability={false}
       actions={
         <>

@@ -115,10 +115,7 @@ export function UpdatesPage() {
 
   return (
     <FeaturePageLayout
-      title={t('updates.title', { defaultValue: '智能更新' })}
-      subtitle={t('updates.body', {
-        defaultValue: '套件清點 · CVE／風險建議 · 面板自身更新 · 誠實 fail-closed',
-      })}
+      title={t('nav.updates', { defaultValue: '更新' })}
       showCapability={false}
       actions={
         <>

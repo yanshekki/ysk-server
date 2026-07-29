@@ -3,6 +3,7 @@
  * List-first; create/edit always in Modal (no huge empty forms).
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -38,6 +39,7 @@ type SftpKey = {
 const FTP_TABS = ['accounts', 'sftp'] as const;
 
 export function FtpPage() {
+  const { t } = useTranslation();
   const crud = useResourceCrud('ftp/accounts');
   const [tab, setTab] = usePageTab(FTP_TABS, 'accounts');
   const [open, setOpen] = useState(false);
@@ -130,8 +132,7 @@ export function FtpPage() {
 
   return (
     <FeaturePageLayout
-      title="FTPS 帳戶"
-      subtitle="虛擬 FTP 帳戶 · 套用到 vsftpd · 可選 SFTP 公鑰"
+      title={t('nav.ftp', { defaultValue: 'FTPS 帳戶' })}
       actions={
         <div className="btn-row">
           <Link to="/ftp/service">

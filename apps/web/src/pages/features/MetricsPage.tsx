@@ -2,6 +2,7 @@
  * Host metrics — professional ops console.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -40,6 +41,7 @@ function alertLabel(a: string): string {
 }
 
 export function MetricsPage() {
+  const { t } = useTranslation();
   const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -120,8 +122,7 @@ export function MetricsPage() {
 
   return (
     <FeaturePageLayout
-      title="主機指標"
-      subtitle="負載 · 記憶體 · 磁碟 · 告警（唯讀快照）"
+      title={t('nav.metrics', { defaultValue: '主機指標' })}
       showCapability={false}
       actions={
         <>

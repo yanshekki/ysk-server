@@ -8,6 +8,30 @@ import { api } from '../../shared/services/api';
 /** All nav paths — used so /ftp does not stay active on /ftp/service */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
 
+const LANG_ORDER = ['zh-TW', 'en', 'zh-CN'] as const;
+
+/** Human-readable language names (not locale codes like zh-TW). */
+const LANG_LABEL: Record<string, string> = {
+  'zh-TW': '繁體中文',
+  'zh-CN': '简体中文',
+  en: 'English',
+};
+
+function langDisplayName(code: string): string {
+  const base = code.split('-')[0];
+  if (LANG_LABEL[code]) return LANG_LABEL[code];
+  if (base === 'zh') return LANG_LABEL['zh-TW']!;
+  if (base === 'en') return LANG_LABEL.en!;
+  return code;
+}
+
+function roleDisplayName(role: string): string {
+  if (role === 'admin') return '管理員';
+  if (role === 'operator') return '操作員';
+  if (role === 'viewer') return '檢視者';
+  return role;
+}
+
 /**
  * Active only for exact match, or for nested routes when no longer sibling nav path matches.
  * Prevents both「FTPS 帳戶」and「vsftpd 服務」highlighting on /ftp/service.
@@ -58,10 +82,19 @@ export function AppShell() {
   }
 
   function cycleLang() {
-    const order = ['zh-TW', 'en', 'zh-CN'] as const;
-    const i = order.indexOf(i18n.language as (typeof order)[number]);
-    void i18n.changeLanguage(order[(i + 1) % order.length]);
+    const cur = i18n.language?.startsWith('zh-CN')
+      ? 'zh-CN'
+      : i18n.language?.startsWith('zh')
+        ? 'zh-TW'
+        : i18n.language?.startsWith('en')
+          ? 'en'
+          : 'zh-TW';
+    const i = LANG_ORDER.indexOf(cur as (typeof LANG_ORDER)[number]);
+    void i18n.changeLanguage(LANG_ORDER[(i + 1) % LANG_ORDER.length]);
   }
+
+  const primaryRole = user?.roles?.[0];
+  const roleLabel = primaryRole ? roleDisplayName(primaryRole) : null;
 
   return (
     <div className="shell">
@@ -166,12 +199,20 @@ export function AppShell() {
               </div>
             ) : null}
           </div>
-          <button type="button" className="btn btn--ghost btn--sm" onClick={cycleLang}>
-            {i18n.language}
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            onClick={cycleLang}
+            title="切換語言"
+            aria-label={`語言：${langDisplayName(i18n.language)}`}
+          >
+            {langDisplayName(i18n.language)}
           </button>
           <span className="shell__user">
             {user?.username ?? '—'}
-            {user?.roles?.[0] ? <span className="badge badge--beside">{user.roles[0]}</span> : null}
+            {roleLabel && roleLabel !== user?.username ? (
+              <span className="badge badge--beside">{roleLabel}</span>
+            ) : null}
           </span>
           <button type="button" className="btn btn--secondary btn--sm" onClick={() => void onLogout()}>
             {t('nav.logout')}

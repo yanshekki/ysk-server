@@ -45,8 +45,7 @@ export function ProjectsPage() {
 
   return (
     <FeaturePageLayout
-      title={t('projects.title')}
-      subtitle={t('projects.subtitle')}
+      title={t('nav.projects', { defaultValue: '專案' })}
       actions={
         <div className="btn-row">
           <Button

@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -25,6 +26,7 @@ import type { ResourceRow } from '../../features/resources/api';
 import { systemApi } from '../../features/system';
 
 export function NginxPage() {
+  const { t } = useTranslation();
   const { items, error, busy, msg, setMsg, create, update, remove, apply } =
     useResourceCrud('nginx/sites');
   const [purgeBusy, setPurgeBusy] = useState(false);
@@ -84,8 +86,7 @@ export function NginxPage() {
 
   return (
     <FeaturePageLayout
-      title="Nginx 站點"
-      subtitle="管理反向代理與網站站點"
+      title={t('nav.nginx', { defaultValue: 'Nginx' })}
       actions={
         <div className="btn-row">
           <Button

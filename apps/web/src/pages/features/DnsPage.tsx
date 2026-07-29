@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Alert,
@@ -37,6 +38,7 @@ const ZONE_TEMPLATES = [
 ] as const;
 
 export function DnsPage() {
+  const { t } = useTranslation();
   const zones = useResourceCrud('dns/zones');
   const [selectedZone, setSelectedZone] = useState<ResourceRow | null>(null);
   const recordsQuery = useMemo(
@@ -162,8 +164,7 @@ export function DnsPage() {
 
   return (
     <FeaturePageLayout
-      title="DNS 區域"
-      subtitle="管理 zone 檔（寫入 ≠ 權威 DNS 已上線）"
+      title={t('nav.dns', { defaultValue: 'DNS' })}
       showCapability={false}
       actions={
         <>
@@ -178,12 +179,9 @@ export function DnsPage() {
     >
       <SoftwareInstallBanner feature="dns" title="DNS 所需軟件尚未安裝" />
       <OpsHero
-        eyebrow="DNS"
-        title="區域與紀錄"
-        pill={`${zones.items.length} zones`}
+        pill={`${zones.items.length}`}
         pillTone={zones.items.length ? 'ok' : 'warn'}
         tone={zones.items.length ? 'ok' : 'warn'}
-        hint="面板寫入 zone 素材；權威伺服器上線／註冊商 NS 仍需運維確認。written ≠ 互聯網已解析。"
         cta={
           <>
             <Button variant="primary" size="md" onClick={() => setZoneOpen(true)}>

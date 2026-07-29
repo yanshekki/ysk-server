@@ -2,6 +2,7 @@
  * Defense Center — SOC-simple command UI for DDoS / attack response.
  */
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Alert,
@@ -268,6 +269,7 @@ function relTime(iso?: string): string {
 }
 
 export function ProtectionPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [tab, setTab] = usePageTab(TABS, 'command');
   const [status, setStatus] = useState<DefenseStatus | null>(null);
@@ -600,8 +602,7 @@ export function ProtectionPage() {
 
   return (
     <FeaturePageLayout
-      title="防護中心"
-      subtitle="威脅一目了然 · 一鍵應變 · 快速封禁"
+      title={t('nav.protection', { defaultValue: '防護中心' })}
       actions={
         <div className="def-head-actions">
           <Button

@@ -352,7 +352,6 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   return (
     <FeaturePageLayout
       title={`${console?.title ?? engine} 服務`}
-      subtitle={console?.version ? `版本 ${console.version}` : '服務控制台'}
       actions={
         <div className="btn-row">
           <Link to={link.path}>

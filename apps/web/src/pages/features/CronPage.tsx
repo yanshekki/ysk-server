@@ -2,6 +2,7 @@
  * Cron — store jobs vs host crontab honesty.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Badge,
@@ -151,6 +152,7 @@ type CronStatus = {
 };
 
 export function CronPage() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<CronJob[]>([]);
   const [status, setStatus] = useState<CronStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -329,8 +331,7 @@ export function CronPage() {
 
   return (
     <FeaturePageLayout
-      title="Cron 工作"
-      subtitle="管理檔 vs 系統 crontab · 誠實 written ≠ installed"
+      title={t('nav.cron', { defaultValue: 'Cron' })}
       showCapability={false}
       actions={
         <>
