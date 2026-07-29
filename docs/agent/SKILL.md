@@ -21,10 +21,22 @@ You manage a Linux host through **YSK Server** control plane. Prefer the CLI ove
 ## Project lifecycle
 
 ```bash
+ysk-server projects list --json
+ysk-server projects get --id UUID|NAME --json
 ysk-server projects create --name NAME --runtime node|php|static|python|go|rust [--runtime-version V] --json
 ysk-server projects deploy --id UUID --json
 ysk-server projects stop --id UUID --json
 ysk-server projects health --id UUID --json
+```
+
+## Nginx / SSL
+
+```bash
+ysk-server nginx status --json    # service + managed confs + nginx -t
+ysk-server nginx list --json
+ysk-server nginx test --json
+ysk-server ssl list --json
+ysk-server ssl get --domain example.com --json
 ```
 
 ## DNS + logs (common ops)

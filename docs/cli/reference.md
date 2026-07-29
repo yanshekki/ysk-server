@@ -136,6 +136,9 @@ Default: dry-run plan. Real ban/unban: `--execute` + `YSK_EXECUTE=1` (+ root for
 # list
 ysk-server projects list [--data-dir PATH] [--json]
 
+# get by id (or name / domain)
+ysk-server projects get --id UUID|NAME [--json]
+
 # create (+ optional template scaffold)
 ysk-server projects create --name NAME \
   [--domain D] [--runtime node|php|static] \
@@ -151,6 +154,24 @@ ysk-server projects template --id UUID --template ID [--force]
 ```
 
 Deploy selects Node / PHP / static from project runtime. Node: systemd → PM2 → pidfile. PHP: FPM+nginx → `php -S`. Static: nginx root conf (`--reload` for system). Flags: `--fpm` / `--builtin` / `--reload`.
+
+## nginx
+
+```bash
+ysk-server nginx status [--json]     # systemctl + managed confs + nginx -t
+ysk-server nginx list [--json]       # managed conf.d under dataDir
+ysk-server nginx test [--json]       # nginx -t (exit 5 on fail)
+ysk-server nginx sync [--execute]    # dry-run by default; same as hosting nginx-sync
+```
+
+## ssl
+
+```bash
+ysk-server ssl list [--json]
+ysk-server ssl get --domain example.com [--json]
+```
+
+Read-only views of managed certs (`dataDir/certs` + registry). No LE apply here.
 
 ## hosting
 

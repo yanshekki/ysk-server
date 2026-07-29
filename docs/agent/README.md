@@ -40,8 +40,16 @@ ysk-server host metrics --json
 
 # 專案
 ysk-server projects list --json
+ysk-server projects get --id <uuid|name> --json
 ysk-server projects create --name demo --runtime node --runtime-version 20 --json
 ysk-server projects deploy --id <uuid> --json
+
+# Nginx / SSL
+ysk-server nginx status --json
+ysk-server nginx list --json
+ysk-server nginx test --json
+ysk-server ssl list --json
+ysk-server ssl get --domain example.com --json
 
 # 服務矩陣 / 防護
 ysk-server services matrix --json

@@ -45,6 +45,8 @@ const CLI_COMMANDS = [
   'dns',
   'logs',
   'host',
+  'nginx',
+  'ssl',
   'services',
   'defense',
   'protection',
@@ -181,13 +183,15 @@ Commands:
   system unit-install   Install ysk-server.service [--enable]
   tools                 List tools; tools run --tool <name> [--dry-run]
   ask                   NL → AI plan [--execute]
-  projects              list|create|deploy|stop|health|backup|template
+  projects              list|get|create|deploy|stop|health|backup|template
   backup all            Backup all project homes
   templates             App templates
   hosting               nginx|dns|db|firewall helpers
   dns                   zone|zones (AI alias → hosting dns-*)
   logs                  sources|query|journal|overview
   host                  overview|metrics (read-only)
+  nginx                 status|list|test|sync
+  ssl                   list|get (certificates)
   services              Host service matrix (systemctl probe)
   defense | protection  status|ban|unban|whitelist
   agents                List/probe agent runtimes (experimental)
@@ -210,8 +214,10 @@ Safety:
 Examples:
   ${CLI_NAME} readiness --json
   ${CLI_NAME} host --json
+  ${CLI_NAME} nginx status --json
+  ${CLI_NAME} ssl list --json
+  ${CLI_NAME} projects get --id UUID --json
   ${CLI_NAME} defense ban --ip 1.2.3.4 --json          # dry-run plan
-  ${CLI_NAME} defense ban --ip 1.2.3.4 --execute --json  # real ban
   ${CLI_NAME} projects list --json
   ${CLI_NAME} logs query --source journal: --lines 100 --json
   ${CLI_NAME} tools --json
@@ -594,6 +600,38 @@ async function main(argv: string[]): Promise<number> {
         printJson({ ok: true, items: ctx.projects.list() });
         return 0;
       }
+      if (sub === 'get' || sub === 'show' || sub === 'info') {
+        const id = getOpt(args, '--id') ?? getOpt(args, '--name');
+        if (!id) {
+          process.stderr.write(
+            'Usage: ysk-server projects get --id <projectId|name> [--json]\n',
+          );
+          return 2;
+        }
+        // Prefer UUID id; fall back to name match for agents
+        try {
+          const project = ctx.projects.get(id);
+          printJson({ ok: true, project });
+          return 0;
+        } catch (err) {
+          if (err instanceof YskError && err.code === ErrorCodes.NOT_FOUND) {
+            const byName = ctx.projects
+              .list()
+              .find((p) => p.name === id || p.domain === id);
+            if (byName) {
+              printJson({ ok: true, project: byName });
+              return 0;
+            }
+            printJson({
+              ok: false,
+              code: ErrorCodes.NOT_FOUND,
+              message: `找不到專案：${id}`,
+            });
+            return 4;
+          }
+          throw err;
+        }
+      }
       if (sub === 'create') {
         const name = getOpt(args, '--name');
         if (!name) {
@@ -694,7 +732,7 @@ async function main(argv: string[]): Promise<number> {
         return exitFromResult(result);
       }
       process.stderr.write(
-        'Usage: ysk-server projects list|create|deploy|stop|backup|template|health [options]\n',
+        'Usage: ysk-server projects list|get|create|deploy|stop|backup|template|health [options]\n',
       );
       return 2;
     } finally {
@@ -734,7 +772,13 @@ async function main(argv: string[]): Promise<number> {
     });
     try {
       if (sub === 'nginx' || sub === 'nginx-list') {
-        printJson({ files: listManagedNginxConfs(ctx.dataDir), dataDir: ctx.dataDir });
+        const { listManagedNginxDetailed } = await import('@ysk/core');
+        printJson({
+          ok: true,
+          files: listManagedNginxConfs(ctx.dataDir),
+          items: listManagedNginxDetailed(ctx.dataDir),
+          dataDir: ctx.dataDir,
+        });
         return 0;
       }
       if (sub === 'nginx-sync') {
@@ -1119,6 +1163,181 @@ async function main(argv: string[]): Promise<number> {
       process.stderr.write(
         `Usage: ${CLI_NAME} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n`,
       );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** Nginx status / managed confs / config test — AI-friendly */
+  if (command === 'nginx') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'status';
+    const {
+      getServiceMatrix,
+      listManagedNginxConfs,
+      listManagedNginxDetailed,
+      syncNginxConfigs,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'list' || sub === 'confs') {
+        printJson({
+          ok: true,
+          items: listManagedNginxDetailed(ctx.dataDir),
+          files: listManagedNginxConfs(ctx.dataDir),
+          dataDir: ctx.dataDir,
+        });
+        return 0;
+      }
+      if (sub === 'test' || sub === 'check') {
+        const hasBin =
+          ctx.host.pathExists('/usr/sbin/nginx') ||
+          ctx.host.pathExists('/usr/bin/nginx');
+        if (!hasBin) {
+          const which = await ctx.host.runCommand(
+            ['bash', '-c', 'command -v nginx || true'],
+            { timeoutMs: 5_000 },
+          );
+          if (!which.stdout.trim()) {
+            printJson({
+              ok: false,
+              code: 'not_found',
+              notes: ['nginx binary not found'],
+            });
+            return 4;
+          }
+        }
+        const r = await ctx.host.runCommand(['nginx', '-t'], { timeoutMs: 15_000 });
+        const output = `${r.stdout}\n${r.stderr}`.trim();
+        printJson({
+          ok: r.exitCode === 0,
+          configTest: { ok: r.exitCode === 0, exitCode: r.exitCode, output },
+          notes: [
+            r.exitCode === 0
+              ? 'nginx -t OK'
+              : `nginx -t failed: ${output.slice(0, 400)}`,
+          ],
+        });
+        return r.exitCode === 0 ? 0 : 5;
+      }
+      if (sub === 'sync') {
+        const execute = wantsHostExecute(args);
+        const result = await syncNginxConfigs({
+          dataDir: ctx.dataDir,
+          systemConfDir: getOpt(args, '--system-dir'),
+          host: ctx.host,
+          dryRun: !execute || hasFlag(args, '--dry-run'),
+        });
+        printJson({
+          ok: true,
+          dryRun: !execute || hasFlag(args, '--dry-run'),
+          ...result,
+          notes: [
+            ...(result.notes ?? []),
+            execute
+              ? 'execute 模式（仍需 YSK_EXECUTE 才能寫系統目錄）'
+              : 'dry-run 預設：加 --execute 先同步到系統 nginx',
+          ],
+        });
+        return 0;
+      }
+      if (sub === 'status' || sub === 'info' || sub === 'overview') {
+        const matrix = await getServiceMatrix(ctx.host);
+        const service = matrix.items.find((i) => i.id === 'nginx') ?? null;
+        const managed = listManagedNginxDetailed(ctx.dataDir);
+        let configTest: {
+          ok: boolean;
+          exitCode: number;
+          output: string;
+          skipped?: boolean;
+        } | null = null;
+        const hasBin =
+          ctx.host.pathExists('/usr/sbin/nginx') ||
+          ctx.host.pathExists('/usr/bin/nginx') ||
+          service?.installed;
+        if (hasBin) {
+          const r = await ctx.host.runCommand(['nginx', '-t'], { timeoutMs: 15_000 });
+          configTest = {
+            ok: r.exitCode === 0,
+            exitCode: r.exitCode,
+            output: `${r.stdout}\n${r.stderr}`.trim(),
+          };
+        } else {
+          configTest = {
+            ok: false,
+            exitCode: -1,
+            output: '',
+            skipped: true,
+          };
+        }
+        printJson({
+          ok: true,
+          service,
+          managed,
+          managedCount: managed.length,
+          configTest,
+          caps: {
+            executeEnabled: matrix.executeEnabled,
+            isRoot: matrix.isRoot,
+          },
+          probedAt: matrix.probedAt,
+        });
+        return 0;
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} nginx status|list|test|sync [--execute] [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** SSL certificates list/get — read-only */
+  if (command === 'ssl') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      dedupeCertificatesInStore(ctx.db);
+      const items = listCertificatesView(ctx.db, ctx.dataDir);
+      if (sub === 'list' || sub === 'ls') {
+        printJson({
+          ok: true,
+          items,
+          count: items.length,
+        });
+        return 0;
+      }
+      if (sub === 'get' || sub === 'show') {
+        const domain = (
+          getOpt(args, '--domain') ??
+          getOpt(args, '--id') ??
+          ''
+        )
+          .trim()
+          .toLowerCase();
+        if (!domain) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssl get --domain example.com [--json]\n`,
+          );
+          return 2;
+        }
+        const cert =
+          items.find((c) => c.domain === domain || c.id === domain) ?? null;
+        if (!cert) {
+          printJson({
+            ok: false,
+            code: ErrorCodes.NOT_FOUND,
+            message: `找不到憑證：${domain}`,
+            items: [],
+          });
+          return 4;
+        }
+        printJson({ ok: true, certificate: cert });
+        return 0;
+      }
+      process.stderr.write(`Usage: ${CLI_NAME} ssl list|get --domain X [--json]\n`);
       return 2;
     } finally {
       closeAppContext(ctx);

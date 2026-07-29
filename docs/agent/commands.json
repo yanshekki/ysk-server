@@ -30,11 +30,52 @@
       "example": "ysk-server projects list --json"
     },
     {
+      "name": "projects get",
+      "risk": "read",
+      "summary": "Get project by id, name, or domain",
+      "args": ["--id"],
+      "example": "ysk-server projects get --id UUID --json",
+      "exitCodes": { "4": "not_found" }
+    },
+    {
       "name": "projects create",
       "risk": "write-panel",
       "summary": "Create project (+ optional template)",
       "args": ["--name", "--domain", "--runtime", "--runtime-version", "--template"],
       "example": "ysk-server projects create --name demo --runtime node --json"
+    },
+    {
+      "name": "nginx status",
+      "risk": "read",
+      "summary": "Nginx service probe + managed confs + nginx -t",
+      "example": "ysk-server nginx status --json"
+    },
+    {
+      "name": "nginx list",
+      "risk": "read",
+      "summary": "List managed nginx conf.d files",
+      "example": "ysk-server nginx list --json"
+    },
+    {
+      "name": "nginx test",
+      "risk": "read",
+      "summary": "Run nginx -t",
+      "example": "ysk-server nginx test --json",
+      "exitCodes": { "5": "config test failed", "4": "nginx binary missing" }
+    },
+    {
+      "name": "ssl list",
+      "risk": "read",
+      "summary": "List managed SSL certificates",
+      "example": "ysk-server ssl list --json"
+    },
+    {
+      "name": "ssl get",
+      "risk": "read",
+      "summary": "Get certificate by domain",
+      "args": ["--domain"],
+      "example": "ysk-server ssl get --domain example.com --json",
+      "exitCodes": { "4": "not_found" }
     },
     {
       "name": "projects deploy",
