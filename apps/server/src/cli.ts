@@ -36,6 +36,9 @@ const CLI_COMMANDS = [
   'backup',
   'templates',
   'hosting',
+  'services',
+  'defense',
+  'protection',
   'agents',
   'agent',
   'readiness',
@@ -43,6 +46,35 @@ const CLI_COMMANDS = [
   'version',
   'help',
 ] as const;
+
+/** Map process failure shape → CLI exit code */
+function exitFromResult(r: {
+  ok?: boolean;
+  blocked?: boolean;
+  code?: string;
+  status?: string;
+}): number {
+  if (r.blocked) return 3;
+  if (r.ok === false) return 1;
+  if (r.status && ['failed', 'error'].includes(r.status)) return 1;
+  return 0;
+}
+
+function openCliContext(args: string[]) {
+  const configPath = getOpt(args, '--config');
+  const dataDir = getOpt(args, '--data-dir');
+  let config = configPath ? loadConfigFile(configPath) : undefined;
+  if (dataDir) {
+    config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
+  }
+  return createAppContext({
+    version: VERSION,
+    config,
+    configPath,
+    dataDir: dataDir ?? config?.dataDir,
+    executeEnabled: process.env.YSK_EXECUTE === '1',
+  });
+}
 
 function printHelp(): void {
   const text = `
@@ -65,6 +97,8 @@ Commands:
   backup all            Backup all project homes
   templates             App templates
   hosting               nginx|dns|db|firewall helpers
+  services              Host service matrix (systemctl probe)
+  defense | protection  status|ban|unban|whitelist
   agents                List/probe agent runtimes (experimental)
   agent run             Outbound fleet poller (experimental)
   readiness | doctor    Production readiness (honest)
@@ -849,6 +883,153 @@ async function main(argv: string[]): Promise<number> {
         ].join('\n'),
       );
       return 1;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'services') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'matrix';
+    const { getServiceMatrix, lifecycleServiceUnit } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'matrix' || sub === 'list' || sub === 'status') {
+        const r = await getServiceMatrix(ctx.host);
+        printJson({ ok: true, ...r });
+        return 0;
+      }
+      if (sub === 'start' || sub === 'stop' || sub === 'restart' || sub === 'reload') {
+        const unit = getOpt(args, '--unit') ?? getOpt(args, '--id');
+        if (!unit) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} services ${sub} --unit <systemd-unit> [--json]\n`,
+          );
+          return 2;
+        }
+        const r = await lifecycleServiceUnit(ctx.host, unit, sub);
+        printJson(r);
+        return exitFromResult(r);
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} services matrix|start|stop|restart|reload [--unit NAME] [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'defense' || command === 'protection') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'status';
+    const {
+      getDefenseStatus,
+      defenseBanIp,
+      defenseUnbanIp,
+      loadAutoBanPolicy,
+      updateAutoBanPolicy,
+      probeFirewallDeep,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'status') {
+        const status = await getDefenseStatus({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+        });
+        const fw = await probeFirewallDeep(ctx.host).catch(() => null);
+        printJson({
+          ok: true,
+          defense: status,
+          firewall: fw
+            ? {
+                active: fw.active,
+                activeLabel: fw.activeLabel,
+                allowCount: fw.allowCount,
+                denyCount: fw.denyCount,
+                denyFromIps: fw.denyFromIps,
+              }
+            : null,
+        });
+        return 0;
+      }
+      if (sub === 'ban') {
+        const ip = getOpt(args, '--ip');
+        if (!ip) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t]\n`,
+          );
+          return 2;
+        }
+        const methodRaw = getOpt(args, '--method') ?? 'fail2ban';
+        const method =
+          methodRaw === 'ufw' || methodRaw === 'both' || methodRaw === 'fail2ban'
+            ? methodRaw
+            : 'fail2ban';
+        const r = await defenseBanIp({
+          host: ctx.host,
+          db: ctx.db,
+          ip,
+          method,
+          reason: getOpt(args, '--reason') ?? 'cli',
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'unban') {
+        const ip = getOpt(args, '--ip');
+        if (!ip) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} defense unban --ip <ip> [--method fail2ban|ufw|both]\n`,
+          );
+          return 2;
+        }
+        const methodRaw = getOpt(args, '--method') ?? 'fail2ban';
+        const method =
+          methodRaw === 'ufw' || methodRaw === 'both' || methodRaw === 'fail2ban'
+            ? methodRaw
+            : 'fail2ban';
+        const r = await defenseUnbanIp({
+          host: ctx.host,
+          db: ctx.db,
+          ip,
+          method,
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'whitelist') {
+        const action = getOpt(args, '--action') ?? 'list';
+        const ip = getOpt(args, '--ip');
+        const policy = loadAutoBanPolicy(ctx.db);
+        if (action === 'list') {
+          printJson({ ok: true, whitelist: policy.whitelist ?? [] });
+          return 0;
+        }
+        if (!ip) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} defense whitelist --action list|add|remove [--ip IP]\n`,
+          );
+          return 2;
+        }
+        let whitelist = [...(policy.whitelist ?? [])];
+        if (action === 'remove') {
+          whitelist = whitelist.filter((w) => w !== ip);
+        } else if (action === 'add') {
+          if (!whitelist.includes(ip)) whitelist.unshift(ip);
+          whitelist = whitelist.slice(0, 200);
+        } else {
+          process.stderr.write('action must be list|add|remove\n');
+          return 2;
+        }
+        const next = updateAutoBanPolicy(ctx.db, { whitelist });
+        printJson({ ok: true, whitelist: next.whitelist });
+        return 0;
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} defense status|ban|unban|whitelist [--json]\n`,
+      );
+      return 2;
     } finally {
       closeAppContext(ctx);
     }

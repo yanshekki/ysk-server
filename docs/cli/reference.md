@@ -84,6 +84,26 @@ List one-click app templates (`node-starter`, `static-site`, `wordpress-php`).
 ysk-server templates [--json]
 ```
 
+## services
+
+Host service matrix (real `systemctl` probe). Lifecycle needs `YSK_EXECUTE=1` + root.
+
+```bash
+ysk-server services matrix [--json]
+ysk-server services start|stop|restart|reload --unit nginx
+```
+
+## defense | protection
+
+```bash
+ysk-server defense status [--json]
+ysk-server defense ban --ip IP [--method fail2ban|ufw|both] [--reason t]
+ysk-server defense unban --ip IP [--method fail2ban|ufw|both]
+ysk-server defense whitelist --action list|add|remove [--ip IP]
+```
+
+Ban/unban need EXECUTE (+ root for ufw). Whitelist is panel policy.
+
 ## projects
 
 ```bash

@@ -78,6 +78,19 @@
       "summary": "nginx/dns/db/firewall helpers — see cli/reference.md"
     },
     {
+      "name": "services",
+      "risk": "read",
+      "summary": "systemctl matrix; start|stop|restart|reload needs EXECUTE+root",
+      "example": "ysk-server services matrix --json"
+    },
+    {
+      "name": "defense",
+      "aliases": ["protection"],
+      "risk": "varies",
+      "summary": "status|ban|unban|whitelist",
+      "example": "ysk-server defense status --json"
+    },
+    {
       "name": "agents",
       "risk": "read",
       "summary": "List/probe experimental agent runtimes"

@@ -39,6 +39,12 @@ ysk-server projects list --json
 ysk-server projects create --name demo --runtime node --runtime-version 20 --json
 ysk-server projects deploy --id <uuid> --json
 
+# 服務矩陣 / 防護
+ysk-server services matrix --json
+ysk-server defense status --json
+ysk-server defense whitelist --action list --json
+# ban 需 EXECUTE： ysk-server defense ban --ip 1.2.3.4 --json
+
 # 工具（allowlist）
 ysk-server tools --json
 ysk-server tools run --tool sys.info --dry-run --json
