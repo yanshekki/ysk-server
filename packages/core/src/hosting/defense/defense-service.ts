@@ -384,7 +384,19 @@ export async function defenseBanIp(input: {
   reason?: string;
   method?: 'fail2ban' | 'ufw' | 'both';
   jail?: string;
-}): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
+  /**
+   * When false: dry-run plan only (CLI default).
+   * When true/undefined: attempt host ban (panel default = true path via omit or true).
+   * CLI should pass execute: true only with --execute.
+   */
+  execute?: boolean;
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  blocked?: boolean;
+  dryRun?: boolean;
+  plan?: string[];
+}> {
   const ip = normalizeIp(input.ip.trim()) ?? '';
   if (!ip || !isValidIp(ip)) return { ok: false, notes: ['無效 IPv4／IPv6'] };
   const policy = loadAutoBanPolicy(input.db);
@@ -402,6 +414,26 @@ export async function defenseBanIp(input: {
     /* */
   }
   const method = input.method ?? 'fail2ban';
+  const jail = input.jail || 'sshd';
+  const plan: string[] = [];
+  if (method === 'fail2ban' || method === 'both') {
+    plan.push(`fail2ban-client set ${jail} banip ${ip}`);
+  }
+  if (method === 'ufw' || method === 'both') {
+    plan.push(`ufw deny from ${ip}`);
+  }
+  // CLI dry-run: execute === false only (panel omits flag → still ban)
+  if (input.execute === false) {
+    return {
+      ok: true,
+      dryRun: true,
+      plan,
+      notes: [
+        'dry-run：未封禁。加 --execute 且 YSK_EXECUTE=1 先真正 ban',
+        ...plan,
+      ],
+    };
+  }
   const notes: string[] = [];
   if (!input.host.executeEnabled()) {
     // still record panel ban intent
@@ -409,12 +441,12 @@ export async function defenseBanIp(input: {
     return {
       ok: false,
       blocked: true,
+      plan,
       notes: ['無法 ban 到系統：需 YSK_EXECUTE；已記到面板 ban 清單'],
     };
   }
   let ok = true;
   if (method === 'fail2ban' || method === 'both') {
-    const jail = input.jail || 'sshd';
     const r = await input.host.runCommand(
       ['fail2ban-client', 'set', jail, 'banip', ip],
       { timeoutMs: 10_000 },
@@ -439,7 +471,7 @@ export async function defenseBanIp(input: {
     title: `封禁 ${ip}`,
     detail: input.reason,
   });
-  return { ok, notes };
+  return { ok, notes, plan };
 }
 
 export async function defenseUnbanIp(input: {
@@ -448,17 +480,44 @@ export async function defenseUnbanIp(input: {
   ip: string;
   method?: 'fail2ban' | 'ufw' | 'both';
   jail?: string;
-}): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
+  /** false = dry-run (CLI default); omit/true = apply (panel) */
+  execute?: boolean;
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  blocked?: boolean;
+  dryRun?: boolean;
+  plan?: string[];
+}> {
   const ip = normalizeIp(input.ip.trim()) ?? '';
   if (!ip || !isValidIp(ip)) return { ok: false, notes: ['無效 IPv4／IPv6'] };
+  const method = input.method ?? 'fail2ban';
+  const jail = input.jail || 'sshd';
+  const plan: string[] = [];
+  if (method === 'fail2ban' || method === 'both') {
+    plan.push(`fail2ban-client set ${jail} unbanip ${ip}`);
+  }
+  if (method === 'ufw' || method === 'both') {
+    plan.push(`ufw delete deny from ${ip}`);
+  }
+  if (input.execute === false) {
+    return {
+      ok: true,
+      dryRun: true,
+      plan,
+      notes: [
+        'dry-run：未解封。加 --execute 且 YSK_EXECUTE=1 先真正 unban',
+        ...plan,
+      ],
+    };
+  }
   if (!input.host.executeEnabled()) {
-    return { ok: false, blocked: true, notes: ['無法 unban：需 YSK_EXECUTE'] };
+    return { ok: false, blocked: true, plan, notes: ['無法 unban：需 YSK_EXECUTE'] };
   }
   const notes: string[] = [];
   let ok = true;
-  const method = input.method ?? 'fail2ban';
   if (method === 'fail2ban' || method === 'both') {
-    const r = await fail2banUnban(input.host, input.jail || 'sshd', ip);
+    const r = await fail2banUnban(input.host, jail, ip);
     ok = ok && r.ok;
     notes.push(...(r.notes ?? []));
   }

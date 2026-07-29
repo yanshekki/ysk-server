@@ -10,6 +10,9 @@ import { probeEndpoint } from './db-client.js';
 export interface PostgresProvisionResult {
   ok: boolean;
   executed: boolean;
+  /** true when plan-only (no --execute) */
+  dryRun?: boolean;
+  blocked?: boolean;
   requiresExecute: boolean;
   psqlClient: boolean;
   reachable: boolean;
@@ -109,21 +112,41 @@ export async function provisionPostgresDatabase(input: {
     notes.push('伺服器未開啟系統變更權限，無法在管理面板完成此操作');
   }
 
-  const want = input.execute !== false;
+  const want = input.execute === true;
   const can = want && input.hostExec.executeEnabled() && psqlClient && reachable;
+  const safeSql = sql.map((s) => s.replace(input.password, '***'));
+
+  if (!want) {
+    return {
+      ok: true,
+      dryRun: true,
+      executed: false,
+      requiresExecute: !input.hostExec.executeEnabled(),
+      psqlClient,
+      reachable,
+      sql: safeSql,
+      connectionHint,
+      notes: [
+        ...notes,
+        'dry-run：未建立資料庫。加 --execute 且 YSK_EXECUTE=1 先真正 provision',
+      ],
+      commandResults: [],
+    };
+  }
 
   if (!can) {
     return {
       ok: false,
       executed: false,
+      blocked: !input.hostExec.executeEnabled(),
       requiresExecute: !input.hostExec.executeEnabled(),
       psqlClient,
       reachable,
-      sql: sql.map((s) => s.replace(input.password, '***')),
+      sql: safeSql,
       connectionHint,
       notes: [
         ...notes,
-        '資料庫尚未建立。請在管理面板重試。',
+        '資料庫尚未建立。請確認 psql、TCP 與 YSK_EXECUTE=1 後再試。',
       ],
       commandResults: [],
     };

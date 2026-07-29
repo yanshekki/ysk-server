@@ -7,7 +7,9 @@ You manage a Linux host through **YSK Server** control plane. Prefer the CLI ove
 - Binary: `ysk-server`
 - Always pass `--json` when parsing output
 - Data: `--data-dir <path>` or `--config <path>` from `ysk-server setup`
-- Host mutations need env `YSK_EXECUTE=1` (often root)
+- **Dangerous ops default dry-run** (`dryRun: true`) — ban, provision, firewall, services lifecycle, nginx-sync
+- Real host mutation: `--execute` (or `--apply`) **and** env `YSK_EXECUTE=1` (often root)
+- Never claim “applied” when JSON has `dryRun: true` or `blocked: true`
 
 ## First steps
 

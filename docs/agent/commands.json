@@ -9,7 +9,12 @@
     "4": "not_found",
     "5": "host_error"
   },
-  "globalFlags": ["--json", "--data-dir", "--config", "--help", "--version"],
+  "globalFlags": ["--json", "--data-dir", "--config", "--help", "--version", "--execute", "--apply"],
+  "safety": {
+    "default": "dry-run for dangerous host mutations",
+    "apply": "pass --execute (or --apply) AND env YSK_EXECUTE=1",
+    "dryRunField": "dryRun: true means plan only — do not claim host changed"
+  },
   "commands": [
     {
       "name": "readiness",
@@ -151,8 +156,26 @@
       "name": "defense",
       "aliases": ["protection"],
       "risk": "varies",
-      "summary": "status|ban|unban|whitelist",
-      "example": "ysk-server defense status --json"
+      "summary": "status|ban|unban|whitelist — ban/unban default dry-run",
+      "example": "ysk-server defense ban --ip 1.2.3.4 --json",
+      "args": ["--ip", "--method", "--reason", "--execute"],
+      "exitCodes": {
+        "0": "ok or dry-run plan",
+        "3": "blocked without YSK_EXECUTE when --execute"
+      }
+    },
+    {
+      "name": "hosting *provision / firewall-apply / nginx-sync",
+      "risk": "execute-host",
+      "summary": "Default dry-run plan; --execute applies (needs YSK_EXECUTE=1)",
+      "example": "ysk-server hosting mysql-provision --db app --user u --password longpass99 --json"
+    },
+    {
+      "name": "services start|stop|restart|reload",
+      "risk": "execute-host",
+      "summary": "Default dry-run; --execute + root + YSK_EXECUTE=1 to systemctl",
+      "args": ["--unit", "--execute"],
+      "example": "ysk-server services restart --unit nginx --json"
     },
     {
       "name": "agents",

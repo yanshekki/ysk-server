@@ -26,7 +26,21 @@ ysk-server <command> --config PATH   # config.json from setup
 | 4 | not found |
 | 5 | host command failed |
 
-Prefer `--json`; parse `ok`, `blocked`, `message`, `notes`.
+Prefer `--json`; parse `ok`, `blocked`, `dryRun`, `executed`, `message`, `notes`.
+
+### Safety (dangerous ops)
+
+CLI **defaults to dry-run** for host mutations. JSON will include `dryRun: true` and a plan; exit `0` means the plan is valid, **not** that the host changed.
+
+| Flag | Meaning |
+|------|---------|
+| *(none)* | dry-run / plan only |
+| `--execute` | attempt real mutation |
+| `--apply` | alias of `--execute` (legacy firewall) |
+
+Still requires env `YSK_EXECUTE=1` (and often root). Without it, expect `blocked: true` / exit `3`.
+
+Covered: `defense ban|unban`, `*provision`, `firewall-apply`, `services start|stop|restart|reload`, `nginx-sync`, install/load flags (`--install` / `--load` also accepted).
 
 Environment:
 
@@ -100,19 +114,21 @@ Host service matrix (real `systemctl` probe). Lifecycle needs `YSK_EXECUTE=1` + 
 
 ```bash
 ysk-server services matrix [--json]
-ysk-server services start|stop|restart|reload --unit nginx
+ysk-server services start|stop|restart|reload --unit nginx [--execute]
 ```
+
+Lifecycle without `--execute` returns dry-run plan only.
 
 ## defense | protection
 
 ```bash
 ysk-server defense status [--json]
-ysk-server defense ban --ip IP [--method fail2ban|ufw|both] [--reason t]
-ysk-server defense unban --ip IP [--method fail2ban|ufw|both]
+ysk-server defense ban --ip IP [--method fail2ban|ufw|both] [--reason t] [--execute]
+ysk-server defense unban --ip IP [--method fail2ban|ufw|both] [--execute]
 ysk-server defense whitelist --action list|add|remove [--ip IP]
 ```
 
-Ban/unban need EXECUTE (+ root for ufw). Whitelist is panel policy.
+Default: dry-run plan. Real ban/unban: `--execute` + `YSK_EXECUTE=1` (+ root for ufw). Whitelist is panel policy.
 
 ## projects
 
@@ -142,25 +158,28 @@ Deploy selects Node / PHP / static from project runtime. Node: systemd â†’ PM2 â
 ysk-server hosting nginx|nginx-list
 ysk-server hosting nginx-sync [--system-dir PATH] [--dry-run]
 
+ysk-server hosting nginx-sync [--execute] [--system-dir PATH]
 ysk-server hosting redis-provision [--project-id ID] [--db N] [--execute]
 ysk-server hosting postgres-provision --db NAME --user USER --password PASS [--execute]
 ysk-server hosting mysql-provision --db NAME --user USER --password PASS [--execute]
 ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]
 ysk-server hosting dns-zones
 ysk-server hosting powerdns-status
-ysk-server hosting powerdns-install [--install]
-ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load]
-ysk-server hosting email-apply --domain example.com [--install]
+ysk-server hosting powerdns-install [--install|--execute]
+ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]
+ysk-server hosting email-apply --domain example.com [--install|--execute]
 ysk-server hosting email-mailbox --domain example.com --local info [--password P] [--ip A.B.C.D] [--system]
-ysk-server hosting ftps-apply --domain files.example.com [--install]
+ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]
 ysk-server hosting runtimes
-ysk-server hosting runtime-install --kind node --version 20
+ysk-server hosting runtime-install --kind node --version 20 [--install|--execute]
 ysk-server hosting dovecot-passdb --domain example.com
 ysk-server hosting webmail-apply --domain webmail.example.com
-ysk-server hosting firewall-apply [--smtp] [--apply]
+ysk-server hosting firewall-apply [--smtp] [--execute]
 ```
 
 `--zone` / `--ip` are **required** (no TEST-NET / example.com defaults). Optional `--ipv6` writes dual-stack AAAA.
+
+Provision / firewall / nginx-sync default **dry-run**; add `--execute` + `YSK_EXECUTE=1` to apply.
 
 ### dns (AI alias)
 

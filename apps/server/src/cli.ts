@@ -69,8 +69,12 @@ function exitFromResult(r: {
   requiresRoot?: boolean;
   allowed?: boolean;
   applyStatus?: string;
+  dryRun?: boolean;
+  executed?: boolean;
 }): number {
   if (r.blocked) return 3;
+  // Plan-only success (default for dangerous CLI ops)
+  if (r.dryRun === true && r.ok !== false) return 0;
   const code = r.code ?? '';
   if (
     code === ErrorCodes.VALIDATION ||
@@ -199,13 +203,17 @@ Global:
 
 Exit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error
 
+Safety:
+  Dangerous ops default to dry-run (plan only).
+  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.
+
 Examples:
   ${CLI_NAME} readiness --json
   ${CLI_NAME} host --json
+  ${CLI_NAME} defense ban --ip 1.2.3.4 --json          # dry-run plan
+  ${CLI_NAME} defense ban --ip 1.2.3.4 --execute --json  # real ban
   ${CLI_NAME} projects list --json
-  ${CLI_NAME} projects create --name demo --runtime node --json
   ${CLI_NAME} logs query --source journal: --lines 100 --json
-  ${CLI_NAME} dns zone --zone example.com --ip YOUR.PUBLIC.IP --json
   ${CLI_NAME} tools --json
 `.trim();
   process.stdout.write(`${text}\n`);
@@ -219,6 +227,15 @@ function getOpt(args: string[], name: string): string | undefined {
   const i = args.indexOf(name);
   if (i >= 0 && args[i + 1] && !args[i + 1].startsWith('-')) return args[i + 1];
   return undefined;
+}
+
+/**
+ * Dangerous host mutations: CLI defaults to dry-run.
+ * Pass --execute (or legacy --apply) to attempt real change.
+ * Still requires YSK_EXECUTE=1 (and often root) on the host.
+ */
+function wantsHostExecute(args: string[]): boolean {
+  return hasFlag(args, '--execute') || hasFlag(args, '--apply');
 }
 
 function printVersion(json: boolean): void {
@@ -721,13 +738,24 @@ async function main(argv: string[]): Promise<number> {
         return 0;
       }
       if (sub === 'nginx-sync') {
+        const execute = wantsHostExecute(args);
         const result = await syncNginxConfigs({
           dataDir: ctx.dataDir,
           systemConfDir: getOpt(args, '--system-dir'),
           host: ctx.host,
-          dryRun: hasFlag(args, '--dry-run'),
+          dryRun: !execute || hasFlag(args, '--dry-run'),
         });
-        printJson(result);
+        printJson({
+          ok: true,
+          dryRun: !execute || hasFlag(args, '--dry-run'),
+          ...result,
+          notes: [
+            ...(result.notes ?? []),
+            execute
+              ? 'execute 模式（仍需 YSK_EXECUTE 才能寫系統目錄）'
+              : 'dry-run 預設：加 --execute 先同步到系統 nginx',
+          ],
+        });
         return 0;
       }
       if (sub === 'redis-provision') {
@@ -735,7 +763,7 @@ async function main(argv: string[]): Promise<number> {
           hostExec: ctx.host,
           projectId: getOpt(args, '--project-id') ?? 'shared',
           dbIndex: getOpt(args, '--db') ? Number(getOpt(args, '--db')) : 0,
-          execute: hasFlag(args, '--execute'),
+          execute: wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -746,7 +774,7 @@ async function main(argv: string[]): Promise<number> {
           username: getOpt(args, '--user') ?? 'appuser',
           password: getOpt(args, '--password') ?? '',
           hostExec: ctx.host,
-          execute: hasFlag(args, '--execute'),
+          execute: wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -757,7 +785,7 @@ async function main(argv: string[]): Promise<number> {
           username: getOpt(args, '--user') ?? 'appuser',
           password: getOpt(args, '--password') ?? '',
           hostExec: ctx.host,
-          execute: hasFlag(args, '--execute'),
+          execute: wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -797,7 +825,7 @@ async function main(argv: string[]): Promise<number> {
         const result = await installPowerDnsPackages({
           dataDir: ctx.dataDir,
           host: ctx.host,
-          install: hasFlag(args, '--install'),
+          install: hasFlag(args, '--install') || wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -807,7 +835,7 @@ async function main(argv: string[]): Promise<number> {
         const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
         if (!zone || !serverIp) {
           process.stderr.write(
-            'Usage: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load]\n',
+            'Usage: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n',
           );
           return 2;
         }
@@ -817,7 +845,7 @@ async function main(argv: string[]): Promise<number> {
           zone,
           serverIp,
           serverIpv6: getOpt(args, '--ipv6') ?? getOpt(args, '--server-ipv6'),
-          load: hasFlag(args, '--load'),
+          load: hasFlag(args, '--load') || wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -825,14 +853,16 @@ async function main(argv: string[]): Promise<number> {
       if (sub === 'email-apply') {
         const domain = getOpt(args, '--domain');
         if (!domain) {
-          process.stderr.write('Usage: ysk-server hosting email-apply --domain example.com [--install]\n');
+          process.stderr.write(
+            'Usage: ysk-server hosting email-apply --domain example.com [--install|--execute]\n',
+          );
           return 2;
         }
         const result = await applyEmailStack({
           dataDir: ctx.dataDir,
           domain,
           host: ctx.host,
-          installPackages: hasFlag(args, '--install'),
+          installPackages: hasFlag(args, '--install') || wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -875,14 +905,16 @@ async function main(argv: string[]): Promise<number> {
         const { applyFtps } = await import('@ysk/core');
         const domain = getOpt(args, '--domain');
         if (!domain) {
-          process.stderr.write('Usage: ysk-server hosting ftps-apply --domain files.example.com [--install]\n');
+          process.stderr.write(
+            'Usage: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n',
+          );
           return 2;
         }
         const result = await applyFtps({
           dataDir: ctx.dataDir,
           domain,
           host: ctx.host,
-          install: hasFlag(args, '--install'),
+          install: hasFlag(args, '--install') || wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -916,7 +948,7 @@ async function main(argv: string[]): Promise<number> {
           host: ctx.host,
           kind,
           version: getOpt(args, '--version') ?? defaultVer,
-          install: hasFlag(args, '--install'),
+          install: hasFlag(args, '--install') || wantsHostExecute(args),
         });
         printJson(result);
         return exitFromResult(result);
@@ -993,7 +1025,7 @@ async function main(argv: string[]): Promise<number> {
           serverIp,
           actor: 'cli',
           audit: ctx.audit,
-          installPackages: hasFlag(args, '--install'),
+          installPackages: hasFlag(args, '--install') || wantsHostExecute(args),
           adminLocalPart: getOpt(args, '--admin') ?? 'postmaster',
           adminPassword: getOpt(args, '--password'),
           webmail: !hasFlag(args, '--no-webmail'),
@@ -1006,27 +1038,42 @@ async function main(argv: string[]): Promise<number> {
           host: ctx.host,
           dataDir: ctx.dataDir,
           allowSmtp: hasFlag(args, '--smtp'),
-          apply: hasFlag(args, '--apply'),
+          apply: wantsHostExecute(args),
         });
-        printJson(result);
-        return exitFromResult(result);
+        printJson({
+          ...result,
+          dryRun: !wantsHostExecute(args),
+          notes: [
+            ...(result.notes ?? []),
+            wantsHostExecute(args)
+              ? 'execute 模式（仍需 YSK_EXECUTE=1 + root）'
+              : 'dry-run 預設：加 --execute 先套用 ufw',
+          ],
+        });
+        return exitFromResult({
+          ...result,
+          dryRun: !wantsHostExecute(args),
+          ok: wantsHostExecute(args) ? result.ok : true,
+        });
       }
       process.stderr.write(
         [
           'Usage: ysk-server hosting <sub>',
-          '  nginx | nginx-sync | redis-provision | postgres-provision | mysql-provision',
+          '  Dangerous ops default dry-run; add --execute (+ YSK_EXECUTE=1) to apply',
+          '  nginx | nginx-sync [--execute]',
+          '  redis-provision | postgres-provision | mysql-provision [--execute]',
           '  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]',
-          '  dns-zones | powerdns-status | powerdns-install [--install]',
-          '  powerdns-load --zone X --ip A.B.C.D [--ipv6 X:X::X] [--load]',
-          '  email-apply --domain X [--install]',
+          '  dns-zones | powerdns-status | powerdns-install [--install|--execute]',
+          '  powerdns-load --zone X --ip A.B.C.D [--load|--execute]',
+          '  email-apply --domain X [--install|--execute]',
           '  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]',
-          '  ftps-apply --domain X [--install]',
-          '  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install]',
+          '  ftps-apply --domain X [--install|--execute]',
+          '  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]',
           '  dovecot-passdb --domain X | --all',
           '  webmail-apply --domain webmail.example.com [--download]',
           '  public-files --domain files.example.com [--reload]',
-          '  email-bootstrap --domain example.com --ip A.B.C.D [--admin postmaster] [--install]',
-          '  firewall-apply [--smtp] [--apply]',
+          '  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]',
+          '  firewall-apply [--smtp] [--execute]',
           '',
         ].join('\n'),
       );
@@ -1219,16 +1266,29 @@ async function main(argv: string[]): Promise<number> {
         const unit = getOpt(args, '--unit') ?? getOpt(args, '--id');
         if (!unit) {
           process.stderr.write(
-            `Usage: ${CLI_NAME} services ${sub} --unit <systemd-unit> [--json]\n`,
+            `Usage: ${CLI_NAME} services ${sub} --unit <systemd-unit> [--execute] [--json]\n`,
           );
           return 2;
+        }
+        if (!wantsHostExecute(args)) {
+          printJson({
+            ok: true,
+            dryRun: true,
+            unit,
+            action: sub,
+            plan: [`systemctl ${sub} ${unit}`],
+            notes: [
+              `dry-run：未 systemctl ${sub}。加 --execute 且 YSK_EXECUTE=1 + root 先真正執行`,
+            ],
+          });
+          return 0;
         }
         const r = await lifecycleServiceUnit(ctx.host, unit, sub);
         printJson(r);
         return exitFromResult(r);
       }
       process.stderr.write(
-        `Usage: ${CLI_NAME} services matrix|start|stop|restart|reload [--unit NAME] [--json]\n`,
+        `Usage: ${CLI_NAME} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n`,
       );
       return 2;
     } finally {
@@ -1274,7 +1334,7 @@ async function main(argv: string[]): Promise<number> {
         const ip = getOpt(args, '--ip');
         if (!ip) {
           process.stderr.write(
-            `Usage: ${CLI_NAME} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t]\n`,
+            `Usage: ${CLI_NAME} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n`,
           );
           return 2;
         }
@@ -1289,6 +1349,8 @@ async function main(argv: string[]): Promise<number> {
           ip,
           method,
           reason: getOpt(args, '--reason') ?? 'cli',
+          // explicit false = dry-run; true only with --execute
+          execute: wantsHostExecute(args),
         });
         printJson(r);
         return exitFromResult(r);
@@ -1297,7 +1359,7 @@ async function main(argv: string[]): Promise<number> {
         const ip = getOpt(args, '--ip');
         if (!ip) {
           process.stderr.write(
-            `Usage: ${CLI_NAME} defense unban --ip <ip> [--method fail2ban|ufw|both]\n`,
+            `Usage: ${CLI_NAME} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n`,
           );
           return 2;
         }
@@ -1311,6 +1373,7 @@ async function main(argv: string[]): Promise<number> {
           db: ctx.db,
           ip,
           method,
+          execute: wantsHostExecute(args),
         });
         printJson(r);
         return exitFromResult(r);

@@ -3452,7 +3452,8 @@ export function createHttpServer(ctx: AppContext): Server {
           maxmemoryMb: data.maxmemoryMb,
           redisHost: data.host,
           redisPort: data.port,
-          execute: data.execute,
+          // Panel: omit execute → apply; explicit false → dry-run
+          execute: data.execute !== false,
         });
         ctx.audit.append({
           actor: user.username,
@@ -3481,7 +3482,8 @@ export function createHttpServer(ctx: AppContext): Server {
           host: data.host,
           port: data.port,
           hostExec: ctx.host,
-          execute: data.execute,
+          // Panel: omit execute → apply; explicit false → dry-run
+          execute: data.execute !== false,
         });
         ctx.audit.append({
           actor: user.username,

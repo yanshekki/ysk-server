@@ -9,6 +9,9 @@ import { renderMysqlProvisionSql, validateMysqlIdent } from './db-client.js';
 export interface MysqlProvisionResult {
   ok: boolean;
   executed: boolean;
+  /** true when plan-only (no --execute) */
+  dryRun?: boolean;
+  blocked?: boolean;
   requiresExecute: boolean;
   requiresRoot: boolean;
   mysqlClient: boolean;
@@ -58,17 +61,17 @@ export async function provisionMysqlDatabase(input: {
     timeoutMs: 5_000,
   });
   const mysqlClient = which.stdout.trim().length > 0;
-  const wantsExecute = input.execute !== false;
+  const wantsExecute = input.execute === true;
   const canExecute = wantsExecute && input.hostExec.executeEnabled() && mysqlClient;
 
   const notes: string[] = [];
   if (!mysqlClient) notes.push('伺服器未安裝 MySQL 客戶端');
   if (!input.hostExec.executeEnabled()) notes.push('伺服器未開啟系統變更權限，無法在管理面板建立資料庫');
-  if (!wantsExecute) notes.push('未要求執行系統變更');
 
-  if (!canExecute) {
+  if (!wantsExecute) {
     return {
-      ok: false,
+      ok: true,
+      dryRun: true,
       executed: false,
       requiresExecute: !input.hostExec.executeEnabled(),
       requiresRoot: false,
@@ -77,7 +80,25 @@ export async function provisionMysqlDatabase(input: {
       connectionHint,
       notes: [
         ...notes,
-        '資料庫尚未建立。請在管理面板重試，或於伺服器開啟系統變更權限後再執行。',
+        'dry-run：未建立資料庫。加 --execute 且 YSK_EXECUTE=1 先真正 provision',
+      ],
+      commandResults: [],
+    };
+  }
+
+  if (!canExecute) {
+    return {
+      ok: false,
+      executed: false,
+      blocked: !input.hostExec.executeEnabled(),
+      requiresExecute: !input.hostExec.executeEnabled(),
+      requiresRoot: false,
+      mysqlClient,
+      sql,
+      connectionHint,
+      notes: [
+        ...notes,
+        '資料庫尚未建立。請確認 mysql 客戶端與 YSK_EXECUTE=1 後再試。',
       ],
       commandResults: [],
     };

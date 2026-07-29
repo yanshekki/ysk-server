@@ -10,6 +10,8 @@ import { probeEndpoint } from './db-client.js';
 export interface RedisProvisionResult {
   ok: boolean;
   executed: boolean;
+  dryRun?: boolean;
+  blocked?: boolean;
   requiresExecute: boolean;
   redisCli: boolean;
   reachable: boolean;
@@ -58,16 +60,18 @@ export async function provisionRedisBinding(input: {
   );
   const redisCli = which.stdout.trim().length > 0;
 
-  const want = input.execute !== false;
+  const want = input.execute === true;
   const can = want && input.hostExec.executeEnabled() && redisCli && reachable;
 
   if (!redisCli) notes.push('伺服器未安裝 Redis 客戶端');
   if (!input.hostExec.executeEnabled()) {
     notes.push('伺服器未開啟系統變更權限，無法在管理面板完成此操作');
   }
-  if (want && !can) {
+
+  if (!want) {
     return {
-      ok: false,
+      ok: true,
+      dryRun: true,
       executed: false,
       requiresExecute: !input.hostExec.executeEnabled(),
       redisCli,
@@ -75,7 +79,25 @@ export async function provisionRedisBinding(input: {
       plan,
       notes: [
         ...notes,
-        '尚未在伺服器建立 Redis 資源，請確認服務與權限後於面板重試',
+        'dry-run：僅探測／計劃。加 --execute 且 YSK_EXECUTE=1 先真正 provision',
+      ],
+      commandResults,
+      connectionHint: { host, port, db: dbIndex },
+    };
+  }
+
+  if (!can) {
+    return {
+      ok: false,
+      executed: false,
+      blocked: !input.hostExec.executeEnabled(),
+      requiresExecute: !input.hostExec.executeEnabled(),
+      redisCli,
+      reachable,
+      plan,
+      notes: [
+        ...notes,
+        '尚未在伺服器建立 Redis 資源，請確認 redis-cli、TCP 與 YSK_EXECUTE=1',
       ],
       commandResults,
       connectionHint: {
@@ -84,20 +106,6 @@ export async function provisionRedisBinding(input: {
         db: dbIndex,
         ...(plan.connectionHint ?? {}),
       },
-    };
-  }
-
-  if (!want) {
-    return {
-      ok: reachable,
-      executed: false,
-      requiresExecute: !input.hostExec.executeEnabled(),
-      redisCli,
-      reachable,
-      plan,
-      notes: [...notes, '未開啟系統變更 — 僅探測'],
-      commandResults,
-      connectionHint: { host, port, db: dbIndex },
     };
   }
 

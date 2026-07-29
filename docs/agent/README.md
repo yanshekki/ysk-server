@@ -17,10 +17,11 @@
 
 1. **永遠加 `--json`**（或只讀 JSON stdout）
 2. **禁止** 把 LLM 原文當 shell 執行
-3. 改系統要 `YSK_EXECUTE=1`（+ 多數情況 root）；否則結果係 `blocked`，唔係假成功
-4. 高風險 tool：先 dry-run / 等人批（`ysk-server tools` / API approval）
-5. Exit code（嚴格）：
-   - `0` ok  
+3. **危險 CLI 預設 dry-run**（`dryRun: true`，exit 0 = 計劃成功，**未改系統**）
+4. 真正改系統：加 **`--execute`**（別名 `--apply`）**＋** env `YSK_EXECUTE=1`（多數要 root）
+5. 高風險 tool：先 dry-run / 等人批（`ysk-server tools` / API approval）
+6. Exit code（嚴格）：
+   - `0` ok（含 dry-run 計劃成功）  
    - `1` 一般失敗  
    - `2` 參數／validation（缺 flag、zone 名無效）  
    - `3` blocked（無權限／無 EXECUTE／allowlist）  
@@ -46,7 +47,13 @@ ysk-server projects deploy --id <uuid> --json
 ysk-server services matrix --json
 ysk-server defense status --json
 ysk-server defense whitelist --action list --json
-# ban 需 EXECUTE： ysk-server defense ban --ip 1.2.3.4 --json
+# ban：預設 dry-run；真正 ban 要 --execute + YSK_EXECUTE=1
+ysk-server defense ban --ip 1.2.3.4 --json
+ysk-server defense ban --ip 1.2.3.4 --execute --json
+ysk-server hosting mysql-provision --db app --user u --password longpass99 --json
+ysk-server hosting firewall-apply --json
+ysk-server services restart --unit nginx --json          # dry-run
+ysk-server services restart --unit nginx --execute --json
 
 # DNS zone（寫管理檔；--validate/--reload 需 EXECUTE）
 ysk-server dns zones --json
