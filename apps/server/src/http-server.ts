@@ -4384,6 +4384,99 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         return sendOpsResult(res, r);
       }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/dns-sync$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          probeFirst?: boolean;
+          applyZone?: boolean;
+        };
+        const { syncCdnSiteDns } = await import('@ysk/core');
+        const r = await syncCdnSiteDns({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          host: ctx.host,
+          probeFirst: data.probeFirst,
+          applyZone: data.applyZone,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.dns_sync',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            strategy: r.strategy,
+            ipv4: r.selectedIpv4,
+            recordsTouched: r.recordsTouched,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/health-loop$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { applyZone?: boolean };
+        const { runCdnSiteHealthLoop } = await import('@ysk/core');
+        const r = await runCdnSiteHealthLoop({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          host: ctx.host,
+          applyZone: data.applyZone,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.health_loop',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            strategy: r.strategy,
+            ipv4: r.selectedIpv4,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/cdn/health-loop') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { applyZone?: boolean };
+        const { runAllCdnSitesHealthLoop } = await import('@ysk/core');
+        const r = await runAllCdnSitesHealthLoop({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          applyZone: data.applyZone,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.health_loop_all',
+          detail: { ok: r.ok, count: r.results.length },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/dns-records$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { listCdnManagedDnsRecords } = await import('@ysk/core');
+        return sendJson(res, 200, {
+          items: listCdnManagedDnsRecords(ctx.db, id),
+        });
+      }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/web-stats$/)) {
         ctx.auth.authenticate(getBearer(req));

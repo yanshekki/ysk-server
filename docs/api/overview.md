@@ -96,6 +96,10 @@ Base URL: `http://127.0.0.1:9287`
 | POST | `/api/v1/cdn/sites/:id/render` | Bearer | Render edge nginx (dryRun or write managed) |
 | POST | `/api/v1/cdn/sites/:id/apply` | Bearer | Fan-out conf to edges (SSH/local) + reload |
 | POST | `/api/v1/cdn/sites/:id/purge` | Bearer | Purge proxy_cache on edges |
+| POST | `/api/v1/cdn/sites/:id/dns-sync` | Bearer | Multi-A/failover DNS from healthy edges |
+| POST | `/api/v1/cdn/sites/:id/health-loop` | Bearer | Probe edges then DNS sync |
+| POST | `/api/v1/cdn/health-loop` | Bearer | Health loop all sites |
+| GET | `/api/v1/cdn/sites/:id/dns-records` | Bearer | List managedBy=cdn records |
 | POST | `/api/v1/hosting/firewall/plan` | Bearer | Firewall plan |
 | GET | `/api/v1/hosting/files/plan` | Bearer | Public file server plan |
 | GET | `/api/v1/backups` | Bearer | List backup archives |

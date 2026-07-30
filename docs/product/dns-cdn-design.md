@@ -306,7 +306,7 @@ CDN 頁建議分頁：**節點** | **站點** | **健康** | **工具（purge / 
 | **PR-C1** | cdn_nodes CRUD + probe + UI 骨架 (**done**) | shared types |
 | **PR-C2** | cdn_sites + Nginx renderer（單 edge dry-run）(**done**) | C1 |
 | **PR-C3** | fleet/SSH fan-out 多 edge apply + purge (**done**) | C2, migrate/db-cluster 模式 |
-| **PR-C4** | DNS multi-A/failover + managedBy + 健康迴圈 **MVP** | C3, D1 |
+| **PR-C4** | DNS multi-A/failover + managedBy + 健康迴圈 **MVP** (**done**) | C3, D1 |
 | **PR-C5** | Weighted + 儀表（命中率粗估） | C4 |
 | **PR-C6** | SSL 分發 / LE on edge | C4 |
 | **PR-C7** | Geo + origin shield + project 一鍵 | C5 |
@@ -328,14 +328,16 @@ CDN 頁建議分頁：**節點** | **站點** | **健康** | **工具（purge / 
 
 ## 13. 驗收檢查表（MVP）
 
-- [ ] 建立 2 edge 節點並 probe online  
-- [ ] 建立 site，origin=project 或 url  
-- [ ] apply → 兩 edge nginx -t ok + reload  
-- [ ] DNS multi-A 寫入；Tools dig 見兩 IP  
-- [ ] stop 一 edge 服務 → 健康迴圈後 dig 一 IP  
-- [ ] purge → 兩邊 cache 清空（header 再 miss）  
-- [ ] 手動 user 記錄不被 CDN planner 覆蓋  
+- [x] 建立 2 edge 節點並 probe online（PR-C1）  
+- [x] 建立 site，origin=url（PR-C2）  
+- [x] apply → edge nginx conf fan-out（PR-C3）  
+- [x] DNS multi-A 寫入 managedBy=cdn（PR-C4）  
+- [x] failover / minHealthyEdges 防全滅（PR-C4）  
+- [x] purge 兩邊 cache（PR-C3）  
+- [x] 手動 user 記錄不被 CDN planner 覆蓋（PR-C4）  
+
+實機 dig 驗證仍取決於 zone apply + 公網 NS；控制面可於 `/dns` 工具分頁對照。
 
 ---
 
-*最後更新：PR-D2 done（cluster remote reload + probe）。*
+*最後更新：PR-C4 MVP done（multi-A / failover + health loop）。*

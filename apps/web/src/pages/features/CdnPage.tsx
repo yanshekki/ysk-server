@@ -26,6 +26,7 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import type {
+  CdnDnsStrategy,
   CdnNodeDto,
   CdnNodeRole,
   CdnSiteDto,
@@ -38,6 +39,13 @@ const MODE_OPTS: CdnSiteMode[] = [
   'origin_pull',
   'reverse_proxy',
   'static_edge',
+];
+const DNS_STRATEGIES: CdnDnsStrategy[] = [
+  'multi_a',
+  'failover',
+  'single',
+  'weighted',
+  'geo',
 ];
 
 function statusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
@@ -82,14 +90,25 @@ export function CdnPage() {
   const [edgeIds, setEdgeIds] = useState<string[]>([]);
   const [cacheEnabled, setCacheEnabled] = useState(true);
   const [maxAge, setMaxAge] = useState('10m');
+  const [dnsStrategy, setDnsStrategy] = useState<CdnDnsStrategy>('multi_a');
+  const [dnsZoneId, setDnsZoneId] = useState('');
+  const [dnsZones, setDnsZones] = useState<
+    Array<{ id: string; zone?: string }>
+  >([]);
 
   const refresh = useCallback(async () => {
-    const [n, s] = await Promise.all([
+    const [n, s, z] = await Promise.all([
       api.requestRaw<{ items: CdnNodeDto[] }>('/api/v1/cdn/nodes'),
       api.requestRaw<{ items: CdnSiteDto[] }>('/api/v1/cdn/sites'),
+      api
+        .requestRaw<{ items: Array<{ id: string; zone?: string }> }>(
+          '/api/v1/resources/dns/zones',
+        )
+        .catch(() => ({ items: [] as Array<{ id: string; zone?: string }> })),
     ]);
     setNodes(n.items ?? []);
     setSites(s.items ?? []);
+    setDnsZones(z.items ?? []);
   }, []);
 
   useEffect(() => {
@@ -122,6 +141,8 @@ export function CdnPage() {
     );
     setCacheEnabled(true);
     setMaxAge('10m');
+    setDnsStrategy('multi_a');
+    setDnsZoneId('');
   }
 
   function openCreateNode() {
@@ -159,6 +180,8 @@ export function CdnPage() {
     setEdgeIds(s.edgeNodeIds ?? []);
     setCacheEnabled(s.cache?.enabled !== false);
     setMaxAge(s.cache?.maxAge ?? '10m');
+    setDnsStrategy(s.dns?.strategy ?? 'multi_a');
+    setDnsZoneId(s.dns?.zoneId ?? '');
     setSiteOpen(true);
   }
 
@@ -238,7 +261,8 @@ export function CdnPage() {
             bypassAuth: true,
           },
           dns: {
-            strategy: 'multi_a',
+            strategy: dnsStrategy,
+            zoneId: dnsZoneId.trim() || undefined,
             ttlHealthy: 60,
             ttlUnhealthy: 30,
             minHealthyEdges: 1,
@@ -361,7 +385,7 @@ export function CdnPage() {
 
   async function postSiteOp(
     id: string,
-    action: 'render' | 'apply' | 'purge',
+    action: 'render' | 'apply' | 'purge' | 'dns-sync' | 'health-loop',
     body: Record<string, unknown> = {},
   ) {
     setBusy(true);
@@ -408,7 +432,9 @@ export function CdnPage() {
             ? `Fan-out 完成（${r.apply_status}）`
             : action === 'purge'
               ? `Purge 完成（${r.apply_status}）`
-              : `已寫入 conf（${r.apply_status}）`,
+              : action === 'dns-sync' || action === 'health-loop'
+                ? `DNS 同步完成（${r.apply_status}）`
+                : `已寫入 conf（${r.apply_status}）`,
         );
       } else {
         setMsg(
@@ -643,7 +669,7 @@ export function CdnPage() {
             <DataTable<CdnSiteDto>
               rowKey={(r) => r.id}
               title={`CDN 站點（${sites.length}）`}
-              description="域名 + origin + edges + cache。渲染寫入控制面 conf；fan-out 見 PR-C3。"
+              description="域名 + origin + edges + cache + multi-A DNS。套用 edges / DNS 同步 / purge。"
               toolbar={
                 <ActionBar>
                   <Button
@@ -653,6 +679,49 @@ export function CdnPage() {
                     disabled={!nodes.length}
                   >
                     + 新增站點
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    disabled={!sites.length}
+                    onClick={() =>
+                      void (async () => {
+                        setBusy(true);
+                        try {
+                          const token = authStore.getToken();
+                          const res = await fetch('/api/v1/cdn/health-loop', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              ...(token
+                                ? { Authorization: `Bearer ${token}` }
+                                : {}),
+                            },
+                            body: '{}',
+                          });
+                          const r = (await res.json()) as {
+                            ok?: boolean;
+                            notes?: string[];
+                          };
+                          setNotes(r.notes ?? []);
+                          setMsg(
+                            r.ok
+                              ? '全部站點健康迴圈完成'
+                              : '健康迴圈部分失敗',
+                          );
+                          await refresh();
+                        } catch (e) {
+                          setMsg(
+                            e instanceof Error ? e.message : 'health-loop 失敗',
+                          );
+                        } finally {
+                          setBusy(false);
+                        }
+                      })()
+                    }
+                  >
+                    全站健康迴圈
                   </Button>
                 </ActionBar>
               }
@@ -751,6 +820,28 @@ export function CdnPage() {
                         Purge
                       </Button>
                       <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void postSiteOp(s.id, 'dns-sync', {
+                            probeFirst: false,
+                          })
+                        }
+                      >
+                        DNS 同步
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void postSiteOp(s.id, 'health-loop', {})
+                        }
+                      >
+                        探活+DNS
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="sm"
                         loading={busy}
@@ -804,15 +895,16 @@ export function CdnPage() {
                     <strong>PR-C2</strong>：site 政策 + Nginx edge 渲染 ✓
                   </li>
                   <li>
-                    <strong>PR-C3（套用 edges / purge）</strong>：SSH/local
-                    fan-out + cache purge ✓
+                    <strong>PR-C3</strong>：SSH/local fan-out + purge ✓
                   </li>
                   <li>
-                    <strong>PR-C4 MVP</strong>：multi-A / failover DNS
+                    <strong>PR-C4 MVP</strong>：multi-A / failover DNS +
+                    managedBy=cdn + 健康迴圈 ✓
                   </li>
                 </ul>
                 <FormHint>
-                  partial = 部分 edge 失敗。draining 節點預設略過。詳見{' '}
+                  CDN 只覆寫 managedBy=cdn 記錄；user 記錄保留。DNS written ≠
+                  公網即時。詳見{' '}
                   <code className="inline">docs/product/dns-cdn-design.md</code>
                 </FormHint>
               </CardSection>
@@ -1088,10 +1180,49 @@ export function CdnPage() {
                 placeholder="10m"
               />
             </Field>
+            <Field
+              label="DNS 策略"
+              htmlFor="site-dns-strategy"
+              flush
+              hint="multi_a=多 IP；failover=只寫最健康一顆"
+            >
+              <select
+                id="site-dns-strategy"
+                value={dnsStrategy}
+                onChange={(e) =>
+                  setDnsStrategy(e.target.value as CdnDnsStrategy)
+                }
+              >
+                {DNS_STRATEGIES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field
+              label="DNS Zone"
+              htmlFor="site-zone"
+              flush
+              hint="可空＝依域名自動匹配 zone"
+            >
+              <select
+                id="site-zone"
+                value={dnsZoneId}
+                onChange={(e) => setDnsZoneId(e.target.value)}
+              >
+                <option value="">（自動匹配）</option>
+                {dnsZones.map((z) => (
+                  <option key={z.id} value={z.id}>
+                    {z.zone ?? z.id}
+                  </option>
+                ))}
+              </select>
+            </Field>
           </FormLayout>
           <FormHint>
-            儲存後按「寫入 conf」產生 edge nginx 模板（控制面 written）。遠端套用屬
-            PR-C3。
+            流程：寫入 conf → 套用 edges → 探活+DNS（multi-A）。CDN 記錄
+            managedBy=cdn，唔覆寫你手動嘅 user 記錄。
           </FormHint>
         </form>
       </Modal>

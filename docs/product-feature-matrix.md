@@ -100,7 +100,7 @@
 | C9b | Zone validation (named-checkzone) | — | D | △ | Better |
 | C10 | Zone → SSL LE preset deep-link | — | — | ✓ | Better |
 | C11 | dig / DNS lookup tool (UI + API) | — | D | ✓ | P1 |
-| C12 | CDN-managed RRset (`managedBy=cdn`) | — | — | ✗ | P1 |
+| C12 | CDN-managed RRset (`managedBy=cdn`) | — | — | ✓ | P1 |
 
 > DNS + multi-node CDN 產品設計：[`docs/product/dns-cdn-design.md`](./product/dns-cdn-design.md)
 
@@ -115,7 +115,7 @@
 | CDN3 | Site policy (domains, origin, edges, cache) | — | — | ✓ | P0 |
 | CDN4 | Nginx edge renderer (proxy_cache + bypass) | — | — | ✓ | P0 |
 | CDN5 | Fan-out apply (fleet/SSH) + partial honesty | — | — | ✓ | P0 |
-| CDN6 | Multi-A / failover DNS sync | — | — | ✗ | P0 |
+| CDN6 | Multi-A / failover DNS sync | — | — | ✓ | P0 |
 | CDN7 | Cache purge all edges | H | D | ✓ | P1 |
 | CDN8 | Weighted / geo DNS | — | — | ✗ | P2 |
 | CDN9 | SSL distribute / LE on edge | — | — | ✗ | P1 |
