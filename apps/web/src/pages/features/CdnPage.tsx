@@ -1029,8 +1029,8 @@ export function CdnPage() {
                   title="尚未有 CDN 站點"
                   description={
                     nodes.length
-                      ? '請使用右上角「+ 新增站點」建立站點並渲染 edge nginx 模板。'
-                      : '請先在「節點」分頁用右上角按鈕登記 edge，再回來新增站點。'
+                      ? '請用表格右上角「+ 新增站點」建立站點。'
+                      : '尚無 edge：先到「節點」分頁，用表格右上角「+ 新增節點」登記，再回來建立站點。'
                   }
                 />
               }
