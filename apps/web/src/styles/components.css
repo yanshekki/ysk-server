@@ -4743,6 +4743,200 @@ code.inline {
   margin-bottom: 0;
 }
 
+/* —— SoftwareInstallBanner: sole page install CTA (alert only) —— */
+.software-install-banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+}
+
+.software-install-banner__alert {
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 0.9rem 1.1rem;
+}
+
+.software-install-banner__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem 1.25rem;
+}
+
+.software-install-banner__text {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.software-install-banner__title {
+  margin: 0;
+  font-size: var(--text-md, 1rem);
+  font-weight: 750;
+  line-height: 1.35;
+  color: var(--text, #0f172a);
+}
+
+.software-install-banner__desc {
+  margin: 0.35rem 0 0;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-muted, #64748b);
+  line-height: 1.4;
+}
+
+/* Buttons: gap between them + not flush to alert edge */
+.software-install-banner__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+  margin: 0.15rem 0 0.15rem auto;
+  padding: 0.15rem 0;
+}
+
+.software-install-banner__result {
+  margin-top: 0.15rem;
+}
+
+/* —— Host migrate wizard —— */
+.mig-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack, 1rem);
+}
+
+.mig-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.mig-steps__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--text-muted, #64748b);
+}
+
+.mig-steps__item.is-current {
+  color: var(--text, #0f172a);
+}
+
+.mig-steps__item.is-done {
+  color: #15803d;
+}
+
+.mig-steps__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: var(--bg-white, #fff);
+  border: 1px solid var(--border-color, #cbd5e1);
+}
+
+.mig-steps__item.is-current .mig-steps__num {
+  background: var(--primary, #2563eb);
+  border-color: var(--primary, #2563eb);
+  color: #fff;
+}
+
+.mig-steps__item.is-done .mig-steps__num {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.mig-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mig-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.mig-check input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.mig-warn-list {
+  margin: 0.4rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.mig-result-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+}
+
+.mig-phases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.55rem;
+}
+
+.mig-phases__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm, 0.35rem);
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-light, #e2e8f0);
+  font-size: 0.78rem;
+}
+
+.mig-phases__name {
+  font-weight: 650;
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.mig-cutover {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.mig-cutover__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.mig-cutover__list {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mig-cutover__list code {
+  font-size: 0.85rem;
+}
+
 /* Tabs sit as full-width workspace */
 .feature-page .tabs {
   min-width: 0;

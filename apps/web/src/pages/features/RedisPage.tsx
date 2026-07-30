@@ -17,8 +17,8 @@ import { ActionBar,
   Modal,
   OpsResultPanel,
   PresetChips,
+  SoftwareInstallBanner,
   SplitPanel,
-
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
@@ -302,6 +302,11 @@ export function RedisPage() {
         </ActionBar>
       }
     >
+      <SoftwareInstallBanner
+        feature="redis"
+        title="Redis 所需軟件尚未安裝"
+        onInstalled={() => void refreshSvc()}
+      />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
@@ -316,16 +321,22 @@ export function RedisPage() {
       {!online ? (
         <EmptyState
           title="尚未連上 Redis"
-          description="安裝並啟動服務後，即可瀏覽各資料庫的鍵與內容。"
+          description={
+            !svc?.serverInstalled
+              ? '請先使用上方橫幅一鍵安裝 Redis，再啟動服務。'
+              : '服務已安裝但未連上，請啟動服務後即可瀏覽鍵與內容。'
+          }
           action={
-            <Button
-              variant="primary"
-              size="lg"
-              loading={busy}
-              onClick={() => void (svc?.serverInstalled ? onStart() : onInstall())}
-            >
-              {svc?.serverInstalled ? '啟動服務' : '一鍵安裝並啟動'}
-            </Button>
+            svc?.serverInstalled ? (
+              <Button
+                variant="primary"
+                size="lg"
+                loading={busy}
+                onClick={() => void onStart()}
+              >
+                啟動服務
+              </Button>
+            ) : undefined
           }
         />
       ) : (

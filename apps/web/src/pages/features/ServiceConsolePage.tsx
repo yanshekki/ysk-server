@@ -20,6 +20,7 @@ import { ActionBar,
   SegRadio,
   PageTabs,
   FeaturePageLayout,
+  SoftwareInstallBanner,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import type { DbServiceEngine } from '../../features/db-service';
@@ -423,6 +424,11 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         </ActionBar>
       }
     >
+      <SoftwareInstallBanner
+        feature={engine}
+        title={`${console?.title ?? engine} 所需軟件尚未安裝`}
+        onInstalled={() => void refresh()}
+      />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
@@ -452,11 +458,9 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           <Card>
             <CardSection title="生命週期" description="安裝、啟動、停止與開機自啟">
               {!console.installed ? (
-                <div className="lifecycle-toolbar">
-                  <Button variant="primary" size="lg" loading={busy} onClick={() => void doInstall()}>
-                    一鍵安裝 {console.title}
-                  </Button>
-                </div>
+                <p className="muted u-text-sm u-mb-0">
+                  請使用上方橫幅「一鍵安裝」安裝 {console.title}。
+                </p>
               ) : (
                 <div className="lifecycle-toolbar">
                   <Button variant="primary" size="md" loading={busy} onClick={() => void doLifecycle('start')}>

@@ -1,8 +1,7 @@
 /**
- * Compact one-click install strip — single CTA, no repeated buttons.
+ * Sole page-level one-click install CTA (alert banner only).
+ * Feature pages must not render additional 「一鍵安裝」 buttons.
  */
-import type { ReactNode } from 'react';
-import { ActionBar } from './ActionBar';
 import { Alert } from './Alert';
 import { buttonClassName } from './Button';
 import { useFeatureSoftware } from '../../../features/software';
@@ -61,17 +60,15 @@ export function SoftwareInstallBanner({
   return (
     <div className="software-install-banner">
       {!ready && missing.length > 0 ? (
-        <CardLike>
-          <ActionBar align="between" className="u-items-start u-flex-wrap u-gap-4">
-            <div className="u-min-w-0" style={{ flex: '1 1 12rem' }}>
-              <h3 className="ops-result__title u-mt-0 u-mb-0">
+        <div className="software-install-banner__alert" role="status">
+          <div className="software-install-banner__row">
+            <div className="software-install-banner__text">
+              <h3 className="software-install-banner__title">
                 {title ?? '尚未安裝所需軟件'}
               </h3>
-              <p className="muted u-text-sm u-mt-2 u-mb-0">
-                缺少：{names}
-              </p>
+              <p className="software-install-banner__desc">缺少：{names}</p>
             </div>
-            <div /* was action-bar */>
+            <div className="software-install-banner__actions">
               <button
                 type="button"
                 className={buttonClassName({ variant: 'primary', size: 'md' })}
@@ -97,8 +94,8 @@ export function SoftwareInstallBanner({
                 重新探測
               </button>
             </div>
-          </ActionBar>
-        </CardLike>
+          </div>
+        </div>
       ) : null}
 
       {msg && !error ? (
@@ -111,7 +108,7 @@ export function SoftwareInstallBanner({
       ) : null}
 
       {opsResult && (error || lastResult) ? (
-        <div className="u-mt-3">
+        <div className="software-install-banner__result">
           <OpsResultPanel
             title="安裝結果"
             result={opsResult}
@@ -127,22 +124,6 @@ export function SoftwareInstallBanner({
           />
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function CardLike({ children }: { children: ReactNode }) {
-  return (
-    <div
-      className="card"
-      style={{
-        borderColor: 'var(--color-warn, #f59e0b)',
-        background: 'var(--color-warn-bg, rgba(245, 158, 11, 0.06))',
-      }}
-    >
-      <div className="card__body">
-        {children}
-      </div>
     </div>
   );
 }

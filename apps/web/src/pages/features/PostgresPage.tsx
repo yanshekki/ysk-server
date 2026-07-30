@@ -199,9 +199,9 @@ export function PostgresPage() {
           ) : null}
           <div className="lifecycle-toolbar u-mt-3">
             {!installed ? (
-              <Button variant="primary" size="md" loading={busy} onClick={() => void onInstall()}>
-                一鍵安裝 PostgreSQL
-              </Button>
+              <p className="muted u-text-sm u-mb-0">
+                請使用上方橫幅「一鍵安裝」安裝 PostgreSQL。
+              </p>
             ) : !running ? (
               <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
                 啟動服務
@@ -246,7 +246,7 @@ export function PostgresPage() {
                 title="尚未有 PostgreSQL 庫"
                 description={
                   !installed
-                    ? '請先一鍵安裝 PostgreSQL'
+                    ? '請先使用上方橫幅一鍵安裝 PostgreSQL'
                     : '建立後按「套用到系統」寫入伺服器'
                 }
                 action={
@@ -254,11 +254,7 @@ export function PostgresPage() {
                     <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
                       + 建立
                     </Button>
-                  ) : (
-                    <Button variant="primary" size="md" loading={busy} onClick={() => void onInstall()}>
-                      一鍵安裝
-                    </Button>
-                  )
+                  ) : undefined
                 }
               />
             }

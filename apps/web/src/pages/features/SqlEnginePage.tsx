@@ -25,8 +25,9 @@ import {
   FormHint,
   CheckboxField,
   SegRadio,
-
-  buttonClassName,} from '../../shared/components/ui';
+  SoftwareInstallBanner,
+  buttonClassName,
+} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
@@ -340,6 +341,11 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         </ActionBar>
       }
     >
+      <SoftwareInstallBanner
+        feature={engine === 'mysql' ? 'mysql' : 'mariadb'}
+        title={`${title} 所需軟件尚未安裝`}
+        onInstalled={() => void refreshSvc()}
+      />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {dbs.msg || users.msg ? <Alert variant="ok">{dbs.msg ?? users.msg}</Alert> : null}
@@ -373,9 +379,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           ) : null}
           <div className="lifecycle-toolbar u-mt-3">
             {!installed ? (
-              <Button variant="primary" size="md" loading={busy} onClick={() => void onInstall()}>
-                一鍵安裝 {title}
-              </Button>
+              <p className="muted u-text-sm u-mb-0">
+                請使用上方橫幅「一鍵安裝」安裝 {title}。
+              </p>
             ) : !running ? (
               <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
                 啟動服務
@@ -395,7 +401,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         title="操作結果"
         result={result}
         message={msg}
-        onRetry={!installed ? () => void onInstall() : !running ? () => void onStart() : undefined}
+        onRetry={
+          installed && !running ? () => void onStart() : undefined
+        }
         busy={busy}
       />
 
@@ -444,7 +452,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     title="尚未有資料庫"
                     description={
                       !installed
-                        ? `請先一鍵安裝 ${title}，再用右上角「建立資料庫」`
+                        ? `請先使用上方橫幅一鍵安裝 ${title}，再用右上角「建立資料庫」`
                         : !svc?.canProvision
                           ? svc?.blockMessage ?? '目前無法在伺服器建立資料庫'
                           : '用右上角「建立資料庫」新增；建立後請再按「套用」'

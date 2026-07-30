@@ -22,6 +22,7 @@ import { ActionBar,
   PresetChips,
   SegRadio,
   PageTabs,
+  SoftwareInstallBanner,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
@@ -189,6 +190,11 @@ export function FtpsServicePage() {
         </ActionBar>
       }
     >
+      <SoftwareInstallBanner
+        feature="ftp"
+        title="FTPS 所需軟件尚未安裝"
+        onInstalled={() => void refresh()}
+      />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
@@ -206,9 +212,9 @@ export function FtpsServicePage() {
             <CardSection title="生命週期" description="安裝與啟動">
               <div className="lifecycle-toolbar">
                 {!installed ? (
-                  <Button variant="primary" size="lg" loading={busy} onClick={() => void onInstallAndStart()}>
-                    一鍵安裝並啟動
-                  </Button>
+                  <p className="muted u-text-sm u-mb-0">
+                    請使用上方橫幅「一鍵安裝」安裝 FTPS，完成後再啟動服務。
+                  </p>
                 ) : status?.active !== 'active' ? (
                   <Button variant="primary" size="md" loading={busy} onClick={() => void onApplySettings()}>
                     啟動服務
@@ -487,7 +493,11 @@ export function FtpsServicePage() {
         title="操作結果"
         result={result}
         message={msg}
-        onRetry={!installed ? () => void onInstallAndStart() : undefined}
+        onRetry={
+          installed && status?.active !== 'active'
+            ? () => void onApplySettings()
+            : undefined
+        }
         busy={busy}
       />
     </FeaturePageLayout>
