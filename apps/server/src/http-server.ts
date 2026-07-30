@@ -4176,6 +4176,136 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, r.ok ? 200 : 422, r);
       }
 
+      // —— CDN sites (PR-C2): policy + edge nginx render (written, not fan-out) ——
+      if (method === 'GET' && url.pathname === '/api/v1/cdn/sites') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listCdnSites } = await import('@ysk/core');
+        return sendJson(res, 200, { items: listCdnSites(ctx.db) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/cdn/sites') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+        const { upsertCdnSite } = await import('@ysk/core');
+        const domainsRaw = data.domains;
+        const domains = Array.isArray(domainsRaw)
+          ? (domainsRaw as string[])
+          : typeof domainsRaw === 'string'
+            ? String(domainsRaw)
+                .split(/[\s,]+/)
+                .filter(Boolean)
+            : undefined;
+        const edgeRaw = data.edgeNodeIds;
+        const edgeNodeIds = Array.isArray(edgeRaw)
+          ? (edgeRaw as string[])
+          : typeof edgeRaw === 'string'
+            ? String(edgeRaw)
+                .split(/[\s,]+/)
+                .filter(Boolean)
+            : undefined;
+        const origin =
+          data.origin && typeof data.origin === 'object'
+            ? (data.origin as {
+                kind?: 'project' | 'url';
+                projectId?: string;
+                url?: string;
+                sni?: string;
+              })
+            : undefined;
+        const site = upsertCdnSite(ctx.db, {
+          id: typeof data.id === 'string' ? data.id : undefined,
+          name: String(data.name ?? ''),
+          domains,
+          mode: typeof data.mode === 'string' ? data.mode : undefined,
+          origin: origin
+            ? {
+                kind: origin.kind === 'project' ? 'project' : 'url',
+                projectId: origin.projectId,
+                url: origin.url,
+                sni: origin.sni,
+              }
+            : undefined,
+          edgeNodeIds,
+          dns:
+            data.dns && typeof data.dns === 'object'
+              ? (data.dns as Record<string, unknown>)
+              : undefined,
+          cache:
+            data.cache && typeof data.cache === 'object'
+              ? (data.cache as Record<string, unknown>)
+              : undefined,
+          ssl:
+            data.ssl && typeof data.ssl === 'object'
+              ? (data.ssl as Record<string, unknown>)
+              : undefined,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.upsert',
+          resource: site.id,
+          detail: { name: site.name, domains: site.domains },
+          ok: true,
+        });
+        return sendJson(res, 200, { site });
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getCdnSite, readCdnSiteRenderedConf } = await import('@ysk/core');
+        const site = getCdnSite(ctx.db, id);
+        if (!site) return sendJson(res, 404, { ok: false, notes: ['找不到站點'] });
+        const rendered = readCdnSiteRenderedConf(ctx.dataDir, id);
+        return sendJson(res, 200, { site, rendered });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { deleteCdnSite } = await import('@ysk/core');
+        const ok = deleteCdnSite(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.delete',
+          resource: id,
+          detail: { ok },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/render$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          dryRun?: boolean;
+          projectOriginUrl?: string;
+        };
+        const { applyCdnSiteEdgeRender } = await import('@ysk/core');
+        const r = await applyCdnSiteEdgeRender({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          host: ctx.host,
+          dryRun: data.dryRun === true,
+          projectOriginUrl: data.projectOriginUrl,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.render',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            contentHash: r.contentHash,
+            dryRun: data.dryRun === true,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/web-stats$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];

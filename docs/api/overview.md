@@ -91,6 +91,9 @@ Base URL: `http://127.0.0.1:9287`
 | POST | `/api/v1/cdn/nodes/:id/probe` | Bearer | HTTP/TCP health probe |
 | POST | `/api/v1/cdn/nodes/:id/drain` | Bearer | Drain / undrain |
 | POST | `/api/v1/cdn/nodes/probe-all` | Bearer | Probe all nodes |
+| GET/POST | `/api/v1/cdn/sites` | Bearer | CDN site list / upsert (PR-C2) |
+| GET/DELETE | `/api/v1/cdn/sites/:id` | Bearer | Get / delete site (+ rendered conf) |
+| POST | `/api/v1/cdn/sites/:id/render` | Bearer | Render edge nginx (dryRun or write managed) |
 | POST | `/api/v1/hosting/firewall/plan` | Bearer | Firewall plan |
 | GET | `/api/v1/hosting/files/plan` | Bearer | Public file server plan |
 | GET | `/api/v1/backups` | Bearer | List backup archives |
