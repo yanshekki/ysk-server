@@ -33,7 +33,47 @@ import type {
   CdnSiteMode,
 } from '@ysk/shared';
 
-const TABS = ['nodes', 'sites', 'about'] as const;
+const TABS = ['nodes', 'sites', 'dashboard', 'about'] as const;
+
+type CdnDashboardDto = {
+  at: string;
+  nodes: {
+    total: number;
+    online: number;
+    offline: number;
+    draining: number;
+    unknown: number;
+    byRegion: Record<string, number>;
+  };
+  sites: {
+    total: number;
+    byApplyStatus: Record<string, number>;
+    rows: Array<{
+      id: string;
+      name: string;
+      domains: string[];
+      mode: string;
+      strategy: string;
+      apply_status: string;
+      edgeCount: number;
+      edgesApplied: number;
+      onlineEdges: number;
+      managedDnsRecords: number;
+    }>;
+  };
+  cache: Array<{
+    siteId: string;
+    siteName: string;
+    method: string;
+    hitRatePct?: number;
+    hits?: number;
+    misses?: number;
+    cacheBytes?: number;
+    notes: string[];
+  }>;
+  overallHitRatePct?: number;
+  notes: string[];
+};
 const ROLE_OPTS: CdnNodeRole[] = ['control', 'origin', 'edge', 'dns'];
 const MODE_OPTS: CdnSiteMode[] = [
   'origin_pull',
@@ -95,6 +135,7 @@ export function CdnPage() {
   const [dnsZones, setDnsZones] = useState<
     Array<{ id: string; zone?: string }>
   >([]);
+  const [dashboard, setDashboard] = useState<CdnDashboardDto | null>(null);
 
   const refresh = useCallback(async () => {
     const [n, s, z] = await Promise.all([
@@ -111,9 +152,20 @@ export function CdnPage() {
     setDnsZones(z.items ?? []);
   }, []);
 
+  const refreshDashboard = useCallback(async () => {
+    const d = await api.requestRaw<CdnDashboardDto>('/api/v1/cdn/dashboard');
+    setDashboard(d);
+  }, []);
+
   useEffect(() => {
     void refresh().catch((e: Error) => setMsg(e.message));
   }, [refresh]);
+
+  useEffect(() => {
+    if (tab === 'dashboard') {
+      void refreshDashboard().catch((e: Error) => setMsg(e.message));
+    }
+  }, [tab, refreshDashboard]);
 
   function resetNodeForm() {
     setEditNode(null);
@@ -467,11 +519,25 @@ export function CdnPage() {
           { label: '節點', value: nodes.length },
           { label: 'Online', value: online },
           { label: '站點', value: sites.length },
+          {
+            label: 'Hit%',
+            value:
+              dashboard?.overallHitRatePct != null
+                ? `${dashboard.overallHitRatePct}%`
+                : '—',
+          },
         ],
       }}
       actions={
         <>
-          <Button variant="secondary" size="sm" onClick={() => void refresh()}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              void refresh();
+              if (tab === 'dashboard') void refreshDashboard();
+            }}
+          >
             重新整理
           </Button>
           <Link
@@ -538,6 +604,7 @@ export function CdnPage() {
         tabs={[
           { id: 'nodes', label: '節點', badge: nodes.length || undefined },
           { id: 'sites', label: '站點', badge: sites.length || undefined },
+          { id: 'dashboard', label: '儀表' },
           { id: 'about', label: '說明' },
         ]}
         active={tab}
@@ -883,28 +950,199 @@ export function CdnPage() {
           </div>
         ) : null}
 
+        {tab === 'dashboard' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="CDN 儀表（PR-C5）"
+                description={
+                  dashboard
+                    ? `更新於 ${new Date(dashboard.at).toLocaleString()}`
+                    : '載入中…'
+                }
+              >
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => void refreshDashboard()}
+                  >
+                    重新彙總
+                  </Button>
+                </FormActions>
+                {dashboard ? (
+                  <>
+                    <div className="u-flex u-flex-wrap gap-3 u-mt-2">
+                      <Badge tone="ok">
+                        online {dashboard.nodes.online}/{dashboard.nodes.total}
+                      </Badge>
+                      <Badge tone="danger">
+                        offline {dashboard.nodes.offline}
+                      </Badge>
+                      <Badge tone="warn">
+                        draining {dashboard.nodes.draining}
+                      </Badge>
+                      <Badge tone="neutral">
+                        sites {dashboard.sites.total}
+                      </Badge>
+                      <Badge
+                        tone={
+                          dashboard.overallHitRatePct != null ? 'ok' : 'warn'
+                        }
+                      >
+                        hit-rate{' '}
+                        {dashboard.overallHitRatePct != null
+                          ? `${dashboard.overallHitRatePct}%`
+                          : '未知'}
+                      </Badge>
+                    </div>
+                    {Object.keys(dashboard.nodes.byRegion).length ? (
+                      <p className="muted u-text-sm u-mt-2">
+                        Region：{' '}
+                        {Object.entries(dashboard.nodes.byRegion)
+                          .map(([r, c]) => `${r}=${c}`)
+                          .join(' · ')}
+                      </p>
+                    ) : null}
+                    {Object.keys(dashboard.sites.byApplyStatus).length ? (
+                      <p className="muted u-text-sm">
+                        apply_status：{' '}
+                        {Object.entries(dashboard.sites.byApplyStatus)
+                          .map(([k, v]) => `${k}=${v}`)
+                          .join(' · ')}
+                      </p>
+                    ) : null}
+                  </>
+                ) : (
+                  <EmptyState title="尚未載入儀表" />
+                )}
+              </CardSection>
+            </Card>
+
+            {dashboard?.sites.rows.length ? (
+              <DataTable
+                rowKey={(r) => String((r as { id: string }).id)}
+                title="站點狀態"
+                columns={[
+                  {
+                    key: 'name',
+                    header: '站點',
+                    render: (r) => String((r as { name: string }).name),
+                  },
+                  {
+                    key: 'strategy',
+                    header: 'DNS',
+                    render: (r) =>
+                      String((r as { strategy: string }).strategy),
+                  },
+                  {
+                    key: 'apply',
+                    header: 'apply',
+                    render: (r) => (
+                      <Badge
+                        tone={statusTone(
+                          String((r as { apply_status: string }).apply_status),
+                        )}
+                      >
+                        {String((r as { apply_status: string }).apply_status)}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: 'edges',
+                    header: 'edges online/applied',
+                    render: (r) => {
+                      const row = r as {
+                        onlineEdges: number;
+                        edgesApplied: number;
+                        edgeCount: number;
+                      };
+                      return `${row.onlineEdges}/${row.edgeCount} · applied ${row.edgesApplied}`;
+                    },
+                  },
+                  {
+                    key: 'dns',
+                    header: 'CDN DNS RR',
+                    render: (r) =>
+                      String(
+                        (r as { managedDnsRecords: number }).managedDnsRecords,
+                      ),
+                  },
+                ]}
+                rows={dashboard.sites.rows}
+              />
+            ) : null}
+
+            {dashboard?.cache.length ? (
+              <Card>
+                <CardSection title="快取命中率粗估">
+                  <ul className="list-plain list-spaced">
+                    {dashboard.cache.map((c) => (
+                      <li key={c.siteId}>
+                        <strong>{c.siteName}</strong>{' '}
+                        <Badge tone={c.hitRatePct != null ? 'ok' : 'warn'}>
+                          {c.hitRatePct != null
+                            ? `${c.hitRatePct}%`
+                            : c.method}
+                        </Badge>
+                        {c.hits != null ? (
+                          <span className="muted u-text-sm">
+                            {' '}
+                            HIT {c.hits} / MISS {c.misses ?? 0}
+                          </span>
+                        ) : null}
+                        {c.cacheBytes != null ? (
+                          <span className="muted u-text-sm">
+                            {' '}
+                            cache ≈ {c.cacheBytes} B
+                          </span>
+                        ) : null}
+                        {c.notes[0] ? (
+                          <p className="muted u-text-sm u-mb-0">{c.notes[0]}</p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </CardSection>
+              </Card>
+            ) : null}
+
+            {dashboard?.notes.length ? (
+              <Card>
+                <CardSection title="儀表 notes">
+                  <ul className="notes-list">
+                    {dashboard.notes.map((n) => (
+                      <li key={n} className="muted u-text-sm">
+                        {n}
+                      </li>
+                    ))}
+                  </ul>
+                </CardSection>
+              </Card>
+            ) : null}
+          </div>
+        ) : null}
+
         {tab === 'about' ? (
           <div className="tab-panel">
             <Card>
               <CardSection title="自建 CDN 路線（誠實）">
                 <ul className="list-plain list-spaced">
                   <li>
-                    <strong>PR-C1</strong>：節點 registry、探活、drain ✓
+                    <strong>PR-C1–C4</strong>：節點 / 站點 / fan-out / multi-A
+                    MVP ✓
                   </li>
                   <li>
-                    <strong>PR-C2</strong>：site 政策 + Nginx edge 渲染 ✓
+                    <strong>PR-C5</strong>：weighted DNS RRset + 命中率儀表 ✓
                   </li>
                   <li>
-                    <strong>PR-C3</strong>：SSH/local fan-out + purge ✓
-                  </li>
-                  <li>
-                    <strong>PR-C4 MVP</strong>：multi-A / failover DNS +
-                    managedBy=cdn + 健康迴圈 ✓
+                    <strong>PR-C6+</strong>：SSL 分發 / geo / project 一鍵
                   </li>
                 </ul>
                 <FormHint>
-                  CDN 只覆寫 managedBy=cdn 記錄；user 記錄保留。DNS written ≠
-                  公網即時。詳見{' '}
+                  Weighted 以重複 A 記錄表達權重（resolver 可能去重）。Hit-rate
+                  需 nginx log 含 $upstream_cache_status。詳見{' '}
                   <code className="inline">docs/product/dns-cdn-design.md</code>
                 </FormHint>
               </CardSection>

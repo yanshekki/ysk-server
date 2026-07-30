@@ -11,13 +11,14 @@ import { upsertCdnNode } from './nodes.js';
 import { upsertCdnSite } from './sites.js';
 import {
   planCdnDnsTargets,
+  expandWeightedRRset,
   relativeDnsName,
   syncCdnSiteDns,
   listCdnManagedDnsRecords,
 } from './dns-sync.js';
 import type { CdnSiteDto } from '@ysk/shared';
 
-describe('cdn dns-sync (PR-C4)', () => {
+describe('cdn dns-sync (PR-C4/C5)', () => {
   it('relativeDnsName maps apex and sub', () => {
     expect(relativeDnsName('example.com', 'example.com')).toBe('@');
     expect(relativeDnsName('www.example.com', 'example.com')).toBe('www');
@@ -93,6 +94,44 @@ describe('cdn dns-sync (PR-C4)', () => {
     });
     expect(noneHealthy.guarded).toBe(true);
     expect(noneHealthy.selected.length).toBeGreaterThan(0);
+  });
+
+  it('weighted expands RRset by weight ratio (PR-C5)', () => {
+    const edges = [
+      {
+        node: { id: 'a', name: 'heavy', weight: 200, status: 'online' } as never,
+        healthy: true,
+        ipv4: ['1.1.1.1'],
+        ipv6: [],
+        notes: [],
+      },
+      {
+        node: { id: 'b', name: 'light', weight: 100, status: 'online' } as never,
+        healthy: true,
+        ipv4: ['2.2.2.2'],
+        ipv6: [],
+        notes: [],
+      },
+    ];
+    const exp = expandWeightedRRset(edges);
+    // 200:100 → 2:1
+    expect(exp.ipv4.filter((ip) => ip === '1.1.1.1').length).toBe(2);
+    expect(exp.ipv4.filter((ip) => ip === '2.2.2.2').length).toBe(1);
+    expect(exp.replicaPlan[0].copies).toBe(2);
+
+    const plan = planCdnDnsTargets({
+      site: {
+        dns: {
+          strategy: 'weighted',
+          ttlHealthy: 60,
+          ttlUnhealthy: 30,
+          minHealthyEdges: 1,
+        },
+      } as CdnSiteDto,
+      edges,
+    });
+    expect(plan.ipv4RRset.length).toBe(3);
+    expect(plan.weightedPlan?.length).toBe(2);
   });
 
   it('sync writes managedBy=cdn A records and leaves user records', async () => {

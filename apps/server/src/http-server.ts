@@ -4477,6 +4477,16 @@ export function createHttpServer(ctx: AppContext): Server {
           items: listCdnManagedDnsRecords(ctx.db, id),
         });
       }
+      if (method === 'GET' && url.pathname === '/api/v1/cdn/dashboard') {
+        ctx.auth.authenticate(getBearer(req));
+        const { collectCdnDashboard } = await import('@ysk/core');
+        const dash = await collectCdnDashboard({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+        });
+        return sendJson(res, 200, dash);
+      }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/web-stats$/)) {
         ctx.auth.authenticate(getBearer(req));

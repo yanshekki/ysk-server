@@ -120,7 +120,7 @@ Ship order:
 |------|------|
 | Users/Packages | Q1–Q3 CRUD, quotas, impersonate |
 | DNS | DNSSEC (C6) · cluster remote reload + probe (C7 **PR-D2**) · dig tools (C11 **PR-D1**) |
-| CDN | C1–C4 MVP **done**（nodes/sites/fan-out/purge/multi-A）；C5+ weighted 儀表/SSL/geo 後期 |
+| CDN | C1–C5 **done**（含 weighted DNS + 儀表）；SSL 分發/geo/project 一鍵 待 C6–C7 |
 | Backup | Incremental restic-class (L7) · exclusions (L5) |
 | Sites | One-click apps / WordPress (B21 setup path) · multi-IP (B9) |
 | Runtimes | Composer/WP-CLI flags (J4) · PHP modules (J5) |

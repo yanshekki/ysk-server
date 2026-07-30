@@ -40,6 +40,8 @@ export type CdnDnsSyncResult = {
   selectedNodeIds: string[];
   selectedIpv4: string[];
   selectedIpv6: string[];
+  /** Weighted replica plan (PR-C5) */
+  weightedPlan?: Array<{ name: string; weight: number; copies: number }>;
   recordsTouched: number;
   zoneId?: string;
   zoneApplied?: boolean;
@@ -56,8 +58,85 @@ function isNodeHealthy(node: CdnNodeDto): boolean {
   return false;
 }
 
+function gcd(a: number, b: number): number {
+  let x = Math.abs(a);
+  let y = Math.abs(b);
+  while (y) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x || 1;
+}
+
+function gcdAll(nums: number[]): number {
+  return nums.reduce((g, n) => gcd(g, n), nums[0] || 1);
+}
+
+/**
+ * Expand healthy edges into A/AAAA RRset by weight (PR-C5).
+ * Higher weight → more duplicate A records (round-robin bias).
+ * Some resolvers collapse duplicates — notes are honest about this limit.
+ */
+export function expandWeightedRRset(
+  edges: CdnHealthyEdge[],
+  opts?: { maxRr?: number },
+): { ipv4: string[]; ipv6: string[]; notes: string[]; replicaPlan: Array<{ name: string; weight: number; copies: number }> } {
+  const maxRr = opts?.maxRr ?? 20;
+  const notes: string[] = [];
+  if (!edges.length) {
+    return { ipv4: [], ipv6: [], notes: ['weighted: 無 edge'], replicaPlan: [] };
+  }
+
+  const weights = edges.map((e) => Math.max(1, Math.round(e.node.weight || 100)));
+  const g = gcdAll(weights);
+  let copies = weights.map((w) => Math.max(1, Math.round(w / g)));
+  let total = copies.reduce((a, b) => a + b, 0);
+
+  if (total > maxRr) {
+    const scale = maxRr / total;
+    copies = copies.map((c) => Math.max(1, Math.round(c * scale)));
+    // trim if still over
+    while (copies.reduce((a, b) => a + b, 0) > maxRr) {
+      const i = copies.indexOf(Math.max(...copies));
+      if (copies[i] <= 1) break;
+      copies[i] -= 1;
+    }
+    total = copies.reduce((a, b) => a + b, 0);
+    notes.push(`weighted 縮放至 maxRr=${maxRr}（總副本 ${total}）`);
+  }
+
+  const ipv4: string[] = [];
+  const ipv6: string[] = [];
+  const replicaPlan: Array<{ name: string; weight: number; copies: number }> = [];
+
+  for (let i = 0; i < edges.length; i++) {
+    const e = edges[i];
+    const n = copies[i];
+    replicaPlan.push({
+      name: e.node.name,
+      weight: weights[i],
+      copies: n,
+    });
+    for (let c = 0; c < n; c++) {
+      for (const ip of e.ipv4) ipv4.push(ip);
+      for (const ip of e.ipv6) ipv6.push(ip);
+    }
+  }
+
+  notes.push(
+    `weighted RRset: ${replicaPlan.map((p) => `${p.name}×${p.copies}(w=${p.weight})`).join(', ')}`,
+  );
+  notes.push(
+    '誠實：部分公網 resolver 會去重相同 A 記錄 — 權重偏差唔保證；高權重 edge 仍建議用更多獨立 IP 或 Anycast',
+  );
+
+  return { ipv4, ipv6, notes, replicaPlan };
+}
+
 /**
  * Pick edge IPs by strategy + minHealthyEdges guard.
+ * Returns selected edges plus ready-to-write RRsets (weighted may repeat IPs).
  */
 export function planCdnDnsTargets(input: {
   site: CdnSiteDto;
@@ -67,6 +146,10 @@ export function planCdnDnsTargets(input: {
   strategy: CdnDnsStrategy;
   notes: string[];
   guarded: boolean;
+  /** Final A RRset values (may contain duplicates for weighted) */
+  ipv4RRset: string[];
+  ipv6RRset: string[];
+  weightedPlan?: Array<{ name: string; weight: number; copies: number }>;
 } {
   const strategy = input.site.dns.strategy || 'multi_a';
   const minH = Math.max(1, input.site.dns.minHealthyEdges || 1);
@@ -78,38 +161,32 @@ export function planCdnDnsTargets(input: {
 
   let selected: CdnHealthyEdge[] = [];
   let guarded = false;
+  let weightedPlan:
+    | Array<{ name: string; weight: number; copies: number }>
+    | undefined;
 
   if (strategy === 'failover' || strategy === 'single') {
-    // Prefer first healthy by weight desc then order
     const ordered = [...healthy].sort(
       (a, b) => (b.node.weight || 0) - (a.node.weight || 0),
     );
     if (ordered.length) {
-      selected = strategy === 'single' ? [ordered[0]] : ordered.slice(0, 1);
-      // failover: only one live IP set
       selected = [ordered[0]];
     }
   } else if (strategy === 'weighted') {
-    // Expand by weight buckets (simple repeat count for multi-A visual weight)
     const ordered = [...healthy].sort(
       (a, b) => (b.node.weight || 0) - (a.node.weight || 0),
     );
     selected = ordered;
-    notes.push(
-      'weighted：全部健康 edge 寫入 multi-A；權重供日後 EDNS/Geo 擴展（現為等權 A 集合）',
-    );
   } else if (strategy === 'geo') {
     selected = healthy;
     notes.push(
-      'geo：MVP 等同 multi_a（全部健康 edge）；geoMap 分區待 PR-C7',
+      'geo：目前等同 multi_a（全部健康 edge）；geoMap 分區待 PR-C7',
     );
   } else {
-    // multi_a default
     selected = healthy;
   }
 
   if (selected.length < minH) {
-    // Guard: do not leave zone empty — fall back to all edges with IPs (or previous healthy attempt)
     guarded = true;
     notes.push(
       `minHealthyEdges=${minH} 但僅 ${selected.length} 個健康 edge — 防全滅：改用全部有 IP 的 edge（含 offline）`,
@@ -121,7 +198,30 @@ export function planCdnDnsTargets(input: {
     notes.push('無可用 edge IP — 不修改 DNS（保留既有 managed 記錄）');
   }
 
-  return { selected, strategy, notes, guarded };
+  let ipv4RRset: string[];
+  let ipv6RRset: string[];
+
+  if (strategy === 'weighted' && selected.length && !guarded) {
+    const exp = expandWeightedRRset(selected);
+    ipv4RRset = exp.ipv4;
+    ipv6RRset = exp.ipv6;
+    weightedPlan = exp.replicaPlan;
+    notes.push(...exp.notes);
+  } else {
+    // unique IPs for multi_a / failover / guarded fallback
+    ipv4RRset = [...new Set(selected.flatMap((e) => e.ipv4))];
+    ipv6RRset = [...new Set(selected.flatMap((e) => e.ipv6))];
+  }
+
+  return {
+    selected,
+    strategy,
+    notes,
+    guarded,
+    ipv4RRset,
+    ipv6RRset,
+    weightedPlan,
+  };
 }
 
 function resolveZoneId(
@@ -228,12 +328,9 @@ export async function syncCdnSiteDns(input: {
   const plan = planCdnDnsTargets({ site, edges });
   notes.push(...plan.notes);
 
-  const selectedIpv4 = [
-    ...new Set(plan.selected.flatMap((e) => e.ipv4)),
-  ];
-  const selectedIpv6 = [
-    ...new Set(plan.selected.flatMap((e) => e.ipv6)),
-  ];
+  // Use RRset from planner (weighted may repeat IPs)
+  const selectedIpv4 = plan.ipv4RRset;
+  const selectedIpv6 = plan.ipv6RRset;
   const selectedNodeIds = plan.selected.map((e) => e.node.id);
 
   if (!selectedIpv4.length && !selectedIpv6.length) {
@@ -245,6 +342,7 @@ export async function syncCdnSiteDns(input: {
       selectedNodeIds: [],
       selectedIpv4: [],
       selectedIpv6: [],
+      weightedPlan: plan.weightedPlan,
       recordsTouched: 0,
       notes: [...notes, '無 IP 可寫入 DNS'],
       edges,
@@ -261,6 +359,7 @@ export async function syncCdnSiteDns(input: {
       selectedNodeIds,
       selectedIpv4,
       selectedIpv6,
+      weightedPlan: plan.weightedPlan,
       recordsTouched: 0,
       notes: [
         ...notes,
@@ -391,6 +490,7 @@ export async function syncCdnSiteDns(input: {
     selectedNodeIds,
     selectedIpv4,
     selectedIpv6,
+    weightedPlan: plan.weightedPlan,
     recordsTouched,
     zoneId: zoneRef.zoneId,
     zoneApplied,

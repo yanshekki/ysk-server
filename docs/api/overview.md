@@ -100,6 +100,7 @@ Base URL: `http://127.0.0.1:9287`
 | POST | `/api/v1/cdn/sites/:id/health-loop` | Bearer | Probe edges then DNS sync |
 | POST | `/api/v1/cdn/health-loop` | Bearer | Health loop all sites |
 | GET | `/api/v1/cdn/sites/:id/dns-records` | Bearer | List managedBy=cdn records |
+| GET | `/api/v1/cdn/dashboard` | Bearer | Nodes/sites status + cache hit-rate estimate |
 | POST | `/api/v1/hosting/firewall/plan` | Bearer | Firewall plan |
 | GET | `/api/v1/hosting/files/plan` | Bearer | Public file server plan |
 | GET | `/api/v1/backups` | Bearer | List backup archives |

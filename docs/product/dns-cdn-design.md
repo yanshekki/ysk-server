@@ -307,7 +307,7 @@ CDN 頁建議分頁：**節點** | **站點** | **健康** | **工具（purge / 
 | **PR-C2** | cdn_sites + Nginx renderer（單 edge dry-run）(**done**) | C1 |
 | **PR-C3** | fleet/SSH fan-out 多 edge apply + purge (**done**) | C2, migrate/db-cluster 模式 |
 | **PR-C4** | DNS multi-A/failover + managedBy + 健康迴圈 **MVP** (**done**) | C3, D1 |
-| **PR-C5** | Weighted + 儀表（命中率粗估） | C4 |
+| **PR-C5** | Weighted + 儀表（命中率粗估）(**done**) | C4 |
 | **PR-C6** | SSL 分發 / LE on edge | C4 |
 | **PR-C7** | Geo + origin shield + project 一鍵 | C5 |
 
