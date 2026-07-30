@@ -74,6 +74,68 @@ function gcdAll(nums: number[]): number {
 }
 
 /**
+ * Geo selection (PR-C7): geoMap region → edge ids.
+ * Without EDNS/Anycast we publish union of healthy geo edges for apex.
+ * Prefer geoDefaultRegion edges when strategy needs a primary set.
+ */
+export function selectGeoEdges(input: {
+  site: CdnSiteDto;
+  healthy: CdnHealthyEdge[];
+  allEdges: CdnHealthyEdge[];
+}): { selected: CdnHealthyEdge[]; notes: string[]; byRegion: Record<string, CdnHealthyEdge[]> } {
+  const notes: string[] = [];
+  const map = input.site.dns.geoMap ?? {};
+  const regions = Object.keys(map);
+  const byRegion: Record<string, CdnHealthyEdge[]> = {};
+
+  if (!regions.length) {
+    notes.push(
+      'geo：未設定 geoMap — 等同 multi_a（全部健康 edge）。請在站點 dns.geoMap 填 region→nodeIds',
+    );
+    return { selected: input.healthy, notes, byRegion };
+  }
+
+  const idToEdge = new Map(input.allEdges.map((e) => [e.node.id, e]));
+  const selectedIds = new Set<string>();
+
+  for (const [region, ids] of Object.entries(map)) {
+    const list: CdnHealthyEdge[] = [];
+    for (const id of ids ?? []) {
+      const e = idToEdge.get(id);
+      if (!e) {
+        notes.push(`geo ${region}: 未知節點 ${id}`);
+        continue;
+      }
+      if (e.healthy) {
+        list.push(e);
+        selectedIds.add(e.node.id);
+      }
+    }
+    byRegion[region] = list;
+    notes.push(
+      `geo ${region}: ${list.length} healthy / ${(ids ?? []).length} mapped`,
+    );
+  }
+
+  let selected = input.healthy.filter((e) => selectedIds.has(e.node.id));
+  const prefer = input.site.dns.geoDefaultRegion?.trim();
+  if (prefer && byRegion[prefer]?.length) {
+    notes.push(`geoDefaultRegion=${prefer}（${byRegion[prefer].length} edges）`);
+  }
+
+  if (!selected.length) {
+    notes.push('geoMap 內無健康 edge — 回退全部健康 edge');
+    selected = input.healthy;
+  } else {
+    notes.push(
+      'geo apex：無 EDNS 時寫入所有 geo 健康 edge 的 multi-A（唔係真·用戶就近 Anycast）',
+    );
+  }
+
+  return { selected, notes, byRegion };
+}
+
+/**
  * Expand healthy edges into A/AAAA RRset by weight (PR-C5).
  * Higher weight → more duplicate A records (round-robin bias).
  * Some resolvers collapse duplicates — notes are honest about this limit.
@@ -150,6 +212,7 @@ export function planCdnDnsTargets(input: {
   ipv4RRset: string[];
   ipv6RRset: string[];
   weightedPlan?: Array<{ name: string; weight: number; copies: number }>;
+  geoByRegion?: Record<string, CdnHealthyEdge[]>;
 } {
   const strategy = input.site.dns.strategy || 'multi_a';
   const minH = Math.max(1, input.site.dns.minHealthyEdges || 1);
@@ -164,6 +227,7 @@ export function planCdnDnsTargets(input: {
   let weightedPlan:
     | Array<{ name: string; weight: number; copies: number }>
     | undefined;
+  let geoByRegion: Record<string, CdnHealthyEdge[]> | undefined;
 
   if (strategy === 'failover' || strategy === 'single') {
     const ordered = [...healthy].sort(
@@ -178,10 +242,14 @@ export function planCdnDnsTargets(input: {
     );
     selected = ordered;
   } else if (strategy === 'geo') {
-    selected = healthy;
-    notes.push(
-      'geo：目前等同 multi_a（全部健康 edge）；geoMap 分區待 PR-C7',
-    );
+    const geo = selectGeoEdges({
+      site: input.site,
+      healthy,
+      allEdges: input.edges,
+    });
+    selected = geo.selected;
+    geoByRegion = geo.byRegion;
+    notes.push(...geo.notes);
   } else {
     selected = healthy;
   }
@@ -221,7 +289,61 @@ export function planCdnDnsTargets(input: {
     ipv4RRset,
     ipv6RRset,
     weightedPlan,
+    geoByRegion,
   };
+}
+
+function writeManagedARecords(input: {
+  db: JsonStore;
+  zoneId: string;
+  siteId: string;
+  relName: string;
+  ipv4: string[];
+  ipv6: string[];
+  ttl: number;
+}): number {
+  let touched = 0;
+  const allRecs = listResources(input.db, 'dns_records');
+  const managed = allRecs.filter(
+    (r) =>
+      r.zoneId === input.zoneId &&
+      String(r.managedBy ?? '') === 'cdn' &&
+      String(r.cdnSiteId ?? '') === input.siteId &&
+      String(r.name ?? '@').toLowerCase() === input.relName.toLowerCase() &&
+      (String(r.type).toUpperCase() === 'A' ||
+        String(r.type).toUpperCase() === 'AAAA'),
+  );
+  for (const r of managed) {
+    deleteResource(input.db, 'dns_records', String(r.id));
+    touched += 1;
+  }
+  for (const ip of input.ipv4) {
+    createResource(input.db, 'dns_records', {
+      zoneId: input.zoneId,
+      type: 'A',
+      name: input.relName,
+      value: ip,
+      ttl: input.ttl,
+      managedBy: 'cdn',
+      cdnSiteId: input.siteId,
+      apply_status: 'draft',
+    });
+    touched += 1;
+  }
+  for (const ip of input.ipv6) {
+    createResource(input.db, 'dns_records', {
+      zoneId: input.zoneId,
+      type: 'AAAA',
+      name: input.relName,
+      value: ip,
+      ttl: input.ttl,
+      managedBy: 'cdn',
+      cdnSiteId: input.siteId,
+      apply_status: 'draft',
+    });
+    touched += 1;
+  }
+  return touched;
 }
 
 function resolveZoneId(
@@ -386,26 +508,9 @@ export async function syncCdnSiteDns(input: {
       : site.dns.ttlUnhealthy || 30;
 
   let recordsTouched = 0;
-  const allRecs = listResources(input.db, 'dns_records');
 
   for (const domain of site.domains) {
     const rel = relativeDnsName(domain, zoneRef.zoneName);
-    // Remove only our managed RRset for this name+type under this site
-    const managed = allRecs.filter(
-      (r) =>
-        r.zoneId === zoneRef.zoneId &&
-        String(r.managedBy ?? '') === 'cdn' &&
-        String(r.cdnSiteId ?? '') === site.id &&
-        String(r.name ?? '@').toLowerCase() === rel.toLowerCase() &&
-        (String(r.type).toUpperCase() === 'A' ||
-          String(r.type).toUpperCase() === 'AAAA'),
-    );
-    for (const r of managed) {
-      deleteResource(input.db, 'dns_records', String(r.id));
-      recordsTouched += 1;
-    }
-
-    // Do not touch user-managed records with same name — warn if conflict
     const userConflict = listResources(input.db, 'dns_records').filter(
       (r) =>
         r.zoneId === zoneRef.zoneId &&
@@ -420,35 +525,55 @@ export async function syncCdnSiteDns(input: {
       );
     }
 
-    for (const ip of selectedIpv4) {
-      createResource(input.db, 'dns_records', {
-        zoneId: zoneRef.zoneId,
-        type: 'A',
-        name: rel,
-        value: ip,
-        ttl,
-        managedBy: 'cdn',
-        cdnSiteId: site.id,
-        apply_status: 'draft',
-      });
-      recordsTouched += 1;
-    }
-    for (const ip of selectedIpv6) {
-      createResource(input.db, 'dns_records', {
-        zoneId: zoneRef.zoneId,
-        type: 'AAAA',
-        name: rel,
-        value: ip,
-        ttl,
-        managedBy: 'cdn',
-        cdnSiteId: site.id,
-        apply_status: 'draft',
-      });
-      recordsTouched += 1;
-    }
+    recordsTouched += writeManagedARecords({
+      db: input.db,
+      zoneId: zoneRef.zoneId,
+      siteId: site.id,
+      relName: rel,
+      ipv4: selectedIpv4,
+      ipv6: selectedIpv6,
+      ttl,
+    });
     notes.push(
       `${domain} → ${rel} A×${selectedIpv4.length} AAAA×${selectedIpv6.length} ttl=${ttl}`,
     );
+  }
+
+  // Geo subdomains: hkg.example.com style relative name "hkg" under zone
+  if (
+    plan.strategy === 'geo' &&
+    site.dns.geoSubdomains &&
+    plan.geoByRegion
+  ) {
+    for (const [region, regionEdges] of Object.entries(plan.geoByRegion)) {
+      const slug = region
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/^-|-$/g, '');
+      if (!slug || slug === '@') continue;
+      const v4 = [
+        ...new Set(regionEdges.flatMap((e) => e.ipv4)),
+      ];
+      const v6 = [
+        ...new Set(regionEdges.flatMap((e) => e.ipv6)),
+      ];
+      if (!v4.length && !v6.length) {
+        notes.push(`geo subdomain ${slug}: 無 IP — 略過`);
+        continue;
+      }
+      recordsTouched += writeManagedARecords({
+        db: input.db,
+        zoneId: zoneRef.zoneId,
+        siteId: site.id,
+        relName: slug,
+        ipv4: v4,
+        ipv6: v6,
+        ttl,
+      });
+      notes.push(
+        `geo subdomain ${slug} → A×${v4.length} AAAA×${v6.length}`,
+      );
+    }
   }
 
   let zoneApplied = false;

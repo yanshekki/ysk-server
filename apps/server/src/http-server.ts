@@ -4237,6 +4237,12 @@ export function createHttpServer(ctx: AppContext): Server {
               }
             : undefined,
           edgeNodeIds,
+          originShieldNodeId:
+            data.originShieldNodeId === null
+              ? null
+              : typeof data.originShieldNodeId === 'string'
+                ? data.originShieldNodeId
+                : undefined,
           dns:
             data.dns && typeof data.dns === 'object'
               ? (data.dns as Record<string, unknown>)
@@ -4258,6 +4264,51 @@ export function createHttpServer(ctx: AppContext): Server {
           ok: true,
         });
         return sendJson(res, 200, { site });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/cdn/from-project') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          projectId?: string;
+          edgeNodeIds?: string[];
+          originShieldNodeId?: string;
+          strategy?: string;
+          mode?: string;
+          geoMap?: Record<string, string[]>;
+          geoSubdomains?: boolean;
+          name?: string;
+        };
+        if (!data.projectId) {
+          return sendJson(res, 400, {
+            ok: false,
+            notes: ['需要 projectId'],
+          });
+        }
+        const proj = ctx.projects.get(data.projectId);
+        const { enableCdnFromProject } = await import('@ysk/core');
+        const r = enableCdnFromProject({
+          db: ctx.db,
+          project: proj,
+          edgeNodeIds: data.edgeNodeIds,
+          originShieldNodeId: data.originShieldNodeId,
+          strategy: data.strategy as import('@ysk/shared').CdnDnsStrategy | undefined,
+          mode: data.mode as import('@ysk/shared').CdnSiteMode | undefined,
+          geoMap: data.geoMap,
+          geoSubdomains: data.geoSubdomains,
+          name: data.name,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.from_project',
+          resource: r.site.id,
+          detail: {
+            projectId: data.projectId,
+            created: r.created,
+            domains: r.site.domains,
+          },
+          ok: r.ok,
+        });
+        return sendJson(res, r.created ? 201 : 200, r);
       }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+$/)) {
         ctx.auth.authenticate(getBearer(req));

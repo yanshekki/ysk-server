@@ -3,7 +3,7 @@
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   ActionBar,
   Alert,
@@ -140,6 +140,10 @@ export function CdnPage() {
     'off' | 'upload' | 'le_http01' | 'le_dns01'
   >('off');
   const [sslEmail, setSslEmail] = useState('');
+  const [shieldId, setShieldId] = useState('');
+  const [geoMapText, setGeoMapText] = useState('');
+  const [geoSubdomains, setGeoSubdomains] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const refresh = useCallback(async () => {
     const [n, s, z] = await Promise.all([
@@ -171,6 +175,43 @@ export function CdnPage() {
     }
   }, [tab, refreshDashboard]);
 
+  // Project one-click: /cdn?fromProject=ID
+  useEffect(() => {
+    const pid = searchParams.get('fromProject');
+    if (!pid) return;
+    void (async () => {
+      setBusy(true);
+      setNotes([]);
+      try {
+        const r = await api.requestRaw<{
+          ok: boolean;
+          created?: boolean;
+          notes?: string[];
+          site?: CdnSiteDto;
+        }>('/api/v1/cdn/from-project', {
+          method: 'POST',
+          body: JSON.stringify({ projectId: pid }),
+        });
+        setNotes(r.notes ?? []);
+        setMsg(
+          r.created
+            ? '已從專案建立 CDN 站點 — 請套用 edges / DNS'
+            : '已更新專案綁定嘅 CDN 站點',
+        );
+        setTab('sites');
+        await refresh();
+        if (r.site) openEditSite(r.site);
+      } catch (e) {
+        setMsg(e instanceof Error ? e.message : 'from-project 失敗');
+      } finally {
+        setBusy(false);
+        searchParams.delete('fromProject');
+        setSearchParams(searchParams, { replace: true });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get('fromProject')]);
+
   function resetNodeForm() {
     setEditNode(null);
     setName('');
@@ -201,6 +242,9 @@ export function CdnPage() {
     setDnsZoneId('');
     setSslMode('off');
     setSslEmail('');
+    setShieldId('');
+    setGeoMapText('');
+    setGeoSubdomains(false);
   }
 
   function openCreateNode() {
@@ -241,6 +285,11 @@ export function CdnPage() {
     setDnsStrategy(s.dns?.strategy ?? 'multi_a');
     setDnsZoneId(s.dns?.zoneId ?? '');
     setSslMode(s.ssl?.mode ?? 'off');
+    setShieldId(s.originShieldNodeId ?? '');
+    setGeoMapText(
+      s.dns?.geoMap ? JSON.stringify(s.dns.geoMap, null, 0) : '',
+    );
+    setGeoSubdomains(Boolean(s.dns?.geoSubdomains));
     setSiteOpen(true);
   }
 
@@ -300,6 +349,16 @@ export function CdnPage() {
     setBusy(true);
     setMsg(null);
     try {
+      let geoMap: Record<string, string[]> | undefined;
+      if (geoMapText.trim()) {
+        try {
+          geoMap = JSON.parse(geoMapText) as Record<string, string[]>;
+        } catch {
+          setMsg('geoMap JSON 無效，例：{"hkg":["node-id"]}');
+          setBusy(false);
+          return;
+        }
+      }
       await api.requestRaw('/api/v1/cdn/sites', {
         method: 'POST',
         body: JSON.stringify({
@@ -312,6 +371,7 @@ export function CdnPage() {
           mode,
           origin: { kind: 'url', url: originUrl.trim() },
           edgeNodeIds: edgeIds,
+          originShieldNodeId: shieldId.trim() || null,
           cache: {
             enabled: cacheEnabled,
             maxAge: maxAge.trim() || '10m',
@@ -325,6 +385,8 @@ export function CdnPage() {
             ttlHealthy: 60,
             ttlUnhealthy: 30,
             minHealthyEdges: 1,
+            geoMap,
+            geoSubdomains,
           },
           ssl: { mode: sslMode },
         }),
@@ -1183,15 +1245,16 @@ export function CdnPage() {
                     <strong>PR-C5</strong>：weighted DNS + 儀表 ✓
                   </li>
                   <li>
-                    <strong>PR-C6</strong>：SSL 分發 / LE http-01 on edge ✓
+                    <strong>PR-C6</strong>：SSL 分發 / LE ✓
                   </li>
                   <li>
-                    <strong>PR-C7</strong>：geo / project 一鍵
+                    <strong>PR-C7</strong>：geoMap + origin shield + 專案一鍵 ✓
                   </li>
                 </ul>
                 <FormHint>
-                  SSL：upload 用控制面 certs；LE 先 ACME conf fan-out 再
-                  certbot webroot，再 scp 到各 edge。詳見{' '}
+                  Geo 無 EDNS/Anycast：apex multi-A 為所有 geo 健康
+                  edge；可開 region 子域名。Origin shield：非 shield edge 經
+                  shield 回源。詳見{' '}
                   <code className="inline">docs/product/dns-cdn-design.md</code>
                 </FormHint>
               </CardSection>
@@ -1544,11 +1607,55 @@ export function CdnPage() {
                 placeholder="admin@example.com"
               />
             </Field>
+            <Field
+              label="Origin shield"
+              htmlFor="site-shield"
+              flush
+              hint="非 shield edge 經此節點回源（PR-C7）"
+            >
+              <select
+                id="site-shield"
+                value={shieldId}
+                onChange={(e) => setShieldId(e.target.value)}
+              >
+                <option value="">（無）</option>
+                {edgeNodes.map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field
+              label="geoMap JSON"
+              htmlFor="site-geo"
+              fullWidth
+              flush
+              hint='strategy=geo 時用，例 {"hkg":["id1"],"nrt":["id2"]}'
+            >
+              <textarea
+                id="site-geo"
+                value={geoMapText}
+                onChange={(e) => setGeoMapText(e.target.value)}
+                rows={2}
+                placeholder='{"hkg":["edge-id"]}'
+                spellCheck={false}
+              />
+            </Field>
+            <Field label="geo 子域名" htmlFor="site-geo-sub" flush>
+              <label className="u-text-sm">
+                <input
+                  type="checkbox"
+                  checked={geoSubdomains}
+                  onChange={(e) => setGeoSubdomains(e.target.checked)}
+                />{' '}
+                寫入 region 子域名 A/AAAA（如 hkg）
+              </label>
+            </Field>
           </FormLayout>
           <FormHint>
-            流程：寫入 conf → 套用 edges → 探活+DNS → 分發 SSL / LE
-            簽發。憑證只推到 edge
-            /etc/ysk-cdn/certs/&lt;siteId&gt;/。
+            流程：寫入 conf → 套用 edges → 探活+DNS → SSL。專案一鍵：
+            /cdn?fromProject=專案ID
           </FormHint>
         </form>
       </Modal>

@@ -5,3 +5,4 @@ export * from './fan-out.js';
 export * from './dns-sync.js';
 export * from './metrics.js';
 export * from './ssl.js';
+export * from './from-project.js';

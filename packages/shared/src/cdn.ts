@@ -53,13 +53,26 @@ export interface CdnSiteDto {
     sni?: string;
   };
   edgeNodeIds: string[];
+  /**
+   * Origin shield (PR-C7): non-shield edges pull via this edge instead of origin.
+   * Shield node itself still uses origin upstream.
+   */
+  originShieldNodeId?: string;
   dns: {
     zoneId?: string;
     strategy: CdnDnsStrategy;
     ttlHealthy: number;
     ttlUnhealthy: number;
     minHealthyEdges: number;
+    /**
+     * region → edge node ids (PR-C7 geo).
+     * Apex multi-A uses union of healthy geo edges; optional region subdomains.
+     */
     geoMap?: Record<string, string[]>;
+    /** When true, also write A/AAAA for `{region}.` relative names */
+    geoSubdomains?: boolean;
+    /** Prefer this region for failover/single under geo strategy */
+    geoDefaultRegion?: string;
   };
   cache: {
     enabled: boolean;

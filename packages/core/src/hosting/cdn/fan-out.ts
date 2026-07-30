@@ -11,12 +11,35 @@ import {
   YskError,
   type ApplyStatus,
   type CdnNodeDto,
+  type CdnSiteDto,
 } from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
-import { applyCdnSiteEdgeRender } from './edge-render.js';
+import {
+  applyCdnSiteEdgeRender,
+  renderCdnEdgeNginxConf,
+} from './edge-render.js';
 import { getCdnNode } from './nodes.js';
 import { getCdnSite, patchCdnSiteStatus } from './sites.js';
+import { edgeSslPaths } from './ssl.js';
+
+/** Public URL of shield edge for other edges to proxy_pass */
+export function resolveShieldUpstreamUrl(
+  site: CdnSiteDto,
+  shield: CdnNodeDto,
+): string {
+  if (shield.baseUrl?.trim()) {
+    return shield.baseUrl.replace(/\/$/, '');
+  }
+  const ip = shield.publicIpv4[0] || shield.publicIpv6[0];
+  if (ip) {
+    const scheme = site.ssl?.mode && site.ssl.mode !== 'off' ? 'https' : 'http';
+    // IPv6 needs brackets
+    const host = ip.includes(':') ? `[${ip}]` : ip;
+    return `${scheme}://${host}`;
+  }
+  return 'http://127.0.0.1:80';
+}
 
 export type CdnEdgeApplyItem = {
   edgeNodeId: string;
@@ -242,6 +265,22 @@ export async function fanOutCdnSite(input: {
     ...site.edge_status,
   };
 
+  // Origin shield URL for non-shield edges (PR-C7)
+  let shieldUrl: string | undefined;
+  if (site.originShieldNodeId) {
+    const shieldNode = getCdnNode(input.db, site.originShieldNodeId);
+    if (shieldNode) {
+      shieldUrl = resolveShieldUpstreamUrl(site, shieldNode);
+      notes.push(
+        `origin shield=${shieldNode.name} upstream=${shieldUrl}`,
+      );
+    } else {
+      notes.push(
+        `originShieldNodeId=${site.originShieldNodeId} 不存在 — 忽略 shield`,
+      );
+    }
+  }
+
   for (const eid of edgeIds) {
     const node = getCdnNode(input.db, eid);
     if (!node) {
@@ -287,11 +326,44 @@ export async function fanOutCdnSite(input: {
       continue;
     }
 
+    // Per-edge conf when origin shield is configured
+    let edgeConfPath = confPath;
+    if (site.originShieldNodeId) {
+      const isShield = site.originShieldNodeId === eid;
+      const sslPaths =
+        site.ssl?.mode && site.ssl.mode !== 'off'
+          ? edgeSslPaths(site.id)
+          : undefined;
+      const rendered = renderCdnEdgeNginxConf({
+        site,
+        projectOriginUrl: input.projectOriginUrl,
+        sslPaths,
+        shieldUpstreamUrl: isShield ? undefined : shieldUrl,
+        isShieldEdge: isShield,
+        forEdgeNodeId: eid,
+      });
+      const edgeDir = join(
+        input.dataDir,
+        'cdn',
+        'sites',
+        site.id,
+        'edges',
+      );
+      mkdirSync(edgeDir, { recursive: true });
+      edgeConfPath = join(edgeDir, `${eid.slice(0, 8)}.conf`);
+      writeFileSync(edgeConfPath, rendered.conf, 'utf8');
+      contentHash = rendered.contentHash;
+      written.push(edgeConfPath);
+      notes.push(
+        `${node.name}: ${isShield ? 'shield conf' : 'via-shield conf'} hash=${rendered.contentHash}`,
+      );
+    }
+
     if (isLocalEdge(node)) {
       const item = await applyLocalEdge({
         host: input.host,
         dataDir: input.dataDir,
-        confPath,
+        confPath: edgeConfPath,
         confBasename,
         node,
         siteId: site.id,
@@ -308,7 +380,7 @@ export async function fanOutCdnSite(input: {
     const item = await applySshEdge({
       host: input.host,
       dataDir: input.dataDir,
-      confPath,
+      confPath: edgeConfPath,
       confBasename,
       node,
       target,

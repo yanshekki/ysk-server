@@ -58,9 +58,33 @@ function originHostPort(upstreamUrl: string): string {
 
 function resolveOriginUpstream(
   site: CdnSiteDto,
-  opts?: { projectOriginUrl?: string },
+  opts?: {
+    projectOriginUrl?: string;
+    /** When rendering for a non-shield edge, pull via shield */
+    shieldUpstreamUrl?: string;
+    isShieldEdge?: boolean;
+  },
 ): { upstream: string; notes: string[] } {
   const notes: string[] = [];
+
+  // Origin shield (PR-C7): non-shield edges use shield as upstream
+  if (
+    opts?.shieldUpstreamUrl &&
+    !opts.isShieldEdge &&
+    site.originShieldNodeId
+  ) {
+    notes.push(
+      `origin shield：本 edge 回源經 shield ${site.originShieldNodeId} → ${opts.shieldUpstreamUrl}`,
+    );
+    return {
+      upstream: opts.shieldUpstreamUrl.replace(/\/$/, ''),
+      notes,
+    };
+  }
+  if (opts?.isShieldEdge && site.originShieldNodeId) {
+    notes.push('origin shield：此節點為 shield，直接連 origin');
+  }
+
   if (site.origin.kind === 'url') {
     return { upstream: site.origin.url!.replace(/\/$/, ''), notes };
   }
@@ -102,6 +126,11 @@ export function renderCdnEdgeNginxConf(input: {
   sslPaths?: CdnEdgeSslPaths;
   /** Force HTTP-only ACME staging conf (before cert issued) */
   acmeOnly?: boolean;
+  /** PR-C7 origin shield */
+  shieldUpstreamUrl?: string;
+  isShieldEdge?: boolean;
+  /** Tag conf for which edge it was rendered (fan-out) */
+  forEdgeNodeId?: string;
 }): {
   conf: string;
   originUpstream: string;
@@ -115,6 +144,8 @@ export function renderCdnEdgeNginxConf(input: {
   }
   const { upstream, notes } = resolveOriginUpstream(site, {
     projectOriginUrl: input.projectOriginUrl,
+    shieldUpstreamUrl: input.shieldUpstreamUrl,
+    isShieldEdge: input.isShieldEdge,
   });
   const zone = safeZoneId(site.id);
   const cachePath = `/var/cache/ysk-cdn/${site.id}`;
@@ -315,6 +346,16 @@ ${locationSlash}${staticLoc}}
     `origin=${upstream}`,
     sslEnabled ? 'ssl=on' : 'ssl=off',
   );
+  if (input.forEdgeNodeId) {
+    notes.push(`rendered for edge ${input.forEdgeNodeId.slice(0, 8)}`);
+  }
+  if (site.originShieldNodeId) {
+    notes.push(
+      input.isShieldEdge
+        ? 'role=origin-shield'
+        : `role=edge-via-shield(${site.originShieldNodeId.slice(0, 8)})`,
+    );
+  }
 
   return {
     conf: stamped,

@@ -104,6 +104,7 @@ Base URL: `http://127.0.0.1:9287`
 | POST | `/api/v1/cdn/sites/:id/ssl/distribute` | Bearer | Copy certs to edges + TLS conf + optional reload |
 | POST | `/api/v1/cdn/sites/:id/ssl/issue` | Bearer | LE http-01/dns-01 plan or run + distribute |
 | POST | `/api/v1/cdn/sites/:id/ssl/prepare-acme` | Bearer | Fan-out ACME webroot HTTP conf |
+| POST | `/api/v1/cdn/from-project` | Bearer | One-click CDN site from project (PR-C7) |
 | POST | `/api/v1/hosting/firewall/plan` | Bearer | Firewall plan |
 | GET | `/api/v1/hosting/files/plan` | Bearer | Public file server plan |
 | GET | `/api/v1/backups` | Bearer | List backup archives |

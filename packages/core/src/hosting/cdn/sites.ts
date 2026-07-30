@@ -34,6 +34,7 @@ export type UpsertCdnSiteInput = {
   mode?: CdnSiteMode | string;
   origin?: CdnSiteDto['origin'];
   edgeNodeIds?: string[];
+  originShieldNodeId?: string | null;
   dns?: Partial<CdnSiteDto['dns']>;
   cache?: Partial<CdnSiteDto['cache']>;
   ssl?: Partial<CdnSiteDto['ssl']>;
@@ -190,6 +191,11 @@ function defaultDns(
       Math.min(16, partial?.minHealthyEdges ?? prev?.minHealthyEdges ?? 1),
     ),
     geoMap: partial?.geoMap ?? prev?.geoMap,
+    geoSubdomains:
+      partial?.geoSubdomains ?? prev?.geoSubdomains ?? false,
+    geoDefaultRegion:
+      (partial?.geoDefaultRegion ?? prev?.geoDefaultRegion)?.trim() ||
+      undefined,
   };
 }
 
@@ -250,6 +256,22 @@ export function upsertCdnSite(
     });
   }
 
+  let originShieldNodeId: string | undefined;
+  if (input.originShieldNodeId === null) {
+    originShieldNodeId = undefined;
+  } else if (input.originShieldNodeId?.trim()) {
+    const sid = input.originShieldNodeId.trim();
+    const n = getCdnNode(db, sid);
+    if (!n) {
+      throw new YskError(ErrorCodes.VALIDATION, `origin shield 節點不存在：${sid}`, {
+        httpStatus: 400,
+      });
+    }
+    originShieldNodeId = sid;
+  } else {
+    originShieldNodeId = prev?.originShieldNodeId;
+  }
+
   const row: CdnSiteDto = {
     id,
     name: assertName(input.name),
@@ -257,12 +279,25 @@ export function upsertCdnSite(
     mode: normalizeMode(input.mode ?? prev?.mode),
     origin: normalizeOrigin(input.origin, prev?.origin),
     edgeNodeIds: normalizeEdges(db, input.edgeNodeIds, prev?.edgeNodeIds),
+    originShieldNodeId,
     dns: defaultDns(input.dns, prev?.dns),
     cache: defaultCache(input.cache, prev?.cache),
     ssl: defaultSsl(input.ssl, prev?.ssl),
     apply_status: prev?.apply_status ?? 'draft',
     edge_status: prev?.edge_status ?? {},
   };
+
+  // Shield must be one of the site edges
+  if (
+    row.originShieldNodeId &&
+    !row.edgeNodeIds.includes(row.originShieldNodeId)
+  ) {
+    throw new YskError(
+      ErrorCodes.VALIDATION,
+      'originShieldNodeId 必須在 edgeNodeIds 內',
+      { httpStatus: 400 },
+    );
+  }
 
   // New domains/origin/edges reset overall status to draft if content-ish change
   if (prev) {

@@ -312,6 +312,12 @@ export function ProjectDetailPage() {
           >
             SSL
           </Link>
+          <Link
+            to={`/cdn?fromProject=${encodeURIComponent(project.id)}`}
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+          >
+            啟用 CDN
+          </Link>
           <Link to="/logs" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             日誌
           </Link>
