@@ -6,13 +6,12 @@ import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import {
   buildExternalTodos,
   planEmailStackInstall,
   planTestSend,
-  scoreEmailHealth,
-} from './dns-records.js';
+  scoreEmailHealth } from './dns-records.js';
 import type { YskDatabase } from '../db/database.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import type { HostExecutor } from '../host/executor.js';
@@ -53,7 +52,7 @@ export class EmailService {
   get(id: string): EmailDomainRecord {
     const row = domains(this.db).find((e) => e.id === id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到郵件域名：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.email.domainNotFound', { id }), { httpStatus: 404 });
     }
     return { ...row };
   }
@@ -76,16 +75,14 @@ export class EmailService {
   } {
     const domain = input.domain.trim().toLowerCase();
     if (domains(this.db).some((e) => e.domain === domain)) {
-      throw new YskError(ErrorCodes.VALIDATION, `域名已登記：${domain}`, {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0081', { v0: (domain) }), {
+        httpStatus: 400 });
     }
 
     const { publicKey, privateKey } = generateKeyPairSync('rsa', {
       modulusLength: 2048,
       publicKeyEncoding: { type: 'spki', format: 'pem' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-    });
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
     const dkimPublic = extractPemBody(publicKey);
     const selector = 'default';
     const mailHostname = input.mailHostname ?? `mail.${domain}`;
@@ -101,8 +98,7 @@ export class EmailService {
       ptrOk: false,
       port25Open: null,
       dnsApplied: false,
-      dmarcPresent: false,
-    });
+      dmarcPresent: false });
 
     const row: EmailDomainRecord = {
       id: randomUUID(),
@@ -119,8 +115,7 @@ export class EmailService {
       port25_open: null,
       health_score: health.score,
       created_at: now,
-      updated_at: now,
-    };
+      updated_at: now };
     domains(this.db).unshift(row);
     this.db.persist();
 
@@ -129,16 +124,14 @@ export class EmailService {
       action: 'email.domain.create',
       resource: domain,
       detail: { id: row.id, health_score: health.score },
-      ok: true,
-    });
+      ok: true });
 
     return {
       domain: { ...row, dkim_private_key: '***redacted***' },
       records: health.records,
       externalTodos: health.externalTodos,
       health,
-      installPlan: planEmailStackInstall(domain),
-    };
+      installPlan: planEmailStackInstall(domain) };
   }
 
   /**
@@ -156,7 +149,7 @@ export class EmailService {
   ): { domain: EmailDomainRecord; health: EmailHealthReport } {
     const row = domains(this.db).find((e) => e.id === id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到郵件域名：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.email.domainNotFound', { id }), { httpStatus: 404 });
     }
     if (checks.dnsApplied !== undefined) row.dns_applied = checks.dnsApplied;
     if (checks.dmarcPresent !== undefined) row.dmarc_present = checks.dmarcPresent;
@@ -173,8 +166,7 @@ export class EmailService {
       ptrOk: row.ptr_ok,
       port25Open: row.port25_open,
       dnsApplied: row.dns_applied,
-      dmarcPresent: row.dmarc_present,
-    });
+      dmarcPresent: row.dmarc_present });
     row.health_score = health.score;
     this.db.persist();
 
@@ -183,13 +175,11 @@ export class EmailService {
       action: 'email.checks.update',
       resource: id,
       detail: checks,
-      ok: true,
-    });
+      ok: true });
 
     return {
       domain: { ...row, dkim_private_key: '***redacted***' },
-      health,
-    };
+      health };
   }
 
   getDnsBundle(id: string): {
@@ -207,8 +197,7 @@ export class EmailService {
       ptrOk: row.ptr_ok,
       port25Open: row.port25_open,
       dnsApplied: row.dns_applied,
-      dmarcPresent: row.dmarc_present,
-    });
+      dmarcPresent: row.dmarc_present });
     return {
       records: health.records,
       externalTodos: buildExternalTodos({
@@ -217,10 +206,8 @@ export class EmailService {
         ptrOk: row.ptr_ok,
         port25Open: row.port25_open,
         dnsApplied: row.dns_applied,
-        dmarcPresent: row.dmarc_present,
-      }),
-      health,
-    };
+        dmarcPresent: row.dmarc_present }),
+      health };
   }
 
   /**
@@ -249,16 +236,15 @@ export class EmailService {
     const row = this.get(domainId);
     const local = input.localPart.trim().toLowerCase();
     if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
-      throw new YskError(ErrorCodes.VALIDATION, '郵箱本地部分無效', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1509'), { httpStatus: 400 });
     }
     const address = `${local}@${row.domain}`;
     const existing = this.db.snapshot.mailboxes.find(
       (m) => String(m.address).toLowerCase() === address,
     );
     if (existing) {
-      throw new YskError(ErrorCodes.VALIDATION, `郵箱已存在：${address}`, {
-        httpStatus: 409,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0082', { v0: (address) }), {
+        httpStatus: 409 });
     }
 
     const notes: string[] = [];
@@ -274,7 +260,7 @@ export class EmailService {
       passwordScheme = hashed.scheme;
       notes.push(...hashed.notes);
     } else if (input.password) {
-      notes.push('密碼過短（至少 8 字）— 郵箱已建立但未寫入雜湊');
+      notes.push(tl('notes.auto.n0668'));
     }
 
     if (this.dataDir) {
@@ -297,9 +283,9 @@ export class EmailService {
         'utf8',
       );
       written.push(maildirPath, join(base, 'README.txt'));
-      notes.push(`已建立 Maildir：${maildirPath}`);
+      notes.push(tl('notes.auto.t0083', { v0: (maildirPath) }));
     } else {
-      notes.push('EmailService 無 dataDir — 只寫資料庫（需 dataDir 才建 Maildir）');
+      notes.push(tl('notes.auto.n0102'));
     }
 
     const wantSystem = Boolean(input.provisionSystem);
@@ -308,7 +294,7 @@ export class EmailService {
     let status = 'managed';
 
     if (wantSystem && !canSystem) {
-      notes.push('無法建立系統郵件用戶：需要系統管理員權限');
+      notes.push(tl('notes.auto.n1169'));
       status = 'managed_pending_system';
     }
 
@@ -321,8 +307,7 @@ export class EmailService {
       commandResults.push({
         argv: ['mkdir', '-p', home],
         exitCode: mk.exitCode,
-        stderr: mk.stderr,
-      });
+        stderr: mk.stderr });
       const ua = await this.host.runCommand(
         ['useradd', '-r', '-m', '-d', home, '-s', '/usr/sbin/nologin', systemUser],
         { timeoutMs: 30_000 },
@@ -330,14 +315,13 @@ export class EmailService {
       commandResults.push({
         argv: ['useradd', systemUser],
         exitCode: ua.exitCode,
-        stderr: ua.stderr,
-      });
+        stderr: ua.stderr });
       if (ua.exitCode === 0) {
         status = 'system_provisioned';
-        notes.push(`已建立系統用戶 ${systemUser}`);
+        notes.push(tl('notes.auto.t0084', { v0: (systemUser) }));
       } else {
         status = 'managed_system_failed';
-        notes.push(`建立系統用戶失敗：${ua.stderr || ua.stdout}`);
+        notes.push(tl('notes.auto.t0085', { v0: (ua.stderr || ua.stdout) }));
       }
     }
 
@@ -350,8 +334,7 @@ export class EmailService {
         {
           address,
           local_part: local,
-          maildir: maildirPath,
-        },
+          maildir: maildirPath },
       ];
       const vmailbox = allForDomain
         .map((m) => {
@@ -365,7 +348,7 @@ export class EmailService {
       const vpath = join(mapDir, 'virtual_mailbox');
       writeFileSync(vpath, vmailbox + '\n', 'utf8');
       written.push(vpath);
-      notes.push(`虛擬郵箱對應：${vpath}`);
+      notes.push(tl('notes.auto.t0086', { v0: (vpath) }));
     }
 
     const mailbox = {
@@ -378,12 +361,10 @@ export class EmailService {
       maildir: maildirPath,
       system_user: systemUser,
       password_scheme: passwordScheme,
-      created_at: new Date().toISOString(),
-    };
+      created_at: new Date().toISOString() };
     this.db.snapshot.mailboxes.unshift({
       ...mailbox,
-      password_hash: passwordHash,
-    });
+      password_hash: passwordHash });
     this.db.persist();
 
     // Refresh Dovecot passdb for this domain when dataDir present
@@ -394,12 +375,11 @@ export class EmailService {
           dataDir: this.dataDir,
           db: this.db,
           domain: row.domain,
-          domainId,
-        });
+          domainId });
         written.push(...pd.written);
         notes.push(...pd.notes.filter((n) => !notes.includes(n)));
       } catch (e) {
-        notes.push(`寫入 passdb 失敗：${e instanceof Error ? e.message : String(e)}`);
+        notes.push(tl('notes.auto.t0087', { v0: (e instanceof Error ? e.message : String(e)) }));
       }
     }
 
@@ -412,10 +392,8 @@ export class EmailService {
         status,
         maildir: maildirPath,
         systemUser,
-        hasPassword: Boolean(passwordHash),
-      },
-      ok: status !== 'managed_system_failed',
-    });
+        hasPassword: Boolean(passwordHash) },
+      ok: status !== 'managed_system_failed' });
 
     const ok = !wantSystem || canSystem ? status !== 'managed_system_failed' : true;
     // If system was requested but skipped, still ok for managed Maildir path
@@ -433,14 +411,12 @@ export class EmailService {
         maildir: maildirPath,
         system_user: systemUser,
         has_password: Boolean(passwordHash),
-        created_at: mailbox.created_at,
-      },
+        created_at: mailbox.created_at },
       notes,
       written,
       requiresExecute: !this.host.executeEnabled(),
       requiresRoot: !this.host.isRoot(),
-      commandResults,
-    };
+      commandResults };
   }
 
   listMailboxes(domainId?: string): Array<Record<string, unknown>> {
@@ -449,8 +425,7 @@ export class EmailService {
       const { password_hash: _ph, password_hash_full: _pf, ...rest } = m;
       return {
         ...rest,
-        has_password: Boolean(_ph || _pf),
-      };
+        has_password: Boolean(_ph || _pf) };
     };
     if (!domainId) return all.map(map);
     return all.filter((m) => m.domain_id === domainId).map(map);
@@ -483,7 +458,7 @@ export class EmailService {
       .map((d) => d.trim().toLowerCase())
       .filter(Boolean);
     if (!dests.length) {
-      throw new YskError(ErrorCodes.VALIDATION, '至少一個轉送目標', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1339'), { httpStatus: 400 });
     }
     for (const d of dests) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d) && type !== 'alias') {
@@ -495,7 +470,7 @@ export class EmailService {
       local = '*';
     } else {
       if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
-        throw new YskError(ErrorCodes.VALIDATION, '本地部分無效', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0993'), { httpStatus: 400 });
       }
     }
     const source =
@@ -504,7 +479,7 @@ export class EmailService {
       (a) => a.domain_id === domainId && String(a.source).toLowerCase() === source,
     );
     if (existing) {
-      throw new YskError(ErrorCodes.VALIDATION, `來源已存在: ${source}`, { httpStatus: 409 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0088', { v0: (source) }), { httpStatus: 409 });
     }
     const alias = {
       id: randomUUID(),
@@ -514,8 +489,7 @@ export class EmailService {
       local_part: local,
       source,
       destinations: dests,
-      created_at: new Date().toISOString(),
-    };
+      created_at: new Date().toISOString() };
     if (!this.db.snapshot.email_aliases) this.db.snapshot.email_aliases = [];
     this.db.snapshot.email_aliases.unshift(alias);
     this.db.persist();
@@ -525,14 +499,12 @@ export class EmailService {
       action: 'email.alias.create',
       resource: source,
       detail: { destinations: dests, type },
-      ok: true,
-    });
+      ok: true });
     return {
       ok: true,
       alias,
-      notes: [`已建立 ${type}: ${source} → ${dests.join(', ')}`, ...written.notes],
-      written: written.written,
-    };
+      notes: [tl('notes.auto.t0089', { v0: (type), v1: (source), v2: (dests.join(', ')) }), ...written.notes],
+      written: written.written };
   }
 
   deleteAlias(
@@ -547,7 +519,7 @@ export class EmailService {
     );
     const ok = this.db.snapshot.email_aliases.length < before;
     if (!ok) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到別名', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0855'), { httpStatus: 404 });
     }
     this.db.persist();
     const written = this.rewriteVirtualAliasMap(domainId);
@@ -556,9 +528,8 @@ export class EmailService {
       action: 'email.alias.delete',
       resource: aliasId,
       detail: {},
-      ok: true,
-    });
-    return { ok: true, notes: ['已刪除', ...written.notes], written: written.written };
+      ok: true });
+    return { ok: true, notes: [tl('notes.auto.n0736'), ...written.notes], written: written.written };
   }
 
   /**
@@ -594,9 +565,8 @@ export class EmailService {
     const row = domains(this.db).find((e) => e.id === domainId) as EmailDomainRecord &
       Record<string, unknown>;
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到郵件域名：${domainId}`, {
-        httpStatus: 404,
-      });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0090', { v0: (domainId) }), {
+        httpStatus: 404 });
     }
     const notes: string[] = [];
     const written: string[] = [];
@@ -615,8 +585,7 @@ export class EmailService {
           this.createAlias(domainId, {
             type: 'catchall',
             destinations: [patch.catchallAddress],
-            actor,
-          });
+            actor });
         }
       } else if (existing) {
         this.deleteAlias(domainId, String(existing.id), actor);
@@ -624,7 +593,7 @@ export class EmailService {
       notes.push(
         patch.catchallAddress
           ? `catch-all → ${patch.catchallAddress}（virtual_alias map）`
-          : '已清除 catch-all',
+          : tl('notes.auto.n0787'),
       );
     }
     if (patch.autoreplyEnabled !== undefined) row.autoreply_enabled = patch.autoreplyEnabled;
@@ -639,8 +608,8 @@ export class EmailService {
       row.status = patch.suspended ? 'suspended' : 'active';
       notes.push(
         patch.suspended
-          ? '域名狀態：suspended（控制面旗標；唔等於 Postfix 已拒信）'
-          : '域名狀態：active（控制面旗標）',
+          ? tl('notes.auto.n0631')
+          : tl('notes.auto.n0630'),
       );
     }
     row.updated_at = new Date().toISOString();
@@ -660,7 +629,7 @@ export class EmailService {
       const sieveDirPath = join(this.dataDir, 'email', domainName, 'sieve');
       mkdirSync(sieveDirPath, { recursive: true });
       const enabled = Boolean(row.autoreply_enabled);
-      const subject = String(row.autoreply_subject ?? '自動回覆');
+      const subject = String(row.autoreply_subject ?? tl('notes.auto.n1335'));
       const body = String(row.autoreply_body ?? '');
       const sievePath = join(sieveDirPath, 'vacation.sieve');
       const content = enabled
@@ -680,11 +649,11 @@ export class EmailService {
       written.push(sievePath);
       notes.push(
         enabled
-          ? `已寫 vacation 草稿 ${sievePath}`
-          : `已寫停用標記 ${sievePath}`,
+          ? tl('notes.auto.t0091', { v0: (sievePath) })
+          : tl('notes.auto.t0092', { v0: (sievePath) }),
       );
       notes.push(
-        '自動回覆：狀態 written — 未自動進 Dovecot/Pigeonhole（需 ManageSieve 或 symlink）',
+        tl('notes.auto.n1336'),
       );
     }
 
@@ -706,18 +675,18 @@ export class EmailService {
           'utf8',
         );
         written.push(flagPath);
-        notes.push(`已寫 ${flagPath}`);
+        notes.push(tl('notes.tpl.wrote', { path: flagPath }));
       } else if (existsSync(flagPath)) {
         unlinkSync(flagPath);
-        notes.push(`已移除 ${flagPath}`);
+        notes.push(tl('notes.tpl.removed', { name: flagPath }));
       } else {
-        notes.push('恢復：控制面 status=active');
+        notes.push(tl('notes.auto.n0832'));
       }
     }
 
     if (patch.rateLimitPerHour !== undefined || patch.antispam !== undefined) {
       notes.push(
-        '限速／反垃圾旗標已存 DB；要進 Postfix/Rspamd 請用「套用限速/反垃圾到系統」',
+        tl('notes.auto.n1533'),
       );
     }
 
@@ -737,8 +706,7 @@ export class EmailService {
         dataDir: this.dataDir,
         domain: String(row.domain),
         mailboxes: locals,
-        enabled: Boolean(row.autoreply_enabled),
-      });
+        enabled: Boolean(row.autoreply_enabled) });
       written.push(...copies.written);
       notes.push(...copies.notes);
     }
@@ -783,8 +751,7 @@ export class EmailService {
         applyVacation:
           patch.autoreplyEnabled !== undefined ||
           patch.autoreplySubject !== undefined ||
-          patch.autoreplyBody !== undefined,
-      });
+          patch.autoreplyBody !== undefined });
       notes.push(...sys.notes);
       written.push(...sys.written);
       commandResults = sys.commandResults;
@@ -795,8 +762,8 @@ export class EmailService {
     } else {
       notes.push(
         wantSystem && !touchesLive
-          ? 'applySystem 已傳但本次無 suspend/autoreply 變更'
-          : 'apply_status=written（控制面成功 ≠ 系統 MTA 已生效；加 applySystem:true 先套用）',
+          ? tl('notes.auto.n0223')
+          : tl('notes.auto.n0224'),
       );
     }
 
@@ -805,8 +772,7 @@ export class EmailService {
       action: 'email.domain.flags',
       resource: domainId,
       detail: { patch, written, apply_status, ok, blocked },
-      ok,
-    });
+      ok });
     return {
       domain: { ...row, dkim_private_key: '***redacted***' },
       ok,
@@ -815,15 +781,14 @@ export class EmailService {
       apply_status,
       blocked,
       blockMessage,
-      commandResults,
-    };
+      commandResults };
   }
 
   private rewriteVirtualAliasMap(domainId: string): { written: string[]; notes: string[] } {
     const written: string[] = [];
     const notes: string[] = [];
     if (!this.dataDir) {
-      notes.push('無 dataDir — 只更新資料庫');
+      notes.push(tl('notes.auto.n1074'));
       return { written, notes };
     }
     const row = this.get(domainId);
@@ -844,7 +809,7 @@ export class EmailService {
     const path = join(mapDir, 'virtual_alias');
     writeFileSync(path, lines.join('\n') + (lines.length ? '\n' : ''), 'utf8');
     written.push(path);
-    notes.push(`virtual_alias: ${path} (${lines.length} 條)`);
+    notes.push(tl('notes.auto.t0093', { v0: (path), v1: (lines.length) }));
     return { written, notes };
   }
 
@@ -858,8 +823,7 @@ export class EmailService {
       status.ok ? 'applied' : 'failed';
     (row as EmailDomainRecord & { last_apply?: unknown }).last_apply = {
       ...status,
-      at: new Date().toISOString(),
-    };
+      at: new Date().toISOString() };
     (row as EmailDomainRecord).updated_at = new Date().toISOString();
     this.db.persist();
   }
@@ -880,16 +844,13 @@ export class EmailService {
         action: 'email.test_send',
         resource: row.domain,
         detail: { ok: false, reason: 'YSK_EXECUTE not enabled' },
-        ok: false,
-      });
+        ok: false });
       return {
         ok: false,
         plan,
         result: {
-          error: '無法寄送測試信：伺服器未開啟系統變更權限或未安裝郵件服務',
-          domain: row.domain,
-        },
-      };
+          error: tl('notes.auto.n1166'),
+          domain: row.domain } };
     }
     // Prefer printf | sendmail via bash -c only if execute enabled; use exec argv safely
     const r = await this.host.runCommand(
@@ -902,8 +863,7 @@ export class EmailService {
       action: 'email.test_send',
       resource: row.domain,
       detail: { ok, exitCode: r.exitCode, stderr: r.stderr },
-      ok,
-    });
+      ok });
     return { ok, plan, result: r };
   }
 }

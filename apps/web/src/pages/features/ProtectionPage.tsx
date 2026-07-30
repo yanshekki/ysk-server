@@ -34,10 +34,10 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
   GEO_ASN_PROVIDERS,
-  GEO_CONTINENTS,
-  GEO_COUNTRIES,
+  getGeoContinents,
+  getGeoCountries,
+  getGeoRegions,
   normalizeAsnInput,
-  regionsForCountries,
 } from '../../features/defense/geo-options';
 
 const TABS = ['command', 'automation', 'bans', 'geo', 'stack', 'intel', 'about'] as const;
@@ -196,57 +196,53 @@ type DefenseStatus = {
   notes: string[];
 };
 
-const LEVEL_META: Record<
-  ThreatLevel,
-  { label: string; verb: string; tone: 'ok' | 'warn' | 'danger'; hint: string }
-> = {
-  low: {
-    label: '正常',
-    verb: '系統平穩',
-    tone: 'ok',
-    hint: '維持日常防護即可',
-  },
-  elevated: {
-    label: '偏高',
-    verb: '有異常跡象',
-    tone: 'warn',
-    hint: '建議切到「加固」並留意可疑 IP',
-  },
-  under_attack: {
-    label: '受攻擊',
-    verb: '疑似正在受攻擊',
-    tone: 'danger',
-    hint: '立即套用「受攻擊」檔 + 批量封禁',
-  },
-  critical: {
-    label: '危急',
-    verb: '威脅嚴重',
-    tone: 'danger',
-    hint: '考慮緊急檔；確認白名單有你',
-  },
+const LEVEL_TONES: Record<ThreatLevel, 'ok' | 'warn' | 'danger'> = {
+  low: 'ok',
+  elevated: 'warn',
+  under_attack: 'danger',
+  critical: 'danger',
 };
 
-const PRESET_META: Record<
-  string,
-  { step: number; accent: string; when: string }
-> = {
-  daily: { step: 1, accent: 'calm', when: '日常營運' },
-  hardened: { step: 2, accent: 'firm', when: '掃描／暴力' },
-  under_attack: { step: 3, accent: 'alert', when: 'L7 爆量' },
-  emergency: { step: 4, accent: 'critical', when: '最後手段' },
+function levelMeta(
+  t: (key: string, opts?: Record<string, unknown>) => string,
+  level: ThreatLevel,
+) {
+  return {
+    label: t(`protection.levels.${level}.label`),
+    verb: t(`protection.levels.${level}.verb`),
+    tone: LEVEL_TONES[level],
+    hint: t(`protection.levels.${level}.hint`),
+  };
+}
+
+const PRESET_META_BASE: Record<string, { step: number; accent: string }> = {
+  daily: { step: 1, accent: 'calm' },
+  hardened: { step: 2, accent: 'firm' },
+  under_attack: { step: 3, accent: 'alert' },
+  emergency: { step: 4, accent: 'critical' },
 };
 
-function summarizeOpsNotes(notes: string[] | undefined): string[] {
+function presetWhen(t: (key: string) => string, id: string): string {
+  const k = `protection.presetsWhen.${id}`;
+  const v = t(k);
+  return v === k ? id : v;
+}
+
+function summarizeOpsNotes(
+  notes: string[] | undefined,
+  t: (key: string) => string,
+): string[] {
   if (!notes?.length) return [];
   return notes.map((n) => {
+    // L3: match backend Chinese / mixed ops notes until error codes exist
     if (/YSK_EXECUTE|未開啟系統|blocked system|無法 ban 到系統/i.test(n)) {
-      return '未套用到系統（需 root + YSK_EXECUTE=1）— 已記到管理設定';
+      return t('protection.note.notApplied');
     }
     if (/已寫 Nginx|Wrote .*nginx|00-ysk-defense/i.test(n)) {
-      return '已寫入 Nginx 限速管理檔';
+      return t('protection.note.nginxWritten');
     }
     if (/jail\.local|fail2ban/i.test(n) && /Wrote|已寫/i.test(n)) {
-      return '已寫入 fail2ban 管理設定';
+      return t('protection.note.f2bWritten');
     }
     if (n.length > 120 && n.includes('/')) {
       return n.replace(/\/home\/[^ ]+/g, '…').slice(0, 100);
@@ -263,12 +259,15 @@ function toneToBadge(t?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' 
   return 'neutral';
 }
 
-function relTime(iso?: string): string {
+function relTime(
+  iso: string | undefined,
+  t: (key: string, o?: Record<string, unknown>) => string,
+): string {
   if (!iso) return '—';
   const d = Date.now() - new Date(iso).getTime();
-  if (d < 60_000) return '剛剛';
-  if (d < 3600_000) return `${Math.floor(d / 60_000)} 分鐘前`;
-  if (d < 86400_000) return `${Math.floor(d / 3600_000)} 小時前`;
+  if (d < 60_000) return t('protection.rel.justNow');
+  if (d < 3600_000) return t('protection.rel.minutesAgo', { n: Math.floor(d / 60_000) });
+  if (d < 86400_000) return t('protection.rel.hoursAgo', { n: Math.floor(d / 3600_000) });
   return new Date(iso).toLocaleString();
 }
 
@@ -362,9 +361,9 @@ export function ProtectionPage() {
       const m =
         e instanceof Error
           ? e.message === 'Failed to fetch'
-            ? '無法連線 API（Web proxy／後端可能未啟動）'
+            ? t('protection.apiUnreachable')
             : e.message
-          : '載入 GeoIP 失敗';
+          : t('protection.geoipLoadFailed');
       setGeoErr(m);
       throw e;
     } finally {
@@ -466,7 +465,7 @@ export function ProtectionPage() {
         setStackF2b(null);
       }
     } catch (e) {
-      setLoadErr(e instanceof Error ? e.message : '載入失敗');
+      setLoadErr(e instanceof Error ? e.message : t('protection.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -513,9 +512,9 @@ export function ProtectionPage() {
         }),
       })) as OpsResultLike;
       if (!preview) await refresh();
-      if (r.notes) r.notes = summarizeOpsNotes(r.notes);
+      if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
       return r;
-    }, preview ? '預覽完成（未寫入）' : '已套用防護檔');
+    }, preview ? t('protection.previewDone') : t('protection.presetApplied'));
   }
 
   async function banOne(ip: string, reason?: string) {
@@ -524,14 +523,14 @@ export function ProtectionPage() {
         method: 'POST',
         body: JSON.stringify({
           ip,
-          reason: reason || banReason || '手動封禁',
+          reason: reason || banReason || t('protection.manualBan'),
           method: banMethod,
         }),
       })) as OpsResultLike;
-      if (r.notes) r.notes = summarizeOpsNotes(r.notes);
+      if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
       await refresh();
       return r;
-    }, `已送出封禁 ${ip}`);
+    }, t('protection.banSent', { ip }));
   }
 
   async function banSelected() {
@@ -541,15 +540,15 @@ export function ProtectionPage() {
         method: 'POST',
         body: JSON.stringify({
           ips: selectedIps,
-          reason: banReason || '快速選取封禁',
+          reason: banReason || t('protection.quickSelectBan'),
           method: banMethod,
         }),
       })) as OpsResultLike;
-      if (r.notes) r.notes = summarizeOpsNotes(r.notes);
+      if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
       setSelected({});
       await refresh();
       return r;
-    }, `批量封禁 ${selectedIps.length} 個`);
+    }, t('protection.bulkBan', { count: selectedIps.length }));
   }
 
   async function saveAutoBan(patch: Partial<AutoBanPolicy>) {
@@ -562,10 +561,10 @@ export function ProtectionPage() {
       return {
         ok: true,
         notes: [
-          `自動 ban：${r.enabled ? '開' : '關'} · ${r.mode} · ${r.method}`,
+          t('protection.autoBanStatus', { onOff: r.enabled ? t('protection.on') : t('protection.off'), mode: r.mode, method: r.method }),
         ],
       };
-    }, '已更新自動 ban');
+    }, t('protection.autoBanUpdated'));
   }
 
   async function saveAutomation(patch: {
@@ -585,16 +584,16 @@ export function ProtectionPage() {
       return {
         ok: true,
         notes: [
-          `自動化主開關：${r.automation.enabled ? '開' : '關'}`,
-          `自動防護檔：${r.automation.autoPreset.enabled ? '開' : '關'}`,
-          `自動 ban：${r.automation.autoBan.enabled ? '開' : '關'}（${r.automation.autoBan.mode}）`,
+          t('protection.automationMaster', { onOff: r.automation.enabled ? t('protection.on') : t('protection.off') }),
+          t('protection.autoPresetStatus', { onOff: r.automation.autoPreset.enabled ? t('protection.on') : t('protection.off') }),
+          t('protection.autoBanAutomation', { onOff: r.automation.autoBan.enabled ? t('protection.on') : t('protection.off'), mode: r.automation.autoBan.mode }),
         ],
       };
-    }, '已儲存自動化設定');
+    }, t('protection.automationSaved'));
   }
 
   const threat = status?.threatLevel ?? 'low';
-  const meta = LEVEL_META[threat];
+  const meta = levelMeta(t, threat);
   const labels = status?.labels;
   const ab = status?.autoBan;
   const activePreset = status?.presets.find((p) => p.id === status.activePreset);
@@ -609,12 +608,12 @@ export function ProtectionPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.protection', { defaultValue: '防護中心' })}
+      title={t('nav.protection')}
       status={
         status
           ? {
               pill: {
-                label: `${meta.label} · ${score}/100`,
+                label: t('protection.threatPill', { label: meta.label, score }),
                 tone: meta.tone,
               },
               items: [
@@ -624,27 +623,27 @@ export function ProtectionPage() {
                   tone: toneToBadge(labels?.fail2ban.tone),
                 },
                 {
-                  label: '防火牆',
+                  label: t('protection.statFirewall'),
                   value: labels?.firewall.short ?? '—',
                   tone: toneToBadge(labels?.firewall.tone),
                 },
                 {
-                  label: '自動 ban',
-                  value: labels?.autoBan.short ?? '關閉',
+                  label: t('protection.statAutoBan'),
+                  value: labels?.autoBan.short ?? t('common.close'),
                   tone: toneToBadge(labels?.autoBan.tone),
                 },
                 {
-                  label: '系統套用',
+                  label: t('protection.statApply'),
                   value: labels?.apply.short ?? '—',
                   tone: toneToBadge(labels?.apply.tone),
                 },
                 {
-                  label: '活躍封禁',
+                  label: t('protection.statActiveBans'),
                   value: status.bans.count,
                   tone: (status.bans.count ?? 0) > 10 ? 'warn' : 'neutral',
                 },
                 {
-                  label: '防護檔',
+                  label: t('protection.statPreset'),
                   value: activePreset?.label ?? '—',
                 },
               ],
@@ -666,12 +665,12 @@ export function ProtectionPage() {
                 await refresh();
                 return {
                   ok: true,
-                  notes: [`威脅 ${LEVEL_META[s.threatLevel].label} · ${s.score} 分`],
+                  notes: [t('protection.threatPill', { label: levelMeta(t, s.threatLevel).label, score: s.score })],
                 };
-              }, '已重新探測')
+              }, t('protection.reprobed'))
             }
           >
-            重新探測
+            {t('common.reprobe')}
           </Button>
           {status &&
           recommendedPreset &&
@@ -682,20 +681,20 @@ export function ProtectionPage() {
               loading={busy}
               onClick={() => void applyPreset(recommendedPreset, true)}
             >
-              一鍵套用建議檔
+              {t('protection.oneClickSuggested')}
             </Button>
           ) : (
             <Button variant="primary" size="sm" onClick={() => setTab('command')}>
-              檢視防護檔
+              {t('protection.viewPresets')}
             </Button>
           )}
           {actionableSuspects.length > 0 ? (
             <Button variant="danger" size="sm" onClick={() => setTab('bans')}>
-              可疑 IP {actionableSuspects.length}
+              {t('protection.suspectIpsCount', { count: actionableSuspects.length })}
             </Button>
           ) : (
             <Button variant="secondary" size="sm" onClick={() => setTab('bans')}>
-              去封禁
+              {t('protection.goBans')}
             </Button>
           )}
         </div>
@@ -707,56 +706,56 @@ export function ProtectionPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
-      {loading && !status ? <LoadingBlock label="載入防護狀態…" /> : null}
+      {loading && !status ? <LoadingBlock label={t('protection.loadingStatus')} /> : null}
 
       <Alert variant="info">
-        <strong>單一入口：</strong> 側欄只留本頁擋攻擊。UFW／fail2ban 喺「底層」分頁。
-        自動化＝探測→評分→可升檔／ban；<strong>緊急檔永不自動</strong>。
+        <strong>{t('protection.singleEntryPrefix')}</strong> {t('protection.singleEntryBody')}
+        <strong>{t('protection.emergencyNeverAuto')}</strong>.
       </Alert>
 
       {!status?.executeEnabled && status ? (
         <Alert variant="info">
-          而家只會<strong>寫管理設定</strong>，唔會改系統防火牆。生產環境用 root +{' '}
-          <code className="inline">YSK_EXECUTE=1</code>。{' '}
-          <Link to="/system/readiness">就緒探測</Link>
+          {t('protection.writeOnlyBanner')}{' '}
+          <code className="inline">YSK_EXECUTE=1</code>.{' '}
+          <Link to="/system/readiness">{t('protection.readiness')}</Link>
         </Alert>
       ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'command', label: '應變', badge: recommendedPreset ? '!' : undefined },
+          { id: 'command', label: t('protection.tabs.command'), badge: recommendedPreset ? '!' : undefined },
           {
             id: 'automation',
-            label: '自動化',
+            label: t('protection.tabs.automation'),
             badge: automation?.enabled ? 'ON' : undefined,
           },
           {
             id: 'bans',
-            label: '封禁',
+            label: t('protection.tabs.bans'),
             badge: actionableSuspects.length || status?.bans.count || undefined,
           },
           {
             id: 'geo',
-            label: 'IP 准入',
+            label: t('protection.tabs.geo'),
             badge: geoStatus?.policy.enabled
               ? 'ON'
               : geoStatus?.ready
                 ? undefined
                 : '!',
           },
-          { id: 'stack', label: '底層' },
+          { id: 'stack', label: t('protection.tabs.stack') },
           {
             id: 'intel',
-            label: '情報',
+            label: t('protection.tabs.intel'),
             badge: status?.signals.filter((s) => s.points > 0).length || undefined,
           },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('protection.tabs.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -779,18 +778,18 @@ export function ProtectionPage() {
                         loading={busy}
                         onClick={() => void applyPreset(s.action!.replace('preset:', ''), true)}
                       >
-                        套用
+                        {t('common.apply')}
                       </Button>
                     ) : s.action === 'tab:bans' ? (
                       <Button variant="secondary" size="sm" onClick={() => setTab('bans')}>
-                        前往
+                        {t('protection.goTo')}
                       </Button>
                     ) : s.action?.startsWith('href:') ? (
                       <Link
                         to={s.action.slice(5)}
                         className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                       >
-                        前往
+                        {t('protection.goTo')}
                       </Link>
                     ) : null}
                   </div>
@@ -800,9 +799,9 @@ export function ProtectionPage() {
 
             <div className="def-section-head">
               <div>
-                <h3 className="def-section-head__title">防護檔</h3>
+                <h3 className="def-section-head__title">{t('protection.sectionPreset')}</h3>
                 <p className="def-section-head__desc">
-                  由左到右逐步收緊 · 套用會寫 Nginx 限速 + fail2ban（加固以上開自動 ban）
+                  {t('protection.presetGuide')}
                 </p>
               </div>
             </div>
@@ -810,7 +809,11 @@ export function ProtectionPage() {
             <div className="def-ramp" role="list">
               {(status?.presets ?? []).map((p, idx) => {
                 const active = status?.activePreset === p.id;
-                const pm = PRESET_META[p.id] ?? { step: idx + 1, accent: 'calm', when: p.short };
+                const pm = PRESET_META_BASE[p.id] ?? {
+                  step: idx + 1,
+                  accent: 'calm',
+                };
+                const whenLabel = presetWhen(t, p.id) || p.short;
                 const recommended = recommendedPreset === p.id && !active;
                 return (
                   <article
@@ -831,11 +834,11 @@ export function ProtectionPage() {
                       <div className="def-ramp__titles">
                         <h4>
                           {p.label}
-                          {active ? <Badge tone="ok">作用中</Badge> : null}
-                          {recommended ? <Badge tone="warn">建議</Badge> : null}
-                          {p.danger && !active ? <Badge tone="danger">慎用</Badge> : null}
+                          {active ? <Badge tone="ok">{t('protection.active')}</Badge> : null}
+                          {recommended ? <Badge tone="warn">{t('protection.recommended')}</Badge> : null}
+                          {p.danger && !active ? <Badge tone="danger">{t('protection.useCarefully')}</Badge> : null}
                         </h4>
-                        <span className="def-ramp__when">{pm.when}</span>
+                        <span className="def-ramp__when">{whenLabel}</span>
                       </div>
                     </header>
                     <p className="def-ramp__short">{p.short}</p>
@@ -851,7 +854,7 @@ export function ProtectionPage() {
                         disabled={busy}
                         onClick={() => void applyPreset(p.id, p.danger, true)}
                       >
-                        預覽
+                        {t('protection.preview')}
                       </Button>
                       <Button
                         variant={p.danger ? 'danger' : active ? 'secondary' : 'primary'}
@@ -859,7 +862,7 @@ export function ProtectionPage() {
                         loading={busy}
                         onClick={() => void applyPreset(p.id, p.danger, false)}
                       >
-                        {active ? '重新套用' : '套用'}
+                        {active ? t('protection.reapply') : t('common.apply')}
                       </Button>
                     </footer>
                   </article>
@@ -870,34 +873,30 @@ export function ProtectionPage() {
             <SummaryStrip
               items={[
                 {
-                  label: 'Nginx 限速',
+                  label: t('protection.nginxLimits'),
                   value: status?.nginxLimits.exists
                     ? `${status.nginxLimits.reqRate ?? '—'}/${status.nginxLimits.burst ?? '—'}/${status.nginxLimits.connLimit ?? '—'}`
-                    : '未寫',
+                    : t('protection.notWritten'),
                   tone: status?.nginxLimits.exists ? 'ok' : 'warn',
                 },
                 {
-                  label: '模式',
+                  label: t('protection.mode'),
                   value: status?.protectionMode ?? '—',
                 },
                 {
-                  label: '控制面',
+                  label: t('protection.controlPlane'),
                   value: status?.executeEnabled
                     ? status.isRoot
-                      ? '可套用'
-                      : '需 root'
-                    : '只寫檔',
+                      ? t('protection.canApply')
+                      : t('protection.needRoot')
+                    : t('protection.writeOnly'),
                   tone: status?.executeEnabled && status.isRoot ? 'ok' : 'warn',
                 },
               ]}
             />
-            <p className="muted u-text-sm" style={{ margin: '0.35rem 0 0' }}>
-              底層工具分開管理 ·{' '}
-              <Link to="/fail2ban">fail2ban</Link>
-              {' · '}
-              <Link to="/firewall">防火牆</Link>
-              {' · '}
-              <Link to="/system/readiness">就緒</Link>
+            <p className="muted u-text-sm u-mt-2">
+              {t('protection.stackToolsSee')}{' '}
+              <Link to="/system/readiness">{t('protection.readinessCheck')}</Link>
             </p>
           </div>
         ) : null}
@@ -911,16 +910,16 @@ export function ProtectionPage() {
                     ⚙
                   </span>
                   <div>
-                    <strong>自動化主開關</strong>
+                    <strong>{t('protection.automationMasterLabel')}</strong>
                     <p>
                       {automation?.enabled
-                        ? `運作中 · 間隔 ${automation.autoBan.intervalSeconds}s · 本小時 ban ${autoBansLastHour}`
-                        : '關閉 — 只人手操作'}
+                        ? t('protection.autoRunning', { sec: automation.autoBan.intervalSeconds, n: autoBansLastHour })
+                        : t('protection.autoOffManual')}
                       {automation?.lastTickAt
-                        ? ` · 上次 ${relTime(automation.lastTickAt)}`
+                        ? t('protection.lastTickPrefix', { t: relTime(automation.lastTickAt, t) })
                         : ''}
                       {schedNext && automation?.enabled
-                        ? ` · 下輪 ${relTime(schedNext)}`
+                        ? t('protection.nextTickPrefix', { t: relTime(schedNext, t) })
                         : ''}
                     </p>
                   </div>
@@ -934,7 +933,7 @@ export function ProtectionPage() {
                     disabled={busy}
                     onChange={(e) => void saveAutomation({ enabled: e.target.checked })}
                   />
-                  <span>{automation?.enabled ? '開啟' : '關閉'}</span>
+                  <span>{automation?.enabled ? t('protection.open') : t('common.close')}</span>
                 </label>
                 <Button
                   variant="secondary"
@@ -946,26 +945,26 @@ export function ProtectionPage() {
                         method: 'POST',
                         body: '{}',
                       })) as OpsResultLike;
-                      if (r.notes) r.notes = summarizeOpsNotes(r.notes);
+                      if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
                       await refresh();
                       return r;
-                    }, '已跑一輪自動化')
+                    }, t('protection.ranAutomationTick'))
                   }
                 >
-                  立即執行一輪
+                  {t('protection.runOneTick')}
                 </Button>
               </div>
             </section>
 
             {automation?.suggestEmergency ? (
               <Alert variant="error">
-                分數極高 — 系統<strong>建議</strong>緊急檔，但<strong>唔會自動套用</strong>。請到應變人手確認。
+                {t('protection.suggestEmergencyBanner')}
               </Alert>
             ) : null}
 
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">① 自動防護檔</h3>
+                <h3 className="def-section-head__title">{t('protection.sectionAutoPreset')}</h3>
                 <label className="def-switch">
                   <input
                     type="checkbox"
@@ -977,14 +976,14 @@ export function ProtectionPage() {
                       })
                     }
                   />
-                  <span>{automation?.autoPreset.enabled ? '開' : '關'}</span>
+                  <span>{automation?.autoPreset.enabled ? t('protection.on') : t('protection.off')}</span>
                 </label>
               </div>
               <p className="muted u-text-sm">
-                依威脅分自動切 日常／加固／受攻擊。緊急檔<strong>永不自動</strong>。
+                {t('protection.autoPresetDesc')}
               </p>
               <FormLayout columns={2}>
-                <Field label="加固 ≥ 分數" htmlFor="ap-h" flush>
+                <Field label={t('protection.escalateHardened')} htmlFor="ap-h" flush>
                   <PresetChips
                     options={[
                       { value: '15', label: '15' },
@@ -1009,7 +1008,7 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="受攻擊 ≥ 分數" htmlFor="ap-u" flush>
+                <Field label={t('protection.escalateAttack')} htmlFor="ap-u" flush>
                   <PresetChips
                     options={[
                       { value: '35', label: '35' },
@@ -1039,14 +1038,14 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="回落日常 &lt; 分數" htmlFor="ap-d" flush>
+                <Field label={t('protection.deescalateDaily')} htmlFor="ap-d" flush>
                   <PresetChips
                     options={[
                       { value: '5', label: '5' },
                       { value: '10', label: '10' },
                       { value: '15', label: '15' },
                       { value: '20', label: '20' },
-                      { value: '0', label: '0 關' },
+                      { value: '0', label: t('protection.zeroOff') },
                     ]}
                     value={String(automation?.autoPreset.deescalateToDailyBelow ?? 10)}
                     disabled={busy}
@@ -1069,14 +1068,14 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="升檔後最少維持" htmlFor="ap-hold" flush>
+                <Field label={t('protection.holdAfterEscalate')} htmlFor="ap-hold" flush>
                   <PresetChips
                     options={[
-                      { value: '5', label: '5 分' },
-                      { value: '15', label: '15 分' },
-                      { value: '30', label: '30 分' },
-                      { value: '60', label: '1 時' },
-                      { value: '120', label: '2 時' },
+                      { value: '5', label: t('protection.min5') },
+                      { value: '15', label: t('protection.min15') },
+                      { value: '30', label: t('protection.min30') },
+                      { value: '60', label: t('protection.hour1') },
+                      { value: '120', label: t('protection.hour2') },
                     ]}
                     value={String(automation?.autoPreset.holdMinutes ?? 15)}
                     disabled={busy}
@@ -1106,13 +1105,13 @@ export function ProtectionPage() {
                     })
                   }
                 />
-                <span>允許自動回落（降檔）</span>
+                <span>{t('protection.allowDeescalate')}</span>
               </label>
             </div>
 
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">② 自動封禁</h3>
+                <h3 className="def-section-head__title">{t('protection.sectionAutoBan')}</h3>
                 <label className="def-switch">
                   <input
                     type="checkbox"
@@ -1124,14 +1123,14 @@ export function ProtectionPage() {
                       })
                     }
                   />
-                  <span>{automation?.autoBan.enabled ? '開' : '關'}</span>
+                  <span>{automation?.autoBan.enabled ? t('protection.on') : t('protection.off')}</span>
                 </label>
               </div>
               <FormLayout columns={2}>
-                <Field label="預設檔 / 自訂" htmlFor="ab-mode2" flush>
+                <Field label={t('protection.presetOrCustom')} htmlFor="ab-mode2" flush>
                   <SegRadio
                     name="ab-mode2"
-                    aria-label="自動封禁模式"
+                    aria-label={t('protection.autoBanMode')}
                     value={(automation?.autoBan.mode ?? 'soft') as string}
                     disabled={busy}
                     onChange={(mode) => {
@@ -1143,17 +1142,17 @@ export function ProtectionPage() {
                       });
                     }}
                     options={[
-                      { value: 'soft', label: '寬鬆' },
-                      { value: 'normal', label: '標準' },
-                      { value: 'aggressive', label: '積極' },
-                      { value: 'custom', label: '自訂' },
+                      { value: 'soft', label: t('protection.soft') },
+                      { value: 'normal', label: t('protection.normal') },
+                      { value: 'aggressive', label: t('protection.aggressive') },
+                      { value: 'custom', label: t('protection.custom') },
                     ]}
                   />
                 </Field>
-                <Field label="方式" htmlFor="ab-meth2" flush>
+                <Field label={t('protection.method')} htmlFor="ab-meth2" flush>
                   <SegRadio
                     name="ab-meth2"
-                    aria-label="封禁方式"
+                    aria-label={t('protection.banMethod')}
                     value={(automation?.autoBan.method ?? 'fail2ban') as string}
                     disabled={busy}
                     onChange={(method) => {
@@ -1166,11 +1165,11 @@ export function ProtectionPage() {
                     options={[
                       { value: 'fail2ban', label: 'fail2ban' },
                       { value: 'ufw', label: 'UFW' },
-                      { value: 'both', label: '兩者' },
+                      { value: 'both', label: t('protection.both') },
                     ]}
                   />
                 </Field>
-                <Field label="分數 ≥" htmlFor="ab-sc" flush>
+                <Field label={t('protection.scoreGte')} htmlFor="ab-sc" flush>
                   <PresetChips
                     options={[
                       { value: '40', label: '40' },
@@ -1189,7 +1188,7 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="請求 hits ≥" htmlFor="ab-hi" flush>
+                <Field label={t('protection.hitsGte')} htmlFor="ab-hi" flush>
                   <PresetChips
                     options={[
                       { value: '50', label: '50' },
@@ -1208,7 +1207,7 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="429 相關 hits ≥" htmlFor="ab-429" flush>
+                <Field label={t('protection.hits429Gte')} htmlFor="ab-429" flush>
                   <PresetChips
                     options={[
                       { value: '20', label: '20' },
@@ -1227,7 +1226,7 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="掃描路徑 hits ≥" htmlFor="ab-scan" flush>
+                <Field label={t('protection.scanHitsGte')} htmlFor="ab-scan" flush>
                   <PresetChips
                     options={[
                       { value: '10', label: '10' },
@@ -1246,14 +1245,14 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="冷卻" htmlFor="ab-cd" flush>
+                <Field label={t('protection.cooldown')} htmlFor="ab-cd" flush>
                   <PresetChips
                     options={[
-                      { value: '15', label: '15 分' },
-                      { value: '30', label: '30 分' },
-                      { value: '60', label: '1 時' },
-                      { value: '120', label: '2 時' },
-                      { value: '360', label: '6 時' },
+                      { value: '15', label: t('protection.min15') },
+                      { value: '30', label: t('protection.min30') },
+                      { value: '60', label: t('protection.hour1') },
+                      { value: '120', label: t('protection.hour2') },
+                      { value: '360', label: t('protection.hour6') },
                     ]}
                     value={String(automation?.autoBan.cooldownMinutes ?? 60)}
                     disabled={busy}
@@ -1268,7 +1267,7 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="每小時上限" htmlFor="ab-max" flush>
+                <Field label={t('protection.maxPerHour')} htmlFor="ab-max" flush>
                   <PresetChips
                     options={[
                       { value: '5', label: '5' },
@@ -1293,7 +1292,7 @@ export function ProtectionPage() {
                     }}
                   />
                 </Field>
-                <Field label="掃描間隔" htmlFor="ab-iv" flush hint="scheduler 預設 120s">
+                <Field label={t('protection.scanInterval')} htmlFor="ab-iv" flush hint={t('protection.schedulerDefault')}>
                   <PresetChips
                     options={[
                       { value: '30', label: '30s' },
@@ -1321,16 +1320,15 @@ export function ProtectionPage() {
                 </Field>
               </FormLayout>
               <FormHint>
-                選 soft/normal/aggressive 會自動填閾值；選「自訂」先可改分數／hits。
-                無 YSK_EXECUTE 時只會記錄，唔會真 ban。
+                {t('protection.autoBanThresholdHint')}
               </FormHint>
             </div>
 
             <div className="def-panel-card def-panel-card--muted">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">③ 機制說明</h3>
+                <h3 className="def-section-head__title">{t('protection.sectionMechanism')}</h3>
                 <Button variant="ghost" size="sm" onClick={() => setShowMech((v) => !v)}>
-                  {showMech ? '收起' : '展開'}
+                  {showMech ? t('protection.collapse') : t('protection.expand')}
                 </Button>
               </div>
               {showMech ? (
@@ -1338,19 +1336,19 @@ export function ProtectionPage() {
                   columns={[
                     {
                       key: 'step',
-                      header: '步驟',
+                      header: t('protection.step'),
                       nowrap: true,
                       render: (row) => <strong>{row.step}</strong>,
                     },
                     {
                       key: 'mechanism',
-                      header: '機制',
+                      header: t('protection.mechanism'),
                       className: 'u-text-sm',
                       render: (row) => row.mechanism,
                     },
                     {
                       key: 'tunable',
-                      header: '你可調',
+                      header: t('protection.youCanTune'),
                       className: 'u-text-sm muted',
                       render: (row) => row.tunable,
                     },
@@ -1360,14 +1358,14 @@ export function ProtectionPage() {
                       ? mechanisms
                       : [
                           {
-                            step: '探測',
-                            mechanism: '外網／請求率／TCP／f2b／UFW',
-                            tunable: '升檔門檻',
+                            step: t('protection.probe'),
+                            mechanism: t('protection.probeSignals'),
+                            tunable: t('protection.escalateThreshold'),
                           },
                           {
-                            step: '緊急',
-                            mechanism: '永不自動',
-                            tunable: '人手 EMERGENCY',
+                            step: t('protection.emergency'),
+                            mechanism: t('protection.neverAuto'),
+                            tunable: t('protection.manualEmergency'),
                           },
                         ]
                   }
@@ -1376,27 +1374,27 @@ export function ProtectionPage() {
               ) : null}
               {automation?.lastTickNotes?.length ? (
                 <p className="muted u-text-sm u-mt-3">
-                  上次：{automation.lastTickNotes.slice(0, 4).join(' · ')}
+                  {t('protection.lastNotes', { notes: automation.lastTickNotes.slice(0, 4).join(' · ') })}
                 </p>
               ) : null}
             </div>
 
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">④ 訊號權重（0–3）</h3>
+                <h3 className="def-section-head__title">{t('protection.sectionWeights')}</h3>
               </div>
               <p className="muted u-text-sm">
-                預設 1；加大會令該類訊號更容易推高威脅分。細範圍用單選，唔使手填數字。
+                {t('protection.weightsDesc')}
               </p>
               <FormLayout columns={2}>
                 {(
                   [
-                    ['networkDown', '外網斷'],
-                    ['highReqRate', '高請求率'],
-                    ['ddosHeuristic', 'DDoS 啟發式'],
-                    ['tcpInuse', 'TCP 連線'],
-                    ['ufwInactive', 'UFW 關閉'],
-                    ['f2bBans', 'fail2ban 封禁數'],
+                    ['networkDown', t('protection.signalNetworkDown')],
+                    ['highReqRate', t('protection.signalHighReq')],
+                    ['ddosHeuristic', t('protection.signalDdos')],
+                    ['tcpInuse', t('protection.signalTcp')],
+                    ['ufwInactive', t('protection.signalUfwOff')],
+                    ['f2bBans', t('protection.signalF2bBans')],
                   ] as const
                 ).map(([key, label]) => {
                   const raw = automation?.signalWeights?.[key] ?? 1;
@@ -1409,7 +1407,7 @@ export function ProtectionPage() {
                       <div
                         className="def-weight-radios"
                         role="radiogroup"
-                        aria-label={`${label} 權重 0–3`}
+                        aria-label={t('protection.weightHint', { label })}
                       >
                         {([0, 1, 2, 3] as const).map((n) => {
                           const id = `sw-${key}-${n}`;
@@ -1485,14 +1483,15 @@ export function ProtectionPage() {
                       })
                     }
                   />
-                  <span>{automation?.cloudflare?.enabled ? '開' : '關'}</span>
+                  <span>{automation?.cloudflare?.enabled ? t('protection.on') : t('protection.off')}</span>
                 </label>
               </div>
               <FormHint>
-                需環境變數 <code className="inline">CF_API_TOKEN</code>
-                {hasCfToken ? '（已偵測）' : '（未設定）'}。升至「受攻擊」或人手套用該檔時可打 API。
+                {t('protection.needCfToken')} <code className="inline">CF_API_TOKEN</code>
+                {hasCfToken ? t('protection.detected') : t('protection.notSet')}
+                {t('protection.cfOnEscalate')}
               </FormHint>
-              <Field label="Zones（逗號分隔）" htmlFor="cf-zones" flush>
+              <Field label={t('protection.zonesComma')} htmlFor="cf-zones" flush>
                 <input
                   id="cf-zones"
                   value={cfZonesText}
@@ -1521,11 +1520,10 @@ export function ProtectionPage() {
                     })
                   }
                 />
-                <span>受攻擊時 UFW 只放 CF 網段（+SSH）</span>
+                <span>{t('protection.ufwOnlyCf')}</span>
               </label>
               <FormHint>
-                慎用：會 reset UFW 再寫入 CF IPv4+IPv6 段 + 保留埠。需 root + YSK_EXECUTE 先
-                applied；並確認 /etc/default/ufw 內 IPV6=yes。
+                {t('protection.ufwOnlyCfHint')}
               </FormHint>
               <FormActions>
                 <Button
@@ -1547,7 +1545,7 @@ export function ProtectionPage() {
                     })
                   }
                 >
-                  儲存 zones
+                  {t('protection.saveZones')}
                 </Button>
                 <Button
                   variant="danger"
@@ -1567,10 +1565,10 @@ export function ProtectionPage() {
                         }),
                       })) as OpsResultLike;
                       return r;
-                    }, '已請求 Under Attack')
+                    }, t('protection.underAttackRequested'))
                   }
                 >
-                  立即 Under Attack
+                  {t('protection.uaNow')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -1589,10 +1587,10 @@ export function ProtectionPage() {
                         }),
                       })) as OpsResultLike;
                       return r;
-                    }, '已請求解除 UA')
+                    }, t('protection.underAttackCleared'))
                   }
                 >
-                  解除（→ high）
+                  {t('protection.uaClear')}
                 </Button>
               </FormActions>
             </div>
@@ -1602,26 +1600,28 @@ export function ProtectionPage() {
         {tab === 'stack' ? (
           <div className="tab-panel def-panel">
             <p className="muted u-text-sm">
-              底層工具唔再佔側欄一級，避免同防護中心重覆。完整設定仍可直達。
+              {t('protection.stackRoleNote')}
             </p>
             <div className="def-split">
               <section className="def-panel-card">
                 <div className="def-section-head">
-                  <h3 className="def-section-head__title">防火牆 UFW</h3>
+                  <h3 className="def-section-head__title">{t('protection.fwUfwTitle')}</h3>
                   <Badge tone={stackFw?.installed ? 'ok' : 'warn'}>
                     {stackFw?.activeLabel ?? '—'}
                   </Badge>
                 </div>
                 <p className="def-kpi-body">
-                  埠策略 · 永久 DENY · 允許 {stackFw?.allowCount ?? '—'} · 拒絕{' '}
-                  {stackFw?.denyCount ?? '—'}
+                  {t('protection.fwStats', {
+                    allow: stackFw?.allowCount ?? '—',
+                    deny: stackFw?.denyCount ?? '—',
+                  })}
                 </p>
                 <FormActions>
                   <Link
-                    to="/firewall"
+                    to="/protection/firewall"
                     className={buttonClassName({ variant: 'primary', size: 'sm' })}
                   >
-                    開啟完整防火牆
+                    {t('protection.fwRulesProfiles')}
                   </Link>
                 </FormActions>
               </section>
@@ -1633,25 +1633,27 @@ export function ProtectionPage() {
                   </Badge>
                 </div>
                 <p className="def-kpi-body">
-                  日誌臨時 ban · {stackF2b?.jails ?? 0} jails · 封鎖中{' '}
-                  {stackF2b?.banned ?? 0}
+                  {t('protection.f2bStats', {
+                    jails: stackF2b?.jails ?? 0,
+                    banned: stackF2b?.banned ?? 0,
+                  })}
                 </p>
                 <FormActions>
                   <Link
-                    to="/fail2ban"
+                    to="/protection/fail2ban"
                     className={buttonClassName({ variant: 'primary', size: 'sm' })}
                   >
-                    開啟完整 fail2ban
+                    {t('protection.jailsWhitelistPolicy')}
                   </Link>
                 </FormActions>
               </section>
             </div>
             <div className="def-panel-card def-panel-card--muted">
-              <strong>分工一覽</strong>
+              <strong>{t('protection.divisionTitle')}</strong>
               <ul className="def-ramp__bullets">
-                <li>UFW = 開邊個埠、永久拒邊個 IP</li>
-                <li>fail2ban = 睇 log 之後臨時 ban</li>
-                <li>防護中心 = 攻擊時總控（限速檔 + 自動化 + 可疑列表）</li>
+                <li>{t('protection.divisionUfw')}</li>
+                <li>{t('protection.divisionF2b')}</li>
+                <li>{t('protection.divisionDefense')}</li>
               </ul>
             </div>
           </div>
@@ -1667,15 +1669,15 @@ export function ProtectionPage() {
                     ⚡
                   </span>
                   <div>
-                    <strong>自動 ban</strong>
+                    <strong>{t('protection.autoBanLabel')}</strong>
                     <p>
                       {ab?.enabled
-                        ? `已開 · ${ab.mode} · 本小時 ${ab.autoBansLastHour ?? 0}/${ab.maxAutoBansPerHour}`
-                        : '關閉 — 只靠手動／列表'}
+                        ? t('protection.autoBanOpen', { mode: ab.mode, n: ab.autoBansLastHour ?? 0, max: ab.maxAutoBansPerHour })
+                        : t('protection.autoBanClosed')}
                       {ab?.pausedReason === 'no_execute'
-                        ? ' · 暫停（無 EXECUTE）'
+                        ? t('protection.pausedNoExecute')
                         : ab?.pausedReason === 'circuit_breaker'
-                          ? ' · 已熔斷'
+                          ? t('protection.circuitOpen')
                           : ''}
                     </p>
                   </div>
@@ -1694,11 +1696,11 @@ export function ProtectionPage() {
                       })
                     }
                   />
-                  <span>{ab?.enabled ? '開啟' : '關閉'}</span>
+                  <span>{ab?.enabled ? t('protection.open') : t('common.close')}</span>
                 </label>
                 <SegRadio
                   name="cmd-ab-mode"
-                  aria-label="自動 ban 模式"
+                  aria-label={t('protection.autoBanModeLabel')}
                   size="sm"
                   value={(ab?.mode ?? 'soft') as string}
                   disabled={busy || !ab?.enabled}
@@ -1709,14 +1711,14 @@ export function ProtectionPage() {
                     })
                   }
                   options={[
-                    { value: 'soft', label: '寬鬆' },
-                    { value: 'normal', label: '標準' },
-                    { value: 'aggressive', label: '積極' },
+                    { value: 'soft', label: t('protection.soft') },
+                    { value: 'normal', label: t('protection.normal') },
+                    { value: 'aggressive', label: t('protection.aggressive') },
                   ]}
                 />
                 <SegRadio
                   name="cmd-ab-meth"
-                  aria-label="封禁方式"
+                  aria-label={t('protection.banMethod')}
                   size="sm"
                   value={(ab?.method ?? banMethod) as string}
                   disabled={busy}
@@ -1728,7 +1730,7 @@ export function ProtectionPage() {
                   options={[
                     { value: 'fail2ban', label: 'fail2ban' },
                     { value: 'ufw', label: 'UFW' },
-                    { value: 'both', label: '兩者' },
+                    { value: 'both', label: t('protection.both') },
                   ]}
                 />
                 <Button
@@ -1741,29 +1743,29 @@ export function ProtectionPage() {
                         method: 'POST',
                         body: '{}',
                       })) as OpsResultLike;
-                      if (r.notes) r.notes = summarizeOpsNotes(r.notes);
+                      if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
                       await refresh();
                       return r;
-                    }, '已掃描')
+                    }, t('protection.scanned'))
                   }
                 >
-                  掃一次
+                  {t('protection.scanOnce')}
                 </Button>
               </div>
             </section>
 
             {/* Sticky batch bar */}
             {selectedIps.length > 0 ? (
-              <div className="def-batch-bar" role="region" aria-label="批量操作">
+              <div className="def-batch-bar" role="region" aria-label={t('protection.bulkOps')}>
                 <span>
-                  已選 <strong>{selectedIps.length}</strong> 個 IP
+                  {t('protection.selectedIps', { count: selectedIps.length })}
                 </span>
                 <div className="def-batch-bar__actions">
                   <Button variant="ghost" size="sm" onClick={() => setSelected({})}>
-                    取消
+                    {t('common.cancel')}
                   </Button>
                   <Button variant="danger" size="sm" loading={busy} onClick={() => void banSelected()}>
-                    封禁已選
+                    {t('protection.banSelected')}
                   </Button>
                 </div>
               </div>
@@ -1772,13 +1774,13 @@ export function ProtectionPage() {
             <div className="def-section-head">
               <div>
                 <h3 className="def-section-head__title">
-                  可疑 IP
+                  {t('protection.suspectIps')}
                   {actionableSuspects.length ? (
                     <Badge tone="warn">{actionableSuspects.length}</Badge>
                   ) : null}
                 </h3>
                 <p className="def-section-head__desc">
-                  {suspectNotes.join(' · ') || '來自 access log · 一鍵或批量封禁'}
+                  {suspectNotes.join(' · ') || t('protection.fromAccessLog')}
                 </p>
               </div>
               <div className="def-section-head__actions">
@@ -1792,7 +1794,7 @@ export function ProtectionPage() {
                     setSelected(next);
                   }}
                 >
-                  全選
+                  {t('protection.selectAll')}
                 </Button>
               </div>
             </div>
@@ -1800,8 +1802,8 @@ export function ProtectionPage() {
             {!suspects.length ? (
               <div className="def-empty-card">
                 <EmptyState
-                  title="暫時無可疑 IP"
-                  description="有掃描／429 流量時會自動出現。亦可展開手動封禁。"
+                  title={t('protection.noSuspectIps')}
+                  description={t('protection.noSuspectDesc')}
                 />
               </div>
             ) : (
@@ -1836,14 +1838,14 @@ export function ProtectionPage() {
                       </label>
                       <div className="def-suspect__badges">
                         <Badge tone={s.score >= 40 ? 'warn' : 'info'}>{s.score}</Badge>
-                        {s.alreadyBanned ? <Badge tone="ok">已封</Badge> : null}
-                        {s.whitelisted ? <Badge tone="info">白名單</Badge> : null}
+                        {s.alreadyBanned ? <Badge tone="ok">{t('protection.alreadyBanned')}</Badge> : null}
+                        {s.whitelisted ? <Badge tone="info">{t('protection.whitelist')}</Badge> : null}
                       </div>
                       <p className="def-suspect__why">{s.reasons.slice(0, 3).join(' · ') || '—'}</p>
                       <div className="def-suspect__meta">
                         <span>{s.hits} hits</span>
                         <span>{s.sources.join(', ')}</span>
-                        <span>{relTime(s.lastSeen)}</span>
+                        <span>{relTime(s.lastSeen, t)}</span>
                       </div>
                       <div className="def-suspect__actions">
                         <Button
@@ -1853,7 +1855,7 @@ export function ProtectionPage() {
                           disabled={disabled}
                           onClick={() => void banOne(s.ip, s.reasons[0])}
                         >
-                          封禁
+                          {t('protection.ban')}
                         </Button>
                         {!s.whitelisted ? (
                           <Button
@@ -1867,11 +1869,11 @@ export function ProtectionPage() {
                                   body: JSON.stringify({ ip: s.ip, action: 'add' }),
                                 });
                                 await refresh();
-                                return { ok: true, notes: [`白名單 + ${s.ip}`] };
-                              }, '已加入白名單')
+                                return { ok: true, notes: [t('protection.whitelistPlus', { ip: s.ip })] };
+                              }, t('protection.whitelistAdded'))
                             }
                           >
-                            白名單
+                            {t('protection.whitelist')}
                           </Button>
                         ) : null}
                       </div>
@@ -1882,20 +1884,21 @@ export function ProtectionPage() {
             )}
 
             <FormHint>
-              攻擊應變：可疑列表 → 封禁／解封。完整 jail 策略、ignoreip、systemd 請用{' '}
-              <Link to="/fail2ban">fail2ban</Link>（單一真相，唔喺呢度再做第二套）。
+              {t('protection.bansWorkflow')}{' '}
+              <Link to="/protection/fail2ban">{t('protection.f2bTool')}</Link>
+              {t('protection.noSecondJail')}
             </FormHint>
 
             <DataTable
-              title={`活躍封禁 (${status?.bans.count ?? 0})`}
-              description="防護中心彙總 · 解封經 defense API（同 fail2ban-client）"
+              title={t('protection.activeBansTitle', { count: status?.bans.count ?? 0 })}
+              description={t('protection.activeBansDesc')}
               toolbar={
                 <ActionBar>
                   <Link
-                    to="/fail2ban"
+                    to="/protection/fail2ban"
                     className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                   >
-                    完整 fail2ban
+                    {t('protection.f2bTool')}
                   </Link>
                 </ActionBar>
               }
@@ -1907,7 +1910,7 @@ export function ProtectionPage() {
                 },
                 {
                   key: 'src',
-                  header: '來源',
+                  header: t('protection.source'),
                   className: 'muted u-text-sm',
                   render: (b) =>
                     `${b.source}${b.jail ? ` · ${b.jail}` : ''}`,
@@ -1931,18 +1934,18 @@ export function ProtectionPage() {
                             method: 'fail2ban',
                           }),
                         })) as OpsResultLike;
-                        if (r.notes) r.notes = summarizeOpsNotes(r.notes);
+                        if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
                         await refresh();
                         return r;
-                      }, '已解封')
+                      }, t('protection.unbanned'))
                     }
                   >
-                    解封
+                    {t('protection.unban')}
                   </Button>
                 </ActionBar>
               )}
               empty={
-                <EmptyState title="未有封禁" description="封禁後顯示於此" />
+                <EmptyState title={t('protection.noBans')} description={t('protection.noBansDesc')} />
               }
             />
 
@@ -1950,27 +1953,26 @@ export function ProtectionPage() {
               <div className="def-section-head">
                 <div>
                   <h3 className="def-section-head__title">
-                    自動 ban 白名單{' '}
+                    {t('protection.autoBanWhitelistTitle')}{' '}
                     <Badge tone="neutral">{ab?.whitelist?.length ?? 0}</Badge>
                   </h3>
                   <p className="def-section-head__desc">
-                    防護中心 auto-ban 豁免（會同步 fail2ban ignoreip.txt）。完整 ignoreip 管理在
-                    fail2ban → 白名單。
+                    {t('protection.autoBanWhitelistDesc')}
                   </p>
                 </div>
                 <ActionBar>
                   <Link
-                    to="/fail2ban?tab=whitelist"
+                    to="/protection/fail2ban?tab=whitelist"
                     className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                   >
-                    fail2ban 白名單
+                    {t('protection.ignoreipWhitelist')}
                   </Link>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowWl((v) => !v)}
                   >
-                    {showWl ? '收起快加' : '快加一條'}
+                    {showWl ? t('protection.collapseQuickAdd') : t('protection.quickAddOne')}
                   </Button>
                 </ActionBar>
               </div>
@@ -1989,21 +1991,21 @@ export function ProtectionPage() {
                             body: JSON.stringify({ ip: w, action: 'remove' }),
                           });
                           await refresh();
-                          return { ok: true, notes: [`移除 ${w}`] };
-                        }, '已更新')
+                          return { ok: true, notes: [t('protection.removeItem', { w })] };
+                        }, t('protection.updated'))
                       }
-                      aria-label={`移除 ${w}`}
+                      aria-label={t('protection.removeItem', { w })}
                     >
                       ×
                     </button>
                   </span>
                 ))}
                 {!ab?.whitelist?.length ? (
-                  <span className="muted u-text-sm">未設定（建議加入你嘅管理 IP）</span>
+                  <span className="muted u-text-sm">{t('protection.notSetSuggestAdmin')}</span>
                 ) : null}
                 {(ab?.whitelist?.length ?? 0) > 12 ? (
                   <span className="muted u-text-sm">
-                    … 仲有 {(ab?.whitelist?.length ?? 0) - 12} 項 · 見 fail2ban 白名單
+                    {t('protection.moreItems', { n: (ab?.whitelist?.length ?? 0) - 12 })}
                   </span>
                 ) : null}
               </div>
@@ -2012,7 +2014,7 @@ export function ProtectionPage() {
                   <input
                     value={wlInput}
                     onChange={(e) => setWlInput(e.target.value)}
-                    placeholder="IPv4／IPv6 或 CIDR"
+                    placeholder={t('protection.ipOrCidr')}
                     spellCheck={false}
                   />
                   <Button
@@ -2031,11 +2033,11 @@ export function ProtectionPage() {
                         });
                         setWlInput('');
                         await refresh();
-                        return { ok: true, notes: ['已加入 auto-ban 白名單'] };
-                      }, '已加入')
+                        return { ok: true, notes: [t('protection.autoBanWhitelistAdded')] };
+                      }, t('protection.added'))
                     }
                   >
-                    加入
+                    {t('protection.add')}
                   </Button>
                 </div>
               ) : null}
@@ -2043,9 +2045,9 @@ export function ProtectionPage() {
 
             <section className="def-panel-card def-panel-card--muted">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">手動封禁</h3>
+                <h3 className="def-section-head__title">{t('protection.manualBanTitle')}</h3>
                 <Button variant="ghost" size="sm" onClick={() => setShowManual((v) => !v)}>
-                  {showManual ? '收起' : '展開'}
+                  {showManual ? t('protection.collapse') : t('protection.expand')}
                 </Button>
               </div>
               {showManual ? (
@@ -2055,16 +2057,16 @@ export function ProtectionPage() {
                       id="def-ip"
                       value={banIp}
                       onChange={(e) => setBanIp(e.target.value)}
-                      placeholder="要封禁的 IPv4 或 IPv6"
+                      placeholder={t('protection.banIpPlaceholder')}
                       spellCheck={false}
                     />
                   </Field>
-                  <Field label="原因" htmlFor="def-reason" flush>
+                  <Field label={t('protection.reason')} htmlFor="def-reason" flush>
                     <input
                       id="def-reason"
                       value={banReason}
                       onChange={(e) => setBanReason(e.target.value)}
-                      placeholder="掃描 / 暴力"
+                      placeholder={t('protection.scanBrute')}
                     />
                   </Field>
                   <div className="def-manual-actions">
@@ -2078,13 +2080,13 @@ export function ProtectionPage() {
                         setBanIp('');
                       }}
                     >
-                      封禁
+                      {t('protection.ban')}
                     </Button>
-                    <FormHint>方式沿用上方選擇（fail2ban / UFW）</FormHint>
+                    <FormHint>{t('protection.methodFollows')}</FormHint>
                   </div>
                 </FormLayout>
               ) : (
-                <p className="muted u-text-sm">多數情況用可疑列表即可。</p>
+                <p className="muted u-text-sm">{t('protection.preferSuspectList')}</p>
               )}
             </section>
           </div>
@@ -2095,11 +2097,11 @@ export function ProtectionPage() {
             <div className="def-split def-split--intel">
               <section className="def-panel-card">
                 <div className="def-section-head">
-                  <h3 className="def-section-head__title">威脅訊號</h3>
-                  <span className="muted u-text-sm">分數來源 · 權重可調</span>
+                  <h3 className="def-section-head__title">{t('protection.threatSignals')}</h3>
+                  <span className="muted u-text-sm">{t('protection.scoreSource')}</span>
                 </div>
                 {!status?.signals.length ? (
-                  <EmptyState title="尚無訊號" description="按重新探測" />
+                  <EmptyState title={t('protection.noSignals')} description={t('protection.pressReprobe')} />
                 ) : (
                   <ul className="def-signal-list">
                     {status.signals.map((s) => (
@@ -2128,11 +2130,11 @@ export function ProtectionPage() {
                     Top IP{' '}
                     <Badge tone="neutral">{topIps.length}</Badge>
                   </h3>
-                  <span className="muted u-text-sm">access + auth 樣本</span>
+                  <span className="muted u-text-sm">{t('protection.accessAuthSample')}</span>
                 </div>
                 <FormHint>
-                  完整 nginx／auth log 請到{' '}
-                  <Link to="/logs?source=file:auth">日誌中心</Link>
+                  {t('protection.fullLogsAt')}{' '}
+                  <Link to="/logs?source=file:auth">{t('protection.logCenter')}</Link>
                 </FormHint>
                 <DataTable
                   columns={[
@@ -2145,7 +2147,7 @@ export function ProtectionPage() {
                     },
                     {
                       key: 'score',
-                      header: '分',
+                      header: t('protection.colScore'),
                       nowrap: true,
                       render: (row) => (
                         <Badge tone={row.score >= 40 ? 'warn' : 'info'}>
@@ -2178,14 +2180,14 @@ export function ProtectionPage() {
                           void banOne(row.ip, `top-ip score=${row.score}`)
                         }
                       >
-                        封
+                        {t('protection.banShort')}
                       </Button>
                     </ActionBar>
                   )}
                   empty={
                     <EmptyState
-                      title="暫無 Top IP"
-                      description="有 log 後會顯示"
+                      title={t('protection.noTopIps')}
+                      description={t('protection.topIpsAfterLog')}
                     />
                   }
                 />
@@ -2196,21 +2198,21 @@ export function ProtectionPage() {
               <section className="def-panel-card">
                 <div className="def-section-head">
                   <h3 className="def-section-head__title">
-                    Vhost 限速{' '}
+                    {t('protection.vhostLimits')}{' '}
                     <Badge tone="ok">
                       {vhostLimits?.withLimit ?? 0}/{vhostLimits?.total ?? 0}
                     </Badge>
                   </h3>
                 </div>
                 {!vhostLimits?.items.length ? (
-                  <EmptyState title="無 managed vhost" description="套用防護檔後會注入 marker" />
+                  <EmptyState title={t('protection.noManagedVhost')} description={t('protection.afterPresetMarker')} />
                 ) : (
                   <ul className="def-ban-list">
                     {vhostLimits.items.slice(0, 30).map((v) => (
                       <li key={v.name}>
                         <code>{v.name}</code>
                         <span className="muted">
-                          {v.hasDefenseMarker ? '已注入 YSK_DEFENSE' : '未注入'}
+                          {v.hasDefenseMarker ? t('protection.injected') : t('protection.notInjected')}
                         </span>
                         <Badge tone={v.hasDefenseMarker ? 'ok' : 'warn'}>
                           {v.hasDefenseMarker ? 'OK' : '—'}
@@ -2223,16 +2225,16 @@ export function ProtectionPage() {
 
               <section className="def-panel-card">
                 <div className="def-section-head">
-                  <h3 className="def-section-head__title">事件流</h3>
-                  <span className="muted u-text-sm">48 小時</span>
+                  <h3 className="def-section-head__title">{t('protection.eventStream')}</h3>
+                  <span className="muted u-text-sm">{t('protection.hours48')}</span>
                 </div>
                 {!timeline.length ? (
-                  <EmptyState title="暫無事件" description="套用／封禁後出現" />
+                  <EmptyState title={t('protection.noEvents')} description={t('protection.eventsAfterOps')} />
                 ) : (
                   <ol className="def-timeline">
                     {timeline.map((e, i) => (
                       <li key={`${e.at}-${i}`}>
-                        <span className="def-timeline__time">{relTime(e.at)}</span>
+                        <span className="def-timeline__time">{relTime(e.at, t)}</span>
                         <div>
                           <Badge tone="info">{e.kind}</Badge>{' '}
                           <strong>{e.title}</strong>
@@ -2251,7 +2253,7 @@ export function ProtectionPage() {
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">GeoIP 資料庫</h3>
+                <h3 className="def-section-head__title">{t('protection.geoipDb')}</h3>
                 <ActionBar>
                   <Button
                     variant="secondary"
@@ -2259,7 +2261,7 @@ export function ProtectionPage() {
                     loading={busy}
                     onClick={() => void loadGeo().catch((e: Error) => setError(e.message))}
                   >
-                    重新整理狀態
+                    {t('protection.refreshStatus')}
                   </Button>
                   <Button
                     variant="primary"
@@ -2280,17 +2282,15 @@ export function ProtectionPage() {
                           ok: r.ok,
                           notes: r.notes ?? [],
                         };
-                      }, 'GeoIP 庫已更新')
+                      }, t('protection.geoipUpdated'))
                     }
                   >
-                    立即更新庫
+                    {t('protection.updateDbNow')}
                   </Button>
                 </ActionBar>
               </div>
               <FormHint>
-                預設來源 sapics（國家 + ASN，每日、PDDL 免 key）。設定{' '}
-                <code className="inline">IPINFO_TOKEN</code> 可改用 IPinfo Lite（國家 + 大陸 +
-                ASN 一檔）。查詢只讀本地 MMDB，唔打線上 API 做攔截。
+                {t('protection.geoipSourceHint')}
               </FormHint>
               {geoErr ? (
                 <div className="geo-status-box geo-status-box--err">
@@ -2306,7 +2306,7 @@ export function ProtectionPage() {
                         })
                       }
                     >
-                      重試
+                      {t('protection.retry')}
                     </Button>
                   </ActionBar>
                 </div>
@@ -2314,7 +2314,7 @@ export function ProtectionPage() {
               {geoLoading && !geoStatus ? (
                 <div className="geo-status-box geo-status-box--loading" role="status">
                   <span className="spinner" aria-hidden />
-                  <span className="muted">載入 GeoIP 狀態…</span>
+                  <span className="muted">{t('protection.loadingGeoip')}</span>
                 </div>
               ) : null}
               {geoStatus ? (
@@ -2323,19 +2323,19 @@ export function ProtectionPage() {
                     items={[
                       { label: 'Provider', value: geoStatus.provider },
                       {
-                        label: '庫就緒',
-                        value: geoStatus.ready ? '是' : '否',
+                        label: t('protection.dbReady'),
+                        value: geoStatus.ready ? t('protection.yes') : t('protection.no'),
                         tone: geoStatus.ready ? 'ok' : 'warn',
                       },
                       {
-                        label: '過舊',
-                        value: geoStatus.stale ? '>7 日' : 'OK',
+                        label: t('protection.stale'),
+                        value: geoStatus.stale ? t('protection.older7d') : 'OK',
                         tone: geoStatus.stale ? 'warn' : 'ok',
                       },
                       {
-                        label: '上次成功',
+                        label: t('protection.lastSuccess'),
                         value: geoStatus.meta?.lastSuccessAt
-                          ? relTime(geoStatus.meta.lastSuccessAt)
+                          ? relTime(geoStatus.meta.lastSuccessAt, t)
                           : '—',
                       },
                     ]}
@@ -2345,13 +2345,13 @@ export function ProtectionPage() {
                       <li key={s.filename}>
                         <code className="inline">{s.filename}</code>{' '}
                         <Badge tone={s.present ? 'ok' : 'warn'}>
-                          {s.present ? '已下載' : '缺失'}
+                          {s.present ? t('protection.downloaded') : t('protection.missing')}
                         </Badge>
                         <span className="muted u-text-sm">
                           {' '}
                           · {s.license} · {s.updateHint}
                           {s.bytes != null ? ` · ${Math.round(s.bytes / 1024)} KiB` : ''}
-                          {s.mtime ? ` · ${relTime(s.mtime)}` : ''}
+                          {s.mtime ? ` · ${relTime(s.mtime, t)}` : ''}
                         </span>
                       </li>
                     ))}
@@ -2370,14 +2370,14 @@ export function ProtectionPage() {
                   ) : null}
                   {geoStatus.scheduler?.nextRunAt ? (
                     <FormHint>
-                      排程下次更新：{new Date(geoStatus.scheduler.nextRunAt).toLocaleString()}
+                      {t('protection.nextScheduledUpdate', { at: new Date(geoStatus.scheduler.nextRunAt).toLocaleString() })}
                     </FormHint>
                   ) : null}
                 </>
               ) : null}
               {!geoLoading && !geoStatus && !geoErr ? (
                 <div className="geo-status-box">
-                  <p className="muted u-mb-2">尚未載入狀態</p>
+                  <p className="muted u-mb-2">{t('protection.statusNotLoaded')}</p>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -2387,7 +2387,7 @@ export function ProtectionPage() {
                       })
                     }
                   >
-                    載入
+                    {t('protection.load')}
                   </Button>
                 </div>
               ) : null}
@@ -2395,40 +2395,38 @@ export function ProtectionPage() {
 
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">准入政策</h3>
+                <h3 className="def-section-head__title">{t('protection.accessPolicy')}</h3>
                 <label className="def-switch">
                   <input
                     type="checkbox"
                     checked={geoEnabled}
                     onChange={(e) => setGeoEnabled(e.target.checked)}
                   />
-                  啟用
+                  {t('protection.enable')}
                 </label>
               </div>
               <FormHint>
-                免費最高細分：<strong>國家 + 省／州 + ASN</strong>；城市可選政策（預設關，準確率較低）。
-                供應商 = ASN。Whitelist 永遠豁免。點 chip 移除。
+                {t('protection.freeGranularity')}
               </FormHint>
               {geoMode === 'allow_list' ? (
                 <Alert variant="error">
-                  允許名單模式高危：唔喺名單嘅公網 IP（含未知 geo）會被擋。請確認管理端 IP 已加入
-                  封禁頁 whitelist。
+                  {t('protection.allowListDanger')}
                 </Alert>
               ) : null}
               <FormLayout columns={2}>
-                <Field label="模式" htmlFor="geo-mode" flush>
+                <Field label={t('protection.mode')} htmlFor="geo-mode" flush>
                   <SegRadio
                     name="geo-mode"
-                    aria-label="Geo 准入模式"
+                    aria-label={t('protection.geoMode')}
                     value={geoMode}
                     onChange={(v) => setGeoMode(v as 'deny_list' | 'allow_list')}
                     options={[
-                      { value: 'deny_list', label: '封鎖名單' },
-                      { value: 'allow_list', label: '允許名單 · 高危' },
+                      { value: 'deny_list', label: t('protection.denyList') },
+                      { value: 'allow_list', label: t('protection.allowListHighRisk') },
                     ]}
                   />
                 </Field>
-                <Field label="自動更新庫" htmlFor="geo-au" flush>
+                <Field label={t('protection.autoUpdateDb')} htmlFor="geo-au" flush>
                   <label className="def-switch">
                     <input
                       id="geo-au"
@@ -2436,72 +2434,72 @@ export function ProtectionPage() {
                       checked={geoAutoUpdate}
                       onChange={(e) => setGeoAutoUpdate(e.target.checked)}
                     />
-                    每日排程
+                    {t('protection.dailySchedule')}
                   </label>
                 </Field>
               </FormLayout>
 
               <div className="geo-select-grid geo-select-grid--4 u-mt-3">
                 <Field
-                  label={`國家（已選 ${geoCountries.length}）`}
+                  label={t('protection.countriesSelected', { n: geoCountries.length })}
                   htmlFor="geo-cc"
                   flush
                   fullWidth
-                  hint="搜尋中文名或 ISO"
+                  hint={t('protection.searchCountry')}
                 >
                   <MultiCheckSelect
                     id="geo-cc"
-                    options={GEO_COUNTRIES}
+                    options={getGeoCountries(t)}
                     value={geoCountries}
                     onChange={setGeoCountries}
-                    searchPlaceholder="中國 / CN"
+                    searchPlaceholder={t('protection.countryPlaceholder')}
                     disabled={busy}
                   />
                 </Field>
                 <Field
-                  label={`省／州（已選 ${geoRegions.length}）`}
+                  label={t('protection.regionsSelected', { n: geoRegions.length })}
                   htmlFor="geo-reg"
                   flush
                   fullWidth
                   hint={
                     geoCountries.length
-                      ? '依已選國家顯示；可自訂 CN-GD'
-                      : '建議先選國家以收窄列表'
+                      ? t('protection.regionsHint')
+                      : t('protection.pickCountryFirst')
                   }
                 >
                   <MultiCheckSelect
                     id="geo-reg"
-                    options={regionsForCountries(geoCountries)}
+                    options={getGeoRegions(t, geoCountries)}
                     value={geoRegions}
                     onChange={setGeoRegions}
                     allowCustom
-                    customPlaceholder="自訂，例 CN-GD"
-                    searchPlaceholder="廣東 / CA / 東京"
+                    customPlaceholder={t('protection.customRegion')}
+                    searchPlaceholder={t('protection.regionPlaceholder')}
                     disabled={busy}
                   />
                 </Field>
                 <Field
-                  label={`大陸（已選 ${geoContinents.length}）`}
+                  label={t('protection.continentsSelected', { n: geoContinents.length })}
                   htmlFor="geo-cont"
                   flush
                   fullWidth
-                  hint="洲際（可選）"
+                  hint={t('protection.continentsHint')}
                 >
                   <MultiCheckSelect
                     id="geo-cont"
-                    options={GEO_CONTINENTS}
+                    options={getGeoContinents(t)}
                     value={geoContinents}
                     onChange={setGeoContinents}
-                    searchPlaceholder="亞洲 / EU"
+                    searchPlaceholder={t('protection.continentPlaceholder')}
                     disabled={busy}
                   />
                 </Field>
                 <Field
-                  label={`供應商 ASN（已選 ${geoAsns.length}）`}
+                  label={t('protection.asnsSelected', { n: geoAsns.length })}
                   htmlFor="geo-asn"
                   flush
                   fullWidth
-                  hint="雲／ISP；可自訂 ASN"
+                  hint={t('protection.asnsHint')}
                 >
                   <MultiCheckSelect
                     id="geo-asn"
@@ -2515,8 +2513,8 @@ export function ProtectionPage() {
                       )
                     }
                     allowCustom
-                    customPlaceholder="自訂 ASN，例 13335"
-                    searchPlaceholder="Cloudflare / 電信"
+                    customPlaceholder={t('protection.customAsn')}
+                    searchPlaceholder={t('protection.asnPlaceholder')}
                     disabled={busy}
                   />
                 </Field>
@@ -2524,8 +2522,8 @@ export function ProtectionPage() {
 
               <div className="def-panel-card def-panel-card--muted u-mt-3">
                 <div className="def-section-head">
-                  <h4 className="def-section-head__title" style={{ fontSize: '0.95rem' }}>
-                    城市政策（低置信 · 可選）
+                  <h4 className="def-section-head__title u-text-body">
+                    {t('protection.cityPolicy')}
                   </h4>
                   <label className="def-switch">
                     <input
@@ -2533,18 +2531,17 @@ export function ProtectionPage() {
                       checked={geoCityPolicy}
                       onChange={(e) => setGeoCityPolicy(e.target.checked)}
                     />
-                    用城市做准入
+                    {t('protection.useCityAccess')}
                   </label>
                 </div>
                 <FormHint>
-                  免費庫城市準確率有限。格式 <code className="inline">CN|Guangzhou</code>
-                  ；未勾選時城市只作查詢展示。
+                  {t('protection.cityPolicyHint')}
                 </FormHint>
                 {geoCityPolicy ? (
                   <>
                     <div className="mcs__chips u-mb-2">
                       {geoCities.length === 0 ? (
-                        <span className="muted u-text-sm">尚未加入城市</span>
+                        <span className="muted u-text-sm">{t('protection.noCitiesYet')}</span>
                       ) : (
                         geoCities.map((c) => (
                           <button
@@ -2565,7 +2562,7 @@ export function ProtectionPage() {
                       <input
                         value={geoCityDraft}
                         onChange={(e) => setGeoCityDraft(e.target.value)}
-                        placeholder="例：CN|Shenzhen 或 US|Ashburn"
+                        placeholder={t('protection.cityExample')}
                         spellCheck={false}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -2602,7 +2599,7 @@ export function ProtectionPage() {
                           setGeoCityDraft('');
                         }}
                       >
-                        加入
+                        {t('protection.add')}
                       </Button>
                     </div>
                   </>
@@ -2642,14 +2639,14 @@ export function ProtectionPage() {
                       return {
                         ok: true,
                         notes: [
-                          `政策已儲存 · 國 ${r.policy.countries.length} · 省 ${r.policy.regions?.length ?? 0} · ASN ${r.policy.asns.length}`,
+                          t('protection.policySaved', { c: r.policy.countries.length, r: r.policy.regions?.length ?? 0, a: r.policy.asns.length }),
                           ...(r.applyNotes ?? []),
                         ],
                       };
-                    }, 'IP 准入政策已儲存')
+                    }, t('protection.ipPolicySaved'))
                   }
                 >
-                  儲存政策
+                  {t('protection.savePolicy')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -2666,29 +2663,28 @@ export function ProtectionPage() {
                         body: '{}',
                       });
                       return { ok: r.ok, notes: r.notes ?? [] };
-                    }, '已寫入 nginx geo 片段')
+                    }, t('protection.nginxGeoWritten'))
                   }
                 >
-                  套用 Nginx 片段
+                  {t('protection.applyNginxSnippet')}
                 </Button>
               </FormActions>
               <FormHint>
-                Nginx 片段需 geoip2 模組先會喺 HTTP 層攔截；否則政策主要用 lookup／後續 auto-ban
-                enrich。UFW 唔會 bulk 灌整國 CIDR。
+                {t('protection.nginxSnippetHint')}
               </FormHint>
             </div>
 
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">測試 IP</h3>
+                <h3 className="def-section-head__title">{t('protection.testIp')}</h3>
               </div>
               <FormLayout columns={2}>
-                <Field label="IP 位址" htmlFor="geo-lip" flush>
+                <Field label={t('protection.ipAddress')} htmlFor="geo-lip" flush>
                   <input
                     id="geo-lip"
                     value={lookupIp}
                     onChange={(e) => setLookupIp(e.target.value)}
-                    placeholder="要查詢的 IPv4 或 IPv6"
+                    placeholder={t('protection.lookupPlaceholder')}
                     spellCheck={false}
                   />
                 </Field>
@@ -2718,15 +2714,15 @@ export function ProtectionPage() {
                         notes: [
                           `country=${String(L.country ?? '—')} continent=${String(L.continent ?? '—')} asn=${String(L.asn ?? '—')} ${String(L.asName ?? '')}`,
                           r.access?.blocked
-                            ? `會攔截 · ${r.access.reason} · ${r.access.matched?.join(', ')}`
-                            : `放行 · ${r.access?.reason ?? 'ok'}`,
+                            ? t('protection.wouldBlock', { reason: r.access.reason, matched: r.access.matched?.join(', ') })
+                            : t('protection.wouldAllow', { reason: r.access?.reason ?? 'ok' }),
                           ...((L.notes as string[]) ?? []).slice(0, 4),
                         ],
                       };
-                    }, 'Lookup 完成')
+                    }, t('protection.lookupDone'))
                   }
                 >
-                  查詢
+                  {t('protection.lookup')}
                 </Button>
               </FormActions>
               {lookupResult?.lookup ? (
@@ -2744,7 +2740,7 @@ export function ProtectionPage() {
                           }
                         }}
                       >
-                        + 國家 {String(lookupResult.lookup.country)}
+                        {t('protection.plusCountry', { v: String(lookupResult.lookup.country) })}
                       </Button>
                     ) : null}
                     {lookupResult.lookup.regionKey ? (
@@ -2759,7 +2755,7 @@ export function ProtectionPage() {
                           }
                         }}
                       >
-                        + 省 {String(lookupResult.lookup.regionKey)}
+                        {t('protection.plusRegion', { v: String(lookupResult.lookup.regionKey) })}
                       </Button>
                     ) : null}
                     {lookupResult.lookup.cityKey ? (
@@ -2775,7 +2771,7 @@ export function ProtectionPage() {
                           }
                         }}
                       >
-                        + 城市 {String(lookupResult.lookup.city)}
+                        {t('protection.plusCity', { v: String(lookupResult.lookup.city) })}
                       </Button>
                     ) : null}
                     {lookupResult.lookup.asn ? (
@@ -2798,42 +2794,42 @@ export function ProtectionPage() {
                     columns={[
                       {
                         key: 'label',
-                        header: '項目',
+                        header: t('protection.item'),
                         nowrap: true,
                         render: (row) => <strong>{row.label}</strong>,
                       },
                       {
                         key: 'value',
-                        header: '值',
+                        header: t('protection.value'),
                         render: (row) => row.value,
                       },
                     ]}
                     rows={(
                       [
                         ['IP', lookupResult.lookup.ip],
-                        ['國家', lookupResult.lookup.country],
+                        [t('protection.country'), lookupResult.lookup.country],
                         [
-                          '省／州',
+                          t('protection.region'),
                           lookupResult.lookup.regionKey ||
                             lookupResult.lookup.regionName,
                         ],
-                        ['城市', lookupResult.lookup.city],
-                        ['大陸', lookupResult.lookup.continent],
+                        [t('protection.city'), lookupResult.lookup.city],
+                        [t('protection.continent'), lookupResult.lookup.continent],
                         [
-                          '座標',
+                          t('protection.coords'),
                           lookupResult.lookup.latitude != null
                             ? `${lookupResult.lookup.latitude}, ${lookupResult.lookup.longitude}`
                             : '—',
                         ],
                         ['ASN', lookupResult.lookup.asn],
-                        ['供應商', lookupResult.lookup.asName],
-                        ['來源', lookupResult.lookup.source],
+                        [t('protection.provider'), lookupResult.lookup.asName],
+                        [t('protection.source'), lookupResult.lookup.source],
                         [
-                          '政策',
-                          lookupResult.access?.blocked ? '攔截' : '放行',
+                          t('protection.policy'),
+                          lookupResult.access?.blocked ? t('protection.block') : t('protection.allow'),
                         ],
                         [
-                          '命中',
+                          t('protection.matched'),
                           lookupResult.access?.matched?.join(', ') || '—',
                         ],
                       ] as const
@@ -2853,13 +2849,14 @@ export function ProtectionPage() {
       </PageTabs>
 
       <OpsResultPanel
-        title="操作結果"
+        title={t('opsResult.title')}
         result={
           result
             ? {
                 ...result,
                 notes: summarizeOpsNotes(
                   Array.isArray(result.notes) ? result.notes.map(String) : undefined,
+                  t,
                 ),
               }
             : result
@@ -2871,10 +2868,10 @@ export function ProtectionPage() {
       <ConfirmDialog
         open={presetConfirmId != null}
         onClose={() => !busy && setPresetConfirmId(null)}
-        title="套用較嚴防護檔？"
-        description="可能開啟自動 ban。請確認白名單有你的 IP。"
-        confirmLabel="套用"
-        cancelLabel="取消"
+        title={t('protection.applyStricterTitle')}
+        description={t('protection.applyStricterDesc')}
+        confirmLabel={t('common.apply')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
         onConfirm={() => {
@@ -2887,12 +2884,12 @@ export function ProtectionPage() {
       <PromptDialog
         open={emergencyPromptOpen}
         onClose={() => !busy && setEmergencyPromptOpen(false)}
-        title="確認緊急防護檔"
-        description="緊急檔會極度限速。請確認白名單有你的 IP，並輸入 EMERGENCY。"
-        label="確認字串"
+        title={t('protection.confirmEmergencyTitle')}
+        description={t('protection.confirmEmergencyDesc')}
+        label={t('protection.confirmString')}
         placeholder="EMERGENCY"
         expectExact="EMERGENCY"
-        confirmLabel="套用緊急檔"
+        confirmLabel={t('protection.applyEmergency')}
         danger
         busy={busy}
         onSubmit={() => {

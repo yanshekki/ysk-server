@@ -2,10 +2,12 @@
  * Updates feature — inventory + self-update hook (panel apply).
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { updatesApi, type AdviceRow } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
 export function useUpdates() {
+  const { t } = useTranslation();
   const [inventory, setInventory] = useState<AdviceRow[]>([]);
   const [selfUpdate, setSelfUpdate] = useState<Record<string, unknown> | null>(null);
   const [lastAt, setLastAt] = useState<string | null>(null);
@@ -29,9 +31,9 @@ export function useUpdates() {
         setMsg(
           [
             osv
-              ? `已掃描 ${inv.inventory?.length ?? 0} 套件（含 OSV）`
-              : `已掃描 ${inv.inventory?.length ?? 0} 套件`,
-            `真實可升級 ${up}`,
+              ? t('updates.scannedWithOsv', { count: inv.inventory?.length ?? 0 })
+              : t('updates.scanned', { count: inv.inventory?.length ?? 0 }),
+            t('updates.realUpgradeable', { count: up }),
             ...(notes ?? []).slice(0, 2),
           ]
             .filter(Boolean)
@@ -71,7 +73,7 @@ export function useUpdates() {
           updateAvailable: false,
           currentVersion: '—',
           latestVersion: 'unknown',
-          notes: [e instanceof Error ? e.message : '面板版本檢查失敗'],
+          notes: [e instanceof Error ? e.message : t('updates.panelCheckFailed')],
         });
       }
       try {
@@ -81,11 +83,11 @@ export function useUpdates() {
         /* optional */
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '載入失敗');
+      setError(e instanceof Error ? e.message : t('common.loadFailed'));
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [t]);
 
   const applyPackage = useCallback(async (row: AdviceRow, confirmHighRisk = false) => {
     setBusy(true);
@@ -104,18 +106,18 @@ export function useUpdates() {
       });
       const notes = sanitizeOperatorNotes(r.notes);
       if (r.blocked || !r.ok) {
-        setError(r.blockMessage ?? notes[0] ?? '套用未完成');
+        setError(r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete'));
       } else {
-        setMsg(notes[0] ?? '已套用套件更新');
+        setMsg(notes[0] ?? t('updates.appliedPackage'));
       }
       return r;
     } catch (e) {
-      setError(e instanceof Error ? e.message : '更新失敗');
+      setError(e instanceof Error ? e.message : t('updates.updateFailed'));
       throw e;
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [t]);
 
   const applySelf = useCallback(async () => {
     setBusy(true);
@@ -125,11 +127,11 @@ export function useUpdates() {
       const r = await updatesApi.selfApply();
       const notes = sanitizeOperatorNotes(r.notes);
       if (r.ok === false || (r.applied === false && r.ok !== true)) {
-        setError(notes[0] ?? '更新未完成');
+        setError(notes[0] ?? t('updates.updateIncomplete'));
       } else if (r.applied) {
-        setMsg(notes[0] ?? '已套用更新');
+        setMsg(notes[0] ?? t('updates.appliedUpdate'));
       } else {
-        setMsg(notes[0] ?? '已是最新版本');
+        setMsg(notes[0] ?? t('updates.selfUpToDate'));
       }
       try {
         const self = await updatesApi.self();
@@ -139,12 +141,12 @@ export function useUpdates() {
       }
       return r;
     } catch (e) {
-      setError(e instanceof Error ? e.message : '更新失敗');
+      setError(e instanceof Error ? e.message : t('updates.updateFailed'));
       throw e;
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load(false);

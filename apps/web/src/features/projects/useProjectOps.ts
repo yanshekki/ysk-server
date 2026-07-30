@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { OpsApplyResultDto } from '@ysk/shared';
 import { projectsApi } from './api';
 import { formatOpsMessage, parseEnvText, type ProjectOpsAction } from './model/ops';
 
 export function useProjectOps(onSuccess?: () => void | Promise<void>) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
             throw new Error(`Unknown action: ${action}`);
         }
         setOpsLog(result);
-        setMsg(formatOpsMessage(action, result));
+        setMsg(formatOpsMessage(action, result, t));
         await onSuccess?.();
         return result;
       } catch (err) {
@@ -108,7 +110,7 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
         setBusy(false);
       }
     },
-    [onSuccess],
+    [onSuccess, t],
   );
 
   return { busy, setBusy, error, setError, msg, setMsg, opsLog, setOpsLog, run, clearFeedback };

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Download GeoIP MMDB files into dataDir/geoip with fail-soft (keep old on error).
  * Supports gzip (.mmdb.gz) for DB-IP City Lite.
@@ -75,7 +76,7 @@ async function downloadOne(
     }
     const st = statSync(tmp);
     if (st.size < 1024) {
-      throw new Error(`檔案過細（${st.size} B），可能下載失敗`);
+      throw new Error(tl('notes.auto.t0775', { v0: (st.size) }));
     }
     renameSync(tmp, dest);
     return {
@@ -122,14 +123,14 @@ export async function updateGeoipDatabases(
   for (const src of sources) {
     // City lite has primary + fallback same filename — skip if already ok
     if (okFiles.has(src.filename)) {
-      notes.push(`略過 ${src.filename} fallback（已成功）`);
+      notes.push(tl('notes.auto.t0776', { v0: (src.filename) }));
       continue;
     }
     const r = await downloadOne(src, dir);
     if (r.ok) {
       okFiles.add(src.filename);
       files.push(r);
-      notes.push(`已更新 ${r.filename}（${r.bytes} B）`);
+      notes.push(tl('notes.auto.t0777', { v0: (r.filename), v1: (r.bytes) }));
     } else {
       // Only record last failure for this filename if never succeeded this run
       const prevFail = files.find((f) => f.filename === src.filename && !f.ok);
@@ -140,7 +141,7 @@ export async function updateGeoipDatabases(
         files.push(r);
       }
       notes.push(
-        `更新失敗 ${r.filename}：${r.error}${existsSync(join(dir, src.filename)) ? '（保留舊庫）' : ''}`,
+        tl('notes.auto.t0778', { v0: (r.filename), v1: (r.error), v2: (existsSync(join(dir, src.filename)) ? tl('notes.tpl.keepOldDb') : '') }),
       );
     }
   }

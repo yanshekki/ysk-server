@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * DNS lookup tools for panel (dig-like via system dig or node dns).
  * Honest: reports tool + raw answers; never fakes records.
@@ -35,7 +36,7 @@ export async function lookupDns(input: {
       name: '',
       type,
       answers: [],
-      notes: ['請提供查詢名稱'],
+      notes: [tl('notes.auto.n1419')],
       method: 'none',
     };
   }
@@ -65,12 +66,12 @@ export async function lookupDns(input: {
         answers,
         notes: answers.length
           ? [`dig ${type} ${name}`]
-          : [`dig 無答案（NXDOMAIN 或空）`],
+          : [tl('notes.auto.t0259')],
         method: 'dig',
         latencyMs: Date.now() - t0,
       };
     }
-    notes.push('dig 不可用，改用 node dns');
+    notes.push(tl('notes.auto.n0251'));
   }
 
   try {

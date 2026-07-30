@@ -3,7 +3,7 @@
  */
 
 import type { LlmTransport } from './gateway.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export const fetchTransport: LlmTransport = {
   async complete(input) {
@@ -25,7 +25,7 @@ export const fetchTransport: LlmTransport = {
         }),
       });
     } catch (err) {
-      throw new YskError(ErrorCodes.INTERNAL, `LLM 請求失敗：${(err as Error).message}`, {
+      throw new YskError(ErrorCodes.INTERNAL, tl('notes.auto.t0099', { v0: ((err as Error).message) }), {
         httpStatus: 502,
         cause: err,
       });

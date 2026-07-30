@@ -130,7 +130,7 @@ export function SystemPage() {
       setManaged(confs.items ?? []);
       setArchives(hist.items ?? []);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '載入匯出資料失敗');
+      setErr(e instanceof Error ? e.message : t('system.exportLoadFailed'));
     }
   }, []);
 
@@ -181,20 +181,20 @@ export function SystemPage() {
       if (r.ok) {
         setMsg(
           r.dryRun
-            ? '模擬完成（未改系統）'
+            ? t('system.dryRunDone')
             : r.mode === 'sync'
-              ? '重建請求已完成 — 見操作結果'
-              : '已寫入匯出／列出 managed conf',
+              ? t('system.rebuildDone')
+              : t('system.exportWritten'),
         );
       } else if (r.blockMessage) {
         setErr(r.blockMessage);
       }
       await refreshExportMeta();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'rebuild 失敗');
+      setErr(e instanceof Error ? e.message : t('system.rebuildFailed'));
       setOpsResult({
         ok: false,
-        notes: [e instanceof Error ? e.message : '失敗'],
+        notes: [e instanceof Error ? e.message : t('common.failed')],
       });
     } finally {
       setBusy(false);
@@ -220,13 +220,13 @@ export function SystemPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.systemIndex', { defaultValue: '系統工具' })}
+      title={t('nav.systemIndex')}
       showCapability={false}
       status={
         tab === 'host'
           ? {
               pill: {
-                label: host?.identity.hostname || hostname || '主機',
+                label: host?.identity.hostname || hostname || t('system.hostFallback'),
                 tone: heroTone === 'neutral' ? 'ok' : heroTone,
               },
               items: [
@@ -239,12 +239,12 @@ export function SystemPage() {
                   value: load1 != null ? load1.toFixed(2) : '—',
                 },
                 {
-                  label: '記憶體',
+                  label: t('common.memory'),
                   value: memPct != null ? `${memPct}%` : '—',
                   tone: memTone(host?.runtime.memory.usedRatio),
                 },
                 {
-                  label: '磁碟峰值',
+                  label: t('system.diskPeak'),
                   value:
                     worstDisk?.usePct != null
                       ? `${worstDisk.mount} ${worstDisk.usePct}%`
@@ -260,23 +260,23 @@ export function SystemPage() {
                 },
                 {
                   label: 'EXECUTE',
-                  value: host?.caps.executeEnabled ? '開' : '關',
+                  value: host?.caps.executeEnabled ? t('common.on') : t('common.off'),
                   tone: host?.caps.executeEnabled ? 'ok' : 'warn',
                 },
                 {
                   label: 'Root',
-                  value: host?.caps.isRoot ? '是' : '否',
+                  value: host?.caps.isRoot ? t('common.yes') : t('common.no'),
                   tone: host?.caps.isRoot ? 'ok' : 'warn',
                 },
               ],
             }
           : {
-              pill: { label: '匯出 / Rebuild', tone: 'ok' },
+              pill: { label: t('system.exportRebuild'), tone: 'ok' },
               items: [
-                { label: '專案', value: counts?.projects ?? '—' },
-                { label: '郵件', value: counts?.email_domains ?? '—' },
+                { label: t('common.project'), value: counts?.projects ?? t('common.noneSelectedShort') },
+                { label: t('common.mail'), value: counts?.email_domains ?? t('common.noneSelectedShort') },
                 {
-                  label: 'DNS / 憑證',
+                  label: t('system.dnsCerts'),
                   value: `${counts?.dns_zones ?? '—'}/${counts?.certificates ?? '—'}`,
                 },
                 { label: 'Managed', value: managed.length },
@@ -286,8 +286,8 @@ export function SystemPage() {
                     caps.executeEnabled === undefined
                       ? '?'
                       : caps.executeEnabled
-                        ? '開'
-                        : '關',
+                        ? t('common.on')
+                        : t('common.off'),
                   tone:
                     caps.executeEnabled === false
                       ? 'warn'
@@ -316,16 +316,16 @@ export function SystemPage() {
                     .finally(() => setBusy(false));
                 }}
               >
-                重新整理
+                {t('common.refresh')}
               </Button>
               <a href="#sys-identity" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
-                編輯身份
+                {t('system.editIdentity')}
               </a>
               <a href="#sys-power" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
-                電源
+                {t('system.power')}
               </a>
               <Link to="/metrics" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                指標
+                {t('system.metrics')}
               </Link>
             </>
           ) : (
@@ -342,7 +342,7 @@ export function SystemPage() {
                   })
                 }
               >
-                寫入 exports/
+                {t('system.writeExports')}
               </Button>
               <Button
                 variant="secondary"
@@ -356,7 +356,7 @@ export function SystemPage() {
                   })
                 }
               >
-                Dry-run 同步
+                {t('system.dryRunSync')}
               </Button>
               <Button
                 variant="ghost"
@@ -364,12 +364,12 @@ export function SystemPage() {
                 loading={busy}
                 onClick={() => void refreshExportMeta()}
               >
-                重新整理
+                {t('common.refresh')}
               </Button>
             </>
           )}
           <Link to="/system/readiness" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            就緒探測
+            {t('nav.readiness')}
           </Link>
         </ActionBar>
       }
@@ -378,7 +378,7 @@ export function SystemPage() {
         <Alert variant="error">
           {err}{' '}
           <Button variant="ghost" size="sm" onClick={() => setErr(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -386,17 +386,17 @@ export function SystemPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'host', label: '主機控制台' },
-          { id: 'export', label: '匯出 / Rebuild' },
+          { id: 'host', label: t('system.hostConsole') },
+          { id: 'export', label: t('system.exportRebuild') },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -406,7 +406,7 @@ export function SystemPage() {
         {tab === 'host' ? (
           <div className="tab-panel sys">
             {hostLoading && !host ? (
-              <LoadingBlock label="載入主機概況…" />
+              <LoadingBlock label={t('system.loadingHost')} />
             ) : (
               <>
                 <div className="sys-grid">
@@ -415,19 +415,19 @@ export function SystemPage() {
                     <section className="sys-panel" id="sys-identity">
                       <header className="sys-panel__head">
                         <div>
-                          <h3 className="sys-panel__title">身份</h3>
+                          <h3 className="sys-panel__title">{t('system.identity')}</h3>
                           <p className="sys-panel__sub">
                             {host?.caps.canIdentity
                               ? 'hostnamectl / timedatectl'
-                              : '唯讀 — 需 YSK_EXECUTE + root 才能套用'}
+                              : t('system.identityReadonly')}
                           </p>
                         </div>
                         <Badge tone={host?.caps.canIdentity ? 'ok' : 'warn'}>
-                          {host?.caps.canIdentity ? '可寫入' : '鎖定'}
+                          {host?.caps.canIdentity ? t('system.writable') : t('system.locked')}
                         </Badge>
                       </header>
                       <FormLayout columns={1}>
-                        <Field label="主機名稱" htmlFor="sys-hn" hint="hostname" flush>
+                        <Field label={t('system.hostname')} htmlFor="sys-hn" hint="hostname" flush>
                           <input
                             id="sys-hn"
                             value={hostname}
@@ -436,23 +436,23 @@ export function SystemPage() {
                           />
                         </Field>
                         <Field
-                          label="顯示名稱（pretty）"
+                          label={t('system.prettyName')}
                           htmlFor="sys-pretty"
-                          hint="可選"
+                          hint={t('system.optional')}
                           flush
                         >
                           <input
                             id="sys-pretty"
                             value={prettyHostname}
                             onChange={(e) => setPrettyHostname(e.target.value)}
-                            placeholder="友善顯示名稱"
+                            placeholder={t('system.prettyPh')}
                             disabled={!host?.caps.canIdentity && host != null}
                           />
                         </Field>
                         <Field
-                          label="時區"
+                          label={t('system.timezone')}
                           htmlFor="sys-tz"
-                          hint="例如 Asia/Hong_Kong"
+                          hint={t('system.timezoneHint')}
                           flush
                         >
                           <input
@@ -482,21 +482,21 @@ export function SystemPage() {
                               })
                               .then((r) => {
                                 const notes = (r as { notes?: string[] }).notes;
-                                setMsg(notes?.join('；') ?? '已更新');
+                                setMsg(notes?.join('；') ?? t('system.updated'));
                                 return refresh();
                               })
                               .catch((e: Error) => setErr(e.message))
                               .finally(() => setBusy(false));
                           }}
                         >
-                          套用身份
+                          {t('system.applyIdentity')}
                         </Button>
                         {hostname ? (
                           <Link
                             to={`/ssl?domain=${encodeURIComponent(hostname)}&action=le`}
                             className={buttonClassName({ variant: 'ghost', size: 'md' })}
                           >
-                            面板 SSL
+                            {t('system.panelSsl')}
                           </Link>
                         ) : null}
                       </div>
@@ -505,13 +505,13 @@ export function SystemPage() {
                     <section className="sys-panel">
                       <header className="sys-panel__head">
                         <div>
-                          <h3 className="sys-panel__title">時間與 NTP</h3>
-                          <p className="sys-panel__sub">系統時鐘狀態</p>
+                          <h3 className="sys-panel__title">{t('system.timeNtp')}</h3>
+                          <p className="sys-panel__sub">{t('system.clockStatus')}</p>
                         </div>
                       </header>
                       <dl className="sys-dl">
                         <div>
-                          <dt>本機</dt>
+                          <dt>{t('system.local')}</dt>
                           <dd>
                             <code>{host?.time.local ?? '—'}</code>
                           </dd>
@@ -523,7 +523,7 @@ export function SystemPage() {
                           </dd>
                         </div>
                         <div>
-                          <dt>來源</dt>
+                          <dt>{t('system.source')}</dt>
                           <dd>{host?.time.timeSource ?? '—'}</dd>
                         </div>
                       </dl>
@@ -541,10 +541,10 @@ export function SystemPage() {
                               .hostNtpSync()
                               .then((r) => {
                                 if (r.ok) {
-                                  setMsg(r.notes?.join('；') ?? 'NTP 已請求啟用');
+                                  setMsg(r.notes?.join('；') ?? t('system.ntpRequested'));
                                 } else {
                                   setErr(
-                                    r.blockMessage || r.notes?.join('；') || 'NTP 失敗',
+                                    r.blockMessage || r.notes?.join('；') || t('system.ntpFailed'),
                                   );
                                 }
                                 return refresh();
@@ -553,7 +553,7 @@ export function SystemPage() {
                               .finally(() => setBusy(false));
                           }}
                         >
-                          啟用 NTP 同步
+                          {t('system.enableNtp')}
                         </Button>
                       </div>
                     </section>
@@ -564,14 +564,14 @@ export function SystemPage() {
                     <section className="sys-panel">
                       <header className="sys-panel__head">
                         <div>
-                          <h3 className="sys-panel__title">網絡</h3>
+                          <h3 className="sys-panel__title">{t('system.network')}</h3>
                           <p className="sys-panel__sub">
-                            唯讀 · 完整 netplan 不在此頁
+                            {t('system.networkSub')}
                           </p>
                         </div>
                       </header>
                       {(host?.network.ips?.length ?? 0) === 0 ? (
-                        <p className="sys-muted">無法讀取 IP</p>
+                        <p className="sys-muted">{t('system.noIp')}</p>
                       ) : (
                         <div className="sys-chips">
                           {host!.network.ips.map((ip) => (
@@ -608,17 +608,17 @@ export function SystemPage() {
                     <section className="sys-panel">
                       <header className="sys-panel__head">
                         <div>
-                          <h3 className="sys-panel__title">儲存</h3>
+                          <h3 className="sys-panel__title">{t('system.storage')}</h3>
                           <p className="sys-panel__sub">
                             df -hT ·{' '}
                             <Link to="/metrics" className="sys-inline-link">
-                              指標詳情
+                              {t('system.metricsDetail')}
                             </Link>
                           </p>
                         </div>
                       </header>
                       {!host?.disks?.length ? (
-                        <p className="sys-muted">無法讀取磁碟</p>
+                        <p className="sys-muted">{t('system.noDisk')}</p>
                       ) : (
                         <div className="sys-disks">
                           {host.disks.map((d) => (
@@ -649,16 +649,14 @@ export function SystemPage() {
                                         ? ' sys-disk__fill--warn'
                                         : ''
                                   }`}
-                                  style={{
-                                    width: `${Math.min(100, d.usePct ?? 0)}%`,
-                                  }}
+                                  style={{ ['--meter-pct' as string]: `${Math.min(100, d.usePct ?? 0)}%` }}
                                 />
                               </div>
                               <div className="sys-disk__meta">
                                 <span>
                                   {d.used} / {d.size}
                                 </span>
-                                <span className="sys-disk__avail">可用 {d.avail}</span>
+                                <span className="sys-disk__avail">{t('system.avail', { v: d.avail })}</span>
                                 <span className="sys-disk__fs">{d.type}</span>
                               </div>
                             </div>
@@ -669,32 +667,32 @@ export function SystemPage() {
 
                     <section className="sys-panel sys-panel--links">
                       <header className="sys-panel__head">
-                        <h3 className="sys-panel__title">運維捷徑</h3>
+                        <h3 className="sys-panel__title">{t('system.shortcuts')}</h3>
                       </header>
-                      <nav className="sys-shortcuts" aria-label="運維捷徑">
+                      <nav className="sys-shortcuts" aria-label={t('system.shortcutsAria')}>
                         <Link to="/services" className="sys-shortcut">
-                          <span className="sys-shortcut__t">服務矩陣</span>
-                          <span className="sys-shortcut__d">unit 生命週期</span>
+                          <span className="sys-shortcut__t">{t('system.scServices')}</span>
+                          <span className="sys-shortcut__d">{t('system.scServicesD')}</span>
                         </Link>
                         <Link to="/system/unit" className="sys-shortcut">
-                          <span className="sys-shortcut__t">控制面 unit</span>
+                          <span className="sys-shortcut__t">{t('system.scUnit')}</span>
                           <span className="sys-shortcut__d">ysk-server systemd</span>
                         </Link>
                         <Link to="/system/readiness" className="sys-shortcut">
-                          <span className="sys-shortcut__t">就緒探測</span>
-                          <span className="sys-shortcut__d">生產閘門</span>
+                          <span className="sys-shortcut__t">{t('system.scReadiness')}</span>
+                          <span className="sys-shortcut__d">{t('system.scReadinessD')}</span>
                         </Link>
                         <Link to="/updates" className="sys-shortcut">
-                          <span className="sys-shortcut__t">系統更新</span>
-                          <span className="sys-shortcut__d">套件 / CVE</span>
+                          <span className="sys-shortcut__t">{t('system.scUpdates')}</span>
+                          <span className="sys-shortcut__d">{t('system.scUpdatesD')}</span>
                         </Link>
                         <Link to="/metrics" className="sys-shortcut">
-                          <span className="sys-shortcut__t">主機指標</span>
-                          <span className="sys-shortcut__d">負載告警</span>
+                          <span className="sys-shortcut__t">{t('system.scMetrics')}</span>
+                          <span className="sys-shortcut__d">{t('system.scMetricsD')}</span>
                         </Link>
                         <Link to="/logs" className="sys-shortcut">
-                          <span className="sys-shortcut__t">日誌中心</span>
-                          <span className="sys-shortcut__d">journal / 檔案</span>
+                          <span className="sys-shortcut__t">{t('system.scLogs')}</span>
+                          <span className="sys-shortcut__d">{t('system.scLogsD')}</span>
                         </Link>
                       </nav>
                     </section>
@@ -705,31 +703,28 @@ export function SystemPage() {
                 <section className="sys-panel sys-panel--danger" id="sys-power">
                   <header className="sys-panel__head">
                     <div>
-                      <h3 className="sys-panel__title">電源（危險區）</h3>
+                      <h3 className="sys-panel__title">{t('system.powerTitle')}</h3>
                       <p className="sys-panel__sub">
-                        重啟／關機會中斷所有服務與面板。面板<strong>無法開機</strong>
-                        — 需實體或 hypervisor。
+                        {t('system.powerWarn')}
                       </p>
                     </div>
                     <Badge tone={host?.caps.canPower ? 'ok' : 'warn'}>
-                      {host?.caps.canPower ? '已解鎖' : '已鎖定'}
+                      {host?.caps.canPower ? t('system.unlocked') : t('system.locked')}
                     </Badge>
                   </header>
 
                   {!host?.caps.canPower ? (
                     <div className="sys-callout sys-callout--info">
-                      需 <code>YSK_EXECUTE=1</code> 與 root。目前 EXECUTE=
-                      {host?.caps.executeEnabled ? '開' : '關'}，root=
-                      {host?.caps.isRoot ? '是' : '否'}。
+                      {t('system.powerCaps', { exec: host?.caps.executeEnabled ? t('common.on') : t('common.off'), root: host?.caps.isRoot ? t('common.yes') : t('common.no') })}
                     </div>
                   ) : null}
                   {host?.power.pending ? (
                     <div className="sys-callout sys-callout--danger">
-                      偵測到排程關機／重啟
+                      {t('system.scheduledPower')}
                       {host.power.pending.actionHint
                         ? `（${host.power.pending.actionHint}）`
                         : ''}
-                      。請用「取消排程」撤回。
+                      {t('system.cancelScheduleHint')}
                     </div>
                   ) : null}
 
@@ -748,7 +743,7 @@ export function SystemPage() {
                         });
                       }}
                     >
-                      重啟主機…
+                      {t('system.rebootHost')}
                     </Button>
                     <Button
                       variant="danger"
@@ -764,7 +759,7 @@ export function SystemPage() {
                         });
                       }}
                     >
-                      關機…
+                      {t('system.poweroffHost')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -778,10 +773,10 @@ export function SystemPage() {
                         void systemApi
                           .hostPower({ action: 'cancel' })
                           .then((r) => {
-                            if (r.ok) setMsg(r.notes?.join('；') ?? '已取消');
+                            if (r.ok) setMsg(r.notes?.join('；') ?? t('system.cancelled'));
                             else
                               setErr(
-                                r.blockMessage || r.notes?.join('；') || '取消失敗',
+                                r.blockMessage || r.notes?.join('；') || t('system.cancelFailed'),
                               );
                             return refresh();
                           })
@@ -789,12 +784,11 @@ export function SystemPage() {
                           .finally(() => setBusy(false));
                       }}
                     >
-                      取消排程
+                      {t('system.cancelSchedule')}
                     </Button>
                   </div>
                   <p className="sys-footnote">
-                    確認字串 <code>REBOOT</code> / <code>POWEROFF</code>
-                    。關機預設延遲約 1 分鐘、重啟約 1 分鐘（shutdown +N）。寫入 audit。
+                    {t('system.confirmStrings')}
                   </p>
                 </section>
 
@@ -804,12 +798,12 @@ export function SystemPage() {
                     if (!busy) setPowerDlg(null);
                   }}
                   title={
-                    powerDlg?.action === 'reboot' ? '確認重啟主機？' : '確認關機？'
+                    powerDlg?.action === 'reboot' ? t('system.confirmReboot') : t('system.confirmPoweroff')
                   }
                   description={
                     powerDlg?.action === 'reboot'
-                      ? '所有服務與面板連線將中斷。請輸入 REBOOT 確認。'
-                      : '主機將關電；面板無法遠端再開機。請輸入 POWEROFF 確認。'
+                      ? t('system.confirmRebootDesc')
+                      : t('system.confirmPoweroffDesc')
                   }
                   size="sm"
                   footer={
@@ -820,7 +814,7 @@ export function SystemPage() {
                         disabled={busy}
                         onClick={() => setPowerDlg(null)}
                       >
-                        取消
+                        {t('common.cancel')}
                       </Button>
                       <Button
                         variant="danger"
@@ -844,15 +838,14 @@ export function SystemPage() {
                             .then((r) => {
                               if (r.ok) {
                                 setMsg(
-                                  (r.notes?.join('；') ?? '已送出') +
-                                    ' — 連線即將中斷',
+                                  r.notes?.join('；') ?? t('system.sentDisconnect'),
                                 );
                                 setPowerDlg(null);
                               } else {
                                 setErr(
                                   r.blockMessage ||
                                     r.notes?.join('；') ||
-                                    '電源操作失敗',
+                                    t('system.powerFailed'),
                                 );
                               }
                             })
@@ -860,13 +853,13 @@ export function SystemPage() {
                             .finally(() => setBusy(false));
                         }}
                       >
-                        {powerDlg?.action === 'reboot' ? '確認重啟' : '確認關機'}
+                        {powerDlg?.action === 'reboot' ? t('system.confirmRebootBtn') : t('system.confirmPoweroffBtn')}
                       </Button>
                     </>
                   }
                 >
                   <Field
-                    label={`輸入 ${powerDlg?.confirmNeed ?? ''} 以解鎖`}
+                    label={t('system.typeToUnlock', { need: powerDlg?.confirmNeed ?? '' })}
                     htmlFor="power-confirm"
                     flush
                   >
@@ -888,8 +881,7 @@ export function SystemPage() {
         {tab === 'export' ? (
           <div className="tab-panel sys sys-export">
             <Alert variant="info">
-              <strong>匯出</strong> = 面板 DB 摘要 JSON。 <strong>Rebuild</strong> = managed
-              conf → <code>/etc/nginx/conf.d</code> + reload。同步需 root + EXECUTE。
+              {t('system.exportExplain')}
             </Alert>
 
             <div className="sys-steps">
@@ -899,9 +891,9 @@ export function SystemPage() {
                   <div className="sys-step-label">
                     <span className="sys-step-num">1</span>
                     <div>
-                      <h3 className="sys-panel__title">控制面摘要</h3>
+                      <h3 className="sys-panel__title">{t('system.controlSummary')}</h3>
                       <p className="sys-panel__sub">
-                        即時 DB 快照 · 預覽 / 下載 / 寫入伺服器
+                        {t('system.controlSummarySub')}
                       </p>
                     </div>
                   </div>
@@ -918,13 +910,13 @@ export function SystemPage() {
                         .requestRaw<ExportSnapshot>('/api/v1/system/export')
                         .then((r) => {
                           setSnapshot(r);
-                          setMsg(`已載入摘要 · ${r.exportedAt}`);
+                          setMsg(t('system.snapshotLoaded', { at: r.exportedAt }));
                         })
                         .catch((e: Error) => setErr(e.message))
                         .finally(() => setBusy(false));
                     }}
                   >
-                    預覽摘要
+                    {t('system.previewSummary')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -936,10 +928,10 @@ export function SystemPage() {
                         snapshot,
                         `ysk-export-${snapshot.exportedAt.replace(/[:.]/g, '-')}.json`,
                       );
-                      setMsg('已下載 JSON 到瀏覽器');
+                      setMsg(t('system.downloadedJson'));
                     }}
                   >
-                    下載 JSON
+                    {t('system.downloadJson')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -949,14 +941,13 @@ export function SystemPage() {
                       void runRebuild({ writeExport: true, syncNginx: false })
                     }
                   >
-                    寫入 exports/
+                    {t('system.writeExports')}
                   </Button>
                 </div>
                 {snapshot ? (
                   <div className="sys-preview">
                     <div className="sys-preview__meta">
-                      產生 {new Date(snapshot.exportedAt).toLocaleString('zh-TW')} · 用戶{' '}
-                      {snapshot.users} · 方案 {snapshot.packages}
+                      {t('system.snapshotMeta', { at: new Date(snapshot.exportedAt).toLocaleString(), users: snapshot.users, packages: snapshot.packages })}
                     </div>
                     <LogViewer
                       text={JSON.stringify(snapshot, null, 2)}
@@ -967,7 +958,7 @@ export function SystemPage() {
                     />
                   </div>
                 ) : (
-                  <p className="sys-muted">按「預覽摘要」載入控制面快照。</p>
+                  <p className="sys-muted">{t('system.previewHint')}</p>
                 )}
               </section>
 
@@ -979,16 +970,16 @@ export function SystemPage() {
                     <div>
                       <h3 className="sys-panel__title">Managed Nginx</h3>
                       <p className="sys-panel__sub">
-                        dataDir/nginx/conf.d — 唔等於 /etc 已套用
+                        {t('system.managedNotEtc')}
                       </p>
                     </div>
                   </div>
-                  <Badge tone="neutral">{managed.length} 檔</Badge>
+                  <Badge tone="neutral">{t('system.nFiles', { count: managed.length })}</Badge>
                 </header>
                 {managed.length === 0 ? (
                   <EmptyState
-                    title="尚無 managed conf"
-                    description="發布專案 Nginx 後會出現在此"
+                    title={t('system.noManaged')}
+                    description={t('system.noManagedDesc')}
                   />
                 ) : (
                   <div className="sys-conf-list">
@@ -1024,14 +1015,14 @@ export function SystemPage() {
                                     content: r.content,
                                   });
                                 } else {
-                                  setErr(r.notes?.join('；') ?? '讀取失敗');
+                                  setErr(r.notes?.join('；') ?? t('system.readFailed'));
                                 }
                               })
                               .catch((e: Error) => setErr(e.message))
                               .finally(() => setBusy(false));
                           }}
                         >
-                          預覽
+                          {t('system.preview')}
                         </Button>
                       </div>
                     ))}
@@ -1046,7 +1037,7 @@ export function SystemPage() {
                         size="sm"
                         onClick={() => setConfPreview(null)}
                       >
-                        關閉
+                        {t('common.close')}
                       </Button>
                     </div>
                     <LogViewer
@@ -1065,9 +1056,9 @@ export function SystemPage() {
                   <div className="sys-step-label">
                     <span className="sys-step-num">3</span>
                     <div>
-                      <h3 className="sys-panel__title">同步到系統</h3>
+                      <h3 className="sys-panel__title">{t('system.syncToSystem')}</h3>
                       <p className="sys-panel__sub">
-                        複製到 /etc/nginx/conf.d 並 reload — 需 root + EXECUTE
+                        {t('system.syncSub')}
                       </p>
                     </div>
                   </div>
@@ -1093,7 +1084,7 @@ export function SystemPage() {
                     loading={busy}
                     onClick={() => setRebuildSyncConfirm(true)}
                   >
-                    同步 + reload
+                    {t('system.syncReload')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -1107,11 +1098,11 @@ export function SystemPage() {
                       })
                     }
                   >
-                    只匯出 + 列 conf
+                    {t('system.exportOnly')}
                   </Button>
                 </div>
                 <p className="sys-footnote">
-                  Dry-run 不改系統。
+                  {t('system.dryRunNote')}
                 </p>
               </section>
 
@@ -1119,17 +1110,17 @@ export function SystemPage() {
               <section className="sys-panel">
                 <header className="sys-panel__head">
                   <div>
-                    <h3 className="sys-panel__title">伺服器 exports/ 歷史</h3>
+                    <h3 className="sys-panel__title">{t('system.exportHistory')}</h3>
                     <p className="sys-panel__sub">
-                      dataDir/exports · Bearer 下載
+                      {t('system.exportHistorySub')}
                     </p>
                   </div>
                   <Badge tone="neutral">{archives.length}</Badge>
                 </header>
                 {archives.length === 0 ? (
                   <EmptyState
-                    title="尚未有伺服器匯出檔"
-                    description="按「寫入 exports/」產生"
+                    title={t('system.noExports')}
+                    description={t('system.noExportsDesc')}
                   />
                 ) : (
                   <div className="sys-archive-list">
@@ -1151,11 +1142,11 @@ export function SystemPage() {
                                 `/api/v1/system/exports/${encodeURIComponent(a.name)}`,
                                 a.name,
                               )
-                              .then(() => setMsg(`已下載 ${a.name}`))
+                              .then(() => setMsg(t('system.downloaded', { name: a.name })))
                               .catch((e: Error) => setErr(e.message));
                           }}
                         >
-                          下載
+                          {t('system.download')}
                         </Button>
                       </div>
                     ))}
@@ -1165,7 +1156,7 @@ export function SystemPage() {
             </div>
 
             <OpsResultPanel
-              title="操作結果"
+              title={t('opsResult.title')}
               result={opsResult}
               message={msg}
               busy={busy}
@@ -1202,10 +1193,10 @@ export function SystemPage() {
       <ConfirmDialog
         open={rebuildSyncConfirm}
         onClose={() => !busy && setRebuildSyncConfirm(false)}
-        title="同步 nginx 到系統？"
-        description="將 managed nginx conf 同步到 /etc/nginx/conf.d 並 reload。需 root + YSK_EXECUTE。"
-        confirmLabel="同步 + reload"
-        cancelLabel="取消"
+        title={t('system.syncConfirmTitle')}
+        description={t('system.syncConfirmDesc')}
+        confirmLabel="{t('system.syncReload')}"
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
         onConfirm={() => {

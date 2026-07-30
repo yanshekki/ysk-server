@@ -1,155 +1,45 @@
 /**
  * Host metrics + process snapshot + top header + SSE stream.
  */
+import type {
+  DiskMount,
+  MetricsSnapshot,
+  CpuTimesPct,
+  TopHeader,
+  ProcessSort,
+  ProcessRow,
+  ProcessSnapshot,
+  ProcessSignal,
+  SignalProcessResultDto,
+  ProcessDetailDto,
+  MetricsStreamTickDto,
+  ProjectDiskUsageRowDto,
+  ProjectsDiskUsageSnapshotDto,
+} from '@ysk/shared';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
+import i18n from '../../shared/lib/i18n';
 
-export type DiskMount = {
-  filesystem: string;
-  size: number;
-  used: number;
-  avail: number;
-  usedRatio: number;
-  mount: string;
-};
+export type {
+  DiskMount,
+  MetricsSnapshot,
+  CpuTimesPct,
+  TopHeader,
+  ProcessSort,
+  ProcessRow,
+  ProcessSnapshot,
+  ProcessSignal,
+} from '@ysk/shared';
 
-export type MetricsSnapshot = {
-  at: string;
-  loadavg: number[];
-  cpuCount: number;
-  memory: { total: number; free: number; usedRatio: number; available?: number };
-  uptimeSec: number;
-  disk?: { path: string; free: number; total: number; usedRatio: number };
-  diskMounts?: DiskMount[];
-  alerts: string[];
-  notes?: string[];
-};
-
-export type CpuTimesPct = {
-  us: number;
-  sy: number;
-  ni: number;
-  id: number;
-  wa: number;
-  hi: number;
-  si: number;
-  st: number;
-  busyPct: number;
-};
-
-export type TopHeader = {
-  ok: boolean;
-  at: string;
-  uptimeSec: number;
-  loadavg: [number, number, number];
-  tasks: {
-    total: number;
-    running: number;
-    sleeping: number;
-    stopped: number;
-    zombie: number;
-  };
-  cpu: CpuTimesPct;
-  cpus: CpuTimesPct[];
-  memory: {
-    totalKiB: number;
-    freeKiB: number;
-    usedKiB: number;
-    buffCacheKiB: number;
-    availableKiB: number;
-  };
-  swap: {
-    totalKiB: number;
-    freeKiB: number;
-    usedKiB: number;
-  };
-  notes: string[];
-  sampleMs?: number;
-};
-
-export type ProcessSort = 'cpu' | 'mem' | 'time' | 'pid';
-
-export type ProcessRow = {
-  pid: string;
-  user: string;
-  cpu: number;
-  mem: number;
-  command: string;
-  etime?: string;
-  pr?: string;
-  ni?: number;
-  virtKiB?: number;
-  resKiB?: number;
-  shrKiB?: number;
-  state?: string;
-  timePlus?: string;
-};
-
-export type ProcessSnapshot = {
-  ok: boolean;
-  at: string;
-  sort: ProcessSort;
-  limit: number;
-  rows: ProcessRow[];
-  topHeader?: TopHeader;
-  rawTop?: string;
-  notes: string[];
-};
-
-export type ProcessSignal = 'TERM' | 'KILL' | 'HUP' | 'USR1';
-
-export type SignalProcessResult = {
-  ok: boolean;
-  blocked?: boolean;
-  blockMessage?: string;
-  pid: string;
-  signal: ProcessSignal;
-  stillAlive?: boolean;
-  command?: string;
-  notes: string[];
-  executeEnabled?: boolean;
-};
-
-export type ProcessDetail = {
-  ok: boolean;
-  pid: string;
-  command?: string;
-  cwd?: string;
-  fdCount?: number;
-  notes: string[];
-};
-
-export type MetricsStreamTick = {
-  at: string;
-  metrics: MetricsSnapshot;
-  processes: ProcessSnapshot;
-  topHeader?: TopHeader;
-};
+export type SignalProcessResult = SignalProcessResultDto;
+export type ProcessDetail = ProcessDetailDto;
+export type MetricsStreamTick = MetricsStreamTickDto;
+export type ProjectDiskUsageRow = ProjectDiskUsageRowDto;
+export type ProjectsDiskUsageSnapshot = ProjectsDiskUsageSnapshotDto;
 
 function apiBase(): string {
   return '';
 }
-
-export type ProjectDiskUsageRow = {
-  projectId: string;
-  name: string;
-  domain?: string;
-  homeDir: string;
-  usedBytes: number;
-  usedMb: number;
-  quotaMb: number | null;
-  usedRatio: number | null;
-  withinQuota: boolean | null;
-  notes: string[];
-};
-
-export type ProjectsDiskUsageSnapshot = {
-  ok: boolean;
-  at: string;
-  items: ProjectDiskUsageRow[];
-  totalUsedBytes: number;
-  notes: string[];
-};
 
 export const metricsApi = {
   snapshot: () => api.requestRaw<MetricsSnapshot>('/api/v1/metrics'),
@@ -274,7 +164,7 @@ export const metricsApi = {
     const token = authStore.getToken();
     if (!token) {
       queueMicrotask(() => {
-        opts.onError?.('未登入，無法開啟 SSE');
+        opts.onError?.(i18n.t('metrics.sseNeedLogin'));
         opts.onEnd?.('no_token');
       });
       return ac;
@@ -295,8 +185,8 @@ export const metricsApi = {
         if (!res.ok || !res.body) {
           opts.onError?.(
             res.status === 401
-              ? '未登入或 session 失效，無法開啟 SSE'
-              : `stream HTTP ${res.status}`,
+              ? i18n.t('metrics.sseSessionExpired')
+              : i18n.t('metrics.sseHttpError', { status: res.status }),
           );
           opts.onEnd?.('http_error');
           return;
@@ -322,7 +212,7 @@ export const metricsApi = {
             try {
               const parsed = JSON.parse(data) as Record<string, unknown>;
               if (event === 'tick') {
-                opts.onTick(parsed as MetricsStreamTick);
+                opts.onTick(parsed as unknown as MetricsStreamTick);
               } else if (event === 'error') {
                 opts.onError?.(String(parsed.message ?? 'stream error'));
               } else if (event === 'end') {

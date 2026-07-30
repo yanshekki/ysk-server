@@ -8,8 +8,7 @@ import {
   YskError,
   type CdnDnsStrategy,
   type CdnSiteDto,
-  type ProjectDto,
-} from '@ysk/shared';
+  type ProjectDto,  tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import { listCdnNodes } from './nodes.js';
 import { listCdnSites, upsertCdnSite } from './sites.js';
@@ -74,7 +73,7 @@ export function enableCdnFromProject(
   if (!domains.length) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      '專案沒有 domain — 請先設定主域名',
+      tl('notes.auto.n0693'),
       { httpStatus: 400 },
     );
   }
@@ -89,16 +88,16 @@ export function enableCdnFromProject(
   if (!edges.length) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      '沒有 edge 節點 — 請先於 CDN 頁登記至少一個 edge',
+      tl('notes.auto.n1047'),
       { httpStatus: 400 },
     );
   }
 
-  notes.push(`edges: ${edges.length} 個`);
+  notes.push(tl('notes.auto.t0703', { v0: (edges.length) }));
   notes.push(`domains: ${domains.join(', ')}`);
 
   const originUrl = projectOriginUrl(input.project);
-  notes.push(`origin URL（回源）: ${originUrl}`);
+  notes.push(tl('notes.auto.t0704', { v0: (originUrl) }));
 
   // Reuse existing site bound to same projectId if any
   const existing = listCdnSites(input.db).find(
@@ -144,14 +143,14 @@ export function enableCdnFromProject(
 
   notes.push(
     existing
-      ? `已更新既有 CDN 站點 ${site.id.slice(0, 8)}`
-      : `已建立 CDN 站點 ${site.id.slice(0, 8)}`,
+      ? tl('notes.auto.t0705', { v0: (site.id.slice(0, 8)) })
+      : tl('notes.auto.t0706', { v0: (site.id.slice(0, 8)) }),
   );
   notes.push(
-    '下一步：寫入 conf → 套用 edges → DNS 同步（及可選 SSL）',
+    tl('notes.auto.n0491'),
   );
   notes.push(
-    '誠實：一鍵只建立控制面政策，唔等於公網 CDN 已生效',
+    tl('notes.auto.n1376'),
   );
 
   return {

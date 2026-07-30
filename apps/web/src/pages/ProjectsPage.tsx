@@ -48,10 +48,10 @@ export function ProjectsPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.projects', { defaultValue: '專案' })}
+      title={t('nav.projects', { defaultValue: t('common.project') })}
       status={{
         pill: {
-          label: stats.total ? `${stats.total} 專案` : '尚無專案',
+          label: stats.total ? t('projects.statProjects', { count: stats.total }) : t('projects.noProjectsShort'),
           tone: stats.total ? 'ok' : 'warn',
         },
         items: [
@@ -89,13 +89,13 @@ export function ProjectsPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <ListPanel
-        title={t('nav.projects', { defaultValue: '專案' })}
+        title={t('nav.projects', { defaultValue: t('common.project') })}
         description={t('projects.searchPlaceholder')}
         toolbar={
           <ActionBar>
@@ -105,7 +105,7 @@ export function ProjectsPage() {
           </ActionBar>
         }
         filters={
-          <div className="page-toolbar" style={{ margin: 0, border: 'none', padding: 0 }}>
+          <div className="page-toolbar u-m-0">
             <div className="page-toolbar__search">
               <input
                 type="search"
@@ -128,7 +128,7 @@ export function ProjectsPage() {
                 { value: 'python', label: 'Python' },
                 { value: 'go', label: 'Go' },
                 { value: 'rust', label: 'Rust' },
-                { value: 'static', label: '靜態' },
+                { value: 'static', label: t('common.static') },
               ]}
             />
           </div>

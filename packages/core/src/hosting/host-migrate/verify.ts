@@ -11,7 +11,7 @@ import type {
   MigrateJobVerify,
   OpsResultDto,
 } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { assessProductionReadiness } from '../production-readiness.js';
@@ -107,7 +107,7 @@ export async function verifyOnHost(input: {
       id: `count:${id}`,
       ok,
       critical: true,
-      detail: ok ? `${id}=${got}` : `${id} 期望 ${exp} 實際 ${got}`,
+      detail: ok ? `${id}=${got}` : tl('notes.auto.t0676', { v0: (id), v1: (exp), v2: (got) }),
     });
     if (!ok) mismatches.push(`${id}: expected ${exp} got ${got}`);
   }
@@ -119,7 +119,7 @@ export async function verifyOnHost(input: {
         id: `home:${p.id}`,
         ok: true,
         critical: false,
-        detail: `來源 home 本就不存在，略過: ${p.home_dir}`,
+        detail: tl('notes.auto.t0677', { v0: (p.home_dir) }),
       });
       continue;
     }
@@ -128,7 +128,7 @@ export async function verifyOnHost(input: {
       id: `home:${p.id}`,
       ok,
       critical: true,
-      detail: ok ? `home ok ${p.home_dir}` : `home 缺失 ${p.home_dir}`,
+      detail: ok ? `home ok ${p.home_dir}` : tl('notes.auto.t0678', { v0: (p.home_dir) }),
     });
     if (!ok) mismatches.push(`home missing: ${p.home_dir}`);
   }
@@ -140,7 +140,7 @@ export async function verifyOnHost(input: {
         id: `maildir:${mb.id}`,
         ok: true,
         critical: false,
-        detail: `來源 Maildir 本就不存在: ${mb.maildirRelPath}`,
+        detail: tl('notes.auto.t0679', { v0: (mb.maildirRelPath) }),
       });
       continue;
     }
@@ -150,7 +150,7 @@ export async function verifyOnHost(input: {
       id: `maildir:${mb.id}`,
       ok,
       critical: true,
-      detail: ok ? `maildir ok ${mb.maildirRelPath}` : `maildir 缺失 ${mb.maildirRelPath}`,
+      detail: ok ? `maildir ok ${mb.maildirRelPath}` : tl('notes.auto.t0680', { v0: (mb.maildirRelPath) }),
     });
     if (!ok) mismatches.push(`maildir missing: ${mb.maildirRelPath}`);
   }
@@ -163,8 +163,8 @@ export async function verifyOnHost(input: {
     ok: secOk,
     critical: true,
     detail: secOk
-      ? 'secrets key 可用'
-      : '無 master key / YSK_SECRETS_KEY',
+      ? tl('notes.auto.n0425')
+      : tl('notes.auto.n1081'),
   });
   if (!secOk) mismatches.push('secrets master key missing');
 
@@ -187,18 +187,18 @@ export async function verifyOnHost(input: {
         ok: true, // non-critical after reapply mutations
         critical: false,
         detail: ok
-          ? 'ysk.json fingerprint 與來源一致'
-          : `ysk.json fingerprint 已變（可能 reapply 寫回）local≠source`,
+          ? tl('notes.auto.n0477')
+          : tl('notes.auto.t0681'),
       });
       if (!ok) {
-        notes.push('ysk.json fingerprint 與來源不同（若只清了 bind_ip 屬預期）');
+        notes.push(tl('notes.auto.n0478'));
       }
     } catch {
       checks.push({
         id: 'fingerprint-ysk-json',
         ok: false,
         critical: false,
-        detail: '無法計算 ysk.json fingerprint',
+        detail: tl('notes.auto.n1181'),
       });
     }
   }
@@ -231,10 +231,12 @@ export async function verifyOnHost(input: {
     }
     if (!report.productionReady) {
       notes.push(
-        `readiness 未達 production：${report.blockers
-          .slice(0, 3)
-          .map((b) => b.title)
-          .join('、')}`,
+        tl('notes.tpl.readinessNotProduction', {
+          list: report.blockers
+            .slice(0, 3)
+            .map((b) => b.title)
+            .join('、'),
+        }),
       );
     }
   } catch (e) {
@@ -242,17 +244,17 @@ export async function verifyOnHost(input: {
       id: 'readiness',
       ok: false,
       critical: false,
-      detail: `readiness 錯誤: ${e instanceof Error ? e.message : String(e)}`,
+      detail: tl('notes.auto.t0682', { v0: (e instanceof Error ? e.message : String(e)) }),
     });
   }
 
   // Cutover checklist always in notes
   if (input.manifest.cutoverHostnames.length) {
     notes.push(
-      `DNS cutover：將以下 A/AAAA 指向新 IP → ${input.manifest.cutoverHostnames.slice(0, 20).join(', ')}${input.manifest.cutoverHostnames.length > 20 ? '…' : ''}`,
+      tl('notes.auto.t0683', { v0: (input.manifest.cutoverHostnames.slice(0, 20).join(', ')), v1: (input.manifest.cutoverHostnames.length > 20 ? '…' : '') }),
     );
   }
-  notes.push('人必須做：雲防火牆、郵件 PTR/rDNS、舊機保留觀察期');
+  notes.push(tl('notes.auto.n0510'));
 
   const criticalFail = checks.some((c) => c.critical && !c.ok);
   const verify: MigrateJobVerify = {
@@ -266,7 +268,7 @@ export async function verifyOnHost(input: {
 
   input.job.verify = verify;
   if (criticalFail) {
-    setMigratePhase(dataDir, input.job, 'failed', 'verify 有關鍵不一致');
+    setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n0461'));
   } else {
     setMigratePhase(dataDir, input.job, 'done');
   }
@@ -281,11 +283,11 @@ export async function verifyOnHost(input: {
       apply_status: criticalFail ? 'failed' : 'applied',
       notes: [
         criticalFail
-          ? `verify 失敗：${mismatches.length} 項 mismatch`
-          : `verify 通過（mismatches=${mismatches.length}）`,
+          ? tl('notes.auto.t0684', { v0: (mismatches.length) })
+          : tl('notes.auto.t0685', { v0: (mismatches.length) }),
         productionReady === true
           ? 'productionReady'
-          : 'productionReady 未達標（資料可能已齊）',
+          : tl('notes.auto.n0390'),
       ],
     },
   });
@@ -300,7 +302,7 @@ export async function verifyOnHost(input: {
     ok: !criticalFail,
     apply_status: criticalFail ? 'failed' : 'applied',
     notes: [
-      criticalFail ? 'verify 未通過 — 不得視為遷移完成' : 'verify 通過 — job=done',
+      criticalFail ? tl('notes.auto.n0462') : tl('notes.auto.n0463'),
       ...verify.notes.slice(0, 12),
     ],
     checks,

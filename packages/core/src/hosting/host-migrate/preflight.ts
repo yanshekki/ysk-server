@@ -6,13 +6,12 @@
 import { existsSync, statfsSync } from 'node:fs';
 import type { HostExecutor } from '../../host/executor.js';
 import type { HostManifest, OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import {
   type MigrateSshAuth,
   type MigrateSshEndpoint,
   runSshCommand,
-  userAtHost,
-} from './transport.js';
+  userAtHost } from './transport.js';
 
 export type PreflightCheck = {
   id: string;
@@ -87,7 +86,7 @@ export async function preflightSource(input: {
     checks,
     'execute',
     exec,
-    exec ? 'YSK_EXECUTE 已開啟' : '未開啟 YSK_EXECUTE',
+    exec ? tl('notes.auto.n0212') : tl('notes.auto.n0984'),
     !exec,
   );
 
@@ -96,7 +95,7 @@ export async function preflightSource(input: {
     checks,
     'root',
     root,
-    root ? '以 root 執行' : '非 root（目標 useradd/apt 會 blocked）',
+    root ? tl('notes.auto.n0021') : tl('notes.tpl.notRootTarget'),
     !root,
   );
 
@@ -105,11 +104,11 @@ export async function preflightSource(input: {
       checks,
       'maintenance',
       false,
-      '尚未確認維護窗（package 階段會停服）',
+      tl('notes.auto.n0713'),
       true,
     );
   } else {
-    push(checks, 'maintenance', true, '已確認維護窗');
+    push(checks, 'maintenance', true, tl('notes.auto.n0795'));
   }
 
   for (const bin of ['ssh', 'rsync', 'ssh-keygen'] as const) {
@@ -122,7 +121,7 @@ export async function preflightSource(input: {
       checks,
       `bin:${bin}`,
       ok,
-      ok ? `${bin} 可用` : `缺少 ${bin}`,
+      ok ? tl('notes.auto.t0646', { v0: (bin) }) : tl('notes.tpl.missing', { name: bin }),
       !ok && (bin === 'ssh' || bin === 'rsync'),
     );
   }
@@ -137,12 +136,12 @@ export async function preflightSource(input: {
     'bin:sshpass',
     sp.stdout.includes('ok'),
     sp.stdout.includes('ok')
-      ? 'sshpass 可用（密碼登入）'
-      : '無 sshpass（僅能用 key/agent 登入）',
+      ? tl('notes.auto.n0437')
+      : tl('notes.auto.n1087'),
   );
 
   if (!existsSync(input.dataDir)) {
-    push(checks, 'dataDir', false, `dataDir 不存在: ${input.dataDir}`, true);
+    push(checks, 'dataDir', false, tl('notes.auto.t0647', { v0: (input.dataDir) }), true);
   } else {
     push(checks, 'dataDir', true, `dataDir ${input.dataDir}`);
   }
@@ -157,7 +156,7 @@ export async function preflightSource(input: {
       if (h != null) sum += h;
     }
     if (sum > 0) estimatedBytes = sum;
-    notes.push(`預估傳輸量 ~${formatBytes(estimatedBytes)}`);
+    notes.push(tl('notes.auto.t0648', { v0: (formatBytes(estimatedBytes)) }));
   }
 
   const free = await localFreeBytes(input.dataDir);
@@ -170,14 +169,14 @@ export async function preflightSource(input: {
       'source_disk',
       ok,
       ok
-        ? `來源可用 ${formatBytes(free)}（dump 緩衝充足）`
-        : `來源磁碟不足：可用 ${formatBytes(free)}，建議 ≥ ${formatBytes(need)}`,
+        ? tl('notes.auto.t0649', { v0: (formatBytes(free)) })
+        : tl('notes.auto.t0650', { v0: (formatBytes(free)), v1: (formatBytes(need)) }),
       !ok,
     );
   }
 
   if (input.manifest?.warnings.length) {
-    notes.push(`盤點警告 ${input.manifest.warnings.length} 則（非全部阻塞）`);
+    notes.push(tl('notes.auto.t0651', { v0: (input.manifest.warnings.length) }));
   }
 
   const hardFail = checks.some((c) => !c.ok && c.blocked);
@@ -195,13 +194,12 @@ export async function preflightSource(input: {
       : undefined,
     apply_status: hardFail ? (blocked ? 'blocked' : 'failed') : 'written',
     notes: [
-      hardFail ? '來源預檢未通過' : '來源預檢通過',
+      hardFail ? tl('notes.auto.n0548') : tl('notes.auto.n0549'),
       ...notes,
       ...checks.filter((c) => !c.ok).map((c) => `· ${c.detail}`),
     ],
     checks,
-    estimatedBytes,
-  }) as PreflightReport;
+    estimatedBytes }) as PreflightReport;
 }
 
 /**
@@ -244,29 +242,27 @@ export async function preflightTarget(input: {
     auth: input.auth,
     remoteCommand: remote,
     timeoutMs: 45_000,
-    name: 'target-preflight',
-  });
+    name: 'target-preflight' });
 
   if (!ssh.ok) {
     push(
       checks,
       'ssh',
       false,
-      ssh.blockMessage || ssh.notes[0] || 'SSH 連線失敗',
+      ssh.blockMessage || ssh.notes[0] || tl('notes.auto.n0186'),
       ssh.blocked === true,
     );
     return assertHonestOps({
       ok: false,
       blocked: ssh.blocked,
       requiresExecute: ssh.requiresExecute,
-      blockMessage: ssh.blockMessage || '無法連線目標機',
+      blockMessage: ssh.blockMessage || tl('notes.auto.n1195'),
       apply_status: ssh.apply_status ?? 'failed',
-      notes: ['目標預檢失敗', ...ssh.notes],
-      checks,
-    }) as PreflightReport;
+      notes: [tl('notes.auto.n1280'), ...ssh.notes],
+      checks }) as PreflightReport;
   }
 
-  push(checks, 'ssh', true, `SSH 連線 ${userAtHost(input.endpoint)}`);
+  push(checks, 'ssh', true, tl('notes.auto.t0652', { v0: (userAtHost(input.endpoint)) }));
 
   const kv = parseKv(ssh.stdout + '\n' + ssh.stderr);
 
@@ -275,7 +271,7 @@ export async function preflightTarget(input: {
     checks,
     'target_root',
     isRoot,
-    isRoot ? '目標為 root' : `目標用戶 ${kv.USER || '?'} 非 root（MVP 需要 root）`,
+    isRoot ? tl('notes.auto.n1276') : tl('notes.auto.t0653', { v0: (kv.USER || '?') }),
     !isRoot,
   );
 
@@ -292,7 +288,7 @@ export async function preflightTarget(input: {
     debish,
     debish
       ? `OS ${osId || osLike || 'debian-like'}`
-      : `不支援的 OS（${osId || 'unknown'}）；需要 Debian/Ubuntu`,
+      : tl('notes.auto.t0654', { v0: (osId || 'unknown') }),
     !debish,
   );
 
@@ -301,7 +297,7 @@ export async function preflightTarget(input: {
     checks,
     'apt',
     hasApt,
-    hasApt ? 'apt-get 可用' : '無 apt-get',
+    hasApt ? tl('notes.auto.n0228') : tl('notes.auto.n1071'),
     !hasApt,
   );
 
@@ -312,7 +308,7 @@ export async function preflightTarget(input: {
     checks,
     'target_rsync',
     hasRsync,
-    hasRsync ? '目標有 rsync' : '目標缺 rsync（將在 bootstrap 安裝）',
+    hasRsync ? tl('notes.auto.n1275') : tl('notes.auto.n1278'),
   );
 
   const freeKb = Number(kv.FREE_KB || 0);
@@ -325,12 +321,12 @@ export async function preflightTarget(input: {
       'target_disk',
       ok,
       ok
-        ? `目標可用 ${formatBytes(freeBytes)} ≥ 需求 ${formatBytes(need)}`
-        : `目標磁碟不足：可用 ${formatBytes(freeBytes)}，需要約 ${formatBytes(need)}`,
+        ? tl('notes.auto.t0655', { v0: (formatBytes(freeBytes)), v1: (formatBytes(need)) })
+        : tl('notes.auto.t0656', { v0: (formatBytes(freeBytes)), v1: (formatBytes(need)) }),
       !ok,
     );
   } else {
-    push(checks, 'target_disk', false, '無法讀取目標磁碟空間', true);
+    push(checks, 'target_disk', false, tl('notes.auto.n1188'), true);
   }
 
   const exists = kv.TARGET_EXISTS === '1';
@@ -340,7 +336,7 @@ export async function preflightTarget(input: {
       checks,
       'target_clean',
       false,
-      `目標已有 ${td}/ysk.json — 拒絕覆蓋（需 forceWipeTarget）`,
+      tl('notes.auto.t0657', { v0: (td) }),
       true,
     );
   } else if (hasYsk && input.forceWipeTarget) {
@@ -348,13 +344,13 @@ export async function preflightTarget(input: {
       checks,
       'target_clean',
       true,
-      '目標已有 YSK 資料，已確認 forceWipeTarget',
+      tl('notes.auto.n1274'),
     );
-    notes.push('警告：將覆寫目標既有 YSK 資料');
+    notes.push(tl('notes.auto.n1432'));
   } else if (exists) {
-    push(checks, 'target_clean', true, `目標目錄存在但無 ysk.json: ${td}`);
+    push(checks, 'target_clean', true, tl('notes.auto.t0658', { v0: (td) }));
   } else {
-    push(checks, 'target_clean', true, `目標目錄將建立: ${td}`);
+    push(checks, 'target_clean', true, tl('notes.auto.t0659', { v0: (td) }));
   }
 
   // clock skew
@@ -367,7 +363,7 @@ export async function preflightTarget(input: {
       checks,
       'clock',
       ok,
-      ok ? `時鐘偏差 ${skew}s` : `時鐘偏差 ${skew}s ≥ 120s（影響 TLS/TOTP）`,
+      ok ? tl('notes.auto.t0660', { v0: (skew) }) : tl('notes.auto.t0661', { v0: (skew) }),
       !ok,
     );
   }
@@ -384,14 +380,13 @@ export async function preflightTarget(input: {
       : undefined,
     apply_status: hardFail ? 'blocked' : 'written',
     notes: [
-      hardFail ? '目標預檢未通過' : '目標預檢通過',
+      hardFail ? tl('notes.auto.n1281') : tl('notes.auto.n1282'),
       ...notes,
       ...checks.filter((c) => !c.ok).map((c) => `· ${c.detail}`),
     ],
     checks,
     estimatedBytes: input.estimatedBytes,
-    targetFreeBytes: freeBytes,
-  }) as PreflightReport;
+    targetFreeBytes: freeBytes }) as PreflightReport;
 }
 
 /**
@@ -413,8 +408,7 @@ export async function preflightMigrate(input: {
     host: input.host,
     dataDir: input.dataDir,
     manifest: input.manifest,
-    maintenanceAccepted: input.maintenanceAccepted,
-  });
+    maintenanceAccepted: input.maintenanceAccepted });
 
   if (input.usingPassword) {
     const hasPass = source.checks.find((c) => c.id === 'bin:sshpass');
@@ -422,20 +416,18 @@ export async function preflightMigrate(input: {
       return assertHonestOps({
         ok: false,
         blocked: true,
-        blockMessage: '密碼登入需要本機安裝 sshpass',
+        blockMessage: tl('notes.auto.n0666'),
         apply_status: 'blocked',
-        notes: ['來源缺 sshpass', ...source.notes],
+        notes: [tl('notes.auto.n0546'), ...source.notes],
         checks: [
           ...source.checks,
           {
             id: 'password_auth',
             ok: false,
             blocked: true,
-            detail: '密碼登入需要 sshpass',
-          },
+            detail: tl('notes.auto.n0665') },
         ],
-        estimatedBytes: source.estimatedBytes,
-      }) as PreflightReport;
+        estimatedBytes: source.estimatedBytes }) as PreflightReport;
     }
   }
 
@@ -449,8 +441,7 @@ export async function preflightMigrate(input: {
     auth: input.auth,
     targetDataDir: input.targetDataDir,
     estimatedBytes: source.estimatedBytes ?? 1024 * 1024 * 1024,
-    forceWipeTarget: input.forceWipeTarget,
-  });
+    forceWipeTarget: input.forceWipeTarget });
 
   const checks = [...source.checks, ...target.checks];
   const hardFail = !target.ok;
@@ -462,8 +453,7 @@ export async function preflightMigrate(input: {
     notes: [...source.notes, ...target.notes],
     checks,
     estimatedBytes: source.estimatedBytes,
-    targetFreeBytes: target.targetFreeBytes,
-  }) as PreflightReport;
+    targetFreeBytes: target.targetFreeBytes }) as PreflightReport;
 }
 
 function parseKv(text: string): Record<string, string> {

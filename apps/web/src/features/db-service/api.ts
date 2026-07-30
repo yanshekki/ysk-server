@@ -3,32 +3,14 @@
  */
 import { api } from '../../shared/services/api';
 
-export type DbServiceEngine = 'redis' | 'mysql' | 'mariadb' | 'postgres';
+export type {
+  DbServiceEngine,
+  RedisServiceSettings,
+  SqlServiceSettings,
+  PostgresServiceSettings,
+} from '@ysk/shared';
 
-export type RedisServiceSettings = {
-  port: number;
-  bind: string;
-  databases: number;
-  maxmemory: string;
-  maxmemoryPolicy: string;
-  requirepass: string;
-  appendonly: boolean;
-  protectedMode: boolean;
-  timeout: number;
-};
-
-export type SqlServiceSettings = {
-  port: number;
-  bindAddress: string;
-  maxConnections: number;
-  characterSetServer?: string;
-};
-
-export type PostgresServiceSettings = {
-  port: number;
-  listenAddresses: string;
-  maxConnections: number;
-};
+import type { DbServiceEngine } from '@ysk/shared';
 
 function base(engine: DbServiceEngine) {
   return `/api/v1/system/db/${engine}`;

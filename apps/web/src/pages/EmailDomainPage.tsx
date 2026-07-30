@@ -84,10 +84,15 @@ export function EmailDomainPage() {
   const [policyAntispam, setPolicyAntispam] = useState(true);
   const [flagsApplySystem, setFlagsApplySystem] = useState(false);
   const [autoreplyOn, setAutoreplyOn] = useState(false);
-  const [autoreplySubject, setAutoreplySubject] = useState('自動回覆');
-  const [autoreplyBody, setAutoreplyBody] = useState('已收到您的郵件，稍後回覆。');
+  const [autoreplySubject, setAutoreplySubject] = useState('');
+  const [autoreplyBody, setAutoreplyBody] = useState('');
   const [webmailDomain, setWebmailDomain] = useState('webmail.example.com');
   const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
+
+  useEffect(() => {
+    setAutoreplySubject((prev) => prev || t('email.defaultAutoreplySubject'));
+    setAutoreplyBody((prev) => prev || t('email.defaultAutoreplyBody'));
+  }, [t]);
 
   const load = useCallback(async () => {
     const list = await emailApi.list();
@@ -118,7 +123,7 @@ export function EmailDomainPage() {
     void load()
       .then((found) => {
         if (cancelled) return;
-        if (!found) setError(t('email.notFound', { defaultValue: '找不到此郵件域名' }));
+        if (!found) setError(t('email.notFound'));
       })
       .catch((e: Error) => {
         if (!cancelled) setError(e.message);
@@ -137,7 +142,7 @@ export function EmailDomainPage() {
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof Error ? e.message : '操作失敗');
+      setError(e instanceof Error ? e.message : t('common.opFailed'));
     } finally {
       setBusy(false);
     }
@@ -150,14 +155,14 @@ export function EmailDomainPage() {
         title={t('email.title')}
         showCapability={false}
         backTo="/email"
-        backLabel={t('email.backToList', { defaultValue: '返回郵件域名' })}
+        backLabel={t('email.backToList')}
       >
-        <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
+        <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
         <Alert variant="error">
-          {error ?? t('email.notFound', { defaultValue: '找不到此郵件域名' })}
+          {error ?? t('email.notFound')}
         </Alert>
         <Button variant="secondary" size="md" onClick={() => navigate('/email')}>
-          {t('email.backToList', { defaultValue: '返回郵件域名' })}
+          {t('email.backToList')}
         </Button>
       </FeaturePageLayout>
     );
@@ -165,12 +170,13 @@ export function EmailDomainPage() {
 
   const tabs = [
     { id: 'dns', label: 'DNS' },
-    { id: 'mailbox', label: '郵箱' },
-    { id: 'aliases', label: '別名／轉發' },
-    { id: 'health', label: '健康' },
-    { id: 'relay', label: '中繼' },
-    { id: 'sieve', label: '過濾／SSO' },
-    { id: 'advanced', label: '進階' },
+    { id: 'mailbox', label: t('email.tabMailbox') },
+    { id: 'aliases', label: t('email.tabAliases') },
+    { id: 'health', label: t('email.tabHealth') },
+    { id: 'relay', label: t('email.tabRelay') },
+    { id: 'sieve', label: t('email.tabSieve') },
+    { id: 'advanced', label: t('email.tabAdvanced') },
+    { id: 'about', label: t('common.about') },
   ];
 
   const applySt = (domain.apply_status ?? 'draft').toLowerCase();
@@ -181,25 +187,25 @@ export function EmailDomainPage() {
       subtitle={domain.server_ip}
       showCapability={false}
       backTo="/email"
-      backLabel={t('email.backToList', { defaultValue: '返回郵件域名' })}
+      backLabel={t('email.backToList')}
       status={{
         pill: {
           label:
             applySt === 'applied'
-              ? '已套用'
+              ? t('email.pillApplied')
               : applySt === 'written'
-                ? '管理檔'
-                : '草稿',
+                ? t('email.pillManaged')
+                : t('email.pillDraft'),
           tone: applySt === 'applied' ? 'ok' : 'warn',
         },
         items: [
           {
-            label: '健康',
+            label: t('email.statHealth'),
             value: `${domain.health_score}/100`,
             tone: domain.health_score >= 80 ? 'ok' : 'warn',
           },
           {
-            label: '套用',
+            label: t('email.statApply'),
             value:
               applySt === 'applied'
                 ? 'applied'
@@ -209,20 +215,20 @@ export function EmailDomainPage() {
             tone: applySt === 'applied' ? 'ok' : 'warn',
           },
           {
-            label: '域名',
+            label: t('email.statDomain'),
             value:
               (domain as { suspended?: boolean; status?: string }).suspended ||
               (domain as { status?: string }).status === 'suspended'
-                ? '已暫停（旗標）'
-                : '正常',
+                ? t('email.pausedFlag')
+                : t('email.normal'),
             tone:
               (domain as { suspended?: boolean; status?: string }).suspended ||
               (domain as { status?: string }).status === 'suspended'
                 ? 'warn'
                 : 'ok',
           },
-          { label: '郵箱', value: mailboxes.length },
-          { label: 'DNS 紀錄', value: bundle?.records.length ?? '—' },
+          { label: t('email.statMailboxes'), value: mailboxes.length },
+          { label: t('email.statDnsRecords'), value: bundle?.records.length ?? '—' },
         ],
       }}
       actions={<ActionBar>
@@ -237,20 +243,20 @@ export function EmailDomainPage() {
               })
             }
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
+      <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'dns' ? (
           <Card>
             <CardSection
-              title="DNS 與待辦"
-              description="建議紀錄可複製到外部 DNS 或到 DNS 頁建 zone（寫入 ≠ 權威上線）"
+              title={t('email.dnsTodosTitle')}
+              description={t('email.dnsTodosDesc')}
             >
               {bundle ? (
                 <>
@@ -265,7 +271,7 @@ export function EmailDomainPage() {
                         void navigator.clipboard?.writeText(text);
                       }}
                     >
-                      複製全部紀錄
+                      {t('email.copyAllRecords')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -274,22 +280,22 @@ export function EmailDomainPage() {
                         navigate(`/dns`)
                       }
                     >
-                      開啟 DNS 頁
+                      {t('email.openDnsPage')}
                     </Button>
                   </ActionBar>
                   <DescriptionList
                     columns={2}
                     items={[
                       {
-                        label: '健康分',
+                        label: t('email.healthScore'),
                         value: (
                           <Badge tone={bundle.health.score >= 80 ? 'ok' : 'warn'}>
                             {bundle.health.score}/{bundle.health.maxScore}
                           </Badge>
                         ),
                       },
-                      { label: '建議紀錄數', value: String(bundle.records.length) },
-                      { label: '外部待辦', value: String(bundle.externalTodos.length) },
+                      { label: t('email.suggestedRecords'), value: String(bundle.records.length) },
+                      { label: t('email.externalTodosCount'), value: String(bundle.externalTodos.length) },
                     ]}
                   />
                   {bundle.health.messages.length > 0 ? (
@@ -304,20 +310,20 @@ export function EmailDomainPage() {
                       columns={[
                         {
                           key: 'type',
-                          header: '類型',
+                          header: t('email.colType'),
                           nowrap: true,
                           render: (r) => <Badge>{r.type}</Badge>,
                         },
                         {
                           key: 'name',
-                          header: '名稱',
+                          header: t('email.colName'),
                           render: (r) => (
                             <code className="inline">{r.name}</code>
                           ),
                         },
                         {
                           key: 'value',
-                          header: '值',
+                          header: t('email.colValue'),
                           className: 'u-break-all',
                           render: (r) => (
                             <code className="inline">{r.value}</code>
@@ -325,7 +331,7 @@ export function EmailDomainPage() {
                         },
                         {
                           key: 'description',
-                          header: '說明',
+                          header: t('email.colNote'),
                           className: 'muted u-text-sm',
                           render: (r) => r.description,
                         },
@@ -341,19 +347,18 @@ export function EmailDomainPage() {
                               void navigator.clipboard?.writeText(r.value)
                             }
                           >
-                            複製
+                            {t('email.copy')}
                           </Button>
                         </ActionBar>
                       )}
-                      empty={<p className="muted">尚無 DNS 紀錄</p>}
+                      empty={<p className="muted">{t('email.noDnsRecords')}</p>}
                     />
                   </div>
                   {bundle.externalTodos.length > 0 ? (
                     <div className="u-mt-4">
-                      <h4 className="u-mb-2">外部待辦（面板無法代勞）</h4>
+                      <h4 className="u-mb-2">{t('email.externalTodosHeading')}</h4>
                       <FormHint>
-                        PTR、Port 25、registrar DNS、信譽 — 要喺主機商／域名商完成；複製 SPF/DKIM 後到 DNS 頁或外部面板新增。
-                      </FormHint>
+                        {t('email.externalTodosBody')}</FormHint>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -368,13 +373,13 @@ export function EmailDomainPage() {
                           void navigator.clipboard?.writeText(text);
                         }}
                       >
-                        複製外部待辦清單
+                        {t('email.copyExternalTodos')}
                       </Button>
                       <ul className="list-plain list-spaced">
                         {bundle.externalTodos.map((todo) => (
                           <li key={todo.id}>
                             <Badge tone={todo.completed ? 'ok' : 'warn'}>
-                              {todo.completed ? '完成' : '待辦'}
+                              {todo.completed ? t('email.todoDone') : t('email.todoPending')}
                             </Badge>{' '}
                             <strong>{todo.title}</strong>
                             <div className="muted u-text-sm">{todo.description}</div>
@@ -385,8 +390,8 @@ export function EmailDomainPage() {
                   ) : null}
                 </>
               ) : (
-                <p className="muted" style={{ margin: 0 }}>
-                  按右上角「重新整理」載入 DNS 建議
+                <p className="muted u-m-0">
+                  {t('email.refreshDnsHint')}
                 </p>
               )}
             </CardSection>
@@ -397,8 +402,8 @@ export function EmailDomainPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title={`郵箱列表（${mailboxes.length}）`}
-                description="建立後可寫入 Dovecot 密碼庫（需系統變更權限）"
+                title={t('email.mailboxListTitle', { count: mailboxes.length })}
+                description={t('email.mailboxListDesc')}
               >
                 <ActionBar className="u-mb-3">
                   <Button
@@ -410,7 +415,7 @@ export function EmailDomainPage() {
                       setCreateMboxOpen(true);
                     }}
                   >
-                    + 建立郵箱
+                    {t('email.createMailbox')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -424,7 +429,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    重新整理
+                    {t('common.refresh')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -436,7 +441,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    寫入 Dovecot 密碼庫
+                    {t('email.writeDovecot')}
                   </Button>
                 </ActionBar>
                 {mailboxes.length > 0 ? (
@@ -451,9 +456,9 @@ export function EmailDomainPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="muted">尚未有郵箱 — 按「建立郵箱」開啟對話框</p>
+                  <p className="muted">{t('email.noMailboxes')}</p>
                 )}
-                <OpsResultPanel title="郵箱操作結果" result={asOps(mboxLog)} busy={busy} />
+                <OpsResultPanel title={t('email.mailboxOpsResult')} result={asOps(mboxLog)} busy={busy} />
               </CardSection>
             </Card>
           </div>
@@ -462,25 +467,25 @@ export function EmailDomainPage() {
         {tab === 'aliases' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title="別名／轉發／Catch-all" description="把地址轉到其他信箱">
+              <CardSection title={t('email.aliasesTitle')} description={t('email.aliasesDesc')}>
                 <FormLayout columns={2}>
-                  <Field label="類型" htmlFor="al-type" flush>
+                  <Field label={t('email.aliasType')} htmlFor="al-type" flush>
                     <SegRadio
                       name="al-type"
-                      aria-label="別名類型"
+                      aria-label={t('email.aliasTypeAria')}
                       value={aliasType}
                       onChange={(v) =>
                         setAliasType(v as 'forward' | 'alias' | 'catchall')
                       }
                       options={[
-                        { value: 'forward', label: '轉發' },
-                        { value: 'alias', label: '別名' },
+                        { value: 'forward', label: t('email.typeForward') },
+                        { value: 'alias', label: t('email.typeAlias') },
                         { value: 'catchall', label: 'Catch-all' },
                       ]}
                     />
                   </Field>
                   {aliasType !== 'catchall' ? (
-                    <Field label="本地部分" htmlFor="al-local" hint="例如 sales" flush>
+                    <Field label={t('email.localPart')} htmlFor="al-local" hint={t('email.localPartHint')} flush>
                       <input
                         id="al-local"
                         value={aliasLocal}
@@ -490,9 +495,9 @@ export function EmailDomainPage() {
                     </Field>
                   ) : null}
                   <Field
-                    label="目標信箱"
+                    label={t('email.targetMailbox')}
                     htmlFor="al-dest"
-                    hint="可用逗號分隔多個"
+                    hint={t('email.targetMailboxHint')}
                     fullWidth
                     flush
                   >
@@ -526,13 +531,13 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    新增別名
+                    {t('email.addAlias')}
                   </Button>
                 </FormActions>
                 {aliases.length > 0 ? (
                   <ul className="list-plain list-spaced u-mt-4">
                     {aliases.map((a) => (
-                      <li key={String(a.id)} className="" style={{ justifyContent: 'space-between' }}>
+                      <li key={String(a.id)} className=" u-flex u-justify-between">
                         <span>
                           <Badge>{String(a.type)}</Badge>{' '}
                           <code className="inline">{String(a.source)}</code> →{' '}
@@ -551,51 +556,50 @@ export function EmailDomainPage() {
                             })
                           }
                         >
-                          刪除
+                          {t('common.delete')}
                         </Button>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="muted u-mt-3">尚未有別名／轉發</p>
+                  <p className="muted u-mt-3">{t('email.noAliases')}</p>
                 )}
-                <OpsResultPanel title="別名結果" result={asOps(aliasLog)} busy={busy} />
+                <OpsResultPanel title={t('email.aliasResult')} result={asOps(aliasLog)} busy={busy} />
               </CardSection>
             </Card>
             <Card>
               <CardSection
-                title="自動回覆／暫停"
-                description="控制面旗標 + dataDir 草稿；written ≠ MTA／Sieve 已上線"
+                title={t('email.autoreplyTitle')}
+                description={t('email.autoreplyDesc')}
               >
                 <FormHint>
-                  預設只寫控制面 + dataDir（written）。勾「套用到系統」會裝
-                  Postfix REJECT map 同 Dovecot .dovecot.sieve（需 EXECUTE+root）。
+                  {t('email.autoreplyBodyHint')}
                 </FormHint>
                 <div className="form-switches">
                   <CheckboxField
                     id="ar-on"
-                    label="啟用自動回覆"
-                    description="vacation.sieve；系統套用後掛 .dovecot.sieve"
+                    label={t('email.enableAutoreply')}
+                    description={t('email.enableAutoreplyDesc')}
                     checked={autoreplyOn}
                     onChange={setAutoreplyOn}
                   />
                   <CheckboxField
                     id="ar-sys"
-                    label="套用到系統（Postfix／Dovecot）"
-                    description="需 YSK_EXECUTE=1 + root；失敗唔會假成功"
+                    label={t('email.applyToSystem')}
+                    description={t('email.applyToSystemDesc')}
                     checked={flagsApplySystem}
                     onChange={setFlagsApplySystem}
                   />
                 </div>
                 <FormLayout>
-                  <Field label="主旨" htmlFor="ar-sub" flush>
+                  <Field label={t('email.subject')} htmlFor="ar-sub" flush>
                     <input
                       id="ar-sub"
                       value={autoreplySubject}
                       onChange={(e) => setAutoreplySubject(e.target.value)}
                     />
                   </Field>
-                  <Field label="內文" htmlFor="ar-body" fullWidth flush>
+                  <Field label={t('email.body')} htmlFor="ar-body" fullWidth flush>
                     <textarea
                       id="ar-body"
                       rows={4}
@@ -629,7 +633,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    {flagsApplySystem ? '儲存並套用自動回覆' : '儲存自動回覆（written）'}
+                    {flagsApplySystem ? t('email.saveApplyAutoreply') : t('email.saveAutoreplyWritten')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -653,7 +657,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    {flagsApplySystem ? '暫停並套用 REJECT' : '暫停域名（written）'}
+                    {flagsApplySystem ? t('email.suspendApply') : t('email.suspendWritten')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -677,10 +681,10 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    {flagsApplySystem ? '恢復並更新 map' : '恢復域名（written）'}
+                    {flagsApplySystem ? t('email.resumeApply') : t('email.resumeWritten')}
                   </Button>
                 </FormActions>
-                <OpsResultPanel title="旗標／系統套用結果" result={asOps(flagsLog)} busy={busy} />
+                <OpsResultPanel title={t('email.flagsResult')} result={asOps(flagsLog)} busy={busy} />
               </CardSection>
             </Card>
           </div>
@@ -690,17 +694,17 @@ export function EmailDomainPage() {
           <div className="tab-panel">
           <Card>
             <CardSection
-              title="寄達健康（真實 DNS／埠探測）"
-              description="Live 查 MX／SPF／DKIM／DMARC／PTR／出站 25／DNSBL；結果會寫回域名健康分"
+              title={t('email.healthLiveTitle')}
+              description={t('email.healthLiveDesc')}
             >
               <SummaryStrip
                 items={[
                   {
-                    label: '伺服器 IP',
+                    label: t('email.serverIpLabel'),
                     value: domain.server_ip || '—',
                   },
                   {
-                    label: '健康分',
+                    label: t('email.healthScore'),
                     value: live
                       ? String(
                           (live as { health?: { score?: number } }).health?.score ??
@@ -718,12 +722,12 @@ export function EmailDomainPage() {
                         : 'warn',
                   },
                   {
-                    label: '即時檢查',
+                    label: t('email.liveCheck'),
                     value: live
                       ? (live as { ok?: boolean }).ok
-                        ? '大致正常'
-                        : '有問題'
-                      : '未測',
+                        ? t('email.liveOk')
+                        : t('email.liveBad')
+                      : t('email.notTested'),
                     tone: live
                       ? (live as { ok?: boolean }).ok
                         ? 'ok'
@@ -731,7 +735,7 @@ export function EmailDomainPage() {
                       : 'default',
                   },
                   {
-                    label: '黑名單',
+                    label: t('email.blacklist'),
                     value: dnsbl
                       ? (dnsbl as { ok?: boolean }).ok
                         ? 'Clean'
@@ -740,7 +744,7 @@ export function EmailDomainPage() {
                         ? (live as { dnsbl?: { ok?: boolean } }).dnsbl?.ok
                           ? 'Clean'
                           : 'Listed'
-                        : '未測',
+                        : t('email.notTested'),
                     tone: (dnsbl ?? live)
                       ? (
                           (dnsbl as { ok?: boolean } | null)?.ok ??
@@ -753,7 +757,7 @@ export function EmailDomainPage() {
                 ]}
               />
               <FormHint>
-                面板外必須自行處理：供應商 PTR、出站 Port 25、Registrar DS（DNSSEC）。此處為真實查詢，唔係假綠燈。
+                {t('email.healthExternalNote')}
               </FormHint>
               <ActionBar className="u-mb-3">
                 <Button
@@ -768,7 +772,7 @@ export function EmailDomainPage() {
                     })
                   }
                 >
-                  執行 Live 檢查
+                  {t('email.runLiveCheck')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -780,7 +784,7 @@ export function EmailDomainPage() {
                     })
                   }
                 >
-                  DNSBL（本 IP）
+                  {t('email.dnsblThisIp')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -801,7 +805,7 @@ export function EmailDomainPage() {
                     })
                   }
                 >
-                  多 IP RBL
+                  {t('email.multiIpRbl')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -813,24 +817,24 @@ export function EmailDomainPage() {
                     })
                   }
                 >
-                  暖身建議
+                  {t('email.warmupAdvice')}
                 </Button>
               </ActionBar>
 
               {live ? (
                 <div className="u-mb-4">
-                  <h3 className="section-block__title">探測矩陣</h3>
+                  <h3 className="section-block__title">{t('email.probeMatrix')}</h3>
                   <DataTable
                     columns={[
                       {
                         key: 'item',
-                        header: '項目',
+                        header: t('email.colItem'),
                         nowrap: true,
                         render: (r) => <strong>{r.label}</strong>,
                       },
                       {
                         key: 'st',
-                        header: '狀態',
+                        header: t('email.colStatus'),
                         nowrap: true,
                         render: (r) => (
                           <Badge
@@ -843,16 +847,16 @@ export function EmailDomainPage() {
                             }
                           >
                             {r.ok === true
-                              ? '通過'
+                              ? t('email.pass')
                               : r.ok === false
-                                ? '失敗'
-                                : '未知'}
+                                ? t('email.fail')
+                                : t('email.unknown')}
                           </Badge>
                         ),
                       },
                       {
                         key: 'detail',
-                        header: '詳情',
+                        header: t('email.colDetail'),
                         className: 'u-break-all',
                         render: (r) => (
                           <code className="inline u-text-sm">{r.detail}</code>
@@ -866,7 +870,7 @@ export function EmailDomainPage() {
                         ['DKIM', live.dkim],
                         ['DMARC', live.dmarc],
                         ['PTR', live.ptr],
-                        ['出站 Port 25', live.port25],
+                        [t('email.outboundPort25'), live.port25],
                         ['DNSBL', live.dnsbl],
                       ] as const
                     ).map(([label, cell]) => {
@@ -880,7 +884,7 @@ export function EmailDomainPage() {
                       };
                     })}
                     rowKey={(r) => r.label}
-                    empty={<p className="muted">尚無探測結果</p>}
+                    empty={<p className="muted">{t('email.noProbeResults')}</p>}
                   />
                   {Array.isArray(
                     (live as { health?: { messages?: string[] } }).health?.messages,
@@ -899,15 +903,15 @@ export function EmailDomainPage() {
                 </div>
               ) : (
                 <EmptyState
-                  title="尚未執行 Live 檢查"
-                  description="按「執行 Live 檢查」對公網 DNS／埠做真實探測"
+                  title={t('email.noLiveYet')}
+                  description={t('email.noLiveYetHint')}
                 />
               )}
 
               <div className="u-mt-4">
-                <h3 className="section-block__title">郵件 SSL（Let’s Encrypt）</h3>
+                <h3 className="section-block__title">{t('email.mailSslTitle')}</h3>
                 <p className="section-block__desc">
-                  真實簽發在 SSL 頁完成；此處一鍵跳到對應主機名（mail / webmail / 域名）
+                  {t('email.mailSslHint')}
                 </p>
                 <ActionBar>
                   <Button
@@ -948,13 +952,13 @@ export function EmailDomainPage() {
                     size="sm"
                     onClick={() => navigate('/ssl')}
                   >
-                    開啟 SSL 頁
+                    {t('email.openSslPage')}
                   </Button>
                 </ActionBar>
               </div>
 
               <div className="u-mt-4">
-                <h3 className="section-block__title">Webmail SSO 骨架</h3>
+                <h3 className="section-block__title">{t('email.webmailSsoSkeleton')}</h3>
                 <ActionBar>
                   <Button
                     variant="ghost"
@@ -971,7 +975,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    寫入 Roundcube SSO 骨架
+                    {t('email.writeRoundcubeSso')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -988,23 +992,22 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    SSO 骨架 + 系統 symlink
+                    {t('email.ssoSkeletonSymlink')}
                   </Button>
                 </ActionBar>
               </div>
 
               <div className="u-mt-4">
-                <h3 className="section-block__title">出站限速 / 反垃圾</h3>
+                <h3 className="section-block__title">{t('email.rateLimitTitle')}</h3>
                 <p className="section-block__desc">
-                  真實寫入 Postfix anvil 與 Rspamd 設定（需 YSK_EXECUTE + root
-                  才會 applied）
+                  {t('email.rateLimitDesc')}
                 </p>
                 <FormLayout columns={2}>
                   <Field
-                    label="每小時訊息上限"
+                    label={t('email.hourlyMsgCap')}
                     htmlFor="policy-rate"
                     flush
-                    hint="全域會取各域名最小值"
+                    hint={t('email.hourlyMsgCapHint')}
                   >
                     <input
                       id="policy-rate"
@@ -1017,8 +1020,8 @@ export function EmailDomainPage() {
                   </Field>
                   <CheckboxField
                     id="policy-spam"
-                    label="啟用反垃圾標記（Rspamd multimap）"
-                    description="關則域名標記 antispam off"
+                    label={t('email.enableAntispam')}
+                    description={t('email.enableAntispamDesc')}
                     checked={policyAntispam}
                     onChange={setPolicyAntispam}
                     disabled={busy}
@@ -1041,7 +1044,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    只寫入控制面（written）
+                    {t('email.writeControlOnly')}
                   </Button>
                   <Button
                     variant="primary"
@@ -1059,15 +1062,15 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    套用到系統
+                    {t('email.applyToSystemBtn')}
                   </Button>
                 </FormActions>
               </div>
 
-              {dnsbl ? <OpsResultPanel title="黑名單（DNSBL）" result={asOps(dnsbl)} /> : null}
-              {warmup ? <OpsResultPanel title="暖身" result={asOps(warmup)} /> : null}
+              {dnsbl ? <OpsResultPanel title={t('email.dnsblResult')} result={asOps(dnsbl)} /> : null}
+              {warmup ? <OpsResultPanel title={t('email.warmupResult')} result={asOps(warmup)} /> : null}
               {policyLog ? (
-                <OpsResultPanel title="限速／反垃圾政策" result={asOps(policyLog)} busy={busy} />
+                <OpsResultPanel title={t('email.policyResult')} result={asOps(policyLog)} busy={busy} />
               ) : null}
             </CardSection>
           </Card>
@@ -1078,11 +1081,11 @@ export function EmailDomainPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="SMTP 出站中繼"
-                description="經外部 SMTP 寄信；套用到系統才會寫 Postfix（需系統變更權限）"
+                title={t('email.relayTitle')}
+                description={t('email.relayDesc')}
               >
                 <FormLayout columns={2}>
-                  <Field label="中繼主機" htmlFor="rh" required flush>
+                  <Field label={t('email.relayHost')} htmlFor="rh" required flush>
                     <input
                       id="rh"
                       value={relayHost}
@@ -1090,14 +1093,14 @@ export function EmailDomainPage() {
                       placeholder="smtp.example.com"
                     />
                   </Field>
-                  <Field label="用戶名" htmlFor="ru" flush>
+                  <Field label={t('common.username')} htmlFor="ru" flush>
                     <input
                       id="ru"
                       value={relayUser}
                       onChange={(e) => setRelayUser(e.target.value)}
                     />
                   </Field>
-                  <Field label="密碼" htmlFor="rp" flush>
+                  <Field label={t('common.password')} htmlFor="rp" flush>
                     <input
                       id="rp"
                       type="password"
@@ -1110,8 +1113,8 @@ export function EmailDomainPage() {
                 <div className="form-switches">
                   <CheckboxField
                     id="ras"
-                    label="套用到系統 Postfix"
-                    description="關閉則只存面板"
+                    label={t('email.applyRelaySystem')}
+                    description={t('email.applyRelaySystemDesc')}
                     checked={relayApplySystem}
                     onChange={setRelayApplySystem}
                   />
@@ -1136,10 +1139,10 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    {relayApplySystem ? '儲存並套用到系統' : '只儲存設定'}
+                    {relayApplySystem ? t('email.saveApplyRelay') : t('email.saveOnly')}
                   </Button>
                 </FormActions>
-                <OpsResultPanel title="中繼結果" result={asOps(relayLog)} busy={busy} />
+                <OpsResultPanel title={t('email.relayResult')} result={asOps(relayLog)} busy={busy} />
               </CardSection>
             </Card>
           </div>
@@ -1149,25 +1152,25 @@ export function EmailDomainPage() {
           <div className="stack">
             <Card>
               <CardSection
-                title="Webmail 單點登入"
-                description="簽發一次性 token；webmail 端需認 token。不假稱已完整整合 Roundcube"
+                title={t('email.webmailSsoTitle')}
+                description={t('email.webmailSsoDesc')}
               >
                 <FormLayout>
                   <Field
-                    label="信箱密碼（可選）"
+                    label={t('email.mailboxPasswordOptional')}
                     htmlFor="sso-pw"
                     flush
-                    hint={`用於 postmaster@${domain.domain} 真自動登入；留空則僅簽發 token`}
+                    hint={t('email.mailboxPasswordHint', { domain: domain.domain })}
                   >
                     <input
                       id="sso-pw"
                       type="password"
                       autoComplete="new-password"
-                      placeholder="填寫後 token 可自動登入 Roundcube"
+                      placeholder={t('email.mailboxPasswordPh')}
                     />
                   </Field>
                 </FormLayout>
-                <FormHint>Token 預設 10 分鐘有效；僅供管理面板測試／對接，非終端使用者流程。</FormHint>
+                <FormHint>{t('email.ssoTokenHint')}</FormHint>
                 <FormActions>
                   <Button
                     variant="primary"
@@ -1188,18 +1191,18 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    簽發 SSO token
+                    {t('email.issueSsoToken')}
                   </Button>
                 </FormActions>
               </CardSection>
             </Card>
             <Card>
               <CardSection
-                title="Sieve 過濾"
-                description="寫入 dataDir/email/sieve；寫入 ≠ Dovecot 已載入"
+                title={t('email.sieveTitle')}
+                description={t('email.sieveDesc')}
               >
                 <FormHint>
-                  對 postmaster@{domain.domain} 寫入預設範本（含垃圾信 fileinto 註解示例）。
+                  {t('email.sieveTemplateHint', { domain: domain.domain })}
                 </FormHint>
                 <FormActions>
                   <Button
@@ -1218,7 +1221,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    寫入預設 Sieve
+                    {t('email.writeDefaultSieve')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -1231,12 +1234,12 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    列出已寫入檔案
+                    {t('email.listWrittenFiles')}
                   </Button>
                 </FormActions>
               </CardSection>
             </Card>
-            {webmailLog ? <OpsResultPanel title="結果" result={asOps(webmailLog)} /> : null}
+            {webmailLog ? <OpsResultPanel title={t('email.result')} result={asOps(webmailLog)} /> : null}
           </div>
         ) : null}
 
@@ -1244,8 +1247,8 @@ export function EmailDomainPage() {
           <div className="stack">
             <Card>
               <CardSection
-                title="此域名 SSL"
-                description="跳轉 SSL 頁並預填域名，申請 Let’s Encrypt"
+                title={t('email.domainSslTitle')}
+                description={t('email.domainSslDesc')}
               >
                 <FormActions>
                   <Button
@@ -1257,17 +1260,17 @@ export function EmailDomainPage() {
                       )
                     }
                   >
-                    申請 {domain.domain} 憑證
+                    {t('email.requestCert', { domain: domain.domain })}
                   </Button>
                 </FormActions>
               </CardSection>
             </Card>
             <Card>
               <CardSection
-                title="用戶端自動設定"
-                description="產生 Mozilla Autoconfig／Outlook Autodiscover XML"
+                title={t('email.clientAutoTitle')}
+                description={t('email.clientAutoDesc')}
               >
-                <FormHint>產生後會嘗試複製 Mozilla XML 到剪貼簿；詳情見下方操作結果。</FormHint>
+                <FormHint>{t('email.clientAutoHint')}</FormHint>
                 <FormActions>
                   <Button
                     variant="secondary"
@@ -1286,15 +1289,15 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    產生並複製設定 XML
+                    {t('email.generateCopyXml')}
                   </Button>
                 </FormActions>
               </CardSection>
             </Card>
             <Card>
               <CardSection
-                title="郵件佇列"
-                description="查詢或清空本機 MTA 佇列（亦可在郵件首頁操作；需系統變更權限）"
+                title={t('email.queueTitle')}
+                description={t('email.queueDesc')}
               >
                 <FormActions>
                   <Button
@@ -1311,7 +1314,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    查看佇列
+                    {t('email.viewQueue')}
                   </Button>
                   <Button
                     variant="danger"
@@ -1323,11 +1326,11 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    清空佇列
+                    {t('email.flushQueue')}
                   </Button>
                 </FormActions>
                 <FormHint>
-                  公開 Autoconfig：
+                  {t('email.publicAutoconfig')}
                   <code className="inline">
                     /mail/config-v1.1.xml?domain={domain.domain}
                   </code>
@@ -1336,16 +1339,16 @@ export function EmailDomainPage() {
             </Card>
             <Card>
               <CardSection
-                title="一鍵設定郵件"
-                description="安裝套件並套用郵件堆疊（需系統變更 + 管理員）。必須自訂管理員密碼。"
+                title={t('email.bootstrapTitle')}
+                description={t('email.bootstrapDesc')}
               >
                 <FormLayout>
                   <Field
-                    label="管理員密碼"
+                    label={t('email.adminPassword')}
                     htmlFor="boot-pw"
                     flush
                     required
-                    hint="postmaster 密碼，至少 8 字元"
+                    hint={t('email.adminPasswordHint')}
                   >
                     <input
                       id="boot-pw"
@@ -1354,7 +1357,7 @@ export function EmailDomainPage() {
                       onChange={(e) => setBootstrapPassword(e.target.value)}
                       minLength={8}
                       autoComplete="new-password"
-                      placeholder="至少 8 字元"
+                      placeholder={t('email.adminPasswordPh')}
                     />
                   </Field>
                 </FormLayout>
@@ -1367,7 +1370,7 @@ export function EmailDomainPage() {
                     onClick={() =>
                       void withBusy(async () => {
                         if (bootstrapPassword.trim().length < 8) {
-                          setError('請設定至少 8 字元的管理員密碼');
+                          setError(t('email.adminPasswordRequired'));
                           return;
                         }
                         setWebmailLog(
@@ -1384,7 +1387,7 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    一鍵設定郵件
+                    {t('email.bootstrapBtn')}
                   </Button>
                 </FormActions>
               </CardSection>
@@ -1392,14 +1395,14 @@ export function EmailDomainPage() {
             <Card>
               <CardSection
                 title="Webmail（Roundcube）"
-                description="下載／套用 Roundcube"
+                description={t('email.webmailInstallDesc')}
               >
                 <FormLayout columns={2}>
                   <Field
-                    label="Webmail 主機名"
+                    label={t('email.webmailHostname')}
                     htmlFor="wmd"
                     flush
-                    hint="虛擬主機 server_name，例如 webmail.example.com"
+                    hint={t('email.webmailHostnameHint')}
                   >
                     <input
                       id="wmd"
@@ -1426,11 +1429,11 @@ export function EmailDomainPage() {
                       })
                     }
                   >
-                    安裝／套用 Webmail
+                    {t('email.installWebmail')}
                   </Button>
                 </FormActions>
                 <OpsResultPanel
-                  title="一鍵設定／Webmail 結果"
+                  title={t('email.bootstrapResult')}
                   result={asOps(webmailLog)}
                   busy={busy}
                 />
@@ -1445,8 +1448,8 @@ export function EmailDomainPage() {
       <Modal
         open={createMboxOpen}
         onClose={() => setCreateMboxOpen(false)}
-        title="建立郵箱"
-        description={`完整位址會是 ${mboxLocal || '…'}@${domain.domain}`}
+        title={t('email.createMailboxTitle')}
+        description={t('email.createMailboxDesc', { local: mboxLocal || '…', domain: domain.domain })}
         footer={
           <>
             <Button
@@ -1454,7 +1457,7 @@ export function EmailDomainPage() {
               size="md"
               onClick={() => setCreateMboxOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -1476,16 +1479,16 @@ export function EmailDomainPage() {
                 })
               }
             >
-              建立郵箱
+              {t('email.createMailboxBtn')}
             </Button>
           </>
         }
       >
         <FormLayout columns={1}>
           <Field
-            label="本地部分"
+            label={t('email.localPartLabel')}
             htmlFor="mlocal"
-            hint={`完整位址會是 ${mboxLocal || '…'}@${domain.domain}`}
+            hint={t('email.localPartFullHint', { local: mboxLocal || '…', domain: domain.domain })}
             required
             flush
           >
@@ -1497,9 +1500,9 @@ export function EmailDomainPage() {
             />
           </Field>
           <Field
-            label="密碼"
+            label={t('common.password')}
             htmlFor="mpass"
-            hint="可選；至少 8 位才會寫入雜湊"
+            hint={t('email.passwordOptionalHint8')}
             flush
           >
             <input

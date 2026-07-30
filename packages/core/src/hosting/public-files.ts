@@ -5,7 +5,7 @@
 
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { planPublicFileServer } from './extras.js';
 import { writeManagedNginxConf, syncNginxConfigs } from './nginx-sync.js';
@@ -36,12 +36,11 @@ export async function applyPublicFileServer(input: {
 }): Promise<PublicFilesApplyResult> {
   const serverName = input.serverName.trim().toLowerCase();
   if (!serverName || serverName.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1387'), { httpStatus: 400 });
   }
   const plan = planPublicFileServer({
     root: publicFilesRoot(input.dataDir),
-    quotaMb: input.quotaMb,
-  });
+    quotaMb: input.quotaMb });
   const publicRoot = plan.publicRoot;
   mkdirSync(publicRoot, { recursive: true });
   const index = join(publicRoot, 'index.html');
@@ -109,19 +108,17 @@ export async function applyPublicFileServer(input: {
       dataDir: input.dataDir,
       systemConfDir: '/etc/nginx/conf.d',
       host: input.host,
-      dryRun: false,
-    });
+      dryRun: false });
     written.push(...sync.copied);
     notes.push(...sync.notes);
     if (sync.tested) {
       const rel = await input.host.runCommand(['systemctl', 'reload', 'nginx'], {
-        timeoutMs: 15_000,
-      });
+        timeoutMs: 15_000 });
       nginxReloaded = rel.exitCode === 0;
-      notes.push(nginxReloaded ? '已重載 Nginx' : `Nginx reload 結束碼=${rel.exitCode}`);
+      notes.push(nginxReloaded ? tl('notes.nginx.reloaded') : tl('notes.nginx.reloadExit', { code: rel.exitCode }));
     }
   } else if (wantReload) {
-    notes.push('無法重載 Nginx：需要系統變更權限');
+    notes.push(tl('ops.blocked.nginxReload'));
   }
 
   return {
@@ -133,6 +130,5 @@ export async function applyPublicFileServer(input: {
     notes,
     nginxReloaded,
     requiresExecute: !input.host.executeEnabled(),
-    requiresRoot: !input.host.isRoot(),
-  };
+    requiresRoot: !input.host.isRoot() };
 }

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * MySQL async primary → replica plan (pure; never mutates host).
  */
@@ -144,10 +145,9 @@ export function planMysqlReplica(c: DbCluster): ClusterPlan {
       engine: c.engine,
       steps: [],
       files: [],
-      notes: ['此 planner 僅支援 mysql + mysql-replica'],
+      notes: [tl('notes.auto.n1034')],
       requiresExecute: true,
-      requiresRoot: true,
-    };
+      requiresRoot: true };
   }
 
   const p = primary(c);
@@ -160,14 +160,13 @@ export function planMysqlReplica(c: DbCluster): ClusterPlan {
       engine: c.engine,
       steps: [],
       files: [],
-      notes: ['需要至少一個 primary 節點'],
+      notes: [tl('notes.auto.n1589')],
       requiresExecute: true,
-      requiresRoot: true,
-    };
+      requiresRoot: true };
   }
 
   if (replicas(c).length < 1) {
-    notes.push('建議至少 1 個 replica；而家計劃仍可產生 primary conf');
+    notes.push(tl('notes.auto.n0825'));
   }
 
   const primaryCnf = renderMysqlPrimaryCnf(c, p, 0);
@@ -175,12 +174,10 @@ export function planMysqlReplica(c: DbCluster): ClusterPlan {
   files.push({ relativePath: 'plan.md', body: renderMysqlReplicaPlanMd(c) });
   files.push({
     relativePath: 'scripts/primary-grants.sql',
-    body: renderMysqlPrimaryGrantsSql(c),
-  });
+    body: renderMysqlPrimaryGrantsSql(c) });
   files.push({
     relativePath: 'scripts/replica-change-source.sql',
-    body: renderMysqlChangeReplicationSql(c),
-  });
+    body: renderMysqlChangeReplicationSql(c) });
 
   steps.push({
     id: 'conf-primary',
@@ -188,16 +185,14 @@ export function planMysqlReplica(c: DbCluster): ClusterPlan {
     title: `Primary conf（${p.host}）`,
     kind: 'conf',
     body: primaryCnf,
-    risk: 'write-panel',
-  });
+    risk: 'write-panel' });
   steps.push({
     id: 'sql-grants',
     memberId: p.id,
-    title: 'Primary：建立 replication 用戶（SQL 腳本）',
+    title: tl('notes.auto.n0162'),
     kind: 'manual',
     body: renderMysqlPrimaryGrantsSql(c),
-    risk: 'execute-host',
-  });
+    risk: 'execute-host' });
 
   replicas(c).forEach((m, i) => {
     const cnf = renderMysqlReplicaCnf(c, m, i + 1);
@@ -209,30 +204,27 @@ export function planMysqlReplica(c: DbCluster): ClusterPlan {
       title: `Replica conf ${m.host}`,
       kind: 'conf',
       body: cnf,
-      risk: 'write-panel',
-    });
+      risk: 'write-panel' });
     steps.push({
       id: `sql-replica-${m.id}`,
       memberId: m.id,
       title: `Replica ${m.host}：CHANGE REPLICATION + START`,
       kind: 'manual',
       body: renderMysqlChangeReplicationSql(c),
-      risk: 'execute-host',
-    });
+      risk: 'execute-host' });
   });
 
   steps.push({
     id: 'probe',
-    title: '探測 SHOW MASTER / REPLICA STATUS',
+    title: tl('notes.auto.n0887'),
     kind: 'probe',
-    risk: 'read',
-  });
+    risk: 'read' });
 
   notes.push(
-    'dry-run：此計劃未改系統',
+    tl('notes.auto.n0032'),
     `primary=${p.host} · replicas=${replicas(c).map((m) => m.host).join(',') || 'none'}`,
-    '密碼只出現在 SQL 腳本佔位符 CHANGE_ME',
-    'GTID 模式：兩邊 conf 已開 gtid_mode=ON',
+    tl('notes.auto.n0662'),
+    tl('notes.auto.n0107'),
   );
 
   return {
@@ -245,6 +237,5 @@ export function planMysqlReplica(c: DbCluster): ClusterPlan {
     files,
     notes,
     requiresExecute: true,
-    requiresRoot: true,
-  };
+    requiresRoot: true };
 }

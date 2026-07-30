@@ -16,7 +16,7 @@ import {
 } from 'node:fs';
 import { cpus, freemem, loadavg, totalmem, uptime, hostname, platform, arch, release } from 'node:os';
 import { promisify } from 'node:util';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, yskError, tl } from '@ysk/shared';
 
 const execFileAsync = promisify(execFile);
 
@@ -79,7 +79,7 @@ export class LocalHostExecutor implements HostExecutor {
     try {
       return readFileSync(path, 'utf8');
     } catch (err) {
-      throw new YskError(ErrorCodes.INTERNAL, `讀取失敗：${path}`, {
+      throw new YskError(ErrorCodes.INTERNAL, tl('notes.auto.t0105', { v0: (path) }), {
         httpStatus: 500,
         cause: err,
       });
@@ -90,7 +90,7 @@ export class LocalHostExecutor implements HostExecutor {
     try {
       return readdirSync(path);
     } catch (err) {
-      throw new YskError(ErrorCodes.INTERNAL, `列出失敗：${path}`, {
+      throw new YskError(ErrorCodes.INTERNAL, tl('notes.auto.t0106', { v0: (path) }), {
         httpStatus: 500,
         cause: err,
       });
@@ -106,7 +106,7 @@ export class LocalHostExecutor implements HostExecutor {
     if (!inManagedRoot && !this.executeOn) {
       throw new YskError(
         ErrorCodes.FORBIDDEN,
-        '寫入被阻擋：未開啟系統變更權限，且路徑在管理資料目錄外',
+        tl('ops.blocked.writeOutsideDataDir'),
         { httpStatus: 403, details: { path } },
       );
     }
@@ -123,7 +123,7 @@ export class LocalHostExecutor implements HostExecutor {
     if (!inManagedRoot && !this.executeOn) {
       throw new YskError(
         ErrorCodes.FORBIDDEN,
-        '刪除被阻擋：未開啟系統變更權限，且路徑在管理資料目錄外',
+        tl('notes.auto.n0603'),
         { httpStatus: 403, details: { path } },
       );
     }
@@ -158,7 +158,7 @@ export class LocalHostExecutor implements HostExecutor {
 
   async serviceStatus(name: string): Promise<RunResult> {
     if (!/^[a-zA-Z0-9@_.-]+$/.test(name)) {
-      throw new YskError(ErrorCodes.VALIDATION, `服務名稱無效：${name}`, {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0107', { v0: (name) }), {
         httpStatus: 400,
       });
     }
@@ -170,7 +170,7 @@ export class LocalHostExecutor implements HostExecutor {
     opts: { dryRun?: boolean; timeoutMs?: number; cwd?: string } = {},
   ): Promise<RunResult> {
     if (!argv.length) {
-      throw new YskError(ErrorCodes.VALIDATION, '指令參數為空', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0882'), { httpStatus: 400 });
     }
     if (opts.dryRun) {
       return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: true };
@@ -178,11 +178,11 @@ export class LocalHostExecutor implements HostExecutor {
     // Non-mutating info commands always allowed; mutating requires executeEnabled
     const mutating = isMutatingArgv(argv);
     if (mutating && !this.executeOn) {
-      throw new YskError(
-        ErrorCodes.FORBIDDEN,
-        '指令被阻擋：變更主機需開啟系統變更權限',
-        { httpStatus: 403, details: { argv } },
-      );
+      throw yskError(ErrorCodes.FORBIDDEN, {
+        httpStatus: 403,
+        messageKey: 'notes.auto.n0883',
+        details: { argv },
+      });
     }
     try {
       const { stdout, stderr } = await execFileAsync(argv[0], argv.slice(1), {
@@ -219,7 +219,7 @@ export class LocalHostExecutor implements HostExecutor {
   private assertWritable(path: string): void {
     if (!this.writeRoots.length) return;
     if (!this.isUnderWriteRoots(path)) {
-      throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `路徑不在允許寫入範圍：${path}`, {
+      throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.auto.t0108', { v0: (path) }), {
         httpStatus: 403,
         details: { path, writeRoots: this.writeRoots },
       });
@@ -349,11 +349,29 @@ function isMutatingArgv(argv: string[]): boolean {
     }
     return false;
   }
-  // bash -c with destructive patterns still run under higher-level allowlist; treat bash as mutating when not dry
+  // bash -c: only treat as mutating when the script clearly mutates the host.
+  // Read-only apt probes (list / cache policy / dpkg-query) must work without YSK_EXECUTE.
   if (bin === 'bash' || bin === 'sh') {
     const script = argv.slice(1).join(' ');
+    // apt-get update writes package indexes — requires EXECUTE
+    if (/\bapt-get\s+update\b/.test(script)) return true;
     if (
-      /\b(rm|mv|cp|apt|useradd|systemctl\s+(enable|start|restart|stop)|crontab|kill\s+-)\b/.test(
+      /\bapt(-get)?\s+(install|remove|purge|upgrade|dist-upgrade|autoremove|full-upgrade)\b/.test(
+        script,
+      )
+    ) {
+      return true;
+    }
+    // Pure inventory / probe helpers — not mutating
+    if (
+      /\bapt\s+list\b/.test(script) ||
+      /\bapt-cache\b/.test(script) ||
+      /\bdpkg-query\b/.test(script)
+    ) {
+      return false;
+    }
+    if (
+      /\b(rm|mv|cp|useradd|userdel|usermod|chown|chmod|systemctl\s+(enable|start|restart|stop|disable)|crontab|kill\s+-)\b/.test(
         script,
       )
     ) {

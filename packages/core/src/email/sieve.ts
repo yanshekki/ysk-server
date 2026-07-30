@@ -4,7 +4,7 @@
 
 import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export type SieveScript = {
   mailbox: string;
@@ -16,8 +16,8 @@ export type SieveScript = {
 
 function safeMailbox(m: string): string {
   const s = m.trim().toLowerCase();
-  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s) && !/^[a-z0-9._-]+$/.test(s)) {
-    throw new YskError(ErrorCodes.VALIDATION, '郵箱 ID 無效', { httpStatus: 400 });
+  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2 }$/i.test(s) && !/^[a-z0-9._-]+$/.test(s)) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1508'), { httpStatus: 400 });
   }
   return s.replace(/[^a-z0-9._@+-]/gi, '_');
 }
@@ -40,8 +40,7 @@ export function listSieveScripts(dataDir: string, mailbox: string): SieveScript[
       name,
       path,
       bytes: st.length,
-      updatedAt: new Date().toISOString(),
-    });
+      updatedAt: new Date().toISOString() });
   }
   return out;
 }
@@ -54,7 +53,7 @@ export function writeSieveScript(input: {
 }): { ok: boolean; script: SieveScript; notes: string[] } {
   const name = (input.name ?? 'default.sieve').replace(/[^a-zA-Z0-9._-]/g, '');
   if (!name.endsWith('.sieve')) {
-    throw new YskError(ErrorCodes.VALIDATION, '檔名須以 .sieve 結尾', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1018'), { httpStatus: 400 });
   }
   const dir = sieveDir(input.dataDir, input.mailbox);
   const path = join(dir, name);
@@ -66,13 +65,11 @@ export function writeSieveScript(input: {
       name,
       path,
       bytes: Buffer.byteLength(input.content),
-      updatedAt: new Date().toISOString(),
-    },
+      updatedAt: new Date().toISOString() },
     notes: [
-      `已寫入 ${path}`,
-      'written ≠ Dovecot Pigeonhole 已載入 — 需 ManageSieve 或 symlink 到 user sieve',
-    ],
-  };
+      tl('notes.email.wrotePath', { path }),
+      tl('notes.auto.n0468'),
+    ] };
 }
 
 export function readSieveScript(
@@ -83,7 +80,7 @@ export function readSieveScript(
   const safe = name.replace(/[^a-zA-Z0-9._-]/g, '');
   const path = join(sieveDir(dataDir, mailbox), safe);
   if (!existsSync(path)) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 Sieve 腳本', { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0849'), { httpStatus: 404 });
   }
   return { content: readFileSync(path, 'utf8'), path };
 }
@@ -95,9 +92,9 @@ export function deleteSieveScript(
 ): { ok: boolean; notes: string[] } {
   const safe = name.replace(/[^a-zA-Z0-9._-]/g, '');
   const path = join(sieveDir(dataDir, mailbox), safe);
-  if (!existsSync(path)) return { ok: false, notes: ['找不到'] };
+  if (!existsSync(path)) return { ok: false, notes: [tl('notes.notFound')] };
   unlinkSync(path);
-  return { ok: true, notes: [`已刪除 ${path}`] };
+  return { ok: true, notes: [tl('notes.tpl.deleted', { name: path })] };
 }
 
 export const DEFAULT_SIEVE_TEMPLATE = `require ["fileinto", "vacation"];

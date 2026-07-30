@@ -7,20 +7,18 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import {
   appendMigrateStep,
   setMigratePhase,
-  writeMigrateProgress,
-} from './job-store.js';
+  writeMigrateProgress } from './job-store.js';
 import {
   type MigrateSshAuth,
   type MigrateSshEndpoint,
   rsyncToRemote,
   runSshCommand,
-  userAtHost,
-} from './transport.js';
+  userAtHost } from './transport.js';
 
 export type TransferItemResult = {
   id: string;
@@ -60,8 +58,7 @@ export async function ensureRemoteDirs(input: {
     return assertHonestOps({
       ok: true,
       apply_status: 'written',
-      notes: ['無需建立遠端目錄'],
-    });
+      notes: [tl('notes.auto.n1201')] });
   }
   return runSshCommand({
     host: input.host,
@@ -69,8 +66,7 @@ export async function ensureRemoteDirs(input: {
     auth: input.auth,
     remoteCommand: `mkdir -p ${list} && echo YSK_MKDIR_OK`,
     timeoutMs: 30_000,
-    name: 'mkdir-remote',
-  });
+    name: 'mkdir-remote' });
 }
 
 /**
@@ -90,8 +86,7 @@ export async function verifyRemoteYskJson(input: {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: ['本機 ysk.json 無法讀取 / 無 fingerprint'],
-    });
+      notes: [tl('notes.auto.n0998')] });
   }
   const remotePath = JSON.stringify(join(input.targetDataDir, 'ysk.json'));
   const r = await runSshCommand({
@@ -99,16 +94,14 @@ export async function verifyRemoteYskJson(input: {
     endpoint: input.endpoint,
     auth: input.auth,
     remoteCommand: `sha256sum ${remotePath} 2>/dev/null | awk '{print $1}'; echo YSK_SHA_DONE`,
-    timeoutMs: 60_000,
-  });
+    timeoutMs: 60_000 });
   if (!r.ok) {
     return assertHonestOps({
       ok: false,
       blocked: r.blocked,
       apply_status: r.apply_status ?? 'failed',
-      notes: ['目標 ysk.json 校驗失敗', ...r.notes],
-      localSha,
-    });
+      notes: [tl('notes.auto.n1272'), ...r.notes],
+      localSha });
   }
   const remoteSha = (r.stdout || '')
     .split('\n')
@@ -118,9 +111,8 @@ export async function verifyRemoteYskJson(input: {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: [`無法解析目標 sha256: ${(r.stdout || '').slice(0, 120)}`],
-      localSha,
-    });
+      notes: [tl('notes.auto.t0618', { v0: ((r.stdout || '').slice(0, 120)) })],
+      localSha });
   }
   const ok = remoteSha.toLowerCase() === localSha.toLowerCase();
   return assertHonestOps({
@@ -128,12 +120,11 @@ export async function verifyRemoteYskJson(input: {
     apply_status: ok ? 'applied' : 'failed',
     notes: [
       ok
-        ? `ysk.json sha256 一致 ${localSha.slice(0, 12)}…`
-        : `ysk.json 不一致 local=${localSha.slice(0, 12)} remote=${remoteSha.slice(0, 12)}`,
+        ? tl('notes.auto.t0619', { v0: (localSha.slice(0, 12)) })
+        : tl('notes.auto.t0620', { v0: (localSha.slice(0, 12)), v1: (remoteSha.slice(0, 12)) }),
     ],
     localSha,
-    remoteSha,
-  }) as OpsResultDto & { localSha?: string; remoteSha?: string };
+    remoteSha }) as OpsResultDto & { localSha?: string; remoteSha?: string };
 }
 
 /**
@@ -161,11 +152,10 @@ export async function transferMigratePayload(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '伺服器未開啟系統變更權限，無法 rsync',
-      notes: ['transfer 需要 YSK_EXECUTE=1'],
+      blockMessage: tl('notes.auto.n0036'),
+      notes: [tl('notes.auto.n0455')],
       items: [],
-      targetDataDir,
-    }) as TransferResult;
+      targetDataDir }) as TransferResult;
   }
 
   if (!input.manifest.packagedAt && !input.dryRun) {
@@ -175,16 +165,14 @@ export async function transferMigratePayload(input: {
       id: 'package-check',
       kind: 'verify',
       ok: true,
-      notes: ['警告：manifest 無 packagedAt — 若需 DB 請先跑 package'],
-    });
+      notes: [tl('notes.auto.n1430')] });
   }
 
   setMigratePhase(dataDir, input.job, 'transfer');
   writeMigrateProgress(dataDir, input.job.id, {
     phase: 'transfer',
     status: 'starting',
-    target: userAtHost(input.endpoint),
-  });
+    target: userAtHost(input.endpoint) });
 
   // 1) mkdir
   const homeParents = [
@@ -198,15 +186,13 @@ export async function transferMigratePayload(input: {
     host: input.host,
     endpoint: input.endpoint,
     auth: input.auth,
-    dirs: [targetDataDir, ...homeParents, '/home'],
-  });
+    dirs: [targetDataDir, ...homeParents, '/home'] });
   items.push({
     id: 'mkdir',
     kind: 'mkdir',
     ok: mkdir.ok,
     notes: mkdir.notes,
-    blocked: mkdir.blocked,
-  });
+    blocked: mkdir.blocked });
   appendMigrateStep(dataDir, input.job, {
     phase: 'transfer',
     name: 'mkdir-remote',
@@ -214,41 +200,35 @@ export async function transferMigratePayload(input: {
       ok: mkdir.ok,
       blocked: mkdir.blocked,
       apply_status: mkdir.apply_status,
-      notes: mkdir.notes,
-    },
-  });
+      notes: mkdir.notes } });
   if (!mkdir.ok) {
-    setMigratePhase(dataDir, input.job, 'failed', '遠端 mkdir 失敗');
+    setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n1477'));
     return assertHonestOps({
       ok: false,
       blocked: mkdir.blocked,
       apply_status: mkdir.apply_status ?? 'failed',
-      notes: ['transfer 中止：無法建立遠端目錄', ...mkdir.notes],
+      notes: [tl('notes.auto.n0450'), ...mkdir.notes],
       items,
-      targetDataDir,
-    }) as TransferResult;
+      targetDataDir }) as TransferResult;
   }
 
   // 2) dataDir
   writeMigrateProgress(dataDir, input.job.id, {
     phase: 'transfer',
-    status: 'rsync-dataDir',
-  });
+    status: 'rsync-dataDir' });
   if (!existsSync(dataDir)) {
     items.push({
       id: 'dataDir',
       kind: 'dataDir',
       ok: false,
-      notes: [`本機 dataDir 不存在: ${dataDir}`],
-    });
-    setMigratePhase(dataDir, input.job, 'failed', 'dataDir 不存在');
+      notes: [tl('notes.auto.t0621', { v0: (dataDir) })] });
+    setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n0243'));
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: [`dataDir 不存在: ${dataDir}`],
+      notes: [tl('notes.auto.t0622', { v0: (dataDir) })],
       items,
-      targetDataDir,
-    }) as TransferResult;
+      targetDataDir }) as TransferResult;
   }
 
   const dataRsync = await rsyncToRemote({
@@ -258,15 +238,13 @@ export async function transferMigratePayload(input: {
     localPath: dataDir,
     remotePath: targetDataDir,
     dryRun: input.dryRun,
-    timeoutMs: 3_600_000,
-  });
+    timeoutMs: 3_600_000 });
   items.push({
     id: 'dataDir',
     kind: 'dataDir',
     ok: dataRsync.ok,
     notes: dataRsync.notes,
-    blocked: dataRsync.blocked,
-  });
+    blocked: dataRsync.blocked });
   appendMigrateStep(dataDir, input.job, {
     phase: 'transfer',
     name: 'rsync-dataDir',
@@ -274,20 +252,17 @@ export async function transferMigratePayload(input: {
       ok: dataRsync.ok,
       blocked: dataRsync.blocked,
       apply_status: dataRsync.apply_status,
-      notes: dataRsync.notes,
-    },
-  });
+      notes: dataRsync.notes } });
   if (!dataRsync.ok) {
-    setMigratePhase(dataDir, input.job, 'failed', 'rsync dataDir 失敗');
+    setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n0421'));
     return assertHonestOps({
       ok: false,
       blocked: dataRsync.blocked,
       apply_status: dataRsync.apply_status ?? 'failed',
       blockMessage: dataRsync.blockMessage,
-      notes: ['transfer 中止：dataDir rsync 失敗', ...dataRsync.notes],
+      notes: [tl('notes.auto.n0449'), ...dataRsync.notes],
       items,
-      targetDataDir,
-    }) as TransferResult;
+      targetDataDir }) as TransferResult;
   }
 
   // 3) homes (skip those already under dataDir to avoid double-copy noise)
@@ -300,8 +275,7 @@ export async function transferMigratePayload(input: {
         id: `home:${home}`,
         kind: 'home',
         ok: true,
-        notes: [`略過不存在的 home: ${home}`],
-      });
+        notes: [tl('notes.auto.t0623', { v0: (home) })] });
       continue;
     }
     if (home === dataResolved || home.startsWith(dataResolved + '/')) {
@@ -309,8 +283,7 @@ export async function transferMigratePayload(input: {
         id: `home:${home}`,
         kind: 'home',
         ok: true,
-        notes: [`home 已在 dataDir 內，隨 dataDir 傳輸: ${home}`],
-      });
+        notes: [tl('notes.auto.t0624', { v0: (home) })] });
       continue;
     }
     writeMigrateProgress(dataDir, input.job.id, {
@@ -318,8 +291,7 @@ export async function transferMigratePayload(input: {
       status: 'rsync-home',
       home,
       index: homeIdx,
-      total: input.manifest.paths.homes.length,
-    });
+      total: input.manifest.paths.homes.length });
     const hr = await rsyncToRemote({
       host: input.host,
       endpoint: input.endpoint,
@@ -327,15 +299,13 @@ export async function transferMigratePayload(input: {
       localPath: home,
       remotePath: home,
       dryRun: input.dryRun,
-      timeoutMs: 3_600_000,
-    });
+      timeoutMs: 3_600_000 });
     items.push({
       id: `home:${home}`,
       kind: 'home',
       ok: hr.ok,
       notes: hr.notes,
-      blocked: hr.blocked,
-    });
+      blocked: hr.blocked });
     appendMigrateStep(dataDir, input.job, {
       phase: 'transfer',
       name: `rsync-home:${home}`,
@@ -343,19 +313,16 @@ export async function transferMigratePayload(input: {
         ok: hr.ok,
         blocked: hr.blocked,
         apply_status: hr.apply_status,
-        notes: hr.notes,
-      },
-    });
+        notes: hr.notes } });
     if (!hr.ok) {
-      setMigratePhase(dataDir, input.job, 'failed', `rsync home 失敗 ${home}`);
+      setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.t0625', { v0: (home) }));
       return assertHonestOps({
         ok: false,
         blocked: hr.blocked,
         apply_status: hr.apply_status ?? 'failed',
-        notes: [`transfer 中止：home rsync 失敗 ${home}`, ...hr.notes],
+        notes: [tl('notes.auto.t0626', { v0: (home) }), ...hr.notes],
         items,
-        targetDataDir,
-      }) as TransferResult;
+        targetDataDir }) as TransferResult;
     }
   }
 
@@ -367,8 +334,7 @@ export async function transferMigratePayload(input: {
           id: `etc:${etc}`,
           kind: 'optionalEtc',
           ok: true,
-          notes: [`略過不存在: ${etc}`],
-        });
+          notes: [tl('notes.auto.t0627', { v0: (etc) })] });
         continue;
       }
       const er = await rsyncToRemote({
@@ -378,15 +344,13 @@ export async function transferMigratePayload(input: {
         localPath: etc,
         remotePath: etc,
         dryRun: input.dryRun,
-        timeoutMs: 1_800_000,
-      });
+        timeoutMs: 1_800_000 });
       items.push({
         id: `etc:${etc}`,
         kind: 'optionalEtc',
         ok: er.ok,
         notes: er.notes,
-        blocked: er.blocked,
-      });
+        blocked: er.blocked });
       appendMigrateStep(dataDir, input.job, {
         phase: 'transfer',
         name: `rsync-etc:${etc}`,
@@ -394,13 +358,11 @@ export async function transferMigratePayload(input: {
           ok: er.ok,
           blocked: er.blocked,
           apply_status: er.apply_status,
-          notes: er.notes,
-        },
-      });
+          notes: er.notes } });
       // optional etc failure is non-fatal (LE may re-issue)
       if (!er.ok) {
         items[items.length - 1]!.notes.push(
-          'optionalEtc 失敗不中止 transfer（可於目標重簽憑證）',
+          tl('notes.auto.n0354'),
         );
       }
     }
@@ -410,8 +372,7 @@ export async function transferMigratePayload(input: {
   if (!input.dryRun) {
     writeMigrateProgress(dataDir, input.job.id, {
       phase: 'transfer',
-      status: 'verify-ysk-json',
-    });
+      status: 'verify-ysk-json' });
     const expected =
       input.manifest.fingerprints['dataDir/ysk.json'] ?? sha256Local(join(dataDir, 'ysk.json'));
     const v = await verifyRemoteYskJson({
@@ -420,15 +381,13 @@ export async function transferMigratePayload(input: {
       auth: input.auth,
       localDataDir: dataDir,
       targetDataDir,
-      expectedSha: expected,
-    });
+      expectedSha: expected });
     items.push({
       id: 'verify-ysk-json',
       kind: 'verify',
       ok: v.ok,
       notes: v.notes,
-      blocked: v.blocked,
-    });
+      blocked: v.blocked });
     appendMigrateStep(dataDir, input.job, {
       phase: 'transfer',
       name: 'verify-ysk-json',
@@ -436,25 +395,21 @@ export async function transferMigratePayload(input: {
         ok: v.ok,
         blocked: v.blocked,
         apply_status: v.apply_status,
-        notes: v.notes,
-      },
-    });
+        notes: v.notes } });
     if (!v.ok) {
-      setMigratePhase(dataDir, input.job, 'failed', 'ysk.json 校驗失敗');
+      setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n0480'));
       return assertHonestOps({
         ok: false,
         apply_status: 'failed',
-        notes: ['transfer 校驗失敗', ...v.notes],
+        notes: [tl('notes.auto.n0454'), ...v.notes],
         items,
-        targetDataDir,
-      }) as TransferResult;
+        targetDataDir }) as TransferResult;
     }
   }
 
   writeMigrateProgress(dataDir, input.job.id, {
     phase: 'transfer',
-    status: 'done',
-  });
+    status: 'done' });
 
   const hardFail = items.some(
     (i) =>
@@ -469,12 +424,11 @@ export async function transferMigratePayload(input: {
     apply_status: input.dryRun ? 'written' : hardFail ? 'failed' : 'applied',
     notes: [
       hardFail
-        ? 'transfer 有失敗項'
-        : `transfer 完成 → ${userAtHost(input.endpoint)}:${targetDataDir}`,
+        ? tl('notes.auto.n0453')
+        : tl('notes.auto.t0628', { v0: (userAtHost(input.endpoint)), v1: (targetDataDir) }),
       `homes ${input.manifest.paths.homes.length} · optionalEtc ${input.manifest.paths.optionalEtc.length}`,
       ...items.filter((i) => !i.ok).flatMap((i) => i.notes),
     ],
     items,
-    targetDataDir,
-  }) as TransferResult;
+    targetDataDir }) as TransferResult;
 }

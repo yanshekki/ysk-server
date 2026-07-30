@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Three-axis RBAC: role × resource scope × operation level.
  */
@@ -37,30 +38,30 @@ export function checkRbac(
 ): RbacDecision {
   const max = ROLE_MAX_LEVEL[role];
   if (!max) {
-    return { allowed: false, reason: `未知角色：${role}` };
+    return { allowed: false, reason: tl('notes.auto.t0016', { v0: (role) }) };
   }
   if (LEVEL_RANK[level] > LEVEL_RANK[max]) {
     return {
       allowed: false,
-      reason: `角色 ${role} 無法執行 ${level}（上限 ${max}）`,
+      reason: tl('notes.auto.t0017', { v0: (role), v1: (level), v2: (max) }),
     };
   }
   // Viewers cannot write on any scope
   if (role === 'viewer' && level !== 'read') {
-    return { allowed: false, reason: '檢視者為唯讀，無法執行寫入' };
+    return { allowed: false, reason: tl('notes.auto.n1027') };
   }
   // Agents cannot operate at global privilege scope for high ops
   if (role === 'agent' && scope.kind === 'global' && LEVEL_RANK[level] >= LEVEL_RANK['write-high']) {
     return {
       allowed: false,
-      reason: 'Agent 無法在全域範圍執行高風險寫入',
+      reason: tl('notes.auto.n0075'),
     };
   }
   // Project scope requires an id for non-global
   if ((scope.kind === 'project' || scope.kind === 'server') && !scope.id && level !== 'read') {
     return {
       allowed: false,
-      reason: `${scope.kind} 範圍的非讀取操作需要指定 id`,
+      reason: tl('notes.auto.t0018', { v0: (scope.kind) }),
     };
   }
   return { allowed: true };

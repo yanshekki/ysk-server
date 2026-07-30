@@ -13,10 +13,9 @@ import {
   openSync,
   closeSync,
   readdirSync,
-  statSync,
-} from 'node:fs';
+  statSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, type OpsResultDto, type ApplyStatus } from '@ysk/shared';
+import { ErrorCodes, YskError, type OpsResultDto, type ApplyStatus, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { checkHttp, findFreePort, isPortListening, waitHttpOk } from '../host/health.js';
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
@@ -27,15 +26,13 @@ import {
   renderNginxPhpFpm,
   renderNginxProxy,
   renderNginxStatic,
-  renderNginxSuspended,
-} from './nginx-ssl.js';
+  renderNginxSuspended } from './nginx-ssl.js';
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
 import {
   defaultProcessCommands,
   isProcessRuntime,
   renderProcessUnit,
-  selectPhpRuntime,
-} from './runtime.js';
+  selectPhpRuntime } from './runtime.js';
 import { gitSync } from './git-deploy.js';
 import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
@@ -45,8 +42,7 @@ import {
   loadPhpIniSettings,
   loadProjectPhpIni,
   mergePhpIni,
-  renderPhpAdminValueLines,
-} from './php-ini.js';
+  renderPhpAdminValueLines } from './php-ini.js';
 import { loadRuntimeTuning, tuningToEnv, type TuningKind } from './runtime-tuning.js';
 import { assertQuotaMb, assertWithinQuota, checkProjectQuota } from './quota.js';
 import { applyPm2Start, applyPm2Stop, writePm2Ecosystem } from './pm2-apply.js';
@@ -56,15 +52,13 @@ import {
   chownProjectHome,
   runAsProjectUser,
   shellQuote,
-  spawnAsProjectUser,
-} from './project-user-run.js';
+  spawnAsProjectUser } from './project-user-run.js';
 import {
   applyOsUserLimits,
   chownHomeNow,
   probeOsUser,
   type ApplyOsLimitsResult,
-  type OsUserLive,
-} from './project-os-user.js';
+  type OsUserLive } from './project-os-user.js';
 
 export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' | 'failed';
 
@@ -132,9 +126,8 @@ export class ProjectOpsService {
   ): Promise<OpsApplyResult> {
     const row = this.require(projectId);
     if (row.runtime !== 'node') {
-      throw new YskError(ErrorCodes.VALIDATION, 'deployNode 只適用於 Node 專案', {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0249'), {
+        httpStatus: 400 });
     }
     assertOsIsolationForDeploy(row, this.host, 'Deploy Node');
     await assertWithinQuota({
@@ -142,29 +135,28 @@ export class ProjectOpsService {
       projectId,
       homeDir: row.home_dir,
       quotaMb: row.quota_mb,
-      action: 'Deploy',
-    });
+      action: 'Deploy' });
 
     const notes: string[] = [];
     const written: string[] = [];
     if (!canRunAsProjectUser(row, this.host)) {
       notes.push(
-        '隔離模式：degraded — 行程可能以控制面用戶執行；生產請 root + YSK_EXECUTE 並建立系統用戶',
+        tl('notes.auto.n1535'),
       );
     } else {
-      notes.push(`隔離模式：以專案用戶 ${row.linux_user} 運作`);
+      notes.push(tl('notes.auto.t0171', { v0: (row.linux_user) }));
     }
     const entry = opts.entry ?? 'server.js';
     const nodeBinary = resolveNodeBinary();
-    notes.push(`使用 Node 執行檔：${nodeBinary}`);
+    notes.push(tl('notes.auto.t0172', { v0: (nodeBinary) }));
 
     const port = opts.port ?? row.port ?? (await findFreePort(3100, 3999));
-    notes.push(`目標埠：${port}`);
+    notes.push(tl('notes.auto.t0173', { v0: (port) }));
 
     const nodeVer = opts.nodeVersion ?? row.runtime_version ?? '20';
     const tuningEnv = tuningToEnv(loadRuntimeTuning(this.dataDir, 'node', nodeVer));
     if (Object.keys(tuningEnv).length) {
-      notes.push(`已套用面板 Node 調校（${Object.keys(tuningEnv).join(', ')}）`);
+      notes.push(tl('notes.auto.t0174', { v0: (Object.keys(tuningEnv).join(', ')) }));
     }
 
     // Stop any previous process for this project
@@ -191,8 +183,7 @@ export class ProjectOpsService {
       memoryMax,
       cpuQuotaPercent,
       limitNOFILE: 65535,
-      env: tuningEnv,
-    });
+      env: tuningEnv });
     written.push(apply.envPath, apply.unitPath, apply.appDir);
     notes.push(...apply.notes);
     await chownProjectHome(this.host, row, notes);
@@ -200,9 +191,8 @@ export class ProjectOpsService {
     const appDir = apply.appDir;
     const entryPath = join(appDir, entry);
     if (!existsSync(entryPath)) {
-      throw new YskError(ErrorCodes.INTERNAL, `套用後找不到進入點：${entryPath}`, {
-        httpStatus: 500,
-      });
+      throw new YskError(ErrorCodes.INTERNAL, tl('notes.auto.t0175', { v0: (entryPath) }), {
+        httpStatus: 500 });
     }
 
     mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
@@ -216,8 +206,7 @@ export class ProjectOpsService {
       process_status: 'starting',
       status: 'deploying',
       last_health: undefined,
-      last_deploy_at: new Date().toISOString(),
-    });
+      last_deploy_at: new Date().toISOString() });
 
     let pid: number | undefined;
     let deployMode: DeployMode = 'pidfile';
@@ -232,8 +221,7 @@ export class ProjectOpsService {
       entry,
       port,
       nodeBinary,
-      env: tuningEnv,
-    });
+      env: tuningEnv });
     written.push(eco.ecosystemPath);
     notes.push(...eco.notes);
     pm2App = eco.appName;
@@ -263,9 +251,9 @@ export class ProjectOpsService {
           pid = n;
           writeFileSync(pidfile, `${pid}\n`, 'utf8');
         }
-        notes.push(`以 systemd unit 部署：${unitName}`);
+        notes.push(tl('notes.auto.t0176', { v0: (unitName) }));
       } else {
-        notes.push('systemd 啟用失敗 — 改試 PM2／pidfile');
+        notes.push(tl('notes.auto.n0443'));
       }
     }
 
@@ -283,25 +271,24 @@ export class ProjectOpsService {
         port,
         nodeBinary,
         execute: true,
-        env: tuningEnv,
-      });
+        env: tuningEnv });
       notes.push(...pm2.notes);
       if (pm2.ok) {
         deployMode = 'pm2';
         degraded = false;
         pid = pm2.pid;
         if (pid) writeFileSync(pidfile, `${pid}\n`, 'utf8');
-        notes.push(`以 PM2 部署：${pm2.appName}`);
+        notes.push(tl('notes.auto.t0177', { v0: (pm2.appName) }));
       } else if (!this.host.executeEnabled()) {
-        notes.push('無法使用 PM2，改用本機行程管理');
+        notes.push(tl('notes.auto.n1143'));
       } else {
-        notes.push('PM2 啟動失敗 — 改用 pidfile 啟動');
+        notes.push(tl('notes.auto.n0152'));
       }
     }
 
     if (deployMode === 'pidfile') {
       notes.push(
-        '目前以本機行程模式部署',
+        tl('notes.auto.n1268'),
       );
     }
 
@@ -323,12 +310,10 @@ export class ProjectOpsService {
             NODE_ENV: 'production',
             PORT: String(port),
             HOST: '127.0.0.1',
-            ...tuningEnv,
-          },
+            ...tuningEnv },
           logOutFd: outFd,
           logErrFd: errFd,
-          notes,
-        });
+          notes });
         child = spawned.child;
         if (spawned.mode === 'degraded') degraded = true;
         closeSync(outFd);
@@ -338,8 +323,7 @@ export class ProjectOpsService {
         this.projects.updateRuntimeState(projectId, {
           process_status: 'failed',
           status: 'failed',
-          last_health: { ok: false, error: msg, at: new Date().toISOString() },
-        });
+          last_health: { ok: false, error: msg, at: new Date().toISOString() } });
         return {
           ok: false,
           projectId,
@@ -347,21 +331,19 @@ export class ProjectOpsService {
           pidfile,
           processStatus: 'failed',
           listening: false,
-          notes: [...notes, `啟動行程失敗：${msg}`],
+          notes: [...notes, tl('notes.auto.t0178', { v0: (msg) })],
           written,
           degraded: true,
           deployMode: 'pidfile',
           requiresRoot: !this.host.isRoot(),
-          requiresExecute: !this.host.executeEnabled(),
-        };
+          requiresExecute: !this.host.executeEnabled() };
       }
 
       pid = child.pid;
       if (!pid) {
         this.projects.updateRuntimeState(projectId, {
           process_status: 'failed',
-          status: 'failed',
-        });
+          status: 'failed' });
         return {
           ok: false,
           projectId,
@@ -369,15 +351,14 @@ export class ProjectOpsService {
           pidfile,
           processStatus: 'failed',
           listening: false,
-          notes: [...notes, '啟動行程後未取得行程編號'],
+          notes: [...notes, tl('notes.auto.n0620')],
           written,
           degraded: true,
-          deployMode: 'pidfile',
-        };
+          deployMode: 'pidfile' };
       }
       child.unref();
       writeFileSync(pidfile, `${pid}\n`, 'utf8');
-      notes.push(`已啟動 pid=${pid}，pidfile=${pidfile}`);
+      notes.push(tl('notes.auto.t0179', { v0: (pid), v1: (pidfile) }));
     }
 
     const url = `http://127.0.0.1:${port}/`;
@@ -406,11 +387,10 @@ export class ProjectOpsService {
       ssl: false,
       cloudflareRealIp: true,
       forceHttps: false,
-      hsts: false,
-    });
+      hsts: false });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
-    notes.push(`已發布 Nginx 設定（管理檔）：${nginxPath}`);
+    notes.push(tl('notes.auto.t0180', { v0: (nginxPath) }));
 
     const statusLabel =
       processStatus === 'running'
@@ -435,20 +415,17 @@ export class ProjectOpsService {
         at: new Date().toISOString(),
         url,
         deployMode,
-        degraded,
-      },
+        degraded },
       last_deploy_at: new Date().toISOString(),
       deploy_entry: entry,
-      last_deploy_notes: clipDeployNotes(notes),
-    });
+      last_deploy_notes: clipDeployNotes(notes) });
 
     this.audit?.append({
       actor: opts.actor,
       action: 'project.deploy_node',
       resource: projectId,
       detail: { port, pid, health, listening, nginxPath, deployMode, degraded },
-      ok: health.ok && listening,
-    });
+      ok: health.ok && listening });
 
     return {
       ok: health.ok && listening,
@@ -463,8 +440,7 @@ export class ProjectOpsService {
         status: health.status,
         body: health.body,
         ms: health.ms,
-        error: health.error,
-      },
+        error: health.error },
       listening,
       nginxPath,
       notes,
@@ -474,8 +450,7 @@ export class ProjectOpsService {
       systemdUnit: deployMode === 'systemd' ? unitName : undefined,
       pm2App: deployMode === 'pm2' ? pm2App : undefined,
       requiresRoot: !this.host.isRoot(),
-      requiresExecute: !this.host.executeEnabled(),
-    };
+      requiresExecute: !this.host.executeEnabled() };
   }
 
   /**
@@ -498,15 +473,13 @@ export class ProjectOpsService {
       pid: undefined,
       process_status: 'stopped',
       status: 'stopped',
-      last_health: { ok: false, error: 'stopped', at: new Date().toISOString() },
-    });
+      last_health: { ok: false, error: 'stopped', at: new Date().toISOString() } });
     this.audit?.append({
       actor,
       action: 'project.stop_node',
       resource: projectId,
       detail: { notes },
-      ok: true,
-    });
+      ok: true });
     return {
       ok: true,
       projectId,
@@ -514,8 +487,7 @@ export class ProjectOpsService {
       processStatus: 'stopped',
       listening: false,
       notes,
-      written: [],
-    };
+      written: [] };
   }
 
   /**
@@ -537,7 +509,7 @@ export class ProjectOpsService {
       if (row.runtime === 'node') {
         throw new YskError(
           ErrorCodes.VALIDATION,
-          '此專案是 Node runtime，請使用 Node 部署（或改 runtime 為 static）',
+          tl('notes.auto.n1037'),
           { httpStatus: 400 },
         );
       }
@@ -547,8 +519,7 @@ export class ProjectOpsService {
       projectId,
       homeDir: row.home_dir,
       quotaMb: row.quota_mb,
-      action: 'Deploy static',
-    });
+      action: 'Deploy static' });
     const notes: string[] = [];
     const written: string[] = [];
     const docRoot = resolveProjectDocRoot(row);
@@ -562,9 +533,9 @@ export class ProjectOpsService {
         'utf8',
       );
       written.push(indexPath);
-      notes.push(`已建立佔位頁：${indexPath}`);
+      notes.push(tl('notes.auto.t0181', { v0: (indexPath) }));
     } else {
-      notes.push(`使用既有：${indexPath}`);
+      notes.push(tl('notes.auto.t0182', { v0: (indexPath) }));
     }
 
     const primary = row.domain ?? `${row.linux_user}.local`;
@@ -584,13 +555,12 @@ export class ProjectOpsService {
       siteRedirectUrl: row.site_redirect_url,
       authBasicUserFile: auth.path,
       authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
-      bindIp: row.bind_ip,
-    });
+      bindIp: row.bind_ip });
     notes.push(...auth.notes);
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
-    notes.push(`靜態 Nginx 設定：${nginxPath}`);
-    notes.push(`文件根目錄：${docRoot}`);
+    notes.push(tl('notes.auto.t0183', { v0: (nginxPath) }));
+    notes.push(tl('notes.auto.t0184', { v0: (docRoot) }));
 
     let nginxReloaded = false;
     const wantReload =
@@ -601,25 +571,23 @@ export class ProjectOpsService {
         dataDir: this.dataDir,
         systemConfDir: '/etc/nginx/conf.d',
         host: this.host,
-        dryRun: false,
-      });
+        dryRun: false });
       written.push(...sync.copied);
       notes.push(...sync.notes);
       if (sync.tested) {
         const rel = await this.host.runCommand(['systemctl', 'reload', 'nginx'], {
-          timeoutMs: 15_000,
-        });
+          timeoutMs: 15_000 });
         nginxReloaded = rel.exitCode === 0;
         notes.push(
           nginxReloaded
-            ? '已重載 Nginx (static site live if DNS points here)'
-            : `Nginx reload 結束碼=${rel.exitCode}`,
+            ? tl('notes.auto.n0810')
+            : tl('notes.nginx.reloadExit', { code: rel.exitCode }),
         );
       }
     } else if (wantReload) {
-      notes.push('無法重載 Nginx：需要系統變更權限');
+      notes.push(tl('ops.blocked.nginxReload'));
     } else {
-      notes.push('僅寫入管理設定 — 就緒後再發布並重載');
+      notes.push(tl('notes.auto.n0568'));
     }
 
     // Stop any leftover node/php process from previous runtime
@@ -637,18 +605,15 @@ export class ProjectOpsService {
         at: new Date().toISOString(),
         deployMode: 'static_nginx',
         degraded: !nginxReloaded,
-        docRoot,
-      },
-      last_deploy_at: new Date().toISOString(),
-    });
+        docRoot },
+      last_deploy_at: new Date().toISOString() });
 
     this.audit?.append({
       actor: opts.actor,
       action: 'project.deploy_static',
       resource: projectId,
       detail: { nginxPath, docRoot, nginxReloaded },
-      ok: true,
-    });
+      ok: true });
 
     return {
       ok: true,
@@ -662,8 +627,7 @@ export class ProjectOpsService {
       deployMode: 'none',
       nginxReloaded,
       requiresRoot: !this.host.isRoot(),
-      requiresExecute: !this.host.executeEnabled(),
-    };
+      requiresExecute: !this.host.executeEnabled() };
   }
 
   /**
@@ -678,9 +642,8 @@ export class ProjectOpsService {
         projectId,
         processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
         listening: false,
-        notes: ['尚未分配埠，請先部署專案'],
-        written: [],
-      };
+        notes: [tl('notes.auto.n0703')],
+        written: [] };
     }
     const url = `http://127.0.0.1:${port}/`;
     const listening = await isPortListening(port);
@@ -700,9 +663,7 @@ export class ProjectOpsService {
         error: health.error,
         ms: health.ms,
         at: new Date().toISOString(),
-        url,
-      },
-    });
+        url } });
 
     return {
       ok: health.ok && listening,
@@ -717,16 +678,14 @@ export class ProjectOpsService {
         status: health.status,
         body: health.body,
         ms: health.ms,
-        error: health.error,
-      },
+        error: health.error },
       listening,
       nginxPath: row.nginx_config_path,
       notes: [
         listening ? `Port ${port} is listening` : `Port ${port} is not listening`,
         health.ok ? `HTTP OK ${health.status}` : `HTTP fail: ${health.error ?? health.status}`,
       ],
-      written: [],
-    };
+      written: [] };
   }
 
   /** Write htpasswd under dataDir when project has HTTP basic auth credentials. */
@@ -750,8 +709,7 @@ export class ProjectOpsService {
     writeFileSync(path, `${row.http_auth_user.trim()}:${hash}\n`, 'utf8');
     return {
       path,
-      notes: [`HTTP 基本認證：${row.http_auth_user.trim()}（${path}）`],
-    };
+      notes: [tl('notes.auto.t0185', { v0: (row.http_auth_user.trim()), v1: (path) })] };
   }
 
   /**
@@ -783,8 +741,7 @@ export class ProjectOpsService {
     if (opts.forceHttps !== undefined || opts.hsts !== undefined) {
       this.projects.updateMeta(projectId, {
         force_https: forceHttps,
-        hsts,
-      });
+        hsts });
     }
     const managed = resolveManagedCertPaths(this.dataDir, primary);
     const auth = await this.writeProjectHtpasswd(row);
@@ -801,8 +758,7 @@ export class ProjectOpsService {
       siteRedirectUrl: row.site_redirect_url,
       authBasicUserFile,
       authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
-      bindIp: row.bind_ip,
-    };
+      bindIp: row.bind_ip };
 
     let conf: string;
     let kind = 'proxy';
@@ -813,8 +769,7 @@ export class ProjectOpsService {
       conf = renderNginxStatic({
         serverName,
         docRoot,
-        ...commonSsl,
-      });
+        ...commonSsl });
     } else if (row.runtime === 'php') {
       kind = 'php-fpm';
       const phpVer = selectPhpRuntime(row.runtime_version || '8.2').version;
@@ -825,14 +780,12 @@ export class ProjectOpsService {
         serverName,
         docRoot,
         fpmSocket,
-        ...commonSsl,
-      });
+        ...commonSsl });
     } else {
       conf = renderNginxProxy({
         serverName,
         upstream: `http://127.0.0.1:${port}`,
-        ...commonSsl,
-      });
+        ...commonSsl });
     }
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     const systemDir =
@@ -841,23 +794,22 @@ export class ProjectOpsService {
     const sync = await syncNginxConfigs({
       dataDir: this.dataDir,
       systemConfDir: systemDir,
-      host: this.host,
-    });
+      host: this.host });
     const notes = [
-      `已寫入 Nginx 設定：${nginxPath}`,
-      `類型：${kind}`,
+      tl('notes.email.wroteNginx', { nginxPath }),
+      tl('notes.auto.t0186', { v0: (kind) }),
       ...sync.notes,
       ...auth.notes,
     ];
     if (serverName.includes(' ')) notes.push(`server_name：${serverName}`);
-    if (wantSsl && forceHttps) notes.push('強制 HTTPS（HTTP→301）');
-    if (wantSsl && hsts) notes.push('已啟用 HSTS');
-    if (row.site_redirect_url) notes.push(`整站重新導向 → ${row.site_redirect_url}`);
+    if (wantSsl && forceHttps) notes.push(tl('notes.auto.n0829'));
+    if (wantSsl && hsts) notes.push(tl('notes.auto.n0745'));
+    if (row.site_redirect_url) notes.push(tl('notes.auto.t0187', { v0: (row.site_redirect_url) }));
     if (wantSsl && managed.exists) {
-      notes.push(`使用已上傳憑證：${managed.fullchain}`);
+      notes.push(tl('notes.auto.t0188', { v0: (managed.fullchain) }));
     } else if (wantSsl) {
       notes.push(
-        `已啟用 SSL（預設 Let’s Encrypt 路徑；或於 SSL 頁上傳 ${primary} 憑證）`,
+        tl('notes.auto.t0189', { v0: (primary) }),
       );
     }
     let nginxReloaded = false;
@@ -868,19 +820,19 @@ export class ProjectOpsService {
       const t = await this.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
       notes.push(
         t.exitCode === 0
-          ? 'Nginx 設定檢查通過'
-          : `Nginx 設定檢查失敗：${(t.stderr || t.stdout).trim()}`,
+          ? tl('notes.nginx.configOk')
+          : tl('notes.tpl.nginxConfigFailed', { detail: (t.stderr || t.stdout).trim() }),
       );
       if (t.exitCode === 0) {
         const r = await this.host.runCommand(['systemctl', 'reload', 'nginx'], { timeoutMs: 15_000 });
         nginxReloaded = r.exitCode === 0;
         nginxStatus = nginxReloaded ? 'reloaded' : `reload_failed:${r.stderr}`;
-        notes.push(nginxReloaded ? '已重載 Nginx' : `重載 Nginx 失敗：${r.stderr}`);
+        notes.push(nginxReloaded ? tl('notes.nginx.reloaded') : tl('notes.auto.t0190', { v0: (r.stderr) }));
       } else {
         nginxStatus = 'nginx_t_failed';
       }
     } else if (wantReload) {
-      notes.push('無法重載 Nginx：需要系統變更權限');
+      notes.push(tl('ops.blocked.nginxReload'));
       nginxStatus = 'requires_execute';
     }
 
@@ -890,9 +842,7 @@ export class ProjectOpsService {
         ...(row.last_health ?? {}),
         nginxStatus,
         nginxReloaded,
-        at: new Date().toISOString(),
-      },
-    });
+        at: new Date().toISOString() } });
     this.projects.updateNginxPath(projectId, nginxPath);
     // Honest ok: if reload requested but blocked/failed → not full success
     const reloadWanted = wantReload;
@@ -915,10 +865,8 @@ export class ProjectOpsService {
         serverName,
         forceHttps,
         hsts,
-        ok,
-      },
-      ok,
-    });
+        ok },
+      ok });
     return {
       ok,
       projectId,
@@ -929,20 +877,19 @@ export class ProjectOpsService {
       notes: [
         ...notes,
         reloadBlocked
-          ? '狀態：written（conf 已寫；reload blocked）'
+          ? tl('notes.auto.n1227')
           : reloadFailed
-            ? '狀態：failed（nginx -t 或 reload 失敗）'
+            ? tl('notes.auto.n1218')
             : nginxReloaded
-              ? '狀態：applied'
-              : '狀態：written',
+              ? tl('notes.auto.n0001')
+              : tl('notes.auto.n0007'),
       ],
       written: [nginxPath, ...sync.copied],
       nginxReloaded,
       nginxStatus,
       requiresExecute: !this.host.executeEnabled(),
       requiresRoot: !this.host.isRoot(),
-      degraded: !nginxReloaded,
-    };
+      degraded: !nginxReloaded };
   }
 
   /**
@@ -958,29 +905,26 @@ export class ProjectOpsService {
     this.projects.updateRuntimeState(projectId, {
       status: 'suspended',
       process_status: 'stopped',
-      nginx_config_path: pub.nginxPath,
-    });
+      nginx_config_path: pub.nginxPath });
     this.audit?.append({
       actor,
       action: 'project.suspend',
       resource: projectId,
       detail: { domain: row.domain },
-      ok: true,
-    });
+      ok: true });
     return {
       ok: true,
       projectId,
       processStatus: 'stopped',
       listening: false,
       nginxPath: pub.nginxPath,
-      notes: ['專案已暫停（503）', ...notes],
+      notes: [tl('notes.auto.n0691'), ...notes],
       written: pub.written,
       degraded: pub.degraded,
       requiresExecute: pub.requiresExecute,
       requiresRoot: pub.requiresRoot,
       nginxReloaded: pub.nginxReloaded,
-      nginxStatus: pub.nginxStatus,
-    };
+      nginxStatus: pub.nginxStatus };
   }
 
   /**
@@ -991,20 +935,17 @@ export class ProjectOpsService {
     this.projects.updateMeta(projectId, { status: 'stopped' });
     this.projects.updateRuntimeState(projectId, {
       status: 'stopped',
-      process_status: 'stopped',
-    });
+      process_status: 'stopped' });
     const pub = await this.publishNginx(projectId, { actor, ssl: false });
     this.audit?.append({
       actor,
       action: 'project.unsuspend',
       resource: projectId,
       detail: {},
-      ok: true,
-    });
+      ok: true });
     return {
       ...pub,
-      notes: ['專案已恢復', ...pub.notes],
-    };
+      notes: [tl('notes.auto.n0690'), ...pub.notes] };
   }
 
   private async publishSuspendedNginx(
@@ -1023,9 +964,8 @@ export class ProjectOpsService {
     const sync = await syncNginxConfigs({
       dataDir: this.dataDir,
       systemConfDir: systemDir,
-      host: this.host,
-    });
-    const notes = [`已寫入暫停用虛擬主機：${nginxPath}`, ...sync.notes];
+      host: this.host });
+    const notes = [tl('notes.auto.t0191', { v0: (nginxPath) }), ...sync.notes];
     let nginxReloaded = false;
     let nginxStatus = 'managed_only';
     if (systemDir && this.host.executeEnabled()) {
@@ -1052,8 +992,7 @@ export class ProjectOpsService {
       nginxStatus,
       requiresExecute: !this.host.executeEnabled(),
       requiresRoot: !this.host.isRoot(),
-      degraded: !nginxReloaded,
-    };
+      degraded: !nginxReloaded };
   }
 
   /**
@@ -1106,8 +1045,7 @@ export class ProjectOpsService {
       deployMode,
       lastHealth: row.last_health,
       osProvisioned: row.os_provisioned,
-      linuxUser: row.linux_user,
-    };
+      linuxUser: row.linux_user };
   }
 
   /**
@@ -1128,9 +1066,8 @@ export class ProjectOpsService {
     const row = this.require(projectId);
     const gitUrl = opts.gitUrl ?? row.git_url;
     if (!gitUrl) {
-      throw new YskError(ErrorCodes.VALIDATION, '請提供 Git URL（或先在專案設定）', {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1414'), {
+        httpStatus: 400 });
     }
     const appDir = join(row.home_dir, 'app');
     const git = await gitSync({
@@ -1138,13 +1075,11 @@ export class ProjectOpsService {
       gitUrl,
       targetDir: appDir,
       branch: opts.branch ?? row.git_branch,
-      depth: opts.depth ?? 1,
-    });
+      depth: opts.depth ?? 1 });
     this.projects.updateRuntimeState(projectId, {
       git_url: gitUrl,
       git_branch: git.branch ?? opts.branch,
-      git_commit: git.commit,
-    });
+      git_commit: git.commit });
     const notes = [...git.notes];
     if (git.ok) {
       await chownProjectHome(this.host, row, notes);
@@ -1155,8 +1090,7 @@ export class ProjectOpsService {
       if (row.runtime === 'node') {
         redeployResult = await this.deployNode(projectId, {
           actor: opts.actor,
-          entry: savedEntry,
-        });
+          entry: savedEntry });
         notes.push(...redeployResult.notes);
       } else if (row.runtime === 'static') {
         redeployResult = await this.deployStatic(projectId, { actor: opts.actor });
@@ -1168,11 +1102,10 @@ export class ProjectOpsService {
         redeployResult = await this.deployProcess(projectId, {
           actor: opts.actor,
           entry: savedEntry,
-          skipBuild: opts.skipBuild,
-        });
+          skipBuild: opts.skipBuild });
         notes.push(...redeployResult.notes);
       } else {
-        notes.push(`Runtime ${row.runtime} — 只同步 Git，不重啟行程`);
+        notes.push(tl('notes.auto.t0192', { v0: (row.runtime) }));
       }
     }
     this.audit?.append({
@@ -1180,8 +1113,7 @@ export class ProjectOpsService {
       action: 'project.git_deploy',
       resource: projectId,
       detail: { git, redeploy: Boolean(redeployResult) },
-      ok: git.ok && (redeployResult?.ok ?? true),
-    });
+      ok: git.ok && (redeployResult?.ok ?? true) });
     return {
       ok: git.ok && (redeployResult?.ok ?? true),
       projectId,
@@ -1194,8 +1126,7 @@ export class ProjectOpsService {
       notes,
       written: redeployResult?.written ?? [],
       git,
-      degraded: redeployResult?.degraded ?? true,
-    };
+      degraded: redeployResult?.degraded ?? true };
   }
 
   /**
@@ -1223,16 +1154,14 @@ export class ProjectOpsService {
       action: 'project.set_env',
       resource: projectId,
       detail: { keys: Object.keys(merged) },
-      ok: true,
-    });
+      ok: true });
     return {
       ok: true,
       projectId,
       processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
       listening: false,
-      notes: [`已寫入環境變數 ${envPath}（${Object.keys(merged).length} 項）`],
-      written: [envPath],
-    };
+      notes: [tl('notes.auto.t0193', { v0: (envPath), v1: (Object.keys(merged).length) })],
+      written: [envPath] };
   }
 
   /**
@@ -1244,21 +1173,18 @@ export class ProjectOpsService {
       host: this.host,
       dataDir: this.dataDir,
       projectId,
-      homeDir: row.home_dir,
-    });
+      homeDir: row.home_dir });
     if (r.ok && r.archivePath) {
       this.projects.updateRuntimeState(projectId, {
         last_backup_path: r.archivePath,
-        last_backup_at: new Date().toISOString(),
-      });
+        last_backup_at: new Date().toISOString() });
     }
     this.audit?.append({
       actor,
       action: 'project.backup',
       resource: projectId,
       detail: r,
-      ok: r.ok,
-    });
+      ok: r.ok });
     return {
       ok: r.ok,
       projectId,
@@ -1266,8 +1192,7 @@ export class ProjectOpsService {
       listening: false,
       notes: r.notes,
       written: r.archivePath ? [r.archivePath] : [],
-      archivePath: r.archivePath,
-    };
+      archivePath: r.archivePath };
   }
 
   /**
@@ -1292,9 +1217,8 @@ export class ProjectOpsService {
     const row = this.require(projectId);
     if (row.runtime !== 'php' && row.runtime !== 'static') {
       if (row.runtime === 'node') {
-        throw new YskError(ErrorCodes.VALIDATION, '此專案是 Node runtime，請使用 Node 部署', {
-          httpStatus: 400,
-        });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1036'), {
+          httpStatus: 400 });
       }
     }
     // PHP production paths require OS user (FPM pool runs as project user)
@@ -1306,14 +1230,13 @@ export class ProjectOpsService {
       projectId,
       homeDir: row.home_dir,
       quotaMb: row.quota_mb,
-      action: 'Deploy PHP',
-    });
+      action: 'Deploy PHP' });
     const notes: string[] = [];
     const written: string[] = [];
     if (row.runtime === 'php' && canRunAsProjectUser(row, this.host)) {
-      notes.push(`PHP-FPM pool 用戶：${row.linux_user}（專案隔離）`);
+      notes.push(tl('notes.auto.t0194', { v0: (row.linux_user) }));
     } else if (row.runtime === 'php') {
-      notes.push('PHP 隔離 degraded — 未以專案 Linux 用戶（需 root + 建立系統用戶）');
+      notes.push(tl('notes.auto.n0148'));
     }
     const port = opts.port ?? row.port ?? (await findFreePort(8100, 8999));
     const docRoot = resolveProjectDocRoot(row);
@@ -1324,7 +1247,7 @@ export class ProjectOpsService {
     const phpRt = selectPhpRuntime(phpVersion);
     if (opts.phpVersion && opts.phpVersion !== row.runtime_version) {
       this.projects.updateMeta(projectId, { runtime_version: phpRt.version });
-      notes.push(`runtime 版本 → ${phpRt.version}`);
+      notes.push(tl('notes.auto.t0195', { v0: (phpRt.version) }));
     }
     const canProd =
       this.host.executeEnabled() &&
@@ -1341,8 +1264,7 @@ export class ProjectOpsService {
       phpVersion,
       poolName: row.linux_user,
       host: this.host,
-      enableSite: Boolean(canProd && opts.enableApache),
-    });
+      enableSite: Boolean(canProd && opts.enableApache) });
     await chownProjectHome(this.host, row, notes);
     written.push(...apply.written);
     notes.push(...apply.notes);
@@ -1353,7 +1275,7 @@ export class ProjectOpsService {
     );
     const adminValueLines = renderPhpAdminValueLines(mergedIni);
     if (adminValueLines.length) {
-      notes.push(`已合併面板 php.ini（${adminValueLines.length} 條 php_admin_*）`);
+      notes.push(tl('notes.auto.t0196', { v0: (adminValueLines.length) }));
     }
     const fpm = await applyPhpFpmPool({
       dataDir: this.dataDir,
@@ -1362,8 +1284,7 @@ export class ProjectOpsService {
       phpVersion,
       host: this.host,
       enable: canProd,
-      adminValueLines,
-    });
+      adminValueLines });
     written.push(...fpm.written);
     notes.push(...fpm.notes);
 
@@ -1385,12 +1306,11 @@ export class ProjectOpsService {
         siteRedirectUrl: row.site_redirect_url,
         authBasicUserFile: authPhp.path,
         authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
-        bindIp: row.bind_ip,
-      });
+        bindIp: row.bind_ip });
       notes.push(...authPhp.notes);
       const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
       written.push(nginxPath);
-      notes.push(`PHP-FPM 生產 Nginx 設定：${nginxPath}`);
+      notes.push(tl('notes.auto.t0197', { v0: (nginxPath) }));
       notes.push(`fastcgi_pass unix:${fpmSocket}`);
 
       // best-effort system sync + nginx -t + reload
@@ -1400,19 +1320,17 @@ export class ProjectOpsService {
           dataDir: this.dataDir,
           systemConfDir: '/etc/nginx/conf.d',
           host: this.host,
-          dryRun: false,
-        });
+          dryRun: false });
         written.push(...sync.copied);
         notes.push(...sync.notes);
         if (sync.tested) {
           const rel = await this.host.runCommand(['systemctl', 'reload', 'nginx'], {
-            timeoutMs: 15_000,
-          });
+            timeoutMs: 15_000 });
           nginxReloaded = rel.exitCode === 0;
           notes.push(
             nginxReloaded
-              ? '已重載 Nginx'
-              : `Nginx reload 結束碼=${rel.exitCode}: ${rel.stderr}`,
+              ? tl('notes.nginx.reloaded')
+              : tl('notes.auto.t0198', { v0: (rel.exitCode), v1: (rel.stderr) }),
           );
         }
       }
@@ -1430,18 +1348,15 @@ export class ProjectOpsService {
           deployMode: 'php_fpm',
           degraded: false,
           fpmSocket,
-          nginxReloaded,
-        },
-        last_deploy_at: new Date().toISOString(),
-      });
+          nginxReloaded },
+        last_deploy_at: new Date().toISOString() });
 
       this.audit?.append({
         actor: opts.actor,
         action: 'project.deploy_php',
         resource: projectId,
         detail: { deployMode: 'php_fpm', fpmSocket, nginxPath, nginxReloaded },
-        ok: true,
-      });
+        ok: true });
 
       return {
         ok: true,
@@ -1456,8 +1371,7 @@ export class ProjectOpsService {
         written,
         degraded: false,
         deployMode: 'none',
-        nginxReloaded,
-      };
+        nginxReloaded };
     }
 
     if (canProd && !fpm.enabled) {
@@ -1466,7 +1380,7 @@ export class ProjectOpsService {
       );
     } else {
       notes.push(
-        '目前以簡易 PHP 模式部署',
+        tl('notes.auto.n1269'),
       );
     }
 
@@ -1476,19 +1390,17 @@ export class ProjectOpsService {
       this.projects.updateRuntimeState(projectId, {
         port,
         process_status: 'failed',
-        status: 'failed',
-      });
+        status: 'failed' });
       return {
         ok: false,
         projectId,
         port,
         processStatus: 'failed',
         listening: false,
-        notes: [...notes, 'php binary 找不到 — install php-cli'],
+        notes: [...notes, tl('notes.auto.n0374')],
         written,
         degraded: true,
-        deployMode: 'pidfile',
-      };
+        deployMode: 'pidfile' };
     }
 
     const pidfile = join(row.home_dir, 'app.pid');
@@ -1507,8 +1419,7 @@ export class ProjectOpsService {
       env: { ...process.env, PORT: String(port) },
       logOutFd: outFd,
       logErrFd: errFd,
-      notes,
-    });
+      notes });
     closeSync(outFd);
     closeSync(errFd);
     const pid = child.pid;
@@ -1519,16 +1430,15 @@ export class ProjectOpsService {
         port,
         processStatus: 'failed',
         listening: false,
-        notes: [...notes, 'PHP 行程啟動後未取得行程編號'],
+        notes: [...notes, tl('notes.auto.n0147')],
         written,
         degraded: true,
-        deployMode: 'pidfile',
-      };
+        deployMode: 'pidfile' };
     }
     child.unref();
     writeFileSync(pidfile, `${pid}\n`, 'utf8');
     notes.push(
-      `PHP 內建伺服器 pid=${pid} @ 127.0.0.1:${port}` +
+      tl('notes.auto.t0199', { v0: (pid), v1: (port) }) +
         (phpMode === 'isolated' ? `（user=${row.linux_user}）` : '（degraded）'),
     );
     await chownProjectHome(this.host, row, notes);
@@ -1544,8 +1454,7 @@ export class ProjectOpsService {
       serverName: domain,
       upstream: `http://127.0.0.1:${port}`,
       ssl: false,
-      cloudflareRealIp: true,
-    });
+      cloudflareRealIp: true });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
 
@@ -1565,18 +1474,15 @@ export class ProjectOpsService {
         at: new Date().toISOString(),
         url,
         deployMode: 'php_builtin',
-        degraded: true,
-      },
-      last_deploy_at: new Date().toISOString(),
-    });
+        degraded: true },
+      last_deploy_at: new Date().toISOString() });
 
     this.audit?.append({
       actor: opts.actor,
       action: 'project.deploy_php',
       resource: projectId,
       detail: { port, pid, health, listening, deployMode: 'php_builtin' },
-      ok: health.ok && listening,
-    });
+      ok: health.ok && listening });
 
     return {
       ok: health.ok && listening,
@@ -1591,8 +1497,7 @@ export class ProjectOpsService {
         status: health.status,
         body: health.body,
         ms: health.ms,
-        error: health.error,
-      },
+        error: health.error },
       listening,
       nginxPath,
       notes,
@@ -1600,8 +1505,7 @@ export class ProjectOpsService {
       degraded: true,
       deployMode: 'pidfile',
       requiresRoot: !this.host.isRoot(),
-      requiresExecute: !this.host.executeEnabled(),
-    };
+      requiresExecute: !this.host.executeEnabled() };
   }
 
   /**
@@ -1619,9 +1523,8 @@ export class ProjectOpsService {
   ): OpsApplyResult {
     const row = this.require(projectId);
     if (resources.memoryMax != null && !/^\d+[KMG]?$/i.test(resources.memoryMax)) {
-      throw new YskError(ErrorCodes.VALIDATION, 'memoryMax 格式須如 512M 或 1G', {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0328'), {
+        httpStatus: 400 });
     }
     if (
       resources.cpuQuotaPercent != null &&
@@ -1629,7 +1532,7 @@ export class ProjectOpsService {
         resources.cpuQuotaPercent < 1 ||
         resources.cpuQuotaPercent > 10000)
     ) {
-      throw new YskError(ErrorCodes.VALIDATION, 'CPU 配額須為 1–10000', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0087'), { httpStatus: 400 });
     }
     if (
       resources.tasksMax != null &&
@@ -1637,7 +1540,7 @@ export class ProjectOpsService {
         resources.tasksMax < 1 ||
         resources.tasksMax > 1_000_000)
     ) {
-      throw new YskError(ErrorCodes.VALIDATION, 'TasksMax 須為 1–1000000', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0196'), { httpStatus: 400 });
     }
     if (
       resources.limitNofile != null &&
@@ -1645,23 +1548,20 @@ export class ProjectOpsService {
         resources.limitNofile < 64 ||
         resources.limitNofile > 10_000_000)
     ) {
-      throw new YskError(ErrorCodes.VALIDATION, 'LimitNOFILE 須為 64–10000000', {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0129'), {
+        httpStatus: 400 });
     }
     this.projects.updateRuntimeState(projectId, {
       memory_max: resources.memoryMax,
       cpu_quota_percent: resources.cpuQuotaPercent,
       tasks_max: resources.tasksMax,
-      limit_nofile: resources.limitNofile,
-    });
+      limit_nofile: resources.limitNofile });
     this.audit?.append({
       actor,
       action: 'project.set_resources',
       resource: projectId,
       detail: resources,
-      ok: true,
-    });
+      ok: true });
     return {
       ok: true,
       projectId,
@@ -1672,10 +1572,9 @@ export class ProjectOpsService {
         `cpuQuota=${resources.cpuQuotaPercent ?? row.cpu_quota_percent ?? 'unset'}%`,
         `tasksMax=${resources.tasksMax ?? row.tasks_max ?? 'unset'}`,
         `limitNofile=${resources.limitNofile ?? row.limit_nofile ?? 'unset'}`,
-        '已寫入控制面；請用「套用限制到 OS」或重新 Deploy 寫入 unit',
+        tl('notes.auto.n0763'),
       ],
-      written: [],
-    };
+      written: [] };
   }
 
   /**
@@ -1693,15 +1592,13 @@ export class ProjectOpsService {
       host: this.host,
       projectId,
       homeDir: row.home_dir,
-      quotaMb,
-    });
+      quotaMb });
     this.audit?.append({
       actor,
       action: 'project.set_quota',
       resource: projectId,
       detail: quota,
-      ok: true,
-    });
+      ok: true });
     return {
       ok: true,
       projectId,
@@ -1711,11 +1608,10 @@ export class ProjectOpsService {
         `quota=${quotaMb}MB`,
         `used=${quota.usedMb}MB`,
         ...quota.notes,
-        '軟配額已存；硬 setquota 請「套用限制到 OS」',
+        tl('notes.auto.n1463'),
       ],
       written: [],
-      quota,
-    };
+      quota };
   }
 
   async getOsUser(projectId: string): Promise<{
@@ -1741,9 +1637,7 @@ export class ProjectOpsService {
         tasksMax: row.tasks_max,
         limitNofile: row.limit_nofile,
         shell: row.shell ?? '/usr/sbin/nologin',
-        accountLocked: row.account_locked,
-      },
-    };
+        accountLocked: row.account_locked } };
   }
 
   /**
@@ -1766,7 +1660,7 @@ export class ProjectOpsService {
     if (patch.shell != null) {
       const s = patch.shell.trim();
       if (!s.startsWith('/') || s.includes('..') || s.length > 128) {
-        throw new YskError(ErrorCodes.VALIDATION, 'shell 路徑無效', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0432'), { httpStatus: 400 });
       }
     }
     if (patch.quotaMb != null) assertQuotaMb(patch.quotaMb);
@@ -1777,21 +1671,18 @@ export class ProjectOpsService {
       cpu_quota_percent: patch.cpuQuotaPercent,
       tasks_max: patch.tasksMax,
       limit_nofile: patch.limitNofile,
-      quota_mb: patch.quotaMb,
-    });
+      quota_mb: patch.quotaMb });
     const fresh = this.require(projectId);
     const result = await applyOsUserLimits({
       host: this.host,
       row: fresh,
-      dataDir: this.dataDir,
-    });
+      dataDir: this.dataDir });
     this.audit?.append({
       actor,
       action: 'project.os_user_patch',
       resource: projectId,
       detail: { patch, result },
-      ok: result.ok,
-    });
+      ok: result.ok });
     return { ...result, projectId };
   }
 
@@ -1800,15 +1691,13 @@ export class ProjectOpsService {
     const result = await applyOsUserLimits({
       host: this.host,
       row,
-      dataDir: this.dataDir,
-    });
+      dataDir: this.dataDir });
     this.audit?.append({
       actor,
       action: 'project.os_user_apply_limits',
       resource: projectId,
       detail: result,
-      ok: result.ok,
-    });
+      ok: result.ok });
     return { ...result, projectId };
   }
 
@@ -1823,8 +1712,7 @@ export class ProjectOpsService {
       action: 'project.os_user_chown',
       resource: projectId,
       detail: r,
-      ok: r.ok,
-    });
+      ok: r.ok });
     return { ...r, projectId };
   }
 
@@ -1834,14 +1722,13 @@ export class ProjectOpsService {
       host: this.host,
       projectId,
       homeDir: row.home_dir,
-      quotaMb: row.quota_mb,
-    });
+      quotaMb: row.quota_mb });
   }
 
   private require(id: string): ProjectRow {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     return row;
   }
@@ -1857,17 +1744,17 @@ export class ProjectOpsService {
     if (pid && isPidAlive(pid)) {
       try {
         process.kill(pid, 'SIGTERM');
-        notes.push(`已送 SIGTERM 至 ${pid}`);
+        notes.push(tl('notes.auto.t0200', { v0: (pid) }));
         await waitUntilDead(pid, 3000);
         if (isPidAlive(pid)) {
           process.kill(pid, 'SIGKILL');
-          notes.push(`已送 SIGKILL 至 ${pid}`);
+          notes.push(tl('notes.auto.t0201', { v0: (pid) }));
         }
       } catch (e) {
         notes.push(`kill ${pid}: ${e instanceof Error ? e.message : String(e)}`);
       }
     } else if (pid) {
-      notes.push(`pid ${pid} 已結束`);
+      notes.push(tl('notes.auto.t0202', { v0: (pid) }));
     }
     if (existsSync(pidfile)) {
       try {
@@ -1900,7 +1787,7 @@ export class ProjectOpsService {
       }
       throw new YskError(
         ErrorCodes.VALIDATION,
-        `deployProcess 不適用於 runtime「${row.runtime}」`,
+        tl('notes.auto.t0203', { v0: (row.runtime) }),
         { httpStatus: 400 },
       );
     }
@@ -1911,17 +1798,16 @@ export class ProjectOpsService {
       projectId,
       homeDir: row.home_dir,
       quotaMb: row.quota_mb,
-      action: 'Deploy',
-    });
+      action: 'Deploy' });
 
     const notes: string[] = [];
     const written: string[] = [];
     if (!canRunAsProjectUser(row, this.host)) {
       notes.push(
-        '隔離模式：degraded — build／行程可能以控制面用戶執行；生產請建立系統用戶',
+        tl('notes.auto.n1534'),
       );
     } else {
-      notes.push(`隔離模式：以專案用戶 ${row.linux_user} 建置與啟動`);
+      notes.push(tl('notes.auto.t0204', { v0: (row.linux_user) }));
     }
     const appDir = join(row.home_dir, 'app');
     mkdirSync(appDir, { recursive: true });
@@ -1941,26 +1827,23 @@ export class ProjectOpsService {
       version: row.runtime_version,
       entry,
       port,
-      cargoName: cargoName ?? undefined,
-    });
-    notes.push(`Runtime：${row.runtime} · 埠 ${port} · entry ${cmds.entry}`);
+      cargoName: cargoName ?? undefined });
+    notes.push(tl('notes.auto.t0205', { v0: (row.runtime), v1: (port), v2: (cmds.entry) }));
 
     await this.stopProcess(row, notes);
 
     if (cmds.build && !opts.skipBuild) {
-      notes.push(`建置：${cmds.build}`);
+      notes.push(tl('notes.auto.t0206', { v0: (cmds.build) }));
       const build = await runAsProjectUser(this.host, row, cmds.build, {
         timeoutMs: 600_000,
         cwd: appDir,
-        notes,
-      });
+        notes });
       if (build.exitCode !== 0) {
-        notes.push(`建置失敗：${(build.stderr || build.stdout || '').slice(0, 400)}`);
+        notes.push(tl('notes.auto.t0207', { v0: ((build.stderr || build.stdout || '').slice(0, 400)) }));
         this.projects.updateRuntimeState(projectId, {
           process_status: 'failed',
           status: 'failed',
-          port,
-        });
+          port });
         return {
           ok: false,
           projectId,
@@ -1971,10 +1854,9 @@ export class ProjectOpsService {
           written,
           degraded: true,
           requiresRoot: !this.host.isRoot(),
-          requiresExecute: !this.host.executeEnabled(),
-        };
+          requiresExecute: !this.host.executeEnabled() };
       }
-      notes.push('建置完成');
+      notes.push(tl('notes.auto.n0821'));
       await chownProjectHome(this.host, row, notes);
     }
 
@@ -1983,13 +1865,12 @@ export class ProjectOpsService {
       loadRuntimeTuning(this.dataDir, rtKind, row.runtime_version ?? 'default'),
     );
     if (Object.keys(tuningEnv).length) {
-      notes.push(`已套用面板 ${row.runtime} 調校（${Object.keys(tuningEnv).join(', ')}）`);
+      notes.push(tl('notes.auto.t0208', { v0: (row.runtime), v1: (Object.keys(tuningEnv).join(', ')) }));
     }
     const processEnv = {
       PORT: String(port),
       HOST: '127.0.0.1',
-      ...tuningEnv,
-    };
+      ...tuningEnv };
 
     const unitBody = renderProcessUnit({
       projectName: row.name,
@@ -2002,13 +1883,12 @@ export class ProjectOpsService {
       memoryMax: row.memory_max,
       cpuQuotaPercent: row.cpu_quota_percent,
       tasksMax: row.tasks_max,
-      limitNOFILE: row.limit_nofile,
-    });
+      limitNOFILE: row.limit_nofile });
     const unitManaged = join(this.dataDir, 'systemd', `ysk-project-${row.linux_user}.service`);
     mkdirSync(join(this.dataDir, 'systemd'), { recursive: true });
     writeFileSync(unitManaged, unitBody, 'utf8');
     written.push(unitManaged);
-    notes.push(`已寫入 systemd 範本：${unitManaged}`);
+    notes.push(tl('notes.auto.t0209', { v0: (unitManaged) }));
 
     let unitActive = false;
     if (this.host.executeEnabled() && this.host.isRoot() && row.os_provisioned) {
@@ -2022,14 +1902,14 @@ export class ProjectOpsService {
           { timeoutMs: 30_000 },
         );
         if (en.exitCode === 0) {
-          notes.push(`已 enable --now 專案 unit（User=${row.linux_user}）`);
+          notes.push(tl('notes.auto.t0210', { v0: (row.linux_user) }));
           unitActive = true;
-        } else notes.push(`systemctl 啟動失敗：${en.stderr || en.stdout}`);
+        } else notes.push(tl('notes.auto.t0211', { v0: (en.stderr || en.stdout) }));
       } catch (e) {
-        notes.push(`寫入系統 unit 失敗：${e instanceof Error ? e.message : String(e)}`);
+        notes.push(tl('notes.auto.t0212', { v0: (e instanceof Error ? e.message : String(e)) }));
       }
     } else {
-      notes.push('未以系統 unit 啟動（需 root + 已隔離）— 改用 pidfile');
+      notes.push(tl('notes.auto.n0949'));
     }
 
     const pidfile = join(row.home_dir, 'app.pid');
@@ -2048,19 +1928,17 @@ export class ProjectOpsService {
       try {
         const outFd = openSync(logOut, 'a');
         const errFd = openSync(logErr, 'a');
-        const { child, mode } = spawnAsProjectUser({
+        const { child } = spawnAsProjectUser({
           row,
           host: this.host,
           shellCmd: cmds.execStart,
           cwd: appDir,
           env: {
             ...process.env,
-            ...processEnv,
-          },
+            ...processEnv },
           logOutFd: outFd,
           logErrFd: errFd,
-          notes,
-        });
+          notes });
         closeSync(outFd);
         closeSync(errFd);
         pid = child.pid;
@@ -2068,13 +1946,18 @@ export class ProjectOpsService {
           child.unref();
           writeFileSync(pidfile, `${pid}\n`, 'utf8');
           notes.push(
-            `pidfile 啟動 pid=${pid}${mode === 'isolated' ? `（user=${row.linux_user}）` : '（degraded）'}`,
+            tl('notes.tpl.pidStarted', {
+              pid,
+              extra: row.linux_user
+                ? tl('notes.tpl.pidUser', { user: row.linux_user })
+                : tl('notes.tpl.pidDegraded'),
+            }),
           );
         } else {
-          notes.push('pidfile 啟動未取得 pid');
+          notes.push(tl('notes.auto.n0378'));
         }
       } catch (err) {
-        notes.push(`pidfile 啟動失敗：${err instanceof Error ? err.message : String(err)}`);
+        notes.push(tl('notes.auto.t0214', { v0: (err instanceof Error ? err.message : String(err)) }));
       }
     }
     await chownProjectHome(this.host, row, notes);
@@ -2087,11 +1970,11 @@ export class ProjectOpsService {
       processStatus = listening ? 'unhealthy' : 'failed';
       notes.push(
         health.ok
-          ? '埠檢查異常'
-          : `健康檢查未通過（${health.ms}ms）：${health.error ?? health.status}`,
+          ? tl('notes.auto.n0633')
+          : tl('notes.auto.t0215', { v0: (health.ms), v1: (health.error ?? health.status) }),
       );
     } else {
-      notes.push(`健康檢查通過（${health.ms}ms）`);
+      notes.push(tl('notes.auto.t0216', { v0: (health.ms) }));
     }
 
     const serverName = buildServerNameList(
@@ -2106,11 +1989,10 @@ export class ProjectOpsService {
       forceHttps: false,
       hsts: false,
       siteRedirectUrl: row.site_redirect_url,
-      bindIp: row.bind_ip,
-    });
+      bindIp: row.bind_ip });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
-    notes.push(`已寫入 Nginx 反代：${nginxPath}`);
+    notes.push(tl('notes.auto.t0217', { v0: (nginxPath) }));
 
     this.projects.updateRuntimeState(projectId, {
       port,
@@ -2122,21 +2004,18 @@ export class ProjectOpsService {
         ok: health.ok,
         status: health.status,
         ms: health.ms,
-        at: new Date().toISOString(),
-      },
+        at: new Date().toISOString() },
       last_deploy_at: new Date().toISOString(),
       nginx_config_path: nginxPath,
       deploy_entry: cmds.entry,
-      last_deploy_notes: clipDeployNotes(notes),
-    });
+      last_deploy_notes: clipDeployNotes(notes) });
 
     this.audit?.append({
       actor: opts.actor,
       action: 'project.deploy_process',
       resource: projectId,
       detail: { runtime: row.runtime, port, processStatus, entry: cmds.entry },
-      ok: processStatus === 'running',
-    });
+      ok: processStatus === 'running' });
 
     return {
       ok: processStatus === 'running',
@@ -2151,8 +2030,7 @@ export class ProjectOpsService {
       written,
       deployMode: unitActive ? 'systemd' : 'pidfile',
       requiresRoot: !this.host.isRoot(),
-      requiresExecute: !this.host.executeEnabled(),
-    };
+      requiresExecute: !this.host.executeEnabled() };
   }
 }
 

@@ -3,6 +3,8 @@
  */
 import { useMemo } from 'react';
 import { Field, FormLayout, PresetChips, SegRadio } from '../../shared/components/ui';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 
 export type ScheduleMode =
   | 'every_n_min'
@@ -26,24 +28,28 @@ export type ScheduleState = {
   custom: string;
 };
 
-const WEEKDAYS: Array<{ v: number; label: string; short: string }> = [
-  { v: 1, label: '一', short: '一' },
-  { v: 2, label: '二', short: '二' },
-  { v: 3, label: '三', short: '三' },
-  { v: 4, label: '四', short: '四' },
-  { v: 5, label: '五', short: '五' },
-  { v: 6, label: '六', short: '六' },
-  { v: 0, label: '日', short: '日' },
-];
+function weekdayDefs(t: (k: string) => string): Array<{ v: number; label: string; short: string }> {
+  return [
+    { v: 1, label: t('cron.mon'), short: t('cron.mon') },
+    { v: 2, label: t('cron.tue'), short: t('cron.tue') },
+    { v: 3, label: t('cron.wed'), short: t('cron.wed') },
+    { v: 4, label: t('cron.thu'), short: t('cron.thu') },
+    { v: 5, label: t('cron.fri'), short: t('cron.fri') },
+    { v: 6, label: t('cron.sat'), short: t('cron.sat') },
+    { v: 0, label: t('cron.sun'), short: t('cron.sun') },
+  ];
+}
 
-const MODE_OPTIONS: Array<{ id: ScheduleMode; label: string; hint: string }> = [
-  { id: 'every_n_min', label: '每 N 分鐘', hint: '固定間隔' },
-  { id: 'hourly', label: '每小時', hint: '指定第幾分' },
-  { id: 'daily', label: '每日', hint: '指定時:分' },
-  { id: 'weekly', label: '每週', hint: '星期 + 時間' },
-  { id: 'monthly', label: '每月', hint: '日期 + 時間' },
-  { id: 'custom', label: '進階', hint: '自訂表達式' },
-];
+function modeOptions(t: (k: string) => string): Array<{ id: ScheduleMode; label: string; hint: string }> {
+  return [
+    { id: 'every_n_min', label: t('cron.everyNMin'), hint: t('cron.fixedInterval') },
+    { id: 'hourly', label: t('cron.hourly'), hint: t('cron.atMinute') },
+    { id: 'daily', label: t('cron.daily'), hint: t('cron.atTime') },
+    { id: 'weekly', label: t('cron.weekly'), hint: t('cron.weekdayTime') },
+    { id: 'monthly', label: t('cron.monthly'), hint: t('cron.dayTime') },
+    { id: 'custom', label: t('cron.advanced'), hint: t('cron.customExpr') },
+  ];
+}
 
 export function defaultScheduleState(): ScheduleState {
   return {
@@ -85,25 +91,28 @@ export function buildCronExpr(s: ScheduleState): string {
   }
 }
 
-export function humanizeSchedule(s: ScheduleState): string {
+export function humanizeSchedule(
+  s: ScheduleState,
+  t: (k: string, o?: Record<string, unknown>) => string = (k, o) => i18n.t(k, o),
+): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   const time = `${pad(s.hour)}:${pad(s.minute)}`;
   switch (s.mode) {
     case 'every_n_min':
-      return s.everyMinutes === 1 ? '每分鐘' : `每 ${s.everyMinutes} 分鐘`;
+      return s.everyMinutes === 1 ? t('cron.everyMinute') : t('cron.everyMinutes', { n: s.everyMinutes });
     case 'hourly':
-      return `每小時 第 ${s.minute} 分`;
+      return t('cron.hourlyAt', { n: s.minute });
     case 'daily':
-      return `每日 ${time}`;
+      return t('cron.dailyAt', { time });
     case 'weekly': {
-      if (!s.weekdays.length) return `每週（未選日） ${time}`;
-      const labels = WEEKDAYS.filter((d) => s.weekdays.includes(d.v)).map((d) => d.label);
-      return `每週${labels.join('、')} ${time}`;
+      if (!s.weekdays.length) return t('cron.weeklyNone', { time });
+      const labels = weekdayDefs(t).filter((d) => s.weekdays.includes(d.v)).map((d) => d.label);
+      return t('cron.weeklyAt', { days: labels.join('、'), time });
     }
     case 'monthly':
-      return `每月 ${s.dayOfMonth} 日 ${time}`;
+      return t('cron.monthlyAt', { day: s.dayOfMonth, time });
     case 'custom':
-      return `自訂：${s.custom.trim() || '—'}`;
+      return t('cron.customAt', { expr: s.custom.trim() || '—' });
     default:
       return '—';
   }
@@ -181,6 +190,7 @@ export interface CronScheduleBuilderProps {
 }
 
 export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProps) {
+  const { t } = useTranslation();
   const expr = useMemo(() => buildCronExpr(value), [value]);
   const human = useMemo(() => humanizeSchedule(value), [value]);
 
@@ -206,8 +216,8 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
   return (
     <div className="cron-sched">
-      <div className="cron-sched__modes" role="radiogroup" aria-label="排程頻率">
-        {MODE_OPTIONS.map((m) => (
+      <div className="cron-sched__modes" role="radiogroup" aria-label={t('cron.frequency')}>
+        {modeOptions(t).map((m) => (
           <button
             key={m.id}
             type="button"
@@ -224,26 +234,26 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
       <div className="cron-sched__body">
         {value.mode === 'every_n_min' ? (
-          <Field label="間隔" htmlFor="cron-every" flush hint="由整點起算">
+          <Field label={t('cron.interval')} htmlFor="cron-every" flush hint={t('cron.fromHour')}>
             <SegRadio
               name="cron-every"
-              aria-label="間隔分鐘"
+              aria-label={t('cron.intervalMinutes')}
               value={String(value.everyMinutes)}
               onChange={(v) => patch({ everyMinutes: Number(v) })}
               options={EVERY_N.map((n) => ({
                 value: String(n),
-                label: n === 1 ? '1 分' : `${n} 分`,
+                label: n === 1 ? t('cron.min1') : t('cron.minN', { n }),
               }))}
             />
           </Field>
         ) : null}
 
         {showMinuteOnly ? (
-          <Field label="在每小時的第幾分" htmlFor="cron-min-h" flush>
+          <Field label={t('cron.minuteOfHour')} htmlFor="cron-min-h" flush>
             <PresetChips
               options={MINUTE_STEPS.map((n) => ({
                 value: String(n),
-                label: `${String(n).padStart(2, '0')} 分`,
+                label: t('cron.minPad', { n: String(n).padStart(2, '0') }),
               }))}
               value={String(value.minute)}
               onChange={(v) => patch({ minute: Number(v) || 0 })}
@@ -255,7 +265,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
         {showTime ? (
           <FormLayout columns={2}>
-            <Field label="小時" htmlFor="cron-hour" flush>
+            <Field label={t('cron.hour')} htmlFor="cron-hour" flush>
               <PresetChips
                 options={[
                   { value: '0', label: '00' },
@@ -280,7 +290,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
                 customPlaceholder="0–23"
               />
             </Field>
-            <Field label="分鐘" htmlFor="cron-min" flush>
+            <Field label={t('cron.minute')} htmlFor="cron-min" flush>
               <PresetChips
                 options={MINUTE_STEPS.map((n) => ({
                   value: String(n),
@@ -299,9 +309,9 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
         {value.mode === 'weekly' ? (
           <div className="cron-sched__weekdays">
-            <span className="cron-sched__weekdays-label">星期</span>
-            <div className="cron-sched__weekday-row" role="group" aria-label="選擇星期">
-              {WEEKDAYS.map((d) => {
+            <span className="cron-sched__weekdays-label">{t('cron.weekLabel')}</span>
+            <div className="cron-sched__weekday-row" role="group" aria-label={t('cron.pickWeekdays')}>
+              {weekdayDefs(t).map((d) => {
                 const on = value.weekdays.includes(d.v);
                 return (
                   <button
@@ -320,7 +330,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
         ) : null}
 
         {value.mode === 'monthly' ? (
-          <Field label="每月第幾日" htmlFor="cron-dom" flush hint="31 日月份沒有該日則跳過">
+          <Field label={t('cron.dayOfMonth')} htmlFor="cron-dom" flush hint={t('cron.dayOfMonthHint')}>
             <PresetChips
               options={[
                 { value: '1', label: '1' },
@@ -344,11 +354,11 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
         {value.mode === 'custom' ? (
           <Field
-            label="Crontab 表達式"
+            label={t('cron.cronExpr')}
             htmlFor="cron-custom"
             flush
             required
-            hint="五欄：分 時 日 月 週（0=日）"
+            hint={t('cron.cronExprHint')}
           >
             <input
               id="cron-custom"
@@ -363,10 +373,10 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
       <div className="cron-sched__preview" aria-live="polite">
         <div className="cron-sched__preview-human">
-          <span className="cron-sched__preview-label">將執行</span>
+          <span className="cron-sched__preview-label">{t('cron.willRun')}</span>
           <strong>{human}</strong>
         </div>
-        <code className="cron-sched__preview-expr" title="crontab 表達式">
+        <code className="cron-sched__preview-expr" title={t('cron.cronExprPh')}>
           {expr}
         </code>
       </div>

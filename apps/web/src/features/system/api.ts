@@ -1,93 +1,25 @@
 /**
  * System feature — apply wizards API surface.
  */
+import type {
+  ProductionReadinessDto,
+  HostOverviewDto,
+  FirewallStatusDto,
+  Fail2banStatusDto,
+  ServiceMatrixDto,
+} from '@ysk/shared';
 import { api } from '../../shared/services/api';
-import { authStore } from '../../shared/stores/auth-store';
+import i18n from '../../shared/lib/i18n';
 
-export type ReadinessLevel = 'ready' | 'degraded' | 'missing' | 'unknown';
-
-export type ReadinessItemDto = {
-  id: string;
-  category: string;
-  title: string;
-  level: ReadinessLevel;
-  detail: string;
-  spec?: string;
-  fixHint?: string;
-  fixHref?: string;
-  severity?: 'critical' | 'recommended' | 'optional';
-};
-
-export type ProductionReadinessDto = {
-  product: string;
-  generatedAt: string;
-  mode: 'production_capable' | 'degraded' | string;
-  executeEnabled: boolean;
-  isRoot: boolean;
-  score: { ready: number; degraded: number; missing: number; total: number };
-  items: ReadinessItemDto[];
-  summary: string[];
-  productionReady: boolean;
-  blockers?: ReadinessItemDto[];
-  categories?: string[];
-};
-
-export type HostOverviewDto = {
-  identity: {
-    hostname: string | null;
-    prettyHostname: string | null;
-    timezone: string | null;
-  };
-  os: {
-    platform: string;
-    arch: string;
-    release: string;
-    kernel: string | null;
-  };
-  runtime: {
-    uptimeSec: number;
-    loadavg: number[];
-    cpus: number;
-    memory: { total: number; free: number; usedRatio: number };
-    node: string;
-    pid: number;
-    uid: number | null;
-  };
-  time: {
-    utc: string;
-    local: string;
-    ntpEnabled: boolean | null;
-    ntpSynchronized: boolean | null;
-    timeSource: string | null;
-  };
-  network: {
-    ips: string[];
-    interfaces: Array<{ name: string; addrs: string[] }>;
-    resolvers: string[];
-  };
-  disks: Array<{
-    filesystem: string;
-    type: string;
-    size: string;
-    used: string;
-    avail: string;
-    usePct: number | null;
-    mount: string;
-  }>;
-  power: {
-    pending: { raw: string; actionHint: string | null } | null;
-  };
-  boot: {
-    defaultTarget: string | null;
-  };
-  caps: {
-    executeEnabled: boolean;
-    isRoot: boolean;
-    canPower: boolean;
-    canIdentity: boolean;
-  };
-  collectedAt: string;
-};
+export type {
+  ReadinessLevel,
+  ReadinessItemDto,
+  ProductionReadinessDto,
+  HostOverviewDto,
+  FirewallStatusDto,
+  Fail2banStatusDto,
+  ServiceMatrixDto,
+} from '@ysk/shared';
 
 export const systemApi = {
   post: <T = Record<string, unknown>>(path: string, body: unknown) =>
@@ -119,29 +51,7 @@ export const systemApi = {
       body: JSON.stringify(body),
     }),
   firewallStatus: () =>
-    api.requestRaw<{
-      installed: boolean;
-      active: string;
-      activeLabel: string;
-      statusText: string;
-      numberedRules: string[];
-      rules: Array<{
-        num?: number;
-        action: string;
-        direction?: string;
-        to?: string;
-        from?: string;
-        raw: string;
-      }>;
-      denyFromIps: string[];
-      allowCount: number;
-      denyCount: number;
-      defaultIncoming?: string;
-      defaultOutgoing?: string;
-      executeEnabled: boolean;
-      isRoot: boolean;
-      notes: string[];
-    }>('/api/v1/system/firewall/status'),
+    api.requestRaw<FirewallStatusDto>('/api/v1/system/firewall/status'),
   firewallApply: (body: { allowSmtp?: boolean; apply?: boolean; extraTcpPorts?: number[] }) =>
     api.requestRaw('/api/v1/system/firewall/apply', {
       method: 'POST',
@@ -173,21 +83,7 @@ export const systemApi = {
       body: JSON.stringify({ port, proto }),
     }),
   fail2banStatus: () =>
-    api.requestRaw<{
-      installed: boolean;
-      active: string;
-      enabled: string;
-      activeLabel: string;
-      jails: Array<{ name: string; currentlyBanned?: number; totalBanned?: number }>;
-      banned: Array<{ jail: string; ip: string }>;
-      ignoreIps: string[];
-      catalog: Array<{ id: string; label: string; desc: string; group: string }>;
-      executeEnabled: boolean;
-      isRoot: boolean;
-      notes: string[];
-      /** legacy compat */
-      defaultJails?: string[];
-    }>('/api/v1/system/fail2ban/status'),
+    api.requestRaw<Fail2banStatusDto>('/api/v1/system/fail2ban/status'),
   fail2banApply: (body: {
     apply?: boolean;
     jails?: string[];
@@ -319,22 +215,7 @@ export const systemApi = {
       };
     }>('/api/v1/system/systemd/status'),
   servicesMatrix: () =>
-    api.requestRaw<{
-      items: Array<{
-        id: string;
-        label: string;
-        unit: string;
-        href?: string;
-        category: string;
-        installed: boolean;
-        active: string;
-        enabled: string;
-        activeLabel: string;
-      }>;
-      executeEnabled: boolean;
-      isRoot: boolean;
-      probedAt: string;
-    }>('/api/v1/system/services/matrix'),
+    api.requestRaw<ServiceMatrixDto>('/api/v1/system/services/matrix'),
   serviceLifecycle: (body: {
     unit: string;
     action: 'start' | 'stop' | 'restart' | 'reload';
@@ -531,20 +412,15 @@ export const systemApi = {
   /**
    * Full production readiness report.
    * HTTP 503 when not productionReady still returns the JSON body (honest gate).
+   * Must use requestRawAllowStatus so Accept-Language matches the UI locale.
    */
   readiness: async (): Promise<ProductionReadinessDto> => {
-    const token = authStore.getToken();
-    const res = await fetch('/api/v1/readiness', {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    const data = (await res.json()) as ProductionReadinessDto;
+    const data = await api.requestRawAllowStatus<ProductionReadinessDto>(
+      '/api/v1/readiness',
+      { allowStatuses: [503] },
+    );
     if (!data || typeof data !== 'object' || !Array.isArray(data.items)) {
-      throw new Error(
-        res.ok ? '就緒報告格式錯誤' : `就緒檢查失敗（${res.status}）`,
-      );
+      throw new Error(i18n.t('readiness.reportFormatError'));
     }
     return data;
   },

@@ -4,7 +4,7 @@
  */
 
 import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { restoreOnHost, type RestoreResult } from './restore.js';
@@ -47,7 +47,7 @@ export async function runPostTransferOnHost(input: {
       ok: false,
       blocked: restore.blocked,
       apply_status: restore.apply_status ?? 'failed',
-      notes: ['post-transfer 停在 restore', ...restore.notes],
+      notes: [tl('notes.auto.n0382'), ...restore.notes],
       restore,
     }) as PostTransferResult;
   }
@@ -56,7 +56,7 @@ export async function runPostTransferOnHost(input: {
     return assertHonestOps({
       ok: true,
       apply_status: 'partial',
-      notes: ['restore ok；略過 reapply/verify', ...restore.notes],
+      notes: [tl('notes.auto.n0415'), ...restore.notes],
       restore,
     }) as PostTransferResult;
   }
@@ -75,7 +75,7 @@ export async function runPostTransferOnHost(input: {
       ok: false,
       blocked: reapply.blocked,
       apply_status: reapply.apply_status ?? 'failed',
-      notes: ['post-transfer 停在 reapply', ...reapply.notes],
+      notes: [tl('notes.auto.n0381'), ...reapply.notes],
       restore,
       reapply,
     }) as PostTransferResult;
@@ -85,7 +85,7 @@ export async function runPostTransferOnHost(input: {
     return assertHonestOps({
       ok: true,
       apply_status: 'partial',
-      notes: ['restore+reapply ok；略過 verify', ...reapply.notes],
+      notes: [tl('notes.auto.n0420'), ...reapply.notes],
       restore,
       reapply,
     }) as PostTransferResult;

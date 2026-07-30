@@ -4,7 +4,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { YskDatabase } from '../db/database.js';
 
 export type FleetAgentStatus = 'registered' | 'connected' | 'stale' | 'disconnected';
@@ -53,7 +53,7 @@ export class FleetService {
    */
   register(agentId: string, group?: string, meta?: Record<string, unknown>): FleetAgent {
     if (!agentId?.trim()) {
-      throw new YskError(ErrorCodes.VALIDATION, '請指定 agentId', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0027'), { httpStatus: 400 });
     }
     const now = new Date().toISOString();
     const fromEdge = Boolean(meta && (meta as { source?: string }).source === 'edge');
@@ -64,8 +64,7 @@ export class FleetService {
       status: fromEdge ? 'connected' : 'registered',
       connected_at: now,
       last_seen_at: now,
-      meta,
-    };
+      meta };
     agents(this.db).unshift(row);
     messages(this.db).push({
       id: randomUUID(),
@@ -73,8 +72,7 @@ export class FleetService {
       direction: 'inbound',
       type: 'register',
       payload: { agentId, group: row.group, source: fromEdge ? 'edge' : 'panel' },
-      created_at: now,
-    });
+      created_at: now });
     this.db.persist();
     return { ...row };
   }
@@ -82,9 +80,8 @@ export class FleetService {
   heartbeat(sessionId: string): FleetAgent {
     const a = agents(this.db).find((x) => x.id === sessionId);
     if (!a) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
-        httpStatus: 404,
-      });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.agents.sessionNotFound', { sessionId }), {
+        httpStatus: 404 });
     }
     a.last_seen_at = new Date().toISOString();
     a.status = 'connected';
@@ -94,8 +91,7 @@ export class FleetService {
       direction: 'inbound',
       type: 'heartbeat',
       payload: {},
-      created_at: a.last_seen_at,
-    });
+      created_at: a.last_seen_at });
     this.db.persist();
     return { ...a, status: 'connected' };
   }
@@ -121,9 +117,8 @@ export class FleetService {
   get(sessionId: string): FleetAgent {
     const a = this.list().find((x) => x.id === sessionId);
     if (!a) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
-        httpStatus: 404,
-      });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.agents.sessionNotFound', { sessionId }), {
+        httpStatus: 404 });
     }
     return a;
   }
@@ -132,9 +127,8 @@ export class FleetService {
     const list = agents(this.db);
     const idx = list.findIndex((x) => x.id === sessionId);
     if (idx < 0) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
-        httpStatus: 404,
-      });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.agents.sessionNotFound', { sessionId }), {
+        httpStatus: 404 });
     }
     list.splice(idx, 1);
     const msgs = messages(this.db);
@@ -148,17 +142,15 @@ export class FleetService {
   enqueue(sessionId: string, payload: unknown): FleetCommand {
     const a = agents(this.db).find((x) => x.id === sessionId);
     if (!a) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
-        httpStatus: 404,
-      });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.agents.sessionNotFound', { sessionId }), {
+        httpStatus: 404 });
     }
     const cmd: FleetCommand = {
       id: randomUUID(),
       agent_session_id: sessionId,
       payload,
       status: 'queued',
-      created_at: new Date().toISOString(),
-    };
+      created_at: new Date().toISOString() };
     messages(this.db).push({
       id: cmd.id,
       session_id: sessionId,
@@ -166,8 +158,7 @@ export class FleetService {
       type: 'command',
       payload,
       status: 'queued',
-      created_at: cmd.created_at,
-    });
+      created_at: cmd.created_at });
     this.db.persist();
     return cmd;
   }
@@ -187,17 +178,15 @@ export class FleetService {
         agent_session_id: sessionId,
         payload: m.payload,
         status: 'queued' as const,
-        created_at: String(m.created_at),
-      }));
+        created_at: String(m.created_at) }));
   }
 
   /** Full command history for panel (queued / done / error). */
   listCommands(sessionId: string): FleetCommand[] {
     const a = agents(this.db).find((x) => x.id === sessionId);
     if (!a) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到 session：${sessionId}`, {
-        httpStatus: 404,
-      });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.agents.sessionNotFound', { sessionId }), {
+        httpStatus: 404 });
     }
     return messages(this.db)
       .filter(
@@ -213,8 +202,7 @@ export class FleetService {
         status: (String(m.status || 'queued') as FleetCommand['status']),
         created_at: String(m.created_at),
         result: m.result,
-        finished_at: m.finished_at ? String(m.finished_at) : undefined,
-      }))
+        finished_at: m.finished_at ? String(m.finished_at) : undefined }))
       .sort((x, y) => (x.created_at < y.created_at ? 1 : -1));
   }
 
@@ -232,7 +220,6 @@ export class FleetService {
       status: m.status as FleetCommand['status'],
       created_at: String(m.created_at),
       result: m.result,
-      finished_at: String(m.finished_at),
-    };
+      finished_at: String(m.finished_at) };
   }
 }

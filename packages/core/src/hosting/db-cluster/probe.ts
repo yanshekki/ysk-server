@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Probe DB cluster health (local node first). Honest — never invent healthy.
  */
@@ -51,7 +52,7 @@ export function evaluateGaleraHealth(
   const size = Number(facts.wsrep_cluster_size || 0);
 
   if (!Object.keys(facts).length) {
-    return { ok: false, notes: ['無 wsrep 狀態（可能未裝 Galera 或服務未開）'] };
+    return { ok: false, notes: [tl('notes.auto.n1090')] };
   }
 
   if (ready !== 'ON' && ready !== 'YES') {
@@ -61,7 +62,7 @@ export function evaluateGaleraHealth(
     notes.push(`wsrep_connected=${facts.wsrep_connected ?? '—'}`);
   }
   if (size > 0 && size < memberCount) {
-    notes.push(`cluster_size=${size} < 登記節點 ${memberCount}`);
+    notes.push(tl('notes.auto.t0560', { v0: (size), v1: (memberCount) }));
   }
   if (localState && !/Synced/i.test(localState) && localState !== '4') {
     notes.push(`local_state=${localState}`);
@@ -74,7 +75,7 @@ export function evaluateGaleraHealth(
 
   // Stricter: if we have memberCount >= 2, require size >= 2 for healthy
   if (memberCount >= 2 && size < 2) {
-    notes.push(size > 0 ? `只有 ${size} 個節點在 cluster` : 'cluster_size 未知或 0');
+    notes.push(size > 0 ? tl('notes.auto.t0561', { v0: (size) }) : tl('notes.auto.n0239'));
     return { ok: false, notes };
   }
 
@@ -159,7 +160,7 @@ export function evaluateMysqlReplicaLocal(
     const has =
       facts.master_has_binlog === 'yes' ||
       Boolean(facts.master_File || facts.master_file || facts.File);
-    if (!has) notes.push('primary 無 binlog / MASTER STATUS 空');
+    if (!has) notes.push(tl('notes.auto.n0388'));
     return { ok: has, notes: notes.length ? notes : ['primary binlog OK'] };
   }
   // replica
@@ -216,7 +217,7 @@ export async function probeDbCluster(input: {
     'redis-sentinel',
   ];
   if (!supported.includes(cluster.kind)) {
-    notes.push(`probe 不支援 ${cluster.kind}`);
+    notes.push(tl('notes.auto.t0562', { v0: (cluster.kind) }));
     const next = updateDbCluster(input.db, cluster.id, {
       status: 'degraded',
       notes,
@@ -234,7 +235,7 @@ export async function probeDbCluster(input: {
     at,
     ok: false,
     facts: {},
-    notes: ['未探測'],
+    notes: [tl('notes.auto.n0961')],
   };
 
   if (cluster.kind === 'mariadb-galera') {
@@ -245,7 +246,7 @@ export async function probeDbCluster(input: {
         ok: false,
         facts: {},
         notes: [
-          `mysql/mariadb 查詢失敗：${(r.stderr || r.stdout || 'exit ' + r.exitCode).slice(0, 160)}`,
+          tl('notes.auto.t0563', { v0: ((r.stderr || r.stdout || 'exit ' + r.exitCode).slice(0, 160)) }),
         ],
       };
       notes.push(...localProbe.notes);
@@ -268,7 +269,7 @@ export async function probeDbCluster(input: {
             ok: false,
             facts: {},
             notes: [
-              `SHOW REPLICA/SLAVE 失敗：${(r2.stderr || r.stderr || '').slice(0, 160)}`,
+              tl('notes.auto.t0564', { v0: ((r2.stderr || r.stderr || '').slice(0, 160)) }),
             ],
           };
           notes.push(...localProbe.notes);
@@ -296,7 +297,7 @@ export async function probeDbCluster(input: {
             ok: false,
             facts: {},
             notes: [
-              `SHOW MASTER 失敗：${(r2.stderr || r.stderr || '').slice(0, 160)}`,
+              tl('notes.auto.t0565', { v0: ((r2.stderr || r.stderr || '').slice(0, 160)) }),
             ],
           };
           notes.push(...localProbe.notes);
@@ -327,7 +328,7 @@ export async function probeDbCluster(input: {
         ok: false,
         facts: {},
         notes: [
-          `psql 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
+          tl('notes.tpl.psqlFailed', { detail: (r.stderr || r.stdout || '').slice(0, 160) }),
         ],
       };
       notes.push(...localProbe.notes);
@@ -339,14 +340,14 @@ export async function probeDbCluster(input: {
         notes.push(
           localOk
             ? 'replica: pg_is_in_recovery=true'
-            : `replica 應為 recovery，實際=${recovery}`,
+            : tl('notes.auto.t0566', { v0: (recovery) }),
         );
       } else {
         localOk = recovery === 'f' || recovery === 'false';
         notes.push(
           localOk
             ? 'primary: pg_is_in_recovery=false'
-            : `primary 不應 recovery，實際=${recovery}`,
+            : tl('notes.auto.t0567', { v0: (recovery) }),
         );
       }
       localProbe = { at, ok: localOk, facts, notes: [...notes] };
@@ -364,7 +365,7 @@ export async function probeDbCluster(input: {
         ok: false,
         facts: {},
         notes: [
-          `redis-cli 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
+          tl('notes.tpl.redisCliFailed', { detail: (r.stderr || r.stdout || '').slice(0, 160) }),
         ],
       };
       notes.push(...localProbe.notes);
@@ -382,17 +383,17 @@ export async function probeDbCluster(input: {
         notes.push(
           localOk
             ? `replica role=${facts.role} link=${facts.master_link_status ?? '—'}`
-            : `replica 異常 role=${facts.role ?? '—'}`,
+            : tl('notes.auto.t0568', { v0: (facts.role ?? '—') }),
         );
       } else if (role === 'sentinel') {
         localOk = true;
-        notes.push('sentinel：INFO replication 僅作參考；請查 sentinel masters');
+        notes.push(tl('notes.auto.n0428'));
       } else {
         localOk = redisRole === 'master';
         notes.push(
           localOk
             ? `master role=${facts.role} connected_slaves=${facts.connected_slaves ?? '—'}`
-            : `期望 master，實際 role=${facts.role ?? '—'}`,
+            : tl('notes.auto.t0569', { v0: (facts.role ?? '—') }),
         );
       }
       localProbe = { at, ok: localOk, facts, notes: notes.slice(-3) };
@@ -409,7 +410,7 @@ export async function probeDbCluster(input: {
         at,
         ok: false,
         facts: {},
-        notes: ['peer 未探測（只 probe 本機）'],
+        notes: [tl('notes.auto.n0372')],
       },
     };
   });
@@ -421,11 +422,11 @@ export async function probeDbCluster(input: {
       if (size >= cluster.members.length) status = 'healthy';
       else if (size >= 2) {
         status = 'partial';
-        notes.push('本機 wsrep 尚可，但 size 未達全部登記節點');
+        notes.push(tl('notes.auto.n0997'));
       } else status = 'degraded';
     } else if (localOk && cluster.members.length === 1) {
       status = 'partial';
-      notes.push('單節點有 wsrep，但 HA 需 ≥2 節點');
+      notes.push(tl('notes.auto.n0626'));
     } else if (!localOk) {
       status = cluster.members.some((m) => m.applyStatus === 'applied')
         ? 'degraded'
@@ -435,7 +436,7 @@ export async function probeDbCluster(input: {
     // mysql / postgres / redis: local OK → partial until peer probe
     if (localOk && cluster.members.length >= 2) {
       status = 'partial';
-      notes.push('本機指標 OK；完整 healthy 需 peer probe（未做）');
+      notes.push(tl('notes.auto.n0999'));
     } else if (localOk) {
       status = 'partial';
     } else {

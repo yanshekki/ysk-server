@@ -1,0 +1,439 @@
+/* —— Global form controls (toolbar, bare select, inputs outside .field) —— */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']),
+select,
+textarea {
+  font: inherit;
+  color: var(--text-main);
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem var(--control-padding-x);
+  min-height: var(--control-height);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 6rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  padding-right: 2.25rem;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-subtle);
+}
+
+/* —— Form kit (unified, human-friendly) —— */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-label-gap);
+  margin-bottom: var(--form-field-gap);
+  min-width: 0;
+}
+
+/* Field title (label) — never flush into previous control/table */
+.field > .field__label-row:first-child,
+.field > label:first-child {
+  margin-top: 0;
+  padding-top: 0.1rem; /* optical air under previous block edge */
+}
+
+.field:last-child,
+.field--flush {
+  margin-bottom: 0;
+}
+
+.field__label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.field label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.field__req {
+  color: var(--danger);
+  font-weight: 700;
+  margin-left: 0.15rem;
+}
+
+.field__key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.field__control {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+}
+
+/* Never force checkbox/radio to full width (breaks layout inside Field) */
+.field__control input:not([type='checkbox']):not([type='radio']),
+.field__control select,
+.field__control textarea,
+.field > input:not([type='checkbox']):not([type='radio']),
+.field > select,
+.field > textarea {
+  width: 100%;
+  max-width: none;
+}
+
+.field__control .checkbox-field {
+  width: auto;
+  max-width: 24rem;
+}
+
+.field__hint {
+  line-height: 1.45;
+  color: var(--text-sub);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.field__error {
+  color: #b91c1c;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Checkbox / switch — large hit target, never squeezed in multi-col grids */
+.field--check,
+.checkbox-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-page);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  box-sizing: border-box;
+}
+
+.field--check:hover,
+.checkbox-field:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.field--check input[type='checkbox'],
+.field--check input[type='radio'],
+.checkbox-field input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  min-width: 1.1rem;
+  min-height: 1.1rem;
+  max-width: 1.1rem;
+  margin: 0;
+  accent-color: var(--brand-blue);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.checkbox-field__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.checkbox-field__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.checkbox-field__desc {
+  font-size: var(--text-xs);
+  color: var(--text-sub);
+  line-height: 1.45;
+}
+
+.form-switches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--form-max);
+  margin-bottom: var(--form-field-gap);
+}
+
+/* Layouts: 1-col default, 2-col max (never auto-fill 4 columns) */
+.form-layout,
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--form-field-gap);
+  align-items: start;
+  max-width: var(--form-max);
+  width: 100%;
+}
+
+.form-layout--2,
+.form-grid {
+  max-width: var(--form-max-wide);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .form-layout--2,
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-6);
+    row-gap: var(--form-field-gap);
+  }
+
+  /* Textareas / full-width fields span both columns when marked */
+  .form-layout--2 .field--full,
+  .form-grid .field--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.form-grid--dense {
+  gap: var(--space-4);
+  max-width: var(--form-max-wide);
+}
+
+.form-layout > .field,
+.form-grid > .field,
+.form-layout > .field--flush,
+.form-grid > .field--flush {
+  margin-bottom: 0;
+}
+
+/* Labels need clear air from previous block when form is not in a flex-gap card */
+.tab-panel > .form-layout,
+.stack > .form-layout,
+.modal__body > .form-layout,
+.modal__body > * + .form-layout,
+.tab-panel > * + .form-layout,
+.stack > * + .form-layout {
+  margin-top: var(--space-card-block, var(--space-6));
+}
+
+.tab-panel > .form-layout:first-child,
+.stack > .form-layout:first-child,
+.modal__body > .form-layout:first-child {
+  margin-top: 0;
+}
+
+/* DataTable followed by form/section (outside card flex) */
+.data-table + .form-layout,
+.data-table + .form-actions,
+.data-table + .card,
+.data-table + .section-block,
+.desc-list + .form-layout,
+.desc-list + .form-actions,
+.preset-chips + .form-layout,
+.preset-chips + .data-table {
+  margin-top: var(--space-card-block, var(--space-6));
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-light);
+}
+
+.form-actions--start {
+  justify-content: flex-start;
+}
+
+.form-actions--end {
+  justify-content: flex-end;
+}
+
+.form-actions--split {
+  justify-content: space-between;
+}
+
+.form-hint {
+  margin: 0 0 var(--form-field-gap);
+  font-size: var(--text-sm);
+  color: var(--text-sub);
+  line-height: 1.5;
+  max-width: var(--form-max-wide);
+}
+
+.form-check-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--form-max);
+  margin-bottom: var(--form-field-gap);
+}
+
+.badge-link {
+  text-decoration: none;
+  display: inline-flex;
+}
+
+/* —— Grid / stack (page layout, not form fields) —— */
+/* Card grids: equal height by default (professional multi-column panels) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-grid);
+  align-items: stretch;
+}
+
+.grid > .card {
+  height: 100%;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 12.5rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Flush content padding when card is a flex column shell */
+.grid > .card > .card__header,
+.grid > .card > .section-block,
+.grid > .card > .card__title,
+.grid > .card > h2.card__title {
+  padding-left: var(--space-card);
+  padding-right: var(--space-card);
+}
+
+.grid > .card > .card__header {
+  padding-top: var(--space-5);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: var(--space-3);
+  background: linear-gradient(
+    180deg,
+    rgba(248, 250, 252, 0.95) 0%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+}
+
+.grid > .card > .section-block {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-card);
+  margin-bottom: 0;
+  min-height: 0;
+}
+
+.grid > .card > .section-block .section-block__desc {
+  margin-bottom: var(--space-4);
+}
+
+.grid > .card > .card__title,
+.grid > .card > h2.card__title,
+.grid > .card > h3.card__title {
+  padding-top: var(--space-5);
+  margin-bottom: var(--space-2);
+}
+
+.grid > .card > .card__desc {
+  padding-left: var(--space-card);
+  padding-right: var(--space-card);
+  flex: 1 1 auto;
+}
+
+.grid > .card > .btn-row,
+.grid > .card > .lifecycle-toolbar,
+.grid > .card > .form-actions {
+  margin-top: auto;
+  padding: var(--space-3) var(--space-card) var(--space-5);
+}
+
+/* Direct children that aren't header/footer (e.g. DescriptionList, p) */
+.grid > .card > .desc-list,
+.grid > .card > p,
+.grid > .card > ul,
+.grid > .card > .empty,
+.grid > .card > .loading-row {
+  padding-left: var(--space-card);
+  padding-right: var(--space-card);
+}
+
+.grid > .card > .desc-list {
+  flex: 1 1 auto;
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-2);
+}
+
+.grid > .card > .section-block > .btn-row,
+.grid > .card > .section-block > .lifecycle-toolbar,
+.grid > .card > .section-block > .form-actions {
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+/* Content-height only (rare) */
+.grid--start {
+  align-items: start;
+}
+
+.grid--start > .card {
+  height: auto;
+  min-height: 0;
+  align-self: start;
+  display: block;
+  padding: var(--space-card);
+}
+
+.grid--stretch {
+  align-items: stretch;
+}
+
+.grid--stretch > .card {
+  height: 100%;
+  align-self: stretch;
+}
+
+/**
+ * Component CSS modules — Wave2 R6 split from components.css
+ */

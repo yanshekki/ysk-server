@@ -56,9 +56,6 @@ export type { InfoCardProps, InfoFact, InfoCardGridCols } from './InfoCard';
 export { ActionBar } from './ActionBar';
 export type { ActionBarProps, ActionBarAlign, ActionBarSize } from './ActionBar';
 
-export { KeyValueList } from './KeyValueList';
-export type { KeyValueListProps, KeyValueItem } from './KeyValueList';
-
 export { CodeBlock, LogViewer } from './CodeBlock';
 export type { CodeBlockProps, LogViewerProps } from './CodeBlock';
 
@@ -74,7 +71,6 @@ export type { LoadingBlockProps } from './LoadingBlock';
 export { StructuredFacts } from './StructuredFacts';
 export type { FactItem } from './StructuredFacts';
 
-export { CapabilityBanner } from './CapabilityBanner';
 export { PageGuide } from './PageGuide';
 export type { PageGuideProps } from './PageGuide';
 
@@ -89,9 +85,6 @@ export type {
 } from './FeaturePageLayout';
 export { FeatureIconGrid } from './FeatureIconGrid';
 export type { FeatureIconGridProps, FeatureTileBadge } from './FeatureIconGrid';
-/** @deprecated Prefer OpsResultPanel — ExecutionResultPanel is a thin adapter */
-export { ExecutionResultPanel } from './ExecutionResultPanel';
-export type { ExecutionResultProps, ExecutionStep } from './ExecutionResultPanel';
 export { SoftwareInstallBanner } from './SoftwareInstallBanner';
 export type { SoftwareInstallBannerProps } from './SoftwareInstallBanner';
 export { Button, buttonClassName } from './Button';
@@ -100,8 +93,6 @@ export { PromptDialog } from './PromptDialog';
 export type { PromptDialogProps } from './PromptDialog';
 export { SplitPanel } from './SplitPanel';
 export type { SplitPanelProps } from './SplitPanel';
-export { SettingField, SettingFieldList } from './SettingField';
-export type { SettingFieldProps } from './SettingField';
 export { DescriptionList } from './DescriptionList';
 export type { DescriptionListProps, DescriptionItem } from './DescriptionList';
 

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Safe journalctl wrappers — fixed argv templates only.
  */
@@ -82,7 +83,7 @@ export async function listJournalUnits(host: HostExecutor): Promise<{
     { timeoutMs: 15_000 },
   );
   if (r.exitCode !== 0) {
-    notes.push(`list-units 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`);
+    notes.push(tl('notes.auto.t0758', { v0: ((r.stderr || r.stdout || '').slice(0, 200)) }));
     // fallback common units
     for (const u of [
       'nginx.service',
@@ -108,7 +109,7 @@ export async function listJournalUnits(host: HostExecutor): Promise<{
     });
     if (items.length >= 200) break;
   }
-  notes.push(`共 ${items.length} 個 service units`);
+  notes.push(tl('notes.auto.t0759', { v0: (items.length) }));
   return { items, notes };
 }
 
@@ -137,7 +138,7 @@ export async function queryJournal(
         lines: [],
         lineCount: 0,
         truncated: false,
-        notes: ['無效 unit 名稱'],
+        notes: [tl('notes.auto.n1108')],
       };
     }
     unitCandidates.push(u);
@@ -174,7 +175,7 @@ export async function queryJournal(
     if (r2.exitCode === 0 && (r2.stdout || '').trim()) {
       r = r2;
       usedUnit = unitCandidates[1];
-      notes.push(`已改用 unit ${usedUnit}`);
+      notes.push(tl('notes.auto.t0760', { v0: (usedUnit) }));
     }
   }
 
@@ -184,7 +185,7 @@ export async function queryJournal(
   if (Buffer.byteLength(text) > maxBytes) {
     text = text.slice(-maxBytes);
     truncated = true;
-    notes.push(`輸出截斷至 ${maxBytes} bytes`);
+    notes.push(tl('notes.auto.t0761', { v0: (maxBytes) }));
   }
   let lines = text.split(/\r?\n/).filter((l, i, a) => l.length || i < a.length - 1);
   if (lines.length > linesN) {
@@ -198,7 +199,7 @@ export async function queryJournal(
       err.includes('permission') || err.includes('not running') || err.includes('access');
     notes.push(
       needsRoot
-        ? 'journalctl 可能需要 root 或使用者在 systemd-journal／adm 組'
+        ? tl('notes.auto.n0312')
         : `journalctl exit ${r.exitCode}`,
     );
     return {
@@ -214,7 +215,7 @@ export async function queryJournal(
     };
   }
 
-  notes.push(`journalctl · ${lines.length} 行`);
+  notes.push(tl('notes.auto.t0762', { v0: (lines.length) }));
   return {
     ok: true,
     source: usedUnit ? `journal:${usedUnit}` : 'journal',
@@ -249,7 +250,7 @@ export async function vacuumJournal(
       ok: false,
       blocked: true,
       requiresExecute: true,
-      notes: ['需 YSK_EXECUTE=1 先可 vacuum journal'],
+      notes: [tl('notes.auto.n1543')],
     };
   }
   if (!host.isRoot()) {
@@ -257,18 +258,18 @@ export async function vacuumJournal(
       ok: false,
       blocked: true,
       requiresRoot: true,
-      notes: ['需 root 先可 journalctl --vacuum'],
+      notes: [tl('notes.auto.n1547')],
     };
   }
   let arg: string;
   if (mode === 'time') {
     if (!/^\d+[dwmh]?$/i.test(value) && !/^\d+days?$/i.test(value)) {
-      return { ok: false, notes: ['無效 vacuum-time（例：7d）'] };
+      return { ok: false, notes: [tl('notes.auto.n1110')] };
     }
     arg = `--vacuum-time=${value}`;
   } else {
     if (!/^\d+[KMG]?$/i.test(value)) {
-      return { ok: false, notes: ['無效 vacuum-size（例：500M）'] };
+      return { ok: false, notes: [tl('notes.auto.n1109')] };
     }
     arg = `--vacuum-size=${value}`;
   }
@@ -278,7 +279,7 @@ export async function vacuumJournal(
     ok: r.exitCode === 0,
     applied: r.exitCode === 0,
     notes: [
-      r.exitCode === 0 ? `已 vacuum：${arg}` : `vacuum 失敗：${out.slice(0, 300)}`,
+      r.exitCode === 0 ? tl('notes.auto.t0763', { v0: (arg) }) : tl('notes.auto.t0764', { v0: (out.slice(0, 300)) }),
       out.slice(0, 200),
     ].filter(Boolean),
   };

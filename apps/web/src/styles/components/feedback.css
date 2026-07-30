@@ -1,0 +1,81 @@
+/* —— Empty —— */
+.empty {
+  text-align: center;
+  padding: var(--space-10) var(--space-5);
+  color: var(--text-sub);
+}
+
+/* Compact empty — inside flush cards / tables (avoid huge white void) */
+.empty--compact {
+  padding: var(--space-8) var(--space-5);
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.empty--compact p {
+  margin: 0 0 var(--space-5);
+  line-height: 1.55;
+}
+
+.empty__title {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-lg);
+}
+
+.card__header--pad {
+  padding: var(--space-5) var(--space-card) var(--space-4);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.card--flush .empty--compact {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+}
+
+.empty p {
+  margin: 0;
+}
+
+/* —— Spinner —— */
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--brand-blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  /* block-only — never zero horizontal padding (overrides .card when combined) */
+  padding-block: var(--space-3);
+  padding-inline: 0;
+}
+
+/* Standalone loading card (e.g. Dashboard) — keep card side padding */
+.card.loading-row {
+  padding: var(--space-4) var(--space-card);
+  padding-left: var(--space-card);
+  padding-right: var(--space-card);
+  min-height: 3rem;
+}
+
+/* Nested loading row inside a padded parent */
+.card > .loading-row:not(.card) {
+  padding-inline: 0;
+  padding-block: var(--space-3);
+}
+

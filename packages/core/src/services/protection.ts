@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Offline / Protection Mode for network disruption and DDoS degradation.
  */
@@ -29,7 +30,7 @@ export function evaluateProtection(signals: {
       localLlmOnly: true,
       blockExternalTools: true,
       emergencyPlaybooksOnly: true,
-      reason: signals.forceOffline ? '強制離線模式' : '網路無法連線',
+      reason: signals.forceOffline ? tl('notes.auto.n0831') : tl('notes.auto.n1317'),
       changedAt: now,
     };
   }
@@ -39,7 +40,7 @@ export function evaluateProtection(signals: {
       localLlmOnly: true,
       blockExternalTools: false,
       emergencyPlaybooksOnly: true,
-      reason: '疑似 DDoS — 降級運作',
+      reason: tl('notes.auto.n1262'),
       changedAt: now,
     };
   }
@@ -49,7 +50,7 @@ export function evaluateProtection(signals: {
       localLlmOnly: false,
       blockExternalTools: false,
       emergencyPlaybooksOnly: false,
-      reason: '請求率偏高 — 已啟用限流',
+      reason: tl('notes.auto.n1421'),
       changedAt: now,
     };
   }

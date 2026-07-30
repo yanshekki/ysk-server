@@ -1,38 +1,10 @@
 /**
  * Redis service + key browser API
  */
+import type { RedisServiceStatus, RedisKeyListItem, RedisKeyView } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type RedisServiceStatus = {
-  serverInstalled: boolean;
-  clientInstalled: boolean;
-  unit: string;
-  active: string;
-  reachable: boolean;
-  ping: string | null;
-  executeEnabled: boolean;
-  isRoot: boolean;
-  canRead: boolean;
-  canWrite: boolean;
-  canInstall: boolean;
-  version?: string;
-  usedMemory?: string;
-  connectedClients?: string;
-  keyspace: Array<{ db: number; keys: number; expires?: number }>;
-  /** Logical DB count (indexes 0 .. databases-1) */
-  databases?: number;
-  configuredDatabases?: number;
-  blockMessage?: string;
-};
-
-export type RedisKeyListItem = { key: string; type?: string; ttl?: number };
-
-export type RedisKeyView = {
-  key: string;
-  type: string;
-  ttl: number;
-  value: string | Record<string, string> | string[] | Array<{ member: string; score: string }>;
-};
+export type { RedisServiceStatus, RedisKeyListItem, RedisKeyView } from '@ysk/shared';
 
 export const redisApi = {
   status: () => api.requestRaw<RedisServiceStatus>('/api/v1/system/db/redis/status'),

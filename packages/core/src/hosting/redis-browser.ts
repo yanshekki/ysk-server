@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Real Redis service probe + key browser via redis-cli.
  * Reads work without YSK_EXECUTE when redis is reachable.
@@ -50,7 +51,7 @@ export interface RedisKeyView {
 function validateDb(db: number): number {
   const n = Number(db);
   if (!Number.isInteger(n) || n < 0 || n > 15) {
-    throw new Error('DB index 必須為 0–15');
+    throw new Error(tl('notes.auto.n0091'));
   }
   return n;
 }
@@ -58,7 +59,7 @@ function validateDb(db: number): number {
 function validateKey(key: string): string {
   const k = key.trim();
   if (!k || !SAFE_KEY.test(k)) {
-    throw new Error('無效的 key 名稱');
+    throw new Error(tl('notes.auto.n1114'));
   }
   return k;
 }
@@ -66,15 +67,14 @@ function validateKey(key: string): string {
 function validatePattern(pattern: string): string {
   const p = (pattern || '*').trim() || '*';
   if (!SAFE_PATTERN.test(p)) {
-    throw new Error('無效的搜尋 pattern');
+    throw new Error(tl('notes.auto.n1117'));
   }
   return p;
 }
 
 async function hasBin(host: HostExecutor, bin: string): Promise<boolean> {
   const r = await host.runCommand(['bash', '-c', `command -v ${bin} 2>/dev/null || true`], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   return r.stdout.trim().length > 0;
 }
 
@@ -137,8 +137,7 @@ export async function probeRedisService(host: HostExecutor): Promise<RedisServic
         keyspace.push({
           db: Number(m[1]),
           keys: Number(m[2]),
-          expires: m[3] != null ? Number(m[3]) : undefined,
-        });
+          expires: m[3] != null ? Number(m[3]) : undefined });
       }
     }
   }
@@ -153,13 +152,13 @@ export async function probeRedisService(host: HostExecutor): Promise<RedisServic
 
   let blockMessage: string | undefined;
   if (!serverInstalled && !canRead) {
-    blockMessage = 'Redis 伺服器尚未安裝或無法連線';
+    blockMessage = tl('notes.auto.n0172');
   } else if (!clientInstalled) {
-    blockMessage = '未安裝 redis-cli 客戶端';
+    blockMessage = tl('notes.auto.n0955');
   } else if (!reachable) {
-    blockMessage = '無法連線 127.0.0.1:6379';
+    blockMessage = tl('notes.auto.n1194');
   } else if (!executeEnabled) {
-    blockMessage = '資料可讀寫；安裝／重啟服務需要系統變更權限';
+    blockMessage = tl('notes.auto.n1447');
   }
 
   return {
@@ -179,8 +178,7 @@ export async function probeRedisService(host: HostExecutor): Promise<RedisServic
     connectedClients,
     keyspace,
     databases,
-    blockMessage,
-  };
+    blockMessage };
 }
 
 export async function installRedisService(input: {
@@ -197,14 +195,12 @@ export async function installRedisService(input: {
     host: input.host,
     id: 'redis-tools',
     dataDir: input.dataDir,
-    enableUnits: false,
-  });
+    enableUnits: false });
   const server = await installSoftware({
     host: input.host,
     id: 'redis-server',
     dataDir: input.dataDir,
-    enableUnits: true,
-  });
+    enableUnits: true });
   const status = await probeRedisService(input.host);
   const blocked = Boolean(tools.blocked || server.blocked);
   return {
@@ -212,8 +208,7 @@ export async function installRedisService(input: {
     blocked,
     blockMessage: tools.blockMessage ?? server.blockMessage,
     notes: [...tools.notes, ...server.notes],
-    status,
-  };
+    status };
 }
 
 export async function startRedisService(host: HostExecutor): Promise<{
@@ -231,16 +226,14 @@ export async function startRedisService(host: HostExecutor): Promise<{
       blocked: true,
       blockMessage,
       notes: [blockMessage],
-      status: await probeRedisService(host),
-    };
+      status: await probeRedisService(host) };
   }
   await host.runCommand(['systemctl', 'enable', '--now', 'redis-server'], { timeoutMs: 60_000 });
   const status = await probeRedisService(host);
   return {
     ok: status.canRead,
-    notes: status.canRead ? ['Redis 已啟動'] : ['Redis 啟動後仍無法 PING'],
-    status,
-  };
+    notes: status.canRead ? [tl('notes.auto.n0175')] : [tl('notes.auto.n0173')],
+    status };
 }
 
 export async function listRedisKeys(input: {
@@ -257,10 +250,9 @@ export async function listRedisKeys(input: {
     return {
       ok: false,
       keys: [],
-      notes: ['未安裝 redis-cli'],
+      notes: [tl('notes.redis.cliMissing')],
       blocked: true,
-      blockMessage: '未安裝 redis-cli',
-    };
+      blockMessage: tl('notes.redis.cliMissing') };
   }
 
   // --scan streams keys; use KEYS for small instances as fallback if scan empty issues
@@ -292,11 +284,10 @@ export async function listRedisKeys(input: {
     keys.push({
       key,
       type: t.stdout.trim() || 'unknown',
-      ttl: Number(ttl.stdout.trim()) || -1,
-    });
+      ttl: Number(ttl.stdout.trim()) || -1 });
   }
 
-  return { ok: true, keys, notes: [`DB ${db}：${keys.length} 個 key`] };
+  return { ok: true, keys, notes: [tl('notes.auto.t0110', { v0: (db), v1: (keys.length) })] };
 }
 
 export async function getRedisKey(input: {
@@ -309,7 +300,7 @@ export async function getRedisKey(input: {
   const t = await redisCli(input.host, ['-n', String(db), 'TYPE', key], 5_000);
   const type = t.stdout.trim() || 'none';
   if (type === 'none') {
-    return { ok: false, notes: ['key 不存在'] };
+    return { ok: false, notes: [tl('notes.auto.n0313')] };
   }
   const ttlR = await redisCli(input.host, ['-n', String(db), 'TTL', key], 5_000);
   const ttl = Number(ttlR.stdout.trim()) || -1;
@@ -345,14 +336,13 @@ export async function getRedisKey(input: {
     }
     value = arr;
   } else {
-    value = `(type ${type} — 僅顯示類型)`;
+    value = tl('notes.auto.t0111', { v0: (type) });
   }
 
   return {
     ok: true,
     view: { key, type, ttl, value },
-    notes: [],
-  };
+    notes: [] };
 }
 
 export async function setRedisString(input: {
@@ -374,15 +364,14 @@ export async function setRedisString(input: {
       ok: false,
       executed: false,
       blocked: true,
-      blockMessage: '未安裝 redis-cli',
-      notes: ['未安裝 redis-cli'],
-    };
+      blockMessage: tl('notes.redis.cliMissing'),
+      notes: [tl('notes.redis.cliMissing')] };
   }
   const db = validateDb(input.db ?? 0);
   const key = validateKey(input.key);
   const value = String(input.value ?? '');
   if (value.length > 256_000) {
-    return { ok: false, executed: false, notes: ['value 過大（上限 256KB）'] };
+    return { ok: false, executed: false, notes: [tl('notes.auto.n0460')] };
   }
   const args = ['-n', String(db), 'SET', key, value];
   if (input.ttl != null && input.ttl > 0) {
@@ -393,8 +382,7 @@ export async function setRedisString(input: {
   return {
     ok,
     executed: true,
-    notes: ok ? [`已寫入 ${key}`] : [`寫入失敗：${r.stderr || r.stdout}`],
-  };
+    notes: ok ? [tl('notes.auto.t0112', { v0: (key) })] : [tl('notes.auto.t0113', { v0: (r.stderr || r.stdout) })] };
 }
 
 export async function deleteRedisKey(input: {
@@ -413,9 +401,8 @@ export async function deleteRedisKey(input: {
       ok: false,
       executed: false,
       blocked: true,
-      blockMessage: '未安裝 redis-cli',
-      notes: ['未安裝 redis-cli'],
-    };
+      blockMessage: tl('notes.redis.cliMissing'),
+      notes: [tl('notes.redis.cliMissing')] };
   }
   const db = validateDb(input.db ?? 0);
   const key = validateKey(input.key);
@@ -424,6 +411,5 @@ export async function deleteRedisKey(input: {
   return {
     ok: r.exitCode === 0 && n >= 0,
     executed: true,
-    notes: n > 0 ? [`已刪除 ${key}`] : [`key 不存在或未刪除`],
-  };
+    notes: n > 0 ? [tl('notes.tpl.deleted', { name: key })] : [tl('notes.auto.t0114')] };
 }

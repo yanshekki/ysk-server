@@ -32,13 +32,7 @@ import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 
-const ZONE_TEMPLATES = [
-  { id: 'minimal', label: '最小 — 僅 apex A' },
-  { id: 'web', label: '網站 — apex + www' },
-  { id: 'mail', label: '郵件 — apex + mail + MX + SPF' },
-  { id: 'full', label: '完整 — web + mail + ftp + SPF' },
-  { id: 'cdn', label: 'CDN — apex + www + cdn（多 edge 預留）' },
-] as const;
+const ZONE_TEMPLATE_IDS = ['minimal', 'web', 'mail', 'full', 'cdn'] as const;
 
 export function DnsPage() {
   const { t } = useTranslation();
@@ -57,7 +51,7 @@ export function DnsPage() {
   const [zone, setZone] = useState('');
   const [serverIp, setServerIp] = useState('');
   const [serverIpv6, setServerIpv6] = useState('');
-  const [template, setTemplate] = useState<(typeof ZONE_TEMPLATES)[number]['id']>('full');
+  const [template, setTemplate] = useState<(typeof ZONE_TEMPLATE_IDS)[number]>('full');
   const [rtype, setRtype] = useState('A');
   const [rname, setRname] = useState('@');
   const [rvalue, setRvalue] = useState('');
@@ -133,15 +127,15 @@ export function DnsPage() {
       setDnssecDs(r.dsRecord ?? null);
       setDnssecMsg(
         r.ok
-          ? '已產生 DNSSEC 金鑰（written — 未簽署 zone／未上 registrar）'
-          : 'DNSSEC 未產生金鑰（只寫說明檔或工具不可用 — 唔假成功）',
+          ? t('dns.dnssecOk')
+          : t('dns.dnssecNotOk'),
       );
       const listed = await api.requestRaw<{ files?: string[]; notes?: string[] }>(
         `/api/v1/dns/zones/${encodeURIComponent(zoneName)}/dnssec`,
       );
       if (listed.notes?.length) setDnssecNotes((n) => [...n, ...listed.notes!]);
     } catch (e) {
-      setDnssecMsg(e instanceof Error ? e.message : 'DNSSEC 失敗');
+      setDnssecMsg(e instanceof Error ? e.message : t('dns.dnssecFailed'));
     } finally {
       setDnssecBusy(false);
     }
@@ -204,17 +198,17 @@ export function DnsPage() {
       setClusterNotes(r.notes ?? []);
       setClusterPeerResults(r.peers ?? []);
       if (r.blocked || r.apply_status === 'blocked') {
-        setClusterMsg('已封鎖（需系統變更權限）');
+        setClusterMsg(t('dns.blocked'));
       } else if (r.ok) {
-        setClusterMsg(`完成（${r.apply_status ?? 'ok'}）`);
+        setClusterMsg(t('dns.clusterDone', { status: r.apply_status ?? 'ok' }));
       } else {
         setClusterMsg(
-          `未全部成功（${r.apply_status ?? res.status}）— 見下方明細`,
+          t('dns.clusterPartial', { status: r.apply_status ?? res.status }),
         );
       }
       await refreshPeers();
     } catch (e) {
-      setClusterMsg(e instanceof Error ? e.message : '叢集操作失敗');
+      setClusterMsg(e instanceof Error ? e.message : t('dns.clusterFailed'));
     } finally {
       setClusterBusy(false);
     }
@@ -259,13 +253,13 @@ export function DnsPage() {
             .map((i) => i.message)
             .join('；') ||
           check.notes?.join('；') ||
-          '記錄驗證失敗';
+          t('dns.validateFailed');
         setValidateMsg(msg);
         return;
       }
       setValidateMsg(null);
     } catch (err) {
-      setValidateMsg(err instanceof Error ? err.message : '驗證請求失敗');
+      setValidateMsg(err instanceof Error ? err.message : t('dns.validateRequestFailed'));
       return;
     }
     if (editRec) await records.update(editRec.id, body);
@@ -298,7 +292,7 @@ export function DnsPage() {
       setLookupResult({
         ok: false,
         answers: [],
-        notes: [err instanceof Error ? err.message : '查詢失敗'],
+        notes: [err instanceof Error ? err.message : t('dns.lookupFailed')],
       });
     } finally {
       setLookupBusy(false);
@@ -307,7 +301,7 @@ export function DnsPage() {
 
   const [tab, setTab] = usePageTab(DNS_TABS, 'zones');
 
-  // Load cluster peers when opening 叢集 tab
+  // Load cluster peers when opening cluster tab
   useEffect(() => {
     if (tab === 'cluster') void refreshPeers().catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh on tab only
@@ -315,7 +309,7 @@ export function DnsPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.dns', { defaultValue: 'DNS' })}
+      title={t('nav.dns')}
       showCapability={false}
       status={{
         pill: {
@@ -324,10 +318,10 @@ export function DnsPage() {
         },
         items: [
           { label: 'Zones', value: zones.items.length },
-          { label: '紀錄', value: records.items.length },
+          { label: t('dns.statRecords'), value: records.items.length },
           { label: 'Peers', value: peers.length },
           {
-            label: '選中',
+            label: t('dns.statSelected'),
             value: selectedLive ? String(selectedLive.zone ?? selectedLive.id) : '—',
           },
         ],
@@ -335,7 +329,7 @@ export function DnsPage() {
       actions={<>
           
           <Button variant="secondary" size="sm" onClick={() => setTab('records')}>
-            紀錄
+            {t('dns.statRecords')}
           </Button>
           <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             SSL
@@ -343,7 +337,7 @@ export function DnsPage() {
         </>
       }
     >
-      <SoftwareInstallBanner feature="dns" title="DNS 所需軟件尚未安裝" />
+      <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} />
       {zones.error || records.error ? (
         <Alert variant="error">{zones.error ?? records.error}</Alert>
       ) : null}
@@ -351,20 +345,20 @@ export function DnsPage() {
         <Alert variant="ok">
           {zones.msg}{' '}
           <button type="button" className={buttonClassName({ variant: 'ghost', size: 'sm' })} onClick={() => zones.setMsg(null)}>
-            關閉
+            {t('common.close')}
           </button>
         </Alert>
       ) : null}
       {dnssecMsg ? (
         <Alert
           variant={
-            /失敗|未完成|未產生|唔假成功/.test(dnssecMsg) ? 'error' : 'ok'
+            /失敗|未完成|未產生|唔假成功|Failed|not generated|false success|失败|未生成/.test(dnssecMsg) ? 'error' : 'ok'
           }
         >
           {dnssecMsg}
           {dnssecDs ? (
             <p className="u-mt-2">
-              DS（供 registrar，未自動發佈）：
+              {t('dns.dsForRegistrar')}
               <code className="inline u-break-all">{dnssecDs}</code>
             </p>
           ) : null}
@@ -387,23 +381,22 @@ export function DnsPage() {
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
             onClick={() => setValidateMsg(null)}
           >
-            關閉
+            {t('common.close')}
           </button>
         </Alert>
       ) : null}
       <PageTabs
         tabs={[
-          { id: 'zones', label: '區域', badge: zones.items.length || undefined },
+          { id: 'zones', label: t('dns.tabs.zones'), badge: zones.items.length || undefined },
           {
             id: 'records',
-            label: '記錄',
+            label: t('dns.tabs.records'),
             badge: selectedLive ? records.items.length || undefined : undefined,
           },
-          { id: 'cluster', label: '叢集', badge: peers.length || undefined },
-          { id: 'dnssec', label: 'DNSSEC' },
-          { id: 'tools', label: '工具' },
-        
-          { id: 'about', label: '說明' },
+          { id: 'cluster', label: t('dns.tabs.cluster'), badge: peers.length || undefined },
+          { id: 'dnssec', label: t('dns.tabs.dnssec') },
+          { id: 'tools', label: t('dns.tabs.tools') },
+          { id: 'about', label: t('dns.tabs.about') },
         ]}
         active={tab}
         onChange={(id) => {
@@ -418,7 +411,7 @@ export function DnsPage() {
           <div className="tab-panel">
             {zones.lastNotes.length > 0 ? (
               <Card>
-                <CardSection title="最近寫入結果">
+                <CardSection title={t('dns.recentWrite')}>
                   <ul className="notes-list">
                     {zones.lastNotes.map((n) => (
                       <li key={n} className="muted u-text-sm">
@@ -431,19 +424,19 @@ export function DnsPage() {
             ) : null}
             <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
-                  title={`區域 (${zones.items.length})`}
-                  description="建立區域後可寫入／套用 zone"
+                  title={t('dns.zonesTitle', { count: zones.items.length })}
+                  description={t('dns.zonesDesc')}
                   toolbar={
                     <ActionBar>
                       <Button variant="primary" size="sm" onClick={() => setZoneOpen(true)}>
-                        + 建立區域
+                        {t('dns.createZone')}
                       </Button>
                     </ActionBar>
                   }
                   columns={[
                     {
                       key: 'zone',
-                      header: '區域名稱',
+                      header: t('dns.colZoneName'),
                       render: (r) => (
                         <button
                           type="button"
@@ -457,23 +450,23 @@ export function DnsPage() {
                         </button>
                       ),
                     },
-                    { key: 'ip', header: '伺服器 IP', render: (r) => String(r.serverIp ?? '—') },
+                    { key: 'ip', header: t('dns.colServerIp'), render: (r) => String(r.serverIp ?? '—') },
                     {
                       key: 'tpl',
-                      header: '模板',
+                      header: t('dns.colTemplate'),
                       render: (r) => String(r.template ?? 'full'),
                     },
                     {
                       key: 'status',
-                      header: '狀態',
+                      header: t('dns.colStatus'),
                       render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
                     },
                   ]}
                   rows={zones.items}
                   empty={
                     <EmptyState
-                      title="尚未有 DNS 區域"
-                      description="用列表右上角「建立區域」新增"
+                      title={t('dns.emptyZonesTitle')}
+                      description={t('dns.emptyZonesDesc')}
                     />
                   }
                   rowActions={(r) => (
@@ -483,9 +476,9 @@ export function DnsPage() {
                         className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                         disabled={zones.busy}
                         onClick={() => void zones.apply(r.id)}
-                        title="寫入管理 zone 檔；有權限時 named-checkzone + 嘗試 reload"
+                        title={t('dns.applyZoneTitle')}
                       >
-                        寫入／套用
+                        {t('dns.applyZone')}
                       </button>
                       <button
                         type="button"
@@ -495,7 +488,7 @@ export function DnsPage() {
                           setTab('records');
                         }}
                       >
-                        記錄
+                        {t('dns.tabs.records')}
                       </button>
                       <button
                         type="button"
@@ -503,7 +496,7 @@ export function DnsPage() {
                         disabled={zones.busy}
                         onClick={() => setDelZone(r.id)}
                       >
-                        刪除
+                        {t('common.delete')}
                       </button>
                     </ActionBar>
                   )}
@@ -517,14 +510,14 @@ export function DnsPage() {
               <CardSection
                 title={
                   selectedLive
-                    ? `記錄 — ${String(selectedLive.zone)}`
-                    : '記錄（請先在「區域」選取）'
+                    ? t('dns.recordsFor', { zone: String(selectedLive.zone) })
+                    : t('dns.recordsNeedSelect')
                 }
               >
                 {selectedLive ? (
                   <>
                     <p className="muted u-text-sm">
-                      狀態 <ResourceStatusBadge status={String(selectedLive.apply_status)} />
+                      {t('dns.statusLabel')} <ResourceStatusBadge status={String(selectedLive.apply_status)} />
                       {selectedLive.zonePath ? (
                         <>
                           {' '}
@@ -545,7 +538,7 @@ export function DnsPage() {
                           setRecOpen(true);
                         }}
                       >
-                        + 新增記錄
+                        {t('dns.addRecord')}
                       </button>
                       <button
                         type="button"
@@ -553,28 +546,28 @@ export function DnsPage() {
                         disabled={zones.busy}
                         onClick={() => void zones.apply(selectedLive.id)}
                       >
-                        寫入區域檔
+                        {t('dns.writeZoneFile')}
                       </button>
                       <Link
                         to={`/ssl?domain=${encodeURIComponent(String(selectedLive.zone))}&action=le`}
                         className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-                        title={`申請 ${String(selectedLive.zone)} Let’s Encrypt`}
+                        title={t('dns.requestLeTitle', { zone: String(selectedLive.zone) })}
                       >
-                        申請本區域 SSL
+                        {t('dns.requestZoneSsl')}
                       </Link>
                     </FormActions>
 
                     <div className="u-mt-4">
-                      <h3 className="section-block__title">SOA / 預設 TTL</h3>
+                      <h3 className="section-block__title">{t('dns.soaTitle')}</h3>
                       <p className="section-block__desc">
-                        寫入 zone 檔時的 SOA 名稱伺服器與 $TTL；儲存後請再「寫入區域檔」才落到磁碟
+                        {t('dns.soaDesc')}
                       </p>
                       <FormLayout columns={2}>
                         <Field
-                          label="SOA 名稱伺服器"
+                          label={t('dns.soaNsLabel')}
                           htmlFor="edit-soa-ns"
                           flush
-                          hint="可留空 → 預設 ns1.區域."
+                          hint={t('dns.soaNsHint')}
                         >
                           <input
                             id="edit-soa-ns"
@@ -585,19 +578,19 @@ export function DnsPage() {
                             disabled={soaBusy || zones.busy}
                           />
                         </Field>
-                        <Field label="預設 TTL（秒）" htmlFor="edit-soa-ttl" flush>
+                        <Field label={t('dns.defaultTtl')} htmlFor="edit-soa-ttl" flush>
                           <PresetChips
                             options={[
-                              { value: '60', label: '1 分' },
-                              { value: '300', label: '5 分' },
-                              { value: '600', label: '10 分' },
-                              { value: '3600', label: '1 時' },
-                              { value: '86400', label: '1 日' },
+                              { value: '60', label: t('dns.min1') },
+                              { value: '300', label: t('dns.min5') },
+                              { value: '600', label: t('dns.min10') },
+                              { value: '3600', label: t('dns.hour1') },
+                              { value: '86400', label: t('dns.day1') },
                             ]}
                             value={editSoaTtl}
                             onChange={setEditSoaTtl}
                             allowCustom
-                            customPlaceholder="自訂秒數"
+                            customPlaceholder={t('dns.customSeconds')}
                             disabled={soaBusy || zones.busy}
                           />
                         </Field>
@@ -618,10 +611,10 @@ export function DnsPage() {
                                   nsName: editSoaNs.trim() || undefined,
                                   ttl,
                                 });
-                                setSoaMsg('已儲存 SOA 設定（控制面）— 請「寫入區域檔」套用');
+                                setSoaMsg(t('dns.soaSaved'));
                               } catch (e) {
                                 setSoaMsg(
-                                  e instanceof Error ? e.message : '儲存 SOA 失敗',
+                                  e instanceof Error ? e.message : t('dns.soaSaveFailed'),
                                 );
                               } finally {
                                 setSoaBusy(false);
@@ -629,7 +622,7 @@ export function DnsPage() {
                             })();
                           }}
                         >
-                          儲存 SOA 設定
+                          {t('dns.saveSoaSettings')}
                         </Button>
                         <Button
                           variant="primary"
@@ -646,10 +639,10 @@ export function DnsPage() {
                                   ttl,
                                 });
                                 await zones.apply(selectedLive.id);
-                                setSoaMsg('已儲存並寫入區域檔');
+                                setSoaMsg(t('dns.soaSavedAndWritten'));
                               } catch (e) {
                                 setSoaMsg(
-                                  e instanceof Error ? e.message : 'SOA 寫入失敗',
+                                  e instanceof Error ? e.message : t('dns.soaWriteFailed'),
                                 );
                               } finally {
                                 setSoaBusy(false);
@@ -657,13 +650,13 @@ export function DnsPage() {
                             })();
                           }}
                         >
-                          儲存並寫入區域檔
+                          {t('dns.saveSoaAndWriteBtn')}
                         </Button>
                       </FormActions>
                       {soaMsg ? (
                         <Alert
                           variant={
-                            soaMsg.includes('失敗') ? 'error' : 'ok'
+                            /失敗|Failed|失败/.test(soaMsg) ? 'error' : 'ok'
                           }
                         >
                           {soaMsg}
@@ -673,11 +666,11 @@ export function DnsPage() {
 
                     <DataTable
                       columns={[
-                        { key: 'type', header: '類型', render: (r) => String(r.type) },
-                        { key: 'name', header: '名稱', render: (r) => String(r.name) },
+                        { key: 'type', header: t('dns.colType'), render: (r) => String(r.type) },
+                        { key: 'name', header: t('dns.colName'), render: (r) => String(r.name) },
                         {
                           key: 'value',
-                          header: '值',
+                          header: t('dns.colValue'),
                           render: (r) => (
                             <code className="inline u-break-all">{String(r.value)}</code>
                           ),
@@ -686,7 +679,7 @@ export function DnsPage() {
                       ]}
                       rows={records.items}
                   rowKey={(r) => String((r as { id?: string }).id ?? '')}
-                      empty={<EmptyState title="尚無記錄" />}
+                      empty={<EmptyState title={t('dns.emptyRecords')} />}
                       rowActions={(r) => (
                         <ActionBar>
                           <button
@@ -701,14 +694,14 @@ export function DnsPage() {
                               setRecOpen(true);
                             }}
                           >
-                            編輯
+                            {t('common.edit')}
                           </button>
                           <button
                             type="button"
                             className={buttonClassName({ variant: 'danger', size: 'sm' })}
                             onClick={() => setDelRec(r.id)}
                           >
-                            刪除
+                            {t('common.delete')}
                           </button>
                         </ActionBar>
                       )}
@@ -716,13 +709,8 @@ export function DnsPage() {
                   </>
                 ) : (
                   <EmptyState
-                    title="尚未選擇區域"
-                    description="到「區域」分頁點選一個 zone"
-                    action={
-                      <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setTab('zones')}>
-                        前往區域
-                      </button>
-                    }
+                    title={t('dns.noZoneSelectedTitle')}
+                    description={t('dns.noZoneSelectedDesc')}
                   />
                 )}
               </CardSection>
@@ -734,16 +722,16 @@ export function DnsPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="DNS 叢集"
-                description="SCP 推送 zone 檔後可 remote reload（rndc / named / bind9 / pdns）。written ≠ applied。"
+                title={t('dns.clusterTitle')}
+                description={t('dns.clusterDesc')}
               >
                 <FormLayout columns={2}>
                   <Field
-                    label="Peer 主機"
+                    label={t('dns.peerHost')}
                     htmlFor="peer-h"
                     flush
                     required
-                    hint="次要 NS 主機名稱或 IP（需 SSH 金鑰登入）"
+                    hint={t('dns.peerHostHint')}
                   >
                     <input
                       id="peer-h"
@@ -754,10 +742,10 @@ export function DnsPage() {
                     />
                   </Field>
                   <Field
-                    label="SSH 用戶"
+                    label={t('dns.sshUser')}
                     htmlFor="peer-u"
                     flush
-                    hint="需有目標路徑寫入與 reload 權限"
+                    hint={t('dns.sshUserHint')}
                   >
                     <input
                       id="peer-u"
@@ -767,10 +755,10 @@ export function DnsPage() {
                     />
                   </Field>
                   <Field
-                    label="標籤（可選）"
+                    label={t('dns.labelOptional')}
                     htmlFor="peer-label"
                     flush
-                    hint="例如 ns2 / hkg-edge-dns"
+                    hint={t('dns.labelPlaceholder')}
                   >
                     <input
                       id="peer-label"
@@ -787,7 +775,7 @@ export function DnsPage() {
                     onClick={() => void refreshPeers()}
                     disabled={clusterBusy}
                   >
-                    重新整理
+                    {t('dns.refresh')}
                   </Button>
                   <Button
                     variant="primary"
@@ -813,7 +801,7 @@ export function DnsPage() {
                         .catch((e: Error) => setClusterMsg(e.message))
                     }
                   >
-                    新增 peer
+                    {t('dns.addPeer')}
                   </Button>
                   <Button
                     variant="primary"
@@ -826,7 +814,7 @@ export function DnsPage() {
                       })
                     }
                   >
-                    推送 + reload
+                    {t('dns.pushReload')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -839,7 +827,7 @@ export function DnsPage() {
                       })
                     }
                   >
-                    僅推送（不 reload）
+                    {t('dns.pushOnly')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -850,7 +838,7 @@ export function DnsPage() {
                       void runClusterOp('/api/v1/dns/cluster/reload', {})
                     }
                   >
-                    僅 remote reload
+                    {t('dns.reloadOnly')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -861,14 +849,11 @@ export function DnsPage() {
                       void runClusterOp('/api/v1/dns/cluster/probe', {})
                     }
                   >
-                    探活 peers
+                    {t('dns.probePeers')}
                   </Button>
                 </FormActions>
                 <FormHint>
-                  預設「推送 + reload」：scp 成功後以 SSH 執行 rndc reload 或
-                  systemctl reload named|bind9|pdns。需本機已開啟系統變更權限，且
-                  control → peer 可用 BatchMode SSH。
-                </FormHint>
+                  {t('dns.clusterDefaultHint')}</FormHint>
               </CardSection>
             </Card>
 
@@ -900,7 +885,7 @@ export function DnsPage() {
 
             {clusterPeerResults.length > 0 ? (
               <Card>
-                <CardSection title="本次操作（每 peer）">
+                <CardSection title={t('dns.opPerPeer')}>
                   <ul className="list-plain list-spaced">
                     {clusterPeerResults.map((pr) => (
                       <li key={String(pr.peerId)}>
@@ -934,11 +919,11 @@ export function DnsPage() {
 
             <Card>
               <CardSection
-                title={`已登記 peers（${peers.length}）`}
-                description="lastProbe 於「探活」或推送後更新"
+                title={t('dns.registeredPeers', { count: peers.length })}
+                description={t('dns.lastProbeHint')}
               >
                 {peers.length === 0 ? (
-                  <EmptyState title="尚未登記任何 peer" />
+                  <EmptyState title={t('dns.noPeers')} />
                 ) : (
                   <ul className="list-plain list-spaced">
                     {peers.map((p) => {
@@ -962,17 +947,17 @@ export function DnsPage() {
                           </div>
                           {lp ? (
                             <p className="muted u-text-sm">
-                              探活：{lp.ok ? 'healthy' : 'unhealthy'}
+                              {t('dns.probeHealthy', { status: lp.ok ? 'healthy' : 'unhealthy' })}
                               {lp.service ? ` · ${lp.service}` : ''}
                               {lp.zoneDirOk === false
-                                ? ' · zone 目錄缺失'
+                                ? t('dns.zoneDirMissing')
                                 : ''}
                               {lp.at
                                 ? ` · ${new Date(lp.at).toLocaleString()}`
                                 : ''}
                             </p>
                           ) : (
-                            <p className="muted u-text-sm">尚未探活</p>
+                            <p className="muted u-text-sm">{t('dns.notProbed')}</p>
                           )}
                           <FormActions>
                             <Button
@@ -989,7 +974,7 @@ export function DnsPage() {
                                 )
                               }
                             >
-                              推送+reload
+                              {t('dns.pushReloadShort')}
                             </Button>
                             <Button
                               variant="secondary"
@@ -1015,7 +1000,7 @@ export function DnsPage() {
                                 )
                               }
                             >
-                              探活
+                              {t('dns.probe')}
                             </Button>
                             <Button
                               variant="ghost"
@@ -1033,7 +1018,7 @@ export function DnsPage() {
                                   )
                               }
                             >
-                              刪除
+                              {t('common.delete')}
                             </Button>
                           </FormActions>
                         </li>
@@ -1051,17 +1036,15 @@ export function DnsPage() {
             <Card>
               <CardSection
                 title="DNSSEC"
-                description="產生金鑰；不自動上線"
+                description={t('dns.generateKeys')}
               >
                 {selectedLive ? (
                   <>
                     <p className="muted u-text-sm">
-                      目前區域：<strong>{String(selectedLive.zone)}</strong>
+                      {t('dns.currentZone')}<strong>{String(selectedLive.zone)}</strong>
                     </p>
                     <FormHint>
-                      產生金鑰／DS；若 dataDir 有 zone 檔會嘗試 dnssec-signzone。DS
-                      唔會自動上 registrar。
-                    </FormHint>
+                      {t('dns.dnssecCardDesc')}</FormHint>
                     <FormActions>
                       <Button
                         variant="primary"
@@ -1069,19 +1052,12 @@ export function DnsPage() {
                         loading={dnssecBusy}
                         onClick={() => void onDnssec(String(selectedLive.zone))}
                       >
-                        產生金鑰並嘗試簽署 zone
+                        {t('dns.generateAndSign')}
                       </Button>
                     </FormActions>
                   </>
                 ) : (
-                  <EmptyState
-                    title="請先選擇區域"
-                    action={
-                      <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setTab('zones')}>
-                        前往區域
-                      </button>
-                    }
-                  />
+                  <EmptyState title={t('dns.selectZoneFirst')} />
                 )}
               </CardSection>
             </Card>
@@ -1092,17 +1068,17 @@ export function DnsPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="DNS 查詢（dig）"
-                description="對公網解析器查詢；用於驗證 multi-A / CDN 是否生效。唔假造答案。"
+                title={t('dns.lookupTitle')}
+                description={t('dns.lookupDesc')}
               >
                 <form onSubmit={(e) => void onLookup(e)}>
                   <FormLayout columns={2}>
                     <Field
-                      label="名稱"
+                      label={t('dns.lookupName')}
                       htmlFor="lookup-name"
                       flush
                       required
-                      hint="例如 example.com 或 www.example.com"
+                      hint={t('dns.lookupNamePlaceholder')}
                     >
                       <input
                         id="lookup-name"
@@ -1117,10 +1093,10 @@ export function DnsPage() {
                         required
                       />
                     </Field>
-                    <Field label="類型" htmlFor="lookup-type" flush>
+                    <Field label={t('dns.colType')} htmlFor="lookup-type" flush>
                       <SegRadio
                         name="lookup-type"
-                        aria-label="查詢類型"
+                        aria-label={t('dns.lookupType')}
                         value={lookupType}
                         onChange={setLookupType}
                         options={['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS'].map(
@@ -1136,7 +1112,7 @@ export function DnsPage() {
                       size="md"
                       loading={lookupBusy}
                     >
-                      查詢
+                      {t('dns.lookup')}
                     </Button>
                     {selectedLive ? (
                       <Button
@@ -1148,14 +1124,13 @@ export function DnsPage() {
                           setLookupType('A');
                         }}
                       >
-                        填入目前區域
+                        {t('dns.fillCurrentZone')}
                       </Button>
                     ) : null}
                   </FormActions>
                 </form>
                 <FormHint>
-                  優先使用主機上的 dig；若無 dig 則 fallback 至 node dns。結果反映查詢當下解析器所見，唔等於 panel 內記錄。
-                </FormHint>
+                  {t('dns.lookupToolHint')}</FormHint>
               </CardSection>
             </Card>
             {lookupResult ? (
@@ -1163,13 +1138,13 @@ export function DnsPage() {
                 <CardSection
                   title={
                     lookupResult.ok
-                      ? `查詢結果（${lookupResult.answers.length} 筆）`
-                      : '查詢無答案／失敗'
+                      ? t('dns.lookupResults', { count: lookupResult.answers.length })
+                      : t('dns.lookupNoAnswerFail')
                   }
                   description={
                     [
                       lookupResult.method
-                        ? `方法：${lookupResult.method}`
+                        ? t('dns.method', { method: lookupResult.method })
                         : null,
                       lookupResult.latencyMs != null
                         ? `${lookupResult.latencyMs} ms`
@@ -1188,7 +1163,7 @@ export function DnsPage() {
                       ))}
                     </ul>
                   ) : (
-                    <EmptyState title="沒有答案" description="NXDOMAIN、空 RRset 或解析失敗" />
+                    <EmptyState title={t('dns.noAnswers')} description={t('dns.noAnswersDesc')} />
                   )}
                   {lookupResult.notes.length ? (
                     <ul className="list-plain u-mt-2">
@@ -1204,20 +1179,19 @@ export function DnsPage() {
                     className="u-mt-2"
                   >
                     {lookupResult.ok
-                      ? '以上為即時查詢結果。CDN multi-A 應看到多個 IP；健康摘除後應減少。'
-                      : '查詢失敗或無答案。請確認名稱、類型與上游解析器。'}
+                      ? t('dns.lookupOkHint')
+                      : t('dns.lookupFailHint')}
                   </Alert>
                 </CardSection>
               </Card>
             ) : null}
             <Card>
               <CardSection
-                title="記錄驗證"
-                description="新增／編輯記錄時會自動呼叫 /api/v1/dns/validate（CNAME 衝突、A/AAAA 格式等）。"
+                title={t('dns.validateTitle')}
+                description={t('dns.validateDesc')}
               >
                 <FormHint>
-                  儲存前若有 error 級問題會擋下；warn（例如 apex CNAME）只提示。CDN 模組日後會用同一驗證器保護 managedBy=cdn 的 RRset。
-                </FormHint>
+                  {t('dns.validateExtra')}</FormHint>
               </CardSection>
             </Card>
           </div>
@@ -1229,15 +1203,15 @@ export function DnsPage() {
       <Modal
         open={zoneOpen}
         onClose={() => setZoneOpen(false)}
-        title="建立 DNS 區域"
-        description="依模板產生記錄"
+        title={t('dns.createZoneTitle')}
+        description={t('dns.createZoneDesc')}
         footer={
           <>
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setZoneOpen(false)}>
-              取消
+              {t('common.cancel')}
             </button>
             <button type="submit" form="dz" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={zones.busy}>
-              建立
+              {t('common.create')}
             </button>
           </>
         }
@@ -1245,11 +1219,11 @@ export function DnsPage() {
         <form id="dz" onSubmit={(e) => void onCreateZone(e)}>
           <FormLayout columns={2}>
             <Field
-              label="區域名稱"
+              label={t('dns.colZoneName')}
               htmlFor="z"
               flush
               required
-              hint="例如 example.com（不含結尾點）"
+              hint={t('dns.zoneNameHint')}
             >
               <input
                 id="z"
@@ -1261,40 +1235,40 @@ export function DnsPage() {
               />
             </Field>
             <Field
-              label="伺服器 IPv4"
+              label={t('dns.serverIpv4')}
               htmlFor="sip"
               flush
               required
-              hint="模板 A 記錄使用的位址"
+              hint={t('dns.serverIpv4Hint')}
             >
               <input
                 id="sip"
                 value={serverIp}
                 onChange={(e) => setServerIp(e.target.value)}
                 required
-                placeholder="此主機公網 IPv4"
+                placeholder={t('dns.thisHostIpv4')}
                 spellCheck={false}
               />
             </Field>
             <Field
-              label="伺服器 IPv6（可選）"
+              label={t('dns.serverIpv6Optional')}
               htmlFor="sip6"
               flush
-              hint="有公網 v6 時寫入 AAAA；可留空"
+              hint={t('dns.serverIpv6Hint')}
             >
               <input
                 id="sip6"
                 value={serverIpv6}
                 onChange={(e) => setServerIpv6(e.target.value)}
-                placeholder="此主機公網 IPv6（可留空）"
+                placeholder={t('dns.thisHostIpv6')}
                 spellCheck={false}
               />
             </Field>
             <Field
-              label="SOA 名稱伺服器"
+              label={t('dns.soaNsLabel')}
               htmlFor="soa-ns"
               flush
-              hint="可留空，預設 ns1.區域名稱"
+              hint={t('dns.soaNsCreateHint')}
             >
               <input
                 id="soa-ns"
@@ -1304,62 +1278,62 @@ export function DnsPage() {
                 spellCheck={false}
               />
             </Field>
-            <Field label="預設 TTL" htmlFor="soa-ttl" flush hint="SOA 與新記錄預設">
+            <Field label={t('dns.defaultTtlLabel')} htmlFor="soa-ttl" flush hint={t('dns.defaultTtlHint')}>
               <PresetChips
                 options={[
-                  { value: '60', label: '1 分' },
-                  { value: '300', label: '5 分' },
-                  { value: '600', label: '10 分' },
-                  { value: '3600', label: '1 時' },
-                  { value: '86400', label: '1 日' },
+                  { value: '60', label: t('dns.min1') },
+                  { value: '300', label: t('dns.min5') },
+                  { value: '600', label: t('dns.min10') },
+                  { value: '3600', label: t('dns.hour1') },
+                  { value: '86400', label: t('dns.day1') },
                 ]}
                 value={soaTtl}
                 onChange={setSoaTtl}
                 allowCustom
-                customPlaceholder="自訂秒數"
+                customPlaceholder={t('dns.customSeconds')}
               />
             </Field>
-            <Field label="記錄模板" htmlFor="ztpl" fullWidth flush>
+            <Field label={t('dns.recordTemplate')} htmlFor="ztpl" fullWidth flush>
               <SegRadio
                 name="ztpl"
-                aria-label="記錄模板"
+                aria-label={t('dns.recordTemplate')}
                 value={template}
-                onChange={(v) => setTemplate(v as (typeof ZONE_TEMPLATES)[number]['id'])}
-                options={ZONE_TEMPLATES.map((t) => ({
-                  value: t.id,
-                  label: t.label,
+                onChange={(v) => setTemplate(v as (typeof ZONE_TEMPLATE_IDS)[number])}
+                options={ZONE_TEMPLATE_IDS.map((id) => ({
+                  value: id,
+                  label: t(`dns.templates.${id}`),
                 }))}
               />
             </Field>
           </FormLayout>
-          <FormHint>建立後請在「記錄」分頁檢視並「寫入區域檔」才會落到磁碟。</FormHint>
+          <FormHint>{t('dns.createAfterHint')}</FormHint>
         </form>
       </Modal>
 
       <Modal
         open={recOpen}
         onClose={() => setRecOpen(false)}
-        title={editRec ? '編輯記錄' : '新增記錄'}
+        title={editRec ? t('dns.editRecord') : t('dns.addRecordTitle')}
         description={
-          selectedLive ? `區域 ${String(selectedLive.zone)} · 儲存後需再寫入區域檔` : undefined
+          selectedLive ? t('dns.recordModalDesc', { zone: String(selectedLive.zone) }) : undefined
         }
         footer={
           <>
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setRecOpen(false)}>
-              取消
+              {t('common.cancel')}
             </button>
             <button type="submit" form="dr" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={records.busy}>
-              儲存
+              {t('common.save')}
             </button>
           </>
         }
       >
         <form id="dr" onSubmit={(e) => void onSaveRec(e)}>
           <FormLayout columns={2}>
-            <Field label="類型" htmlFor="rt" flush required>
+            <Field label={t('dns.colType')} htmlFor="rt" flush required>
               <SegRadio
                 name="rt"
-                aria-label="DNS 記錄類型"
+                aria-label={t('dns.recordType')}
                 value={rtype}
                 onChange={setRtype}
                 options={['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS'].map((t) => ({
@@ -1369,11 +1343,11 @@ export function DnsPage() {
               />
             </Field>
             <Field
-              label="名稱"
+              label={t('dns.lookupName')}
               htmlFor="rn"
               flush
               required
-              hint="@ = 根網域；www = 子網域"
+              hint={t('dns.nameHint')}
             >
               <input
                 id="rn"
@@ -1385,21 +1359,21 @@ export function DnsPage() {
               />
             </Field>
             <Field
-              label="值"
+              label={t('dns.valueLabel')}
               htmlFor="rv"
               fullWidth
               flush
               required
               hint={
                 rtype === 'MX'
-                  ? '例如 10 mail.example.com.'
+                  ? t('dns.mxPlaceholder')
                   : rtype === 'TXT'
-                    ? '例如 v=spf1 a mx ip4:… ip6:… ~all'
+                    ? t('dns.spfPlaceholder')
                     : rtype === 'AAAA'
-                      ? '請填 IPv6 位址'
+                      ? t('dns.needIpv6')
                       : rtype === 'A'
-                        ? '請填 IPv4 位址'
-                        : 'IP、主機名或對應內容'
+                        ? t('dns.needIpv4')
+                        : t('dns.valueHint')
               }
             >
               <input
@@ -1409,27 +1383,27 @@ export function DnsPage() {
                 required
                 placeholder={
                   rtype === 'AAAA'
-                    ? 'IPv6 位址'
+                    ? t('dns.ipv6Address')
                     : rtype === 'A'
-                      ? 'IPv4 位址'
+                      ? t('dns.ipv4Address')
                       : undefined
                 }
                 spellCheck={false}
               />
             </Field>
-            <Field label="TTL" htmlFor="ttl" flush hint="快取時間">
+            <Field label="TTL" htmlFor="ttl" flush hint={t('dns.ttlHint')}>
               <PresetChips
                 options={[
-                  { value: '60', label: '1 分' },
-                  { value: '300', label: '5 分' },
-                  { value: '600', label: '10 分' },
-                  { value: '3600', label: '1 時' },
-                  { value: '86400', label: '1 日' },
+                  { value: '60', label: t('dns.min1') },
+                  { value: '300', label: t('dns.min5') },
+                  { value: '600', label: t('dns.min10') },
+                  { value: '3600', label: t('dns.hour1') },
+                  { value: '86400', label: t('dns.day1') },
                 ]}
                 value={rttl}
                 onChange={setRttl}
                 allowCustom
-                customPlaceholder="自訂秒數"
+                customPlaceholder={t('dns.customSeconds')}
               />
             </Field>
           </FormLayout>
@@ -1446,10 +1420,10 @@ export function DnsPage() {
               setDelZone(null);
             });
         }}
-        title="刪除區域？"
-        description="會一併刪除其 DNS 記錄登記。"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('dns.deleteZoneTitle')}
+        description={t('dns.deleteZoneDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={zones.busy}
       />
@@ -1459,10 +1433,10 @@ export function DnsPage() {
         onConfirm={() => {
           if (delRec) void records.remove(delRec).then(() => setDelRec(null));
         }}
-        title="刪除記錄？"
-        description="移除後請寫入區域檔"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('dns.deleteRecordTitle')}
+        description={t('dns.deleteRecordDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={records.busy}
       />

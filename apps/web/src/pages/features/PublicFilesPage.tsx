@@ -34,23 +34,27 @@ export function PublicFilesPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.publicFiles', { defaultValue: '公用檔案' })}
+      title={t('nav.publicFiles')}
       showCapability={false}
       status={{
         pill: {
-          label: serverName || '未設定',
+          label: serverName || t('publicFiles.notSet'),
           tone: serverName ? 'ok' : 'warn',
         },
         items: [
-          { label: 'server_name', value: serverName || '—' },
-          { label: '配額', value: `${quotaMb || '—'} MiB` },
-          { label: 'Reload', value: '套用時' },
-          { label: '路徑', value: 'dataDir/files' },
+          { label: 'server_name', value: serverName || t('common.noneSelectedShort') },
+          {
+            label: t('publicFiles.quota'),
+            value: `${quotaMb || t('common.noneSelectedShort')} MiB`,
+          },
+          { label: 'Reload', value: t('publicFiles.reloadOnApply') },
+          { label: t('publicFiles.path'), value: 'dataDir/files' },
         ],
       }}
-      actions={<>
+      actions={
+        <>
           <Link to="/files" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            檔案管理
+            {t('publicFiles.fileManager')}
           </Link>
           <Link to="/nginx" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
             Nginx
@@ -59,107 +63,117 @@ export function PublicFilesPage() {
       }
     >
       <WithPageGuide guideId="publicFiles">
-
-      {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
-          </Button>
-        </Alert>
-      ) : null}
-
-      <Card>
-        <CardSection title="概覽" description="即將套用的設定（唯讀摘要）">
-          <DescriptionList
-            columns={2}
-            items={[
-              { label: '伺服器名稱', value: serverName || '—' },
-              { label: '配額', value: `${quotaMb || '—'} MiB` },
-              { label: '重載 Nginx', value: '套用時嘗試' },
-            ]}
-          />
-        </CardSection>
-      </Card>
-
-      <Card>
-        <CardSection
-          title="站點設定"
-          description="寫入管理 conf；套用時可嘗試 reload Nginx（套用後才可連）"
-        >
-          <FormLayout columns={2}>
-            <Field
-              label="伺服器名稱"
-              htmlFor="pf-sn"
-              flush
-              required
-              hint="Nginx server_name，例如 files.example.com"
-            >
-              <input
-                id="pf-sn"
-                value={serverName}
-                onChange={(e) => {
-                  setServerName(e.target.value);
-                  setServerContext({ domain: e.target.value.replace(/^files\./, '') });
-                }}
-                placeholder="files.example.com"
-                spellCheck={false}
-              />
-            </Field>
-            <Field
-              label="配額（MiB）"
-              htmlFor="pf-q"
-              flush
-              hint="可選；限制公開目錄總量"
-            >
-              <PresetChips
-                options={[
-                  { value: '', label: '不限' },
-                  { value: '512', label: '512' },
-                  { value: '1024', label: '1G' },
-                  { value: '5120', label: '5G' },
-                  { value: '10240', label: '10G' },
-                  { value: '51200', label: '50G' },
-                ]}
-                value={quotaMb}
-                onChange={setQuotaMb}
-                allowCustom
-                customPlaceholder="MiB"
-              />
-            </Field>
-          </FormLayout>
-          <FormHint>
-            套用成功只代表設定已寫入；DNS、SSL 與防火牆需另行就緒才會對外服務。
-          </FormHint>
-          <FormActions>
-            <Button
-              variant="primary"
-              size="md"
-              loading={busy}
-              onClick={() =>
-                void run(async () => {
-                  try {
-                    return (await systemApi.publicFilesApply({
-                      serverName,
-                      quotaMb: Number(quotaMb) || undefined,
-                      reload: true,
-                    })) as OpsResultLike;
-                  } catch (e) {
-                    const m = e instanceof Error ? e.message : '套用失敗';
-                    return { ok: false, blocked: true, blockMessage: m, notes: [m] };
-                  }
-                }, '已套用公開檔案站點')
-              }
-            >
-              套用並重載 Nginx
+        {error ? <Alert variant="error">{error}</Alert> : null}
+        {msg ? (
+          <Alert variant="ok">
+            {msg}{' '}
+            <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+              {t('common.close')}
             </Button>
-          </FormActions>
-        </CardSection>
-      </Card>
+          </Alert>
+        ) : null}
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
-    
+        <Card>
+          <CardSection
+            title={t('publicFiles.overview')}
+            description={t('publicFiles.overviewDesc')}
+          >
+            <DescriptionList
+              columns={2}
+              items={[
+                {
+                  label: t('publicFiles.serverName'),
+                  value: serverName || t('common.noneSelectedShort'),
+                },
+                {
+                  label: t('publicFiles.quota'),
+                  value: `${quotaMb || t('common.noneSelectedShort')} MiB`,
+                },
+                { label: t('publicFiles.reloadNginx'), value: t('publicFiles.reloadTry') },
+              ]}
+            />
+          </CardSection>
+        </Card>
+
+        <Card>
+          <CardSection
+            title={t('publicFiles.siteSettings')}
+            description={t('publicFiles.siteSettingsDesc')}
+          >
+            <FormLayout columns={2}>
+              <Field
+                label={t('publicFiles.serverName')}
+                htmlFor="pf-sn"
+                flush
+                required
+                hint={t('publicFiles.serverNameHint')}
+              >
+                <input
+                  id="pf-sn"
+                  value={serverName}
+                  onChange={(e) => {
+                    setServerName(e.target.value);
+                    setServerContext({ domain: e.target.value.replace(/^files\./, '') });
+                  }}
+                  placeholder="files.example.com"
+                  spellCheck={false}
+                />
+              </Field>
+              <Field
+                label={t('publicFiles.quotaMiB')}
+                htmlFor="pf-q"
+                flush
+                hint={t('publicFiles.quotaHint')}
+              >
+                <PresetChips
+                  options={[
+                    { value: '', label: t('publicFiles.unlimited') },
+                    { value: '512', label: '512' },
+                    { value: '1024', label: '1G' },
+                    { value: '5120', label: '5G' },
+                    { value: '10240', label: '10G' },
+                    { value: '51200', label: '50G' },
+                  ]}
+                  value={quotaMb}
+                  onChange={setQuotaMb}
+                  allowCustom
+                  customPlaceholder="MiB"
+                />
+              </Field>
+            </FormLayout>
+            <FormHint>{t('publicFiles.applyHint')}</FormHint>
+            <FormActions>
+              <Button
+                variant="primary"
+                size="md"
+                loading={busy}
+                onClick={() =>
+                  void run(async () => {
+                    try {
+                      return (await systemApi.publicFilesApply({
+                        serverName,
+                        quotaMb: Number(quotaMb) || undefined,
+                        reload: true,
+                      })) as OpsResultLike;
+                    } catch (e) {
+                      const m = e instanceof Error ? e.message : t('common.applyFailed');
+                      return { ok: false, blocked: true, blockMessage: m, notes: [m] };
+                    }
+                  }, t('publicFiles.appliedOk'))
+                }
+              >
+                {t('publicFiles.applyReload')}
+              </Button>
+            </FormActions>
+          </CardSection>
+        </Card>
+
+        <OpsResultPanel
+          title={t('opsResult.title')}
+          result={result}
+          message={msg}
+          busy={busy}
+        />
       </WithPageGuide>
     </FeaturePageLayout>
   );

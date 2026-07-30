@@ -34,18 +34,20 @@ import {
 } from '../../features/db-service/console-api';
 import { DbClusterPanel } from '../../features/db-service/DbClusterPanel';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 
 const DATA_LINK: Record<DbServiceEngine, { path: string; label: string }> = {
-  redis: { path: '/databases/redis', label: '資料瀏覽' },
-  mysql: { path: '/databases/mysql', label: '資料庫管理' },
-  mariadb: { path: '/databases/mariadb', label: '資料庫管理' },
-  postgres: { path: '/databases/postgres', label: '資料庫管理' },
+  redis: { path: '/databases/redis', label: i18n.t('db.console.dataBrowse') },
+  mysql: { path: '/databases/mysql', label: i18n.t('db.console.dbManage') },
+  mariadb: { path: '/databases/mariadb', label: i18n.t('db.console.dbManage') },
+  postgres: { path: '/databases/postgres', label: i18n.t('db.console.dbManage') },
 };
 
 function applyModeLabel(m: string): string {
-  if (m === 'runtime') return '即時';
-  if (m === 'reload') return '重載';
-  if (m === 'restart') return '需重啟';
+  if (m === 'runtime') return i18n.t('db.console.realtime');
+  if (m === 'reload') return i18n.t('services.action.reload');
+  if (m === 'restart') return i18n.t('db.console.needRestart');
   return m;
 }
 
@@ -55,6 +57,7 @@ function displayValue(v?: string): string {
 }
 
 export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
+  const { t } = useTranslation();
   const [console, setConsole] = useState<ServiceConsole | null>(null);
   const [tab, setTab] = useState('lifecycle');
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -75,7 +78,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       }
       setDraft(d);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
   }, [engine]);
 
@@ -98,11 +101,11 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
 
   const tabs = useMemo(() => {
     const base = [
-      { id: 'lifecycle', label: '生命週期' },
-      { id: 'overview', label: '概覽' },
-      { id: 'cluster', label: '叢集' },
+      { id: 'lifecycle', label: t('common.lifecycle') },
+      { id: 'overview', label: t('publicFiles.overview') },
+      { id: 'cluster', label: t('dns.tabs.cluster') },
     ];
-    const about = { id: 'about', label: '說明' };
+    const about = { id: 'about', label: t('common.about') };
     if (!console) return [...base, about];
     return [
       ...base,
@@ -118,10 +121,10 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         await refresh();
         return r as unknown as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '操作失敗';
+        const m = e instanceof Error ? e.message : t('common.opFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, `已${action}`);
+    }, t('db.console.actionDone', { action }));
   }
 
   async function doInstall() {
@@ -131,10 +134,10 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         await refresh();
         return r as unknown as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '安裝失敗';
+        const m = e instanceof Error ? e.message : t('common.installFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, '安裝完成');
+    }, t('db.console.installDone'));
   }
 
   async function doApply(keys?: string[]) {
@@ -144,7 +147,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       if (draft[k] != null) changes[k] = draft[k];
     }
     if (!Object.keys(changes).length) {
-      setError('沒有變更可套用');
+      setError(t('db.console.noChanges'));
       return;
     }
     await run(async () => {
@@ -153,10 +156,10 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         await refresh();
         return r as unknown as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '套用失敗';
+        const m = e instanceof Error ? e.message : t('common.applyFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, '設定已套用');
+    }, t('db.console.settingsApplied'));
   }
 
   function renderControl(s: ConsoleSetting) {
@@ -200,7 +203,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       }
       return (
         <select id={id} value={val} onChange={(e) => onChange(e.target.value)} aria-label={s.label}>
-          {val === '' ? <option value="">— 未取得 —</option> : null}
+          {val === '' ? <option value="">{t('db.console.noneFetched')}</option> : null}
           {s.enumValues.map((x) => (
             <option key={x} value={x}>
               {x}
@@ -247,7 +250,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             value={val}
             onChange={onChange}
             allowCustom
-            customPlaceholder="自訂"
+            customPlaceholder={t('common.custom')}
           />
         );
       }
@@ -257,7 +260,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         id={id}
         value={val}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={s.liveValue == null ? '未從服務讀取' : undefined}
+        placeholder={s.liveValue == null ? t('db.console.notReadFromService') : undefined}
         aria-label={s.label}
       />
     );
@@ -269,9 +272,9 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     const mode = applyModeLabel(s.applyMode);
     const hintParts = [
       s.description,
-      mode ? `套用方式：${mode}` : null,
-      dirty ? '已修改，尚未套用' : null,
-      s.danger ? '高風險設定' : null,
+      mode ? t('db.console.applyMode', { mode }) : null,
+      dirty ? t('db.console.dirtyNotApplied') : null,
+      s.danger ? t('db.console.highRisk') : null,
     ].filter(Boolean);
     return (
       <div key={s.key} className={dirty ? 'field-wrap is-dirty' : 'field-wrap'}>
@@ -291,14 +294,14 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   function categoryBody(cat: ConsoleCategory) {
     const rows = cat.settings.filter((s) => !s.advanced || tab === 'advanced');
     if (!rows.length) {
-      return <p className="muted">此分類暫無可用設定（或目前版本不支援）</p>;
+      return <p className="muted">{t('db.console.noSettings')}</p>;
     }
     const catDirty = dirtyKeys.filter((k) => rows.some((r) => r.key === k));
     return (
       <>
         {cat.description ? <FormHint>{cat.description}</FormHint> : null}
         <FormHint>
-          「即時」可在線修改；「需重啟」套用後請到生命週期重啟服務。藍色底為尚未套用的變更。
+          {t('db.console.applyHint')}
         </FormHint>
         <FormLayout columns={2}>{rows.map(renderSetting)}</FormLayout>
         <FormActions>
@@ -309,7 +312,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             disabled={!catDirty.length}
             onClick={() => void doApply(catDirty)}
           >
-            套用本分類{catDirty.length ? `（${catDirty.length}）` : ''}
+            {catDirty.length ? t('db.console.applyCatCount', { n: catDirty.length }) : t('db.console.applyCategory')}
           </Button>
           <Button
             variant="secondary"
@@ -318,7 +321,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             disabled={!dirtyKeys.length}
             onClick={() => void doApply()}
           >
-            套用全部變更{dirtyKeys.length ? `（${dirtyKeys.length}）` : ''}
+            {dirtyKeys.length ? t('db.console.applyAllCount', { n: dirtyKeys.length }) : t('db.console.applyAll')}
           </Button>
         </FormActions>
       </>
@@ -328,39 +331,39 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const overviewItems = useMemo(() => {
     if (!console) return [];
     return [
-      { label: '引擎', value: console.title },
+      { label: t('db.console.engine'), value: console.title },
       {
-        label: '狀態',
+        label: t('common.status'),
         value: (
           <Badge tone={console.active === 'active' ? 'ok' : 'warn'}>{console.activeLabel}</Badge>
         ),
       },
       { label: 'systemd', value: console.unit },
-      { label: '開機自啟', value: console.enabled ?? '—' },
-      { label: '版本', value: console.version ?? '—' },
+      { label: t('systemd.bootEnabled'), value: console.enabled ?? '—' },
+      { label: t('common.version'), value: console.version ?? '—' },
       {
-        label: '系統變更',
-        value: console.executeEnabled ? '已開啟' : '未開啟',
+        label: t('db.systemChange'),
+        value: console.executeEnabled ? t('db.opened') : t('db.notOpened'),
       },
-      { label: '管理員', value: console.isRoot ? '是' : '否' },
+      { label: t('roles.admin'), value: console.isRoot ? t('common.yes') : t('common.no') },
       ...(console.metrics.Uptime
-        ? [{ label: '運行秒數', value: console.metrics.Uptime }]
+        ? [{ label: t('db.console.uptimeSec'), value: console.metrics.Uptime }]
         : []),
       ...(console.metrics.Threads_connected
-        ? [{ label: '目前連線', value: console.metrics.Threads_connected }]
+        ? [{ label: t('db.console.currentConnections'), value: console.metrics.Threads_connected }]
         : []),
       ...(console.metrics.used_memory
-        ? [{ label: '記憶體', value: console.metrics.used_memory }]
+        ? [{ label: t('common.memory'), value: console.metrics.used_memory }]
         : []),
       ...(console.metrics.connected_clients
-        ? [{ label: '客戶端', value: console.metrics.connected_clients }]
+        ? [{ label: t('db.client'), value: console.metrics.connected_clients }]
         : []),
     ];
   }, [console]);
 
   return (
     <FeaturePageLayout
-      title={`${console?.title ?? engine} 服務`}
+      title={t('db.console.serviceTitle', { title: console?.title ?? engine })}
       status={
         console
           ? {
@@ -375,7 +378,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
               },
               items: [
                 {
-                  label: '狀態',
+                  label: t('common.status'),
                   value: console.activeLabel,
                   tone:
                     console.active === 'active'
@@ -385,26 +388,26 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                         : 'danger',
                 },
                 {
-                  label: '版本',
+                  label: t('common.version'),
                   value:
                     console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 28) ??
                     '—',
                 },
                 {
                   label: 'EXECUTE',
-                  value: console.executeEnabled ? '開' : '關',
+                  value: console.executeEnabled ? t('common.on') : t('common.off'),
                   tone: console.executeEnabled ? 'ok' : 'warn',
                 },
-                { label: '變更', value: dirtyKeys.length },
+                { label: t('db.console.changes'), value: dirtyKeys.length },
                 {
                   label: 'Root',
-                  value: console.isRoot ? '是' : '否',
+                  value: console.isRoot ? t('common.yes') : t('common.no'),
                   tone: console.isRoot ? 'ok' : 'warn',
                 },
                 {
-                  label: '開機自啟',
+                  label: t('systemd.bootEnabled'),
                   value:
-                    console.enabled === 'enabled' ? '是' : console.enabled ?? '—',
+                    console.enabled === 'enabled' ? t('common.yes') : console.enabled ?? '—',
                 },
               ],
             }
@@ -426,14 +429,14 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
               void refresh();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
         </ActionBar>
       }
     >
       <SoftwareInstallBanner
         feature={engine}
-        title={`${console?.title ?? engine} 所需軟件尚未安裝`}
+        title={t('db.console.softwareMissing', { title: console?.title ?? engine })}
         onInstalled={() => void refresh()}
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -442,7 +445,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -452,10 +455,10 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'overview' && console ? (
           <Card>
-            <CardSection title="服務概覽" description="唯讀資訊，由探測取得（非輸入欄）">
+            <CardSection title={t('db.serviceOverview')} description={t('db.console.overviewDesc')}>
               <DescriptionList columns={2} items={overviewItems} />
-              <p className="muted u-text-sm u-mt-4" style={{ marginBottom: 0 }}>
-                設定分頁中，「即時」可在線修改；「需重啟」套用後請到生命週期重啟服務。
+              <p className="muted u-text-sm u-mt-4">
+                {t('db.console.lifecycleNote')}
               </p>
             </CardSection>
           </Card>
@@ -463,35 +466,35 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
 
         {tab === 'lifecycle' && console ? (
           <Card>
-            <CardSection title="生命週期" description="安裝、啟動、停止與開機自啟">
+            <CardSection title={t('common.lifecycle')} description={t('db.console.lifecycleDesc')}>
               {!console.installed ? (
                 <p className="muted u-text-sm u-mb-0">
-                  請使用上方橫幅「一鍵安裝」安裝 {console.title}。
+                  {t('db.console.installEngine', { title: console.title })}
                 </p>
               ) : (
                 <div className="lifecycle-toolbar">
                   <Button variant="primary" size="md" loading={busy} onClick={() => void doLifecycle('start')}>
-                    啟動
+                    {t('services.action.start')}
                   </Button>
                   <Button variant="secondary" size="md" loading={busy} onClick={() => void doLifecycle('stop')}>
-                    停止
+                    {t('services.action.stop')}
                   </Button>
                   <Button variant="secondary" size="md" loading={busy} onClick={() => void doLifecycle('restart')}>
-                    重啟
+                    {t('services.action.restart')}
                   </Button>
                   <Button variant="secondary" size="md" loading={busy} onClick={() => void doLifecycle('reload')}>
-                    重載設定
+                    {t('db.console.reloadConfig')}
                   </Button>
                   <Button variant="ghost" size="md" loading={busy} onClick={() => void doLifecycle('enable')}>
-                    開機自啟
+                    {t('systemd.bootEnabled')}
                   </Button>
                   <Button variant="ghost" size="md" loading={busy} onClick={() => void doLifecycle('disable')}>
-                    取消自啟
+                    {t('db.console.disableBoot')}
                   </Button>
                 </div>
               )}
-              <p className="muted u-text-sm u-mt-3" style={{ marginBottom: 0 }}>
-                需要系統變更權限與管理員身分。失敗會顯示原因，不會假裝成功。
+              <p className="muted u-text-sm u-mt-3">
+                {t('db.console.needRights')}
               </p>
             </CardSection>
           </Card>
@@ -522,7 +525,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         ) : null}
       </PageTabs>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
     </FeaturePageLayout>
   );
 }

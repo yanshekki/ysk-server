@@ -29,6 +29,8 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 
 export type HostingRuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust';
 type TuningKind = 'node' | 'python' | 'go' | 'rust';
@@ -39,7 +41,7 @@ const META: Record<
     title: string;
     defaultVersion: string;
     versions: string[];
-    installLabel: (v: string) => string;
+    installLabelKey: string;
     bannerTitle: string;
   }
 > = {
@@ -47,36 +49,36 @@ const META: Record<
     title: 'Node.js',
     defaultVersion: '20',
     versions: ['18', '20', '22'],
-    installLabel: (v) => `安裝 Node ${v}`,
-    bannerTitle: 'Node.js 尚未安裝',
+    installLabelKey: 'runtime.installNodeLabel',
+    bannerTitle: i18n.t('runtime.nodeMissing'),
   },
   php: {
     title: 'PHP',
     defaultVersion: '8.2',
     versions: ['8.1', '8.2', '8.3'],
-    installLabel: (v) => `安裝 PHP ${v}`,
-    bannerTitle: 'PHP 尚未安裝',
+    installLabelKey: 'runtime.installPhpLabel',
+    bannerTitle: i18n.t('runtime.phpMissing'),
   },
   python: {
     title: 'Python',
     defaultVersion: '3.12',
     versions: ['3.10', '3.11', '3.12'],
-    installLabel: (v) => `安裝 Python ${v}`,
-    bannerTitle: 'Python 尚未安裝',
+    installLabelKey: 'runtime.installPythonLabel',
+    bannerTitle: i18n.t('runtime.pythonMissing'),
   },
   go: {
     title: 'Go',
     defaultVersion: '1.22',
     versions: ['1.21', '1.22', '1.23'],
-    installLabel: (v) => `安裝 Go ${v}`,
-    bannerTitle: 'Go 尚未安裝',
+    installLabelKey: 'runtime.installGoLabel',
+    bannerTitle: i18n.t('runtime.goMissing'),
   },
   rust: {
     title: 'Rust',
     defaultVersion: 'stable',
     versions: ['stable', '1.78', '1.81'],
-    installLabel: (v) => `安裝 Rust ${v}`,
-    bannerTitle: 'Rust／cargo 尚未安裝',
+    installLabelKey: 'runtime.installRustLabel',
+    bannerTitle: i18n.t('runtime.rustMissing'),
   },
 };
 
@@ -100,6 +102,7 @@ function isTuningKind(k: HostingRuntimeKind): k is TuningKind {
 }
 
 export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
+  const { t } = useTranslation();
   const meta = META[kind];
   const [tab, setTab] = usePageTab(RT_TABS, 'overview');
   const [version, setVersion] = useState(meta.defaultVersion);
@@ -143,7 +146,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   useEffect(() => {
     if (tab === 'tuning' && isTuningKind(kind)) {
       void loadTuning().catch((e) =>
-        setError(e instanceof Error ? e.message : '載入調校失敗'),
+        setError(e instanceof Error ? e.message : t('runtime.tuneLoadFailed')),
       );
     }
   }, [tab, kind, version, loadTuning, setError]);
@@ -194,20 +197,20 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       status={{
         pill: {
           label: probeData.available.length
-            ? `${probeData.available.length} 可用`
-            : '未探測到',
+            ? t('runtime.availableCount', { n: probeData.available.length })
+            : t('runtime.notDetected'),
           tone: probeData.available.length ? 'ok' : 'warn',
         },
         items: [
           {
-            label: '探測',
-            value: probe ? '已讀' : '—',
+            label: t('common.probe'),
+            value: probe ? t('runtime.readShort') : '—',
             tone: probe ? 'ok' : 'neutral',
           },
-          { label: '可用', value: probeData.available.length || 0 },
-          { label: '目標', value: version },
-          { label: '調校', value: tuningLoaded ? '已載' : '—' },
-          { label: '主機', value: probeData.host || '—' },
+          { label: t('common.available'), value: probeData.available.length || 0 },
+          { label: t('common.target'), value: version },
+          { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
+          { label: t('common.host'), value: probeData.host || '—' },
         ],
       }}
       actions={<>
@@ -221,14 +224,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               void run(async () => {
                 const r = (await systemApi.runtimes()) as Record<string, unknown>;
                 setProbe(r);
-                return { ok: true, notes: ['已探測'], ...r } as unknown as OpsResultLike;
-              }, '已探測');
+                return { ok: true, notes: [t('common.probed')], ...r } as unknown as OpsResultLike;
+              }, t('common.probed'));
             }}
           >
-            重新探測
+            {t('common.reprobe')}
           </Button>
           <Link to="/projects" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            專案
+            {t('common.project')}
           </Link>
         </>
       }
@@ -239,17 +242,17 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'overview', label: '總覽 / 安裝' },
-          { id: 'tuning', label: '執行調校' },
+          { id: 'overview', label: t('runtime.tabOverviewInstall') },
+          { id: 'tuning', label: t('runtime.tabTune') },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -258,17 +261,17 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         {tab === 'overview' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title="探測結果" description="唯讀 · 安裝成功後請再探測確認">
+              <CardSection title={t('runtime.probeResult')} description={t('runtime.probeReadonlyInstall')}>
                 <DescriptionList
                   columns={2}
                   items={[
-                    { label: '主機預設', value: probeData.host },
+                    { label: t('runtime.hostDefault'), value: probeData.host },
                     {
-                      label: '面板支援',
+                      label: t('runtime.panelSupport'),
                       value: probeData.supported.join(', '),
                     },
                     {
-                      label: '已就緒',
+                      label: t('ssl.status.ready'),
                       value: probeData.available.length ? (
                         <span /* was action-bar */>
                           {probeData.available.map((v) => (
@@ -278,7 +281,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                           ))}
                         </span>
                       ) : (
-                        '尚未偵測到'
+                        t('runtime.notDetectedYet')
                       ),
                     },
                   ]}
@@ -289,7 +292,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                       <li key={String(i.version)}>
                         <strong>{String(i.version)}</strong>{' '}
                         <Badge tone={i.available ? 'ok' : 'neutral'}>
-                          {i.available ? '可用' : '未找到'}
+                          {i.available ? t('common.available') : t('runtime.notFound')}
                         </Badge>
                         {i.resolvedPath ? (
                           <span className="muted u-text-sm"> · {String(i.resolvedPath)}</span>
@@ -301,18 +304,18 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     ))}
                   </ul>
                 ) : (
-                  <p className="muted u-mt-2">按「重新探測」載入主機版本矩陣</p>
+                  <p className="muted u-mt-2">{t('runtime.pressReprobeHost')}</p>
                 )}
               </CardSection>
             </Card>
 
             <Card>
               <CardSection
-                title="安裝"
-                description="需系統變更權限與管理員；安裝 toolchain ≠ 專案已對外"
+                title={t('common.install')}
+                description={t('runtime.installHint')}
               >
                 <FormLayout columns={2}>
-                  <Field label="目標版本" htmlFor={`rt-${kind}-ver`} flush required>
+                  <Field label={t('runtime.targetVersion')} htmlFor={`rt-${kind}-ver`} flush required>
                     {(() => {
                       const vers =
                         probeData.supported.length ? probeData.supported : meta.versions;
@@ -320,7 +323,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         return (
                           <SegRadio
                             name={`rt-${kind}-ver`}
-                            aria-label="目標版本"
+                            aria-label={t('runtime.targetVersion')}
                             value={version}
                             onChange={setVersion}
                             options={vers.map((v) => ({ value: v, label: v }))}
@@ -344,7 +347,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   </Field>
                 </FormLayout>
                 <FormHint>
-                  寫入安裝腳本後，有權限才會真正執行。調校在「執行調校」分頁；重新部署專案後才進行程。
+                  {t('runtime.installScriptNote')}
                 </FormHint>
                 <FormActions>
                   <Button
@@ -360,10 +363,10 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         });
                         await refresh();
                         return r as OpsResultLike;
-                      }, meta.installLabel(version))
+                      }, t(meta.installLabelKey, { v: version }))
                     }
                   >
-                    {meta.installLabel(version)}
+                    {t(meta.installLabelKey, { v: version })}
                   </Button>
                 </FormActions>
               </CardSection>
@@ -375,11 +378,11 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="面板調校"
-                description="寫入管理檔；部署時注入 env"
+                title={t('runtime.panelTune')}
+                description={t('runtime.panelTuneDesc')}
               >
                 <FormLayout columns={2}>
-                  <Field label="綁定版本" htmlFor={`tune-${kind}-ver`} flush>
+                  <Field label={t('runtime.bindVersion')} htmlFor={`tune-${kind}-ver`} flush>
                     {(() => {
                       const vers =
                         probeData.supported.length ? probeData.supported : meta.versions;
@@ -387,7 +390,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         return (
                           <SegRadio
                             name={`tune-${kind}-ver`}
-                            aria-label="綁定版本"
+                            aria-label={t('runtime.bindVersion')}
                             value={version}
                             onChange={setVersion}
                             options={vers.map((v) => ({ value: v, label: v }))}
@@ -411,14 +414,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   </Field>
                 </FormLayout>
                 <FormHint>
-                  Node：max-old-space-size 等會合成 NODE_OPTIONS。Go／Python／Rust 對應官方環境變數。
+                  {t('runtime.envNote')}
                 </FormHint>
               </CardSection>
             </Card>
 
             {catalog.map((group) => (
               <Card key={group.id}>
-                <CardSection title={group.title} description="每一列一個設定">
+                <CardSection title={group.title} description={t('runtime.onePerRow')}>
                   <FormLayout columns={1}>
                     {group.fields.map((f) => {
                       const id = `tune-${kind}-${f.key}`;
@@ -436,7 +439,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                           {f.type === 'bool' ? (
                             <CheckboxField
                               id={id}
-                              label={val === true || val === 1 || val === '1' ? '開啟' : '關閉'}
+                              label={val === true || val === 1 || val === '1' ? t('common.open') : t('common.close')}
                               checked={val === true || val === 1 || val === '1'}
                               onChange={(c) => setValue(f.key, c)}
                             />
@@ -490,7 +493,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                                         ]
                                       : f.key === 'gomaxprocs'
                                         ? [
-                                            { value: '0', label: '0 全' },
+                                            { value: '0', label: t('runtime.zeroAll') },
                                             { value: '1', label: '1' },
                                             { value: '2', label: '2' },
                                             { value: '4', label: '4' },
@@ -505,7 +508,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                               value={String(val ?? f.default ?? '')}
                               onChange={(v) => setValue(f.key, Number(v))}
                               allowCustom
-                              customPlaceholder="自訂"
+                              customPlaceholder={t('common.custom')}
                             />
                           ) : (
                             <input
@@ -524,9 +527,9 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             ))}
 
             <Card>
-              <CardSection title="額外環境變數" description="一行 KEY=value">
+              <CardSection title={t('runtime.extraEnv')} description={t('runtime.extraEnvHint')}>
                 <FormLayout columns={1}>
-                  <Field label="自訂 env" htmlFor={`tune-${kind}-extra`} flush fullWidth>
+                  <Field label={t('runtime.customEnv')} htmlFor={`tune-${kind}-extra`} flush fullWidth>
                     <textarea
                       id={`tune-${kind}-extra`}
                       rows={4}
@@ -542,7 +545,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
 
             {Object.keys(envPreview).length > 0 ? (
               <Card>
-                <CardSection title="Env 預覽" description="儲存後／上次載入的合併結果">
+                <CardSection title={t('runtime.envPreview')} description={t('runtime.envPreviewDesc')}>
                   <DescriptionList
                     columns={2}
                     items={Object.entries(envPreview).map(([k, v]) => ({
@@ -562,7 +565,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 disabled={!isTuningKind(kind)}
                 onClick={() =>
                   void run(async () => {
-                    if (!isTuningKind(kind)) return { ok: false, notes: ['不支援'] };
+                    if (!isTuningKind(kind)) return { ok: false, notes: [t('runtime.unsupported')] };
                     const r = await systemApi.runtimeTuningSave(kind, {
                       version,
                       values,
@@ -570,10 +573,10 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     });
                     await loadTuning();
                     return r as OpsResultLike;
-                  }, '已儲存調校')
+                  }, t('runtime.tuneSaved'))
                 }
               >
-                儲存調校
+                {t('runtime.saveTune')}
               </Button>
               <Button
                 variant="ghost"
@@ -581,11 +584,11 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 loading={busy}
                 onClick={() =>
                   void loadTuning().catch((e) =>
-                    setError(e instanceof Error ? e.message : '重新載入失敗'),
+                    setError(e instanceof Error ? e.message : t('runtime.reloadFailed')),
                   )
                 }
               >
-                重新載入
+                {t('updates.reload')}
               </Button>
             </FormActions>
           </div>
@@ -608,7 +611,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         ) : null}
       </PageTabs>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
     </FeaturePageLayout>
   );
 }

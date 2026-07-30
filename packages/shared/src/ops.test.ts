@@ -11,7 +11,9 @@ describe('assertHonestOps', () => {
     });
     expect(r.ok).toBe(false);
     expect(r.apply_status).toBe('blocked');
-    expect(r.notes.some((n) => n.includes('誠實校正'))).toBe(true);
+    expect(r.notes.some((n) => n.includes('ops.honesty') || n.includes('誠實校正'))).toBe(
+      true,
+    );
   });
 
   it('keeps honest applied', () => {

@@ -4,20 +4,18 @@
  */
 
 import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { getSoftware, SOFTWARE_CATALOG } from '../software-catalog.js';
 import {
   appendMigrateStep,
   setMigratePhase,
-  writeMigrateProgress,
-} from './job-store.js';
+  writeMigrateProgress } from './job-store.js';
 import {
   type MigrateSshAuth,
   type MigrateSshEndpoint,
   runSshCommand,
-  userAtHost,
-} from './transport.js';
+  userAtHost } from './transport.js';
 
 export type BootstrapStage = 'minimal' | 'software' | 'ysk-cli' | 'full';
 
@@ -156,15 +154,13 @@ async function runStage(input: {
     auth: input.auth,
     remoteCommand: input.script,
     timeoutMs: input.timeoutMs ?? 600_000,
-    name: input.name,
-  });
+    name: input.name });
   if (!r.ok) {
     return {
       ok: false,
       blocked: r.blocked,
       apply_status: r.apply_status,
-      notes: r.notes,
-    };
+      notes: r.notes };
   }
   const out = `${r.stdout || ''}\n${r.stderr || ''}`;
   if (input.successMarkers?.length) {
@@ -174,17 +170,15 @@ async function runStage(input: {
         ok: false,
         apply_status: 'failed',
         notes: [
-          `遠端未回報成功標記 (${input.successMarkers.join('|')})`,
+          tl('notes.auto.t0693', { v0: (input.successMarkers.join('|')) }),
           out.slice(0, 300),
-        ],
-      };
+        ] };
     }
   }
   return {
     ok: true,
     apply_status: 'applied',
-    notes: [`${input.name} ok`, ...r.notes.slice(0, 2)],
-  };
+    notes: [`${input.name} ok`, ...r.notes.slice(0, 2)] };
 }
 
 /**
@@ -200,10 +194,9 @@ export async function bootstrapTargetMinimal(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '無法 bootstrap：未開啟 YSK_EXECUTE',
-      notes: ['bootstrap 需要 YSK_EXECUTE=1'],
-      stages: [],
-    }) as BootstrapResult;
+      blockMessage: tl('notes.auto.n0038'),
+      notes: [tl('notes.auto.n0039')],
+      stages: [] }) as BootstrapResult;
   }
   const st = await runStage({
     host: input.host,
@@ -211,17 +204,15 @@ export async function bootstrapTargetMinimal(input: {
     auth: input.auth,
     name: 'minimal-apt',
     script: buildMinimalBootstrapScript(),
-    successMarkers: ['YSK_APT_OK', 'YSK_APT_NONE'],
-  });
+    successMarkers: ['YSK_APT_OK', 'YSK_APT_NONE'] });
   return assertHonestOps({
     ok: st.ok,
     blocked: st.blocked,
     apply_status: st.apply_status ?? (st.ok ? 'applied' : 'failed'),
     notes: st.ok
       ? [`minimal bootstrap ok → ${userAtHost(input.endpoint)}`, ...st.notes]
-      : ['minimal bootstrap 失敗', ...st.notes],
-    stages: [{ id: 'minimal', ok: st.ok, notes: st.notes }],
-  }) as BootstrapResult;
+      : [tl('notes.auto.n0333'), ...st.notes],
+    stages: [{ id: 'minimal', ok: st.ok, notes: st.notes }] }) as BootstrapResult;
 }
 
 /**
@@ -245,10 +236,9 @@ export async function bootstrapTargetFull(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '無法 bootstrap：未開啟 YSK_EXECUTE',
-      notes: ['bootstrap 需要 YSK_EXECUTE=1'],
-      stages: [],
-    }) as BootstrapResult;
+      blockMessage: tl('notes.auto.n0038'),
+      notes: [tl('notes.auto.n0039')],
+      stages: [] }) as BootstrapResult;
   }
 
   if (!input.skipJobPhase) {
@@ -256,16 +246,14 @@ export async function bootstrapTargetFull(input: {
   }
   writeMigrateProgress(input.dataDir, input.job.id, {
     phase: 'bootstrap',
-    status: 'starting',
-  });
+    status: 'starting' });
 
   // 1) apt packages from catalog
   const aptPkgs = aptPackagesForSoftwareIds(input.manifest.softwareNeeded);
   writeMigrateProgress(input.dataDir, input.job.id, {
     phase: 'bootstrap',
     status: 'apt',
-    packages: aptPkgs.length,
-  });
+    packages: aptPkgs.length });
   const apt = await runStage({
     host: input.host,
     endpoint: input.endpoint,
@@ -273,8 +261,7 @@ export async function bootstrapTargetFull(input: {
     name: 'apt-software',
     script: buildAptInstallScript(aptPkgs),
     timeoutMs: 1_800_000,
-    successMarkers: ['YSK_APT_OK', 'YSK_APT_NONE'],
-  });
+    successMarkers: ['YSK_APT_OK', 'YSK_APT_NONE'] });
   stages.push({ id: 'apt-software', ok: apt.ok, notes: apt.notes });
   appendMigrateStep(input.dataDir, input.job, {
     phase: 'bootstrap',
@@ -286,20 +273,17 @@ export async function bootstrapTargetFull(input: {
       notes: [
         ...apt.notes,
         `packages=${aptPkgs.length}: ${aptPkgs.slice(0, 12).join(', ')}${aptPkgs.length > 12 ? '…' : ''}`,
-      ],
-    },
-  });
+      ] } });
   if (!apt.ok) {
     if (!input.skipJobPhase) {
-      setMigratePhase(input.dataDir, input.job, 'failed', 'apt 安裝失敗');
+      setMigratePhase(input.dataDir, input.job, 'failed', tl('notes.auto.n0227'));
     }
     return assertHonestOps({
       ok: false,
       blocked: apt.blocked,
       apply_status: apt.apply_status ?? 'failed',
-      notes: ['bootstrap 中止：apt 失敗', ...apt.notes],
-      stages,
-    }) as BootstrapResult;
+      notes: [tl('notes.auto.n0232'), ...apt.notes],
+      stages }) as BootstrapResult;
   }
 
   // 2) Node ≥20 if softwareNeeded includes node or always for ysk-cli
@@ -310,8 +294,7 @@ export async function bootstrapTargetFull(input: {
   if (needNode) {
     writeMigrateProgress(input.dataDir, input.job.id, {
       phase: 'bootstrap',
-      status: 'node',
-    });
+      status: 'node' });
     const node = await runStage({
       host: input.host,
       endpoint: input.endpoint,
@@ -319,8 +302,7 @@ export async function bootstrapTargetFull(input: {
       name: 'node',
       script: buildNodeInstallScript(),
       timeoutMs: 900_000,
-      successMarkers: ['YSK_NODE_OK'],
-    });
+      successMarkers: ['YSK_NODE_OK'] });
     stages.push({ id: 'node', ok: node.ok, notes: node.notes });
     appendMigrateStep(input.dataDir, input.job, {
       phase: 'bootstrap',
@@ -328,27 +310,23 @@ export async function bootstrapTargetFull(input: {
       result: {
         ok: node.ok,
         apply_status: node.apply_status ?? (node.ok ? 'applied' : 'failed'),
-        notes: node.notes,
-      },
-    });
+        notes: node.notes } });
     if (!node.ok) {
       if (!input.skipJobPhase) {
-        setMigratePhase(input.dataDir, input.job, 'failed', 'Node 安裝失敗');
+        setMigratePhase(input.dataDir, input.job, 'failed', tl('notes.auto.n0142'));
       }
       return assertHonestOps({
         ok: false,
         apply_status: 'failed',
-        notes: ['bootstrap 中止：Node 失敗', ...node.notes],
-        stages,
-      }) as BootstrapResult;
+        notes: [tl('notes.auto.n0231'), ...node.notes],
+        stages }) as BootstrapResult;
     }
   }
 
   // 3) ysk-server CLI
   writeMigrateProgress(input.dataDir, input.job.id, {
     phase: 'bootstrap',
-    status: 'ysk-cli',
-  });
+    status: 'ysk-cli' });
   const ver = input.yskVersion ?? input.manifest.source.yskVersion;
   const cli = await runStage({
     host: input.host,
@@ -357,8 +335,7 @@ export async function bootstrapTargetFull(input: {
     name: 'ysk-cli',
     script: buildYskCliInstallScript({ version: ver === '0.1.0' ? undefined : ver }),
     timeoutMs: 600_000,
-    successMarkers: ['YSK_CLI_OK', 'YSK_CLI_PRESENT'],
-  });
+    successMarkers: ['YSK_CLI_OK', 'YSK_CLI_PRESENT'] });
   stages.push({ id: 'ysk-cli', ok: cli.ok, notes: cli.notes });
   appendMigrateStep(input.dataDir, input.job, {
     phase: 'bootstrap',
@@ -366,21 +343,18 @@ export async function bootstrapTargetFull(input: {
     result: {
       ok: cli.ok,
       apply_status: cli.apply_status ?? (cli.ok ? 'applied' : 'failed'),
-      notes: cli.notes,
-    },
-  });
+      notes: cli.notes } });
   // CLI install failure is soft-fail if dataDir already has everything — still notes
   if (!cli.ok) {
     stages[stages.length - 1]!.notes.push(
-      'ysk-server CLI 安裝失敗 — 可稍後手動 npm i -g ysk-server',
+      tl('notes.auto.n0473'),
     );
   }
 
   // 4) enable units best-effort
   writeMigrateProgress(input.dataDir, input.job.id, {
     phase: 'bootstrap',
-    status: 'units',
-  });
+    status: 'units' });
   const units = await runStage({
     host: input.host,
     endpoint: input.endpoint,
@@ -388,8 +362,7 @@ export async function bootstrapTargetFull(input: {
     name: 'enable-units',
     script: buildEnableUnitsScript(input.manifest.softwareNeeded),
     timeoutMs: 300_000,
-    successMarkers: ['YSK_UNITS_END', 'YSK_UNITS_NONE'],
-  });
+    successMarkers: ['YSK_UNITS_END', 'YSK_UNITS_NONE'] });
   stages.push({ id: 'enable-units', ok: units.ok, notes: units.notes });
   appendMigrateStep(input.dataDir, input.job, {
     phase: 'bootstrap',
@@ -397,14 +370,11 @@ export async function bootstrapTargetFull(input: {
     result: {
       ok: units.ok,
       apply_status: units.ok ? 'applied' : 'partial',
-      notes: units.notes,
-    },
-  });
+      notes: units.notes } });
 
   writeMigrateProgress(input.dataDir, input.job.id, {
     phase: 'bootstrap',
-    status: 'done',
-  });
+    status: 'done' });
 
   const criticalOk = stages
     .filter((s) => s.id === 'apt-software' || s.id === 'node')
@@ -420,14 +390,13 @@ export async function bootstrapTargetFull(input: {
       : 'failed',
     notes: [
       criticalOk
-        ? `bootstrap 完成 → ${userAtHost(input.endpoint)}`
-        : 'bootstrap 關鍵步驟失敗',
+        ? tl('notes.auto.t0694', { v0: (userAtHost(input.endpoint)) })
+        : tl('notes.auto.n0233'),
       `softwareNeeded=${input.manifest.softwareNeeded.length} aptPkgs=${aptPkgs.length}`,
-      ...(softFail.length ? [`非關鍵失敗: ${softFail.join(', ')}`] : []),
+      ...(softFail.length ? [tl('notes.auto.t0695', { v0: (softFail.join(', ')) })] : []),
       ...stages.filter((s) => !s.ok).flatMap((s) => s.notes),
     ],
-    stages,
-  }) as BootstrapResult;
+    stages }) as BootstrapResult;
 }
 
 /**
@@ -459,8 +428,7 @@ export async function transferThenBootstrap(input: {
   const minimal = await bootstrapTargetMinimal({
     host: input.host,
     endpoint: input.endpoint,
-    auth: input.auth,
-  });
+    auth: input.auth });
   if (!minimal.ok && !input.dryRun) {
     // rsync might still work if rsync already installed
     // continue with note if rsync exists — check
@@ -469,19 +437,17 @@ export async function transferThenBootstrap(input: {
       endpoint: input.endpoint,
       auth: input.auth,
       remoteCommand: 'command -v rsync && echo YSK_HAS_RSYNC || echo YSK_NO_RSYNC',
-      timeoutMs: 15_000,
-    });
+      timeoutMs: 15_000 });
     if (!probe.stdout.includes('YSK_HAS_RSYNC')) {
       return assertHonestOps({
         ok: false,
         blocked: minimal.blocked,
         apply_status: 'failed',
         notes: [
-          '無法在目標安裝 rsync，且目標原本也沒有 rsync',
+          tl('notes.auto.n1156'),
           ...minimal.notes,
         ],
-        bootstrapMinimal: minimal,
-      }) as OpsResultDto & {
+        bootstrapMinimal: minimal }) as OpsResultDto & {
         bootstrapMinimal: BootstrapResult;
       };
     }
@@ -496,8 +462,7 @@ export async function transferThenBootstrap(input: {
     auth: input.auth,
     targetDataDir: input.targetDataDir,
     includeOptionalEtc: input.includeOptionalEtc,
-    dryRun: input.dryRun,
-  });
+    dryRun: input.dryRun });
 
   if (!transfer.ok) {
     return assertHonestOps({
@@ -506,8 +471,7 @@ export async function transferThenBootstrap(input: {
       apply_status: transfer.apply_status ?? 'failed',
       notes: transfer.notes,
       transfer,
-      bootstrapMinimal: minimal,
-    }) as OpsResultDto & {
+      bootstrapMinimal: minimal }) as OpsResultDto & {
       transfer: typeof transfer;
       bootstrapMinimal: BootstrapResult;
     };
@@ -518,12 +482,11 @@ export async function transferThenBootstrap(input: {
       ok: true,
       apply_status: 'written',
       notes: [
-        input.dryRun ? 'dry-run transfer 完成（略過 full bootstrap）' : 'transfer 完成（略過 full bootstrap）',
+        input.dryRun ? tl('notes.auto.n0265') : tl('notes.auto.n0451'),
         ...transfer.notes,
       ],
       transfer,
-      bootstrapMinimal: minimal,
-    }) as OpsResultDto & {
+      bootstrapMinimal: minimal }) as OpsResultDto & {
       transfer: typeof transfer;
       bootstrapMinimal: BootstrapResult;
     };
@@ -536,8 +499,7 @@ export async function transferThenBootstrap(input: {
     manifest: input.manifest,
     endpoint: input.endpoint,
     auth: input.auth,
-    yskVersion: input.yskVersion,
-  });
+    yskVersion: input.yskVersion });
 
   return assertHonestOps({
     ok: full.ok,
@@ -545,8 +507,7 @@ export async function transferThenBootstrap(input: {
     notes: [...transfer.notes, ...full.notes],
     transfer,
     bootstrapMinimal: minimal,
-    bootstrapFull: full,
-  }) as OpsResultDto & {
+    bootstrapFull: full }) as OpsResultDto & {
     transfer: typeof transfer;
     bootstrapMinimal: BootstrapResult;
     bootstrapFull: BootstrapResult;

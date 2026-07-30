@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Route cluster planning by kind; write artifacts under dataDir (optional).
  */
@@ -33,7 +34,7 @@ export function planDbCluster(cluster: DbCluster): ClusterPlan {
     engine: cluster.engine,
     steps: [],
     files: [],
-    notes: [`未知拓撲 ${cluster.kind}`],
+    notes: [tl('notes.auto.t0580', { v0: (cluster.kind) })],
     requiresExecute: true,
     requiresRoot: true,
   };

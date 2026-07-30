@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Single catalog of host software required by admin features.
  * Panel installs via software-install.ts — never user CLI.
@@ -58,7 +59,13 @@ export type RuntimeInstaller =
 
 export interface SoftwareSpec {
   id: SoftwareId;
+  /**
+   * Literal brand/product name (no i18n). Prefer this for proper nouns.
+   * When titleKey is set, title is only a fallback for tests/CLI without locale.
+   */
   title: string;
+  /** Optional i18n key resolved under request locale (never call tl at module load). */
+  titleKey?: string;
   /** Binaries to probe with command -v */
   bins: string[];
   /** Debian/Ubuntu packages */
@@ -72,6 +79,14 @@ export interface SoftwareSpec {
   runtimeVersion?: string;
 }
 
+/** Resolve display title under current request locale. */
+export function resolveSoftwareTitle(spec: SoftwareSpec): string {
+  return spec.titleKey ? tl(spec.titleKey) : spec.title;
+}
+
+/**
+ * Static catalog — never call tl() when building this array (module-load freezes default locale).
+ */
 export const SOFTWARE_CATALOG: SoftwareSpec[] = [
   {
     id: 'vsftpd',
@@ -79,137 +94,128 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['vsftpd'],
     aptPackages: ['vsftpd'],
     units: ['vsftpd'],
-    features: ['ftp'],
-  },
+    features: ['ftp'] },
   {
     id: 'db-util',
-    title: 'db-util（FTP 帳戶庫）',
+    title: 'db-util (FTP user DB)',
+    titleKey: 'notes.auto.n0248',
     bins: ['db_load'],
     aptPackages: ['db-util'],
-    features: ['ftp'],
-  },
+    features: ['ftp'] },
   {
     id: 'nginx',
     title: 'Nginx',
     bins: ['nginx'],
     aptPackages: ['nginx'],
     units: ['nginx'],
-    features: ['nginx'],
-  },
+    features: ['nginx'] },
   {
     id: 'certbot',
     title: 'Certbot (Let’s Encrypt)',
     bins: ['certbot'],
     aptPackages: ['certbot', 'python3-certbot-nginx'],
-    features: ['ssl'],
-  },
+    features: ['ssl'] },
   {
     id: 'mysql-client',
-    title: 'MySQL/MariaDB 客戶端',
+    title: 'MySQL/MariaDB client',
+    titleKey: 'notes.auto.n0136',
     bins: ['mysql'],
     aptPackages: ['mysql-client', 'mariadb-client'],
-    features: ['mysql', 'mariadb'],
-  },
+    features: ['mysql', 'mariadb'] },
   {
     id: 'mysql-server',
-    title: 'MySQL 伺服器',
+    title: 'MySQL server',
+    titleKey: 'notes.auto.n0135',
     bins: ['mysqld'],
     aptPackages: ['mysql-server'],
     units: ['mysql'],
-    features: ['mysql'],
-  },
+    features: ['mysql'] },
   {
     id: 'mariadb-server',
-    title: 'MariaDB 伺服器',
+    title: 'MariaDB server',
+    titleKey: 'notes.auto.n0133',
     bins: ['mariadbd'],
     aptPackages: ['mariadb-server'],
     units: ['mariadb'],
-    features: ['mariadb'],
-  },
+    features: ['mariadb'] },
   {
     id: 'postgresql-client',
-    title: 'PostgreSQL 客戶端',
+    title: 'PostgreSQL client',
+    titleKey: 'notes.auto.n0159',
     bins: ['psql'],
     aptPackages: ['postgresql-client'],
-    features: ['postgres'],
-  },
+    features: ['postgres'] },
   {
     id: 'postgresql',
-    title: 'PostgreSQL 伺服器',
+    title: 'PostgreSQL server',
+    titleKey: 'notes.auto.n0157',
     bins: ['postgres'],
     aptPackages: ['postgresql'],
     units: ['postgresql'],
-    features: ['postgres'],
-  },
+    features: ['postgres'] },
   {
     id: 'redis-tools',
-    title: 'Redis 客戶端',
+    title: 'Redis client',
+    titleKey: 'notes.auto.n0174',
     bins: ['redis-cli'],
     aptPackages: ['redis-tools'],
-    features: ['redis'],
-  },
+    features: ['redis'] },
   {
     id: 'redis-server',
-    title: 'Redis 伺服器',
+    title: 'Redis server',
+    titleKey: 'notes.auto.n0171',
     bins: ['redis-server'],
     aptPackages: ['redis-server'],
     units: ['redis-server'],
-    features: ['redis'],
-  },
+    features: ['redis'] },
   {
     id: 'ufw',
-    title: 'UFW 防火牆',
+    title: 'UFW firewall',
+    titleKey: 'notes.auto.n0017',
     bins: ['ufw'],
     aptPackages: ['ufw'],
-    features: ['firewall'],
-  },
+    features: ['firewall'] },
   {
     id: 'fail2ban',
     title: 'fail2ban',
     bins: ['fail2ban-client'],
     aptPackages: ['fail2ban'],
     units: ['fail2ban'],
-    features: ['fail2ban'],
-  },
+    features: ['fail2ban'] },
   {
     id: 'postfix',
     title: 'Postfix',
     bins: ['postfix'],
     aptPackages: ['postfix'],
     units: ['postfix'],
-    features: ['email'],
-  },
+    features: ['email'] },
   {
     id: 'dovecot',
     title: 'Dovecot',
     bins: ['dovecot'],
     aptPackages: ['dovecot-core', 'dovecot-imapd'],
     units: ['dovecot'],
-    features: ['email'],
-  },
+    features: ['email'] },
   {
     id: 'opendkim',
     title: 'OpenDKIM',
     bins: ['opendkim'],
     aptPackages: ['opendkim', 'opendkim-tools'],
     units: ['opendkim'],
-    features: ['email'],
-  },
+    features: ['email'] },
   {
     id: 'pdns-server',
     title: 'PowerDNS',
     bins: ['pdns_server', 'pdnsutil'],
     aptPackages: ['pdns-server', 'pdns-backend-bind'],
     units: ['pdns'],
-    features: ['dns'],
-  },
+    features: ['dns'] },
   {
     id: 'git',
     title: 'Git',
     bins: ['git'],
     aptPackages: ['git'],
-    features: ['git', 'all'],
-  },
+    features: ['git', 'all'] },
   {
     id: 'node',
     title: 'Node.js',
@@ -217,8 +223,7 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     aptPackages: [],
     features: ['node'],
     installer: 'runtime-node',
-    runtimeVersion: '20',
-  },
+    runtimeVersion: '20' },
   {
     id: 'php',
     title: 'PHP',
@@ -226,8 +231,7 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     aptPackages: [],
     features: ['php'],
     installer: 'runtime-php',
-    runtimeVersion: '8.3',
-  },
+    runtimeVersion: '8.3' },
   {
     id: 'python',
     title: 'Python 3',
@@ -235,8 +239,7 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     aptPackages: [],
     features: ['python'],
     installer: 'runtime-python',
-    runtimeVersion: '3.12',
-  },
+    runtimeVersion: '3.12' },
   {
     id: 'go',
     title: 'Go',
@@ -244,8 +247,7 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     aptPackages: [],
     features: ['go'],
     installer: 'runtime-go',
-    runtimeVersion: '1.22',
-  },
+    runtimeVersion: '1.22' },
   {
     id: 'rust',
     title: 'Rust (cargo)',
@@ -253,8 +255,7 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     aptPackages: [],
     features: ['rust'],
     installer: 'runtime-rust',
-    runtimeVersion: 'stable',
-  },
+    runtimeVersion: 'stable' },
 ];
 
 export function getSoftware(id: string): SoftwareSpec | undefined {

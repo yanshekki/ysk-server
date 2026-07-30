@@ -3,7 +3,14 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError, assertHonestOps, type OpsResultInput } from '@ysk/shared';
+import {
+  YskError,
+  localizeOpsResult,
+  resolveRequestLocale,
+  tl,
+  type LocaleCode,
+  type OpsResultInput,
+} from '@ysk/shared';
 
 export function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -20,7 +27,7 @@ export function sendJson(res: ServerResponse, status: number, body: unknown): vo
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(payload),
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept-Language',
     'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
   });
   res.end(payload);
@@ -64,9 +71,7 @@ export type SendOpsOptions = {
 };
 
 /**
- * Normalize honesty then send JSON with correct status.
- * Prefer this for every mutate / apply path that returns ops-shaped bodies.
- * Accepts any object (domain-specific fields preserved); honesty fields normalized.
+ * Normalize honesty, localize notes/blockMessage, then send JSON with correct status.
  */
 export function sendOpsResult(
   res: ServerResponse,
@@ -75,7 +80,7 @@ export function sendOpsResult(
 ): void {
   const raw = result as OpsResultInput & Record<string, unknown>;
   const notes = Array.isArray(raw.notes) ? raw.notes.map(String) : [];
-  const honest = assertHonestOps({
+  const honest = localizeOpsResult({
     ok: raw.ok,
     apply_status: raw.apply_status as OpsResultInput['apply_status'],
     blocked: raw.blocked,
@@ -91,7 +96,6 @@ export function sendOpsResult(
 
 /**
  * Heuristic: body looks like an ops result (has ok + notes/blocked/apply_status).
- * Used by honesty lint / optional middleware — not for silent coercion of CRUD items.
  */
 export function looksLikeOpsResult(body: unknown): boolean {
   if (!body || typeof body !== 'object') return false;
@@ -116,16 +120,27 @@ export function parseUrl(req: IncomingMessage): URL {
   return new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
 }
 
+/** Locale from Accept-Language (and optional query). */
+export function localeFromRequest(req: IncomingMessage, url?: URL): LocaleCode {
+  return resolveRequestLocale({
+    acceptLanguage: req.headers['accept-language'],
+    queryLocale: url?.searchParams.get('locale'),
+  });
+}
+
 export function sendError(res: ServerResponse, err: unknown): void {
   if (err instanceof YskError) {
     sendJson(res, err.httpStatus, {
       ok: false,
       code: err.code,
-      message: err.message,
+      message: err.localize(),
       details: err.details,
+      ...(typeof err.details === 'object' && err.details
+        ? (err.details as object)
+        : {}),
     });
     return;
   }
-  const message = err instanceof Error ? err.message : 'Internal error';
+  const message = err instanceof Error ? err.message : tl('errors.http.internal');
   sendJson(res, 500, { ok: false, code: 'YSK_INTERNAL', message });
 }

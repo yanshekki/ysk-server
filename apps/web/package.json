@@ -12,7 +12,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "css:reuse": "node ./scripts/css-reuse-check.mjs",
     "chrome:check": "node ./scripts/page-chrome-check.mjs",
-    "primitives:check": "node ./scripts/page-primitives-check.mjs"
+    "primitives:check": "node ./scripts/page-primitives-check.mjs",
+    "about-tab:check": "node ./scripts/about-tab-check.mjs"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^13.3.0",

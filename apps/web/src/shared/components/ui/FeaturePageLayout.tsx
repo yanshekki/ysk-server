@@ -16,6 +16,7 @@
  */
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from './PageHeader';
 import { PageStatusBar, type PageStatusChip } from './PageStatusBar';
 import { buttonClassName } from './Button';
@@ -55,9 +56,10 @@ export function FeaturePageLayout({
   actions,
   status,
   backTo,
-  backLabel = '返回',
+  backLabel,
   children,
 }: FeaturePageLayoutProps) {
+  const { t } = useTranslation();
   const chips: PageStatusChip[] | undefined = status?.items?.length
     ? status.items.slice(0, 6).map((s) => ({
         label: s.label,
@@ -75,7 +77,7 @@ export function FeaturePageLayout({
         {backTo ? (
           <div className="feature-page__back">
             <Link to={backTo} className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-              ← {backLabel}
+              ← {backLabel ?? t('featurePage.back')}
             </Link>
           </div>
         ) : null}

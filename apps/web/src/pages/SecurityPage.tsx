@@ -16,6 +16,7 @@ import {
   Button,
   Card,
   CardSection,
+  ConfirmDialog,
   DataTable,
   DescriptionList,
   EmptyState,
@@ -31,6 +32,62 @@ import {
 import { usePageTab } from '../shared/hooks/usePageTab';
 
 const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'allowlist', 'about'] as const;
+
+type SessionRow = {
+  id: string;
+  created_at: string;
+  last_seen_at?: string;
+  ip?: string;
+  user_agent?: string;
+  current?: boolean;
+};
+
+/** Friendly browser/OS from User-Agent (best-effort). */
+function parseUserAgent(ua?: string): { browser: string; os: string; icon: string } {
+  const s = ua || '';
+  let browser = 'Unknown';
+  let icon = '💻';
+  if (/curl\//i.test(s)) {
+    browser = 'curl / API';
+    icon = '⌨️';
+  } else if (/Edg\//i.test(s)) {
+    browser = 'Microsoft Edge';
+    icon = '🌐';
+  } else if (/Chrome\//i.test(s) && !/Edg\//i.test(s)) {
+    browser = 'Chrome';
+    icon = '🌐';
+  } else if (/Firefox\//i.test(s)) {
+    browser = 'Firefox';
+    icon = '🦊';
+  } else if (/Safari\//i.test(s) && !/Chrome\//i.test(s)) {
+    browser = 'Safari';
+    icon = '🧭';
+  } else if (s.trim()) {
+    browser = s.slice(0, 40) + (s.length > 40 ? '…' : '');
+  }
+  let os = '';
+  if (/Windows/i.test(s)) os = 'Windows';
+  else if (/Mac OS X|Macintosh/i.test(s)) os = 'macOS';
+  else if (/Android/i.test(s)) os = 'Android';
+  else if (/iPhone|iPad/i.test(s)) os = 'iOS';
+  else if (/Linux/i.test(s)) os = 'Linux';
+  return { browser, os, icon };
+}
+
+function relativeTime(
+  iso: string | undefined,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  if (!iso) return '—';
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return iso.slice(0, 19).replace('T', ' ');
+  const sec = Math.floor(ms / 1000);
+  if (sec < 45) return t('security.sessionJustNow');
+  if (sec < 3600) return t('security.sessionMinAgo', { n: Math.max(1, Math.floor(sec / 60)) });
+  if (sec < 86400) return t('security.sessionHourAgo', { n: Math.floor(sec / 3600) });
+  if (sec < 86400 * 7) return t('security.sessionDayAgo', { n: Math.floor(sec / 86400) });
+  return new Date(iso).toLocaleString();
+}
 
 export function SecurityPage() {
   const { t } = useTranslation();
@@ -49,16 +106,9 @@ export function SecurityPage() {
   const [totpBusy, setTotpBusy] = useState(false);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [reauthPassword, setReauthPassword] = useState('');
-  const [sessions, setSessions] = useState<
-    Array<{
-      id: string;
-      created_at: string;
-      last_seen_at?: string;
-      ip?: string;
-      user_agent?: string;
-      current?: boolean;
-    }>
-  >([]);
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [revokeTarget, setRevokeTarget] = useState<SessionRow | null>(null);
+  const [revokeOthersOpen, setRevokeOthersOpen] = useState(false);
   const [requireAdminTotp, setRequireAdminTotp] = useState(false);
   const [requireStrict, setRequireStrict] = useState(false);
   const [policyTotp, setPolicyTotp] = useState('');
@@ -126,37 +176,37 @@ export function SecurityPage() {
         .slice(0, 16)
         .map(([k, v]) => ({ label: k, value: String(v) }));
     } catch {
-      return [{ label: '輸出', value: result.slice(0, 500) }];
+      return [{ label: t('security.output'), value: result.slice(0, 500) }];
     }
   })();
 
   return (
     <FeaturePageLayout
-      title={t('nav.security', { defaultValue: '帳號安全' })}
+      title={t('nav.security')}
       showCapability={false}
       status={{
         pill: {
           label:
             approvals.length > 0
-              ? `${approvals.length} 待批`
+              ? t('security.pillPending', { count: approvals.length })
               : totpStatus?.enabled
-                ? '就緒'
-                : '2FA 未啟用',
+                ? t('security.pillReady')
+                : t('security.pill2faOff'),
           tone: approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn',
         },
         items: [
           {
-            label: '2FA',
-            value: totpStatus?.enabled ? '開' : '關',
+            label: t('security.stat2fa'),
+            value: totpStatus?.enabled ? t('common.on') : t('common.off'),
             tone: totpStatus?.enabled ? 'ok' : 'warn',
           },
-          { label: 'API', value: apiKeys.length },
+          { label: t('security.statApi'), value: apiKeys.length },
           {
-            label: 'SSH',
+            label: t('security.statSsh'),
             value: `${sshCounts.identities}/${sshCounts.loginKeys}`,
           },
           {
-            label: '待批',
+            label: t('security.statPending'),
             value: approvals.length,
             tone: approvals.length > 0 ? 'danger' : 'ok',
           },
@@ -172,36 +222,36 @@ export function SecurityPage() {
       {totpMsg ? <Alert variant="ok">{totpMsg}</Alert> : null}
       {newKeyToken ? (
         <Alert variant="ok">
-          API token（只顯示一次）：<code className="inline u-break-all">{newKeyToken}</code>
+          {t('security.apiTokenOnce')}<code className="inline u-break-all">{newKeyToken}</code>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
               void navigator.clipboard?.writeText(newKeyToken);
-              setTotpMsg('已複製 token');
+              setTotpMsg(t('security.copiedToken'));
             }}
           >
-            複製
+            {t('common.copy')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setNewKeyToken(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'account', label: '帳戶安全' },
-          { id: 'keys', label: 'API 金鑰', badge: apiKeys.length || undefined },
+          { id: 'account', label: t('security.tabAccount') },
+          { id: 'keys', label: t('security.tabApiKeys'), badge: apiKeys.length || undefined },
           {
             id: 'ssh',
-            label: 'SSH',
+            label: t('security.tabSsh'),
             badge: sshCounts.identities + sshCounts.loginKeys || undefined,
           },
-          { id: 'approvals', label: '審批', badge: approvals.length || undefined },
-          { id: 'allowlist', label: '允許清單', badge: tools.length || undefined },
+          { id: 'approvals', label: t('security.tabApprovals'), badge: approvals.length || undefined },
+          { id: 'allowlist', label: t('security.tabAllowlist'), badge: tools.length || undefined },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -210,21 +260,21 @@ export function SecurityPage() {
         {tab === 'account' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title="操作員雙重驗證 (TOTP)">
+              <CardSection title={t('security.totpTitle')}>
                 <p className="muted u-text-sm">
-                  狀態：
+                  {t('security.totpStatus')}
                   {totpStatus?.enabled
-                    ? '已啟用'
+                    ? t('security.totpEnabled')
                     : totpStatus?.enrolled
-                      ? '已產生密鑰、未確認'
-                      : '未設定'}
+                      ? t('security.totpEnrolledUnconfirmed')
+                      : t('security.totpNotSet')}
                 </p>
                 <FormLayout columns={2}>
                   <Field
-                    label="重新驗證密碼"
+                    label={t('security.reauthPassword')}
                     htmlFor="reauth-pw"
                     flush
-                    hint="開始／重設 2FA 需要再輸入密碼（防 session 被盜）"
+                    hint={t('security.reauthPasswordHint')}
                   >
                     <input
                       id="reauth-pw"
@@ -249,7 +299,7 @@ export function SecurityPage() {
                         .then((r) => {
                           setTotpSecret(r.secret);
                           setTotpUrl(r.otpauthUrl);
-                          setTotpMsg('已產生密鑰 — 用驗證器 App 掃描後輸入 6 位碼確認');
+                          setTotpMsg(t('security.totpSecretGenerated'));
                           setReauthPassword('');
                           return refreshTotp();
                         })
@@ -257,13 +307,13 @@ export function SecurityPage() {
                         .finally(() => setTotpBusy(false));
                     }}
                   >
-                    {totpStatus?.enabled ? '重新設定 2FA' : '開始設定 2FA'}
+                    {totpStatus?.enabled ? t('security.reset2fa') : t('security.start2fa')}
                   </Button>
                 </ActionBar>
                 {totpSecret ? (
                   <div className="u-mt-4">
                     <FormHint>
-                      密鑰：<code className="inline">{totpSecret}</code>
+                      {t('security.secretLabel')}<code className="inline">{totpSecret}</code>
                       {totpUrl ? (
                         <>
                           <br />
@@ -274,11 +324,11 @@ export function SecurityPage() {
                     </FormHint>
                     <FormLayout columns={2}>
                       <Field
-                        label="確認碼"
+                        label={t('security.confirmCode')}
                         htmlFor="totp-confirm"
                         flush
                         required
-                        hint="Authenticator 顯示的 6 位數字"
+                        hint={t('security.confirmCodeHint')}
                       >
                         <input
                           id="totp-confirm"
@@ -303,7 +353,7 @@ export function SecurityPage() {
                             .totpConfirm(totpCode)
                             .then((r) => {
                               setTotpMsg(
-                                '2FA 已啟用 — 請立即保存下方 recovery codes（只顯示一次）',
+                                t('security.totpEnabledSaveCodes'),
                               );
                               setRecoveryCodes(r.recoveryCodes ?? null);
                               setTotpSecret(null);
@@ -315,7 +365,7 @@ export function SecurityPage() {
                             .finally(() => setTotpBusy(false));
                         }}
                       >
-                        確認啟用
+                        {t('security.confirmEnable')}
                       </Button>
                     </FormActions>
                   </div>
@@ -323,7 +373,7 @@ export function SecurityPage() {
                 {recoveryCodes && recoveryCodes.length > 0 ? (
                   <div className="u-mt-4">
                     <FormHint>
-                      恢復碼（離線保存；每個只用一次）。登入時可填 recoveryCode 代替 App 碼。
+                      {t('security.recoveryCodesHint')}
                     </FormHint>
                     <pre className="u-font-mono u-text-sm">
                       {recoveryCodes.join('\n')}
@@ -333,17 +383,17 @@ export function SecurityPage() {
                       size="sm"
                       onClick={() => {
                         void navigator.clipboard?.writeText(recoveryCodes.join('\n'));
-                        setTotpMsg('已複製 recovery codes');
+                        setTotpMsg(t('security.copiedRecoveryCodes'));
                       }}
                     >
-                      複製全部
+                      {t('security.copyAll')}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setRecoveryCodes(null)}
                     >
-                      我已保存，關閉
+                      {t('security.savedClose')}
                     </Button>
                   </div>
                 ) : null}
@@ -352,76 +402,177 @@ export function SecurityPage() {
 
             <Card>
               <CardSection
-                title="工作階段"
-                description="閒置 4 小時或最長 24 小時會失效。可撤銷其他裝置。"
+                title={t('security.sessionsTitle')}
+                description={t('security.sessionsDesc')}
               >
-                <ActionBar className="u-mb-3">
+                {sessions.length > 0 ? (
+                  <div className="sess-summary u-mb-3">
+                    <div className="sess-summary__stat">
+                      <span className="sess-summary__n">{sessions.length}</span>
+                      <span className="sess-summary__l">{t('security.sessionsActive')}</span>
+                    </div>
+                    <div className="sess-summary__stat">
+                      <span className="sess-summary__n">
+                        {sessions.filter((s) => !s.current).length}
+                      </span>
+                      <span className="sess-summary__l">{t('security.sessionsOther')}</span>
+                    </div>
+                    <p className="sess-summary__hint muted u-text-sm">
+                      {t('security.sessionsHint')}
+                    </p>
+                  </div>
+                ) : null}
+
+                <ActionBar className="u-mb-4">
                   <Button
                     variant="secondary"
-                    size="sm"
+                    size="md"
                     onClick={() => void refreshSessions().catch(() => undefined)}
                   >
-                    重新整理
+                    {t('common.refresh')}
                   </Button>
                   <Button
                     variant="danger"
-                    size="sm"
-                    onClick={() => {
-                      void api
-                        .revokeOtherSessions()
-                        .then((r) => {
-                          setTotpMsg(`已撤銷 ${r.revoked} 個其他工作階段`);
-                          return refreshSessions();
-                        })
-                        .catch((e: Error) => setTotpErr(e.message));
-                    }}
+                    size="md"
+                    disabled={sessions.filter((s) => !s.current).length === 0}
+                    onClick={() => setRevokeOthersOpen(true)}
                   >
-                    撤銷其他階段
+                    {t('security.revokeOtherSessions')}
                   </Button>
                 </ActionBar>
+
                 {sessions.length === 0 ? (
-                  <EmptyState title="無工作階段資料" />
+                  <EmptyState
+                    title={t('security.noSessions')}
+                    description={t('security.noSessionsHint')}
+                  />
                 ) : (
-                  <ul className="list-plain list-spaced">
-                    {sessions.map((s) => (
-                      <li key={s.id} className="u-justify-between u-flex-wrap">
-                        <span>
-                          <code className="inline">{s.id}…</code>
-                          {s.current ? <Badge tone="ok">目前</Badge> : null}
-                          <div className="muted u-text-sm">
-                            {s.ip ?? '—'} · {s.last_seen_at ?? s.created_at}
-                          </div>
-                          {s.user_agent ? (
-                            <div className="muted u-text-sm u-break-all">
-                              {s.user_agent.slice(0, 80)}
-                            </div>
-                          ) : null}
-                        </span>
-                        {!s.current ? (
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => {
-                              void api
-                                .revokeSession(s.id)
-                                .then(() => refreshSessions())
-                                .catch((e: Error) => setTotpErr(e.message));
-                            }}
+                  <ul className="sess-list">
+                    {[...sessions]
+                      .sort((a, b) => Number(!!b.current) - Number(!!a.current))
+                      .map((s) => {
+                        const ua = parseUserAgent(s.user_agent);
+                        const title = ua.os
+                          ? t('security.sessionDeviceOn', {
+                              browser: ua.browser,
+                              os: ua.os,
+                            })
+                          : ua.browser;
+                        const when = relativeTime(s.last_seen_at ?? s.created_at, t);
+                        return (
+                          <li
+                            key={s.id}
+                            className={`sess-card${s.current ? ' sess-card--current' : ''}`}
                           >
-                            撤銷
-                          </Button>
-                        ) : null}
-                      </li>
-                    ))}
+                            <div className="sess-card__icon" aria-hidden>
+                              {ua.icon}
+                            </div>
+                            <div className="sess-card__body">
+                              <div className="sess-card__title-row">
+                                <strong className="sess-card__title">{title}</strong>
+                                {s.current ? (
+                                  <Badge tone="ok">{t('security.currentSession')}</Badge>
+                                ) : (
+                                  <Badge tone="neutral">{t('security.sessionOtherBadge')}</Badge>
+                                )}
+                              </div>
+                              <div className="sess-card__meta">
+                                <span>{s.ip || t('security.sessionIpUnknown')}</span>
+                                <span className="sess-card__dot" aria-hidden>
+                                  ·
+                                </span>
+                                <span>
+                                  {t('security.sessionLastActive', { when })}
+                                </span>
+                              </div>
+                              <div className="sess-card__sub muted u-text-sm">
+                                {t('security.sessionStarted', {
+                                  when: relativeTime(s.created_at, t),
+                                })}
+                                <span className="sess-card__id" title={s.id}>
+                                  {t('security.sessionIdShort', {
+                                    id: s.id.slice(0, 10),
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="sess-card__actions">
+                              {s.current ? (
+                                <span className="sess-card__this muted u-text-sm">
+                                  {t('security.sessionThisDevice')}
+                                </span>
+                              ) : (
+                                <Button
+                                  variant="danger"
+                                  size="md"
+                                  onClick={() => setRevokeTarget(s)}
+                                >
+                                  {t('security.revoke')}
+                                </Button>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
                   </ul>
                 )}
+
+                <ConfirmDialog
+                  open={Boolean(revokeTarget)}
+                  title={t('security.revokeSessionTitle')}
+                  description={
+                    revokeTarget
+                      ? t('security.revokeSessionDesc', {
+                          device: parseUserAgent(revokeTarget.user_agent).browser,
+                          ip: revokeTarget.ip || '—',
+                        })
+                      : ''
+                  }
+                  confirmLabel={t('security.revoke')}
+                  danger
+                  onClose={() => setRevokeTarget(null)}
+                  onConfirm={() => {
+                    if (!revokeTarget) return;
+                    const id = revokeTarget.id;
+                    setRevokeTarget(null);
+                    void api
+                      .revokeSession(id)
+                      .then(() => {
+                        setTotpMsg(t('security.sessionRevoked'));
+                        return refreshSessions();
+                      })
+                      .catch((e: Error) => setTotpErr(e.message));
+                  }}
+                />
+                <ConfirmDialog
+                  open={revokeOthersOpen}
+                  title={t('security.revokeOthersTitle')}
+                  description={t('security.revokeOthersDesc', {
+                    count: sessions.filter((s) => !s.current).length,
+                  })}
+                  confirmLabel={t('security.revokeOtherSessions')}
+                  danger
+                  onClose={() => setRevokeOthersOpen(false)}
+                  onConfirm={() => {
+                    setRevokeOthersOpen(false);
+                    void api
+                      .revokeOtherSessions()
+                      .then((r) => {
+                        setTotpMsg(
+                          t('security.revokedOtherSessions', { count: r.revoked }),
+                        );
+                        return refreshSessions();
+                      })
+                      .catch((e: Error) => setTotpErr(e.message));
+                  }}
+                />
               </CardSection>
             </Card>
 
             <Card>
               <CardSection
-                title="Passkey / WebAuthn"
-                description="硬體或平台驗證器作為第二因素（step-up）。需 HTTPS 或 localhost。"
+                title={t('security.passkeyTitle')}
+                description={t('security.passkeyDesc')}
               >
                 <ActionBar className="u-mb-3">
                   <Button
@@ -453,18 +604,18 @@ export function SecurityPage() {
                           });
                           setTotpMsg(
                             fin.ok
-                              ? 'Passkey 已登記'
-                              : (fin.notes ?? []).join('；') || '失敗',
+                              ? t('security.passkeyRegistered')
+                              : (fin.notes ?? []).join(' · ') || t('common.failed'),
                           );
                         } catch (e) {
-                          setTotpErr(e instanceof Error ? e.message : 'WebAuthn 失敗');
+                          setTotpErr(e instanceof Error ? e.message : t('security.webauthnFailed'));
                         } finally {
                           setTotpBusy(false);
                         }
                       })();
                     }}
                   >
-                    登記 Passkey
+                    {t('security.registerPasskey')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -486,7 +637,7 @@ export function SecurityPage() {
                             body: '{}',
                           });
                           if (!begin.ok || !begin.options) {
-                            setTotpErr((begin.notes ?? []).join('；') || '無 passkey');
+                            setTotpErr((begin.notes ?? []).join(' · ') || t('security.noPasskey'));
                             return;
                           }
                           const ass = await startAuthentication({
@@ -501,30 +652,30 @@ export function SecurityPage() {
                           );
                           setTotpMsg(
                             fin.ok
-                              ? 'Passkey 驗證成功（已 step-up）'
-                              : (fin.notes ?? []).join('；') || '失敗',
+                              ? t('security.passkeyVerifyOk')
+                              : (fin.notes ?? []).join(' · ') || t('common.failed'),
                           );
                         } catch (e) {
-                          setTotpErr(e instanceof Error ? e.message : '驗證失敗');
+                          setTotpErr(e instanceof Error ? e.message : t('security.verifyFailed'));
                         } finally {
                           setTotpBusy(false);
                         }
                       })();
                     }}
                   >
-                    用 Passkey 驗證 (step-up)
+                    {t('security.verifyWithPasskey')}
                   </Button>
                 </ActionBar>
                 <FormHint>
-                  登入仍用密碼+TOTP；Passkey 用於高危操作 step-up。詳見安全文件。
+                  {t('security.passkeyHint')}
                 </FormHint>
               </CardSection>
             </Card>
 
             <Card>
               <CardSection
-                title="記住的裝置 / 加密備份 / Fail2ban"
-                description="deviceToken 可跳過 TOTP（30 天）；備份含 secret 加密；Fail2ban 片段寫入 dataDir"
+                title={t('security.devicesTitle')}
+                description={t('security.devicesDesc')}
               >
                 <FormActions>
                   <Button
@@ -536,12 +687,12 @@ export function SecurityPage() {
                           '/api/v1/auth/devices',
                         )
                         .then((r) =>
-                          setTotpMsg(`信任裝置：${(r.items ?? []).length} 個`),
+                          setTotpMsg(t('security.trustedDevicesCount', { count: (r.items ?? []).length })),
                         )
                         .catch((e: Error) => setTotpErr(e.message));
                     }}
                   >
-                    查看信任裝置
+                    {t('security.viewTrustedDevices')}
                   </Button>
                   <Button
                     variant="danger"
@@ -549,18 +700,18 @@ export function SecurityPage() {
                     onClick={() => {
                       void api
                         .requestRaw('/api/v1/auth/devices', { method: 'DELETE' })
-                        .then(() => setTotpMsg('已撤銷全部信任裝置'))
+                        .then(() => setTotpMsg(t('security.revokedAllDevices')))
                         .catch((e: Error) => setTotpErr(e.message));
                     }}
                   >
-                    撤銷全部裝置
+                    {t('security.revokeAllDevices')}
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => setTotpPrompt({ kind: 'backup' })}
                   >
-                    匯出 2FA 加密備份
+                    {t('security.export2faBackup')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -572,13 +723,16 @@ export function SecurityPage() {
                         )
                         .then((r) =>
                           setTotpMsg(
-                            `Fail2ban 片段：${(r.written ?? []).join(', ')} — ${(r.notes ?? []).join('；')}`,
+                            t('security.fail2banSnippetMsg', {
+                              written: (r.written ?? []).join(', '),
+                              notes: (r.notes ?? []).join(' · '),
+                            }),
                           ),
                         )
                         .catch((e: Error) => setTotpErr(e.message));
                     }}
                   >
-                    產生 Fail2ban 片段
+                    {t('security.generateFail2ban')}
                   </Button>
                 </FormActions>
               </CardSection>
@@ -586,8 +740,8 @@ export function SecurityPage() {
 
             <Card>
               <CardSection
-                title="管理員 2FA 政策"
-                description="建議開啟。Strict 會拒絕未開 2FA 的 admin 登入（需已有 2FA 帳號才能關）。"
+                title={t('security.adminPolicyTitle')}
+                description={t('security.adminPolicyDesc')}
               >
                 <label className="ssh-check">
                   <input
@@ -595,7 +749,7 @@ export function SecurityPage() {
                     checked={requireAdminTotp}
                     onChange={(e) => setRequireAdminTotp(e.target.checked)}
                   />
-                  <span>要求 admin 啟用 2FA（登入後提示 mustEnrollTotp）</span>
+                  <span>{t('security.requireAdmin2fa')}</span>
                 </label>
                 <label className="ssh-check u-mt-2">
                   <input
@@ -603,20 +757,20 @@ export function SecurityPage() {
                     checked={requireStrict}
                     onChange={(e) => setRequireStrict(e.target.checked)}
                   />
-                  <span>Strict：未開 2FA 的 admin 直接拒絕登入</span>
+                  <span>{t('security.strictAdmin2fa')}</span>
                 </label>
                 <Field
-                  label="確認 TOTP（改政策時）"
+                  label={t('security.confirmTotpPolicy')}
                   htmlFor="pol-totp"
-                  flush
-                  hint="開啟政策需 step-up"
+                  className="u-mt-4"
+                  hint={t('security.confirmTotpPolicyHint')}
                 >
                   <input
                     id="pol-totp"
                     value={policyTotp}
                     onChange={(e) => setPolicyTotp(e.target.value)}
                     maxLength={12}
-                    placeholder="6 位碼"
+                    placeholder={t('security.totp6digitPlaceholder')}
                   />
                 </Field>
                 <FormActions>
@@ -631,14 +785,14 @@ export function SecurityPage() {
                           totp: policyTotp || undefined,
                         })
                         .then(() => {
-                          setTotpMsg('安全政策已更新');
+                          setTotpMsg(t('security.policyUpdated'));
                           setPolicyTotp('');
                           return refreshPolicy();
                         })
                         .catch((e: Error) => setTotpErr(e.message));
                     }}
                   >
-                    儲存政策
+                    {t('security.savePolicy')}
                   </Button>
                 </FormActions>
               </CardSection>
@@ -646,7 +800,7 @@ export function SecurityPage() {
 
             {probeItems.length > 0 ? (
               <Card>
-                <CardSection title="最近探測">
+                <CardSection title={t('security.recentProbe')}>
                   <DescriptionList
                     items={probeItems.map((i) => ({ label: i.label, value: i.value }))}
                   />
@@ -659,8 +813,8 @@ export function SecurityPage() {
         {tab === 'keys' ? (
           <div className="tab-panel">
             <DataTable
-              title="API 存取金鑰"
-              description="給腳本／CI 用。完整 token 只在建立時顯示一次。"
+              title={t('security.apiKeysTitle')}
+              description={t('security.apiKeysDesc')}
               toolbar={
                 <ActionBar>
                   <Button
@@ -668,31 +822,31 @@ export function SecurityPage() {
                     size="sm"
                     onClick={() => void refreshKeys().catch(() => undefined)}
                   >
-                    重新整理
+                    {t('common.refresh')}
                   </Button>
                   <Button
                     variant="primary"
                     size="sm"
                     onClick={() => setCreateKeyOpen(true)}
                   >
-                    + 建立金鑰
+                    {t('security.createKey')}
                   </Button>
                 </ActionBar>
               }
               columns={[
                 {
                   key: 'name',
-                  header: '名稱',
+                  header: t('security.colName'),
                   render: (k) => <strong>{k.name}</strong>,
                 },
                 {
                   key: 'prefix',
-                  header: '前綴',
+                  header: t('security.colPrefix'),
                   render: (k) => <span className="muted">{k.prefix}…</span>,
                 },
                 {
                   key: 'created',
-                  header: '建立',
+                  header: t('security.colCreated'),
                   className: 'muted u-text-sm',
                   render: (k) => k.created_at,
                 },
@@ -701,8 +855,8 @@ export function SecurityPage() {
               rowKey={(k) => k.id}
               empty={
                 <EmptyState
-                  title="尚未有 API 金鑰"
-                  description="用列表右上角建立；建立後可用 Bearer token 呼叫 API"
+                  title={t('security.apiKeysEmpty')}
+                  description={t('security.apiKeysEmptyHint')}
                 />
               }
               rowActions={(k) => (
@@ -717,7 +871,7 @@ export function SecurityPage() {
                         .catch((e: Error) => setTotpErr(e.message));
                     }}
                   >
-                    刪除
+                    {t('common.delete')}
                   </Button>
                 </ActionBar>
               )}
@@ -755,7 +909,7 @@ export function SecurityPage() {
                             loading={busy}
                             onClick={() => void approve(String(a.id))}
                           >
-                            批准
+                            {t('security.approve')}
                           </Button>
                         </div>
                       </div>
@@ -770,7 +924,7 @@ export function SecurityPage() {
         {tab === 'allowlist' ? (
           <div className="tab-panel">
             <DataTable
-              title={`Allowlist (${tools.length})`}
+              title={t('security.allowlistTitle', { count: tools.length })}
               columns={[
                 {
                   key: 'tool',
@@ -802,7 +956,7 @@ export function SecurityPage() {
               ]}
               rows={tools}
               rowKey={(tool) => String(tool.tool)}
-              empty={<p className="muted">尚無 allowlist 工具</p>}
+              empty={<p className="muted">{t('security.allowlistEmpty')}</p>}
             />
           </div>
         ) : null}
@@ -813,12 +967,12 @@ export function SecurityPage() {
       <Modal
         open={createKeyOpen}
         onClose={() => setCreateKeyOpen(false)}
-        title="建立 API 金鑰"
-        description="建立後完整 token 只顯示一次"
+        title={t('security.createApiKeyTitle')}
+        description={t('security.createApiKeyDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCreateKeyOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -842,7 +996,7 @@ export function SecurityPage() {
                   })
                   .then((r) => {
                     setNewKeyToken(r.token);
-                    setTotpMsg('API 金鑰已建立');
+                    setTotpMsg(t('security.apiKeyCreated'));
                     setCreateKeyOpen(false);
                     return refreshKeys();
                   })
@@ -850,13 +1004,13 @@ export function SecurityPage() {
                   .finally(() => setTotpBusy(false));
               }}
             >
-              建立金鑰
+              {t('security.createKeyBtn')}
             </Button>
           </>
         }
       >
         <FormLayout columns={1}>
-          <Field label="名稱" htmlFor="ak-name" flush required hint="方便辨識，例如 CI／備份腳本">
+          <Field label={t('common.name')} htmlFor="ak-name" flush required hint={t('security.apiKeyNameHint')}>
             <input
               id="ak-name"
               value={newKeyName}
@@ -865,13 +1019,13 @@ export function SecurityPage() {
               spellCheck={false}
             />
           </Field>
-          <Field label="範圍" htmlFor="ak-scope" flush hint="read = 只讀（no full mutate）">
+          <Field label={t('security.apiKeyScope')} htmlFor="ak-scope" flush hint={t('security.apiKeyScopeHint')}>
             <select id="ak-scope" defaultValue="full">
-              <option value="full">full（完整 API）</option>
-              <option value="read">read（只讀）</option>
+              <option value="full">{t('security.scopeFull')}</option>
+              <option value="read">{t('security.scopeRead')}</option>
             </select>
           </Field>
-          <FormHint>若已開 2FA，建立金鑰會要求再輸入驗證碼（step-up）。</FormHint>
+          <FormHint>{t('security.apiKey2faHint')}</FormHint>
         </FormLayout>
       </Modal>
 
@@ -880,14 +1034,14 @@ export function SecurityPage() {
         onClose={() => !totpBusy && setTotpPrompt(null)}
         title={
           totpPrompt?.kind === 'backup'
-            ? '匯出 2FA 備份'
-            : '建立 API 金鑰 · step-up'
+            ? t('security.export2faBackupTitle')
+            : t('security.createApiKeyStepUp')
         }
-        description="請輸入目前 TOTP 驗證碼"
+        description={t('security.enterTotpCode')}
         label="TOTP"
         secret
-        placeholder="6 位數字"
-        confirmLabel={totpPrompt?.kind === 'backup' ? '匯出' : '建立'}
+        placeholder={t('security.digit6Placeholder')}
+        confirmLabel={totpPrompt?.kind === 'backup' ? t('security.export') : t('common.create')}
         busy={totpBusy}
         onSubmit={async (totp) => {
           if (totpPrompt?.kind === 'backup') {
@@ -903,13 +1057,13 @@ export function SecurityPage() {
               });
               if (r.blob) {
                 void navigator.clipboard?.writeText(r.blob);
-                setTotpMsg('加密備份已複製到剪貼簿（離線保存）');
+                setTotpMsg(t('security.backupCopied'));
               } else {
-                setTotpErr((r.notes ?? []).join('；') || '失敗');
+                setTotpErr((r.notes ?? []).join(' · ') || t('common.failed'));
                 return false;
               }
             } catch (e) {
-              setTotpErr(e instanceof Error ? e.message : '失敗');
+              setTotpErr(e instanceof Error ? e.message : t('common.failed'));
               return false;
             } finally {
               setTotpBusy(false);
@@ -937,12 +1091,12 @@ export function SecurityPage() {
                 body: JSON.stringify({ name: newKeyName, totp, scope }),
               });
               setNewKeyToken(r.token);
-              setTotpMsg('API 金鑰已建立');
+              setTotpMsg(t('security.apiKeyCreated'));
               setCreateKeyOpen(false);
               setTotpPrompt(null);
               await refreshKeys();
             } catch (e) {
-              setTotpErr(e instanceof Error ? e.message : '失敗');
+              setTotpErr(e instanceof Error ? e.message : t('common.failed'));
               return false;
             } finally {
               setTotpBusy(false);

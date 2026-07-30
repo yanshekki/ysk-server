@@ -61,7 +61,7 @@
 | GitHub Actions：gates → typecheck → build → test → e2e | **done** |
 | `prepare-release.sh` 跑 gates + typecheck | **done** |
 | 文件：CI 門檻寫入 architecture / frontend-ui | **done** |
-| `css:reuse` 仍為本地 aspirational（inline meter 等尚未清零） | **soft**（非硬閘） |
+| `css:reuse` | **hard in gates (Wave2 R6)** — modular CSS + allowed CSS-var inlines only |
 
 ## 審查門檻（持續 · 由 CI 硬閘部分強制）
 
@@ -73,7 +73,7 @@
 | H4 DTO 只在 shared | 架構規則 + 空殼刪除 |
 | H5 UI kit only | `primitives:check` + `chrome:check` |
 | H6 無重複 link 廢話 | 審查 |
-| H7 CSS 不平行開支 | CSS freeze 文件；`css:reuse` soft |
+| H7 CSS 不平行開支 | CSS freeze 文件；`pnpm css:reuse` in gates (R6) |
 
 **本地 / CI 一鍵：**
 

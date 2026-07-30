@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * UFW deep operations — port policy / permanent deny.
  * Distinct from fail2ban (log-driven temporary bans) and Defense Center (orchestration).
@@ -33,14 +34,14 @@ export type FirewallDeepStatus = {
 };
 
 function humanActive(active: string, installed: boolean, isRoot: boolean): string {
-  if (!installed) return '未安裝';
+  if (!installed) return tl('notes.notInstalled');
   const a = (active || '').toLowerCase();
   if (a.includes('need to be root') || a.includes('error')) {
-    return isRoot ? '讀取失敗' : '需 root 讀取';
+    return isRoot ? tl('notes.readFailed') : tl('notes.tpl.needRootRead');
   }
-  if (a === 'active') return '啟用中';
-  if (a === 'inactive') return '已關閉';
-  return active || '未知';
+  if (a === 'active') return tl('notes.auto.n0623');
+  if (a === 'inactive') return tl('notes.state.closed');
+  return active || tl('notes.unknown');
 }
 
 /** Parse `ufw status numbered` lines into structured rules. */
@@ -60,8 +61,7 @@ export function parseUfwNumbered(lines: string[]): UfwRule[] {
         action: m[3].toUpperCase(),
         direction: (m[4] || 'IN').toUpperCase(),
         from: (m[5] || '').trim() || 'Anywhere',
-        raw: t,
-      });
+        raw: t });
       continue;
     }
     if (/ALLOW|DENY|REJECT/i.test(t)) {
@@ -90,8 +90,7 @@ export async function probeFirewallDeep(host: HostExecutor): Promise<FirewallDee
     host.pathExists('/usr/bin/ufw') ||
     (await host
       .runCommand(['bash', '-c', 'command -v ufw >/dev/null && echo yes || echo no'], {
-        timeoutMs: 3_000,
-      })
+        timeoutMs: 3_000 })
       .then((r) => (r.stdout || '').trim() === 'yes')
       .catch(() => false));
 
@@ -128,10 +127,10 @@ export async function probeFirewallDeep(host: HostExecutor): Promise<FirewallDee
         }
       }
     } catch {
-      notes.push('無法讀取 numbered 規則');
+      notes.push(tl('notes.auto.n1184'));
     }
   } else {
-    notes.push('UFW 未安裝');
+    notes.push(tl('notes.auto.n0197'));
   }
 
   const rules = parseUfwNumbered(numberedRules);
@@ -153,8 +152,7 @@ export async function probeFirewallDeep(host: HostExecutor): Promise<FirewallDee
     defaultOutgoing,
     executeEnabled: host.executeEnabled(),
     isRoot: host.isRoot(),
-    notes,
-  };
+    notes };
 }
 
 function needExec(host: HostExecutor): { ok: false; blocked: true; notes: string[] } | null {
@@ -162,8 +160,7 @@ function needExec(host: HostExecutor): { ok: false; blocked: true; notes: string
     return {
       ok: false,
       blocked: true,
-      notes: ['無法變更 UFW：需 YSK_EXECUTE=1'],
-    };
+      notes: [tl('notes.auto.n1189')] };
   }
   return null;
 }
@@ -180,20 +177,18 @@ export async function firewallSetEnabled(
       ok: r.exitCode === 0,
       notes: [
         r.exitCode === 0
-          ? '已啟用 UFW'
-          : `enable 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-      ],
-    };
+          ? tl('notes.auto.n0747')
+          : tl('notes.auto.t0160', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+      ] };
   }
   const r = await host.runCommand(['ufw', 'disable'], { timeoutMs: 15_000 });
   return {
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? '已停用 UFW（警告：主機埠將直接暴露）'
-        : `disable 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-    ],
-  };
+        ? tl('notes.auto.n0732')
+        : tl('notes.auto.t0161', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+    ] };
 }
 
 export async function firewallDenyIp(
@@ -204,17 +199,16 @@ export async function firewallDenyIp(
   if (block) return block;
   const safe = normalizeIp(ip.trim()) ?? '';
   if (!safe || !isValidIp(safe)) {
-    return { ok: false, notes: ['無效 IPv4／IPv6'] };
+    return { ok: false, notes: [tl('notes.invalidIp46')] };
   }
   const r = await host.runCommand(['ufw', 'deny', 'from', safe], { timeoutMs: 12_000 });
   return {
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? `UFW DENY from ${safe}（永久規則，直至手動刪）`
-        : `deny 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-    ],
-  };
+        ? tl('notes.auto.t0162', { v0: (safe) })
+        : tl('notes.auto.t0163', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+    ] };
 }
 
 export async function firewallDeleteDenyIp(
@@ -225,19 +219,17 @@ export async function firewallDeleteDenyIp(
   if (block) return block;
   const safe = normalizeIp(ip.trim()) ?? ip.trim();
   if (!safe || !isValidIp(safe)) {
-    return { ok: false, notes: ['無效 IPv4／IPv6'] };
+    return { ok: false, notes: [tl('notes.invalidIp46')] };
   }
   const r = await host.runCommand(['ufw', 'delete', 'deny', 'from', safe], {
-    timeoutMs: 12_000,
-  });
+    timeoutMs: 12_000 });
   return {
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? `已刪 UFW DENY ${safe}`
-        : `delete 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-    ],
-  };
+        ? tl('notes.auto.t0164', { v0: (safe) })
+        : tl('notes.auto.t0165', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+    ] };
 }
 
 export async function firewallDeleteRuleNumber(
@@ -247,7 +239,7 @@ export async function firewallDeleteRuleNumber(
   const block = needExec(host);
   if (block) return block;
   if (!Number.isInteger(num) || num < 1 || num > 999) {
-    return { ok: false, notes: ['無效規則編號'] };
+    return { ok: false, notes: [tl('notes.auto.n1118')] };
   }
   // ufw delete N is interactive; use yes pipe
   const r = await host.runCommand(
@@ -258,10 +250,9 @@ export async function firewallDeleteRuleNumber(
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? `已刪規則 #${num}`
-        : `刪 #${num} 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-    ],
-  };
+        ? tl('notes.auto.t0166', { v0: (num) })
+        : tl('notes.auto.t0167', { v0: (num), v1: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+    ] };
 }
 
 export async function firewallAllowPort(
@@ -272,43 +263,38 @@ export async function firewallAllowPort(
   const block = needExec(host);
   if (block) return block;
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    return { ok: false, notes: ['無效埠'] };
+    return { ok: false, notes: [tl('notes.auto.n1113')] };
   }
   const r = await host.runCommand(['ufw', 'allow', `${port}/${proto}`], { timeoutMs: 12_000 });
   return {
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? `已允許 ${port}/${proto}`
-        : `allow 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-    ],
-  };
+        ? tl('notes.auto.t0168', { v0: (port), v1: (proto) })
+        : tl('notes.auto.t0169', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+    ] };
 }
 
 /** Hosting-oriented quick profiles (ports only — not fail2ban). */
 export const FIREWALL_PROFILES = {
   web: {
     id: 'web',
-    label: 'Web 主機',
+    label: tl('notes.auto.n0203'),
     short: 'SSH + 80/443',
     allowSmtp: false,
-    extraTcpPorts: [] as number[],
-  },
+    extraTcpPorts: [] as number[] },
   mail: {
     id: 'mail',
-    label: 'Web + 郵件',
+    label: tl('notes.auto.n0201'),
     short: 'SSH + Web + SMTP/IMAP',
     allowSmtp: true,
-    extraTcpPorts: [] as number[],
-  },
+    extraTcpPorts: [] as number[] },
   ftps: {
     id: 'ftps',
     label: 'Web + FTPS',
-    short: '另開 21 與 PASV 段',
+    short: tl('notes.auto.n0609'),
     allowSmtp: false,
-    extraTcpPorts: [21, ...range(30000, 30100)],
-  },
-} as const;
+    extraTcpPorts: [21, ...range(30000, 30100)] } } as const;
 
 function range(a: number, b: number): number[] {
   const out: number[] = [];

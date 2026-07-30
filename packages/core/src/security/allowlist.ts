@@ -4,7 +4,7 @@
  */
 
 import type { RiskTier } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface AllowlistEntry {
   tool: string;
@@ -25,7 +25,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: '讀取檔案',
+    description: tl('notes.auto.n1442'),
     argsSchema: { path: 'string' },
   },
   {
@@ -33,7 +33,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: '列出目錄',
+    description: tl('notes.auto.n0598'),
     argsSchema: { path: 'string' },
   },
   {
@@ -41,21 +41,21 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: '讀取系統資訊',
+    description: tl('notes.auto.n1443'),
   },
   {
     tool: 'process.list',
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: '列出行程',
+    description: tl('notes.auto.n0599'),
   },
   {
     tool: 'service.status',
     allowed: true,
     risk: 'low',
     requiresApproval: false,
-    description: '查詢服務狀態',
+    description: tl('notes.auto.n1006'),
     argsSchema: { name: 'string' },
   },
   {
@@ -63,7 +63,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'medium',
     requiresApproval: true,
-    description: '寫入檔案',
+    description: tl('notes.auto.n0678'),
     argsSchema: { path: 'string', content: 'string' },
   },
   {
@@ -71,7 +71,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'high',
     requiresApproval: true,
-    description: '重啟系統服務',
+    description: tl('notes.auto.n1512'),
     argsSchema: { name: 'string' },
   },
   {
@@ -79,7 +79,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'high',
     requiresApproval: true,
-    description: '安裝套件',
+    description: tl('notes.auto.n0655'),
     argsSchema: { name: 'string' },
   },
   {
@@ -87,7 +87,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'critical',
     requiresApproval: true,
-    description: '移除套件',
+    description: tl('notes.auto.n1298'),
     argsSchema: { name: 'string' },
   },
   {
@@ -95,7 +95,7 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: true,
     risk: 'critical',
     requiresApproval: true,
-    description: '刪除檔案或目錄',
+    description: tl('notes.auto.n0601'),
     argsSchema: { path: 'string' },
   },
   {
@@ -103,21 +103,21 @@ const DEFAULT_ENTRIES: AllowlistEntry[] = [
     allowed: false,
     risk: 'critical',
     requiresApproval: true,
-    description: '任意 shell — 預設拒絕',
+    description: tl('notes.auto.n0517'),
   },
   {
     tool: 'user.delete',
     allowed: false,
     risk: 'critical',
     requiresApproval: true,
-    description: '刪除系統用戶 — 預設拒絕',
+    description: tl('notes.auto.n0602'),
   },
   {
     tool: 'firewall.flush',
     allowed: false,
     risk: 'critical',
     requiresApproval: true,
-    description: '清空防火牆規則 — 預設拒絕',
+    description: tl('notes.auto.n1053'),
   },
 ];
 
@@ -154,7 +154,7 @@ export class Allowlist {
         allowed: false,
         requiresApproval: false,
         risk: 'critical',
-        reason: `工具不在允許清單：${tool}`,
+        reason: tl('notes.auto.t0020', { v0: (tool) }),
       };
     }
     if (!entry.allowed) {
@@ -162,7 +162,7 @@ export class Allowlist {
         allowed: false,
         requiresApproval: entry.requiresApproval,
         risk: entry.risk,
-        reason: `工具已明確拒絕：${tool}`,
+        reason: tl('notes.auto.t0021', { v0: (tool) }),
         entry,
       };
     }
@@ -180,7 +180,7 @@ export class Allowlist {
   assertAllowed(tool: string): AllowlistEntry {
     const result = this.evaluate(tool);
     if (!result.allowed || !result.entry) {
-      throw new YskError(ErrorCodes.ALLOWLIST_DENIED, result.reason ?? '已拒絕', {
+      throw new YskError(ErrorCodes.ALLOWLIST_DENIED, result.reason ?? tl('notes.auto.n0778'), {
         httpStatus: 403,
         details: { tool },
       });

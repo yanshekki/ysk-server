@@ -1,31 +1,10 @@
 /**
  * Unified one-click software install API
  */
+import type { SoftwareStatus, SoftwareInstallResult } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type SoftwareStatus = {
-  id: string;
-  title: string;
-  installed: boolean;
-  active?: string;
-  bins: string[];
-  missingBins: string[];
-  features: string[];
-};
-
-export type SoftwareInstallResult = {
-  ok: boolean;
-  executed?: boolean;
-  blocked?: boolean;
-  blockMessage?: string;
-  id?: string;
-  title?: string;
-  installed?: boolean;
-  notes?: string[];
-  steps?: Array<{ name: string; status: string; detail?: string }>;
-  status?: SoftwareStatus;
-  results?: SoftwareInstallResult[];
-};
+export type { SoftwareStatus, SoftwareInstallResult } from '@ysk/shared';
 
 export const softwareApi = {
   list: (feature?: string) => {

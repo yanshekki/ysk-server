@@ -8,7 +8,7 @@
  */
 
 import type { ProjectDto } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 /** Canonical home directory prefix (trailing path is full project UUID). */
 export const PROJECT_HOME_PREFIX = '/home/ysk-server-';
@@ -22,9 +22,8 @@ export const LINUX_USER_PREFIX = 'ysks_';
 export function projectHomeDir(projectId: string): string {
   const id = projectId.trim();
   if (!id || id.includes('/') || id.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, '專案 id 無效，無法產生 home', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0683'), {
+      httpStatus: 400 });
   }
   return `${PROJECT_HOME_PREFIX}${id}`;
 }
@@ -39,9 +38,8 @@ export function deriveLinuxUserFromProjectId(projectId: string): string {
     .replace(/-/g, '')
     .replace(/[^a-f0-9]/g, '');
   if (hex.length < 8) {
-    throw new YskError(ErrorCodes.VALIDATION, '專案 id 過短，無法產生系統用戶名', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0684'), {
+      httpStatus: 400 });
   }
   const base = hex.slice(0, 12);
   const name = `${LINUX_USER_PREFIX}${base}`;
@@ -62,9 +60,8 @@ export function deriveLinuxUser(projectName: string): string {
     .replace(/^_+|_+$/g, '')
     .slice(0, 24);
   if (!slug) {
-    throw new YskError(ErrorCodes.VALIDATION, '專案名稱無法產生有效系統用戶名', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0689'), {
+      httpStatus: 400 });
   }
   return `ysk_${slug}`;
 }
@@ -128,10 +125,10 @@ export function planProjectIsolation(input: {
   notes: string[];
 } {
   if (!input.name?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫專案名稱', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.needProjectName'), { httpStatus: 400 });
   }
   if (!input.id?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, '專案 id 必填', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0682'), { httpStatus: 400 });
   }
   const linuxUser = deriveLinuxUserFromProjectId(input.id);
   const linuxGroup = linuxUser;
@@ -145,8 +142,7 @@ export function planProjectIsolation(input: {
     homeDir,
     runtime: input.runtime,
     runtimeVersion: input.runtimeVersion,
-    env: input.env ?? 'production',
-  };
+    env: input.env ?? 'production' };
   const commands = [
     `groupadd --system ${linuxGroup} 2>/dev/null || true`,
     `id ${linuxUser} >/dev/null 2>&1 || useradd --system --gid ${linuxGroup} --home-dir ${homeDir} --create-home --shell /usr/sbin/nologin ${linuxUser}`,
@@ -164,11 +160,10 @@ export function planProjectIsolation(input: {
     project,
     commands,
     notes: [
-      '每個專案以獨立 Linux 用戶／群組運作',
+      tl('notes.auto.n1043'),
       `home：${homeDir}`,
       `user：${linuxUser}`,
-      'ysk-web 群組供 Nginx/www-data 讀靜態（非 world-readable）',
-      '需 root + YSK_EXECUTE 才會真正 useradd；控制面不會假裝成功',
-    ],
-  };
+      tl('notes.auto.n0474'),
+      tl('notes.auto.n1546'),
+    ] };
 }

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Mutate host network (ip addr / link / route / DNS) — fail-closed without YSK_EXECUTE + root.
  */
@@ -14,11 +15,10 @@ function gate(host: HostExecutor): NetApplyResult | null {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '無法變更網路：需要系統變更權限（YSK_EXECUTE）與 root',
-      notes: ['需要 YSK_EXECUTE=1 與 root'],
+      blockMessage: tl('notes.auto.n1191'),
+      notes: [tl('ops.blocked.needExecuteRoot')],
       executeEnabled,
-      isRoot,
-    };
+      isRoot };
   }
   return null;
 }
@@ -30,8 +30,7 @@ function base(host: HostExecutor, iface?: string): Pick<
   return {
     executeEnabled: host.executeEnabled(),
     isRoot: host.isRoot(),
-    interface: iface,
-  };
+    interface: iface };
 }
 
 export async function networkAddAddr(input: {
@@ -47,16 +46,14 @@ export async function networkAddAddr(input: {
   if (!isValidIfName(input.ifname)) {
     return {
       ok: false,
-      notes: ['介面名稱無效'],
-      ...base(input.host, input.ifname),
-    };
+      notes: [tl('notes.net.invalidIface')],
+      ...base(input.host, input.ifname) };
   }
   if (input.ifname === 'lo') {
     return {
       ok: false,
-      notes: ['拒絕修改 loopback 位址（保護）'],
-      ...base(input.host, input.ifname),
-    };
+      notes: [tl('notes.auto.n0872')],
+      ...base(input.host, input.ifname) };
   }
   const c = parseCidr(input.cidr);
   if (!c.ok) {
@@ -72,12 +69,11 @@ export async function networkAddAddr(input: {
       return {
         ok: false,
         blocked: true,
-        blockMessage: '無法持久化：需要 NetworkManager 作用中連線',
+        blockMessage: tl('notes.net.needNmActive'),
         notes: [
-          '本機無對應 NM 連線；唔會假成功。可改「僅即時」或啟用 NetworkManager。',
+          tl('notes.auto.n1003'),
         ],
-        ...base(input.host, input.ifname),
-      };
+        ...base(input.host, input.ifname) };
     }
     const prop = c.family === 6 ? '+ipv6.addresses' : '+ipv4.addresses';
     const mod = await input.host.runCommand(
@@ -88,12 +84,11 @@ export async function networkAddAddr(input: {
       return {
         ok: false,
         notes: [
-          `nmcli 寫入地址失敗：${(mod.stderr || mod.stdout || '').trim().slice(0, 240)}`,
+          tl('notes.auto.t0025', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 240)) }),
         ],
-        ...base(input.host, input.ifname),
-      };
+        ...base(input.host, input.ifname) };
     }
-    notes.push(`已保存 ${c.cidr} → 連線「${nm.connection}」`);
+    notes.push(tl('notes.auto.t0026', { v0: (c.cidr), v1: (nm.connection) }));
     const up = await input.host.runCommand(
       ['nmcli', 'connection', 'up', nm.connection],
       { timeoutMs: 45_000 },
@@ -101,37 +96,34 @@ export async function networkAddAddr(input: {
     if (up.exitCode !== 0) {
       // still try live add so address may appear
       notes.push(
-        `connection up 警告：${(up.stderr || up.stdout || '').trim().slice(0, 160)}`,
+        tl('notes.auto.t0027', { v0: ((up.stderr || up.stdout || '').trim().slice(0, 160)) }),
       );
       const live = await input.host.runCommand(
         ['ip', 'addr', 'add', c.cidr, 'dev', input.ifname],
         { timeoutMs: 10_000 },
       );
       if (live.exitCode === 0) {
-        notes.push('已即時 ip addr add（設定檔已寫入，重開應仍在）');
+        notes.push(tl('notes.auto.n0740'));
         return {
           ok: true,
           notes,
           persistent: true,
           ephemeral: true,
-          ...base(input.host, input.ifname),
-        };
+          ...base(input.host, input.ifname) };
       }
       return {
         ok: false,
-        notes: [...notes, '設定已寫入但套用失敗'],
+        notes: [...notes, tl('notes.auto.n1368')],
         persistent: true,
-        ...base(input.host, input.ifname),
-      };
+        ...base(input.host, input.ifname) };
     }
-    notes.push(`已重新啟用連線（重開仍在）`);
+    notes.push(tl('notes.auto.t0028'));
     return {
       ok: true,
       notes,
       persistent: true,
       ephemeral: false,
-      ...base(input.host, input.ifname),
-    };
+      ...base(input.host, input.ifname) };
   }
 
   const r = await input.host.runCommand(
@@ -140,22 +132,20 @@ export async function networkAddAddr(input: {
   );
   if (r.exitCode !== 0) {
     const err = (r.stderr || r.stdout || '').trim().slice(0, 240);
-    notes.push(`ip addr add 失敗：${err || `exit ${r.exitCode}`}`);
+    notes.push(tl('notes.tpl.ipAddrAddFailed', { detail: err || `exit ${r.exitCode}` }));
     return {
       ok: false,
       notes,
       ephemeral: true,
-      ...base(input.host, input.ifname),
-    };
+      ...base(input.host, input.ifname) };
   }
-  notes.push(`已新增 ${c.cidr} → ${input.ifname}（即時；重開可能消失）`);
+  notes.push(tl('notes.auto.t0029', { v0: (c.cidr), v1: (input.ifname) }));
   return {
     ok: true,
     notes,
     ephemeral: true,
     persistent: false,
-    ...base(input.host, input.ifname),
-  };
+    ...base(input.host, input.ifname) };
 }
 
 export async function networkDelAddr(input: {
@@ -169,7 +159,7 @@ export async function networkDelAddr(input: {
   if (g) return { ...g, interface: input.ifname };
 
   if (!isValidIfName(input.ifname)) {
-    return { ok: false, notes: ['介面名稱無效'], ...base(input.host, input.ifname) };
+    return { ok: false, notes: [tl('notes.net.invalidIface')], ...base(input.host, input.ifname) };
   }
   const c = parseCidr(input.cidr);
   if (!c.ok) {
@@ -181,9 +171,8 @@ export async function networkDelAddr(input: {
   ) {
     return {
       ok: false,
-      notes: ['拒絕刪除 loopback 核心地址'],
-      ...base(input.host, input.ifname),
-    };
+      notes: [tl('notes.auto.n0873')],
+      ...base(input.host, input.ifname) };
   }
 
   const notes: string[] = [];
@@ -197,18 +186,18 @@ export async function networkDelAddr(input: {
         { timeoutMs: 15_000 },
       );
       if (mod.exitCode === 0) {
-        notes.push(`已從連線「${nm.connection}」移除 ${c.cidr}`);
+        notes.push(tl('notes.auto.t0030', { v0: (nm.connection), v1: (c.cidr) }));
         await input.host.runCommand(
           ['nmcli', 'connection', 'up', nm.connection],
           { timeoutMs: 45_000 },
         );
       } else {
         notes.push(
-          `NM 移除地址：${(mod.stderr || mod.stdout || '').trim().slice(0, 160)}`,
+          tl('notes.auto.t0031', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 160)) }),
         );
       }
     } else {
-      notes.push('無 NM 連線可改；僅刪即時地址');
+      notes.push(tl('notes.auto.n1061'));
     }
   }
 
@@ -216,25 +205,23 @@ export async function networkDelAddr(input: {
     ['ip', 'addr', 'del', c.cidr, 'dev', input.ifname],
     { timeoutMs: 10_000 },
   );
-  if (r.exitCode !== 0 && !notes.some((n) => n.includes('已從連線'))) {
+  if (r.exitCode !== 0 && !notes.some((n) => n.includes(tl('notes.auto.n0777')))) {
     return {
       ok: false,
       notes: [
         ...notes,
-        `ip addr del 失敗：${(r.stderr || r.stdout || '').trim().slice(0, 240) || `exit ${r.exitCode}`}`,
+        tl('notes.tpl.ipAddrDelFailed', { detail: (r.stderr || r.stdout || '').trim().slice(0, 240) || `exit ${r.exitCode}` }),
       ],
       ephemeral: true,
-      ...base(input.host, input.ifname),
-    };
+      ...base(input.host, input.ifname) };
   }
-  if (r.exitCode === 0) notes.push(`已刪除即時 ${c.cidr} ← ${input.ifname}`);
+  if (r.exitCode === 0) notes.push(tl('notes.auto.t0032', { v0: (c.cidr), v1: (input.ifname) }));
   return {
     ok: true,
-    notes: notes.length ? notes : [`已刪除 ${c.cidr}`],
+    notes: notes.length ? notes : [tl('notes.tpl.deleted', { name: c.cidr })],
     ephemeral: !input.persistent,
     persistent: Boolean(input.persistent),
-    ...base(input.host, input.ifname),
-  };
+    ...base(input.host, input.ifname) };
 }
 
 export async function networkSetLink(input: {
@@ -250,14 +237,13 @@ export async function networkSetLink(input: {
   if (g) return { ...g, interface: input.ifname };
 
   if (!isValidIfName(input.ifname)) {
-    return { ok: false, notes: ['介面名稱無效'], ...base(input.host, input.ifname) };
+    return { ok: false, notes: [tl('notes.net.invalidIface')], ...base(input.host, input.ifname) };
   }
   if (input.ifname === 'lo' && input.action === 'down') {
     return {
       ok: false,
-      notes: ['拒絕 down loopback'],
-      ...base(input.host, input.ifname),
-    };
+      notes: [tl('notes.auto.n0869')],
+      ...base(input.host, input.ifname) };
   }
 
   const notes: string[] = [];
@@ -266,12 +252,11 @@ export async function networkSetLink(input: {
     if (input.confirmName !== input.ifname) {
       return {
         ok: false,
-        notes: ['Down 需 confirmName 等於介面名'],
-        ...base(input.host, input.ifname),
-      };
+        notes: [tl('notes.auto.n0101')],
+        ...base(input.host, input.ifname) };
     }
     if (input.isDefaultEgress) {
-      notes.push('警告：此介面為預設路由出口，down 可能令面板斷線');
+      notes.push(tl('notes.auto.n1433'));
     }
     const r = await input.host.runCommand(
       ['ip', 'link', 'set', 'dev', input.ifname, 'down'],
@@ -279,11 +264,11 @@ export async function networkSetLink(input: {
     );
     if (r.exitCode !== 0) {
       notes.push(
-        `link down 失敗：${(r.stderr || r.stdout || '').trim().slice(0, 200)}`,
+        tl('notes.auto.t0033', { v0: ((r.stderr || r.stdout || '').trim().slice(0, 200)) }),
       );
       return { ok: false, notes, ...base(input.host, input.ifname) };
     }
-    notes.push(`已 down ${input.ifname}`);
+    notes.push(tl('notes.auto.t0034', { v0: (input.ifname) }));
   } else if (input.action === 'up') {
     const r = await input.host.runCommand(
       ['ip', 'link', 'set', 'dev', input.ifname, 'up'],
@@ -293,12 +278,11 @@ export async function networkSetLink(input: {
       return {
         ok: false,
         notes: [
-          `link up 失敗：${(r.stderr || r.stdout || '').trim().slice(0, 200)}`,
+          tl('notes.auto.t0035', { v0: ((r.stderr || r.stdout || '').trim().slice(0, 200)) }),
         ],
-        ...base(input.host, input.ifname),
-      };
+        ...base(input.host, input.ifname) };
     }
-    notes.push(`已 up ${input.ifname}`);
+    notes.push(tl('notes.auto.t0036', { v0: (input.ifname) }));
   }
 
   if (input.mtu != null) {
@@ -306,9 +290,8 @@ export async function networkSetLink(input: {
     if (!Number.isFinite(mtu) || mtu < 68 || mtu > 65535) {
       return {
         ok: false,
-        notes: [...notes, 'MTU 須在 68–65535'],
-        ...base(input.host, input.ifname),
-      };
+        notes: [...notes, tl('notes.auto.n0130')],
+        ...base(input.host, input.ifname) };
     }
     const r = await input.host.runCommand(
       ['ip', 'link', 'set', 'dev', input.ifname, 'mtu', String(mtu)],
@@ -316,7 +299,7 @@ export async function networkSetLink(input: {
     );
     if (r.exitCode !== 0) {
       notes.push(
-        `設 MTU 失敗：${(r.stderr || r.stdout || '').trim().slice(0, 200)}`,
+        tl('notes.auto.t0037', { v0: ((r.stderr || r.stdout || '').trim().slice(0, 200)) }),
       );
       return { ok: false, notes, ...base(input.host, input.ifname) };
     }
@@ -326,17 +309,15 @@ export async function networkSetLink(input: {
   if (!input.action && input.mtu == null) {
     return {
       ok: false,
-      notes: ['請指定 action 或 mtu'],
-      ...base(input.host, input.ifname),
-    };
+      notes: [tl('notes.auto.n1401')],
+      ...base(input.host, input.ifname) };
   }
 
   return {
     ok: true,
     notes,
     ephemeral: true,
-    ...base(input.host, input.ifname),
-  };
+    ...base(input.host, input.ifname) };
 }
 
 /** Pick active NM connection (prefer device / default egress). */
@@ -390,16 +371,15 @@ export async function networkAddRoute(input: {
   if (isDef && !input.confirmDefault) {
     return {
       ok: false,
-      notes: ['變更 default 路由需 confirmDefault: true'],
-      ...base(input.host),
-    };
+      notes: [tl('notes.auto.n1444')],
+      ...base(input.host) };
   }
   if (input.dev && !isValidIfName(input.dev)) {
-    return { ok: false, notes: ['dev 名稱無效'], ...base(input.host) };
+    return { ok: false, notes: [tl('notes.net.invalidDev')], ...base(input.host) };
   }
   const gw = input.gateway?.trim();
   if (gw && !isBareIp(gw)) {
-    return { ok: false, notes: ['gateway 須為純 IP'], ...base(input.host) };
+    return { ok: false, notes: [tl('notes.auto.n0296')], ...base(input.host) };
   }
 
   // —— Persistent via NetworkManager ——
@@ -409,12 +389,11 @@ export async function networkAddRoute(input: {
       return {
         ok: false,
         blocked: true,
-        blockMessage: '無法持久化：需要 NetworkManager 作用中連線',
+        blockMessage: tl('notes.net.needNmActive'),
         notes: [
-          '本機無可用 NM 連線；唔會假成功。可改用「僅即時」或啟用 NetworkManager。',
+          tl('notes.auto.n1001'),
         ],
-        ...base(input.host),
-      };
+        ...base(input.host) };
     }
     const notes: string[] = [];
 
@@ -422,9 +401,8 @@ export async function networkAddRoute(input: {
       if (!gw) {
         return {
           ok: false,
-          notes: ['持久 default 路由需要 Gateway'],
-          ...base(input.host),
-        };
+          notes: [tl('notes.auto.n0880')],
+          ...base(input.host) };
       }
       const mod = await input.host.runCommand(
         [
@@ -443,13 +421,12 @@ export async function networkAddRoute(input: {
         return {
           ok: false,
           notes: [
-            `nmcli 寫入 gateway 失敗：${(mod.stderr || mod.stdout || '').trim().slice(0, 240)}`,
+            tl('notes.auto.t0038', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 240)) }),
           ],
-          ...base(input.host),
-        };
+          ...base(input.host) };
       }
       notes.push(
-        `已保存 default gateway ${gw} → 連線「${nm.connection}」（重開仍在）`,
+        tl('notes.auto.t0039', { v0: (gw), v1: (nm.connection) }),
       );
     } else {
       // static route: "prefix[/len] [next-hop]"
@@ -473,13 +450,12 @@ export async function networkAddRoute(input: {
         return {
           ok: false,
           notes: [
-            `nmcli 寫入 routes 失敗：${(mod.stderr || mod.stdout || '').trim().slice(0, 240)}`,
+            tl('notes.auto.t0040', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 240)) }),
           ],
-          ...base(input.host),
-        };
+          ...base(input.host) };
       }
       notes.push(
-        `已保存靜態路由 ${routeSpec} →「${nm.connection}」（重開仍在）`,
+        tl('notes.auto.t0041', { v0: (routeSpec), v1: (nm.connection) }),
       );
     }
 
@@ -489,23 +465,21 @@ export async function networkAddRoute(input: {
     );
     if (up.exitCode !== 0) {
       notes.push(
-        `connection up 警告：${(up.stderr || up.stdout || '').trim().slice(0, 200) || `exit ${up.exitCode}`}`,
+        tl('notes.tpl.connUpWarn', { detail: (up.stderr || up.stdout || '').trim().slice(0, 200) || `exit ${up.exitCode}` }),
       );
       return {
         ok: false,
-        notes: [...notes, '設定已寫入連線但重啟失敗；請手動 nmcli connection up'],
+        notes: [...notes, tl('notes.auto.n1369')],
         persistent: true,
-        ...base(input.host),
-      };
+        ...base(input.host) };
     }
-    notes.push(`已重新啟用連線 ${nm.connection}`);
+    notes.push(tl('notes.tpl.reenabledLink', { name: nm.connection }));
     return {
       ok: true,
       notes,
       persistent: true,
       ephemeral: false,
-      ...base(input.host),
-    };
+      ...base(input.host) };
   }
 
   // —— Ephemeral ip route ——
@@ -518,21 +492,19 @@ export async function networkAddRoute(input: {
     return {
       ok: false,
       notes: [
-        `ip route add 失敗：${(r.stderr || r.stdout || '').trim().slice(0, 240)}`,
+        tl('notes.auto.t0042', { v0: ((r.stderr || r.stdout || '').trim().slice(0, 240)) }),
       ],
       ephemeral: true,
-      ...base(input.host),
-    };
+      ...base(input.host) };
   }
   return {
     ok: true,
     notes: [
-      `已加即時路由 ${dst}${gw ? ` via ${gw}` : ''}${input.dev ? ` dev ${input.dev}` : ''}（重開可能消失；要持久請用「保存」）`,
+      tl('notes.tpl.routeAdded', { dst, via: gw ? ` via ${gw}` : '', dev: input.dev ? ` dev ${input.dev}` : '' }),
     ],
     ephemeral: true,
     persistent: false,
-    ...base(input.host),
-  };
+    ...base(input.host) };
 }
 
 export async function networkDelRoute(input: {
@@ -552,9 +524,8 @@ export async function networkDelRoute(input: {
   if (isDef && !input.confirmDefault) {
     return {
       ok: false,
-      notes: ['刪除 default 路由需 confirmDefault: true'],
-      ...base(input.host),
-    };
+      notes: [tl('notes.auto.n0600')],
+      ...base(input.host) };
   }
   const notes: string[] = [];
   const gw = input.gateway?.trim();
@@ -575,14 +546,14 @@ export async function networkDelRoute(input: {
           { timeoutMs: 15_000 },
         );
         if (mod.exitCode === 0) {
-          notes.push(`已從連線「${nm.connection}」清除 ipv4.gateway`);
+          notes.push(tl('notes.auto.t0045', { v0: (nm.connection) }));
           await input.host.runCommand(
             ['nmcli', 'connection', 'up', nm.connection],
             { timeoutMs: 45_000 },
           );
         } else {
           notes.push(
-            `NM 清除 gateway：${(mod.stderr || mod.stdout || '').trim().slice(0, 160)}`,
+            tl('notes.auto.t0046', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 160)) }),
           );
         }
       } else {
@@ -603,19 +574,19 @@ export async function networkDelRoute(input: {
           { timeoutMs: 15_000 },
         );
         if (mod.exitCode === 0) {
-          notes.push(`已從「${nm.connection}」移除路由 ${routeSpec}`);
+          notes.push(tl('notes.auto.t0047', { v0: (nm.connection), v1: (routeSpec) }));
           await input.host.runCommand(
             ['nmcli', 'connection', 'up', nm.connection],
             { timeoutMs: 45_000 },
           );
         } else {
           notes.push(
-            `NM 移除 routes：${(mod.stderr || mod.stdout || '').trim().slice(0, 160)}`,
+            tl('notes.auto.t0048', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 160)) }),
           );
         }
       }
     } else {
-      notes.push('無 NM 連線可改；僅刪即時路由');
+      notes.push(tl('notes.auto.n1062'));
     }
   }
 
@@ -623,30 +594,28 @@ export async function networkDelRoute(input: {
   if (gw) argv.push('via', gw);
   if (input.dev) {
     if (!isValidIfName(input.dev)) {
-      return { ok: false, notes: ['dev 名稱無效'], ...base(input.host) };
+      return { ok: false, notes: [tl('notes.net.invalidDev')], ...base(input.host) };
     }
     argv.push('dev', input.dev);
   }
   const r = await input.host.runCommand(argv, { timeoutMs: 10_000 });
-  if (r.exitCode !== 0 && !notes.some((n) => n.includes('已從'))) {
+  if (r.exitCode !== 0 && !notes.some((n) => n.includes(tl('notes.auto.n0774')))) {
     return {
       ok: false,
       notes: [
         ...notes,
-        `ip route del 失敗：${(r.stderr || r.stdout || '').trim().slice(0, 240)}`,
+        tl('notes.auto.t0049', { v0: ((r.stderr || r.stdout || '').trim().slice(0, 240)) }),
       ],
       ephemeral: true,
-      ...base(input.host),
-    };
+      ...base(input.host) };
   }
-  if (r.exitCode === 0) notes.push(`已刪即時路由 ${dst}`);
+  if (r.exitCode === 0) notes.push(tl('notes.auto.t0050', { v0: (dst) }));
   return {
     ok: true,
-    notes: notes.length ? notes : [`已刪路由 ${dst}`],
+    notes: notes.length ? notes : [tl('notes.auto.t0051', { v0: (dst) })],
     ephemeral: !input.persistent,
     persistent: Boolean(input.persistent),
-    ...base(input.host),
-  };
+    ...base(input.host) };
 }
 
 function validateDnsList(list: string[]): { ok: true; servers: string[] } | { ok: false; reason: string } {
@@ -655,15 +624,15 @@ function validateDnsList(list: string[]): { ok: true; servers: string[] } | { ok
     const s = raw.trim();
     if (!s) continue;
     if (s.includes('%') || s.includes('/')) {
-      return { ok: false, reason: `DNS 無效：${s}` };
+      return { ok: false, reason: tl('notes.auto.t0052', { v0: (s) }) };
     }
     if (isIP(s) === 0) {
-      return { ok: false, reason: `DNS 不是合法 IP：${s}` };
+      return { ok: false, reason: tl('notes.auto.t0053', { v0: (s) }) };
     }
     if (!servers.includes(s)) servers.push(s);
   }
   if (servers.length > 8) {
-    return { ok: false, reason: '最多 8 個 nameserver' };
+    return { ok: false, reason: tl('notes.auto.n0932') };
   }
   return { ok: true, servers };
 }
@@ -704,10 +673,9 @@ export async function networkSetDns(input: {
       return {
         ok: false,
         blocked: true,
-        blockMessage: 'NetworkManager 不可用，無法寫入 DNS',
-        notes: ['需 NetworkManager active 才能持久改 DNS（唔會盲寫 /etc/resolv.conf）'],
-        ...base(input.host),
-      };
+        blockMessage: tl('notes.auto.n0137'),
+        notes: [tl('notes.auto.n1538')],
+        ...base(input.host) };
     }
     const prefer = input.device?.trim();
     for (const line of act.stdout.split('\n').filter(Boolean)) {
@@ -725,9 +693,8 @@ export async function networkSetDns(input: {
   if (!conn) {
     return {
       ok: false,
-      notes: ['找不到可用的 NetworkManager 連線'],
-      ...base(input.host),
-    };
+      notes: [tl('notes.auto.n0859')],
+      ...base(input.host) };
   }
 
   if (mode === 'dhcp') {
@@ -750,12 +717,11 @@ export async function networkSetDns(input: {
       return {
         ok: false,
         notes: [
-          `nmcli modify 失敗：${(mod.stderr || mod.stdout || '').trim().slice(0, 240)}`,
+          tl('notes.auto.t0054', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 240)) }),
         ],
-        ...base(input.host),
-      };
+        ...base(input.host) };
     }
-    notes.push(`已還原 ${conn} 使用 DHCP DNS（ignore-auto-dns=no）`);
+    notes.push(tl('notes.auto.t0055', { v0: (conn) }));
   } else {
     const v = validateDnsList(input.nameservers ?? []);
     if (!v.ok) {
@@ -764,9 +730,8 @@ export async function networkSetDns(input: {
     if (!v.servers.length) {
       return {
         ok: false,
-        notes: ['請至少填一個 nameserver，或選「還原 DHCP DNS」'],
-        ...base(input.host),
-      };
+        notes: [tl('notes.auto.n1425')],
+        ...base(input.host) };
     }
     const search = (input.search ?? [])
       .map((s) => s.trim())
@@ -791,13 +756,16 @@ export async function networkSetDns(input: {
       return {
         ok: false,
         notes: [
-          `nmcli modify 失敗：${(mod.stderr || mod.stdout || '').trim().slice(0, 240)}`,
+          tl('notes.auto.t0056', { v0: ((mod.stderr || mod.stdout || '').trim().slice(0, 240)) }),
         ],
-        ...base(input.host),
-      };
+        ...base(input.host) };
     }
     notes.push(
-      `已寫入 ${conn}：DNS ${v.servers.join(', ')}${search.length ? ` · search ${search.join(' ')}` : ''}`,
+      tl('notes.tpl.dnsWritten', {
+        conn,
+        dns: v.servers.join(', '),
+        search: search.length ? ` · search ${search.join(' ')}` : '',
+      }),
     );
   }
 
@@ -807,24 +775,22 @@ export async function networkSetDns(input: {
   );
   if (up.exitCode !== 0) {
     notes.push(
-      `connection up 警告：${(up.stderr || up.stdout || '').trim().slice(0, 200) || `exit ${up.exitCode}`}`,
+      tl('notes.tpl.connUpWarn', { detail: (up.stderr || up.stdout || '').trim().slice(0, 200) || `exit ${up.exitCode}` }),
     );
     // still partial success if modify ok
     return {
       ok: false,
-      notes: [...notes, '設定已寫入連線但重新啟用失敗，請手動 nmcli connection up'],
+      notes: [...notes, tl('notes.auto.n1370')],
       persistent: true,
-      ...base(input.host),
-    };
+      ...base(input.host) };
   }
-  notes.push(`已重新啟用連線 ${conn}`);
+  notes.push(tl('notes.tpl.reenabledLink', { name: conn }));
   return {
     ok: true,
     notes,
     persistent: true,
     ephemeral: false,
-    ...base(input.host),
-  };
+    ...base(input.host) };
 }
 
 /** Resolve a name via getent — honest connectivity check */
@@ -835,7 +801,7 @@ export async function networkTestDns(input: {
   // read-only — no execute gate
   const name = (input.name || 'example.com').trim().replace(/[^a-zA-Z0-9._-]/g, '');
   if (!name || name.length > 253) {
-    return { ok: false, notes: ['查詢名稱無效'], ...base(input.host) };
+    return { ok: false, notes: [tl('notes.auto.n1005')], ...base(input.host) };
   }
   const r = await input.host.runCommand(
     ['getent', 'ahosts', name],
@@ -845,11 +811,10 @@ export async function networkTestDns(input: {
     return {
       ok: false,
       notes: [
-        `解析失敗：${name}`,
+        tl('notes.auto.t0058', { v0: (name) }),
         (r.stderr || r.stdout || '').trim().slice(0, 200) || `exit ${r.exitCode}`,
       ],
-      ...base(input.host),
-    };
+      ...base(input.host) };
   }
   const answers = r.stdout
     .split('\n')
@@ -859,9 +824,8 @@ export async function networkTestDns(input: {
   return {
     ok: answers.length > 0,
     notes: answers.length
-      ? [`${name} → ${answers.length} 筆`]
-      : [`${name} 無結果`],
+      ? [tl('notes.auto.t0059', { v0: (name), v1: (answers.length) })]
+      : [tl('notes.auto.t0060', { v0: (name) })],
     answers,
-    ...base(input.host),
-  };
+    ...base(input.host) };
 }

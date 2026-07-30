@@ -3,7 +3,7 @@
  */
 
 import type { NginxProxyConfig, SslCertPlan } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 const CLOUDFLARE_REAL_IP = `
 # Cloudflare real IP
@@ -98,7 +98,7 @@ function httpRedirectBlock(serverName: string, bindIp?: string): string {
  */
 export function renderNginxProxy(config: NginxProxyConfig): string {
   if (!config.serverName || !config.upstream) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName 與 upstream', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1388'), {
       httpStatus: 400,
     });
   }
@@ -230,7 +230,7 @@ export function renderNginxStatic(opts: {
   staticCache?: boolean;
 }): string {
   if (!opts.serverName || !opts.docRoot) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName 與文件根目錄', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1389'), {
       httpStatus: 400,
     });
   }
@@ -309,7 +309,7 @@ export function renderNginxPhpFpm(opts: {
   bindIp?: string;
 }): string {
   if (!opts.serverName || !opts.docRoot || !opts.fpmSocket) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫 serverName、文件根目錄與 FPM socket', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1390'), {
       httpStatus: 400,
     });
   }
@@ -386,7 +386,7 @@ export async function purgeNginxCache(input: {
     return {
       ok: false,
       blocked: true,
-      notes: ['無法 purge cache：未開啟系統變更權限（YSK_EXECUTE）'],
+      notes: [tl('notes.auto.n1131')],
     };
   }
   const r = await input.host.runCommand(
@@ -403,9 +403,9 @@ export async function purgeNginxCache(input: {
     ok,
     notes: [
       ok
-        ? '已嘗試清除 nginx cache 目錄並 reload（若主機未開 proxy_cache 則可能無檔可清）'
-        : `purge／reload 失敗：${out.slice(0, 400)}`,
-      '狀態：' + (ok ? 'applied（best-effort）' : 'failed'),
+        ? tl('notes.auto.n0751')
+        : tl('notes.auto.t0109', { v0: (out.slice(0, 400)) }),
+      tl('notes.auto.n1207') + (ok ? 'applied（best-effort）' : 'failed'),
     ],
   };
 }
@@ -425,14 +425,14 @@ export function renderNginxSuspended(serverName: string): string {
  */
 export function planLetsEncrypt(plan: SslCertPlan): { commands: string[]; notes: string[] } {
   if (!plan.domain || !plan.email) {
-    throw new YskError(ErrorCodes.VALIDATION, '申請 SSL 需要域名與電郵', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1249'), {
       httpStatus: 400,
     });
   }
   if (plan.provider === 'upload') {
     return {
       commands: [],
-      notes: ['已登記上傳憑證路徑（檔案置於 /etc/ysk-server/certs）'],
+      notes: [tl('notes.auto.n0792')],
     };
   }
   const isWildcard = plan.domain.startsWith('*.');
@@ -448,9 +448,9 @@ export function planLetsEncrypt(plan: SslCertPlan): { commands: string[]; notes:
     commands: useDns01 ? [challenge] : [challenge, 'systemctl reload nginx'],
     notes: useDns01
       ? [
-          'Wildcard／dns-01：certbot 需手動 TXT；面板會啟動流程但 DS/TXT 需於 DNS 提供商完成',
-          '狀態：executed ≠ 已上線，直到 certbot 完成且 reload',
-          'Renewal via certbot.timer（dns-01 續期需自動化插件）',
+          tl('notes.auto.n0208'),
+          tl('notes.auto.n1217'),
+          tl('notes.auto.n0177'),
         ]
       : [
           'Requires root and port 80/443 reachable for http-01',

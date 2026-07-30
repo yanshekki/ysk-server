@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Per-project disk usage for metrics panel (real `du`, reuses quota helpers).
  */
@@ -53,7 +54,7 @@ export async function collectProjectsDiskUsage(input: {
   const concurrency = Math.min(Math.max(input.concurrency ?? 3, 1), 8);
   const slice = input.projects.slice(0, limit);
   if (input.projects.length > limit) {
-    notes.push(`僅量測前 ${limit} 個專案（共 ${input.projects.length}）`);
+    notes.push(tl('notes.auto.t0459', { v0: (limit), v1: (input.projects.length) }));
   }
 
   const items: ProjectDiskUsageRow[] = [];
@@ -81,7 +82,7 @@ export async function collectProjectsDiskUsage(input: {
           quotaMb,
           usedRatio: null,
           withinQuota: null,
-          notes: ['無 home_dir'],
+          notes: [tl('notes.auto.n1078')],
         });
         continue;
       }

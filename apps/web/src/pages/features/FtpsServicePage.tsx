@@ -4,6 +4,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 import {
   PageGuide,
   ActionBar,
@@ -47,12 +48,12 @@ const empty: FtpsSettings = {
   guestUsername: 'ftp',
 };
 
-function statusLabel(s?: FtpsStatus | null): { text: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' } {
-  if (!s) return { text: '載入中', tone: 'neutral' };
-  if (!s.installed) return { text: '未安裝', tone: 'danger' };
-  if (s.active === 'active') return { text: '運行中', tone: 'ok' };
-  if (s.active === 'inactive') return { text: '已停止', tone: 'warn' };
-  return { text: s.active || '已安裝', tone: 'warn' };
+function statusLabel(s: FtpsStatus | null | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' } {
+  if (!s) return { text: t('common.loading'), tone: 'neutral' };
+  if (!s.installed) return { text: t('common.notInstalled'), tone: 'danger' };
+  if (s.active === 'active') return { text: t('common.running'), tone: 'ok' };
+  if (s.active === 'inactive') return { text: t('common.stopped'), tone: 'warn' };
+  return { text: s.active || t('common.installed'), tone: 'warn' };
 }
 
 export function FtpsServicePage() {
@@ -72,7 +73,7 @@ export function FtpsServicePage() {
       setStatus(s.status);
       setDomains(o.domains);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
   }, []);
 
@@ -90,8 +91,8 @@ export function FtpsServicePage() {
       const r = await ftpApi.saveSettings(settings);
       setSettings(r.settings);
       await refresh();
-      return { ok: true, notes: ['已儲存設定'] };
-    }, '已儲存');
+      return { ok: true, notes: [t('ftp.settingsSaved')] };
+    }, t('common.savedOk'));
   }
 
   async function onInstallAndStart() {
@@ -107,15 +108,15 @@ export function FtpsServicePage() {
               inst.blockMessage ??
               inst.results?.find((r) => r.blockMessage)?.blockMessage ??
               notes[0] ??
-              '無法完成安裝',
+              t('ftp.installIncomplete'),
             notes,
           } satisfies OpsResultLike;
         }
       } catch (e) {
-        const m = e instanceof Error ? e.message : '安裝失敗';
+        const m = e instanceof Error ? e.message : t('common.installFailed');
         return {
           ok: false,
-          blocked: /權限|系統變更|管理員/.test(m),
+          blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
           notes: [m],
         } satisfies OpsResultLike;
@@ -123,7 +124,7 @@ export function FtpsServicePage() {
       const r = await ftpApi.apply({ settings, applySystem: true });
       await refresh();
       return r as unknown as OpsResultLike;
-    }, 'FTPS 已就緒');
+    }, t('ftp.ftpsReady'));
   }
 
   async function onApplySettings() {
@@ -131,22 +132,23 @@ export function FtpsServicePage() {
       const r = await ftpApi.apply({ settings, applySystem: true });
       await refresh();
       return r as unknown as OpsResultLike;
-    }, '已套用設定');
+    }, t('ftp.settingsApplied'));
   }
 
-  const st = statusLabel(status);
+  const st = statusLabel(status, t);
   const installed = Boolean(status?.installed);
 
   const tabs = [
-    { id: 'lifecycle', label: '生命週期' },
-    { id: 'overview', label: '概覽' },
-    { id: 'network', label: '網絡' },
-    { id: 'security', label: '安全' },
+    { id: 'lifecycle', label: t('common.lifecycle') },
+    { id: 'overview', label: t('publicFiles.overview') },
+    { id: 'network', label: t('system.network') },
+    { id: 'security', label: t('nav.sections.security') },
+    { id: 'about', label: t('common.about') },
   ];
 
   return (
     <FeaturePageLayout
-      title={t('nav.ftpService', { defaultValue: 'vsftpd 服務' })}
+      title={t('nav.ftpService', { defaultValue: t('nav.ftpService') })}
       status={{
         pill: {
           label: st.text,
@@ -154,18 +156,18 @@ export function FtpsServicePage() {
         },
         items: [
           {
-            label: '狀態',
+            label: t('common.status'),
             value: st.text,
             tone: st.tone === 'neutral' ? 'neutral' : st.tone,
           },
-          { label: '埠', value: String(settings.listenPort) },
+          { label: t('common.port'), value: String(settings.listenPort) },
           {
-            label: '帳戶',
+            label: t('ftp.accounts'),
             value: status?.accountCount != null ? String(status.accountCount) : '—',
           },
           {
             label: 'FTPS',
-            value: settings.sslEnable ? '開' : '關',
+            value: settings.sslEnable ? t('common.on') : t('common.off'),
             tone: settings.sslEnable ? 'ok' : 'warn',
           },
         ],
@@ -173,7 +175,7 @@ export function FtpsServicePage() {
       actions={<ActionBar>
           <Link to="/ftp">
             <Button variant="secondary" size="sm">
-              帳戶
+              {t('ftp.accounts')}
             </Button>
           </Link>
           <Button
@@ -186,14 +188,14 @@ export function FtpsServicePage() {
               void refresh();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
         </ActionBar>
       }
     >
       <SoftwareInstallBanner
         feature="ftp"
-        title="FTPS 所需軟件尚未安裝"
+        title={t('ftp.softwareMissingService')}
         onInstalled={() => void refresh()}
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -202,7 +204,7 @@ export function FtpsServicePage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -210,25 +212,25 @@ export function FtpsServicePage() {
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'lifecycle' ? (
           <Card>
-            <CardSection title="生命週期" description="安裝與啟動">
+            <CardSection title={t('common.lifecycle')} description={t('ftp.installStart')}>
               <div className="lifecycle-toolbar">
                 {!installed ? (
                   <p className="muted u-text-sm u-mb-0">
-                    請使用上方橫幅「一鍵安裝」安裝 FTPS，完成後再啟動服務。
+                    {t('ftp.installFtpsBanner')}
                   </p>
                 ) : status?.active !== 'active' ? (
                   <Button variant="primary" size="md" loading={busy} onClick={() => void onApplySettings()}>
-                    啟動服務
+                    {t('fail2ban.startService')}
                   </Button>
                 ) : (
                   <Button variant="secondary" size="md" loading={busy} onClick={() => void onApplySettings()}>
-                    套用並重啟
+                    {t('ftp.applyRestart')}
                   </Button>
                 )}
               </div>
               {!installed ? (
-                <p className="muted u-text-sm u-mt-3" style={{ marginBottom: 0 }}>
-                  安裝後即可使用 FTPS 帳戶登入。需系統管理員權限才能完成安裝。
+                <p className="muted u-text-sm u-mt-3">
+                  {t('ftp.afterInstall')}
                 </p>
               ) : null}
             </CardSection>
@@ -237,20 +239,20 @@ export function FtpsServicePage() {
 
         {tab === 'overview' ? (
           <Card>
-            <CardSection title="服務概覽" description="唯讀狀態">
+            <CardSection title={t('db.serviceOverview')} description={t('db.readonlyStatus')}>
               <DescriptionList
                 columns={2}
                 items={[
-                  { label: '狀態', value: <Badge tone={st.tone}>{st.text}</Badge> },
-                  { label: '監聽埠', value: String(settings.listenPort) },
-                  { label: '帳戶數', value: status?.accountCount != null ? String(status.accountCount) : '—' },
-                  { label: '登入橫幅', value: settings.banner || '—' },
-                  { label: 'SSL 網域', value: settings.sslDomain || '—' },
-                  { label: 'PASV 範圍', value: `${settings.pasvMin}–${settings.pasvMax}` },
-                  { label: 'FTPS', value: settings.sslEnable ? '開啟' : '關閉' },
-                  { label: '強制 TLS', value: settings.forceSsl ? '是' : '否' },
-                  { label: '允許寫入', value: settings.writeEnable ? '是' : '否' },
-                  { label: 'Chroot', value: settings.chrootLocalUser ? '是' : '否' },
+                  { label: t('common.status'), value: <Badge tone={st.tone}>{st.text}</Badge> },
+                  { label: t('ftp.listenPort'), value: String(settings.listenPort) },
+                  { label: t('ftp.accountCount'), value: status?.accountCount != null ? String(status.accountCount) : '—' },
+                  { label: t('ftp.loginBanner'), value: settings.banner || '—' },
+                  { label: t('ftp.sslDomain'), value: settings.sslDomain || '—' },
+                  { label: t('ftp.pasvRange'), value: `${settings.pasvMin}–${settings.pasvMax}` },
+                  { label: 'FTPS', value: settings.sslEnable ? t('common.open') : t('common.close') },
+                  { label: t('ftp.forceTls'), value: settings.forceSsl ? t('common.yes') : t('common.no') },
+                  { label: t('ftp.allowWrite'), value: settings.writeEnable ? t('common.yes') : t('common.no') },
+                  { label: 'Chroot', value: settings.chrootLocalUser ? t('common.yes') : t('common.no') },
                 ]}
               />
             </CardSection>
@@ -260,8 +262,8 @@ export function FtpsServicePage() {
         {tab === 'network' ? (
           <Card>
             <CardSection
-              title="網絡設定"
-              description="監聽埠與 PASV 被動模式；儲存只改管理設定，套用才寫入 vsftpd 並重啟"
+              title={t('ftp.networkTitle')}
+              description={t('ftp.networkDesc')}
             >
               <form
                 onSubmit={(e) => {
@@ -270,11 +272,11 @@ export function FtpsServicePage() {
               >
                 <FormLayout columns={2}>
                   <Field
-                    label="監聽埠"
+                    label={t('ftp.listenPort')}
                     htmlFor="listenPort"
                     flush
                     required
-                    hint="預設 21；若防火牆另開埠請一併放行"
+                    hint={t('ftp.listenPortHint')}
                   >
                     <PresetChips
                       options={[
@@ -285,18 +287,18 @@ export function FtpsServicePage() {
                       value={String(settings.listenPort)}
                       onChange={(v) => patch('listenPort', Number(v) || 21)}
                       allowCustom
-                      customPlaceholder="自訂埠"
+                      customPlaceholder={t('ftp.customPort')}
                     />
                   </Field>
                   <Field
-                    label="IP 棧"
+                    label={t('ftp.ipStack')}
                     htmlFor="listenStack"
                     flush
-                    hint="vsftpd 多數版本 listen 與 listen_ipv6 互斥；IPv6 用 listen_ipv6=YES"
+                    hint={t('ftp.ipStackHint')}
                   >
                     <SegRadio
                       name="listenStack"
-                      aria-label="IP 棧"
+                      aria-label={t('ftp.ipStack')}
                       value={settings.listenIpv6 ? 'ipv6' : 'ipv4'}
                       onChange={(v) => {
                         setSettings((prev) =>
@@ -306,16 +308,16 @@ export function FtpsServicePage() {
                         );
                       }}
                       options={[
-                        { value: 'ipv4', label: '僅 IPv4' },
-                        { value: 'ipv6', label: 'IPv6（可 mapped）' },
+                        { value: 'ipv4', label: t('ftp.ipv4Only') },
+                        { value: 'ipv6', label: t('ftp.ipv6Mapped') },
                       ]}
                     />
                   </Field>
                   <Field
-                    label="登入橫幅"
+                    label={t('ftp.loginBanner')}
                     htmlFor="banner"
                     flush
-                    hint="連線成功後客戶端可見的歡迎字串"
+                    hint={t('ftp.bannerHint')}
                   >
                     <input
                       id="banner"
@@ -325,10 +327,10 @@ export function FtpsServicePage() {
                     />
                   </Field>
                   <Field
-                    label="PASV 起始埠"
+                    label={t('ftp.pasvStart')}
                     htmlFor="pasvMin"
                     flush
-                    hint="被動模式資料通道起始"
+                    hint={t('ftp.pasvStartHint')}
                   >
                     <PresetChips
                       options={[
@@ -339,14 +341,14 @@ export function FtpsServicePage() {
                       value={String(settings.pasvMin)}
                       onChange={(v) => patch('pasvMin', Number(v) || 30000)}
                       allowCustom
-                      customPlaceholder="自訂起始"
+                      customPlaceholder={t('ftp.customStart')}
                     />
                   </Field>
                   <Field
-                    label="PASV 結束埠"
+                    label={t('ftp.pasvEnd')}
                     htmlFor="pasvMax"
                     flush
-                    hint="需 ≥ 起始埠；防火牆需放行此範圍"
+                    hint={t('ftp.pasvEndHint')}
                   >
                     <PresetChips
                       options={[
@@ -357,28 +359,28 @@ export function FtpsServicePage() {
                       value={String(settings.pasvMax)}
                       onChange={(v) => patch('pasvMax', Number(v) || 30100)}
                       allowCustom
-                      customPlaceholder="自訂結束"
+                      customPlaceholder={t('ftp.customEnd')}
                     />
                   </Field>
                   <Field
-                    label="PASV 公網 IP"
+                    label={t('ftp.pasvPublicIp')}
                     htmlFor="pasvAddress"
                     fullWidth
                     flush
-                    hint="NAT／雲主機可填公網 IP；本機可留空"
+                    hint={t('ftp.pasvPublicIpHint')}
                   >
                     <input
                       id="pasvAddress"
                       value={settings.pasvAddress ?? ''}
                       onChange={(e) => patch('pasvAddress', e.target.value || undefined)}
-                      placeholder="（可留空）"
+                      placeholder={t('ftp.optionalEmpty')}
                       spellCheck={false}
                     />
                   </Field>
                 </FormLayout>
                 <FormActions>
                   <Button type="submit" variant="secondary" size="md" loading={busy}>
-                    儲存設定
+                    {t('ftp.saveSettings')}
                   </Button>
                   {installed ? (
                     <Button
@@ -388,7 +390,7 @@ export function FtpsServicePage() {
                       loading={busy}
                       onClick={() => void onApplySettings()}
                     >
-                      套用並重啟
+                      {t('ftp.applyRestart')}
                     </Button>
                   ) : null}
                 </FormActions>
@@ -400,8 +402,8 @@ export function FtpsServicePage() {
         {tab === 'security' ? (
           <Card>
             <CardSection
-              title="安全設定"
-              description="TLS、寫入權限與 chroot；變更後請套用並重啟才會生效"
+              title={t('ftp.securityTitle')}
+              description={t('ftp.securityDesc')}
             >
               <form
                 onSubmit={(e) => {
@@ -410,18 +412,18 @@ export function FtpsServicePage() {
               >
                 <FormLayout columns={2}>
                   <Field
-                    label="SSL 憑證域名"
+                    label={t('ftp.sslCertDomain')}
                     htmlFor="sslDomain"
                     fullWidth
                     flush
-                    hint="選已上傳／申請的憑證網域"
+                    hint={t('ftp.sslCertDomainHint')}
                   >
                     <select
                       id="sslDomain"
                       value={settings.sslDomain}
                       onChange={(e) => patch('sslDomain', e.target.value)}
                     >
-                      <option value="">— 選擇 —</option>
+                      <option value="">{t('security.ssh.selectOption')}</option>
                       {domains.map((d) => (
                         <option key={d.value} value={d.value}>
                           {d.label}
@@ -433,44 +435,44 @@ export function FtpsServicePage() {
                 <div className="form-check-row u-mt-4">
                   <CheckboxField
                     id="sslEnable"
-                    label="啟用 FTPS（SSL/TLS）"
-                    description="以 TLS 加密控制通道；建議開啟"
+                    label={t('ftp.enableFtps')}
+                    description={t('ftp.enableFtpsDesc')}
                     checked={settings.sslEnable}
                     onChange={(v) => patch('sslEnable', v)}
                   />
                   <CheckboxField
                     id="forceSsl"
-                    label="強制 TLS 登入"
-                    description="拒絕明文 FTP；需客戶端支援 FTPS"
+                    label={t('ftp.forceTlsLogin')}
+                    description={t('ftp.forceTlsLoginDesc')}
                     checked={settings.forceSsl}
                     onChange={(v) => patch('forceSsl', v)}
                   />
                   <CheckboxField
                     id="writeEnable"
-                    label="允許寫入"
-                    description="關閉則帳戶僅能下載／列目錄"
+                    label={t('ftp.allowWrite')}
+                    description={t('ftp.allowWriteDesc')}
                     checked={settings.writeEnable}
                     onChange={(v) => patch('writeEnable', v)}
                   />
                   <CheckboxField
                     id="chrootLocalUser"
-                    label="Chroot 用戶"
-                    description="登入後鎖在家目錄，無法瀏覽系統其他路徑"
+                    label={t('ftp.chrootUsers')}
+                    description={t('ftp.chrootUsersDesc')}
                     checked={settings.chrootLocalUser}
                     onChange={(v) => patch('chrootLocalUser', v)}
                   />
                   <CheckboxField
                     id="allowWriteableChroot"
-                    label="允許可寫 chroot"
-                    description="家目錄可寫時仍啟用 chroot（vsftpd 常見需求）"
+                    label={t('ftp.writableChroot')}
+                    description={t('ftp.writableChrootDesc')}
                     checked={settings.allowWriteableChroot}
                     onChange={(v) => patch('allowWriteableChroot', v)}
                   />
                 </div>
-                <FormHint>儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.conf 並重載服務。</FormHint>
+                <FormHint>{t('ftp.saveApplyHint')}</FormHint>
                 <FormActions>
                   <Button type="submit" variant="secondary" size="md" loading={busy}>
-                    儲存設定
+                    {t('ftp.saveSettings')}
                   </Button>
                   {installed ? (
                     <Button
@@ -480,7 +482,7 @@ export function FtpsServicePage() {
                       loading={busy}
                       onClick={() => void onApplySettings()}
                     >
-                      套用並重啟
+                      {t('ftp.applyRestart')}
                     </Button>
                   ) : null}
                 </FormActions>
@@ -493,7 +495,7 @@ export function FtpsServicePage() {
       </PageTabs>
 
       <OpsResultPanel
-        title="操作結果"
+        title={t('systemd.opsResult')}
         result={result}
         message={msg}
         onRetry={

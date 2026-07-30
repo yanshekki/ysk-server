@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * SSH identity vault store under dataDir/secrets/ssh/identities.json
  */
@@ -10,16 +11,14 @@ import {
   decryptPrivateKey,
   encryptPrivateKey,
   resolveMasterKey,
-  secretsSshDir,
-} from './crypto.js';
+  secretsSshDir } from './crypto.js';
 import { generateSshKeyPair, parseImportedPrivateKey } from './generate.js';
 import type {
   SshIdentity,
   SshIdentityAlgorithm,
   SshIdentityBinding,
   SshIdentityPublic,
-  SshIdentityPurpose,
-} from './types.js';
+  SshIdentityPurpose } from './types.js';
 import { toPublicIdentity } from './types.js';
 
 function identitiesPath(dataDir: string): string {
@@ -126,7 +125,7 @@ export function createSshIdentity(
 ): CreateSshIdentityResult {
   const name = input.name.trim();
   if (!name) {
-    return { ok: false, notes: ['需要 name'] };
+    return { ok: false, notes: [tl('notes.auto.n0029')] };
   }
   const notes: string[] = [];
   let master;
@@ -135,19 +134,17 @@ export function createSshIdentity(
   } catch (e) {
     return {
       ok: false,
-      notes: [e instanceof Error ? e.message : 'master key unavailable'],
-    };
+      notes: [e instanceof Error ? e.message : 'master key unavailable'] };
   }
   if (master.source === 'generated') {
-    notes.push(`已產生 master key：${master.path ?? 'secrets/ssh/.master.key'}（請一併備份）`);
+    notes.push(tl('notes.auto.t0520', { v0: (master.path ?? 'secrets/ssh/.master.key') }));
   } else if (master.source === 'env') {
-    notes.push('使用 YSK_SECRETS_KEY');
+    notes.push(tl('notes.auto.n0538'));
   }
 
   const pair = generateSshKeyPair({
     algorithm: input.algorithm,
-    comment: input.comment ?? name,
-  });
+    comment: input.comment ?? name });
   const id = randomUUID();
   const now = new Date().toISOString();
   const purpose = input.purpose ?? 'unbound';
@@ -166,8 +163,7 @@ export function createSshIdentity(
     status: 'stored',
     createdAt: now,
     updatedAt: now,
-    createdBy: input.createdBy,
-  };
+    createdBy: input.createdBy };
 
   const items = loadAll(dataDir);
   items.unshift(row);
@@ -178,8 +174,7 @@ export function createSshIdentity(
     identity: toPublicIdentity(row),
     privateKey: input.revealPrivate ? pair.privateKey : undefined,
     masterKeySource: master.source,
-    notes,
-  };
+    notes };
 }
 
 export type ImportSshIdentityInput = {
@@ -198,8 +193,8 @@ export function importSshIdentity(
   db?: JsonStore,
 ): CreateSshIdentityResult {
   const name = input.name.trim();
-  if (!name) return { ok: false, notes: ['需要 name'] };
-  if (!input.privateKey?.trim()) return { ok: false, notes: ['需要 privateKey'] };
+  if (!name) return { ok: false, notes: [tl('notes.auto.n0029')] };
+  if (!input.privateKey?.trim()) return { ok: false, notes: [tl('notes.auto.n1568')] };
 
   const notes: string[] = [];
   let master;
@@ -208,11 +203,10 @@ export function importSshIdentity(
   } catch (e) {
     return {
       ok: false,
-      notes: [e instanceof Error ? e.message : 'master key unavailable'],
-    };
+      notes: [e instanceof Error ? e.message : 'master key unavailable'] };
   }
   if (master.source === 'generated') {
-    notes.push(`已產生 master key：${master.path ?? 'secrets/ssh/.master.key'}`);
+    notes.push(tl('notes.auto.t0521', { v0: (master.path ?? 'secrets/ssh/.master.key') }));
   }
 
   let pair;
@@ -227,9 +221,8 @@ export function importSshIdentity(
   if (existing) {
     return {
       ok: false,
-      notes: [`已有相同 fingerprint：${existing.id} (${existing.name})`],
-      identity: toPublicIdentity(existing),
-    };
+      notes: [tl('notes.auto.t0522', { v0: (existing.id), v1: (existing.name) })],
+      identity: toPublicIdentity(existing) };
   }
 
   const id = randomUUID();
@@ -247,8 +240,7 @@ export function importSshIdentity(
     status: 'stored',
     createdAt: now,
     updatedAt: now,
-    createdBy: input.createdBy,
-  };
+    createdBy: input.createdBy };
 
   const items = loadAll(dataDir);
   items.unshift(row);
@@ -259,8 +251,7 @@ export function importSshIdentity(
     identity: toPublicIdentity(row),
     privateKey: input.revealPrivate ? pair.privateKey : undefined,
     masterKeySource: master.source,
-    notes,
-  };
+    notes };
 }
 
 export function exportSshIdentityPrivate(
@@ -268,7 +259,7 @@ export function exportSshIdentityPrivate(
   id: string,
 ): { ok: boolean; privateKey?: string; fingerprintSha256?: string; notes: string[] } {
   const row = getSshIdentityInternal(dataDir, id);
-  if (!row) return { ok: false, notes: ['找不到 identity'] };
+  if (!row) return { ok: false, notes: [tl('notes.ssh.identityNotFound')] };
   try {
     const master = resolveMasterKey(dataDir);
     const privateKey = decryptPrivateKey(master.key, row.id, row.privateKeyEnc);
@@ -276,13 +267,11 @@ export function exportSshIdentityPrivate(
       ok: true,
       privateKey,
       fingerprintSha256: row.fingerprintSha256,
-      notes: ['private key exported — treat as secret; audit recommended'],
-    };
+      notes: ['private key exported — treat as secret; audit recommended'] };
   } catch (e) {
     return {
       ok: false,
-      notes: [e instanceof Error ? e.message : 'decrypt failed'],
-    };
+      notes: [e instanceof Error ? e.message : 'decrypt failed'] };
   }
 }
 
@@ -293,13 +282,12 @@ export function deleteSshIdentity(
   const items = loadAll(dataDir);
   const next = items.filter((i) => i.id !== id);
   if (next.length === items.length) {
-    return { ok: false, notes: ['找不到 identity'] };
+    return { ok: false, notes: [tl('notes.ssh.identityNotFound')] };
   }
   saveAll(dataDir, next);
   return {
     ok: true,
-    notes: ['已從庫移除（disk install 未自動清除；用 uninstall --purge）'],
-  };
+    notes: [tl('notes.auto.n0775')] };
 }
 
 export function updateSshIdentityRecord(
@@ -316,8 +304,7 @@ export function updateSshIdentityRecord(
   items[idx] = {
     ...prev,
     ...patch,
-    updatedAt: new Date().toISOString(),
-  };
+    updatedAt: new Date().toISOString() };
   saveAll(dataDir, items);
   return toPublicIdentity(items[idx]!);
 }

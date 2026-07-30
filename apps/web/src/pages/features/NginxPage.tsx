@@ -7,8 +7,6 @@ import {
   ActionBar,
   Alert,
   Button,
-  Card,
-  CardSection,
   ConfirmDialog,
   EmptyState,
   Field,
@@ -85,16 +83,23 @@ export function NginxPage() {
     setSsl(Boolean(row.ssl));
   }
 
+  function kindLabel(k: string): string {
+    if (k === 'proxy') return t('nginx.kindProxy');
+    if (k === 'static') return t('nginx.kindStatic');
+    if (k === 'php') return t('nginx.kindPhp');
+    return k;
+  }
+
   return (
     <FeaturePageLayout
-      title={t('nav.nginx', { defaultValue: 'Nginx' })}
+      title={t('nav.nginx')}
       status={{
         pill: {
-          label: `${items.length} 站點`,
+          label: t('nginx.pillSites', { count: items.length }),
           tone: items.length ? 'ok' : 'warn',
         },
         items: [
-          { label: '站點', value: items.length },
+          { label: t('nginx.statSites'), value: items.length },
           {
             label: 'Proxy',
             value: items.filter((r) => r.kind === 'proxy').length,
@@ -104,12 +109,13 @@ export function NginxPage() {
             value: items.filter((r) => r.kind !== 'proxy').length,
           },
           {
-            label: 'SSL 標記',
+            label: t('nginx.statSslFlag'),
             value: items.filter((r) => r.ssl).length,
           },
         ],
       }}
-      actions={<ActionBar>
+      actions={
+        <ActionBar>
           <Button
             variant="secondary"
             size="sm"
@@ -121,15 +127,15 @@ export function NginxPage() {
                 .nginxPurgeCache()
                 .then((r) => {
                   const notes = (r as { notes?: string[] }).notes;
-                  setPurgeMsg(notes?.[0] ?? '已 purge');
+                  setPurgeMsg(notes?.[0] ?? t('nginx.purgeOk'));
                 })
                 .catch((e: Error) => setPurgeMsg(e.message))
                 .finally(() => setPurgeBusy(false));
             }}
           >
-            清除 Cache + Reload
+            {t('nginx.purgeCache')}
           </Button>
-          
+
           <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             SSL
           </Link>
@@ -137,180 +143,200 @@ export function NginxPage() {
       }
     >
       <WithPageGuide guideId="nginx">
-
-      <SoftwareInstallBanner feature="nginx" title="Nginx 尚未安裝" />
-      {error ? <Alert variant="error">{error}</Alert> : null}
-      {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
-          </Button>
-        </Alert>
-      ) : null}
-
-      <DataTable
-                  rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
-            title={`站點列表 (${items.length})`}
-            description="建立後請再按「套用」同步到系統"
-            toolbar={
-              <ActionBar>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    resetForm();
-                    setCreateOpen(true);
-                  }}
-                >
-                  + 建立站點
-                </Button>
-              </ActionBar>
-            }
-            columns={[
-              {
-                key: 'serverName',
-                header: '伺服器名稱',
-                render: (r) => <strong>{String(r.serverName ?? '—')}</strong>,
-              },
-              {
-                key: 'kind',
-                header: '類型',
-                render: (r) => {
-                  const k = String(r.kind ?? 'proxy');
-                  if (k === 'proxy') return '反向代理';
-                  if (k === 'static') return '靜態';
-                  if (k === 'php') return 'PHP-FPM';
-                  return k;
-                },
-              },
-              {
-                key: 'target',
-                header: '上游／根目錄',
-                render: (r) => (
-                  <code className="inline u-break-all">
-                    {String(r.upstream ?? r.root ?? '—')}
-                  </code>
-                ),
-              },
-              {
-                key: 'ssl',
-                header: 'SSL',
-                render: (r) => (r.ssl ? '是' : '否'),
-              },
-              {
-                key: 'status',
-                header: '狀態',
-                render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
-              },
-            ]}
-            rows={items}
-            empty={
-              <EmptyState
-                title="尚未有 Nginx 站點"
-                description="用列表右上角「建立站點」新增；建立後請再按「套用」"
-              />
-            }
-            rowActions={(r) => (
-              <ActionBar>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() => void apply(r.id)}
-                  title="寫入管理檔並嘗試同步到系統 + nginx -t + reload"
-                >
-                  同步到系統
-                </Button>
-                <Button variant="secondary" size="sm" loading={busy} onClick={() => openEdit(r)}>
-                  編輯
-                </Button>
-                <Button variant="danger" size="sm" loading={busy} onClick={() => setDelId(r.id)}>
-                  刪除
-                </Button>
-              </ActionBar>
-            )}
-          />
-
-      <Modal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        title="建立 Nginx 站點"
-        description="建立後需套用"
-        footer={
-          <>
-            <Button variant="secondary" size="md" onClick={() => setCreateOpen(false)}>
-              取消
+        <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
+        {error ? <Alert variant="error">{error}</Alert> : null}
+        {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
+        {msg ? (
+          <Alert variant="ok">
+            {msg}{' '}
+            <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+              {t('common.close')}
             </Button>
-            <Button type="submit" form="ngx-create" variant="primary" size="md" loading={busy}>
-              建立
-            </Button>
-          </>
-        }
-      >
-        <form id="ngx-create" onSubmit={(e) => void onCreate(e)}>
-          <SiteForm
-            serverName={serverName}
-            setServerName={setServerName}
-            kind={kind}
-            setKind={setKind}
-            upstream={upstream}
-            setUpstream={setUpstream}
-            root={root}
-            setRoot={setRoot}
-            ssl={ssl}
-            setSsl={setSsl}
-          />
-        </form>
-      </Modal>
+          </Alert>
+        ) : null}
 
-      <Modal
-        open={Boolean(edit)}
-        onClose={() => setEdit(null)}
-        title="編輯 Nginx 站點"
-        description="儲存後需套用"
-        footer={
-          <>
-            <Button variant="secondary" size="md" onClick={() => setEdit(null)}>
-              取消
-            </Button>
-            <Button type="submit" form="ngx-edit" variant="primary" size="md" loading={busy}>
-              儲存
-            </Button>
-          </>
-        }
-      >
-        <form id="ngx-edit" onSubmit={(e) => void onEdit(e)}>
-          <SiteForm
-            serverName={serverName}
-            setServerName={setServerName}
-            kind={kind}
-            setKind={setKind}
-            upstream={upstream}
-            setUpstream={setUpstream}
-            root={root}
-            setRoot={setRoot}
-            ssl={ssl}
-            setSsl={setSsl}
-          />
-        </form>
-      </Modal>
+        <DataTable
+          rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+          title={t('nginx.listTitle', { count: items.length })}
+          description={t('nginx.listDesc')}
+          toolbar={
+            <ActionBar>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  resetForm();
+                  setCreateOpen(true);
+                }}
+              >
+                {t('nginx.createSite')}
+              </Button>
+            </ActionBar>
+          }
+          columns={[
+            {
+              key: 'serverName',
+              header: t('nginx.colServerName'),
+              render: (r) => <strong>{String(r.serverName ?? '—')}</strong>,
+            },
+            {
+              key: 'kind',
+              header: t('nginx.colKind'),
+              render: (r) => kindLabel(String(r.kind ?? 'proxy')),
+            },
+            {
+              key: 'target',
+              header: t('nginx.colTarget'),
+              render: (r) => (
+                <code className="inline u-break-all">
+                  {String(r.upstream ?? r.root ?? '—')}
+                </code>
+              ),
+            },
+            {
+              key: 'ssl',
+              header: 'SSL',
+              render: (r) => (r.ssl ? t('common.yes') : t('common.no')),
+            },
+            {
+              key: 'status',
+              header: t('nginx.colStatus'),
+              render: (r) => (
+                <ResourceStatusBadge status={String(r.apply_status)} />
+              ),
+            },
+          ]}
+          rows={items}
+          empty={
+            <EmptyState
+              title={t('nginx.emptyTitle')}
+              description={t('nginx.emptyDesc')}
+            />
+          }
+          rowActions={(r) => (
+            <ActionBar>
+              <Button
+                variant="primary"
+                size="sm"
+                loading={busy}
+                onClick={() => void apply(r.id)}
+                title={t('nginx.applyTitle')}
+              >
+                {t('nginx.applyToSystem')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={busy}
+                onClick={() => openEdit(r)}
+              >
+                {t('common.edit')}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                loading={busy}
+                onClick={() => setDelId(r.id)}
+              >
+                {t('common.delete')}
+              </Button>
+            </ActionBar>
+          )}
+        />
 
-      <ConfirmDialog
-        open={Boolean(delId)}
-        onClose={() => setDelId(null)}
-        onConfirm={() => {
-          if (delId) void remove(delId).then(() => setDelId(null));
-        }}
-        title="刪除站點？"
-        description="確定刪除此站點？"
-        confirmLabel="刪除"
-        cancelLabel="取消"
-        danger
-        busy={busy}
-      />
-    
+        <Modal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          title={t('nginx.createTitle')}
+          description={t('nginx.createDesc')}
+          footer={
+            <>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setCreateOpen(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="submit"
+                form="ngx-create"
+                variant="primary"
+                size="md"
+                loading={busy}
+              >
+                {t('common.create')}
+              </Button>
+            </>
+          }
+        >
+          <form id="ngx-create" onSubmit={(e) => void onCreate(e)}>
+            <SiteForm
+              serverName={serverName}
+              setServerName={setServerName}
+              kind={kind}
+              setKind={setKind}
+              upstream={upstream}
+              setUpstream={setUpstream}
+              root={root}
+              setRoot={setRoot}
+              ssl={ssl}
+              setSsl={setSsl}
+            />
+          </form>
+        </Modal>
+
+        <Modal
+          open={Boolean(edit)}
+          onClose={() => setEdit(null)}
+          title={t('nginx.editTitle')}
+          description={t('nginx.editDesc')}
+          footer={
+            <>
+              <Button variant="secondary" size="md" onClick={() => setEdit(null)}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="submit"
+                form="ngx-edit"
+                variant="primary"
+                size="md"
+                loading={busy}
+              >
+                {t('common.save')}
+              </Button>
+            </>
+          }
+        >
+          <form id="ngx-edit" onSubmit={(e) => void onEdit(e)}>
+            <SiteForm
+              serverName={serverName}
+              setServerName={setServerName}
+              kind={kind}
+              setKind={setKind}
+              upstream={upstream}
+              setUpstream={setUpstream}
+              root={root}
+              setRoot={setRoot}
+              ssl={ssl}
+              setSsl={setSsl}
+            />
+          </form>
+        </Modal>
+
+        <ConfirmDialog
+          open={Boolean(delId)}
+          onClose={() => setDelId(null)}
+          onConfirm={() => {
+            if (delId) void remove(delId).then(() => setDelId(null));
+          }}
+          title={t('nginx.deleteTitle')}
+          description={t('nginx.deleteDesc')}
+          confirmLabel={t('common.delete')}
+          cancelLabel={t('common.cancel')}
+          danger
+          busy={busy}
+        />
       </WithPageGuide>
     </FeaturePageLayout>
   );
@@ -328,15 +354,16 @@ function SiteForm(props: {
   ssl: boolean;
   setSsl: (v: boolean) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="feature-form">
       <FormLayout columns={2}>
         <Field
-          label="伺服器名稱"
+          label={t('nginx.colServerName')}
           htmlFor="sn"
           flush
           required
-          hint="server_name，例如 app.example.com"
+          hint={t('nginx.serverNameHint')}
         >
           <input
             id="sn"
@@ -347,26 +374,26 @@ function SiteForm(props: {
             spellCheck={false}
           />
         </Field>
-        <Field label="站點類型" htmlFor="kd" flush required>
+        <Field label={t('nginx.kindLabel')} htmlFor="kd" flush required>
           <SegRadio
             name="kd"
-            aria-label="站點類型"
+            aria-label={t('nginx.kindLabel')}
             value={props.kind}
             onChange={(v) => props.setKind(v as 'proxy' | 'static' | 'php')}
             options={[
-              { value: 'proxy', label: '反向代理' },
-              { value: 'static', label: '靜態' },
-              { value: 'php', label: 'PHP-FPM' },
+              { value: 'proxy', label: t('nginx.kindProxy') },
+              { value: 'static', label: t('nginx.kindStatic') },
+              { value: 'php', label: t('nginx.kindPhp') },
             ]}
           />
         </Field>
         {props.kind === 'proxy' ? (
           <Field
-            label="上游位址"
+            label={t('nginx.upstreamLabel')}
             htmlFor="up"
             fullWidth
             flush
-            hint="例如 127.0.0.1:3000 或 http://backend:8080"
+            hint={t('nginx.upstreamHint')}
           >
             <input
               id="up"
@@ -378,14 +405,12 @@ function SiteForm(props: {
           </Field>
         ) : (
           <Field
-            label="網站根目錄"
+            label={t('nginx.rootLabel')}
             htmlFor="rt"
             fullWidth
             flush
             hint={
-              props.kind === 'php'
-                ? 'PHP 專案 document root，例如 /var/www/app/public'
-                : '靜態檔案目錄絕對路徑'
+              props.kind === 'php' ? t('nginx.rootHintPhp') : t('nginx.rootHintStatic')
             }
           >
             <input
@@ -401,15 +426,13 @@ function SiteForm(props: {
       <div className="form-check-row u-mt-4">
         <CheckboxField
           id="ngx-ssl"
-          label="啟用 SSL 區塊"
-          description="產生 listen 443 ssl；憑證需於 SSL 頁就緒後綁定"
+          label={t('nginx.sslLabel')}
+          description={t('nginx.sslDesc')}
           checked={props.ssl}
           onChange={props.setSsl}
         />
       </div>
-      <FormHint>
-        儲存後按「套用」寫入 nginx
-      </FormHint>
+      <FormHint>{t('nginx.saveThenApply')}</FormHint>
     </div>
   );
 }

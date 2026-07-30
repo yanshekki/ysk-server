@@ -1,13 +1,22 @@
+import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { sslApi, type CertificateView } from './api';
-import type { ExecutionStep } from '../../shared/components/ui';
+
+/** SSL apply step (from LE / system apply notes) */
+export type SslCertStep = {
+  name: string;
+  status: 'ok' | 'skipped' | 'failed' | 'blocked';
+  detail?: string;
+};
 
 export function useSslCertificates() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<CertificateView[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [notes, setNotes] = useState<string[]>([]);
-  const [steps, setSteps] = useState<ExecutionStep[]>([]);
+  const [steps, setSteps] = useState<SslCertStep[]>([]);
   const [blocked, setBlocked] = useState(false);
   const [blockMessage, setBlockMessage] = useState<string | null>(null);
   const [ok, setOk] = useState<boolean | undefined>(undefined);
@@ -42,16 +51,16 @@ export function useSslCertificates() {
         await sslApi.upload({ domain, fullchainPem, privkeyPem });
         await refresh();
         setOk(true);
-        setMsg(`已儲存 ${domain} 的憑證`);
+        setMsg(t('ssl.savedCert', { domain }));
       } catch (e) {
         setOk(false);
-        setError(e instanceof Error ? e.message : '上傳失敗');
+        setError(e instanceof Error ? e.message : t('ssl.uploadFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [refresh, clearResult],
+    [refresh, clearResult, t],
   );
 
   const requestCertificate = useCallback(
@@ -68,36 +77,42 @@ export function useSslCertificates() {
           r = await sslApi.letsencryptViaSystem({ domain, email, run: true });
         }
         await refresh();
+        // L3: match backend Chinese / mixed permission notes until error codes exist
         const blockedFlag = Boolean(
           (r as { blocked?: boolean }).blocked ||
-            (!r.ok && /權限|root|系統變更|無法在管理面板/i.test((r.notes ?? []).join(' '))),
+            (!r.ok &&
+              looksLikeBlockedMessage(
+                (r.notes ?? []).join(' '),
+              )),
         );
         setBlocked(blockedFlag);
         setBlockMessage(
           (r as { blockMessage?: string }).blockMessage ||
-            (blockedFlag ? (r.notes ?? [])[0] ?? '無法在管理面板完成憑證申請' : null),
+            (blockedFlag
+              ? (r.notes ?? [])[0] ?? t('ssl.requestBlocked')
+              : null),
         );
         setOk(r.ok);
         setNotes(r.notes ?? []);
-        const rSteps = (r as { steps?: ExecutionStep[] }).steps;
+        const rSteps = (r as { steps?: SslCertStep[] }).steps;
         setSteps(rSteps ?? []);
         setMsg(
           r.ok
-            ? '憑證申請已完成'
+            ? t('ssl.requestDone')
             : blockedFlag
               ? null
-              : '憑證申請未成功',
+              : t('ssl.requestFailed'),
         );
         return r;
       } catch (e) {
         setOk(false);
-        setError(e instanceof Error ? e.message : '申請失敗');
+        setError(e instanceof Error ? e.message : t('ssl.applyFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [refresh, clearResult],
+    [refresh, clearResult, t],
   );
 
   const remove = useCallback(
@@ -108,17 +123,17 @@ export function useSslCertificates() {
         const r = await sslApi.remove(idOrDomain);
         await refresh();
         setOk(true);
-        setMsg(`已刪除 ${r.domain}`);
+        setMsg(t('ssl.deletedCert', { domain: r.domain }));
         setNotes(r.notes ?? []);
       } catch (e) {
         setOk(false);
-        setError(e instanceof Error ? e.message : '刪除失敗');
+        setError(e instanceof Error ? e.message : t('common.deleteFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [refresh, clearResult],
+    [refresh, clearResult, t],
   );
 
   const retryLast = useCallback(async () => {

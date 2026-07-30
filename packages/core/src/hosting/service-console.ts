@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Professional DB service console: lifecycle + categorized settings + live values.
  */
@@ -8,10 +9,10 @@ import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import {
   catalogForEngine,
   CATEGORY_META,
+  resolveCategoryMeta,
   type ServiceEngine,
   type SettingCategoryId,
-  type SettingDef,
-} from './service-catalog/index.js';
+  type SettingDef } from './service-catalog/index.js';
 import { installSoftware } from './software-install.js';
 
 export type LifecycleAction = 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable';
@@ -54,21 +55,19 @@ const ENGINE_META: Record<
   mysql: { title: 'MySQL', unit: 'mysql', installIds: ['mysql-server', 'mysql-client'] },
   mariadb: { title: 'MariaDB', unit: 'mariadb', installIds: ['mariadb-server', 'mysql-client'] },
   postgres: { title: 'PostgreSQL', unit: 'postgresql', installIds: ['postgresql', 'postgresql-client'] },
-  redis: { title: 'Redis', unit: 'redis-server', installIds: ['redis-server', 'redis-tools'] },
-};
+  redis: { title: 'Redis', unit: 'redis-server', installIds: ['redis-server', 'redis-tools'] } };
 
 function activeLabel(active: string, installed: boolean): string {
-  if (!installed || active === 'not_installed') return '未安裝';
-  if (active === 'active') return '運行中';
-  if (active === 'inactive' || active === 'failed') return '已停止';
-  if (active === 'activating') return '啟動中';
-  return active || '未知';
+  if (!installed || active === 'not_installed') return tl('notes.notInstalled');
+  if (active === 'active') return tl('notes.running');
+  if (active === 'inactive' || active === 'failed') return tl('notes.stopped');
+  if (active === 'activating') return tl('notes.auto.n0014');
+  return active || tl('notes.unknown');
 }
 
 async function hasBin(host: HostExecutor, bin: string): Promise<boolean> {
   const r = await host.runCommand(['bash', '-c', `command -v ${bin} 2>/dev/null || true`], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   return r.stdout.trim().length > 0;
 }
 
@@ -80,8 +79,7 @@ async function unitState(host: HostExecutor, unit: string): Promise<{ active: st
   const e = await host.runCommand(['systemctl', 'is-enabled', unit], { timeoutMs: 5_000 });
   return {
     active: (a.stdout || a.stderr || 'unknown').trim().split('\n')[0] || 'unknown',
-    enabled: (e.stdout || e.stderr || 'unknown').trim().split('\n')[0] || 'unknown',
-  };
+    enabled: (e.stdout || e.stderr || 'unknown').trim().split('\n')[0] || 'unknown' };
 }
 
 async function loadMysqlLive(
@@ -244,8 +242,7 @@ export async function getServiceConsole(
     const row: ConsoleSettingRow = {
       ...d,
       liveValue: live[d.key] ?? live[d.confKey ?? ''] ?? undefined,
-      supported: true,
-    };
+      supported: true };
     const list = byCat.get(d.category) ?? [];
     list.push(row);
     byCat.set(d.category, list);
@@ -264,8 +261,7 @@ export async function getServiceConsole(
       applyMode: engine === 'postgres' ? 'reload' : 'runtime',
       liveValue: v,
       supported: true,
-      advanced: true,
-    });
+      advanced: true });
   }
   if (extra.length) {
     byCat.set('advanced', [...(byCat.get('advanced') ?? []), ...extra.slice(0, 80)]);
@@ -274,21 +270,24 @@ export async function getServiceConsole(
   const categories: ConsoleCategory[] = Object.entries(CATEGORY_META)
     .sort((a, b) => a[1].order - b[1].order)
     .filter(([id]) => id !== 'overview' && id !== 'lifecycle')
-    .map(([id, m]) => ({
-      id: id as SettingCategoryId,
-      label: m.label,
-      description: m.description,
-      settings: byCat.get(id as SettingCategoryId) ?? [],
-    }))
+    .map(([id]) => {
+      const m = resolveCategoryMeta(id as SettingCategoryId);
+      return {
+        id: id as SettingCategoryId,
+        label: m.label,
+        description: m.description,
+        settings: byCat.get(id as SettingCategoryId) ?? [],
+      };
+    })
     .filter((c) => c.settings.length > 0);
 
   const executeEnabled = host.executeEnabled();
   const isRoot = host.isRoot();
   const canLifecycle = executeEnabled && isRoot;
   let blockMessage: string | undefined;
-  if (!installed) blockMessage = `${meta.title} 尚未安裝`;
-  else if (!executeEnabled) blockMessage = '可檢視設定；安裝／重啟／寫入系統設定需要系統變更權限';
-  else if (!isRoot) blockMessage = '需要系統管理員權限才能變更服務';
+  if (!installed) blockMessage = tl('notes.auto.t0308', { v0: (meta.title) });
+  else if (!executeEnabled) blockMessage = tl('notes.auto.n0613');
+  else if (!isRoot) blockMessage = tl('notes.auto.n1583');
 
   return {
     engine,
@@ -305,8 +304,7 @@ export async function getServiceConsole(
     blockMessage,
     metrics,
     categories,
-    live,
-  };
+    live };
 }
 
 export async function lifecycleService(
@@ -326,8 +324,7 @@ export async function lifecycleService(
     restart: ['systemctl', 'restart', meta.unit],
     reload: ['systemctl', 'reload', meta.unit],
     enable: ['systemctl', 'enable', meta.unit],
-    disable: ['systemctl', 'disable', meta.unit],
-  };
+    disable: ['systemctl', 'disable', meta.unit] };
   const argv = map[action];
   const r = await host.runCommand(argv, { timeoutMs: 120_000 });
   // Redis/MySQL may not support reload
@@ -335,13 +332,11 @@ export async function lifecycleService(
     const r2 = await host.runCommand(['systemctl', 'restart', meta.unit], { timeoutMs: 120_000 });
     return {
       ok: r2.exitCode === 0,
-      notes: r2.exitCode === 0 ? ['已重啟（重載不支援）'] : [`失敗：${r2.stderr || r.stderr}`],
-    };
+      notes: r2.exitCode === 0 ? [tl('notes.auto.n0807')] : [tl('notes.tpl.failedDetail', { detail: r2.stderr || r.stderr })] };
   }
   return {
     ok: r.exitCode === 0,
-    notes: r.exitCode === 0 ? [`已執行 ${action}`] : [`失敗：${r.stderr || r.stdout}`],
-  };
+    notes: r.exitCode === 0 ? [tl('notes.auto.t0309', { v0: (action) })] : [tl('notes.tpl.failedDetail', { detail: r.stderr || r.stdout })] };
 }
 
 export async function applyConsoleSettings(input: {
@@ -367,12 +362,11 @@ export async function applyConsoleSettings(input: {
     if (!(await hasBin(host, 'redis-cli'))) {
       return {
         ok: false,
-        notes: ['未安裝 redis-cli'],
+        notes: [tl('notes.redis.cliMissing')],
         applied,
         needsRestart,
         blocked: true,
-        blockMessage: '未安裝 redis-cli',
-      };
+        blockMessage: tl('notes.redis.cliMissing') };
     }
     for (const [k, v] of Object.entries(changes)) {
       const def = byKey.get(k);
@@ -384,19 +378,19 @@ export async function applyConsoleSettings(input: {
       if (r.exitCode === 0 && r.stdout.trim().toUpperCase() === 'OK') {
         applied.push(k);
       } else {
-        notes.push(`${k}: ${r.stderr || r.stdout || '失敗'}`);
+        notes.push(`${k}: ${r.stderr || r.stdout || tl('notes.failed')}`);
         if (def?.applyMode === 'restart') needsRestart.push(k);
       }
     }
     if (applied.length) {
       await host.runCommand(['redis-cli', 'CONFIG', 'REWRITE'], { timeoutMs: 10_000 });
-      notes.push(`已套用 ${applied.length} 項`);
+      notes.push(tl('notes.auto.t0310', { v0: (applied.length) }));
     }
     if (needsRestart.length && host.executeEnabled() && host.isRoot()) {
       await host.runCommand(['systemctl', 'restart', 'redis-server'], { timeoutMs: 60_000 });
-      notes.push('已重啟 redis-server 以套用需重啟項目');
+      notes.push(tl('notes.auto.n0806'));
     } else if (needsRestart.length) {
-      notes.push(`以下項目可能需重啟：${[...new Set(needsRestart)].join(', ')}`);
+      notes.push(tl('notes.auto.t0311', { v0: ([...new Set(needsRestart)].join(', ')) }));
     }
     return { ok: applied.length > 0 || needsRestart.length === 0, notes, applied, needsRestart };
   }
@@ -405,12 +399,11 @@ export async function applyConsoleSettings(input: {
     if (!(await hasBin(host, 'mysql'))) {
       return {
         ok: false,
-        notes: ['未安裝 mysql 客戶端'],
+        notes: [tl('notes.auto.n0015')],
         applied,
         needsRestart,
         blocked: true,
-        blockMessage: '未安裝 mysql 客戶端',
-      };
+        blockMessage: tl('notes.auto.n0015') };
     }
     for (const [k, v] of Object.entries(changes)) {
       const def = byKey.get(k);
@@ -424,11 +417,11 @@ export async function applyConsoleSettings(input: {
         { timeoutMs: 10_000 },
       );
       if (r.exitCode === 0) applied.push(k);
-      else notes.push(`${k}: ${r.stderr || '失敗'}`);
+      else notes.push(`${k}: ${r.stderr || tl('notes.failed')}`);
     }
-    notes.push(`即時套用 ${applied.length} 項`);
+    notes.push(tl('notes.auto.t0312', { v0: (applied.length) }));
     if (needsRestart.length) {
-      notes.push(`需重啟項（請用生命週期重啟）：${[...new Set(needsRestart)].join(', ')}`);
+      notes.push(tl('notes.auto.t0313', { v0: ([...new Set(needsRestart)].join(', ')) }));
     }
     return { ok: true, notes, applied, needsRestart: [...new Set(needsRestart)] };
   }
@@ -437,12 +430,11 @@ export async function applyConsoleSettings(input: {
   if (!(await hasBin(host, 'psql'))) {
     return {
       ok: false,
-      notes: ['未安裝 psql'],
+      notes: [tl('notes.auto.n0016')],
       applied,
       needsRestart,
       blocked: true,
-      blockMessage: '未安裝 psql',
-    };
+      blockMessage: tl('notes.auto.n0016') };
   }
   for (const [k, v] of Object.entries(changes)) {
     const def = byKey.get(k);
@@ -454,14 +446,14 @@ export async function applyConsoleSettings(input: {
     if (r.exitCode === 0) {
       applied.push(k);
       if (def?.applyMode === 'restart') needsRestart.push(k);
-    } else notes.push(`${k}: ${r.stderr || '失敗'}`);
+    } else notes.push(`${k}: ${r.stderr || tl('notes.failed')}`);
   }
   if (applied.length) {
     await host.runCommand(['psql', '-c', 'SELECT pg_reload_conf();'], { timeoutMs: 10_000 });
-    notes.push(`已 ALTER SYSTEM ${applied.length} 項並 reload`);
+    notes.push(tl('notes.auto.t0314', { v0: (applied.length) }));
   }
   if (needsRestart.length) {
-    notes.push(`部分參數需重啟後生效：${[...new Set(needsRestart)].join(', ')}`);
+    notes.push(tl('notes.auto.t0315', { v0: ([...new Set(needsRestart)].join(', ')) }));
   }
   return { ok: applied.length > 0, notes, applied, needsRestart: [...new Set(needsRestart)] };
 }

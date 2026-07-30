@@ -3,6 +3,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 import { Link } from 'react-router-dom';
 import {
   PageGuide,
@@ -44,9 +45,9 @@ type SystemdStatus = {
 
 function enabledLabel(v?: string): string {
   if (!v) return '—';
-  if (v === 'enabled') return '已啟用';
-  if (v === 'disabled') return '未啟用';
-  if (v === 'not-found') return '未安裝';
+  if (v === 'enabled') return i18n.t('common.enabled');
+  if (v === 'disabled') return i18n.t('systemd.disabled');
+  if (v === 'not-found') return i18n.t('common.notInstalled');
   if (v === 'static') return 'static';
   if (v === 'indirect') return 'indirect';
   return v;
@@ -61,11 +62,11 @@ function activeTone(active: string): 'ok' | 'warn' | 'danger' | 'neutral' {
 }
 
 function activeLabel(active: string): string {
-  if (active === 'active') return '運行中';
-  if (active === 'inactive') return '未運行';
-  if (active === 'failed') return '失敗';
-  if (active === 'activating') return '啟動中';
-  if (active === 'not-found') return '單元不存在';
+  if (active === 'active') return i18n.t('common.running');
+  if (active === 'inactive') return i18n.t('systemd.notRunning');
+  if (active === 'failed') return i18n.t('common.failed');
+  if (active === 'activating') return i18n.t('systemd.activating');
+  if (active === 'not-found') return i18n.t('systemd.unitMissing');
   return active || '—';
 }
 
@@ -88,7 +89,7 @@ export function SystemdUnitPage() {
     try {
       setStatus(await systemApi.systemdStatus());
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
   }, []);
 
@@ -104,10 +105,10 @@ export function SystemdUnitPage() {
         await refresh();
         return r as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '操作失敗';
+        const m = e instanceof Error ? e.message : t('common.opFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, enable ? '已安裝並嘗試啟用' : '已寫入 unit 範本');
+    }, enable ? t('systemd.installedEnabled') : t('systemd.unitTemplateWritten'));
   }
 
   const active = status?.active ?? '—';
@@ -129,15 +130,15 @@ export function SystemdUnitPage() {
     if (!status.managedUnitExists) {
       steps.push({
         id: 'template',
-        title: '寫入管理目錄範本',
-        detail: '於 dataDir/systemd 產生 ysk-server.service（唔會改 /etc）',
+        title: t('systemd.writeTemplate'),
+        detail: t('systemd.writeTemplateDesc'),
         action: 'template',
         done: false,
       });
     } else {
       steps.push({
         id: 'template',
-        title: '管理目錄範本已存在',
+        title: t('systemd.templateExists'),
         detail: status.managedUnitPath ?? 'dataDir/systemd/ysk-server.service',
         done: true,
       });
@@ -146,18 +147,18 @@ export function SystemdUnitPage() {
     if (!status.systemUnitExists || status.enabled === 'not-found') {
       steps.push({
         id: 'install',
-        title: '安裝到 /etc/systemd 並啟用',
+        title: t('systemd.installEnable'),
         detail: canInstall
-          ? '複製 unit → daemon-reload → enable --now'
-          : '需 YSK_EXECUTE 與 root',
+          ? t('systemd.installEnableDesc')
+          : t('systemd.needExecuteRoot'),
         action: 'install',
         done: false,
       });
     } else if (!running) {
       steps.push({
         id: 'start',
-        title: '服務未運行',
-        detail: 'unit 可能已安裝但 inactive — 可再「安裝並啟用」或於服務矩陣操作',
+        title: t('systemd.serviceNotRunning'),
+        detail: t('systemd.serviceNotRunningHint'),
         action: 'install',
         href: '/services',
         done: false,
@@ -165,7 +166,7 @@ export function SystemdUnitPage() {
     } else {
       steps.push({
         id: 'running',
-        title: '控制面服務運行中',
+        title: t('systemd.controlRunning'),
         detail: status.show?.mainPid
           ? `MainPID ${status.show.mainPid}`
           : 'systemctl is-active: active',
@@ -176,8 +177,8 @@ export function SystemdUnitPage() {
     if (!canInstall) {
       steps.push({
         id: 'caps',
-        title: '解鎖系統套用能力',
-        detail: '以 root 啟動並設定 YSK_EXECUTE=1',
+        title: t('systemd.unlockApply'),
+        detail: t('systemd.startAsRoot'),
         href: '/system',
         done: false,
       });
@@ -199,28 +200,28 @@ export function SystemdUnitPage() {
               },
               items: [
                 {
-                  label: '狀態',
+                  label: t('common.status'),
                   value: activeLabel(active),
                   tone: activeTone(active),
                 },
                 {
-                  label: '開機自啟',
+                  label: t('systemd.bootEnabled'),
                   value: enabledLabel(status.enabled),
                   tone: enabledTone(status.enabled),
                 },
                 {
                   label: 'EXECUTE',
-                  value: status.executeEnabled ? '開' : '關',
+                  value: status.executeEnabled ? t('common.on') : t('common.off'),
                   tone: status.executeEnabled ? 'ok' : 'warn',
                 },
                 {
                   label: 'Root',
-                  value: status.isRoot ? '是' : '否',
+                  value: status.isRoot ? t('common.yes') : t('common.no'),
                   tone: status.isRoot ? 'ok' : 'warn',
                 },
                 {
-                  label: '可安裝',
-                  value: canInstall ? '是' : '否',
+                  label: t('systemd.canInstall'),
+                  value: canInstall ? t('common.yes') : t('common.no'),
                   tone: canInstall ? 'ok' : 'warn',
                 },
                 {
@@ -244,7 +245,7 @@ export function SystemdUnitPage() {
               void refresh().finally(() => setLoading(false));
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Button
             variant="secondary"
@@ -255,7 +256,7 @@ export function SystemdUnitPage() {
               void doInstall(false);
             }}
           >
-            僅寫入範本
+            {t('systemd.writeTemplateOnly')}
           </Button>
           <Button
             variant="primary"
@@ -268,14 +269,14 @@ export function SystemdUnitPage() {
             }}
             title={
               canInstall
-                ? '複製到 /etc/systemd 並 enable --now'
-                : '需要 EXECUTE + root'
+                ? t('systemd.copyEnable')
+                : t('systemd.needExecuteRootShort')
             }
           >
-            安裝並啟用
+            {t('systemd.installAndEnable')}
           </Button>
           <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            服務矩陣
+            {t('system.scServices')}
           </Link>
         </ActionBar>
       }
@@ -286,23 +287,23 @@ export function SystemdUnitPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       {loading && !status ? (
-        <LoadingBlock label="探測 systemd 狀態…" />
+        <LoadingBlock label={t('systemd.probing')} />
       ) : status ? (
         <div className="sdu">
           <PageTabs
             tabs={[
-              { id: 'guide', label: '建議步驟' },
-              { id: 'status', label: '狀態' },
-              { id: 'install', label: '安裝' },
-              { id: 'policy', label: '政策' },
+              { id: 'guide', label: t('systemd.suggestedSteps') },
+              { id: 'status', label: t('common.status') },
+              { id: 'install', label: t('common.install') },
+              { id: 'policy', label: t('updates.tabPolicy') },
             
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
             active={tab}
             onChange={setTab}
@@ -313,8 +314,8 @@ export function SystemdUnitPage() {
                 <section className="sdu-panel sdu-panel--primary">
                   <header className="sdu-panel__head">
                     <div>
-                      <h3 className="sdu-panel__title">建議步驟</h3>
-                      <p className="sdu-panel__sub">按步回報</p>
+                      <h3 className="sdu-panel__title">{t('systemd.suggestedSteps')}</h3>
+                      <p className="sdu-panel__sub">{t('systemd.stepReport')}</p>
                     </div>
                   </header>
                   <ol className="sdu-steps">
@@ -332,7 +333,7 @@ export function SystemdUnitPage() {
                         </div>
                         <div className="sdu-step__action">
                           {s.done ? (
-                            <span className="sdu-step__ok">完成</span>
+                            <span className="sdu-step__ok">{t('ssl.step.ok')}</span>
                           ) : s.action === 'template' ? (
                             <Button
                               variant="secondary"
@@ -340,7 +341,7 @@ export function SystemdUnitPage() {
                               loading={busy}
                               onClick={() => void doInstall(false)}
                             >
-                              寫入
+                              {t('redis.writable')}
                             </Button>
                           ) : s.action === 'install' ? (
                             <Button
@@ -350,11 +351,11 @@ export function SystemdUnitPage() {
                               disabled={!canInstall && s.id === 'install'}
                               onClick={() => void doInstall(true)}
                             >
-                              安裝啟用
+                              {t('systemd.installEnableShort')}
                             </Button>
                           ) : s.href ? (
                             <Link to={s.href} className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                              前往
+                              {t('protection.goTo')}
                             </Link>
                           ) : null}
                         </div>
@@ -363,10 +364,10 @@ export function SystemdUnitPage() {
                   </ol>
                   {!canInstall ? (
                     <div className="sdu-callout sdu-callout--warn">
-                      目前無法真正安裝到系統：需要{' '}
-                      <code>YSK_EXECUTE=1</code> 與 root。「僅寫入範本」仍可產生管理目錄檔案。見{' '}
-                      <Link to="/system">主機設定</Link> /{' '}
-                      <Link to="/system/readiness">就緒探測</Link>。
+                      {t('systemd.cannotInstall')}{' '}
+                      {t('systemd.cannotInstallFull')}{' '}
+                      <Link to="/system">{t('updates.scHost')}</Link> /{' '}
+                      <Link to="/system/readiness">{t('updates.scReadiness')}</Link>。
                     </div>
                   ) : null}
                 </section>
@@ -377,12 +378,12 @@ export function SystemdUnitPage() {
               <div className="tab-panel">
                 <section className="sdu-panel">
                   <header className="sdu-panel__head">
-                    <h3 className="sdu-panel__title">探測詳情</h3>
-                    <p className="sdu-panel__sub">systemctl / 檔案系統真實狀態</p>
+                    <h3 className="sdu-panel__title">{t('systemd.probeDetail')}</h3>
+                    <p className="sdu-panel__sub">{t('systemd.probeDetailSub')}</p>
                   </header>
                   <dl className="sdu-dl">
                     <div>
-                      <dt>單元</dt>
+                      <dt>{t('systemd.unit')}</dt>
                       <dd>
                         <code>{status.unit}.service</code>
                       </dd>
@@ -402,16 +403,16 @@ export function SystemdUnitPage() {
                       </dd>
                     </div>
                     <div>
-                      <dt>系統檔</dt>
+                      <dt>{t('logs.catSystem')}</dt>
                       <dd>
-                        {status.systemUnitExists ? '存在' : '不存在'} ·{' '}
+                        {status.systemUnitExists ? t('systemd.exists') : t('systemd.missing')} ·{' '}
                         <code className="sdu-dl__path">{status.unitPathHint}</code>
                       </dd>
                     </div>
                     <div>
-                      <dt>管理範本</dt>
+                      <dt>{t('systemd.manageTemplate')}</dt>
                       <dd>
-                        {status.managedUnitExists ? '存在' : '尚未寫入'}
+                        {status.managedUnitExists ? t('systemd.exists') : t('systemd.notWritten')}
                         {status.managedUnitPath ? (
                           <>
                             <br />
@@ -456,18 +457,18 @@ export function SystemdUnitPage() {
                 <section className="sdu-panel">
                   <header className="sdu-panel__head">
                     <div>
-                      <h3 className="sdu-panel__title">安裝操作</h3>
+                      <h3 className="sdu-panel__title">{t('systemd.installOps')}</h3>
                       <p className="sdu-panel__sub">
-                        兩種模式用途不同 — 請按環境選擇
+                        {t('systemd.twoModes')}
                       </p>
                     </div>
                   </header>
                   <div className="sdu-actions">
                     <article className="sdu-action-card">
-                      <h4 className="sdu-action-card__title">僅寫入範本</h4>
+                      <h4 className="sdu-action-card__title">{t('systemd.writeTemplateOnly')}</h4>
                       <p className="sdu-action-card__body">
-                        產生管理目錄 unit 檔。適合先檢視內容、或無 root 時預先準備。
-                        <strong>唔會</strong> enable 服務。
+                        {t('systemd.writeOnlyBody')}
+                        {t('systemd.willNotEnable')}
                       </p>
                       <Button
                         variant="secondary"
@@ -475,14 +476,13 @@ export function SystemdUnitPage() {
                         loading={busy}
                         onClick={() => void doInstall(false)}
                       >
-                        寫入範本
+                        {t('systemd.writeTemplateBtn')}
                       </Button>
                     </article>
                     <article className="sdu-action-card sdu-action-card--primary">
-                      <h4 className="sdu-action-card__title">安裝並啟用</h4>
+                      <h4 className="sdu-action-card__title">{t('systemd.installAndEnable')}</h4>
                       <p className="sdu-action-card__body">
-                        複製到 <code>/etc/systemd/system</code>、daemon-reload、
-                        <code>enable --now</code>。需 root + EXECUTE。
+                        {t('systemd.installEnableBody')}
                       </p>
                       <Button
                         variant="primary"
@@ -491,7 +491,7 @@ export function SystemdUnitPage() {
                         disabled={!canInstall}
                         onClick={() => void doInstall(true)}
                       >
-                        安裝並啟用
+                        {t('systemd.installAndEnable')}
                       </Button>
                     </article>
                   </div>
@@ -503,35 +503,35 @@ export function SystemdUnitPage() {
               <div className="tab-panel stack">
                 <section className="sdu-panel">
                   <header className="sdu-panel__head">
-                    <h3 className="sdu-panel__title">政策</h3>
+                    <h3 className="sdu-panel__title">{t('updates.tabPolicy')}</h3>
                   </header>
                   <ul className="sdu-bullets">
                     <li>
-                      <strong>僅寫入範本</strong> — 只寫 dataDir，唔動 /etc
+                      {t('systemd.policyWriteFull')}
                     </li>
                     <li>
-                      <strong>安裝並啟用</strong> — cp + daemon-reload + enable
+                      <strong>{t('systemd.installAndEnable')}</strong> — cp + daemon-reload + enable
                       --now
                     </li>
-                    <li>未開 EXECUTE 或非 root → 明確 blocked，唔假成功</li>
-                    <li>寫入範本 ≠ 服務已啟用 ≠ 已在監聽端口</li>
+                    <li>{t('systemd.policyBlocked')}</li>
+                    <li>{t('systemd.policyNotEqualFull')}</li>
                   </ul>
                 </section>
-                <nav className="sdu-shortcuts" aria-label="相關">
+                <nav className="sdu-shortcuts" aria-label={t('updates.relatedAria')}>
                   <Link to="/system" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">主機設定</span>
-                    <span className="sdu-shortcut__d">EXECUTE / 電源</span>
+                    <span className="sdu-shortcut__t">{t('updates.scHost')}</span>
+                    <span className="sdu-shortcut__d">{t('systemd.shortcutPower')}</span>
                   </Link>
                   <Link to="/services" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">服務矩陣</span>
-                    <span className="sdu-shortcut__d">其他 unit</span>
+                    <span className="sdu-shortcut__t">{t('system.scServices')}</span>
+                    <span className="sdu-shortcut__d">{t('systemd.shortcutOther')}</span>
                   </Link>
                   <Link to="/system/readiness" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">就緒探測</span>
-                    <span className="sdu-shortcut__d">生產閘門</span>
+                    <span className="sdu-shortcut__t">{t('updates.scReadiness')}</span>
+                    <span className="sdu-shortcut__d">{t('updates.scReadinessD')}</span>
                   </Link>
                   <Link to="/logs" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">日誌中心</span>
+                    <span className="sdu-shortcut__t">{t('system.scLogs')}</span>
                     <span className="sdu-shortcut__d">journal</span>
                   </Link>
                 </nav>
@@ -542,7 +542,7 @@ export function SystemdUnitPage() {
       </PageTabs>
 
           <OpsResultPanel
-            title="操作結果"
+            title={t('systemd.opsResult')}
             result={result}
             message={msg}
             busy={busy}

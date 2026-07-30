@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Adminer (lightweight DB browser) — managed download under dataDir + nginx plan.
  * Honest: download needs EXECUTE+network; system nginx needs root + applySystem.
@@ -63,17 +64,16 @@ export async function applyAdminer(input: {
         nginxPath: nginxEarly,
         urlHint: `http://${domain}/adminer.php`,
         notes: [
-          '無法下載 Adminer：未開啟系統變更權限',
-          `管理路徑 ${path}`,
-          `nginx 管理 conf: ${nginxEarly}`,
-          '狀態：blocked（placeholder written）',
+          tl('notes.auto.n1141'),
+          tl('notes.auto.t0351', { v0: (path) }),
+          tl('notes.auto.t0352', { v0: (nginxEarly) }),
+          tl('notes.auto.n1215'),
         ],
         written,
         requiresExecute: true,
         blocked: true,
-        blockMessage: '需要 YSK_EXECUTE 下載 Adminer',
-        apply_status: 'blocked',
-      };
+        blockMessage: tl('notes.auto.n1558'),
+        apply_status: 'blocked' };
     }
     const r = await input.host.runCommand(
       [
@@ -84,26 +84,24 @@ export async function applyAdminer(input: {
       { timeoutMs: 120_000 },
     );
     if (r.exitCode !== 0 || !existsSync(path)) {
-      notes.push(`下載失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+      notes.push(tl('notes.auto.t0353', { v0: ((r.stderr || r.stdout).slice(0, 200)) }));
       return {
         ok: false,
         notes,
         written,
         path,
-        apply_status: 'failed',
-      };
+        apply_status: 'failed' };
     }
     written.push(path);
-    notes.push(`已下載 Adminer → ${path}`);
+    notes.push(tl('notes.auto.t0354', { v0: (path) }));
   } else if (!existsSync(path)) {
     return {
       ok: false,
-      notes: ['Adminer 檔案不存在；請 download:true'],
+      notes: [tl('notes.auto.n0074')],
       written,
-      apply_status: 'failed',
-    };
+      apply_status: 'failed' };
   } else {
-    notes.push(`已有 ${path}`);
+    notes.push(tl('notes.auto.t0355', { v0: (path) }));
   }
 
   const conf = renderAdminerNginx(domain, dir);
@@ -113,11 +111,11 @@ export async function applyAdminer(input: {
     conf,
   );
   written.push(nginxPath);
-  notes.push(`nginx 管理 conf: ${nginxPath}`);
-  notes.push('請限制來源 IP 或 HTTP auth 後再公開');
+  notes.push(tl('notes.auto.t0356', { v0: (nginxPath) }));
+  notes.push(tl('notes.auto.n1429'));
 
   if (!input.applySystem) {
-    notes.push('狀態：written（未複製到系統 Nginx；設 applySystem 才會 try reload）');
+    notes.push(tl('notes.auto.n1230'));
     return {
       ok: true,
       path,
@@ -125,12 +123,11 @@ export async function applyAdminer(input: {
       urlHint: `http://${domain}/adminer.php`,
       notes,
       written,
-      apply_status: 'written',
-    };
+      apply_status: 'written' };
   }
 
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
-    notes.push('無法套用系統：需 YSK_EXECUTE + root');
+    notes.push(tl('notes.auto.n0005'));
     return {
       ok: false,
       path,
@@ -140,9 +137,8 @@ export async function applyAdminer(input: {
       written,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '需要系統變更權限才能複製 nginx conf 並 reload',
-      apply_status: 'blocked',
-    };
+      blockMessage: tl('notes.auto.n1587'),
+      apply_status: 'blocked' };
   }
 
   const sysDir = '/etc/nginx/conf.d';
@@ -151,37 +147,34 @@ export async function applyAdminer(input: {
     mkdirSync(sysDir, { recursive: true });
     copyFileSync(nginxPath, dest);
     written.push(dest);
-    notes.push(`已複製 → ${dest}`);
+    notes.push(tl('notes.auto.t0357', { v0: (dest) }));
   } catch (e) {
-    notes.push(`複製失敗: ${e instanceof Error ? e.message : String(e)}`);
+    notes.push(tl('notes.tpl.copyFailed2', { detail: e instanceof Error ? e.message : String(e) }));
     return {
       ok: false,
       path,
       nginxPath,
       notes,
       written,
-      apply_status: 'failed',
-    };
+      apply_status: 'failed' };
   }
 
   const test = await input.host.runCommand(['nginx', '-t'], { timeoutMs: 15_000 });
   if (test.exitCode !== 0) {
-    notes.push(`nginx -t 失敗: ${(test.stderr || test.stdout).slice(0, 200)}`);
+    notes.push(tl('notes.tpl.nginxTestFailed', { detail: (test.stderr || test.stdout).slice(0, 200) }));
     return {
       ok: false,
       path,
       nginxPath,
       notes,
       written,
-      apply_status: 'failed',
-    };
+      apply_status: 'failed' };
   }
   notes.push('nginx -t ok');
   const reload = await input.host.runCommand(['systemctl', 'reload', 'nginx'], {
-    timeoutMs: 15_000,
-  });
+    timeoutMs: 15_000 });
   if (reload.exitCode !== 0) {
-    notes.push(`reload 失敗: ${(reload.stderr || reload.stdout).slice(0, 160)}`);
+    notes.push(tl('notes.tpl.reloadFailed2', { detail: (reload.stderr || reload.stdout).slice(0, 160) }));
     return {
       ok: false,
       path,
@@ -189,10 +182,9 @@ export async function applyAdminer(input: {
       urlHint: `http://${domain}/adminer.php`,
       notes,
       written,
-      apply_status: 'failed',
-    };
+      apply_status: 'failed' };
   }
-  notes.push('nginx reload ok · 狀態：applied');
+  notes.push(tl('notes.auto.n0340'));
   return {
     ok: true,
     path,
@@ -200,8 +192,7 @@ export async function applyAdminer(input: {
     urlHint: `http://${domain}/adminer.php`,
     notes,
     written,
-    apply_status: 'applied',
-  };
+    apply_status: 'applied' };
 }
 
 function renderAdminerNginx(domain: string, rootDir: string): string {

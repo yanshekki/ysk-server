@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Apply local cluster conf (honest).
  * Default execute=false → dataDir artifacts only (written).
@@ -86,7 +87,7 @@ export async function applyDbClusterLocal(input: {
       executed: false,
       cluster: planned,
       written,
-      notes: [...plan.notes, '無法套用：計劃失敗'],
+      notes: [...plan.notes, tl('notes.auto.n1162')],
       requiresExecute: true,
       requiresRoot: true,
     };
@@ -125,7 +126,7 @@ export async function applyDbClusterLocal(input: {
   if (confSrc && existsSync(confSrc)) {
     written.push(confSrc);
   } else if (confSrc) {
-    notes.push(`找不到 conf 產物：${confSrc}`);
+    notes.push(tl('notes.auto.t0584', { v0: (confSrc) }));
   }
 
   const requiresExecute = true;
@@ -139,7 +140,7 @@ export async function applyDbClusterLocal(input: {
       status: 'partial',
       notes: [
         ...plan.notes,
-        'dry-run：已寫入管理檔（dataDir）。加 execute + YSK_EXECUTE=1 + root 先裝系統 drop-in',
+        tl('notes.auto.n0272'),
       ],
       artifactDir,
     });
@@ -161,7 +162,7 @@ export async function applyDbClusterLocal(input: {
       members,
       status: 'partial',
       notes: [
-        '已寫管理檔，但未套用系統 conf：需 YSK_EXECUTE=1',
+        tl('notes.auto.n0768'),
         ...plan.notes.slice(0, 4),
       ],
     });
@@ -183,7 +184,7 @@ export async function applyDbClusterLocal(input: {
     const cluster = updateDbCluster(input.db, planned.id, {
       members,
       status: 'partial',
-      notes: ['已寫管理檔，但未套用系統 conf：需要 root', ...plan.notes.slice(0, 3)],
+      notes: [tl('notes.auto.n0769'), ...plan.notes.slice(0, 3)],
     });
     return {
       ok: false,
@@ -212,7 +213,7 @@ export async function applyDbClusterLocal(input: {
       executed: false,
       cluster: planned,
       written,
-      notes: [`本機 apply 不支援 ${planned.kind}`],
+      notes: [tl('notes.auto.t0585', { v0: (planned.kind) })],
       requiresExecute,
       requiresRoot,
     };
@@ -239,7 +240,7 @@ export async function applyDbClusterLocal(input: {
       executed: false,
       cluster: planned,
       written,
-      notes: ['缺少 conf 產物，請先 plan'],
+      notes: [tl('notes.auto.n1322')],
       requiresExecute,
       requiresRoot,
     };
@@ -284,14 +285,14 @@ export async function applyDbClusterLocal(input: {
     mkdirSync(dirname(dest), { recursive: true });
     copyFileSync(src, dest);
     written.push(dest);
-    notes.push(`已安裝系統 drop-in：${dest}`);
+    notes.push(tl('notes.auto.t0586', { v0: (dest) }));
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const members = markLocal(planned.members, local?.id, 'failed');
     const cluster = updateDbCluster(input.db, planned.id, {
       members,
       status: 'failed',
-      notes: [`寫入系統 conf 失敗：${msg}`],
+      notes: [tl('notes.auto.t0587', { v0: (msg) })],
     });
     return {
       ok: false,
@@ -319,8 +320,8 @@ export async function applyDbClusterLocal(input: {
       cmdOk = r.exitCode === 0;
       notes.push(
         cmdOk
-          ? '已 galera_new_cluster（bootstrap）'
-          : `galera_new_cluster 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
+          ? tl('notes.auto.n0724')
+          : tl('notes.auto.t0588', { v0: ((r.stderr || r.stdout || '').slice(0, 200)) }),
       );
     } else {
       const r = await input.host.runCommand(['systemctl', 'restart', unit], {
@@ -328,8 +329,8 @@ export async function applyDbClusterLocal(input: {
       });
       cmdOk = r.exitCode === 0;
       notes.push(
-        '無 galera_new_cluster；已 restart mariadb',
-        cmdOk ? 'restart OK' : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
+        tl('notes.auto.n1077'),
+        cmdOk ? 'restart OK' : tl('notes.tpl.restartFailed2', { detail: (r.stderr || r.stdout || '').slice(0, 160) }),
       );
     }
   } else {
@@ -344,14 +345,14 @@ export async function applyDbClusterLocal(input: {
     ) {
       notes.push(
         cmdOk
-          ? `已 systemctl restart ${unit}（從庫/slot/sentinel 後續步驟見 scripts/）`
-          : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
+          ? tl('notes.auto.t0589', { v0: (unit) })
+          : tl('notes.tpl.restartFailed2', { detail: (r.stderr || r.stdout || '').slice(0, 200) }),
       );
     } else {
       notes.push(
         cmdOk
-          ? `已 systemctl restart ${unit}`
-          : `restart 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`,
+          ? tl('notes.auto.t0590', { v0: (unit) })
+          : tl('notes.tpl.restartFailed2', { detail: (r.stderr || r.stdout || '').slice(0, 200) }),
       );
     }
   }
@@ -366,8 +367,8 @@ export async function applyDbClusterLocal(input: {
     status: cmdOk ? 'partial' : 'failed',
     notes: [
       ...notes,
-      'applied ≠ healthy — 請跑 probe 確認 wsrep',
-      'peer 節點仍需各自套用 conf 並 join',
+      tl('notes.auto.n0221'),
+      tl('notes.auto.n0373'),
     ],
     artifactDir,
   });

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Real MySQL/MariaDB provision via mysql CLI when available.
  * Never reports ok=true for skipped system mutations.
@@ -45,28 +46,25 @@ export async function provisionMysqlDatabase(input: {
       mysqlClient: false,
       sql: [],
       connectionHint: {},
-      notes: ['請提供密碼（至少 8 字元）'],
-      commandResults: [],
-    };
+      notes: [tl('notes.auto.n1418')],
+      commandResults: [] };
   }
 
   const { sql, connectionHint } = renderMysqlProvisionSql({
     dbName: input.dbName,
     username: input.username,
     password: input.password,
-    host: input.host ?? 'localhost',
-  });
+    host: input.host ?? 'localhost' });
 
   const which = await input.hostExec.runCommand(['bash', '-c', 'command -v mysql || true'], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   const mysqlClient = which.stdout.trim().length > 0;
   const wantsExecute = input.execute === true;
   const canExecute = wantsExecute && input.hostExec.executeEnabled() && mysqlClient;
 
   const notes: string[] = [];
-  if (!mysqlClient) notes.push('伺服器未安裝 MySQL 客戶端');
-  if (!input.hostExec.executeEnabled()) notes.push('伺服器未開啟系統變更權限，無法在管理面板建立資料庫');
+  if (!mysqlClient) notes.push(tl('notes.auto.n0521'));
+  if (!input.hostExec.executeEnabled()) notes.push(tl('notes.db.needExecuteCreate'));
 
   if (!wantsExecute) {
     return {
@@ -80,10 +78,9 @@ export async function provisionMysqlDatabase(input: {
       connectionHint,
       notes: [
         ...notes,
-        'dry-run：未建立資料庫。加 --execute 且 YSK_EXECUTE=1 先真正 provision',
+        tl('notes.db.dryRunMysql'),
       ],
-      commandResults: [],
-    };
+      commandResults: [] };
   }
 
   if (!canExecute) {
@@ -98,10 +95,9 @@ export async function provisionMysqlDatabase(input: {
       connectionHint,
       notes: [
         ...notes,
-        '資料庫尚未建立。請確認 mysql 客戶端與 YSK_EXECUTE=1 後再試。',
+        tl('notes.auto.n1449'),
       ],
-      commandResults: [],
-    };
+      commandResults: [] };
   }
 
   // Run as single multi-statement via mysql
@@ -122,6 +118,5 @@ export async function provisionMysqlDatabase(input: {
     notes: ok
       ? ['MySQL provision executed successfully']
       : [`mysql failed: ${r.stderr || r.stdout}`],
-    commandResults: [{ argv: ['mysql', '-e', '(redacted)'], exitCode: r.exitCode, stderr: r.stderr }],
-  };
+    commandResults: [{ argv: ['mysql', '-e', '(redacted)'], exitCode: r.exitCode, stderr: r.stderr }] };
 }

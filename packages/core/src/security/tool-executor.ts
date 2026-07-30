@@ -8,9 +8,8 @@ import type {
   ResourceScope,
   SystemRole,
   ToolCallRequest,
-  ToolCallResult,
-} from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+  ToolCallResult } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { Allowlist } from './allowlist.js';
 import type { ApprovalQueue } from './approval.js';
 import { checkRbac } from './rbac.js';
@@ -50,7 +49,7 @@ export async function executeToolCall(
   approvalId?: string,
 ): Promise<ToolCallResult> {
   if (!req.tool || typeof req.tool !== 'string') {
-    throw new YskError(ErrorCodes.VALIDATION, '請指定工具名稱', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1408'), { httpStatus: 400 });
   }
 
   const protection = opts.protection;
@@ -66,7 +65,7 @@ export async function executeToolCall(
 
   const evaluation = opts.allowlist.evaluate(req.tool);
   if (!evaluation.allowed) {
-    return deny(req, opts, evaluation.reason ?? '已拒絕 by allowlist');
+    return deny(req, opts, evaluation.reason ?? tl('notes.auto.n0779'));
   }
 
   const level: OperationLevel = toolImpliedLevel(req.tool, evaluation.risk);
@@ -93,9 +92,7 @@ export async function executeToolCall(
         wouldRequireApproval: evaluation.requiresApproval,
         schema: evaluation.entry?.argsSchema,
         protectionMode: protection?.mode ?? 'normal',
-        hostExecuteEnabled: opts.host.executeEnabled(),
-      },
-    };
+        hostExecuteEnabled: opts.host.executeEnabled() } };
   }
 
   if (evaluation.requiresApproval) {
@@ -104,22 +101,19 @@ export async function executeToolCall(
         action: req.tool,
         risk: evaluation.risk,
         requestedBy: opts.actor,
-        payload: req.args,
-      });
+        payload: req.args });
       opts.audit?.append({
         actor: opts.actor,
         action: 'tool.approval_requested',
         resource: req.tool,
         detail: { approvalId: pending.id, args: req.args },
-        ok: true,
-      });
+        ok: true });
       return {
         allowed: true,
         requiresApproval: true,
         approvalId: pending.id,
         dryRun: false,
-        result: { status: 'pending_approval', approvalId: pending.id },
-      };
+        result: { status: 'pending_approval', approvalId: pending.id } };
     }
     opts.approvals.assertApproved(approvalId, req.tool);
   }
@@ -138,8 +132,7 @@ export async function executeToolCall(
       action: 'tool.execute',
       resource: req.tool,
       detail: { args: req.args, result: summarize(resultPayload), approvalId },
-      ok: true,
-    });
+      ok: true });
     return {
       allowed: true,
       requiresApproval: evaluation.requiresApproval,
@@ -148,9 +141,7 @@ export async function executeToolCall(
       result: {
         tool: req.tool,
         executed: true,
-        ...resultPayload,
-      },
-    };
+        ...resultPayload } };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     opts.audit?.append({
@@ -158,8 +149,7 @@ export async function executeToolCall(
       action: 'tool.execute',
       resource: req.tool,
       detail: { args: req.args, error: message },
-      ok: false,
-    });
+      ok: false });
     if (err instanceof YskError) throw err;
     throw new YskError(ErrorCodes.INTERNAL, message, { httpStatus: 500, cause: err });
   }
@@ -174,26 +164,26 @@ async function dispatchTool(
   switch (tool) {
     case 'fs.read': {
       const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
       const content = await host.readFile(path);
       return { path, content, bytes: Buffer.byteLength(content) };
     }
     case 'fs.list': {
       const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
       const entries = await host.listDir(path);
       return { path, entries };
     }
     case 'fs.write': {
       const path = String(args.path ?? '');
       const content = String(args.content ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
       await host.writeFile(path, content);
       return { path, bytesWritten: Buffer.byteLength(content) };
     }
     case 'fs.delete': {
       const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
+      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
       await host.deletePath(path);
       return { path, deleted: true };
     }
@@ -213,15 +203,15 @@ async function dispatchTool(
     }
     case 'service.status': {
       const name = String(args.name ?? '');
-      if (!name) throw new YskError(ErrorCodes.VALIDATION, '請填寫名稱', { httpStatus: 400 });
+      if (!name) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needName'), { httpStatus: 400 });
       const r = await host.serviceStatus(name);
       return { name, ...r };
     }
     case 'service.restart': {
       const name = String(args.name ?? '');
-      if (!name) throw new YskError(ErrorCodes.VALIDATION, '請填寫名稱', { httpStatus: 400 });
+      if (!name) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needName'), { httpStatus: 400 });
       if (!/^[a-zA-Z0-9@_.-]+$/.test(name)) {
-        throw new YskError(ErrorCodes.VALIDATION, '服務名稱無效', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0947'), { httpStatus: 400 });
       }
       const r = await host.runCommand(['systemctl', 'restart', name]);
       return { name, ...r };
@@ -229,7 +219,7 @@ async function dispatchTool(
     case 'pkg.install': {
       const name = String(args.name ?? '');
       if (!name || !/^[a-zA-Z0-9+._-]+$/.test(name)) {
-        throw new YskError(ErrorCodes.VALIDATION, '套件名稱無效', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.invalidPackageName'), { httpStatus: 400 });
       }
       const r = await host.runCommand(['apt-get', 'install', '-y', name], { timeoutMs: 120_000 });
       return { package: name, ...r };
@@ -237,15 +227,14 @@ async function dispatchTool(
     case 'pkg.remove': {
       const name = String(args.name ?? '');
       if (!name || !/^[a-zA-Z0-9+._-]+$/.test(name)) {
-        throw new YskError(ErrorCodes.VALIDATION, '套件名稱無效', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.invalidPackageName'), { httpStatus: 400 });
       }
       const r = await host.runCommand(['apt-get', 'remove', '-y', name], { timeoutMs: 120_000 });
       return { package: name, ...r };
     }
     default:
-      throw new YskError(ErrorCodes.VALIDATION, `工具無主機執行器：${tool}`, {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0019', { v0: (tool) }), {
+        httpStatus: 400 });
   }
 }
 
@@ -259,14 +248,12 @@ function deny(
     action: 'tool.denied',
     resource: req.tool,
     detail: { reason, args: req.args },
-    ok: false,
-  });
+    ok: false });
   return {
     allowed: false,
     requiresApproval: false,
     dryRun: Boolean(req.dryRun),
-    denialReason: reason,
-  };
+    denialReason: reason };
 }
 
 function summarize(payload: Record<string, unknown>): unknown {

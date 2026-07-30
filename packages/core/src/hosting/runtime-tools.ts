@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Runtime tooling probes: composer, wp-cli, php modules.
  */
@@ -30,7 +31,7 @@ export async function probeRuntimeTools(host: HostExecutor): Promise<{
         .filter((s) => s && !s.startsWith('[')),
     };
   } else {
-    notes.push('php 未在 PATH');
+    notes.push(tl('notes.auto.n0376'));
   }
 
   const c = await host.runCommand(['bash', '-c', 'composer -V 2>/dev/null || true'], {

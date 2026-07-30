@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * System Log Center routes — /api/v1/logs/*
  */
@@ -19,33 +20,66 @@ export async function handleLogsRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/overview') {
     ctx.auth.authenticate(getBearer(req));
-    const { getLogOverview } = await import('@ysk/core');
-    sendJson(
-      res,
-      200,
-      await getLogOverview({ host: ctx.host, dataDir: ctx.dataDir, db: ctx.db }),
-    );
+    try {
+      const { getLogOverview } = await import('@ysk/core');
+      sendJson(
+        res,
+        200,
+        await getLogOverview({ host: ctx.host, dataDir: ctx.dataDir, db: ctx.db }),
+      );
+    } catch (e) {
+      // Never leave the Log center on a raw 500 — return degraded overview
+      sendJson(res, 200, {
+        at: new Date().toISOString(),
+        journalDisk: null,
+        journalDiskMb: null,
+        varLogHint: null,
+        varLogMb: null,
+        logrotate: { installed: false, statusText: '', notes: [] },
+        recentErrors: 0,
+        projectLogs: { fileCount: 0 },
+        executeEnabled: ctx.host.executeEnabled(),
+        isRoot: ctx.host.isRoot(),
+        quickUnits: [],
+        notes: [e instanceof Error ? e.message : tl('errors.http.internal')],
+        degraded: true,
+      });
+    }
     return true;
   }
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/sources') {
     ctx.auth.authenticate(getBearer(req));
-    const { listSourceStatuses, loadLogSettings } = await import('@ysk/core');
-    const settings = loadLogSettings(ctx.db);
-    sendJson(res, 200, {
-      items: listSourceStatuses({
-        disabledIds: settings.disabledSources,
-        extraManagedLogDirs: [join(ctx.dataDir, 'nginx', 'logs')],
-        customAllowPaths: settings.customAllowPaths,
-      }),
-    });
+    try {
+      const { listSourceStatuses, loadLogSettings } = await import('@ysk/core');
+      const settings = loadLogSettings(ctx.db);
+      sendJson(res, 200, {
+        items: listSourceStatuses({
+          disabledIds: settings.disabledSources,
+          extraManagedLogDirs: [join(ctx.dataDir, 'nginx', 'logs')],
+          customAllowPaths: settings.customAllowPaths,
+        }),
+      });
+    } catch (e) {
+      sendJson(res, 200, {
+        items: [],
+        notes: [e instanceof Error ? e.message : tl('errors.http.internal')],
+      });
+    }
     return true;
   }
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/journal/units') {
     ctx.auth.authenticate(getBearer(req));
-    const { listJournalUnits } = await import('@ysk/core');
-    sendJson(res, 200, await listJournalUnits(ctx.host));
+    try {
+      const { listJournalUnits } = await import('@ysk/core');
+      sendJson(res, 200, await listJournalUnits(ctx.host));
+    } catch (e) {
+      sendJson(res, 200, {
+        items: [],
+        notes: [e instanceof Error ? e.message : tl('errors.http.internal')],
+      });
+    }
     return true;
   }
 
@@ -92,7 +126,7 @@ export async function handleLogsRoutes(
     const { queryLogSource, loadLogSettings } = await import('@ysk/core');
     const source = url.searchParams.get('source') || '';
     if (!source) {
-      sendJson(res, 400, { ok: false, notes: ['需要 source'] });
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n1571')] });
       return true;
     }
     const settings = loadLogSettings(ctx.db);
@@ -224,7 +258,7 @@ export async function handleLogsRoutes(
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/').pop() || '';
     if (!/^[a-zA-Z0-9_-]{8,36}$/.test(id)) {
-      sendJson(res, 400, { ok: false, notes: ['無效 export id'] });
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n1101')] });
       return true;
     }
     const base = join(ctx.dataDir, 'logs-export');
@@ -237,7 +271,7 @@ export async function handleLogsRoutes(
       fname = `ysk-logs-${id}.jsonl`;
     }
     if (!existsSync(path)) {
-      sendJson(res, 404, { ok: false, notes: ['匯出不存在或已過期'] });
+      sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0607')] });
       return true;
     }
     res.writeHead(200, {

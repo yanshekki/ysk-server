@@ -3,9 +3,59 @@
  */
 
 import type { AuthLoginResponse, HealthResponse, OpsApplyResultDto, ProjectDto } from '@ysk/shared';
+import i18n from '../lib/i18n';
 import { authStore } from '../stores/auth-store';
 
 const base = '';
+
+/** API error with backend code + flags (L3). */
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  readonly needsTotp?: boolean;
+  readonly locked?: boolean;
+  readonly retryAfterSec?: number;
+  readonly details?: unknown;
+
+  constructor(
+    message: string,
+    opts: {
+      status: number;
+      code?: string;
+      needsTotp?: boolean;
+      locked?: boolean;
+      retryAfterSec?: number;
+      details?: unknown;
+    },
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = opts.status;
+    this.code = opts.code;
+    this.needsTotp = opts.needsTotp;
+    this.locked = opts.locked;
+    this.retryAfterSec = opts.retryAfterSec;
+    this.details = opts.details;
+  }
+}
+
+function localeHeader(): string {
+  try {
+    // Always send a supported tag so API runWithLocale matches UI language packs.
+    const raw =
+      i18n.language ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('ysk.locale') : null) ||
+      'zh-HK';
+    // Normalize en-US → en, zh-TW → zh-HK, etc.
+    const lower = String(raw).toLowerCase();
+    if (lower === 'en' || lower.startsWith('en-')) return 'en';
+    if (lower.includes('cn') || lower.includes('hans')) return 'zh-CN';
+    if (lower.startsWith('zh')) return 'zh-HK';
+    return 'zh-HK';
+  } catch {
+    return 'zh-HK';
+  }
+}
 
 function errorMessageFromBody(data: unknown, status: number): string {
   if (data && typeof data === 'object') {
@@ -28,11 +78,33 @@ function errorMessageFromBody(data: unknown, status: number): string {
       }
     }
   }
-  if (status === 401) return '未登入或工作階段已過期';
-  if (status === 403) return '沒有權限執行此操作';
-  if (status === 404) return '找不到資源';
-  if (status === 422) return '操作無法完成（伺服器拒絕）';
-  return `請求失敗（${status}）`;
+  if (status === 401) return i18n.t('errors.http.unauthorized');
+  if (status === 403) return i18n.t('errors.http.forbidden');
+  if (status === 404) return i18n.t('errors.http.notFound');
+  if (status === 422) return i18n.t('errors.http.unprocessable');
+  return i18n.t('errors.http.requestFailed', { status });
+}
+
+function throwFromResponse(data: unknown, status: number): never {
+  const o = data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
+  const details = o.details;
+  const d =
+    details && typeof details === 'object'
+      ? (details as Record<string, unknown>)
+      : {};
+  throw new ApiError(errorMessageFromBody(data, status), {
+    status,
+    code: typeof o.code === 'string' ? o.code : undefined,
+    needsTotp: Boolean(o.needsTotp ?? d.needsTotp),
+    locked: Boolean(o.locked ?? d.locked),
+    retryAfterSec:
+      typeof o.retryAfterSec === 'number'
+        ? o.retryAfterSec
+        : typeof d.retryAfterSec === 'number'
+          ? d.retryAfterSec
+          : undefined,
+    details: details ?? o,
+  });
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -41,6 +113,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      'Accept-Language': localeHeader(),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {}),
     },
@@ -52,7 +125,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     data = {};
   }
   if (!res.ok) {
-    throw new Error(errorMessageFromBody(data, res.status));
+    throwFromResponse(data, res.status);
   }
   return data as T;
 }
@@ -62,6 +135,36 @@ export const api = {
     return request<T>(path, init);
   },
   /**
+   * Like requestRaw, but treat listed HTTP statuses as success (body still returned).
+   * Used by readiness: 503 = not production-ready, payload is still the full report.
+   */
+  async requestRawAllowStatus<T>(
+    path: string,
+    opts?: RequestInit & { allowStatuses?: number[] },
+  ): Promise<T> {
+    const { allowStatuses = [], ...init } = opts ?? {};
+    const token = authStore.getToken();
+    const res = await fetch(`${base}${path}`, {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Language': localeHeader(),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(init.headers ?? {}),
+      },
+    });
+    let data: unknown = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
+    if (!res.ok && !allowStatuses.includes(res.status)) {
+      throwFromResponse(data, res.status);
+    }
+    return data as T;
+  },
+  /**
    * Authenticated binary download (Bearer). Saves via blob + object URL.
    * Do not use window.open — it will not send Authorization.
    */
@@ -69,6 +172,7 @@ export const api = {
     const token = authStore.getToken();
     const res = await fetch(`${base}${path}`, {
       headers: {
+        'Accept-Language': localeHeader(),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
@@ -79,7 +183,7 @@ export const api = {
       } catch {
         /* ignore */
       }
-      throw new Error(errorMessageFromBody(data, res.status));
+      throwFromResponse(data, res.status);
     }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -108,8 +212,27 @@ export const api = {
   logout(): Promise<{ ok: boolean }> {
     return request('/api/v1/auth/logout', { method: 'POST' });
   },
-  me(): Promise<{ user: { username: string; roles: string[]; locale: string } }> {
+  me(): Promise<{
+    user: {
+      id?: string;
+      username: string;
+      roles: string[];
+      locale: string;
+      capabilities?: string[];
+    };
+    capabilities?: string[];
+  }> {
     return request('/api/v1/auth/me');
+  },
+  /** Persist UI language for the signed-in user (Accept-Language still used per request). */
+  setLocale(locale: string): Promise<{
+    ok: boolean;
+    user: { id: string; username: string; roles: string[]; locale: string };
+  }> {
+    return request('/api/v1/auth/locale', {
+      method: 'PATCH',
+      body: JSON.stringify({ locale }),
+    });
   },
   totpStatus(): Promise<{
     enabled: boolean;

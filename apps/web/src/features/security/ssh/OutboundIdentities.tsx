@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionBar,
   Alert,
   Badge,
@@ -34,6 +35,7 @@ type Props = {
 };
 
 export function OutboundIdentities({ onFlash, onChanged }: Props) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<SshIdentityRow[]>([]);
   const [projects, setProjects] = useState<ProjectOpt[]>([]);
   const [busy, setBusy] = useState(false);
@@ -135,7 +137,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             : undefined,
       });
       if (!r.ok) {
-        onFlash('error', (r.notes ?? []).join('；') || '建立失敗');
+        onFlash('error', (r.notes ?? []).join(' · ') || t('security.ssh.createFailed'));
         return;
       }
       setWizOpen(false);
@@ -145,12 +147,12 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
         setRevealAck(false);
         setRevealNextId(r.identity?.id ?? null);
       }
-      onFlash('ok', '身份已建立（私鑰只顯示一次）');
+      onFlash('ok', t('security.ssh.identityCreatedOnce'));
       await refresh();
       onChanged();
       if (r.identity) setSelectedId(r.identity.id);
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '建立失敗');
+      onFlash('error', e instanceof Error ? e.message : t('security.ssh.createFailed'));
     } finally {
       setBusy(false);
     }
@@ -162,17 +164,17 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
       const r = await sshApi.install(id, true);
       onFlash(
         r.ok && r.applied ? 'ok' : r.blocked ? 'error' : 'ok',
-        (r.notes ?? []).join('；') ||
+        (r.notes ?? []).join(' · ') ||
           (r.applied
-            ? '已寫入磁碟'
+            ? t('security.ssh.writtenToDisk')
             : r.blocked
-              ? '無法寫入系統：需開啟執行權限（YSK_EXECUTE）'
-              : '未完成'),
+              ? t('security.ssh.cannotWriteNeedExecute')
+              : t('security.ssh.notDone')),
       );
       await refresh();
       onChanged();
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '安裝失敗');
+      onFlash('error', e instanceof Error ? e.message : t('security.ssh.installFailed'));
     } finally {
       setBusy(false);
     }
@@ -185,20 +187,20 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
       const r = await sshApi.test(testId, testTarget.trim(), true);
       onFlash(
         r.ok ? 'ok' : 'error',
-        (r.notes ?? []).join('；') || (r.ok ? '連線通過' : '連線失敗'),
+        (r.notes ?? []).join(' · ') || (r.ok ? t('security.ssh.testPassed') : t('security.ssh.testFailed')),
       );
       setTestId(null);
       await refresh();
       onChanged();
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '測試失敗');
+      onFlash('error', e instanceof Error ? e.message : t('security.ssh.testError'));
     } finally {
       setBusy(false);
     }
   }
 
   async function runPrimary(row: SshIdentityRow) {
-    const act = nextAction(row.status, row.purpose);
+    const act = nextAction(row.status, row.purpose, t);
     if (act.id === 'install') return runInstall(row.id);
     if (act.id === 'test') {
       setTestTarget(row.binding?.linuxUser ? `${row.binding.linuxUser}@` : 'root@');
@@ -207,7 +209,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
     }
     if (act.id === 'copy_pub') {
       void navigator.clipboard?.writeText(row.publicKey);
-      onFlash('ok', '已複製公鑰 — 貼到對方 authorized_keys 或 Git 部署金鑰');
+      onFlash('ok', t('security.ssh.copiedPubPaste'));
     }
   }
 
@@ -217,7 +219,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
     try {
       if (confirm.kind === 'delete') {
         await sshApi.remove(confirm.id, true);
-        onFlash('ok', `已刪除「${confirm.name}」`);
+        onFlash('ok', t('security.ssh.deletedNamed', { name: confirm.name }));
         if (selectedId === confirm.id) setSelectedId(null);
       } else {
         const r = await sshApi.rotate(confirm.id, true);
@@ -227,14 +229,14 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
           setRevealAck(false);
           setRevealNextId(r.newIdentity?.id ?? null);
         }
-        onFlash('ok', '已輪替：舊金鑰退役，新金鑰已建立');
+        onFlash('ok', t('security.ssh.rotated'));
         if (r.newIdentity) setSelectedId(r.newIdentity.id);
       }
       setConfirm(null);
       await refresh();
       onChanged();
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '操作失敗');
+      onFlash('error', e instanceof Error ? e.message : t('common.opFailed'));
     } finally {
       setBusy(false);
     }
@@ -246,12 +248,12 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
 
       <Card>
         <CardSection
-          title="出站身份金鑰"
-          description="私鑰加密保存在控制面。列表永不顯示私鑰。寫入磁碟 ≠ 對方已授權你登入。"
+          title={t('security.ssh.outboundTitle')}
+          description={t('security.ssh.outboundDesc')}
         >
           <ActionBar className="u-mb-3 u-flex-wrap">
             <Button variant="primary" size="md" onClick={openWizard}>
-              新增出站身份
+              {t('security.ssh.outboundAdd')}
             </Button>
             <Button
               variant="ghost"
@@ -259,18 +261,18 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               loading={busy}
               onClick={() => void refresh().catch((e: Error) => setLoadErr(e.message))}
             >
-              重新整理
+              {t('common.refresh')}
             </Button>
           </ActionBar>
 
           <div className="ssh-filters">
             {(
               [
-                ['active', '使用中'],
-                ['panel', '面板'],
-                ['user', '專案用戶'],
-                ['retired', '已退役'],
-                ['all', '全部'],
+                ['active', t('security.ssh.filterActive')],
+                ['panel', t('security.ssh.filterPanel')],
+                ['user', t('security.ssh.filterUser')],
+                ['retired', t('security.ssh.filterRetired')],
+                ['all', t('security.ssh.filterAll')],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -284,10 +286,10 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             ))}
             <input
               className="ssh-filter-search"
-              placeholder="搜尋名稱或 fingerprint…"
+              placeholder={t('security.ssh.searchIdentity')}
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              aria-label="搜尋身份"
+              aria-label={t('security.ssh.searchIdentityAria')}
             />
           </div>
         </CardSection>
@@ -295,27 +297,20 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
 
       <div className={`ssh-split${selected ? ' has-detail' : ''}`}>
         <Card className="ssh-split__list">
-          <CardSection title={filtered.length ? `${filtered.length} 個身份` : '身份列表'}>
+          <CardSection title={filtered.length ? t('security.ssh.identityCount', { count: filtered.length }) : t('security.ssh.identityList')}>
             {filtered.length === 0 ? (
               <EmptyState
-                title={items.length === 0 ? '還沒有出站身份' : '沒有符合條件的項目'}
+                title={items.length === 0 ? t('security.ssh.outboundEmpty') : t('security.ssh.outboundEmptyFilter')}
                 description={
                   items.length === 0
-                    ? '30 秒建立一把金鑰：選用途 → 命名 → 完成。之後可用於 peer / 備份 / git。'
-                    : '試下改篩選或清空搜尋'
-                }
-                action={
-                  items.length === 0 ? (
-                    <Button variant="primary" size="md" onClick={openWizard}>
-                      新增第一個出站身份
-                    </Button>
-                  ) : undefined
+                    ? t('security.ssh.outboundEmptyHint')
+                    : t('security.ssh.outboundEmptyFilterHint')
                 }
               />
             ) : (
               <div className="list-panel">
                 {filtered.map((row) => {
-                  const act = nextAction(row.status, row.purpose);
+                  const act = nextAction(row.status, row.purpose, t);
                   const on = selectedId === row.id;
                   return (
                     <div
@@ -334,15 +329,15 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                       <div className="list-row__main">
                         <div className="list-row__title">
                           <span>{row.name}</span>
-                          <Badge tone={statusTone(row.status)}>{statusLabel(row.status)}</Badge>
-                          <Badge tone="neutral">{purposeLabel(row.purpose)}</Badge>
+                          <Badge tone={statusTone(row.status)}>{statusLabel(row.status, t)}</Badge>
+                          <Badge tone="neutral">{purposeLabel(row.purpose, t)}</Badge>
                         </div>
                         <div className="list-row__meta">
                           <span title={row.fingerprintSha256} className="u-font-mono">
                             {shortFingerprint(row.fingerprintSha256)}
                           </span>
                           {row.binding?.linuxUser ? (
-                            <span>用戶 {row.binding.linuxUser}</span>
+                            <span>{t('security.ssh.userPrefix', { user: row.binding.linuxUser })}</span>
                           ) : null}
                           <span className="muted">{row.algorithm}</span>
                         </div>
@@ -369,26 +364,26 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
 
         {selected ? (
           <Card className="ssh-split__detail">
-            <CardSection title={selected.name} description={purposeHint(selected.purpose)}>
+            <CardSection title={selected.name} description={purposeHint(selected.purpose, t)}>
               <ActionBar className="u-mb-3 u-justify-end">
                 <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
-                  關閉
+                  {t('common.close')}
                 </Button>
               </ActionBar>
               <StatusPipeline status={selected.status} />
 
               <dl className="ssh-facts">
                 <div>
-                  <dt>狀態</dt>
+                  <dt>{t('security.ssh.detailStatus')}</dt>
                   <dd>
                     <Badge tone={statusTone(selected.status)}>
-                      {statusLabel(selected.status)}
+                      {statusLabel(selected.status, t)}
                     </Badge>
                   </dd>
                 </div>
                 <div>
-                  <dt>用途</dt>
-                  <dd>{purposeLabel(selected.purpose)}</dd>
+                  <dt>{t('security.ssh.detailPurpose')}</dt>
+                  <dd>{purposeLabel(selected.purpose, t)}</dd>
                 </div>
                 <div>
                   <dt>Fingerprint</dt>
@@ -398,7 +393,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 </div>
                 {selected.binding?.linuxUser ? (
                   <div>
-                    <dt>Linux 用戶</dt>
+                    <dt>{t('security.ssh.detailLinuxUser')}</dt>
                     <dd>
                       {selected.binding.linuxUser}
                       {selected.binding.homeDir ? (
@@ -409,7 +404,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 ) : null}
                 {selected.install?.path ? (
                   <div>
-                    <dt>磁碟路徑</dt>
+                    <dt>{t('security.ssh.detailDiskPath')}</dt>
                     <dd className="u-font-mono u-text-sm u-break-all">
                       {selected.install.path}
                     </dd>
@@ -417,14 +412,14 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 ) : null}
                 {selected.lastVerifyNote ? (
                   <div>
-                    <dt>最近測試</dt>
+                    <dt>{t('security.ssh.detailLastTest')}</dt>
                     <dd className="u-text-sm">{selected.lastVerifyNote}</dd>
                   </div>
                 ) : null}
               </dl>
 
               <FormHint>
-                建議流程：入庫 → 寫入磁碟 → 把<strong>公鑰</strong>放到對方 → 測試連線
+                {t('security.ssh.suggestFlowPrefix')}<strong>{t('security.ssh.publicKeyStrong')}</strong>{t('security.ssh.suggestFlowSuffix')}
               </FormHint>
 
               <div className="ssh-detail-actions">
@@ -434,17 +429,17 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                   loading={busy}
                   onClick={() => void runPrimary(selected)}
                 >
-                  {nextAction(selected.status, selected.purpose).label || '複製公鑰'}
+                  {nextAction(selected.status, selected.purpose, t).label || t('security.ssh.actionCopyPub')}
                 </Button>
                 <Button
                   variant="secondary"
                   size="md"
                   onClick={() => {
                     void navigator.clipboard?.writeText(selected.publicKey);
-                    onFlash('ok', '已複製公鑰');
+                    onFlash('ok', t('security.ssh.copiedPub'));
                   }}
                 >
-                  複製公鑰
+                  {t('security.ssh.actionCopyPub')}
                 </Button>
                 {(selected.binding?.linuxUser || selected.binding?.projectId) &&
                 selected.status !== 'retired' ? (
@@ -459,15 +454,15 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                         .then((r) => {
                           onFlash(
                             r.ok ? 'ok' : 'error',
-                            (r.notes ?? []).join('；') ||
-                              (r.ok ? '已把公鑰加入本機登入授權' : '失敗'),
+                            (r.notes ?? []).join(' · ') ||
+                              (r.ok ? t('security.ssh.localLoginOk') : t('common.failed')),
                           );
                         })
                         .catch((e: Error) => onFlash('error', e.message))
                         .finally(() => setBusy(false));
                     }}
                   >
-                    允許本機用此鑰登入
+                    {t('security.ssh.allowLocalLogin')}
                   </Button>
                 ) : null}
                 <Button
@@ -482,7 +477,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                     setTestId(selected.id);
                   }}
                 >
-                  測試連線…
+                  {t('security.ssh.testingConnection')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -492,7 +487,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                     setConfirm({ kind: 'rotate', id: selected.id, name: selected.name })
                   }
                 >
-                  輪替金鑰
+                  {t('security.ssh.rotateKey')}
                 </Button>
                 <Button
                   variant="danger"
@@ -501,7 +496,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                     setConfirm({ kind: 'delete', id: selected.id, name: selected.name })
                   }
                 >
-                  刪除
+                  {t('common.delete')}
                 </Button>
               </div>
             </CardSection>
@@ -515,21 +510,21 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
         onClose={() => setWizOpen(false)}
         title={
           wizStep === 1
-            ? '這把金鑰用來做什麼？'
+            ? t('security.ssh.wizStepPurpose')
             : wizStep === 2
               ? purpose === 'user_outbound'
-                ? '綁定哪個專案？'
-                : '確認面板出站'
-              : '命名與選項'
+                ? t('security.ssh.wizStepProject')
+                : t('security.ssh.wizStepPanelConfirm')
+              : t('security.ssh.wizStepName')
         }
         description={
           wizStep === 1
-            ? '選對用途，之後列表與安裝路徑會自動對齊'
+            ? t('security.ssh.wizStepPurposeDesc')
             : wizStep === 2
               ? purpose === 'user_outbound'
-                ? '金鑰會綁定該專案的 Linux 用戶與 home'
-                : '私鑰只放在控制面 secrets，用於 scp／ssh 到其他主機'
-              : '名稱方便你辨識；進階選項可稍後再改'
+                ? t('security.ssh.wizStepProjectDesc')
+                : t('security.ssh.wizStepPanelDesc')
+              : t('security.ssh.wizStepNameDesc')
         }
         size="lg"
         footer={
@@ -542,7 +537,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 else setWizStep((s) => (s === 3 ? 2 : 1));
               }}
             >
-              {wizStep === 1 ? '取消' : '上一步'}
+              {wizStep === 1 ? t('common.cancel') : t('security.ssh.prevStep')}
             </Button>
             {wizStep < 3 ? (
               <Button
@@ -557,11 +552,11 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                   }
                 }}
               >
-                下一步
+                {t('security.ssh.nextStep')}
               </Button>
             ) : (
               <Button variant="primary" size="md" loading={busy} onClick={() => void submitCreate()}>
-                建立身份
+                {t('security.ssh.createIdentity')}
               </Button>
             )}
           </>
@@ -574,30 +569,30 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               className={`ssh-purpose-card${purpose === 'panel_outbound' ? ' is-on' : ''}`}
               onClick={() => setPurpose('panel_outbound')}
             >
-              <strong>面板連其他機</strong>
-              <span>Cluster peer、遠端備份、探測</span>
-              <span className="muted u-text-sm">推薦大多數管理操作</span>
+              <strong>{t('security.ssh.purposePanelTitle')}</strong>
+              <span>{t('security.ssh.purposePanelSub')}</span>
+              <span className="muted u-text-sm">{t('security.ssh.purposePanelRec')}</span>
             </button>
             <button
               type="button"
               className={`ssh-purpose-card${purpose === 'user_outbound' ? ' is-on' : ''}`}
               onClick={() => setPurpose('user_outbound')}
             >
-              <strong>專案用戶出站</strong>
-              <span>git pull、專案腳本 scp</span>
-              <span className="muted u-text-sm">寫入專案 home/.ssh</span>
+              <strong>{t('security.ssh.purposeUserTitle')}</strong>
+              <span>{t('security.ssh.purposeUserSub')}</span>
+              <span className="muted u-text-sm">{t('security.ssh.purposeUserPath')}</span>
             </button>
           </div>
         ) : null}
 
         {wizStep === 2 && purpose === 'user_outbound' ? (
-          <Field label="專案" htmlFor="wiz-proj" flush fullWidth required>
+          <Field label={t('common.project')} htmlFor="wiz-proj" flush fullWidth required>
             <select
               id="wiz-proj"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
             >
-              <option value="">— 選擇專案 —</option>
+              <option value="">{t('security.ssh.selectProject')}</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} · {p.linuxUser}
@@ -605,7 +600,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               ))}
             </select>
             {projects.length === 0 ? (
-              <FormHint>尚未有專案 — 請先建立專案與系統用戶</FormHint>
+              <FormHint>{t('security.ssh.noProjectsHint')}</FormHint>
             ) : null}
           </Field>
         ) : null}
@@ -613,19 +608,19 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
         {wizStep === 2 && purpose === 'panel_outbound' ? (
           <div className="ssh-callout">
             <p>
-              建立後請把<strong>公鑰</strong>放到目標機的{' '}
+              {t('security.ssh.afterCreatePub')}<strong>{t('security.ssh.publicKeyStrong')}</strong>{t('security.ssh.afterCreatePubMid')}{' '}
               <code className="inline">authorized_keys</code>
-              ，再用「測試連線」確認。
+              {t('security.ssh.afterCreatePubEnd')}
             </p>
             <p className="muted u-text-sm u-mb-0">
-              私鑰只留在本機控制面；不會出現在列表或日誌。
+              {t('security.ssh.privKeyStayLocal')}
             </p>
           </div>
         ) : null}
 
         {wizStep === 3 ? (
           <FormLayout columns={1}>
-            <Field label="顯示名稱" htmlFor="wiz-name" flush required hint="例如 peer-prod、myapp-git">
+            <Field label={t('security.ssh.displayName')} htmlFor="wiz-name" flush required hint={t('security.ssh.displayNameHint')}>
               <input
                 id="wiz-name"
                 value={name}
@@ -634,15 +629,15 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 spellCheck={false}
               />
             </Field>
-            <Field label="演算法" htmlFor="wiz-algo" flush>
+            <Field label={t('security.ssh.algorithm')} htmlFor="wiz-algo" flush>
               <SegRadio
                 name="wiz-algo"
-                aria-label="演算法"
+                aria-label={t('security.ssh.algorithm')}
                 value={algo}
                 onChange={setAlgo}
                 options={[
-                  { value: 'ed25519', label: 'ed25519', hint: '建議' },
-                  { value: 'rsa-4096', label: 'RSA 4096', hint: '舊系統' },
+                  { value: 'ed25519', label: 'ed25519', hint: t('security.ssh.algoSuggested') },
+                  { value: 'rsa-4096', label: 'RSA 4096', hint: t('security.ssh.algoLegacy') },
                 ]}
               />
             </Field>
@@ -653,10 +648,10 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 onChange={(e) => setInstallNow(e.target.checked)}
               />
               <span>
-                建立後立即寫入磁碟
+                {t('security.ssh.installImmediately')}
                 <span className="muted u-text-sm">
                   {' '}
-                  （需系統執行權限；否則會提示無法套用）
+                  {t('security.ssh.installImmediatelyHint')}
                 </span>
               </span>
             </label>
@@ -676,8 +671,8 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
           setRevealFp(null);
           setRevealNextId(null);
         }}
-        title="請立即保存私鑰"
-        description="關閉後面板不會再顯示私鑰全文。公鑰可隨時複製。"
+        title={t('security.ssh.savePrivTitle')}
+        description={t('security.ssh.savePrivDesc')}
         size="lg"
         footer={
           <>
@@ -686,10 +681,10 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               size="md"
               onClick={() => {
                 if (revealKey) void navigator.clipboard?.writeText(revealKey);
-                onFlash('ok', '已複製私鑰');
+                onFlash('ok', t('security.ssh.copiedPriv'));
               }}
             >
-              複製私鑰
+              {t('security.ssh.copyPriv')}
             </Button>
             {revealNextId ? (
               <Button
@@ -703,7 +698,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                   void runInstall(id);
                 }}
               >
-                下一步：寫入磁碟
+                {t('security.ssh.nextInstallDisk')}
               </Button>
             ) : null}
             <Button
@@ -717,7 +712,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 setRevealAck(false);
               }}
             >
-              我已保存，關閉
+              {t('security.ssh.savedCloseBtn')}
             </Button>
           </>
         }
@@ -727,7 +722,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             Fingerprint：<code className="inline u-break-all">{revealFp}</code>
           </FormHint>
         ) : null}
-        <Field label="Private key（僅此一次）" htmlFor="reveal-priv" flush fullWidth>
+        <Field label={t('security.ssh.privKeyOnce')} htmlFor="reveal-priv" flush fullWidth>
           <textarea
             id="reveal-priv"
             rows={8}
@@ -743,7 +738,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             checked={revealAck}
             onChange={(e) => setRevealAck(e.target.checked)}
           />
-          <span>我已把私鑰存到安全位置（密碼管理器／離線備份）</span>
+          <span>{t('security.ssh.privSavedConfirm')}</span>
         </label>
       </Modal>
 
@@ -751,12 +746,12 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
       <Modal
         open={Boolean(testId)}
         onClose={() => setTestId(null)}
-        title="測試連線"
-        description="用此身份嘗試 ssh … true。成功只代表這個目標可登入。"
+        title={t('security.ssh.testConnTitle')}
+        description={t('security.ssh.testConnDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setTestId(null)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -765,17 +760,17 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               disabled={!testTarget.includes('@')}
               onClick={() => void runTest()}
             >
-              開始測試
+              {t('security.ssh.startTest')}
             </Button>
           </>
         }
       >
         <Field
-          label="目標"
+          label={t('security.ssh.testTarget')}
           htmlFor="test-target"
           flush
           required
-          hint="格式 user@host 或 user@host:port"
+          hint={t('security.ssh.testTargetHint')}
         >
           <input
             id="test-target"
@@ -791,14 +786,14 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
         open={Boolean(confirm)}
         onClose={() => setConfirm(null)}
         onConfirm={() => void confirmAction()}
-        title={confirm?.kind === 'delete' ? '刪除身份？' : '輪替金鑰？'}
+        title={confirm?.kind === 'delete' ? t('security.ssh.deleteIdentityTitle') : t('security.ssh.rotateKeyTitle')}
         description={
           confirm?.kind === 'delete'
-            ? `將刪除「${confirm?.name}」並嘗試清除磁碟上的私鑰檔。此操作無法復原。`
-            : `「${confirm?.name}」會標記為已退役，並產生一把新金鑰。請更新對方 authorized_keys。`
+            ? t('security.ssh.deleteIdentityDesc', { name: confirm?.name })
+            : t('security.ssh.rotateKeyDesc', { name: confirm?.name })
         }
-        confirmLabel={confirm?.kind === 'delete' ? '刪除' : '輪替'}
-        cancelLabel="取消"
+        confirmLabel={confirm?.kind === 'delete' ? t('common.delete') : t('security.ssh.rotate')}
+        cancelLabel={t('common.cancel')}
         danger={confirm?.kind === 'delete'}
         busy={busy}
       />
@@ -807,10 +802,15 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
 }
 
 function StatusPipeline({ status }: { status: string }) {
+  const { t } = useTranslation();
   const step = pipelineStep(status);
-  const labels = ['已入庫', '已寫磁碟', '連線通過'];
+  const labels = [
+    t('security.ssh.pipelineStored'),
+    t('security.ssh.pipelineInstalled'),
+    t('security.ssh.pipelineVerified'),
+  ];
   return (
-    <ol className="ssh-pipeline" aria-label="進度">
+    <ol className="ssh-pipeline" aria-label={t('security.ssh.progressAria')}>
       {labels.map((lab, i) => {
         const done = step !== 3 && i <= step;
         const fail = step === 3 && i === 0;

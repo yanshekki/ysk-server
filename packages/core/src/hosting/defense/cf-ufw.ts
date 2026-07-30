@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * UFW "Cloudflare only" profile — origin only accepts CF edge ranges + SSH.
  * Static lists from https://www.cloudflare.com/ips-v4 and ips-v6 (refresh periodically).
@@ -82,25 +83,25 @@ export async function writeAndMaybeApplyCfOnlyUfw(input: {
   const body = renderCfOnlyUfwScript({ keepTcpPorts: input.keepTcpPorts });
   writeFileSync(scriptPath, body, 'utf8');
   const notes = [
-    `已寫 CF-only UFW 腳本：${scriptPath}`,
-    `保留埠：${(input.keepTcpPorts ?? [22]).join(',')}`,
-    `CF IPv4 段：${CLOUDFLARE_IPV4_RANGES.length} 個`,
-    `CF IPv6 段：${CLOUDFLARE_IPV6_RANGES.length} 個`,
-    '請確認 /etc/default/ufw 內 IPV6=yes',
+    tl('notes.auto.t0523', { v0: (scriptPath) }),
+    tl('notes.auto.t0524', { v0: ((input.keepTcpPorts ?? [22]).join(',')) }),
+    tl('notes.auto.t0525', { v0: (CLOUDFLARE_IPV4_RANGES.length) }),
+    tl('notes.auto.t0526', { v0: (CLOUDFLARE_IPV6_RANGES.length) }),
+    tl('notes.auto.n1423'),
   ];
   if (!input.apply) {
     // Plan / written only — not blocked (operator chose not to apply)
     return {
       ok: true,
       written: [scriptPath],
-      notes: [...notes, '狀態：written（apply=false；未套用到系統）'],
+      notes: [...notes, tl('notes.auto.n1225')],
     };
   }
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
       written: [scriptPath],
-      notes: [...notes, '需 YSK_EXECUTE 先可 ufw apply'],
+      notes: [...notes, tl('notes.auto.n1539')],
       blocked: true,
     };
   }
@@ -108,7 +109,7 @@ export async function writeAndMaybeApplyCfOnlyUfw(input: {
     return {
       ok: false,
       written: [scriptPath],
-      notes: [...notes, '需 root 先可改 UFW'],
+      notes: [...notes, tl('notes.auto.n1548')],
       blocked: true,
     };
   }
@@ -116,8 +117,8 @@ export async function writeAndMaybeApplyCfOnlyUfw(input: {
   const ok = r.exitCode === 0;
   notes.push(
     ok
-      ? '已套用 CF-only UFW（origin 只收 CF + 保留埠）'
-      : `ufw 腳本失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
+      ? tl('notes.auto.n0753')
+      : tl('notes.auto.t0527', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
   );
   return { ok, written: [scriptPath], notes };
 }

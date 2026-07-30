@@ -53,74 +53,75 @@ export function useDashboard() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Isolate each call so one failed/down API never aborts the whole dashboard
+      // (proxy ECONNREFUSED while API restarts previously left the page half-dead).
+      const soft = async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
+        try {
+          return await fn();
+        } catch {
+          return undefined;
+        }
+      };
+
       try {
-        const h = await dashboardApi.health();
-        if (!cancelled) setHealth(h);
-        const a = await dashboardApi.audit();
-        if (!cancelled) setAudit(a.items.slice(0, 12));
-        const m = await dashboardApi.metrics();
-        if (!cancelled) setMetrics(m);
-        try {
-          const p = await dashboardApi.projects();
-          if (!cancelled) setProjects(p.items.slice(0, 12));
-        } catch {
-          /* guest */
+        const h = await soft(() => dashboardApi.health());
+        if (!cancelled && h) setHealth(h);
+        else if (!cancelled && !h) setError('API unreachable');
+
+        const a = await soft(() => dashboardApi.audit());
+        if (!cancelled && a?.items) setAudit(a.items.slice(0, 12));
+
+        const m = await soft(() => dashboardApi.metrics());
+        if (!cancelled && m) setMetrics(m);
+
+        const p = await soft(() => dashboardApi.projects());
+        if (!cancelled && p?.items) setProjects(p.items.slice(0, 12));
+
+        const b = await soft(() => dashboardApi.backups());
+        if (!cancelled && b?.items) setBackups(b.items.length);
+
+        const s = await soft(() => dashboardApi.sslBindings());
+        if (!cancelled && s?.items) {
+          const now = Date.now();
+          const exp = (s.items ?? [])
+            .filter((c) => c.expires_at)
+            .map((c) => {
+              const t = new Date(String(c.expires_at)).getTime();
+              const days = Math.floor((t - now) / (86400 * 1000));
+              return { domain: c.domain, expires_at: String(c.expires_at), days };
+            })
+            .filter((c) => c.days <= 30)
+            .sort((x, y) => x.days - y.days);
+          setExpiringCerts(exp);
         }
-        try {
-          const b = await dashboardApi.backups();
-          if (!cancelled) setBackups(b.items.length);
-        } catch {
-          /* optional */
+
+        const sum = await soft(() => dashboardApi.summary());
+        if (!cancelled && sum) setSummary(sum);
+
+        const r = await soft(() => dashboardApi.readiness());
+        // Guard shape: never set partial objects that crash render (score/summary)
+        if (
+          !cancelled &&
+          r &&
+          r.score &&
+          typeof r.score.ready === 'number' &&
+          Array.isArray(r.summary)
+        ) {
+          setReadiness(r);
         }
-        try {
-          const s = await dashboardApi.sslBindings();
-          if (!cancelled) {
-            const now = Date.now();
-            const exp = (s.items ?? [])
-              .filter((c) => c.expires_at)
-              .map((c) => {
-                const t = new Date(String(c.expires_at)).getTime();
-                const days = Math.floor((t - now) / (86400 * 1000));
-                return { domain: c.domain, expires_at: String(c.expires_at), days };
-              })
-              .filter((c) => c.days <= 30)
-              .sort((a, b) => a.days - b.days);
-            setExpiringCerts(exp);
-          }
-        } catch {
-          /* optional */
+
+        const n = await soft(() => dashboardApi.notifications());
+        if (!cancelled && n) {
+          setNotifications(n.items ?? []);
+          setNotifCounts(n.counts ?? { critical: 0, warn: 0, info: 0 });
         }
-        try {
-          const s = await dashboardApi.summary();
-          if (!cancelled) setSummary(s);
-        } catch {
-          /* optional */
-        }
-        try {
-          const r = await dashboardApi.readiness();
-          if (!cancelled) setReadiness(r);
-        } catch {
-          /* optional / 503 still returns body via fetch throw — ignore */
-        }
-        try {
-          const n = await dashboardApi.notifications();
-          if (!cancelled) {
-            setNotifications(n.items ?? []);
-            setNotifCounts(n.counts ?? { critical: 0, warn: 0, info: 0 });
-          }
-        } catch {
-          /* optional */
-        }
-        try {
-          const a = await dashboardApi.applyAudit();
-          if (!cancelled) {
-            setApplyAudit({
-              summary: a.summary,
-              findings: (a.findings ?? []).filter((f) => f.severity !== 'ok').slice(0, 12),
-            });
-          }
-        } catch {
-          /* optional */
+
+        const aa = await soft(() => dashboardApi.applyAudit());
+        if (!cancelled && aa?.summary) {
+          setApplyAudit({
+            summary: aa.summary,
+            findings: (aa.findings ?? []).filter((f) => f.severity !== 'ok').slice(0, 12),
+          });
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Error');

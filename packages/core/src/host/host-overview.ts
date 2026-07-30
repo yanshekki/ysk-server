@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Unified host overview for System → 主機 tab (read-mostly, fail-soft).
  */
@@ -16,66 +17,11 @@ import {
 } from 'node:os';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { HostOverviewDto } from '@ysk/shared';
 import type { HostExecutor } from './executor.js';
 
-export type HostDiskRow = {
-  filesystem: string;
-  type: string;
-  size: string;
-  used: string;
-  avail: string;
-  usePct: number | null;
-  mount: string;
-};
-
-export type HostOverview = {
-  identity: {
-    hostname: string | null;
-    prettyHostname: string | null;
-    timezone: string | null;
-  };
-  os: {
-    platform: string;
-    arch: string;
-    release: string;
-    kernel: string | null;
-  };
-  runtime: {
-    uptimeSec: number;
-    loadavg: number[];
-    cpus: number;
-    memory: { total: number; free: number; usedRatio: number };
-    node: string;
-    pid: number;
-    uid: number | null;
-  };
-  time: {
-    utc: string;
-    local: string;
-    ntpEnabled: boolean | null;
-    ntpSynchronized: boolean | null;
-    timeSource: string | null;
-  };
-  network: {
-    ips: string[];
-    interfaces: Array<{ name: string; addrs: string[] }>;
-    resolvers: string[];
-  };
-  disks: HostDiskRow[];
-  power: {
-    pending: { raw: string; actionHint: string | null } | null;
-  };
-  boot: {
-    defaultTarget: string | null;
-  };
-  caps: {
-    executeEnabled: boolean;
-    isRoot: boolean;
-    canPower: boolean;
-    canIdentity: boolean;
-  };
-  collectedAt: string;
-};
+export type HostOverview = HostOverviewDto;
+export type HostDiskRow = HostOverviewDto['disks'][number];
 
 function parseTimedatectlShow(stdout: string): {
   timezone: string | null;
@@ -396,16 +342,16 @@ export async function enableHostNtp(host: HostExecutor): Promise<{
     return {
       ok: false,
       blocked: true,
-      blockMessage: '無法啟用 NTP：需要系統變更權限與 root',
-      notes: ['需要 YSK_EXECUTE=1 與 root'],
+      blockMessage: tl('notes.auto.n1151'),
+      notes: [tl('ops.blocked.needExecuteRoot')],
     };
   }
   const r = await host.runCommand(['timedatectl', 'set-ntp', 'true'], { timeoutMs: 15_000 });
   if (r.exitCode === 0) {
-    notes.push('已啟用 NTP 同步（timedatectl set-ntp true）');
+    notes.push(tl('notes.auto.n0746'));
     return { ok: true, notes };
   }
-  notes.push(`啟用 NTP 失敗: ${(r.stderr || r.stdout || '').trim() || `exit ${r.exitCode}`}`);
+  notes.push(tl('notes.tpl.ntpEnableFailed', { detail: (r.stderr || r.stdout || '').trim() || `exit ${r.exitCode}` }));
   return { ok: false, notes };
 }
 

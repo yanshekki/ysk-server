@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Multi-list DNSBL (blacklist) checks for outbound mail IP reputation (Spec §5.4 D).
  */
@@ -118,7 +119,7 @@ export async function checkIpDnsbl(
       : [
           `IP ${n} not listed on ${zones.length} checked DNSBLs`,
           ...(fam === 6
-            ? ['部分 DNSBL 未必完整支援 IPv6；結果僅供參考']
+            ? [tl('notes.auto.n1489')]
             : []),
         ];
   return {

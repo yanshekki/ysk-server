@@ -1,37 +1,20 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { canSeeFeature } from '@ysk/shared';
 import { useAuth } from '../../shared/hooks/useAuth';
+import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { api } from '../../shared/services/api';
 import { buttonClassName } from '../../shared/components/ui';
+import {
+  cycleAppLocale,
+  LOCALE_LABELS,
+  normalizeLocale,
+} from '../../shared/lib/i18n';
 
 /** All nav paths — used so /ftp does not stay active on /ftp/service */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
-
-const LANG_ORDER = ['zh-TW', 'en', 'zh-CN'] as const;
-
-/** Human-readable language names (not locale codes like zh-TW). */
-const LANG_LABEL: Record<string, string> = {
-  'zh-TW': '繁體中文',
-  'zh-CN': '简体中文',
-  en: 'English',
-};
-
-function langDisplayName(code: string): string {
-  const base = code.split('-')[0];
-  if (LANG_LABEL[code]) return LANG_LABEL[code];
-  if (base === 'zh') return LANG_LABEL['zh-TW']!;
-  if (base === 'en') return LANG_LABEL.en!;
-  return code;
-}
-
-function roleDisplayName(role: string): string {
-  if (role === 'admin') return '管理員';
-  if (role === 'operator') return '操作員';
-  if (role === 'viewer') return '檢視者';
-  return role;
-}
 
 /**
  * Active only for exact match, or for nested routes when no longer sibling nav path matches.
@@ -53,6 +36,7 @@ function isNavActive(to: string, pathname: string): boolean {
 export function AppShell() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
+  const { capabilities } = useCapabilities();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -60,6 +44,18 @@ export function AppShell() {
   const [searchHits, setSearchHits] = useState<
     Array<{ kind: string; title: string; subtitle?: string; href: string }>
   >([]);
+
+  const isAdmin = Boolean(user?.roles?.includes('admin'));
+  const navSections = useMemo(
+    () =>
+      FEATURE_SECTIONS.map((section) => ({
+        ...section,
+        items: section.items.filter(
+          (item) => isAdmin || canSeeFeature(item.key, capabilities),
+        ),
+      })).filter((section) => section.items.length > 0),
+    [capabilities, isAdmin],
+  );
 
   async function onLogout() {
     await logout();
@@ -83,19 +79,16 @@ export function AppShell() {
   }
 
   function cycleLang() {
-    const cur = i18n.language?.startsWith('zh-CN')
-      ? 'zh-CN'
-      : i18n.language?.startsWith('zh')
-        ? 'zh-TW'
-        : i18n.language?.startsWith('en')
-          ? 'en'
-          : 'zh-TW';
-    const i = LANG_ORDER.indexOf(cur as (typeof LANG_ORDER)[number]);
-    void i18n.changeLanguage(LANG_ORDER[(i + 1) % LANG_ORDER.length]);
+    cycleAppLocale();
   }
 
   const primaryRole = user?.roles?.[0];
-  const roleLabel = primaryRole ? roleDisplayName(primaryRole) : null;
+  const roleLabel = primaryRole
+    ? t(`roles.${primaryRole}`, { defaultValue: primaryRole })
+    : null;
+  const langLabel =
+    LOCALE_LABELS[normalizeLocale(i18n.language)] ??
+    t('common.languageName', { defaultValue: 'Language' });
 
   return (
     <div className="shell">
@@ -106,7 +99,7 @@ export function AppShell() {
           <span className="gradient-text">YSK Server</span>
         </div>
         <nav className="shell__nav" aria-label="Main">
-          {FEATURE_SECTIONS.map((section) => (
+          {navSections.map((section) => (
             <div key={section.sectionKey} className="shell__nav-section">
               {section.sectionKey !== 'overview' ? (
                 <span className="shell__nav-section-title">
@@ -148,40 +141,27 @@ export function AppShell() {
             type="button"
             className={`${buttonClassName({ variant: 'secondary', size: 'sm' })} shell__menu-btn`}
             onClick={() => setOpen(true)}
-            aria-label="Menu"
+            aria-label={t('common.menu')}
           >
             ☰
           </button>
-          <div className="shell__search" style={{ position: 'relative', flex: '1 1 12rem', maxWidth: 320 }}>
+          <div className="shell__search shell-search">
             <input
               type="search"
-              placeholder="全域搜尋…"
+              placeholder={t('common.searchGlobal')}
               value={searchQ}
               onChange={(e) => void onSearch(e.target.value)}
-              aria-label="全域搜尋"
-              style={{ width: '100%' }}
+              aria-label={t('common.searchGlobal')}
+              className="shell-search__input"
             />
             {searchHits.length > 0 ? (
-              <div
-                className="card"
-                style={{
-                  position: 'absolute',
-                  zIndex: 50,
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  marginTop: 4,
-                  maxHeight: 280,
-                  overflow: 'auto',
-                }}
-              >
-                <ul className="list-plain" style={{ margin: 0, padding: '0.5rem' }}>
+              <div className="card shell-search__menu">
+                <ul className="list-plain shell-search__list">
                   {searchHits.map((h, i) => (
                     <li key={`${h.kind}-${h.href}-${i}`}>
                       <button
                         type="button"
-                        className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-                        style={{ width: '100%', justifyContent: 'flex-start' }}
+                        className={`${buttonClassName({ variant: 'ghost', size: 'sm' })} shell-search__item`}
                         onClick={() => {
                           setSearchHits([]);
                           setSearchQ('');
@@ -204,10 +184,10 @@ export function AppShell() {
             type="button"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
             onClick={cycleLang}
-            title="切換語言"
-            aria-label={`語言：${langDisplayName(i18n.language)}`}
+            title={t('common.switchLanguage')}
+            aria-label={`${t('common.language')}: ${langLabel}`}
           >
-            {langDisplayName(i18n.language)}
+            {langLabel}
           </button>
           <span className="shell__user">
             {user?.username ?? '—'}

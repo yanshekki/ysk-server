@@ -1,45 +1,46 @@
+import type { TFunction } from 'i18next';
 import type { BadgeTone } from '../../../shared/components/ui';
 
 /** Human labels — never show raw enums as primary UI copy */
 
-export function purposeLabel(purpose: string): string {
+export function purposeLabel(purpose: string, t: TFunction): string {
   switch (purpose) {
     case 'panel_outbound':
-      return '面板連其他機';
+      return t('security.ssh.purposePanel');
     case 'user_outbound':
-      return '專案用戶出站';
+      return t('security.ssh.purposeUser');
     case 'unbound':
-      return '尚未指定用途';
+      return t('security.ssh.purposeUnbound');
     default:
       return purpose;
   }
 }
 
-export function purposeHint(purpose: string): string {
+export function purposeHint(purpose: string, t: TFunction): string {
   switch (purpose) {
     case 'panel_outbound':
-      return 'Cluster peer、備份 scp、遠端探測';
+      return t('security.ssh.purposePanelHint');
     case 'user_outbound':
-      return '專案 Linux 用戶 git / scp / 腳本';
+      return t('security.ssh.purposeUserHint');
     default:
-      return '稍後再綁定';
+      return t('security.ssh.purposeDefaultHint');
   }
 }
 
-export function statusLabel(status: string): string {
+export function statusLabel(status: string, t: TFunction): string {
   switch (status) {
     case 'stored':
-      return '已入庫';
+      return t('security.ssh.statusStored');
     case 'installed':
-      return '已寫入磁碟';
+      return t('security.ssh.statusInstalled');
     case 'verified':
-      return '連線通過';
+      return t('security.ssh.statusVerified');
     case 'missing_on_disk':
-      return '磁碟檔案遺失';
+      return t('security.ssh.statusMissing');
     case 'retired':
-      return '已退役';
+      return t('security.ssh.statusRetired');
     case 'error':
-      return '異常';
+      return t('security.ssh.statusError');
     default:
       return status;
   }
@@ -71,18 +72,19 @@ export function shortFingerprint(fp: string): string {
 export function nextAction(
   status: string,
   purpose: string,
+  t: TFunction,
 ): { id: 'install' | 'test' | 'copy_pub' | 'none'; label: string } {
   if (status === 'retired') return { id: 'none', label: '' };
   if (status === 'stored' || status === 'missing_on_disk') {
-    return { id: 'install', label: '寫入磁碟' };
+    return { id: 'install', label: t('security.ssh.actionInstall') };
   }
   if (status === 'installed') {
     return purpose === 'panel_outbound'
-      ? { id: 'test', label: '測試連線' }
-      : { id: 'copy_pub', label: '複製公鑰' };
+      ? { id: 'test', label: t('security.ssh.actionTest') }
+      : { id: 'copy_pub', label: t('security.ssh.actionCopyPub') };
   }
-  if (status === 'verified') return { id: 'copy_pub', label: '複製公鑰' };
-  return { id: 'install', label: '寫入磁碟' };
+  if (status === 'verified') return { id: 'copy_pub', label: t('security.ssh.actionCopyPub') };
+  return { id: 'install', label: t('security.ssh.actionInstall') };
 }
 
 export function pipelineStep(

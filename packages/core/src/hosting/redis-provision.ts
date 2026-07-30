@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Redis provision: probe + optional CONFIG for project DB index.
  * Never fake success when execute requested without redis-cli / EXECUTE.
@@ -50,8 +51,8 @@ export async function provisionRedisBinding(input: {
   const reachable = reach.ok;
   notes.push(
     reachable
-      ? `TCP ${host}:${port} 正常（${reach.latencyMs}ms）`
-      : `TCP ${host}:${port} 失敗：${reach.detail}`,
+      ? tl('notes.auto.t0364', { v0: (host), v1: (port), v2: (reach.latencyMs) })
+      : tl('notes.auto.t0365', { v0: (host), v1: (port), v2: (reach.detail) }),
   );
 
   const which = await input.hostExec.runCommand(
@@ -63,9 +64,9 @@ export async function provisionRedisBinding(input: {
   const want = input.execute === true;
   const can = want && input.hostExec.executeEnabled() && redisCli && reachable;
 
-  if (!redisCli) notes.push('伺服器未安裝 Redis 客戶端');
+  if (!redisCli) notes.push(tl('notes.auto.n0523'));
   if (!input.hostExec.executeEnabled()) {
-    notes.push('伺服器未開啟系統變更權限，無法在管理面板完成此操作');
+    notes.push(tl('ops.blocked.needExecute'));
   }
 
   if (!want) {
@@ -79,7 +80,7 @@ export async function provisionRedisBinding(input: {
       plan,
       notes: [
         ...notes,
-        'dry-run：僅探測／計劃。加 --execute 且 YSK_EXECUTE=1 先真正 provision',
+        tl('notes.auto.n0271'),
       ],
       commandResults,
       connectionHint: { host, port, db: dbIndex },
@@ -97,7 +98,7 @@ export async function provisionRedisBinding(input: {
       plan,
       notes: [
         ...notes,
-        '尚未在伺服器建立 Redis 資源，請確認 redis-cli、TCP 與 YSK_EXECUTE=1',
+        tl('notes.auto.n0705'),
       ],
       commandResults,
       connectionHint: {
@@ -120,7 +121,7 @@ export async function provisionRedisBinding(input: {
     stdout: ping.stdout.trim(),
   });
   const pong = ping.stdout.trim().toUpperCase() === 'PONG' && ping.exitCode === 0;
-  notes.push(pong ? 'PING 成功' : `PING 失敗：${ping.stderr || ping.stdout}`);
+  notes.push(pong ? tl('notes.auto.n0151') : tl('notes.auto.t0366', { v0: (ping.stderr || ping.stdout) }));
 
   // Soft binding: SELECT db index and record; avoid destructive CONFIG SET without explicit flag
   const sel = await input.hostExec.runCommand(

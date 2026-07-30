@@ -14,7 +14,7 @@ import {
   closeDatabase,
   writeControlPlaneSystemdUnit,
 } from '@ysk/core';
-import { CLI_NAME, PRODUCT_NAME, type StructuredResult } from '@ysk/shared';
+import { CLI_NAME, PRODUCT_NAME, type StructuredResult, tl} from '@ysk/shared';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
@@ -47,10 +47,10 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     return {
       ok: false,
       code: 'YSK_SETUP_EXISTS',
-      message: `設定已存在於 ${configPath}。使用 --force 覆寫。`,
+      message: tl('notes.auto.t0792', { v0: (configPath) }),
       error: {
         code: 'YSK_SETUP_EXISTS',
-        message: `設定已存在於 ${configPath}`,
+        message: tl('notes.auto.t0793', { v0: (configPath) }),
       },
     };
   }

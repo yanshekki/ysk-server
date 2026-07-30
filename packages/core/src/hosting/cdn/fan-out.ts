@@ -4,24 +4,28 @@
  * Honesty: partial when any edge fails; draining edges skipped by default.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   ErrorCodes,
   YskError,
   type ApplyStatus,
   type CdnNodeDto,
-  type CdnSiteDto,
-} from '@ysk/shared';
+  type CdnSiteDto,  tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import {
   applyCdnSiteEdgeRender,
-  renderCdnEdgeNginxConf,
-} from './edge-render.js';
+  renderCdnEdgeNginxConf } from './edge-render.js';
+import type {
+  CdnFleetApplyPayload,
+  CdnFleetEnqueueFn,
+  CdnFleetPurgePayload } from './fleet-payload.js';
 import { getCdnNode } from './nodes.js';
 import { getCdnSite, patchCdnSiteStatus } from './sites.js';
 import { edgeSslPaths } from './ssl.js';
+
+export type { CdnFleetEnqueueFn } from './fleet-payload.js';
 
 /** Public URL of shield edge for other edges to proxy_pass */
 export function resolveShieldUpstreamUrl(
@@ -84,8 +88,7 @@ function resolveSshTarget(node: CdnNodeDto): {
   return {
     host,
     port: node.sshPort && node.sshPort > 0 ? node.sshPort : 22,
-    username: node.sshUsername?.trim() || 'root',
-  };
+    username: node.sshUsername?.trim() || 'root' };
 }
 
 function isLocalEdge(node: CdnNodeDto): boolean {
@@ -165,8 +168,7 @@ async function sshRun(
   return {
     exitCode: r.exitCode,
     stdout: r.stdout || '',
-    stderr: r.stderr || '',
-  };
+    stderr: r.stderr || '' };
 }
 
 const REMOTE_NGINX_RELOAD = [
@@ -191,13 +193,17 @@ export async function fanOutCdnSite(input: {
   projectOriginUrl?: string;
   /** Force re-render before fan-out (default true) */
   renderFirst?: boolean;
+  /**
+   * Fleet enqueue (control plane). When set, edges with fleetAgentId and no SSH
+   * queue conf apply to the agent. Queued ≠ edge nginx applied.
+   */
+  enqueue?: CdnFleetEnqueueFn;
 }): Promise<CdnFanOutResult> {
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 站點', {
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.cdn.siteNotFound'), {
       httpStatus: 404,
-      details: { id: input.siteId },
-    });
+      details: { id: input.siteId } });
   }
 
   if (!input.host.executeEnabled()) {
@@ -207,10 +213,9 @@ export async function fanOutCdnSite(input: {
       requiresExecute: true,
       apply_status: 'blocked',
       siteId: site.id,
-      notes: ['無法 fan-out：未開啟系統變更權限'],
+      notes: [tl('notes.auto.n1126')],
       edges: [],
-      edge_status: {},
-    };
+      edge_status: {} };
   }
 
   const notes: string[] = [];
@@ -225,8 +230,7 @@ export async function fanOutCdnSite(input: {
       siteId: site.id,
       host: input.host,
       dryRun: false,
-      projectOriginUrl: input.projectOriginUrl,
-    });
+      projectOriginUrl: input.projectOriginUrl });
     confPath = rendered.confPath || confPath;
     contentHash = rendered.contentHash;
     written.push(...rendered.written);
@@ -239,10 +243,9 @@ export async function fanOutCdnSite(input: {
       ok: false,
       apply_status: 'failed',
       siteId: site.id,
-      notes: ['找不到 edge.conf — 請先渲染'],
+      notes: [tl('notes.auto.n0851')],
       edges: [],
-      edge_status: {},
-    };
+      edge_status: {} };
   }
 
   const edgeIds = site.edgeNodeIds.filter(
@@ -253,17 +256,15 @@ export async function fanOutCdnSite(input: {
       ok: false,
       apply_status: 'failed',
       siteId: site.id,
-      notes: ['站點無 edge 節點'],
+      notes: [tl('notes.auto.n1301')],
       edges: [],
-      edge_status: {},
-    };
+      edge_status: {} };
   }
 
   const confBasename = `ysk-cdn-${site.id.slice(0, 8)}.conf`;
   const edges: CdnEdgeApplyItem[] = [];
   const edge_status: Record<string, ApplyStatus> = {
-    ...site.edge_status,
-  };
+    ...site.edge_status };
 
   // Origin shield URL for non-shield edges (PR-C7)
   let shieldUrl: string | undefined;
@@ -276,7 +277,7 @@ export async function fanOutCdnSite(input: {
       );
     } else {
       notes.push(
-        `originShieldNodeId=${site.originShieldNodeId} 不存在 — 忽略 shield`,
+        tl('notes.auto.t0722', { v0: (site.originShieldNodeId) }),
       );
     }
   }
@@ -289,8 +290,7 @@ export async function fanOutCdnSite(input: {
         name: eid,
         apply_status: 'failed',
         method: 'skip',
-        notes: ['節點不存在'],
-      };
+        notes: [tl('notes.cdn.nodeMissing')] };
       edges.push(item);
       edge_status[eid] = 'failed';
       continue;
@@ -302,27 +302,10 @@ export async function fanOutCdnSite(input: {
         name: node.name,
         apply_status: 'planned',
         method: 'skip',
-        notes: ['略過 draining 節點'],
-      };
+        notes: [tl('notes.auto.n1256')] };
       edges.push(item);
       edge_status[eid] = 'planned';
       notes.push(`${node.name}: skip draining`);
-      continue;
-    }
-
-    if (node.fleetAgentId && !resolveSshTarget(node)) {
-      const item: CdnEdgeApplyItem = {
-        edgeNodeId: eid,
-        name: node.name,
-        apply_status: 'planned',
-        method: 'fleet',
-        notes: [
-          `fleetAgentId=${node.fleetAgentId} — fleet dispatch 尚未實作，請改用 SSH`,
-        ],
-      };
-      edges.push(item);
-      edge_status[eid] = 'planned';
-      notes.push(`${node.name}: fleet stub only`);
       continue;
     }
 
@@ -340,8 +323,7 @@ export async function fanOutCdnSite(input: {
         sslPaths,
         shieldUpstreamUrl: isShield ? undefined : shieldUrl,
         isShieldEdge: isShield,
-        forEdgeNodeId: eid,
-      });
+        forEdgeNodeId: eid });
       const edgeDir = join(
         input.dataDir,
         'cdn',
@@ -359,6 +341,29 @@ export async function fanOutCdnSite(input: {
       );
     }
 
+    // Fleet-only edge (no SSH target): enqueue conf for agent — never mark applied here
+    if (node.fleetAgentId?.trim() && !resolveSshTarget(node)) {
+      const item = applyFleetEdgeEnqueue({
+        node,
+        siteId: site.id,
+        confPath: edgeConfPath,
+        confBasename,
+        enqueue: input.enqueue });
+      edges.push(item);
+      edge_status[eid] = item.apply_status;
+      notes.push(
+        `${node.name}: fleet ${item.apply_status} — ${item.notes[0] ?? ''}`,
+      );
+      continue;
+    }
+
+    // Prefer SSH when both fleetAgentId and SSH exist (sync apply)
+    if (node.fleetAgentId?.trim() && resolveSshTarget(node)) {
+      notes.push(
+        tl('notes.auto.t0723', { v0: (node.name) }),
+      );
+    }
+
     if (isLocalEdge(node)) {
       const item = await applyLocalEdge({
         host: input.host,
@@ -366,8 +371,7 @@ export async function fanOutCdnSite(input: {
         confPath: edgeConfPath,
         confBasename,
         node,
-        siteId: site.id,
-      });
+        siteId: site.id });
       edges.push(item);
       edge_status[eid] = item.apply_status;
       notes.push(
@@ -384,8 +388,7 @@ export async function fanOutCdnSite(input: {
       confBasename,
       node,
       target,
-      siteId: site.id,
-    });
+      siteId: site.id });
     edges.push(item);
     edge_status[eid] = item.apply_status;
     notes.push(
@@ -395,36 +398,54 @@ export async function fanOutCdnSite(input: {
 
   const applied = edges.filter((e) => e.apply_status === 'applied').length;
   const failed = edges.filter((e) => e.apply_status === 'failed').length;
+  const blockedN = edges.filter((e) => e.apply_status === 'blocked').length;
+  const fleetQueued = edges.filter(
+    (e) => e.method === 'fleet' && e.apply_status === 'written',
+  ).length;
   const skipped = edges.filter(
     (e) => e.apply_status === 'planned' || e.method === 'skip',
   ).length;
 
   let apply_status: ApplyStatus;
   let ok: boolean;
+  let blocked: boolean | undefined;
   if (applied === edges.length && edges.length > 0) {
     apply_status = 'applied';
     ok = true;
-    notes.push('全部 edge fan-out applied');
+    notes.push(tl('notes.auto.n0582'));
+  } else if (blockedN > 0 && applied === 0 && failed === 0 && fleetQueued === 0) {
+    apply_status = 'blocked';
+    ok = false;
+    blocked = true;
+    notes.push(
+      tl('notes.auto.t0724', { v0: (blockedN) }),
+    );
   } else if (applied > 0) {
     apply_status = 'partial';
     ok = false;
     notes.push(
-      `partial：applied=${applied} failed=${failed} skipped=${skipped}`,
+      `partial：applied=${applied} fleetQueued=${fleetQueued} failed=${failed} blocked=${blockedN} skipped=${skipped}`,
+    );
+  } else if (fleetQueued > 0 && failed === 0 && blockedN === 0) {
+    // Control-plane conf written + fleet commands queued — not edge-applied
+    apply_status = 'written';
+    ok = true;
+    notes.push(
+      tl('notes.auto.t0725', { v0: (fleetQueued) }),
     );
   } else if (failed === 0 && skipped === edges.length) {
     apply_status = 'written';
     ok = true;
-    notes.push('無 edge 可套用（皆 skip/drain）— 控制面 conf 仍 written');
+    notes.push(tl('notes.auto.n1076'));
   } else {
     apply_status = 'failed';
     ok = false;
-    notes.push('全部 edge fan-out 失敗');
+    notes.push(tl('notes.auto.n0583'));
   }
 
   patchCdnSiteStatus(input.db, site.id, {
     apply_status,
-    edge_status,
-  });
+    edge_status });
 
   return {
     ok,
@@ -435,7 +456,83 @@ export async function fanOutCdnSite(input: {
     written,
     edges,
     edge_status,
-  };
+    ...(blocked ? { blocked: true } : {}) };
+}
+
+/**
+ * Enqueue conf apply to fleet agent. Never marks applied (agent must ack).
+ */
+function applyFleetEdgeEnqueue(input: {
+  node: CdnNodeDto;
+  siteId: string;
+  confPath: string;
+  confBasename: string;
+  enqueue?: CdnFleetEnqueueFn;
+}): CdnEdgeApplyItem {
+  const sessionId = input.node.fleetAgentId!.trim();
+  if (!input.enqueue) {
+    return {
+      edgeNodeId: input.node.id,
+      name: input.node.name,
+      apply_status: 'blocked',
+      method: 'fleet',
+      notes: [
+        tl('notes.auto.t0726', { v0: (sessionId) }),
+      ] };
+  }
+  if (!existsSync(input.confPath)) {
+    return {
+      edgeNodeId: input.node.id,
+      name: input.node.name,
+      apply_status: 'failed',
+      method: 'fleet',
+      notes: [tl('notes.auto.t0727', { v0: (input.confPath) })] };
+  }
+  let confContent: string;
+  try {
+    confContent = readFileSync(input.confPath, 'utf8');
+  } catch (e) {
+    return {
+      edgeNodeId: input.node.id,
+      name: input.node.name,
+      apply_status: 'failed',
+      method: 'fleet',
+      notes: [
+        tl('notes.auto.t0728', { v0: (e instanceof Error ? e.message : String(e)) }),
+      ] };
+  }
+  const remoteDir =
+    input.node.remoteNginxConfDir?.trim() || '/etc/nginx/conf.d';
+  const payload: CdnFleetApplyPayload = {
+    op: 'cdn.edge.apply',
+    siteId: input.siteId,
+    edgeNodeId: input.node.id,
+    confBasename: input.confBasename,
+    confContent,
+    remoteDir,
+    cacheDir: `/var/cache/ysk-cdn/${input.siteId}` };
+  try {
+    const cmd = input.enqueue(sessionId, payload);
+    return {
+      edgeNodeId: input.node.id,
+      name: input.node.name,
+      apply_status: 'written',
+      method: 'fleet',
+      notes: [
+        `fleet command queued ${cmd.id.slice(0, 8)}… → session ${sessionId.slice(0, 8)}…`,
+        tl('notes.auto.n0398'),
+      ],
+      reloaded: false };
+  } catch (e) {
+    return {
+      edgeNodeId: input.node.id,
+      name: input.node.name,
+      apply_status: 'failed',
+      method: 'fleet',
+      notes: [
+        tl('notes.auto.t0729', { v0: (e instanceof Error ? e.message : String(e)) }),
+      ] };
+  }
 }
 
 async function applyLocalEdge(input: {
@@ -460,27 +557,24 @@ async function applyLocalEdge(input: {
     // ensure cache dir
     const cacheDir = `/var/cache/ysk-cdn/${input.siteId}`;
     await input.host.runCommand(['mkdir', '-p', cacheDir], {
-      timeoutMs: 5_000,
-    });
+      timeoutMs: 5_000 });
 
     if (!input.host.pathExists('/usr/sbin/nginx') && !input.host.pathExists('/usr/bin/nginx')) {
-      notes.push('本機無 nginx — conf 已寫入，未 reload');
+      notes.push(tl('notes.auto.n1000'));
       return {
         edgeNodeId: input.node.id,
         name: input.node.name,
         apply_status: 'written',
         method: 'local',
         notes,
-        reloaded: false,
-      };
+        reloaded: false };
     }
 
     const t = await input.host.runCommand(['nginx', '-t'], {
-      timeoutMs: 15_000,
-    });
+      timeoutMs: 15_000 });
     if (t.exitCode !== 0) {
       notes.push(
-        `nginx -t 失敗：${(t.stderr || t.stdout).slice(0, 120)}`,
+        tl('notes.auto.t0730', { v0: ((t.stderr || t.stdout).slice(0, 120)) }),
       );
       return {
         edgeNodeId: input.node.id,
@@ -488,8 +582,7 @@ async function applyLocalEdge(input: {
         apply_status: 'failed',
         method: 'local',
         notes,
-        reloaded: false,
-      };
+        reloaded: false };
     }
     const r = await input.host.runCommand(
       ['bash', '-c', 'systemctl reload nginx 2>/dev/null || nginx -s reload'],
@@ -503,26 +596,23 @@ async function applyLocalEdge(input: {
         apply_status: 'applied',
         method: 'local',
         notes,
-        reloaded: true,
-      };
+        reloaded: true };
     }
-    notes.push(`reload 失敗：${(r.stderr || r.stdout).slice(0, 100)}`);
+    notes.push(tl('notes.tpl.reloadFailed', { detail: (r.stderr || r.stdout).slice(0, 100) }));
     return {
       edgeNodeId: input.node.id,
       name: input.node.name,
       apply_status: 'partial',
       method: 'local',
       notes,
-      reloaded: false,
-    };
+      reloaded: false };
   } catch (e) {
     return {
       edgeNodeId: input.node.id,
       name: input.node.name,
       apply_status: 'failed',
       method: 'local',
-      notes: [e instanceof Error ? e.message : String(e)],
-    };
+      notes: [e instanceof Error ? e.message : String(e)] };
   }
 }
 
@@ -555,15 +645,14 @@ async function applySshEdge(input: {
   );
   if (mk.exitCode !== 0) {
     notes.push(
-      `SSH mkdir 失敗：${(mk.stderr || mk.stdout).slice(0, 120)}`,
+      tl('notes.auto.t0731', { v0: ((mk.stderr || mk.stdout).slice(0, 120)) }),
     );
     return {
       edgeNodeId: input.node.id,
       name: input.node.name,
       apply_status: 'failed',
       method: 'ssh',
-      notes,
-    };
+      notes };
   }
 
   const scpArgv = [
@@ -588,15 +677,14 @@ async function applySshEdge(input: {
   const scp = await input.host.runCommand(scpArgv, { timeoutMs: 60_000 });
   if (scp.exitCode !== 0) {
     notes.push(
-      `scp 失敗：${(scp.stderr || scp.stdout).slice(0, 120)}`,
+      tl('notes.auto.t0732', { v0: ((scp.stderr || scp.stdout).slice(0, 120)) }),
     );
     return {
       edgeNodeId: input.node.id,
       name: input.node.name,
       apply_status: 'failed',
       method: 'ssh',
-      notes,
-    };
+      notes };
   }
   notes.push(`scp → ${remoteConf}`);
 
@@ -615,22 +703,20 @@ async function applySshEdge(input: {
       apply_status: 'applied',
       method: 'ssh',
       notes,
-      reloaded: true,
-    };
+      reloaded: true };
   }
   if (/NGINX_NONE/.test(reload.stdout)) {
-    notes.push('遠端無 nginx — conf 已 scp（written on peer）');
+    notes.push(tl('notes.auto.n1485'));
     return {
       edgeNodeId: input.node.id,
       name: input.node.name,
       apply_status: 'partial',
       method: 'ssh',
       notes,
-      reloaded: false,
-    };
+      reloaded: false };
   }
   notes.push(
-    `remote reload 失敗：${(reload.stderr || reload.stdout).slice(0, 140)}`,
+    tl('notes.auto.t0733', { v0: ((reload.stderr || reload.stdout).slice(0, 140)) }),
   );
   return {
     edgeNodeId: input.node.id,
@@ -638,8 +724,7 @@ async function applySshEdge(input: {
     apply_status: 'partial',
     method: 'ssh',
     notes,
-    reloaded: false,
-  };
+    reloaded: false };
 }
 
 /**
@@ -652,13 +737,14 @@ export async function purgeCdnSite(input: {
   siteId: string;
   edgeNodeId?: string;
   skipDraining?: boolean;
+  /** Fleet enqueue for fleet-only edges */
+  enqueue?: CdnFleetEnqueueFn;
 }): Promise<CdnFanOutResult> {
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 站點', {
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.cdn.siteNotFound'), {
       httpStatus: 404,
-      details: { id: input.siteId },
-    });
+      details: { id: input.siteId } });
   }
 
   if (!input.host.executeEnabled()) {
@@ -668,10 +754,9 @@ export async function purgeCdnSite(input: {
       requiresExecute: true,
       apply_status: 'blocked',
       siteId: site.id,
-      notes: ['無法 purge：未開啟系統變更權限'],
+      notes: [tl('notes.auto.n1132')],
       edges: [],
-      edge_status: {},
-    };
+      edge_status: {} };
   }
 
   const cacheDir = `/var/cache/ysk-cdn/${site.id}`;
@@ -699,8 +784,7 @@ export async function purgeCdnSite(input: {
         name: eid,
         apply_status: 'failed',
         method: 'skip',
-        notes: ['節點不存在'],
-      });
+        notes: [tl('notes.cdn.nodeMissing')] });
       continue;
     }
     if (input.skipDraining !== false && node.status === 'draining') {
@@ -709,16 +793,60 @@ export async function purgeCdnSite(input: {
         name: node.name,
         apply_status: 'planned',
         method: 'skip',
-        notes: ['略過 draining'],
-      });
+        notes: [tl('notes.auto.n0043')] });
       notes.push(`${node.name}: skip draining`);
+      continue;
+    }
+
+    // Fleet-only (no SSH): enqueue purge for agent
+    if (node.fleetAgentId?.trim() && !resolveSshTarget(node)) {
+      const sessionId = node.fleetAgentId.trim();
+      if (!input.enqueue) {
+        edges.push({
+          edgeNodeId: eid,
+          name: node.name,
+          apply_status: 'blocked',
+          method: 'fleet',
+          notes: [
+            tl('notes.auto.t0734', { v0: (sessionId) }),
+          ] });
+        notes.push(`${node.name}: fleet purge blocked`);
+        continue;
+      }
+      const payload: CdnFleetPurgePayload = {
+        op: 'cdn.edge.purge',
+        siteId: site.id,
+        edgeNodeId: eid,
+        cacheDir };
+      try {
+        const cmd = input.enqueue(sessionId, payload);
+        edges.push({
+          edgeNodeId: eid,
+          name: node.name,
+          apply_status: 'written',
+          method: 'fleet',
+          notes: [
+            `fleet purge queued ${cmd.id.slice(0, 8)}…`,
+            tl('notes.auto.n0397'),
+          ] });
+        notes.push(`${node.name}: fleet purge queued`);
+      } catch (e) {
+        edges.push({
+          edgeNodeId: eid,
+          name: node.name,
+          apply_status: 'failed',
+          method: 'fleet',
+          notes: [
+            tl('notes.auto.t0735', { v0: (e instanceof Error ? e.message : String(e)) }),
+          ] });
+        notes.push(`${node.name}: fleet purge enqueue failed`);
+      }
       continue;
     }
 
     if (isLocalEdge(node)) {
       const r = await input.host.runCommand(['bash', '-c', purgeCmd], {
-        timeoutMs: 30_000,
-      });
+        timeoutMs: 30_000 });
       const ok =
         r.exitCode === 0 &&
         (/PURGE_OK/.test(r.stdout) || /PURGE_EMPTY/.test(r.stdout));
@@ -730,11 +858,10 @@ export async function purgeCdnSite(input: {
         notes: [
           ok
             ? /PURGE_EMPTY/.test(r.stdout)
-              ? 'local cache 目錄空／新建'
+              ? tl('notes.auto.n0319')
               : 'local cache purged'
-            : `purge 失敗：${(r.stderr || r.stdout).slice(0, 100)}`,
-        ],
-      });
+            : tl('notes.auto.t0736', { v0: ((r.stderr || r.stdout).slice(0, 100)) }),
+        ] });
       notes.push(
         `${node.name}: ${ok ? 'purged' : 'purge failed'}`,
       );
@@ -748,8 +875,7 @@ export async function purgeCdnSite(input: {
         name: node.name,
         apply_status: 'failed',
         method: 'skip',
-        notes: ['無 SSH 目標'],
-      });
+        notes: [tl('notes.auto.n1066')] });
       continue;
     }
     const identityPath = await resolveIdentityPath(
@@ -774,9 +900,8 @@ export async function purgeCdnSite(input: {
       notes: [
         ok
           ? `remote purge OK @ ${target.host}`
-          : `remote purge 失敗：${(r.stderr || r.stdout).slice(0, 100)}`,
-      ],
-    });
+          : tl('notes.auto.t0737', { v0: ((r.stderr || r.stdout).slice(0, 100)) }),
+      ] });
     notes.push(
       `${node.name}@${target.host}: ${ok ? 'purged' : 'purge failed'}`,
     );
@@ -784,20 +909,38 @@ export async function purgeCdnSite(input: {
 
   const applied = edges.filter((e) => e.apply_status === 'applied').length;
   const failed = edges.filter((e) => e.apply_status === 'failed').length;
+  const blockedN = edges.filter((e) => e.apply_status === 'blocked').length;
+  const fleetQueued = edges.filter(
+    (e) => e.method === 'fleet' && e.apply_status === 'written',
+  ).length;
   let apply_status: ApplyStatus;
   let ok: boolean;
+  let blocked: boolean | undefined;
   if (applied === edges.length && edges.length > 0) {
     apply_status = 'applied';
     ok = true;
-    notes.push('全部 edge purge 成功');
+    notes.push(tl('notes.auto.n0584'));
+  } else if (blockedN > 0 && applied === 0 && failed === 0 && fleetQueued === 0) {
+    apply_status = 'blocked';
+    ok = false;
+    blocked = true;
+    notes.push(tl('notes.auto.n0291'));
   } else if (applied > 0) {
     apply_status = 'partial';
     ok = false;
-    notes.push(`purge partial：ok=${applied} fail=${failed}`);
+    notes.push(
+      `purge partial：ok=${applied} fleetQueued=${fleetQueued} fail=${failed} blocked=${blockedN}`,
+    );
+  } else if (fleetQueued > 0 && failed === 0 && blockedN === 0) {
+    apply_status = 'written';
+    ok = true;
+    notes.push(
+      tl('notes.auto.t0738', { v0: (fleetQueued) }),
+    );
   } else {
     apply_status = 'failed';
     ok = false;
-    notes.push('purge 全部失敗或無目標');
+    notes.push(tl('notes.auto.n0395'));
   }
 
   // purge does not change site apply_status to failed — keep prior deploy status
@@ -809,5 +952,5 @@ export async function purgeCdnSite(input: {
     notes,
     edges,
     edge_status,
-  };
+    ...(blocked ? { blocked: true } : {}) };
 }

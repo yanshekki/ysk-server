@@ -160,3 +160,129 @@
 .u-min-w-0 {
   min-width: 0;
 }
+
+.u-m-0 {
+  margin: 0;
+}
+
+.u-flex-1 {
+  flex: 1;
+}
+
+.u-font-medium {
+  font-weight: 500;
+}
+
+.u-max-w-full {
+  max-width: 100%;
+}
+
+/** Scrollable code / preview pane */
+.u-scroll-preview {
+  max-height: 25rem;
+  overflow: auto;
+}
+
+/** Padded empty / body region inside split panels */
+.u-pad-panel {
+  padding: var(--space-5);
+}
+
+/**
+ * Meter / progress fill — set --meter-pct (e.g. 42%) via style.
+ * Only CSS variables are allowed as inline style for meters (css:reuse gate).
+ */
+.u-meter-fill {
+  display: block;
+  height: 100%;
+  width: var(--meter-pct, 0%);
+  max-width: 100%;
+  border-radius: inherit;
+  background: var(--brand-blue, #3b82f6);
+  transition: width 0.2s ease;
+}
+
+.u-pre-wrap {
+  white-space: pre-wrap;
+}
+
+.u-scroll-sm {
+  max-height: 10rem;
+  overflow: auto;
+}
+
+.u-scroll-md {
+  max-height: 17.5rem;
+  overflow: auto;
+}
+
+.u-scroll-lg {
+  max-height: 20rem;
+  overflow: auto;
+}
+
+.u-scroll-xl {
+  max-height: 26rem;
+  overflow: auto;
+}
+
+.u-pl-5 {
+  padding-left: var(--space-5);
+}
+
+.u-text-body {
+  font-size: var(--text-md, 0.95rem);
+}
+
+.u-text-danger {
+  color: var(--danger, #b91c1c);
+}
+
+.u-mono-input {
+  width: 100%;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--text-sm);
+}
+
+.u-callout {
+  padding: 0.75rem 1rem;
+  background: var(--bg-subtle, #f6f8fa);
+  border-radius: var(--radius-sm, 6px);
+}
+
+/* Global search dropdown (AppShell) */
+.shell-search {
+  position: relative;
+  flex: 1 1 12rem;
+  max-width: 20rem;
+}
+
+.shell-search__input {
+  width: 100%;
+}
+
+.shell-search__menu {
+  position: absolute;
+  z-index: 50;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  max-height: 16rem;
+  overflow: auto;
+  background: var(--bg-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.shell-search__list {
+  margin: 0;
+  padding: 0.5rem;
+  list-style: none;
+}
+
+.shell-search__item {
+  width: 100%;
+  justify-content: flex-start;
+}

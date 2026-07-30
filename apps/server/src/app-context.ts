@@ -10,6 +10,7 @@ import {
   AuditRepository,
   AuthService,
   UsersAdminService,
+  RbacPolicyService,
   LocalHostExecutor,
   LlmGateway,
   ProjectRepository,
@@ -44,6 +45,7 @@ export interface AppContext {
   db: YskDatabase;
   auth: AuthService;
   usersAdmin: UsersAdminService;
+  rbac: RbacPolicyService;
   allowlist: Allowlist;
   approvals: ApprovalQueue;
   agents: AgentComms;
@@ -106,12 +108,15 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
 
   const auth = new AuthService(users, sessions, audit, db, dataDir);
   const usersAdmin = new UsersAdminService(users, sessions, db, audit);
+  const rbac = new RbacPolicyService(db, audit);
   const adminUsername = opts.config?.adminUsername ?? 'admin';
   const locale = opts.config?.locale ?? 'zh-TW';
   const password = opts.adminPassword ?? process.env.YSK_ADMIN_PASSWORD ?? 'admin';
   if (users.count() === 0) {
     auth.ensureAdmin(adminUsername, password, locale);
   }
+  // Hard guarantee: at least one full-privilege user (users.manage + rbac.policy)
+  rbac.ensureFullPrivilegeHolder();
 
   const host = new LocalHostExecutor({
     executeEnabled: opts.executeEnabled,
@@ -134,6 +139,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     db,
     auth,
     usersAdmin,
+    rbac,
     allowlist,
     approvals,
     agents: new AgentComms(),

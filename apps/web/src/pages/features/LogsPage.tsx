@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   PageGuide,
@@ -152,13 +153,13 @@ function formatBytes(n?: number): string {
 function groupLabel(g: string): string {
   if (g.startsWith('proj:')) return g.slice('proj:'.length);
   const map: Record<string, string> = {
-    system: '系統檔',
+    system: i18n.t('logs.catSystem'),
     web: 'Web',
-    mail: '郵件',
-    security: '安全',
-    app: '應用',
-    other: '其他',
-    journal: 'Journal 服務',
+    mail: i18n.t('common.mail'),
+    security: i18n.t('nav.sections.security'),
+    app: i18n.t('logs.catApp'),
+    other: i18n.t('logs.catOther'),
+    journal: i18n.t('logs.journalService'),
   };
   return map[g] || g;
 }
@@ -214,7 +215,8 @@ export function LogsPage() {
     setLoadErr(null);
     setMetaLoading(true);
     try {
-      const [ov, src, un, pr, st] = await Promise.all([
+      // Soft-fail per endpoint so one 500/timeout does not blank the whole Log center
+      const settled = await Promise.allSettled([
         api.requestRaw<Overview>('/api/v1/logs/overview'),
         api.requestRaw<{ items: Source[] }>('/api/v1/logs/sources'),
         api.requestRaw<{ items: Array<{ unit: string; active?: string }> }>(
@@ -223,20 +225,36 @@ export function LogsPage() {
         api.requestRaw<{ items: ProjectLogIndex[] }>('/api/v1/logs/projects'),
         api.requestRaw<LogSettings>('/api/v1/logs/settings'),
       ]);
-      setOverview(ov);
-      setSources(src.items ?? []);
-      setUnits(un.items ?? []);
-      setProjects(pr.items ?? []);
-      setSettings(st);
-      setSettingsDraft(st);
-      if (st.vacuumDefaultDays) setVacuumDays(`${st.vacuumDefaultDays}d`);
-      if (st.maxLines && !searchParams.get('lines')) setLines(st.maxLines);
+      const [ov, src, un, pr, st] = settled;
+      const fails: string[] = [];
+      if (ov.status === 'fulfilled') setOverview(ov.value);
+      else fails.push(ov.reason instanceof Error ? ov.reason.message : 'overview');
+      if (src.status === 'fulfilled') setSources(src.value.items ?? []);
+      else fails.push(src.reason instanceof Error ? src.reason.message : 'sources');
+      if (un.status === 'fulfilled') setUnits(un.value.items ?? []);
+      else fails.push(un.reason instanceof Error ? un.reason.message : 'units');
+      if (pr.status === 'fulfilled') setProjects(pr.value.items ?? []);
+      else fails.push(pr.reason instanceof Error ? pr.reason.message : 'projects');
+      if (st.status === 'fulfilled') {
+        setSettings(st.value);
+        setSettingsDraft(st.value);
+        if (st.value.vacuumDefaultDays) setVacuumDays(`${st.value.vacuumDefaultDays}d`);
+        if (st.value.maxLines && !searchParams.get('lines')) setLines(st.value.maxLines);
+      } else {
+        fails.push(st.reason instanceof Error ? st.reason.message : 'settings');
+      }
+      // Only surface error if every critical call failed
+      if (fails.length === settled.length) {
+        setLoadErr(fails[0] ?? t('common.loadFailed'));
+      } else if (fails.length) {
+        setLoadErr(null); // partial OK — page still usable
+      }
     } catch (e) {
-      setLoadErr(e instanceof Error ? e.message : '載入失敗');
+      setLoadErr(e instanceof Error ? e.message : t('common.loadFailed'));
     } finally {
       setMetaLoading(false);
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   useEffect(() => {
     void refreshMeta();
@@ -338,7 +356,7 @@ export function LogsPage() {
           id: s.id,
           source: s.id,
           label: s.label,
-          meta: s.available ? formatBytes(s.bytes) : '不可用',
+          meta: s.available ? formatBytes(s.bytes) : t('network.unavailable'),
           group: `proj:${owner.name}`,
           kind: 'project',
           available: s.available,
@@ -350,7 +368,7 @@ export function LogsPage() {
         id: s.id,
         source: s.id,
         label: s.label,
-        meta: s.available ? formatBytes(s.bytes) : '不可用',
+        meta: s.available ? formatBytes(s.bytes) : t('network.unavailable'),
         group: s.group || 'other',
         kind: 'file',
         available: s.available,
@@ -380,7 +398,7 @@ export function LogsPage() {
           id: `proj:${p.projectId}:${f.name}`,
           source: `project:${p.projectId}:${f.name}`,
           label: f.name,
-          meta: `${formatBytes(f.bytes)}${previewable ? '' : ' · 壓縮'}`,
+          meta: `${formatBytes(f.bytes)}${previewable ? '' : t('logs.compressed')}`,
           group: g,
           kind: 'project',
           available: previewable,
@@ -391,8 +409,8 @@ export function LogsPage() {
         items.push({
           id: `proj-empty:${p.projectId}`,
           source: `project:${p.projectId}`,
-          label: '（尚未有 log 檔）',
-          meta: p.linuxUser ? `user ${p.linuxUser}` : '部署後會出現',
+          label: t('logs.noLogFileYet'),
+          meta: p.linuxUser ? `user ${p.linuxUser}` : t('logs.afterDeploy'),
           group: g,
           kind: 'project',
           available: true,
@@ -488,7 +506,7 @@ export function LogsPage() {
         notes: r.notes,
         blocked: r.blocked,
       } as OpsResultLike;
-    }, '已載入日誌');
+    }, t('logs.logsLoaded'));
   }
 
   function selectSource(src: string) {
@@ -534,7 +552,7 @@ export function LogsPage() {
             credentials: 'include',
           });
           if (!res.ok || !res.body) {
-            setError('SSE 串流失敗，改用輪詢');
+            setError(t('logs.sseFailed'));
             setUseSse(false);
             return;
           }
@@ -570,7 +588,7 @@ export function LogsPage() {
           }
         } catch (e) {
           if (!ac.signal.aborted) {
-            setError(e instanceof Error ? e.message : 'SSE 中斷');
+            setError(e instanceof Error ? e.message : t('logs.sseInterrupted'));
             setUseSse(false);
           }
         }
@@ -630,8 +648,8 @@ export function LogsPage() {
       setSettings(r);
       setSettingsDraft(r);
       await refreshMeta();
-      return { ok: true, notes: ['設定已儲存'] } as OpsResultLike;
-    }, '設定已儲存');
+      return { ok: true, notes: [t('logs.settingsSaved')] } as OpsResultLike;
+    }, t('logs.settingsSaved'));
   }
 
   async function exportServer(format: 'text' | 'jsonl') {
@@ -659,7 +677,7 @@ export function LogsPage() {
         );
       }
       return { ok: r.ok, notes: r.notes } as OpsResultLike;
-    }, format === 'jsonl' ? '已匯出 JSONL' : '已匯出');
+    }, format === 'jsonl' ? t('logs.exportedJsonl') : t('logs.exported'));
   }
 
   async function saveBookmark(name: string) {
@@ -676,8 +694,8 @@ export function LogsPage() {
         }),
       });
       await refreshMeta();
-      return { ok: true, notes: ['已存書籤'] } as OpsResultLike;
-    }, '已存書籤');
+      return { ok: true, notes: [t('logs.bookmarkSaved')] } as OpsResultLike;
+    }, t('logs.bookmarkSaved'));
   }
 
   const quickChips = [
@@ -690,17 +708,17 @@ export function LogsPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.logs', { defaultValue: '日誌中心' })}
+      title={t('nav.logs', { defaultValue: t('system.scLogs') })}
       showCapability={false}
       status={{
         pill: {
           label: overview
             ? overview.isRoot && overview.executeEnabled
-              ? '完整權限'
+              ? t('logs.fullAccess')
               : !overview.isRoot
-                ? '非 root'
-                : '無 EXECUTE'
-            : '載入中',
+                ? t('logs.nonRoot')
+                : t('logs.noExecute')
+            : t('runtime.loading'),
           tone:
             overview?.isRoot && overview?.executeEnabled
               ? 'ok'
@@ -723,24 +741,24 @@ export function LogsPage() {
               overview?.varLogMb != null ? `≈${overview.varLogMb}MB` : '—',
           },
           {
-            label: '錯誤',
+            label: t('projects.healthDetail.error'),
             value: overview?.recentErrors ?? '—',
             tone: (overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok',
           },
           {
-            label: '專案 log',
+            label: t('logs.projectLog'),
             value:
               overview?.projectLogs?.fileCount ??
               projects.reduce((n, p) => n + (p.files?.length ?? 0), 0),
           },
           {
             label: 'EXECUTE',
-            value: overview?.executeEnabled ? '開' : '關',
+            value: overview?.executeEnabled ? t('common.on') : t('common.off'),
             tone: overview?.executeEnabled ? 'ok' : 'warn',
           },
           {
             label: 'Root',
-            value: overview?.isRoot ? '是' : '否',
+            value: overview?.isRoot ? t('common.yes') : t('common.no'),
             tone: overview?.isRoot ? 'ok' : 'warn',
           },
         ],
@@ -752,19 +770,19 @@ export function LogsPage() {
             loading={metaLoading || busy}
             onClick={() => void refreshMeta()}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            服務狀態
+            {t('nav.services')}
           </Link>
           <Link to="/metrics" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            主機指標
+            {t('system.scMetrics')}
           </Link>
           <Link to="/system" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            主機設定
+            {t('updates.scHost')}
           </Link>
           <Link to="/protection" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            防護中心
+            {t('readiness.scProtection')}
           </Link>
         </div>
       }
@@ -775,7 +793,7 @@ export function LogsPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -783,7 +801,7 @@ export function LogsPage() {
       {/* Quick + bookmarks */}
       <div className="lc-strip">
         <div className="lc-strip__row">
-          <span className="lc-strip__label">快捷</span>
+          <span className="lc-strip__label">{t('logs.shortcuts')}</span>
           {quickChips.map((c) => (
             <button
               key={c.source}
@@ -802,7 +820,7 @@ export function LogsPage() {
               setTab('explore');
             }}
           >
-            只顯示專案
+            {t('logs.projectsOnly')}
           </button>
           {projects.slice(0, 6).map((p) => (
             <button
@@ -818,7 +836,7 @@ export function LogsPage() {
                 else if (p.related?.[0]) selectSource(p.related[0].source);
                 else selectSource(`project:${p.projectId}`);
               }}
-              title={`${p.files?.length ?? 0} 檔`}
+              title={t('logs.filesTitle', { n: p.files?.length ?? 0 })}
             >
               {p.name}
             </button>
@@ -826,7 +844,7 @@ export function LogsPage() {
         </div>
         {bookmarks.length > 0 ? (
           <div className="lc-strip__row">
-            <span className="lc-strip__label">書籤</span>
+            <span className="lc-strip__label">{t('logs.bookmark')}</span>
             {bookmarks.map((b) => (
               <button
                 key={b.id}
@@ -844,11 +862,11 @@ export function LogsPage() {
 
       <PageTabs
         tabs={[
-          { id: 'explore', label: '探索' },
-          { id: 'ops', label: '維護' },
-          { id: 'settings', label: '設定' },
+          { id: 'explore', label: t('logs.tabExplore') },
+          { id: 'ops', label: t('logs.tabMaint') },
+          { id: 'settings', label: t('logs.tabSettings') },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -858,23 +876,23 @@ export function LogsPage() {
           <div className="tab-panel lc-explore">
             <div className="lc-workspace">
               {/* Source rail */}
-              <aside className="lc-rail" aria-label="日誌來源">
+              <aside className="lc-rail" aria-label={t('logs.sources')}>
                 <div className="lc-rail__head">
-                  <strong>來源</strong>
+                  <strong>{t('system.source')}</strong>
                   <span className="muted u-text-sm">{railFiltered.length}</span>
                 </div>
                 <input
                   className="lc-rail__search"
                   type="search"
-                  placeholder="篩選 unit / 檔案…"
+                  placeholder={t('logs.filterPlaceholder')}
                   value={railFilter}
                   onChange={(e) => setRailFilter(e.target.value)}
-                  aria-label="篩選來源"
+                  aria-label={t('logs.filterSources')}
                 />
                 <div className="lc-rail__body">
                   {railGroups.length === 0 ? (
                     <p className="muted u-text-sm lc-rail__empty">
-                      {projectsOnly ? '未發現專案 log — 部署專案後會出現' : '無匹配來源'}
+                      {projectsOnly ? t('logs.noProjectLogs') : t('logs.noMatchSources')}
                     </p>
                   ) : (
                     railGroups.map(({ group, items, isProject }) => {
@@ -895,7 +913,7 @@ export function LogsPage() {
                             }}
                           >
                             <span>
-                              {isProject ? '專案 · ' : ''}
+                              {isProject ? t('logs.projectPrefix') : ''}
                               {groupLabel(group)}
                             </span>
                             <span className="lc-rail__group-count">
@@ -958,10 +976,10 @@ export function LogsPage() {
                     {isJournal ? (
                       <>
                         <label className="lc-field">
-                          <span>時間</span>
+                          <span>{t('common.time')}</span>
                           <SegRadio
                             name="lc-since"
-                            aria-label="時間範圍"
+                            aria-label={t('logs.timeRange')}
                             size="sm"
                             value={since || 'all'}
                             onChange={(v) => setSince(v === 'all' ? '' : v)}
@@ -971,20 +989,20 @@ export function LogsPage() {
                               { value: '6h', label: '6h' },
                               { value: '24h', label: '24h' },
                               { value: '7d', label: '7d' },
-                              { value: 'all', label: '不限' },
+                              { value: 'all', label: t('publicFiles.unlimited') },
                             ]}
                           />
                         </label>
                         <label className="lc-field">
-                          <span>優先級</span>
+                          <span>{t('logs.priority')}</span>
                           <SegRadio
                             name="lc-prio"
-                            aria-label="優先級"
+                            aria-label={t('logs.priority')}
                             size="sm"
                             value={priority || 'all'}
                             onChange={(v) => setPriority(v === 'all' ? '' : v)}
                             options={[
-                              { value: 'all', label: '全部' },
+                              { value: 'all', label: t('updates.all') },
                               { value: 'err', label: 'err+' },
                               { value: 'warning', label: 'warn+' },
                               { value: 'info', label: 'info+' },
@@ -994,18 +1012,18 @@ export function LogsPage() {
                       </>
                     ) : null}
                     <label className="lc-field lc-field--grow">
-                      <span>篩選</span>
+                      <span>{t('logs.filter')}</span>
                       <input
                         value={grep}
                         onChange={(e) => setGrep(e.target.value)}
-                        placeholder="關鍵字 / IP…"
+                        placeholder={t('logs.keywordIp')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') void runQuery();
                         }}
                       />
                     </label>
                     <label className="lc-field">
-                      <span>行數</span>
+                      <span>{t('metrics.rows')}</span>
                       <PresetChips
                         options={[
                           { value: '100', label: '100' },
@@ -1019,7 +1037,7 @@ export function LogsPage() {
                           setLines(Math.max(50, Math.min(5000, Number(v) || 300)))
                         }
                         allowCustom
-                        customPlaceholder="自訂"
+                        customPlaceholder={t('common.custom')}
                       />
                     </label>
                   </div>
@@ -1030,7 +1048,7 @@ export function LogsPage() {
                       loading={busy}
                       onClick={() => void runQuery()}
                     >
-                      查詢
+                      {t('protection.lookup')}
                     </Button>
                     <label className={`lc-toggle ${follow ? 'lc-toggle--on' : ''}`}>
                       <input
@@ -1038,7 +1056,7 @@ export function LogsPage() {
                         checked={follow}
                         onChange={(e) => setFollow(e.target.checked)}
                       />
-                      <span>跟隨 {followSec}s</span>
+                      <span>{t('logs.followSec', { sec: followSec })}</span>
                     </label>
                     <label className={`lc-toggle ${useSse ? 'lc-toggle--on' : ''}`}>
                       <input
@@ -1055,7 +1073,7 @@ export function LogsPage() {
                         checked={wrap}
                         onChange={(e) => setWrap(e.target.checked)}
                       />
-                      <span>換行</span>
+                      <span>{t('logs.wrap')}</span>
                     </label>
                     <div className="lc-toolbar__more">
                       <Button
@@ -1064,7 +1082,7 @@ export function LogsPage() {
                         disabled={!text}
                         onClick={() => void exportServer('text')}
                       >
-                        匯出
+                        {t('security.export')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -1080,17 +1098,17 @@ export function LogsPage() {
                         disabled={!text}
                         onClick={() => {
                           void navigator.clipboard?.writeText(text);
-                          setMsg('已複製');
+                          setMsg(t('logs.copied'));
                         }}
                       >
-                        複製
+                        {t('common.copy')}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setBookmarkPromptOpen(true)}
                       >
-                        書籤
+                        {t('logs.bookmarksLabel')}
                       </Button>
                     </div>
                   </div>
@@ -1099,17 +1117,17 @@ export function LogsPage() {
                 <div className="lc-status">
                   <span>
                     {queryOk == null ? (
-                      <Badge tone="neutral">待命</Badge>
+                      <Badge tone="neutral">{t('logs.standby')}</Badge>
                     ) : queryOk ? (
                       <Badge tone="ok">OK</Badge>
                     ) : (
-                      <Badge tone="warn">部分／失敗</Badge>
+                      <Badge tone="warn">{t('logs.partialFail')}</Badge>
                     )}
                   </span>
                   <span className="muted u-text-sm">
-                    {lineCount} 行
-                    {truncated ? ' · 已截斷' : ''}
-                    {follow ? ` · 跟隨中${useSse ? ' (SSE)' : ''}` : ''}
+                    {t('logs.lines', { n: lineCount })}
+                    {truncated ? t('logs.truncated') : ''}
+                    {follow ? t('logs.followingSseDyn', { sse: useSse ? ' (SSE)' : '' }) : ''}
                   </span>
                   <span className="lc-status__notes muted u-text-sm">
                     {queryNotes.slice(0, 3).join(' · ')}
@@ -1118,7 +1136,7 @@ export function LogsPage() {
                     to="/protection?tab=bans"
                     className="lc-status__link u-text-sm"
                   >
-                    IP → 封禁
+                    {t('logs.ipBan')}
                   </Link>
                 </div>
 
@@ -1127,8 +1145,8 @@ export function LogsPage() {
                     text={text}
                     emptyLabel={
                       metaLoading
-                        ? '載入來源中…'
-                        : '選左側來源，或按快捷 · 再按「查詢」'
+                        ? t('logs.loadingSources')
+                        : t('logs.pickSource')
                     }
                     maxHeight="min(58vh, 620px)"
                   />
@@ -1140,7 +1158,7 @@ export function LogsPage() {
 
         {tab === 'ops' ? (
           <div className="tab-panel lc-ops">
-            <div className="lc-section-stats" aria-label="維護概況">
+            <div className="lc-section-stats" aria-label={t('logs.maintOverview')}>
               <div className="lc-stat">
                 <span className="lc-stat__lab">Journal</span>
                 <span className="lc-stat__val">
@@ -1150,9 +1168,9 @@ export function LogsPage() {
                 </span>
               </div>
               <div className="lc-stat">
-                <span className="lc-stat__lab">權限</span>
+                <span className="lc-stat__lab">{t('updates.permPolicy')}</span>
                 <span className="lc-stat__val">
-                  {overview?.executeEnabled && overview?.isRoot ? '可執行' : '受限'}
+                  {overview?.executeEnabled && overview?.isRoot ? t('logs.executable') : t('logs.restricted')}
                 </span>
               </div>
             </div>
@@ -1163,7 +1181,7 @@ export function LogsPage() {
                   <div className="lc-card__titles">
                     <h3>Journal vacuum</h3>
                     <p className="lc-card__desc">
-                      釋放 systemd-journal 磁碟。無 EXECUTE 會 blocked，唔假成功。
+                      {t('logs.vacuumNote')}
                     </p>
                   </div>
                   <Badge
@@ -1172,12 +1190,12 @@ export function LogsPage() {
                     }
                   >
                     {overview?.executeEnabled && overview?.isRoot
-                      ? '可執行'
-                      : '需 root+EXECUTE'}
+                      ? t('logs.executable')
+                      : t('logs.needRootExecute')}
                   </Badge>
                 </div>
                 <div className="lc-card__body">
-                  <Field label="保留時間" htmlFor="vac-t" flush hint="例 7d · 14d · 30d">
+                  <Field label={t('logs.retention')} htmlFor="vac-t" flush hint={t('logs.retentionHint')}>
                     <input
                       id="vac-t"
                       value={vacuumDays}
@@ -1192,7 +1210,7 @@ export function LogsPage() {
                       loading={busy}
                       onClick={() => setVacuumConfirm('time')}
                     >
-                      Vacuum 時間
+                      {t('logs.vacuumTime')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -1203,7 +1221,7 @@ export function LogsPage() {
                       Vacuum 500M
                     </Button>
                   </div>
-                  <p className="lc-card__hint">建議保留 ≥7 日；操作後重新探測磁碟用量。</p>
+                  <p className="lc-card__hint">{t('logs.vacuumHint')}</p>
                 </div>
               </article>
 
@@ -1211,10 +1229,10 @@ export function LogsPage() {
                 <div className="lc-card__head">
                   <div className="lc-card__titles">
                     <h3>logrotate</h3>
-                    <p className="lc-card__desc">系統 logrotate 狀態（唯讀探測）</p>
+                    <p className="lc-card__desc">{t('logs.logrotateStatus')}</p>
                   </div>
                   <Badge tone={overview?.logrotate?.installed ? 'ok' : 'warn'}>
-                    {overview?.logrotate?.installed ? '已安裝' : '未安裝'}
+                    {overview?.logrotate?.installed ? t('common.installed') : t('common.notInstalled')}
                   </Badge>
                 </div>
                 <div className="lc-card__body">
@@ -1222,7 +1240,7 @@ export function LogsPage() {
                     <pre className="lc-pre">{overview.logrotate.statusText}</pre>
                   ) : (
                     <div className="lc-empty-inline">
-                      無 status 檔或不可讀 — 可於服務矩陣檢查 logrotate 套件
+                      {t('logs.logrotateMissing')}
                     </div>
                   )}
                 </div>
@@ -1231,31 +1249,31 @@ export function LogsPage() {
               <article className="lc-card lc-card--links">
                 <div className="lc-card__head">
                   <div className="lc-card__titles">
-                    <h3>相關運維</h3>
-                    <p className="lc-card__desc">日誌觀測 vs 攻擊應變分工</p>
+                    <h3>{t('logs.relatedOps')}</h3>
+                    <p className="lc-card__desc">{t('logs.relatedOpsDesc')}</p>
                   </div>
                 </div>
                 <div className="lc-card__body">
                   <ul className="lc-bullets">
                     <li>
-                      <strong>日誌中心</strong> — 觀測 journal／檔案／專案
+                      <strong>{t('system.scLogs')}</strong> — {t('logs.scLogsLine')}
                     </li>
                     <li>
-                      <strong>防護中心</strong> — 攻擊應變、自動 ban（點 IP）
+                      <strong>{t('readiness.scProtection')}</strong> — {t('logs.scProtLine')}
                     </li>
                     <li>
-                      <strong>專案 → 日誌</strong> — 單站快捷 + 深鏈
+                      <strong>{t('logs.projectLogsLink')}</strong>{t('logs.projectLogsDesc')}
                     </li>
                   </ul>
                   <div className="lc-card__actions">
                     <Link to="/protection" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
-                      防護中心
+                      {t('readiness.scProtection')}
                     </Link>
                     <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                      服務矩陣
+                      {t('system.scServices')}
                     </Link>
                     <Link to="/system" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                      主機設定
+                      {t('updates.scHost')}
                     </Link>
                   </div>
                 </div>
@@ -1270,12 +1288,12 @@ export function LogsPage() {
               <article className="lc-card">
                 <div className="lc-card__head">
                   <div className="lc-card__titles">
-                    <h3>查詢與跟隨</h3>
-                    <p className="lc-card__desc">探索頁預設行數、跟隨節奏、回應上限</p>
+                    <h3>{t('logs.queryFollow')}</h3>
+                    <p className="lc-card__desc">{t('logs.queryFollowDesc')}</p>
                   </div>
                 </div>
                 <div className="lc-card__body lc-card__body--fields">
-                  <Field label="預設行數" htmlFor="set-lines" flush>
+                  <Field label={t('logs.defaultLines')} htmlFor="set-lines" flush>
                     <PresetChips
                       options={[
                         { value: '200', label: '200' },
@@ -1292,7 +1310,7 @@ export function LogsPage() {
                       }
                     />
                   </Field>
-                  <Field label="跟隨間隔" htmlFor="set-follow" flush>
+                  <Field label={t('logs.followInterval')} htmlFor="set-follow" flush>
                     <PresetChips
                       options={[
                         { value: '1', label: '1s' },
@@ -1310,7 +1328,7 @@ export function LogsPage() {
                       }
                     />
                   </Field>
-                  <Field label="最大字節" htmlFor="set-bytes" flush>
+                  <Field label={t('logs.maxBytes')} htmlFor="set-bytes" flush>
                     <PresetChips
                       options={[
                         { value: '524288', label: '512 KiB' },
@@ -1327,7 +1345,7 @@ export function LogsPage() {
                       }
                     />
                   </Field>
-                  <Field label="遮罩 secret" htmlFor="set-mask" flush>
+                  <Field label={t('logs.maskSecrets')} htmlFor="set-mask" flush>
                     <label className="lc-toggle lc-toggle--block">
                       <input
                         id="set-mask"
@@ -1349,20 +1367,20 @@ export function LogsPage() {
               <article className="lc-card">
                 <div className="lc-card__head">
                   <div className="lc-card__titles">
-                    <h3>保留與告警</h3>
+                    <h3>{t('logs.retentionAlerts')}</h3>
                     <p className="lc-card__desc">
-                      vacuum 預設、journal 磁碟告警、自動清理時間窗
+                      {t('logs.retentionAlertsDesc')}
                     </p>
                   </div>
                 </div>
                 <div className="lc-card__body lc-card__body--fields">
-                  <Field label="預設 vacuum 天數" htmlFor="set-vac-d" flush>
+                  <Field label={t('logs.defaultVacuumDays')} htmlFor="set-vac-d" flush>
                     <PresetChips
                       options={[
-                        { value: '7', label: '7 日' },
-                        { value: '14', label: '14 日' },
-                        { value: '30', label: '30 日' },
-                        { value: '90', label: '90 日' },
+                        { value: '7', label: t('runtime.d7') },
+                        { value: '14', label: t('logs.d14') },
+                        { value: '30', label: t('logs.d30') },
+                        { value: '90', label: t('logs.d90') },
                       ]}
                       value={String(settingsDraft.vacuumDefaultDays ?? 14)}
                       onChange={(v) =>
@@ -1373,7 +1391,7 @@ export function LogsPage() {
                       }
                     />
                   </Field>
-                  <Field label="Journal 告警" htmlFor="set-warn" flush>
+                  <Field label={t('logs.journalAlerts')} htmlFor="set-warn" flush>
                     <PresetChips
                       options={[
                         { value: '512', label: '512 MB' },
@@ -1390,7 +1408,7 @@ export function LogsPage() {
                       }
                     />
                   </Field>
-                  <Field label="自動 vacuum" htmlFor="set-auto-v" flush>
+                  <Field label={t('logs.autoVacuum')} htmlFor="set-auto-v" flush>
                     <label className="lc-toggle lc-toggle--block">
                       <input
                         id="set-auto-v"
@@ -1403,10 +1421,10 @@ export function LogsPage() {
                           }))
                         }
                       />
-                      <span>每日（需 root + EXECUTE）</span>
+                      <span>{t('logs.dailyNeedRoot')}</span>
                     </label>
                   </Field>
-                  <Field label="時間" htmlFor="set-auto-t" flush>
+                  <Field label={t('common.time')} htmlFor="set-auto-t" flush>
                     <PresetChips
                       options={[
                         { value: '01:00', label: '01:00' },
@@ -1428,13 +1446,13 @@ export function LogsPage() {
               <article className="lc-card">
                 <div className="lc-card__head">
                   <div className="lc-card__titles">
-                    <h3>自訂 allow 路徑</h3>
+                    <h3>{t('logs.customAllow')}</h3>
                     <p className="lc-card__desc">
-                      僅 /var/log 或 /run/log · 拒絕 .ssh、金鑰、/etc
+                      {t('logs.customAllowDesc')}
                     </p>
                   </div>
                   <Badge tone="neutral">
-                    {(settingsDraft.customAllowPaths ?? []).length} 條
+                    {t('logs.pathsCount', { n: (settingsDraft.customAllowPaths ?? []).length })}
                   </Badge>
                 </div>
                 <div className="lc-card__body">
@@ -1476,11 +1494,11 @@ export function LogsPage() {
                         setCustomPathInput('');
                       }}
                     >
-                      加入
+                      {t('protection.add')}
                     </Button>
                   </div>
                   {(settingsDraft.customAllowPaths ?? []).length === 0 ? (
-                    <div className="lc-empty-inline">尚未加入自訂路徑</div>
+                    <div className="lc-empty-inline">{t('logs.noCustomPaths')}</div>
                   ) : (
                     <ul className="lc-path-list">
                       {(settingsDraft.customAllowPaths ?? []).map((p) => (
@@ -1498,7 +1516,7 @@ export function LogsPage() {
                               }))
                             }
                           >
-                            移除
+                            {t('security.ssh.remove')}
                           </Button>
                         </li>
                       ))}
@@ -1510,9 +1528,9 @@ export function LogsPage() {
               <article className="lc-card lc-card--span">
                 <div className="lc-card__head">
                   <div className="lc-card__titles">
-                    <h3>書籤</h3>
+                    <h3>{t('logs.bookmark')}</h3>
                     <p className="lc-card__desc">
-                      探索頁常用過濾；開啟會切回探索並套用來源
+                      {t('logs.bookmarksDesc')}
                     </p>
                   </div>
                   <Badge tone="neutral">{bookmarks.length}</Badge>
@@ -1520,7 +1538,7 @@ export function LogsPage() {
                 <div className="lc-card__body">
                   {!bookmarks.length ? (
                     <div className="lc-empty-inline">
-                      尚未有書籤 — 在探索頁查詢後按「書籤」儲存
+                      {t('logs.noBookmarks')}
                     </div>
                   ) : (
                     <ul className="lc-path-list lc-path-list--bookmarks">
@@ -1536,7 +1554,7 @@ export function LogsPage() {
                               size="sm"
                               onClick={() => applyBookmark(b)}
                             >
-                              開啟
+                              {t('common.open')}
                             </Button>
                             <Button
                               variant="ghost"
@@ -1550,12 +1568,12 @@ export function LogsPage() {
                                   await refreshMeta();
                                   return {
                                     ok: true,
-                                    notes: ['已刪'],
+                                    notes: [t('logs.deleted')],
                                   } as OpsResultLike;
-                                }, '已刪書籤');
+                                }, t('logs.bookmarkDeleted'));
                               }}
                             >
-                              刪
+                              {t('network.deleteShort')}
                             </Button>
                           </span>
                         </li>
@@ -1568,7 +1586,7 @@ export function LogsPage() {
 
             <footer className="lc-settings-bar">
               <p className="lc-settings-bar__hint">
-                設定寫入面板 DB；自動 vacuum 由排程每 15 分鐘檢查時間窗。
+                {t('logs.settingsWriteNote')}
               </p>
               <Button
                 variant="primary"
@@ -1576,7 +1594,7 @@ export function LogsPage() {
                 loading={busy}
                 onClick={() => void saveSettings()}
               >
-                儲存設定
+                {t('logs.saveSettings')}
               </Button>
             </footer>
           </div>
@@ -1585,19 +1603,19 @@ export function LogsPage() {
         {tab === 'about' ? <PageGuide guideId="logs" /> : null}
       </PageTabs>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
 
       <PromptDialog
         open={bookmarkPromptOpen}
         onClose={() => setBookmarkPromptOpen(false)}
-        title="儲存書籤"
-        description="為目前查詢條件命名"
-        label="名稱"
+        title={t('logs.saveBookmark')}
+        description={t('logs.bookmarkNamePrompt')}
+        label={t('common.name')}
         defaultValue={
           activeMeta?.label ||
           activeSource.replace(/^(journal:|file:|project:)/, '')
         }
-        confirmLabel="儲存"
+        confirmLabel={t('common.save')}
         onSubmit={(name) => {
           setBookmarkPromptOpen(false);
           void saveBookmark(name);
@@ -1610,12 +1628,12 @@ export function LogsPage() {
         onClose={() => !busy && setVacuumConfirm(null)}
         title={
           vacuumConfirm === 'time'
-            ? `Vacuum 時間 ${vacuumDays}？`
-            : 'Vacuum 大小 500M？'
+            ? `{t('logs.vacuumTime')} ${vacuumDays}？`
+            : t('logs.vacuumSizeQ')
         }
-        description="journalctl vacuum 會刪除舊日誌，不可復原。"
-        confirmLabel="執行"
-        cancelLabel="取消"
+        description={t('logs.vacuumDesc')}
+        confirmLabel={t('migrate.tabRun')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
         onConfirm={() => {
@@ -1629,7 +1647,7 @@ export function LogsPage() {
               })) as OpsResultLike;
               await refreshMeta();
               return r;
-            }, '已請求 vacuum');
+            }, t('logs.vacuumRequested'));
           } else if (mode === 'size') {
             void run(async () => {
               const r = (await api.requestRaw('/api/v1/logs/journal/vacuum', {
@@ -1638,7 +1656,7 @@ export function LogsPage() {
               })) as OpsResultLike;
               await refreshMeta();
               return r;
-            }, '已請求 vacuum size');
+            }, t('logs.vacuumSizeRequested'));
           }
         }}
       />

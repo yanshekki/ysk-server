@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Optional DNS cluster: peer list + scp zone files + remote nameserver reload/probe.
  * Honesty: scp written ≠ reloaded; reload ok only when remote command succeeds.
@@ -89,8 +90,7 @@ export function upsertDnsClusterPeer(
     label: input.label,
     sshIdentityId: input.sshIdentityId ?? prev?.sshIdentityId,
     createdAt: prev?.createdAt ?? new Date().toISOString(),
-    lastProbe: prev?.lastProbe,
-  };
+    lastProbe: prev?.lastProbe };
   const next = [row, ...all.filter((p) => p.id !== id)];
   savePeers(db, next);
   return row;
@@ -178,13 +178,11 @@ async function sshOnPeer(
   const identityPath = await resolvePeerIdentity(opts?.dataDir, peer);
   const argv = sshArgv(peer, remoteCmd, identityPath);
   const r = await host.runCommand(argv, {
-    timeoutMs: opts?.timeoutMs ?? 30_000,
-  });
+    timeoutMs: opts?.timeoutMs ?? 30_000 });
   return {
     exitCode: r.exitCode,
     stdout: r.stdout || '',
-    stderr: r.stderr || '',
-  };
+    stderr: r.stderr || '' };
 }
 
 /** Remote one-liner: detect active NS unit + zone dir. */
@@ -229,9 +227,8 @@ export async function probeDnsClusterPeer(input: {
     return {
       at,
       ok: false,
-      notes: ['無法 probe：未開啟系統變更權限（SSH 需 EXECUTE）'],
-      latencyMs: Date.now() - t0,
-    };
+      notes: [tl('notes.auto.n1130')],
+      latencyMs: Date.now() - t0 };
   }
 
   const r = await sshOnPeer(
@@ -246,10 +243,9 @@ export async function probeDnsClusterPeer(input: {
       at,
       ok: false,
       notes: [
-        `SSH probe 失敗：${(r.stderr || r.stdout || 'connection failed').slice(0, 160)}`,
+        tl('notes.auto.t0152', { v0: ((r.stderr || r.stdout || 'connection failed').slice(0, 160)) }),
       ],
-      latencyMs: Date.now() - t0,
-    };
+      latencyMs: Date.now() - t0 };
     if (input.db) updatePeerLastProbe(input.db, input.peer.id, probe);
     return probe;
   }
@@ -261,11 +257,11 @@ export async function probeDnsClusterPeer(input: {
   const serviceOk = active !== 'none';
   const notes: string[] = [
     serviceOk
-      ? `nameserver 活躍：${active}`
-      : '遠端無 active named/bind9/pdns（仍可 scp 檔案）',
+      ? tl('notes.auto.t0153', { v0: (active) })
+      : tl('notes.auto.n1484'),
     zoneDirOk
-      ? `zone 目錄存在（${zoneFiles} 個 .zone）`
-      : `zone 目錄不存在：${input.peer.path}`,
+      ? tl('notes.auto.t0154', { v0: (zoneFiles) })
+      : tl('notes.auto.t0155', { v0: (input.peer.path) }),
   ];
   const probe: DnsPeerProbeResult = {
     at,
@@ -273,8 +269,7 @@ export async function probeDnsClusterPeer(input: {
     service: active,
     zoneDirOk,
     notes,
-    latencyMs: Date.now() - t0,
-  };
+    latencyMs: Date.now() - t0 };
   if (input.db) updatePeerLastProbe(input.db, input.peer.id, probe);
   return probe;
 }
@@ -295,9 +290,8 @@ export async function probeDnsClusterPeers(input: {
     return {
       ok: true,
       apply_status: 'written',
-      notes: ['尚未登記叢集 peer'],
-      peers: [],
-    };
+      notes: [tl('notes.dns.noClusterPeer')],
+      peers: [] };
   }
   if (!input.host.executeEnabled()) {
     return {
@@ -305,9 +299,8 @@ export async function probeDnsClusterPeers(input: {
       blocked: true,
       requiresExecute: true,
       apply_status: 'blocked',
-      notes: ['無法 probe DNS cluster：未開啟系統變更權限'],
-      peers: [],
-    };
+      notes: [tl('notes.auto.n1129')],
+      peers: [] };
   }
 
   const results: DnsPeerActionResult[] = [];
@@ -318,8 +311,7 @@ export async function probeDnsClusterPeers(input: {
       host: input.host,
       peer,
       dataDir: input.dataDir,
-      db: input.db,
-    });
+      db: input.db });
     if (probe.ok) okCount += 1;
     results.push({
       peerId: peer.id,
@@ -327,8 +319,7 @@ export async function probeDnsClusterPeers(input: {
       label: peer.label,
       probe,
       notes: probe.notes,
-      apply_status: probe.ok ? 'applied' : 'failed',
-    });
+      apply_status: probe.ok ? 'applied' : 'failed' });
     notes.push(
       `${peer.label || peer.host}: ${probe.ok ? 'healthy' : 'unhealthy'} — ${probe.notes.join('; ')}`,
     );
@@ -340,8 +331,7 @@ export async function probeDnsClusterPeers(input: {
     ok: allOk,
     apply_status: allOk ? 'applied' : noneOk ? 'failed' : 'partial',
     notes,
-    peers: results,
-  };
+    peers: results };
 }
 
 /**
@@ -360,9 +350,8 @@ export async function reloadDnsClusterPeers(input: {
     return {
       ok: true,
       apply_status: 'written',
-      notes: ['尚未登記叢集 peer'],
-      peers: [],
-    };
+      notes: [tl('notes.dns.noClusterPeer')],
+      peers: [] };
   }
   if (!input.host.executeEnabled()) {
     return {
@@ -370,9 +359,8 @@ export async function reloadDnsClusterPeers(input: {
       blocked: true,
       requiresExecute: true,
       apply_status: 'blocked',
-      notes: ['無法 remote reload：未開啟系統變更權限'],
-      peers: [],
-    };
+      notes: [tl('notes.auto.n1133')],
+      peers: [] };
   }
 
   const results: DnsPeerActionResult[] = [];
@@ -382,8 +370,7 @@ export async function reloadDnsClusterPeers(input: {
   for (const peer of peers) {
     const r = await sshOnPeer(input.host, peer, REMOTE_RELOAD_SCRIPT, {
       dataDir: input.dataDir,
-      timeoutMs: 25_000,
-    });
+      timeoutMs: 25_000 });
     const method = r.stdout.match(/RELOAD_OK:(\S+)/)?.[1];
     const reloaded = r.exitCode === 0 && Boolean(method);
     if (reloaded) okCount += 1;
@@ -391,10 +378,10 @@ export async function reloadDnsClusterPeers(input: {
     if (reloaded) {
       peerNotes.push(`remote reload OK (${method})`);
     } else if (/RELOAD_NONE/.test(r.stdout)) {
-      peerNotes.push('遠端找不到 rndc / active named|bind9|pdns');
+      peerNotes.push(tl('notes.auto.n1481'));
     } else {
       peerNotes.push(
-        `remote reload 失敗：${(r.stderr || r.stdout).slice(0, 140)}`,
+        tl('notes.auto.t0156', { v0: ((r.stderr || r.stdout).slice(0, 140)) }),
       );
     }
     notes.push(`${peer.label || peer.host}: ${peerNotes.join('; ')}`);
@@ -405,25 +392,23 @@ export async function reloadDnsClusterPeers(input: {
       reloaded,
       reloadMethod: method,
       notes: peerNotes,
-      apply_status: reloaded ? 'applied' : 'failed',
-    });
+      apply_status: reloaded ? 'applied' : 'failed' });
   }
 
   const allOk = okCount === peers.length;
   const noneOk = okCount === 0;
   notes.push(
     allOk
-      ? '全部 peer nameserver 已 reload'
+      ? tl('notes.auto.n0585')
       : noneOk
-        ? '全部 peer reload 失敗 — 檔案可能已在磁碟但權威未刷新'
-        : '部分 peer reload 成功（partial）',
+        ? tl('notes.auto.n0586')
+        : tl('notes.auto.n1491'),
   );
   return {
     ok: allOk,
     apply_status: allOk ? 'applied' : noneOk ? 'failed' : 'partial',
     notes,
-    peers: results,
-  };
+    peers: results };
 }
 
 /**
@@ -447,9 +432,8 @@ export async function pushDnsZonesToCluster(input: {
     return {
       ok: true,
       apply_status: 'written',
-      notes: ['尚未登記叢集 peer'],
-      peers: [],
-    };
+      notes: [tl('notes.dns.noClusterPeer')],
+      peers: [] };
   }
   if (!input.host.executeEnabled()) {
     return {
@@ -457,27 +441,24 @@ export async function pushDnsZonesToCluster(input: {
       blocked: true,
       requiresExecute: true,
       apply_status: 'blocked',
-      notes: ['無法推送 DNS cluster：未開啟系統變更權限'],
-      peers: [],
-    };
+      notes: [tl('notes.auto.n1172')],
+      peers: [] };
   }
   const zoneDir = join(input.dataDir, 'dns', 'zones');
   if (!existsSync(zoneDir)) {
     return {
       ok: false,
       apply_status: 'failed',
-      notes: ['本地尚無 zone 檔'],
-      peers: [],
-    };
+      notes: [tl('notes.auto.n0991')],
+      peers: [] };
   }
   const files = readdirSync(zoneDir).filter((f) => f.endsWith('.zone'));
   if (!files.length) {
     return {
       ok: false,
       apply_status: 'failed',
-      notes: ['無 .zone 檔可推'],
-      peers: [],
-    };
+      notes: [tl('notes.auto.n1057')],
+      peers: [] };
   }
 
   const results: DnsPeerActionResult[] = [];
@@ -529,7 +510,7 @@ export async function pushDnsZonesToCluster(input: {
       if (r.exitCode !== 0) {
         filesFail += 1;
         peerNotes.push(
-          `${f}: scp 失敗 ${(r.stderr || r.stdout).slice(0, 80)}`,
+          tl('notes.auto.t0157', { v0: (f), v1: ((r.stderr || r.stdout).slice(0, 80)) }),
         );
       } else {
         filesOk += 1;
@@ -542,8 +523,8 @@ export async function pushDnsZonesToCluster(input: {
 
     peerNotes.push(
       scpOk
-        ? `scp ${filesOk} 檔 OK → ${peer.path}`
-        : `scp 部分/全部失敗（ok=${filesOk} fail=${filesFail}）`,
+        ? tl('notes.auto.t0158', { v0: (filesOk), v1: (peer.path) })
+        : tl('notes.auto.t0159', { v0: (filesOk), v1: (filesFail) }),
     );
 
     let reloaded = false;
@@ -551,23 +532,22 @@ export async function pushDnsZonesToCluster(input: {
     if (wantReload && filesOk > 0) {
       const rr = await sshOnPeer(input.host, peer, REMOTE_RELOAD_SCRIPT, {
         dataDir: input.dataDir,
-        timeoutMs: 25_000,
-      });
+        timeoutMs: 25_000 });
       reloadMethod = rr.stdout.match(/RELOAD_OK:(\S+)/)?.[1];
       reloaded = rr.exitCode === 0 && Boolean(reloadMethod);
       if (reloaded) {
         peerNotes.push(`remote reload OK (${reloadMethod})`);
       } else if (/RELOAD_NONE/.test(rr.stdout)) {
         peerNotes.push(
-          'scp 已寫入但無法 reload：遠端無 rndc/named/bind9/pdns',
+          tl('notes.auto.n0423'),
         );
       } else {
         peerNotes.push(
-          `reload 失敗：${(rr.stderr || rr.stdout).slice(0, 100)}`,
+          tl('notes.tpl.reloadFailed', { detail: (rr.stderr || rr.stdout).slice(0, 100) }),
         );
       }
     } else if (!wantReload) {
-      peerNotes.push('略過 remote reload（reload=false）— written ≠ applied');
+      peerNotes.push(tl('notes.auto.n1258'));
     }
 
     let probe: DnsPeerProbeResult | undefined;
@@ -576,8 +556,7 @@ export async function pushDnsZonesToCluster(input: {
         host: input.host,
         peer,
         dataDir: input.dataDir,
-        db: input.db,
-      });
+        db: input.db });
       peerNotes.push(...probe.notes.map((n) => `probe: ${n}`));
     }
 
@@ -609,8 +588,7 @@ export async function pushDnsZonesToCluster(input: {
       reloadMethod,
       probe,
       notes: peerNotes,
-      apply_status,
-    });
+      apply_status });
   }
 
   const allApplied = peersFullyApplied === peers.length;
@@ -624,25 +602,25 @@ export async function pushDnsZonesToCluster(input: {
   if (allApplied) {
     apply_status = 'applied';
     ok = true;
-    notes.push('全部 peer：zone 已推送並 remote reload 成功');
+    notes.push(tl('notes.auto.n0588'));
   } else if (allFailed) {
     apply_status = 'failed';
     ok = false;
-    notes.push('全部 peer 失敗');
+    notes.push(tl('notes.auto.n0587'));
   } else if (wantReload && peersFullyApplied > 0) {
     apply_status = 'partial';
     ok = false;
     notes.push(
-      '部分 peer applied；其餘僅 written 或失敗 — 勿當全叢集已 reload',
+      tl('notes.auto.n1490'),
     );
   } else if (!wantReload && peersAnyOk === peers.length) {
     apply_status = 'written';
     ok = true;
-    notes.push('已 scp zone 檔（written on peer ≠ named reloaded）');
+    notes.push(tl('notes.auto.n0728'));
   } else {
     apply_status = anyPartial ? 'partial' : 'failed';
     ok = false;
-    notes.push('推送結果不完整（partial/failed）');
+    notes.push(tl('notes.auto.n0895'));
   }
 
   return { ok, apply_status, notes, peers: results };

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Apply domain suspend + vacation artifacts to host (Postfix / Dovecot).
  * Never fakes applied without successful host commands.
@@ -50,7 +51,7 @@ export function rebuildSuspendDomainMap(dataDir: string): {
       `suspend map: ${path} (${domains.length} domains)`,
       domains.length
         ? `paused: ${domains.join(', ')}`
-        : '無暫停域名 — map 為空（系統套用後會 postmap 空檔）',
+        : tl('notes.auto.n1120'),
     ],
   };
 }
@@ -68,7 +69,7 @@ export function writeMailboxVacationCopies(input: {
   const notes: string[] = [];
   const domainSieve = join(input.dataDir, 'email', input.domain, 'sieve', 'vacation.sieve');
   if (!existsSync(domainSieve)) {
-    notes.push('無 domain vacation.sieve — 略過 per-mailbox 複製');
+    notes.push(tl('notes.auto.n1075'));
     return { written, notes };
   }
   const content = readFileSync(domainSieve, 'utf8');
@@ -82,10 +83,10 @@ export function writeMailboxVacationCopies(input: {
   }
   if (input.mailboxes.length) {
     notes.push(
-      `已複製 vacation 到 ${input.mailboxes.length} 個郵箱 sieve 目錄（written）`,
+      tl('notes.auto.t0065', { v0: (input.mailboxes.length) }),
     );
   } else {
-    notes.push('域名尚無郵箱 — 只保留 domain-level vacation 草稿');
+    notes.push(tl('notes.auto.n0628'));
   }
   return { written, notes };
 }
@@ -150,7 +151,7 @@ export async function applySuspendMapToPostfix(input: {
       stderr: r.stderr,
     });
     if (r.exitCode !== 0) {
-      notes.push(`${step.name} 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+      notes.push(tl('notes.tpl.actionFailed', { action: step.name, detail: (r.stderr || r.stdout).slice(0, 200) }));
       if (step.hard) {
         return { ok: false, notes, commandResults };
       }
@@ -158,7 +159,7 @@ export async function applySuspendMapToPostfix(input: {
       notes.push(`${step.name} ok`);
     }
   }
-  notes.push('Postfix suspend map 已套用（check_recipient_access REJECT）');
+  notes.push(tl('notes.auto.n0156'));
   return { ok: true, notes, commandResults };
 }
 
@@ -185,14 +186,14 @@ export async function applyVacationSieveToSystem(input: {
   if (!existsSync(domainSieve)) {
     return {
       ok: false,
-      notes: ['無 vacation.sieve 可部署'],
+      notes: [tl('notes.auto.n1088')],
       written,
       commandResults,
     };
   }
 
   if (!input.mailboxes.length) {
-    notes.push('無郵箱 — 跳過系統 sieve 部署');
+    notes.push(tl('notes.auto.n1200'));
     return { ok: true, notes, written, commandResults };
   }
 
@@ -240,13 +241,13 @@ export async function applyVacationSieveToSystem(input: {
       written.push(destFile);
       notes.push(
         input.enabled
-          ? `已部署 sieve + .dovecot.sieve → ${local}@${input.domain}`
-          : `已停用 active sieve link → ${local}@${input.domain}`,
+          ? tl('notes.auto.t0066', { v0: (local), v1: (input.domain) })
+          : tl('notes.auto.t0067', { v0: (local), v1: (input.domain) }),
       );
     } else {
       anyFail = true;
       notes.push(
-        `${local}@${input.domain} sieve 部署失敗: ${(r.stderr || r.stdout).slice(0, 120)}`,
+        tl('notes.auto.t0068', { v0: (local), v1: (input.domain), v2: ((r.stderr || r.stdout).slice(0, 120)) }),
       );
     }
   }
@@ -265,7 +266,7 @@ export async function applyVacationSieveToSystem(input: {
     if (reload.exitCode === 0) notes.push('dovecot reloaded');
     else
       notes.push(
-        'dovecot reload 失敗或服務未裝（sieve 檔已寫；唔標假 reload 成功）',
+        tl('notes.auto.n0261'),
       );
   }
 
@@ -301,9 +302,9 @@ export async function applyDomainFlagsToSystem(input: {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '系統套用需 YSK_EXECUTE + root',
+      blockMessage: tl('notes.auto.n1306'),
       apply_status: 'blocked',
-      notes: ['狀態：blocked — 管理檔已寫；未改 Postfix/Dovecot'],
+      notes: [tl('notes.auto.n1214')],
       written,
       commandResults,
     };
@@ -354,7 +355,7 @@ export async function applyDomainFlagsToSystem(input: {
     return {
       ok: false,
       apply_status: 'partial',
-      notes: [...notes, '狀態：partial — 部分系統步驟失敗'],
+      notes: [...notes, tl('notes.auto.n1220')],
       written,
       commandResults,
     };
@@ -363,7 +364,7 @@ export async function applyDomainFlagsToSystem(input: {
     return {
       ok: true,
       apply_status: 'written',
-      notes: [...notes, '無可執行系統步驟（仍只是 written）'],
+      notes: [...notes, tl('notes.auto.n1093')],
       written,
       commandResults,
     };
@@ -371,7 +372,7 @@ export async function applyDomainFlagsToSystem(input: {
   return {
     ok: true,
     apply_status: 'applied',
-    notes: [...notes, '狀態：applied（系統命令成功）'],
+    notes: [...notes, tl('notes.auto.n1212')],
     written,
     commandResults,
   };

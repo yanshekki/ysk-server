@@ -5,7 +5,7 @@
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export type AppTemplateId =
   | 'node-starter'
@@ -29,67 +29,58 @@ export interface AppTemplateMeta {
 export const APP_TEMPLATES: AppTemplateMeta[] = [
   {
     id: 'node-starter',
-    name: 'Node.js 起步',
-    description: '最小 HTTP 伺服器（/health）+ public 靜態目錄',
+    name: tl('notes.auto.n0143'),
+    description: tl('notes.auto.n0940'),
     runtime: 'node',
-    runtimeVersion: '20',
-  },
+    runtimeVersion: '20' },
   {
     id: 'static-site',
-    name: '靜態網站',
-    description: 'index.html + CSS，供 Nginx root 或靜態部署',
+    name: tl('notes.auto.n1590'),
+    description: tl('notes.auto.n0307'),
     runtime: 'static',
-    runtimeVersion: '1',
-  },
+    runtimeVersion: '1' },
   {
     id: 'wordpress-php',
-    name: 'WordPress（PHP 骨架）',
-    description: 'PHP docroot + wp-config 範例（核心需另下載）',
+    name: tl('notes.auto.n0209'),
+    description: tl('notes.auto.n0145'),
     runtime: 'php',
-    runtimeVersion: '8.2',
-  },
+    runtimeVersion: '8.2' },
   {
     id: 'python-fastapi',
     name: 'Python FastAPI',
-    description: 'FastAPI + uvicorn；requirements.txt；/ 與 /health',
+    description: tl('notes.auto.n0105'),
     runtime: 'python',
-    runtimeVersion: '3.12',
-  },
+    runtimeVersion: '3.12' },
   {
     id: 'python-flask',
     name: 'Python Flask',
-    description: 'Flask 最小 app.py；requirements.txt；/ 與 /health',
+    description: tl('notes.auto.n0106'),
     runtime: 'python',
-    runtimeVersion: '3.12',
-  },
+    runtimeVersion: '3.12' },
   {
     id: 'python-django',
-    name: 'Python Django（骨架）',
-    description: 'manage.py + minimal settings/urls/wsgi；需 pip install django',
+    name: tl('notes.auto.n0163'),
+    description: tl('notes.auto.n0325'),
     runtime: 'python',
-    runtimeVersion: '3.12',
-  },
+    runtimeVersion: '3.12' },
   {
     id: 'go-http',
     name: 'Go HTTP',
-    description: '標準庫 net/http；go.mod；/ 與 /health',
+    description: tl('notes.auto.n1012'),
     runtime: 'go',
-    runtimeVersion: '1.22',
-  },
+    runtimeVersion: '1.22' },
   {
     id: 'rust-http',
     name: 'Rust HTTP',
-    description: '標準庫 TcpListener（無額外 crate）；Cargo.toml',
+    description: tl('notes.auto.n1011'),
     runtime: 'rust',
-    runtimeVersion: 'stable',
-  },
+    runtimeVersion: 'stable' },
   {
     id: 'rust-axum',
     name: 'Rust Axum',
-    description: 'Axum + Tokio；需 cargo build 下載 crates（需外網）',
+    description: tl('notes.auto.n0078'),
     runtime: 'rust',
-    runtimeVersion: 'stable',
-  },
+    runtimeVersion: 'stable' },
 ];
 
 export function listAppTemplates(): AppTemplateMeta[] {
@@ -99,10 +90,9 @@ export function listAppTemplates(): AppTemplateMeta[] {
 export function getAppTemplate(id: string): AppTemplateMeta {
   const t = APP_TEMPLATES.find((x) => x.id === id);
   if (!t) {
-    throw new YskError(ErrorCodes.VALIDATION, `未知範本：${id}`, {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0131', { v0: (id) }), {
       httpStatus: 400,
-      details: { known: APP_TEMPLATES.map((x) => x.id) },
-    });
+      details: { known: APP_TEMPLATES.map((x) => x.id) } });
   }
   return t;
 }
@@ -128,7 +118,7 @@ export function scaffoldAppTemplate(input: {
   force?: boolean;
 }): ScaffoldResult {
   const meta = getAppTemplate(input.templateId);
-  const notes: string[] = [`範本 ${meta.id}：${meta.name}`];
+  const notes: string[] = [tl('notes.auto.t0132', { v0: (meta.id), v1: (meta.name) })];
   const written: string[] = [];
   const appDir = join(input.homeDir, 'app');
   mkdirSync(appDir, { recursive: true });
@@ -157,7 +147,7 @@ export function scaffoldAppTemplate(input: {
   return attachScaffoldMarker(appDir, result);
 }
 
-/** Marker so git clone can safely replace YSK 佔位 skeleton without data-loss refuse. */
+/** Marker so git clone can safely replace YSK placeholder skeleton without data-loss refuse. */
 export const YSK_SCAFFOLD_MARKER = '.ysk-scaffold';
 
 function attachScaffoldMarker(appDir: string, result: ScaffoldResult): ScaffoldResult {
@@ -191,7 +181,7 @@ function scaffoldNode(
   const entry = 'server.js';
   const entryPath = join(appDir, entry);
   if (existsSync(entryPath) && !input.force) {
-    notes.push(`${entry} 已存在 — 已略過（force 可覆寫）`);
+    notes.push(tl('notes.auto.t0133', { v0: (entry) }));
   } else {
     writeFileSync(
       entryPath,
@@ -218,7 +208,7 @@ const server = http.createServer((req, res) => {
     return;
   }
   res.statusCode = 404;
-  res.end('找不到');
+  res.end(tl('notes.notFound'));
 });
 server.listen(port, host, () => {
   process.stdout.write('ysk node-starter on ' + host + ':' + port + '\\n');
@@ -235,7 +225,7 @@ server.listen(port, host, () => {
     writeFileSync(
       idx,
       `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(input.projectName)}</title></head>
-<body><h1>${escapeHtml(input.projectName)}</h1><p>YSK Node 起步範本</p></body></html>\n`,
+<body><h1>${escapeHtml(input.projectName)}</h1><p>YSK Node starter template</p></body></html>\n`,
       'utf8',
     );
     written.push(idx);
@@ -250,8 +240,7 @@ server.listen(port, host, () => {
           version: '1.0.0',
           private: true,
           main: 'server.js',
-          scripts: { start: 'node server.js' },
-        },
+          scripts: { start: 'node server.js' } },
         null,
         2,
       ) + '\n',
@@ -259,7 +248,7 @@ server.listen(port, host, () => {
     );
     written.push(pkg);
   }
-  notes.push('部署：面板「部署」會啟動 server.js；written ≠ 已對外');
+  notes.push(tl('notes.auto.n1504'));
   return { ok: true, templateId: meta.id, written, notes, entry };
 }
 
@@ -286,7 +275,7 @@ function scaffoldStatic(
 <body>
   <main>
     <h1>${escapeHtml(input.projectName)}</h1>
-    <p>由 YSK Server 產生的靜態站點骨架。</p>
+    <p>Static site skeleton generated by YSK Server.</p>
   </main>
 </body>
 </html>
@@ -302,7 +291,7 @@ main{max-width:40rem}h1{color:#3b82f6}
     'utf8',
   );
   written.push(idx, css);
-  notes.push('以 Nginx root 或「靜態部署」提供 public/');
+  notes.push(tl('notes.auto.n0513'));
   return { ok: true, templateId: meta.id, written, notes, docRoot: pub };
 }
 
@@ -321,8 +310,8 @@ function scaffoldWordpress(
     `<?php
 // YSK WordPress 骨架 — 下載完整 WordPress 後覆寫
 header('Content-Type: text/plain; charset=utf-8');
-echo "YSK PHP OK — WordPress 尚未安裝\\n";
-echo "下載：curl -sL https://wordpress.org/latest.tar.gz | tar xz -C " . __DIR__ . " --strip-components=1\\n";
+echo tl('notes.auto.n0210');
+echo "Download: curl -sL https://wordpress.org/latest.tar.gz | tar xz -C " . __DIR__ . " --strip-components=1\\n";
 `,
     'utf8',
   );
@@ -350,12 +339,12 @@ if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
   writeFileSync(
     planPath,
     [
-      `WordPress 安裝說明 — ${input.projectName}`,
-      input.domain ? `域名：${input.domain}` : '',
-      '1. 於面板建立 MySQL 資料庫',
-      '2. 下載 WordPress 到 app/public',
-      '3. 設定 wp-config.php',
-      '4. 部署 PHP + 發布 Nginx／SSL',
+      tl('notes.auto.t0134', { v0: (input.projectName) }),
+      input.domain ? tl('notes.auto.t0135', { v0: (input.domain) }) : '',
+      tl('notes.auto.n0064'),
+      tl('notes.auto.n0066'),
+      tl('notes.auto.n0067'),
+      tl('notes.auto.n0068'),
       '',
     ]
       .filter(Boolean)
@@ -363,7 +352,7 @@ if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
     'utf8',
   );
   written.push(planPath);
-  notes.push('未下載 WordPress 核心（需外網／另下）— 見 WORDPRESS_INSTALL.txt');
+  notes.push(tl('notes.auto.n0948'));
   return { ok: true, templateId: meta.id, written, notes, docRoot };
 }
 
@@ -380,7 +369,7 @@ function scaffoldPythonFastapi(
     writeFileSync(
       mainPath,
       `# YSK python-fastapi — ${input.projectName}
-# 部署時會建 venv 並 pip install -r requirements.txt
+# Deploy creates venv and runs pip install -r requirements.txt
 from fastapi import FastAPI
 
 app = FastAPI(title=${JSON.stringify(input.projectName)})
@@ -394,7 +383,7 @@ def health():
     );
     written.push(mainPath);
   } else {
-    notes.push('main.py 已存在 — 已略過');
+    notes.push(tl('notes.auto.n0324'));
   }
   const req = join(appDir, 'requirements.txt');
   if (!existsSync(req) || input.force) {
@@ -402,8 +391,8 @@ def health():
     written.push(req);
   }
   notes.push(
-    '部署會執行 venv + pip；ExecStart 使用 uvicorn main:app',
-    '需主機有 Python 與外網 pip（否則安裝依賴會失敗）',
+    tl('notes.auto.n1501'),
+    tl('notes.auto.n1551'),
   );
   return { ok: true, templateId: meta.id, written, notes, entry: 'main:app' };
 }
@@ -440,7 +429,7 @@ if __name__ == "__main__":
     );
     written.push(appPath);
   } else {
-    notes.push('app.py 已存在 — 已略過');
+    notes.push(tl('notes.auto.n0220'));
   }
   const req = join(appDir, 'requirements.txt');
   if (!existsSync(req) || input.force) {
@@ -448,8 +437,8 @@ if __name__ == "__main__":
     written.push(req);
   }
   notes.push(
-    '部署會執行 venv + pip；entry 預設 app.py（非 ASGI）',
-    '需主機有 Python 與外網 pip',
+    tl('notes.auto.n1502'),
+    tl('notes.auto.n1550'),
   );
   return { ok: true, templateId: meta.id, written, notes, entry: 'app.py' };
 }
@@ -560,9 +549,9 @@ application = get_wsgi_application()
     written.push(req);
   }
   notes.push(
-    'Django 骨架：部署時 pip install django/gunicorn',
-    `進程 entry 預設 ${proj}.wsgi:application（gunicorn）`,
-    '正式環境請改 SECRET_KEY／DEBUG 並配置資料庫',
+    tl('notes.auto.n0100'),
+    tl('notes.auto.t0136', { v0: (proj) }),
+    tl('notes.auto.n1032'),
   );
   // Optional stdlib fallback launcher if gunicorn missing (still useful for debug)
   const launcher = join(appDir, 'app.py');
@@ -590,8 +579,7 @@ if __name__ == "__main__":
     templateId: meta.id,
     written,
     notes,
-    entry: `${proj}.wsgi:application`,
-  };
+    entry: `${proj}.wsgi:application` };
 }
 
 function scaffoldGoHttp(
@@ -645,7 +633,7 @@ func main() {
     writeFileSync(mod, `module ${modName}\n\ngo 1.22\n`, 'utf8');
     written.push(mod);
   }
-  notes.push('部署會 go build -o app .；需主機已安裝 Go toolchain');
+  notes.push(tl('notes.auto.n1500'));
   return { ok: true, templateId: meta.id, written, notes, entry: './app' };
 }
 
@@ -708,16 +696,15 @@ edition = "2021"
     written.push(cargo);
   }
   notes.push(
-    `部署會 cargo build --release；二進位預設 ./target/release/${crate}`,
-    '需主機已安裝 cargo／rustc',
+    tl('notes.auto.t0137', { v0: (crate) }),
+    tl('notes.auto.n1549'),
   );
   return {
     ok: true,
     templateId: meta.id,
     written,
     notes,
-    entry: `./target/release/${crate}`,
-  };
+    entry: `./target/release/${crate}` };
 }
 
 function scaffoldRustAxum(
@@ -783,17 +770,16 @@ serde_json = "1"
     written.push(cargo);
   }
   notes.push(
-    `Axum 範本：cargo build --release 需外網 crates.io`,
-    `二進位 ./target/release/${crate}`,
-    '首次 build 可能數分鐘；失敗時見 notes／日誌',
+    tl('notes.auto.t0138'),
+    tl('notes.auto.t0139', { v0: (crate) }),
+    tl('notes.auto.n1606'),
   );
   return {
     ok: true,
     templateId: meta.id,
     written,
     notes,
-    entry: `./target/release/${crate}`,
-  };
+    entry: `./target/release/${crate}` };
 }
 
 function slug(name: string): string {

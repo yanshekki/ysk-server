@@ -2,7 +2,7 @@
  * MySQL/MariaDB + Redis management plans (pure orchestration).
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface DatabasePlan {
   kind: 'mysql' | 'mariadb' | 'redis';
@@ -32,9 +32,8 @@ export function planMysqlDatabase(input: {
       `GRANT ${privileges} ON \`${input.dbName}\`.* TO '${input.username}'@'${host}';`,
       'FLUSH PRIVILEGES;',
     ],
-    notes: ['密碼需由安全管道設定', '需要 MySQL／MariaDB 管理員權限'],
-    connectionHint: { database: input.dbName, user: input.username, host },
-  };
+    notes: [tl('notes.auto.n0669'), tl('notes.auto.n1556')],
+    connectionHint: { database: input.dbName, user: input.username, host } };
 }
 
 /**
@@ -46,9 +45,8 @@ export function planRedisBinding(input: {
   maxmemoryMb?: number;
 }): DatabasePlan {
   if (!Number.isInteger(input.dbIndex) || input.dbIndex < 0 || input.dbIndex > 15) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Redis dbIndex 須為 0–15', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0169'), {
+      httpStatus: 400 });
   }
   const maxmem = input.maxmemoryMb ?? 64;
   return {
@@ -58,13 +56,12 @@ export function planRedisBinding(input: {
       `CONFIG SET maxmemory-policy allkeys-lru`,
       `# Optional dedicated instance memory hint: ${maxmem}mb`,
     ],
-    notes: ['預設以 Redis 邏輯 DB 編號隔離', '更強隔離請使用獨立 Redis 實例'],
-    connectionHint: { db: input.dbIndex, maxmemoryMb: maxmem },
-  };
+    notes: [tl('notes.auto.n1599'), tl('notes.auto.n0927')],
+    connectionHint: { db: input.dbIndex, maxmemoryMb: maxmem } };
 }
 
 function assertIdent(value: string, field: string): void {
   if (!/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(value)) {
-    throw new YskError(ErrorCodes.VALIDATION, `欄位 ${field} 無效：${value}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.fieldInvalid', { field, value }), { httpStatus: 400 });
   }
 }

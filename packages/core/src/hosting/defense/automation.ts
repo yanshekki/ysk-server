@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Defense automation — auto preset escalate/de-escalate + auto-ban (user-tunable).
  * Emergency preset is NEVER applied automatically.
@@ -13,15 +14,13 @@ import {
   modeThresholds,
   runAutoBanTick,
   saveAutoBanPolicy,
-  updateAutoBanPolicy,
-} from './auto-ban.js';
+  updateAutoBanPolicy } from './auto-ban.js';
 import { applyDefensePreset } from './defense-service.js';
 import {
   collectDefenseSignals,
   DEFAULT_SIGNAL_WEIGHTS,
   threatThresholdsFromAutoPreset,
-  type SignalWeights,
-} from './signals.js';
+  type SignalWeights } from './signals.js';
 import { enableCloudflareUnderAttack } from './cloudflare-ua.js';
 import { writeAndMaybeApplyCfOnlyUfw } from './cf-ufw.js';
 
@@ -96,8 +95,7 @@ export const DEFAULT_AUTOMATION: DefenseAutomation = {
     criticalAt: 70,
     deescalateEnabled: true,
     deescalateToDailyBelow: 10,
-    holdMinutes: 15,
-  },
+    holdMinutes: 15 },
   autoBan: {
     enabled: false,
     mode: 'soft',
@@ -110,17 +108,14 @@ export const DEFAULT_AUTOMATION: DefenseAutomation = {
     maxAutoBansPerHour: 40,
     intervalSeconds: 120,
     whitelist: ['127.0.0.1', '::1'],
-    syncFail2banIgnoreip: true,
-  },
+    syncFail2banIgnoreip: true },
   signalWeights: { ...DEFAULT_SIGNAL_WEIGHTS },
   cloudflare: {
     enabled: false,
     zones: [],
     onAutoEscalate: true,
     ufwAllowOnlyCf: false,
-    ufwKeepTcpPorts: [22],
-  },
-};
+    ufwKeepTcpPorts: [22] } };
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -143,11 +138,9 @@ export function loadDefenseAutomation(db: JsonStore): DefenseAutomation {
           cooldownMinutes: legacy.cooldownMinutes,
           maxAutoBansPerHour: legacy.maxAutoBansPerHour,
           whitelist: [...legacy.whitelist],
-          ...thresholdsFromMode(legacy.mode === 'off' ? 'soft' : legacy.mode),
-        },
+          ...thresholdsFromMode(legacy.mode === 'off' ? 'soft' : legacy.mode) },
         lastTickAt: legacy.lastTickAt,
-        lastTickNotes: legacy.lastTickNotes,
-      };
+        lastTickNotes: legacy.lastTickNotes };
     }
     const p = JSON.parse(raw) as Partial<DefenseAutomation>;
     const ab: Partial<DefenseAutomation['autoBan']> = p.autoBan ?? {};
@@ -159,8 +152,7 @@ export function loadDefenseAutomation(db: JsonStore): DefenseAutomation {
             minScore: Number(ab.minScore) || 40,
             minHits: Number(ab.minHits) || 60,
             min429: Number(ab.min429) || 30,
-            minScan: Number(ab.minScan) || 12,
-          }
+            minScan: Number(ab.minScan) || 12 }
         : thresholdsFromMode(mode === 'off' ? 'soft' : mode);
     return {
       enabled: Boolean(p.enabled),
@@ -172,8 +164,7 @@ export function loadDefenseAutomation(db: JsonStore): DefenseAutomation {
         criticalAt: clamp(Number(ap.criticalAt) || 70, 30, 100),
         deescalateEnabled: ap.deescalateEnabled !== false,
         deescalateToDailyBelow: clamp(Number(ap.deescalateToDailyBelow) || 10, 0, 50),
-        holdMinutes: clamp(Number(ap.holdMinutes) || 15, 1, 240),
-      },
+        holdMinutes: clamp(Number(ap.holdMinutes) || 15, 1, 240) },
       autoBan: {
         enabled: Boolean(ab.enabled ?? legacy.enabled),
         mode: mode === 'off' ? 'soft' : mode,
@@ -192,12 +183,10 @@ export function loadDefenseAutomation(db: JsonStore): DefenseAutomation {
         whitelist: Array.isArray(ab.whitelist)
           ? ab.whitelist.map(String).filter(Boolean).slice(0, 200)
           : [...legacy.whitelist],
-        syncFail2banIgnoreip: ab.syncFail2banIgnoreip !== false,
-      },
+        syncFail2banIgnoreip: ab.syncFail2banIgnoreip !== false },
       signalWeights: {
         ...DEFAULT_SIGNAL_WEIGHTS,
-        ...(p.signalWeights ?? {}),
-      },
+        ...(p.signalWeights ?? {}) },
       cloudflare: {
         enabled: Boolean(p.cloudflare?.enabled),
         zones: Array.isArray(p.cloudflare?.zones)
@@ -210,21 +199,18 @@ export function loadDefenseAutomation(db: JsonStore): DefenseAutomation {
               .map(Number)
               .filter((n) => Number.isInteger(n) && n > 0 && n < 65536)
               .slice(0, 20)
-          : [22],
-      },
+          : [22] },
       lastTickAt: p.lastTickAt,
       lastTickNotes: p.lastTickNotes,
       lastPresetChangeAt: p.lastPresetChangeAt,
       lastPresetId: p.lastPresetId as DefensePresetId | undefined,
-      suggestEmergency: p.suggestEmergency,
-    };
+      suggestEmergency: p.suggestEmergency };
   } catch {
     return {
       ...DEFAULT_AUTOMATION,
       autoBan: { ...DEFAULT_AUTOMATION.autoBan },
       signalWeights: { ...DEFAULT_SIGNAL_WEIGHTS },
-      cloudflare: { ...DEFAULT_AUTOMATION.cloudflare },
-    };
+      cloudflare: { ...DEFAULT_AUTOMATION.cloudflare } };
   }
 }
 
@@ -247,8 +233,7 @@ export function saveDefenseAutomation(
       ...policy.autoBan,
       whitelist: (policy.autoBan.whitelist ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 200),
       intervalSeconds: clamp(policy.autoBan.intervalSeconds, 30, 600),
-      syncFail2banIgnoreip: policy.autoBan.syncFail2banIgnoreip !== false,
-    },
+      syncFail2banIgnoreip: policy.autoBan.syncFail2banIgnoreip !== false },
     signalWeights: { ...DEFAULT_SIGNAL_WEIGHTS, ...policy.signalWeights },
     cloudflare: {
       enabled: Boolean(policy.cloudflare?.enabled),
@@ -258,9 +243,7 @@ export function saveDefenseAutomation(
       ufwKeepTcpPorts: (policy.cloudflare?.ufwKeepTcpPorts ?? [22])
         .map(Number)
         .filter((n) => Number.isInteger(n) && n > 0 && n < 65536)
-        .slice(0, 20),
-    },
-  };
+        .slice(0, 20) } };
   // When mode is preset, sync numeric thresholds for UI clarity
   if (next.autoBan.mode !== 'custom') {
     const th = thresholdsFromMode(next.autoBan.mode === 'off' ? 'soft' : next.autoBan.mode);
@@ -274,8 +257,7 @@ export function saveDefenseAutomation(
     method: next.autoBan.method,
     cooldownMinutes: next.autoBan.cooldownMinutes,
     maxAutoBansPerHour: next.autoBan.maxAutoBansPerHour,
-    whitelist: next.autoBan.whitelist,
-  });
+    whitelist: next.autoBan.whitelist });
   db.persist();
   return next;
 }
@@ -308,8 +290,7 @@ export function updateDefenseAutomation(
     autoPreset: { ...cur.autoPreset, ...patch.autoPreset },
     autoBan: { ...cur.autoBan, ...patch.autoBan },
     signalWeights: { ...cur.signalWeights, ...patch.signalWeights },
-    cloudflare: { ...cur.cloudflare, ...patch.cloudflare },
-  });
+    cloudflare: { ...cur.cloudflare, ...patch.cloudflare } });
 }
 
 function loadPresetId(db: JsonStore): DefensePresetId {
@@ -348,8 +329,7 @@ function holdActive(db: JsonStore, holdMinutes: number): boolean {
 function setHold(db: JsonStore, preset: DefensePresetId): void {
   db.snapshot.settings[HOLD_KEY] = JSON.stringify({
     at: new Date().toISOString(),
-    preset,
-  });
+    preset });
   db.persist();
 }
 
@@ -392,9 +372,8 @@ export async function runDefenseAutomationTick(input: {
     host: input.host,
     requestCountLastMinute: input.requestCountLastMinute,
     weights: automation.signalWeights,
-    threatThresholds,
-  });
-  notes.push(`威脅分 ${sig.score} · ${sig.threatLevel}`);
+    threatThresholds });
+  notes.push(tl('notes.auto.t0530', { v0: (sig.score), v1: (sig.threatLevel) }));
 
   let presetChanged = false;
   let preset = loadPresetId(input.db);
@@ -403,13 +382,12 @@ export async function runDefenseAutomationTick(input: {
   if (automation.enabled && automation.autoPreset.enabled) {
     if (sig.score >= automation.autoPreset.suggestEmergencyAt) {
       suggestEmergency = true;
-      notes.push('分數極高 — 建議人手套用「緊急」檔（永不自動）');
+      notes.push(tl('notes.auto.n0596'));
       pushTimeline(input.db, {
         at: new Date().toISOString(),
         kind: 'auto_suggest',
-        title: '建議緊急檔',
-        detail: `score=${sig.score}`,
-      });
+        title: tl('notes.auto.n0824'),
+        detail: `score=${sig.score}` });
     }
 
     const desired = desiredPresetFromScore(sig.score, automation.autoPreset);
@@ -418,8 +396,7 @@ export async function runDefenseAutomationTick(input: {
       daily: 0,
       hardened: 1,
       under_attack: 2,
-      emergency: 3,
-    };
+      emergency: 3 };
 
     // Escalate always if higher; de-escalate only if enabled and not in hold
     const wantUp = rank[desired] > rank[current] && current !== 'emergency';
@@ -445,45 +422,41 @@ export async function runDefenseAutomationTick(input: {
         preset = target;
         setHold(input.db, target);
         notes.push(
-          `自動防護檔 → ${target}${r.applied ? ' (applied)' : r.blocked ? ' (written)' : ''}`,
+          tl('notes.auto.t0531', { v0: (target), v1: (r.applied ? ' (applied)' : r.blocked ? ' (written)' : '') }),
         );
         pushTimeline(input.db, {
           at: new Date().toISOString(),
           kind: 'auto_preset',
-          title: `自動切換防護檔：${target}`,
-          detail: `score=${sig.score} from=${current}`,
-        });
+          title: tl('notes.auto.t0532', { v0: (target) }),
+          detail: `score=${sig.score} from=${current}` });
         // Cloudflare Under Attack + optional CF-only UFW on escalate
         if (target === 'under_attack' && wantUp && automation.cloudflare.enabled) {
           if (automation.cloudflare.onAutoEscalate && automation.cloudflare.zones.length) {
             const cf = await enableCloudflareUnderAttack({
               zones: automation.cloudflare.zones,
-              dryRun: !input.host.executeEnabled(),
-            });
+              dryRun: !input.host.executeEnabled() });
             notes.push(...cf.notes.slice(0, 4));
             pushTimeline(input.db, {
               at: new Date().toISOString(),
               kind: 'cloudflare_ua',
-              title: cf.ok ? 'Cloudflare Under Attack 已請求' : 'Cloudflare UA 未成功',
-              detail: cf.notes.slice(0, 2).join('; '),
-            });
+              title: cf.ok ? tl('notes.auto.n0089') : tl('notes.auto.n0088'),
+              detail: cf.notes.slice(0, 2).join('; ') });
           }
           if (automation.cloudflare.ufwAllowOnlyCf) {
             const u = await writeAndMaybeApplyCfOnlyUfw({
               dataDir: input.dataDir,
               host: input.host,
               keepTcpPorts: automation.cloudflare.ufwKeepTcpPorts,
-              apply: Boolean(input.host.executeEnabled() && input.host.isRoot()),
-            });
+              apply: Boolean(input.host.executeEnabled() && input.host.isRoot()) });
             notes.push(...u.notes.slice(0, 4));
           }
         }
       }
     } else if (holdActive(input.db, automation.autoPreset.holdMinutes) && wantDown === false) {
-      notes.push('防護檔維持期（hold）中，暫不降檔');
+      notes.push(tl('notes.auto.n1526'));
     }
   } else if (!automation.enabled) {
-    notes.push('自動化主開關關閉');
+    notes.push(tl('notes.auto.n1333'));
   }
 
   let banned: string[] = [];
@@ -500,13 +473,11 @@ export async function runDefenseAutomationTick(input: {
       method: automation.autoBan.method,
       cooldownMinutes: automation.autoBan.cooldownMinutes,
       maxAutoBansPerHour: automation.autoBan.maxAutoBansPerHour,
-      whitelist: automation.autoBan.whitelist,
-    };
+      whitelist: automation.autoBan.whitelist };
     saveAutoBanPolicy(input.db, {
       ...loadAutoBanPolicy(input.db),
       ...legacy,
-      enabled: true,
-    });
+      enabled: true });
 
     // Monkey-patch: run tick with custom thresholds by temporarily overriding
     // We inject custom thresholds via settings flag for runAutoBanTick
@@ -514,15 +485,13 @@ export async function runDefenseAutomationTick(input: {
       minScore: automation.autoBan.minScore,
       minHits: automation.autoBan.minHits,
       min429: automation.autoBan.min429,
-      minScan: automation.autoBan.minScan,
-    });
+      minScan: automation.autoBan.minScan });
     input.db.persist();
 
     const banR = await runAutoBanTick({
       host: input.host,
       db: input.db,
-      dataDir: input.dataDir,
-    });
+      dataDir: input.dataDir });
     banned = banR.banned;
     notes.push(...banR.notes.slice(0, 6));
   }
@@ -533,8 +502,7 @@ export async function runDefenseAutomationTick(input: {
     lastTickNotes: notes.slice(0, 16),
     lastPresetChangeAt: presetChanged ? new Date().toISOString() : automation.lastPresetChangeAt,
     lastPresetId: preset,
-    suggestEmergency,
-  });
+    suggestEmergency });
 
   return {
     ok: true,
@@ -545,17 +513,16 @@ export async function runDefenseAutomationTick(input: {
     presetChanged,
     banned,
     suggestEmergency,
-    automation,
-  };
+    automation };
 }
 
 /** Mechanism table for UI (static). */
 export const AUTOMATION_MECHANISM_ROWS = [
-  { step: '探測', mechanism: '外網 TCP、面板 req/min、TCP inuse、fail2ban、UFW', tunable: '升／降檔門檻' },
-  { step: '評分', mechanism: '訊號加總 0–100 → 威脅級', tunable: '門檻數字' },
-  { step: '限速', mechanism: '防護檔寫入 nginx limit_req', tunable: '自動切檔 或 人手' },
-  { step: '臨時 ban', mechanism: 'fail2ban banip', tunable: '方式 + 閾值' },
-  { step: '永久 ban', mechanism: 'UFW deny from', tunable: 'method=ufw/both' },
-  { step: '熔斷', mechanism: '每小時 auto-ban 上限', tunable: 'maxAutoBansPerHour' },
-  { step: '緊急', mechanism: '永不自動', tunable: '只人手 EMERGENCY' },
+  { step: tl('notes.probe'), mechanism: tl('notes.tpl.probeMech'), tunable: tl('notes.tpl.probeTunable') },
+  { step: tl('notes.auto.n1375'), mechanism: tl('notes.auto.n1354'), tunable: tl('notes.auto.n1519') },
+  { step: tl('notes.auto.n1531'), mechanism: tl('notes.auto.n1525'), tunable: tl('notes.auto.n1332') },
+  { step: tl('notes.auto.n1325'), mechanism: 'fail2ban banip', tunable: tl('notes.auto.n0906') },
+  { step: tl('notes.auto.n1046'), mechanism: 'UFW deny from', tunable: 'method=ufw/both' },
+  { step: tl('notes.auto.n1202'), mechanism: tl('notes.auto.n1044'), tunable: 'maxAutoBansPerHour' },
+  { step: tl('notes.auto.n0030'), mechanism: tl('notes.tpl.autoNever'), tunable: tl('notes.tpl.autoManualEmergency') },
 ] as const;

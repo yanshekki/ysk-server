@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Managed resource CRUD routes — nginx, ftp, mysql, postgres, redis, dns, certificates.
  */
@@ -16,8 +17,7 @@ import {
   applyRedisInstance,
   applyDnsZone,
   seedDnsZoneRecords,
-  type CollectionKey,
-} from '@ysk/core';
+  type CollectionKey } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
@@ -31,8 +31,7 @@ const COLLECTIONS: Record<string, CollectionKey> = {
   'redis/instances': 'redis_instances',
   'dns/zones': 'dns_zones',
   'dns/records': 'dns_records',
-  'ssl/certs': 'certificates',
-};
+  'ssl/certs': 'certificates' };
 
 function parseCollection(pathname: string): {
   key: CollectionKey | null;
@@ -70,7 +69,7 @@ export async function handleResourcesRoutes(
   const user = ctx.auth.authenticate(getBearer(req));
   const { key, id, action, prefix } = parseCollection(url.pathname);
   if (!key || !prefix) {
-    sendJson(res, 404, { ok: false, message: '未知的資源類型' });
+    sendJson(res, 404, { ok: false, message: tl('notes.auto.n0966') });
     return true;
   }
 
@@ -100,7 +99,7 @@ export async function handleResourcesRoutes(
   if (method === 'GET' && id && !action) {
     const row = getResource(ctx.db, key, id);
     if (!row) {
-      sendJson(res, 404, { ok: false, message: '找不到資源' });
+      sendJson(res, 404, { ok: false, message: tl('notes.auto.n0004') });
       return true;
     }
     sendJson(res, 200, { item: row });
@@ -114,8 +113,7 @@ export async function handleResourcesRoutes(
     if (key === 'certificates') {
       sendJson(res, 400, {
         ok: false,
-        message: '請使用 POST /api/v1/ssl/upload 或 POST /api/v1/ssl/letsencrypt',
-      });
+        message: tl('notes.auto.n1379') });
       return true;
     }
     // DNS zone: seed template records
@@ -127,7 +125,7 @@ export async function handleResourcesRoutes(
         : undefined;
       const template = String(data.template ?? 'full');
       if (!zone) {
-        sendJson(res, 400, { ok: false, message: '請填寫 zone 名稱' });
+        sendJson(res, 400, { ok: false, message: tl('notes.auto.n1392') });
         return true;
       }
       const nsName = data.nsName ? String(data.nsName).trim() : undefined;
@@ -145,8 +143,7 @@ export async function handleResourcesRoutes(
         template,
         ...(nsName ? { nsName } : {}),
         ttl,
-        apply_status: 'draft',
-      });
+        apply_status: 'draft' });
       seedDnsZoneRecords(
         ctx.db,
         String(row.id),
@@ -160,8 +157,7 @@ export async function handleResourcesRoutes(
         action: 'resources.create',
         resource: prefix,
         detail: { id: row.id, zone, template },
-        ok: true,
-      });
+        ok: true });
       sendJson(res, 201, { item: row });
       return true;
     }
@@ -169,7 +165,7 @@ export async function handleResourcesRoutes(
     if (key === 'mysql_databases') {
       const name = String(data.name ?? '').trim();
       if (!name) {
-        sendJson(res, 400, { ok: false, message: '請填寫名稱' });
+        sendJson(res, 400, { ok: false, message: tl('notes.needName') });
         return true;
       }
       const eng = data.engine === 'mariadb' ? 'mariadb' : 'mysql';
@@ -178,8 +174,7 @@ export async function handleResourcesRoutes(
         charset: data.charset ?? 'utf8mb4',
         projectId: data.projectId,
         engine: eng,
-        apply_status: 'draft',
-      });
+        apply_status: 'draft' });
       if (data.createUser && data.username && data.password) {
         createResource(ctx.db, 'mysql_users', {
           username: data.username,
@@ -188,37 +183,33 @@ export async function handleResourcesRoutes(
           databaseId: row.id,
           privileges: data.privileges ?? ['ALL'],
           engine: eng,
-          apply_status: 'draft',
-        });
+          apply_status: 'draft' });
       }
       ctx.audit.append({
         actor: user.username,
         action: 'resources.create',
         resource: prefix,
         detail: { id: row.id, name },
-        ok: true,
-      });
+        ok: true });
       sendJson(res, 201, { item: row });
       return true;
     }
     if (key === 'postgres_databases') {
       const name = String(data.name ?? '').trim();
       if (!name) {
-        sendJson(res, 400, { ok: false, message: '請填寫名稱' });
+        sendJson(res, 400, { ok: false, message: tl('notes.needName') });
         return true;
       }
       const row = createResource(ctx.db, key, {
         name,
         projectId: data.projectId,
-        apply_status: 'draft',
-      });
+        apply_status: 'draft' });
       if (data.createUser && data.username && data.password) {
         createResource(ctx.db, 'postgres_users', {
           username: data.username,
           password_plain: data.password,
           databaseId: row.id,
-          apply_status: 'draft',
-        });
+          apply_status: 'draft' });
       }
       sendJson(res, 201, { item: row });
       return true;
@@ -230,8 +221,7 @@ export async function handleResourcesRoutes(
       action: 'resources.create',
       resource: prefix,
       detail: { id: row.id },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 201, { item: row });
     return true;
   }
@@ -243,7 +233,7 @@ export async function handleResourcesRoutes(
     delete data.id;
     const row = updateResource(ctx.db, key, id, data);
     if (!row) {
-      sendJson(res, 404, { ok: false, message: '找不到資源' });
+      sendJson(res, 404, { ok: false, message: tl('notes.auto.n0004') });
       return true;
     }
     ctx.audit.append({
@@ -251,8 +241,7 @@ export async function handleResourcesRoutes(
       action: 'resources.update',
       resource: `${prefix}/${id}`,
       detail: data,
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { item: row });
     return true;
   }
@@ -266,8 +255,7 @@ export async function handleResourcesRoutes(
         action: 'resources.delete',
         resource: `${prefix}/${id}`,
         detail: r,
-        ok: r.ok,
-      });
+        ok: r.ok });
       sendOpsResult(res, r, { notFound: true });
       return true;
     }
@@ -299,8 +287,7 @@ export async function handleResourcesRoutes(
       action: 'resources.delete',
       resource: `${prefix}/${id}`,
       detail: { ok },
-      ok,
-    });
+      ok });
     sendJson(res, ok ? 200 : 404, { ok });
     return true;
   }
@@ -316,8 +303,7 @@ export async function handleResourcesRoutes(
       const r = await applyManagedNginxSite(ctx.db, ctx.dataDir, id, {
         host: ctx.host,
         execute,
-        systemConfDir: '/etc/nginx/conf.d',
-      });
+        systemConfDir: '/etc/nginx/conf.d' });
       sendOpsResult(res, r);
       return true;
     }
@@ -340,8 +326,7 @@ export async function handleResourcesRoutes(
       const r = await applyDnsZone(ctx.db, ctx.dataDir, id, {
         host: ctx.host,
         validate: true,
-        tryReload: execute,
-      });
+        tryReload: execute });
       sendOpsResult(res, r);
       return true;
     }
@@ -351,20 +336,18 @@ export async function handleResourcesRoutes(
         db: ctx.db,
         dataDir: ctx.dataDir,
         host: ctx.host,
-        id,
-      });
+        id });
       sendOpsResult(res, r);
       return true;
     }
     if (key === 'certificates') {
       sendJson(res, 410, {
         ok: false,
-        notes: ['Use POST /api/v1/ssl/upload or /api/v1/ssl/letsencrypt — marking applied is disabled'],
-      });
+        notes: ['Use POST /api/v1/ssl/upload or /api/v1/ssl/letsencrypt — marking applied is disabled'] });
       return true;
     }
 
-    sendJson(res, 400, { ok: false, message: '此資源不支援套用到系統' });
+    sendJson(res, 400, { ok: false, message: tl('notes.auto.n1040') });
     return true;
   }
 

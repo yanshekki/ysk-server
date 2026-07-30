@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Per-sender (envelope from domain) rate policy via Postfix check_policy_service.
  * Generates a small Python3 policy daemon + master.cf / main.cf hooks.
@@ -142,12 +143,11 @@ ysk_rate  unix  -       n       n       -       0       spawn
   return {
     written: [ratesPath, scriptPath, masterSnippet],
     notes: [
-      `已寫 per-sender policy daemon（${Object.keys(rates).length} domains）`,
+      tl('notes.auto.t0069', { v0: (Object.keys(rates).length) }),
       scriptPath,
     ],
     scriptPath,
-    ratesPath,
-  };
+    ratesPath };
 }
 
 /**
@@ -169,15 +169,14 @@ export async function applySenderRatePolicyService(input: {
   const written = [...gen.written];
 
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
-    notes.push('狀態：blocked（policy daemon 已生成；系統套用需 EXECUTE+root）');
+    notes.push(tl('notes.auto.n1216'));
     return {
       ok: false,
       notes,
       written,
       blocked: true,
-      blockMessage: '需要系統變更權限才能掛 check_policy_service',
-      apply_status: 'blocked',
-    };
+      blockMessage: tl('notes.auto.n1586'),
+      apply_status: 'blocked' };
   }
 
   const sysDir = '/etc/ysk-server/email/policy';
@@ -198,44 +197,38 @@ export async function applySenderRatePolicyService(input: {
           `cp -f ${JSON.stringify(gen.ratesPath)} ${JSON.stringify(ratesSys)}`,
           `chmod 755 ${JSON.stringify(scriptSys)}`,
         ].join(' && '),
-      ],
-    },
+      ] },
     {
       name: 'master.cf ysk_rate',
       argv: [
         'bash',
         '-c',
         `grep -q '^ysk_rate' /etc/postfix/master.cf 2>/dev/null || printf '\\n# YSK sender rate\\nysk_rate  unix  -       n       n       -       0       spawn\\n  user=nobody argv=/usr/bin/python3 %s\\n' ${JSON.stringify(scriptSys)} >> /etc/postfix/master.cf`,
-      ],
-    },
+      ] },
     {
       name: 'postconf end_of_data',
       argv: [
         'postconf',
         '-e',
         'smtpd_end_of_data_restrictions=check_policy_service unix:private/ysk_rate',
-      ],
-    },
+      ] },
     {
       name: 'postconf recipient (optional soft)',
       argv: [
         'bash',
         '-c',
         `grep -q 'private/ysk_rate' /etc/postfix/main.cf 2>/dev/null || postconf -e "smtpd_recipient_restrictions=\$smtpd_recipient_restrictions, check_policy_service unix:private/ysk_rate"`,
-      ],
-    },
+      ] },
     {
       name: 'postfix check',
-      argv: ['bash', '-c', 'postfix check 2>&1 | tail -20; exit ${PIPESTATUS[0]:-0}'],
-    },
+      argv: ['bash', '-c', 'postfix check 2>&1 | tail -20; exit ${PIPESTATUS[0]:-0}'] },
     {
       name: 'reload postfix',
       argv: [
         'bash',
         '-c',
         'systemctl reload postfix 2>&1 || service postfix reload 2>&1',
-      ],
-    },
+      ] },
   ];
 
   let failed = 0;
@@ -244,7 +237,7 @@ export async function applySenderRatePolicyService(input: {
     if (r.exitCode !== 0) {
       failed += 1;
       notes.push(
-        `${step.name} 失敗 (exit ${r.exitCode}): ${(r.stderr || r.stdout).slice(0, 200)}`,
+        tl('notes.auto.t0070', { v0: (step.name), v1: (r.exitCode), v2: ((r.stderr || r.stdout).slice(0, 200)) }),
       );
       // Hard fail on copy / postconf end_of_data / reload
       if (
@@ -252,27 +245,25 @@ export async function applySenderRatePolicyService(input: {
         step.name === 'postconf end_of_data' ||
         step.name === 'reload postfix'
       ) {
-        notes.push('狀態：written/partial（關鍵步驟失敗 — 唔標 applied）');
+        notes.push(tl('notes.auto.n1224'));
         return {
           ok: false,
           notes,
           written: [...written, scriptSys, ratesSys],
-          apply_status: 'written',
-        };
+          apply_status: 'written' };
       }
     } else {
       notes.push(`${step.name} ok`);
     }
   }
 
-  notes.push('Per-sender：依 envelope sender domain 計 msgs/hour；超限 DEFER_IF_PERMIT');
+  notes.push(tl('notes.auto.n0155'));
   const ok = failed === 0;
-  notes.push(ok ? '狀態：applied' : '狀態：written/partial');
+  notes.push(ok ? tl('notes.auto.n0001') : tl('notes.tpl.statusWrittenPartial'));
 
   return {
     ok,
     notes,
     written: [...written, scriptSys, ratesSys],
-    apply_status: ok ? 'applied' : 'written',
-  };
+    apply_status: ok ? 'applied' : 'written' };
 }

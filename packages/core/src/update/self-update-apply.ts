@@ -5,7 +5,7 @@
 
 import { planSelfUpdate, compareVersions, isValidSha256 } from './self-update.js';
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface RegistryVersion {
   latest: string;
@@ -47,7 +47,7 @@ export async function fetchNpmLatest(packageName = 'ysk-server'): Promise<Regist
   const url = `https://registry.npmjs.org/${encodeURIComponent(packageName)}/latest`;
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!res.ok) {
-    throw new YskError(ErrorCodes.UPDATE_FAILED, `npm registry 回應 HTTP ${res.status}`, {
+    throw new YskError(ErrorCodes.UPDATE_FAILED, tl('notes.auto.t0469', { v0: (res.status) }), {
       httpStatus: 502,
       details: { packageName, url },
     });
@@ -57,7 +57,7 @@ export async function fetchNpmLatest(packageName = 'ysk-server'): Promise<Regist
     dist?: { tarball?: string; shasum?: string };
   };
   if (!body.version) {
-    throw new YskError(ErrorCodes.UPDATE_FAILED, 'npm latest 缺少版本資訊', { httpStatus: 502 });
+    throw new YskError(ErrorCodes.UPDATE_FAILED, tl('notes.auto.n0347'), { httpStatus: 502 });
   }
   return {
     latest: body.version.replace(/^v/, ''),
@@ -85,7 +85,7 @@ export async function fetchGithubLatest(
   if (!res.ok) {
     throw new YskError(
       ErrorCodes.UPDATE_FAILED,
-      `GitHub releases 回應 HTTP ${res.status}`,
+      tl('notes.auto.t0470', { v0: (res.status) }),
       { httpStatus: 502, details: { repo, url } },
     );
   }
@@ -96,7 +96,7 @@ export async function fetchGithubLatest(
   };
   const tag = (body.tag_name || body.name || '').trim();
   if (!tag) {
-    throw new YskError(ErrorCodes.UPDATE_FAILED, 'GitHub release 缺少 tag', {
+    throw new YskError(ErrorCodes.UPDATE_FAILED, tl('notes.auto.n0111'), {
       httpStatus: 502,
     });
   }
@@ -124,13 +124,13 @@ export async function fetchGithubPackageJsonVersion(
   if (!res.ok) {
     throw new YskError(
       ErrorCodes.UPDATE_FAILED,
-      `GitHub package.json 回應 HTTP ${res.status}`,
+      tl('notes.auto.t0471', { v0: (res.status) }),
       { httpStatus: 502, details: { repo, branch, path, url } },
     );
   }
   const body = (await res.json()) as { version?: string; name?: string };
   if (!body.version) {
-    throw new YskError(ErrorCodes.UPDATE_FAILED, 'GitHub package.json 缺少 version', {
+    throw new YskError(ErrorCodes.UPDATE_FAILED, tl('notes.auto.n0110'), {
       httpStatus: 502,
     });
   }
@@ -161,7 +161,7 @@ export async function resolveLatestVersion(input?: {
         channel: 'env',
         packageName: input.packageName,
       },
-      notes: ['使用呼叫端指定版本（latestOverride）'],
+      notes: [tl('notes.auto.n0540')],
     };
   }
   if (envLatest) {
@@ -171,7 +171,7 @@ export async function resolveLatestVersion(input?: {
         channel: 'env',
         packageName: input?.packageName,
       },
-      notes: ['使用環境變數 YSK_LATEST_VERSION（離線／測試覆蓋）'],
+      notes: [tl('notes.auto.n0541')],
     };
   }
 
@@ -182,11 +182,11 @@ export async function resolveLatestVersion(input?: {
   for (const name of npmNames) {
     try {
       const registry = await fetchNpmLatest(name);
-      notes.push(`npm 頻道：${name}@${registry.latest}`);
+      notes.push(tl('notes.auto.t0472', { v0: (name), v1: (registry.latest) }));
       return { registry, notes };
     } catch (e) {
       notes.push(
-        `npm ${name} 不可用：${e instanceof Error ? e.message : String(e)}`,
+        tl('notes.auto.t0473', { v0: (name), v1: (e instanceof Error ? e.message : String(e)) }),
       );
     }
   }
@@ -197,24 +197,24 @@ export async function resolveLatestVersion(input?: {
     notes.push(`GitHub release：${registry.packageName} tag ${registry.latest}`);
     return { registry, notes };
   } catch (e) {
-    notes.push(`GitHub releases 不可用：${e instanceof Error ? e.message : String(e)}`);
+    notes.push(tl('notes.auto.t0474', { v0: (e instanceof Error ? e.message : String(e)) }));
   }
 
   try {
     const registry = await fetchGithubPackageJsonVersion(repo);
     notes.push(
-      `GitHub 源碼 package.json（${registry.sourceUrl}）：${registry.latest}`,
+      tl('notes.auto.t0475', { v0: (registry.sourceUrl), v1: (registry.latest) }),
     );
     return { registry, notes };
   } catch (e) {
     notes.push(
-      `GitHub package.json 不可用：${e instanceof Error ? e.message : String(e)}`,
+      tl('notes.auto.t0476', { v0: (e instanceof Error ? e.message : String(e)) }),
     );
   }
 
   throw new YskError(
     ErrorCodes.UPDATE_FAILED,
-    '無法從 npm 或 GitHub 取得最新版本（未假裝已是最新）',
+    tl('notes.auto.n1170'),
     { httpStatus: 502, details: { notes } },
   );
 }
@@ -236,7 +236,7 @@ export async function checkSelfUpdate(input: {
       githubRepo: input.githubRepo,
     });
     if (registry.shasum && !isValidSha256(registry.shasum) && registry.shasum.length !== 40) {
-      notes.push('registry shasum 非 sha256（npm 常用 sha1）— 以 npm integrity 為準');
+      notes.push(tl('notes.auto.n0404'));
     }
     const plan = planSelfUpdate({
       current: input.currentVersion,
@@ -245,9 +245,9 @@ export async function checkSelfUpdate(input: {
         registry.shasum && isValidSha256(registry.shasum) ? registry.shasum : undefined,
     });
     if (!plan.status.updateAvailable) {
-      notes.push('已是最新版本（頻道已確認）');
+      notes.push(tl('notes.auto.n0784'));
     } else {
-      notes.push(`有更新：${input.currentVersion} → ${registry.latest}`);
+      notes.push(tl('notes.auto.t0477', { v0: (input.currentVersion), v1: (registry.latest) }));
     }
     return {
       currentVersion: input.currentVersion,
@@ -266,7 +266,7 @@ export async function checkSelfUpdate(input: {
   } catch (e) {
     const notes = [
       e instanceof Error ? e.message : String(e),
-      '未能確認遠端最新版 — 唔會假裝「已是最新」',
+      tl('notes.auto.n0974'),
     ];
     // Keep plan shape with latest=current only for structure; flag checked=false
     const plan = planSelfUpdate({
@@ -327,7 +327,7 @@ export async function applySelfUpdateFromGit(input: {
 
   if (!gitCheck.stdout.includes('yes')) {
     notes.push(
-      `來源目錄 ${root} 不是 git repo — 可設 YSK_SOURCE_ROOT，或改用 npm 頻道（YSK_NPM_PACKAGE）`,
+      tl('notes.auto.t0478', { v0: (root) }),
     );
     // Try download tarball of main into staging (does not replace running tree without root swap)
     const staging = `${root}/.ysk-self-update-staging`;
@@ -352,17 +352,17 @@ export async function applySelfUpdateFromGit(input: {
       stderr: dl.stderr,
     });
     if (dl.exitCode !== 0) {
-      notes.push(`GitHub tarball 下載失敗：${(dl.stderr || dl.stdout).slice(0, 300)}`);
+      notes.push(tl('notes.auto.t0479', { v0: ((dl.stderr || dl.stdout).slice(0, 300)) }));
       return { applied: false, notes, commandResults };
     }
     notes.push(
-      `已下載原始碼到 ${staging}（staging only）— 未替換運行中安裝；請用部署腳本／git 工作目錄完成切換`,
+      tl('notes.auto.t0480', { v0: (staging) }),
     );
-    notes.push('狀態：partial — 唔會標 applied（避免假成功）');
+    notes.push(tl('notes.auto.n1219'));
     return { applied: false, notes, commandResults };
   }
 
-  notes.push(`使用 git 來源：${root}`);
+  notes.push(tl('notes.auto.t0481', { v0: (root) }));
   const tag = input.latest.replace(/^v/, '');
   const steps = [
     {
@@ -409,7 +409,7 @@ export async function applySelfUpdateFromGit(input: {
     });
     if (r.exitCode !== 0) {
       notes.push(
-        `git apply 步驟 ${step.name} 失敗 (exit ${r.exitCode}): ${(r.stderr || r.stdout).slice(0, 300)}`,
+        tl('notes.auto.t0482', { v0: (step.name), v1: (r.exitCode), v2: ((r.stderr || r.stdout).slice(0, 300)) }),
       );
       return { applied: false, notes, commandResults };
     }
@@ -417,7 +417,7 @@ export async function applySelfUpdateFromGit(input: {
   }
 
   notes.push(
-    `已更新來源樹至目標 ${input.latest} 並 build — 請重啟 ysk-server 程序令新版本生效`,
+    tl('notes.auto.t0483', { v0: (input.latest) }),
   );
   return { applied: true, notes, commandResults };
 }
@@ -490,7 +490,7 @@ export async function runSelfUpdate(input: {
 
   if (input.apply && plan.status.updateAvailable) {
     if (!input.host.executeEnabled()) {
-      notes.push('伺服器未開啟系統變更權限，無法在管理面板完成更新');
+      notes.push(tl('ops.blocked.update'));
     } else {
       const latest = plan.status.latestVersion ?? registry?.latest ?? '';
       const preferNpm =
@@ -517,7 +517,7 @@ export async function runSelfUpdate(input: {
         });
         applied = r.exitCode === 0;
         notes.push(
-          applied ? `已安裝 ${pkg}` : `npm 更新失敗：${(r.stderr || r.stdout).slice(0, 400)}`,
+          applied ? tl('notes.auto.t0484', { v0: (pkg) }) : tl('notes.auto.t0485', { v0: ((r.stderr || r.stdout).slice(0, 400)) }),
         );
       }
 
@@ -550,14 +550,14 @@ export async function runSelfUpdate(input: {
         applied = r.exitCode === 0;
         notes.push(
           applied
-            ? `已用 YSK_NPM_PACKAGE 安裝 ${pkg}`
-            : `YSK_NPM_PACKAGE 安裝失敗：${(r.stderr || r.stdout).slice(0, 300)}`,
+            ? tl('notes.auto.t0486', { v0: (pkg) })
+            : tl('notes.auto.t0487', { v0: ((r.stderr || r.stdout).slice(0, 300)) }),
         );
       }
 
       if (!applied) {
         notes.push(
-          '未能套用更新：請設 YSK_SOURCE_ROOT 指向 git 工作目錄，或 publish npm 套件後設 YSK_NPM_PACKAGE',
+          tl('notes.auto.n0973'),
         );
       }
     }
@@ -569,7 +569,7 @@ export async function runSelfUpdate(input: {
 
   if (input.apply && plan.status.updateAvailable && !applied) {
     if (!notes.some((n) => /權限|失敗|failed|GitHub|npm 套件|最新/i.test(n))) {
-      notes.push('更新未完成');
+      notes.push(tl('notes.auto.n0929'));
     }
   }
 

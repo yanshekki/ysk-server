@@ -68,32 +68,33 @@ function badgeForKey(
   key: string,
   software: SoftwareStatus[],
   opts: { executeEnabled?: boolean; productionReady?: boolean },
+  t: (k: string) => string,
 ): FeatureTileBadge | undefined {
   const feat = KEY_TO_FEATURE[key];
   if (feat) {
     const related = software.filter((s) => s.features?.includes(feat) || s.id === feat);
     if (related.length === 0) {
       // unknown software entry — neutral control-plane
-      return { label: '面板', tone: 'info' };
+      return { label: t('dashboard.badge.panel'), tone: 'info' };
     }
     const allInstalled = related.every((s) => s.installed);
     const anyActive = related.some((s) => s.active === 'active');
-    if (!allInstalled) return { label: '未安裝', tone: 'warn' };
-    if (anyActive || allInstalled) return { label: '就緒', tone: 'ok' };
-    return { label: '已裝', tone: 'info' };
+    if (!allInstalled) return { label: t('dashboard.badge.notInstalled'), tone: 'warn' };
+    if (anyActive || allInstalled) return { label: t('dashboard.badge.ready'), tone: 'ok' };
+    return { label: t('dashboard.badge.installed'), tone: 'info' };
   }
 
   // Control-plane features
   if (key === 'readiness') {
     return opts.productionReady
-      ? { label: '可生產', tone: 'ok' }
-      : { label: '檢查', tone: 'warn' };
+      ? { label: t('dashboard.badge.prodReady'), tone: 'ok' }
+      : { label: t('dashboard.badge.check'), tone: 'warn' };
   }
   if (['security', 'ai', 'agents', 'updates', 'metrics', 'services', 'cron', 'backups', 'projects', 'files', 'publicFiles', 'systemd'].includes(key)) {
-    if (opts.executeEnabled === false) return { label: '需權限', tone: 'warn' };
-    return { label: '就緒', tone: 'ok' };
+    if (opts.executeEnabled === false) return { label: t('dashboard.badge.needPerm'), tone: 'warn' };
+    return { label: t('dashboard.badge.ready'), tone: 'ok' };
   }
-  return { label: '面板', tone: 'neutral' };
+  return { label: t('dashboard.badge.panel'), tone: 'neutral' };
 }
 
 export function DashboardPage() {
@@ -186,13 +187,13 @@ export function DashboardPage() {
       });
       setWizMsg(
         (r.notes ?? []).join('；') ||
-          (r.ok ? '建立完成' : '部分失敗'),
+          (r.ok ? t('dashboard.wizardOk') : t('dashboard.wizardPartial')),
       );
       if (r.projectId) {
         setTimeout(() => navigate(`/projects/${r.projectId}`), 800);
       }
     } catch (err) {
-      setWizErr(err instanceof Error ? err.message : '建立失敗');
+      setWizErr(err instanceof Error ? err.message : t('common.createFailed'));
     } finally {
       setWizBusy(false);
     }
@@ -214,7 +215,7 @@ export function DashboardPage() {
         badge: badgeForKey(i.key, software, {
           executeEnabled,
           productionReady: readiness?.productionReady,
-        }),
+        }, t),
       }));
   }, [t, software, executeEnabled, readiness?.productionReady]);
 
@@ -226,15 +227,15 @@ export function DashboardPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.dashboard', { defaultValue: t('dashboard.title') })}
+      title={t('nav.dashboard')}
       status={{
         pill: {
           label:
             health?.status === 'ok'
-              ? '健康'
+              ? t('dashboard.status.healthy')
               : readiness?.productionReady
-                ? '可生產'
-                : '需檢查',
+                ? t('dashboard.status.prodReady')
+                : t('dashboard.status.needsCheck'),
           tone:
             health?.status === 'ok'
               ? 'ok'
@@ -249,9 +250,9 @@ export function DashboardPage() {
             value: running,
             tone: running > 0 ? 'ok' : 'neutral',
           },
-          { label: '備份', value: backups },
+          { label: t('dashboard.stat.backups'), value: backups },
           {
-            label: '通知',
+            label: t('dashboard.stat.notifications'),
             value: notifications.length,
             tone:
               notifCounts.critical > 0
@@ -263,11 +264,11 @@ export function DashboardPage() {
           {
             label: 'EXECUTE',
             value:
-              executeEnabled === true ? '開' : executeEnabled === false ? '關' : '—',
+              executeEnabled === true ? t('common.on') : executeEnabled === false ? t('common.off') : t('common.noneSelectedShort'),
             tone: executeEnabled === true ? 'ok' : 'warn',
           },
           {
-            label: '憑證到期',
+            label: t('dashboard.stat.certExpiry'),
             value: expiringCerts?.length ?? 0,
             tone: (expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok',
           },
@@ -275,13 +276,13 @@ export function DashboardPage() {
       }}
       actions={<ActionBar>
           <Link to="/projects" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            專案
+            {t('nav.projects')}
           </Link>
           <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            服務
+            {t('nav.services')}
           </Link>
           <Link to="/system/readiness" className={buttonClassName({ variant: 'primary', size: 'sm' })}>
-            就緒探測
+            {t('nav.readiness')}
           </Link>
         </ActionBar>
       }
@@ -293,16 +294,15 @@ export function DashboardPage() {
 
       <PageTabs
         tabs={[
-          { id: 'overview', label: '概覽' },
-          { id: 'wizard', label: '一鍵建立' },
+          { id: 'overview', label: t('dashboard.tabs.overview') },
+          { id: 'wizard', label: t('dashboard.tabs.wizard') },
           {
             id: 'notifications',
-            label: '通知',
+            label: t('dashboard.tabs.notifications'),
             badge: notifBadge || undefined,
           },
-          { id: 'features', label: '功能入口' },
-        
-          { id: 'about', label: '說明' },
+          { id: 'features', label: t('dashboard.tabs.features') },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -312,7 +312,7 @@ export function DashboardPage() {
           <div className="tab-panel">
             {svcMatrix.length > 0 ? (
               <Card>
-                <CardSection title="服務健康" description="systemctl 實時探測">
+                <CardSection title={t('dashboard.serviceHealth')} description={t('dashboard.serviceHealthDesc')}>
                   <div className="chip-row">
                     {svcMatrix.slice(0, 12).map((s) => (
                       <Link
@@ -336,29 +336,35 @@ export function DashboardPage() {
                     ))}
                   </div>
                   <p className="muted u-text-sm u-mt-4">
-                    <Link to="/services">完整服務矩陣</Link>
+                    <Link to="/services">{t('dashboard.fullServiceMatrix')}</Link>
                   </p>
                 </CardSection>
               </Card>
             ) : null}
 
-            {readiness ? (
+            {readiness?.score ? (
               <Alert variant={readiness.productionReady ? 'ok' : 'info'}>
-                <strong>就緒檢查：</strong>
-                {readiness.productionReady ? '可作生產' : '尚未完全就緒'} · 模式 {readiness.mode} ·
-                分數 {readiness.score.ready}/{readiness.score.total}
-                {readiness.summary[1] ? ` — ${readiness.summary[1]}` : ''}
+                <strong>{t('dashboard.readinessCheck')}</strong>
+                {readiness.productionReady ? t('dashboard.prodOk') : t('dashboard.notFullyReady')} ·{' '}
+                {t('dashboard.modeScore', {
+                  mode: readiness.mode ?? '—',
+                  ready: readiness.score.ready,
+                  total: readiness.score.total,
+                })}
+                {readiness.summary?.[1] ? ` — ${readiness.summary[1]}` : ''}
                 {' · '}
-                <Link to="/system/readiness">詳情</Link>
+                <Link to="/system/readiness">{t('dashboard.details')}</Link>
               </Alert>
             ) : null}
 
             {expiringCerts && expiringCerts.length > 0 ? (
               <Alert variant={expiringCerts.some((c) => c.days <= 7) ? 'error' : 'info'}>
-                <strong>憑證到期：</strong>
+                <strong>{t('dashboard.certExpiryTitle')}</strong>
                 {expiringCerts
                   .slice(0, 4)
-                  .map((c) => `${c.domain}（${c.days < 0 ? '已過期' : `${c.days} 日`}）`)
+                  .map((c) =>
+                    `${c.domain}（${c.days < 0 ? t('dashboard.certExpired') : t('dashboard.certDays', { days: c.days })}）`,
+                  )
                   .join(' · ')}
                 {' · '}
                 <Link to="/ssl">SSL</Link>
@@ -368,8 +374,8 @@ export function DashboardPage() {
             {/* Security strip — notifications + apply honesty + shortcuts */}
             <Card>
               <CardSection
-                title="安全與套用狀態"
-                description="真實通知 + apply 誠實審計（written ≠ applied）"
+                title={t('dashboard.securityStrip')}
+                description={t('dashboard.securityStripDesc')}
               >
                 <div className="chip-row u-mb-3">
                   <Badge
@@ -381,11 +387,11 @@ export function DashboardPage() {
                           : 'ok'
                     }
                   >
-                    通知 {notifications.length}
+                    {t('dashboard.notifCount', { count: notifications.length })}
                     {notifCounts.critical > 0
-                      ? ` · 嚴重 ${notifCounts.critical}`
+                      ? t('dashboard.criticalCount', { count: notifCounts.critical })
                       : notifCounts.warn > 0
-                        ? ` · 警告 ${notifCounts.warn}`
+                        ? t('dashboard.warnCount', { count: notifCounts.warn })
                         : ''}
                   </Badge>
                   {applyAudit ? (
@@ -398,12 +404,15 @@ export function DashboardPage() {
                             : 'ok'
                       }
                     >
-                      套用 audit · ok {applyAudit.summary.ok} · warn{' '}
-                      {applyAudit.summary.warn} · bad {applyAudit.summary.bad}
+                      {t('dashboard.applyAuditBadge', {
+                        ok: applyAudit.summary.ok,
+                        warn: applyAudit.summary.warn,
+                        bad: applyAudit.summary.bad,
+                      })}
                     </Badge>
                   ) : null}
                   <Badge tone={executeEnabled === true ? 'ok' : 'warn'}>
-                    EXECUTE {executeEnabled === true ? '開' : '關'}
+                    {t('dashboard.executeBadge', { state: executeEnabled === true ? t('common.on') : t('common.off') })}
                   </Badge>
                 </div>
                 {notifications.length > 0 ? (
@@ -425,7 +434,7 @@ export function DashboardPage() {
                           {n.href ? (
                             <>
                               {' '}
-                              <Link to={n.href}>前往</Link>
+                              <Link to={n.href}>{t('dashboard.go')}</Link>
                             </>
                           ) : null}
                         </li>
@@ -433,7 +442,7 @@ export function DashboardPage() {
                   </ul>
                 ) : (
                   <p className="muted u-text-sm u-mb-3">
-                    目前無嚴重／警告通知
+                    {t('dashboard.noCriticalWarn')}
                   </p>
                 )}
                 {applyAudit &&
@@ -457,7 +466,7 @@ export function DashboardPage() {
                           {f.href ? (
                             <>
                               {' '}
-                              <Link to={f.href}>開啟</Link>
+                              <Link to={f.href}>{t('dashboard.open')}</Link>
                             </>
                           ) : null}
                         </li>
@@ -466,19 +475,13 @@ export function DashboardPage() {
                 ) : null}
                 <ActionBar>
                   <Link to="/?tab=notifications" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
-                    通知中心
+                    {t('dashboard.notifCenter')}
                   </Link>
-                  <Link to="/fail2ban" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                    fail2ban
-                  </Link>
-                  <Link to="/firewall" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                    防火牆
-                  </Link>
-                  <Link to="/protection" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                    防護中心
+                  <Link to="/protection" className={buttonClassName({ variant: 'primary', size: 'sm' })}>
+                    {t('nav.protection')}
                   </Link>
                   <Link to="/security" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-                    安全（2FA／金鑰）
+                    {t('nav.security')}
                   </Link>
                 </ActionBar>
               </CardSection>
@@ -510,12 +513,12 @@ export function DashboardPage() {
                     </header>
                     <div className="dash-kpi__body">
                       <p className="dash-kpi__value">
-                        {healthOk ? '正常' : health ? String(health.status) : '—'}
+                        {healthOk ? t('common.normal') : health ? String(health.status) : t('common.noneSelectedShort')}
                       </p>
                       <p className="dash-kpi__meta">
                         {health
                           ? `${health.product} · v${health.version}`
-                          : '尚未取得健康狀態'}
+                          : t('dashboard.noHealthYet')}
                       </p>
                       <dl className="dash-kpi__facts">
                         <div>
@@ -523,20 +526,20 @@ export function DashboardPage() {
                           <dd>{health?.protectionMode ?? '—'}</dd>
                         </div>
                         <div>
-                          <dt>系統變更</dt>
+                          <dt>{t('dashboard.sysChange')}</dt>
                           <dd>
                             {executeEnabled === true
-                              ? '已開'
+                              ? t('dashboard.opened')
                               : executeEnabled === false
-                                ? '未開'
-                                : '—'}
+                                ? t('dashboard.closed')
+                                : t('common.noneSelectedShort')}
                           </dd>
                         </div>
                       </dl>
                     </div>
                     <footer className="dash-kpi__foot">
                       <Link to="/system/readiness" className="dash-kpi__link">
-                        就緒檢查 →
+                        {t('dashboard.readinessLink')}
                       </Link>
                     </footer>
                   </article>
@@ -544,18 +547,18 @@ export function DashboardPage() {
                   {/* Host metrics */}
                   <article className="dash-kpi" role="listitem">
                     <header className="dash-kpi__head">
-                      <span className="dash-kpi__label">主機指標</span>
+                      <span className="dash-kpi__label">{t('dashboard.hostMetrics')}</span>
                       <span className="dash-kpi__hint">
                         {metrics?.cpuCount != null ? `${String(metrics.cpuCount)} CPU` : '—'}
                       </span>
                     </header>
                     <div className="dash-kpi__body">
                       <p className="dash-kpi__value dash-kpi__value--sm">{loadStr}</p>
-                      <p className="dash-kpi__meta">Load average（1 · 5 · 15 分）</p>
+                      <p className="dash-kpi__meta">{t('dashboard.loadAvg')}</p>
                       {memPct != null ? (
                         <div className="dash-kpi__meter">
                           <div className="dash-kpi__meter-row">
-                            <span>記憶體</span>
+                            <span>{t('common.memory')}</span>
                             <strong>{memPct}%</strong>
                           </div>
                           <div
@@ -572,18 +575,17 @@ export function DashboardPage() {
                                   : memPct >= 75
                                     ? ' is-warn'
                                     : ''
-                              }`}
-                              style={{ width: `${Math.min(100, memPct)}%` }}
+                              } u-meter-fill`} style={{ ["--meter-pct" as string]: `${Math.min(100, memPct)}%` }}
                             />
                           </div>
                         </div>
                       ) : (
-                        <p className="dash-kpi__meta">記憶體 —</p>
+                        <p className="dash-kpi__meta">{t('dashboard.memoryDash')}</p>
                       )}
                     </div>
                     <footer className="dash-kpi__foot">
                       <Link to="/metrics" className="dash-kpi__link">
-                        詳細指標 →
+                        {t('dashboard.metricsLink')}
                       </Link>
                     </footer>
                   </article>
@@ -593,14 +595,14 @@ export function DashboardPage() {
                     <header className="dash-kpi__head">
                       <span className="dash-kpi__label">{t('nav.projects')}</span>
                       <span className="dash-kpi__hint">
-                        運行 {running}/{projects.length}
+                        {t('dashboard.runningOf', { running, total: projects.length })}
                       </span>
                     </header>
                     <div className="dash-kpi__body">
                       {projects.length === 0 ? (
                         <div className="dash-kpi__empty">
                           <p className="dash-kpi__value dash-kpi__value--sm">0</p>
-                          <p className="dash-kpi__meta">尚未有專案</p>
+                          <p className="dash-kpi__meta">{t('dashboard.noProjects')}</p>
                         </div>
                       ) : (
                         <ul className="dash-kpi__list">
@@ -626,11 +628,11 @@ export function DashboardPage() {
                           className="dash-kpi__link btn--link"
                           onClick={() => setTab('wizard')}
                         >
-                          一鍵建立 →
+                          {t('dashboard.wizardLink')}
                         </button>
                       ) : (
                         <Link to="/projects" className="dash-kpi__link">
-                          全部專案 →
+                          {t('dashboard.allProjects')}
                         </Link>
                       )}
                     </footer>
@@ -641,14 +643,14 @@ export function DashboardPage() {
                     <header className="dash-kpi__head">
                       <span className="dash-kpi__label">{t('dashboard.audit')}</span>
                       <span className="dash-kpi__hint">
-                        {audit.length > 0 ? `最近 ${Math.min(5, audit.length)}` : '—'}
+                        {audit.length > 0 ? t('dashboard.recentN', { n: Math.min(5, audit.length) }) : t('common.noneSelectedShort')}
                       </span>
                     </header>
                     <div className="dash-kpi__body">
                       {audit.length === 0 ? (
                         <div className="dash-kpi__empty">
                           <p className="dash-kpi__meta">
-                            {t('dashboard.needLogin', { defaultValue: '尚無審計紀錄' })}
+                            {t('dashboard.needLogin')}
                           </p>
                         </div>
                       ) : (
@@ -666,11 +668,12 @@ export function DashboardPage() {
                     </div>
                     <footer className="dash-kpi__foot">
                       <span className="dash-kpi__hint">
-                        運行中{' '}
-                        {String((summary?.projects as { running?: number })?.running ?? running)}
+                        {t('dashboard.runningCount', {
+                          n: String((summary?.projects as { running?: number })?.running ?? running),
+                        })}
                       </span>
                       <Link to="/security" className="dash-kpi__link">
-                        安全 →
+                        {t('dashboard.securityLink')}
                       </Link>
                     </footer>
                   </article>
@@ -684,17 +687,17 @@ export function DashboardPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="一鍵建立"
-                description="建立專案，並可選一併登記 DNS／郵件／資料庫草稿（各項需再到對應頁套用）"
+                title={t('dashboard.wizardTitle')}
+                description={t('dashboard.wizardDesc')}
               >
                 <form onSubmit={(e) => void onWizard(e)}>
                   <FormLayout columns={2}>
                     <Field
-                      label="專案名稱"
+                      label={t('dashboard.projectName')}
                       htmlFor="wiz-name"
                       flush
                       required
-                      hint="控制台顯示名稱；會產生對應目錄"
+                      hint={t('dashboard.projectNameHint')}
                     >
                       <input
                         id="wiz-name"
@@ -706,10 +709,10 @@ export function DashboardPage() {
                       />
                     </Field>
                     <Field
-                      label="域名（可留空）"
+                      label={t('dashboard.domainOptional')}
                       htmlFor="wiz-dom"
                       flush
-                      hint="填寫後才可勾選 DNS 與郵件"
+                      hint={t('dashboard.domainHint')}
                     >
                       <input
                         id="wiz-dom"
@@ -720,15 +723,15 @@ export function DashboardPage() {
                       />
                     </Field>
                     <Field
-                      label="執行環境"
+                      label={t('dashboard.runtime')}
                       htmlFor="wiz-rt"
                       flush
                       required
-                      hint="決定預設 runtime 版本與部署方式"
+                      hint={t('dashboard.runtimeHint')}
                     >
                       <SegRadio
                         name="wiz-rt"
-                        aria-label="執行環境"
+                        aria-label={t('dashboard.runtime')}
                         value={wizRuntime}
                         onChange={(v) => {
                           const next = v as typeof wizRuntime;
@@ -745,21 +748,21 @@ export function DashboardPage() {
                           { value: 'python', label: 'Python' },
                           { value: 'go', label: 'Go' },
                           { value: 'rust', label: 'Rust' },
-                          { value: 'static', label: '靜態' },
+                          { value: 'static', label: t('common.static') },
                         ]}
                       />
                     </Field>
                     {runtimeVersionChoices(wizRuntime).length > 0 ? (
                       <Field
-                        label="版本"
+                        label={t('common.version')}
                         htmlFor="wiz-ver"
                         flush
                         required
-                        hint="寫入專案 runtime_version"
+                        hint={t('dashboard.versionHint')}
                       >
                         <SegRadio
                           name="wiz-ver"
-                          aria-label="執行環境版本"
+                          aria-label={t('dashboard.runtimeVersion')}
                           value={
                             runtimeVersionChoices(wizRuntime).includes(
                               wizRuntimeVersion,
@@ -780,30 +783,30 @@ export function DashboardPage() {
                   {(wizDns || wizMail) && wizDomain ? (
                     <FormLayout columns={2}>
                       <Field
-                        label="伺服器 IPv4"
+                        label={t('dashboard.serverIpv4')}
                         htmlFor="wiz-ip"
                         flush
-                        hint="DNS A／郵件 SPF"
+                        hint={t('dashboard.serverIpv4Hint')}
                       >
                         <input
                           id="wiz-ip"
                           value={wizServerIp}
                           onChange={(e) => setWizServerIp(e.target.value)}
-                          placeholder="此主機公網 IPv4"
+                          placeholder={t('dashboard.serverIpv4Ph')}
                           spellCheck={false}
                         />
                       </Field>
                       <Field
-                        label="伺服器 IPv6（可選）"
+                        label={t('dashboard.serverIpv6')}
                         htmlFor="wiz-ip6"
                         flush
-                        hint="有則寫 AAAA／ip6:"
+                        hint={t('dashboard.serverIpv6Hint')}
                       >
                         <input
                           id="wiz-ip6"
                           value={wizServerIpv6}
                           onChange={(e) => setWizServerIpv6(e.target.value)}
-                          placeholder="公網 IPv6（可留空）"
+                          placeholder={t('dashboard.serverIpv6Ph')}
                           spellCheck={false}
                         />
                       </Field>
@@ -812,34 +815,34 @@ export function DashboardPage() {
                   <div className="form-check-row u-mt-4">
                     <CheckboxField
                       id="wiz-dns"
-                      label="一併建立 DNS 區域"
-                      description="需填寫域名；僅登記，需到 DNS 頁寫入區域檔"
+                      label={t('dashboard.withDns')}
+                      description={t('dashboard.withDnsDesc')}
                       checked={wizDns}
                       onChange={setWizDns}
                       disabled={!wizDomain}
                     />
                     <CheckboxField
                       id="wiz-mail"
-                      label="一併登記郵件域名"
-                      description="需填寫域名；軟件安裝與 DNS 在郵件詳情頁完成"
+                      label={t('dashboard.withMail')}
+                      description={t('dashboard.withMailDesc')}
                       checked={wizMail}
                       onChange={setWizMail}
                       disabled={!wizDomain}
                     />
                     <CheckboxField
                       id="wiz-db"
-                      label="一併建立 MySQL 資料庫草稿"
-                      description="控制面登記；需到 SQL 引擎頁套用到系統"
+                      label={t('dashboard.withDb')}
+                      description={t('dashboard.withDbDesc')}
                       checked={wizDb}
                       onChange={setWizDb}
                     />
                   </div>
                   <FormHint>
-                    一鍵建立不會自動對外上線。DNS、郵件、資料庫與 SSL 請到各功能頁確認並套用。
+                    {t('dashboard.wizardHint')}
                   </FormHint>
                   <FormActions>
                     <Button type="submit" variant="primary" size="md" loading={wizBusy}>
-                      一鍵建立
+                      {t('dashboard.wizardSubmit')}
                     </Button>
                   </FormActions>
                 </form>
@@ -852,11 +855,15 @@ export function DashboardPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title={`通知中心（${notifications.length}）`}
-                description={`嚴重 ${notifCounts.critical} · 警告 ${notifCounts.warn} · 資訊 ${notifCounts.info}`}
+                title={t('dashboard.notifCenterTitle', { count: notifications.length })}
+                description={t('dashboard.notifCenterDesc', {
+                  critical: notifCounts.critical,
+                  warn: notifCounts.warn,
+                  info: notifCounts.info,
+                })}
               >
                 {notifications.length === 0 ? (
-                  <EmptyState title="暫無通知" description="系統告警與待辦會顯示於此" />
+                  <EmptyState title={t('dashboard.noNotifs')} description={t('dashboard.noNotifsDesc')} />
                 ) : (
                   <ul className="list-plain list-spaced">
                     {notifications.slice(0, 20).map((n) => (
@@ -877,7 +884,7 @@ export function DashboardPage() {
                         {n.href ? (
                           <>
                             {' '}
-                            <Link to={n.href}>前往</Link>
+                            <Link to={n.href}>{t('dashboard.go')}</Link>
                           </>
                         ) : null}
                       </li>
@@ -889,8 +896,12 @@ export function DashboardPage() {
             {applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0) ? (
               <Card>
                 <CardSection
-                  title="套用狀態審計"
-                  description={`ok ${applyAudit.summary.ok} · warn ${applyAudit.summary.warn} · bad ${applyAudit.summary.bad}`}
+                  title={t('dashboard.applyAuditTitle')}
+                  description={t('dashboard.applyAuditDesc', {
+                    ok: applyAudit.summary.ok,
+                    warn: applyAudit.summary.warn,
+                    bad: applyAudit.summary.bad,
+                  })}
                 >
                   <ul className="list-plain list-spaced">
                     {applyAudit.findings.map((f, i) => (
@@ -901,7 +912,7 @@ export function DashboardPage() {
                         {f.href ? (
                           <>
                             {' '}
-                            <Link to={f.href}>開啟</Link>
+                            <Link to={f.href}>{t('dashboard.open')}</Link>
                           </>
                         ) : null}
                       </li>
@@ -917,13 +928,10 @@ export function DashboardPage() {
           <div className="tab-panel">
             <div>
               <h2 className="section-title">
-                {t('dashboard.features', { defaultValue: '功能選單' })}
+                {t('dashboard.features')}
               </h2>
               <p className="muted meta-block--tight">
-                {t('dashboard.featuresHint', {
-                  defaultValue:
-                    '角標：就緒＝軟件已裝；未安裝＝需一鍵安裝；需權限＝未開系統變更。',
-                })}
+{t('dashboard.featuresHint')}
               </p>
             </div>
             <FeatureIconGrid items={tiles} />

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * DNS record validation + conflict detection (control-plane honesty).
  */
@@ -63,7 +64,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'error',
       code: 'bad_type',
-      message: `不支援的類型：${rec.type}`,
+      message: tl('notes.auto.t0420', { v0: (rec.type) }),
       recordIndex: index,
     });
   }
@@ -71,7 +72,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'error',
       code: 'empty_value',
-      message: '記錄值不可為空',
+      message: tl('notes.auto.n1362'),
       recordIndex: index,
     });
   }
@@ -79,7 +80,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'warn',
       code: 'ttl_range',
-      message: `TTL ${ttl} 建議介於 30–604800`,
+      message: tl('notes.auto.t0421', { v0: (ttl) }),
       recordIndex: index,
     });
   }
@@ -88,7 +89,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'error',
       code: 'bad_a',
-      message: 'A 記錄必須是 IPv4',
+      message: tl('notes.auto.n0070'),
       recordIndex: index,
     });
   }
@@ -96,7 +97,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'error',
       code: 'bad_aaaa',
-      message: 'AAAA 記錄必須是 IPv6',
+      message: tl('notes.auto.n0072'),
       recordIndex: index,
     });
   }
@@ -104,7 +105,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'error',
       code: 'bad_mx',
-      message: 'MX 格式：優先級 主機（例如 10 mail.example.com.）',
+      message: tl('notes.auto.n0132'),
       recordIndex: index,
     });
   }
@@ -112,7 +113,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'warn',
       code: 'apex_cname',
-      message: 'apex CNAME 在多數授權伺服器不建議／不相容',
+      message: tl('notes.auto.n0219'),
       recordIndex: index,
     });
   }
@@ -120,7 +121,7 @@ export function validateDnsRecord(
     issues.push({
       level: 'warn',
       code: 'bad_srv',
-      message: 'SRV 建議格式：priority weight port target',
+      message: tl('notes.auto.n0184'),
       recordIndex: index,
     });
   }
@@ -153,7 +154,7 @@ export function validateDnsRecordSet(
       issues.push({
         level: 'error',
         code: 'cname_conflict',
-        message: `名稱 ${name} 同時有 CNAME 與其他類型（禁止）`,
+        message: tl('notes.auto.t0422', { v0: (name) }),
       });
     }
     if (types.filter((t) => t === 'CNAME').length > 1) {
@@ -163,7 +164,7 @@ export function validateDnsRecordSet(
         issues.push({
           level: 'error',
           code: 'multi_cname',
-          message: `名稱 ${name} 有多個不同 CNAME 目標`,
+          message: tl('notes.auto.t0423', { v0: (name) }),
         });
       }
     }

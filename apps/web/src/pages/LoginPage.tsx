@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
+import { ApiError } from '../shared/services/api';
 import {
   Alert,
   Field,
@@ -33,10 +34,20 @@ export function LoginPage() {
       nav(from === '/login' ? '/' : from, { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('login.failed');
-      if (msg.includes('雙重驗證') || msg.includes('TOTP') || msg.includes('2FA')) {
-        setNeedsTotp(true);
-      }
-      if (String(msg).includes('needsTotp') || String(msg).includes('驗證碼')) {
+      if (err instanceof ApiError) {
+        if (
+          err.needsTotp ||
+          err.code === 'YSK_TOTP_REQUIRED' ||
+          (err.details &&
+            typeof err.details === 'object' &&
+            (err.details as { needsTotp?: boolean }).needsTotp)
+        ) {
+          setNeedsTotp(true);
+        }
+      } else if (
+        /needsTotp|TOTP|2FA|YSK_TOTP|authenticator/i.test(String(msg))
+      ) {
+        // Legacy backends without code field
         setNeedsTotp(true);
       }
       setError(msg);
@@ -57,7 +68,9 @@ export function LoginPage() {
         </div>
 
         {error ? <Alert variant="error">{error}</Alert> : null}
-        {needsTotp ? <Alert variant="info">此帳戶已開啟 2FA，請輸入 6 位驗證碼</Alert> : null}
+        {needsTotp ? (
+          <Alert variant="info">{t('login.totpRequired')}</Alert>
+        ) : null}
 
         <form className="login-card__form" onSubmit={(e) => void onSubmit(e)}>
           <FormLayout>
@@ -82,9 +95,9 @@ export function LoginPage() {
             </Field>
             {needsTotp || totp ? (
               <Field
-                label="雙重驗證碼"
+                label={t('login.totpLabel')}
                 htmlFor="totp"
-                hint="Authenticator 應用程式中的 6 位數字"
+                hint={t('login.totpHint')}
                 flush
               >
                 <input
@@ -105,7 +118,7 @@ export function LoginPage() {
               className={buttonClassName({ variant: 'primary', fullWidth: true })}
               disabled={loading}
             >
-              {loading ? '登入中…' : t('login.submit')}
+              {loading ? t('login.submitting') : t('login.submit')}
             </button>
           </FormActions>
         </form>

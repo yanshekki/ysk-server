@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * PHP ini settings: load/save managed files, render drop-in + FPM php_admin_value.
  */
@@ -249,7 +250,7 @@ export function getPhpIni(dataDir: string, version: string): PhpIniGetResult {
     settings,
     managedIniPath: managedIniPath(dataDir, v),
     notes: [
-      '變更會寫入管理檔；「套用到系統」才會進 /etc/php/.../conf.d 並 reload FPM',
+      tl('notes.auto.n1445'),
     ],
   };
 }
@@ -278,14 +279,14 @@ export async function applyPhpIniSystem(input: {
     // ensure file from defaults
     savePhpIniSettings(input.dataDir, loadPhpIniSettings(input.dataDir, v));
   }
-  notes.push(`管理 ini：${managed}`);
+  notes.push(tl('notes.auto.t0317', { v0: (managed) }));
   written.push(managed);
 
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
     return {
       ok: false,
       written,
-      notes: [...notes, '無法套用到系統：需要 YSK_EXECUTE + root'],
+      notes: [...notes, tl('notes.auto.n1160')],
       applied: false,
       blocked: true,
       requiresRoot: !input.host.isRoot(),
@@ -299,7 +300,7 @@ export async function applyPhpIniSystem(input: {
     return {
       ok: false,
       written,
-      notes: [...notes, `/etc/php/${v}/fpm 不存在 — 請先安裝 php${v}-fpm`],
+      notes: [...notes, tl('notes.auto.t0318', { v0: (v), v1: (v) })],
       applied: false,
       blocked: false,
       requiresRoot: false,
@@ -309,7 +310,7 @@ export async function applyPhpIniSystem(input: {
   await input.host.runCommand(['mkdir', '-p', destDir], { timeoutMs: 5_000 });
   const cp = await input.host.runCommand(['cp', managed, dest], { timeoutMs: 10_000 });
   if (cp.exitCode !== 0) {
-    notes.push(`複製失敗：${cp.stderr || cp.stdout}`);
+    notes.push(tl('notes.tpl.copyFailed', { detail: cp.stderr || cp.stdout }));
     return {
       ok: false,
       written,
@@ -335,8 +336,8 @@ export async function applyPhpIniSystem(input: {
   const applied = rel.exitCode === 0;
   notes.push(
     applied
-      ? `已套用 ${dest} 並 reload php${v}-fpm`
-      : `已複製 ini；reload 失敗：${rel.stderr || rel.stdout}`,
+      ? tl('notes.auto.t0319', { v0: (dest), v1: (v) })
+      : tl('notes.auto.t0320', { v0: (rel.stderr || rel.stdout) }),
   );
   return {
     ok: applied,

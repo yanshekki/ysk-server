@@ -26,6 +26,7 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { useCapabilities } from '../../shared/hooks/useCapabilities';
 
 const BK_TABS = ['files', 'ops', 'remote', 'about'] as const;
 
@@ -67,7 +68,10 @@ function formatBytes(n?: number): string {
 }
 
 export function BackupsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { can } = useCapabilities();
+  const canRestore = can('backups.restore');
+  const canRun = can('backups.run');
   const [items, setItems] = useState<BackupItem[]>([]);
   const [lastRun, setLastRun] = useState<Record<string, unknown> | null>(null);
   const [liveProjectCount, setLiveProjectCount] = useState(0);
@@ -195,10 +199,10 @@ export function BackupsPage() {
         method: 'POST',
         body: JSON.stringify(body),
       });
-      setMsg('已儲存備份設定');
+      setMsg(t('backups.settingsSaved'));
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : '儲存失敗');
+      setError(e instanceof Error ? e.message : t('common.saveFailed'));
     } finally {
       setSettingsBusy(false);
     }
@@ -233,22 +237,22 @@ export function BackupsPage() {
     try {
       const q = new URLSearchParams({ projectId: b.projectId, name: b.name });
       await api.downloadAuthenticated(`/api/v1/backups/download?${q}`, b.name);
-      setMsg(`已開始下載 ${b.name}`);
+      setMsg(t('backups.downloadStarted', { name: b.name }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : '下載失敗');
+      setError(e instanceof Error ? e.message : t('common.downloadFailed'));
     }
   }
 
   const lastLabel =
     lastOk === true
       ? lastRun?.empty
-        ? '無事可做'
+        ? t('backups.nothingToDo')
         : lastRun?.sideOk === false
-          ? 'tar OK／副步驟有問題'
-          : '成功'
+          ? t('backups.tarOkSideFail')
+          : t('common.success')
       : lastOk === false
-        ? '有失敗'
-        : '尚未';
+        ? t('backups.hasFailures')
+        : t('backups.notYet');
   const lastTone =
     lastOk === true
       ? lastRun?.sideOk === false
@@ -259,9 +263,9 @@ export function BackupsPage() {
         : 'ok';
   const resticLabel = restic.enabled
     ? resticPasswordSet || restic.password
-      ? '已啟用'
-      : '缺 password'
-    : '關閉';
+      ? t('common.enabled')
+      : t('backups.needPassword')
+    : t('common.close');
   const resticTone = restic.enabled
     ? resticPasswordSet || restic.password
       ? 'ok'
@@ -269,11 +273,11 @@ export function BackupsPage() {
     : 'neutral';
   return (
     <FeaturePageLayout
-      title={t('nav.backups', { defaultValue: '備份' })}
+      title={t('nav.backups', { defaultValue: t('projects.backup') })}
       showCapability={false}
       status={{
         pill: {
-          label: `上次 ${lastLabel}`,
+          label: t('backups.lastRun', { label: lastLabel }),
           tone:
             lastTone === 'danger'
               ? 'danger'
@@ -282,10 +286,10 @@ export function BackupsPage() {
                 : 'ok',
         },
         items: [
-          { label: '備份檔', value: items.length },
-          { label: '專案', value: liveProjectCount },
+          { label: t('backups.backupFiles'), value: items.length },
+          { label: t('common.project'), value: liveProjectCount },
           {
-            label: '上次全部',
+            label: t('backups.lastAll'),
             value: lastLabel,
             tone:
               lastTone === 'danger'
@@ -300,11 +304,11 @@ export function BackupsPage() {
             tone: resticTone as 'ok' | 'warn' | 'neutral',
           },
           {
-            label: '遠端',
-            value: remote.enabled ? remote.kind : '關閉',
+            label: t('backups.remoteStep'),
+            value: remote.enabled ? remote.kind : t('common.close'),
             tone: remote.enabled ? 'ok' : 'neutral',
           },
-          { label: '有備份專案', value: archiveProjectCount },
+          { label: t('backups.withBackups'), value: archiveProjectCount },
         ],
       }}
       actions={<>
@@ -314,10 +318,10 @@ export function BackupsPage() {
             loading={busy}
             onClick={() => void refresh().catch((e: Error) => setError(e.message))}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Button variant="primary" size="sm" loading={busy} onClick={() => setTab('ops')}>
-            操作
+            {t('common.operation')}
           </Button>
         </>
       }
@@ -327,7 +331,7 @@ export function BackupsPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -335,11 +339,11 @@ export function BackupsPage() {
       <div className="ops">
       <PageTabs
         tabs={[
-          { id: 'files', label: '備份檔', badge: items.length || undefined },
-          { id: 'ops', label: '操作' },
-          { id: 'remote', label: '遠端 / 排除' },
+          { id: 'files', label: t('backups.backupFiles'), badge: items.length || undefined },
+          { id: 'ops', label: t('common.operation') },
+          { id: 'remote', label: t('backups.remoteExclude') },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -350,24 +354,21 @@ export function BackupsPage() {
             <section className="ops-panel">
               <header className="ops-panel__head">
                 <div>
-                  <h3 className="ops-panel__title">備份檔案 ({items.length})</h3>
+                  <h3 className="ops-panel__title">{t('backups.filesTitle', { count: items.length })}</h3>
                   <p className="ops-panel__sub">
-                    管理目錄 tar · 下載需登入 · 還原有 dry-run／web／完整
+                    {t('backups.filesSub')}
                   </p>
                 </div>
-                <Button variant="secondary" size="sm" onClick={() => setTab('ops')}>
-                  全部備份
-                </Button>
+                {canRun ? (
+                  <Button variant="secondary" size="sm" onClick={() => setTab('ops')}>
+                    {t('backups.backupAllBtn')}
+                  </Button>
+                ) : null}
               </header>
           {items.length === 0 ? (
             <EmptyState
-              title="尚無備份"
-              description="執行「備份所有專案」或於專案詳情 Backup"
-              action={
-                <Button variant="primary" size="md" onClick={() => setTab('ops')}>
-                  去操作
-                </Button>
-              }
+              title={t('backups.noBackups')}
+              description={t('backups.noBackupsDesc')}
             />
           ) : (
             <div className="ops-svc-list">
@@ -380,7 +381,7 @@ export function BackupsPage() {
                         </div>
                         <div className="ops-svc__meta">
                           <span>
-                            專案 <code>{b.projectId.slice(0, 10)}…</code>
+                            {t('common.project')} <code>{b.projectId.slice(0, 10)}…</code>
                           </span>
                           <span>
                             {b.mtime
@@ -396,49 +397,55 @@ export function BackupsPage() {
                             loading={busy}
                             onClick={() => void downloadBackup(b)}
                           >
-                            下載
+                            {t('system.download')}
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              setRestoreMode('dry-run');
-                              setRestoreTarget(b);
-                            }}
-                          >
-                            預覽
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              setRestoreMode('web');
-                              setRestoreTarget(b);
-                            }}
-                          >
-                            還原 web
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              setRestoreMode('full');
-                              setRestoreTarget(b);
-                            }}
-                          >
-                            完整還原
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => setDeleteTarget(b)}
-                          >
-                            刪除
-                          </Button>
+                          {canRestore ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                loading={busy}
+                                onClick={() => {
+                                  setRestoreMode('dry-run');
+                                  setRestoreTarget(b);
+                                }}
+                              >
+                                {t('system.preview')}
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                loading={busy}
+                                onClick={() => {
+                                  setRestoreMode('web');
+                                  setRestoreTarget(b);
+                                }}
+                              >
+                                {t('backups.restoreWeb')}
+                              </Button>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                loading={busy}
+                                onClick={() => {
+                                  setRestoreMode('full');
+                                  setRestoreTarget(b);
+                                }}
+                              >
+                                {t('backups.restoreFull')}
+                              </Button>
+                            </>
+                          ) : null}
+                          {canRun ? (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => setDeleteTarget(b)}
+                            >
+                              {t('common.delete')}
+                            </Button>
+                          ) : null}
                       </div>
                     </article>
                   ))}
@@ -453,9 +460,9 @@ export function BackupsPage() {
       <section className="ops-panel">
         <header className="ops-panel__head">
           <div>
-            <h3 className="ops-panel__title">操作</h3>
+            <h3 className="ops-panel__title">{t('common.operation')}</h3>
             <p className="ops-panel__sub">
-              0 個專案或全部略過 = 成功；真正有試過備而失敗先算失敗
+              {t('backups.opsHint')}
             </p>
           </div>
         </header>
@@ -481,25 +488,25 @@ export function BackupsPage() {
                     await refresh();
                     const extra =
                       r.empty
-                        ? '（沒有專案）'
+                        ? t('backups.noProjects')
                         : Array.isArray(r.results)
-                          ? ` · ${r.results.filter((x) => x.ok && !x.skipped).length}/${r.results.filter((x) => !x.skipped).length} 成功`
+                          ? t('backups.successRatio', { ok: r.results.filter((x) => x.ok && !x.skipped).length, total: r.results.filter((x) => !x.skipped).length })
                           : '';
                     return {
                       ...r,
                       notes: [
                         ...(r.notes ?? []),
-                        extra ? `摘要${extra}` : '',
+                        extra ? t('backups.summary', { extra }) : '',
                       ].filter(Boolean),
                     };
                   } catch (e) {
-                    const m = e instanceof Error ? e.message : '備份失敗';
+                    const m = e instanceof Error ? e.message : t('backups.backupFailed');
                     return { ok: false, notes: [m], blockMessage: m };
                   }
-                }, '備份完成')
+                }, t('backups.backupDone'))
               }
             >
-              備份所有專案
+              {t('backups.backupAll')}
             </Button>
             <Button
               variant="secondary"
@@ -515,14 +522,14 @@ export function BackupsPage() {
                     ...r,
                     notes: [
                       ...(r.notes ?? []),
-                      '指令：ysk-server backup all --data-dir …',
-                      '記得到「Cron」頁安裝到系統 crontab 才會真正跑',
+                      t('backups.cronCmd'),
+                      t('backups.cronHint'),
                     ],
                   };
-                }, '已登記每日 03:00 排程')
+                }, t('backups.dailyCronRegistered'))
               }
             >
-              登記每日排程
+              {t('backups.registerDailyCron')}
             </Button>
             <Button
               variant="secondary"
@@ -531,7 +538,7 @@ export function BackupsPage() {
               disabled={!restic.enabled}
               title={
                 !restic.enabled
-                  ? '請先在「遠端／排除」啟用 restic 並設定 password'
+                  ? t('backups.resticNeedConfig')
                   : undefined
               }
               onClick={() =>
@@ -542,13 +549,13 @@ export function BackupsPage() {
                       body: '{}',
                     })) as OpsResultLike;
                   } catch (e) {
-                    const m = e instanceof Error ? e.message : 'restic 失敗';
+                    const m = e instanceof Error ? e.message : t('backups.resticFailed');
                     return { ok: false, notes: [m], blockMessage: m };
                   }
-                }, 'restic 增量完成')
+                }, t('backups.resticDone'))
               }
             >
-              只跑 restic 增量
+              {t('backups.resticOnly')}
             </Button>
             <Button
               variant="ghost"
@@ -579,39 +586,41 @@ export function BackupsPage() {
                   .catch((e: Error) => setError(e.message));
               }}
             >
-              列出 restic snapshots
+              {t('backups.listSnapshots')}
             </Button>
           </div>
 
           {lastRun ? (
             <div className="u-mt-4">
-              <h4 className="u-mb-2" style={{ marginTop: 0 }}>
-                上次全部備份明細
+              <h4 className="u-mb-2">
+                {t('backups.lastAllDetail')}
               </h4>
               <DescriptionList
                 columns={2}
                 items={[
                   {
-                    label: '時間',
+                    label: t('common.time'),
                     value: lastRun.at
                       ? new Date(String(lastRun.at)).toLocaleString()
                       : '—',
                   },
                   {
-                    label: '結果',
+                    label: t('projects.healthDetail.overall'),
                     value:
                       lastOk === true
                         ? lastRun.empty
-                          ? '無事可做（0 專案）'
-                          : '成功'
+                          ? t('backups.nothingZero')
+                          : t('common.success')
                         : lastOk === false
-                          ? '有失敗'
+                          ? t('backups.hasFailures')
                           : '—',
                   },
                   {
-                    label: '備註',
+                    label: t('common.notes'),
                     value: Array.isArray(lastRun.notes)
-                      ? (lastRun.notes as string[]).join('；')
+                      ? (lastRun.notes as string[]).join(
+                          i18n.language?.toLowerCase().startsWith('en') ? '; ' : '；',
+                        )
                       : '—',
                   },
                 ]}
@@ -622,7 +631,7 @@ export function BackupsPage() {
                     columns={[
                       {
                         key: 'project',
-                        header: '專案',
+                        header: t('common.project'),
                         render: (row) => (
                           <code className="inline">
                             {(row.projectId ?? '—').slice(0, 8)}
@@ -632,20 +641,20 @@ export function BackupsPage() {
                       },
                       {
                         key: 'status',
-                        header: '狀態',
+                        header: t('common.status'),
                         nowrap: true,
                         render: (row) =>
                           row.skipped ? (
-                            <Badge tone="neutral">略過</Badge>
+                            <Badge tone="neutral">{t('ssl.step.skipped')}</Badge>
                           ) : row.ok ? (
-                            <Badge tone="ok">成功</Badge>
+                            <Badge tone="ok">{t('common.success')}</Badge>
                           ) : (
-                            <Badge tone="danger">失敗</Badge>
+                            <Badge tone="danger">{t('common.failed')}</Badge>
                           ),
                       },
                       {
                         key: 'notes',
-                        header: '備註',
+                        header: t('common.notes'),
                         className: 'muted u-text-sm',
                         render: (row) => (row.notes ?? []).join('；') || '—',
                       },
@@ -657,18 +666,18 @@ export function BackupsPage() {
               ) : (
                 <p className="muted u-text-sm u-mt-2">
                   {lastRun.empty
-                    ? '上次沒有專案需要備份。'
-                    : '沒有 per-project results。'}
+                    ? t('backups.lastNoProjects')
+                    : t('backups.noPerProject')}
                 </p>
               )}
               {sideResults.length > 0 ? (
                 <div className="u-mt-3">
                   <DataTable
-                    title="遠端／restic 副步驟"
+                    title={t('backups.remoteSide')}
                     columns={[
                       {
                         key: 'project',
-                        header: '專案',
+                        header: t('common.project'),
                         render: (row) => (
                           <code className="inline">
                             {(row.projectId ?? '—').slice(0, 8)}
@@ -678,27 +687,27 @@ export function BackupsPage() {
                       },
                       {
                         key: 'kind',
-                        header: '步驟',
+                        header: t('common.steps'),
                         nowrap: true,
                         render: (row) =>
-                          row.kind === 'restic' ? 'restic' : '遠端',
+                          row.kind === 'restic' ? 'restic' : t('backups.remoteStep'),
                       },
                       {
                         key: 'status',
-                        header: '狀態',
+                        header: t('common.status'),
                         nowrap: true,
                         render: (row) =>
                           row.skipped ? (
-                            <Badge tone="neutral">略過</Badge>
+                            <Badge tone="neutral">{t('ssl.step.skipped')}</Badge>
                           ) : row.ok ? (
-                            <Badge tone="ok">成功</Badge>
+                            <Badge tone="ok">{t('common.success')}</Badge>
                           ) : (
-                            <Badge tone="danger">失敗</Badge>
+                            <Badge tone="danger">{t('common.failed')}</Badge>
                           ),
                       },
                       {
                         key: 'notes',
-                        header: '備註',
+                        header: t('common.notes'),
                         className: 'muted u-text-sm',
                         render: (row) =>
                           (row.notes ?? []).slice(0, 3).join('；') || '—',
@@ -716,7 +725,7 @@ export function BackupsPage() {
 
           {snapshots.length > 0 ? (
             <div className="u-mt-4">
-              <Field label="還原用 projectId（可空=全部 list）" htmlFor="rs-pid" flush>
+              <Field label={t('backups.restoreProjectId')} htmlFor="rs-pid" flush>
                 <input
                   id="rs-pid"
                   value={restoreProjectId}
@@ -734,7 +743,7 @@ export function BackupsPage() {
                     },
                     {
                       key: 'time',
-                      header: '時間',
+                      header: t('common.time'),
                       className: 'muted',
                       nowrap: true,
                       render: (s) =>
@@ -764,7 +773,7 @@ export function BackupsPage() {
                             '';
                           if (!pid) {
                             setError(
-                              '請填 projectId 或 snapshot 需有 project: tag',
+                              t('backups.needProjectOrTag'),
                             );
                             return;
                           }
@@ -780,10 +789,10 @@ export function BackupsPage() {
                                 }),
                               },
                             )) as OpsResultLike;
-                          }, 'dry-run 完成（未寫檔）');
+                          }, t('backups.dryRunDone'));
                         }}
                       >
-                        預覽
+                        {t('system.preview')}
                       </Button>
                       <Button
                         variant="primary"
@@ -798,14 +807,14 @@ export function BackupsPage() {
                             '';
                           if (!pid) {
                             setError(
-                              '請填 projectId 或 snapshot 需有 project: tag',
+                              t('backups.needProjectOrTag'),
                             );
                             return;
                           }
                           setResticSafe({ projectId: pid, snapshotId: s.id });
                         }}
                       >
-                        安全目錄
+                        {t('backups.safeDir')}
                       </Button>
                       <Button
                         variant="danger"
@@ -820,7 +829,7 @@ export function BackupsPage() {
                             '';
                           if (!pid) {
                             setError(
-                              '請填 projectId 或 snapshot 需有 project: tag',
+                              t('backups.needProjectOrTag'),
                             );
                             return;
                           }
@@ -830,7 +839,7 @@ export function BackupsPage() {
                           });
                         }}
                       >
-                        覆寫 home
+                        {t('backups.overwriteHome')}
                       </Button>
                     </ActionBar>
                   )}
@@ -844,22 +853,22 @@ export function BackupsPage() {
                 columns={2}
                 items={[
                   {
-                    label: '結果',
+                    label: t('projects.healthDetail.overall'),
                     value: (
                       <Badge tone={lastRun.ok ? 'ok' : 'warn'}>
-                        {lastRun.ok ? '全部成功' : '有失敗／略過'}
+                        {lastRun.ok ? t('backups.allSuccess') : t('backups.failOrSkip')}
                       </Badge>
                     ),
                   },
                   {
-                    label: '時間',
+                    label: t('common.time'),
                     value: lastRun.at
                       ? new Date(String(lastRun.at)).toLocaleString()
                       : '—',
                   },
                   ...(Array.isArray(lastRun.notes)
                     ? (lastRun.notes as string[]).slice(0, 4).map((n, i) => ({
-                        label: i === 0 ? '備註' : `備註 ${i + 1}`,
+                        label: i === 0 ? t('common.notes') : t('backups.noteN', { n: i + 1 }),
                         value: n,
                       }))
                     : []),
@@ -876,34 +885,34 @@ export function BackupsPage() {
             <section className="ops-panel">
               <header className="ops-panel__head">
                 <div>
-                  <h3 className="ops-panel__title">遠端推送目標</h3>
+                  <h3 className="ops-panel__title">{t('backups.remotePushTitle')}</h3>
                   <p className="ops-panel__sub">
-                    本地 tar 成功後可推送到 SFTP、本機路徑或 S3
+                    {t('backups.remotePushSub')}
                   </p>
                 </div>
                 <Badge tone={remote.enabled ? 'ok' : 'neutral'}>
-                  {remote.enabled ? remote.kind : '關閉'}
+                  {remote.enabled ? remote.kind : t('common.close')}
                 </Badge>
               </header>
                 <FormLayout columns={2}>
-                  <Field label="啟用遠端推送" htmlFor="bk-en" flush>
+                  <Field label={t('backups.enableRemote')} htmlFor="bk-en" flush>
                     <SegRadio
                       name="bk-en"
-                      aria-label="啟用遠端推送"
+                      aria-label={t('backups.enableRemote')}
                       value={remote.enabled ? 'yes' : 'no'}
                       onChange={(v) =>
                         setRemote((r) => ({ ...r, enabled: v === 'yes' }))
                       }
                       options={[
-                        { value: 'no', label: '否' },
-                        { value: 'yes', label: '是' },
+                        { value: 'no', label: t('common.no') },
+                        { value: 'yes', label: t('common.yes') },
                       ]}
                     />
                   </Field>
-                  <Field label="目標類型" htmlFor="bk-kind" flush>
+                  <Field label={t('backups.targetKind')} htmlFor="bk-kind" flush>
                     <SegRadio
                       name="bk-kind"
-                      aria-label="遠端目標類型"
+                      aria-label={t('backups.remoteKindAria')}
                       value={remote.kind}
                       onChange={(v) =>
                         setRemote((r) => ({
@@ -913,14 +922,14 @@ export function BackupsPage() {
                       }
                       options={[
                         { value: 'sftp', label: 'SFTP / scp' },
-                        { value: 'local', label: '本機路徑' },
+                        { value: 'local', label: t('backups.localPath') },
                         { value: 's3', label: 'S3' },
                       ]}
                     />
                   </Field>
                   {remote.kind === 'sftp' ? (
                     <>
-                      <Field label="主機" htmlFor="bk-host" flush>
+                      <Field label={t('common.host')} htmlFor="bk-host" flush>
                         <input
                           id="bk-host"
                           value={remote.host ?? ''}
@@ -928,7 +937,7 @@ export function BackupsPage() {
                           placeholder="backup.example.com"
                         />
                       </Field>
-                      <Field label="埠" htmlFor="bk-port" flush>
+                      <Field label={t('common.port')} htmlFor="bk-port" flush>
                         <input
                           id="bk-port"
                           value={String(remote.port ?? 22)}
@@ -937,7 +946,7 @@ export function BackupsPage() {
                           }
                         />
                       </Field>
-                      <Field label="用戶名" htmlFor="bk-user" flush>
+                      <Field label={t('common.username')} htmlFor="bk-user" flush>
                         <input
                           id="bk-user"
                           value={remote.username ?? ''}
@@ -947,9 +956,9 @@ export function BackupsPage() {
                         />
                       </Field>
                       <Field
-                        label="密碼"
+                        label={t('common.password')}
                         htmlFor="bk-pass"
-                        hint="可留空，改用主機 SSH key"
+                        hint={t('backups.passwordSshHint')}
                         flush
                       >
                         <input
@@ -959,14 +968,14 @@ export function BackupsPage() {
                           onChange={(e) =>
                             setRemote((r) => ({ ...r, password: e.target.value }))
                           }
-                          placeholder="已儲存則留空"
+                          placeholder={t('backups.savedLeaveEmpty')}
                         />
                       </Field>
                     </>
                   ) : null}
                   {remote.kind === 's3' ? (
                     <>
-                      <Field label="Bucket 路徑" htmlFor="bk-s3b" flush>
+                      <Field label={t('backups.s3Bucket')} htmlFor="bk-s3b" flush>
                         <input
                           id="bk-s3b"
                           value={remote.s3Bucket ?? ''}
@@ -976,7 +985,7 @@ export function BackupsPage() {
                           placeholder="my-bucket/ysk"
                         />
                       </Field>
-                      <Field label="區域" htmlFor="bk-s3r" flush>
+                      <Field label={t('dns.tabs.zones')} htmlFor="bk-s3r" flush>
                         <input
                           id="bk-s3r"
                           value={remote.s3Region ?? ''}
@@ -985,7 +994,7 @@ export function BackupsPage() {
                           }
                         />
                       </Field>
-                      <Field label="Endpoint（可選）" htmlFor="bk-s3e" flush>
+                      <Field label={t('backups.endpointOptional')} htmlFor="bk-s3e" flush>
                         <input
                           id="bk-s3e"
                           value={remote.s3Endpoint ?? ''}
@@ -1014,14 +1023,14 @@ export function BackupsPage() {
                               awsSecretAccessKey: e.target.value,
                             }))
                           }
-                          placeholder="已儲存則留空"
+                          placeholder={t('backups.savedLeaveEmpty')}
                         />
                       </Field>
                     </>
                   ) : null}
                   {remote.kind !== 's3' ? (
                     <Field
-                      label={remote.kind === 'local' ? '本機鏡像路徑' : '遠端路徑'}
+                      label={remote.kind === 'local' ? t('backups.localMirror') : t('backups.remotePath')}
                       htmlFor="bk-path"
                       fullWidth
                       flush
@@ -1040,9 +1049,9 @@ export function BackupsPage() {
             <section className="ops-panel">
               <header className="ops-panel__head">
                 <div>
-                  <h3 className="ops-panel__title">Restic 增量</h3>
+                  <h3 className="ops-panel__title">{t('backups.resticTitle')}</h3>
                   <p className="ops-panel__sub">
-                    可選；需 PATH 有 restic。啟用後必須設定 password（唔會用預設密碼）
+                    {t('backups.resticDesc')}
                   </p>
                 </div>
                 <Badge tone={resticTone as 'ok' | 'warn' | 'neutral'}>
@@ -1050,21 +1059,21 @@ export function BackupsPage() {
                 </Badge>
               </header>
                 <FormLayout columns={2}>
-                  <Field label="啟用 restic" htmlFor="rs-en" flush>
+                  <Field label={t('backups.enableRestic')} htmlFor="rs-en" flush>
                     <SegRadio
                       name="rs-en"
-                      aria-label="啟用 restic"
+                      aria-label={t('backups.enableRestic')}
                       value={restic.enabled ? 'yes' : 'no'}
                       onChange={(v) =>
                         setRestic((r) => ({ ...r, enabled: v === 'yes' }))
                       }
                       options={[
-                        { value: 'no', label: '否' },
-                        { value: 'yes', label: '是' },
+                        { value: 'no', label: t('common.no') },
+                        { value: 'yes', label: t('common.yes') },
                       ]}
                     />
                   </Field>
-                  <Field label="Repo 路徑" htmlFor="rs-path" flush>
+                  <Field label={t('backups.repoPath')} htmlFor="rs-path" flush>
                     <input
                       id="rs-path"
                       value={restic.repoPath ?? ''}
@@ -1075,14 +1084,14 @@ export function BackupsPage() {
                     />
                   </Field>
                   <Field
-                    label="Repo 密碼"
+                    label={t('backups.repoPassword')}
                     htmlFor="rs-pw"
                     flush
                     required={restic.enabled}
                     hint={
                       resticPasswordSet
-                        ? '已儲存；留空＝不改。啟用後必填。'
-                        : '啟用 restic 時必填（唔會用預設密碼）'
+                        ? t('backups.repoPassSaved')
+                        : t('backups.repoPassRequired')
                     }
                   >
                     <input
@@ -1093,11 +1102,11 @@ export function BackupsPage() {
                         setRestic((r) => ({ ...r, password: e.target.value }));
                         if (e.target.value) setResticPasswordSet(true);
                       }}
-                      placeholder={resticPasswordSet ? '已儲存（留空不改）' : '必填'}
+                      placeholder={resticPasswordSet ? t('backups.savedPlaceholder') : t('backups.required')}
                       autoComplete="new-password"
                     />
                   </Field>
-                  <Field label="或 S3 repo URL" htmlFor="rs-s3" flush>
+                  <Field label={t('backups.s3RepoUrl')} htmlFor="rs-s3" flush>
                     <input
                       id="rs-s3"
                       value={restic.s3Repo ?? ''}
@@ -1113,12 +1122,12 @@ export function BackupsPage() {
             <section className="ops-panel">
               <header className="ops-panel__head">
                 <div>
-                  <h3 className="ops-panel__title">排除規則</h3>
-                  <p className="ops-panel__sub">tar 排除路徑，每行一個 glob</p>
+                  <h3 className="ops-panel__title">{t('backups.excludeTitle')}</h3>
+                  <p className="ops-panel__sub">{t('backups.excludeSub')}</p>
                 </div>
               </header>
                 <FormLayout>
-                  <Field label="排除清單" htmlFor="bk-ex" fullWidth flush>
+                  <Field label={t('backups.excludeList')} htmlFor="bk-ex" fullWidth flush>
                     <textarea
                       id="bk-ex"
                       rows={5}
@@ -1135,7 +1144,7 @@ export function BackupsPage() {
                     loading={settingsBusy}
                     onClick={() => void saveSettings()}
                   >
-                    儲存全部設定
+                    {t('backups.saveAll')}
                   </Button>
                 </FormActions>
             </section>
@@ -1164,29 +1173,29 @@ export function BackupsPage() {
               await refresh();
               return r as OpsResultLike;
             } catch (e) {
-              const m = e instanceof Error ? e.message : '還原失敗';
+              const m = e instanceof Error ? e.message : t('backups.restoreFailed');
               return { ok: false, notes: [m], blockMessage: m };
             }
-          }, restoreMode === 'dry-run' ? '預覽完成' : '還原完成');
+          }, restoreMode === 'dry-run' ? t('backups.previewDone') : t('backups.restoreDone'));
         }}
         title={
           restoreMode === 'dry-run'
-            ? '預覽備份內容？'
+            ? t('backups.previewQ')
             : restoreMode === 'web'
-              ? '選擇性還原 (web)？'
-              : '完整還原？'
+              ? t('backups.restoreWebQ')
+              : t('backups.restoreFullQ')
         }
         description={
           restoreTarget
             ? restoreMode === 'dry-run'
-              ? `只列出 ${restoreTarget.name} 內容，唔會改檔。`
+              ? t('backups.previewDesc', { name: restoreTarget.name })
               : restoreMode === 'web'
-                ? `將 ${restoreTarget.name} 解壓到專案 home（較保守）。`
-                : `完整 tar 還原 ${restoreTarget.name}，可能覆蓋現有檔案。`
+                ? t('backups.restoreWebDesc', { name: restoreTarget.name })
+                : t('backups.restoreFullDesc', { name: restoreTarget.name })
             : ''
         }
-        confirmLabel={restoreMode === 'dry-run' ? '預覽' : '還原'}
-        cancelLabel="取消"
+        confirmLabel={restoreMode === 'dry-run' ? t('system.preview') : t('files.restore')}
+        cancelLabel={t('common.cancel')}
         danger={restoreMode === 'full'}
         busy={busy}
       />
@@ -1209,15 +1218,15 @@ export function BackupsPage() {
               await refresh();
               return r as OpsResultLike;
             } catch (e) {
-              const m = e instanceof Error ? e.message : '刪除失敗';
+              const m = e instanceof Error ? e.message : t('common.deleteFailed');
               return { ok: false, notes: [m], blockMessage: m };
             }
-          }, '已刪除');
+          }, t('redis.deleted'));
         }}
-        title="刪除備份檔？"
-        description={deleteTarget ? `永久刪除 ${deleteTarget.name}` : ''}
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('backups.deleteTitle')}
+        description={deleteTarget ? t('backups.deleteDesc', { name: deleteTarget.name }) : ''}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />
@@ -1225,67 +1234,67 @@ export function BackupsPage() {
       <ConfirmDialog
         open={resticSafe != null}
         onClose={() => setResticSafe(null)}
-        title="restic 還原到安全目錄？"
+        title={t('backups.resticSafeTitle')}
         description={
           resticSafe
-            ? `還原 ${resticSafe.snapshotId} 到專案 ${resticSafe.projectId.slice(0, 8)}… 的 .restic-restore-* 目錄`
+            ? t('backups.resticSafeDesc', { snapshot: resticSafe.snapshotId, project: resticSafe.projectId.slice(0, 8)+'…' })
             : ''
         }
-        confirmLabel="還原"
-        cancelLabel="取消"
+        confirmLabel={t('files.restore')}
+        cancelLabel={t('common.cancel')}
         busy={busy}
         onConfirm={() => {
-          const t = resticSafe;
+          const tgt = resticSafe;
           setResticSafe(null);
-          if (!t) return;
+          if (!tgt) return;
           void run(async () => {
             return (await api.requestRaw('/api/v1/backups/restic/restore', {
               method: 'POST',
               body: JSON.stringify({
-                projectId: t.projectId,
-                snapshotId: t.snapshotId,
+                projectId: tgt.projectId,
+                snapshotId: tgt.snapshotId,
                 overwriteHome: false,
               }),
             })) as OpsResultLike;
-          }, 'restic 還原完成');
+          }, t('backups.resticRestoreDone'));
         }}
       />
 
       <PromptDialog
         open={resticOverwrite != null}
         onClose={() => setResticOverwrite(null)}
-        title="危險：覆寫 home"
+        title={t('backups.overwriteTitle')}
         description={
           resticOverwrite
-            ? `將覆寫專案 ${resticOverwrite.projectId.slice(0, 8)}… 的 home。輸入 OVERWRITE 確認。`
+            ? t('backups.overwriteDesc', { project: resticOverwrite.projectId.slice(0, 8)+'…' })
             : ''
         }
-        label="確認字串"
+        label={t('security.ssh.confirmString')}
         placeholder="OVERWRITE"
         expectExact="OVERWRITE"
-        confirmLabel="覆寫 home"
+        confirmLabel={t('backups.overwriteHome')}
         danger
         busy={busy}
         onSubmit={() => {
-          const t = resticOverwrite;
+          const tgt = resticOverwrite;
           setResticOverwrite(null);
-          if (!t) return true;
+          if (!tgt) return true;
           void run(async () => {
             return (await api.requestRaw('/api/v1/backups/restic/restore', {
               method: 'POST',
               body: JSON.stringify({
-                projectId: t.projectId,
-                snapshotId: t.snapshotId,
+                projectId: tgt.projectId,
+                snapshotId: tgt.snapshotId,
                 overwriteHome: true,
                 confirmPhrase: 'OVERWRITE',
               }),
             })) as OpsResultLike;
-          }, 'restic 覆寫 home 完成');
+          }, t('backups.resticOverwriteDone'));
           return true;
         }}
       />
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
       </div>
     </FeaturePageLayout>
   );

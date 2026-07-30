@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Write ~/.google_authenticator + plan/apply PAM/sshd notes.
  * Honest: dry-run default; apply needs execute.
@@ -8,8 +9,7 @@ import {
   existsSync,
   mkdirSync,
   unlinkSync,
-  writeFileSync,
-} from 'node:fs';
+  writeFileSync } from 'node:fs';
 import { randomInt } from 'node:crypto';
 import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
@@ -17,8 +17,7 @@ import { shellQuote } from '../../hosting/project-user-run.js';
 import { decryptPrivateKey, resolveMasterKey, secretsSshDir } from '../ssh-identity/crypto.js';
 import {
   getSsh2faInternal,
-  updateSsh2faStatus,
-} from './store.js';
+  updateSsh2faStatus } from './store.js';
 import type { Ssh2faPublic } from './types.js';
 import { toPublicSsh2fa } from './types.js';
 
@@ -140,34 +139,32 @@ export function planSsh2faStrictSnippet(input: {
   }
   const notes: string[] = [];
   if (recovery.size) {
-    notes.push(`救援用戶排除：${[...recovery].join(', ')}`);
+    notes.push(tl('notes.auto.t0502', { v0: ([...recovery].join(', ')) }));
   }
   if (droppedSftp.length) {
     notes.push(
-      `已排除專案 SFTP 風格用戶（ysks_/ysk_，internal-sftp 不適合 kbd-interactive）：${droppedSftp.join(', ')}`,
+      tl('notes.auto.t0503', { v0: (droppedSftp.join(', ')) }),
     );
   }
   const overlap = input.linuxUsers.filter((u) => recovery.has(u.trim()));
   if (overlap.length) {
-    notes.push(`已從 strict 列表移除救援用戶：${overlap.join(', ')}`);
+    notes.push(tl('notes.auto.t0504', { v0: (overlap.join(', ')) }));
   }
   if (!users.length) {
     return {
       ok: false,
       snippet: buildSshdStrictMatchSnippet([]),
       users: [],
-      notes: [...notes, '無可用 strict 用戶（全部是救援或未登記）'],
-      blocked: true,
-    };
+      notes: [...notes, tl('notes.auto.n1099')],
+      blocked: true };
   }
-  notes.push(`${users.length} 個用戶將要求 publickey+TOTP、關閉 password`);
-  notes.push('apply 後需 reload sshd；錯誤 Match 可能鎖死 — 先 dry-run');
+  notes.push(tl('notes.auto.t0505', { v0: (users.length) }));
+  notes.push(tl('notes.auto.n0222'));
   return {
     ok: true,
     snippet: buildSshdStrictMatchSnippet(users),
     users,
-    notes,
-  };
+    notes };
 }
 
 export async function applySshdStrictSnippet(input: {
@@ -188,13 +185,12 @@ export async function applySshdStrictSnippet(input: {
 }> {
   const plan = planSsh2faStrictSnippet({
     linuxUsers: input.linuxUsers,
-    recoveryUsers: input.recoveryUsers,
-  });
+    recoveryUsers: input.recoveryUsers });
   const notes = [...plan.notes];
   const managed = join(secretsSshDir(input.dataDir), SSHD_STRICT_SNIPPET_NAME);
   mkdirSync(secretsSshDir(input.dataDir), { recursive: true });
   writeFileSync(managed, plan.snippet, 'utf8');
-  notes.push(`管理檔：${managed}`);
+  notes.push(tl('notes.auto.t0506', { v0: (managed) }));
 
   if (!input.apply) {
     return {
@@ -203,9 +199,8 @@ export async function applySshdStrictSnippet(input: {
       applied: false,
       blocked: Boolean(plan.blocked),
       snippet: plan.snippet,
-      notes: [...notes, 'dry-run — 未寫入 /etc'],
-      written: [managed],
-    };
+      notes: [...notes, tl('notes.auto.n0268')],
+      written: [managed] };
   }
   if (plan.blocked || !plan.ok) {
     return {
@@ -215,8 +210,7 @@ export async function applySshdStrictSnippet(input: {
       blocked: true,
       snippet: plan.snippet,
       notes,
-      written: [managed],
-    };
+      written: [managed] };
   }
   if (!input.executeEnabled) {
     return {
@@ -225,9 +219,8 @@ export async function applySshdStrictSnippet(input: {
       applied: false,
       blocked: true,
       snippet: plan.snippet,
-      notes: [...notes, 'blocked: 需要 YSK_EXECUTE=1'],
-      written: [managed],
-    };
+      notes: [...notes, tl('notes.auto.n0003')],
+      written: [managed] };
   }
   const systemPath = `/etc/ssh/sshd_config.d/${SSHD_STRICT_SNIPPET_NAME}`;
   const r = await input.host.runCommand(
@@ -241,8 +234,8 @@ export async function applySshdStrictSnippet(input: {
   const ok = r.exitCode === 0;
   notes.push(
     ok
-      ? `已安裝 ${systemPath} 並嘗試 reload sshd`
-      : `安裝／sshd -t 失敗：${(r.stderr || r.stdout).slice(0, 200)}`,
+      ? tl('notes.auto.t0507', { v0: (systemPath) })
+      : tl('notes.auto.t0508', { v0: ((r.stderr || r.stdout).slice(0, 200)) }),
   );
   return {
     ok,
@@ -251,8 +244,7 @@ export async function applySshdStrictSnippet(input: {
     blocked: false,
     snippet: plan.snippet,
     notes,
-    written: [managed, systemPath],
-  };
+    written: [managed, systemPath] };
 }
 
 export type InstallSsh2faResult = {
@@ -288,14 +280,13 @@ export async function installSsh2faFile(input: {
       blocked: false,
       requiresRoot: true,
       requiresExecute: true,
-      notes: ['找不到登記'],
-    };
+      notes: [tl('notes.ssh.registrationNotFound')] };
   }
 
   const filePath = join(row.homeDir, '.google_authenticator');
   notes.push(`planned: ${filePath} mode 0400 owner ${row.linuxUser}`);
   notes.push('file written ≠ PAM active ≠ sshd requires TOTP');
-  notes.push('專案 internal-sftp Match 用戶通常唔走 interactive shell — TOTP 主要影響 SSH shell/scp');
+  notes.push(tl('notes.auto.n0685'));
 
   const pamSnippet = buildPamSshSnippet();
   const sshdHints = buildSshdTotpHints();
@@ -303,8 +294,8 @@ export async function installSsh2faFile(input: {
   const managedSshd = join(secretsSshDir(input.dataDir), 'sshd-totp-hints.conf');
 
   if (!input.apply) {
-    notes.push('dry-run — pass apply/execute 才寫 home 檔');
-    notes.push(`PAM 預覽會寫管理檔：${managedPam}`);
+    notes.push(tl('notes.auto.n0266'));
+    notes.push(tl('notes.auto.t0509', { v0: (managedPam) }));
     return {
       ok: true,
       dryRun: true,
@@ -316,12 +307,11 @@ export async function installSsh2faFile(input: {
       record: toPublicSsh2fa(row),
       notes,
       pamSnippet,
-      sshdHints,
-    };
+      sshdHints };
   }
 
   if (!input.executeEnabled) {
-    notes.push('blocked: 需要 YSK_EXECUTE=1');
+    notes.push(tl('notes.auto.n0003'));
     return {
       ok: false,
       dryRun: false,
@@ -333,8 +323,7 @@ export async function installSsh2faFile(input: {
       record: toPublicSsh2fa(row),
       notes,
       pamSnippet,
-      sshdHints,
-    };
+      sshdHints };
   }
 
   let secret: string;
@@ -349,8 +338,7 @@ export async function installSsh2faFile(input: {
       blocked: false,
       requiresRoot: true,
       requiresExecute: true,
-      notes: [e instanceof Error ? e.message : 'decrypt failed'],
-    };
+      notes: [e instanceof Error ? e.message : 'decrypt failed'] };
   }
 
   const scratch = generateScratchCodes(5);
@@ -372,8 +360,7 @@ export async function installSsh2faFile(input: {
       requiresRoot: true,
       requiresExecute: true,
       plannedPath: filePath,
-      notes: [`write failed: ${e instanceof Error ? e.message : String(e)}`],
-    };
+      notes: [`write failed: ${e instanceof Error ? e.message : String(e)}`] };
   }
 
   if (input.host) {
@@ -389,13 +376,13 @@ export async function installSsh2faFile(input: {
     notes.push(
       ch.exitCode === 0
         ? `chown/chmod ok · ${st}`
-        : `chown 可能失敗：${(ch.stderr || st).slice(0, 120)}`,
+        : tl('notes.auto.t0510', { v0: ((ch.stderr || st).slice(0, 120)) }),
     );
     if (st && !/^400\b/.test(st)) {
-      notes.push(`警告：期望 mode 400（stat: ${st}）`);
+      notes.push(tl('notes.auto.t0511', { v0: (st) }));
     }
   } else {
-    notes.push('無 HostExecutor — 請手動 chown 檔案');
+    notes.push(tl('notes.auto.n1058'));
   }
 
   // Always write managed PAM/sshd docs under dataDir (safe)
@@ -403,8 +390,8 @@ export async function installSsh2faFile(input: {
     mkdirSync(secretsSshDir(input.dataDir), { recursive: true });
     writeFileSync(managedPam, pamSnippet, { mode: 0o644 });
     writeFileSync(managedSshd, sshdHints, { mode: 0o644 });
-    notes.push(`PAM 片段（管理檔）：${managedPam}`);
-    notes.push(`sshd 提示（管理檔）：${managedSshd}`);
+    notes.push(tl('notes.auto.t0512', { v0: (managedPam) }));
+    notes.push(tl('notes.auto.t0513', { v0: (managedSshd) }));
   } catch {
     /* ignore */
   }
@@ -413,13 +400,12 @@ export async function installSsh2faFile(input: {
     status: 'file_written',
     filePath,
     writtenAt: new Date().toISOString(),
-    notes: [...row.notes, `written ${filePath}`, '下一步：將 PAM 片段併入 /etc/pam.d/sshd（nullok）'],
-  });
+    notes: [...row.notes, `written ${filePath}`, tl('notes.auto.n0492')] });
 
-  notes.push('已寫入 .google_authenticator（含 5 組 scratch codes）');
-  notes.push('下一步：系統安裝 libpam-google-authenticator + 合併 PAM 片段（見下方）');
+  notes.push(tl('notes.auto.n0760'));
+  notes.push(tl('notes.auto.n0493'));
   notes.push(
-    `scratch（只此一次回應）：${scratch.join(' ')} — 請離線保存`,
+    tl('notes.auto.t0514', { v0: (scratch.join(' ')) }),
   );
 
   return {
@@ -434,8 +420,7 @@ export async function installSsh2faFile(input: {
     notes,
     pamSnippet,
     sshdHints,
-    scratchCodes: scratch,
-  };
+    scratchCodes: scratch };
 }
 
 export async function uninstallSsh2faFile(input: {
@@ -454,8 +439,7 @@ export async function uninstallSsh2faFile(input: {
       blocked: false,
       requiresRoot: false,
       requiresExecute: false,
-      notes: ['找不到登記'],
-    };
+      notes: [tl('notes.ssh.registrationNotFound')] };
   }
   const path = row.filePath || join(row.homeDir, '.google_authenticator');
   notes.push(`will remove ${path}`);
@@ -470,8 +454,7 @@ export async function uninstallSsh2faFile(input: {
       requiresExecute: false,
       plannedPath: path,
       record: toPublicSsh2fa(row),
-      notes: [...notes, 'dry-run'],
-    };
+      notes: [...notes, 'dry-run'] };
   }
 
   if (existsSync(path)) {
@@ -488,14 +471,12 @@ export async function uninstallSsh2faFile(input: {
   if (input.retire !== false) {
     updateSsh2faStatus(input.dataDir, row.id, {
       status: 'retired',
-      notes: [...row.notes, 'uninstalled'],
-    });
+      notes: [...row.notes, 'uninstalled'] });
   } else {
     updateSsh2faStatus(input.dataDir, row.id, {
       status: 'confirmed',
       filePath: undefined,
-      writtenAt: undefined,
-    });
+      writtenAt: undefined });
   }
 
   return {
@@ -506,8 +487,7 @@ export async function uninstallSsh2faFile(input: {
     requiresRoot: false,
     requiresExecute: false,
     plannedPath: path,
-    notes,
-  };
+    notes };
 }
 
 /** Host probe: package + pam file presence (read-only hints). */
@@ -539,8 +519,8 @@ export async function probeSsh2faHost(host: HostExecutor): Promise<Ssh2faHostHea
     (mod.stdout || '').includes('libpam-google-authenticator');
   notes.push(
     pamModule
-      ? '偵測到 pam_google_authenticator 模組'
-      : '未偵測到 pam_google_authenticator — apt install libpam-google-authenticator',
+      ? tl('notes.auto.n0559')
+      : tl('notes.auto.n0950'),
   );
   const pam = await host.runCommand(
     ['bash', '-c', 'grep -E "pam_google_authenticator" /etc/pam.d/sshd 2>/dev/null | head -3 || true'],
@@ -548,9 +528,9 @@ export async function probeSsh2faHost(host: HostExecutor): Promise<Ssh2faHostHea
   );
   const pamConfigured = Boolean((pam.stdout || '').trim());
   if (pamConfigured) {
-    notes.push(`pam.d/sshd 已引用：${pam.stdout.trim().slice(0, 120)}`);
+    notes.push(tl('notes.auto.t0515', { v0: (pam.stdout.trim().slice(0, 120)) }));
   } else {
-    notes.push('pam.d/sshd 尚未引用 pam_google_authenticator（檔寫了也未 enforce）');
+    notes.push(tl('notes.auto.n0363'));
   }
   const kbd = await host.runCommand(
     [
@@ -565,19 +545,17 @@ export async function probeSsh2faHost(host: HostExecutor): Promise<Ssh2faHostHea
     kbdOut.includes('kbdinteractiveauthentication yes') ||
     kbdOut.includes('challengeresponseauthentication yes');
   if (kbdInteractive) {
-    notes.push('sshd keyboard-interactive / challenge-response 似已開啟');
+    notes.push(tl('notes.auto.n0435'));
   } else {
-    notes.push('sshd 可能未開 KbdInteractiveAuthentication — TOTP 無法在 SSH 提示');
+    notes.push(tl('notes.auto.n0436'));
   }
   return {
     notes,
     lights: {
       package: pamModule ? 'green' : 'red',
       pam: pamConfigured ? 'green' : pamModule ? 'yellow' : 'red',
-      kbdInteractive: kbdInteractive ? 'green' : 'yellow',
-    },
+      kbdInteractive: kbdInteractive ? 'green' : 'yellow' },
     pamModule,
     pamConfigured,
-    kbdInteractive,
-  };
+    kbdInteractive };
 }

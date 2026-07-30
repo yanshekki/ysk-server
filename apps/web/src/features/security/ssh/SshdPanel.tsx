@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Button,
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function SshdPanel({ onFlash }: Props) {
+  const { t } = useTranslation();
   const [snippet, setSnippet] = useState('');
   const [notes, setNotes] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -37,14 +39,14 @@ export function SshdPanel({ onFlash }: Props) {
 
       <Card>
         <CardSection
-          title="專案用戶 SFTP（sshd）"
-          description="讓 ysks_* / ysk_* 專案用戶可用公鑰 SFTP。未安裝時，登入授權可能無效。"
+          title={t('security.ssh.sshdTitle')}
+          description={t('security.ssh.sshdDesc')}
         >
           <div className="ssh-callout">
             <ol className="list-spaced u-mb-0">
-              <li>在「登入授權」為專案加入公鑰</li>
-              <li>在此預覽並安裝系統 Match 片段</li>
-              <li>安裝需要系統執行權限；會嘗試 reload sshd</li>
+              <li>{t('security.ssh.sshdStep1')}</li>
+              <li>{t('security.ssh.sshdStep2')}</li>
+              <li>{t('security.ssh.sshdStep3')}</li>
             </ol>
           </div>
 
@@ -58,12 +60,12 @@ export function SshdPanel({ onFlash }: Props) {
             </ul>
           ) : null}
 
-          <Field label="設定預覽" htmlFor="sshd-snip" flush fullWidth>
+          <Field label={t('security.ssh.sshdPreview')} htmlFor="sshd-snip" flush fullWidth>
             <textarea
               id="sshd-snip"
               rows={12}
               readOnly
-              value={snippet || '（載入中…）'}
+              value={snippet || t('security.ssh.loadingSnippet')}
               className="u-font-mono"
               spellCheck={false}
             />
@@ -79,13 +81,13 @@ export function SshdPanel({ onFlash }: Props) {
                 void load()
                   .then(() => {
                     void navigator.clipboard?.writeText(snippet);
-                    onFlash('ok', '已重新載入；片段已複製到剪貼簿');
+                    onFlash('ok', t('security.ssh.reloadedCopied'));
                   })
                   .catch((e: Error) => setErr(e.message))
                   .finally(() => setBusy(false));
               }}
             >
-              重新載入並複製
+              {t('security.ssh.reloadAndCopy')}
             </Button>
             <Button
               variant="primary"
@@ -98,19 +100,20 @@ export function SshdPanel({ onFlash }: Props) {
                   .then((r) => {
                     onFlash(
                       r.ok ? 'ok' : 'error',
-                      (r.notes ?? []).join('；') || (r.ok ? '已安裝' : '未完成'),
+                      (r.notes ?? []).join(' · ') ||
+                        (r.ok ? t('security.ssh.installedOk') : t('security.ssh.notDone')),
                     );
                   })
                   .catch((e: Error) => onFlash('error', e.message))
                   .finally(() => setBusy(false));
               }}
             >
-              安裝到系統
+              {t('security.ssh.installToSystem')}
             </Button>
           </FormActions>
           <FormHint>
-            若提示無法執行，請以具備權限的方式執行控制面，或手動將片段放入{' '}
-            <code className="inline">/etc/ssh/sshd_config.d</code>。
+            {t('security.ssh.sshdManualHint')}{' '}
+            <code className="inline">/etc/ssh/sshd_config.d</code>.
           </FormHint>
         </CardSection>
       </Card>

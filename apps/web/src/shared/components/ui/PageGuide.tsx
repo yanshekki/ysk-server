@@ -1,7 +1,8 @@
 /**
- * Professional product help panel for the trailing「說明」tab.
+ * Professional product help panel for the trailing about tab.
  */
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { PageGuideDoc } from '../../guides/types';
 import { getPageGuide } from '../../guides/catalog';
 import { Badge } from './Badge';
@@ -14,11 +15,13 @@ export type PageGuideProps = {
 };
 
 export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
-  const doc = docProp ?? (guideId ? getPageGuide(guideId) : null);
+  const { t, i18n } = useTranslation();
+  const doc =
+    docProp ?? (guideId ? getPageGuide(guideId, i18n.language) : null);
   if (!doc) {
     return (
       <div className="page-guide page-guide--missing tab-panel">
-        <p className="muted">暫無此頁說明文件。</p>
+        <p className="muted">{t('pageGuide.missing')}</p>
       </div>
     );
   }
@@ -27,11 +30,13 @@ export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
     <div className="page-guide tab-panel" data-guide-id={doc.id}>
       <header className="page-guide__hero">
         <div className="page-guide__hero-text">
-          <p className="page-guide__kicker">功能說明</p>
+          <p className="page-guide__kicker">{t('pageGuide.kicker')}</p>
           <h2 className="page-guide__title">{doc.title}</h2>
           <p className="page-guide__summary">{doc.summary}</p>
           {doc.audience ? (
-            <p className="page-guide__audience">適用對象：{doc.audience}</p>
+            <p className="page-guide__audience">
+              {t('pageGuide.audience', { audience: doc.audience })}
+            </p>
           ) : null}
           {doc.chips?.length ? (
             <div className="page-guide__chips">
@@ -47,7 +52,7 @@ export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
 
       <section className="page-guide__section" aria-labelledby={`pg-feat-${doc.id}`}>
         <h3 id={`pg-feat-${doc.id}`} className="page-guide__section-title">
-          本頁能做什麼
+          {t('pageGuide.featuresTitle')}
         </h3>
         <div className="page-guide__feature-grid">
           {doc.features.map((f) => (
@@ -56,7 +61,7 @@ export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
               <p className="page-guide__feature-purpose">{f.purpose}</p>
               {f.how ? (
                 <p className="page-guide__feature-how">
-                  <span className="page-guide__label">用法</span>
+                  <span className="page-guide__label">{t('pageGuide.howLabel')}</span>
                   {f.how}
                 </p>
               ) : null}
@@ -68,7 +73,7 @@ export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
       <div className="page-guide__split">
         <section className="page-guide__section" aria-labelledby={`pg-uc-${doc.id}`}>
           <h3 id={`pg-uc-${doc.id}`} className="page-guide__section-title">
-            典型應用
+            {t('pageGuide.useCasesTitle')}
           </h3>
           <ul className="page-guide__list">
             {doc.useCases.map((u) => (
@@ -79,7 +84,7 @@ export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
 
         <section className="page-guide__section" aria-labelledby={`pg-wf-${doc.id}`}>
           <h3 id={`pg-wf-${doc.id}`} className="page-guide__section-title">
-            建議流程
+            {t('pageGuide.workflowTitle')}
           </h3>
           <ol className="page-guide__steps">
             {doc.workflow.map((step, i) => (
@@ -99,7 +104,7 @@ export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
         aria-labelledby={`pg-cv-${doc.id}`}
       >
         <h3 id={`pg-cv-${doc.id}`} className="page-guide__section-title">
-          注意與邊界
+          {t('pageGuide.caveatsTitle')}
         </h3>
         <ul className="page-guide__caveats">
           {doc.caveats.map((c) => (
@@ -111,7 +116,7 @@ export function PageGuide({ guideId, doc: docProp }: PageGuideProps) {
       {doc.related?.length ? (
         <section className="page-guide__section" aria-labelledby={`pg-rel-${doc.id}`}>
           <h3 id={`pg-rel-${doc.id}`} className="page-guide__section-title">
-            相關功能
+            {t('pageGuide.relatedTitle')}
           </h3>
           <div className="page-guide__related">
             {doc.related.map((r) => (

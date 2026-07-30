@@ -67,23 +67,24 @@ export function assertHonestOps<T extends OpsResultInput>(result: T): T & OpsRes
 
   if (hardBlocked && ok) {
     ok = false;
-    nextNotes.push('誠實校正：blocked 時不可 ok=true');
+    // Stable i18n keys — localize at sendOpsResult / localizeOpsResult
+    nextNotes.push('ops.honesty.blockedNotOk');
     if (apply_status === 'applied' || !apply_status) apply_status = 'blocked';
   }
 
   if (apply_status === 'applied' && hardBlocked) {
     ok = false;
     apply_status = 'blocked';
-    if (!nextNotes.some((n) => n.includes('誠實校正'))) {
-      nextNotes.push('誠實校正：blocked 時不可 apply_status=applied');
+    if (!nextNotes.some((n) => n.includes('ops.honesty') || n.includes('誠實校正'))) {
+      nextNotes.push('ops.honesty.blockedNotApplied');
     }
   }
 
   // Claimed applied but ok=false → demote
   if (apply_status === 'applied' && !ok) {
     apply_status = hardBlocked ? 'blocked' : 'failed';
-    if (!nextNotes.some((n) => n.includes('ok=false 時不可'))) {
-      nextNotes.push('誠實校正：ok=false 時不可 apply_status=applied');
+    if (!nextNotes.some((n) => n.includes('ops.honesty') || n.includes('ok=false'))) {
+      nextNotes.push('ops.honesty.okFalseNotApplied');
     }
   }
 

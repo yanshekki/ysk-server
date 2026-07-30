@@ -6,8 +6,7 @@
 import {
   assertHonestOps,
   type OpsResultDto,
-  type OpsResultInput,
-} from '@ysk/shared';
+  type OpsResultInput,  tl} from '@ysk/shared';
 import type { YskDatabase } from '../db/database.js';
 
 /** @deprecated import assertHonestOps from @ysk/shared */
@@ -41,7 +40,7 @@ function classifyStatus(st: string): {
     return { severity: 'bad', issue: `apply_status=${st}` };
   }
   if (s === 'written' || s === 'draft' || s === 'planned' || s === 'partial') {
-    return { severity: 'warn', issue: `尚未 applied（${st}）` };
+    return { severity: 'warn', issue: tl('notes.auto.t0226', { v0: (st) }) };
   }
   if (
     s === 'applied' ||
@@ -53,9 +52,9 @@ function classifyStatus(st: string): {
     return { severity: 'ok' };
   }
   if (s === 'unknown' || !s) {
-    return { severity: 'warn', issue: '無 apply_status' };
+    return { severity: 'warn', issue: tl('notes.auto.n1070') };
   }
-  return { severity: 'warn', issue: `狀態 ${st}` };
+  return { severity: 'warn', issue: tl('notes.auto.t0227', { v0: (st) }) };
 }
 
 /** Detect dishonest last_apply payloads stored on resources */
@@ -76,7 +75,7 @@ function auditLastApply(
       id,
       name,
       apply_status: String(o.apply_status ?? 'unknown'),
-      issue: 'last_apply 同時 ok=true 與 blocked（不誠實）',
+      issue: tl('notes.auto.n0318'),
       severity: 'bad',
       href,
     };
@@ -87,7 +86,7 @@ function auditLastApply(
       id,
       name,
       apply_status: 'applied',
-      issue: 'last_apply applied 但 blocked',
+      issue: tl('notes.auto.n0317'),
       severity: 'bad',
       href,
     };
@@ -148,7 +147,7 @@ export function auditApplyStatuses(db: YskDatabase): ApplyAuditResult {
       issue = 'suspended';
     } else if (!p.nginx_config_path) {
       severity = 'warn';
-      issue = '未發布 nginx conf';
+      issue = tl('notes.auto.n0963');
     }
     findings.push({
       kind: 'project',

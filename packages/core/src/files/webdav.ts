@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Minimal WebDAV settings + PROPFIND XML helpers (managed under panel).
  * Real PROPFIND/PUT handlers live in server controller; this is control-plane config.
@@ -59,8 +60,8 @@ export function issueWebDavToken(db: JsonStore): {
     settings,
     token,
     notes: [
-      '已啟用 WebDAV · Basic 用戶 ysk · 密碼為本次 token（只顯示一次）',
-      'written ≠ 公開可連 — 需 reverse proxy 到面板 /webdav',
+      tl('notes.auto.n0748'),
+      tl('notes.auto.n0471'),
     ],
   };
 }

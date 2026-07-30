@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * File version snapshots under .versions/<encoded-path>/
  */
@@ -97,7 +98,7 @@ export function restoreFileVersion(
   const dir = join(versionsRoot(sandboxRoot), encodePath(relPath));
   const src = join(dir, safe);
   if (!existsSync(src)) {
-    return { ok: false, notes: ['找不到版本'] };
+    return { ok: false, notes: [tl('notes.auto.n0865')] };
   }
   // snapshot current before restore
   if (currentAbs && existsSync(currentAbs)) {
@@ -105,7 +106,7 @@ export function restoreFileVersion(
   }
   const buf = readFileSync(src);
   writeAbs(buf);
-  return { ok: true, notes: [`已還原版本 ${safe}`] };
+  return { ok: true, notes: [tl('notes.auto.t0002', { v0: (safe) })] };
 }
 
 export function readVersionBytes(

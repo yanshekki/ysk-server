@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Build complete HostManifest from control-plane store + disk facts.
  * Read-only; no host mutation.
@@ -171,15 +172,15 @@ export async function buildHostManifest(input: {
     }
 
     if (!homeExists) {
-      warnings.push(`專案 ${p.id} home 不存在: ${home}`);
+      warnings.push(tl('notes.auto.t0629', { v0: (p.id), v1: (home) }));
     }
     if (p.bind_ip) {
       warnings.push(
-        `專案 ${p.id} 綁定 bind_ip=${p.bind_ip} — 遷移後可能需清空（新機 IP 不同）`,
+        tl('notes.auto.t0630', { v0: (p.id), v1: (p.bind_ip) }),
       );
     }
     if (!home.startsWith('/home/ysk-server-') && !home.startsWith(dataDir)) {
-      warnings.push(`專案 ${p.id} home 非標準路徑: ${home}`);
+      warnings.push(tl('notes.auto.t0631', { v0: (p.id), v1: (home) }));
     }
 
     projects.push({
@@ -201,7 +202,7 @@ export async function buildHostManifest(input: {
   for (const diskHome of globHomesOnDisk()) {
     const abs = resolve(diskHome);
     if (!homeSet.has(abs)) {
-      warnings.push(`磁碟有孤立 home（store 無對應）: ${diskHome}`);
+      warnings.push(tl('notes.auto.t0632', { v0: (diskHome) }));
       homeSet.add(abs);
     }
   }
@@ -211,13 +212,13 @@ export async function buildHostManifest(input: {
   for (const row of s.mysql_databases ?? []) {
     const m = mapDbRow('mysql', row as Record<string, unknown>);
     if (m.name) databases.push(m);
-    else warnings.push('mysql_databases 列缺 name');
+    else warnings.push(tl('notes.auto.n0336'));
   }
   // MariaDB rows often share mysql_databases; keep engine mysql unless tagged
   for (const row of s.postgres_databases ?? []) {
     const m = mapDbRow('postgres', row as Record<string, unknown>);
     if (m.name) databases.push(m);
-    else warnings.push('postgres_databases 列缺 name');
+    else warnings.push(tl('notes.auto.n0385'));
   }
 
   const redis: HostManifestRedis[] = [];
@@ -246,7 +247,7 @@ export async function buildHostManifest(input: {
     const abs = join(dataDir, rel);
     const exists = existsSync(abs);
     if (!exists && domain && local) {
-      warnings.push(`Maildir 不存在: ${rel}`);
+      warnings.push(tl('notes.auto.t0633', { v0: (rel) }));
     }
     mailboxes.push({
       id,
@@ -276,7 +277,7 @@ export async function buildHostManifest(input: {
     if (!existsSync(join(dataDir, rel))) {
       // secrets/config may be missing on fresh — warn only for ysk.json
       if (rel === 'ysk.json') {
-        warnings.push('dataDir 缺 ysk.json — 控制面狀態不完整');
+        warnings.push(tl('notes.auto.n0244'));
       }
     }
   }
@@ -284,7 +285,7 @@ export async function buildHostManifest(input: {
   const secretsKey = join(dataDir, 'secrets', 'ssh', '.master.key');
   if (!existsSync(secretsKey) && !process.env.YSK_SECRETS_KEY) {
     warnings.push(
-      '未找到 secrets/ssh/.master.key 且無 YSK_SECRETS_KEY — 目標機可能無法解密 vault/2FA',
+      tl('notes.auto.n0959'),
     );
   }
 
@@ -302,20 +303,20 @@ export async function buildHostManifest(input: {
       );
       if (!r.stdout.includes('ok')) {
         if (bin === 'mysqldump' && databases.some((d) => d.engine === 'mysql')) {
-          warnings.push('來源缺 mysqldump — package 階段將無法匯出 MySQL');
+          warnings.push(tl('notes.auto.n0543'));
         }
         if (bin === 'pg_dump' && databases.some((d) => d.engine === 'postgres')) {
-          warnings.push('來源缺 pg_dump — package 階段將無法匯出 Postgres');
+          warnings.push(tl('notes.auto.n0544'));
         }
         if (bin === 'redis-cli' && redis.length > 0) {
-          warnings.push('來源缺 redis-cli — package 階段將無法匯出 Redis RDB');
+          warnings.push(tl('notes.auto.n0545'));
         }
         if (bin === 'rsync' || bin === 'ssh') {
-          warnings.push(`來源缺 ${bin} — 無法傳輸到目標機`);
+          warnings.push(tl('notes.auto.t0634', { v0: (bin) }));
         }
       }
     } catch {
-      warnings.push(`無法探測 ${bin}`);
+      warnings.push(tl('notes.auto.t0635', { v0: (bin) }));
     }
   }
 
@@ -421,17 +422,17 @@ export function summarizeManifest(m: HostManifest): {
   lines: string[];
 } {
   const lines = [
-    `來源 ${m.source.hostname} · ${m.source.os}`,
+    tl('notes.auto.t0636', { v0: (m.source.hostname), v1: (m.source.os) }),
     `dataDir ${m.source.dataDir}`,
-    `專案 ${m.counts.projects} · 信箱 ${m.counts.mailboxes} · DB ${m.databases.length} · Redis ${m.redis.length}`,
-    `需安裝軟體 ${m.softwareNeeded.length} 項 · homes ${m.paths.homes.length}`,
-    `cutover 主機名 ${m.cutoverHostnames.length}`,
+    tl('notes.auto.t0637', { v0: (m.counts.projects), v1: (m.counts.mailboxes), v2: (m.databases.length), v3: (m.redis.length) }),
+    tl('notes.auto.t0638', { v0: (m.softwareNeeded.length), v1: (m.paths.homes.length) }),
+    tl('notes.auto.t0639', { v0: (m.cutoverHostnames.length) }),
   ];
   if (m.warnings.length) {
-    lines.push(`警告 ${m.warnings.length} 則（請審閱）`);
+    lines.push(tl('notes.auto.t0640', { v0: (m.warnings.length) }));
   }
   const blocking = m.warnings.some(
-    (w) => w.includes('缺 rsync') || w.includes('缺 ssh') || w.includes('缺 ysk.json'),
+    (w) => w.includes(tl('notes.auto.n1319')) || w.includes(tl('notes.auto.n1320')) || w.includes(tl('notes.auto.n1321')),
   );
   return { okToProceed: !blocking, lines };
 }

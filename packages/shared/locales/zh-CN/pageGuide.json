@@ -1,0 +1,11 @@
+{
+  "missing": "暂无此页说明文件。",
+  "kicker": "功能说明",
+  "audience": "适用对象：{{audience}}",
+  "featuresTitle": "本页能做什么",
+  "howLabel": "用法",
+  "useCasesTitle": "典型应用",
+  "workflowTitle": "建议流程",
+  "caveatsTitle": "注意与边界",
+  "relatedTitle": "相关功能"
+}

@@ -1,43 +1,10 @@
 /**
  * Agents feature — fleet + runtime probe/install API.
  */
+import type { FleetAgent, FleetCommand, RuntimeProbe } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type FleetAgentStatus = 'registered' | 'connected' | 'stale' | 'disconnected' | string;
-
-export type FleetAgent = {
-  id: string;
-  agent_id: string;
-  status: FleetAgentStatus;
-  group?: string;
-  last_seen_at: string;
-  connected_at?: string;
-  meta?: Record<string, unknown>;
-};
-
-export type FleetCommand = {
-  id: string;
-  agent_session_id: string;
-  payload: unknown;
-  status: 'queued' | 'acked' | 'done' | 'error' | string;
-  created_at: string;
-  result?: unknown;
-  finished_at?: string;
-};
-
-export type RuntimeProbe = {
-  kind: string;
-  name: string;
-  status: string;
-  installPath?: string;
-  pathExists?: boolean;
-  unitActive?: string;
-  unitName?: string;
-  notes?: string[];
-  installPlan?: string[];
-  supervision?: string[];
-  probedAt?: string;
-};
+export type { FleetAgentStatus, FleetAgent, FleetCommand, RuntimeProbe } from '@ysk/shared';
 
 export const agentsApi = {
   listFleet: () => api.requestRaw<{ items: FleetAgent[] }>('/api/v1/fleet/agents'),

@@ -1,0 +1,11 @@
+{
+  "draft": "草稿",
+  "written": "已写入管理文件",
+  "planned": "处理中",
+  "applied": "已套用到系统",
+  "failed": "失败",
+  "pendingExecute": "待系统权限",
+  "uploaded": "已上传",
+  "issued": "已签发",
+  "missing": "文件缺失"
+}

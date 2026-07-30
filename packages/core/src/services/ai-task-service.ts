@@ -9,7 +9,7 @@ import type { HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import type { ProtectionState } from './protection.js';
 import type { SystemRole } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import {
   approveTaskSteps,
   createAiTask,
@@ -61,7 +61,7 @@ export class AiTaskService {
 
   get(id: string): AiTask {
     const t = this.store.get(id);
-    if (!t) throw new YskError(ErrorCodes.NOT_FOUND, `找不到任務：${id}`, { httpStatus: 404 });
+    if (!t) throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0500', { v0: (id) }), { httpStatus: 404 });
     return t;
   }
 
@@ -129,7 +129,7 @@ export class AiTaskService {
     const task = this.get(id);
     const step = task.steps.find((s) => s.id === stepId);
     if (!step) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到步驟', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0864'), { httpStatus: 404 });
     }
     step.status = 'rejected';
     step.error = `rejected by ${actor}`;

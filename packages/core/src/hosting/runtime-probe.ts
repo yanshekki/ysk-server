@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Probe multi-version runtimes on the host + managed install plans.
  * Never fakes install success — package installs need root + YSK_EXECUTE.
@@ -60,7 +61,7 @@ async function probeBinaryVersions(
     if (hostDefault && match(hostDefault, v)) {
       available = true;
       versionOutput = hostDefault;
-      itemNotes.push('符合主機預設版本');
+      itemNotes.push(tl('notes.auto.n1302'));
     }
 
     if (!available && host.pathExists(plan.binaryPath)) {
@@ -94,7 +95,7 @@ async function probeBinaryVersions(
       }
     }
 
-    if (!available) itemNotes.push(`找不到（預期 ${plan.binaryPath}）`);
+    if (!available) itemNotes.push(tl('notes.auto.t0395', { v0: (plan.binaryPath) }));
     out.push({
       kind,
       version: v,
@@ -204,16 +205,16 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   );
 
   notes.push(
-    `主機 node：${hostNode ?? '無'}`,
-    `主機 php：${hostPhp ?? '無'}`,
-    `主機 python：${hostPython ?? '無'}`,
-    `主機 go：${hostGo ?? '無'}`,
-    `主機 cargo：${hostRust ?? '無'}`,
-    `Node 可用：${node.filter((n) => n.available).map((n) => n.version).join(', ') || '無'}`,
-    `PHP 可用：${php.filter((p) => p.available).map((p) => p.version).join(', ') || '無'}`,
-    `Python 可用：${python.filter((p) => p.available).map((p) => p.version).join(', ') || '無'}`,
-    `Go 可用：${go.filter((g) => g.available).map((g) => g.version).join(', ') || '無'}`,
-    `Rust 可用：${rust.filter((r) => r.available).map((r) => r.version).join(', ') || '無'}`,
+    tl('notes.auto.t0396', { v0: (hostNode ?? tl('notes.tpl.none')) }),
+    tl('notes.auto.t0397', { v0: (hostPhp ?? tl('notes.tpl.none')) }),
+    tl('notes.auto.t0398', { v0: (hostPython ?? tl('notes.tpl.none')) }),
+    tl('notes.auto.t0399', { v0: (hostGo ?? tl('notes.tpl.none')) }),
+    tl('notes.auto.t0400', { v0: (hostRust ?? tl('notes.tpl.none')) }),
+    tl('notes.auto.t0401', { v0: (node.filter((n) => n.available).map((n) => n.version).join(', ') || tl('notes.tpl.none')) }),
+    tl('notes.auto.t0402', { v0: (php.filter((p) => p.available).map((p) => p.version).join(', ') || tl('notes.tpl.none')) }),
+    tl('notes.auto.t0403', { v0: (python.filter((p) => p.available).map((p) => p.version).join(', ') || tl('notes.tpl.none')) }),
+    tl('notes.auto.t0404', { v0: (go.filter((g) => g.available).map((g) => g.version).join(', ') || tl('notes.tpl.none')) }),
+    tl('notes.auto.t0405', { v0: (rust.filter((r) => r.available).map((r) => r.version).join(', ') || tl('notes.tpl.none')) }),
   );
 
   return {
@@ -278,7 +279,7 @@ export async function planOrInstallRuntime(input: {
       `ln -sfn "$NODE_BIN" ${plan.binaryPath}`,
       '',
     ].join('\n');
-    notes.push(`準備安裝 Node ${plan.version}`);
+    notes.push(tl('notes.auto.t0406', { v0: (plan.version) }));
   } else if (input.kind === 'php') {
     const plan = selectPhpRuntime(input.version);
     script = [
@@ -295,7 +296,7 @@ export async function planOrInstallRuntime(input: {
       'systemctl enable --now php' + plan.version + '-fpm',
       '',
     ].join('\n');
-    notes.push(`準備安裝 PHP ${plan.version}`);
+    notes.push(tl('notes.auto.t0407', { v0: (plan.version) }));
   } else if (input.kind === 'python') {
     const plan = selectPythonRuntime(input.version);
     script = [
@@ -311,7 +312,7 @@ export async function planOrInstallRuntime(input: {
       `python${plan.version} --version 2>/dev/null || python3 --version`,
       '',
     ].join('\n');
-    notes.push(`準備安裝 Python ${plan.version}`);
+    notes.push(tl('notes.auto.t0408', { v0: (plan.version) }));
   } else if (input.kind === 'go') {
     const plan = selectGoRuntime(input.version);
     const arch = 'linux-amd64';
@@ -331,7 +332,7 @@ export async function planOrInstallRuntime(input: {
       '"$DEST/bin/go" version',
       '',
     ].join('\n');
-    notes.push(`準備安裝 Go ${plan.version} 到 /usr/local/ysk/go`);
+    notes.push(tl('notes.auto.t0409', { v0: (plan.version) }));
   } else {
     const plan = selectRustRuntime(input.version);
     script = [
@@ -353,21 +354,21 @@ export async function planOrInstallRuntime(input: {
       'rustc --version',
       '',
     ].join('\n');
-    notes.push(`準備安裝 Rust（${plan.version}）到 /usr/local/ysk/rust`);
+    notes.push(tl('notes.auto.t0410', { v0: (plan.version) }));
   }
 
   const scriptPath = join(dir, 'install.sh');
   writeFileSync(scriptPath, script, 'utf8');
   written.push(scriptPath);
-  notes.push('已寫入安裝腳本');
+  notes.push(tl('notes.auto.n0762'));
 
   const want = Boolean(input.install);
   const can = want && input.host.executeEnabled() && input.host.isRoot();
   if (want && !can) {
     if (!input.host.executeEnabled()) {
-      notes.push('伺服器未開啟系統變更權限，無法在管理面板完成安裝');
+      notes.push(tl('ops.blocked.install'));
     } else if (!input.host.isRoot()) {
-      notes.push('需要系統管理員權限才能完成安裝');
+      notes.push(tl('notes.auto.n1582'));
     }
   }
 
@@ -378,8 +379,8 @@ export async function planOrInstallRuntime(input: {
       exitCode: r.exitCode,
       stderr: r.stderr,
     });
-    if (r.exitCode === 0) notes.push('安裝完成');
-    else notes.push(`安裝失敗：${r.stderr || r.stdout}`);
+    if (r.exitCode === 0) notes.push(tl('notes.auto.n0656'));
+    else notes.push(tl('notes.auto.t0411', { v0: (r.stderr || r.stdout) }));
   }
 
   const ranOk = commandResults.every((c) => c.exitCode === 0);

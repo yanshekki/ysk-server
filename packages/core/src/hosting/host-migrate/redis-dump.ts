@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, statSync, copyFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import type { OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 
 export type RedisDumpResult = OpsResultDto & {
   path?: string;
@@ -41,9 +41,8 @@ export async function dumpRedisRdb(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '伺服器未開啟系統變更權限，無法匯出 Redis',
-      notes: ['Redis dump 需要 YSK_EXECUTE=1'],
-    });
+      blockMessage: tl('notes.auto.n0527'),
+      notes: [tl('notes.auto.n0170')] });
   }
 
   const out = input.outputPath;
@@ -64,9 +63,8 @@ export async function dumpRedisRdb(input: {
     return assertHonestOps({
       ok: false,
       blocked: true,
-      blockMessage: '未安裝 redis-cli',
-      notes: ['無法 dump Redis：缺 redis-cli'],
-    });
+      blockMessage: tl('notes.redis.cliMissing'),
+      notes: [tl('notes.auto.n1124')] });
   }
 
   // Method 1: redis-cli --rdb (Redis 6+)
@@ -82,12 +80,11 @@ export async function dumpRedisRdb(input: {
     return assertHonestOps({
       ok: true,
       apply_status: 'written',
-      notes: [`Redis RDB 已寫入 ${out}（--rdb）`],
+      notes: [tl('notes.auto.t0671', { v0: (out) })],
       path: out,
       bytes: fileBytes(out),
       method: 'rdb-flag' as const,
-      written: [out],
-    });
+      written: [out] });
   }
 
   // Method 2: BGSAVE + copy dump.rdb from dir
@@ -100,10 +97,9 @@ export async function dumpRedisRdb(input: {
       ok: false,
       apply_status: 'failed',
       notes: [
-        `--rdb 失敗: ${(rdb.stderr || rdb.stdout || '').slice(0, 200)}`,
-        `BGSAVE 失敗: ${(bgsave.stderr || bgsave.stdout || '').slice(0, 200)}`,
-      ],
-    });
+        tl('notes.auto.t0672', { v0: ((rdb.stderr || rdb.stdout || '').slice(0, 200)) }),
+        tl('notes.auto.t0673', { v0: ((bgsave.stderr || bgsave.stdout || '').slice(0, 200)) }),
+      ] });
   }
 
   const timeout = input.bgsaveTimeoutMs ?? 120_000;
@@ -173,24 +169,22 @@ export async function dumpRedisRdb(input: {
     return assertHonestOps({
       ok: true,
       apply_status: 'written',
-      notes: [`Redis RDB 已複製 ${src} → ${out}（BGSAVE）`],
+      notes: [tl('notes.auto.t0674', { v0: (src), v1: (out) })],
       path: out,
       bytes: fileBytes(out),
       method: 'bgsave-copy' as const,
-      written: [out],
-    });
+      written: [out] });
   }
 
   return assertHonestOps({
     ok: false,
     apply_status: 'failed',
     notes: [
-      `無法取得 Redis RDB（src=${src}）`,
+      tl('notes.auto.t0675', { v0: (src) }),
       (rdb.stderr || rdb.stdout || '').slice(0, 150),
       (cp.stdout || cp.stderr || '').slice(0, 150),
       last.slice(0, 100),
-    ].filter(Boolean),
-  });
+    ].filter(Boolean) });
 }
 
 function sleep(ms: number): Promise<void> {

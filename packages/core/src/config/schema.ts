@@ -2,7 +2,7 @@
  * Configuration load / validate for YSK Server control plane.
  */
 
-import { ErrorCodes, YskError, type SetupConfigDto } from '@ysk/shared';
+import { ErrorCodes, YskError, type SetupConfigDto, tl} from '@ysk/shared';
 
 export interface YskConfig {
   version: number;
@@ -31,15 +31,15 @@ const DEFAULTS = {
  */
 export function buildConfigFromSetup(input: Partial<SetupConfigDto> & { dataDir: string }): YskConfig {
   if (!input.dataDir || typeof input.dataDir !== 'string') {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, '請指定 dataDir', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.n1402'), { httpStatus: 400 });
   }
   const port = input.listenPort ?? DEFAULTS.listenPort;
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, `listenPort 無效：${port}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.t0001', { v0: (port) }), { httpStatus: 400 });
   }
   const host = input.listenHost ?? DEFAULTS.listenHost;
   if (!host || typeof host !== 'string') {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, '請指定 listenHost', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.n1403'), { httpStatus: 400 });
   }
   return {
     version: DEFAULTS.version,
@@ -59,16 +59,16 @@ export function buildConfigFromSetup(input: Partial<SetupConfigDto> & { dataDir:
  */
 export function parseConfig(raw: unknown): YskConfig {
   if (!raw || typeof raw !== 'object') {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, '設定檔格式錯誤（須為物件）', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.n1372'), { httpStatus: 400 });
   }
   const o = raw as Record<string, unknown>;
   if (o.product !== 'ysk-server') {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, '設定檔 product 必須是 ysk-server', {
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.n1371'), {
       httpStatus: 400,
     });
   }
   if (typeof o.dataDir !== 'string' || !o.dataDir) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, '設定檔缺少 dataDir', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.n1373'), { httpStatus: 400 });
   }
   return {
     version: typeof o.version === 'number' ? o.version : 1,

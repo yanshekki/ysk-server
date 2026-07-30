@@ -3,7 +3,7 @@
  */
 
 import type { ApprovalStatus, RiskTier } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { randomUUID } from 'node:crypto';
 import type { ApprovalRepository, ApprovalRow } from '../repositories/approval-repo.js';
 
@@ -37,8 +37,7 @@ export class ApprovalQueue {
       requestedBy: input.requestedBy,
       status: 'pending',
       payload: input.payload ?? {},
-      createdAt: new Date().toISOString(),
-    };
+      createdAt: new Date().toISOString() };
     if (this.repo) {
       this.repo.insert(toRow(record));
     } else {
@@ -77,7 +76,7 @@ export class ApprovalQueue {
     if (record.status !== 'approved') {
       throw new YskError(
         ErrorCodes.VALIDATION,
-        `無法從狀態 ${record.status} 標記為已執行`,
+        tl('notes.auto.t0012', { v0: (record.status) }),
         { httpStatus: 400 },
       );
     }
@@ -90,45 +89,40 @@ export class ApprovalQueue {
     if (!id) {
       throw new YskError(
         ErrorCodes.APPROVAL_REQUIRED,
-        `此操作需要人工審批：${action}`,
+        tl('notes.auto.t0013', { v0: (action) }),
         { httpStatus: 403, details: { action } },
       );
     }
     const record = this.get(id);
     if (!record) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到審批：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.approval.notFound', { id }), { httpStatus: 404 });
     }
     if (record.status === 'pending') {
-      throw new YskError(ErrorCodes.APPROVAL_PENDING, '審批仍在等待中', {
+      throw new YskError(ErrorCodes.APPROVAL_PENDING, tl('notes.auto.n0670'), {
         httpStatus: 403,
-        details: { id, action },
-      });
+        details: { id, action } });
     }
     if (record.status === 'rejected') {
-      throw new YskError(ErrorCodes.APPROVAL_REJECTED, '審批已被拒絕', {
+      throw new YskError(ErrorCodes.APPROVAL_REJECTED, tl('notes.auto.n0672'), {
         httpStatus: 403,
-        details: { id, action },
-      });
+        details: { id, action } });
     }
     if (record.status !== 'approved' && record.status !== 'executed') {
-      throw new YskError(ErrorCodes.APPROVAL_REQUIRED, `審批狀態無效：${record.status}`, {
-        httpStatus: 403,
-      });
+      throw new YskError(ErrorCodes.APPROVAL_REQUIRED, tl('notes.auto.t0014', { v0: (record.status) }), {
+        httpStatus: 403 });
     }
     if (record.action !== action) {
-      throw new YskError(ErrorCodes.VALIDATION, '審批動作與請求不符', {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0671'), {
         httpStatus: 400,
-        details: { expected: action, got: record.action },
-      });
+        details: { expected: action, got: record.action } });
     }
   }
 
   private decide(id: string, status: 'approved' | 'rejected', decidedBy: string): ApprovalRecord {
     const record = this.require(id);
     if (record.status !== 'pending') {
-      throw new YskError(ErrorCodes.VALIDATION, `審批已是 ${record.status}`, {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0015', { v0: (record.status) }), {
+        httpStatus: 400 });
     }
     record.status = status;
     record.decidedAt = new Date().toISOString();
@@ -140,7 +134,7 @@ export class ApprovalQueue {
   private require(id: string): ApprovalRecord {
     const record = this.get(id);
     if (!record) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到審批：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.approval.notFound', { id }), { httpStatus: 404 });
     }
     // return mutable copy bound for persist — re-fetch into memory map if needed
     if (!this.repo) {
@@ -169,8 +163,7 @@ function toRow(r: ApprovalRecord): ApprovalRow {
     payload: r.payload,
     created_at: r.createdAt,
     decided_at: r.decidedAt,
-    decided_by: r.decidedBy,
-  };
+    decided_by: r.decidedBy };
 }
 
 function fromRow(r: ApprovalRow): ApprovalRecord {
@@ -183,6 +176,5 @@ function fromRow(r: ApprovalRow): ApprovalRecord {
     payload: r.payload,
     createdAt: r.created_at,
     decidedAt: r.decided_at,
-    decidedBy: r.decided_by,
-  };
+    decidedBy: r.decided_by };
 }

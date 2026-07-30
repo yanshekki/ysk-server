@@ -3,7 +3,7 @@
  * Enqueues { cli: [...] } and/or { clusterSync: {...} } for edge bootstrap.
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import { getDbCluster, updateDbCluster } from './store.js';
 import type { DbCluster, DbClusterMember } from './types.js';
@@ -95,8 +95,8 @@ export function dispatchDbClusterFleet(input: {
       cluster,
       queued: [],
       notes: [
-        '無 access=fleet 且填了 fleetAgentId 的成員',
-        '例：--member 10.0.0.3=replica:fleet:SESSION_UUID',
+        tl('notes.auto.n1068'),
+        tl('notes.auto.n0553'),
       ],
     };
   }
@@ -125,8 +125,8 @@ export function dispatchDbClusterFleet(input: {
 
   if (!input.execute) {
     notes.push(
-      'dry-run fleet dispatch（未入佇列）',
-      `${queued.length} 個 agent · op=${op}`,
+      tl('notes.auto.n0262'),
+      tl('notes.auto.t0578', { v0: (queued.length), v1: (op) }),
     );
     for (const q of queued) {
       notes.push(
@@ -137,7 +137,7 @@ export function dispatchDbClusterFleet(input: {
   }
 
   if (!input.enqueue) {
-    throw new YskError(ErrorCodes.VALIDATION, 'execute 需要 enqueue 回調', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0280'), {
       httpStatus: 400,
     });
   }
@@ -151,7 +151,7 @@ export function dispatchDbClusterFleet(input: {
     } catch (e) {
       anyFail = true;
       notes.push(
-        `${q.host}: enqueue 失敗 ${e instanceof Error ? e.message : String(e)}`,
+        tl('notes.auto.t0579', { v0: (q.host), v1: (e instanceof Error ? e.message : String(e)) }),
       );
     }
   }
@@ -168,7 +168,7 @@ export function dispatchDbClusterFleet(input: {
     queued,
     notes: [
       ...notes,
-      'queued ≠ edge 已執行 — Agents 紀錄睇 exit/JSON',
+      tl('notes.auto.n0399'),
     ],
   };
 }

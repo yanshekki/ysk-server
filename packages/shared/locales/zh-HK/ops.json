@@ -1,0 +1,38 @@
+{
+  "blocked": {
+    "needExecute": "伺服器未開啟系統變更權限，無法在管理面板完成此操作",
+    "needExecuteShort": "未開啟系統變更權限",
+    "needExecuteBlocked": "已封鎖：未開啟系統變更",
+    "needRoot": "需系統管理員權限（root）",
+    "needExecuteRoot": "需要 YSK_EXECUTE=1 與 root",
+    "needExecuteYsk": "需要 YSK_EXECUTE=1",
+    "writeOutsideDataDir": "寫入被阻擋：未開啟系統變更權限，且路徑在管理資料目錄外",
+    "nginxReload": "無法重載 Nginx：需要系統變更權限",
+    "signal": "無法送出訊號：需要系統變更權限（YSK_EXECUTE）",
+    "signalNote": "需要 YSK_EXECUTE=1 才會真 kill",
+    "renice": "無法 renice：需要系統變更權限（YSK_EXECUTE）",
+    "install": "伺服器未開啟系統變更權限，無法在管理面板完成安裝",
+    "update": "伺服器未開啟系統變更權限，無法在管理面板完成更新",
+    "panel": "無法在管理面板完成此操作"
+  },
+  "honesty": {
+    "blockedNotOk": "誠實校正：blocked 時不可 ok=true",
+    "blockedNotApplied": "誠實校正：blocked 時不可 apply_status=applied",
+    "okFalseNotApplied": "誠實校正：ok=false 時不可 apply_status=applied"
+  },
+  "status": {
+    "applied": "狀態：applied",
+    "failed": "狀態：failed",
+    "written": "狀態：written",
+    "blocked": "狀態：blocked"
+  },
+  "notes": {
+    "writtenSettings": "已寫入設定",
+    "completed": "完成",
+    "partialSuccess": "操作未完全成功",
+    "notInstalled": "未安裝",
+    "running": "運行中",
+    "stopped": "已停止",
+    "unknown": "未知"
+  }
+}

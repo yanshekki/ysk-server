@@ -1,4 +1,5 @@
 import type { OpsApplyResultDto } from '@ysk/shared';
+import type { TFunction } from 'i18next';
 import { humanizeOperatorNote, sanitizeOperatorNotes } from '../../../shared/lib/operator-messages';
 
 export type ProjectOpsAction =
@@ -17,37 +18,49 @@ export type ProjectOpsAction =
   | 'resources'
   | 'wordpress';
 
-const ACTION_LABEL: Record<string, string> = {
-  deploy: '部署',
-  'deploy-php': '部署 PHP',
-  stop: '停止',
-  health: '健康檢查',
-  'publish-nginx': '發布 Nginx',
-  'publish-nginx-ssl': '發布 Nginx + SSL',
-  suspend: '暫停',
-  unsuspend: '恢復',
-  'git-deploy': 'Git 部署',
-  backup: '備份',
-  env: '儲存環境變數',
-  quota: '設定配額',
-  resources: '設定資源',
-  wordpress: 'WordPress',
+/** i18n keys for ops action labels (projects.* namespace) */
+const ACTION_LABEL_KEYS: Record<string, string> = {
+  deploy: 'projects.deploy',
+  'deploy-php': 'projects.deployPhp',
+  stop: 'projects.stop',
+  health: 'projects.health',
+  'publish-nginx': 'projects.publishNginx',
+  'publish-nginx-ssl': 'projects.publishNginxSsl',
+  suspend: 'projects.suspend',
+  unsuspend: 'projects.resume',
+  'git-deploy': 'projects.gitDeploy',
+  backup: 'projects.backup',
+  env: 'projects.saveEnv',
+  quota: 'projects.setQuota',
+  resources: 'projects.setResources',
+  wordpress: 'projects.downloadWp',
 };
 
-export function formatOpsMessage(action: string, result: OpsApplyResultDto): string {
-  const label = ACTION_LABEL[action] ?? action;
+export function actionLabel(action: string, t: TFunction): string {
+  const key = ACTION_LABEL_KEYS[action];
+  return key ? t(key) : action;
+}
+
+export function formatOpsMessage(
+  action: string,
+  result: OpsApplyResultDto,
+  t: TFunction,
+): string {
+  const label = actionLabel(action, t);
   const notes = sanitizeOperatorNotes(result.notes ?? []);
   const tail = notes.slice(-1)[0] ?? humanizeOperatorNote(result.notes?.slice(-1)[0] ?? '') ?? null;
   if (result.ok) {
     const url = result.url ? ` → ${result.url}` : '';
-    return tail ? `${label}完成：${tail}${url}` : `${label}完成${url}`;
+    return tail
+      ? t('projects.opsOkWithNote', { label, note: tail, url })
+      : t('projects.opsOk', { label, url });
   }
   const blocked =
     typeof (result as { blockMessage?: string }).blockMessage === 'string'
       ? (result as { blockMessage?: string }).blockMessage
       : undefined;
-  const reason = tail ?? blocked ?? '未知錯誤';
-  return `${label}失敗：${reason}`;
+  const reason = tail ?? blocked ?? t('common.unknownError');
+  return t('projects.opsFail', { label, reason });
 }
 
 export function parseEnvText(envText: string): Record<string, string> {
@@ -78,21 +91,32 @@ export function envToText(env?: Record<string, string>, runtime?: string): strin
     .join('\n') + (Object.keys(env).length ? '\n' : '');
 }
 
-export function formatRuntimeLabel(runtime?: string, version?: string | null): string {
-  const name =
-    runtime === 'php'
-      ? 'PHP'
-      : runtime === 'node'
-        ? 'Node.js'
-        : runtime === 'static'
-          ? '靜態'
-          : runtime === 'python'
-            ? 'Python'
-            : runtime === 'go'
-              ? 'Go'
-              : runtime === 'rust'
-                ? 'Rust'
-                : runtime ?? '—';
+export function formatRuntimeLabel(
+  runtime?: string,
+  version?: string | null,
+  t?: TFunction,
+): string {
+  const name = formatRuntimeNameForLabel(runtime, t);
   if (runtime === 'static' || !version) return name;
   return `${name} ${version}`;
+}
+
+function formatRuntimeNameForLabel(runtime?: string, t?: TFunction): string {
+  if (t) {
+    if (runtime === 'php') return t('projects.runtimeName.php');
+    if (runtime === 'node') return t('projects.runtimeName.node');
+    if (runtime === 'static') return t('projects.runtimeName.static');
+    if (runtime === 'python') return t('projects.runtimeName.python');
+    if (runtime === 'go') return t('projects.runtimeName.go');
+    if (runtime === 'rust') return t('projects.runtimeName.rust');
+    return runtime ?? t('common.noneSelectedShort');
+  }
+  // Fallback without t (English brand names + static key)
+  if (runtime === 'php') return 'PHP';
+  if (runtime === 'node') return 'Node.js';
+  if (runtime === 'static') return 'Static';
+  if (runtime === 'python') return 'Python';
+  if (runtime === 'go') return 'Go';
+  if (runtime === 'rust') return 'Rust';
+  return runtime ?? '—';
 }

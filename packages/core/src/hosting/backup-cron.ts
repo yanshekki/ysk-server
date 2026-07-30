@@ -9,11 +9,10 @@ import {
   writeFileSync,
   readFileSync,
   statSync,
-  unlinkSync,
-} from 'node:fs';
+  unlinkSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { YskDatabase } from '../db/database.js';
 import { planCronJob } from './extras.js';
@@ -27,18 +26,18 @@ export function resolveManagedBackupArchive(
   const id = String(projectId ?? '')
     .replace(/[^a-zA-Z0-9_-]/g, '')
     .slice(0, 80);
-  if (!id) return { ok: false, notes: ['無效的 projectId'] };
+  if (!id) return { ok: false, notes: [tl('notes.auto.n1115')] };
   const safeName = String(archiveName ?? '')
     .replace(/[/\\]/g, '')
     .replace(/\0/g, '');
   if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
-    return { ok: false, notes: ['無效的備份檔名'] };
+    return { ok: false, notes: [tl('notes.auto.n1116')] };
   }
   const root = resolve(join(dataDir, 'backups', id));
   const archivePath = resolve(join(root, safeName));
   const rootPrefix = root.endsWith(sep) ? root : root + sep;
   if (archivePath !== root && !archivePath.startsWith(rootPrefix)) {
-    return { ok: false, notes: ['路徑越界拒絕'] };
+    return { ok: false, notes: [tl('notes.auto.n1460')] };
   }
   return { ok: true, root, path: archivePath, name: safeName };
 }
@@ -78,8 +77,7 @@ export function listBackups(dataDir: string): BackupListItem[] {
           name,
           path,
           bytes: st.size,
-          mtime: st.mtime.toISOString(),
-        });
+          mtime: st.mtime.toISOString() });
       }
     } catch {
       /* skip */
@@ -94,8 +92,8 @@ export function isBackupSkipNote(note: string): boolean {
   return (
     /^skip\b/i.test(n) ||
     /^skipped\b/i.test(n) ||
-    n.startsWith('略過') ||
-    n.startsWith('跳過')
+    n.startsWith(tl('notes.auto.n1252')) ||
+    n.startsWith(tl('notes.auto.n1461'))
   );
 }
 
@@ -130,8 +128,7 @@ export async function backupAllProjects(input: {
       ok: true,
       empty: true,
       results: [],
-      notes: ['沒有專案可備份（0 個）— 不視為失敗'],
-    };
+      notes: [tl('notes.auto.n1050')] };
   }
 
   const results: Array<BackupResult & { projectId: string; skipped?: boolean }> = [];
@@ -141,9 +138,8 @@ export async function backupAllProjects(input: {
         projectId: p.id,
         ok: true, // skip is not a hard failure of the job
         skipped: true,
-        notes: [`略過：家目錄不存在 ${p.home_dir}`],
-        commandResults: [],
-      });
+        notes: [tl('notes.auto.t0325', { v0: (p.home_dir) })],
+        commandResults: [] });
       continue;
     }
     try {
@@ -152,16 +148,14 @@ export async function backupAllProjects(input: {
         dataDir: input.dataDir,
         projectId: p.id,
         homeDir: p.home_dir,
-        excludes: input.excludes,
-      });
+        excludes: input.excludes });
       results.push({ projectId: p.id, ...r });
     } catch (e) {
       results.push({
         projectId: p.id,
         ok: false,
         notes: [e instanceof Error ? e.message : String(e)],
-        commandResults: [],
-      });
+        commandResults: [] });
     }
   }
 
@@ -173,20 +167,62 @@ export async function backupAllProjects(input: {
     attempted.length === 0 ? true : attempted.every((r) => r.ok);
 
   const notes: string[] = [
-    `已備份 ${okCount}/${attempted.length} 個專案` +
+    tl('notes.auto.t0326', { v0: (okCount), v1: (attempted.length) }) +
       (skipped.length
-        ? `（略過 ${skipped.length} 個無 home）`
+        ? tl('notes.auto.t0327', { v0: (skipped.length) })
         : ''),
   ];
   if (attempted.length === 0) {
-    notes.push('全部略過（沒有可備份的 home）— 不視為失敗');
+    notes.push(tl('notes.auto.n0590'));
   } else if (ok) {
-    notes.push('全部成功');
+    notes.push(tl('notes.auto.n0589'));
   } else {
-    notes.push('部分或全部失敗 — 請查看 results');
+    notes.push(tl('notes.auto.n1492'));
   }
 
   return { ok, results, notes };
+}
+
+/**
+ * Re-localize a persisted last_backup_run payload under the current request locale.
+ * Historical runs stored free-text notes (often zh-HK); recompute summary notes from structure.
+ */
+export function localizeLastBackupRun(
+  last: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | null {
+  if (!last || typeof last !== 'object') return last ?? null;
+  const results = Array.isArray(last.results)
+    ? (last.results as Array<{ ok: boolean; notes?: string[]; skipped?: boolean }>)
+    : [];
+  const asSkip = (r: { ok: boolean; notes?: string[]; skipped?: boolean }) =>
+    isBackupSkippedResult({ ok: r.ok, notes: r.notes ?? [], skipped: r.skipped });
+  const skipped = results.filter(asSkip);
+  const attempted = results.filter((r) => !asSkip(r));
+  const okCount = attempted.filter((r) => r.ok).length;
+
+  const notes: string[] = [
+    tl('notes.auto.t0326', { v0: okCount, v1: attempted.length }) +
+      (skipped.length ? tl('notes.auto.t0327', { v0: skipped.length }) : ''),
+  ];
+  if (last.ok === true) {
+    notes.push(
+      attempted.length === 0 ? tl('notes.auto.n0590') : tl('notes.auto.n0589'),
+    );
+  } else {
+    notes.push(tl('notes.auto.n1492'));
+  }
+  if (last.sideOk === false) {
+    notes.push(tl('notes.auto.n1482'));
+  } else if (
+    last.sideOk === true &&
+    Array.isArray(last.sideResults) &&
+    (last.sideResults as unknown[]).length > 0
+  ) {
+    notes.push(tl('notes.auto.n1486'));
+  }
+
+  // Per-result notes: pass through (may be free-text errors); skip detection uses skipped flag
+  return { ...last, notes };
 }
 
 /**
@@ -202,9 +238,8 @@ export async function backupProject(input: {
   excludes?: string[];
 }): Promise<BackupResult> {
   if (!existsSync(input.homeDir)) {
-    throw new YskError(ErrorCodes.NOT_FOUND, `專案目錄不存在：${input.homeDir}`, {
-      httpStatus: 404,
-    });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0328', { v0: (input.homeDir) }), {
+      httpStatus: 404 });
   }
   const destDir = join(input.dataDir, 'backups', input.projectId);
   mkdirSync(destDir, { recursive: true });
@@ -229,17 +264,15 @@ export async function backupProject(input: {
   if (r.exitCode !== 0) {
     // fallback: tar with absolute paths
     const r2 = await input.host.runCommand(['tar', '-czf', archivePath, ...sources], {
-      timeoutMs: tarTimeoutMs,
-    });
+      timeoutMs: tarTimeoutMs });
     if (r2.exitCode !== 0) {
       return {
         ok: false,
-        notes: [`tar 失敗：${r2.stderr || r.stderr}`],
+        notes: [tl('notes.auto.t0329', { v0: (r2.stderr || r.stderr) })],
         commandResults: [
           { argv: ['tar', '...'], exitCode: r.exitCode, stderr: r.stderr },
           { argv: ['tar', '...'], exitCode: r2.exitCode, stderr: r2.stderr },
-        ],
-      };
+        ] };
     }
   }
   let bytes = 0;
@@ -264,9 +297,8 @@ export async function backupProject(input: {
     ok: true,
     archivePath,
     bytes,
-    notes: [`已寫入備份 ${archivePath}`, '保留策略：最近 10 份'],
-    commandResults: [{ argv: ['tar', '-czf', archivePath], exitCode: 0, stderr: '' }],
-  };
+    notes: [tl('notes.auto.t0330', { v0: (archivePath) }), tl('notes.auto.n0556')],
+    commandResults: [{ argv: ['tar', '-czf', archivePath], exitCode: 0, stderr: '' }] };
 }
 
 /**
@@ -295,13 +327,12 @@ export async function restoreProjectBackup(input: {
     input.archiveName,
   );
   if (!resolved.ok) {
-    throw new YskError(ErrorCodes.VALIDATION, resolved.notes[0] ?? '無效備份', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, resolved.notes[0] ?? tl('notes.auto.n1111'), {
+      httpStatus: 400 });
   }
   const { path: archivePath, name: safeName } = resolved;
   if (!existsSync(archivePath)) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到備份檔', { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.backup.fileNotFound'), { httpStatus: 404 });
   }
   const mode = input.mode ?? 'full';
 
@@ -313,12 +344,11 @@ export async function restoreProjectBackup(input: {
       archivePath,
       notes: [
         r.exitCode === 0
-          ? `dry-run：檔案 ${listing.length}+ 個（顯示前 ${listing.length}）`
-          : `無法列出: ${r.stderr}`,
+          ? tl('notes.auto.t0331', { v0: (listing.length), v1: (listing.length) })
+          : tl('notes.auto.t0332', { v0: (r.stderr) }),
         ...listing.slice(0, 12).map((l) => `  ${l}`),
       ],
-      commandResults: [{ argv: ['tar', '-tzf', archivePath], exitCode: r.exitCode, stderr: r.stderr }],
-    };
+      commandResults: [{ argv: ['tar', '-tzf', archivePath], exitCode: r.exitCode, stderr: r.stderr }] };
   }
 
   if (!existsSync(input.homeDir)) {
@@ -333,8 +363,8 @@ export async function restoreProjectBackup(input: {
     );
     const notes =
       r2.exitCode === 0
-        ? [`已選擇性還原 (web) 到 ${input.homeDir}`]
-        : [`web 還原失敗: ${r2.stderr}`];
+        ? [tl('notes.auto.t0333', { v0: (input.homeDir) })]
+        : [tl('notes.auto.t0334', { v0: (r2.stderr) })];
     if (r2.exitCode === 0) {
       notes.push(...(await chownAfterRestore(input)));
     }
@@ -344,14 +374,12 @@ export async function restoreProjectBackup(input: {
       notes,
       commandResults: [
         { argv: ['tar', '-xzf', archivePath, '-C', input.homeDir], exitCode: r2.exitCode, stderr: r2.stderr },
-      ],
-    };
+      ] };
   }
 
   // full: Archives are created with -C / relative paths; extract the same way
   const r = await input.host.runCommand(['tar', '-xzf', archivePath, '-C', '/'], {
-    timeoutMs: 180_000,
-  });
+    timeoutMs: 180_000 });
   if (r.exitCode !== 0) {
     const r2 = await input.host.runCommand(
       ['tar', '-xzf', archivePath, '-C', input.homeDir],
@@ -360,21 +388,19 @@ export async function restoreProjectBackup(input: {
     if (r2.exitCode !== 0) {
       return {
         ok: false,
-        notes: [`還原失敗: ${r2.stderr || r.stderr}`],
+        notes: [tl('notes.auto.t0335', { v0: (r2.stderr || r.stderr) })],
         commandResults: [
           { argv: ['tar', '-xzf', archivePath], exitCode: r.exitCode, stderr: r.stderr },
           { argv: ['tar', '-xzf', archivePath], exitCode: r2.exitCode, stderr: r2.stderr },
-        ],
-      };
+        ] };
     }
   }
-  const notes = [`已從 ${safeName} 完整還原到專案目錄`, ...(await chownAfterRestore(input))];
+  const notes = [tl('notes.auto.t0336', { v0: (safeName) }), ...(await chownAfterRestore(input))];
   return {
     ok: true,
     archivePath,
     notes,
-    commandResults: [{ argv: ['tar', '-xzf', archivePath], exitCode: 0, stderr: '' }],
-  };
+    commandResults: [{ argv: ['tar', '-xzf', archivePath], exitCode: 0, stderr: '' }] };
 }
 
 async function chownAfterRestore(input: {
@@ -386,7 +412,7 @@ async function chownAfterRestore(input: {
   const u = input.linuxUser?.trim();
   if (!u) return [];
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
-    return ['還原後未 chown（需 root + YSK_EXECUTE）'];
+    return [tl('notes.auto.n1488')];
   }
   const g = (input.linuxGroup || u).trim();
   const r = await input.host.runCommand(
@@ -398,8 +424,8 @@ async function chownAfterRestore(input: {
     { timeoutMs: 120_000 },
   );
   return r.exitCode === 0
-    ? [`已 chown ${u}:${g} → ${input.homeDir}`]
-    : [`chown 失敗：${(r.stderr || r.stdout).slice(0, 120)}`];
+    ? [tl('notes.auto.t0337', { v0: (u), v1: (g), v2: (input.homeDir) })]
+    : [tl('notes.tpl.chownFailed', { detail: (r.stderr || r.stdout).slice(0, 120) })];
 }
 
 /** Delete one managed backup archive (path constrained). */
@@ -411,11 +437,11 @@ export function deleteProjectBackup(
   const resolved = resolveManagedBackupArchive(dataDir, projectId, archiveName);
   if (!resolved.ok) return { ok: false, notes: resolved.notes };
   if (!existsSync(resolved.path)) {
-    return { ok: false, notes: ['找不到備份檔'] };
+    return { ok: false, notes: [tl('notes.backup.fileNotFound')] };
   }
   try {
     unlinkSync(resolved.path);
-    return { ok: true, notes: [`已刪除 ${resolved.name}`] };
+    return { ok: true, notes: [tl('notes.tpl.deleted', { name: resolved.name })] };
   } catch (e) {
     return { ok: false, notes: [e instanceof Error ? e.message : String(e)] };
   }
@@ -430,7 +456,7 @@ export function resolveBackupDownloadPath(
   const resolved = resolveManagedBackupArchive(dataDir, projectId, archiveName);
   if (!resolved.ok) return { ok: false, notes: resolved.notes };
   if (!existsSync(resolved.path)) {
-    return { ok: false, notes: ['找不到備份檔'] };
+    return { ok: false, notes: [tl('notes.backup.fileNotFound')] };
   }
   return { ok: true, path: resolved.path };
 }
@@ -500,8 +526,7 @@ export class CronJobService {
     planCronJob({
       user,
       schedule: input.schedule,
-      command,
-    });
+      command });
     const now = new Date().toISOString();
     const row: CronJobRecord = {
       id: randomUUID(),
@@ -511,8 +536,7 @@ export class CronJobService {
       command,
       enabled: true,
       created_at: now,
-      updated_at: now,
-    };
+      updated_at: now };
     this.db.snapshot.cron_jobs.unshift(row as unknown as Record<string, unknown>);
     this.db.persist();
     this.writeManagedCrontab();
@@ -556,19 +580,17 @@ export class CronJobService {
   }> {
     const row = cronRows(this.db).find((j) => j.id === id);
     if (!row) {
-      return { ok: false, notes: ['找不到 cron 工作'] };
+      return { ok: false, notes: [tl('notes.auto.n0019')] };
     }
     if (!this.host.executeEnabled()) {
       return {
         ok: false,
         blocked: true,
         requiresExecute: true,
-        notes: ['無法立即執行：伺服器未開啟系統變更權限'],
-      };
+        notes: [tl('notes.auto.n1178')] };
     }
     const r = await this.host.runCommand(['bash', '-lc', row.command], {
-      timeoutMs: 120_000,
-    });
+      timeoutMs: 120_000 });
     void actor;
     return {
       ok: r.exitCode === 0,
@@ -576,11 +598,10 @@ export class CronJobService {
       stdout: (r.stdout || '').slice(0, 4000),
       stderr: (r.stderr || '').slice(0, 4000),
       notes: [
-        `執行: ${row.command}`,
+        tl('notes.auto.t0338', { v0: (row.command) }),
         `exit=${r.exitCode}`,
-        r.exitCode === 0 ? '成功' : '失敗',
-      ],
-    };
+        r.exitCode === 0 ? tl('notes.tpl.success') : tl('notes.failed'),
+      ] };
   }
 
   /** Ensure a daily full-backup job exists (idempotent by command marker). */
@@ -611,8 +632,7 @@ export class CronJobService {
       schedule,
       command: this.backupAllCliCommand(marker),
       actor: 'system',
-      skipRunuserWrap: true,
-    });
+      skipRunuserWrap: true });
   }
 
   /** Absolute-ish CLI for scheduled full backup (must match apps/server cli). */
@@ -651,7 +671,7 @@ export class CronJobService {
     hostInstalled?: boolean;
   }> {
     const path = this.writeManagedCrontab();
-    const notes = [`管理 crontab 檔：${path}`];
+    const notes = [tl('notes.auto.t0339', { v0: (path) })];
     if (!this.host.executeEnabled()) {
       return {
         ok: false,
@@ -659,12 +679,11 @@ export class CronJobService {
         requiresExecute: true,
         blocked: true,
         hostInstalled: false,
-        notes: [...notes, '無法安裝到系統：伺服器未開啟系統變更權限（僅寫入管理檔）'],
-      };
+        notes: [...notes, tl('notes.auto.n1165')] };
     }
     const r = await this.host.runCommand(['crontab', path], { timeoutMs: 10_000 });
     const ok = r.exitCode === 0;
-    notes.push(ok ? '已安裝到目前程序用戶的系統 crontab' : `crontab 失敗: ${r.stderr}`);
+    notes.push(ok ? tl('notes.auto.n0759') : tl('notes.auto.t0340', { v0: (r.stderr) }));
     for (const j of this.db.snapshot.cron_jobs) {
       j.last_install = { ok, at: new Date().toISOString(), actor };
     }
@@ -725,8 +744,7 @@ export class CronJobService {
       hostCrontabPreview,
       executeEnabled: this.host.executeEnabled(),
       lastInstallOk: last?.ok ?? null,
-      lastInstallAt: last?.at ?? null,
-    };
+      lastInstallAt: last?.at ?? null };
   }
 }
 

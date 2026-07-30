@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * SQL dump export/import for MySQL/MariaDB/Postgres — honest fail-closed.
  */
@@ -30,14 +31,13 @@ export async function dumpSqlDatabase(input: {
   outputPath?: string;
 }): Promise<DumpResult> {
   const db = input.dbName.replace(/[^a-zA-Z0-9_]/g, '');
-  if (!db) return { ok: false, notes: ['無效資料庫名'], requiresExecute: false };
+  if (!db) return { ok: false, notes: [tl('notes.auto.n1119')], requiresExecute: false };
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      notes: ['無法 dump：伺服器未開啟系統變更權限'],
-    };
+      notes: [tl('notes.auto.n1125')] };
   }
   let out: string;
   if (input.outputPath) {
@@ -66,9 +66,8 @@ export async function dumpSqlDatabase(input: {
       path: r.exitCode === 0 ? out : undefined,
       requiresExecute: false,
       notes: [
-        r.exitCode === 0 ? `已匯出 ${out}` : `pg_dump 失敗: ${r.stderr || r.stdout}`,
-      ],
-    };
+        r.exitCode === 0 ? tl('notes.tpl.exported', { path: out }) : tl('notes.auto.t0341', { v0: (r.stderr || r.stdout) }),
+      ] };
   }
 
   const client = input.engine === 'mariadb' ? 'mariadb-dump' : 'mysqldump';
@@ -89,8 +88,7 @@ export async function dumpSqlDatabase(input: {
     ok,
     path: ok ? out : undefined,
     requiresExecute: false,
-    notes: [ok ? `已匯出 ${out}` : `dump 失敗: ${r.stderr || r.stdout || 'empty file'}`],
-  };
+    notes: [ok ? tl('notes.tpl.exported', { path: out }) : tl('notes.auto.t0342', { v0: (r.stderr || r.stdout || 'empty file') })] };
 }
 
 export async function importSqlDatabase(input: {
@@ -106,11 +104,10 @@ export async function importSqlDatabase(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      notes: ['無法 import：伺服器未開啟系統變更權限'],
-    };
+      notes: [tl('notes.auto.n1127')] };
   }
   if (!existsSync(input.sqlPath)) {
-    return { ok: false, notes: ['找不到 SQL 檔'], requiresExecute: false };
+    return { ok: false, notes: [tl('notes.auto.n0848')], requiresExecute: false };
   }
   const db = input.dbName.replace(/[^a-zA-Z0-9_]/g, '');
   if (input.engine === 'postgres') {
@@ -127,8 +124,7 @@ export async function importSqlDatabase(input: {
     return {
       ok: r.exitCode === 0,
       requiresExecute: false,
-      notes: [r.exitCode === 0 ? '已匯入' : `psql 失敗: ${r.stderr || r.stdout}`],
-    };
+      notes: [r.exitCode === 0 ? tl('notes.auto.n0020') : tl('notes.auto.t0343', { v0: (r.stderr || r.stdout) })] };
   }
   const client = input.engine === 'mariadb' ? 'mariadb' : 'mysql';
   const user = input.username || 'root';
@@ -144,8 +140,7 @@ export async function importSqlDatabase(input: {
   return {
     ok: r.exitCode === 0,
     requiresExecute: false,
-    notes: [r.exitCode === 0 ? '已匯入' : `import 失敗: ${r.stderr || r.stdout}`],
-  };
+    notes: [r.exitCode === 0 ? tl('notes.auto.n0020') : tl('notes.auto.t0344', { v0: (r.stderr || r.stdout) })] };
 }
 
 function statSafe(p: string): number {
@@ -179,8 +174,7 @@ export function listSqlDumps(
           name,
           path,
           bytes: st.size,
-          mtime: st.mtime.toISOString(),
-        });
+          mtime: st.mtime.toISOString() });
       } catch {
         /* skip */
       }

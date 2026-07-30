@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * SSH public keys for SFTP — managed copy under dataDir + optional project home .ssh
  * When projectId/homeDir/linuxUser provided, keys land in project isolation home.
@@ -93,7 +94,7 @@ export function addSftpKey(
   const username = input.username.trim().toLowerCase();
   const publicKey = input.publicKey.trim();
   if (!username || !publicKey.startsWith('ssh-')) {
-    return { ok: false, notes: ['需要 username 與 ssh- 開頭公鑰'], written: [] };
+    return { ok: false, notes: [tl('notes.auto.n1575')], written: [] };
   }
 
   // Resolve project binding
@@ -130,7 +131,7 @@ export function addSftpKey(
 
   const managedAuth = rewriteManagedAuthorizedKeys(dataDir, loginName, all);
   written.push(managedAuth);
-  notes.push(`管理檔 ${managedAuth}`);
+  notes.push(tl('notes.auto.t0414', { v0: (managedAuth) }));
 
   if (homeDir) {
     const projAuth = rewriteProjectAuthorizedKeys(
@@ -139,15 +140,15 @@ export function addSftpKey(
       projectId,
     );
     written.push(projAuth);
-    notes.push(`專案 home 公鑰：${projAuth}`);
+    notes.push(tl('notes.auto.t0415', { v0: (projAuth) }));
   } else {
-    notes.push('未綁專案 home — 僅寫入控制面 ftps/ssh；需 sshd Match 才生效');
+    notes.push(tl('notes.auto.n0972'));
   }
 
   notes.push(
     homeDir && linuxUser
-      ? `登入目標用戶 ${linuxUser}（專案隔離 home）；請對 .ssh 執行 chown（API 會嘗試）`
-      : '需系統 sshd Match/User 設定才會真正生效',
+      ? tl('notes.auto.t0416', { v0: (linuxUser) })
+      : tl('notes.auto.n1554'),
   );
 
   void host; // chown via chownSftpProjectKeys after add (async)
@@ -167,7 +168,7 @@ export async function chownSftpProjectKeys(
   linuxUser: string,
 ): Promise<string[]> {
   if (!host.executeEnabled() || !host.isRoot()) {
-    return ['SFTP .ssh chown 需 root + YSK_EXECUTE'];
+    return [tl('notes.auto.n0180')];
   }
   const sshDir = join(homeDir, '.ssh');
   if (!existsSync(sshDir)) return [];
@@ -180,8 +181,8 @@ export async function chownSftpProjectKeys(
     { timeoutMs: 15_000 },
   );
   return r.exitCode === 0
-    ? [`已 chown ${linuxUser} → ${sshDir}`]
-    : [`chown .ssh 失敗：${(r.stderr || r.stdout).slice(0, 120)}`];
+    ? [tl('notes.auto.t0417', { v0: (linuxUser), v1: (sshDir) })]
+    : [tl('notes.auto.t0418', { v0: ((r.stderr || r.stdout).slice(0, 120)) })];
 }
 
 export function removeSftpKey(
@@ -191,7 +192,7 @@ export function removeSftpKey(
 ): { ok: boolean; notes: string[] } {
   const all = listSftpKeys(db);
   const found = all.find((k) => k.id === id);
-  if (!found) return { ok: false, notes: ['找不到 key'] };
+  if (!found) return { ok: false, notes: [tl('notes.auto.n0852')] };
   const next = all.filter((k) => k.id !== id);
   db.snapshot.settings[KEY] = JSON.stringify(next);
   db.persist();
@@ -203,7 +204,7 @@ export function removeSftpKey(
       found.projectId,
     );
   }
-  return { ok: true, notes: [`已刪除 key · 重寫 authorized_keys`] };
+  return { ok: true, notes: [tl('notes.auto.t0419')] };
 }
 
 export function readSftpAuthorizedKeysFile(dataDir: string, username: string): string {

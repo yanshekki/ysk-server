@@ -1,0 +1,60 @@
+/* —— SplitPanel (equal-height master–detail) —— */
+.split-panel {
+  display: grid;
+  grid-template-columns: var(--split-ratio, 1fr 1.1fr);
+  gap: var(--space-4);
+  align-items: stretch;
+  min-height: var(--split-min-h, 24rem);
+}
+
+@media (max-width: 900px) {
+  .split-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.split-panel__pane {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--split-min-h, 24rem);
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 !important; /* override .card padding — head/body manage spacing */
+}
+
+.split-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  min-height: 3rem;
+  padding: 0.75rem 1.15rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.split-panel__title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.split-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.split-panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface TabItem {
   id: string;
@@ -17,6 +18,7 @@ export interface TabsProps {
 }
 
 export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: TabsProps) {
+  const { t } = useTranslation();
   const listRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -74,7 +76,7 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
           <button
             type="button"
             className="tabs__arrow tabs__arrow--left"
-            aria-label="向左捲動分頁"
+            aria-label={t('tabs.scrollLeft')}
             onClick={() => scrollBy(-1)}
           >
             ‹
@@ -106,7 +108,7 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
           <button
             type="button"
             className="tabs__arrow tabs__arrow--right"
-            aria-label="向右捲動分頁"
+            aria-label={t('tabs.scrollRight')}
             onClick={() => scrollBy(1)}
           >
             ›

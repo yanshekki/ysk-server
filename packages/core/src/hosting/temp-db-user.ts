@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Temporary read-only DB users + remote host registry (control plane).
  */
@@ -97,13 +98,12 @@ export async function createTempReadonlyUser(input: {
     createdAt: new Date().toISOString(),
     createdBy: input.actor,
     apply_status: 'written',
-    notes: [],
-  };
+    notes: [] };
 
   if (input.apply) {
     if (!input.host.executeEnabled() || !input.host.isRoot()) {
       row.apply_status = 'blocked';
-      notes.push('無法在系統建立帳號：需要 YSK_EXECUTE + root；已登記控制面（written/blocked）');
+      notes.push(tl('notes.auto.n1157'));
     } else if (input.engine === 'postgres') {
       const sql = `DO $$ BEGIN CREATE ROLE ${username} LOGIN PASSWORD '${password}'; EXCEPTION WHEN duplicate_object THEN NULL; END $$; GRANT CONNECT ON DATABASE ${input.database} TO ${username}; GRANT USAGE ON SCHEMA public TO ${username}; GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${username};`;
       const r = await input.host.runCommand(
@@ -112,10 +112,10 @@ export async function createTempReadonlyUser(input: {
       );
       if (r.exitCode === 0) {
         row.apply_status = 'applied';
-        notes.push('已於 PostgreSQL 建立只讀角色');
+        notes.push(tl('notes.auto.n0783'));
       } else {
         row.apply_status = 'blocked';
-        notes.push(`PostgreSQL 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+        notes.push(tl('notes.auto.t0261', { v0: ((r.stderr || r.stdout).slice(0, 200)) }));
       }
     } else {
       const sql = [
@@ -133,14 +133,14 @@ export async function createTempReadonlyUser(input: {
       );
       if (r.exitCode === 0) {
         row.apply_status = 'applied';
-        notes.push('已於 MySQL/MariaDB 建立只讀用戶');
+        notes.push(tl('notes.auto.n0782'));
       } else {
         row.apply_status = 'blocked';
-        notes.push(`MySQL 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+        notes.push(tl('notes.auto.t0262', { v0: ((r.stderr || r.stdout).slice(0, 200)) }));
       }
     }
   } else {
-    notes.push('僅控制面登記（apply:false）；密碼只回傳一次');
+    notes.push(tl('notes.auto.n0570'));
   }
 
   row.notes = notes;
@@ -151,19 +151,17 @@ export async function createTempReadonlyUser(input: {
     ok: row.apply_status !== 'blocked' || !input.apply,
     user: row,
     password,
-    notes,
-  };
+    notes };
 }
 
 export function revokeTempDbUser(db: JsonStore, id: string): { ok: boolean; notes: string[] } {
   const all = loadTemp(db);
   const next = all.filter((u) => u.id !== id);
-  if (next.length === all.length) return { ok: false, notes: ['找不到'] };
+  if (next.length === all.length) return { ok: false, notes: [tl('notes.notFound')] };
   saveTemp(db, next);
   return {
     ok: true,
-    notes: ['已從控制面移除；系統帳號需手動 DROP USER（誠實：未自動 drop）'],
-  };
+    notes: [tl('notes.auto.n0776')] };
 }
 
 /**
@@ -199,7 +197,7 @@ export async function expireTempDbUsers(input: {
     if (input.dropSystem && u.apply_status === 'applied') {
       if (!input.host.executeEnabled() || !input.host.isRoot()) {
         blocked = true;
-        notes.push(`${u.username}: 無法 DROP — 需 EXECUTE+root（已標記 expired）`);
+        notes.push(tl('notes.auto.t0263', { v0: (u.username) }));
         next.push(row);
         continue;
       }
@@ -219,7 +217,7 @@ export async function expireTempDbUsers(input: {
           // remove from store after drop
           continue;
         }
-        notes.push(`${u.username}: DROP 失敗 ${(r.stderr || r.stdout).slice(0, 120)}`);
+        notes.push(tl('notes.auto.t0264', { v0: (u.username), v1: ((r.stderr || r.stdout).slice(0, 120)) }));
         next.push(row);
       } else {
         const sql = `DROP USER IF EXISTS '${u.username}'@'localhost'; FLUSH PRIVILEGES;`;
@@ -236,12 +234,12 @@ export async function expireTempDbUsers(input: {
           notes.push(`${u.username}: MySQL user dropped`);
           continue;
         }
-        notes.push(`${u.username}: DROP 失敗 ${(r.stderr || r.stdout).slice(0, 120)}`);
+        notes.push(tl('notes.auto.t0265', { v0: (u.username), v1: ((r.stderr || r.stdout).slice(0, 120)) }));
         next.push(row);
       }
     } else {
       next.push(row);
-      notes.push(`${u.username}: 已標記 expired（未 DROP 系統帳號）`);
+      notes.push(tl('notes.auto.t0266', { v0: (u.username) }));
     }
   }
 
@@ -250,16 +248,14 @@ export async function expireTempDbUsers(input: {
     ok: !blocked || dropped > 0 || expired === 0,
     expired,
     dropped,
-    notes: notes.length ? notes : ['無過期臨時用戶'],
-    blocked: blocked || undefined,
-  };
+    notes: notes.length ? notes : [tl('notes.auto.n1199')],
+    blocked: blocked || undefined };
 }
 
 export function listRemoteDbHosts(db: JsonStore): Array<Omit<RemoteDbHost, 'password'>> {
   return loadRemote(db).map(({ password: _p, ...rest }) => ({
     ...rest,
-    hasPassword: Boolean(_p) || rest.hasPassword,
-  }));
+    hasPassword: Boolean(_p) || rest.hasPassword }));
 }
 
 export function upsertRemoteDbHost(
@@ -286,8 +282,7 @@ export function upsertRemoteDbHost(
     username: input.username,
     hasPassword: Boolean(input.password) || Boolean(existing?.password),
     password: input.password || existing?.password,
-    createdAt: existing?.createdAt ?? new Date().toISOString(),
-  };
+    createdAt: existing?.createdAt ?? new Date().toISOString() };
   const next = [row, ...all.filter((h) => h.id !== id)];
   saveRemote(db, next);
   const { password: _p, ...pub } = row;

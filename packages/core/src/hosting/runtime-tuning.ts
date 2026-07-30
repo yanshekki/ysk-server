@@ -1,6 +1,10 @@
+import { tl } from '@ysk/shared';
 /**
  * Per-runtime tuning catalogs + JSON persistence for Node/Python/Go/Rust.
  * Applied as Environment= on systemd unit / deploy env.
+ *
+ * Catalog titles/hints must be i18n *keys* (or plain English labels), never
+ * tl() at module load — that freezes the default locale (zh-HK).
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -12,18 +16,22 @@ export type TuningFieldType = 'string' | 'int' | 'bool' | 'select';
 
 export interface TuningField {
   key: string;
+  /** Display label or i18n key (notes.*) */
   label: string;
   type: TuningFieldType;
   default: string | number | boolean;
+  /** Hint text or i18n key (notes.*) */
   hint?: string;
   /** maps to env var name (default key) */
   env?: string;
+  /** option labels may be i18n keys */
   options?: Array<{ value: string; label: string }>;
   group: string;
 }
 
 export interface TuningGroup {
   id: string;
+  /** Title text or i18n key (notes.*) */
   title: string;
   fields: TuningField[];
 }
@@ -37,18 +45,28 @@ export interface RuntimeTuningSettings {
   updatedAt?: string;
 }
 
+function isI18nKey(s?: string | null): boolean {
+  if (!s) return false;
+  return /^(notes|ops|errors|runtime|common)\./.test(s);
+}
+
+function resolveText(s: string): string {
+  return isI18nKey(s) ? tl(s) : s;
+}
+
+/** Static catalogs — keys only for localizable strings. */
 const CATALOGS: Record<TuningKind, TuningGroup[]> = {
   node: [
     {
       id: 'memory',
-      title: '記憶體與 V8',
+      title: 'notes.auto.n1360',
       fields: [
         {
           key: 'max_old_space_size',
           label: 'max-old-space-size (MB)',
           type: 'int',
           default: 512,
-          hint: '寫入 NODE_OPTIONS=--max-old-space-size=N',
+          hint: 'notes.auto.n0673',
           env: 'NODE_OPTIONS_MAX_OLD_SPACE',
           group: 'memory',
         },
@@ -63,7 +81,7 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
     },
     {
       id: 'runtime',
-      title: '執行',
+      title: 'notes.auto.n0634',
       fields: [
         {
           key: 'node_env',
@@ -91,7 +109,7 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
   python: [
     {
       id: 'py',
-      title: 'Python 行為',
+      title: 'notes.auto.n0165',
       fields: [
         {
           key: 'pythonoptimize',
@@ -99,7 +117,7 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
           type: 'select',
           default: '0',
           options: [
-            { value: '0', label: '0（關閉）' },
+            { value: '0', label: 'notes.auto.n0062' },
             { value: '1', label: '1' },
             { value: '2', label: '2' },
           ],
@@ -116,10 +134,10 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
         },
         {
           key: 'uvicorn_workers',
-          label: '預設 uvicorn workers',
+          label: 'notes.auto.n1598',
           type: 'int',
           default: 2,
-          hint: '部署時可覆寫',
+          hint: 'notes.auto.n1499',
           group: 'py',
         },
       ],
@@ -128,14 +146,14 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
   go: [
     {
       id: 'go',
-      title: 'Go 執行',
+      title: 'notes.auto.n0112',
       fields: [
         {
           key: 'gomaxprocs',
           label: 'GOMAXPROCS',
           type: 'int',
           default: 0,
-          hint: '0 = 使用全部 CPU',
+          hint: 'notes.auto.n0061',
           env: 'GOMAXPROCS',
           group: 'go',
         },
@@ -152,7 +170,7 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
           label: 'GOMEMLIMIT',
           type: 'string',
           default: '',
-          hint: '例如 512MiB；留空不設',
+          hint: 'notes.auto.n0551',
           env: 'GOMEMLIMIT',
           group: 'go',
         },
@@ -162,7 +180,7 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
   rust: [
     {
       id: 'rust',
-      title: 'Rust 建置／執行',
+      title: 'notes.auto.n0178',
       fields: [
         {
           key: 'rust_log',
@@ -187,7 +205,7 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
         },
         {
           key: 'rustflags',
-          label: 'RUSTFLAGS（建置）',
+          label: 'notes.auto.n0168',
           type: 'string',
           default: '',
           env: 'RUSTFLAGS',
@@ -198,10 +216,20 @@ const CATALOGS: Record<TuningKind, TuningGroup[]> = {
   ],
 };
 
+/** Catalog under current request locale. */
 export function listTuningCatalog(kind: TuningKind): TuningGroup[] {
   return (CATALOGS[kind] ?? []).map((g) => ({
     ...g,
-    fields: g.fields.map((f) => ({ ...f })),
+    title: resolveText(g.title),
+    fields: g.fields.map((f) => ({
+      ...f,
+      label: resolveText(f.label),
+      hint: f.hint != null ? resolveText(f.hint) : f.hint,
+      options: f.options?.map((o) => ({
+        ...o,
+        label: resolveText(o.label),
+      })),
+    })),
   }));
 }
 

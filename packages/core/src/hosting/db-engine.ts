@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * MySQL vs MariaDB engine probe / install / start — panel only.
  */
@@ -109,11 +110,11 @@ export async function probeDbEngine(
   if (!executeEnabled) {
     blockMessage = panelBlockMessage('no_execute');
   } else if (!serverInstalled) {
-    blockMessage = `${title} 伺服器尚未安裝`;
+    blockMessage = tl('notes.auto.t0245', { v0: (title) });
   } else if (active !== 'active') {
-    blockMessage = `${title} 服務未運行`;
+    blockMessage = tl('notes.auto.t0246', { v0: (title) });
   } else if (!clientInstalled) {
-    blockMessage = `${title} 客戶端尚未安裝`;
+    blockMessage = tl('notes.auto.t0247', { v0: (title) });
   }
 
   return {
@@ -158,7 +159,7 @@ export async function installDbEngine(input: {
     dataDir: input.dataDir,
     enableUnits: false,
   });
-  steps.push(...(client.steps ?? []).map((s) => ({ ...s, name: `客戶端：${s.name}` })));
+  steps.push(...(client.steps ?? []).map((s) => ({ ...s, name: tl('notes.auto.t0248', { v0: (s.name) }) })));
   notes.push(...client.notes);
 
   const server = await installSoftware({
@@ -167,7 +168,7 @@ export async function installDbEngine(input: {
     dataDir: input.dataDir,
     enableUnits: true,
   });
-  steps.push(...(server.steps ?? []).map((s) => ({ ...s, name: `伺服器：${s.name}` })));
+  steps.push(...(server.steps ?? []).map((s) => ({ ...s, name: tl('notes.auto.t0249', { v0: (s.name) }) })));
   notes.push(...server.notes);
 
   const status = await probeDbEngine(input.host, input.engine);
@@ -180,7 +181,7 @@ export async function installDbEngine(input: {
     blocked,
     blockReason: client.blockReason ?? server.blockReason,
     blockMessage: client.blockMessage ?? server.blockMessage,
-    notes: notes.length ? notes : ok ? [`${status.title} 已就緒`] : [`${status.title} 安裝未完成`],
+    notes: notes.length ? notes : ok ? [tl('notes.auto.t0250', { v0: (status.title) })] : [tl('notes.auto.t0251', { v0: (status.title) })],
     status,
     steps,
   };
@@ -216,8 +217,8 @@ export async function startDbEngine(input: {
   return {
     ok,
     notes: ok
-      ? [`${status.title} 服務已啟動`]
-      : [`啟動失敗：${r.stderr || status.active}`],
+      ? [tl('notes.auto.t0252', { v0: (status.title) })]
+      : [tl('notes.auto.t0253', { v0: (r.stderr || status.active) })],
     status,
   };
 }

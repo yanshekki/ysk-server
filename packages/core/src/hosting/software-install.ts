@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Probe + one-click install for catalog software (panel only).
  */
@@ -6,9 +7,9 @@ import type { HostExecutor } from '../host/executor.js';
 import {
   getSoftware,
   listSoftwareForFeature,
+  resolveSoftwareTitle,
   type SoftwareId,
-  type SoftwareSpec,
-} from './software-catalog.js';
+  type SoftwareSpec } from './software-catalog.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { planOrInstallRuntime } from './runtime-probe.js';
 
@@ -47,8 +48,7 @@ const APT_UPDATE_MS = 5 * 60_000;
 
 async function binExists(host: HostExecutor, bin: string): Promise<boolean> {
   const r = await host.runCommand(['bash', '-c', `command -v ${bin} 2>/dev/null || true`], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   return r.stdout.trim().length > 0;
 }
 
@@ -81,13 +81,12 @@ export async function probeSoftware(
 
   return {
     id: spec.id,
-    title: spec.title,
+    title: resolveSoftwareTitle(spec),
     installed: installedAny,
     active,
     bins: spec.bins,
     missingBins: installedAny ? [] : missingBins,
-    features: spec.features,
-  };
+    features: spec.features };
 }
 
 export async function probeAllSoftware(
@@ -117,34 +116,30 @@ export async function installSoftware(input: {
       id: input.id,
       title: input.id,
       installed: false,
-      notes: ['未知軟件'],
-      steps: [{ name: '驗證', status: 'failed', detail: '未知軟件 ID' }],
+      notes: [tl('notes.auto.n0967')],
+      steps: [{ name: tl('notes.auto.n1607'), status: 'failed', detail: tl('notes.auto.n0968') }],
       status: {
         id: input.id,
         title: input.id,
         installed: false,
         bins: [],
         missingBins: [],
-        features: [],
-      },
-    };
+        features: [] } };
   }
 
   const steps: SoftwareInstallStep[] = [];
   const notes: string[] = [];
   const before = await probeSoftware(input.host, spec);
   if (before.installed) {
-    notes.push(`${spec.title} 已安裝`);
+    notes.push(tl('notes.auto.t0149', { v0: (resolveSoftwareTitle(spec)) }));
     if (spec.units?.length && input.enableUnits !== false) {
       for (const u of spec.units) {
         const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
-          timeoutMs: 60_000,
-        });
+          timeoutMs: 60_000 });
         steps.push({
-          name: `啟動 ${u}`,
+          name: tl('notes.software.startUnit', { u }),
           status: en.exitCode === 0 ? 'ok' : 'failed',
-          detail: en.exitCode === 0 ? 'ok' : en.stderr,
-        });
+          detail: en.exitCode === 0 ? 'ok' : en.stderr });
       }
     }
     const status = await probeSoftware(input.host, spec);
@@ -152,12 +147,11 @@ export async function installSoftware(input: {
       ok: true,
       executed: false,
       id: spec.id,
-      title: spec.title,
+      title: resolveSoftwareTitle(spec),
       installed: true,
       notes,
-      steps: steps.length ? steps : [{ name: '探測', status: 'ok', detail: '已安裝' }],
-      status,
-    };
+      steps: steps.length ? steps : [{ name: tl('notes.probe'), status: 'ok', detail: tl('notes.tpl.installed') }],
+      status };
   }
 
   const can = input.host.executeEnabled() && input.host.isRoot();
@@ -165,7 +159,7 @@ export async function installSoftware(input: {
     const blockReason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
     const blockMessage = panelBlockMessage(blockReason);
     notes.push(blockMessage);
-    steps.push({ name: '一鍵安裝', status: 'blocked', detail: blockMessage });
+    steps.push({ name: tl('notes.auto.n0487'), status: 'blocked', detail: blockMessage });
     return {
       ok: false,
       executed: false,
@@ -173,12 +167,11 @@ export async function installSoftware(input: {
       blockReason,
       blockMessage,
       id: spec.id,
-      title: spec.title,
+      title: resolveSoftwareTitle(spec),
       installed: false,
       notes,
       steps,
-      status: before,
-    };
+      status: before };
   }
 
   // Runtime installers
@@ -190,17 +183,16 @@ export async function installSoftware(input: {
     spec.installer === 'runtime-rust'
   ) {
     if (!input.dataDir) {
-      notes.push('缺少 dataDir，無法安裝 runtime');
+      notes.push(tl('notes.auto.n1323'));
       return {
         ok: false,
         executed: false,
         id: spec.id,
-        title: spec.title,
+        title: resolveSoftwareTitle(spec),
         installed: false,
         notes,
-        steps: [{ name: '安裝', status: 'failed', detail: '缺少 dataDir' }],
-        status: before,
-      };
+        steps: [{ name: tl('notes.install'), status: 'failed', detail: tl('notes.tpl.missingDataDir') }],
+        status: before };
     }
     const kind =
       spec.installer === 'runtime-node'
@@ -228,8 +220,7 @@ export async function installSoftware(input: {
       dataDir: input.dataDir,
       kind,
       version,
-      install: true,
-    });
+      install: true });
     const status = await probeSoftware(input.host, spec);
     return {
       ok: r.ok && status.installed,
@@ -240,32 +231,29 @@ export async function installSoftware(input: {
           ? panelBlockMessage(r.requiresExecute ? 'no_execute' : 'no_root')
           : undefined,
       id: spec.id,
-      title: spec.title,
+      title: resolveSoftwareTitle(spec),
       installed: status.installed,
-      notes: r.notes.length ? r.notes : status.installed ? [`已安裝 ${spec.title}`] : ['安裝未完成'],
+      notes: r.notes.length ? r.notes : status.installed ? [tl('notes.software.installedSpec', { title: resolveSoftwareTitle(spec) })] : [tl('notes.tpl.installIncomplete')],
       steps: (r.notes ?? []).slice(0, 6).map((n) => ({
-        name: '安裝步驟',
+        name: tl('notes.auto.n0657'),
         status: r.ok ? ('ok' as const) : ('failed' as const),
-        detail: n,
-      })),
-      status,
-    };
+        detail: n })),
+      status };
   }
 
   // apt path
   const pkgs = spec.aptPackages.filter(Boolean);
   if (!pkgs.length) {
-    notes.push('此軟件無 apt 套件定義');
+    notes.push(tl('notes.auto.n1041'));
     return {
       ok: false,
       executed: false,
       id: spec.id,
-      title: spec.title,
+      title: resolveSoftwareTitle(spec),
       installed: false,
       notes,
-      steps: [{ name: '安裝', status: 'failed', detail: '無套件' }],
-      status: before,
-    };
+      steps: [{ name: tl('notes.install'), status: 'failed', detail: tl('notes.tpl.noPackages') }],
+      status: before };
   }
 
   const now = Date.now();
@@ -275,13 +263,12 @@ export async function installSoftware(input: {
       { timeoutMs: 180_000 },
     );
     steps.push({
-      name: '更新套件索引',
+      name: tl('notes.apt.updateIndex'),
       status: up.exitCode === 0 ? 'ok' : 'failed',
-      detail: up.exitCode === 0 ? undefined : up.stderr,
-    });
+      detail: up.exitCode === 0 ? undefined : up.stderr });
     if (up.exitCode === 0) lastAptUpdateMs = now;
   } else {
-    steps.push({ name: '更新套件索引', status: 'skipped', detail: '最近已更新' });
+    steps.push({ name: tl('notes.apt.updateIndex'), status: 'skipped', detail: tl('notes.tpl.recentlyUpdated') });
   }
 
   // Try packages one-by-one groups: first package set as OR — install all listed, ignore individual fails partially
@@ -297,45 +284,41 @@ export async function installSoftware(input: {
       );
       if (one.exitCode === 0) {
         installOk = true;
-        steps.push({ name: `安裝 ${p}`, status: 'ok' });
+        steps.push({ name: tl('notes.software.installPkg', { p }), status: 'ok' });
         break;
       }
-      steps.push({ name: `安裝 ${p}`, status: 'failed', detail: one.stderr });
+      steps.push({ name: tl('notes.software.installPkg', { p }), status: 'failed', detail: one.stderr });
     }
   } else {
     steps.push({
-      name: `安裝 ${pkgs.join(', ')}`,
+      name: tl('notes.auto.t0150', { v0: (pkgs.join(', ')) }),
       status: installOk ? 'ok' : 'failed',
-      detail: installOk ? undefined : inst.stderr,
-    });
+      detail: installOk ? undefined : inst.stderr });
   }
 
   if (installOk && spec.units?.length && input.enableUnits !== false) {
     for (const u of spec.units) {
       const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
-        timeoutMs: 60_000,
-      });
+        timeoutMs: 60_000 });
       steps.push({
-        name: `啟動 ${u}`,
+        name: tl('notes.software.startUnit', { u }),
         status: en.exitCode === 0 ? 'ok' : 'failed',
-        detail: en.exitCode === 0 ? '已啟動' : en.stderr,
-      });
+        detail: en.exitCode === 0 ? tl('notes.auto.n0744') : en.stderr });
     }
   }
 
   const status = await probeSoftware(input.host, spec);
   const ok = status.installed;
-  notes.push(ok ? `已安裝 ${spec.title}` : `未能安裝 ${spec.title}`);
+  notes.push(ok ? tl('notes.software.installedSpec', { title: resolveSoftwareTitle(spec) }) : tl('notes.auto.t0151', { v0: (resolveSoftwareTitle(spec)) }));
   return {
     ok,
     executed: true,
     id: spec.id,
-    title: spec.title,
+    title: resolveSoftwareTitle(spec),
     installed: status.installed,
     notes,
     steps,
-    status,
-  };
+    status };
 }
 
 export async function installSoftwareBatch(input: {
@@ -359,14 +342,13 @@ export async function installSoftwareBatch(input: {
   const blocked = results.some((r) => r.blocked);
   const blockMessage =
     results.find((r) => r.blockMessage)?.blockMessage ??
-    (blocked ? '伺服器未開啟系統變更權限，無法在管理面板完成此操作' : undefined);
+    (blocked ? tl('ops.blocked.needExecute') : undefined);
   return {
     ok,
     blocked,
     blockMessage,
     results,
-    notes: results.flatMap((r) => r.notes),
-  };
+    notes: results.flatMap((r) => r.notes) };
 }
 
 export async function installForFeature(input: {
@@ -392,20 +374,17 @@ export async function installForFeature(input: {
       ok: true,
       results: [],
       missingBefore: [],
-      notes: ['所需軟件均已安裝'],
-    };
+      notes: [tl('notes.auto.n0841')] };
   }
   const batch = await installSoftwareBatch({
     host: input.host,
     ids,
-    dataDir: input.dataDir,
-  });
+    dataDir: input.dataDir });
   return {
     ok: batch.ok,
     blocked: batch.blocked,
     blockMessage: batch.blockMessage,
     results: batch.results,
     missingBefore: missing,
-    notes: batch.notes,
-  };
+    notes: batch.notes };
 }

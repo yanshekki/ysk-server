@@ -1,24 +1,10 @@
 /**
  * Updates feature — inventory, self-update, scheduler API.
  */
+import type { AdviceRow, InventoryMeta } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type AdviceRow = {
-  packageName: string;
-  currentVersion: string;
-  candidateVersion?: string;
-  advice?: string;
-  risk?: string;
-  summary?: string;
-  cves?: string[];
-  requiresApproval?: boolean;
-};
-
-export type InventoryMeta = {
-  source?: string;
-  upgradableCount?: number;
-  notes?: string[];
-};
+export type { AdviceRow, InventoryMeta } from '@ysk/shared';
 
 export const updatesApi = {
   inventory: () =>

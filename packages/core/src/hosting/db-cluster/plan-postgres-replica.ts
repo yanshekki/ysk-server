@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * PostgreSQL streaming primary → replica plan (pure).
  */
@@ -119,10 +120,9 @@ export function planPostgresReplica(c: DbCluster): ClusterPlan {
       engine: c.engine,
       steps: [],
       files: [],
-      notes: ['僅支援 postgres + postgres-replica'],
+      notes: [tl('notes.auto.n0571')],
       requiresExecute: true,
-      requiresRoot: true,
-    };
+      requiresRoot: true };
   }
   const p = primary(c);
   if (!p) {
@@ -134,13 +134,12 @@ export function planPostgresReplica(c: DbCluster): ClusterPlan {
       engine: c.engine,
       steps: [],
       files: [],
-      notes: ['需要 primary 節點'],
+      notes: [tl('notes.auto.n1567')],
       requiresExecute: true,
-      requiresRoot: true,
-    };
+      requiresRoot: true };
   }
 
-  const notes: string[] = ['dry-run：未改系統', `primary=${p.host}`];
+  const notes: string[] = [tl('notes.auto.n0033'), `primary=${p.host}`];
   const steps: ClusterPlanStep[] = [];
   const files: ClusterPlan['files'] = [
     { relativePath: 'conf/99-ysk-postgres-primary.conf', body: renderPostgresPrimaryConf(c) },
@@ -155,16 +154,14 @@ export function planPostgresReplica(c: DbCluster): ClusterPlan {
     title: `Primary conf（${p.host}）`,
     kind: 'conf',
     body: renderPostgresPrimaryConf(c),
-    risk: 'write-panel',
-  });
+    risk: 'write-panel' });
   steps.push({
     id: 'sql-role',
     memberId: p.id,
     title: 'Primary CREATE ROLE REPLICATION',
     kind: 'manual',
     body: renderPostgresPrimarySql(c),
-    risk: 'execute-host',
-  });
+    risk: 'execute-host' });
 
   for (const m of replicas(c)) {
     const conf = renderPostgresReplicaConf(c, m);
@@ -176,26 +173,23 @@ export function planPostgresReplica(c: DbCluster): ClusterPlan {
       title: `Replica conf ${m.host}`,
       kind: 'conf',
       body: conf,
-      risk: 'write-panel',
-    });
+      risk: 'write-panel' });
     steps.push({
       id: `basebackup-${m.id}`,
       memberId: m.id,
       title: `Replica ${m.host} pg_basebackup`,
       kind: 'manual',
       body: renderPostgresBasebackupSh(c),
-      risk: 'execute-host',
-    });
+      risk: 'execute-host' });
   }
 
   steps.push({
     id: 'probe',
-    title: '探測 pg_is_in_recovery / pg_stat_replication',
+    title: tl('notes.auto.n0888'),
     kind: 'probe',
-    risk: 'read',
-  });
+    risk: 'read' });
 
-  if (!replicas(c).length) notes.push('建議至少 1 個 replica');
+  if (!replicas(c).length) notes.push(tl('notes.auto.n0034'));
 
   return {
     ok: true,
@@ -207,6 +201,5 @@ export function planPostgresReplica(c: DbCluster): ClusterPlan {
     files,
     notes,
     requiresExecute: true,
-    requiresRoot: true,
-  };
+    requiresRoot: true };
 }

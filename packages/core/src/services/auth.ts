@@ -8,7 +8,7 @@
  */
 
 import type { AuthLoginRequest, AuthLoginResponse, UserDto } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, yskError, tl, normalizeLocale } from '@ysk/shared';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { UserRepository } from '../repositories/user-repo.js';
 import type { SessionRepository } from '../repositories/session-repo.js';
@@ -73,7 +73,7 @@ export class AuthService {
   /**
    * Bootstrap admin if no users exist (called by setup).
    */
-  ensureAdmin(username: string, password: string, locale = 'zh-TW'): UserDto {
+  ensureAdmin(username: string, password: string, locale = 'zh-HK'): UserDto {
     const existing = this.users.findByUsername(username);
     if (existing) return toDto(existing);
     if (this.users.count() > 0 && !existing) {
@@ -119,8 +119,9 @@ export class AuthService {
     meta?: { ip?: string; userAgent?: string },
   ): AuthLoginResponse & { deviceToken?: string; deviceExpiresAt?: string } {
     if (!req.username || !req.password) {
-      throw new YskError(ErrorCodes.VALIDATION, '請輸入使用者名稱與密碼', {
+      throw yskError(ErrorCodes.VALIDATION, {
         httpStatus: 400,
+        messageKey: 'errors.auth.needCredentials',
       });
     }
     const rlId = `${meta?.ip ?? 'local'}:${req.username}`;
@@ -132,8 +133,9 @@ export class AuthService {
         detail: { ok: false, reason: 'rate_limit', retryAfterSec: locked.retryAfterSec },
         ok: false,
       });
-      throw new YskError(ErrorCodes.FORBIDDEN, '登入嘗試過多，請稍後再試', {
+      throw yskError(ErrorCodes.RATE_LIMITED, {
         httpStatus: 429,
+        messageKey: 'errors.auth.rateLimited',
         details: { retryAfterSec: locked.retryAfterSec, locked: true },
       });
     }
@@ -147,15 +149,16 @@ export class AuthService {
         detail: { ok: false, failures: fail.failures, locked: fail.locked },
         ok: false,
       });
-      throw new YskError(ErrorCodes.UNAUTHORIZED, '帳號或密碼不正確', {
+      throw yskError(ErrorCodes.UNAUTHORIZED, {
         httpStatus: 401,
+        messageKey: 'errors.auth.badCredentials',
         details: fail.locked
           ? { locked: true, retryAfterSec: fail.retryAfterSec }
           : undefined,
       });
     }
     if (user.suspended) {
-      throw new YskError(ErrorCodes.FORBIDDEN, '帳戶已暫停', { httpStatus: 403 });
+      throw yskError(ErrorCodes.FORBIDDEN, { httpStatus: 403, messageKey: 'errors.auth.accountSuspended' });
     }
 
     const mustEnrollTotp =
@@ -173,14 +176,11 @@ export class AuthService {
         detail: { ok: false, reason: 'admin_totp_required_strict' },
         ok: false,
       });
-      throw new YskError(
-        ErrorCodes.FORBIDDEN,
-        '管理員必須先啟用 2FA（strict）。請用已啟用 2FA 的帳號，或關閉 strict 設定。',
-        {
-          httpStatus: 403,
-          details: { requireAdminTotp: true, needsTotpEnroll: true, strict: true },
-        },
-      );
+      throw yskError(ErrorCodes.FORBIDDEN, {
+        httpStatus: 403,
+        messageKey: 'errors.auth.adminTotpStrict',
+        details: { requireAdminTotp: true, needsTotpEnroll: true, strict: true },
+      });
     }
 
     if (user.totp_enabled && user.totp_secret) {
@@ -217,8 +217,9 @@ export class AuthService {
         if (step != null) {
           if (user.totp_last_step != null && step <= user.totp_last_step) {
             recordRateLimitFailure('login', rlId);
-            throw new YskError(ErrorCodes.UNAUTHORIZED, '驗證碼已使用，請等下一個週期', {
+            throw yskError(ErrorCodes.UNAUTHORIZED, {
               httpStatus: 401,
+              messageKey: 'errors.auth.totpReplay',
               details: { needsTotp: true, replay: true },
             });
           }
@@ -234,8 +235,9 @@ export class AuthService {
           detail: { ok: false, reason: 'totp', locked: fail.locked },
           ok: false,
         });
-        throw new YskError(ErrorCodes.UNAUTHORIZED, '需要有效的雙重驗證碼', {
+        throw yskError(ErrorCodes.TOTP_REQUIRED, {
           httpStatus: 401,
+          messageKey: 'errors.auth.totpRequired',
           details: {
             needsTotp: true,
             ...(fail.locked
@@ -293,7 +295,7 @@ export class AuthService {
       expiresAt,
       ...(deviceToken ? { deviceToken, deviceExpiresAt } : {}),
       ...(mustEnrollTotp
-        ? { mustEnrollTotp: true as const, message: '管理員政策：請立即啟用雙重驗證' }
+        ? { mustEnrollTotp: true as const, message: tl('errors.auth.mustEnrollTotp') }
         : {}),
     };
   }
@@ -307,7 +309,7 @@ export class AuthService {
   ): { secret: string; otpauthUrl: string; enabled: boolean } {
     const user = this.users.findById(userId);
     if (!user) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
+      throw yskError(ErrorCodes.NOT_FOUND, { httpStatus: 404, messageKey: 'errors.auth.userNotFound' });
     }
     // Re-auth: password OR valid totp/step-up when already has 2FA
     const pwOk =
@@ -318,14 +320,11 @@ export class AuthService {
         this.assertTotpOrRecovery(userId, opts.totp);
         markTotpStepUp(userId);
       } else if (!hasRecentTotpStepUp(userId)) {
-        throw new YskError(
-          ErrorCodes.FORBIDDEN,
-          '設定 2FA 需要重新輸入密碼（或近期 step-up 驗證碼）',
-          {
-            httpStatus: 403,
-            details: { needsReauth: true },
-          },
-        );
+        throw yskError(ErrorCodes.FORBIDDEN, {
+          httpStatus: 403,
+          messageKey: 'errors.auth.totpSetupNeedReauth',
+          details: { needsReauth: true },
+        });
       }
     }
     const secret = generateTotpSecret();
@@ -385,12 +384,12 @@ export class AuthService {
   ): { enabled: boolean; recoveryCodes: string[] } {
     const user = this.users.findById(userId);
     if (!user?.totp_secret) {
-      throw new YskError(ErrorCodes.VALIDATION, '請先開始設定 2FA', { httpStatus: 400 });
+      throw yskError(ErrorCodes.VALIDATION, { httpStatus: 400, messageKey: 'errors.auth.totpBeginFirst' });
     }
     const secret = this.resolveTotpSecret(userId, user.totp_secret);
     const step = matchTotpStep(secret, code);
     if (step == null) {
-      throw new YskError(ErrorCodes.VALIDATION, '驗證碼無效', { httpStatus: 400 });
+      throw yskError(ErrorCodes.VALIDATION, { httpStatus: 400, messageKey: 'errors.auth.totpInvalid' });
     }
     const recoveryCodes = generateRecoveryCodes(10);
     const hashes = recoveryCodes.map(hashRecoveryCode);
@@ -412,7 +411,7 @@ export class AuthService {
   disableTotp(userId: string, code: string): { enabled: boolean } {
     const user = this.users.findById(userId);
     if (!user) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
+      throw yskError(ErrorCodes.NOT_FOUND, { httpStatus: 404, messageKey: 'errors.auth.userNotFound' });
     }
     if (user.totp_enabled && user.totp_secret) {
       this.assertTotpOrRecovery(userId, code);
@@ -439,7 +438,7 @@ export class AuthService {
   } {
     const user = this.users.findById(userId);
     if (!user) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
+      throw yskError(ErrorCodes.NOT_FOUND, { httpStatus: 404, messageKey: 'errors.auth.userNotFound' });
     }
     return {
       enabled: Boolean(user.totp_enabled),
@@ -467,7 +466,8 @@ export class AuthService {
     }
     const user = this.users.findById(userId);
     if (!user?.totp_enabled) return; // no 2FA → no step-up gate
-    throw new YskError(ErrorCodes.FORBIDDEN, '此操作需要重新輸入雙重驗證碼', {
+    throw yskError(ErrorCodes.FORBIDDEN, {
+      messageKey: 'errors.auth.stepUpRequired',
       httpStatus: 403,
       details: { needsStepUp: true },
     });
@@ -490,7 +490,7 @@ export class AuthService {
 
   authenticate(token: string | undefined): UserDto {
     if (!token) {
-      throw new YskError(ErrorCodes.UNAUTHORIZED, '缺少登入憑證', { httpStatus: 401 });
+      throw yskError(ErrorCodes.UNAUTHORIZED, { httpStatus: 401, messageKey: 'errors.auth.missingCredential' });
     }
     // API access keys (ysk_…) — hash lookup, no session cookie
     if (this.db && token.startsWith('ysk_')) {
@@ -498,29 +498,31 @@ export class AuthService {
       if (userId) {
         const user = this.users.findById(userId);
         if (!user) {
-          throw new YskError(ErrorCodes.UNAUTHORIZED, 'API 金鑰對應用戶不存在', {
+          throw yskError(ErrorCodes.UNAUTHORIZED, {
+          messageKey: 'errors.auth.apiKeyUserMissing',
             httpStatus: 401,
           });
         }
         if (user.suspended) {
-          throw new YskError(ErrorCodes.FORBIDDEN, '帳戶已暫停', { httpStatus: 403 });
+          throw yskError(ErrorCodes.FORBIDDEN, { httpStatus: 403, messageKey: 'errors.auth.accountSuspended' });
         }
         return toDto(user);
       }
-      throw new YskError(ErrorCodes.UNAUTHORIZED, 'API 金鑰無效', { httpStatus: 401 });
+      throw yskError(ErrorCodes.UNAUTHORIZED, { httpStatus: 401, messageKey: 'errors.auth.apiKeyInvalid' });
     }
     const session = this.sessions.find(token);
     const now = Date.now();
     const nowIso = new Date(now).toISOString();
     if (!session || session.expires_at < nowIso) {
       if (session) this.sessions.delete(token);
-      throw new YskError(ErrorCodes.UNAUTHORIZED, '登入已失效，請重新登入', { httpStatus: 401 });
+      throw yskError(ErrorCodes.UNAUTHORIZED, { httpStatus: 401, messageKey: 'errors.auth.sessionExpired' });
     }
     // Idle timeout
     const last = Date.parse(session.last_seen_at ?? session.created_at);
     if (Number.isFinite(last) && now - last > SESSION_IDLE_MS) {
       this.sessions.delete(token);
-      throw new YskError(ErrorCodes.UNAUTHORIZED, '閒置逾時，請重新登入', {
+      throw yskError(ErrorCodes.UNAUTHORIZED, {
+        messageKey: 'errors.auth.sessionIdle',
         httpStatus: 401,
         details: { idleTimeout: true },
       });
@@ -532,9 +534,29 @@ export class AuthService {
     }
     const user = this.users.findById(session.user_id);
     if (!user) {
-      throw new YskError(ErrorCodes.UNAUTHORIZED, '找不到用戶', { httpStatus: 401 });
+      throw yskError(ErrorCodes.UNAUTHORIZED, { httpStatus: 401, messageKey: 'errors.auth.userNotFound' });
     }
     return toDto(user);
+  }
+
+
+  /** Persist UI locale for the signed-in user (self-service). */
+  setOwnLocale(userId: string, locale: string): UserDto {
+    const code = normalizeLocale(locale);
+    const u = this.users.update(userId, { locale: code });
+    if (!u) {
+      throw yskError(ErrorCodes.NOT_FOUND, {
+        httpStatus: 404,
+        messageKey: 'errors.auth.userNotFound',
+      });
+    }
+    this.audit?.append({
+      actor: u.username,
+      action: 'auth.locale',
+      detail: { locale: code },
+      ok: true,
+    });
+    return toDto(u);
   }
 
   private resolveTotpSecret(userId: string, stored: string): string {
@@ -542,11 +564,10 @@ export class AuthService {
       // migrate path unavailable — accept plain
       return stored.startsWith('yskenc:')
         ? (() => {
-            throw new YskError(
-              ErrorCodes.INTERNAL,
-              'TOTP secret 已加密但未設定 dataDir',
-              { httpStatus: 500 },
-            );
+            throw yskError(ErrorCodes.INTERNAL, {
+              httpStatus: 500,
+              messageKey: 'errors.auth.totpSecretNoDataDir',
+            });
           })()
         : stored;
     }
@@ -560,7 +581,7 @@ export class AuthService {
   private assertTotpOrRecovery(userId: string, code: string): void {
     const user = this.users.findById(userId);
     if (!user?.totp_secret) {
-      throw new YskError(ErrorCodes.VALIDATION, '未啟用 2FA', { httpStatus: 400 });
+      throw yskError(ErrorCodes.VALIDATION, { httpStatus: 400, messageKey: 'errors.auth.totpNotEnabled' });
     }
     const secret = this.resolveTotpSecret(userId, user.totp_secret);
     // recovery code format has dashes
@@ -573,10 +594,11 @@ export class AuthService {
     }
     const step = matchTotpStep(secret, code);
     if (step == null) {
-      throw new YskError(ErrorCodes.VALIDATION, '驗證碼無效', { httpStatus: 400 });
+      throw yskError(ErrorCodes.VALIDATION, { httpStatus: 400, messageKey: 'errors.auth.totpInvalid' });
     }
     if (user.totp_last_step != null && step <= user.totp_last_step) {
-      throw new YskError(ErrorCodes.VALIDATION, '驗證碼已使用，請等下一個週期', {
+      throw yskError(ErrorCodes.VALIDATION, {
+        messageKey: 'errors.auth.totpReplay',
         httpStatus: 400,
       });
     }
@@ -601,6 +623,8 @@ function toDto(user: {
   roles: UserDto['roles'];
   locale: string;
   totp_enabled?: boolean;
+  capability_grants?: UserDto['capabilityGrants'];
+  capability_revokes?: UserDto['capabilityRevokes'];
 }): UserDto {
   return {
     id: user.id,
@@ -608,5 +632,7 @@ function toDto(user: {
     roles: [...user.roles],
     locale: user.locale,
     totpEnabled: Boolean(user.totp_enabled),
+    capabilityGrants: user.capability_grants?.length ? [...user.capability_grants] : undefined,
+    capabilityRevokes: user.capability_revokes?.length ? [...user.capability_revokes] : undefined,
   };
 }

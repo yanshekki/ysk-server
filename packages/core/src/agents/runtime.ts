@@ -4,7 +4,7 @@
  */
 
 import type { AgentRuntimeDto, AgentRuntimeKind } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export type AgentCatalogEntry = {
   name: string;
@@ -71,7 +71,7 @@ export function planAgentInstall(kind: AgentRuntimeKind): {
 } {
   const entry = CATALOG[kind];
   if (!entry) {
-    throw new YskError(ErrorCodes.VALIDATION, `未知 Agent 運行時：${kind}`, {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0496', { v0: (kind) }), {
       httpStatus: 400,
     });
   }
@@ -98,7 +98,7 @@ export function parseAgentKind(value: string): AgentRuntimeKind {
   if (value === 'openclaw' || value === 'hermes' || value === 'ionclaw') {
     return value;
   }
-  throw new YskError(ErrorCodes.VALIDATION, `不支援的 Agent 類型：${value}`, {
+  throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0497', { v0: (value) }), {
     httpStatus: 400,
   });
 }

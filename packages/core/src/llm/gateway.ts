@@ -4,7 +4,7 @@
  */
 
 import type { LlmChatRequest, LlmChatResponse } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { randomUUID } from 'node:crypto';
 import type { ProtectionState } from '../services/protection.js';
 
@@ -36,7 +36,7 @@ export interface LlmTransport {
  */
 export const nullTransport: LlmTransport = {
   async complete() {
-    throw new YskError(ErrorCodes.VALIDATION, '尚未設定 LLM 連線', { httpStatus: 503 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0714'), { httpStatus: 503 });
   },
 };
 
@@ -80,11 +80,11 @@ export class LlmGateway {
    */
   async chat(req: LlmChatRequest): Promise<LlmChatResponse> {
     if (!req.messages?.length) {
-      throw new YskError(ErrorCodes.VALIDATION, '請提供訊息內容', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1420'), { httpStatus: 400 });
     }
     for (const m of req.messages) {
       if (!m.role || typeof m.content !== 'string') {
-        throw new YskError(ErrorCodes.VALIDATION, '訊息格式無效', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1353'), { httpStatus: 400 });
       }
     }
 
@@ -102,7 +102,7 @@ export class LlmGateway {
     if (localOnly && req.model && /gpt-|claude|gemini|openai/i.test(req.model)) {
       throw new YskError(
         ErrorCodes.FORBIDDEN,
-        `保護模式 ${this.protection?.mode}：已封鎖遠端模型（僅允許本機 LLM）`,
+        tl('notes.auto.t0098', { v0: (this.protection?.mode) }),
         { httpStatus: 403, details: { model: req.model, mode: this.protection?.mode } },
       );
     }
@@ -127,7 +127,7 @@ export class LlmGateway {
    */
   assertNotExecutable(response: LlmChatResponse): void {
     if (!response.untrusted) {
-      throw new YskError(ErrorCodes.LLM_UNTRUSTED, 'LLM 回應格式異常（缺少安全標記）', {
+      throw new YskError(ErrorCodes.LLM_UNTRUSTED, tl('notes.auto.n0127'), {
         httpStatus: 500,
       });
     }

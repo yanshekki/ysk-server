@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { 
+import {
   DataTable,
   ActionBar,
   Alert,
@@ -18,21 +18,31 @@ import {
   Modal,
   OpsResultPanel,
   SoftwareInstallBanner,
-  FormActions,
   FormHint,
   WithPageGuide,
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
 
-function statusBadge(status: string, filesExist: boolean) {
+function statusBadge(
+  status: string,
+  filesExist: boolean,
+  t: (key: string) => string,
+) {
   const s = (status || '').toLowerCase();
-  if (filesExist || s === 'uploaded') return <Badge tone="ok">已上傳</Badge>;
-  if (s === 'issued') return <Badge tone="ok">已簽發</Badge>;
-  if (s === 'planned') return <Badge tone="warn">處理中</Badge>;
-  if (s === 'failed') return <Badge tone="danger">失敗</Badge>;
-  if (s === 'missing') return <Badge tone="danger">檔案缺失</Badge>;
-  if (s === 'applied') return filesExist ? <Badge tone="ok">已就緒</Badge> : <Badge tone="warn">處理中</Badge>;
+  if (filesExist || s === 'uploaded')
+    return <Badge tone="ok">{t('ssl.status.uploaded')}</Badge>;
+  if (s === 'issued') return <Badge tone="ok">{t('ssl.status.issued')}</Badge>;
+  if (s === 'planned') return <Badge tone="warn">{t('ssl.status.planned')}</Badge>;
+  if (s === 'failed') return <Badge tone="danger">{t('ssl.status.failed')}</Badge>;
+  if (s === 'missing') return <Badge tone="danger">{t('ssl.status.missing')}</Badge>;
+  if (s === 'applied')
+    return filesExist ? (
+      <Badge tone="ok">{t('ssl.status.ready')}</Badge>
+    ) : (
+      <Badge tone="warn">{t('ssl.status.processing')}</Badge>
+    );
   return <Badge tone="neutral">{status || '—'}</Badge>;
 }
 
@@ -53,7 +63,6 @@ export function SslPage() {
     requestCertificate,
     remove,
     retryLast,
-    clearResult,
   } = useSslCertificates();
 
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -122,32 +131,33 @@ export function SslPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.ssl', { defaultValue: 'SSL 憑證' })}
+      title={t('nav.ssl')}
       status={{
         pill: {
-          label: `${items.length} 張`,
+          label: t('ssl.pillCount', { count: items.length }),
           tone: items.length ? 'ok' : 'warn',
         },
         items: [
-          { label: '憑證', value: items.length },
+          { label: t('ssl.statCerts'), value: items.length },
           {
-            label: '有檔案',
+            label: t('ssl.statWithFiles'),
             value: items.filter((c) => c.files_exist).length,
           },
-          { label: '綁定', value: bindings.length },
+          { label: t('ssl.statBindings'), value: bindings.length },
           {
-            label: '失敗',
+            label: t('ssl.statFailed'),
             value: failedCount,
             tone: failedCount > 0 ? 'danger' : 'ok',
           },
         ],
       }}
-      actions={<ActionBar>
+      actions={
+        <ActionBar>
           <Button variant="secondary" size="sm" onClick={() => setLeOpen(true)}>
-            申請 Let’s Encrypt
+            {t('ssl.requestLe')}
           </Button>
           <Button variant="primary" size="sm" onClick={() => setUploadOpen(true)}>
-            + 上傳憑證
+            {t('ssl.uploadCert')}
           </Button>
           <Link to="/nginx" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             Nginx
@@ -156,282 +166,319 @@ export function SslPage() {
       }
     >
       <WithPageGuide guideId="ssl">
-      <SoftwareInstallBanner feature="ssl" title="Certbot 尚未安裝" />
-      {error ? <Alert variant="error">{error}</Alert> : null}
+        <SoftwareInstallBanner feature="ssl" title={t('ssl.certbotNotInstalled')} />
+        {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <OpsResultPanel
-        title="操作結果"
-        message={msg}
-        result={
-          ok != null || blocked || notes.length || steps.length
-            ? {
-                ok: blocked ? false : ok !== false,
-                blocked: Boolean(blocked),
-                blockMessage: blockMessage ?? undefined,
-                notes: [
-                  ...steps.map((s) => {
-                    const st =
-                      s.status === 'ok'
-                        ? '完成'
-                        : s.status === 'blocked'
-                          ? '無法執行'
-                          : s.status === 'failed'
-                            ? '失敗'
-                            : '略過';
-                    return s.detail ? `${s.name}: ${st} — ${s.detail}` : `${s.name}: ${st}`;
-                  }),
-                  ...notes,
-                ],
-              }
-            : null
-        }
-        onRetry={blocked ? () => void retryLast() : undefined}
-        busy={busy}
-      />
+        <OpsResultPanel
+          message={msg}
+          result={
+            ok != null || blocked || notes.length || steps.length
+              ? {
+                  ok: blocked ? false : ok !== false,
+                  blocked: Boolean(blocked),
+                  blockMessage: blockMessage ?? undefined,
+                  notes: [
+                    ...steps.map((s) => {
+                      const st =
+                        s.status === 'ok'
+                          ? t('ssl.step.ok')
+                          : s.status === 'blocked'
+                            ? t('ssl.step.blocked')
+                            : s.status === 'failed'
+                              ? t('ssl.step.failed')
+                              : t('ssl.step.skipped');
+                      return s.detail
+                        ? `${s.name}: ${st} — ${s.detail}`
+                        : `${s.name}: ${st}`;
+                    }),
+                    ...notes,
+                  ],
+                }
+              : null
+          }
+          onRetry={blocked ? () => void retryLast() : undefined}
+          busy={busy}
+        />
 
-      {renewNotes.length || bindings.length ? (
+        {renewNotes.length || bindings.length ? (
+          <Card>
+            <CardSection title={t('ssl.bindingsTitle')}>
+              {renewNotes.map((n) => (
+                <p key={n} className="muted u-text-sm">
+                  {n}
+                </p>
+              ))}
+              {bindings.filter(
+                (b) => (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0,
+              ).length > 0 ? (
+                <ul className="list-plain list-spaced u-mt-2">
+                  {bindings
+                    .filter(
+                      (b) =>
+                        (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0,
+                    )
+                    .map((b) => (
+                      <li key={b.domain}>
+                        <strong>{b.domain}</strong>
+                        {b.expires_at
+                          ? t('ssl.expiresAt', {
+                              date: new Date(b.expires_at).toLocaleDateString(),
+                            })
+                          : ''}
+                        {b.projects?.length
+                          ? t('ssl.projectsAt', {
+                              names: b.projects.map((p) => p.name).join(', '),
+                            })
+                          : ''}
+                        {b.mailDomains?.length
+                          ? t('ssl.mailAt', {
+                              domains: b.mailDomains.map((m) => m.domain).join(', '),
+                            })
+                          : ''}
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                <p className="muted u-text-sm">{t('ssl.noBindings')}</p>
+              )}
+            </CardSection>
+          </Card>
+        ) : null}
+
         <Card>
-          <CardSection title="綁定與續期">
-            {renewNotes.map((n) => (
-              <p key={n} className="muted u-text-sm">
-                {n}
-              </p>
-            ))}
-            {bindings.filter((b) => (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0)
-              .length > 0 ? (
-              <ul className="list-plain list-spaced u-mt-2">
-                {bindings
-                  .filter((b) => (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0)
-                  .map((b) => (
-                    <li key={b.domain}>
-                      <strong>{b.domain}</strong>
-                      {b.expires_at
-                        ? ` · 到期 ${new Date(b.expires_at).toLocaleDateString()}`
-                        : ''}
-                      {b.projects?.length
-                        ? ` · 專案: ${b.projects.map((p) => p.name).join(', ')}`
-                        : ''}
-                      {b.mailDomains?.length
-                        ? ` · 郵件: ${b.mailDomains.map((m) => m.domain).join(', ')}`
-                        : ''}
-                    </li>
-                  ))}
-              </ul>
-            ) : (
-              <p className="muted u-text-sm">尚未偵測到專案／郵件綁定</p>
-            )}
+          <CardSection title={t('ssl.certsTitle', { count: items.length })}>
+            <DataTable
+              columns={[
+                {
+                  key: 'domain',
+                  header: t('ssl.colDomain'),
+                  render: (r) => <strong>{r.domain}</strong>,
+                },
+                {
+                  key: 'provider',
+                  header: t('ssl.colProvider'),
+                  render: (r) =>
+                    r.provider === 'letsencrypt'
+                      ? 'Let’s Encrypt'
+                      : r.provider === 'upload'
+                        ? t('ssl.providerUpload')
+                        : r.provider,
+                },
+                {
+                  key: 'files',
+                  header: t('ssl.colLocalFiles'),
+                  render: (r) =>
+                    r.files_exist ? (
+                      <Badge tone="ok">{t('ssl.filesYes')}</Badge>
+                    ) : (
+                      <Badge tone="neutral">{t('ssl.filesNo')}</Badge>
+                    ),
+                },
+                {
+                  key: 'expires',
+                  header: t('ssl.colExpires'),
+                  render: (r) =>
+                    r.expires_at ? new Date(r.expires_at).toLocaleDateString() : '—',
+                },
+                {
+                  key: 'status',
+                  header: t('ssl.colStatus'),
+                  render: (r) => statusBadge(r.status, r.files_exist, t),
+                },
+              ]}
+              rows={items}
+              rowKey={(r) => String(r.id ?? r.domain)}
+              empty={
+                <EmptyState
+                  title={t('ssl.emptyTitle')}
+                  description={t('ssl.emptyDesc')}
+                />
+              }
+              rowActions={(r) => (
+                <ActionBar>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => setDel(r)}
+                  >
+                    {t('common.delete')}
+                  </Button>
+                </ActionBar>
+              )}
+            />
           </CardSection>
         </Card>
-      ) : null}
 
-      <Card>
-        <CardSection title={`憑證 (${items.length})`}>
-          <DataTable
-            columns={[
-              {
-                key: 'domain',
-                header: '域名',
-                render: (r) => <strong>{r.domain}</strong>,
-              },
-              {
-                key: 'provider',
-                header: '來源',
-                render: (r) =>
-                  r.provider === 'letsencrypt'
-                    ? 'Let’s Encrypt'
-                    : r.provider === 'upload'
-                      ? '上傳'
-                      : r.provider,
-              },
-              {
-                key: 'files',
-                header: '本地檔案',
-                render: (r) =>
-                  r.files_exist ? <Badge tone="ok">有</Badge> : <Badge tone="neutral">無</Badge>,
-              },
-              {
-                key: 'expires',
-                header: '到期',
-                render: (r) =>
-                  r.expires_at ? new Date(r.expires_at).toLocaleDateString() : '—',
-              },
-              {
-                key: 'status',
-                header: '狀態',
-                render: (r) => statusBadge(r.status, r.files_exist),
-              },
-            ]}
-            rows={items}
-            rowKey={(r) => String(r.id ?? r.domain)}
-            empty={
-              <EmptyState
-                title="尚未有憑證"
-                description="用右上角「上傳憑證」或「申請 Let’s Encrypt」"
-              />
-            }
-            rowActions={(r) => (
-              <ActionBar>
-                <Button variant="danger" size="sm" loading={busy} onClick={() => setDel(r)}>
-                  刪除
-                </Button>
-              </ActionBar>
+        <Modal
+          open={uploadOpen}
+          onClose={() => setUploadOpen(false)}
+          title={t('ssl.uploadTitle')}
+          description={t('ssl.uploadDesc')}
+          size="lg"
+          footer={
+            <>
+              <button
+                type="button"
+                className={buttonClassName({ variant: 'secondary', size: 'md' })}
+                onClick={() => setUploadOpen(false)}
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="submit"
+                form="ssl-up"
+                className={buttonClassName({ variant: 'primary', size: 'md' })}
+                disabled={busy}
+              >
+                {t('common.save')}
+              </button>
+            </>
+          }
+        >
+          <form id="ssl-up" onSubmit={(e) => void onUpload(e)}>
+            <FormLayout>
+              <Field
+                label={t('common.domain')}
+                htmlFor="ud"
+                flush
+                required
+                hint={t('ssl.domainHint')}
+              >
+                <input
+                  id="ud"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  required
+                  placeholder="example.com"
+                  spellCheck={false}
+                />
+              </Field>
+              <Field
+                label={t('ssl.fullchainLabel')}
+                htmlFor="uf"
+                fullWidth
+                flush
+                required
+                hint={t('ssl.fullchainHint')}
+              >
+                <textarea
+                  id="uf"
+                  rows={6}
+                  value={fullchain}
+                  onChange={(e) => setFullchain(e.target.value)}
+                  required
+                  placeholder={
+                    '-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----'
+                  }
+                  spellCheck={false}
+                />
+              </Field>
+              <Field
+                label={t('ssl.privkeyLabel')}
+                htmlFor="up"
+                fullWidth
+                flush
+                required
+                hint={t('ssl.privkeyHint')}
+              >
+                <textarea
+                  id="up"
+                  rows={5}
+                  value={privkey}
+                  onChange={(e) => setPrivkey(e.target.value)}
+                  required
+                  placeholder={
+                    '-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----'
+                  }
+                  spellCheck={false}
+                />
+              </Field>
+            </FormLayout>
+            <FormHint>{t('ssl.uploadHint')}</FormHint>
+          </form>
+        </Modal>
+
+        <Modal
+          open={leOpen}
+          onClose={() => setLeOpen(false)}
+          title={t('ssl.leTitle')}
+          description={t('ssl.leDesc')}
+          footer={
+            <>
+              <button
+                type="button"
+                className={buttonClassName({ variant: 'secondary', size: 'md' })}
+                onClick={() => setLeOpen(false)}
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="submit"
+                form="ssl-le"
+                className={buttonClassName({ variant: 'primary', size: 'md' })}
+                disabled={busy}
+              >
+                {t('ssl.requestCert')}
+              </button>
+            </>
+          }
+        >
+          <form id="ssl-le" onSubmit={(e) => void onLe(e)}>
+            <FormLayout columns={2}>
+              <Field
+                label={t('common.domain')}
+                htmlFor="ld"
+                flush
+                required
+                hint={t('ssl.domainLeHint')}
+              >
+                <input
+                  id="ld"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  required
+                  placeholder={t('ssl.domainLePlaceholder')}
+                  spellCheck={false}
+                />
+              </Field>
+              <Field
+                label={t('ssl.emailLabel')}
+                htmlFor="le"
+                flush
+                hint={t('ssl.emailHint')}
+              >
+                <input
+                  id="le"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  spellCheck={false}
+                />
+              </Field>
+            </FormLayout>
+            {domain.trim().startsWith('*.') ? (
+              <FormHint>{t('ssl.leDns01Hint')}</FormHint>
+            ) : (
+              <FormHint>{t('ssl.leHttp01Hint')}</FormHint>
             )}
-          />
-        </CardSection>
-      </Card>
+          </form>
+        </Modal>
 
-      <Modal
-        open={uploadOpen}
-        onClose={() => setUploadOpen(false)}
-        title="上傳憑證"
-        description="貼上 PEM 內容，由管理面板寫入伺服器"
-        size="lg"
-        footer={
-          <>
-            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setUploadOpen(false)}>
-              取消
-            </button>
-            <button type="submit" form="ssl-up" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
-              儲存
-            </button>
-          </>
-        }
-      >
-        <form id="ssl-up" onSubmit={(e) => void onUpload(e)}>
-          <FormLayout>
-            <Field
-              label="域名"
-              htmlFor="ud"
-              flush
-              required
-              hint="憑證對應的主域名，例如 example.com"
-            >
-              <input
-                id="ud"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                required
-                placeholder="example.com"
-                spellCheck={false}
-              />
-            </Field>
-            <Field
-              label="憑證鏈（fullchain）"
-              htmlFor="uf"
-              fullWidth
-              flush
-              required
-              hint="含伺服器憑證與中繼 CA 的 PEM"
-            >
-              <textarea
-                id="uf"
-                rows={6}
-                value={fullchain}
-                onChange={(e) => setFullchain(e.target.value)}
-                required
-                placeholder={'-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----'}
-                spellCheck={false}
-              />
-            </Field>
-            <Field
-              label="私鑰（privkey）"
-              htmlFor="up"
-              fullWidth
-              flush
-              required
-              hint="與憑證配對的私鑰 PEM，請妥善保管"
-            >
-              <textarea
-                id="up"
-                rows={5}
-                value={privkey}
-                onChange={(e) => setPrivkey(e.target.value)}
-                required
-                placeholder={'-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----'}
-                spellCheck={false}
-              />
-            </Field>
-          </FormLayout>
-          <FormHint>上傳成功只代表檔案已寫入；請到對應專案／郵件域名綁定後才會生效。</FormHint>
-        </form>
-      </Modal>
-
-      <Modal
-        open={leOpen}
-        onClose={() => setLeOpen(false)}
-        title="申請 Let’s Encrypt"
-        description="由管理面板在伺服器上申請，無需手動執行 certbot"
-        footer={
-          <>
-            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setLeOpen(false)}>
-              取消
-            </button>
-            <button type="submit" form="ssl-le" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
-              申請憑證
-            </button>
-          </>
-        }
-      >
-        <form id="ssl-le" onSubmit={(e) => void onLe(e)}>
-          <FormLayout columns={2}>
-            <Field
-              label="域名"
-              htmlFor="ld"
-              flush
-              required
-              hint="一般域名或 *.example.com 萬用字元"
-            >
-              <input
-                id="ld"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                required
-                placeholder="example.com 或 *.example.com"
-                spellCheck={false}
-              />
-            </Field>
-            <Field
-              label="聯絡電郵"
-              htmlFor="le"
-              flush
-              hint="Let’s Encrypt 到期通知用；可留空則用 admin@域名"
-            >
-              <input
-                id="le"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
-                spellCheck={false}
-              />
-            </Field>
-          </FormLayout>
-          {domain.trim().startsWith('*.') ? (
-            <FormHint>
-              萬用字元使用 dns-01：面板會啟動 certbot manual challenge，需於 DNS
-              提供商完成 TXT 驗證。執行完成 ≠ 憑證已上線。
-            </FormHint>
-          ) : (
-            <FormHint>
-              一般域名使用 http-01（nginx 外掛）。申請成功後請確認專案／郵件已綁定此域名。
-            </FormHint>
-          )}
-        </form>
-      </Modal>
-
-      <ConfirmDialog
-        open={Boolean(del)}
-        onClose={() => setDel(null)}
-        onConfirm={() => {
-          if (del) void remove(del.domain || del.id).then(() => setDel(null));
-        }}
-        title="刪除憑證？"
-        description={`將刪除 ${del?.domain ?? ''} 的憑證檔與登記。`}
-        confirmLabel="刪除"
-        cancelLabel="取消"
-        danger
-        busy={busy}
-      />
+        <ConfirmDialog
+          open={Boolean(del)}
+          onClose={() => setDel(null)}
+          onConfirm={() => {
+            if (del) void remove(del.domain || del.id).then(() => setDel(null));
+          }}
+          title={t('ssl.deleteTitle')}
+          description={t('ssl.deleteDesc', { domain: del?.domain ?? '' })}
+          confirmLabel={t('common.delete')}
+          cancelLabel={t('common.cancel')}
+          danger
+          busy={busy}
+        />
       </WithPageGuide>
     </FeaturePageLayout>
   );

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Curated log sources + path allowlist (fail-closed).
  */
@@ -14,8 +15,7 @@ export const BUILTIN_LOG_SOURCES: LogSourceDef[] = [
     unit: 'nginx.service',
     group: 'web',
     defaultEnabled: true,
-    description: 'Web server (journal)',
-  },
+    description: 'Web server (journal)' },
   {
     id: 'journal:sshd',
     kind: 'journal',
@@ -23,80 +23,70 @@ export const BUILTIN_LOG_SOURCES: LogSourceDef[] = [
     unit: 'ssh.service',
     group: 'security',
     defaultEnabled: true,
-    description: 'SSH (journal; some distros use sshd.service)',
-  },
+    description: 'SSH (journal; some distros use sshd.service)' },
   {
     id: 'journal:fail2ban',
     kind: 'journal',
     label: 'fail2ban',
     unit: 'fail2ban.service',
     group: 'security',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'journal:postfix',
     kind: 'journal',
     label: 'postfix',
     unit: 'postfix.service',
     group: 'mail',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'journal:dovecot',
     kind: 'journal',
     label: 'dovecot',
     unit: 'dovecot.service',
     group: 'mail',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'file:syslog',
     kind: 'file',
     label: 'syslog',
     paths: ['/var/log/syslog', '/var/log/messages'],
     group: 'system',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'file:auth',
     kind: 'file',
     label: 'auth',
     paths: ['/var/log/auth.log', '/var/log/secure'],
     group: 'security',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'file:nginx-access',
     kind: 'file',
     label: 'nginx access',
     paths: ['/var/log/nginx/access.log'],
     group: 'web',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'file:nginx-error',
     kind: 'file',
     label: 'nginx error',
     paths: ['/var/log/nginx/error.log'],
     group: 'web',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'file:mail',
     kind: 'file',
     label: 'mail',
     paths: ['/var/log/mail.log', '/var/log/maillog'],
     group: 'mail',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
   {
     id: 'file:fail2ban',
     kind: 'file',
     label: 'fail2ban.log',
     paths: ['/var/log/fail2ban.log'],
     group: 'security',
-    defaultEnabled: true,
-  },
+    defaultEnabled: true },
 ];
 
 /** Roots under which file logs may be read (after realpath). */
@@ -139,18 +129,18 @@ export function assertLogPathAllowed(
 } {
   const notes: string[] = [];
   if (!candidate || candidate.includes('\0')) {
-    return { ok: false, notes: ['無效路徑'] };
+    return { ok: false, notes: [tl('notes.invalidPath')] };
   }
   if (isForbiddenLogPath(candidate)) {
-    return { ok: false, notes: ['拒絕讀取敏感路徑'] };
+    return { ok: false, notes: [tl('notes.auto.n0878')] };
   }
   try {
     if (!existsSync(candidate)) {
-      return { ok: false, notes: ['檔案不存在'] };
+      return { ok: false, notes: [tl('notes.fileMissing')] };
     }
     const real = realpathSync(candidate);
     if (isForbiddenLogPath(real)) {
-      return { ok: false, notes: ['symlink 指向敏感路徑'] };
+      return { ok: false, notes: [tl('notes.auto.n0439')] };
     }
     const roots = [...LOG_PATH_ROOTS, ...extraRoots.filter(Boolean)];
     const allowed = roots.some((root) => {
@@ -162,18 +152,17 @@ export function assertLogPathAllowed(
       }
     });
     if (!allowed) {
-      return { ok: false, notes: [`路徑不在 allowlist：${real}`] };
+      return { ok: false, notes: [tl('notes.auto.t0767', { v0: (real) })] };
     }
     const st = statSync(real);
     if (!st.isFile()) {
-      return { ok: false, notes: ['不是一般檔案'] };
+      return { ok: false, notes: [tl('notes.notRegularFile')] };
     }
     return { ok: true, path: real, notes };
   } catch (e) {
     return {
       ok: false,
-      notes: [e instanceof Error ? e.message : '路徑解析失敗'],
-    };
+      notes: [e instanceof Error ? e.message : tl('notes.pathResolveFailed')] };
   }
 }
 
@@ -207,8 +196,7 @@ export function listSourceStatuses(opts?: {
       out.push({
         ...def,
         available: true,
-        notes: ['journal 來源；實際可讀性視權限'],
-      });
+        notes: [tl('notes.auto.n0311')] });
       continue;
     }
     const res = resolveSourcePath(def);
@@ -229,8 +217,7 @@ export function listSourceStatuses(opts?: {
       resolvedPath: res.path,
       bytes,
       mtime,
-      notes: res.available ? undefined : ['檔案不存在或不可讀'],
-    });
+      notes: res.available ? undefined : [tl('notes.auto.n1021')] });
   }
 
   // Custom admin paths
@@ -250,8 +237,7 @@ export function listSourceStatuses(opts?: {
         resolvedPath: r.path,
         bytes: st.size,
         mtime: st.mtime.toISOString(),
-        notes: ['自訂 allow 路徑'],
-      });
+        notes: [tl('notes.auto.n1338')] });
     } catch {
       /* */
     }
@@ -279,8 +265,7 @@ export function listSourceStatuses(opts?: {
             resolvedPath: full,
             bytes: st.size,
             mtime: st.mtime.toISOString(),
-            notes: ['YSK managed nginx log'],
-          });
+            notes: ['YSK managed nginx log'] });
         } catch {
           /* */
         }
@@ -306,7 +291,7 @@ export function assertManagedOrSystemLogPath(
     const real = realpathSync(candidate);
     const root = realpathSync(join(dataDir, 'nginx', 'logs'));
     if (real === root || real.startsWith(root + '/')) {
-      if (isForbiddenLogPath(real)) return { ok: false, notes: ['拒絕'] };
+      if (isForbiddenLogPath(real)) return { ok: false, notes: [tl('notes.auto.n0868')] };
       return { ok: true, path: real, notes: ['managed log'] };
     }
   } catch {

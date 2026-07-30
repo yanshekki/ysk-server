@@ -123,18 +123,18 @@ export function ProjectLogsTab({
     <div className="tab-panel stack">
       <Card>
         <CardHeader
-          title={t('projects.sectionLogs', { defaultValue: '應用日誌' })}
+          title={t('projects.sectionLogs', { defaultValue: t('projects.sectionLogs') })}
           description={t('projects.sectionLogsDesc', {
             defaultValue:
-              '掃描 logs/、log/ 與額外目錄；可按檔名／內容關鍵字搜尋',
+              t('projects.logsSectionDesc'),
           })}
         />
 
         <FormLayout columns={2}>
           <Field
-            label="檔名搜尋"
+            label={t('projects.logsNameSearch')}
             htmlFor="plog-name"
-            hint="匹配相對路徑，例如 error、app.out"
+            hint={t('projects.logsNameSearchHint')}
             flush
           >
             <input
@@ -149,9 +149,9 @@ export function ProjectLogsTab({
             />
           </Field>
           <Field
-            label="內容關鍵字"
+            label={t('projects.logsContentKw')}
             htmlFor="plog-grep"
-            hint="在各檔尾端搜尋（唔係全檔全文）"
+            hint={t('projects.logsContentKwHint')}
             flush
           >
             <input
@@ -174,7 +174,7 @@ export function ProjectLogsTab({
             loading={busy}
             onClick={runScan}
           >
-            {grepQ.trim() ? '搜尋' : '重新掃描'}
+            {grepQ.trim() ? t('common.search') : t('projects.logsRescan')}
           </Button>
           {selectedFile ? (
             <Button
@@ -185,7 +185,7 @@ export function ProjectLogsTab({
                 onRefreshFile?.({ grep: grepQ.trim() || undefined })
               }
             >
-              重新整理此檔
+              {t('projects.logsRefreshFile')}
             </Button>
           ) : null}
           {selectedFile && logTail ? (
@@ -196,7 +196,7 @@ export function ProjectLogsTab({
                 void navigator.clipboard?.writeText(logTail);
               }}
             >
-              複製內容
+              {t('projects.logsCopy')}
             </Button>
           ) : null}
           {selectedFile && logTail ? (
@@ -215,14 +215,14 @@ export function ProjectLogsTab({
                 URL.revokeObjectURL(url);
               }}
             >
-              下載尾端
+              {t('projects.logsDownloadTail')}
             </Button>
           ) : null}
           <Link
             to={logCenterHref}
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
           >
-            日誌中心
+            {t('system.scLogs')}
           </Link>
         </FormActions>
 
@@ -233,7 +233,7 @@ export function ProjectLogsTab({
         {hits.length > 0 ? (
           <div className="u-mt-3">
             <FormHint>
-              內容命中 {hits.length} 個檔 — 點檔名可開尾端（含關鍵字過濾）
+              {t('projects.hitsFiles', { count: hits.length })}
             </FormHint>
             <div className="chip-row u-mt-2">
               {hits.map((h) => (
@@ -248,7 +248,7 @@ export function ProjectLogsTab({
                       grep: grepQ.trim() || undefined,
                     })
                   }
-                  title={`${h.matched} 行命中`}
+                  title={t('projects.logsLinesHit', { count: h.matched })}
                 >
                   {h.file} · {h.matched}
                 </button>
@@ -260,8 +260,8 @@ export function ProjectLogsTab({
         {filteredByLocalName.length > 0 ? (
           <div className="u-mt-4">
             <FormHint>
-              日誌檔 {filteredByLocalName.length}
-              {nameQ.trim() ? `（檔名含「${nameQ.trim()}」）` : ''}
+              {t('projects.logFilesCount', { count: filteredByLocalName.length })}
+              {nameQ.trim() ? t('projects.logsNameFilter', { q: nameQ.trim() }) : ''}
               ：
             </FormHint>
             <div className="chip-row">
@@ -288,8 +288,8 @@ export function ProjectLogsTab({
         ) : (
           <FormHint>
             {busy
-              ? '正在掃描 logs…'
-              : '尚無日誌檔 — 部署或跑過服務後會出現；亦可設定額外目錄。'}
+              ? t('projects.logsScanning')
+              : t('projects.logsNoneYet')}
           </FormHint>
         )}
 
@@ -297,7 +297,7 @@ export function ProjectLogsTab({
           <LogViewer
             text={logTail}
             emptyLabel={t('projects.logsEmpty', {
-              defaultValue: '尚無內容',
+              defaultValue: t('projects.logsNoContent'),
             })}
           />
         </div>
@@ -306,14 +306,14 @@ export function ProjectLogsTab({
       {related.length > 0 ? (
         <Card>
           <CardHeader
-            title="相關來源"
-            description="journal / nginx / PHP-FPM（詳見日誌中心）"
+            title={t('projects.logsRelated')}
+            description={t('projects.logsRelatedDesc')}
           />
           <ul className="plog-related">
             {related.map((r) => (
               <li key={r.id} className="plog-related__item">
                 <Badge tone={r.available ? 'ok' : 'neutral'}>
-                  {r.available ? '可用' : '未見'}
+                  {r.available ? t('common.available') : t('projects.logsMissing')}
                 </Badge>
                 <strong>{r.label}</strong>
                 <code className="muted u-text-sm">{r.meta || r.source}</code>
@@ -326,7 +326,7 @@ export function ProjectLogsTab({
                 to={`/logs?tab=explore&project=${encodeURIComponent(projectId)}`}
                 className={buttonClassName({ variant: 'secondary', size: 'sm' })}
               >
-                在日誌中心開啟
+                {t('projects.logsOpenInCenter')}
               </Link>
             </FormActions>
           ) : null}
@@ -335,8 +335,8 @@ export function ProjectLogsTab({
 
       <Card>
         <CardHeader
-          title="額外 log 目錄"
-          description="相對專案 home 的路徑（除預設 logs/、log/ 外）"
+          title={t('projects.logsExtraDirs')}
+          description={t('projects.logsExtraDirsDesc')}
         />
         <div className="u-mb-3">
           <PresetChips
@@ -374,9 +374,9 @@ export function ProjectLogsTab({
         </div>
         <FormLayout>
           <Field
-            label="目錄列表"
+            label={t('projects.logsDirList')}
             htmlFor="plog-dirs"
-            hint="一行一個；只允許 home 內相對路徑"
+            hint={t('projects.logsDirListHint')}
             flush
             fullWidth
           >
@@ -387,11 +387,7 @@ export function ProjectLogsTab({
               onChange={(e) => setDirsText(e.target.value)}
               placeholder={'storage/logs\nvar/log'}
               disabled={busy || !onSaveExtraDirs}
-              style={{
-                width: '100%',
-                fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-                fontSize: '0.85rem',
-              }}
+              className="u-mono-input"
             />
           </Field>
         </FormLayout>
@@ -402,7 +398,7 @@ export function ProjectLogsTab({
             disabled={busy}
             onClick={() => setDirsText(extraDirs.join('\n'))}
           >
-            重設
+            {t('projects.logsReset')}
           </Button>
           <Button
             variant="primary"
@@ -417,12 +413,11 @@ export function ProjectLogsTab({
               void onSaveExtraDirs?.(dirs);
             }}
           >
-            儲存並掃描
+            {t('projects.logsSaveScan')}
           </Button>
         </FormActions>
         <FormHint>
-          預設永遠掃描 <code>logs/</code> 與 <code>log/</code>
-          。額外目錄只收入檔名像 *.log / *.out / *.err 的檔。
+          {t('projects.defaultScanNote')}
         </FormHint>
       </Card>
     </div>

@@ -1,0 +1,117 @@
+/* —— Card (shared across all pages) —— */
+.card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-card);
+  min-width: 0;
+  /* Stack direct children with consistent air — fixes “label stuck to table” */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-card-block, var(--space-6));
+}
+
+.card + .card {
+  margin-top: var(--space-card-gap);
+}
+
+.tab-panel > .card + .card,
+.feature-page__body.stack > .card + .card {
+  margin-top: 0; /* stack/tab-panel gap owns spacing */
+}
+
+/* Stack owns vertical rhythm — avoid double spacing */
+.stack > .card + .card,
+.stack > .alert + .card,
+.stack > .card {
+  margin-top: 0;
+}
+
+/**
+ * Card header is a unit — no extra gap inside header row.
+ * Collapse margin on nested wrappers that already pad themselves.
+ */
+.card > .card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.card > .card__header .card__title {
+  margin: 0 0 var(--space-2);
+}
+
+.card > .card__header .card__desc {
+  margin: 0; /* spacing to next card child is via .card gap */
+}
+
+/* Nested full-bleed table: cancel double padding feel, keep outer gap */
+.card > .data-table {
+  margin: 0;
+}
+
+/* Wrappers like div.u-mb-3 should not fight card gap */
+.card > [class*='u-mb-'] {
+  margin-bottom: 0 !important;
+}
+
+/* form-actions already has padding-top border; with card gap avoid double air */
+.card > .form-actions {
+  margin-top: 0;
+}
+
+.card > .form-layout {
+  margin-top: 0;
+  max-width: none; /* use full card width when stacked */
+}
+
+.card > .form-hint {
+  margin-bottom: 0;
+}
+
+.card__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.card__desc {
+  margin: 0 0 var(--space-section);
+  color: var(--text-sub);
+  font-size: var(--text-md);
+}
+
+/* —— Card flush for list —— */
+.card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card--flush .card__header {
+  padding: var(--space-5) var(--space-card) 0;
+}
+
+.card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-section);
+}
+
+.card__header .card__title {
+  margin: 0;
+}
+
+.card__body {
+  /* Explicit body when card uses header/body split; default card already has padding */
+  min-width: 0;
+}
+

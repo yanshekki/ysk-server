@@ -3,6 +3,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Link } from 'react-router-dom';
 import {
   PageGuide,
@@ -20,19 +21,20 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { dbClusterApi } from '../../features/db-service/cluster-api';
+import { useCapabilities } from '../../shared/hooks/useCapabilities';
 
-function enabledLabel(v: string): string {
-  if (v === 'enabled') return '自啟';
-  if (v === 'disabled') return '否';
+function enabledLabel(v: string, t: TFunction): string {
+  if (v === 'enabled') return t('services.enabledBoot');
+  if (v === 'disabled') return t('common.no');
   if (v === 'static' || v === 'indirect') return v;
-  return v || '—';
+  return v || t('common.noneSelectedShort');
 }
 
-function actionLabel(action: 'start' | 'stop' | 'restart' | 'reload'): string {
-  if (action === 'start') return '啟動';
-  if (action === 'stop') return '停止';
-  if (action === 'restart') return '重啟';
-  return '重載';
+function actionLabel(
+  action: 'start' | 'stop' | 'restart' | 'reload',
+  t: TFunction,
+): string {
+  return t(`services.action.${action}`);
 }
 
 type MatrixItem = {
@@ -57,6 +59,7 @@ function toneFor(active: string, installed: boolean): 'ok' | 'warn' | 'danger' |
 
 export function ServicesPage() {
   const { t } = useTranslation();
+  const { can } = useCapabilities();
   const [items, setItems] = useState<MatrixItem[]>([]);
   const [meta, setMeta] = useState<{
     executeEnabled?: boolean;
@@ -100,9 +103,9 @@ export function ServicesPage() {
         setHaOverview(null);
       }
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     setLoading(true);
@@ -119,16 +122,18 @@ export function ServicesPage() {
         await refresh();
         return r as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '操作失敗';
+        const m = e instanceof Error ? e.message : t('common.opFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, `已${actionLabel(action)}`);
+    }, t('services.actionDone', { action: actionLabel(action, t) }));
   }
 
   const running = items.filter((i) => i.active === 'active').length;
   const missing = items.filter((i) => !i.installed).length;
   const failed = items.filter((i) => i.active === 'failed').length;
-  const canMutate = Boolean(meta.executeEnabled && meta.isRoot);
+  const canMutate = Boolean(
+    meta.executeEnabled && meta.isRoot && can('services.control'),
+  );
 
   const categories = useMemo(
     () => [...new Set(items.map((i) => i.category))].sort(),
@@ -154,41 +159,42 @@ export function ServicesPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.services', { defaultValue: '服務狀態' })}
+      title={t('nav.services')}
       showCapability={false}
       status={{
         pill: {
-          label: `${running}/${items.length} 運行中`,
+          label: t('services.runningOf', { running, total: items.length }),
           tone: heroTone,
         },
         items: [
-          { label: '運行中', value: running, tone: 'ok' },
+          { label: t('common.running'), value: running, tone: 'ok' },
           {
-            label: '未安裝',
+            label: t('common.notInstalled'),
             value: missing,
             tone: missing ? 'warn' : 'neutral',
           },
           {
             label: 'EXECUTE',
-            value: meta.executeEnabled ? '開' : '關',
+            value: meta.executeEnabled ? t('common.on') : t('common.off'),
             tone: meta.executeEnabled ? 'ok' : 'warn',
           },
           {
             label: 'Root',
-            value: meta.isRoot ? '是' : '否',
+            value: meta.isRoot ? t('common.yes') : t('common.no'),
             tone: meta.isRoot ? 'ok' : 'warn',
           },
           {
-            label: '可變更',
-            value: canMutate ? '是' : '鎖定',
+            label: t('services.canMutate'),
+            value: canMutate ? t('common.yes') : t('services.locked'),
             tone: canMutate ? 'ok' : 'warn',
           },
           ...(failed > 0
-            ? [{ label: '失敗', value: failed, tone: 'danger' as const }]
+            ? [{ label: t('common.failed'), value: failed, tone: 'danger' as const }]
             : []),
         ],
       }}
-      actions={<>
+      actions={
+        <>
           <Button
             variant="secondary"
             size="sm"
@@ -200,13 +206,13 @@ export function ServicesPage() {
               void refresh().finally(() => setLoading(false));
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Link to="/system/unit" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            控制面 unit
+            {t('services.controlUnit')}
           </Link>
           <Link to="/logs" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            日誌
+            {t('services.logs')}
           </Link>
         </>
       }
@@ -217,46 +223,52 @@ export function ServicesPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       {haOverview && haOverview.count > 0 ? (
         <Alert variant="info">
-          <strong>資料庫 HA</strong>：{haOverview.count} 個叢集 ·{' '}
+          <strong>{t('services.dbHa')}</strong>：
+          {t('services.clusterCount', { count: haOverview.count })} ·{' '}
           {haOverview.items
             .slice(0, 4)
             .map((x) => `${x.name}(${x.status})`)
             .join(' · ')}
           {haOverview.count > 4 ? ' …' : ''}{' '}
-          <Link to="/databases/mariadb/service" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            MariaDB 叢集
+          <Link
+            to="/databases/mariadb/service"
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+          >
+            {t('services.mariadbCluster')}
           </Link>{' '}
-          <Link to="/databases/mysql/service" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+          <Link
+            to="/databases/mysql/service"
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+          >
             MySQL
           </Link>
         </Alert>
       ) : null}
 
       {loading && items.length === 0 ? (
-        <LoadingBlock label="探測服務矩陣…" />
+        <LoadingBlock label={t('services.probing')} />
       ) : (
         <div className="ops">
           {!canMutate ? (
             <Alert variant="info">
-              生命週期操作已鎖定：需 root + YSK_EXECUTE。探測仍可用。見{' '}
-              <Link to="/system">主機設定</Link>。
+              {t('services.lifecycleLocked')}{' '}
+              <Link to="/system">{t('services.hostSettings')}</Link>。
             </Alert>
           ) : null}
 
           <PageTabs
             tabs={[
-              { id: 'matrix', label: `服務矩陣 (${items.length})` },
-              { id: 'protection', label: '保護探測' },
-            
-          { id: 'about', label: '說明' },
-        ]}
+              { id: 'matrix', label: t('services.matrixTab', { count: items.length }) },
+              { id: 'protection', label: t('services.protectionTab') },
+              { id: 'about', label: t('common.about') },
+            ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -266,9 +278,12 @@ export function ServicesPage() {
                 <header className="ops-panel__head ops-panel__head--stack">
                   <div className="ops-panel__head-row">
                     <div>
-                      <h3 className="ops-panel__title">已知服務</h3>
+                      <h3 className="ops-panel__title">{t('services.knownServices')}</h3>
                       <p className="ops-panel__sub">
-                        顯示 {filtered.length} / {items.length}
+                        {t('services.showing', {
+                          shown: filtered.length,
+                          total: items.length,
+                        })}
                       </p>
                     </div>
                   </div>
@@ -279,7 +294,7 @@ export function ServicesPage() {
                         className={`ops-chip${catFilter === 'all' ? ' ops-chip--active' : ''}`}
                         onClick={() => setCatFilter('all')}
                       >
-                        全部
+                        {t('services.all')}
                         <span className="ops-chip__n">{items.length}</span>
                       </button>
                       {categories.map((c) => {
@@ -297,19 +312,19 @@ export function ServicesPage() {
                         );
                       })}
                     </div>
-                    <Field label="搜尋" htmlFor="svc-q" flush>
+                    <Field label={t('common.search')} htmlFor="svc-q" flush>
                       <input
                         id="svc-q"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
-                        placeholder="名稱 / unit / 類別"
+                        placeholder={t('services.searchPh')}
                       />
                     </Field>
                   </div>
                 </header>
 
                 {filtered.length === 0 ? (
-                  <p className="ops-muted">沒有符合的服務</p>
+                  <p className="ops-muted">{t('services.noMatch')}</p>
                 ) : (
                   <div className="ops-svc-list">
                     {filtered.map((row) => (
@@ -327,9 +342,13 @@ export function ServicesPage() {
                           </div>
                           <div className="ops-svc__meta">
                             <code>{row.unit}</code>
-                            <span>開機 {enabledLabel(row.enabled)}</span>
+                            <span>
+                              {t('services.bootPrefix', {
+                                state: enabledLabel(row.enabled, t),
+                              })}
+                            </span>
                             {!row.installed ? (
-                              <Badge tone="danger">未安裝</Badge>
+                              <Badge tone="danger">{t('common.notInstalled')}</Badge>
                             ) : null}
                           </div>
                         </div>
@@ -339,12 +358,11 @@ export function ServicesPage() {
                             size="sm"
                             loading={busy}
                             disabled={
-                              (!row.installed && row.active !== 'active') ||
-                              !canMutate
+                              (!row.installed && row.active !== 'active') || !canMutate
                             }
                             onClick={() => void lifecycle(row.unit, 'start')}
                           >
-                            啟動
+                            {t('services.action.start')}
                           </Button>
                           <Button
                             variant="secondary"
@@ -353,7 +371,7 @@ export function ServicesPage() {
                             disabled={!canMutate}
                             onClick={() => void lifecycle(row.unit, 'restart')}
                           >
-                            重啟
+                            {t('services.action.restart')}
                           </Button>
                           <Button
                             variant="ghost"
@@ -362,21 +380,21 @@ export function ServicesPage() {
                             disabled={!canMutate}
                             onClick={() => void lifecycle(row.unit, 'stop')}
                           >
-                            停止
+                            {t('services.action.stop')}
                           </Button>
                           {row.href ? (
                             <Link
                               to={row.href}
                               className={buttonClassName({ variant: 'ghost', size: 'sm' })}
                             >
-                              控制頁
+                              {t('services.controlPage')}
                             </Link>
                           ) : null}
                           <Link
                             to={`/logs?unit=${encodeURIComponent(row.unit)}`}
                             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
                           >
-                            日誌
+                            {t('services.logs')}
                           </Link>
                         </div>
                       </article>
@@ -390,10 +408,8 @@ export function ServicesPage() {
               <section className="ops-panel">
                 <header className="ops-panel__head">
                   <div>
-                    <h3 className="ops-panel__title">保護探測</h3>
-                    <p className="ops-panel__sub">
-                      唯讀；唔改防火牆／fail2ban
-                    </p>
+                    <h3 className="ops-panel__title">{t('services.protectionTitle')}</h3>
+                    <p className="ops-panel__sub">{t('services.protectionSub')}</p>
                   </div>
                 </header>
                 <div className="ops-panel__actions">
@@ -410,19 +426,19 @@ export function ServicesPage() {
                         setProbe(r);
                         return {
                           ok: true,
-                          notes: ['保護探測完成'],
+                          notes: [t('services.protectionDoneNote')],
                           ...r,
                         } as unknown as OpsResultLike;
-                      }, '探測完成')
+                      }, t('services.probeDone'))
                     }
                   >
-                    執行保護探測
+                    {t('services.runProtection')}
                   </Button>
-                  <Link to="/fail2ban" className={buttonClassName({ variant: 'secondary', size: 'md' })}>
-                    Fail2ban
-                  </Link>
-                  <Link to="/firewall" className={buttonClassName({ variant: 'ghost', size: 'md' })}>
-                    防火牆
+                  <Link
+                    to="/protection"
+                    className={buttonClassName({ variant: 'secondary', size: 'md' })}
+                  >
+                    {t('nav.protection')}
                   </Link>
                 </div>
                 {probe ? (
@@ -438,16 +454,16 @@ export function ServicesPage() {
                       ))}
                   </dl>
                 ) : (
-                  <p className="ops-muted">尚未探測</p>
+                  <p className="ops-muted">{t('services.notProbedYet')}</p>
                 )}
               </section>
             ) : null}
-          
-        {tab === 'about' ? <PageGuide guideId="services" /> : null}
-      </PageTabs>
+
+            {tab === 'about' ? <PageGuide guideId="services" /> : null}
+          </PageTabs>
 
           <OpsResultPanel
-            title="操作結果"
+            title={t('opsResult.title')}
             result={result}
             message={msg}
             busy={busy}

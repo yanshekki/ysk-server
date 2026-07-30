@@ -8,14 +8,15 @@ import {
   PRODUCT_NAME,
   ErrorCodes,
   YskError,
-  type StructuredResult,
-} from '@ysk/shared';
+  localeFromEnv,
+  normalizeLocale,
+  runWithLocaleAsync,
+  type StructuredResult,  tl} from '@ysk/shared';
 import {
   createDefaultAllowlist,
   installControlPlaneSystemd,
   listAgentRuntimes,
-  planSelfUpdate,
-} from '@ysk/core';
+  planSelfUpdate } from '@ysk/core';
 import { createAppContext, closeAppContext } from './app-context.js';
 import { createHttpServer, listen } from './http-server.js';
 import { runSetup } from './cli/setup.js';
@@ -141,8 +142,7 @@ function printCliError(err: unknown, json: boolean): number {
         code: err.code,
         message: err.message,
         details: err.details ?? null,
-        httpStatus: err.httpStatus,
-      });
+        httpStatus: err.httpStatus });
     } else {
       process.stderr.write(`${err.code}: ${err.message}\n`);
     }
@@ -166,8 +166,7 @@ function openCliContext(args: string[]) {
     config,
     configPath,
     dataDir: dataDir ?? config?.dataDir,
-    executeEnabled: process.env.YSK_EXECUTE === '1',
-  });
+    executeEnabled: process.env.YSK_EXECUTE === '1' });
 }
 
 function printHelp(): void {
@@ -204,7 +203,7 @@ Commands:
   agents                List/probe agent runtimes (experimental)
   agent run             Outbound fleet poller (experimental)
   readiness | doctor    Production readiness (honest)
-  migrate               inventory|host|post|status|resume (整機遷移)
+  migrate               inventory|host|post|status|resume (full host migrate)
   version | help
 
 Global:
@@ -264,7 +263,23 @@ async function main(argv: string[]): Promise<number> {
   const args = argv.slice(2);
   const json = hasFlag(args, '--json');
   const command = args.find((a) => !a.startsWith('-'));
+  // Locale: --locale=xx | YSK_LOCALE | LANG
+  const localeFlag =
+    args.find((a) => a.startsWith('--locale='))?.slice('--locale='.length) ??
+    (() => {
+      const i = args.indexOf('--locale');
+      return i >= 0 ? args[i + 1] : undefined;
+    })();
+  const locale = normalizeLocale(localeFlag ?? localeFromEnv());
 
+  return runWithLocaleAsync(locale, () => mainInner(args, json, command));
+}
+
+async function mainInner(
+  args: string[],
+  json: boolean,
+  command: string | undefined,
+): Promise<number> {
   // Global flags must win over default-to-help when only flags are present
   if (hasFlag(args, '--version') || hasFlag(args, '-V')) {
     printVersion(json);
@@ -280,8 +295,7 @@ async function main(argv: string[]): Promise<number> {
         version: VERSION,
         commands: [...CLI_COMMANDS],
         docs: ['docs/agent/README.md', 'docs/cli/reference.md', 'docs/agent/commands.json'],
-        exitCodes: { 0: 'ok', 1: 'error', 2: 'validation', 3: 'blocked', 4: 'not_found', 5: 'host_error' },
-      });
+        exitCodes: { 0: 'ok', 1: 'error', 2: 'validation', 3: 'blocked', 4: 'not_found', 5: 'host_error' } });
     } else {
       printHelp();
     }
@@ -297,8 +311,7 @@ async function main(argv: string[]): Promise<number> {
         version: VERSION,
         commands: [...CLI_COMMANDS],
         docs: ['docs/agent/README.md', 'docs/cli/reference.md', 'docs/agent/commands.json'],
-        exitCodes: { 0: 'ok', 1: 'error', 2: 'validation', 3: 'blocked', 4: 'not_found', 5: 'host_error' },
-      });
+        exitCodes: { 0: 'ok', 1: 'error', 2: 'validation', 3: 'blocked', 4: 'not_found', 5: 'host_error' } });
     } else {
       printHelp();
     }
@@ -318,8 +331,7 @@ async function main(argv: string[]): Promise<number> {
       locale: getOpt(args, '--locale'),
       nonInteractive: hasFlag(args, '--non-interactive'),
       dryRun: hasFlag(args, '--dry-run'),
-      force: hasFlag(args, '--force'),
-    });
+      force: hasFlag(args, '--force') });
     if (json || hasFlag(args, '--dry-run')) {
       printJson(result);
     } else if (result.ok) {
@@ -338,8 +350,7 @@ async function main(argv: string[]): Promise<number> {
     const result = await runUpdate({
       checkOnly: hasFlag(args, '--check'),
       latest: getOpt(args, '--latest'),
-      apply: hasFlag(args, '--apply'),
-    });
+      apply: hasFlag(args, '--apply') });
     if (json) printJson(result);
     else process.stdout.write(`${result.message}\n`);
     return result.ok ? 0 : 1;
@@ -377,16 +388,14 @@ async function main(argv: string[]): Promise<number> {
             host: ctx.host,
             audit: ctx.audit,
             protection: ctx.protection,
-            dataDir: ctx.dataDir,
-          },
+            dataDir: ctx.dataDir },
         );
         printJson(result);
         return exitFromResult({
           ok: result.allowed,
           blocked: !result.allowed,
           code: result.allowed ? undefined : 'blocked',
-          allowed: result.allowed,
-        });
+          allowed: result.allowed });
       } finally {
         closeAppContext(ctx);
       }
@@ -395,9 +404,8 @@ async function main(argv: string[]): Promise<number> {
     const payload: StructuredResult = {
       ok: true,
       code: 'YSK_TOOLS',
-      message: 'Allowlist 工具清單',
-      data: tools,
-    };
+      message: tl('notes.auto.n0077'),
+      data: tools };
     printJson(payload);
     return 0;
   }
@@ -416,8 +424,7 @@ async function main(argv: string[]): Promise<number> {
       const ctx = createAppContext({
         version: VERSION,
         config,
-        dataDir: dataDir ?? config?.dataDir,
-      });
+        dataDir: dataDir ?? config?.dataDir });
       try {
         printJson({ ok: true, items: await probeAllAgentRuntimes(ctx.host) });
         return 0;
@@ -426,7 +433,7 @@ async function main(argv: string[]): Promise<number> {
       }
     }
     const data = listAgentRuntimes();
-    if (json) printJson({ ok: true, code: 'YSK_AGENTS', message: 'Agent 運行時', data });
+    if (json) printJson({ ok: true, code: 'YSK_AGENTS', message: tl('notes.auto.n0076'), data });
     else {
       for (const a of data) process.stdout.write(`${a.kind}\t${a.name}\t${a.status}\n`);
     }
@@ -462,7 +469,48 @@ async function main(argv: string[]): Promise<number> {
           cli?: string[];
           op?: string;
           cluster?: unknown;
+          siteId?: string;
+          confContent?: string;
+          confBasename?: string;
+          remoteDir?: string;
+          cacheDir?: string;
+          edgeNodeId?: string;
         };
+        // CDN fleet apply / purge on edge (honest local write + nginx)
+        if (
+          payload?.op === 'cdn.edge.apply' ||
+          payload?.op === 'cdn.edge.purge'
+        ) {
+          const { isCdnFleetPayload, runCdnFleetPayload } = await import(
+            '@ysk/core'
+          );
+          if (!isCdnFleetPayload(payload)) {
+            return {
+              ok: false,
+              exitCode: 2,
+              error: 'invalid cdn fleet payload',
+              at: new Date().toISOString() };
+          }
+          const dataDir =
+            getOpt(args, '--data-dir') ??
+            process.env.YSK_DATA_DIR ??
+            join(process.cwd(), '.ysk');
+          const ctxCdn = openCliContext([
+            ...args.filter((a) => a.startsWith('--')),
+            '--data-dir',
+            dataDir,
+          ]);
+          try {
+            const r = await runCdnFleetPayload(ctxCdn.host, payload);
+            return {
+              ...r,
+              ok: r.ok,
+              exitCode: r.exitCode,
+              at: r.at };
+          } finally {
+            closeAppContext(ctxCdn);
+          }
+        }
         // Fleet cluster sync: upsert registry + plan on edge
         if (payload?.op === 'clusterSync' && payload.cluster) {
           const { importDbClusterSync } = await import('@ysk/core');
@@ -479,15 +527,13 @@ async function main(argv: string[]): Promise<number> {
             const r = importDbClusterSync({
               db: ctxSync.db,
               dataDir: ctxSync.dataDir,
-              cluster: payload.cluster as import('@ysk/core').DbCluster,
-            });
+              cluster: payload.cluster as import('@ysk/core').DbCluster });
             return {
               ok: r.ok,
               exitCode: r.ok ? 0 : 1,
               op: 'clusterSync',
               result: r,
-              at: new Date().toISOString(),
-            };
+              at: new Date().toISOString() };
           } finally {
             closeAppContext(ctxSync);
           }
@@ -504,14 +550,12 @@ async function main(argv: string[]): Promise<number> {
               ok: false,
               exitCode: 2,
               note: 'Use payload.op=clusterSync with cluster snapshot',
-              at: new Date().toISOString(),
-            };
+              at: new Date().toISOString() };
           }
           const r = spawnSync(process.execPath, [bin, ...argv], {
             encoding: 'utf8',
             env: process.env,
-            timeout: 120_000,
-          });
+            timeout: 120_000 });
           let parsed: unknown = r.stdout;
           try {
             parsed = JSON.parse(r.stdout || 'null');
@@ -525,8 +569,7 @@ async function main(argv: string[]): Promise<number> {
             cli: argv,
             result: parsed,
             stderr: (r.stderr || '').slice(0, 4000),
-            at: new Date().toISOString(),
-          };
+            at: new Date().toISOString() };
         }
         if (payload?.op === 'ping') {
           return { ok: true, exitCode: 0, op: 'pong', at: new Date().toISOString() };
@@ -536,10 +579,8 @@ async function main(argv: string[]): Promise<number> {
           exitCode: 0,
           echo: cmd.payload,
           note: 'Pass { "cli": [...] } or { "op":"clusterSync", "cluster":{...} }',
-          at: new Date().toISOString(),
-        };
-      },
-    });
+          at: new Date().toISOString() };
+      } });
     return 0;
   }
 
@@ -593,21 +634,18 @@ async function main(argv: string[]): Promise<number> {
       config,
       configPath,
       dataDir: dataDir ?? config?.dataDir,
-      executeEnabled: process.env.YSK_EXECUTE === '1',
-    });
+      executeEnabled: process.env.YSK_EXECUTE === '1' });
     try {
       const projects = ctx.db.snapshot.projects.map((p) => ({
         id: p.id,
         home_dir: p.home_dir,
-        name: p.name,
-      }));
+        name: p.name }));
       const excludes = getBackupExclusions(ctx.db);
       const r = await backupAllProjects({
         host: ctx.host,
         dataDir: ctx.dataDir,
         projects,
-        excludes: excludes.length ? excludes : ['node_modules', '.git', 'vendor', '.cache'],
-      });
+        excludes: excludes.length ? excludes : ['node_modules', '.git', 'vendor', '.cache'] });
       for (const item of r.results) {
         if (item.ok && item.archivePath && !item.skipped) {
           const p = ctx.db.snapshot.projects.find((x) => x.id === item.projectId);
@@ -622,8 +660,7 @@ async function main(argv: string[]): Promise<number> {
       ctx.settings.setJson('last_backup_run', {
         at: new Date().toISOString(),
         ...r,
-        via: 'cli',
-      });
+        via: 'cli' });
       printJson({ ...r, ok: r.ok });
       return r.ok ? 0 : 1;
     } finally {
@@ -645,8 +682,7 @@ async function main(argv: string[]): Promise<number> {
       config,
       configPath,
       dataDir: dataDir ?? config?.dataDir,
-      executeEnabled: process.env.YSK_EXECUTE === '1',
-    });
+      executeEnabled: process.env.YSK_EXECUTE === '1' });
     try {
       if (sub === 'list') {
         printJson({ ok: true, items: ctx.projects.list() });
@@ -677,8 +713,7 @@ async function main(argv: string[]): Promise<number> {
             printJson({
               ok: false,
               code: ErrorCodes.NOT_FOUND,
-              message: `找不到專案：${id}`,
-            });
+              message: tl('notes.project.notFound', { id }) });
             return 4;
           }
           throw err;
@@ -709,8 +744,7 @@ async function main(argv: string[]): Promise<number> {
           runtimeVersion: getOpt(args, '--runtime-version'),
           templateId: getOpt(args, '--template'),
           forceTemplate: hasFlag(args, '--force'),
-          actor: 'cli',
-        });
+          actor: 'cli' });
         printJson(created);
         return 0;
       }
@@ -726,13 +760,11 @@ async function main(argv: string[]): Promise<number> {
             ? await ctx.projectOps.deployPhp(id, {
                 actor: 'cli',
                 preferFpm: hasFlag(args, '--fpm'),
-                forceBuiltin: hasFlag(args, '--builtin'),
-              })
+                forceBuiltin: hasFlag(args, '--builtin') })
             : proj.runtime === 'static'
               ? await ctx.projectOps.deployStatic(id, {
                   actor: 'cli',
-                  reload: hasFlag(args, '--reload'),
-                })
+                  reload: hasFlag(args, '--reload') })
               : proj.runtime === 'python' ||
                   proj.runtime === 'go' ||
                   proj.runtime === 'rust'
@@ -813,15 +845,13 @@ async function main(argv: string[]): Promise<number> {
       powerDnsStatus,
       installPowerDnsPackages,
       applyEmailStack,
-      applyFirewall,
-    } = await import('@ysk/core');
+      applyFirewall } = await import('@ysk/core');
     const ctx = createAppContext({
       version: VERSION,
       config,
       configPath,
       dataDir: dataDir ?? config?.dataDir,
-      executeEnabled: process.env.YSK_EXECUTE === '1',
-    });
+      executeEnabled: process.env.YSK_EXECUTE === '1' });
     try {
       if (sub === 'nginx' || sub === 'nginx-list') {
         const { listManagedNginxDetailed } = await import('@ysk/core');
@@ -829,8 +859,7 @@ async function main(argv: string[]): Promise<number> {
           ok: true,
           files: listManagedNginxConfs(ctx.dataDir),
           items: listManagedNginxDetailed(ctx.dataDir),
-          dataDir: ctx.dataDir,
-        });
+          dataDir: ctx.dataDir });
         return 0;
       }
       if (sub === 'nginx-sync') {
@@ -839,8 +868,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           systemConfDir: getOpt(args, '--system-dir'),
           host: ctx.host,
-          dryRun: !execute || hasFlag(args, '--dry-run'),
-        });
+          dryRun: !execute || hasFlag(args, '--dry-run') });
         printJson({
           ...result,
           ok: result.ok !== false,
@@ -848,10 +876,9 @@ async function main(argv: string[]): Promise<number> {
           notes: [
             ...(result.notes ?? []),
             execute
-              ? 'execute 模式（仍需 YSK_EXECUTE 才能寫系統目錄）'
-              : 'dry-run 預設：加 --execute 先同步到系統 nginx',
-          ],
-        });
+              ? tl('notes.auto.n0046')
+              : tl('notes.auto.n0047'),
+          ] });
         return result.ok === false ? 3 : 0;
       }
       if (sub === 'redis-provision') {
@@ -859,8 +886,7 @@ async function main(argv: string[]): Promise<number> {
           hostExec: ctx.host,
           projectId: getOpt(args, '--project-id') ?? 'shared',
           dbIndex: getOpt(args, '--db') ? Number(getOpt(args, '--db')) : 0,
-          execute: wantsHostExecute(args),
-        });
+          execute: wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -870,8 +896,7 @@ async function main(argv: string[]): Promise<number> {
           username: getOpt(args, '--user') ?? 'appuser',
           password: getOpt(args, '--password') ?? '',
           hostExec: ctx.host,
-          execute: wantsHostExecute(args),
-        });
+          execute: wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -881,8 +906,7 @@ async function main(argv: string[]): Promise<number> {
           username: getOpt(args, '--user') ?? 'appuser',
           password: getOpt(args, '--password') ?? '',
           hostExec: ctx.host,
-          execute: wantsHostExecute(args),
-        });
+          execute: wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -904,8 +928,7 @@ async function main(argv: string[]): Promise<number> {
           host: ctx.host,
           validate: hasFlag(args, '--validate'),
           tryReload: hasFlag(args, '--reload'),
-          template: getOpt(args, '--template'),
-        });
+          template: getOpt(args, '--template') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -921,8 +944,7 @@ async function main(argv: string[]): Promise<number> {
         const result = await installPowerDnsPackages({
           dataDir: ctx.dataDir,
           host: ctx.host,
-          install: hasFlag(args, '--install') || wantsHostExecute(args),
-        });
+          install: hasFlag(args, '--install') || wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -941,8 +963,7 @@ async function main(argv: string[]): Promise<number> {
           zone,
           serverIp,
           serverIpv6: getOpt(args, '--ipv6') ?? getOpt(args, '--server-ipv6'),
-          load: hasFlag(args, '--load') || wantsHostExecute(args),
-        });
+          load: hasFlag(args, '--load') || wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -958,8 +979,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           domain,
           host: ctx.host,
-          installPackages: hasFlag(args, '--install') || wantsHostExecute(args),
-        });
+          installPackages: hasFlag(args, '--install') || wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -984,16 +1004,14 @@ async function main(argv: string[]): Promise<number> {
           const created = ctx.email.create({
             domain: domainName,
             serverIp,
-            actor: 'cli',
-          });
+            actor: 'cli' });
           domainId = created.domain.id;
         }
         const result = await ctx.email.createMailbox(domainId, {
           localPart,
           password: getOpt(args, '--password'),
           provisionSystem: hasFlag(args, '--system'),
-          actor: 'cli',
-        });
+          actor: 'cli' });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1010,8 +1028,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           domain,
           host: ctx.host,
-          install: hasFlag(args, '--install') || wantsHostExecute(args),
-        });
+          install: hasFlag(args, '--install') || wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1019,8 +1036,7 @@ async function main(argv: string[]): Promise<number> {
         const { probeRuntimes, listSupportedRuntimes } = await import('@ysk/core');
         printJson({
           supported: listSupportedRuntimes(),
-          probe: await probeRuntimes(ctx.host),
-        });
+          probe: await probeRuntimes(ctx.host) });
         return 0;
       }
       if (sub === 'runtime-install') {
@@ -1044,8 +1060,7 @@ async function main(argv: string[]): Promise<number> {
           host: ctx.host,
           kind,
           version: getOpt(args, '--version') ?? defaultVer,
-          install: hasFlag(args, '--install') || wantsHostExecute(args),
-        });
+          install: hasFlag(args, '--install') || wantsHostExecute(args) });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1077,8 +1092,7 @@ async function main(argv: string[]): Promise<number> {
           imapHost: getOpt(args, '--imap'),
           smtpHost: getOpt(args, '--smtp'),
           download: hasFlag(args, '--download'),
-          systemInstall: hasFlag(args, '--system'),
-        });
+          systemInstall: hasFlag(args, '--system') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1098,8 +1112,7 @@ async function main(argv: string[]): Promise<number> {
           quotaMb: getOpt(args, '--quota-mb')
             ? Number(getOpt(args, '--quota-mb'))
             : undefined,
-          reload: hasFlag(args, '--reload'),
-        });
+          reload: hasFlag(args, '--reload') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1124,8 +1137,7 @@ async function main(argv: string[]): Promise<number> {
           installPackages: hasFlag(args, '--install') || wantsHostExecute(args),
           adminLocalPart: getOpt(args, '--admin') ?? 'postmaster',
           adminPassword: getOpt(args, '--password'),
-          webmail: !hasFlag(args, '--no-webmail'),
-        });
+          webmail: !hasFlag(args, '--no-webmail') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1134,23 +1146,20 @@ async function main(argv: string[]): Promise<number> {
           host: ctx.host,
           dataDir: ctx.dataDir,
           allowSmtp: hasFlag(args, '--smtp'),
-          apply: wantsHostExecute(args),
-        });
+          apply: wantsHostExecute(args) });
         printJson({
           ...result,
           dryRun: !wantsHostExecute(args),
           notes: [
             ...(result.notes ?? []),
             wantsHostExecute(args)
-              ? 'execute 模式（仍需 YSK_EXECUTE=1 + root）'
-              : 'dry-run 預設：加 --execute 先套用 ufw',
-          ],
-        });
+              ? tl('notes.auto.n0279')
+              : tl('notes.auto.n0269'),
+          ] });
         return exitFromResult({
           ...result,
           dryRun: !wantsHostExecute(args),
-          ok: wantsHostExecute(args) ? result.ok : true,
-        });
+          ok: wantsHostExecute(args) ? result.ok : true });
       }
       process.stderr.write(
         [
@@ -1207,8 +1216,7 @@ async function main(argv: string[]): Promise<number> {
           host: ctx.host,
           validate: hasFlag(args, '--validate'),
           tryReload: hasFlag(args, '--reload'),
-          template: getOpt(args, '--template'),
-        });
+          template: getOpt(args, '--template') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1239,8 +1247,7 @@ async function main(argv: string[]): Promise<number> {
       dispatchDbClusterFleet,
       installDbClusterOnPeers,
       firewallPortsForCluster,
-      importDbClusterSync,
-    } = await import('@ysk/core');
+      importDbClusterSync } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'ls') {
@@ -1326,9 +1333,7 @@ async function main(argv: string[]): Promise<number> {
               : {}),
             ...(getOpt(args, '--cluster-name')
               ? { clusterName: getOpt(args, '--cluster-name')! }
-              : {}),
-          },
-        });
+              : {}) } });
         printJson({ ok: true, cluster });
         return 0;
       }
@@ -1342,8 +1347,7 @@ async function main(argv: string[]): Promise<number> {
           db: ctx.db,
           dataDir: ctx.dataDir,
           clusterId: id,
-          writeArtifacts: true,
-        });
+          writeArtifacts: true });
         printJson({ ok: plan.ok, dryRun: true, cluster, plan });
         return plan.ok ? 0 : 1;
       }
@@ -1361,8 +1365,7 @@ async function main(argv: string[]): Promise<number> {
           host: ctx.host,
           clusterId: id,
           execute: wantsHostExecute(args),
-          bootstrap: hasFlag(args, '--bootstrap'),
-        });
+          bootstrap: hasFlag(args, '--bootstrap') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1380,13 +1383,11 @@ async function main(argv: string[]): Promise<number> {
               host: ctx.host,
               clusterId: id,
               dataDir: ctx.dataDir,
-              identityId: getOpt(args, '--identity'),
-            })
+              identityId: getOpt(args, '--identity') })
           : await probeDbCluster({
               db: ctx.db,
               host: ctx.host,
-              clusterId: id,
-            });
+              clusterId: id });
         printJson(result);
         return result.ok ? 0 : result.localOk ? 0 : 1;
       }
@@ -1406,8 +1407,7 @@ async function main(argv: string[]): Promise<number> {
           memberId: getOpt(args, '--member'),
           execute: wantsHostExecute(args),
           restart: !hasFlag(args, '--no-restart'),
-          identityId: getOpt(args, '--identity'),
-        });
+          identityId: getOpt(args, '--identity') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1430,9 +1430,7 @@ async function main(argv: string[]): Promise<number> {
             kind: c.kind,
             status: c.status,
             members: c.members.length,
-            firewallPorts: firewallPortsForCluster(c.kind),
-          })),
-        });
+            firewallPorts: firewallPortsForCluster(c.kind) })) });
         return 0;
       }
       if (sub === 'import-sync') {
@@ -1456,8 +1454,7 @@ async function main(argv: string[]): Promise<number> {
         const r = importDbClusterSync({
           db: ctx.db,
           dataDir: ctx.dataDir,
-          cluster: data.cluster,
-        });
+          cluster: data.cluster });
         printJson(r);
         return r.ok ? 0 : 1;
       }
@@ -1470,14 +1467,12 @@ async function main(argv: string[]): Promise<number> {
         const r = listDbClusterArtifacts({
           db: ctx.db,
           dataDir: ctx.dataDir,
-          clusterId: id,
-        });
+          clusterId: id });
         printJson({
           ok: r.ok,
           artifactDir: r.artifactDir,
           files: r.files.map((f) => ({ path: f.relativePath, bytes: f.bytes })),
-          notes: r.notes,
-        });
+          notes: r.notes });
         return r.ok ? 0 : 4;
       }
       if (sub === 'bundle') {
@@ -1489,8 +1484,7 @@ async function main(argv: string[]): Promise<number> {
         const r = bundleDbClusterArtifacts({
           db: ctx.db,
           dataDir: ctx.dataDir,
-          clusterId: id,
-        });
+          clusterId: id });
         printJson(r);
         return r.ok ? 0 : 1;
       }
@@ -1509,8 +1503,7 @@ async function main(argv: string[]): Promise<number> {
           clusterId: id,
           memberId: getOpt(args, '--member'),
           execute: wantsHostExecute(args),
-          identityId: getOpt(args, '--identity'),
-        });
+          identityId: getOpt(args, '--identity') });
         printJson(result);
         return exitFromResult(result);
       }
@@ -1539,8 +1532,7 @@ async function main(argv: string[]): Promise<number> {
           edgeExecute: hasFlag(args, '--edge-execute'),
           enqueue: wantsHostExecute(args)
             ? (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload)
-            : undefined,
-        });
+            : undefined });
         printJson(result);
         return result.ok || result.dryRun ? 0 : 1;
       }
@@ -1555,8 +1547,7 @@ async function main(argv: string[]): Promise<number> {
           ok,
           notes: ok
             ? ['registry removed; system conf not auto-cleaned']
-            : ['not found'],
-        });
+            : ['not found'] });
         return ok ? 0 : 4;
       }
       process.stderr.write(
@@ -1579,8 +1570,7 @@ async function main(argv: string[]): Promise<number> {
       exportSshIdentityPrivate,
       deleteSshIdentity,
       installSshIdentity,
-      uninstallSshIdentity,
-    } = await import('@ysk/core');
+      uninstallSshIdentity } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'ls') {
@@ -1602,9 +1592,7 @@ async function main(argv: string[]): Promise<number> {
           items: listSshIdentities(ctx.dataDir, {
             linuxUser: getOpt(args, '--user'),
             projectId: getOpt(args, '--project'),
-            purpose,
-          }),
-        });
+            purpose }) });
         return 0;
       }
       if (sub === 'get' || sub === 'show') {
@@ -1615,7 +1603,7 @@ async function main(argv: string[]): Promise<number> {
         }
         const identity = getSshIdentity(ctx.dataDir, id);
         if (!identity) {
-          printJson({ ok: false, code: 'YSK_NOT_FOUND', message: '找不到 identity' });
+          printJson({ ok: false, code: 'YSK_NOT_FOUND', message: tl('notes.ssh.identityNotFound') });
           return 4;
         }
         printJson({ ok: true, identity });
@@ -1649,10 +1637,8 @@ async function main(argv: string[]): Promise<number> {
             binding: {
               projectId: getOpt(args, '--project'),
               linuxUser: getOpt(args, '--user'),
-              homeDir: getOpt(args, '--home'),
-            },
-            revealPrivate: hasFlag(args, '--reveal'),
-          },
+              homeDir: getOpt(args, '--home') },
+            revealPrivate: hasFlag(args, '--reveal') },
           ctx.db,
         );
         if (r.ok && hasFlag(args, '--install') && r.identity) {
@@ -1661,8 +1647,7 @@ async function main(argv: string[]): Promise<number> {
             id: r.identity.id,
             apply: wantsHostExecute(args),
             host: ctx.host,
-            executeEnabled: ctx.host.executeEnabled(),
-          });
+            executeEnabled: ctx.host.executeEnabled() });
           printJson({ ok: r.ok && inst.ok, create: r, install: inst });
           return exitFromResult(inst);
         }
@@ -1686,8 +1671,7 @@ async function main(argv: string[]): Promise<number> {
           printJson({
             ok: false,
             code: 'YSK_NOT_FOUND',
-            message: e instanceof Error ? e.message : String(e),
-          });
+            message: e instanceof Error ? e.message : String(e) });
           return 4;
         }
         const purposeRaw = getOpt(args, '--purpose') ?? 'panel_outbound';
@@ -1706,10 +1690,8 @@ async function main(argv: string[]): Promise<number> {
             binding: {
               projectId: getOpt(args, '--project'),
               linuxUser: getOpt(args, '--user'),
-              homeDir: getOpt(args, '--home'),
-            },
-            revealPrivate: hasFlag(args, '--reveal'),
-          },
+              homeDir: getOpt(args, '--home') },
+            revealPrivate: hasFlag(args, '--reveal') },
           ctx.db,
         );
         printJson(r);
@@ -1723,7 +1705,7 @@ async function main(argv: string[]): Promise<number> {
         }
         const identity = getSshIdentity(ctx.dataDir, id);
         if (!identity) {
-          printJson({ ok: false, code: 'YSK_NOT_FOUND', message: '找不到 identity' });
+          printJson({ ok: false, code: 'YSK_NOT_FOUND', message: tl('notes.ssh.identityNotFound') });
           return 4;
         }
         if (json) printJson({ ok: true, publicKey: identity.publicKey, fingerprintSha256: identity.fingerprintSha256 });
@@ -1745,8 +1727,7 @@ async function main(argv: string[]): Promise<number> {
         if (out) {
           const { writeFileSync, chmodSync } = await import('node:fs');
           writeFileSync(out, r.privateKey.endsWith('\n') ? r.privateKey : r.privateKey + '\n', {
-            mode: 0o600,
-          });
+            mode: 0o600 });
           try {
             chmodSync(out, 0o600);
           } catch {
@@ -1756,8 +1737,7 @@ async function main(argv: string[]): Promise<number> {
             ok: true,
             written: out,
             fingerprintSha256: r.fingerprintSha256,
-            notes: r.notes,
-          });
+            notes: r.notes });
           return 0;
         }
         if (json) {
@@ -1765,8 +1745,7 @@ async function main(argv: string[]): Promise<number> {
             ok: true,
             privateKey: r.privateKey,
             fingerprintSha256: r.fingerprintSha256,
-            notes: r.notes,
-          });
+            notes: r.notes });
         } else {
           process.stdout.write(r.privateKey.endsWith('\n') ? r.privateKey : r.privateKey + '\n');
         }
@@ -1785,8 +1764,7 @@ async function main(argv: string[]): Promise<number> {
           id,
           apply: wantsHostExecute(args),
           host: ctx.host,
-          executeEnabled: ctx.host.executeEnabled(),
-        });
+          executeEnabled: ctx.host.executeEnabled() });
         printJson(r);
         return exitFromResult(r);
       }
@@ -1806,8 +1784,7 @@ async function main(argv: string[]): Promise<number> {
           target,
           apply: wantsHostExecute(args),
           host: ctx.host,
-          executeEnabled: ctx.host.executeEnabled(),
-        });
+          executeEnabled: ctx.host.executeEnabled() });
         printJson(r);
         return exitFromResult(r);
       }
@@ -1824,8 +1801,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           id,
           revealPrivate: hasFlag(args, '--reveal'),
-          db: ctx.db,
-        });
+          db: ctx.db });
         printJson(r);
         return r.ok ? 0 : 4;
       }
@@ -1842,8 +1818,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           db: ctx.db,
           id,
-          host: ctx.host,
-        });
+          host: ctx.host });
         printJson(r);
         return r.ok ? 0 : 1;
       }
@@ -1859,8 +1834,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           id,
           apply: wantsHostExecute(args),
-          purgeFiles: !hasFlag(args, '--keep-files'),
-        });
+          purgeFiles: !hasFlag(args, '--keep-files') });
         printJson(r);
         return exitFromResult(r);
       }
@@ -1875,8 +1849,7 @@ async function main(argv: string[]): Promise<number> {
             dataDir: ctx.dataDir,
             id,
             apply: true,
-            purgeFiles: true,
-          });
+            purgeFiles: true });
         }
         const r = deleteSshIdentity(ctx.dataDir, id);
         printJson(r);
@@ -1904,8 +1877,7 @@ async function main(argv: string[]): Promise<number> {
       buildPamSshSnippet,
       buildSshdTotpHints,
       probeSsh2faHost,
-      revealSsh2faSecret,
-    } = await import('@ysk/core');
+      revealSsh2faSecret } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'ls') {
@@ -1914,10 +1886,8 @@ async function main(argv: string[]): Promise<number> {
           ok: true,
           items: listSsh2fa(ctx.dataDir, {
             linuxUser: getOpt(args, '--user'),
-            projectId: getOpt(args, '--project'),
-          }),
-          host,
-        });
+            projectId: getOpt(args, '--project') }),
+          host });
         return 0;
       }
       if (sub === 'enroll' || sub === 'create') {
@@ -1940,8 +1910,7 @@ async function main(argv: string[]): Promise<number> {
           if (!withTotp?.totp_secret) {
             printJson({
               ok: false,
-              notes: ['panel 無 TOTP secret — 先在 Web 啟用 2FA 或勿用 --from-panel'],
-            });
+              notes: [tl('notes.auto.n0365')] });
             return 2;
           }
           secret = withTotp.totp_secret;
@@ -1955,8 +1924,7 @@ async function main(argv: string[]): Promise<number> {
             projectId: project,
             homeDir: getOpt(args, '--home'),
             secret,
-            fromPanel,
-          },
+            fromPanel },
           ctx.db,
         );
         printJson(r);
@@ -1988,8 +1956,7 @@ async function main(argv: string[]): Promise<number> {
           id,
           apply: wantsHostExecute(args),
           host: ctx.host,
-          executeEnabled: ctx.host.executeEnabled(),
-        });
+          executeEnabled: ctx.host.executeEnabled() });
         printJson(r);
         return exitFromResult(r);
       }
@@ -2005,8 +1972,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           id,
           apply: wantsHostExecute(args),
-          retire: true,
-        });
+          retire: true });
         printJson(r);
         return exitFromResult(r);
       }
@@ -2016,10 +1982,9 @@ async function main(argv: string[]): Promise<number> {
           pamSnippet: buildPamSshSnippet(),
           sshdHints: buildSshdTotpHints(),
           notes: [
-            'nullok 避免未寫檔用戶被鎖',
-            '獨立於 panel operator 2FA',
-          ],
-        });
+            tl('notes.auto.n0349'),
+            tl('notes.auto.n1241'),
+          ] });
         return 0;
       }
       if (sub === 'reveal') {
@@ -2042,8 +2007,7 @@ async function main(argv: string[]): Promise<number> {
             dataDir: ctx.dataDir,
             id,
             apply: true,
-            retire: true,
-          });
+            retire: true });
         }
         printJson(retireSsh2fa(ctx.dataDir, id));
         return 0;
@@ -2064,8 +2028,7 @@ async function main(argv: string[]): Promise<number> {
       getServiceMatrix,
       listManagedNginxConfs,
       listManagedNginxDetailed,
-      syncNginxConfigs,
-    } = await import('@ysk/core');
+      syncNginxConfigs } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'confs') {
@@ -2073,8 +2036,7 @@ async function main(argv: string[]): Promise<number> {
           ok: true,
           items: listManagedNginxDetailed(ctx.dataDir),
           files: listManagedNginxConfs(ctx.dataDir),
-          dataDir: ctx.dataDir,
-        });
+          dataDir: ctx.dataDir });
         return 0;
       }
       if (sub === 'test' || sub === 'check') {
@@ -2090,8 +2052,7 @@ async function main(argv: string[]): Promise<number> {
             printJson({
               ok: false,
               code: 'not_found',
-              notes: ['nginx binary not found'],
-            });
+              notes: ['nginx binary not found'] });
             return 4;
           }
         }
@@ -2104,8 +2065,7 @@ async function main(argv: string[]): Promise<number> {
             r.exitCode === 0
               ? 'nginx -t OK'
               : `nginx -t failed: ${output.slice(0, 400)}`,
-          ],
-        });
+          ] });
         return r.exitCode === 0 ? 0 : 5;
       }
       if (sub === 'sync') {
@@ -2114,8 +2074,7 @@ async function main(argv: string[]): Promise<number> {
           dataDir: ctx.dataDir,
           systemConfDir: getOpt(args, '--system-dir'),
           host: ctx.host,
-          dryRun: !execute || hasFlag(args, '--dry-run'),
-        });
+          dryRun: !execute || hasFlag(args, '--dry-run') });
         printJson({
           ...result,
           ok: result.ok !== false,
@@ -2123,10 +2082,9 @@ async function main(argv: string[]): Promise<number> {
           notes: [
             ...(result.notes ?? []),
             execute
-              ? 'execute 模式（仍需 YSK_EXECUTE 才能寫系統目錄）'
-              : 'dry-run 預設：加 --execute 先同步到系統 nginx',
-          ],
-        });
+              ? tl('notes.auto.n0046')
+              : tl('notes.auto.n0047'),
+          ] });
         return result.ok === false ? 3 : 0;
       }
       if (sub === 'status' || sub === 'info' || sub === 'overview') {
@@ -2148,15 +2106,13 @@ async function main(argv: string[]): Promise<number> {
           configTest = {
             ok: r.exitCode === 0,
             exitCode: r.exitCode,
-            output: `${r.stdout}\n${r.stderr}`.trim(),
-          };
+            output: `${r.stdout}\n${r.stderr}`.trim() };
         } else {
           configTest = {
             ok: false,
             exitCode: -1,
             output: '',
-            skipped: true,
-          };
+            skipped: true };
         }
         printJson({
           ok: true,
@@ -2166,10 +2122,8 @@ async function main(argv: string[]): Promise<number> {
           configTest,
           caps: {
             executeEnabled: matrix.executeEnabled,
-            isRoot: matrix.isRoot,
-          },
-          probedAt: matrix.probedAt,
-        });
+            isRoot: matrix.isRoot },
+          probedAt: matrix.probedAt });
         return 0;
       }
       process.stderr.write(
@@ -2193,8 +2147,7 @@ async function main(argv: string[]): Promise<number> {
         printJson({
           ok: true,
           items,
-          count: items.length,
-        });
+          count: items.length });
         return 0;
       }
       if (sub === 'get' || sub === 'show') {
@@ -2217,9 +2170,8 @@ async function main(argv: string[]): Promise<number> {
           printJson({
             ok: false,
             code: ErrorCodes.NOT_FOUND,
-            message: `找不到憑證：${domain}`,
-            items: [],
-          });
+            message: tl('notes.auto.t0781', { v0: (domain) }),
+            items: [] });
           return 4;
         }
         printJson({ ok: true, certificate: cert });
@@ -2251,9 +2203,7 @@ async function main(argv: string[]): Promise<number> {
           ...metrics,
           caps: {
             executeEnabled: ctx.host.executeEnabled(),
-            isRoot: ctx.host.isRoot(),
-          },
-        });
+            isRoot: ctx.host.isRoot() } });
         return metrics.alerts.length ? 1 : 0;
       }
       process.stderr.write(
@@ -2273,8 +2223,7 @@ async function main(argv: string[]): Promise<number> {
       listSourceStatuses,
       getLogOverview,
       loadLogSettings,
-      listJournalUnits,
-    } = await import('@ysk/core');
+      listJournalUnits } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'sources' || sub === 'list') {
@@ -2282,8 +2231,7 @@ async function main(argv: string[]): Promise<number> {
         const items = listSourceStatuses({
           disabledIds: settings.disabledSources,
           extraManagedLogDirs: [join(ctx.dataDir, 'nginx', 'logs')],
-          customAllowPaths: settings.customAllowPaths,
-        });
+          customAllowPaths: settings.customAllowPaths });
         printJson({ ok: true, items });
         return 0;
       }
@@ -2291,8 +2239,7 @@ async function main(argv: string[]): Promise<number> {
         const r = await getLogOverview({
           host: ctx.host,
           dataDir: ctx.dataDir,
-          db: ctx.db,
-        });
+          db: ctx.db });
         printJson({ ok: true, ...r });
         return 0;
       }
@@ -2313,8 +2260,7 @@ async function main(argv: string[]): Promise<number> {
           lines: linesRaw ? Number(linesRaw) : undefined,
           since: getOpt(args, '--since'),
           priority: getOpt(args, '--priority'),
-          grep: getOpt(args, '--grep'),
-        });
+          grep: getOpt(args, '--grep') });
         printJson(r);
         return exitFromResult(r);
       }
@@ -2345,8 +2291,7 @@ async function main(argv: string[]): Promise<number> {
           lines: linesRaw ? Number(linesRaw) : undefined,
           since: getOpt(args, '--since'),
           priority: getOpt(args, '--priority'),
-          grep: getOpt(args, '--grep'),
-        });
+          grep: getOpt(args, '--grep') });
         printJson(r);
         return exitFromResult(r);
       }
@@ -2385,9 +2330,8 @@ async function main(argv: string[]): Promise<number> {
             action: sub,
             plan: [`systemctl ${sub} ${unit}`],
             notes: [
-              `dry-run：未 systemctl ${sub}。加 --execute 且 YSK_EXECUTE=1 + root 先真正執行`,
-            ],
-          });
+              tl('notes.auto.t0782', { v0: (sub) }),
+            ] });
           return 0;
         }
         const r = await lifecycleServiceUnit(ctx.host, unit, sub);
@@ -2411,16 +2355,14 @@ async function main(argv: string[]): Promise<number> {
       defenseUnbanIp,
       loadAutoBanPolicy,
       updateAutoBanPolicy,
-      probeFirewallDeep,
-    } = await import('@ysk/core');
+      probeFirewallDeep } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'status') {
         const status = await getDefenseStatus({
           host: ctx.host,
           db: ctx.db,
-          dataDir: ctx.dataDir,
-        });
+          dataDir: ctx.dataDir });
         const fw = await probeFirewallDeep(ctx.host).catch(() => null);
         printJson({
           ok: true,
@@ -2431,10 +2373,8 @@ async function main(argv: string[]): Promise<number> {
                 activeLabel: fw.activeLabel,
                 allowCount: fw.allowCount,
                 denyCount: fw.denyCount,
-                denyFromIps: fw.denyFromIps,
-              }
-            : null,
-        });
+                denyFromIps: fw.denyFromIps }
+            : null });
         return 0;
       }
       if (sub === 'ban') {
@@ -2457,8 +2397,7 @@ async function main(argv: string[]): Promise<number> {
           method,
           reason: getOpt(args, '--reason') ?? 'cli',
           // explicit false = dry-run; true only with --execute
-          execute: wantsHostExecute(args),
-        });
+          execute: wantsHostExecute(args) });
         printJson(r);
         return exitFromResult(r);
       }
@@ -2480,8 +2419,7 @@ async function main(argv: string[]): Promise<number> {
           db: ctx.db,
           ip,
           method,
-          execute: wantsHostExecute(args),
-        });
+          execute: wantsHostExecute(args) });
         printJson(r);
         return exitFromResult(r);
       }
@@ -2538,23 +2476,20 @@ async function main(argv: string[]): Promise<number> {
       runSourceMigrateHost,
       runLocalMigratePost,
       loadMigrateJob,
-      listMigrateJobs,
-    } = await import('@ysk/core');
+      listMigrateJobs } = await import('@ysk/core');
     const ctx = createAppContext({
       version: VERSION,
       config,
       configPath,
       dataDir: dataDirOpt ?? config?.dataDir,
-      executeEnabled: process.env.YSK_EXECUTE === '1',
-    });
+      executeEnabled: process.env.YSK_EXECUTE === '1' });
     try {
       if (sub === 'inventory') {
         const r = await migrateInventory({
           host: ctx.host,
           db: ctx.db,
           dataDir: ctx.dataDir,
-          yskVersion: VERSION,
-        });
+          yskVersion: VERSION });
         printJson(r);
         return r.ok ? 0 : 1;
       }
@@ -2563,7 +2498,7 @@ async function main(argv: string[]): Promise<number> {
         if (jobId) {
           const job = loadMigrateJob(ctx.dataDir, jobId);
           if (!job) {
-            printJson({ ok: false, notes: [`找不到 job ${jobId}`] });
+            printJson({ ok: false, notes: [tl('notes.auto.t0783', { v0: (jobId) })] });
             return 4;
           }
           printJson({ ok: true, job });
@@ -2584,15 +2519,13 @@ async function main(argv: string[]): Promise<number> {
           printJson({
             ok: false,
             blocked: true,
-            notes: ['migrate post 需 --execute 且 YSK_EXECUTE=1（在目標機執行）'],
-          });
+            notes: [tl('notes.auto.n0330')] });
           return 3;
         }
         const r = await runLocalMigratePost({
           host: ctx.host,
           dataDir: ctx.dataDir,
-          jobId,
-        });
+          jobId });
         printJson(r);
         return r.ok ? 0 : r.blocked ? 3 : 1;
       }
@@ -2612,9 +2545,8 @@ async function main(argv: string[]): Promise<number> {
             ok: false,
             blocked: true,
             notes: [
-              'migrate host 需 --execute + YSK_EXECUTE=1，或 --dry-run（僅 inventory+preflight）',
-            ],
-          });
+              tl('notes.auto.n0329'),
+            ] });
           return 3;
         }
         const identityFile = getOpt(args, '--identity-file');
@@ -2631,8 +2563,7 @@ async function main(argv: string[]): Promise<number> {
           auth = {
             kind: 'identityId',
             dataDir: ctx.dataDir,
-            identityId,
-          };
+            identityId };
         } else if (hasFlag(args, '--password') || process.env.YSK_MIGRATE_SSH_PASSWORD) {
           const pw =
             getOpt(args, '--password') ||
@@ -2641,8 +2572,7 @@ async function main(argv: string[]): Promise<number> {
           if (!pw) {
             printJson({
               ok: false,
-              notes: ['--password 需值，或設 YSK_MIGRATE_SSH_PASSWORD'],
-            });
+              notes: [tl('notes.auto.n0056')] });
             return 2;
           }
           passwordForTempKey = pw;
@@ -2657,7 +2587,7 @@ async function main(argv: string[]): Promise<number> {
           }
         }
         if (!targetStr) {
-          printJson({ ok: false, notes: ['需要 --target 或可 resume 的 --job'] });
+          printJson({ ok: false, notes: [tl('notes.auto.n1555')] });
           return 2;
         }
         const port = getOpt(args, '--port')
@@ -2682,8 +2612,7 @@ async function main(argv: string[]): Promise<number> {
           dryRun: hasFlag(args, '--dry-run'),
           remotePost: !hasFlag(args, '--skip-remote-post'),
           yskVersion: VERSION,
-          jobId,
-        });
+          jobId });
         printJson(r);
         return r.ok ? 0 : r.blocked ? 3 : 1;
       }
@@ -2711,15 +2640,13 @@ async function main(argv: string[]): Promise<number> {
       const ctx = createAppContext({
         version: VERSION,
         dataDir,
-        executeEnabled: process.env.YSK_EXECUTE === '1',
-      });
+        executeEnabled: process.env.YSK_EXECUTE === '1' });
       try {
         const result = await installControlPlaneSystemd({
           dataDir,
           cliPath,
           host: ctx.host,
-          enable,
-        });
+          enable });
         if (json) printJson(result);
         else {
           process.stdout.write(`${result.notes.join('\n')}\n`);
@@ -2757,8 +2684,7 @@ async function main(argv: string[]): Promise<number> {
       configPath,
       dataDir: dataDirOpt ?? config?.dataDir,
       adminPassword: process.env.YSK_ADMIN_PASSWORD,
-      webRoot: webRoot ?? undefined,
-    });
+      webRoot: webRoot ?? undefined });
     const server = createHttpServer(ctx);
     const addr = await listen(server, host, port);
     const msg = `${PRODUCT_NAME} listening on http://${addr.host}:${addr.port}`;
@@ -2773,16 +2699,14 @@ async function main(argv: string[]): Promise<number> {
           adminUsername: config?.adminUsername ?? 'admin',
           locale: config?.locale ?? 'zh-TW',
           webUi: Boolean(webRoot),
-          webRoot,
-        },
-      });
+          webRoot } });
     } else {
       process.stdout.write(`${msg}\n`);
       process.stdout.write(`Health: http://${addr.host}:${addr.port}/health\n`);
       process.stdout.write(
         webRoot
           ? `Web UI:  http://${addr.host}:${addr.port}/\n`
-          : `Web UI:  找不到 (build apps/web or set YSK_WEB_ROOT)\n`,
+          : tl('notes.auto.t0784'),
       );
       if (configPath) {
         process.stdout.write(`Config: ${configPath} (admin=${config?.adminUsername}, locale=${config?.locale})\n`);
@@ -2814,15 +2738,13 @@ async function main(argv: string[]): Promise<number> {
     const ctx = createAppContext({
       version: VERSION,
       dataDir,
-      executeEnabled: process.env.YSK_EXECUTE === '1',
-    });
+      executeEnabled: process.env.YSK_EXECUTE === '1' });
     try {
       const report = await assessProductionReadiness({
         dataDir: ctx.dataDir,
         host: ctx.host,
         product: PRODUCT_NAME,
-        version: VERSION,
-      });
+        version: VERSION });
       printJson(report);
       return report.productionReady ? 0 : 2;
     } finally {

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Encrypted break-glass backup of panel 2FA material (operator-held).
  * Format: ysk2fabak:v1:<base64(iv|tag|json)>
@@ -22,7 +23,7 @@ export function exportTotpBackup(input: {
   user: UserRow;
 }): { ok: boolean; blob?: string; notes: string[] } {
   if (!input.user.totp_enabled || !input.user.totp_secret) {
-    return { ok: false, notes: ['未啟用 2FA'] };
+    return { ok: false, notes: [tl('notes.auto.n0951')] };
   }
   try {
     const secret = decryptTotpSecret(
@@ -37,7 +38,7 @@ export function exportTotpBackup(input: {
       exportedAt: new Date().toISOString(),
       totpSecret: secret,
       recoveryRemaining: (input.user.totp_recovery_hashes ?? []).length,
-      note: '離線保存；含 TOTP secret。遺失 Authenticator 時可手動重建。',
+      note: tl('notes.auto.n1536'),
     };
     const { key } = resolveMasterKey(input.dataDir);
     const enc = encryptPrivateKey(
@@ -48,7 +49,7 @@ export function exportTotpBackup(input: {
     return {
       ok: true,
       blob: `ysk2fabak:v1:${enc}`,
-      notes: ['已產生加密備份（同一 dataDir master key 可解密）'],
+      notes: [tl('notes.auto.n0789')],
     };
   } catch (e) {
     return { ok: false, notes: [e instanceof Error ? e.message : 'export failed'] };
@@ -61,7 +62,7 @@ export function importTotpBackupPreview(input: {
   blob: string;
 }): { ok: boolean; payload?: Omit<TotpBackupPayload, 'totpSecret'> & { totpSecret: '***' }; notes: string[] } {
   if (!input.blob.startsWith('ysk2fabak:v1:')) {
-    return { ok: false, notes: ['無效備份格式'] };
+    return { ok: false, notes: [tl('notes.auto.n1112')] };
   }
   try {
     const enc = input.blob.slice('ysk2fabak:v1:'.length);
@@ -74,7 +75,7 @@ export function importTotpBackupPreview(input: {
         ...p,
         totpSecret: '***',
       },
-      notes: ['解密預覽成功（secret 已遮罩）'],
+      notes: [tl('notes.auto.n1351')],
     };
   } catch (e) {
     return { ok: false, notes: [e instanceof Error ? e.message : 'decrypt failed'] };

@@ -2,6 +2,7 @@
  * Data Transfer Objects shared between API, CLI, and Web.
  */
 
+import type { CapabilityId } from './capabilities.js';
 import type {
   AgentRuntimeKind,
   ApprovalStatus,
@@ -36,6 +37,12 @@ export interface UserDto {
   locale: string;
   /** Operator has confirmed TOTP 2FA */
   totpEnabled?: boolean;
+  /** Effective capabilities (from roles + policies + overrides) */
+  capabilities?: CapabilityId[];
+  /** Per-user extra grants */
+  capabilityGrants?: CapabilityId[];
+  /** Per-user revokes */
+  capabilityRevokes?: CapabilityId[];
 }
 
 export interface HealthResponse {

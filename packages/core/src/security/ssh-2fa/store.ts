@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * SSH 2FA registry under dataDir/secrets/ssh/ssh-2fa.json
  */
@@ -10,8 +11,7 @@ import {
   encryptPrivateKey,
   decryptPrivateKey,
   resolveMasterKey,
-  secretsSshDir,
-} from '../ssh-identity/crypto.js';
+  secretsSshDir } from '../ssh-identity/crypto.js';
 import { buildOtpAuthUrl, generateTotpSecret, verifyTotp } from '../totp.js';
 import type { Ssh2faPublic, Ssh2faRecord, Ssh2faStatus } from './types.js';
 import { toPublicSsh2fa } from './types.js';
@@ -51,11 +51,11 @@ function resolveBinding(
   let homeDir = input.homeDir?.trim() || undefined;
   if (projectId && db) {
     const p = db.snapshot.projects.find((x) => x.id === projectId);
-    if (!p) return { error: '找不到專案' };
+    if (!p) return { error: tl('notes.auto.n0028') };
     linuxUser = linuxUser || p.linux_user;
     homeDir = homeDir || p.home_dir;
   }
-  if (!linuxUser) return { error: '需要 linuxUser 或 projectId' };
+  if (!linuxUser) return { error: tl('notes.auto.n1564') };
   if (!homeDir) {
     // best-effort default
     homeDir = `/home/${linuxUser}`;
@@ -118,9 +118,8 @@ export function enrollSsh2fa(
   if (existing) {
     return {
       ok: false,
-      notes: [`用戶 ${binding.linuxUser} 已有 SSH 2FA（${existing.id}）。先 disable/retire。`],
-      record: toPublicSsh2fa(existing),
-    };
+      notes: [tl('notes.auto.t0516', { v0: (binding.linuxUser), v1: (existing.id) })],
+      record: toPublicSsh2fa(existing) };
   }
 
   let master;
@@ -144,12 +143,11 @@ export function enrollSsh2fa(
     label,
     fromPanel: Boolean(input.fromPanel),
     notes: input.fromPanel
-      ? ['進階：secret 來自 panel（與 operator 2FA 同源 — 風險自負）']
-      : ['獨立 TOTP（與 panel operator 2FA 分開）'],
+      ? [tl('notes.auto.n1472')]
+      : [tl('notes.auto.n1240')],
     createdAt: now,
     updatedAt: now,
-    createdBy: input.createdBy,
-  };
+    createdBy: input.createdBy };
 
   const items = loadAll(dataDir);
   items.unshift(row);
@@ -157,7 +155,7 @@ export function enrollSsh2fa(
 
   const notes = [...row.notes];
   if (master.source === 'generated') {
-    notes.push(`已產生 secrets master key：${master.path ?? 'secrets/ssh/.master.key'}`);
+    notes.push(tl('notes.auto.t0517', { v0: (master.path ?? 'secrets/ssh/.master.key') }));
   }
 
   return {
@@ -167,10 +165,8 @@ export function enrollSsh2fa(
     otpauthUrl: buildOtpAuthUrl({
       secret,
       username: label,
-      issuer: 'YSK SSH',
-    }),
-    notes,
-  };
+      issuer: 'YSK SSH' }),
+    notes };
 }
 
 export function confirmSsh2fa(
@@ -180,13 +176,13 @@ export function confirmSsh2fa(
 ): { ok: boolean; record?: Ssh2faPublic; notes: string[] } {
   const items = loadAll(dataDir);
   const idx = items.findIndex((i) => i.id === id);
-  if (idx < 0) return { ok: false, notes: ['找不到登記'] };
+  if (idx < 0) return { ok: false, notes: [tl('notes.ssh.registrationNotFound')] };
   const row = items[idx]!;
   try {
     const master = resolveMasterKey(dataDir);
     const secret = decryptPrivateKey(master.key, row.id, row.secretEnc);
     if (!verifyTotp(secret, code)) {
-      return { ok: false, notes: ['驗證碼無效'] };
+      return { ok: false, notes: [tl('notes.auto.n1608')] };
     }
   } catch (e) {
     return { ok: false, notes: [e instanceof Error ? e.message : 'decrypt failed'] };
@@ -196,10 +192,9 @@ export function confirmSsh2fa(
     status: row.status === 'file_written' ? 'file_written' : 'confirmed',
     confirmedAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    notes: [...row.notes, 'TOTP 確認成功'],
-  };
+    notes: [...row.notes, tl('notes.auto.n0195')] };
   saveAll(dataDir, items);
-  return { ok: true, record: toPublicSsh2fa(items[idx]!), notes: ['已確認'] };
+  return { ok: true, record: toPublicSsh2fa(items[idx]!), notes: [tl('notes.auto.n0794')] };
 }
 
 export function revealSsh2faSecret(
@@ -207,7 +202,7 @@ export function revealSsh2faSecret(
   id: string,
 ): { ok: boolean; secret?: string; otpauthUrl?: string; notes: string[] } {
   const row = getSsh2faInternal(dataDir, id);
-  if (!row) return { ok: false, notes: ['找不到登記'] };
+  if (!row) return { ok: false, notes: [tl('notes.ssh.registrationNotFound')] };
   try {
     const master = resolveMasterKey(dataDir);
     const secret = decryptPrivateKey(master.key, row.id, row.secretEnc);
@@ -217,10 +212,8 @@ export function revealSsh2faSecret(
       otpauthUrl: buildOtpAuthUrl({
         secret,
         username: row.label,
-        issuer: 'YSK SSH',
-      }),
-      notes: ['secret revealed — audit recommended'],
-    };
+        issuer: 'YSK SSH' }),
+      notes: ['secret revealed — audit recommended'] };
   } catch (e) {
     return { ok: false, notes: [e instanceof Error ? e.message : 'decrypt failed'] };
   }
@@ -241,8 +234,7 @@ export function updateSsh2faStatus(
     ...prev,
     ...patch,
     notes: patch.notes ?? prev.notes,
-    updatedAt: new Date().toISOString(),
-  };
+    updatedAt: new Date().toISOString() };
   saveAll(dataDir, items);
   return toPublicSsh2fa(items[idx]!);
 }
@@ -253,12 +245,11 @@ export function retireSsh2fa(
 ): { ok: boolean; notes: string[] } {
   const items = loadAll(dataDir);
   const idx = items.findIndex((i) => i.id === id);
-  if (idx < 0) return { ok: false, notes: ['找不到登記'] };
+  if (idx < 0) return { ok: false, notes: [tl('notes.ssh.registrationNotFound')] };
   items[idx] = {
     ...items[idx]!,
     status: 'retired' as Ssh2faStatus,
-    updatedAt: new Date().toISOString(),
-  };
+    updatedAt: new Date().toISOString() };
   saveAll(dataDir, items);
-  return { ok: true, notes: ['已退役（磁碟檔案未自動刪；可 uninstall）'] };
+  return { ok: true, notes: [tl('notes.auto.n0801')] };
 }

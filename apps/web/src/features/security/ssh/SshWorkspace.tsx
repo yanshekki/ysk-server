@@ -3,6 +3,7 @@
  * Job-to-be-done UX, not raw crypto dump.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
@@ -19,17 +20,11 @@ import { Ssh2faPanel } from './Ssh2faPanel';
 import { sshApi } from './api';
 import type { SshSubTab } from './types';
 
-const SUBS: { id: SshSubTab; label: string; hint: string }[] = [
-  { id: 'outbound', label: '出站身份', hint: '面板／專案出去用的私鑰' },
-  { id: 'login', label: '登入授權', hint: '誰可以 SFTP／SSH 進來' },
-  { id: '2fa', label: '登入 2FA', hint: 'SSH TOTP（≠ panel 2FA）' },
-  { id: 'sshd', label: '系統 sshd', hint: '專案用戶 SFTP 設定' },
-];
-
 export function SshWorkspace(props: {
   /** Called so parent FeaturePageLayout status can show counts */
   onCounts?: (c: { identities: number; loginKeys: number }) => void;
 }) {
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const raw = params.get('ssh');
   const sub: SshSubTab =
@@ -73,11 +68,38 @@ export function SshWorkspace(props: {
     void refreshCounts();
   }, [refreshCounts, sub]);
 
+  const subs = useMemo(
+    () =>
+      [
+        {
+          id: 'outbound' as const,
+          label: t('security.ssh.subOutbound'),
+          hint: t('security.ssh.subOutboundHint'),
+        },
+        {
+          id: 'login' as const,
+          label: t('security.ssh.subLogin'),
+          hint: t('security.ssh.subLoginHint'),
+        },
+        {
+          id: '2fa' as const,
+          label: t('security.ssh.sub2fa'),
+          hint: t('security.ssh.sub2faHint'),
+        },
+        {
+          id: 'sshd' as const,
+          label: t('security.ssh.subSshd'),
+          hint: t('security.ssh.subSshdHint'),
+        },
+      ] as const,
+    [t],
+  );
+
   const flashEl = flash ? (
     <Alert variant={flash.tone === 'ok' ? 'ok' : 'error'}>
       {flash.text}{' '}
       <Button variant="ghost" size="sm" onClick={() => setFlash(null)}>
-        關閉
+        {t('common.close')}
       </Button>
     </Alert>
   ) : null;
@@ -94,10 +116,8 @@ export function SshWorkspace(props: {
             ↗
           </span>
           <span className="ssh-job__body">
-            <strong>我要連出去</strong>
-            <span className="muted u-text-sm">
-              建立出站身份金鑰 · 面板 peer／專案 git
-            </span>
+            <strong>{t('security.ssh.jobOutboundTitle')}</strong>
+            <span className="muted u-text-sm">{t('security.ssh.jobOutboundDesc')}</span>
           </span>
           <Badge tone={identitiesN ? 'ok' : 'neutral'}>{identitiesN || '—'}</Badge>
         </button>
@@ -110,8 +130,8 @@ export function SshWorkspace(props: {
             ↙
           </span>
           <span className="ssh-job__body">
-            <strong>我要讓人登入</strong>
-            <span className="muted u-text-sm">登記公鑰到專案 home · authorized_keys</span>
+            <strong>{t('security.ssh.jobLoginTitle')}</strong>
+            <span className="muted u-text-sm">{t('security.ssh.jobLoginDesc')}</span>
           </span>
           <Badge tone={loginN ? 'info' : 'neutral'}>{loginN || '—'}</Badge>
         </button>
@@ -124,8 +144,8 @@ export function SshWorkspace(props: {
             2
           </span>
           <span className="ssh-job__body">
-            <strong>SSH 登入要 2FA</strong>
-            <span className="muted u-text-sm">Linux 用戶 TOTP（與 panel 2FA 分開）</span>
+            <strong>{t('security.ssh.job2faTitle')}</strong>
+            <span className="muted u-text-sm">{t('security.ssh.job2faDesc')}</span>
           </span>
         </button>
         <button
@@ -137,13 +157,13 @@ export function SshWorkspace(props: {
             ⚙
           </span>
           <span className="ssh-job__body">
-            <strong>系統要能 SFTP</strong>
-            <span className="muted u-text-sm">安裝 sshd Match 片段（專案用戶）</span>
+            <strong>{t('security.ssh.jobSshdTitle')}</strong>
+            <span className="muted u-text-sm">{t('security.ssh.jobSshdDesc')}</span>
           </span>
         </button>
       </div>
     ),
-    [sub, setSub, identitiesN, loginN],
+    [sub, setSub, identitiesN, loginN, t],
   );
 
   return (
@@ -152,15 +172,15 @@ export function SshWorkspace(props: {
 
       <Card>
         <CardSection
-          title="SSH 工作台"
-          description="先選你要完成的事。登入公鑰 ≠ 出站私鑰，兩邊分開管理更安全。"
+          title={t('security.ssh.workspaceTitle')}
+          description={t('security.ssh.workspaceDesc')}
         >
           {jobCards}
         </CardSection>
       </Card>
 
       <PageTabs
-        tabs={SUBS.map((s) => ({
+        tabs={subs.map((s) => ({
           id: s.id,
           label: s.label,
           badge:

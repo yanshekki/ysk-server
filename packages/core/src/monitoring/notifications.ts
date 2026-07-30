@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Aggregate panel notifications for dashboard (honest, derived from live state).
  */
@@ -43,11 +44,10 @@ export async function collectNotifications(input: {
     push({
       id: 'exec-disabled',
       level: 'warn',
-      title: '系統變更未開啟',
-      body: 'YSK_EXECUTE 未開 — 套用到系統嘅操作會 blocked',
+      title: tl('notes.auto.n0025'),
+      body: tl('notes.auto.n0214'),
       href: '/system/readiness',
-      source: 'host',
-    });
+      source: 'host' });
   }
 
   // Metrics
@@ -58,31 +58,28 @@ export async function collectNotifications(input: {
         push({
           id: 'mem-high',
           level: 'warn',
-          title: '記憶體偏高',
-          body: '主機 memory 使用率超過 90%',
+          title: tl('notes.auto.n1357'),
+          body: tl('notes.auto.n0504'),
           href: '/metrics',
-          source: 'metrics',
-        });
+          source: 'metrics' });
       }
       if (a === 'load_high') {
         push({
           id: 'load-high',
           level: 'warn',
-          title: '負載偏高',
-          body: '1 分鐘 load 超過 CPU×2',
+          title: tl('notes.auto.n1446'),
+          body: tl('notes.auto.n0063'),
           href: '/metrics',
-          source: 'metrics',
-        });
+          source: 'metrics' });
       }
       if (a === 'disk_high') {
         push({
           id: 'disk-high',
           level: 'critical',
-          title: '磁碟空間不足',
-          body: '根分割使用率超過 90%',
+          title: tl('notes.auto.n1292'),
+          body: tl('notes.auto.n1007'),
           href: '/metrics',
-          source: 'metrics',
-        });
+          source: 'metrics' });
       }
     }
   } catch {
@@ -95,14 +92,13 @@ export async function collectNotifications(input: {
     push({
       id: 'proj-suspended',
       level: 'info',
-      title: `${suspended.length} 個專案已暫停`,
+      title: tl('notes.auto.t0445', { v0: (suspended.length) }),
       body: suspended
         .slice(0, 3)
         .map((p) => p.name)
         .join('、'),
       href: '/projects',
-      source: 'projects',
-    });
+      source: 'projects' });
   }
 
   // Projects missing OS isolation (only warn when EXECUTE on — otherwise always true)
@@ -114,11 +110,10 @@ export async function collectNotifications(input: {
       push({
         id: 'proj-no-os',
         level: 'warn',
-        title: `${bare.length} 個專案未建立系統用戶`,
-        body: '生產隔離：到專案「資源」建立 Linux 用戶與 home',
+        title: tl('notes.auto.t0446', { v0: (bare.length) }),
+        body: tl('notes.auto.n1247'),
         href: '/projects',
-        source: 'projects',
-      });
+        source: 'projects' });
     }
   }
 
@@ -130,14 +125,13 @@ export async function collectNotifications(input: {
     push({
       id: 'approvals-pending',
       level: pendingApprovals.length >= 5 ? 'critical' : 'warn',
-      title: `${pendingApprovals.length} 項待審批`,
+      title: tl('notes.auto.t0447', { v0: (pendingApprovals.length) }),
       body: pendingApprovals
         .slice(0, 3)
         .map((a) => a.action)
         .join('、'),
       href: '/security?tab=approvals',
-      source: 'security',
-    });
+      source: 'security' });
   }
 
   // Certs expiring ≤ 30d
@@ -154,11 +148,10 @@ export async function collectNotifications(input: {
       push({
         id: `cert-${domain}`,
         level: days <= 7 ? 'critical' : 'warn',
-        title: days < 0 ? `憑證已過期：${domain}` : `憑證 ${days} 日內到期：${domain}`,
+        title: days < 0 ? tl('notes.auto.t0448', { v0: (domain) }) : tl('notes.auto.t0449', { v0: (days), v1: (domain) }),
         body: exp,
         href: `/ssl?domain=${encodeURIComponent(domain)}`,
-        source: 'ssl',
-      });
+        source: 'ssl' });
     }
   }
 
@@ -168,20 +161,18 @@ export async function collectNotifications(input: {
     push({
       id: 'backup-fail',
       level: 'warn',
-      title: '上次全部備份有失敗',
-      body: lastBackup.at ? `時間 ${String(lastBackup.at)}` : '請到備份頁查看',
+      title: tl('notes.auto.n0490'),
+      body: lastBackup.at ? tl('notes.auto.t0450', { v0: (String(lastBackup.at)) }) : tl('notes.auto.n1383'),
       href: '/backups?tab=ops',
-      source: 'backup',
-    });
+      source: 'backup' });
   } else if (lastBackup && lastBackup.ok === true && lastBackup.sideOk === false) {
     push({
       id: 'backup-side-fail',
       level: 'warn',
-      title: '備份 tar 成功但遠端／restic 有問題',
-      body: '請到備份操作頁查看 sideResults',
+      title: tl('notes.auto.n0560'),
+      body: tl('notes.auto.n1382'),
       href: '/backups?tab=ops',
-      source: 'backup',
-    });
+      source: 'backup' });
   }
 
   // DNSBL listed from last run
@@ -194,11 +185,10 @@ export async function collectNotifications(input: {
         push({
           id: `dnsbl-${r.domain}`,
           level: 'critical',
-          title: `DNSBL 上榜：${r.domain ?? 'IP'}`,
+          title: tl('notes.auto.t0451', { v0: (r.domain ?? 'IP') }),
           body: (r.listedOn ?? []).join(', ') || 'listed',
           href: '/email',
-          source: 'email',
-        });
+          source: 'email' });
       }
     }
   }
@@ -210,11 +200,10 @@ export async function collectNotifications(input: {
       push({
         id: 'defense-threat',
         level: def === 'critical' ? 'critical' : 'warn',
-        title: def === 'critical' ? '防護：危急' : '防護：疑似受攻擊',
-        body: '請到防護中心檢視訊號並切換防護檔',
+        title: def === 'critical' ? tl('notes.auto.n1527') : tl('notes.auto.n1529'),
+        body: tl('notes.auto.n1385'),
         href: '/protection',
-        source: 'defense',
-      });
+        source: 'defense' });
     }
   } catch {
     /* ignore */
@@ -229,11 +218,10 @@ export async function collectNotifications(input: {
         push({
           id: 'defense-auto-ban-cb',
           level: 'warn',
-          title: '自動 ban 已熔斷',
-          body: '本小時封禁次數達上限 — 到防護中心檢查',
+          title: tl('notes.auto.n0026'),
+          body: tl('notes.auto.n0994'),
           href: '/protection',
-          source: 'defense',
-        });
+          source: 'defense' });
       }
     }
   } catch {
@@ -252,20 +240,18 @@ export async function collectNotifications(input: {
       push({
         id: 'apply-audit-bad',
         level: 'critical',
-        title: `${audit.summary.bad} 項套用失敗／blocked`,
-        body: sample || '請到通知 → 套用狀態審計',
+        title: tl('notes.auto.t0452', { v0: (audit.summary.bad) }),
+        body: sample || tl('notes.auto.n1384'),
         href: '/?tab=notifications',
-        source: 'apply-audit',
-      });
+        source: 'apply-audit' });
     } else if (audit.summary.warn > 0) {
       push({
         id: 'apply-audit-warn',
         level: 'warn',
-        title: `${audit.summary.warn} 項仍為 written／draft`,
-        body: '控制面已寫入但尚未 applied 到系統 — 檢查各功能頁「套用」',
+        title: tl('notes.auto.t0453', { v0: (audit.summary.warn) }),
+        body: tl('notes.auto.n0890'),
         href: '/?tab=notifications',
-        source: 'apply-audit',
-      });
+        source: 'apply-audit' });
     }
   } catch {
     /* ignore */
@@ -276,11 +262,10 @@ export async function collectNotifications(input: {
     push({
       id: 'not-root',
       level: 'warn',
-      title: '面板非 root',
-      body: 'YSK_EXECUTE 已開但進程非 root — 部分 systemctl／nginx reload 會 blocked',
+      title: tl('notes.auto.n1595'),
+      body: tl('notes.auto.n0211'),
       href: '/system/readiness',
-      source: 'host',
-    });
+      source: 'host' });
   }
 
   // Automation: suggest emergency / last escalate
@@ -297,23 +282,21 @@ export async function collectNotifications(input: {
         push({
           id: 'defense-suggest-emergency',
           level: 'critical',
-          title: '防護：建議緊急檔',
-          body: '分數極高 — 緊急檔需人手確認（永不自動）',
+          title: tl('notes.auto.n1528'),
+          body: tl('notes.auto.n0597'),
           href: '/protection',
-          source: 'defense',
-        });
+          source: 'defense' });
       }
       if (a.enabled && a.lastPresetId && a.lastPresetId !== 'daily') {
-        const note = (a.lastTickNotes ?? []).find((n) => n.includes('自動防護檔'));
+        const note = (a.lastTickNotes ?? []).find((n) => n.includes(tl('notes.auto.n1337')));
         if (note) {
           push({
             id: 'defense-auto-preset',
             level: 'warn',
-            title: `自動防護檔：${a.lastPresetId}`,
+            title: tl('notes.auto.t0454', { v0: (a.lastPresetId) }),
             body: note,
             href: '/protection',
-            source: 'defense',
-          });
+            source: 'defense' });
         }
       }
     }
@@ -329,12 +312,11 @@ export async function collectNotifications(input: {
     push({
       id: `audit-${e.id}`,
       level: 'info',
-      title: `操作失敗：${e.action}`,
-      body: e.resource ? String(e.resource) : '見審計',
+      title: tl('notes.auto.t0455', { v0: (e.action) }),
+      body: e.resource ? String(e.resource) : tl('notes.auto.n1350'),
       href: '/security',
       source: 'audit',
-      at: e.created_at,
-    });
+      at: e.created_at });
   }
 
   // Journal / log disk pressure from log-center settings snapshot (optional live probe)
@@ -354,12 +336,11 @@ export async function collectNotifications(input: {
           push({
             id: 'journal-disk-high',
             level: h.journalDiskMb >= warnMb * 2 ? 'critical' : 'warn',
-            title: `Journal 磁碟偏高：≈${h.journalDiskMb} MB`,
-            body: `閾值 ${warnMb} MB — 可到日誌中心 vacuum 或調整保留`,
+            title: tl('notes.auto.t0456', { v0: (h.journalDiskMb) }),
+            body: tl('notes.auto.t0457', { v0: (warnMb) }),
             href: '/logs?tab=maintain',
             source: 'logs',
-            at: h.at,
-          });
+            at: h.at });
         }
       } catch {
         /* ignore */

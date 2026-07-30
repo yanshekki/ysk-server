@@ -1,11 +1,12 @@
 /**
  * System-wide data table — only allowed table primitive for feature pages.
- * Replaces ResourceTable and raw <table className="data">.
+ * Only table primitive for feature pages (no raw <table className="data">).
  *
- * **Create buttons:** only place primary “+ 建立/新增 …” in `toolbar`
- * (top-right of this table). Never put create in FeaturePageLayout.actions.
+ * **Actions:** primary CTAs only in `toolbar` or page header.
+ * `empty` EmptyState must be text only — no Create / Go-to / Refresh buttons.
  */
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EmptyState } from './EmptyState';
 
 export type DataColumn<T> = {
@@ -52,6 +53,7 @@ export function DataTable<T>({
   className,
   dense = true,
 }: DataTableProps<T>) {
+  const { t } = useTranslation();
   const shellCls = [
     'data-table',
     dense ? 'data-table--dense' : '',
@@ -78,7 +80,7 @@ export function DataTable<T>({
 
       {rows.length === 0 ? (
         <div className="data-table__empty">
-          {empty ?? <EmptyState title="沒有資料" />}
+          {empty ?? <EmptyState title={t('dataTable.empty')} />}
         </div>
       ) : (
         <div className="data-table__wrap table-wrap">
@@ -96,7 +98,7 @@ export function DataTable<T>({
                   </th>
                 ))}
                 {rowActions ? (
-                  <th className="u-nowrap data-table__actions-col">操作</th>
+                  <th className="u-nowrap data-table__actions-col">{t('dataTable.actions')}</th>
                 ) : null}
               </tr>
             </thead>

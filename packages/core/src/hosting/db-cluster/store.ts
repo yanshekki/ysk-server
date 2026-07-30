@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import type {
   CreateDbClusterInput,
@@ -29,14 +29,14 @@ const ENGINES: DbClusterEngine[] = ['mysql', 'mariadb', 'postgres', 'redis'];
 
 function assertEngine(e: string): DbClusterEngine {
   if (!ENGINES.includes(e as DbClusterEngine)) {
-    throw new YskError(ErrorCodes.VALIDATION, `不支援的引擎：${e}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0601', { v0: (e) }), { httpStatus: 400 });
   }
   return e as DbClusterEngine;
 }
 
 function assertKind(k: string): DbClusterKind {
   if (!KINDS.includes(k as DbClusterKind)) {
-    throw new YskError(ErrorCodes.VALIDATION, `不支援的叢集類型：${k}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0602', { v0: (k) }), { httpStatus: 400 });
   }
   return k as DbClusterKind;
 }
@@ -44,11 +44,11 @@ function assertKind(k: string): DbClusterKind {
 function assertHost(host: string): string {
   const h = host.trim();
   if (!h || h.length > 253) {
-    throw new YskError(ErrorCodes.VALIDATION, '節點 host 無效', { httpStatus: 400, details: { host } });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1303'), { httpStatus: 400, details: { host } });
   }
   // No placeholder defaults — reject empty / whitespace only
   if (h === 'example.com' || h.startsWith('203.0.113.')) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫真實節點位址（不可用示範 IP）', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1397'), {
       httpStatus: 400,
       details: { host },
     });
@@ -82,7 +82,7 @@ function normalizeMember(
       ? 'local'
       : 'ssh';
   if (access === 'fleet' && !raw.fleetAgentId?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, 'access=fleet 需要 fleetAgentId', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0216'), {
       httpStatus: 400,
       details: { host: raw.host },
     });
@@ -128,7 +128,7 @@ function saveAll(db: JsonStore, rows: DbCluster[]): void {
 export function getDbCluster(db: JsonStore, id: string): DbCluster {
   const c = listDbClusters(db).find((x) => x.id === id);
   if (!c) {
-    throw new YskError(ErrorCodes.NOT_FOUND, `找不到叢集：${id}`, { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.tpl.clusterNotFound', { id: id }), { httpStatus: 404 });
   }
   return c;
 }
@@ -136,21 +136,21 @@ export function getDbCluster(db: JsonStore, id: string): DbCluster {
 export function createDbCluster(db: JsonStore, input: CreateDbClusterInput): DbCluster {
   const name = (input.name || '').trim();
   if (!name || name.length > 64) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫叢集名稱（≤64）', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1394'), { httpStatus: 400 });
   }
   const engine = assertEngine(input.engine);
   const kind = assertKind(input.kind);
   if (kind.startsWith('mariadb') && engine !== 'mariadb') {
-    throw new YskError(ErrorCodes.VALIDATION, 'Galera 僅支援 mariadb 引擎', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0108'), { httpStatus: 400 });
   }
   if (kind.startsWith('mysql') && engine !== 'mysql') {
-    throw new YskError(ErrorCodes.VALIDATION, 'mysql-replica 僅支援 mysql 引擎', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0335'), { httpStatus: 400 });
   }
   if (kind.startsWith('postgres') && engine !== 'postgres') {
-    throw new YskError(ErrorCodes.VALIDATION, 'postgres-replica 僅支援 postgres', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0384'), { httpStatus: 400 });
   }
   if (kind.startsWith('redis') && engine !== 'redis') {
-    throw new YskError(ErrorCodes.VALIDATION, 'redis 叢集僅支援 redis', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0403'), { httpStatus: 400 });
   }
 
   const rawMembers = input.members?.length
@@ -158,7 +158,7 @@ export function createDbCluster(db: JsonStore, input: CreateDbClusterInput): DbC
     : [{ host: '127.0.0.1', role: defaultRole(kind, 0), access: 'local' as const }];
 
   if (rawMembers.length < 1) {
-    throw new YskError(ErrorCodes.VALIDATION, '至少需要一個節點', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1342'), { httpStatus: 400 });
   }
 
   const members = rawMembers.map((m, i) => normalizeMember(m, engine, kind, i));
@@ -226,7 +226,7 @@ export function updateDbCluster(
   const all = listDbClusters(db);
   const idx = all.findIndex((c) => c.id === id);
   if (idx < 0) {
-    throw new YskError(ErrorCodes.NOT_FOUND, `找不到叢集：${id}`, { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.tpl.clusterNotFound', { id: id }), { httpStatus: 404 });
   }
   const cur = all[idx];
   const next: DbCluster = {

@@ -17,7 +17,14 @@
     "honesty:lint": "pnpm --filter @ysk/server honesty:lint",
     "primitives:check": "pnpm --filter @ysk/web primitives:check",
     "chrome:check": "pnpm --filter @ysk/web chrome:check",
-    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check",
+    "about-tab:check": "pnpm --filter @ysk/web about-tab:check",
+    "css:reuse": "pnpm --filter @ysk/web css:reuse",
+    "i18n:check-keys": "node ./scripts/i18n-check-keys.mjs",
+    "i18n:check-ui": "node ./scripts/i18n-check-ui.mjs",
+    "i18n:check-api": "node ./scripts/i18n-check-api.mjs",
+    "i18n:rebuild": "node ./scripts/rebuild-translation.mjs",
+    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check && pnpm about-tab:check && pnpm css:reuse && pnpm i18n:check-keys && pnpm i18n:check-ui && pnpm i18n:check-api",
+    "review:inventory": "node ./scripts/review-inventory.mjs",
     "e2e:real-ops": "bash scripts/e2e-real-ops.sh",
     "e2e:hosting-root": "bash scripts/e2e-hosting-root.sh",
     "prepare-release": "bash scripts/prepare-release.sh",
@@ -27,7 +34,13 @@
     "node": ">=20"
   },
   "packageManager": "pnpm@9.15.0",
-  "keywords": ["ysk-server", "linux", "server-manager", "hosting", "ai"],
+  "keywords": [
+    "ysk-server",
+    "linux",
+    "server-manager",
+    "hosting",
+    "ai"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,0 +1,164 @@
+/* —— Buttons (shared) — ONE size only (md / 40px). sm|lg aliases keep API, same look. —— */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  height: var(--control-height); /* same as inputs — one chrome height */
+  min-height: var(--control-height);
+  padding: 0 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition),
+    border-color var(--transition);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  color: #fff;
+  background: var(--brand-gradient);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover:not(:disabled) {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.btn--secondary {
+  color: var(--text-main);
+  background: var(--bg-white);
+  border-color: var(--border-color);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  border-color: var(--brand-blue-light);
+  color: var(--brand-blue);
+}
+
+.btn--ghost {
+  color: var(--text-sub);
+  background: transparent;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.btn--danger {
+  color: #fff;
+  background: var(--danger);
+}
+
+/*
+ * Size tokens kept for class compatibility (size="sm"|"md"|"lg") but all
+ * resolve to the same geometry so the whole product has one button size.
+ */
+.btn--sm,
+.btn--md,
+.btn--lg {
+  height: var(--control-height);
+  min-height: var(--control-height);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--link {
+  background: transparent;
+  border: none;
+  color: var(--brand-blue);
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: none;
+}
+
+.btn--link:hover:not(:disabled) {
+  text-decoration: underline;
+  transform: none;
+}
+
+/* Legacy alias — prefer .action-bar / <ActionBar> */
+.btn-row,
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-control-gap);
+  align-items: center;
+}
+
+.action-bar--end {
+  justify-content: flex-end;
+}
+
+.action-bar--between {
+  justify-content: space-between;
+}
+
+.action-bar--nowrap {
+  flex-wrap: nowrap;
+}
+
+.action-bar--sm {
+  gap: 0.35rem;
+}
+
+.action-bar--md {
+  gap: var(--space-control-gap);
+}
+
+/* Compact labeled control inside ActionBar / DataTable toolbar */
+.toolbar-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.toolbar-field input {
+  width: 5.25rem;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-page);
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.toolbar-field input:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.35);
+  outline-offset: 1px;
+}
+
+/* Chip / badge wrap row — prefer over inline gap styles */
+.chip-row,
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+

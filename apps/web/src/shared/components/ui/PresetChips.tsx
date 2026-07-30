@@ -1,6 +1,8 @@
 /**
  * One-click preset chips for common values; optional free custom beside.
  */
+import { useTranslation } from 'react-i18next';
+
 export type PresetChipOption = {
   value: string;
   label: string;
@@ -29,11 +31,14 @@ export function PresetChips({
   onChange,
   disabled = false,
   allowCustom = false,
-  customPlaceholder = '自訂…',
+  customPlaceholder,
   looseMatch = true,
 }: PresetChipsProps) {
+  const { t } = useTranslation();
   const current = norm(value, looseMatch);
   const isPreset = options.some((o) => norm(o.value, looseMatch) === current);
+  const resolvedPlaceholder =
+    customPlaceholder ?? t('presetChips.customPlaceholder');
 
   return (
     <div className="preset-chips">
@@ -58,7 +63,7 @@ export function PresetChips({
           className="preset-chips__custom"
           value={isPreset ? '' : value}
           disabled={disabled}
-          placeholder={customPlaceholder}
+          placeholder={resolvedPlaceholder}
           spellCheck={false}
           onChange={(e) => onChange(e.target.value)}
         />

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Collect host network snapshot via iproute2 + resolv (honest).
  */
@@ -59,13 +60,13 @@ export async function collectNetworkSnapshot(
   } else {
     notes.push(
       addrR.exitCode !== 0
-        ? `ip -j addr 失敗：${(addrR.stderr || addrR.stdout).slice(0, 160)}`
-        : 'ip -j addr 無介面',
+        ? tl('notes.auto.t0023', { v0: ((addrR.stderr || addrR.stdout).slice(0, 160)) })
+        : tl('notes.auto.n0309'),
     );
     // fallback: try non-json
     const plain = await host.runCommand(['ip', 'addr'], { timeoutMs: 8_000 });
     if (plain.exitCode === 0 && plain.stdout.trim()) {
-      notes.push('本機 ip 可能不支援 -j；請升級 iproute2（目前僅 notes）');
+      notes.push(tl('notes.auto.n0995'));
       backend.hasIp = true;
     }
   }
@@ -80,7 +81,7 @@ export async function collectNetworkSnapshot(
   const routeR = await host.runCommand(['ip', '-j', 'route'], { timeoutMs: 8_000 });
   let routes = routeR.exitCode === 0 ? parseIpRouteJson(routeR.stdout) : [];
   if (routeR.exitCode !== 0) {
-    notes.push(`ip -j route 失敗：${(routeR.stderr || '').slice(0, 120)}`);
+    notes.push(tl('notes.auto.t0024', { v0: ((routeR.stderr || '').slice(0, 120)) }));
   }
 
   const def = routes.find((r) => r.dst === 'default' || r.dst === '0.0.0.0/0');
@@ -116,7 +117,7 @@ export async function collectNetworkSnapshot(
       mode = 'static';
     }
   } else {
-    notes.push('無法讀 /etc/resolv.conf');
+    notes.push(tl('notes.auto.n1182'));
   }
 
   // resolvectl per-link DNS (uplink)
@@ -213,9 +214,9 @@ export async function collectNetworkSnapshot(
   if (!nameservers.length && stubServers.length) {
     // only stub left
     nameservers = [...stubServers];
-    dnsNotes.push('僅見 stub resolv（127.0.0.53）；實際上行 DNS 請看 resolvectl');
+    dnsNotes.push(tl('notes.auto.n0574'));
   }
-  if (!nameservers.length) dnsNotes.push('無 nameserver（可能未配置）');
+  if (!nameservers.length) dnsNotes.push(tl('notes.auto.n1082'));
 
   const canApplyDns = backend.networkManager === 'active' && Boolean(connection);
 

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Peer distribution: list/bundle artifacts + scp push (honest).
  * scp only with execute=true + YSK_EXECUTE; never claims peer reloaded.
@@ -87,8 +88,8 @@ export function listDbClusterArtifacts(input: {
     artifactDir,
     files,
     notes: files.length
-      ? [`${files.length} 個產物檔 · ${artifactDir}`]
-      : ['尚無產物 — 請先 plan'],
+      ? [tl('notes.auto.t0570', { v0: (files.length), v1: (artifactDir) })]
+      : [tl('notes.auto.n0720')],
   };
 }
 
@@ -146,8 +147,8 @@ export function bundleDbClusterArtifacts(input: {
       ok: false,
       cluster: listed.cluster,
       notes: [
-        `tar 失敗：${(tar.stderr || tar.stdout || 'no tar').slice(0, 200)}`,
-        '可手動打包 dataDir/clusters/<id>/',
+        tl('notes.auto.t0571', { v0: ((tar.stderr || tar.stdout || 'no tar').slice(0, 200)) }),
+        tl('notes.auto.n0612'),
       ],
     };
   }
@@ -157,7 +158,7 @@ export function bundleDbClusterArtifacts(input: {
     cluster: listed.cluster,
     bundlePath,
     bytes,
-    notes: [`已打包 ${bundlePath}（${bytes} bytes）`, 'written ≠ peer applied'],
+    notes: [tl('notes.auto.t0572', { v0: (bundlePath), v1: (bytes) }), 'written ≠ peer applied'],
   };
 }
 
@@ -255,12 +256,12 @@ export function planDbClusterPeerPush(input: {
   }));
 
   const notes = [
-    'dry-run peer push 計劃（未 scp）',
+    tl('notes.auto.n0263'),
     targets.length
-      ? `${targets.length} 個 peer 目標`
-      : '無 access=ssh 的成員 — 請在 create 時用 :ssh 或改 members',
-    '真正推送需 execute + YSK_EXECUTE=1',
-    'scp 成功 ≠ peer 已 restart / 已 join',
+      ? tl('notes.auto.t0573', { v0: (targets.length) })
+      : tl('notes.auto.n1069'),
+    tl('notes.auto.n1284'),
+    tl('notes.auto.n0424'),
   ];
   for (const t of targets) {
     notes.push(`${t.host}: ${t.files.length} files → ${t.username}@${t.host}:${t.remotePath}/`);
@@ -322,7 +323,7 @@ export async function pushDbClusterToPeers(input: {
       blocked: true,
       cluster: plan.cluster,
       targets: plan.targets,
-      notes: ['無法 scp：需 YSK_EXECUTE=1', ...plan.notes.slice(0, 3)],
+      notes: [tl('notes.auto.n1136'), ...plan.notes.slice(0, 3)],
       requiresExecute: true,
     };
   }
@@ -334,7 +335,7 @@ export async function pushDbClusterToPeers(input: {
       executed: false,
       cluster: plan.cluster,
       targets: [],
-      notes: ['無 ssh peer 可推'],
+      notes: [tl('notes.auto.n1086')],
       requiresExecute: false,
     };
   }
@@ -362,7 +363,7 @@ export async function pushDbClusterToPeers(input: {
         idOpts = buildIdentityFileOpts(key.path);
         identityUsed = idId;
       } else {
-        notes.push(`${t.host}: identity ${idId} 不可用 — 改用預設 key`);
+        notes.push(tl('notes.auto.t0574', { v0: (t.host), v1: (idId) }));
       }
     }
 
@@ -386,7 +387,7 @@ export async function pushDbClusterToPeers(input: {
     if (mkdir.exitCode !== 0) {
       anyFail = true;
       notes.push(
-        `${t.host}: ssh mkdir 失敗 ${(mkdir.stderr || mkdir.stdout || '').slice(0, 120)}`,
+        tl('notes.auto.t0575', { v0: (t.host), v1: ((mkdir.stderr || mkdir.stdout || '').slice(0, 120)) }),
       );
       continue;
     }
@@ -395,7 +396,7 @@ export async function pushDbClusterToPeers(input: {
       const local = join(listed.artifactDir, rel);
       if (!existsSync(local)) {
         anyFail = true;
-        notes.push(`${t.host}: 本地缺 ${rel}`);
+        notes.push(tl('notes.auto.t0576', { v0: (t.host), v1: (rel) }));
         continue;
       }
       // preserve subdirs on remote with scp -r of parent or flat copy with basename
@@ -417,7 +418,7 @@ export async function pushDbClusterToPeers(input: {
       if (r.exitCode !== 0) {
         anyFail = true;
         notes.push(
-          `${t.host}/${rel}: scp 失敗 ${(r.stderr || r.stdout || '').slice(0, 100)}`,
+          tl('notes.auto.t0577', { v0: (t.host), v1: (rel), v2: ((r.stderr || r.stdout || '').slice(0, 100)) }),
         );
       } else {
         notes.push(`${t.host}/${rel}: scp ok → ${t.remotePath}/`);
@@ -427,9 +428,9 @@ export async function pushDbClusterToPeers(input: {
 
   notes.push(
     anyFail
-      ? '部分推送失敗 — 檢查 SSH key / 防火牆'
-      : '已 scp 到 peer /tmp（written on peer ≠ service restarted）',
-    '請在 peer 上安裝 conf 並 restart / join',
+      ? tl('notes.auto.n1494')
+      : tl('notes.auto.n0729'),
+    tl('notes.auto.n1386'),
   );
 
   // Mark ssh members as written if any file succeeded

@@ -69,13 +69,10 @@ function formatUptime(sec?: number): string {
   return `${m}m`;
 }
 
-function alertLabel(a: string): string {
-  const map: Record<string, string> = {
-    memory_high: '記憶體偏高',
-    load_high: '負載偏高',
-    disk_high: '磁碟偏高',
-  };
-  return map[a] ?? a;
+function alertLabel(a: string, tr: (k: string) => string): string {
+  const key = `metrics.alert.${a}`;
+  const v = tr(key);
+  return v === key ? a : v;
 }
 
 export function MetricsPage() {
@@ -116,7 +113,7 @@ export function MetricsPage() {
       setMetrics(m);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '載入指標失敗');
+      setError(e instanceof Error ? e.message : t('metrics.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -129,7 +126,7 @@ export function MetricsPage() {
       const snap = await metricsApi.projectsUsage({ limit: 50 });
       setProjectUsage(snap);
     } catch (e) {
-      setProjectUsageErr(e instanceof Error ? e.message : '專案用量載入失敗');
+      setProjectUsageErr(e instanceof Error ? e.message : t('metrics.projectUsageFailed'));
     } finally {
       setProjectUsageLoading(false);
     }
@@ -150,9 +147,9 @@ export function MetricsPage() {
         header: true,
       });
       setProcesses(p);
-      setStreamErr(p.ok ? null : p.notes?.[0] ?? '進程列表失敗');
+      setStreamErr(p.ok ? null : p.notes?.[0] ?? t('metrics.procListFailed'));
     } catch (e) {
-      setStreamErr(e instanceof Error ? e.message : '進程列表失敗');
+      setStreamErr(e instanceof Error ? e.message : t('metrics.procListFailed'));
     }
   }, [sort, limit, showRawTop]);
 
@@ -217,13 +214,13 @@ export function MetricsPage() {
         onEnd: (reason) => {
           setFollow(false);
           if (reason && reason !== 'http_error') {
-            setStreamErr((e) => e ?? `stream 已結束（${reason}）`);
+            setStreamErr((e) => e ?? t('metrics.streamEnded', { reason }));
           }
         },
       });
     } catch (e) {
       setFollow(false);
-      setStreamErr(e instanceof Error ? e.message : '無法開啟 stream');
+      setStreamErr(e instanceof Error ? e.message : t('metrics.streamOpenFailed'));
       return;
     }
     streamRef.current = ac;
@@ -333,7 +330,7 @@ export function MetricsPage() {
         ok: false,
         pid: pending.pid,
         signal: pending.signal,
-        notes: [e instanceof Error ? e.message : '訊號失敗'],
+        notes: [e instanceof Error ? e.message : t('metrics.signalFailed')],
       });
     } finally {
       setSignalBusy(false);
@@ -352,7 +349,7 @@ export function MetricsPage() {
       setDetail({
         ok: false,
         pid,
-        notes: [e instanceof Error ? e.message : '無法載入詳情'],
+        notes: [e instanceof Error ? e.message : t('metrics.detailFailed')],
       });
     } finally {
       setDetailLoading(false);
@@ -377,7 +374,7 @@ export function MetricsPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.metrics', { defaultValue: '主機指標' })}
+      title={t('nav.metrics')}
       showCapability={false}
       status={
         metrics
@@ -385,10 +382,10 @@ export function MetricsPage() {
               pill: {
                 label:
                   alerts.length > 0
-                    ? `${alerts.length} 則告警`
+                    ? t('metrics.alertCount', { count: alerts.length })
                     : heroTone === 'warn'
-                      ? '需留意'
-                      : '正常',
+                      ? t('metrics.attention')
+                      : t('metrics.normal'),
                 tone: heroTone,
               },
               items: [
@@ -397,7 +394,7 @@ export function MetricsPage() {
                   value: load1 != null ? load1.toFixed(2) : '—',
                 },
                 {
-                  label: '記憶體',
+                  label: t('common.memory'),
                   value: memPct != null ? `${memPct}%` : '—',
                   tone:
                     memPct != null && memPct >= 90
@@ -407,7 +404,7 @@ export function MetricsPage() {
                         : 'ok',
                 },
                 {
-                  label: '磁碟',
+                  label: t('metrics.disk'),
                   value: diskPct != null ? `${diskPct}%` : '—',
                   tone:
                     diskPct != null && diskPct >= 90
@@ -417,7 +414,7 @@ export function MetricsPage() {
                         : 'ok',
                 },
                 {
-                  label: '告警',
+                  label: t('metrics.alerts'),
                   value: alerts.length,
                   tone: alerts.length ? 'warn' : 'ok',
                 },
@@ -439,7 +436,7 @@ export function MetricsPage() {
               if (tab === 'projects' || tab === 'storage') void refreshProjectUsage();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           {tab === 'overview' ? (
             <label className="met-toggle">
@@ -448,44 +445,44 @@ export function MetricsPage() {
                 checked={autoRefresh}
                 onChange={(e) => setAutoRefresh(e.target.checked)}
               />
-              <span>自動 5s</span>
+              <span>{t('metrics.auto5s')}</span>
             </label>
           ) : null}
           <Link to="/system" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            主機設定
+            {t('metrics.hostSettings')}
           </Link>
           <Link to="/system/readiness" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            就緒探測
+            {t('nav.readiness')}
           </Link>
         </>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {loading && !metrics ? <LoadingBlock label="載入指標…" /> : null}
+      {loading && !metrics ? <LoadingBlock label={t('metrics.loading')} /> : null}
 
       {metrics ? (
         <div className="met">
           <PageTabs
             tabs={[
-              { id: 'overview', label: '概覽' },
-              { id: 'live', label: '即時進程', badge: follow ? 'LIVE' : undefined },
+              { id: 'overview', label: t('metrics.tabs.overview') },
+              { id: 'live', label: t('metrics.tabs.live'), badge: follow ? 'LIVE' : undefined },
               {
                 id: 'storage',
-                label: '磁碟',
+                label: t('metrics.disk'),
                 badge: mounts.length || undefined,
               },
               {
                 id: 'projects',
-                label: '專案用量',
+                label: t('metrics.tabs.projectUsage'),
                 badge: projectUsage?.items.length || undefined,
               },
               {
                 id: 'alerts',
-                label: '告警',
+                label: t('metrics.alerts'),
                 badge: alerts.length || undefined,
               },
             
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
             active={tab}
             onChange={setTab}
@@ -496,7 +493,7 @@ export function MetricsPage() {
                 <div className="met-grid met-grid--3">
                   <section className="met-card">
                     <header className="met-card__head">
-                      <h3 className="met-card__title">負載</h3>
+                      <h3 className="met-card__title">{t('metrics.load')}</h3>
                       <Badge
                         tone={
                           loadPressure != null && loadPressure > 2
@@ -513,9 +510,9 @@ export function MetricsPage() {
                     </header>
                     <div className="met-meters">
                       {[
-                        { lab: '1 分', v: loadavg?.[0] },
-                        { lab: '5 分', v: loadavg?.[1] },
-                        { lab: '15 分', v: loadavg?.[2] },
+                        { lab: t('metrics.min1'), v: loadavg?.[0] },
+                        { lab: t('metrics.min5'), v: loadavg?.[1] },
+                        { lab: t('metrics.min15'), v: loadavg?.[2] },
                       ].map((row) => {
                         const pct =
                           row.v != null && cpuCount > 0
@@ -531,8 +528,7 @@ export function MetricsPage() {
                             </div>
                             <div className="met-meter__track">
                               <div
-                                className="met-meter__fill"
-                                style={{ width: `${pct}%` }}
+                                className="met-meter__fill u-meter-fill" style={{ ["--meter-pct" as string]: `${pct}%` }}
                               />
                             </div>
                           </div>
@@ -540,13 +536,13 @@ export function MetricsPage() {
                       })}
                     </div>
                     <p className="met-footnote">
-                      相對 {cpuCount || '?'} CPU；高於 1.0× 表示可能排隊。
+                      {t('metrics.loadHint', { cpus: cpuCount || '?' })}
                     </p>
                   </section>
 
                   <section className="met-card">
                     <header className="met-card__head">
-                      <h3 className="met-card__title">記憶體</h3>
+                      <h3 className="met-card__title">{t('common.memory')}</h3>
                       <Badge
                         tone={
                           memPct != null && memPct >= 90
@@ -568,18 +564,17 @@ export function MetricsPage() {
                               : memPct != null && memPct >= 75
                                 ? ' met-meter__fill--warn'
                                 : ''
-                          }`}
-                          style={{ width: `${Math.min(100, memPct ?? 0)}%` }}
+                          } u-meter-fill`} style={{ ["--meter-pct" as string]: `${Math.min(100, memPct ?? 0)}%` }}
                         />
                       </div>
                     </div>
                     <dl className="met-dl">
                       <div>
-                        <dt>總量</dt>
+                        <dt>{t('metrics.total')}</dt>
                         <dd>{formatBytes(mem?.total)}</dd>
                       </div>
                       <div>
-                        <dt>可用</dt>
+                        <dt>{t('metrics.available')}</dt>
                         <dd>
                           {formatBytes(
                             mem?.available != null ? mem.available : mem?.free,
@@ -591,7 +586,7 @@ export function MetricsPage() {
 
                   <section className="met-card">
                     <header className="met-card__head">
-                      <h3 className="met-card__title">主磁碟</h3>
+                      <h3 className="met-card__title">{t('metrics.mainDisk')}</h3>
                       <Badge
                         tone={
                           diskPct != null && diskPct >= 90
@@ -616,31 +611,29 @@ export function MetricsPage() {
                                     ? ' met-meter__fill--warn'
                                     : ''
                               }`}
-                              style={{
-                                width: `${Math.min(100, diskPct ?? 0)}%`,
-                              }}
+                              style={{ ['--meter-pct' as string]: `${Math.min(100, diskPct ?? 0)}%` }}
                             />
                           </div>
                         </div>
                         <dl className="met-dl">
                           <div>
-                            <dt>路徑</dt>
+                            <dt>{t('metrics.path')}</dt>
                             <dd>
                               <code>{disk.path ?? '/'}</code>
                             </dd>
                           </div>
                           <div>
-                            <dt>總量</dt>
+                            <dt>{t('metrics.total')}</dt>
                             <dd>{formatBytes(disk.total)}</dd>
                           </div>
                           <div>
-                            <dt>可用</dt>
+                            <dt>{t('metrics.available')}</dt>
                             <dd>{formatBytes(disk.free)}</dd>
                           </div>
                         </dl>
                       </>
                     ) : (
-                      <p className="met-muted">無法讀取磁碟</p>
+                      <p className="met-muted">{t('metrics.diskReadFail')}</p>
                     )}
                     {mounts.length > 1 ? (
                       <button
@@ -648,7 +641,7 @@ export function MetricsPage() {
                         className="met-linkish"
                         onClick={() => setTab('storage')}
                       >
-                        查看全部 {mounts.length} 個 mount →
+                        {t('metrics.viewAllMounts', { count: mounts.length })}
                       </button>
                     ) : null}
                   </section>
@@ -656,24 +649,24 @@ export function MetricsPage() {
 
                 {alerts.length > 0 ? (
                   <div className="met-alert-strip">
-                    <Badge tone="warn">{alerts.length} 告警</Badge>
-                    <span>{alerts.map(alertLabel).join(' · ')}</span>
+                    <Badge tone="warn">{t('metrics.nAlerts', { count: alerts.length })}</Badge>
+                    <span>{alerts.map((a) => alertLabel(a, t)).join(' · ')}</span>
                     <button
                       type="button"
                       className="met-linkish"
                       onClick={() => setTab('alerts')}
                     >
-                      詳情
+                      {t('metrics.details')}
                     </button>
                   </div>
                 ) : (
-                  <div className="met-ok-strip">目前無記憶體／負載／磁碟閾值告警</div>
+                  <div className="met-ok-strip">{t('metrics.noThresholdAlerts')}</div>
                 )}
 
                 {projectUsage && projectUsage.items.length > 0 ? (
                   <section className="met-card u-mt-4">
                     <header className="met-card__head">
-                      <h3 className="met-card__title">專案磁碟（真實 du）</h3>
+                      <h3 className="met-card__title">{t('metrics.projectDisk')}</h3>
                       <Badge tone="ok">
                         {formatBytes(projectUsage.totalUsedBytes)}
                       </Badge>
@@ -718,7 +711,7 @@ export function MetricsPage() {
                       className="met-linkish"
                       onClick={() => setTab('projects')}
                     >
-                      查看全部專案用量 →
+                      {t('metrics.viewAllProjectUsage')}
                     </button>
                   </section>
                 ) : (
@@ -731,7 +724,7 @@ export function MetricsPage() {
                         void refreshProjectUsage();
                       }}
                     >
-                      載入專案磁碟用量（真實 du）→
+                      {t('metrics.loadProjectDisk')}
                     </button>
                   </div>
                 )}
@@ -747,10 +740,10 @@ export function MetricsPage() {
                       checked={follow}
                       onChange={(e) => setFollow(e.target.checked)}
                     />
-                    <span>跟隨（SSE）</span>
+                    <span>{t('metrics.followSse')}</span>
                   </label>
                   <label className="met-field">
-                    <span>間隔</span>
+                    <span>{t('metrics.interval')}</span>
                     <select
                       value={intervalSec}
                       onChange={(e) => setIntervalSec(Number(e.target.value) || 2)}
@@ -762,7 +755,7 @@ export function MetricsPage() {
                     </select>
                   </label>
                   <label className="met-field">
-                    <span>排序</span>
+                    <span>{t('metrics.sort')}</span>
                     <select
                       value={sort}
                       onChange={(e) => {
@@ -779,7 +772,7 @@ export function MetricsPage() {
                     </select>
                   </label>
                   <label className="met-field">
-                    <span>行數</span>
+                    <span>{t('metrics.rows')}</span>
                     <select
                       value={limit}
                       onChange={(e) => setLimit(Number(e.target.value) || 40)}
@@ -796,7 +789,7 @@ export function MetricsPage() {
                     disabled={follow}
                     onClick={() => void refreshProcesses()}
                   >
-                    單次查詢
+                    {t('metrics.onceQuery')}
                   </Button>
                   <label className="met-toggle">
                     <input
@@ -824,17 +817,17 @@ export function MetricsPage() {
                   <label className="met-search">
                     <input
                       type="search"
-                      placeholder="搜尋 PID / USER / COMMAND"
+                      placeholder={t('metrics.procSearchPh')}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      aria-label="搜尋進程"
+                      aria-label={t('metrics.procSearchAria')}
                     />
                   </label>
                   <div className="met-chips">
                     {(
                       [
-                        ['none', '全部'],
-                        ['mine', '非系統'],
+                        ['none', t('metrics.filterAll')],
+                        ['mine', t('metrics.filterMine')],
                         ['cpu5', '≥5%CPU'],
                         ['mem5', '≥5%MEM'],
                       ] as const
@@ -850,9 +843,9 @@ export function MetricsPage() {
                     ))}
                   </div>
                   <span className="met-sel-count muted u-text-sm">
-                    選中 {selected.size}
+                    {t('metrics.selectedN', { count: selected.size })}
                     {filteredRows.length !== rows.length
-                      ? ` · 顯示 ${filteredRows.length}/${rows.length}`
+                      ? t('metrics.showOf', { shown: filteredRows.length, total: rows.length })
                       : ''}
                   </span>
                   <div className="met-signal-actions">
@@ -884,7 +877,7 @@ export function MetricsPage() {
                 {lastSignal ? (
                   <div className="met-signal-result">
                     <OpsResultPanel
-                      title={`訊號 ${lastSignal.signal} → PID ${lastSignal.pid}`}
+                      title={t('metrics.signalTo', { sig: lastSignal.signal, pid: lastSignal.pid })}
                       result={{
                         ok: lastSignal.ok,
                         blocked: lastSignal.blocked,
@@ -893,8 +886,8 @@ export function MetricsPage() {
                           ...(lastSignal.stillAlive != null
                             ? [
                                 lastSignal.stillAlive
-                                  ? '進程仍在（kill -0 成功）'
-                                  : '進程已結束',
+                                  ? t('metrics.procAlive')
+                                  : t('metrics.procGone'),
                               ]
                             : []),
                           ...(lastSignal.notes ?? []),
@@ -906,12 +899,14 @@ export function MetricsPage() {
 
                 <DataTable<ProcessRow>
                   className="data-table--live"
-                  title={`進程 (${filteredRows.length}${
-                    filteredRows.length !== rows.length
-                      ? `/${rows.length}`
-                      : ''
-                  })`}
-                  description="ps 列表 · 勾選後可 TERM/KILL（需 YSK_EXECUTE）"
+                  title={t('metrics.procTable', {
+                    count: filteredRows.length,
+                    more:
+                      filteredRows.length !== rows.length
+                        ? `/${rows.length}`
+                        : '',
+                  })}
+                  description={t('metrics.procTableDesc')}
                   columns={[
                     {
                       key: 'sel',
@@ -923,7 +918,7 @@ export function MetricsPage() {
                             filteredRows.every((r) => selected.has(r.pid))
                           }
                           onChange={selectAllFiltered}
-                          aria-label="全選篩選結果"
+                          aria-label={t('metrics.selectAllAria')}
                         />
                       ),
                       className: 'data-table__check',
@@ -933,7 +928,7 @@ export function MetricsPage() {
                           type="checkbox"
                           checked={selected.has(r.pid)}
                           onChange={() => toggleSelect(r.pid)}
-                          aria-label={`選取 PID ${r.pid}`}
+                          aria-label={t('metrics.selectPidAria', { pid: r.pid })}
                         />
                       ),
                     },
@@ -1019,7 +1014,7 @@ export function MetricsPage() {
                         <span title={r.command}>
                           {r.command}
                           {isControlPlaneRow(r) ? (
-                            <Badge tone="warn">控制面</Badge>
+                            <Badge tone="warn">{t('metrics.controlPlane')}</Badge>
                           ) : null}
                         </span>
                       ),
@@ -1041,10 +1036,10 @@ export function MetricsPage() {
                         <button
                           type="button"
                           className="met-icon-btn"
-                          title="詳情"
+                          title={t('metrics.details')}
                           onClick={() => void openDetail(r.pid)}
                         >
-                          詳
+                          {t('metrics.detailShort')}
                         </button>
                         <button
                           type="button"
@@ -1072,13 +1067,13 @@ export function MetricsPage() {
                       title={
                         rows.length === 0
                           ? processes && !processes.ok
-                            ? processes.notes?.[0] || '無法取得進程'
-                            : '尚無進程資料'
-                          : '無符合篩選的進程'
+                            ? processes.notes?.[0] || t('metrics.procUnavailable')
+                            : t('metrics.noProcData')
+                          : t('metrics.noProcFilter')
                       }
                       description={
                         rows.length === 0 && !(processes && !processes.ok)
-                          ? '按「單次查詢」或開跟隨'
+                          ? t('metrics.clickOnceOrFollow')
                           : processes && !processes.ok
                             ? processes.notes?.slice(1).join(' · ') || undefined
                             : undefined
@@ -1094,8 +1089,7 @@ export function MetricsPage() {
                   <p className="met-footnote">{processes.notes.join(' · ')}</p>
                 ) : (
                   <p className="met-footnote">
-                    等同 SSH top：/proc/stat 雙樣本算 %Cpu（開「每核」= top 按 1）、Mem/Swap、Tasks；進程表來自
-                    ps。唔係互動 PTY。Kill 需 YSK_EXECUTE；PID 1 與控制面預設保護。
+                    {t('metrics.liveFootnote')}
                   </p>
                 )}
 
@@ -1105,18 +1099,18 @@ export function MetricsPage() {
                   onConfirm={() => void runSignal()}
                   title={
                     pending?.signal === 'KILL'
-                      ? `強制結束 PID ${pending?.pid}（SIGKILL）`
-                      : `向 PID ${pending?.pid} 發送 SIG${pending?.signal ?? 'TERM'}`
+                      ? t('metrics.forceKillTitle', { pid: pending?.pid })
+                      : t('metrics.sendSigTitle', { pid: pending?.pid, sig: pending?.signal ?? 'TERM' })
                   }
                   description={
                     pending?.signal === 'KILL'
-                      ? `無法攔截，可能丟數據。指令：${(pending?.command ?? '—').slice(0, 120)}`
-                      : `進程可自行清理後退出。指令：${(pending?.command ?? '—').slice(0, 120)}`
+                      ? t('metrics.forceKillDesc', { cmd: (pending?.command ?? '—').slice(0, 120) })
+                      : t('metrics.termDesc', { cmd: (pending?.command ?? '—').slice(0, 120) })
                   }
                   confirmLabel={
-                    pending?.signal === 'KILL' ? '強制 KILL' : '發送 TERM'
+                    pending?.signal === 'KILL' ? t('metrics.forceKillBtn') : t('metrics.sendTermBtn')
                   }
-                  cancelLabel="取消"
+                  cancelLabel={t('common.cancel')}
                   danger={pending?.signal === 'KILL'}
                   busy={signalBusy}
                 />
@@ -1127,7 +1121,7 @@ export function MetricsPage() {
                     setDetailPid(null);
                     setDetail(null);
                   }}
-                  title={detailPid ? `進程 PID ${detailPid}` : '進程詳情'}
+                  title={detailPid ? t('metrics.procPidTitle', { pid: detailPid }) : t('metrics.procDetail')}
                   size="md"
                   footer={
                     <ActionBar size="sm" align="end">
@@ -1139,7 +1133,7 @@ export function MetricsPage() {
                           setDetail(null);
                         }}
                       >
-                        關閉
+                        {t('common.close')}
                       </Button>
                       {detailPid ? (
                         <>
@@ -1163,7 +1157,7 @@ export function MetricsPage() {
                   }
                 >
                   {detailLoading ? (
-                    <LoadingBlock label="讀取 /proc…" />
+                    <LoadingBlock label={t('metrics.readingProc')} />
                   ) : detail ? (
                     <div className="stack">
                       <dl className="met-detail-dl">
@@ -1231,16 +1225,16 @@ export function MetricsPage() {
                               })();
                             }}
                           >
-                            套用 renice
+                            {t('metrics.applyRenice')}
                           </Button>
                           <span className="muted u-text-sm">
-                            -20 最高優先 · 19 最低（需 EXECUTE）
+                            {t('metrics.reniceHint')}
                           </span>
                         </div>
                       ) : null}
                     </div>
                   ) : (
-                    <p className="met-muted">無資料</p>
+                    <p className="met-muted">{t('metrics.noData')}</p>
                   )}
                 </Modal>
               </div>
@@ -1249,8 +1243,8 @@ export function MetricsPage() {
             {tab === 'storage' ? (
               <div className="tab-panel">
                 <DataTable
-                  title={`磁碟 mounts (${mounts.length})`}
-                  description="真實 df -P -B1（已過濾 tmpfs 等）"
+                  title={t('metrics.mountsTitle', { count: mounts.length })}
+                  description={t('metrics.mountsDesc')}
                   className="data-table--live"
                   columns={[
                     {
@@ -1321,8 +1315,7 @@ export function MetricsPage() {
                                   : pct >= 75
                                     ? ' met-meter__fill--warn'
                                     : ''
-                              }`}
-                              style={{ width: `${Math.min(100, pct)}%` }}
+                              } u-meter-fill`} style={{ ["--meter-pct" as string]: `${Math.min(100, pct)}%` }}
                             />
                           </div>
                         );
@@ -1333,15 +1326,16 @@ export function MetricsPage() {
                   rowKey={(m) => `${m.filesystem}:${m.mount}`}
                   empty={
                     <EmptyState
-                      title="無 mount 列表"
-                      description="df 不可用或被過濾。主磁碟仍見於概覽。"
+                      title={t('metrics.noMounts')}
+                      description={t('metrics.noMountsDesc')}
                     />
                   }
                 />
                 {projectUsage?.items.length ? (
                   <p className="met-footnote u-mt-3">
-                    專案 home 用量見「專案用量」分頁（真實 du · 共{' '}
-                    {formatBytes(projectUsage.totalUsedBytes)}）
+                    {t('metrics.seeProjectUsage', {
+                      size: formatBytes(projectUsage.totalUsedBytes),
+                    })}
                   </p>
                 ) : null}
               </div>
@@ -1353,14 +1347,14 @@ export function MetricsPage() {
                   <Alert variant="error">{projectUsageErr}</Alert>
                 ) : null}
                 {projectUsageLoading && !projectUsage ? (
-                  <LoadingBlock label="量測專案 home（du）…" />
+                  <LoadingBlock label={t('metrics.measuringDu')} />
                 ) : (
                   <DataTable<ProjectDiskUsageRow>
-                    title={`專案磁碟用量 (${projectUsage?.items.length ?? 0})`}
+                    title={t('metrics.projectUsageTitle', { count: projectUsage?.items.length ?? 0 })}
                     description={
                       projectUsage
-                        ? `真實 du · 合計 ${formatBytes(projectUsage.totalUsedBytes)} · ${new Date(projectUsage.at).toLocaleString()}`
-                        : '對各專案 home_dir 執行 du'
+                        ? t('metrics.projectUsageDesc', { total: formatBytes(projectUsage.totalUsedBytes), at: new Date(projectUsage.at).toLocaleString() })
+                        : t('metrics.projectUsageDescEmpty')
                     }
                     toolbar={
                       <ActionBar>
@@ -1370,14 +1364,14 @@ export function MetricsPage() {
                           loading={projectUsageLoading}
                           onClick={() => void refreshProjectUsage()}
                         >
-                          重新量測
+                          {t('metrics.remeasure')}
                         </Button>
                       </ActionBar>
                     }
                     columns={[
                       {
                         key: 'name',
-                        header: '專案',
+                        header: t('metrics.project'),
                         render: (r) => (
                           <Link
                             to={`/projects/${encodeURIComponent(r.projectId)}`}
@@ -1401,18 +1395,18 @@ export function MetricsPage() {
                       },
                       {
                         key: 'used',
-                        header: '已用',
+                        header: t('metrics.used'),
                         render: (r) => formatBytes(r.usedBytes),
                       },
                       {
                         key: 'quota',
-                        header: '配額',
+                        header: t('metrics.quota'),
                         render: (r) =>
-                          r.quotaMb != null ? `${r.quotaMb} MiB` : '無限制',
+                          r.quotaMb != null ? `${r.quotaMb} MiB` : t('metrics.unlimited'),
                       },
                       {
                         key: 'ratio',
-                        header: '佔比',
+                        header: t('metrics.ratio'),
                         render: (r) => {
                           if (r.usedRatio == null) {
                             return <span className="muted">—</span>;
@@ -1438,8 +1432,8 @@ export function MetricsPage() {
                     rowKey={(r) => r.projectId}
                     empty={
                       <EmptyState
-                        title="尚無專案"
-                        description="建立專案後可在此看真實 home 用量"
+                        title={t('metrics.noProjects')}
+                        description={t('metrics.noProjectsDesc')}
                       />
                     }
                   />
@@ -1447,10 +1441,7 @@ export function MetricsPage() {
                 {projectUsage?.notes?.length ? (
                   <p className="met-footnote">{projectUsage.notes.join(' · ')}</p>
                 ) : (
-                  <p className="met-footnote">
-                    用量來自本機 du（非估算）。配額為控制面 soft limit；硬 setquota 需「套用限制到
-                    OS」。
-                  </p>
+                  <p className="met-footnote">{t('metrics.usageNoteFull')}</p>
                 )}
               </div>
             ) : null}
@@ -1459,21 +1450,21 @@ export function MetricsPage() {
               <div className="tab-panel stack">
                 <section className="met-card">
                   <header className="met-card__head">
-                    <h3 className="met-card__title">閾值告警</h3>
+                    <h3 className="met-card__title">{t('metrics.thresholdAlerts')}</h3>
                     <Badge tone={alerts.length ? 'warn' : 'ok'}>
                       {alerts.length}
                     </Badge>
                   </header>
                   {alerts.length === 0 ? (
                     <div className="met-empty met-empty--ok">
-                      <strong>目前正常</strong>
-                      <p>沒有記憶體／負載／磁碟閾值告警。</p>
+                      <strong>{t('metrics.alertsOkTitle')}</strong>
+                      <p>{t('metrics.alertsOkDesc')}</p>
                     </div>
                   ) : (
                     <ul className="met-alert-list">
                       {alerts.map((a) => (
                         <li key={a}>
-                          <Badge tone="warn">{alertLabel(a)}</Badge>
+                          <Badge tone="warn">{alertLabel(a, t)}</Badge>
                           <code>{a}</code>
                         </li>
                       ))}

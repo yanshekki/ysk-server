@@ -4,7 +4,7 @@
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { injectDefenseLimitsIntoConf } from './defense/nginx-limits.js';
 
@@ -62,9 +62,8 @@ export async function syncNginxConfigs(opts: {
       files,
       copied: [],
       tested: false,
-      notes: [...notes, '模擬執行：未實際複製'],
-      ok: true,
-    };
+      notes: [...notes, tl('notes.auto.n1014')],
+      ok: true };
   }
 
   let blocked = false;
@@ -84,9 +83,9 @@ export async function syncNginxConfigs(opts: {
       copyFileSync(src, dest);
       copied.push(dest);
     }
-    notes.push(`已複製 ${copied.length} 個設定檔到系統目錄`);
+    notes.push(tl('notes.auto.t0427', { v0: (copied.length) }));
   } else if (targetDir) {
-    notes.push('無法同步到系統 Nginx：需要系統變更權限');
+    notes.push(tl('notes.auto.n1148'));
     blocked = true;
   }
 
@@ -97,10 +96,10 @@ export async function syncNginxConfigs(opts: {
     tested = r.exitCode === 0;
     testOutput = `${r.stdout}\n${r.stderr}`.trim();
     notes.push(
-      tested ? 'Nginx 設定檢查通過' : `Nginx 設定檢查失敗：${testOutput || '未知錯誤'}`,
+      tested ? tl('notes.nginx.configOk') : tl('notes.tpl.nginxConfigFailed', { detail: testOutput || tl('notes.tpl.unknownError') }),
     );
   } else {
-    notes.push('已略過 Nginx 設定檢查（未安裝或未開系統變更權限）');
+    notes.push(tl('notes.auto.n0791'));
   }
 
   // ok: managed write always succeeds; system path blocked or nginx -t fail → not ok
@@ -120,8 +119,7 @@ export async function syncNginxConfigs(opts: {
     notes,
     ok,
     blocked: blocked || undefined,
-    requiresExecute: blocked || undefined,
-  };
+    requiresExecute: blocked || undefined };
 }
 
 /**
@@ -130,7 +128,7 @@ export async function syncNginxConfigs(opts: {
  */
 export function writeManagedNginxConf(dataDir: string, filename: string, content: string): string {
   if (!filename.endsWith('.conf')) {
-    throw new YskError(ErrorCodes.VALIDATION, '檔名須以 .conf 結尾', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1017'), { httpStatus: 400 });
   }
   const dir = join(dataDir, 'nginx', 'conf.d');
   mkdirSync(dir, { recursive: true });

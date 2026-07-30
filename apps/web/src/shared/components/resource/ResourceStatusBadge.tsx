@@ -1,19 +1,35 @@
+import { useTranslation } from 'react-i18next';
 import { Badge, type BadgeTone } from '../ui/Badge';
 
-const MAP: Record<string, { label: string; tone: BadgeTone }> = {
-  draft: { label: '草稿', tone: 'neutral' },
-  written: { label: '已寫入管理檔', tone: 'info' },
-  planned: { label: '處理中', tone: 'warn' },
-  applied: { label: '已套用到系統', tone: 'ok' },
-  failed: { label: '失敗', tone: 'danger' },
-  pending_execute: { label: '待系統權限', tone: 'warn' },
-  uploaded: { label: '已上傳', tone: 'ok' },
-  issued: { label: '已簽發', tone: 'ok' },
-  missing: { label: '檔案缺失', tone: 'danger' },
+const TONE: Record<string, BadgeTone> = {
+  draft: 'neutral',
+  written: 'info',
+  planned: 'warn',
+  applied: 'ok',
+  failed: 'danger',
+  pending_execute: 'warn',
+  uploaded: 'ok',
+  issued: 'ok',
+  missing: 'danger',
+};
+
+const KEY: Record<string, string> = {
+  draft: 'applyStatus.draft',
+  written: 'applyStatus.written',
+  planned: 'applyStatus.planned',
+  applied: 'applyStatus.applied',
+  failed: 'applyStatus.failed',
+  pending_execute: 'applyStatus.pendingExecute',
+  uploaded: 'applyStatus.uploaded',
+  issued: 'applyStatus.issued',
+  missing: 'applyStatus.missing',
 };
 
 export function ResourceStatusBadge({ status }: { status?: string | null }) {
+  const { t } = useTranslation();
   const s = (status ?? 'draft').toLowerCase();
-  const m = MAP[s] ?? { label: status ?? '—', tone: 'info' as BadgeTone };
-  return <Badge tone={m.tone}>{m.label}</Badge>;
+  const tone = TONE[s] ?? ('info' as BadgeTone);
+  const key = KEY[s];
+  const label = key ? t(key) : (status ?? '—');
+  return <Badge tone={tone}>{label}</Badge>;
 }

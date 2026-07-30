@@ -1,6 +1,7 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import { AppShell } from './layout/AppShell';
 import { RequireAuth } from './layout/RequireAuth';
+import { RequireCapability } from './layout/RequireCapability';
 import { GuestOnly } from './layout/GuestOnly';
 import { DashboardPage } from '../pages/DashboardPage';
 import { LoginPage } from '../pages/LoginPage';
@@ -50,8 +51,16 @@ import { NetworkPage } from '../pages/features/NetworkPage';
 import { LogsPage } from '../pages/features/LogsPage';
 import { UsersPage } from '../pages/UsersPage';
 
+/** Legacy top-level paths → protection subtree (preserve query, e.g. ?tab=whitelist). */
+function RedirectPreserveQuery({ to }: { to: string }) {
+  const [params] = useSearchParams();
+  const q = params.toString();
+  return <Navigate to={q ? `${to}?${q}` : to} replace />;
+}
+
 /**
  * Each major capability has its own route/page.
+ * Defense: single nav entry `/protection`; UFW/fail2ban are nested tools.
  */
 export function App() {
   return (
@@ -68,7 +77,9 @@ export function App() {
         <Route
           element={
             <RequireAuth>
-              <AppShell />
+              <RequireCapability>
+                <AppShell />
+              </RequireCapability>
             </RequireAuth>
           }
         >
@@ -102,8 +113,11 @@ export function App() {
           <Route path="databases/redis" element={<RedisPage />} />
           <Route path="databases/redis/service" element={<RedisServicePage />} />
           <Route path="protection" element={<ProtectionPage />} />
-          <Route path="firewall" element={<FirewallPage />} />
-          <Route path="fail2ban" element={<Fail2banPage />} />
+          <Route path="protection/firewall" element={<FirewallPage />} />
+          <Route path="protection/fail2ban" element={<Fail2banPage />} />
+          {/* Legacy peers → nested tools under 防護中心 */}
+          <Route path="firewall" element={<RedirectPreserveQuery to="/protection/firewall" />} />
+          <Route path="fail2ban" element={<RedirectPreserveQuery to="/protection/fail2ban" />} />
           <Route path="services" element={<ServicesPage />} />
           <Route path="metrics" element={<MetricsPage />} />
           <Route path="network" element={<NetworkPage />} />

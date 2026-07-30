@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Offline MMDB lookup — sapics / IPinfo Lite / DB-IP City Lite.
  */
@@ -108,8 +109,7 @@ function parseCityStyleRecord(rec: AnyRec): {
     longitude:
       typeof loc?.longitude === 'number'
         ? loc.longitude
-        : pickNum(rec, ['longitude', 'lon', 'lng']),
-  };
+        : pickNum(rec, ['longitude', 'lon', 'lng']) };
 }
 
 async function openReaders(dataDir: string): Promise<void> {
@@ -131,8 +131,7 @@ async function openReaders(dataDir: string): Promise<void> {
     lite: join(dir, 'ipinfo_lite.mmdb'),
     country: join(dir, 'user-country.mmdb'),
     asn: join(dir, 'origin-asn.mmdb'),
-    city: join(dir, 'dbip-city-lite.mmdb'),
-  };
+    city: join(dir, 'dbip-city-lite.mmdb') };
 
   try {
     if (existsSync(paths.lite)) liteReader = await maxmind.open<AnyRec>(paths.lite);
@@ -169,10 +168,10 @@ export async function lookupIp(dataDir: string, ip: string): Promise<GeoLookupRe
   const notes: string[] = [];
   const trimmed = normalizeIp(ip.trim()) ?? ip.trim();
   if (!trimmed) {
-    return { ip: '', ok: false, notes: ['請提供 IP'] };
+    return { ip: '', ok: false, notes: [tl('notes.auto.n1415')] };
   }
   if (!isValidIp(trimmed)) {
-    return { ip: trimmed, ok: false, notes: ['無效 IPv4／IPv6'] };
+    return { ip: trimmed, ok: false, notes: [tl('notes.invalidIp46')] };
   }
   if (isPrivateOrLocalIp(trimmed)) {
     return {
@@ -180,8 +179,7 @@ export async function lookupIp(dataDir: string, ip: string): Promise<GeoLookupRe
       ok: true,
       country: 'ZZ',
       countryName: 'Private/Local',
-      notes: ['私網／本機，不套用公網 geo'],
-    };
+      notes: [tl('notes.auto.n1294')] };
   }
 
   await openReaders(dataDir);
@@ -191,10 +189,9 @@ export async function lookupIp(dataDir: string, ip: string): Promise<GeoLookupRe
       ip: trimmed,
       ok: false,
       notes: [
-        '尚未下載 GeoIP 庫 — 請在防護中心「IP 准入」按更新',
+        tl('notes.auto.n0702'),
         `provider=${status.provider}`,
-      ],
-    };
+      ] };
   }
 
   let country: string | undefined;
@@ -299,11 +296,11 @@ export async function lookupIp(dataDir: string, ip: string): Promise<GeoLookupRe
   const cityKey = makeCityKey(country, city);
 
   if (!cityReader) {
-    notes.push('未裝 City Lite — 無省／市；請更新庫（免費 DB-IP）');
+    notes.push(tl('notes.auto.n0977'));
   }
 
   if (!country && !asn && !city && !regionName) {
-    notes.push('庫中無此 IP 記錄');
+    notes.push(tl('notes.auto.n0818'));
     return { ip: trimmed, ok: false, notes, source };
   }
 
@@ -331,6 +328,5 @@ export async function lookupIp(dataDir: string, ip: string): Promise<GeoLookupRe
     source,
     ok: true,
     notes,
-    confidenceHint,
-  };
+    confidenceHint };
 }

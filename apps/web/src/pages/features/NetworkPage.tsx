@@ -132,14 +132,14 @@ export function NetworkPage() {
       try {
         const s = await networkApi.snapshot({ raw });
         setSnap(s);
-        setError(s.ok ? null : s.notes?.[0] ?? '載入失敗');
+        setError(s.ok ? null : s.notes?.[0] ?? t('network.loadFailed'));
         setDetail((prev) => {
           if (!prev) return null;
           return s.interfaces.find((i) => i.name === prev.name) ?? null;
         });
         syncDnsForm(s);
       } catch (e) {
-        setError(e instanceof Error ? e.message : '載入網路失敗');
+        setError(e instanceof Error ? e.message : t('network.loadNetworkFailed'));
       } finally {
         setLoading(false);
       }
@@ -166,7 +166,7 @@ export function NetworkPage() {
     } catch (e) {
       const r: NetApplyResult = {
         ok: false,
-        notes: [e instanceof Error ? e.message : '操作失敗'],
+        notes: [e instanceof Error ? e.message : t('common.opFailed')],
       };
       setLastOps(r);
       return r;
@@ -189,32 +189,32 @@ export function NetworkPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.network', { defaultValue: '網路介面' })}
+      title={t('nav.network')}
       showCapability={false}
       status={
         snap
           ? {
               pill: {
-                label: snap.caps.canMutate ? '可變更' : '唯讀／受阻',
+                label: snap.caps.canMutate ? t('network.canMutate') : t('network.readOnlyBlocked'),
                 tone: snap.caps.canMutate ? 'ok' : 'warn',
               },
               items: [
-                { label: '介面', value: snap.interfaces.length },
+                { label: t('network.statIfaces'), value: snap.interfaces.length },
                 { label: 'UP', value: upCount, tone: 'ok' as const },
                 {
-                  label: '閘道',
+                  label: t('network.statGateway'),
                   value: snap.defaultGateway
                     ? `${snap.defaultGateway}${snap.defaultDev ? ` · ${snap.defaultDev}` : ''}`
                     : '—',
                 },
                 {
                   label: 'EXECUTE',
-                  value: snap.caps.executeEnabled ? '開' : '關',
+                  value: snap.caps.executeEnabled ? t('network.on') : t('network.off'),
                   tone: snap.caps.executeEnabled ? 'ok' : 'warn',
                 },
                 {
                   label: 'root',
-                  value: snap.caps.isRoot ? '是' : '否',
+                  value: snap.caps.isRoot ? t('common.yes') : t('common.no'),
                   tone: snap.caps.isRoot ? 'ok' : 'warn',
                 },
               ],
@@ -222,44 +222,44 @@ export function NetworkPage() {
           : undefined
       }
       actions={
-        <ActionBar size="sm" aria-label="頁面操作">
+        <ActionBar size="sm" aria-label={t('network.pageActions')}>
           <Button
             variant="secondary"
             size="sm"
             loading={loading}
             onClick={() => void refresh(tab === 'advanced')}
           >
-            重新整理
+            {t('network.refresh')}
           </Button>
           <Link
             to="/system"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
           >
-            主機設定
+            {t('network.hostSettings')}
           </Link>
           <Link
             to="/protection"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
           >
-            防護中心
+            {t('network.protection')}
           </Link>
         </ActionBar>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {loading && !snap ? <LoadingBlock label="讀取網路快照…" /> : null}
+      {loading && !snap ? <LoadingBlock label={t('network.loadingSnap')} /> : null}
 
       {snap ? (
         <div className="stack">
           <Alert variant="info">
             {snap.caps.canMutate
-              ? '變更預設為即時（ip addr / link / route），重開可能還原。防火牆請用防護中心。'
-              : '目前無法變更網路（需 YSK_EXECUTE 與 root）。可查看；提交會誠實回報 blocked。'}
+              ? t('network.mutateHint')
+              : t('network.cannotMutate')}
           </Alert>
 
           {lastOps ? (
             <OpsResultPanel
-              title="操作結果"
+              title={t('opsResult.title')}
               result={{
                 ok: lastOps.ok,
                 blocked: lastOps.blocked,
@@ -273,22 +273,22 @@ export function NetworkPage() {
             tabs={[
               {
                 id: 'ifaces',
-                label: '介面',
+                label: t('network.statIfaces'),
                 badge: snap.interfaces.length || undefined,
               },
               {
                 id: 'routes',
-                label: '路由',
+                label: t('network.tabs.routes'),
                 badge: snap.routes.length || undefined,
               },
               {
                 id: 'dns',
-                label: 'DNS',
+                label: t('network.tabs.dns'),
                 badge: snap.dns.nameservers.length || undefined,
               },
-              { id: 'advanced', label: '進階' },
+              { id: 'advanced', label: t('network.tabs.advanced') },
             
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('network.tabs.about') },
         ]}
             active={tab}
             onChange={setTab}
@@ -297,22 +297,22 @@ export function NetworkPage() {
             {tab === 'ifaces' ? (
               <div className="tab-panel">
                 <DataTable<NetInterface>
-                  title="網路介面"
-                  description={`${snap.interfaces.length} 個介面 · ${upCount} 個 UP`}
+                  title={t('network.title')}
+                  description={t('network.ifaceSummary', { count: snap.interfaces.length, up: upCount })}
                   dense
                   rows={snap.interfaces}
                   rowKey={(r) => r.name}
-                  empty={<EmptyState title="沒有介面" description="ip 不可用或無權讀取" />}
+                  empty={<EmptyState title={t('network.noIfaces')} description={t('network.noIfacesDesc')} />}
                   columns={[
                     {
                       key: 'name',
-                      header: '名稱',
+                      header: t('network.colName'),
                       nowrap: true,
                       render: (r) => (
                         <>
                           <code>{r.name}</code>{' '}
                           {r.isDefaultEgress ? (
-                            <Badge tone="info">預設出口</Badge>
+                            <Badge tone="info">{t('network.defaultEgressBadge')}</Badge>
                           ) : null}{' '}
                           {r.isLoopback ? (
                             <Badge tone="neutral">lo</Badge>
@@ -322,7 +322,7 @@ export function NetworkPage() {
                     },
                     {
                       key: 'state',
-                      header: '狀態',
+                      header: t('network.colStatus'),
                       nowrap: true,
                       render: (r) => (
                         <Badge tone={operTone(r.operstate)}>
@@ -369,14 +369,14 @@ export function NetworkPage() {
                     <ActionBar
                       size="sm"
                       wrap={false}
-                      aria-label={`${r.name} 操作`}
+                      aria-label={t('network.opsAria', { name: r.name })}
                     >
                       <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => openDetail(r)}
                       >
-                        詳情
+                        {t('network.details')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -384,7 +384,7 @@ export function NetworkPage() {
                         disabled={busy || r.isLoopback}
                         onClick={() => openAdd(r)}
                       >
-                        加 IP
+                        {t('network.addIp')}
                       </Button>
                       {isUp(r) ? (
                         <Button
@@ -421,22 +421,23 @@ export function NetworkPage() {
             {tab === 'routes' ? (
               <div className="tab-panel stack">
                 <DataTable<NetRoute>
-                  title="路由表"
+                  title={t('network.routeTable')}
                   description={
                     snap.defaultGateway
-                      ? `預設閘道 ${snap.defaultGateway}${snap.defaultDev ? ` via ${snap.defaultDev}` : ''}`
-                      : '即時 ip route'
+                      ? t('network.defaultGw', { gw: snap.defaultGateway }) +
+                        (snap.defaultDev ? ` · ${snap.defaultDev}` : '')
+                      : t('network.liveIpRoute')
                   }
                   dense
                   rows={snap.routes}
                   rowKey={(r, i) =>
                     `${r.dst}-${r.gateway ?? ''}-${r.dev ?? ''}-${i}`
                   }
-                  empty={<EmptyState title="沒有路由" />}
+                  empty={<EmptyState title={t('network.noRoutes')} />}
                   columns={[
                     {
                       key: 'dst',
-                      header: '目的地',
+                      header: t('network.colDest'),
                       render: (r) => (
                         <>
                           <code>{r.dst}</code>{' '}
@@ -480,7 +481,7 @@ export function NetworkPage() {
                         disabled={busy}
                         onClick={() => setDelRoute(r)}
                       >
-                        刪除
+                        {t('common.delete')}
                       </Button>
                     </ActionBar>
                   )}
@@ -488,20 +489,20 @@ export function NetworkPage() {
 
                 <Card>
                   <CardHeader
-                    title="新增路由"
+                    title={t('network.addRoute')}
                     description={
                       routePersist
-                        ? '保存到 NetworkManager 連線（重開仍在）'
-                        : '僅即時 ip route（重開可能消失）'
+                        ? t('network.persistNm')
+                        : t('network.ephemeralRoute')
                     }
                   />
                   <FormLayout columns={2}>
-                    <Field label="目的地" htmlFor="net-route-dst">
+                    <Field label={t('network.colDest')} htmlFor="net-route-dst">
                       <input
                         id="net-route-dst"
                         value={routeDst}
                         onChange={(e) => setRouteDst(e.target.value)}
-                        placeholder="default 或 10.0.0.0/8"
+                        placeholder={t('network.destPlaceholder')}
                       />
                     </Field>
                     <Field label="Gateway" htmlFor="net-route-gw">
@@ -515,11 +516,11 @@ export function NetworkPage() {
                       />
                     </Field>
                     <Field
-                      label="Dev（可選）"
+                      label={t('network.devOptional')}
                       htmlFor="net-route-dev"
                       hint={
                         snap.defaultDev
-                          ? `預設出口：${snap.defaultDev}`
+                          ? t('network.defaultDev', { dev: snap.defaultDev })
                           : undefined
                       }
                       fullWidth
@@ -533,8 +534,8 @@ export function NetworkPage() {
                     </Field>
                     <CheckboxField
                       id="net-route-persist"
-                      label="保存（NetworkManager，重開不消失）"
-                      description="取消則只做即時 ip route add"
+                      label={t('network.saveNm')}
+                      description={t('network.ephemeralHint')}
                       checked={routePersist}
                       onChange={setRoutePersist}
                       disabled={busy}
@@ -552,7 +553,7 @@ export function NetworkPage() {
                         setRoutePersist(true);
                       }}
                     >
-                      重設
+                      {t('network.reset')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -577,7 +578,7 @@ export function NetworkPage() {
                         );
                       }}
                     >
-                      僅即時
+                      {t('network.ephemeralOnly')}
                     </Button>
                     <Button
                       variant="primary"
@@ -602,12 +603,11 @@ export function NetworkPage() {
                         );
                       }}
                     >
-                      {routePersist ? '保存路由' : '新增路由'}
+                      {routePersist ? t('network.saveRoute') : t('network.addRoute')}
                     </Button>
                   </FormActions>
                   <FormHint>
-                    保存會寫入 NM 連線並 connection up；default 用
-                    ipv4.gateway，其他用 +ipv4.routes。需 EXECUTE + root。
+                    {t('network.saveRouteHint')}
                   </FormHint>
                 </Card>
               </div>
@@ -617,38 +617,38 @@ export function NetworkPage() {
               <div className="tab-panel stack">
                 <Card>
                   <CardHeader
-                    title="DNS 設定"
+                    title={t('network.dnsSettings')}
                     description={
                       snap.dns.canApply
-                        ? `經 NetworkManager 寫入連線「${snap.dns.connection}」並重連（持久）`
-                        : '目前無法套用：需 NetworkManager 作用中連線 + EXECUTE + root'
+                        ? t('network.dnsNmHint', { conn: snap.dns.connection })
+                        : t('network.dnsCannotApply')
                     }
                   />
                   <DescriptionList
                     columns={2}
                     items={[
                       {
-                        label: '模式',
+                        label: t('network.mode'),
                         value: snap.dns.mode ?? '—',
                       },
                       {
-                        label: '連線',
+                        label: t('network.connection'),
                         value: snap.dns.connection
                           ? `${snap.dns.connection}${snap.dns.device ? ` · ${snap.dns.device}` : ''}`
                           : '—',
                       },
                       {
-                        label: '來源',
+                        label: t('network.source'),
                         value: snap.dns.source,
                       },
                       {
-                        label: '現況 ignore-auto-dns',
+                        label: t('network.ignoreAutoDns'),
                         value:
                           snap.dns.ignoreAutoDns == null
                             ? '—'
                             : snap.dns.ignoreAutoDns
-                              ? 'yes（忽略 DHCP DNS）'
-                              : 'no（跟 DHCP）',
+                              ? t('network.ignoreYes')
+                              : t('network.ignoreNo'),
                       },
                     ]}
                   />
@@ -657,7 +657,7 @@ export function NetworkPage() {
                 <Card>
                   <CardHeader
                     title="Nameservers"
-                    description="可加減伺服器；套用寫入 NetworkManager 並重連"
+                    description={t('network.nameserverEditHint')}
                   />
                   <div className="u-mb-3">
                     <PresetChips
@@ -678,7 +678,7 @@ export function NetworkPage() {
                           ? [
                               {
                                 value: snap.dns.gatewayDns,
-                                label: `路由器 ${snap.dns.gatewayDns}`,
+                                label: t('network.routerDns', { dns: snap.dns.gatewayDns }),
                               },
                             ]
                           : []),
@@ -695,7 +695,7 @@ export function NetworkPage() {
                                 ns !== '127.0.0.1',
                             )
                             .join(','),
-                          label: '目前',
+                          label: t('network.current'),
                         },
                       ]}
                       value={dnsPreset}
@@ -715,7 +715,7 @@ export function NetworkPage() {
                   </div>
 
                   <DataTable<{ id: string; value: string; index: number }>
-                    title="伺服器列表"
+                    title={t('network.serverList')}
                     dense
                     rows={dnsServers.map((value, index) => ({
                       id: `dns-${index}`,
@@ -725,8 +725,8 @@ export function NetworkPage() {
                     rowKey={(r) => r.id}
                     empty={
                       <EmptyState
-                        title="尚未加入 DNS"
-                        description="按「加伺服器」開始"
+                        title={t('network.emptyDnsTitle')}
+                        description={t('network.emptyDnsDesc')}
                       />
                     }
                     toolbar={
@@ -742,7 +742,7 @@ export function NetworkPage() {
                             setDnsPreset('');
                           }}
                         >
-                          加伺服器
+                          {t('network.addServer')}
                         </Button>
                       </ActionBar>
                     }
@@ -786,8 +786,8 @@ export function NetworkPage() {
                           disabled={busy || dnsServers.length <= 1}
                           title={
                             dnsServers.length <= 1
-                              ? '至少保留一列（可清空後再刪）'
-                              : '移除此伺服器'
+                              ? t('network.keepOneRow')
+                              : t('network.removeServer')
                           }
                           onClick={() => {
                             setDnsServers((prev) => {
@@ -797,7 +797,7 @@ export function NetworkPage() {
                             setDnsPreset('');
                           }}
                         >
-                          刪
+                          {t('network.deleteShort')}
                         </Button>
                       </ActionBar>
                     )}
@@ -807,7 +807,7 @@ export function NetworkPage() {
                     <Field
                       label="Search domains"
                       htmlFor="net-dns-search"
-                      hint="可選，空白分隔"
+                      hint={t('network.searchDomainsPlaceholder')}
                       fullWidth
                     >
                       <input
@@ -820,8 +820,8 @@ export function NetworkPage() {
                     </Field>
                     <CheckboxField
                       id="net-dns-ignore-auto"
-                      label="忽略 DHCP 自動 DNS（ipv4.ignore-auto-dns=yes）"
-                      description="用「還原 DHCP DNS」可交回路由器分配"
+                      label={t('network.ignoreDhcpDns')}
+                      description={t('network.restoreDhcpHint')}
                       checked={dnsIgnoreAuto}
                       onChange={setDnsIgnoreAuto}
                       disabled={busy}
@@ -834,7 +834,7 @@ export function NetworkPage() {
                       disabled={busy}
                       onClick={() => syncDnsForm(snap)}
                     >
-                      重設表單
+                      {t('network.resetForm')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -851,7 +851,7 @@ export function NetworkPage() {
                         )
                       }
                     >
-                      還原 DHCP DNS
+                      {t('network.restoreDhcpDns')}
                     </Button>
                     <Button
                       variant="primary"
@@ -882,30 +882,29 @@ export function NetworkPage() {
                         );
                       }}
                     >
-                      套用 DNS
+                      {t('network.applyDns')}
                     </Button>
                   </FormActions>
                   {!snap.caps.canMutate || !snap.dns.canApply ? (
                     <FormHint>
                       {!snap.dns.canApply
-                        ? '無可用 NM 連線 — 唔會盲改 /etc/resolv.conf（避免假成功）。'
-                        : '需 YSK_EXECUTE=1 與 root 才會真寫入。'}
+                        ? t('network.noNmConnection')
+                        : t('network.needExecuteRoot')}
                     </FormHint>
                   ) : (
                     <FormHint>
-                      套用後會 nmcli connection modify + up；短暫斷線屬正常。stub
-                      127.0.0.53 唔會寫入（本機 resolved 內部用）。
+                      {t('network.applyDnsNotes')}
                     </FormHint>
                   )}
                 </Card>
 
                 <Card>
                   <CardHeader
-                    title="解析測試"
-                    description="getent ahosts（本機實際解析結果）"
+                    title={t('network.resolveTest')}
+                    description={t('network.resolveTestDesc')}
                   />
                   <FormLayout columns={2}>
-                    <Field label="主機名" htmlFor="net-dns-test">
+                    <Field label={t('network.hostname')} htmlFor="net-dns-test">
                       <input
                         id="net-dns-test"
                         value={dnsTestName}
@@ -935,7 +934,7 @@ export function NetworkPage() {
                             setLastOps({
                               ok: false,
                               notes: [
-                                e instanceof Error ? e.message : '測試失敗',
+                                e instanceof Error ? e.message : t('network.testFailed'),
                               ],
                             });
                             setDnsTestOut(null);
@@ -945,7 +944,7 @@ export function NetworkPage() {
                         })();
                       }}
                     >
-                      測試解析
+                      {t('network.testResolve')}
                     </Button>
                   </FormActions>
                   {dnsTestOut?.length ? (
@@ -964,7 +963,7 @@ export function NetworkPage() {
                 <Card>
                   <CardHeader
                     title="Backend"
-                    description="本機網路堆疊偵測"
+                    description={t('network.stackDetect')}
                     actions={
                       <ActionBar size="sm">
                         <Button
@@ -973,7 +972,7 @@ export function NetworkPage() {
                           loading={loading}
                           onClick={() => void refresh(true)}
                         >
-                          載入 raw 輸出
+                          {t('network.loadRaw')}
                         </Button>
                       </ActionBar>
                     }
@@ -983,7 +982,7 @@ export function NetworkPage() {
                     items={[
                       {
                         label: 'iproute2',
-                        value: snap.backend.hasIp ? '可用' : '不可用',
+                        value: snap.backend.hasIp ? t('network.available') : t('network.unavailable'),
                       },
                       {
                         label: 'NetworkManager',
@@ -994,8 +993,8 @@ export function NetworkPage() {
                         value: snap.backend.networkd,
                       },
                       {
-                        label: '可持久化（NM）',
-                        value: snap.backend.canPersist ? '是' : '否',
+                        label: t('network.persistNmCap'),
+                        value: snap.backend.canPersist ? t('common.yes') : t('common.no'),
                       },
                     ]}
                   />
@@ -1027,7 +1026,7 @@ export function NetworkPage() {
       <Modal
         open={detail != null}
         onClose={() => setDetail(null)}
-        title={detail ? `介面 ${detail.name}` : '介面'}
+        title={detail ? t('network.ifaceDetail', { name: detail.name }) : t('network.statIfaces')}
         size="lg"
         footer={
           <ActionBar size="sm" align="end">
@@ -1036,7 +1035,7 @@ export function NetworkPage() {
               size="sm"
               onClick={() => setDetail(null)}
             >
-              關閉
+              {t('common.close')}
             </Button>
           </ActionBar>
         }
@@ -1046,11 +1045,11 @@ export function NetworkPage() {
             <DescriptionList
               columns={2}
               items={[
-                { label: '狀態', value: detail.operstate },
+                { label: t('network.colStatus'), value: detail.operstate },
                 { label: 'ifindex', value: detail.ifindex },
                 { label: 'MAC', value: detail.mac ?? '—' },
                 { label: 'MTU', value: detail.mtu ?? '—' },
-                { label: '類型', value: detail.linkType ?? '—' },
+                { label: t('network.type'), value: detail.linkType ?? '—' },
                 {
                   label: 'Flags',
                   value: detail.flags.join(', ') || '—',
@@ -1071,17 +1070,17 @@ export function NetworkPage() {
             />
 
             <DataTable<NetAddress>
-              title="位址"
+              title={t('network.addresses')}
               dense
               rows={detail.addrs}
               rowKey={(a) => cidrOf(a)}
-              empty={<EmptyState title="無地址" />}
+              empty={<EmptyState title={t('network.noAddresses')} />}
               toolbar={
                 detail.isLoopback ? undefined : (
                   <ActionBar
                     size="sm"
                     wrap={false}
-                    aria-label="介面調整"
+                    aria-label={t('network.ifaceAdjust')}
                   >
                     <label className="toolbar-field" htmlFor="net-mtu-input">
                       <span>MTU</span>
@@ -1106,7 +1105,7 @@ export function NetworkPage() {
                         );
                       }}
                     >
-                      套用
+                      {t('common.apply')}
                     </Button>
                     <Button
                       variant="primary"
@@ -1114,7 +1113,7 @@ export function NetworkPage() {
                       disabled={busy}
                       onClick={() => openAdd(detail)}
                     >
-                      加 IP
+                      {t('network.addIp')}
                     </Button>
                   </ActionBar>
                 )
@@ -1158,7 +1157,7 @@ export function NetworkPage() {
                       )
                     }
                   >
-                    刪除
+                    {t('common.delete')}
                   </Button>
                 </ActionBar>
               )}
@@ -1171,7 +1170,7 @@ export function NetworkPage() {
       <Modal
         open={addOpen}
         onClose={() => !busy && setAddOpen(false)}
-        title={`加 IP · ${addIf}`}
+        title={t('network.addIpTitle', { name: addIf })}
         size="sm"
         footer={
           <ActionBar size="sm" align="end">
@@ -1181,7 +1180,7 @@ export function NetworkPage() {
               disabled={busy}
               onClick={() => setAddOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="ghost"
@@ -1198,7 +1197,7 @@ export function NetworkPage() {
                 });
               }}
             >
-              僅即時
+              {t('network.ephemeralOnly')}
             </Button>
             <Button
               variant="primary"
@@ -1215,7 +1214,7 @@ export function NetworkPage() {
                 });
               }}
             >
-              {addPersist ? '保存 IP' : '新增'}
+              {addPersist ? t('network.saveIp') : t('network.add')}
             </Button>
           </ActionBar>
         }
@@ -1224,7 +1223,7 @@ export function NetworkPage() {
           <Field
             label="CIDR"
             htmlFor="net-add-cidr"
-            hint="例：10.0.0.5/24 或 2001:db8::5/64"
+            hint={t('network.cidrPlaceholder')}
           >
             <input
               id="net-add-cidr"
@@ -1236,8 +1235,8 @@ export function NetworkPage() {
           </Field>
           <CheckboxField
             id="net-add-persist"
-            label="保存（NetworkManager，重開不消失）"
-            description="寫入連線 +ipv4/ipv6.addresses 並 connection up"
+            label={t('network.saveNm')}
+            description={t('network.saveIpHint')}
             checked={addPersist}
             onChange={setAddPersist}
             disabled={busy}
@@ -1259,7 +1258,7 @@ export function NetworkPage() {
               disabled={busy}
               onClick={() => setDownDlg(null)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="danger"
@@ -1278,19 +1277,19 @@ export function NetworkPage() {
                 });
               }}
             >
-              確認 Down
+              {t('network.confirmDown')}
             </Button>
           </ActionBar>
         }
       >
         {downDlg?.isDefaultEgress ? (
           <Alert variant="error">
-            此介面是預設路由出口，down 後可能無法連上管理面板。
+            {t('network.defaultRouteDownWarn')}
           </Alert>
         ) : null}
         <FormLayout>
           <Field
-            label={`輸入介面名「${downDlg?.name ?? ''}」確認`}
+            label={t('network.confirmIfaceName', { name: downDlg?.name ?? '' })}
             htmlFor="net-down-confirm"
           >
             <input
@@ -1308,7 +1307,7 @@ export function NetworkPage() {
       <Modal
         open={delRoute != null}
         onClose={() => !busy && setDelRoute(null)}
-        title="刪除路由？"
+        title={t('network.deleteRouteTitle')}
         size="sm"
         footer={
           <ActionBar size="sm" align="end">
@@ -1318,7 +1317,7 @@ export function NetworkPage() {
               disabled={busy}
               onClick={() => setDelRoute(null)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="danger"
@@ -1342,7 +1341,7 @@ export function NetworkPage() {
                 });
               }}
             >
-              刪除
+              {t('common.delete')}
             </Button>
           </ActionBar>
         }
@@ -1354,12 +1353,12 @@ export function NetworkPage() {
               {delRoute.gateway ? ` via ${delRoute.gateway}` : ''}
               {delRoute.dev ? ` dev ${delRoute.dev}` : ''}
               {delRoute.dst === 'default' || delRoute.dst === '0.0.0.0/0'
-                ? ' — 刪除 default 可能斷線。'
+                ? t('network.deleteDefaultMayDrop')
                 : ''}
             </p>
             <CheckboxField
               id="net-del-route-persist"
-              label="同時從 NetworkManager 連線移除（重開唔再出現）"
+              label={t('network.alsoRemoveNm')}
               checked={delRoutePersist}
               onChange={setDelRoutePersist}
               disabled={busy}

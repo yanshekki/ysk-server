@@ -145,7 +145,7 @@ export function FilesPage() {
       setUsage(r.usage ?? null);
       setSelected(new Set());
     } catch (e) {
-      setError(e instanceof Error ? e.message : '載入失敗');
+      setError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
   }, [root, path, sort, order, query, side]);
 
@@ -192,7 +192,7 @@ export function FilesPage() {
       if (okMsg) setMsg(okMsg);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : '操作失敗');
+      setError(e instanceof Error ? e.message : t('common.opFailed'));
     } finally {
       setBusy(false);
     }
@@ -207,7 +207,7 @@ export function FilesPage() {
         payload.push({ name: f.name, base64: await fileToBase64(f) });
       }
       await filesApi.upload(root, path, payload);
-    }, `已上傳 ${files.length} 個檔案`);
+    }, t('files.uploadDone', { count: files.length }));
   }
 
   function toggleSelect(p: string) {
@@ -264,7 +264,7 @@ export function FilesPage() {
       const res = await fetch(filesApi.downloadUrl(root, p), {
         headers: tkn ? { Authorization: `Bearer ${tkn}` } : {},
       });
-      if (!res.ok) throw new Error(`下載失敗 (${res.status})`);
+      if (!res.ok) throw new Error(t('files.downloadFailedStatus', { status: res.status }));
       const blob = await res.blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -272,7 +272,7 @@ export function FilesPage() {
       a.click();
       URL.revokeObjectURL(a.href);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '下載失敗');
+      setError(e instanceof Error ? e.message : t('files.downloadFailed'));
     } finally {
       setBusy(false);
     }
@@ -284,37 +284,37 @@ export function FilesPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.files', { defaultValue: '檔案' })}
+      title={t('nav.files')}
       status={{
         pill: {
-          label: `${items.filter((i) => i.type === 'file').length} 檔`,
+          label: t('files.pillFiles', { count: items.filter((i) => i.type === 'file').length }),
           tone: 'ok',
         },
         items: [
           {
-            label: '檔案',
+            label: t('files.statFiles'),
             value: String(
               usage?.fileCount ?? items.filter((i) => i.type === 'file').length,
             ),
           },
           {
-            label: '資料夾',
+            label: t('files.statFolders'),
             value: String(
               usage?.dirCount ?? items.filter((i) => i.type === 'dir').length,
             ),
           },
-          { label: '用量', value: formatBytes(usage?.bytes ?? 0) },
-          { label: '已選', value: String(selected.size) },
-          { label: '回收桶', value: trash.length },
-          { label: '分享', value: shares.length },
+          { label: t('files.statUsage'), value: formatBytes(usage?.bytes ?? 0) },
+          { label: t('files.statSelected'), value: String(selected.size) },
+          { label: t('files.statTrash'), value: trash.length },
+          { label: t('files.statShares'), value: shares.length },
         ],
       }}
       actions={<ActionBar>
           <Link to="/files/public" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
-            公用站設定
+            {t('files.publicSiteSettings')}
           </Link>
           <Button variant="secondary" size="sm" loading={busy} onClick={() => void refresh()}>
-            重新整理
+            {t('common.refresh')}
           </Button>
         </ActionBar>
       }
@@ -324,14 +324,14 @@ export function FilesPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
       {opsNote ? (
         <div className="stack">
           <OpsResultPanel
-            title="檔案操作結果"
+            title={t('files.opsResultTitle')}
             result={{
               ok: opsNote.ok,
               notes: opsNote.notes,
@@ -340,7 +340,7 @@ export function FilesPage() {
           />
           <ActionBar size="sm">
             <Button variant="ghost" size="sm" onClick={() => setOpsNote(null)}>
-              關閉結果
+              {t('files.closeResult')}
             </Button>
           </ActionBar>
         </div>
@@ -348,12 +348,12 @@ export function FilesPage() {
 
       <PageTabs
         tabs={[
-          { id: 'browse', label: '瀏覽' },
-          { id: 'trash', label: '回收桶', badge: trash.length || undefined },
-          { id: 'shares', label: '分享', badge: shares.length || undefined },
+          { id: 'browse', label: t('files.tabBrowse') },
+          { id: 'trash', label: t('files.tabTrash'), badge: trash.length || undefined },
+          { id: 'shares', label: t('files.tabShares'), badge: shares.length || undefined },
           { id: 'webdav', label: 'WebDAV' },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={(id) => {
@@ -370,13 +370,13 @@ export function FilesPage() {
         {/* Sidebar */}
         <aside className="fm-sidebar">
           <div className="fm-sidebar__section">
-            <div className="fm-sidebar__label">空間</div>
+            <div className="fm-sidebar__label">{t('files.spaceLabel')}</div>
             <button
               type="button"
               className={`fm-side-item${root === 'public' ? ' is-active' : ''}`}
               onClick={() => changeRoot('public')}
             >
-              📁 公用檔案
+              📁 {t('files.publicFiles')}
             </button>
             {projects.map((p) => (
               <button
@@ -390,11 +390,11 @@ export function FilesPage() {
             ))}
           </div>
           <div className="fm-sidebar__section">
-            <div className="fm-sidebar__label">視圖</div>
+            <div className="fm-sidebar__label">{t('files.viewLabel')}</div>
             {(
               [
-                ['all', '全部檔案'],
-                ['favorites', '收藏'],
+                ['all', t('files.allFiles')],
+                ['favorites', t('files.favorites')],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -419,7 +419,7 @@ export function FilesPage() {
               <div className="fm-toolbar">
                 <ActionBar>
                   <label className={`${buttonClassName({ variant: 'primary', size: 'md' })} fm-upload-btn`}>
-                    上傳
+                    {t('files.upload')}
                     <input
                       type="file"
                       multiple
@@ -431,10 +431,10 @@ export function FilesPage() {
                     />
                   </label>
                   <Button variant="secondary" size="md" onClick={() => setMkdirOpen(true)}>
-                    新建資料夾
+                    {t('files.newFolder')}
                   </Button>
                   <Button variant="secondary" size="md" onClick={() => setNewFileOpen(true)}>
-                    新建文字檔
+                    {t('files.newTextFile')}
                   </Button>
                   {selected.size > 0 ? (
                     <>
@@ -447,7 +447,7 @@ export function FilesPage() {
                           if (first && first.type === 'file') void doDownload(first.path);
                         }}
                       >
-                        下載
+                        {t('files.download')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -457,7 +457,7 @@ export function FilesPage() {
                           setMoveDest(path === '.' ? '' : path);
                         }}
                       >
-                        複製
+                        {t('files.copy')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -467,7 +467,7 @@ export function FilesPage() {
                           setMoveDest(path === '.' ? '' : path);
                         }}
                       >
-                        移動
+                        {t('files.move')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -489,7 +489,7 @@ export function FilesPage() {
                           setZipOpen(true);
                         }}
                       >
-                        壓縮 zip
+                        {t('files.zip')}
                       </Button>
                       {selectedEntries.length === 1 &&
                       selectedEntries[0]?.name.toLowerCase().endsWith('.zip') ? (
@@ -510,19 +510,19 @@ export function FilesPage() {
                                 );
                                 setOpsNote({
                                   ok: true,
-                                  notes: r.notes ?? [`已解壓 ${zipPath}`],
+                                  notes: r.notes ?? [t('files.unzipDone', { path: zipPath })],
                                 });
-                                setMsg(`已解壓 ${zipPath}`);
+                                setMsg(t('files.unzipDone', { path: zipPath }));
                                 await refresh();
                               } catch (e) {
-                                setError(e instanceof Error ? e.message : 'unzip 失敗');
+                                setError(e instanceof Error ? e.message : t('files.unzipFailed'));
                               } finally {
                                 setBusy(false);
                               }
                             })();
                           }}
                         >
-                          解壓
+                          {t('files.unzip')}
                         </Button>
                       ) : null}
                       <Button
@@ -530,7 +530,7 @@ export function FilesPage() {
                         size="md"
                         onClick={() => setDelPaths([...selected])}
                       >
-                        刪除
+                        {t('files.delete')}
                       </Button>
                     </>
                   ) : null}
@@ -538,13 +538,13 @@ export function FilesPage() {
                 <ActionBar>
                   <input
                     className="fm-search"
-                    placeholder="搜尋檔名…"
+                    placeholder={t('files.searchName')}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                   />
                   <SegRadio
                     name="fm-sort"
-                    aria-label="排序"
+                    aria-label={t('files.sortAria')}
                     size="sm"
                     value={`${sort}:${order}`}
                     onChange={(v) => {
@@ -553,12 +553,12 @@ export function FilesPage() {
                       setOrder(o);
                     }}
                     options={[
-                      { value: 'name:asc', label: '名↑' },
-                      { value: 'name:desc', label: '名↓' },
-                      { value: 'size:asc', label: '小↑' },
-                      { value: 'size:desc', label: '小↓' },
-                      { value: 'mtime:desc', label: '最新' },
-                      { value: 'mtime:asc', label: '最舊' },
+                      { value: 'name:asc', label: t('files.sortNameAsc') },
+                      { value: 'name:desc', label: t('files.sortNameDesc') },
+                      { value: 'size:asc', label: t('files.sortSizeAsc') },
+                      { value: 'size:desc', label: t('files.sortSizeDesc') },
+                      { value: 'mtime:desc', label: t('files.sortMtimeDesc') },
+                      { value: 'mtime:asc', label: t('files.sortMtimeAsc') },
                     ]}
                   />
                   <Button
@@ -566,22 +566,22 @@ export function FilesPage() {
                     size="sm"
                     onClick={() => setView('list')}
                   >
-                    列表
+                    {t('files.viewList')}
                   </Button>
                   <Button
                     variant={view === 'grid' ? 'primary' : 'ghost'}
                     size="sm"
                     onClick={() => setView('grid')}
                   >
-                    圖示
+                    {t('files.viewIcons')}
                   </Button>
                 </ActionBar>
               </div>
 
               {/* Breadcrumb */}
-              <nav className="fm-breadcrumb action-bar" aria-label="路徑">
+              <nav className="fm-breadcrumb action-bar" aria-label={t('files.pathAria')}>
                 <Button variant="ghost" size="sm" onClick={() => setPath('.')}>
-                  {root === 'public' ? '公用' : '專案'}
+                  {root === 'public' ? t('files.rootPublic') : t('files.rootProject')}
                 </Button>
                 {crumbs.map((c, i) => {
                   const p = crumbs.slice(0, i + 1).join('/');
@@ -609,8 +609,8 @@ export function FilesPage() {
               >
                 {items.length === 0 ? (
                   <EmptyState
-                    title={side === 'favorites' ? '尚未有收藏' : '此資料夾是空的'}
-                    description="拖放檔案到此處上傳，或按「上傳」"
+                    title={side === 'favorites' ? t('files.emptyFavorites') : t('files.emptyFolder')}
+                    description={t('files.emptyFolderHint')}
                   />
                 ) : view === 'list' ? (
                   <DataTable
@@ -625,13 +625,13 @@ export function FilesPage() {
                             type="checkbox"
                             checked={selected.has(e.path)}
                             onChange={() => toggleSelect(e.path)}
-                            aria-label={`選擇 ${e.name}`}
+                            aria-label={t('files.selectItem', { name: e.name })}
                           />
                         ),
                       },
                       {
                         key: 'name',
-                        header: '名稱',
+                        header: t('files.colName'),
                         render: (e) => (
                           <button
                             type="button"
@@ -645,14 +645,14 @@ export function FilesPage() {
                       },
                       {
                         key: 'size',
-                        header: '大小',
+                        header: t('files.colSize'),
                         nowrap: true,
                         render: (e) =>
                           e.type === 'dir' ? '—' : formatBytes(e.size),
                       },
                       {
                         key: 'mtime',
-                        header: '修改',
+                        header: t('files.colMtime'),
                         className: 'muted',
                         nowrap: true,
                         render: (e) =>
@@ -669,7 +669,7 @@ export function FilesPage() {
                             size="sm"
                             onClick={() => void doDownload(e.path)}
                           >
-                            下載
+                            {t('files.download')}
                           </Button>
                         ) : null}
                         <Button
@@ -680,7 +680,7 @@ export function FilesPage() {
                             setRenameTo(e.name);
                           }}
                         >
-                          重新命名
+                          {t('files.rename')}
                         </Button>
                         <Button
                           variant="ghost"
@@ -691,7 +691,7 @@ export function FilesPage() {
                             })
                           }
                         >
-                          {e.favorite ? '取消收藏' : '收藏'}
+                          {e.favorite ? t('files.unfavorite') : t('files.favorite')}
                         </Button>
                         {e.type === 'file' ? (
                           <>
@@ -704,7 +704,7 @@ export function FilesPage() {
                                 setShareResult(null);
                               }}
                             >
-                              分享
+                              {t('files.share')}
                             </Button>
                             <Button
                               variant="ghost"
@@ -722,7 +722,7 @@ export function FilesPage() {
                                   .finally(() => setBusy(false));
                               }}
                             >
-                              版本
+                              {t('files.versions')}
                             </Button>
                           </>
                         ) : null}
@@ -731,16 +731,16 @@ export function FilesPage() {
                           size="sm"
                           onClick={() => setDelPaths([e.path])}
                         >
-                          刪除
+                          {t('files.delete')}
                         </Button>
                       </ActionBar>
                     )}
                     empty={
                       <EmptyState
                         title={
-                          side === 'favorites' ? '尚未有收藏' : '此資料夾是空的'
+                          side === 'favorites' ? t('files.emptyFavorites') : t('files.emptyFolder')
                         }
-                        description="拖放檔案到此處上傳，或按「上傳」"
+                        description={t('files.emptyFolderHint')}
                       />
                     }
                     toolbar={
@@ -752,9 +752,9 @@ export function FilesPage() {
                               selected.size === items.length && items.length > 0
                             }
                             onChange={selectAll}
-                            aria-label="全選"
+                            aria-label={t('files.selectAllAria')}
                           />{' '}
-                          全選
+                          {t('files.selectAll')}
                         </label>
                       </ActionBar>
                     }
@@ -774,13 +774,13 @@ export function FilesPage() {
                         <span className="fm-grid-icon">{iconFor(e)}</span>
                         <span className="fm-grid-name">{e.name}</span>
                         <span className="muted u-text-sm">
-                          {e.type === 'dir' ? '資料夾' : formatBytes(e.size)}
+                          {e.type === 'dir' ? t('files.folder') : formatBytes(e.size)}
                         </span>
                       </button>
                     ))}
                   </div>
                 )}
-                {dragOver ? <div className="fm-drop-hint">放開以上傳</div> : null}
+                {dragOver ? <div className="fm-drop-hint">{t('files.dropToUpload')}</div> : null}
               </div>
             </>
 
@@ -793,8 +793,8 @@ export function FilesPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title={`回收桶 (${trash.length})`}
-                description="刪除的檔案可還原或永久清除"
+                title={t('files.trashTitle', { count: trash.length })}
+                description={t('files.trashDesc')}
               >
                 <DataTable
                   toolbar={
@@ -806,17 +806,17 @@ export function FilesPage() {
                         onClick={() =>
                           void run(async () => {
                             await filesApi.purgeTrash(root);
-                          }, '已清空回收桶')
+                          }, t('files.emptyTrashDone'))
                         }
                       >
-                        清空回收桶
+                        {t('files.emptyTrash')}
                       </Button>
                     </ActionBar>
                   }
                   columns={[
                     {
                       key: 'name',
-                      header: '名稱',
+                      header: t('files.colName'),
                       render: (t) => (
                         <>
                           {iconFor(t)} {t.name}
@@ -825,14 +825,14 @@ export function FilesPage() {
                     },
                     {
                       key: 'path',
-                      header: '原路徑',
+                      header: t('files.colOrigPath'),
                       render: (t) => (
                         <code className="inline">{t.originalPath}</code>
                       ),
                     },
                     {
                       key: 'deleted',
-                      header: '刪除時間',
+                      header: t('files.colDeletedAt'),
                       className: 'muted',
                       nowrap: true,
                       render: (t) =>
@@ -840,8 +840,8 @@ export function FilesPage() {
                     },
                   ]}
                   rows={trash}
-                  rowKey={(t) => t.trashId}
-                  rowActions={(t) => (
+                  rowKey={(entry) => entry.trashId}
+                  rowActions={(entry) => (
                     <ActionBar align="end">
                       <Button
                         variant="primary"
@@ -849,11 +849,11 @@ export function FilesPage() {
                         loading={busy}
                         onClick={() =>
                           void run(async () => {
-                            await filesApi.restoreTrash(root, t.trashId);
-                          }, '已還原')
+                            await filesApi.restoreTrash(root, entry.trashId);
+                          }, t('files.restored'))
                         }
                       >
-                        還原
+                        {t('files.restore')}
                       </Button>
                       <Button
                         variant="danger"
@@ -861,15 +861,15 @@ export function FilesPage() {
                         loading={busy}
                         onClick={() =>
                           void run(async () => {
-                            await filesApi.purgeTrash(root, t.trashId);
-                          }, '已永久刪除')
+                            await filesApi.purgeTrash(root, entry.trashId);
+                          }, t('files.purged'))
                         }
                       >
-                        永久刪除
+                        {t('files.purgeForever')}
                       </Button>
                     </ActionBar>
                   )}
-                  empty={<EmptyState title="回收桶是空的" />}
+                  empty={<EmptyState title={t('files.trashEmpty')} />}
                 />
               </CardSection>
             </Card>
@@ -879,19 +879,19 @@ export function FilesPage() {
         {tab === 'shares' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title={`公開分享連結 (${shares.length})`}>
+              <CardSection title={t('files.sharesTitle', { count: shares.length })}>
                 <DataTable
                   columns={[
                     {
                       key: 'path',
-                      header: '路徑',
+                      header: t('files.colPath'),
                       render: (s) => (
                         <code className="inline">{s.path}</code>
                       ),
                     },
                     {
                       key: 'url',
-                      header: '連結',
+                      header: t('files.colLink'),
                       render: (s) => (
                         <code className="inline u-break-all">
                           {s.url ?? `/api/v1/public/files/${s.token}`}
@@ -900,7 +900,7 @@ export function FilesPage() {
                     },
                     {
                       key: 'downloads',
-                      header: '下載次數',
+                      header: t('files.colDownloads'),
                       nowrap: true,
                       render: (s) => s.downloadCount,
                     },
@@ -916,17 +916,17 @@ export function FilesPage() {
                         onClick={() =>
                           void run(async () => {
                             await filesApi.deleteShare(root, s.id);
-                          }, '已取消分享')
+                          }, t('files.unshareDone'))
                         }
                       >
-                        取消
+                        {t('files.unshare')}
                       </Button>
                     </ActionBar>
                   )}
                   empty={
                     <EmptyState
-                      title="尚未建立分享"
-                      description="在檔案列按「分享」"
+                      title={t('files.sharesEmpty')}
+                      description={t('files.sharesEmptyHint')}
                     />
                   }
                 />
@@ -940,7 +940,7 @@ export function FilesPage() {
       <Card>
         <CardSection
           title="WebDAV"
-          description="Basic 用戶 ysk · 掛載 /webdav → 公用檔案根；token 只顯示一次"
+          description={t('files.webdavDesc')}
         >
           <ActionBar>
             <Button
@@ -954,13 +954,13 @@ export function FilesPage() {
                   .then((r) => {
                     setWebdavToken(r.token);
                     setWebdavEnabled(true);
-                    setMsg(r.notes?.join('；') ?? '已簽發 token');
+                    setMsg(r.notes?.join(' · ') ?? t('files.tokenIssued'));
                   })
                   .catch((e: Error) => setError(e.message))
                   .finally(() => setBusy(false));
               }}
             >
-              啟用並簽發 token
+              {t('files.enableIssueToken')}
             </Button>
             <Button
               variant="secondary"
@@ -971,12 +971,12 @@ export function FilesPage() {
                   .webdavStatus()
                   .then((s) => {
                     setWebdavEnabled(s.enabled);
-                    setMsg(s.enabled ? `已啟用 · ${s.mountPath}` : '未啟用');
+                    setMsg(s.enabled ? t('files.enabledMount', { path: s.mountPath }) : t('files.notEnabled'));
                   })
                   .catch((e: Error) => setError(e.message));
               }}
             >
-              狀態
+              {t('files.status')}
             </Button>
             <Button
               variant="ghost"
@@ -988,12 +988,12 @@ export function FilesPage() {
                   .then(() => {
                     setWebdavEnabled(false);
                     setWebdavToken(null);
-                    setMsg('已停用 WebDAV');
+                    setMsg(t('files.webdavDisabled'));
                   })
                   .catch((e: Error) => setError(e.message));
               }}
             >
-              停用
+              {t('files.disable')}
             </Button>
           </ActionBar>
           {webdavToken ? (
@@ -1002,7 +1002,7 @@ export function FilesPage() {
             </p>
           ) : (
             <p className="muted u-text-sm u-mt-2">
-              {webdavEnabled ? '已啟用（token 不回顯）' : '預設關閉'}
+              {webdavEnabled ? t('files.webdavEnabledNoEcho') : t('files.webdavDefaultOff')}
             </p>
           )}
         </CardSection>
@@ -1017,12 +1017,12 @@ export function FilesPage() {
       <Modal
         open={mkdirOpen}
         onClose={() => setMkdirOpen(false)}
-        title="新建資料夾"
-        description={`將建立於「${path || '/'}」`}
+        title={t('files.newFolderTitle')}
+        description={t('files.willCreateAt', { path: path || '/' })}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setMkdirOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -1031,25 +1031,25 @@ export function FilesPage() {
               onClick={() =>
                 void run(async () => {
                   const name = mkdirName.trim();
-                  if (!name) throw new Error('請輸入名稱');
+                  if (!name) throw new Error(t('files.nameRequired'));
                   await filesApi.mkdir(root, joinPath(path, name));
                   setMkdirOpen(false);
                   setMkdirName('');
-                }, '已建立資料夾')
+                }, t('files.folderCreated'))
               }
             >
-              建立
+              {t('files.create')}
             </Button>
           </>
         }
       >
         <FormLayout>
           <Field
-            label="資料夾名稱"
+            label={t('files.folderName')}
             htmlFor="mn"
             flush
             required
-            hint="不可含路徑分隔符"
+            hint={t('files.noPathSepHint')}
           >
             <input
               id="mn"
@@ -1067,12 +1067,12 @@ export function FilesPage() {
       <Modal
         open={newFileOpen}
         onClose={() => setNewFileOpen(false)}
-        title="新建文字檔"
-        description={`將建立於「${path || '/'}」`}
+        title={t('files.newTextTitle')}
+        description={t('files.willCreateAt', { path: path || '/' })}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setNewFileOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -1081,19 +1081,19 @@ export function FilesPage() {
               onClick={() =>
                 void run(async () => {
                   const name = newFileName.trim();
-                  if (!name) throw new Error('請輸入檔名');
+                  if (!name) throw new Error(t('files.fileNameRequired'));
                   await filesApi.createText(root, joinPath(path, name), '');
                   setNewFileOpen(false);
-                }, '已建立文字檔')
+                }, t('files.textFileCreated'))
               }
             >
-              建立
+              {t('files.create')}
             </Button>
           </>
         }
       >
         <FormLayout>
-          <Field label="檔名" htmlFor="nf" flush required hint="例如 readme.md 或 notes.txt">
+          <Field label={t('files.fileName')} htmlFor="nf" flush required hint={t('files.fileNameHint')}>
             <input
               id="nf"
               value={newFileName}
@@ -1113,8 +1113,8 @@ export function FilesPage() {
           setVersionsPath(null);
           setVersions([]);
         }}
-        title={`版本 — ${versionsPath ?? ''}`}
-        description="覆寫前自動快照（.versions）；最多保留 20 版"
+        title={t('files.versionsTitle', { path: versionsPath ?? '' })}
+        description={t('files.versionsDesc')}
         footer={
           <Button
             variant="secondary"
@@ -1124,12 +1124,12 @@ export function FilesPage() {
               setVersions([]);
             }}
           >
-            關閉
+            {t('common.close')}
           </Button>
         }
       >
         {versions.length === 0 ? (
-          <EmptyState title="尚無版本" description="修改並儲存檔案後會產生快照" />
+          <EmptyState title={t('files.noVersions')} description={t('files.noVersionsHint')} />
         ) : (
           <ul className="list-plain list-spaced">
             {versions.map((v) => (
@@ -1147,14 +1147,14 @@ export function FilesPage() {
                     void filesApi
                       .restoreVersion(root, versionsPath, v.id)
                       .then((r) => {
-                        setMsg(r.notes?.join('；') ?? '已還原');
+                        setMsg(r.notes?.join(' · ') ?? t('files.versionRestored'));
                         return refresh();
                       })
                       .catch((e: Error) => setError(e.message))
                       .finally(() => setBusy(false));
                   }}
                 >
-                  還原
+                  {t('files.restore')}
                 </Button>
               </li>
             ))}
@@ -1166,12 +1166,12 @@ export function FilesPage() {
       <Modal
         open={Boolean(renameTarget)}
         onClose={() => setRenameTarget(null)}
-        title="重新命名"
-        description={renameTarget ? `目前：${renameTarget.name}` : undefined}
+        title={t('files.renameTitle')}
+        description={renameTarget ? t('files.renameCurrent', { name: renameTarget.name }) : undefined}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setRenameTarget(null)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -1186,16 +1186,16 @@ export function FilesPage() {
                   const to = joinPath(parent, renameTo.trim());
                   await filesApi.rename(root, renameTarget.path, to);
                   setRenameTarget(null);
-                }, '已重新命名')
+                }, t('files.renamed'))
               }
             >
-              確認
+              {t('common.confirm')}
             </Button>
           </>
         }
       >
         <FormLayout>
-          <Field label="新名稱" htmlFor="rn" flush required hint="僅改檔名，不變更所在目錄">
+          <Field label={t('files.newName')} htmlFor="rn" flush required hint={t('files.newNameHint')}>
             <input
               id="rn"
               value={renameTo}
@@ -1210,16 +1210,19 @@ export function FilesPage() {
       <Modal
         open={Boolean(moveTarget)}
         onClose={() => setMoveTarget(null)}
-        title={moveTarget?.mode === 'copy' ? '複製到…' : '移動到…'}
+        title={moveTarget?.mode === 'copy' ? t('files.copyTo') : t('files.moveTo')}
         description={
           moveTarget
-            ? `${moveTarget.mode === 'copy' ? '複製' : '移動'} ${moveTarget.entries.length} 個項目`
+            ? t('files.copyMoveDesc', {
+                action: moveTarget.mode === 'copy' ? t('files.actionCopy') : t('files.actionMove'),
+                count: moveTarget.entries.length,
+              })
             : undefined
         }
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setMoveTarget(null)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -1235,20 +1238,20 @@ export function FilesPage() {
                     else await filesApi.move(root, e.path, to);
                   }
                   setMoveTarget(null);
-                }, moveTarget?.mode === 'copy' ? '已複製' : '已移動')
+                }, moveTarget?.mode === 'copy' ? t('files.copied') : t('files.moved'))
               }
             >
-              確認
+              {t('common.confirm')}
             </Button>
           </>
         }
       >
         <FormLayout>
           <Field
-            label="目標資料夾路徑"
+            label={t('files.targetFolderPath')}
             htmlFor="md"
             flush
-            hint="相對 root，例如 docs 或 docs/a；留空 = 根目錄"
+            hint={t('files.targetFolderHint')}
           >
             <input
               id="md"
@@ -1265,12 +1268,12 @@ export function FilesPage() {
       <Modal
         open={Boolean(sharePath)}
         onClose={() => setSharePath(null)}
-        title="建立公開分享連結"
-        description="產生可對外下載的連結；可選密碼保護"
+        title={t('files.shareCreateTitle')}
+        description={t('files.shareCreateDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setSharePath(null)}>
-              關閉
+              {t('common.close')}
             </Button>
             {!shareResult ? (
               <Button
@@ -1289,21 +1292,21 @@ export function FilesPage() {
                   })
                 }
               >
-                建立連結
+                {t('files.createLink')}
               </Button>
             ) : null}
           </>
         }
       >
         <FormHint>
-          路徑：<code className="inline">{sharePath}</code>
+          {t('files.sharePath')}<code className="inline">{sharePath}</code>
         </FormHint>
         <FormLayout>
           <Field
-            label="密碼（可選）"
+            label={t('files.passwordOptional')}
             htmlFor="sp"
             flush
-            hint="留空則任何人持有連結即可下載"
+            hint={t('files.passwordOptionalHint')}
           >
             <input
               id="sp"
@@ -1311,13 +1314,13 @@ export function FilesPage() {
               value={sharePass}
               onChange={(e) => setSharePass(e.target.value)}
               autoComplete="new-password"
-              placeholder="（可留空）"
+              placeholder={t('files.passwordPlaceholder')}
             />
           </Field>
         </FormLayout>
         {shareResult ? (
           <Alert variant="ok">
-            連結已建立：
+            {t('files.linkCreated')}
             <code className="inline u-break-all">{shareResult}</code>
           </Alert>
         ) : null}
@@ -1327,7 +1330,7 @@ export function FilesPage() {
       <Modal
         open={chmodOpen}
         onClose={() => !busy && setChmodOpen(false)}
-        title="修改權限（chmod）"
+        title={t('files.chmodTitle')}
         size="sm"
         footer={
           <FormActions align="end">
@@ -1337,7 +1340,7 @@ export function FilesPage() {
               disabled={busy}
               onClick={() => setChmodOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -1355,46 +1358,46 @@ export function FilesPage() {
                     setOpsNote({
                       ok: true,
                       notes: [
-                        `已 chmod ${chmodMode.trim()} → ${selected.size} 個項目`,
+                        t('files.chmodDone', { mode: chmodMode.trim(), count: selected.size }),
                       ],
                     });
-                    setMsg(`已 chmod ${chmodMode.trim()}`);
+                    setMsg(t('files.chmodDoneShort', { mode: chmodMode.trim() }));
                     setChmodOpen(false);
                     await refresh();
                   } catch (e) {
-                    setError(e instanceof Error ? e.message : 'chmod 失敗');
+                    setError(e instanceof Error ? e.message : t('files.chmodFailed'));
                   } finally {
                     setBusy(false);
                   }
                 })();
               }}
             >
-              套用
+              {t('files.apply')}
             </Button>
           </FormActions>
         }
       >
         <FormHint>
-          將套用到已選 {selected.size} 個項目（八進位，如 644 / 755）
+          {t('files.chmodApplyHint', { count: selected.size })}
         </FormHint>
         <div className="u-mb-3">
           <PresetChips
             options={[
-              { value: '644', label: '644 檔' },
-              { value: '755', label: '755 可執行' },
-              { value: '600', label: '600 私密' },
-              { value: '700', label: '700 目錄私密' },
-              { value: '775', label: '775 群組寫' },
+              { value: '644', label: t('files.chmod644') },
+              { value: '755', label: t('files.chmod755') },
+              { value: '600', label: t('files.chmod600') },
+              { value: '700', label: t('files.chmod700') },
+              { value: '775', label: t('files.chmod775') },
             ]}
             value={chmodMode}
             onChange={setChmodMode}
             allowCustom
-            customPlaceholder="自訂 0644…"
+            customPlaceholder={t('files.chmodCustomPh')}
             disabled={busy}
           />
         </div>
         <FormLayout>
-          <Field label="模式" htmlFor="fm-chmod-mode" required flush>
+          <Field label={t('files.mode')} htmlFor="fm-chmod-mode" required flush>
             <input
               id="fm-chmod-mode"
               value={chmodMode}
@@ -1410,7 +1413,7 @@ export function FilesPage() {
       <Modal
         open={zipOpen}
         onClose={() => !busy && setZipOpen(false)}
-        title="壓縮為 zip"
+        title={t('files.zipTitle')}
         size="sm"
         footer={
           <FormActions align="end">
@@ -1420,7 +1423,7 @@ export function FilesPage() {
               disabled={busy}
               onClick={() => setZipOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -1439,35 +1442,35 @@ export function FilesPage() {
                     const r = await filesApi.zip(root, [...selected], destPath);
                     setOpsNote({
                       ok: true,
-                      notes: r.notes ?? [`已建立 ${destPath}`],
+                      notes: r.notes ?? [t('files.zipCreated', { path: destPath })],
                     });
-                    setMsg(`已壓縮 → ${destPath}`);
+                    setMsg(t('files.zipDone', { path: destPath }));
                     setZipOpen(false);
                     setSelected(new Set());
                     await refresh();
                   } catch (e) {
-                    setError(e instanceof Error ? e.message : 'zip 失敗');
+                    setError(e instanceof Error ? e.message : t('files.zipFailed'));
                   } finally {
                     setBusy(false);
                   }
                 })();
               }}
             >
-              壓縮
+              {t('files.compress')}
             </Button>
           </FormActions>
         }
       >
         <FormHint>
-          將壓縮已選 {selected.size} 個項目到目前資料夾（需系統有 zip 指令）
+          {t('files.zipHint', { count: selected.size })}
         </FormHint>
         <FormLayout>
           <Field
-            label="目標檔名"
+            label={t('files.destFileName')}
             htmlFor="fm-zip-name"
             required
             flush
-            hint={`路徑：${path === '.' ? '' : path + '/'}${zipName || '….zip'}`}
+            hint={t('files.destPathHint', { path: `${path === '.' ? '' : path + '/'}${zipName || '….zip'}` })}
           >
             <input
               id="fm-zip-name"
@@ -1489,12 +1492,12 @@ export function FilesPage() {
               await filesApi.remove(root, p, false);
             }
             setDelPaths(null);
-          }, '已移至回收桶')
+          }, t('files.movedToTrash'))
         }
-        title="移至回收桶？"
-        description={`將刪除 ${delPaths?.length ?? 0} 個項目（可於回收桶還原）`}
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('files.moveToTrashTitle')}
+        description={t('files.moveToTrashDesc', { count: delPaths?.length ?? 0 })}
+        confirmLabel={t('files.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />
@@ -1503,11 +1506,11 @@ export function FilesPage() {
       <Modal
         open={Boolean(preview)}
         onClose={() => setPreview(null)}
-        title={preview?.entry.name ?? '預覽'}
+        title={preview?.entry.name ?? t('files.preview')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setPreview(null)}>
-              關閉
+              {t('common.close')}
             </Button>
             {preview ? (
               <Button
@@ -1515,14 +1518,14 @@ export function FilesPage() {
                 size="md"
                 onClick={() => void doDownload(preview.entry.path)}
               >
-                下載
+                {t('files.download')}
               </Button>
             ) : null}
           </>
         }
       >
         {preview?.kind === 'text' ? (
-          <pre className="code" style={{ maxHeight: 400, overflow: 'auto' }}>
+          <pre className="code u-scroll-preview">
             {preview.content}
           </pre>
         ) : null}
@@ -1530,15 +1533,15 @@ export function FilesPage() {
           <img
             src={preview.url}
             alt={preview.entry.name}
-            style={{ maxWidth: '100%', maxHeight: 400 }}
-            onError={() => setError('圖片預覽需要已登入；請改用下載')}
+            className="u-max-w-full u-scroll-preview"
+            onError={() => setError(t('files.imagePreviewNeedLogin'))}
           />
         ) : null}
         {preview?.kind === 'pdf' && preview.url ? (
-          <p className="muted">PDF 請按下載開啟（需授權標頭）</p>
+          <p className="muted">{t('files.pdfDownloadHint')}</p>
         ) : null}
         {preview?.kind === 'other' ? (
-          <p className="muted">此類型無法內嵌預覽，請下載。</p>
+          <p className="muted">{t('files.noEmbedPreview')}</p>
         ) : null}
       </Modal>
     </FeaturePageLayout>

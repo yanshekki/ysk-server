@@ -1,0 +1,14 @@
+{
+  "titleDefault": "尚未安装所需软件",
+  "missing": "缺少：{{names}}",
+  "nameSep": "、",
+  "installOneClick": "一键安装",
+  "installing": "安装中…",
+  "reprobe": "重新探测",
+  "close": "关闭",
+  "resultTitle": "安装结果",
+  "probeFailed": "探测失败",
+  "installIncomplete": "安装未完成",
+  "installedOne": "已安装 {{name}}",
+  "allInstalled": "所需软件已安装"
+}

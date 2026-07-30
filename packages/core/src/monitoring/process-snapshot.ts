@@ -1,48 +1,19 @@
+import { tl } from '@ysk/shared';
 /**
  * Process table snapshot — real `ps` + top-style header (honest, no fake rows).
  */
 
+import type {
+  ProcessRowDto,
+  ProcessSnapshotDto,
+  ProcessSort,
+} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
-import { collectTopHeader, type TopHeader } from './top-snapshot.js';
+import { collectTopHeader } from './top-snapshot.js';
 
-export type ProcessSort = 'cpu' | 'mem' | 'time' | 'pid';
-
-export interface ProcessRow {
-  pid: string;
-  user: string;
-  cpu: number;
-  mem: number;
-  command: string;
-  /** Elapsed wall time from ps etime */
-  etime?: string;
-  /** Priority */
-  pr?: string;
-  /** Nice */
-  ni?: number;
-  /** Virtual size KiB */
-  virtKiB?: number;
-  /** Resident set KiB */
-  resKiB?: number;
-  /** Shared KiB when available */
-  shrKiB?: number;
-  /** Process state R/S/D/Z/T… */
-  state?: string;
-  /** Cumulative CPU time (TIME+) */
-  timePlus?: string;
-}
-
-export interface ProcessSnapshot {
-  ok: boolean;
-  at: string;
-  sort: ProcessSort;
-  limit: number;
-  rows: ProcessRow[];
-  /** top(1)-style summary (load, tasks, per-cpu, mem, swap) */
-  topHeader?: TopHeader;
-  /** Raw top -b -n 1 (head) when requested */
-  rawTop?: string;
-  notes: string[];
-}
+export type ProcessRow = ProcessRowDto;
+export type ProcessSnapshot = ProcessSnapshotDto;
+export type { ProcessSort };
 
 function parseKiB(raw: string): number | undefined {
   const t = raw.trim().toUpperCase();
@@ -185,7 +156,7 @@ export async function collectProcessSnapshot(
   const headerPromise = includeHeader
     ? collectTopHeader(host, { sampleMs: opts?.sampleMs }).catch((e) => {
         notes.push(
-          `top header 失敗：${e instanceof Error ? e.message : String(e)}`,
+          tl('notes.auto.t0438', { v0: (e instanceof Error ? e.message : String(e)) }),
         );
         return undefined;
       })
@@ -207,7 +178,7 @@ export async function collectProcessSnapshot(
 
   let rows: ProcessRow[] = [];
   if (ps.exitCode !== 0) {
-    notes.push(`ps 完整欄位失敗：${(ps.stderr || ps.stdout).slice(0, 160)}`);
+    notes.push(tl('notes.auto.t0439', { v0: ((ps.stderr || ps.stdout).slice(0, 160)) }));
     const ps2 = await host.runCommand(
       ['ps', '-eo', 'pid,user,pcpu,pmem,etime,args', '--sort=-pcpu'],
       { timeoutMs: 8_000 },
@@ -218,7 +189,7 @@ export async function collectProcessSnapshot(
         { timeoutMs: 8_000 },
       );
       if (ps3.exitCode !== 0) {
-        notes.push('本機無可用 ps — 無法列出進程（唔假空表當健康）');
+        notes.push(tl('notes.auto.n1002'));
         const topHeader = await headerPromise;
         return {
           ok: false,
@@ -231,10 +202,10 @@ export async function collectProcessSnapshot(
         };
       }
       rows = sortRows(parsePsOutput(ps3.stdout, limit * 2), sort).slice(0, limit);
-      notes.push('ps 降級：無 --sort／精簡欄位');
+      notes.push(tl('notes.auto.n0392'));
     } else {
       rows = sortRows(parsePsOutput(ps2.stdout, limit * 2), sort).slice(0, limit);
-      notes.push('ps 降級：無 pri/vsz/stat 等欄');
+      notes.push(tl('notes.auto.n0393'));
     }
   } else {
     rows = parsePsOutput(ps.stdout, limit);
@@ -245,7 +216,7 @@ export async function collectProcessSnapshot(
   }
 
   if (!rows.length) {
-    notes.push('ps 輸出無進程列');
+    notes.push(tl('notes.auto.n0391'));
     const topHeader = await headerPromise;
     return { ok: false, at, sort, limit, rows: [], topHeader, notes };
   }
@@ -259,7 +230,7 @@ export async function collectProcessSnapshot(
     if (top.exitCode === 0 && top.stdout.trim()) {
       rawTop = top.stdout.trim().slice(0, 6000);
     } else {
-      notes.push('top -b 不可用（進程表仍以 ps 為準）');
+      notes.push(tl('notes.auto.n0448'));
     }
   }
 

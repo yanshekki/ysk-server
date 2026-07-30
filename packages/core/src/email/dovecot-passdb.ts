@@ -5,7 +5,7 @@
 
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { YskDatabase } from '../db/database.js';
 
 export interface DovecotPassdbResult {
@@ -31,7 +31,7 @@ export function writeDovecotPassdb(input: {
 }): DovecotPassdbResult {
   const domain = input.domain.trim().toLowerCase();
   if (!domain) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫域名', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.needDomain'), { httpStatus: 400 });
   }
 
   const mailboxes = input.db.snapshot.mailboxes.filter((m) => {
@@ -109,8 +109,7 @@ export function writeDovecotPassdb(input: {
     confSnippetPath,
     written: [passwdPath, userdbPath, confSnippetPath],
     mailboxCount: mailboxes.length,
-    notes,
-  };
+    notes };
 }
 
 /**
@@ -136,8 +135,7 @@ export function writeAllDovecotPassdbs(input: {
   return {
     ok,
     domains: results,
-    notes: [`Wrote passdb for ${results.length} domain(s)`],
-  };
+    notes: [`Wrote passdb for ${results.length} domain(s)`] };
 }
 
 export function passdbExists(dataDir: string, domain: string): boolean {

@@ -3,7 +3,7 @@
  */
 
 import type { SelfUpdateStatus } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface VersionInfo {
   current: string;
@@ -41,7 +41,7 @@ export function compareVersions(a: string, b: string): number {
  */
 export function planSelfUpdate(info: VersionInfo, now = new Date()): SelfUpdatePlan {
   if (!info.current || !info.latest) {
-    throw new YskError(ErrorCodes.VALIDATION, '需要目前版本與最新版本', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1580'), {
       httpStatus: 400,
     });
   }

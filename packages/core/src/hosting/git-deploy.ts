@@ -5,7 +5,7 @@
 
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { YSK_SCAFFOLD_MARKER } from './app-templates.js';
 
@@ -37,7 +37,7 @@ export function assertGitUrl(url: string): void {
     !/\s/.test(u) &&
     !(remoteOk && u.includes('..'));
   if (!ok) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Git URL 無效', { httpStatus: 400, details: { url } });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0109'), { httpStatus: 400, details: { url } });
   }
 }
 
@@ -116,7 +116,7 @@ export async function gitSync(input: {
       ok: false,
       action: 'none',
       repoDir,
-      notes: ['git binary 找不到 on PATH'],
+      notes: [tl('notes.auto.n0300')],
     };
   }
 
@@ -130,14 +130,14 @@ export async function gitSync(input: {
         for (const e of nonEmpty) {
           rmSync(join(repoDir, e), { recursive: true, force: true });
         }
-        notes.push('clone 前已清除佔位應用檔（YSK scaffold / stub）');
+        notes.push(tl('notes.auto.n0238'));
       } else {
         return {
           ok: false,
           action: 'none',
           repoDir,
           notes: [
-            `目標 ${repoDir} 非空且非 git 倉庫 — 拒絕 clone 以免覆寫資料（僅清除帶 .ysk-scaffold 的佔位範本）`,
+            tl('notes.auto.t0345', { v0: (repoDir) }),
           ],
         };
       }
@@ -162,7 +162,7 @@ export async function gitSync(input: {
         stderr: r.stderr,
       };
     }
-    notes.push(`已 clone ${input.gitUrl} → ${repoDir}`);
+    notes.push(tl('notes.auto.t0346', { v0: (input.gitUrl), v1: (repoDir) }));
   } else {
     if (input.branch) {
       await input.host.runCommand(['git', '-C', repoDir, 'fetch', 'origin', input.branch], {
@@ -189,7 +189,7 @@ export async function gitSync(input: {
         stderr: r.stderr,
       };
     }
-    notes.push(`已 pull 更新：${repoDir}`);
+    notes.push(tl('notes.auto.t0347', { v0: (repoDir) }));
   }
 
   const rev = await input.host.runCommand(['git', '-C', repoDir, 'rev-parse', 'HEAD'], {

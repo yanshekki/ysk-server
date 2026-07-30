@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * File manager routes — ownCloud-style sandboxed API.
  * Project roots: after write, chown to project linuxUser when root+execute.
@@ -16,8 +17,7 @@ import {
   bumpShareDownload,
   listFavorites,
   toggleFavorite,
-  chownProjectPath,
-} from '@ysk/core';
+  chownProjectPath } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
@@ -41,9 +41,7 @@ function resolveRoot(
       owner: {
         linuxUser: proj.linuxUser,
         linuxGroup: proj.linuxGroup || proj.linuxUser,
-        homeDir: proj.homeDir,
-      },
-    };
+        homeDir: proj.homeDir } };
   }
   throw Object.assign(new Error('root must be public or project:<id>'), { httpStatus: 400 });
 }
@@ -79,7 +77,7 @@ export async function handleFilesRoutes(
       await import('@ysk/core');
     const settings = getWebDavSettings(ctx.db);
     if (!settings.enabled) {
-      sendJson(res, 503, { ok: false, message: 'WebDAV 未啟用' });
+      sendJson(res, 503, { ok: false, message: tl('notes.auto.n0206') });
       return true;
     }
     const auth = req.headers.authorization ?? '';
@@ -96,9 +94,8 @@ export async function handleFilesRoutes(
     if (!okAuth) {
       res.writeHead(401, {
         'WWW-Authenticate': 'Basic realm="YSK WebDAV"',
-        'Content-Type': 'application/json',
-      });
-      res.end(JSON.stringify({ ok: false, message: '未授權' }));
+        'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, message: tl('notes.auto.n0960') }));
       return true;
     }
     const rel =
@@ -114,18 +111,15 @@ export async function handleFilesRoutes(
               href: `/webdav/${e.path}`,
               isDir: e.type === 'dir',
               size: e.size,
-              mtime: e.mtime,
-            }))
+              mtime: e.mtime }))
           : [];
       const xml = buildPropfindResponse({
         href: url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`,
-        entries,
-      });
+        entries });
       res.writeHead(207, {
         'Content-Type': 'application/xml; charset=utf-8',
         DAV: '1,2',
-        Allow: 'OPTIONS, GET, PUT, PROPFIND',
-      });
+        Allow: 'OPTIONS, GET, PUT, PROPFIND' });
       res.end(xml);
       return true;
     }
@@ -134,11 +128,10 @@ export async function handleFilesRoutes(
         const file = fm.readBinary(rel);
         res.writeHead(200, {
           'Content-Type': file.mime,
-          'Content-Length': file.buffer.length,
-        });
+          'Content-Length': file.buffer.length });
         res.end(file.buffer);
       } catch (e) {
-        sendJson(res, 404, { ok: false, message: e instanceof Error ? e.message : '找不到' });
+        sendJson(res, 404, { ok: false, message: e instanceof Error ? e.message : tl('notes.notFound') });
       }
       return true;
     }
@@ -151,7 +144,7 @@ export async function handleFilesRoutes(
       res.end(JSON.stringify({ ok: true, path: rel, bytes: buf.length }));
       return true;
     }
-    sendJson(res, 405, { ok: false, message: '不支援此操作方法' });
+    sendJson(res, 405, { ok: false, message: tl('notes.auto.n0497') });
     return true;
   }
 
@@ -160,12 +153,12 @@ export async function handleFilesRoutes(
     const token = url.pathname.split('/').pop() ?? '';
     const share = getShareByToken(ctx.db, token);
     if (!share) {
-      sendJson(res, 404, { ok: false, message: '分享不存在或已過期' });
+      sendJson(res, 404, { ok: false, message: tl('notes.auto.n0595') });
       return true;
     }
     const password = url.searchParams.get('password') ?? undefined;
     if (!verifySharePassword(share, password)) {
-      sendJson(res, 401, { ok: false, message: '需要密碼', needPassword: true });
+      sendJson(res, 401, { ok: false, message: tl('notes.auto.n1577'), needPassword: true });
       return true;
     }
     try {
@@ -177,14 +170,12 @@ export async function handleFilesRoutes(
         'Content-Type': file.mime,
         'Content-Length': file.buffer.length,
         'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`,
-        'Access-Control-Allow-Origin': '*',
-      });
+        'Access-Control-Allow-Origin': '*' });
       res.end(file.buffer);
     } catch (e) {
       sendJson(res, 404, {
         ok: false,
-        message: e instanceof Error ? e.message : '找不到',
-      });
+        message: e instanceof Error ? e.message : tl('notes.notFound') });
     }
     return true;
   }
@@ -202,8 +193,7 @@ export async function handleFilesRoutes(
   } catch (e) {
     sendJson(res, 400, {
       ok: false,
-      message: e instanceof Error ? e.message : '根目錄無效',
-    });
+      message: e instanceof Error ? e.message : tl('notes.auto.n1008') });
     return true;
   }
   const fm = new FileManager(root);
@@ -220,8 +210,7 @@ export async function handleFilesRoutes(
       root: rootKey,
       path,
       items: items.map((i) => ({ ...i, favorite: favs.has(i.path) })),
-      usage,
-    });
+      usage });
     return true;
   }
 
@@ -239,14 +228,12 @@ export async function handleFilesRoutes(
         'Content-Type': file.mime,
         'Content-Length': file.buffer.length,
         'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`,
-        'Access-Control-Allow-Origin': '*',
-      });
+        'Access-Control-Allow-Origin': '*' });
       res.end(file.buffer);
     } catch (e) {
       sendJson(res, 404, {
         ok: false,
-        message: e instanceof Error ? e.message : '找不到',
-      });
+        message: e instanceof Error ? e.message : tl('notes.notFound') });
     }
     return true;
   }
@@ -261,7 +248,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { path?: string; content?: string; base64?: string };
     if (!data.path) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
     const result = data.base64
@@ -273,8 +260,7 @@ export async function handleFilesRoutes(
       action: 'files.write',
       resource: data.path,
       detail: { root: rootKey, bytes: result.bytes, chowned: own.chowned },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { ...result, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
@@ -288,7 +274,7 @@ export async function handleFilesRoutes(
     const dir = (data.dir ?? '.').replace(/\/$/, '') || '.';
     const files = data.files ?? [];
     if (!files.length) {
-      sendJson(res, 400, { ok: false, message: '請選擇檔案' });
+      sendJson(res, 400, { ok: false, message: tl('notes.auto.n1428') });
       return true;
     }
     const results: Array<{ path: string; bytes: number }> = [];
@@ -305,8 +291,7 @@ export async function handleFilesRoutes(
       actor: user.username,
       action: 'files.upload',
       detail: { root: rootKey, count: results.length, dir, chowned: own.chowned },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { ok: true, results, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
@@ -315,7 +300,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { path?: string };
     if (!data.path?.trim()) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
     const result = fm.mkdir(data.path.trim());
@@ -325,8 +310,7 @@ export async function handleFilesRoutes(
       action: 'files.mkdir',
       resource: data.path,
       detail: { root: rootKey, chowned: own.chowned },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { ...result, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
@@ -335,7 +319,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { path?: string; content?: string };
     if (!data.path?.trim()) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
     const result = fm.createTextFile(data.path.trim(), data.content ?? '');
@@ -345,8 +329,7 @@ export async function handleFilesRoutes(
       action: 'files.create_text',
       resource: data.path,
       detail: { root: rootKey, chowned: own.chowned },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { ...result, chowned: own.chowned, ownershipNotes: own.notes });
     return true;
   }
@@ -360,8 +343,7 @@ export async function handleFilesRoutes(
       action: permanent ? 'files.delete_permanent' : 'files.trash',
       resource: path,
       detail: { root: rootKey, ...result },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, result);
     return true;
   }
@@ -370,7 +352,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { from?: string; to?: string };
     if (!data.from || !data.to) {
-      sendJson(res, 400, { ok: false, message: '請指定來源與目標路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.files.needSrcDst') });
       return true;
     }
     const result = fm.rename(data.from, data.to);
@@ -380,8 +362,7 @@ export async function handleFilesRoutes(
       action: 'files.rename',
       resource: data.from,
       detail: { root: rootKey, to: data.to, chowned: own.chowned },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { ...result, chowned: own.chowned });
     return true;
   }
@@ -390,7 +371,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { from?: string; to?: string };
     if (!data.from || !data.to) {
-      sendJson(res, 400, { ok: false, message: '請指定來源與目標路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.files.needSrcDst') });
       return true;
     }
     const result = fm.copy(data.from, data.to);
@@ -400,8 +381,7 @@ export async function handleFilesRoutes(
       action: 'files.copy',
       resource: data.from,
       detail: { root: rootKey, to: data.to, chowned: own.chowned },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { ...result, chowned: own.chowned });
     return true;
   }
@@ -410,7 +390,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { from?: string; to?: string };
     if (!data.from || !data.to) {
-      sendJson(res, 400, { ok: false, message: '請指定來源與目標路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.files.needSrcDst') });
       return true;
     }
     const result = fm.move(data.from, data.to);
@@ -420,8 +400,7 @@ export async function handleFilesRoutes(
       action: 'files.move',
       resource: data.from,
       detail: { root: rootKey, to: data.to, chowned: own.chowned },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, { ...result, chowned: own.chowned });
     return true;
   }
@@ -430,7 +409,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { path?: string; mode?: string };
     if (!data.path || !data.mode) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑與權限模式' });
+      sendJson(res, 400, { ok: false, message: tl('notes.auto.n1410') });
       return true;
     }
     const result = fm.chmod(data.path, data.mode);
@@ -439,8 +418,7 @@ export async function handleFilesRoutes(
       action: 'files.chmod',
       resource: data.path,
       detail: { root: rootKey, mode: data.mode },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, result);
     return true;
   }
@@ -449,7 +427,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { paths?: string[]; dest?: string };
     if (!data.paths?.length || !data.dest) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑與目的地' });
+      sendJson(res, 400, { ok: false, message: tl('notes.auto.n1412') });
       return true;
     }
     try {
@@ -458,14 +436,12 @@ export async function handleFilesRoutes(
         actor: user.username,
         action: 'files.zip',
         detail: { root: rootKey, ...result },
-        ok: true,
-      });
+        ok: true });
       sendJson(res, 200, { ok: true, ...result });
     } catch (e) {
       sendJson(res, 500, {
         ok: false,
-        notes: [e instanceof Error ? e.message : String(e)],
-      });
+        notes: [e instanceof Error ? e.message : String(e)] });
     }
     return true;
   }
@@ -474,7 +450,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { zipPath?: string; destDir?: string };
     if (!data.zipPath) {
-      sendJson(res, 400, { ok: false, message: '請指定 zip 路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.auto.n1404') });
       return true;
     }
     try {
@@ -483,14 +459,12 @@ export async function handleFilesRoutes(
         actor: user.username,
         action: 'files.unzip',
         detail: { root: rootKey, ...result },
-        ok: true,
-      });
+        ok: true });
       sendJson(res, 200, { ok: true, ...result });
     } catch (e) {
       sendJson(res, 500, {
         ok: false,
-        notes: [e instanceof Error ? e.message : String(e)],
-      });
+        notes: [e instanceof Error ? e.message : String(e)] });
     }
     return true;
   }
@@ -504,7 +478,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { trashId?: string };
     if (!data.trashId) {
-      sendJson(res, 400, { ok: false, message: '請指定回收項目' });
+      sendJson(res, 400, { ok: false, message: tl('notes.auto.n1407') });
       return true;
     }
     const result = fm.restoreTrash(data.trashId);
@@ -512,8 +486,7 @@ export async function handleFilesRoutes(
       actor: user.username,
       action: 'files.trash_restore',
       detail: { root: rootKey, ...result },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, result);
     return true;
   }
@@ -524,8 +497,7 @@ export async function handleFilesRoutes(
       actor: user.username,
       action: 'files.trash_purge',
       detail: { root: rootKey, ...result },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, result);
     return true;
   }
@@ -543,7 +515,7 @@ export async function handleFilesRoutes(
       expiresAt?: string;
     };
     if (!data.path) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
     // ensure file exists
@@ -553,22 +525,18 @@ export async function handleFilesRoutes(
       path: data.path,
       password: data.password,
       expiresAt: data.expiresAt,
-      createdBy: user.username,
-    });
+      createdBy: user.username });
     ctx.audit.append({
       actor: user.username,
       action: 'files.share_create',
       resource: data.path,
       detail: { id: share.id, token: share.token },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 201, {
       share: {
         ...share,
         passwordHash: undefined,
-        url: `/api/v1/public/files/${share.token}`,
-      },
-    });
+        url: `/api/v1/public/files/${share.token}` } });
     return true;
   }
   if (method === 'DELETE' && url.pathname.startsWith('/api/v1/files/shares/')) {
@@ -587,7 +555,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { path?: string };
     if (!data.path) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
     const r = toggleFavorite(ctx.db, rootKey, data.path);
@@ -599,7 +567,7 @@ export async function handleFilesRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/files/versions') {
     const path = url.searchParams.get('path') ?? '';
     if (!path) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑' });
+      sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
     sendJson(res, 200, { items: fm.listVersions(path), path });
@@ -609,7 +577,7 @@ export async function handleFilesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { path?: string; versionId?: string };
     if (!data.path || !data.versionId) {
-      sendJson(res, 400, { ok: false, message: '請指定路徑與版本' });
+      sendJson(res, 400, { ok: false, message: tl('notes.auto.n1411') });
       return true;
     }
     const r = fm.restoreVersion(data.path, data.versionId);
@@ -618,8 +586,7 @@ export async function handleFilesRoutes(
       action: 'files.version.restore',
       resource: data.path,
       detail: { versionId: data.versionId, ok: r.ok },
-      ok: r.ok,
-    });
+      ok: r.ok });
     sendOpsResult(res, r, { notFound: true });
     return true;
   }
@@ -632,8 +599,7 @@ export async function handleFilesRoutes(
       enabled: s.enabled,
       mountPath: s.mountPath,
       tokenId: s.tokenId,
-      updated_at: s.updated_at,
-    });
+      updated_at: s.updated_at });
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/files/webdav/token') {
@@ -643,15 +609,13 @@ export async function handleFilesRoutes(
       actor: user.username,
       action: 'files.webdav.token',
       detail: { tokenId: r.settings.tokenId },
-      ok: true,
-    });
+      ok: true });
     sendJson(res, 200, {
       ok: true,
       token: r.token,
       tokenId: r.settings.tokenId,
       mountPath: r.settings.mountPath,
-      notes: r.notes,
-    });
+      notes: r.notes });
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/files/webdav/disable') {

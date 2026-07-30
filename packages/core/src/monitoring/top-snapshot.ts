@@ -1,61 +1,17 @@
+import { tl } from '@ysk/shared';
 /**
  * Structured top(1)-style host header — honest /proc samples (no fake PTY).
  * Per-CPU deltas match SSH top press "1".
  */
 
+import type { CpuTimesPctDto, TopHeaderDto } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 
-export type CpuTimesPct = {
-  us: number;
-  sy: number;
-  ni: number;
-  id: number;
-  wa: number;
-  hi: number;
-  si: number;
-  st: number;
-  /** 100 - id (top-style busy; includes iowait in busy-ish sense differently — we use 100-id) */
-  busyPct: number;
-};
-
-export type TopTasks = {
-  total: number;
-  running: number;
-  sleeping: number;
-  stopped: number;
-  zombie: number;
-};
-
-export type TopMemBlock = {
-  totalKiB: number;
-  freeKiB: number;
-  usedKiB: number;
-  buffCacheKiB: number;
-  availableKiB: number;
-};
-
-export type TopSwapBlock = {
-  totalKiB: number;
-  freeKiB: number;
-  usedKiB: number;
-};
-
-export type TopHeader = {
-  ok: boolean;
-  at: string;
-  uptimeSec: number;
-  loadavg: [number, number, number];
-  tasks: TopTasks;
-  /** Aggregate %Cpu(s) */
-  cpu: CpuTimesPct;
-  /** Per-core %Cpu0…N (top key "1") */
-  cpus: CpuTimesPct[];
-  memory: TopMemBlock;
-  swap: TopSwapBlock;
-  notes: string[];
-  /** Sample window used for CPU delta (ms) */
-  sampleMs?: number;
-};
+export type CpuTimesPct = CpuTimesPctDto;
+export type TopHeader = TopHeaderDto;
+export type TopTasks = TopHeaderDto['tasks'];
+export type TopMemBlock = TopHeaderDto['memory'];
+export type TopSwapBlock = TopHeaderDto['swap'];
 
 /** Raw jiffies row from /proc/stat */
 export type CpuJiffies = {
@@ -257,7 +213,7 @@ export async function collectTopHeader(
       cpus.push(jiffiesToPct(s1.cpus[i], s2.cpus[i]));
     }
   } else {
-    notes.push('/proc/stat 不可讀 — CPU% 無法計算');
+    notes.push(tl('notes.auto.n0059'));
   }
 
   let memory: TopMemBlock = {
@@ -274,7 +230,7 @@ export async function collectTopHeader(
     memory = parsed.memory;
     swap = parsed.swap;
   } else {
-    notes.push('/proc/meminfo 不可讀');
+    notes.push(tl('notes.auto.n0058'));
   }
 
   let loadavg: [number, number, number] = [0, 0, 0];
@@ -306,7 +262,7 @@ export async function collectTopHeader(
     if (st2.exitCode === 0) {
       tasks = parseTaskStates(st2.stdout);
     } else {
-      notes.push('無法統計 Tasks（ps state 失敗）');
+      notes.push(tl('notes.auto.n1179'));
     }
   }
 

@@ -24,16 +24,11 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 
 const RDY_TABS = ['priority', 'checklist', 'summary', 'about'] as const;
 
-const CAT_LABEL: Record<string, string> = {
-  core: '控制面',
-  security: '權限與安全',
-  binaries: '系統軟體',
-  hosting: '執行環境',
-  dns: 'DNS',
-  email: '郵件',
-  isolation: '專案隔離',
-  ops: '運維',
-};
+function catLabel(cat: string, t: (k: string) => string): string {
+  const key = `readiness.cat.${cat}`;
+  const v = t(key);
+  return v === key ? cat : v;
+}
 
 type LevelFilter = 'all' | 'blockers' | 'missing' | 'degraded' | 'ready';
 
@@ -44,17 +39,17 @@ function levelTone(level: ReadinessLevel): 'ok' | 'warn' | 'danger' | 'neutral' 
   return 'neutral';
 }
 
-function levelLabel(level: ReadinessLevel): string {
-  if (level === 'ready') return '就緒';
-  if (level === 'degraded') return '降級';
-  if (level === 'missing') return '缺少';
-  return '未知';
+function levelLabel(level: ReadinessLevel, t: (k: string) => string): string {
+  if (level === 'ready') return t('readiness.level.ready');
+  if (level === 'degraded') return t('readiness.level.degraded');
+  if (level === 'missing') return t('readiness.level.missing');
+  return t('readiness.level.unknown');
 }
 
-function severityLabel(s?: string): string | null {
-  if (s === 'critical') return '關鍵';
-  if (s === 'recommended') return '建議';
-  if (s === 'optional') return '可選';
+function severityLabel(s: string | undefined, t: (k: string) => string): string | null {
+  if (s === 'critical') return t('readiness.severity.critical');
+  if (s === 'recommended') return t('readiness.severity.recommended');
+  if (s === 'optional') return t('readiness.severity.optional');
   return null;
 }
 
@@ -62,12 +57,14 @@ function ItemRow({
   item,
   index,
   emphasize,
+  t,
 }: {
   item: ReadinessItemDto;
   index?: number;
   emphasize?: boolean;
+  t: (k: string) => string;
 }) {
-  const sev = severityLabel(item.severity);
+  const sev = severityLabel(item.severity, t);
   return (
     <article
       className={`rdy-item rdy-item--${item.level}${emphasize ? ' rdy-item--emphasis' : ''}`}
@@ -81,7 +78,7 @@ function ItemRow({
             <span className="rdy-item__step">{index + 1}</span>
           ) : null}
           <h3 className="rdy-item__title">{item.title}</h3>
-          <Badge tone={levelTone(item.level)}>{levelLabel(item.level)}</Badge>
+          <Badge tone={levelTone(item.level)}>{levelLabel(item.level, t)}</Badge>
           {sev ? <span className="rdy-item__sev">{sev}</span> : null}
         </div>
         <p className="rdy-item__detail">{item.detail}</p>
@@ -99,10 +96,10 @@ function ItemRow({
             to={item.fixHref}
             className={`btn btn--sm ${emphasize || item.level === 'missing' ? 'btn--primary' : 'btn--secondary'}`}
           >
-            修復
+            {t('readiness.fix')}
           </Link>
         ) : item.level === 'ready' ? (
-          <span className="rdy-item__ok">通過</span>
+          <span className="rdy-item__ok">{t('readiness.passed')}</span>
         ) : (
           <span className="rdy-item__na">—</span>
         )}
@@ -112,7 +109,8 @@ function ItemRow({
 }
 
 export function ReadinessPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   const [report, setReport] = useState<ProductionReadinessDto | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -131,11 +129,11 @@ export function ReadinessPage() {
         setFilter((prev) => (prev === 'ready' ? 'blockers' : prev === 'all' ? 'blockers' : prev));
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '就緒檢查失敗');
+      setError(e instanceof Error ? e.message : t('readiness.checkFailed'));
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [t, locale]);
 
   useEffect(() => {
     void load();
@@ -228,41 +226,41 @@ export function ReadinessPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.readiness', { defaultValue: '就緒探測' })}
+      title={t('nav.readiness')}
       showCapability={false}
       status={
         report
           ? {
               pill: {
                 label: report.productionReady
-                  ? `門檻通過 · ${scorePct}%`
-                  : `尚未達標 · ${scorePct}%`,
+                  ? t('readiness.gatePass', { pct: scorePct })
+                  : t('readiness.gateFail', { pct: scorePct }),
                 tone: heroTone,
               },
               items: [
                 {
                   label: 'EXECUTE',
-                  value: report.executeEnabled ? '已開' : '未開',
+                  value: report.executeEnabled ? t('readiness.executeOn') : t('readiness.executeOff'),
                   tone: report.executeEnabled ? 'ok' : 'warn',
                 },
                 {
                   label: 'Root',
-                  value: report.isRoot ? '是' : '否',
+                  value: report.isRoot ? t('common.yes') : t('common.no'),
                   tone: report.isRoot ? 'ok' : 'warn',
                 },
-                { label: '就緒', value: score?.ready ?? 0, tone: 'ok' },
+                { label: t('common.ready'), value: score?.ready ?? 0, tone: 'ok' },
                 {
-                  label: '降級',
+                  label: t('common.degraded'),
                   value: score?.degraded ?? 0,
                   tone: (score?.degraded ?? 0) > 0 ? 'warn' : 'neutral',
                 },
                 {
-                  label: '缺少',
+                  label: t('common.missing'),
                   value: score?.missing ?? 0,
                   tone: (score?.missing ?? 0) > 0 ? 'danger' : 'neutral',
                 },
                 {
-                  label: '阻擋',
+                  label: t('readiness.blockers'),
                   value: blockers.length,
                   tone: blockers.length ? 'danger' : 'ok',
                 },
@@ -272,14 +270,14 @@ export function ReadinessPage() {
       }
       actions={<>
           <Button variant="secondary" size="sm" loading={busy} onClick={() => void load()}>
-            {busy ? '探測中…' : '重新探測'}
+            {busy ? t('readiness.probing') : t('readiness.reprobe')}
           </Button>
           <Button variant="ghost" size="sm" disabled={!report} onClick={() => downloadReport()}>
-            匯出報告
+            {t('readiness.exportReport')}
           </Button>
           {firstFix ? (
             <Link to={firstFix.fixHref!} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
-              處理首個阻擋
+              {t('readiness.firstBlocker')}
             </Link>
           ) : report && !report.productionReady ? (
             <Button
@@ -290,14 +288,14 @@ export function ReadinessPage() {
                 setTab('checklist');
               }}
             >
-              檢視建議項
+              {t('readiness.viewRecommended')}
             </Button>
           ) : null}
         </>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {busy && !report ? <LoadingBlock label="正在探測主機能力…" /> : null}
+      {busy && !report ? <LoadingBlock label={t('readiness.loadingProbe')} /> : null}
 
       {report ? (
         <div className="rdy">
@@ -305,17 +303,17 @@ export function ReadinessPage() {
             tabs={[
               {
                 id: 'priority',
-                label: '優先修復',
+                label: t('readiness.priorityTab'),
                 badge: blockers.length || undefined,
               },
               {
                 id: 'checklist',
-                label: '完整清單',
+                label: t('readiness.checklistTab'),
                 badge: report.items.length || undefined,
               },
-              { id: 'summary', label: '摘要與快捷' },
+              { id: 'summary', label: t('readiness.summaryTab') },
             
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
             active={tab}
             onChange={setTab}
@@ -330,26 +328,26 @@ export function ReadinessPage() {
                   <header className="rdy-panel__head">
                     <div>
                       <h2 id="rdy-next-title" className="rdy-panel__title">
-                        優先修復
+                        {t('readiness.priorityTitle')}
                       </h2>
                       <p className="rdy-panel__sub">
-                        按建議順序處理；修好阻擋後再重新探測
+                        {t('readiness.prioritySub')}
                       </p>
                     </div>
                     {blockers.length > 0 ? (
-                      <Badge tone="danger">{blockers.length} 項</Badge>
+                      <Badge tone="danger">{t('readiness.nItems', { count: blockers.length })}</Badge>
                     ) : (
-                      <Badge tone="ok">無硬阻擋</Badge>
+                      <Badge tone="ok">{t('readiness.noHardBlockers')}</Badge>
                     )}
                   </header>
 
                   {blockers.length === 0 ? (
                     <div className="rdy-empty rdy-empty--ok">
-                      <strong>沒有硬阻擋項</strong>
+                      <strong>{t('readiness.noHardBlockersTitle')}</strong>
                       <p>
-                        生產門檻
-                        {report.productionReady ? '已通過' : '仍可能因權限未達標'}。
-                        可檢視「降級」建議項（郵件、DNS、可選 runtime）。
+                        {t('readiness.prodGate')}
+                        {report.productionReady ? t('readiness.gatePassed') : t('readiness.gateMaybePerm')}。
+                        {t('readiness.viewDegradedHint')}
                       </p>
                       <Button
                         variant="secondary"
@@ -359,13 +357,13 @@ export function ReadinessPage() {
                           setTab('checklist');
                         }}
                       >
-                        查看降級項
+                        {t('readiness.viewDegraded')}
                       </Button>
                     </div>
                   ) : (
                     <div className="rdy-item-list">
                       {blockers.map((item, i) => (
-                        <ItemRow key={item.id} item={item} index={i} emphasize />
+                        <ItemRow key={item.id} item={item} t={t} index={i} emphasize />
                       ))}
                     </div>
                   )}
@@ -379,25 +377,25 @@ export function ReadinessPage() {
                   <header className="rdy-panel__head rdy-panel__head--stack">
                     <div className="rdy-panel__head-row">
                       <div>
-                        <h2 className="rdy-panel__title">完整檢查清單</h2>
+                        <h2 className="rdy-panel__title">{t('readiness.fullChecklist')}</h2>
                         <p className="rdy-panel__sub">
-                          顯示 {filtered.length} / {report.items.length} 項
+                          {t('readiness.showing', { shown: filtered.length, total: report.items.length })}
                           {catFilter !== 'all'
-                            ? ` · ${CAT_LABEL[catFilter] ?? catFilter}`
+                            ? ` · ${catLabel(catFilter, t)}`
                             : ''}
                         </p>
                       </div>
                     </div>
 
                     <div className="rdy-toolbar">
-                      <div className="rdy-chips" role="tablist" aria-label="狀態篩選">
+                      <div className="rdy-chips" role="tablist" aria-label={t('readiness.filterAria')}>
                         {(
                           [
-                            ['all', `全部`, report.items.length],
-                            ['blockers', `阻擋`, blockers.length],
-                            ['missing', `缺少`, score?.missing ?? 0],
-                            ['degraded', `降級`, score?.degraded ?? 0],
-                            ['ready', `就緒`, score?.ready ?? 0],
+                            ['all', t('readiness.all'), report.items.length],
+                            ['blockers', t('readiness.blockers'), blockers.length],
+                            ['missing', t('common.missing'), score?.missing ?? 0],
+                            ['degraded', t('common.degraded'), score?.degraded ?? 0],
+                            ['ready', t('common.ready'), score?.ready ?? 0],
                           ] as const
                         ).map(([id, label, n]) => (
                           <button
@@ -424,38 +422,38 @@ export function ReadinessPage() {
 
                       <div className="rdy-toolbar__filters">
                         <label className="rdy-field">
-                          <span className="rdy-field__lab">類別</span>
+                          <span className="rdy-field__lab">{t('readiness.category')}</span>
                           <select
                             value={catFilter}
                             onChange={(e) => setCatFilter(e.target.value)}
                           >
-                            <option value="all">全部類別</option>
+                            <option value="all">{t('readiness.allCategories')}</option>
                             {categories.map((c) => (
                               <option key={c} value={c}>
-                                {CAT_LABEL[c] ?? c}
+                                {catLabel(c, t)}
                               </option>
                             ))}
                           </select>
                         </label>
                         <label className="rdy-field rdy-field--grow">
-                          <span className="rdy-field__lab">搜尋</span>
+                          <span className="rdy-field__lab">{t('common.search')}</span>
                           <input
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
-                            placeholder="標題、說明、id、修復提示…"
+                            placeholder={t('readiness.searchPh')}
                             autoComplete="off"
                           />
                         </label>
                       </div>
 
                       {categories.length > 1 ? (
-                        <div className="rdy-cat-pills" aria-label="快速類別">
+                        <div className="rdy-cat-pills" aria-label={t('readiness.quickCatAria')}>
                           <button
                             type="button"
                             className={`rdy-pill${catFilter === 'all' ? ' rdy-pill--active' : ''}`}
                             onClick={() => setCatFilter('all')}
                           >
-                            全部
+                            {t('readiness.all')}
                           </button>
                           {categories.map((c) => {
                             const count = report.items.filter(
@@ -475,7 +473,7 @@ export function ReadinessPage() {
                                 }`}
                                 onClick={() => setCatFilter(c)}
                               >
-                                {CAT_LABEL[c] ?? c}
+                                {catLabel(c, t)}
                                 <span className="rdy-pill__n">{count}</span>
                               </button>
                             );
@@ -487,8 +485,8 @@ export function ReadinessPage() {
 
                   {grouped.length === 0 ? (
                     <div className="rdy-empty">
-                      <strong>沒有符合的項目</strong>
-                      <p>試下清搜尋或改篩選條件。</p>
+                      <strong>{t('readiness.noMatchTitle')}</strong>
+                      <p>{t('readiness.noMatchDesc')}</p>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -498,7 +496,7 @@ export function ReadinessPage() {
                           setQ('');
                         }}
                       >
-                        重設篩選
+                        {t('readiness.resetFilters')}
                       </Button>
                     </div>
                   ) : (
@@ -507,13 +505,13 @@ export function ReadinessPage() {
                         <div key={cat} className="rdy-group">
                           <div className="rdy-group__head">
                             <h3 className="rdy-group__title">
-                              {CAT_LABEL[cat] ?? cat}
+                              {catLabel(cat, t)}
                             </h3>
                             <span className="rdy-group__count">{items.length}</span>
                           </div>
                           <div className="rdy-item-list">
                             {items.map((item) => (
-                              <ItemRow key={item.id} item={item} />
+                              <ItemRow key={item.id} item={item} t={t} />
                             ))}
                           </div>
                         </div>
@@ -528,7 +526,7 @@ export function ReadinessPage() {
               <div className="tab-panel stack">
                 <section className="rdy-panel">
                   <header className="rdy-panel__head">
-                    <h2 className="rdy-panel__title">摘要</h2>
+                    <h2 className="rdy-panel__title">{t('readiness.summary')}</h2>
                   </header>
                   <ul className="rdy-summary">
                     {report.summary.map((line) => (
@@ -539,39 +537,34 @@ export function ReadinessPage() {
 
                 <section className="rdy-panel">
                   <header className="rdy-panel__head">
-                    <h2 className="rdy-panel__title">快捷入口</h2>
+                    <h2 className="rdy-panel__title">{t('readiness.shortcuts')}</h2>
                   </header>
-                  <nav className="rdy-shortcuts" aria-label="運維捷徑">
+                  <nav className="rdy-shortcuts" aria-label={t('readiness.opsShortcutsAria')}>
                     <Link to="/system" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">主機設定</span>
-                      <span className="rdy-shortcut__d">hostname · 電源 · NTP</span>
+                      <span className="rdy-shortcut__t">{t('readiness.scHost')}</span>
+                      <span className="rdy-shortcut__d">{t('readiness.scHostD')}</span>
                     </Link>
                     <Link to="/system/unit" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">控制面 unit</span>
-                      <span className="rdy-shortcut__d">systemd 安裝／啟用</span>
+                      <span className="rdy-shortcut__t">{t('readiness.scUnit')}</span>
+                      <span className="rdy-shortcut__d">{t('readiness.scUnitD')}</span>
                     </Link>
                     <Link to="/services" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">服務矩陣</span>
-                      <span className="rdy-shortcut__d">nginx · DB · 生命週期</span>
+                      <span className="rdy-shortcut__t">{t('readiness.scServices')}</span>
+                      <span className="rdy-shortcut__d">{t('readiness.scServicesD')}</span>
                     </Link>
                     <Link to="/metrics" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">主機指標</span>
-                      <span className="rdy-shortcut__d">負載 · 記憶體 · 告警</span>
+                      <span className="rdy-shortcut__t">{t('readiness.scMetrics')}</span>
+                      <span className="rdy-shortcut__d">{t('readiness.scMetricsD')}</span>
                     </Link>
-                    <Link to="/firewall" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">防火牆</span>
-                      <span className="rdy-shortcut__d">UFW 規則</span>
-                    </Link>
-                    <Link to="/fail2ban" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">Fail2ban</span>
-                      <span className="rdy-shortcut__d">jail · ban</span>
+                    <Link to="/protection" className="rdy-shortcut">
+                      <span className="rdy-shortcut__t">{t('readiness.scProtection')}</span>
+                      <span className="rdy-shortcut__d">{t('readiness.scProtectionD')}</span>
                     </Link>
                   </nav>
                 </section>
 
                 <p className="rdy-footnote">
-                  政策：郵件 PTR／Port 25／域名商 DNS 永不自動宣稱完成。
-                  HTTP 503 = 未達標但仍有完整報告（非假成功）。
+                  {t('readiness.policyNote')}
                 </p>
               </div>
             ) : null}
@@ -583,10 +576,10 @@ export function ReadinessPage() {
 
       {!busy && !report && !error ? (
         <div className="rdy-empty rdy-empty--start">
-          <strong>尚未探測</strong>
-          <p>按「重新探測」開始唯讀就緒檢查。</p>
+          <strong>{t('readiness.notProbedTitle')}</strong>
+          <p>{t('readiness.notProbedDesc')}</p>
           <Button variant="primary" size="md" onClick={() => void load()}>
-            執行就緒檢查
+            {t('readiness.runCheck')}
           </Button>
         </div>
       ) : null}

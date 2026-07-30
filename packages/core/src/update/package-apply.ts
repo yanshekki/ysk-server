@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Apply apt package upgrade from panel — fail-closed, honest notes.
  */
@@ -29,8 +30,8 @@ export async function applyPackageUpdate(input: {
       ok: false,
       applied: false,
       blocked: true,
-      blockMessage: '此更新需人工確認（高風險／需審批）。請勾選確認後再套用。',
-      notes: [...notes, '已封鎖：需確認高風險更新'],
+      blockMessage: tl('notes.auto.n1038'),
+      notes: [...notes, tl('notes.auto.n0771')],
       commands: plan.commands,
     };
   }
@@ -40,8 +41,8 @@ export async function applyPackageUpdate(input: {
       ok: false,
       applied: false,
       blocked: true,
-      blockMessage: '未開啟系統變更權限',
-      notes: [...notes, '已封鎖：未開啟系統變更'],
+      blockMessage: tl('ops.blocked.needExecuteShort'),
+      notes: [...notes, tl('ops.blocked.needExecuteBlocked')],
       commands: plan.commands,
     };
   }
@@ -50,8 +51,8 @@ export async function applyPackageUpdate(input: {
       ok: false,
       applied: false,
       blocked: true,
-      blockMessage: '套件更新需要系統管理員權限',
-      notes: [...notes, '已封鎖：需要管理員權限'],
+      blockMessage: tl('notes.auto.n0642'),
+      notes: [...notes, tl('notes.auto.n0772')],
       commands: plan.commands,
     };
   }
@@ -61,7 +62,7 @@ export async function applyPackageUpdate(input: {
     return {
       ok: false,
       applied: false,
-      notes: ['套件名不合法'],
+      notes: [tl('notes.auto.n0640')],
       commands: plan.commands,
     };
   }
@@ -80,9 +81,9 @@ export async function applyPackageUpdate(input: {
       blocked: true,
       blockMessage:
         !rawCand || rawCand === input.item.currentVersion
-          ? '沒有可套用的真實升級（缺 candidate 或與目前版本相同）'
-          : 'candidateVersion 含非法字元',
-      notes: [...notes, '已封鎖：無真實 candidateVersion'],
+          ? tl('notes.auto.n1048')
+          : tl('notes.auto.n0234'),
+      notes: [...notes, tl('notes.auto.n0770')],
       commands: [],
     };
   }
@@ -98,8 +99,8 @@ export async function applyPackageUpdate(input: {
     applied: ok,
     notes: [
       ...notes,
-      `目標版本 ${input.item.currentVersion} → ${cand}`,
-      ok ? `已嘗試升級 ${pkg}` : `升級失敗 exit=${r.exitCode}`,
+      tl('notes.auto.t0460', { v0: (input.item.currentVersion), v1: (cand) }),
+      ok ? tl('notes.auto.t0461', { v0: (pkg) }) : tl('notes.auto.t0462', { v0: (r.exitCode) }),
       out.slice(0, 400),
     ],
     commands: [cmd],

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Webmail SSO — one-time panel tokens for Roundcube-style login handoff.
  * Does not claim Roundcube is configured; token is panel-issued for reverse-proxy auth.
@@ -52,7 +53,7 @@ export function issueWebmailSso(input: {
   const email = input.email.trim().toLowerCase();
   const domain = input.domain.trim().toLowerCase();
   if (!email.includes('@') || !domain) {
-    return { ok: false, notes: ['需要有效 email 與 domain'] };
+    return { ok: false, notes: [tl('notes.auto.n1579')] };
   }
   const plain = randomBytes(24).toString('base64url');
   const ttl = Math.min(Math.max(input.ttlMinutes ?? 5, 1), 60);
@@ -76,10 +77,10 @@ export function issueWebmailSso(input: {
     expiresAt,
     loginUrl,
     notes: [
-      `已簽發一次性 SSO token（${ttl} 分鐘）`,
+      tl('notes.auto.t0061', { v0: (ttl) }),
       input.password
-        ? '已附一次性登入密碼 — Roundcube 外掛可自動 login'
-        : '未附密碼 — 僅驗證 email（外掛需另行登入）',
+        ? tl('notes.auto.n0813')
+        : tl('notes.auto.n0987'),
       `loginUrl: ${loginUrl}`,
     ],
   };
@@ -99,10 +100,10 @@ export function consumeWebmailSso(
   const hash = createHash('sha256').update(token).digest('hex');
   const all = load(db);
   const found = all.find((t) => t.tokenHash === hash);
-  if (!found) return { ok: false, notes: ['無效 token'] };
-  if (found.usedAt) return { ok: false, notes: ['token 已使用'] };
+  if (!found) return { ok: false, notes: [tl('notes.auto.n1106')] };
+  if (found.usedAt) return { ok: false, notes: [tl('notes.auto.n0446')] };
   if (found.expiresAt < new Date().toISOString()) {
-    return { ok: false, notes: ['token 已過期'] };
+    return { ok: false, notes: [tl('notes.auto.n0447')] };
   }
   found.usedAt = new Date().toISOString();
   const password = found.loginPassword;
@@ -114,7 +115,7 @@ export function consumeWebmailSso(
     domain: found.domain,
     password,
     notes: password
-      ? ['SSO 已驗證（單次）· 含自動登入密碼']
-      : ['SSO 已驗證（單次）· 無密碼'],
+      ? [tl('notes.auto.n0188')]
+      : [tl('notes.auto.n0189')],
   };
 }

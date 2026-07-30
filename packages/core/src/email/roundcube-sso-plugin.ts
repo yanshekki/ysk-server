@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Roundcube SSO plugin skeleton + optional system symlink into Roundcube plugins/.
  */
@@ -85,16 +86,16 @@ class ysk_sso extends rcube_plugin {
     [
       'YSK Roundcube SSO plugin skeleton',
       `Panel consume: ${input.panelBaseUrl}/api/v1/email/webmail/sso/consume`,
-      'written ≠ Roundcube 已載入 — 用 enableSystem 或手動 symlink',
+      tl('notes.auto.n0469'),
       '',
     ].join('\n'),
     'utf8',
   );
   written.push(readme);
-  notes.push(`已寫入 plugin 骨架 ${dir}`);
-  notes.push('狀態：written（非已上線 SSO）');
+  notes.push(tl('notes.auto.t0071', { v0: (dir) }));
+  notes.push(tl('notes.auto.n1233'));
   if (!existsSync(path)) {
-    return { ok: false, written, notes: [...notes, '寫入失敗'], pluginDir: dir };
+    return { ok: false, written, notes: [...notes, tl('notes.auto.n0676')], pluginDir: dir };
   }
   return { ok: true, written, notes, pluginDir: dir };
 }
@@ -136,10 +137,10 @@ export async function enableRoundcubeSsoPlugin(input: {
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
-      notes: [...notes, '無法 symlink：未開啟系統變更權限'],
+      notes: [...notes, tl('notes.auto.n1138')],
       written,
       blocked: true,
-      blockMessage: '需要 YSK_EXECUTE',
+      blockMessage: tl('notes.auto.n1557'),
       apply_status: 'blocked',
     };
   }
@@ -195,7 +196,7 @@ export async function enableRoundcubeSsoPlugin(input: {
 
   if (!pluginsDir) {
     notes.push(
-      '找不到 Roundcube plugins 目錄 — 已寫骨架；請安裝 Roundcube 或傳 roundcubePluginsDir',
+      tl('notes.auto.n0847'),
     );
     return {
       ok: true,
@@ -215,7 +216,7 @@ export async function enableRoundcubeSsoPlugin(input: {
     { timeoutMs: 10_000 },
   );
   if (r.exitCode !== 0) {
-    notes.push(`symlink 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+    notes.push(tl('notes.auto.t0072', { v0: ((r.stderr || r.stdout).slice(0, 200)) }));
     return {
       ok: false,
       notes,
@@ -223,7 +224,7 @@ export async function enableRoundcubeSsoPlugin(input: {
       apply_status: 'written',
     };
   }
-  notes.push(`已 symlink ${linkPath} → ${base.pluginDir}`);
+  notes.push(tl('notes.auto.t0073', { v0: (linkPath), v1: (base.pluginDir) }));
   written.push(linkPath);
 
   // Auto-enable in config.inc.php near this plugins tree
@@ -238,8 +239,8 @@ export async function enableRoundcubeSsoPlugin(input: {
   // Symlink succeeded; config may be partial — ok reflects full apply only
   notes.push(
     configResult.ok
-      ? '狀態：applied（symlink + config plugins[] 已啟用）'
-      : '狀態：partial（symlink 成功；config 需手動加 plugins）— 唔會標成完整 applied',
+      ? tl('notes.auto.n1209')
+      : tl('notes.auto.n1221'),
   );
   return {
     ok: configResult.ok,
@@ -292,7 +293,7 @@ export async function ensureRoundcubePluginInConfig(input: {
   }
 
   if (!configPath) {
-    notes.push('找不到 config.inc.php — 請手動: $config[\'plugins\'][] = \'ysk_sso\';');
+    notes.push(tl('notes.auto.n0850'));
     return { ok: false, notes, written };
   }
 
@@ -317,13 +318,13 @@ fi
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 10_000 });
   const out = (r.stdout || '').trim();
   if (r.exitCode !== 0) {
-    notes.push(`改 config 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+    notes.push(tl('notes.auto.t0074', { v0: ((r.stderr || r.stdout).slice(0, 200)) }));
     return { ok: false, notes, written };
   }
   if (out.includes('ALREADY')) {
-    notes.push(`config 已包含 plugin ${name}: ${configPath}`);
+    notes.push(tl('notes.auto.t0075', { v0: (name), v1: (configPath) }));
   } else {
-    notes.push(`已寫入 ${configPath}: ${snippet}`);
+    notes.push(tl('notes.auto.t0076', { v0: (configPath), v1: (snippet) }));
     written.push(configPath);
   }
   return { ok: true, notes, written };

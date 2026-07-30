@@ -20,7 +20,8 @@ export interface ProjectAdvancedTabProps {
   onWordpress: () => void;
   onSuspend: () => void;
   onUnsuspend: () => void;
-  onDelete: () => void;
+  /** Omit when caller lacks projects.delete */
+  onDelete?: () => void;
   onOpsMessage?: (msg: string) => void;
 }
 
@@ -51,12 +52,12 @@ export function ProjectAdvancedTab({
       });
       onOpsMessage?.(
         r.ok
-          ? `FTP ${String((r.account as { username?: string })?.username ?? '')} 已建立（草稿，需到 FTPS 頁套用）`
-          : (r.notes ?? []).join('；') || '建立失敗',
+          ? t('projects.advFtpCreated', { user: String((r.account as { username?: string })?.username ?? '') })
+          : (r.notes ?? []).join('；') || t('common.createFailed'),
       );
       if (r.ok) setFtpPass('');
     } catch (e) {
-      onOpsMessage?.(e instanceof Error ? e.message : 'FTP 建立失敗');
+      onOpsMessage?.(e instanceof Error ? e.message : t('projects.advFtpFailed'));
     } finally {
       setFtpBusy(false);
     }
@@ -66,48 +67,48 @@ export function ProjectAdvancedTab({
     <div className="tab-panel">
       <Card>
         <CardSection
-          title={t('projects.sectionAdvanced', { defaultValue: '維護操作' })}
+          title={t('projects.sectionAdvanced', { defaultValue: t('projects.advMaintTitle') })}
           description={t('projects.sectionAdvancedDesc', {
-            defaultValue: '備份、暫停／恢復、選用工具',
+            defaultValue: t('projects.advMaintDesc'),
           })}
         >
           <FormActions>
             <Button variant="secondary" size="md" loading={busy} onClick={onBackup}>
-              {t('projects.backup', { defaultValue: '備份本專案' })}
+              {t('projects.backup', { defaultValue: t('projects.advBackupProject') })}
             </Button>
             {ui.showWordpress ? (
               <Button variant="secondary" size="md" loading={busy} onClick={onWordpress}>
-                {t('projects.downloadWp', { defaultValue: '一鍵 WordPress（下載+設定）' })}
+                {t('projects.downloadWp', { defaultValue: t('projects.advOneClickWp') })}
               </Button>
             ) : null}
             {suspended ? (
               <Button variant="primary" size="md" loading={busy} onClick={onUnsuspend}>
-                恢復專案
+                {t('projects.resume')}
               </Button>
             ) : (
               <Button variant="secondary" size="md" loading={busy} onClick={onSuspend}>
-                暫停專案
+                {t('projects.suspend')}
               </Button>
             )}
           </FormActions>
           <FormHint>
             {suspended
-              ? '暫停中：進程已停、訪客會收到 503。'
-              : '暫停會停止進程並將站點改為 503 維護頁。'}
+              ? t('projects.advSuspendedHint')
+              : t('projects.advSuspendHint')}
           </FormHint>
         </CardSection>
       </Card>
 
       <Card>
         <CardSection
-          title="專案 FTP（路徑 Jail）"
-          description="帳戶限制在專案 app 目錄；建立後請到 FTPS 服務頁套用"
+          title={t('projects.advFtpTitle')}
+          description={t('projects.advFtpDesc')}
         >
           <FormLayout columns={2}>
             <Field
-              label="用戶名"
+              label={t('common.username')}
               htmlFor="ftp-user"
-              hint="可留空，系統自動產生"
+              hint={t('projects.advFtpUserHint')}
               flush
             >
               <input
@@ -119,9 +120,9 @@ export function ProjectAdvancedTab({
               />
             </Field>
             <Field
-              label="密碼"
+              label={t('common.password')}
               htmlFor="ftp-pass"
-              hint="至少 8 個字元"
+              hint={t('projects.advFtpPassHint')}
               required
               flush
             >
@@ -142,7 +143,7 @@ export function ProjectAdvancedTab({
               disabled={ftpPass.length < 8}
               onClick={() => void createFtp()}
             >
-              建立 FTP 帳戶
+              {t('ftp.createAccount')}
             </Button>
             <Button
               variant="secondary"
@@ -151,7 +152,7 @@ export function ProjectAdvancedTab({
                 window.location.href = '/ftp/service';
               }}
             >
-              前往 FTPS 服務套用
+              {t('projects.goFtpsApply')}
             </Button>
           </FormActions>
         </CardSection>
@@ -160,18 +161,24 @@ export function ProjectAdvancedTab({
       <Card>
         <div className="danger-zone">
           <h3 className="danger-zone__title">
-            {t('projects.dangerZone', { defaultValue: '危險區域' })}
+            {t('projects.dangerZone', { defaultValue: t('projects.advDangerTitle') })}
           </h3>
           <p className="danger-zone__desc">
             {t('projects.dangerZoneDesc', {
-              defaultValue: '刪除專案無法從介面復原，請確認已備份。',
+              defaultValue: t('projects.advDangerDesc'),
             })}
           </p>
-          <FormActions>
-            <Button variant="danger" size="md" loading={busy} onClick={onDelete}>
-              {t('projects.delete', { defaultValue: '刪除專案' })}
-            </Button>
-          </FormActions>
+          {onDelete ? (
+            <FormActions>
+              <Button variant="danger" size="md" loading={busy} onClick={onDelete}>
+                {t('projects.delete', { defaultValue: t('projects.advDelete') })}
+              </Button>
+            </FormActions>
+          ) : (
+            <p className="muted u-text-sm">
+              {t('rbac.cap.projectsDelete', { defaultValue: 'projects.delete required' })}
+            </p>
+          )}
         </div>
       </Card>
     </div>

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Nginx/static readability: shared system group so www-data can read project homes
  * without world-readable 755.
@@ -40,18 +41,18 @@ export async function applyProjectWebGroupAccess(input: {
       ok: false,
       applied: false,
       blocked: true,
-      notes: ['ysk-web 群組需 YSK_EXECUTE + root（靜態 Nginx 可能無法讀 750 home）'],
+      notes: [tl('notes.auto.n0475')],
     };
   }
   const u = input.linuxUser.trim();
   const home = input.homeDir;
   if (!u || !home) {
-    return { ok: false, applied: false, blocked: false, notes: ['缺少 linuxUser/homeDir'] };
+    return { ok: false, applied: false, blocked: false, notes: [tl('notes.auto.n1324')] };
   }
 
   const safeUser = u.replace(/[^a-zA-Z0-9._-]/g, '');
   if (safeUser !== u) {
-    return { ok: false, applied: false, blocked: false, notes: [`linuxUser 無效：${u}`] };
+    return { ok: false, applied: false, blocked: false, notes: [tl('notes.auto.t0348', { v0: (u) })] };
   }
 
   const script = [
@@ -75,11 +76,11 @@ export async function applyProjectWebGroupAccess(input: {
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 60_000 });
   if (r.exitCode === 0) {
     notes.push(
-      `已套用 ${YSK_WEB_GROUP}：${safeUser} + www-data/nginx；home 750、public g+rX`,
+      tl('notes.auto.t0349', { v0: (YSK_WEB_GROUP), v1: (safeUser) }),
     );
     return { ok: true, applied: true, blocked: false, notes };
   }
-  notes.push(`ysk-web 套用部分失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`);
+  notes.push(tl('notes.auto.t0350', { v0: ((r.stderr || r.stdout || '').slice(0, 200)) }));
   return { ok: false, applied: false, blocked: false, notes };
 }
 

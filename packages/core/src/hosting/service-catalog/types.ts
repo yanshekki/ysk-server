@@ -1,5 +1,9 @@
+import { tl } from '@ysk/shared';
 /**
  * Version-aware service setting catalog types.
+ *
+ * Catalog strings must be i18n *keys* (or plain English fallbacks), never
+ * `tl(...)` at module load — that freezes the default locale (zh-HK).
  */
 
 export type ServiceEngine = 'mysql' | 'mariadb' | 'postgres' | 'redis';
@@ -21,11 +25,15 @@ export type ApplyMode = 'runtime' | 'reload' | 'restart' | 'conf_only' | 'lifecy
 
 export interface SettingDef {
   key: string;
+  /**
+   * Display label or i18n key (`notes.*`). Resolved with resolveSettingDef().
+   */
   label: string;
   category: SettingCategoryId;
   type: SettingType;
   unit?: string;
   enumValues?: string[];
+  /** Description or i18n key (`notes.*`). Resolved with resolveSettingDef(). */
   description?: string;
   applyMode: ApplyMode;
   /** Semver major.minor minimum, e.g. "8.0" */
@@ -37,19 +45,58 @@ export interface SettingDef {
   confKey?: string;
 }
 
+/** True when s looks like a shared catalog key, not a human string. */
+export function isI18nKey(s?: string | null): boolean {
+  if (!s) return false;
+  return /^(notes|ops|errors|db|common|services)\./.test(s);
+}
+
+/** Translate catalog string if it is a key; otherwise pass through. */
+export function resolveCatalogText(s: string): string {
+  return isI18nKey(s) ? tl(s) : s;
+}
+
+export function resolveSettingDef(d: SettingDef): SettingDef {
+  return {
+    ...d,
+    label: resolveCatalogText(d.label),
+    description: d.description != null ? resolveCatalogText(d.description) : d.description,
+  };
+}
+
+/**
+ * Static category meta — keys only; resolve with resolveCategoryMeta().
+ */
 export const CATEGORY_META: Record<
   SettingCategoryId,
-  { label: string; order: number; description: string }
+  { labelKey: string; order: number; descriptionKey: string }
 > = {
-  overview: { label: '概覽', order: 0, description: '狀態與版本' },
-  lifecycle: { label: '生命週期', order: 1, description: '啟動、停止、重啟、開機自啟' },
-  network: { label: '連線與網路', order: 2, description: '埠、綁定、連線上限' },
-  performance: { label: '效能與資源', order: 3, description: '記憶體、緩衝、併發' },
-  persistence: { label: '持久化', order: 4, description: '磁碟、備份、AOF/WAL' },
-  logging: { label: '日誌', order: 5, description: '錯誤日誌、慢查詢' },
-  security: { label: '安全', order: 6, description: '密碼、TLS、本機限制' },
-  advanced: { label: '進階', order: 7, description: '其他執行期變數' },
+  overview: { labelKey: 'notes.auto.n1010', order: 0, descriptionKey: 'notes.auto.n1206' },
+  lifecycle: { labelKey: 'notes.auto.n1242', order: 1, descriptionKey: 'notes.auto.n0619' },
+  network: { labelKey: 'notes.auto.n1468', order: 2, descriptionKey: 'notes.auto.n0632' },
+  performance: { labelKey: 'notes.auto.n0900', order: 3, descriptionKey: 'notes.auto.n1355' },
+  persistence: { labelKey: 'notes.auto.n0881', order: 4, descriptionKey: 'notes.auto.n1291' },
+  logging: { labelKey: 'notes.auto.n0915', order: 5, descriptionKey: 'notes.auto.n1517' },
+  security: {
+    labelKey: 'notes.readiness.security',
+    order: 6,
+    descriptionKey: 'notes.tpl.securityDesc',
+  },
+  advanced: { labelKey: 'notes.auto.n1471', order: 7, descriptionKey: 'notes.auto.n0593' },
 };
+
+export function resolveCategoryMeta(id: SettingCategoryId): {
+  label: string;
+  order: number;
+  description: string;
+} {
+  const m = CATEGORY_META[id];
+  return {
+    label: tl(m.labelKey),
+    order: m.order,
+    description: tl(m.descriptionKey),
+  };
+}
 
 export function parseVersion(v?: string | null): { major: number; minor: number; raw: string } {
   const raw = (v ?? '').trim();

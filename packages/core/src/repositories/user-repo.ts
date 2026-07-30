@@ -36,7 +36,15 @@ export class UserRepository {
     patch: Partial<
       Pick<
         UserRow,
-        'username' | 'roles' | 'locale' | 'package_id' | 'suspended' | 'password_hash' | 'password_salt'
+        | 'username'
+        | 'roles'
+        | 'locale'
+        | 'package_id'
+        | 'suspended'
+        | 'password_hash'
+        | 'password_salt'
+        | 'capability_grants'
+        | 'capability_revokes'
       >
     >,
   ): UserRow | undefined {
@@ -49,6 +57,20 @@ export class UserRepository {
     if (patch.suspended !== undefined) u.suspended = patch.suspended;
     if (patch.password_hash !== undefined) u.password_hash = patch.password_hash;
     if (patch.password_salt !== undefined) u.password_salt = patch.password_salt;
+    if ('capability_grants' in patch) {
+      if (!patch.capability_grants?.length) {
+        delete u.capability_grants;
+      } else {
+        u.capability_grants = [...patch.capability_grants];
+      }
+    }
+    if ('capability_revokes' in patch) {
+      if (!patch.capability_revokes?.length) {
+        delete u.capability_revokes;
+      } else {
+        u.capability_revokes = [...patch.capability_revokes];
+      }
+    }
     u.updated_at = new Date().toISOString();
     this.db.persist();
     return { ...u };

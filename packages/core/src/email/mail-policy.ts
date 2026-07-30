@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Apply domain rate-limit + antispam flags to managed Postfix/Rspamd configs.
  * When applySystem: write real include snippets under /etc and reload.
@@ -61,19 +62,18 @@ export async function applyMailDomainPolicy(input: {
   notes.push(...senderPol.notes);
 
   if (!input.applySystem) {
-    notes.push('狀態：written（未套用到系統 Postfix/Rspamd）');
+    notes.push(tl('notes.auto.n1229'));
     return { ok: true, notes, written, apply_status: 'written' };
   }
 
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
     return {
       ok: false,
-      notes: [...notes, '無法套用系統：需 YSK_EXECUTE + root'],
+      notes: [...notes, tl('notes.auto.n0005')],
       written,
       blocked: true,
-      blockMessage: '需要系統變更權限',
-      apply_status: 'blocked',
-    };
+      blockMessage: tl('notes.auto.n0006'),
+      apply_status: 'blocked' };
   }
 
   const sysPolicy = '/etc/ysk-server/email/policy';
@@ -105,7 +105,7 @@ export async function applyMailDomainPolicy(input: {
   const run = async (name: string, argv: string[], hard = false) => {
     const r = await input.host.runCommand(argv, { timeoutMs: 30_000 });
     if (r.exitCode !== 0) {
-      notes.push(`${name} 失敗: ${(r.stderr || r.stdout).slice(0, 200)}`);
+      notes.push(tl('notes.tpl.actionFailed', { action: name, detail: (r.stderr || r.stdout).slice(0, 200) }));
       if (hard) hardFail = true;
     } else {
       notes.push(`${name} ok`);
@@ -193,7 +193,7 @@ export async function applyMailDomainPolicy(input: {
   );
 
   notes.push(
-    `Postfix anvil: smtpd_client_message_rate_limit=${globalRate} / 3600s（全域；取各域名 rate 最小值）`,
+    tl('notes.auto.t0094', { v0: (globalRate) }),
   );
 
   let reloadsOk = 0;
@@ -218,17 +218,16 @@ export async function applyMailDomainPolicy(input: {
   );
   const verified = check.stdout.includes('message_rate_limit');
   if (verified) {
-    notes.push(`postconf 確認: ${check.stdout.trim().replace(/\n/g, ' | ').slice(0, 200)}`);
+    notes.push(tl('notes.auto.t0095', { v0: (check.stdout.trim().replace(/\n/g, ' | ').slice(0, 200)) }));
   } else {
-    notes.push('postconf 未能確認 message_rate_limit（唔當完整 applied）');
+    notes.push(tl('notes.auto.n0383'));
     hardFail = true;
   }
 
   // Per-sender check_policy_service
   const senderApply = await applySenderRatePolicyService({
     dataDir: input.dataDir,
-    host: input.host,
-  });
+    host: input.host });
   written.push(...senderApply.written);
   notes.push(...senderApply.notes);
   if (senderApply.blocked || !senderApply.ok) hardFail = true;
@@ -237,15 +236,14 @@ export async function applyMailDomainPolicy(input: {
     !hardFail && reloadsOk > 0 && verified && senderApply.apply_status === 'applied';
   notes.push(
     applied
-      ? '狀態：applied（anvil + per-sender policy + maps）'
-      : '狀態：written/partial（系統複製／reload／驗證未完全成功）',
+      ? tl('notes.auto.n1208')
+      : tl('notes.auto.n1223'),
   );
   return {
     ok: applied,
     notes,
     written,
-    apply_status: applied ? 'applied' : 'written',
-  };
+    apply_status: applied ? 'applied' : 'written' };
 }
 
 /** Min positive per-domain rate; default 500 msgs/hour */
@@ -303,8 +301,7 @@ rates {
   );
   return {
     written: [path],
-    notes: [`已寫 rspamd ratelimit.conf（~${globalRate}/h）`],
-  };
+    notes: [tl('notes.auto.t0096', { v0: (globalRate) })] };
 }
 
 /** Rebuild aggregate maps from all per-domain policy dirs */
@@ -370,8 +367,7 @@ export function rebuildAggregatePolicyMaps(dataDir: string): {
 
   return {
     written: [rateAgg, spamAgg, join(root, 'ysk-rate-values.txt')],
-    notes: [`已重建聚合 map（${domains} domains）`],
-  };
+    notes: [tl('notes.auto.t0097', { v0: (domains) })] };
 }
 
 function writePolicyIncludeSnippets(dataDir: string): {
@@ -408,6 +404,5 @@ ysk_antispam {
   );
   return {
     written: [multimap, postfixSnippet],
-    notes: ['已寫入 rspamd multimap + postfix snippet'],
-  };
+    notes: [tl('notes.auto.n0761')] };
 }

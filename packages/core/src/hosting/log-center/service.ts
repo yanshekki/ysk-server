@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Log Center facade.
  */
@@ -11,24 +12,21 @@ import {
   listProjectLogs,
   listProjectRelatedLogSources,
   parseProjectLogSourceRest,
-  tailProjectLog,
-} from '../project-logs.js';
+  tailProjectLog } from '../project-logs.js';
 import { assertLogPathAllowed, listSourceStatuses } from './catalog.js';
 import {
   journalDiskUsage,
   listJournalUnits,
   queryJournal,
   vacuumJournal,
-  sanitizeUnit,
-} from './journal.js';
+  sanitizeUnit } from './journal.js';
 import { queryFileLog, maskSecrets } from './file-tail.js';
 import {
   DEFAULT_LOG_SETTINGS,
   type LogBookmark,
   type LogCenterSettings,
   type LogOverview,
-  type LogQueryResult,
-} from './types.js';
+  type LogQueryResult } from './types.js';
 
 const SETTINGS_KEY = 'log_center';
 const LAST_AUTO_VACUUM_KEY = 'log_center_last_auto_vacuum';
@@ -58,8 +56,7 @@ function normalizeBookmark(b: Partial<LogBookmark>, fallbackId?: string): LogBoo
     priority: b.priority ? String(b.priority).slice(0, 16) : undefined,
     grep: b.grep ? String(b.grep).slice(0, 200) : undefined,
     lines: b.lines != null ? Math.max(50, Math.min(5000, Number(b.lines) || 300)) : undefined,
-    createdAt: b.createdAt || new Date().toISOString(),
-  };
+    createdAt: b.createdAt || new Date().toISOString() };
 }
 
 export function loadLogSettings(db: JsonStore): LogCenterSettings {
@@ -104,15 +101,13 @@ export function loadLogSettings(db: JsonStore): LogCenterSettings {
       journalWarnMb: Math.max(
         64,
         Math.min(100_000, Number(p.journalWarnMb) || DEFAULT_LOG_SETTINGS.journalWarnMb),
-      ),
-    };
+      ) };
   } catch {
     return {
       ...DEFAULT_LOG_SETTINGS,
       bookmarks: [],
       customAllowPaths: [],
-      disabledSources: [],
-    };
+      disabledSources: [] };
   }
 }
 
@@ -193,8 +188,7 @@ export function addLogBookmark(
 export function removeLogBookmark(db: JsonStore, id: string): LogCenterSettings {
   const cur = loadLogSettings(db);
   return saveLogSettings(db, {
-    bookmarks: cur.bookmarks.filter((b) => b.id !== id),
-  });
+    bookmarks: cur.bookmarks.filter((b) => b.id !== id) });
 }
 
 export async function getLogrotateStatus(host: HostExecutor): Promise<{
@@ -204,11 +198,10 @@ export async function getLogrotateStatus(host: HostExecutor): Promise<{
 }> {
   const notes: string[] = [];
   const which = await host.runCommand(['bash', '-c', 'command -v logrotate 2>/dev/null'], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   const installed = Boolean((which.stdout || '').trim());
   if (!installed) {
-    return { installed: false, notes: ['logrotate 未安裝或不在 PATH'] };
+    return { installed: false, notes: [tl('notes.auto.n0323')] };
   }
   const st = await host.runCommand(
     [
@@ -219,7 +212,7 @@ export async function getLogrotateStatus(host: HostExecutor): Promise<{
     { timeoutMs: 8_000 },
   );
   const statusText = (st.stdout || '').trim().slice(0, 2000) || undefined;
-  notes.push('logrotate 已安裝');
+  notes.push(tl('notes.auto.n0322'));
   return { installed: true, statusText, notes };
 }
 
@@ -233,8 +226,7 @@ export async function getLogOverview(input: {
   const sources = listSourceStatuses({
     disabledIds: settings.disabledSources,
     extraManagedLogDirs: [join(input.dataDir, 'nginx', 'logs')],
-    customAllowPaths: settings.customAllowPaths,
-  });
+    customAllowPaths: settings.customAllowPaths });
   const journalDisk = await journalDiskUsage(input.host);
   const journalDiskMb = parseDiskToMb(journalDisk);
 
@@ -252,7 +244,7 @@ export async function getLogOverview(input: {
   }
 
   if (journalDiskMb != null && journalDiskMb >= settings.journalWarnMb) {
-    notes.push(`Journal 磁碟偏高：≈${journalDiskMb} MB（閾值 ${settings.journalWarnMb} MB）`);
+    notes.push(tl('notes.auto.t0768', { v0: (journalDiskMb), v1: (settings.journalWarnMb) }));
   }
 
   let recentErrors: number | undefined;
@@ -260,8 +252,7 @@ export async function getLogOverview(input: {
     const q = await queryJournal(input.host, {
       lines: 200,
       since: '1h',
-      priority: 'err',
-    });
+      priority: 'err' });
     if (q.ok) recentErrors = q.lineCount;
     else notes.push(...q.notes.slice(0, 1));
   } catch {
@@ -286,8 +277,7 @@ export async function getLogOverview(input: {
     ],
     sourceCount: {
       total: sources.length,
-      available: sources.filter((s) => s.available).length,
-    },
+      available: sources.filter((s) => s.available).length },
     recentErrors,
     notes,
     executeEnabled: input.host.executeEnabled(),
@@ -298,10 +288,8 @@ export async function getLogOverview(input: {
       return {
         projectCount: idx.length,
         fileCount: idx.reduce((n, p) => n + p.fileCount, 0),
-        withFiles: idx.filter((p) => p.fileCount > 0).length,
-      };
-    })(),
-  };
+        withFiles: idx.filter((p) => p.fileCount > 0).length };
+    })() };
 }
 
 export async function queryLogSource(input: {
@@ -327,8 +315,7 @@ export async function queryLogSource(input: {
       since: input.since,
       priority: input.priority,
       grep: input.grep,
-      maxBytes: settings.maxBytes,
-    });
+      maxBytes: settings.maxBytes });
     if (mask) r.lines = r.lines.map(maskSecrets);
     return r;
   }
@@ -337,8 +324,7 @@ export async function queryLogSource(input: {
     const sources = listSourceStatuses({
       disabledIds: settings.disabledSources,
       extraManagedLogDirs: [join(input.dataDir, 'nginx', 'logs')],
-      customAllowPaths: settings.customAllowPaths,
-    });
+      customAllowPaths: settings.customAllowPaths });
     const def = sources.find((s) => s.id === source);
     // custom id file:custom:… may resolve via resolvedPath
     const path = def?.resolvedPath || def?.paths?.[0];
@@ -349,9 +335,8 @@ export async function queryLogSource(input: {
         lines: [],
         lineCount: 0,
         truncated: false,
-        notes: ['來源不可用'],
-        blocked: true,
-      };
+        notes: [tl('notes.auto.n0542')],
+        blocked: true };
     }
     return queryFileLog({
       path,
@@ -360,8 +345,7 @@ export async function queryLogSource(input: {
       grep: input.grep,
       maxBytes: settings.maxBytes,
       maskSecrets: mask,
-      customAllowPaths: settings.customAllowPaths,
-    });
+      customAllowPaths: settings.customAllowPaths });
   }
 
   if (source.startsWith('project:')) {
@@ -380,9 +364,8 @@ export async function queryLogSource(input: {
         lines: [],
         lineCount: 0,
         truncated: false,
-        notes: ['專案不存在或未設定 home'],
-        blocked: true,
-      };
+        notes: [tl('notes.auto.n0688')],
+        blocked: true };
     }
     if (!fileName) {
       const files = listProjectLogs(proj.home_dir);
@@ -394,8 +377,7 @@ export async function queryLogSource(input: {
         ),
         lineCount: files.length,
         truncated: false,
-        notes: [`專案 ${proj.name ?? projectId} · ${files.length} 個 log 檔（含子目錄）`],
-      };
+        notes: [tl('notes.auto.t0769', { v0: (proj.name ?? projectId), v1: (files.length) })] };
     }
     try {
       const t = tailProjectLog(proj.home_dir, fileName, lines, settings.maxBytes);
@@ -411,8 +393,7 @@ export async function queryLogSource(input: {
         lines: outLines,
         lineCount: outLines.length,
         truncated: Boolean(t.truncated),
-        notes: t.notes,
-      };
+        notes: t.notes };
     } catch (e) {
       return {
         ok: false,
@@ -420,9 +401,8 @@ export async function queryLogSource(input: {
         lines: [],
         lineCount: 0,
         truncated: false,
-        notes: [e instanceof Error ? e.message : '讀取失敗'],
-        blocked: true,
-      };
+        notes: [e instanceof Error ? e.message : tl('notes.readFailed')],
+        blocked: true };
     }
   }
 
@@ -443,9 +423,8 @@ export async function queryLogSource(input: {
         lines: [],
         lineCount: 0,
         truncated: false,
-        notes: ['專案 managed log 無效'],
-        blocked: true,
-      };
+        notes: [tl('notes.auto.n0686')],
+        blocked: true };
     }
     const path = join(input.dataDir, 'nginx', 'logs', `${user}.${suffix}`);
     return queryFileLog({
@@ -455,8 +434,7 @@ export async function queryLogSource(input: {
       grep: input.grep,
       maxBytes: settings.maxBytes,
       maskSecrets: mask,
-      customAllowPaths: settings.customAllowPaths,
-    });
+      customAllowPaths: settings.customAllowPaths });
   }
 
   // project-fpm:<id> → /var/log/php*-fpm-{linux_user}.log
@@ -476,9 +454,8 @@ export async function queryLogSource(input: {
         lines: [],
         lineCount: 0,
         truncated: false,
-        notes: ['專案無 linux_user'],
-        blocked: true,
-      };
+        notes: [tl('notes.auto.n0694')],
+        blocked: true };
     }
     const ver = (proj?.runtime_version || '8.3').replace(/[^0-9.]/g, '') || '8.3';
     const path = `/var/log/php${ver}-fpm-${user}.log`;
@@ -489,8 +466,7 @@ export async function queryLogSource(input: {
       grep: input.grep,
       maxBytes: settings.maxBytes,
       maskSecrets: mask,
-      customAllowPaths: settings.customAllowPaths,
-    });
+      customAllowPaths: settings.customAllowPaths });
   }
 
   return {
@@ -499,8 +475,7 @@ export async function queryLogSource(input: {
     lines: [],
     lineCount: 0,
     truncated: false,
-    notes: ['未知 source（journal:… / file:… / project:…）'],
-  };
+    notes: [tl('notes.auto.n0965')] };
 }
 
 export function listProjectLogIndex(
@@ -552,16 +527,14 @@ export function listProjectLogIndex(
             mtime: f.mtime,
             kind: f.kind,
             previewable: f.previewable !== false,
-            root: f.root,
-          }))
+            root: f.root }))
         : [];
       const related = listProjectRelatedLogSources({
         projectId: p.id,
         linuxUser: p.linux_user,
         runtime: p.runtime,
         dataDir: opts?.dataDir,
-        phpVersion: p.runtime_version,
-      });
+        phpVersion: p.runtime_version });
       return {
         projectId: p.id,
         name: p.name ?? p.domain ?? p.id,
@@ -572,8 +545,7 @@ export function listProjectLogIndex(
         homeDir: p.home_dir,
         files,
         related,
-        fileCount: files.length,
-      };
+        fileCount: files.length };
     });
 }
 
@@ -598,8 +570,7 @@ export async function exportLogQuery(input: {
   const format = input.format === 'jsonl' ? 'jsonl' : 'text';
   const q = await queryLogSource({
     ...input,
-    lines: Math.min(input.lines ?? 2000, 5000),
-  });
+    lines: Math.min(input.lines ?? 2000, 5000) });
   if (!q.ok && !q.lines.length) {
     return { ok: false, notes: q.notes, format };
   }
@@ -616,8 +587,7 @@ export async function exportLogQuery(input: {
           JSON.stringify({
             i,
             source: q.source,
-            line,
-          }),
+            line }),
         )
         .join('\n') + (q.lines.length ? '\n' : '');
   } else {
@@ -644,8 +614,7 @@ export async function exportLogQuery(input: {
     path,
     bytes: Buffer.byteLength(body),
     format,
-    notes: [`已匯出 ${q.lineCount} 行（${format}）`, ...q.notes.slice(0, 2)],
-  };
+    notes: [tl('notes.auto.t0770', { v0: (q.lineCount), v1: (format) }), ...q.notes.slice(0, 2)] };
 }
 
 /**
@@ -659,10 +628,10 @@ export async function runLogAutoVacuumTick(input: {
   const settings = loadLogSettings(input.db);
   const notes: string[] = [];
   if (!settings.autoVacuumEnabled) {
-    return { ran: false, notes: ['auto vacuum 關閉'] };
+    return { ran: false, notes: [tl('notes.auto.n0229')] };
   }
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
-    return { ran: false, notes: ['需 EXECUTE + root 先可自動 vacuum'] };
+    return { ran: false, notes: [tl('notes.auto.n1537')] };
   }
 
   const [hhStr, mmStr] = settings.autoVacuumTime.split(':');
@@ -673,13 +642,13 @@ export async function runLogAutoVacuumTick(input: {
   const minsTarget = hh * 60 + (Number.isFinite(mm) ? mm : 0);
   // window: target time .. + 90 minutes
   if (minsNow < minsTarget || minsNow > minsTarget + 90) {
-    return { ran: false, notes: [`未到時間窗 ${settings.autoVacuumTime}`] };
+    return { ran: false, notes: [tl('notes.auto.t0771', { v0: (settings.autoVacuumTime) })] };
   }
 
   const today = now.toISOString().slice(0, 10);
   const last = input.db.snapshot.settings?.[LAST_AUTO_VACUUM_KEY];
   if (last === today) {
-    return { ran: false, notes: ['今日已自動 vacuum'] };
+    return { ran: false, notes: [tl('notes.auto.n0511')] };
   }
 
   const days = settings.vacuumDefaultDays;

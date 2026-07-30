@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Best-effort nginx geoip2 snippet for managed conf.d.
  * Requires ngx_http_geoip2_module; if absent, notes explain written ≠ applied.
@@ -31,8 +32,8 @@ export function renderNginxGeoConf(dataDir: string, policy: IpAccessPolicy): {
   const asnDb = existsSync(lite) ? lite : existsSync(asn) ? asn : '';
 
   const notes: string[] = [
-    '需要 nginx geoip2 模組（libnginx-mod-http-geoip2）先會喺 HTTP 層生效',
-    '無模組時政策仍可用於嫌疑人 auto-ban enrich',
+    tl('notes.auto.n1566'),
+    tl('notes.auto.n1122'),
   ];
 
   const denyCountries = policy.mode === 'deny_list' ? policy.countries : [];
@@ -108,7 +109,7 @@ export function writeNginxGeoConf(
   mkdirSync(confDir, { recursive: true });
   const { path, body, notes } = renderNginxGeoConf(dataDir, policy);
   writeFileSync(path, body, 'utf8');
-  notes.push(`已寫入 ${path}`);
-  notes.push('written ≠ applied：需同步到系統 conf.d 並 nginx -t && reload');
+  notes.push(tl('notes.email.wrotePath', { path }));
+  notes.push(tl('notes.auto.n0470'));
   return { path, notes, ok: true };
 }

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Apply Node.js hosting artifacts under dataDir (real files).
  */
@@ -103,9 +104,9 @@ server.listen(port, host, () => {
     const r2 = await input.host.runCommand(['systemctl', 'daemon-reload']);
     const r3 = await input.host.runCommand(['systemctl', 'enable', '--now', unitName]);
     enabled = r1.exitCode === 0 && r2.exitCode === 0 && r3.exitCode === 0;
-    notes.push(enabled ? '已啟用 systemd 服務' : '無法啟用 systemd 服務（請確認權限）');
+    notes.push(enabled ? tl('notes.auto.n0749') : tl('notes.auto.n1153'));
   } else {
-    notes.push('無法啟用 systemd 服務：需要系統管理員權限');
+    notes.push(tl('notes.auto.n1154'));
   }
 
   return { envPath, unitPath, appDir, runtime, enabled, notes };

@@ -1,0 +1,268 @@
+/* —— App shell —— */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  background: var(--bg-page);
+}
+
+.shell__sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--bg-white);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+}
+
+.shell__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--header-height);
+  padding: 0 1.15rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.shell__brand img {
+  width: 32px;
+  height: 32px;
+}
+
+.shell__nav {
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.shell__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-sub);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background var(--transition), color var(--transition);
+}
+
+.shell__link:hover {
+  color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.shell__link.active {
+  color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.shell__link-icon {
+  width: 1.25rem;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.shell__footer {
+  padding: 0.85rem var(--space-4) 1.15rem;
+  border-top: 1px solid var(--border-color);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.shell__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell__top {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: 0 var(--space-6);
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.shell__user {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  display: inline-flex;
+  align-items: center;
+}
+
+.shell__content {
+  padding: var(--space-page-y) var(--space-page-x);
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  /* Give main canvas a consistent vertical start */
+  box-sizing: border-box;
+}
+
+.shell__menu-btn {
+  display: none;
+}
+
+/* —— Login (shared brand surface) —— */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59, 130, 246, 0.12), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(16, 185, 129, 0.1), transparent 50%),
+    var(--bg-page);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-8) var(--space-7) var(--space-7);
+}
+
+.login-card__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: var(--space-7);
+}
+
+.login-card__brand img {
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-4);
+}
+
+.login-card__brand h1 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.login-card__brand p {
+  margin: 0;
+  color: var(--text-sub);
+  font-size: var(--text-md);
+}
+
+.login-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.login-card__form .form-layout {
+  gap: var(--space-field);
+  margin-bottom: var(--space-5);
+}
+
+.login-card__form .field,
+.login-card__form .field--flush {
+  margin-bottom: 0;
+}
+
+.login-card__form .form-actions {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.login-card__form .btn--block {
+  width: 100%;
+}
+
+.login-card__footer {
+  margin-top: var(--space-6);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.login-card__footer a {
+  color: var(--brand-blue);
+  font-weight: 600;
+}
+
+/* Health / meta text blocks inside cards */
+.meta-block {
+  margin: 0 0 var(--space-3);
+}
+
+.meta-block--tight {
+  margin: 0;
+}
+
+.meta-block--top {
+  margin: var(--space-4) 0 0;
+}
+
+@media (max-width: 900px) {
+  .shell__sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shell__sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .shell__menu-btn {
+    display: inline-flex;
+    margin-right: auto;
+  }
+
+  .shell__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    z-index: 35;
+  }
+}
+
+/* —— Sidebar nav sections —— */
+.shell__nav-section {
+  margin-bottom: var(--space-3);
+}
+
+.shell__nav-section-title {
+  display: block;
+  padding: 0.35rem 0.85rem 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+

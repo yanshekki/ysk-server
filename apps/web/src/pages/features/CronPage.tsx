@@ -3,6 +3,7 @@
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 import {
   PageGuide,
   ActionBar,
@@ -47,11 +48,11 @@ function projectCommandPresets(p: CronProjectOpt): Array<{ label: string; comman
   const log = `${home}/logs/cron.log`;
   const common = [
     {
-      label: 'cd app + true（測試）',
+      label: i18n.t('cron.presetCdTrue'),
       command: `cd ${app} && /usr/bin/true`,
     },
     {
-      label: '清理暫存（示例）',
+      label: i18n.t('cron.presetCleanTmp'),
       command: `find ${home}/tmp -type f -mtime +7 -delete 2>/dev/null || true`,
     },
   ];
@@ -75,7 +76,7 @@ function projectCommandPresets(p: CronProjectOpt): Array<{ label: string; comman
     case 'node':
       return [
         {
-          label: 'npm run cron（若有）',
+          label: i18n.t('cron.presetNpmCron'),
           command: `cd ${app} && /usr/bin/npm run cron >> ${log} 2>&1`,
         },
         {
@@ -100,7 +101,7 @@ function projectCommandPresets(p: CronProjectOpt): Array<{ label: string; comman
     case 'rust':
       return [
         {
-          label: '執行 app binary',
+          label: i18n.t('cron.presetAppBin'),
           command: `cd ${app} && ./app --cron >> ${log} 2>&1`,
         },
         ...common,
@@ -108,7 +109,7 @@ function projectCommandPresets(p: CronProjectOpt): Array<{ label: string; comman
     case 'static':
       return [
         {
-          label: '同步靜態（示例 rsync）',
+          label: i18n.t('cron.presetRsync'),
           command: `rsync -a --delete ${app}/ ${home}/public/ >> ${log} 2>&1`,
         },
         ...common,
@@ -162,7 +163,7 @@ export function CronPage() {
   const schedule = useMemo(() => buildCronExpr(schedState), [schedState]);
   const scheduleHuman = useMemo(() => humanizeSchedule(schedState), [schedState]);
   const [command, setCommand] = useState('/usr/bin/true');
-  /** Only used when no project (系統級工作) */
+  /** Only used when no project ({t('cron.systemLevel')}工作) */
   const [systemUser, setSystemUser] = useState('ysk');
   const [projectId, setProjectId] = useState('');
   const [projects, setProjects] = useState<CronProjectOpt[]>([]);
@@ -191,21 +192,21 @@ export function CronPage() {
       value: `p:${p.id}`,
       label: p.linuxUser?.trim()
         ? `${p.linuxUser} · ${p.name}`
-        : `（未有 linux 用戶）· ${p.name}`,
+        : t('cron.noLinuxUser', { name: p.name }),
       disabled: !p.linuxUser?.trim(),
-      group: '專案用戶' as const,
+      group: t('security.ssh.filterUser'),
     }));
     const systemOpts = [
-      { value: 's:ysk', label: 'ysk · 面板／系統', group: '系統' as const },
-      { value: 's:root', label: 'root · 系統（慎用）', group: '系統' as const },
-      { value: 's:www-data', label: 'www-data · Web', group: '系統' as const },
+      { value: 's:ysk', label: t('cron.panelUser'), group: t('common.system') },
+      { value: 's:root', label: t('cron.rootCareful'), group: t('common.system') },
+      { value: 's:www-data', label: 'www-data · Web', group: t('common.system') },
     ];
     const known = new Set(systemOpts.map((o) => o.value));
     if (!projectId && systemUser && !known.has(`s:${systemUser}`)) {
       systemOpts.push({
         value: `s:${systemUser}`,
-        label: `${systemUser} · 自訂`,
-        group: '系統',
+        label: t('cron.customUser', { user: systemUser }),
+        group: t('common.system'),
       });
     }
     return { projectOpts, systemOpts };
@@ -283,7 +284,7 @@ export function CronPage() {
     e.preventDefault();
     setError(null);
     if (projectId && !selectedProject?.linuxUser) {
-      setError('所選專案沒有 Linux 用戶 — 請先到專案資源建立系統用戶');
+      setError(t('cron.needLinuxUser'));
       return;
     }
     await run(async () => {
@@ -300,14 +301,14 @@ export function CronPage() {
         ok: true,
         notes: [
           projectId
-            ? `已綁專案；執行用戶 ${runAsUser}（指令會以 runuser 隔離）`
-            : `系統工作；執行用戶 ${runAsUser}`,
-          '已寫入管理 crontab（尚未安裝到系統）',
-          '請按「安裝到系統 crontab」才會真正生效',
+            ? t('cron.boundProject', { user: runAsUser })
+            : t('cron.systemJob', { user: runAsUser }),
+          t('cron.writtenManage'),
+          t('cron.needInstall'),
         ],
         ...r,
       } as unknown as OpsResultLike;
-    }, '已建立（僅管理檔）');
+    }, t('cron.createdManageOnly'));
   }
 
   async function onInstall() {
@@ -318,10 +319,10 @@ export function CronPage() {
         await refresh();
         return r as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '安裝失敗';
+        const m = e instanceof Error ? e.message : t('common.installFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, '已安裝到系統');
+    }, t('cron.installedSystem'));
   }
 
   const hostOk = status?.hostHasYskEntries === true;
@@ -337,21 +338,21 @@ export function CronPage() {
       showCapability={false}
       status={{
         pill: {
-          label: hostOk ? '系統已同步' : hostNo ? '未裝到系統' : '狀態未知',
+          label: hostOk ? t('cron.hostSynced') : hostNo ? t('cron.hostNotInstalled') : t('cron.statusUnknown'),
           tone: heroTone,
         },
         items: [
-          { label: '工作', value: status?.totalJobs ?? items.length },
-          { label: '啟用', value: status?.enabledJobs ?? '—' },
+          { label: t('migrate.jobs'), value: status?.totalJobs ?? items.length },
+          { label: t('protection.enable'), value: status?.enabledJobs ?? '—' },
           {
-            label: '系統 crontab',
-            value: hostOk ? '已同步' : hostNo ? '未安裝' : '未知',
+            label: t('cron.systemCrontab'),
+            value: hostOk ? t('cron.synced') : hostNo ? t('common.notInstalled') : t('common.unknown'),
             tone: hostOk ? 'ok' : hostNo ? 'warn' : 'neutral',
           },
-          { label: '管理行數', value: status?.managedLines ?? '—' },
+          { label: t('cron.managedLines'), value: status?.managedLines ?? '—' },
           {
             label: 'EXECUTE',
-            value: status?.executeEnabled ? '開' : '關',
+            value: status?.executeEnabled ? t('common.on') : t('common.off'),
             tone: status?.executeEnabled ? 'ok' : 'warn',
           },
         ],
@@ -363,7 +364,7 @@ export function CronPage() {
             loading={busy}
             onClick={() => void refresh().catch((e: Error) => setError(e.message))}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           
           <Button
@@ -372,7 +373,7 @@ export function CronPage() {
             loading={busy}
             onClick={() => void onInstall()}
           >
-            安裝到系統
+            {t('security.ssh.installToSystem')}
           </Button>
         </ActionBar>
       }
@@ -382,7 +383,7 @@ export function CronPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -390,18 +391,18 @@ export function CronPage() {
       <div className="ops">
         {needsInstallHint || (status && status.enabledJobs > 0 && hostNo) ? (
           <Alert variant="info">
-            工作只寫在管理檔。系統 crontab{' '}
-            {hostOk ? '已包含 YSK 項目' : '尚未安裝或無 YSK 項目'}。
-            請按「安裝到系統 crontab」。
+            {t('cron.jobsOnlyManage')}{' '}
+            {hostOk ? t('cron.hostHasYsk') : t('cron.hostNoYsk')}.
+            {t('cron.pressInstall')}
           </Alert>
         ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'jobs', label: `工作 (${items.length})` },
-          { id: 'status', label: '狀態' },
+          { id: 'jobs', label: t('cron.jobsTab', { count: items.length }) },
+          { id: 'status', label: t('common.status') },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -412,19 +413,19 @@ export function CronPage() {
             <section className="ops-panel">
               <header className="ops-panel__head">
                 <div>
-                  <h3 className="ops-panel__title">已登記工作 ({items.length})</h3>
+                  <h3 className="ops-panel__title">{t('cron.registeredJobs', { count: items.length })}</h3>
                   <p className="ops-panel__sub">
-                    管理檔項目 · 改動後需「安裝到系統」才生效
+                    {t('cron.jobsSub')}
                   </p>
                 </div>
                 <Button variant="primary" size="sm" onClick={openCreate}>
-                  + 新增工作
+                  {t('cron.addJob')}
                 </Button>
               </header>
               {items.length === 0 ? (
                 <EmptyState
-                  title="尚未有 cron"
-                  description="用列表右上角新增工作，再安裝到系統 crontab"
+                  title={t('cron.noCron')}
+                  description={t('cron.noCronDesc')}
                 />
               ) : (
                 <div className="ops-svc-list">
@@ -453,26 +454,26 @@ export function CronPage() {
                             <Badge
                               tone={job.enabled === false ? 'neutral' : 'ok'}
                             >
-                              {job.enabled === false ? '已停用' : '已啟用'}
+                              {job.enabled === false ? t('common.disabled') : t('common.enabled')}
                             </Badge>
                             {job.last_install?.ok != null ? (
                               <Badge
                                 tone={job.last_install.ok ? 'ok' : 'warn'}
                               >
-                                {job.last_install.ok ? '曾安裝' : '安裝失敗'}
+                                {job.last_install.ok ? t('cron.onceInstalled') : t('common.installFailed')}
                               </Badge>
                             ) : (
-                              <Badge tone="warn">僅管理檔</Badge>
+                              <Badge tone="warn">{t('cron.manageOnly')}</Badge>
                             )}
                           </div>
                           <div className="ops-svc__meta">
                             <code>{job.schedule}</code>
                             <span>
-                              用戶 <code>{job.user ?? '—'}</code>
+                              {t('common.user')} <code>{job.user ?? '—'}</code>
                             </span>
                             {job.projectId || job.project_id ? (
                               <span>
-                                專案{' '}
+                                {t('cron.projectLabel')}{' '}
                                 {projects.find(
                                   (p) =>
                                     p.id === (job.projectId ?? job.project_id),
@@ -481,7 +482,7 @@ export function CronPage() {
                                   job.project_id}
                               </span>
                             ) : (
-                              <span className="muted">系統級</span>
+                              <span className="muted">{t('cron.systemLevel')}</span>
                             )}
                           </div>
                           <p className="ops-svc__cmd">{job.command}</p>
@@ -495,10 +496,10 @@ export function CronPage() {
                               void run(async () => {
                                 const r = await api.runCronNow(job.id);
                                 return r as unknown as OpsResultLike;
-                              }, '已執行一次')
+                              }, t('cron.runOnceOk'))
                             }
                           >
-                            立即執行
+                            {t('cron.runOnce')}
                           </Button>
                           <Button
                             variant="secondary"
@@ -517,13 +518,13 @@ export function CronPage() {
                                 return {
                                   ok: true,
                                   notes: [
-                                    '已更新管理檔；請重新安裝到系統 crontab',
+                                    t('cron.updatedManage'),
                                   ],
                                 };
-                              }, '已更新管理檔')
+                              }, t('cron.updatedManageShort'))
                             }
                           >
-                            {job.enabled === false ? '啟用' : '停用'}
+                            {job.enabled === false ? t('protection.enable') : t('files.disable')}
                           </Button>
                           <Button
                             variant="danger"
@@ -539,13 +540,13 @@ export function CronPage() {
                                 return {
                                   ok: true,
                                   notes: [
-                                    '已從管理檔刪除；請重新安裝同步系統',
+                                    t('cron.deletedManage'),
                                   ],
                                 };
-                              }, '已刪除')
+                              }, t('redis.deleted'))
                             }
                           >
-                            刪除
+                            {t('common.delete')}
                           </Button>
                         </div>
                       </article>
@@ -562,23 +563,23 @@ export function CronPage() {
               <section className="ops-panel">
                 <header className="ops-panel__head">
                   <div>
-                    <h3 className="ops-panel__title">安裝狀態</h3>
-                    <p className="ops-panel__sub">管理檔 vs 主機</p>
+                    <h3 className="ops-panel__title">{t('cron.installStatus')}</h3>
+                    <p className="ops-panel__sub">{t('cron.manageVsHost')}</p>
                   </div>
                 </header>
                 <dl className="ops-dl">
                   <div>
-                    <dt>管理檔</dt>
+                    <dt>{t('email.pillManaged')}</dt>
                     <dd>
                       <code className="ops-svc__cmd">{status?.managedPath ?? '—'}</code>
                     </dd>
                   </div>
                   <div>
-                    <dt>行數</dt>
+                    <dt>{t('metrics.rows')}</dt>
                     <dd>{status?.managedLines ?? '—'}</dd>
                   </div>
                   <div>
-                    <dt>主機 YSK</dt>
+                    <dt>{t('cron.hostYsk')}</dt>
                     <dd>
                       <Badge
                         tone={
@@ -592,17 +593,17 @@ export function CronPage() {
                         {status?.hostHasYskEntries == null
                           ? '—'
                           : status.hostHasYskEntries
-                            ? '有'
-                            : '無'}
+                            ? t('ssl.filesYes')
+                            : t('ssl.filesNo')}
                       </Badge>
                     </dd>
                   </div>
                   <div>
-                    <dt>上次安裝</dt>
+                    <dt>{t('cron.lastInstall')}</dt>
                     <dd>
                       {status?.lastInstallAt
-                        ? `${status.lastInstallOk ? '成功' : '失敗'} · ${new Date(status.lastInstallAt).toLocaleString('zh-TW')}`
-                        : '尚未'}
+                        ? `${status.lastInstallOk ? t('common.success') : t('common.failed')} · ${new Date(status.lastInstallAt).toLocaleString('zh-TW')}`
+                        : t('backups.notYet')}
                     </dd>
                   </div>
                 </dl>
@@ -613,21 +614,21 @@ export function CronPage() {
                     loading={busy}
                     onClick={() => void onInstall()}
                   >
-                    安裝到系統 crontab
+                    {t('cron.installToSystem')}
                   </Button>
                 </div>
                 <p className="ops-footnote">
-                  建立／啟用／停用只改管理檔；必須安裝後系統才會執行。
+                  {t('cron.installHint')}
                 </p>
               </section>
               <section className="ops-panel">
                 <header className="ops-panel__head">
-                  <h3 className="ops-panel__title">主機 crontab 預覽</h3>
+                  <h3 className="ops-panel__title">{t('cron.hostPreview')}</h3>
                 </header>
                 {status?.hostCrontabPreview ? (
                   <pre className="ops-pre">{status.hostCrontabPreview}</pre>
                 ) : (
-                  <p className="ops-muted">無法讀取或尚未安裝（需權限）</p>
+                  <p className="ops-muted">{t('cron.cannotRead')}</p>
                 )}
               </section>
             </div>
@@ -637,14 +638,14 @@ export function CronPage() {
         {tab === 'about' ? <PageGuide guideId="cron" /> : null}
       </PageTabs>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
       </div>
 
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="新增工作"
-        description="寫入管理檔；需「安裝到系統」後 crontab 才會執行"
+        title={t('cron.addJobTitle')}
+        description={t('cron.addJobDesc')}
         size="lg"
         footer={
           <>
@@ -653,7 +654,7 @@ export function CronPage() {
               size="md"
               onClick={() => setCreateOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -662,7 +663,7 @@ export function CronPage() {
               size="md"
               loading={busy}
             >
-              建立（僅管理檔）
+              {t('cron.createManageOnlyParen')}
             </Button>
           </>
         }
@@ -673,12 +674,12 @@ export function CronPage() {
           onSubmit={(e) => void onCreate(e)}
         >
           <Field
-            label="何時執行"
+            label={t('cron.whenRun')}
             htmlFor="cron-sched-builder"
             flush
             fullWidth
             required
-            hint="用下方卡片揀頻率與時間；進階模式可手寫 crontab"
+            hint={t('cron.whenRunHint')}
           >
             <div id="cron-sched-builder">
               <CronScheduleBuilder value={schedState} onChange={setSchedState} />
@@ -687,41 +688,41 @@ export function CronPage() {
 
           <FormLayout columns={2}>
             <Field
-              label="專案"
+              label={t('common.project')}
               htmlFor="cron-pid"
               flush
               required
-              hint="用戶 + 指令路徑會跟專案 home／runtime 更新"
+              hint={t('cron.userPathHint')}
             >
               <select
                 id="cron-pid"
                 value={projectId}
                 onChange={(e) => onProjectChange(e.target.value)}
               >
-                <option value="">— 請選擇專案 —</option>
+                <option value="">{t('cron.pickProject')}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} · {p.runtime} · {p.linuxUser || '（未有 linux 用戶）'}
+                    {p.name} · {p.runtime} · {p.linuxUser || t('cron.projectNoLinux')}
                   </option>
                 ))}
               </select>
             </Field>
             <Field
-              label="執行用戶"
+              label={t('cron.runAsUser')}
               htmlFor="cron-user"
               flush
               required
-              hint="揀專案用戶會同步上方專案；揀系統用戶則為系統級 cron"
+              hint={t('cron.runAsHintFull')}
             >
               <select
                 id="cron-user"
                 value={runUserSelectValue}
                 onChange={(e) => onRunUserChange(e.target.value)}
               >
-                <optgroup label="專案用戶">
+                <optgroup label={t('security.ssh.filterUser')}>
                   {runUserOptions.projectOpts.length === 0 ? (
                     <option value="__none_proj" disabled>
-                      （尚未有專案）
+                      {t('cron.noProjectsYet')}
                     </option>
                   ) : (
                     runUserOptions.projectOpts.map((o) => (
@@ -731,7 +732,7 @@ export function CronPage() {
                     ))
                   )}
                 </optgroup>
-                <optgroup label="系統">
+                <optgroup label={t('common.system')}>
                   {runUserOptions.systemOpts.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
@@ -741,15 +742,15 @@ export function CronPage() {
               </select>
             </Field>
             <Field
-              label="指令"
+              label={t('metrics.command')}
               htmlFor="cron-cmd"
               fullWidth
               flush
               required
               hint={
                 selectedProject
-                  ? `在專案 home 下執行（${selectedProject.homeDir}）；儲存時會包 runuser`
-                  : '建議絕對路徑'
+                  ? t('cron.runInHome', { home: selectedProject.homeDir })
+                  : t('cron.absPath')
               }
             >
               <input
@@ -769,7 +770,7 @@ export function CronPage() {
           {selectedProject && commandPresets.length > 0 ? (
             <div className="cron-cmd-presets">
               <span className="cron-cmd-presets__label">
-                常用指令（{selectedProject.runtime}）
+                {t('cron.commonCmds', { runtime: selectedProject.runtime })}
               </span>
               <div className="cron-cmd-presets__row">
                 {commandPresets.map((p) => (
@@ -787,14 +788,13 @@ export function CronPage() {
             </div>
           ) : null}
           {selectedProject ? (
-            <div className="cron-sched__preview" style={{ maxWidth: '100%' }}>
+            <div className="cron-sched__preview u-max-w-full">
               <div className="cron-sched__preview-human">
                 <span className="cron-sched__preview-label">
-                  實際寫入 crontab（預覽）
+                  {t('cron.actualPreview')}
                 </span>
                 <code
-                  className="u-text-sm u-break-all"
-                  style={{ fontWeight: 500 }}
+                  className="u-text-sm u-break-all u-font-medium"
                 >
                   {wrappedPreview}
                 </code>
@@ -803,25 +803,25 @@ export function CronPage() {
           ) : null}
           {projects.length === 0 ? (
             <EmptyState
-              title="尚未有專案"
-              description="請先建立專案並（建議）建立系統用戶，再登記 cron"
+              title={t('dashboard.noProjects')}
+              description={t('cron.noProjectsHint')}
             />
           ) : null}
           {selectedProject && !selectedProject.linuxUser ? (
             <Alert variant="error">
-              此專案未有 Linux 用戶名 — 請到專案「資源」建立系統用戶後再試。
+              {t('cron.noLinuxName')}
             </Alert>
           ) : null}
           <p className="form-hint u-mb-0">
-            建立後：<strong>{scheduleHuman}</strong>
+            {t('cron.afterCreate')}<strong>{scheduleHuman}</strong>
             {' · '}
             <code className="inline">{schedule}</code>
-            {' · 用戶 '}
+            {t('cron.userSuffix')}
             <code className="inline">{runAsUser}</code>
             {selectedProject ? (
-              <span className="muted">（專案 {selectedProject.name}）</span>
+              <span className="muted">{t('cron.projectParen', { name: selectedProject.name })}</span>
             ) : (
-              <span className="muted">（系統級，未綁專案）</span>
+              <span className="muted">{t('cron.systemParenFull')}</span>
             )}
           </p>
         </form>

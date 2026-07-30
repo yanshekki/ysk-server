@@ -32,12 +32,14 @@ import {
   buttonClassName,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { useCapabilities } from '../shared/hooks/useCapabilities';
 
 type ConfirmKind = 'stop' | 'delete' | null;
 
 export function ProjectDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { t } = useTranslation();
+  const { can } = useCapabilities();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [freshChecklist, setFreshChecklist] = useState(
@@ -165,7 +167,7 @@ export function ProjectDetailPage() {
         setLogTail(t('projects.logsNoFiles'));
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '讀取日誌失敗');
+      setError(e instanceof Error ? e.message : t('projects.logsLoadFailed'));
     } finally {
       setBusy(false);
     }
@@ -186,7 +188,7 @@ export function ProjectDetailPage() {
         await projectsApi.remove(project.id);
         navigate('/projects', { replace: true });
       } catch (e) {
-        setError(e instanceof Error ? e.message : '刪除失敗');
+        setError(e instanceof Error ? e.message : t('common.deleteFailed'));
       } finally {
         setBusy(false);
       }
@@ -253,7 +255,7 @@ export function ProjectDetailPage() {
     ...(ui.showResourcesTab ? [{ id: 'resources', label: t('projects.tabResources') }] : []),
     ...(ui.showLogsTab ? [{ id: 'logs', label: t('projects.tabLogs') }] : []),
     { id: 'advanced', label: t('projects.tabAdvanced') },
-    { id: 'about', label: '說明' },
+    { id: 'about', label: t('common.about') },
   ];
   const activeTab = tabs.some((x) => x.id === tab) ? tab : 'overview';
   const display = deriveProjectStatus(project);
@@ -263,7 +265,7 @@ export function ProjectDetailPage() {
 
   const subtitle = [
     project.domain ?? t('projects.noDomain'),
-    formatRuntimeLabel(project.runtime, project.runtimeVersion),
+    formatRuntimeLabel(project.runtime, project.runtimeVersion, t),
   ].join(' · ');
 
   return (
@@ -279,7 +281,7 @@ export function ProjectDetailPage() {
         },
         items: [
           {
-            label: '狀態',
+            label: t('common.status'),
             value: project.status ?? project.processStatus ?? '—',
           },
           {
@@ -287,17 +289,17 @@ export function ProjectDetailPage() {
             value: project.port != null ? String(project.port) : '—',
           },
           {
-            label: '用戶',
+            label: t('common.user'),
             value: project.linuxUser || '—',
           },
           {
             label: 'Nginx',
-            value: project.nginxConfigPath ? '已發布' : '未發布',
+            value: project.nginxConfigPath ? t('projects.status.published') : t('projects.nginxValueNone'),
             tone: project.nginxConfigPath ? 'ok' : 'neutral',
           },
           {
             label: 'OS',
-            value: project.osProvisioned ? '已建' : '待建',
+            value: project.osProvisioned ? t('projects.osValueReady') : t('projects.osValuePending'),
             tone: project.osProvisioned ? 'ok' : 'warn',
           },
         ],
@@ -308,7 +310,7 @@ export function ProjectDetailPage() {
             to={`/files?root=project:${project.id}`}
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
           >
-            檔案
+            {t('common.files')}
           </Link>
           <Link
             to={`/ssl?domain=${encodeURIComponent(project.domain || '')}&action=le`}
@@ -320,10 +322,10 @@ export function ProjectDetailPage() {
             to={`/cdn?fromProject=${encodeURIComponent(project.id)}`}
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
           >
-            啟用 CDN
+            {t('projects.enableCdn')}
           </Link>
           <Link to="/logs" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            日誌
+            {t('projects.tabLogs')}
           </Link>
           <ProjectDetailHeader
             project={project}
@@ -345,7 +347,7 @@ export function ProjectDetailPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -429,12 +431,12 @@ export function ProjectDetailPage() {
                   .then((r) => {
                     const d = r.osProvision?.detail ?? '';
                     if (r.ok) {
-                      setMsg(`系統用戶已就緒。${d}`);
+                      setMsg(t('projects.osUserReadyMsg', { detail: d }));
                     } else {
                       setMsg(
                         r.requiresRoot || r.requiresExecute
-                          ? `無法建立系統用戶：需要 YSK_EXECUTE + root。${d}`
-                          : d || '系統用戶建立未完成',
+                          ? t('projects.osUserNeedRoot', { detail: d })
+                          : d || t('projects.osUserIncomplete'),
                       );
                     }
                     return refreshProject();
@@ -485,7 +487,7 @@ export function ProjectDetailPage() {
                   if (r.notes?.length) setMsg(r.notes.join(' · '));
                   await loadLogs();
                 } catch (e) {
-                  setError(e instanceof Error ? e.message : '儲存 log 目錄失敗');
+                  setError(e instanceof Error ? e.message : t('projects.saveLogDirsFailed'));
                 } finally {
                   setBusy(false);
                 }
@@ -502,7 +504,7 @@ export function ProjectDetailPage() {
               onWordpress={() => void run('wordpress', project.id).catch(() => undefined)}
               onSuspend={() => void run('suspend', project.id).catch(() => undefined)}
               onUnsuspend={() => void run('unsuspend', project.id).catch(() => undefined)}
-              onDelete={() => setConfirm('delete')}
+              onDelete={can('projects.delete') ? () => setConfirm('delete') : undefined}
               onOpsMessage={(m) => setMsg(m)}
             />
           </div>

@@ -1,6 +1,6 @@
 import type { OpsResultDto } from '@ysk/shared';
+import { useTranslation } from 'react-i18next';
 import { ActionBar } from './ActionBar';
-import { useState } from 'react';
 import { Badge } from './Badge';
 import { buttonClassName } from './Button';
 import { StructuredFacts, type FactItem } from './StructuredFacts';
@@ -37,16 +37,16 @@ export interface OpsResultPanelProps {
  * Operator result panel — human notes only, never shell homework or raw JSON.
  */
 export function OpsResultPanel({
-  title = '操作結果',
+  title,
   result,
   message,
   facts = [],
   onRetry,
   busy,
 }: OpsResultPanelProps) {
+  const { t } = useTranslation();
   if (!result && !message && facts.length === 0) return null;
 
-  // Never default missing ok to success when blocked / requires*
   const blocked = Boolean(result?.blocked || result?.requiresExecute || result?.requiresRoot);
   const ok =
     result == null
@@ -64,12 +64,14 @@ export function OpsResultPanel({
 
   const autoFacts: FactItem[] = [...facts];
   if (result?.processStatus) {
-    autoFacts.push({ label: '狀態', value: result.processStatus });
+    autoFacts.push({ label: t('opsResult.status'), value: result.processStatus });
   }
-  if (result?.port != null) autoFacts.push({ label: '埠', value: String(result.port) });
+  if (result?.port != null) {
+    autoFacts.push({ label: t('opsResult.port'), value: String(result.port) });
+  }
   if (result?.url) {
     autoFacts.push({
-      label: '網址',
+      label: t('opsResult.url'),
       value: (
         <a href={result.url} target="_blank" rel="noreferrer">
           {result.url}
@@ -81,11 +83,13 @@ export function OpsResultPanel({
   return (
     <div className="ops-result" role="status">
       <div className="ops-result__head">
-        <h3 className="ops-result__title">{title}</h3>
+        <h3 className="ops-result__title">{title ?? t('opsResult.title')}</h3>
         {blocked ? (
-          <Badge tone="warn">無法執行</Badge>
+          <Badge tone="warn">{t('opsResult.blocked')}</Badge>
         ) : (
-          <Badge tone={ok ? 'ok' : 'danger'}>{ok ? '成功' : '失敗'}</Badge>
+          <Badge tone={ok ? 'ok' : 'danger'}>
+            {ok ? t('opsResult.success') : t('opsResult.failed')}
+          </Badge>
         )}
       </div>
       {message ? <p className="meta-block">{message}</p> : null}
@@ -112,7 +116,7 @@ export function OpsResultPanel({
             disabled={busy}
             onClick={onRetry}
           >
-            再試
+            {t('opsResult.retry')}
           </button>
         </ActionBar>
       ) : null}

@@ -2,7 +2,7 @@
  * Firewall (UFW) — port policy & permanent deny.
  * Not fail2ban (log bans) · not Defense Center (attack orchestration).
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
@@ -29,34 +29,17 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { useCapabilities } from '../../shared/hooks/useCapabilities';
 
 const FW_TABS = ['rules', 'ports', 'deny', 'profiles', 'about'] as const;
 
 type FwStatus = Awaited<ReturnType<typeof systemApi.firewallStatus>>;
 
-const PROFILES = [
-  {
-    id: 'web',
-    label: 'Web 主機',
-    short: 'SSH · 80 · 443',
-    allowSmtp: false,
-    extra: '',
-  },
-  {
-    id: 'mail',
-    label: 'Web + 郵件',
-    short: '另開 25/465/587/993',
-    allowSmtp: true,
-    extra: '',
-  },
-  {
-    id: 'ftps',
-    label: 'Web + FTPS',
-    short: '21 + PASV 30000–30100',
-    allowSmtp: false,
-    extra: '21,30000:30100',
-  },
-] as const;
+const PROFILE_DEFS = [
+  { id: 'web' as const, allowSmtp: false, extra: '' },
+  { id: 'mail' as const, allowSmtp: true, extra: '' },
+  { id: 'ftps' as const, allowSmtp: false, extra: '21,30000:30100' },
+];
 
 function parsePorts(extraPorts: string): number[] {
   const out: number[] = [];
@@ -64,7 +47,8 @@ function parsePorts(extraPorts: string): number[] {
     if (part.includes(':')) {
       const [a, b] = part.split(':').map(Number);
       if (Number.isFinite(a) && Number.isFinite(b)) {
-        for (let p = Math.min(a, b); p <= Math.max(a, b) && out.length < 40; p++) out.push(p);
+        for (let p = Math.min(a, b); p <= Math.max(a, b) && out.length < 40; p++)
+          out.push(p);
       }
     } else {
       const n = Number(part);
@@ -76,6 +60,9 @@ function parsePorts(extraPorts: string): number[] {
 
 export function FirewallPage() {
   const { t } = useTranslation();
+  const { can } = useCapabilities();
+  const canEdit = can('firewall.edit');
+  const canFlush = can('firewall.flush');
   const [tab, setTab] = usePageTab(FW_TABS, 'rules');
   const [status, setStatus] = useState<FwStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -87,14 +74,24 @@ export function FirewallPage() {
   const [delRuleNum, setDelRuleNum] = useState<number | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
+  const profiles = useMemo(
+    () =>
+      PROFILE_DEFS.map((p) => ({
+        ...p,
+        label: t(`firewall.profiles.${p.id}.label`),
+        short: t(`firewall.profiles.${p.id}.short`),
+      })),
+    [t],
+  );
+
   const refresh = useCallback(async () => {
     setLoadError(null);
     try {
       setStatus(await systemApi.firewallStatus());
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();
@@ -102,7 +99,7 @@ export function FirewallPage() {
 
   const active = status?.active === 'active';
 
-  async function applyProfile(p: (typeof PROFILES)[number]) {
+  async function applyProfile(p: (typeof profiles)[number]) {
     await run(async () => {
       const r = (await systemApi.firewallApply({
         allowSmtp: p.allowSmtp,
@@ -111,14 +108,14 @@ export function FirewallPage() {
       })) as OpsResultLike;
       await refresh();
       return r;
-    }, `已套用設定檔：${p.label}`);
+    }, t('firewall.appliedProfile', { label: p.label }));
   }
 
   return (
     <FeaturePageLayout
-      title={t('nav.firewall', { defaultValue: '防火牆' })}
+      title={t('nav.firewall')}
       backTo="/protection"
-      backLabel="防護中心"
+      backLabel={t('firewall.backToProtection')}
       status={{
         pill: {
           label: status?.activeLabel ?? '—',
@@ -126,33 +123,36 @@ export function FirewallPage() {
         },
         items: [
           {
-            label: '規則',
+            label: t('firewall.statRules'),
             value: status?.rules?.length ?? status?.numberedRules?.length ?? 0,
           },
           {
-            label: '永久拒 IP',
+            label: t('firewall.statDenyIps'),
             value: status?.denyFromIps?.length ?? 0,
           },
           {
-            label: '允許',
+            label: t('firewall.statAllow'),
             value: status?.allowCount ?? 0,
           },
           {
-            label: '拒絕',
+            label: t('firewall.statDeny'),
             value: status?.denyCount ?? 0,
           },
           {
-            label: '入站預設',
+            label: t('firewall.statDefaultIn'),
             value: status?.defaultIncoming ?? '—',
           },
           {
             label: 'EXECUTE',
-            value: status?.executeEnabled ? '開' : '關',
+            value: status?.executeEnabled
+              ? t('firewall.executeOn')
+              : t('firewall.executeOff'),
             tone: status?.executeEnabled ? 'ok' : 'warn',
           },
         ],
       }}
-      actions={<div className="def-head-actions">
+      actions={
+        <div className="def-head-actions">
           <Button
             variant="secondary"
             size="sm"
@@ -163,9 +163,9 @@ export function FirewallPage() {
               void refresh();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
-          {status?.installed ? (
+          {status?.installed && canFlush ? (
             <Button
               variant={active ? 'ghost' : 'primary'}
               size="sm"
@@ -175,22 +175,23 @@ export function FirewallPage() {
                   const r = (await systemApi.firewallEnable(!active)) as OpsResultLike;
                   await refresh();
                   return r;
-                }, active ? '已停用 UFW' : '已啟用 UFW')
+                }, active ? t('firewall.ufwDisabled') : t('firewall.ufwEnabled'))
               }
             >
-              {active ? '停用 UFW' : '啟用 UFW'}
+              {active ? t('firewall.disableUfw') : t('firewall.enableUfw')}
             </Button>
           ) : null}
         </div>
       }
     >
-      <SoftwareInstallBanner feature="firewall" title="UFW 尚未安裝" />
+      <SoftwareInstallBanner feature="firewall" title={t('firewall.notInstalled')} />
 
       <div className="stack-role">
         <Alert variant="info">
-          <strong>分工：</strong> UFW = 埠／永久規則 ·{' '}
-          <Link to="/fail2ban">fail2ban</Link> = 日誌臨時 ban ·{' '}
-          <Link to="/protection">防護中心</Link> = 攻擊時總控（限速 + 自動 ban）
+          <strong>{t('firewall.toolHintPrefix')}</strong> {t('firewall.toolHintBody')}{' '}
+          <Link to="/protection">{t('nav.protection')}</Link>
+          {' · '}
+          <Link to="/protection/fail2ban">fail2ban</Link> = {t('firewall.toolHintFail2ban')}
         </Alert>
       </div>
 
@@ -200,29 +201,30 @@ export function FirewallPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       {!status?.executeEnabled ? (
-        <Alert variant="info">
-          系統變更未開 — 可睇狀態，改規則需 root + <code className="inline">YSK_EXECUTE=1</code>
-        </Alert>
+        <Alert variant="info">{t('firewall.executeOffHint')}</Alert>
       ) : null}
 
       <PageTabs
         tabs={[
           {
             id: 'rules',
-            label: '規則表',
+            label: t('firewall.tabs.rules'),
             badge: status?.rules?.length || status?.numberedRules?.length || undefined,
           },
-          { id: 'ports', label: '開埠' },
-          { id: 'deny', label: '永久拒 IP', badge: status?.denyFromIps?.length || undefined },
-          { id: 'profiles', label: '設定檔' },
-        
-          { id: 'about', label: '說明' },
+          { id: 'ports', label: t('firewall.tabs.ports') },
+          {
+            id: 'deny',
+            label: t('firewall.tabs.deny'),
+            badge: status?.denyFromIps?.length || undefined,
+          },
+          { id: 'profiles', label: t('firewall.tabs.profiles') },
+          { id: 'about', label: t('firewall.tabs.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -232,7 +234,7 @@ export function FirewallPage() {
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">目前規則</h3>
+                <h3 className="def-section-head__title">{t('firewall.currentRules')}</h3>
                 <span className="muted u-text-sm">ufw status numbered</span>
               </div>
               <DataTable
@@ -246,7 +248,7 @@ export function FirewallPage() {
                   },
                   {
                     key: 'action',
-                    header: '動作',
+                    header: t('firewall.colAction'),
                     nowrap: true,
                     render: (r) => (
                       <Badge
@@ -264,14 +266,12 @@ export function FirewallPage() {
                   },
                   {
                     key: 'to',
-                    header: '目標',
-                    render: (r) => (
-                      <code className="inline">{r.to ?? r.raw}</code>
-                    ),
+                    header: t('firewall.colTo'),
+                    render: (r) => <code className="inline">{r.to ?? r.raw}</code>,
                   },
                   {
                     key: 'from',
-                    header: '來源',
+                    header: t('firewall.colFrom'),
                     className: 'u-text-sm',
                     render: (r) => r.from ?? '—',
                   },
@@ -303,18 +303,18 @@ export function FirewallPage() {
                         loading={busy}
                         onClick={() => setDelRuleNum(r.num!)}
                       >
-                        刪
+                        {t('firewall.deleteShort')}
                       </Button>
                     </ActionBar>
                   ) : null
                 }
                 empty={
                   <EmptyState
-                    title="無規則或無權讀取"
+                    title={t('firewall.emptyRulesTitle')}
                     description={
                       status?.installed
-                        ? 'UFW inactive 或需 root 讀取'
-                        : '安裝 UFW 後再整理'
+                        ? t('firewall.emptyRulesInstalled')
+                        : t('firewall.emptyRulesNotInstalled')
                     }
                   />
                 }
@@ -327,13 +327,13 @@ export function FirewallPage() {
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">允許埠</h3>
+                <h3 className="def-section-head__title">{t('firewall.allowPortTitle')}</h3>
               </div>
               <FormLayout columns={2}>
-                <Field label="協議" htmlFor="fw-proto" flush>
+                <Field label={t('firewall.protocol')} htmlFor="fw-proto" flush>
                   <SegRadio
                     name="fw-proto"
-                    aria-label="協議"
+                    aria-label={t('firewall.protocol')}
                     value={portProto}
                     onChange={setPortProto}
                     options={[
@@ -344,10 +344,10 @@ export function FirewallPage() {
                   />
                 </Field>
                 <Field
-                  label="埠"
+                  label={t('firewall.port')}
                   htmlFor="fw-port"
                   flush
-                  hint="揀常用埠，或下面自訂"
+                  hint={t('firewall.portHint')}
                 >
                   <PresetChips
                     options={[
@@ -366,7 +366,7 @@ export function FirewallPage() {
                     value={portInput}
                     onChange={setPortInput}
                     allowCustom
-                    customPlaceholder="自訂埠號"
+                    customPlaceholder={t('firewall.customPort')}
                     disabled={busy}
                   />
                 </Field>
@@ -376,7 +376,8 @@ export function FirewallPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  disabled={!portInput.trim() || !Number(portInput)}
+                  disabled={!canEdit || !portInput.trim() || !Number(portInput)}
+                  title={!canEdit ? t('rbac.cap.firewallEdit') : undefined}
                   onClick={() =>
                     void run(async () => {
                       const n = Number(portInput);
@@ -386,13 +387,16 @@ export function FirewallPage() {
                       )) as OpsResultLike;
                       await refresh();
                       return r;
-                    }, `已允許 ${portProto.toUpperCase()}/${portInput}`)
+                    }, t('firewall.allowedPort', {
+                      proto: portProto.toUpperCase(),
+                      port: portInput,
+                    }))
                   }
                 >
-                  允許此埠
+                  {t('firewall.allowThisPort')}
                 </Button>
               </FormActions>
-              <FormHint>預設 Web 主機應保留 22／80／443；勿隨便 allow 全部。</FormHint>
+              <FormHint>{t('firewall.allowPortHint')}</FormHint>
             </div>
           </div>
         ) : null}
@@ -401,8 +405,8 @@ export function FirewallPage() {
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">永久拒絕 IP</h3>
-                <span className="muted u-text-sm">UFW DENY · 與 fail2ban 臨時 ban 不同</span>
+                <h3 className="def-section-head__title">{t('firewall.denyTitle')}</h3>
+                <span className="muted u-text-sm">{t('firewall.denySub')}</span>
               </div>
               <FormLayout columns={2}>
                 <Field label="IP" htmlFor="fw-deny" flush>
@@ -410,7 +414,7 @@ export function FirewallPage() {
                     id="fw-deny"
                     value={denyIp}
                     onChange={(e) => setDenyIp(e.target.value)}
-                    placeholder="要拒絕的 IPv4 或 IPv6"
+                    placeholder={t('firewall.denyPlaceholder')}
                     spellCheck={false}
                   />
                 </Field>
@@ -420,14 +424,17 @@ export function FirewallPage() {
                   variant="danger"
                   size="md"
                   loading={busy}
-                  disabled={!denyIp.trim()}
+                  disabled={!canFlush || !denyIp.trim()}
+                  title={!canFlush ? t('rbac.cap.firewallFlush') : undefined}
                   onClick={() =>
                     void run(async () => {
-                      const r = (await systemApi.firewallDeny(denyIp.trim())) as OpsResultLike;
+                      const r = (await systemApi.firewallDeny(
+                        denyIp.trim(),
+                      )) as OpsResultLike;
                       setDenyIp('');
                       await refresh();
                       return r;
-                    }, '已永久拒絕')
+                    }, t('firewall.deniedOk'))
                   }
                 >
                   DENY from IP
@@ -445,19 +452,21 @@ export function FirewallPage() {
                         loading={busy}
                         onClick={() =>
                           void run(async () => {
-                            const r = (await systemApi.firewallDeleteDeny(ip)) as OpsResultLike;
+                            const r = (await systemApi.firewallDeleteDeny(
+                              ip,
+                            )) as OpsResultLike;
                             await refresh();
                             return r;
-                          }, '已移除 DENY')
+                          }, t('firewall.removedDeny'))
                         }
                       >
-                        移除
+                        {t('firewall.remove')}
                       </Button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="muted u-text-sm u-mt-3">未有永久拒 IP 規則</p>
+                <p className="muted u-text-sm u-mt-3">{t('firewall.noDenyRules')}</p>
               )}
             </div>
           </div>
@@ -467,14 +476,14 @@ export function FirewallPage() {
           <div className="tab-panel def-panel">
             <div className="def-section-head">
               <div>
-                <h3 className="def-section-head__title">一鍵設定檔</h3>
-                <p className="def-section-head__desc">
-                  寫入管理腳本並套用 UFW（唔會裝 fail2ban — 請到 fail2ban 頁）
-                </p>
+                <h3 className="def-section-head__title">
+                  {t('firewall.oneClickProfiles')}
+                </h3>
+                <p className="def-section-head__desc">{t('firewall.oneClickDesc')}</p>
               </div>
             </div>
             <div className="fw-profiles">
-              {PROFILES.map((p) => (
+              {profiles.map((p) => (
                 <article key={p.id} className="fw-profile">
                   <h4>{p.label}</h4>
                   <p>{p.short}</p>
@@ -484,14 +493,14 @@ export function FirewallPage() {
                     loading={busy}
                     onClick={() => void applyProfile(p)}
                   >
-                    套用
+                    {t('common.apply')}
                   </Button>
                 </article>
               ))}
             </div>
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">自訂套用</h3>
+                <h3 className="def-section-head__title">{t('firewall.customApply')}</h3>
               </div>
               <label className="def-switch">
                 <input
@@ -499,21 +508,21 @@ export function FirewallPage() {
                   checked={allowSmtp}
                   onChange={(e) => setAllowSmtp(e.target.checked)}
                 />
-                <span>允許 SMTP／IMAP 埠</span>
+                <span>{t('firewall.allowSmtp')}</span>
               </label>
               <FormLayout columns={1}>
                 <Field
-                  label="額外 TCP 埠"
+                  label={t('firewall.extraTcp')}
                   htmlFor="fw-extra"
                   flush
-                  hint="點選預設組合；可再自訂逗號／範圍"
+                  hint={t('firewall.extraTcpHint')}
                 >
                   <PresetChips
                     options={[
-                      { value: '', label: '無額外' },
+                      { value: '', label: t('firewall.noExtra') },
                       { value: '21', label: '21 FTP' },
                       { value: '21,30000:30100', label: 'FTPS+PASV' },
-                      { value: '25,465,587,993', label: '郵件組' },
+                      { value: '25,465,587,993', label: t('firewall.mailGroup') },
                       { value: '3306', label: 'MySQL' },
                       { value: '5432', label: 'Postgres' },
                       { value: '6379', label: 'Redis' },
@@ -522,7 +531,7 @@ export function FirewallPage() {
                     value={extraPorts}
                     onChange={setExtraPorts}
                     allowCustom
-                    customPlaceholder="自訂：8080,9000:9010"
+                    customPlaceholder={t('firewall.customExtraPlaceholder')}
                     disabled={busy}
                   />
                 </Field>
@@ -541,20 +550,20 @@ export function FirewallPage() {
                       })) as OpsResultLike;
                       await refresh();
                       return r;
-                    }, '已套用自訂規則')
+                    }, t('firewall.appliedCustom'))
                   }
                 >
-                  套用到系統
+                  {t('firewall.applyToSystem')}
                 </Button>
               </FormActions>
             </div>
           </div>
         ) : null}
-      
+
         {tab === 'about' ? <PageGuide guideId="firewall" /> : null}
       </PageTabs>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel result={result} message={msg} busy={busy} />
 
       <ConfirmDialog
         open={delRuleNum != null}
@@ -567,12 +576,12 @@ export function FirewallPage() {
             const res = (await systemApi.firewallDeleteRule(n)) as OpsResultLike;
             await refresh();
             return res;
-          }, `已刪 #${n}`);
+          }, t('firewall.deletedRule', { n }));
         }}
-        title={`刪規則 #${delRuleNum ?? ''}？`}
-        description="將從 UFW 移除該規則編號（需系統變更權限）。"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('firewall.deleteRuleTitle', { n: delRuleNum ?? '' })}
+        description={t('firewall.deleteRuleDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />

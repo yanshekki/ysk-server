@@ -1,0 +1,19 @@
+/* —— Typography helpers —— */
+.gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.muted {
+  color: var(--text-sub);
+}
+
+.section-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+

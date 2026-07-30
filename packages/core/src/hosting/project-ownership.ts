@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * After any write into a project home, restore ownership to project linux user.
  */
@@ -24,11 +25,11 @@ export async function chownProjectPath(
   if (!host.executeEnabled() || !host.isRoot()) {
     return {
       ok: false,
-      notes: ['略過 chown（需 YSK_EXECUTE + root）— 檔案可能為控制面用戶擁有'],
+      notes: [tl('notes.auto.n1255')],
     };
   }
   const u = owner.linuxUser?.trim();
-  if (!u) return { ok: false, notes: ['無 linuxUser'] };
+  if (!u) return { ok: false, notes: [tl('notes.auto.n1080')] };
   const g = (owner.linuxGroup || u).trim();
   // Stay under home when possible
   const home = owner.homeDir.replace(/\/+$/, '');
@@ -47,7 +48,7 @@ export async function chownProjectPath(
   }
   return {
     ok: false,
-    notes: [`chown 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`],
+    notes: [tl('notes.tpl.chownFailed', { detail: (r.stderr || r.stdout || '').slice(0, 160) })],
   };
 }
 

@@ -61,5 +61,15 @@ export interface ResourceScope {
   id?: string;
 }
 
-/** Locale codes (zh-TW priority) */
-export type LocaleCode = 'zh-TW' | 'en' | 'zh-CN';
+/**
+ * Locale codes — canonical in i18n/normalize-locale.ts.
+ * zh-HK = 香港書面語（繁體）; zh-TW is accepted via normalizeLocale → zh-HK.
+ */
+export type { LocaleCode } from './i18n/normalize-locale.js';
+export {
+  LOCALES,
+  DEFAULT_LOCALE,
+  LOCALE_LABELS,
+  normalizeLocale,
+  localeFromAcceptLanguage,
+} from './i18n/normalize-locale.js';

@@ -1,0 +1,167 @@
+/* —— Modal —— */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: modal-fade 0.15s ease-out;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: min(90vh, 800px);
+  /* Sticky header/footer: only body scrolls — footer never “falls out” */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 0;
+  animation: modal-rise 0.18s ease-out;
+}
+
+.modal__body {
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-5) var(--space-modal-pad);
+}
+
+/* Modal body: stack sections with even air (forms, hints, extras) */
+.modal__body > form.project-create-form,
+.modal__body > form.stack,
+.modal__body > .stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.modal__body > form.project-create-form > .form-layout,
+.modal__body > form.project-create-form > .form-hint {
+  margin-top: 0; /* gap owns spacing — avoid double margin rules */
+  max-width: none;
+}
+
+.modal--sm {
+  max-width: 400px;
+}
+
+.modal--lg {
+  max-width: min(36rem, 96vw); /* ~576px: form-friendly, not sparse */
+}
+
+.modal--xl {
+  max-width: min(52rem, 96vw); /* roomy detail / multi-section */
+  max-height: min(92vh, 900px);
+}
+
+/* Project create modal sections */
+.project-create-form__tpl {
+  padding: 0.75rem 1rem;
+  background: var(--bg-subtle, #f6f8fa);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.project-create-form__extras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-1);
+}
+
+.project-create-form__extras-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-sub);
+}
+
+.project-create-form__extras .form-switches {
+  margin-bottom: 0;
+}
+
+.project-create-form__extras .form-layout {
+  margin-top: 0;
+  max-width: none;
+}
+
+/* SegRadio in forms: full width of field, wrap cleanly */
+.field__control .seg-radios,
+.field .seg-radios {
+  width: 100%;
+}
+
+@keyframes modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-shrink: 0;
+  margin: 0;
+  padding: var(--space-modal-pad) var(--space-modal-pad) var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modal__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.modal__desc {
+  margin: var(--space-2) 0 0;
+  color: var(--text-sub);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.modal__close {
+  flex-shrink: 0;
+}
+
+.modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  margin: 0;
+  padding: var(--space-4) var(--space-modal-pad) var(--space-modal-pad);
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-white);
+}
+

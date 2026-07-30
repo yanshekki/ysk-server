@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 export * from './types.js';
 export * from './providers.js';
 export * from './downloader.js';
@@ -42,23 +43,23 @@ export async function getGeoipStatus(
   }
 
   const notes: string[] = [];
-  if (!ready) notes.push('尚未有本地 GeoIP 庫 — 請更新');
-  if (stale) notes.push('資料庫可能過舊（>7 日）— 建議立即更新');
+  if (!ready) notes.push(tl('notes.auto.n0709'));
+  if (stale) notes.push(tl('notes.auto.n1448'));
   if (cityReady) {
     notes.push(
-      '免費最高細分：國家 + 省／州 + 城市（enrich）+ ASN；城市政策預設關',
+      tl('notes.auto.n0581'),
     );
   } else {
-    notes.push('未裝 City Lite — 僅國家／ASN；更新庫可下載 DB-IP（免費 CC BY）');
+    notes.push(tl('notes.auto.n0976'));
   }
   if (policy.enabled) {
     notes.push(
-      `政策：${policy.mode} · 國 ${policy.countries.length} · 省 ${policy.regions.length} · 市 ${policy.cities.length}${policy.cityPolicyEnabled ? '' : '（市政策關）'} · ASN ${policy.asns.length}`,
+      tl('notes.auto.t0774', { v0: (policy.mode), v1: (policy.countries.length), v2: (policy.regions.length), v3: (policy.cities.length), v4: (policy.cityPolicyEnabled ? '' : tl('notes.tpl.cityPolicyOff')), v5: (policy.asns.length) }),
     );
   } else {
-    notes.push('IP 准入政策未啟用（只影響查詢／enrich）');
+    notes.push(tl('notes.auto.n0118'));
   }
-  notes.push('供應商 = ASN（自治系統），非消費品牌名');
+  notes.push(tl('notes.auto.n0554'));
 
   const attribution = [
     ...new Set(
@@ -151,7 +152,7 @@ export function applyIpAccessNginx(
     return {
       ok: true,
       path: '',
-      notes: ['nginx 執行層已關閉（enforce.nginx=false）'],
+      notes: [tl('notes.auto.n0343')],
     };
   }
   return writeNginxGeoConf(dataDir, policy);

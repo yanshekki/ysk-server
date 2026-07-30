@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Port / HTTP health helpers for real process deploy verification.
  */
@@ -38,7 +39,7 @@ export async function findFreePort(from = 3100, to = 3999): Promise<number> {
       if (free) return port;
     }
   }
-  throw new Error(`在 ${from}–${to} 範圍內找不到可用埠`);
+  throw new Error(tl('notes.auto.t0100', { v0: (from), v1: (to) }));
 }
 
 function canBind(port: number): Promise<boolean> {

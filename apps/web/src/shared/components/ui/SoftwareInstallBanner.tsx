@@ -1,7 +1,8 @@
 /**
  * Sole page-level one-click install CTA (alert banner only).
- * Feature pages must not render additional 「一鍵安裝」 buttons.
+ * Feature pages must not render additional install buttons.
  */
+import { useTranslation } from 'react-i18next';
 import { Alert } from './Alert';
 import { buttonClassName } from './Button';
 import { useFeatureSoftware } from '../../../features/software';
@@ -22,6 +23,7 @@ export function SoftwareInstallBanner({
   autoHideWhenReady = true,
   title,
 }: SoftwareInstallBannerProps) {
+  const { t } = useTranslation();
   const {
     missing,
     ready,
@@ -39,12 +41,11 @@ export function SoftwareInstallBanner({
     return null;
   }
 
-  // Ready and no residual messages
   if (ready && !error && !msg) {
     return null;
   }
 
-  const names = missing.map((m) => m.title).join('、');
+  const names = missing.map((m) => m.title).join(t('softwareBanner.nameSep'));
   const opsResult: OpsResultLike | null = lastResult
     ? {
         ok: Boolean(lastResult.ok),
@@ -64,9 +65,11 @@ export function SoftwareInstallBanner({
           <div className="software-install-banner__row">
             <div className="software-install-banner__text">
               <h3 className="software-install-banner__title">
-                {title ?? '尚未安裝所需軟件'}
+                {title ?? t('softwareBanner.titleDefault')}
               </h3>
-              <p className="software-install-banner__desc">缺少：{names}</p>
+              <p className="software-install-banner__desc">
+                {t('softwareBanner.missing', { names })}
+              </p>
             </div>
             <div className="software-install-banner__actions">
               <button
@@ -79,7 +82,9 @@ export function SoftwareInstallBanner({
                   })
                 }
               >
-                {busy ? '安裝中…' : '一鍵安裝'}
+                {busy
+                  ? t('softwareBanner.installing')
+                  : t('softwareBanner.installOneClick')}
               </button>
               <button
                 type="button"
@@ -91,7 +96,7 @@ export function SoftwareInstallBanner({
                   void refresh();
                 }}
               >
-                重新探測
+                {t('softwareBanner.reprobe')}
               </button>
             </div>
           </div>
@@ -101,8 +106,12 @@ export function SoftwareInstallBanner({
       {msg && !error ? (
         <Alert variant="ok">
           {msg}{' '}
-          <button type="button" className={buttonClassName({ variant: 'ghost', size: 'sm' })} onClick={() => setMsg(null)}>
-            關閉
+          <button
+            type="button"
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+            onClick={() => setMsg(null)}
+          >
+            {t('softwareBanner.close')}
           </button>
         </Alert>
       ) : null}
@@ -110,7 +119,7 @@ export function SoftwareInstallBanner({
       {opsResult && (error || lastResult) ? (
         <div className="software-install-banner__result">
           <OpsResultPanel
-            title="安裝結果"
+            title={t('softwareBanner.resultTitle')}
             result={opsResult}
             onRetry={
               !ready

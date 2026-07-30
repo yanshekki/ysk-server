@@ -173,7 +173,7 @@ export function ProjectCreateModal({
       >
         {/* ① 基本：單欄，避免 SegRadio 把兩欄撐歪 */}
         <FormLayout>
-          <Field label="專案名稱" htmlFor="pname" required flush>
+          <Field label={t('projects.createName')} htmlFor="pname" required flush>
             <input
               id="pname"
               value={name}
@@ -184,14 +184,14 @@ export function ProjectCreateModal({
             />
           </Field>
           <Field
-            label="執行環境"
+            label={t('readiness.cat.hosting')}
             htmlFor="pruntime"
-            hint="之後可在詳情調整部署方式"
+            hint={t('projects.createRuntimeHint')}
             flush
           >
             <SegRadio
               name="pruntime"
-              aria-label="執行環境"
+              aria-label={t('readiness.cat.hosting')}
               value={runtime}
               onChange={(next) => applyRuntime(next as typeof runtime)}
               options={[
@@ -200,21 +200,21 @@ export function ProjectCreateModal({
                 { value: 'python', label: 'Python' },
                 { value: 'go', label: 'Go' },
                 { value: 'rust', label: 'Rust' },
-                { value: 'static', label: '靜態' },
+                { value: 'static', label: t('common.static') },
               ]}
             />
           </Field>
           {versionChoices.length > 0 ? (
             <Field
-              label="版本"
+              label={t('common.version')}
               htmlFor="pver"
               flush
               required
-              hint="寫入專案 runtime_version；部署／FPM 會參考此版本"
+              hint={t('projects.createVersionHint')}
             >
               <SegRadio
                 name="pver"
-                aria-label="執行環境版本"
+                aria-label={t('projects.createVersionAria')}
                 value={
                   versionChoices.includes(runtimeVersion)
                     ? runtimeVersion
@@ -237,7 +237,7 @@ export function ProjectCreateModal({
 
         {/* ② 域名：兩欄對齊 */}
         <FormLayout columns={2}>
-          <Field label="主要域名" htmlFor="pdomain" hint="可稍後再填" flush>
+          <Field label={t('projects.netPrimaryDomain')} htmlFor="pdomain" hint={t('projects.createPrimaryDomainHint')} flush>
             <input
               id="pdomain"
               value={domain}
@@ -245,7 +245,7 @@ export function ProjectCreateModal({
               placeholder="app.example.com"
             />
           </Field>
-          <Field label="別名" htmlFor="paliases" hint="逗號或換行分隔" flush>
+          <Field label={t('projects.ovAliases')} htmlFor="paliases" hint={t('projects.createAliasesHint')} flush>
             <input
               id="paliases"
               value={aliases}
@@ -258,10 +258,10 @@ export function ProjectCreateModal({
         {/* ③ 範本 */}
         <FormLayout>
           <Field
-            label="範本"
+            label={t('projects.createTemplate')}
             htmlFor="ptpl"
             flush
-            hint="選範本會自動帶入對應執行環境"
+            hint={t('projects.createTemplateHint')}
           >
             <select
               id="ptpl"
@@ -287,7 +287,7 @@ export function ProjectCreateModal({
                   {tpl.name}
                   {tpl.runtime === runtime
                     ? ''
-                    : `（${formatRuntimeName(tpl.runtime)}）`}
+                    : `（${formatRuntimeName(tpl.runtime, t)}）`}
                 </option>
               ))}
             </select>
@@ -299,45 +299,45 @@ export function ProjectCreateModal({
             <ActionBar size="sm" className="u-mb-2">
               <strong>{selectedTpl.name}</strong>
               <Badge tone="info">
-                {formatRuntimeName(selectedTpl.runtime)}
+                {formatRuntimeName(selectedTpl.runtime, t)}
               </Badge>
             </ActionBar>
             <p className="muted u-text-sm u-mb-0">{selectedTpl.description}</p>
             <p className="muted u-text-sm u-mt-2 u-mb-0">
-              範本只寫入專案目錄骨架；需再「部署」才會 build／啟動。
+              {t('projects.createTemplateNote')}
             </p>
           </div>
         ) : (
           <FormHint>
-            目前執行環境：
-            <strong>{formatRuntimeName(runtime)}</strong>
-            。可選範本加速起步，或不選直接空白專案。
+            {t('projects.createRuntimeNow')}
+            <strong>{formatRuntimeName(runtime, t)}</strong>
+            {t('projects.createTemplateFooter')}
           </FormHint>
         )}
 
         {/* ④ 草稿資源 — 永遠顯示（唔再因未填域名而消失） */}
         <div className="project-create-form__extras">
           <p className="project-create-form__extras-title">
-            與域名一併建立草稿資源
+            {t('projects.createDraftResources')}
           </p>
           {!hasDomain ? (
             <FormHint>
-              請先填「主要域名」，以下選項才會一併建立草稿。
+              {t('projects.createNeedDomainFirst')}
             </FormHint>
           ) : null}
           <div className="form-switches">
             <CheckboxField
               id="pc-dns"
-              label="同時建立 DNS zone"
-              description="只寫管理檔（draft），唔等於權威 DNS 已上線"
+              label={t('projects.createDnsZone')}
+              description={t('projects.createDnsZoneDesc')}
               checked={createDns && hasDomain}
               onChange={(v) => setCreateDns(v)}
               disabled={!hasDomain || busy}
             />
             <CheckboxField
               id="pc-mail"
-              label="同時登記郵件域名"
-              description="之後可到郵件頁完成郵箱與套用"
+              label={t('projects.createMailDomain')}
+              description={t('projects.createMailDomainDesc')}
               checked={createMail && hasDomain}
               onChange={(v) => setCreateMail(v)}
               disabled={!hasDomain || busy}
@@ -346,24 +346,24 @@ export function ProjectCreateModal({
           {hasDomain && (createDns || createMail) ? (
             <FormLayout columns={2}>
               <Field
-                label="伺服器 IPv4"
+                label={t('projects.createServerIpv4')}
                 htmlFor="pc-ip"
                 flush
-                hint="DNS／郵件範本用"
+                hint={t('projects.createServerIpv4Hint')}
               >
                 <input
                   id="pc-ip"
                   value={serverIp}
                   onChange={(e) => setServerIp(e.target.value)}
-                  placeholder="此主機公網 IPv4"
+                  placeholder={t('projects.createServerIpv4Ph')}
                 />
               </Field>
-              <Field label="伺服器 IPv6（可選）" htmlFor="pc-ip6" flush>
+              <Field label={t('projects.createServerIpv6')} htmlFor="pc-ip6" flush>
                 <input
                   id="pc-ip6"
                   value={serverIpv6}
                   onChange={(e) => setServerIpv6(e.target.value)}
-                  placeholder="公網 IPv6（可留空）"
+                  placeholder={t('projects.createServerIpv6Ph')}
                 />
               </Field>
             </FormLayout>

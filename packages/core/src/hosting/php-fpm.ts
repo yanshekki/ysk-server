@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * PHP-FPM pool config generation + optional system install.
  */
@@ -78,7 +79,7 @@ export async function applyPhpFpmPool(input: {
     adminValueLines: input.adminValueLines,
   });
   writeFileSync(poolPath, content, 'utf8');
-  const notes = [`已寫入 FPM pool：${poolPath}`, `PHP ${rt.version}`];
+  const notes = [tl('notes.auto.t0146', { v0: (poolPath) }), `PHP ${rt.version}`];
   const written = [poolPath];
   const commandResults: PhpFpmApplyResult['commandResults'] = [];
   let enabled = false;
@@ -86,7 +87,7 @@ export async function applyPhpFpmPool(input: {
   const want = Boolean(input.enable);
   const can = want && input.host.executeEnabled() && input.host.isRoot();
   if (want && !can) {
-    notes.push('無法啟用 PHP-FPM：需要系統管理員權限');
+    notes.push(tl('notes.auto.n1152'));
   }
   if (can) {
     const destDir = `/etc/php/${rt.version}/fpm/pool.d`;
@@ -105,9 +106,9 @@ export async function applyPhpFpmPool(input: {
         stderr: reload.stderr,
       });
       enabled = cp.exitCode === 0 && reload.exitCode === 0;
-      notes.push(enabled ? `已啟用 pool：${dest}` : 'FPM 重載失敗');
+      notes.push(enabled ? tl('notes.auto.t0147', { v0: (dest) }) : tl('notes.auto.n0103'));
     } else {
-      notes.push(`/etc/php/${rt.version}/fpm 找不到 — install php${rt.version}-fpm`);
+      notes.push(tl('notes.auto.t0148', { v0: (rt.version), v1: (rt.version) }));
     }
   }
 

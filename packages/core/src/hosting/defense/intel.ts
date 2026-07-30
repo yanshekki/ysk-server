@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Defense intel — top IPs, vhosts with rate-limit markers, richer log sources.
  */
@@ -99,11 +100,11 @@ export function collectTopIps(dataDir: string, limit = 30): {
   const notes: string[] = [];
   const content = readLogChunks(dataDir);
   if (!content.trim()) {
-    return { items: [], notes: ['無可用 access／auth log 樣本'] };
+    return { items: [], notes: [tl('notes.auto.n1097')] };
   }
   const fromAccess = parseAccessLogSuspects(content);
   const fromAuth = parseAuthFailIps(content);
-  if (fromAuth.size) notes.push(`auth 失敗 IP：${fromAuth.size}`);
+  if (fromAuth.size) notes.push(tl('notes.auto.t0528', { v0: (fromAuth.size) }));
 
   const merged = new Map<string, { hits: number; s429: number; scan: number }>();
   for (const [ip, a] of fromAccess) {
@@ -127,7 +128,7 @@ export function collectTopIps(dataDir: string, limit = 30): {
     .sort((x, y) => y.score - x.score || y.hits - x.hits)
     .slice(0, limit);
 
-  notes.push(`Top IP 樣本 ${items.length} 個`);
+  notes.push(tl('notes.auto.t0529', { v0: (items.length) }));
   return { items, notes };
 }
 

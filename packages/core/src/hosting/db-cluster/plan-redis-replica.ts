@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Redis replica (+ optional Sentinel plan) — pure planners.
  */
@@ -112,10 +113,9 @@ export function planRedisReplica(c: DbCluster): ClusterPlan {
       engine: c.engine,
       steps: [],
       files: [],
-      notes: ['僅支援 redis + redis-replica|redis-sentinel'],
+      notes: [tl('notes.auto.n0572')],
       requiresExecute: true,
-      requiresRoot: true,
-    };
+      requiresRoot: true };
   }
 
   const m = master(c);
@@ -128,13 +128,12 @@ export function planRedisReplica(c: DbCluster): ClusterPlan {
       engine: c.engine,
       steps: [],
       files: [],
-      notes: ['需要 master 節點'],
+      notes: [tl('notes.auto.n1565')],
       requiresExecute: true,
-      requiresRoot: true,
-    };
+      requiresRoot: true };
   }
 
-  const notes: string[] = ['dry-run：未改系統', `master=${m.host}`];
+  const notes: string[] = [tl('notes.auto.n0033'), `master=${m.host}`];
   const steps: ClusterPlanStep[] = [];
   const files: ClusterPlan['files'] = [
     { relativePath: 'conf/99-ysk-redis-master.conf', body: renderRedisMasterConf(c) },
@@ -147,8 +146,7 @@ export function planRedisReplica(c: DbCluster): ClusterPlan {
     title: `Master conf（${m.host}）`,
     kind: 'conf',
     body: renderRedisMasterConf(c),
-    risk: 'write-panel',
-  });
+    risk: 'write-panel' });
 
   for (const r of replicas(c)) {
     const conf = renderRedisReplicaConf(c, r);
@@ -160,13 +158,12 @@ export function planRedisReplica(c: DbCluster): ClusterPlan {
       title: `Replica conf ${r.host}`,
       kind: 'conf',
       body: conf,
-      risk: 'write-panel',
-    });
+      risk: 'write-panel' });
   }
 
   if (c.kind === 'redis-sentinel') {
     if (!sentinels(c).length) {
-      notes.push('sentinel 模式但未登記 sentinel 角色成員');
+      notes.push(tl('notes.auto.n0427'));
     }
     for (const s of sentinels(c)) {
       const conf = renderRedisSentinelConf(c, s);
@@ -178,19 +175,17 @@ export function planRedisReplica(c: DbCluster): ClusterPlan {
         title: `Sentinel conf ${s.host}`,
         kind: 'conf',
         body: conf,
-        risk: 'write-panel',
-      });
+        risk: 'write-panel' });
     }
   }
 
   steps.push({
     id: 'probe',
-    title: '探測 INFO replication',
+    title: tl('notes.auto.n0886'),
     kind: 'probe',
-    risk: 'read',
-  });
+    risk: 'read' });
 
-  if (!replicas(c).length) notes.push('建議至少 1 個 replica');
+  if (!replicas(c).length) notes.push(tl('notes.auto.n0034'));
 
   return {
     ok: true,
@@ -202,6 +197,5 @@ export function planRedisReplica(c: DbCluster): ClusterPlan {
     files,
     notes,
     requiresExecute: true,
-    requiresRoot: true,
-  };
+    requiresRoot: true };
 }

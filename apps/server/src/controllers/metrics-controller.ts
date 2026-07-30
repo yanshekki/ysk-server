@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Host metrics + process snapshot + SSE stream + process signals.
  */
@@ -81,7 +82,7 @@ export async function handleMetricsRoutes(
     try {
       data = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
     } catch {
-      sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+      sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
     const { signalProcess, isProcessSignal } = await import('@ysk/core');
@@ -89,7 +90,7 @@ export async function handleMetricsRoutes(
     if (!isProcessSignal(signalRaw)) {
       sendJson(res, 400, {
         ok: false,
-        message: 'signal 必須為 TERM | KILL | HUP | USR1',
+        message: tl('notes.auto.n0433'),
       });
       return true;
     }
@@ -97,7 +98,7 @@ export async function handleMetricsRoutes(
     if (signalRaw === 'KILL' && data.confirmKill !== true) {
       sendJson(res, 400, {
         ok: false,
-        message: 'SIGKILL 需 confirmKill: true',
+        message: tl('notes.auto.n0181'),
       });
       return true;
     }
@@ -133,7 +134,7 @@ export async function handleMetricsRoutes(
     try {
       data = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
     } catch {
-      sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+      sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
     const { reniceProcess } = await import('@ysk/core');

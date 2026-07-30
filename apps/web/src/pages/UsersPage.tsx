@@ -1,9 +1,21 @@
 /**
- * Admin users + packages — FeaturePageLayout + system primitives only.
+ * Admin users + packages + adjustable multi-level RBAC.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import {
+  CAPABILITY_CATALOG,
+  OPERATION_LEVELS,
+  SYSTEM_ROLES,
+  applyBandToCapabilities,
+  computeEffectiveCapabilities,
+  factoryRolePolicy,
+  type CapabilityId,
+  type OperationLevel,
+  type SystemRole,
+} from '@ysk/shared';
+import { useCapabilities } from '../shared/hooks/useCapabilities';
 import {
   PageGuide,
   ActionBar,
@@ -22,17 +34,30 @@ import {
   SegRadio,
   buttonClassName,
 } from '../shared/components/ui';
+import { UserDetailModal } from '../features/users/UserDetailModal';
 import { api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
+
+type HostUsage = {
+  scope: 'host';
+  projects: number;
+  mailboxes: number;
+  databases: number;
+};
 
 type UserRow = {
   id: string;
   username: string;
   roles: string[];
   packageId?: string;
+  packageName?: string;
   suspended?: boolean;
   totpEnabled?: boolean;
+  capabilityGrants?: CapabilityId[];
+  capabilityRevokes?: CapabilityId[];
+  capabilities?: CapabilityId[];
+  lastSeenAt?: string;
 };
 
 type Pkg = {
@@ -42,15 +67,57 @@ type Pkg = {
   max_mailboxes: number;
   max_databases: number;
   disk_mb: number;
+  bandwidth_mb?: number;
   allow_ftp: boolean;
   allow_ssh: boolean;
+  notes?: string;
+  subscriberCount?: number;
+  hostUsage?: HostUsage;
+  usageScope?: string;
 };
+
+function usageBar(used: number, max: number): string {
+  if (max <= 0) return `${used} / ∞`;
+  const pct = Math.min(100, Math.round((used / max) * 100));
+  return `${used} / ${max} (${pct}%)`;
+}
+
+type RolePolicyView = {
+  role: SystemRole;
+  dirty: boolean;
+  policy: { maxLevel: OperationLevel; capabilities: CapabilityId[] };
+  factory: { maxLevel: OperationLevel; capabilities: CapabilityId[] };
+};
+
+type UserFilter =
+  | 'all'
+  | 'admin'
+  | 'operator'
+  | 'viewer'
+  | 'suspended'
+  | 'noPkg'
+  | '2faOff'
+  | 'overrides';
+
+function capLabelKey(id: CapabilityId): string {
+  const def = CAPABILITY_CATALOG.find((c) => c.id === id);
+  return def?.labelKey ?? id;
+}
 
 export function UsersPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = usePageTab(['users', 'packages'] as const, 'users');
+  const { can } = useCapabilities();
+  const canImpersonate = can('users.impersonate');
+  const canEditRbac = can('rbac.policy');
+  const [tab, setTab] = usePageTab(
+    ['users', 'packages', 'permissions', 'about'] as const,
+    'users',
+  );
   const [users, setUsers] = useState<UserRow[]>([]);
   const [packages, setPackages] = useState<Pkg[]>([]);
+  const [hostUsage, setHostUsage] = useState<HostUsage | null>(null);
+  const [policies, setPolicies] = useState<RolePolicyView[]>([]);
+  const [createLocale, setCreateLocale] = useState('zh-HK');
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,26 +126,56 @@ export function UsersPage() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'operator' | 'viewer' | 'admin'>('operator');
   const [userPkgId, setUserPkgId] = useState('');
+  const [q, setQ] = useState('');
+  const [filter, setFilter] = useState<UserFilter>('all');
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [pkgFormOpen, setPkgFormOpen] = useState(false);
+  const [editingPkg, setEditingPkg] = useState<Pkg | null>(null);
   const [pkgName, setPkgName] = useState('default');
   const [pkgProjects, setPkgProjects] = useState('10');
+  const [pkgMail, setPkgMail] = useState('10');
+  const [pkgDb, setPkgDb] = useState('5');
   const [pkgDisk, setPkgDisk] = useState('10240');
-  const [q, setQ] = useState('');
-  const [createUserOpen, setCreateUserOpen] = useState(false);
-  const [createPkgOpen, setCreatePkgOpen] = useState(false);
+  const [pkgBw, setPkgBw] = useState('0');
+  const [pkgFtp, setPkgFtp] = useState(true);
+  const [pkgSsh, setPkgSsh] = useState(true);
+  const [pkgNotes, setPkgNotes] = useState('');
+  const [detailUser, setDetailUser] = useState<UserRow | null>(null);
+  const [detailRole, setDetailRole] = useState<SystemRole>('operator');
+  const [detailPkg, setDetailPkg] = useState('');
+  const [detailSuspended, setDetailSuspended] = useState(false);
+  const [detailPassword, setDetailPassword] = useState('');
+  const [detailGrants, setDetailGrants] = useState<CapabilityId[]>([]);
+  const [detailRevokes, setDetailRevokes] = useState<CapabilityId[]>([]);
+  const [policyRole, setPolicyRole] = useState<SystemRole>('operator');
+  const [draftMax, setDraftMax] = useState<OperationLevel>('write-high');
+  const [draftCaps, setDraftCaps] = useState<CapabilityId[]>([]);
   const [pending, setPending] = useState<
     | { kind: 'impersonate'; user: UserRow }
     | { kind: 'delUser'; user: UserRow }
     | { kind: 'delPkg'; pkg: Pkg }
+    | { kind: 'restoreRole'; role: SystemRole }
+    | { kind: 'restoreAll' }
+    | { kind: 'restoreUserOverrides'; user: UserRow }
+    | { kind: 'promoteAdmin'; next: () => void }
+    | { kind: 'dangerPolicySave'; next: () => void }
     | null
   >(null);
 
   const refresh = useCallback(async () => {
     const [u, p] = await Promise.all([
       api.requestRaw<{ items: UserRow[] }>('/api/v1/users'),
-      api.requestRaw<{ items: Pkg[] }>('/api/v1/packages'),
+      api.requestRaw<{ items: Pkg[]; hostUsage?: HostUsage }>('/api/v1/packages'),
     ]);
     setUsers(u.items ?? []);
     setPackages(p.items ?? []);
+    setHostUsage(p.hostUsage ?? p.items?.[0]?.hostUsage ?? null);
+    try {
+      const pol = await api.requestRaw<{ items: RolePolicyView[] }>('/api/v1/rbac/policies');
+      setPolicies(pol.items ?? []);
+    } catch {
+      setPolicies([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -87,6 +184,18 @@ export function UsersPage() {
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [refresh]);
+
+  useEffect(() => {
+    const view = policies.find((x) => x.role === policyRole);
+    if (view) {
+      setDraftMax(view.policy.maxLevel);
+      setDraftCaps([...view.policy.capabilities]);
+    } else {
+      const f = factoryRolePolicy(policyRole);
+      setDraftMax(f.maxLevel);
+      setDraftCaps([...f.capabilities]);
+    }
+  }, [policyRole, policies]);
 
   function openCreateUser() {
     setUsername('');
@@ -99,60 +208,187 @@ export function UsersPage() {
   }
 
   function openCreatePkg() {
+    setEditingPkg(null);
     setPkgName('default');
     setPkgProjects('10');
+    setPkgMail('10');
+    setPkgDb('5');
     setPkgDisk('10240');
+    setPkgBw('0');
+    setPkgFtp(true);
+    setPkgSsh(true);
+    setPkgNotes('');
     setError(null);
     setTab('packages');
-    setCreatePkgOpen(true);
+    setPkgFormOpen(true);
+  }
+
+  function openEditPkg(p: Pkg) {
+    setEditingPkg(p);
+    setPkgName(p.name);
+    setPkgProjects(String(p.max_projects));
+    setPkgMail(String(p.max_mailboxes));
+    setPkgDb(String(p.max_databases));
+    setPkgDisk(String(p.disk_mb));
+    setPkgBw(String(p.bandwidth_mb ?? 0));
+    setPkgFtp(p.allow_ftp);
+    setPkgSsh(p.allow_ssh);
+    setPkgNotes(p.notes ?? '');
+    setPkgFormOpen(true);
+  }
+
+  function openDetail(u: UserRow) {
+    setDetailUser(u);
+    setDetailRole((u.roles[0] as SystemRole) || 'operator');
+    setDetailPkg(u.packageId ?? '');
+    setDetailSuspended(Boolean(u.suspended));
+    setDetailPassword('');
+    setDetailGrants([...(u.capabilityGrants ?? [])]);
+    setDetailRevokes([...(u.capabilityRevokes ?? [])]);
   }
 
   async function onCreateUser(e: FormEvent) {
     e.preventDefault();
+    const doCreate = async () => {
+      setBusy(true);
+      setError(null);
+      try {
+        await api.requestRaw('/api/v1/users', {
+          method: 'POST',
+          body: JSON.stringify({
+            username,
+            password,
+            roles: [role],
+            packageId: userPkgId || undefined,
+            locale: createLocale || undefined,
+          }),
+        });
+        setCreateUserOpen(false);
+        setMsg(t('users.createdUser', { name: username }));
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('common.createFailed'));
+      } finally {
+        setBusy(false);
+      }
+    };
+    if (role === 'admin') {
+      setPending({ kind: 'promoteAdmin', next: () => void doCreate() });
+      return;
+    }
+    await doCreate();
+  }
+
+  async function onSavePkg(e: FormEvent) {
+    e.preventDefault();
     setBusy(true);
     setError(null);
+    const body = {
+      name: pkgName,
+      max_projects: Number(pkgProjects) || 10,
+      max_mailboxes: Number(pkgMail) || 10,
+      max_databases: Number(pkgDb) || 5,
+      disk_mb: Number(pkgDisk) || 10240,
+      bandwidth_mb: Number(pkgBw) || 0,
+      allow_ftp: pkgFtp,
+      allow_ssh: pkgSsh,
+      notes: pkgNotes || undefined,
+    };
     try {
-      await api.requestRaw('/api/v1/users', {
-        method: 'POST',
-        body: JSON.stringify({
-          username,
-          password,
-          roles: [role],
-          packageId: userPkgId || undefined,
-        }),
-      });
-      setCreateUserOpen(false);
-      setMsg(`已建立用戶 ${username}`);
+      if (editingPkg) {
+        await api.requestRaw(`/api/v1/packages/${editingPkg.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        });
+        setMsg(t('users.pkgUpdated', { name: pkgName }));
+      } else {
+        await api.requestRaw('/api/v1/packages', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: pkgName,
+            maxProjects: body.max_projects,
+            maxMailboxes: body.max_mailboxes,
+            maxDatabases: body.max_databases,
+            diskMb: body.disk_mb,
+            bandwidthMb: body.bandwidth_mb,
+            allowFtp: body.allow_ftp,
+            allowSsh: body.allow_ssh,
+            notes: body.notes,
+          }),
+        });
+        setMsg(t('users.createdPkg', { name: pkgName }));
+      }
+      setPkgFormOpen(false);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '建立失敗');
+      setError(err instanceof Error ? err.message : t('common.createFailed'));
     } finally {
       setBusy(false);
     }
   }
 
-  async function onCreatePkg(e: FormEvent) {
-    e.preventDefault();
+  async function saveDetailUser() {
+    if (!detailUser) return;
+    const run = async () => {
+      setBusy(true);
+      setError(null);
+      try {
+        const patch: Record<string, unknown> = {
+          roles: [detailRole],
+          packageId: detailPkg || null,
+          suspended: detailSuspended,
+          capabilityGrants: detailGrants,
+          capabilityRevokes: detailRevokes,
+        };
+        if (detailPassword.length >= 8) patch.password = detailPassword;
+        await api.requestRaw(`/api/v1/users/${detailUser.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(patch),
+        });
+        setMsg(t('users.userSaved', { name: detailUser.username }));
+        setDetailUser(null);
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('common.saveFailed', { defaultValue: 'Save failed' }));
+      } finally {
+        setBusy(false);
+      }
+    };
+    if (detailRole === 'admin' && !detailUser.roles.includes('admin')) {
+      setPending({ kind: 'promoteAdmin', next: () => void run() });
+      return;
+    }
+    await run();
+  }
+
+  async function saveRolePolicy(force = false) {
+    const factory = factoryRolePolicy(policyRole);
+    const addsDanger = draftCaps.some((id) => {
+      const def = CAPABILITY_CATALOG.find((c) => c.id === id);
+      if (!def || (def.band !== 'destructive' && def.band !== 'privilege')) return false;
+      return !factory.capabilities.includes(id);
+    });
+    const elevatesMax =
+      OPERATION_LEVELS.indexOf(draftMax) >
+      OPERATION_LEVELS.indexOf(factory.maxLevel);
+    if ((addsDanger || elevatesMax) && !force) {
+      setPending({
+        kind: 'dangerPolicySave',
+        next: () => void saveRolePolicy(true),
+      });
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      await api.requestRaw('/api/v1/packages', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: pkgName,
-          max_projects: Number(pkgProjects) || 10,
-          max_mailboxes: 10,
-          max_databases: 5,
-          disk_mb: Number(pkgDisk) || 10240,
-          allow_ftp: true,
-          allow_ssh: true,
-        }),
+      await api.requestRaw(`/api/v1/rbac/policies/${policyRole}`, {
+        method: 'PUT',
+        body: JSON.stringify({ maxLevel: draftMax, capabilities: draftCaps }),
       });
-      setCreatePkgOpen(false);
-      setMsg(`已建立方案 ${pkgName}`);
+      setMsg(t('rbac.saved', { role: policyRole }));
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '建立失敗');
+      setError(err instanceof Error ? err.message : t('common.saveFailed', { defaultValue: 'Save failed' }));
     } finally {
       setBusy(false);
     }
@@ -163,34 +399,91 @@ export function UsersPage() {
   const with2fa = users.filter((u) => u.totpEnabled).length;
 
   const filteredUsers = useMemo(() => {
+    let list = users;
+    switch (filter) {
+      case 'admin':
+        list = list.filter((u) => u.roles.includes('admin'));
+        break;
+      case 'operator':
+        list = list.filter((u) => u.roles.includes('operator'));
+        break;
+      case 'viewer':
+        list = list.filter((u) => u.roles.includes('viewer'));
+        break;
+      case 'suspended':
+        list = list.filter((u) => u.suspended);
+        break;
+      case 'noPkg':
+        list = list.filter((u) => !u.packageId);
+        break;
+      case '2faOff':
+        list = list.filter((u) => !u.totpEnabled);
+        break;
+      case 'overrides':
+        list = list.filter(
+          (u) => (u.capabilityGrants?.length ?? 0) > 0 || (u.capabilityRevokes?.length ?? 0) > 0,
+        );
+        break;
+      default:
+        break;
+    }
     const needle = q.trim().toLowerCase();
-    if (!needle) return users;
-    return users.filter(
+    if (!needle) return list;
+    return list.filter(
       (u) =>
         u.username.toLowerCase().includes(needle) ||
-        u.roles.join(' ').toLowerCase().includes(needle),
+        u.roles.join(' ').toLowerCase().includes(needle) ||
+        (u.packageName ?? '').toLowerCase().includes(needle),
     );
-  }, [users, q]);
+  }, [users, q, filter]);
+
+  const policyView = policies.find((p) => p.role === policyRole);
+  const effectivePreview = useMemo(() => {
+    if (!detailUser) return [] as CapabilityId[];
+    const map: Partial<Record<SystemRole, { maxLevel: OperationLevel; capabilities: CapabilityId[] }>> =
+      {};
+    for (const p of policies) {
+      map[p.role] = p.policy;
+    }
+    return computeEffectiveCapabilities({
+      roles: [detailRole],
+      rolePolicies: map,
+      grants: detailGrants,
+      revokes: detailRevokes,
+    });
+  }, [detailUser, detailRole, detailGrants, detailRevokes, policies]);
+
+  const filterChips: { id: UserFilter; label: string }[] = [
+    { id: 'all', label: t('users.filterAll') },
+    { id: 'admin', label: t('users.filterAdmin') },
+    { id: 'operator', label: t('users.filterOperator') },
+    { id: 'viewer', label: t('users.filterViewer') },
+    { id: 'suspended', label: t('users.filterSuspended') },
+    { id: 'noPkg', label: t('users.filterNoPkg') },
+    { id: '2faOff', label: t('users.filter2faOff') },
+    { id: 'overrides', label: t('users.filterOverrides') },
+  ];
 
   return (
     <FeaturePageLayout
-      title={t('nav.users', { defaultValue: '用戶與方案' })}
+      title={t('nav.users')}
       showCapability={false}
       status={{
-        pill: { label: `${users.length} 用戶`, tone: 'ok' },
+        pill: { label: t('users.userCount', { count: users.length }), tone: 'ok' },
         items: [
-          { label: '用戶', value: users.length },
+          { label: t('users.users'), value: users.length },
           { label: 'Admin', value: admins },
           {
-            label: '暫停',
+            label: t('users.suspended'),
             value: suspended,
             tone: suspended ? 'warn' : 'ok',
           },
-          { label: '方案', value: packages.length },
+          { label: t('users.packages'), value: packages.length },
           { label: '2FA', value: with2fa },
         ],
       }}
-      actions={<ActionBar align="end">
+      actions={
+        <ActionBar align="end">
           <Button
             variant="ghost"
             size="sm"
@@ -202,10 +495,10 @@ export function UsersPage() {
                 .finally(() => setLoading(false));
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Link to="/security" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            安全中心
+            {t('users.securityCenter')}
           </Link>
         </ActionBar>
       }
@@ -214,7 +507,7 @@ export function UsersPage() {
         <Alert variant="error">
           {error}{' '}
           <Button variant="ghost" size="sm" onClick={() => setError(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -222,273 +515,462 @@ export function UsersPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       {loading && users.length === 0 && packages.length === 0 ? (
-        <LoadingBlock label="載入用戶與方案…" />
+        <LoadingBlock label={t('users.loading')} />
       ) : (
         <PageTabs
           tabs={[
-            { id: 'users', label: '用戶', badge: users.length || undefined },
+            { id: 'users', label: t('users.users'), badge: users.length || undefined },
             {
               id: 'packages',
-              label: '方案',
+              label: t('users.packages'),
               badge: packages.length || undefined,
             },
-          
-          { id: 'about', label: '說明' },
-        ]}
+            { id: 'permissions', label: t('rbac.permissions') },
+            { id: 'about', label: t('common.about') },
+          ]}
           active={tab}
           onChange={setTab}
           variant="scroll"
         >
           {tab === 'users' ? (
             <DataTable
-              title={`用戶列表 (${filteredUsers.length})`}
-              description="暫停／方案／模擬登入／刪除"
+              title={t('users.userList', { count: filteredUsers.length })}
+              description={t('users.userListDesc')}
               toolbar={
                 <ActionBar>
                   <Button variant="primary" size="sm" onClick={openCreateUser}>
-                    + 建立用戶
+                    {t('users.createUserPlus')}
                   </Button>
                 </ActionBar>
               }
               filters={
                 <Form layoutOnly columns={1}>
-                  <Field label="搜尋" htmlFor="user-q" flush>
+                  <Field label={t('common.search')} htmlFor="user-q" flush>
                     <input
                       id="user-q"
                       type="search"
                       value={q}
                       onChange={(e) => setQ(e.target.value)}
-                      placeholder="用戶名 / 角色"
-                      aria-label="搜尋用戶"
+                      placeholder={t('users.searchPh')}
+                      aria-label={t('users.searchUsersAria')}
                     />
                   </Field>
+                  <div className="badge-row u-mt-2" role="group" aria-label={t('common.filter', { defaultValue: 'Filter' })}>
+                    {filterChips.map((c) => (
+                      <Button
+                        key={c.id}
+                        size="sm"
+                        variant={filter === c.id ? 'primary' : 'ghost'}
+                        onClick={() => setFilter(c.id)}
+                      >
+                        {c.label}
+                      </Button>
+                    ))}
+                  </div>
                 </Form>
               }
               columns={[
                 {
                   key: 'user',
-                  header: '用戶',
+                  header: t('users.user'),
                   render: (u) => (
                     <span className="u-font-semibold">{u.username}</span>
                   ),
                 },
                 {
                   key: 'roles',
-                  header: '角色',
+                  header: t('users.roles'),
                   render: (u) => (
                     <span className="badge-row">
                       {u.roles.map((r) => (
-                        <Badge
-                          key={r}
-                          tone={r === 'admin' ? 'warn' : 'neutral'}
-                        >
+                        <Badge key={r} tone={r === 'admin' ? 'warn' : 'neutral'}>
                           {r}
                         </Badge>
                       ))}
                       {u.totpEnabled ? <Badge tone="ok">2FA</Badge> : null}
+                      {(u.capabilityGrants?.length || u.capabilityRevokes?.length) ? (
+                        <Badge tone="info">{t('rbac.overridesBadge')}</Badge>
+                      ) : null}
                     </span>
                   ),
                 },
                 {
                   key: 'status',
-                  header: '狀態',
+                  header: t('common.status'),
                   nowrap: true,
                   render: (u) => (
                     <Badge tone={u.suspended ? 'warn' : 'ok'}>
-                      {u.suspended ? '暫停' : '正常'}
+                      {u.suspended ? t('users.suspended') : t('common.normal')}
                     </Badge>
                   ),
                 },
                 {
                   key: 'pkg',
-                  header: '方案',
-                  render: (u) => (
-                    <select
-                      value={u.packageId ?? ''}
-                      disabled={busy}
-                      aria-label={`${u.username} 方案`}
-                      onChange={(e) => {
-                        const packageId = e.target.value || null;
-                        setBusy(true);
-                        void api
-                          .requestRaw(`/api/v1/users/${u.id}`, {
-                            method: 'PATCH',
-                            body: JSON.stringify({ packageId }),
-                          })
-                          .then(() => refresh())
-                          .catch((err: Error) => setError(err.message))
-                          .finally(() => setBusy(false));
-                      }}
-                    >
-                      <option value="">— 無 —</option>
-                      {packages.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))}
-                    </select>
-                  ),
+                  header: t('users.package'),
+                  render: (u) => u.packageName || u.packageId || t('users.noneOption'),
+                },
+                {
+                  key: 'seen',
+                  header: t('users.lastSeen'),
+                  nowrap: true,
+                  render: (u) =>
+                    u.lastSeenAt
+                      ? new Date(u.lastSeenAt).toLocaleString()
+                      : t('users.neverSeen'),
                 },
               ]}
               rows={filteredUsers}
               rowKey={(u) => u.id}
               rowActions={(u) => (
                 <ActionBar align="end">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={busy}
-                    onClick={() => {
-                      setBusy(true);
-                      void api
-                        .requestRaw(`/api/v1/users/${u.id}`, {
-                          method: 'PATCH',
-                          body: JSON.stringify({
-                            suspended: !u.suspended,
-                          }),
-                        })
-                        .then(() => refresh())
-                        .catch((e: Error) => setError(e.message))
-                        .finally(() => setBusy(false));
-                    }}
-                  >
-                    {u.suspended ? '恢復' : '暫停'}
+                  <Button variant="secondary" size="sm" onClick={() => openDetail(u)}>
+                    {t('users.openDetail')}
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={busy}
-                    onClick={() => setPending({ kind: 'impersonate', user: u })}
-                  >
-                    模擬登入
-                  </Button>
+                  {canImpersonate ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      onClick={() => setPending({ kind: 'impersonate', user: u })}
+                    >
+                      {t('users.impersonate')}
+                    </Button>
+                  ) : null}
                   <Button
                     variant="danger"
                     size="sm"
                     loading={busy}
                     onClick={() => setPending({ kind: 'delUser', user: u })}
                   >
-                    刪除
+                    {t('common.delete')}
                   </Button>
                 </ActionBar>
               )}
             />
-        ) : null}
+          ) : null}
 
-        {tab === 'packages' ? (
-          <div className="tab-panel">
-            <DataTable
-              title={`方案列表 (${packages.length})`}
-              description="專案／磁碟配額"
-              toolbar={
-                <ActionBar>
-                  <Button variant="primary" size="sm" onClick={openCreatePkg}>
-                    + 建立方案
-                  </Button>
-                </ActionBar>
-              }
-              columns={[
-                {
-                  key: 'name',
-                  header: '名稱',
-                  render: (p) => (
-                    <span className="u-font-semibold">{p.name}</span>
-                  ),
-                },
-                {
-                  key: 'projects',
-                  header: '專案',
-                  nowrap: true,
-                  render: (p) => p.max_projects,
-                },
-                {
-                  key: 'mail',
-                  header: '信箱',
-                  nowrap: true,
-                  render: (p) => p.max_mailboxes,
-                },
-                {
-                  key: 'db',
-                  header: 'DB',
-                  nowrap: true,
-                  render: (p) => p.max_databases,
-                },
-                {
-                  key: 'disk',
-                  header: '碟 MiB',
-                  nowrap: true,
-                  render: (p) => p.disk_mb,
-                },
-                {
-                  key: 'ftp',
-                  header: 'FTP',
-                  nowrap: true,
-                  render: (p) => (p.allow_ftp ? '是' : '否'),
-                },
-                {
-                  key: 'ssh',
-                  header: 'SSH',
-                  nowrap: true,
-                  render: (p) => (p.allow_ssh ? '是' : '否'),
-                },
-              ]}
-              rows={packages}
-              rowKey={(p) => p.id}
-              rowActions={(p) => (
-                <ActionBar align="end">
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    loading={busy}
-                    onClick={() => setPending({ kind: 'delPkg', pkg: p })}
-                  >
-                    刪除
-                  </Button>
-                </ActionBar>
-              )}
-              empty={<p className="muted u-text-sm">尚未有方案</p>}
-            />
-          </div>
-        ) : null}
-        
-        {tab === 'about' ? <PageGuide guideId="users" /> : null}
-      </PageTabs>
+          {tab === 'packages' ? (
+            <div className="tab-panel">
+              <DataTable
+                title={t('users.pkgList', { count: packages.length })}
+                description={t('users.pkgListDesc')}
+                toolbar={
+                  <ActionBar>
+                    <Button variant="primary" size="sm" onClick={openCreatePkg}>
+                      {t('users.createPkgPlus')}
+                    </Button>
+                  </ActionBar>
+                }
+                columns={[
+                  {
+                    key: 'name',
+                    header: t('common.name'),
+                    render: (p) => (
+                      <span className="u-font-semibold">{p.name}</span>
+                    ),
+                  },
+                  {
+                    key: 'subs',
+                    header: t('users.subscribers'),
+                    nowrap: true,
+                    render: (p) => t('users.subscribersN', { count: p.subscriberCount ?? 0 }),
+                  },
+                  {
+                    key: 'usage',
+                    header: t('users.hostUsage'),
+                    render: (p) => {
+                      const hu = p.hostUsage ?? hostUsage;
+                      if (!hu) return '—';
+                      return (
+                        <span
+                          className="u-text-sm"
+                          title={t('users.hostUsageHint')}
+                        >
+                          {t('common.project')}: {usageBar(hu.projects, p.max_projects)}
+                          {' · '}
+                          {t('users.mailboxes')}: {usageBar(hu.mailboxes, p.max_mailboxes)}
+                          {' · '}
+                          {t('users.databases')}: {usageBar(hu.databases, p.max_databases)}
+                        </span>
+                      );
+                    },
+                  },
+                  {
+                    key: 'projects',
+                    header: t('common.project'),
+                    nowrap: true,
+                    render: (p) => p.max_projects,
+                  },
+                  {
+                    key: 'mail',
+                    header: t('users.mailboxes'),
+                    nowrap: true,
+                    render: (p) => p.max_mailboxes,
+                  },
+                  {
+                    key: 'db',
+                    header: t('users.databases'),
+                    nowrap: true,
+                    render: (p) => p.max_databases,
+                  },
+                  {
+                    key: 'disk',
+                    header: t('users.diskMiB'),
+                    nowrap: true,
+                    render: (p) => p.disk_mb,
+                  },
+                  {
+                    key: 'bw',
+                    header: t('users.bandwidth'),
+                    nowrap: true,
+                    render: (p) => p.bandwidth_mb ?? 0,
+                  },
+                  {
+                    key: 'ftp',
+                    header: t('users.ftp'),
+                    nowrap: true,
+                    render: (p) => (p.allow_ftp ? t('common.yes') : t('common.no')),
+                  },
+                  {
+                    key: 'ssh',
+                    header: t('users.ssh'),
+                    nowrap: true,
+                    render: (p) => (p.allow_ssh ? t('common.yes') : t('common.no')),
+                  },
+                ]}
+                rows={packages}
+                rowKey={(p) => p.id}
+                rowActions={(p) => (
+                  <ActionBar align="end">
+                    <Button variant="secondary" size="sm" onClick={() => openEditPkg(p)}>
+                      {t('users.edit')}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      loading={busy}
+                      disabled={(p.subscriberCount ?? 0) > 0}
+                      onClick={() => setPending({ kind: 'delPkg', pkg: p })}
+                    >
+                      {t('common.delete')}
+                    </Button>
+                  </ActionBar>
+                )}
+                empty={<p className="muted u-text-sm">{t('users.noPackages')}</p>}
+              />
+            </div>
+          ) : null}
+
+          {tab === 'permissions' ? (
+            <div className="tab-panel">
+              {!canEditRbac ? (
+                <Alert variant="info">{t('rbac.needRbacPolicy')}</Alert>
+              ) : null}
+              <p className="muted u-text-sm u-mb-3">{t('rbac.permissionsDesc')}</p>
+              <fieldset
+                disabled={!canEditRbac || policyRole === 'admin'}
+                style={{ border: 0, padding: 0, margin: 0 }}
+              >
+              <ActionBar className="u-mb-3">
+                <SegRadio
+                  name="policy-role"
+                  aria-label={t('users.role')}
+                  value={policyRole}
+                  onChange={(v) => setPolicyRole(v as SystemRole)}
+                  options={SYSTEM_ROLES.map((r) => ({ value: r, label: r }))}
+                />
+                {policyRole === 'admin' ? (
+                  <Badge tone="ok">{t('rbac.adminLockedFull')}</Badge>
+                ) : null}
+                {policyView?.dirty ? (
+                  <Badge tone="warn">{t('rbac.dirty')}</Badge>
+                ) : (
+                  <Badge tone="ok">{t('rbac.factory')}</Badge>
+                )}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!policyView?.dirty}
+                  onClick={() => setPending({ kind: 'restoreRole', role: policyRole })}
+                >
+                  {t('rbac.restoreRole')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPending({ kind: 'restoreAll' })}
+                >
+                  {t('rbac.restoreAll')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  disabled={policyRole === 'admin' || !canEditRbac}
+                  title={
+                    policyRole === 'admin' ? t('rbac.adminLockedFull') : undefined
+                  }
+                  onClick={() => void saveRolePolicy()}
+                >
+                  {t('rbac.save')}
+                </Button>
+              </ActionBar>
+              {policyRole === 'admin' ? (
+                <Alert variant="info">{t('rbac.adminLockedHint')}</Alert>
+              ) : null}
+
+              <Field label={t('rbac.maxLevel')} htmlFor="max-level" flush>
+                <SegRadio
+                  name="max-level"
+                  aria-label={t('rbac.maxLevel')}
+                  value={draftMax}
+                  onChange={(v) => {
+                    if (policyRole === 'admin') return;
+                    const next = v as OperationLevel;
+                    setDraftMax(next);
+                    setDraftCaps((caps) =>
+                      caps.filter((id) => {
+                        const def = CAPABILITY_CATALOG.find((c) => c.id === id);
+                        if (!def) return false;
+                        return (
+                          OPERATION_LEVELS.indexOf(def.band) <= OPERATION_LEVELS.indexOf(next)
+                        );
+                      }),
+                    );
+                  }}
+                  options={OPERATION_LEVELS.map((lv) => ({
+                    value: lv,
+                    label: t(`rbac.level.${lv}`),
+                  }))}
+                />
+              </Field>
+
+              {OPERATION_LEVELS.map((band) => {
+                const bandCaps = CAPABILITY_CATALOG.filter((c) => c.band === band);
+                const locked = OPERATION_LEVELS.indexOf(band) > OPERATION_LEVELS.indexOf(draftMax);
+                const allOn = bandCaps.every((c) => draftCaps.includes(c.id));
+                return (
+                  <div key={band} className="u-mt-4" style={{ opacity: locked ? 0.5 : 1 }}>
+                    <ActionBar>
+                      <strong>{t(`rbac.level.${band}`)}</strong>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={locked || busy}
+                        onClick={() =>
+                          setDraftCaps(applyBandToCapabilities(draftCaps, band, true, draftMax))
+                        }
+                      >
+                        {t('rbac.bandAllOn')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={locked || busy}
+                        onClick={() =>
+                          setDraftCaps(applyBandToCapabilities(draftCaps, band, false, draftMax))
+                        }
+                      >
+                        {t('rbac.bandAllOff')}
+                      </Button>
+                      {allOn && !locked ? <Badge tone="ok">{t('common.on', { defaultValue: 'On' })}</Badge> : null}
+                    </ActionBar>
+                    <div className="u-mt-2" style={{ display: 'grid', gap: '0.35rem' }}>
+                      {bandCaps.map((c) => {
+                        const checked = draftCaps.includes(c.id);
+                        const factoryHas = (policyView?.factory.capabilities ?? factoryRolePolicy(policyRole).capabilities).includes(
+                          c.id,
+                        );
+                        const differs = checked !== factoryHas;
+                        return (
+                          <label
+                            key={c.id}
+                            className="u-text-sm"
+                            style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+                          >
+                            <input
+                              type="checkbox"
+                              disabled={locked || busy}
+                              checked={checked}
+                              onChange={(e) => {
+                                setDraftCaps((prev) => {
+                                  const set = new Set(prev);
+                                  if (e.target.checked) set.add(c.id);
+                                  else set.delete(c.id);
+                                  return [...set].sort() as CapabilityId[];
+                                });
+                              }}
+                            />
+                            <span>{t(capLabelKey(c.id))}</span>
+                            <code className="muted u-text-xs">{c.id}</code>
+                            {differs ? (
+                              <Badge tone="warn">{t('rbac.diffFromFactory')}</Badge>
+                            ) : null}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+              </fieldset>
+            </div>
+          ) : null}
+
+          {tab === 'about' ? (
+            <div className="tab-panel">
+              <PageGuide guideId="users" />
+              <div className="u-mt-4">
+                <h3 className="u-font-semibold">{t('rbac.aboutRoles')}</h3>
+                <p className="muted u-text-sm">{t('rbac.aboutRolesBody')}</p>
+                <h3 className="u-font-semibold u-mt-3">{t('rbac.aboutQuota')}</h3>
+                <p className="muted u-text-sm">{t('rbac.aboutQuotaBody')}</p>
+                {hostUsage ? (
+                  <p className="u-text-sm u-mt-2" title={t('users.hostUsageHint')}>
+                    <strong>{t('users.hostUsage')}:</strong>{' '}
+                    {t('common.project')} {hostUsage.projects} · {t('users.mailboxes')}{' '}
+                    {hostUsage.mailboxes} · {t('users.databases')} {hostUsage.databases}{' '}
+                    <Badge tone="warn">{t('users.hostTotalsBadge')}</Badge>
+                  </p>
+                ) : null}
+                <h3 className="u-font-semibold u-mt-3">{t('users.opsChecklist')}</h3>
+                <ul className="u-text-sm muted">
+                  <li>{t('users.opsCheck1')}</li>
+                  <li>{t('users.opsCheck2')}</li>
+                  <li>{t('users.opsCheck3')}</li>
+                  <li>{t('users.opsCheck4')}</li>
+                </ul>
+              </div>
+            </div>
+          ) : null}
+        </PageTabs>
       )}
 
+      {/* Create user */}
       <Modal
         open={createUserOpen}
         onClose={() => setCreateUserOpen(false)}
-        title="建立用戶"
-        description="密碼至少 8 位；建立後可改方案或暫停"
+        title={t('users.createUser')}
+        description={t('users.createUserDesc')}
         footer={
           <ActionBar align="end" size="md">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCreateUserOpen(false)}
-            >
-              取消
+            <Button variant="secondary" size="sm" onClick={() => setCreateUserOpen(false)}>
+              {t('common.cancel')}
             </Button>
-            <Button
-              type="submit"
-              form="users-create"
-              variant="primary"
-              size="sm"
-              loading={busy}
-            >
-              建立用戶
+            <Button type="submit" form="users-create" variant="primary" size="sm" loading={busy}>
+              {t('users.createUser')}
             </Button>
           </ActionBar>
         }
       >
         <Form id="users-create" columns={1} onSubmit={(e) => void onCreateUser(e)}>
-          <Field label="用戶名" htmlFor="u-name" flush required>
+          <Field label={t('users.username')} htmlFor="u-name" flush required>
             <input
               id="u-name"
               value={username}
@@ -497,7 +979,13 @@ export function UsersPage() {
               autoComplete="off"
             />
           </Field>
-          <Field label="密碼" htmlFor="u-pass" flush required hint="至少 8 位">
+          <Field
+            label={t('common.password')}
+            htmlFor="u-pass"
+            flush
+            required
+            hint={t('users.passwordHint')}
+          >
             <input
               id="u-pass"
               type="password"
@@ -508,10 +996,10 @@ export function UsersPage() {
               autoComplete="new-password"
             />
           </Field>
-          <Field label="角色" htmlFor="u-role" flush>
+          <Field label={t('users.role')} htmlFor="u-role" flush>
             <SegRadio
               name="u-role"
-              aria-label="用戶角色"
+              aria-label={t('users.roleAria')}
               value={role}
               onChange={(v) => setRole(v as typeof role)}
               options={[
@@ -521,13 +1009,9 @@ export function UsersPage() {
               ]}
             />
           </Field>
-          <Field label="方案" htmlFor="u-pkg" flush>
-            <select
-              id="u-pkg"
-              value={userPkgId}
-              onChange={(e) => setUserPkgId(e.target.value)}
-            >
-              <option value="">— 無 —</option>
+          <Field label={t('users.package')} htmlFor="u-pkg" flush>
+            <select id="u-pkg" value={userPkgId} onChange={(e) => setUserPkgId(e.target.value)}>
+              <option value="">{t('users.noneOption')}</option>
               {packages.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -535,37 +1019,52 @@ export function UsersPage() {
               ))}
             </select>
           </Field>
+          <Field label={t('common.language', { defaultValue: 'Locale' })} htmlFor="u-locale" flush>
+            <select
+              id="u-locale"
+              value={createLocale}
+              onChange={(e) => setCreateLocale(e.target.value)}
+            >
+              <option value="zh-HK">zh-HK</option>
+              <option value="zh-CN">zh-CN</option>
+              <option value="en">en</option>
+            </select>
+          </Field>
+          <div className="u-mt-2">
+            <strong className="u-text-sm">{t('rbac.effectivePreview')}</strong>
+            <div className="badge-row u-mt-1">
+              {factoryRolePolicy(role).capabilities.slice(0, 12).map((id) => (
+                <Badge key={id} tone="neutral">
+                  {id}
+                </Badge>
+              ))}
+              {factoryRolePolicy(role).capabilities.length > 12 ? (
+                <Badge tone="info">+{factoryRolePolicy(role).capabilities.length - 12}</Badge>
+              ) : null}
+            </div>
+          </div>
         </Form>
       </Modal>
 
+      {/* Package create/edit */}
       <Modal
-        open={createPkgOpen}
-        onClose={() => setCreatePkgOpen(false)}
-        title="建立方案"
-        description="配額模板；可之後綁到用戶"
+        open={pkgFormOpen}
+        onClose={() => setPkgFormOpen(false)}
+        title={editingPkg ? t('users.editPkg') : t('users.createPkg')}
+        description={t('users.createPkgDesc')}
         footer={
           <ActionBar align="end" size="md">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCreatePkgOpen(false)}
-            >
-              取消
+            <Button variant="secondary" size="sm" onClick={() => setPkgFormOpen(false)}>
+              {t('common.cancel')}
             </Button>
-            <Button
-              type="submit"
-              form="pkg-create"
-              variant="primary"
-              size="sm"
-              loading={busy}
-            >
-              建立方案
+            <Button type="submit" form="pkg-form" variant="primary" size="sm" loading={busy}>
+              {editingPkg ? t('common.save') : t('users.createPkg')}
             </Button>
           </ActionBar>
         }
       >
-        <Form id="pkg-create" columns={1} onSubmit={(e) => void onCreatePkg(e)}>
-          <Field label="名稱" htmlFor="p-name" flush required>
+        <Form id="pkg-form" columns={1} onSubmit={(e) => void onSavePkg(e)}>
+          <Field label={t('common.name')} htmlFor="p-name" flush required>
             <input
               id="p-name"
               value={pkgName}
@@ -573,7 +1072,7 @@ export function UsersPage() {
               required
             />
           </Field>
-          <Field label="最大專案數" htmlFor="p-proj" flush>
+          <Field label={t('users.maxProjects')} htmlFor="p-proj" flush>
             <PresetChips
               options={[
                 { value: '1', label: '1' },
@@ -586,10 +1085,28 @@ export function UsersPage() {
               value={pkgProjects}
               onChange={setPkgProjects}
               allowCustom
-              customPlaceholder="自訂"
+              customPlaceholder={t('users.custom')}
             />
           </Field>
-          <Field label="磁碟 MiB" htmlFor="p-disk" flush>
+          <Field label={t('users.mailboxes')} htmlFor="p-mail" flush>
+            <input
+              id="p-mail"
+              type="number"
+              min={0}
+              value={pkgMail}
+              onChange={(e) => setPkgMail(e.target.value)}
+            />
+          </Field>
+          <Field label={t('users.databases')} htmlFor="p-db" flush>
+            <input
+              id="p-db"
+              type="number"
+              min={0}
+              value={pkgDb}
+              onChange={(e) => setPkgDb(e.target.value)}
+            />
+          </Field>
+          <Field label={t('users.diskQuota')} htmlFor="p-disk" flush>
             <PresetChips
               options={[
                 { value: '1024', label: '1G' },
@@ -604,40 +1121,139 @@ export function UsersPage() {
               customPlaceholder="MiB"
             />
           </Field>
+          <Field label={t('users.bandwidth')} htmlFor="p-bw" flush>
+            <input
+              id="p-bw"
+              type="number"
+              min={0}
+              value={pkgBw}
+              onChange={(e) => setPkgBw(e.target.value)}
+            />
+          </Field>
+          <label className="u-text-sm" style={{ display: 'flex', gap: '0.5rem' }}>
+            <input type="checkbox" checked={pkgFtp} onChange={(e) => setPkgFtp(e.target.checked)} />
+            {t('users.ftp')}
+          </label>
+          <label className="u-text-sm" style={{ display: 'flex', gap: '0.5rem' }}>
+            <input type="checkbox" checked={pkgSsh} onChange={(e) => setPkgSsh(e.target.checked)} />
+            {t('users.ssh')}
+          </label>
+          <Field label={t('users.notes')} htmlFor="p-notes" flush>
+            <textarea
+              id="p-notes"
+              value={pkgNotes}
+              onChange={(e) => setPkgNotes(e.target.value)}
+              rows={2}
+            />
+          </Field>
         </Form>
       </Modal>
+
+      <UserDetailModal
+        open={detailUser != null}
+        user={detailUser}
+        packages={packages.map((p) => ({ id: p.id, name: p.name }))}
+        role={detailRole}
+        packageId={detailPkg}
+        suspended={detailSuspended}
+        password={detailPassword}
+        grants={detailGrants}
+        revokes={detailRevokes}
+        effective={effectivePreview}
+        busy={busy}
+        canImpersonate={canImpersonate}
+        isAdminRole={detailRole === 'admin'}
+        onRoleChange={setDetailRole}
+        onPackageChange={setDetailPkg}
+        onSuspendedChange={setDetailSuspended}
+        onPasswordChange={setDetailPassword}
+        onGrantsChange={setDetailGrants}
+        onRevokesChange={setDetailRevokes}
+        onSave={() => void saveDetailUser()}
+        onClose={() => setDetailUser(null)}
+        onImpersonate={
+          detailUser
+            ? () => setPending({ kind: 'impersonate', user: detailUser })
+            : undefined
+        }
+        onDelete={
+          detailUser ? () => setPending({ kind: 'delUser', user: detailUser }) : undefined
+        }
+        onRestoreOverrides={
+          detailUser
+            ? () => setPending({ kind: 'restoreUserOverrides', user: detailUser })
+            : undefined
+        }
+      />
 
       <ConfirmDialog
         open={pending != null}
         onClose={() => !busy && setPending(null)}
         title={
           pending?.kind === 'impersonate'
-            ? `模擬登入 ${pending.user.username}？`
+            ? t('users.impersonateTitle', { name: pending.user.username })
             : pending?.kind === 'delUser'
-              ? `刪除 ${pending.user.username}？`
+              ? t('users.deleteUserTitle', { name: pending.user.username })
               : pending?.kind === 'delPkg'
-                ? `刪除方案 ${pending.pkg.name}？`
-                : '確認'
+                ? t('users.deletePkgTitle', { name: pending.pkg.name })
+                : pending?.kind === 'restoreRole'
+                  ? t('rbac.restoreRoleTitle', { role: pending.role })
+                  : pending?.kind === 'restoreAll'
+                    ? t('rbac.restoreAllTitle')
+                    : pending?.kind === 'restoreUserOverrides'
+                      ? t('rbac.restoreUserOverridesTitle', { name: pending.user.username })
+                      : pending?.kind === 'promoteAdmin'
+                        ? t('rbac.promoteAdminTitle')
+                        : pending?.kind === 'dangerPolicySave'
+                          ? t('rbac.dangerPolicyTitle')
+                          : t('common.confirm')
         }
         description={
           pending?.kind === 'impersonate'
-            ? '目前工作階段會被取代。'
+            ? t('users.impersonateDesc')
             : pending?.kind === 'delUser'
-              ? '此操作無法復原。'
+              ? t('users.deleteUserDesc')
               : pending?.kind === 'delPkg'
-                ? '已綁定用戶的方案引用會失效。'
-                : ''
+                ? t('users.deletePkgDesc')
+                : pending?.kind === 'restoreRole'
+                  ? t('rbac.restoreRoleDesc')
+                  : pending?.kind === 'restoreAll'
+                    ? t('rbac.restoreAllDesc')
+                    : pending?.kind === 'restoreUserOverrides'
+                      ? t('rbac.restoreUserOverridesDesc')
+                      : pending?.kind === 'promoteAdmin'
+                        ? t('rbac.promoteAdminDesc')
+                        : pending?.kind === 'dangerPolicySave'
+                          ? t('rbac.dangerPolicyDesc')
+                          : ''
         }
         confirmLabel={
-          pending?.kind === 'impersonate' ? '模擬登入' : '刪除'
+          pending?.kind === 'impersonate'
+            ? t('users.impersonate')
+            : pending?.kind === 'promoteAdmin' ||
+                pending?.kind === 'dangerPolicySave' ||
+                pending?.kind === 'restoreRole' ||
+                pending?.kind === 'restoreAll' ||
+                pending?.kind === 'restoreUserOverrides'
+              ? t('common.confirm')
+              : t('common.delete')
         }
-        cancelLabel="取消"
-        danger={pending?.kind !== 'impersonate'}
+        cancelLabel={t('common.cancel')}
+        danger={
+          pending?.kind === 'delUser' ||
+          pending?.kind === 'delPkg' ||
+          pending?.kind === 'restoreAll' ||
+          pending?.kind === 'dangerPolicySave'
+        }
         busy={busy}
         onConfirm={() => {
           const p = pending;
           setPending(null);
           if (!p) return;
+          if (p.kind === 'promoteAdmin' || p.kind === 'dangerPolicySave') {
+            p.next();
+            return;
+          }
           if (p.kind === 'impersonate') {
             setBusy(true);
             void api
@@ -668,16 +1284,53 @@ export function UsersPage() {
             setBusy(true);
             void api
               .requestRaw(`/api/v1/users/${p.user.id}`, { method: 'DELETE' })
-              .then(() => refresh())
+              .then(() => {
+                setDetailUser(null);
+                return refresh();
+              })
               .catch((e: Error) => setError(e.message))
               .finally(() => setBusy(false));
           } else if (p.kind === 'delPkg') {
+            setBusy(true);
             void api
-              .requestRaw(`/api/v1/packages/${p.pkg.id}`, {
-                method: 'DELETE',
-              })
+              .requestRaw(`/api/v1/packages/${p.pkg.id}`, { method: 'DELETE' })
               .then(() => refresh())
-              .catch((e: Error) => setError(e.message));
+              .catch((e: Error) => setError(e.message))
+              .finally(() => setBusy(false));
+          } else if (p.kind === 'restoreRole') {
+            setBusy(true);
+            void api
+              .requestRaw(`/api/v1/rbac/policies/${p.role}/restore`, { method: 'POST', body: '{}' })
+              .then(() => {
+                setMsg(t('rbac.restoredRole', { role: p.role }));
+                return refresh();
+              })
+              .catch((e: Error) => setError(e.message))
+              .finally(() => setBusy(false));
+          } else if (p.kind === 'restoreAll') {
+            setBusy(true);
+            void api
+              .requestRaw('/api/v1/rbac/policies/restore-all', { method: 'POST', body: '{}' })
+              .then(() => {
+                setMsg(t('rbac.restoredAll'));
+                return refresh();
+              })
+              .catch((e: Error) => setError(e.message))
+              .finally(() => setBusy(false));
+          } else if (p.kind === 'restoreUserOverrides') {
+            setBusy(true);
+            void api
+              .requestRaw(`/api/v1/rbac/users/${p.user.id}/restore`, {
+                method: 'POST',
+                body: '{}',
+              })
+              .then(() => {
+                setDetailGrants([]);
+                setDetailRevokes([]);
+                return refresh();
+              })
+              .catch((e: Error) => setError(e.message))
+              .finally(() => setBusy(false));
           }
         }}
       />

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Host metrics snapshot for dashboard / predictive thresholds.
  * Disk mounts and process lists use real host commands (honest, no fake rows).
@@ -6,28 +7,11 @@
 import { cpus, freemem, loadavg, totalmem, uptime } from 'node:os';
 import { readFileSync, existsSync } from 'node:fs';
 import fs from 'node:fs';
+import type { DiskMountDto, MetricsSnapshotDto } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 
-export interface DiskMount {
-  filesystem: string;
-  size: number;
-  used: number;
-  avail: number;
-  usedRatio: number;
-  mount: string;
-}
-
-export interface MetricsSnapshot {
-  at: string;
-  loadavg: number[];
-  cpuCount: number;
-  memory: { total: number; free: number; usedRatio: number; available?: number };
-  uptimeSec: number;
-  disk?: { path: string; free: number; total: number; usedRatio: number };
-  /** Multi-mount from `df -P -B1` when host provided */
-  diskMounts?: DiskMount[];
-  alerts: string[];
-}
+export type DiskMount = DiskMountDto;
+export type MetricsSnapshot = MetricsSnapshotDto;
 
 export function collectMetrics(diskPath = '/'): MetricsSnapshot {
   const total = totalmem();
@@ -133,11 +117,11 @@ export async function collectDiskMounts(
   const notes: string[] = [];
   const r = await host.runCommand(['df', '-P', '-B1'], { timeoutMs: 8_000 });
   if (r.exitCode !== 0) {
-    notes.push(`df 失敗：${(r.stderr || r.stdout).slice(0, 160)}`);
+    notes.push(tl('notes.auto.t0458', { v0: ((r.stderr || r.stdout).slice(0, 160)) }));
     return { mounts: [], notes };
   }
   const mounts = parseDfOutput(r.stdout, opts);
-  if (!mounts.length) notes.push('df 無可用 mount（或全被過濾）');
+  if (!mounts.length) notes.push(tl('notes.auto.n0250'));
   return { mounts, notes };
 }
 

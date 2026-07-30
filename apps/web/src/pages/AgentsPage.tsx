@@ -39,16 +39,16 @@ function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'in
   return 'info';
 }
 
-function statusLabel(status?: string): string {
-  if (status === 'running') return '運行中';
-  if (status === 'connected') return '上線';
-  if (status === 'registered') return '僅登記';
-  if (status === 'stale') return '逾時';
-  if (status === 'disconnected') return '離線';
-  if (status === 'not_installed') return '未安裝';
-  if (status === 'failed' || status === 'error') return '失敗';
-  if (status === 'unknown') return '未探測';
-  return status ?? '未知';
+function statusLabel(status: string | undefined, tr: (k: string) => string): string {
+  if (status === 'running') return tr('agents.status.running');
+  if (status === 'connected') return tr('agents.status.connected');
+  if (status === 'registered') return tr('agents.status.registered');
+  if (status === 'stale') return tr('agents.status.stale');
+  if (status === 'disconnected') return tr('agents.status.disconnected');
+  if (status === 'not_installed') return tr('agents.status.not_installed');
+  if (status === 'failed' || status === 'error') return tr('agents.status.failed');
+  if (status === 'unknown') return tr('agents.status.unknown');
+  return status ?? tr('agents.status.fallback');
 }
 
 function cmdStatusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
@@ -299,25 +299,25 @@ export function AgentsPage() {
         pill: {
           label:
             liveAgents > 0
-              ? `${liveAgents} 上線`
+              ? t('agents.liveN', { count: liveAgents })
               : agents.length
-                ? '僅登記'
-                : '待探測',
+                ? t('agents.registeredOnly')
+                : t('agents.awaitProbe'),
           tone: liveAgents > 0 ? 'ok' : 'warn',
         },
         items: [
-          { label: '運行時', value: runtimeList.length },
+          { label: t('agents.runtimes'), value: runtimeList.length },
           {
-            label: '運行中',
+            label: t('agents.running'),
             value: running,
             tone: running > 0 ? 'ok' : 'neutral',
           },
           {
-            label: '上線 agent',
+            label: t('agents.liveAgents'),
             value: liveAgents,
             tone: liveAgents > 0 ? 'ok' : 'warn',
           },
-          { label: '機群', value: agents.length },
+          { label: t('agents.fleet'), value: agents.length },
         ],
       }}
       actions={<ActionBar>
@@ -327,10 +327,10 @@ export function AgentsPage() {
             loading={busy}
             onClick={() => void refresh()}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Link to="/ai" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            AI 任務
+            {t('agents.aiTasks')}
           </Link>
           
         </ActionBar>
@@ -339,12 +339,12 @@ export function AgentsPage() {
       <WithPageGuide guideId="agents">
 
       <Alert variant="info">
-        <strong>實驗。</strong> 登記 ≠ 上線。真實運維用 CLI：
+        <strong>{t('agents.expBanner')}</strong> {t('agents.expBody')}
         <code className="inline"> ysk-server … --json</code>
-        。文件：repo <code className="inline">docs/agent/README.md</code>
+         {t('agents.expDocs')} <code className="inline">docs/agent/README.md</code>
         。Edge：
         <code className="inline">ysk-server agent run --id …</code>
-        ；指令 payload 建議{' '}
+         {t('agents.expPayload')}{' '}
         <code className="inline">{`{ "cli": ["projects", "list"] }`}</code>。
       </Alert>
       {error ? <Alert variant="error">{error}</Alert> : null}
@@ -352,32 +352,31 @@ export function AgentsPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <Card>
         <CardSection
-          title="機群能做乜"
-          description="唔係空殼列表 — 以下係控制面對邊緣節點嘅真實能力"
+          title={t('agents.fleetCan')}
+          description={t('agents.fleetCanDesc')}
         >
           <ul className="list-plain list-spaced u-mb-0">
             <li>
-              <strong>登記</strong>：寫入控制面清單（狀態「僅登記」）— 唔代表進程已跑
+              <strong>{t('agents.capRegister')}</strong>：{t('agents.capRegisterD')}
             </li>
             <li>
-              <strong>下指令</strong>：CLI preset（readiness / host / projects…）或自訂；邊緣 pull 後跑{' '}
-              <code className="inline">ysk-server</code> 並 ack
+              <strong>{t('agents.capCommand')}</strong>：{t('agents.capCommandD')}
             </li>
             <li>
-              <strong>指令紀錄</strong>：queued / done / error、exit code、pretty JSON result
+              <strong>{t('agents.capHistory')}</strong>：{t('agents.capHistoryD')}
             </li>
             <li>
-              <strong>刪除</strong>：移除 session 同相關訊息
+              <strong>{t('agents.capDelete')}</strong>：{t('agents.capDeleteD')}
             </li>
             <li>
-              <strong>狀態</strong>：僅登記 → 上線（heartbeat）→ 逾時（&gt;60s 無心跳）
+              <strong>{t('agents.capStatus')}</strong>：{t('agents.capStatusD')}
             </li>
           </ul>
         </CardSection>
@@ -385,41 +384,41 @@ export function AgentsPage() {
 
       <Card>
         <CardSection
-          title={`機群（${agents.length}）`}
-          description="控制面登記清單 · 登記 ≠ 節點已上線"
+          title={t('agents.fleetTitle', { count: agents.length })}
+          description={t('agents.fleetDesc')}
         >
           <DataTable
             toolbar={
               <ActionBar>
                 <Button variant="primary" size="sm" onClick={openRegister}>
-                  + 登記 Agent
+                  {t('agents.registerPlus')}
                 </Button>
               </ActionBar>
             }
             columns={[
               {
                 key: 'id',
-                header: '識別碼',
+                header: t('agents.colId'),
                 render: (a) => <code className="inline">{a.agent_id}</code>,
               },
               {
                 key: 'status',
-                header: '狀態',
+                header: t('agents.colStatus'),
                 nowrap: true,
                 render: (a) => (
                   <Badge tone={statusTone(a.status)}>
-                    {statusLabel(a.status)}
+                    {statusLabel(a.status, t)}
                   </Badge>
                 ),
               },
               {
                 key: 'group',
-                header: '群組',
+                header: t('agents.colGroup'),
                 render: (a) => a.group ?? '—',
               },
               {
                 key: 'last_seen',
-                header: '最後上線',
+                header: t('agents.colLastSeen'),
                 nowrap: true,
                 className: 'muted',
                 render: (a) =>
@@ -439,7 +438,7 @@ export function AgentsPage() {
                     setCmdAgent(a);
                   }}
                 >
-                  下指令
+                  {t('agents.command')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -447,7 +446,7 @@ export function AgentsPage() {
                   loading={busy}
                   onClick={() => void openHistory(a)}
                 >
-                  紀錄
+                  {t('agents.history')}
                 </Button>
                 <Button
                   variant="danger"
@@ -455,14 +454,14 @@ export function AgentsPage() {
                   loading={busy}
                   onClick={() => setDelAgent(a)}
                 >
-                  刪除
+                  {t('common.delete')}
                 </Button>
               </ActionBar>
             )}
             empty={
               <EmptyState
-                title="尚未登記 agent"
-                description="用列表右上角登記，或等邊緣進程自行 register"
+                title={t('agents.emptyAgents')}
+                description={t('agents.emptyAgentsDesc')}
               />
             }
           />
@@ -472,8 +471,8 @@ export function AgentsPage() {
       {histAgent ? (
         <Card>
           <CardSection
-            title={`指令紀錄 · ${histAgent.agent_id}`}
-            description="queued 等節點 pull；done/error 為 ack。CLI 結果含 exit code + JSON（約 4s 自動刷新）"
+            title={t('agents.historyTitle', { id: histAgent.agent_id })}
+            description={t('agents.historyDesc')}
           >
             <DataTable
               toolbar={
@@ -484,7 +483,7 @@ export function AgentsPage() {
                     loading={busy}
                     onClick={() => void loadCommands(histAgent.id)}
                   >
-                    重新整理紀錄
+                    {t('agents.refreshHistory')}
                   </Button>
                   <Button
                     variant="primary"
@@ -494,21 +493,21 @@ export function AgentsPage() {
                       setCmdAgent(histAgent);
                     }}
                   >
-                    下指令
+                    {t('agents.command')}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setHistAgent(null)}
                   >
-                    關閉
+                    {t('common.close')}
                   </Button>
                 </ActionBar>
               }
               columns={[
                 {
                   key: 'time',
-                  header: '時間',
+                  header: t('agents.colTime'),
                   nowrap: true,
                   className: 'muted',
                   render: (c) => (
@@ -516,7 +515,7 @@ export function AgentsPage() {
                       {c.created_at?.slice(0, 19).replace('T', ' ')}
                       {c.finished_at ? (
                         <div className="muted u-text-sm">
-                          完成 {c.finished_at.slice(0, 19).replace('T', ' ')}
+                          {t('agents.finishedAt', { at: c.finished_at.slice(0, 19).replace('T', ' ') })}
                         </div>
                       ) : null}
                     </>
@@ -524,7 +523,7 @@ export function AgentsPage() {
                 },
                 {
                   key: 'status',
-                  header: '狀態',
+                  header: t('agents.colStatus'),
                   nowrap: true,
                   render: (c) => (
                     <Badge tone={cmdStatusTone(c.status)}>{c.status}</Badge>
@@ -548,7 +547,7 @@ export function AgentsPage() {
                 },
                 {
                   key: 'payload',
-                  header: '指令',
+                  header: t('agents.colCommand'),
                   render: (c) => (
                     <code className="inline u-break-all">
                       {summarizePayload(c.payload)}
@@ -557,7 +556,7 @@ export function AgentsPage() {
                 },
                 {
                   key: 'summary',
-                  header: '結果摘要',
+                  header: t('agents.colResult'),
                   className: 'muted u-break-all',
                   render: (c) => {
                     const code = exitCodeOf(c);
@@ -579,7 +578,7 @@ export function AgentsPage() {
                     if (flags.length) return flags.join(' · ');
                     if (code === 0) return 'ok';
                     if (code != null) return exitHint(code);
-                    return '有結果';
+                    return t('agents.hasResult');
                   },
                 },
               ]}
@@ -600,8 +599,8 @@ export function AgentsPage() {
               }
               empty={
                 <EmptyState
-                  title="尚未有指令"
-                  description="按「下指令」排隊；邊緣 agent 未上線時會一直 queued"
+                  title={t('agents.emptyCmds')}
+                  description={t('agents.emptyCmdsDesc')}
                 />
               }
             />
@@ -611,16 +610,15 @@ export function AgentsPage() {
 
       <Card>
         <CardSection
-          title="邊緣 agent 點樣真正上線"
-          description="面板登記後，節點要跑 outbound loop 先會 heartbeat / pull 指令"
+          title={t('agents.edgeOnlineTitle')}
+          description={t('agents.edgeOnlineDesc')}
         >
           <FormHint>
-            控制面 API：<code className="inline">{controlPlane}</code>
-            （需網路可達；生產請改成實際面板地址）
+            {t('agents.controlPlaneApi')}<code className="inline">{controlPlane}</code>
+            {t('agents.controlPlaneHint')}
           </FormHint>
-          <pre className="ops-pre u-mt-3" style={{ whiteSpace: 'pre-wrap' }}>
-            {`# 概念：register → heartbeat loop → pull commands → ack
-# 程式庫：@ysk/core runOutboundAgent / agentCycle
+          <pre className="ops-pre u-mt-3 u-pre-wrap">
+            {`${t('agents.codeComment')}
 
 controlPlane: ${controlPlane}
 agentId: edge-1
@@ -628,53 +626,43 @@ group: default
 intervalMs: 5000`}
           </pre>
           <p className="muted u-text-sm u-mt-3 u-mb-0">
-            未有邊緣進程時，「下指令」仍然有效：會入佇列（queued），等 agent 上線再消化。
+            {t('agents.queueNote')}
           </p>
         </CardSection>
       </Card>
 
       <Card>
         <CardSection
-          title="AI 運行時"
-          description="探測路徑與 unit；安裝會嘗試 enable systemd（需系統變更與 root）"
+          title={t('agents.runtimeTitle')}
+          description={t('agents.runtimeDesc')}
         >
           {runtimeList.length === 0 ? (
             <EmptyState
-              title="尚未有探測結果"
-              description="按重新整理載入運行時清單，或逐個探測"
-              action={
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() => void refresh()}
-                >
-                  重新整理
-                </Button>
-              }
+              title={t('agents.emptyRuntime')}
+              description={t('agents.emptyRuntimeDesc')}
             />
           ) : (
             <InfoCardGrid cols={3}>
               {runtimeList.map((rt) => {
                 const pathLine = rt.installPath
-                  ? `${rt.pathExists ? '已存在' : '尚未安裝'} · ${rt.installPath}`
+                  ? `${rt.pathExists ? t('agents.pathExists') : t('agents.pathMissing')} · ${rt.installPath}`
                   : '—';
                 const unitLine = rt.unitActive
                   ? `${rt.unitName ?? 'unit'} · ${rt.unitActive}`
                   : rt.unitName
-                    ? `${rt.unitName} · 未知`
+                    ? t('agents.unitUnknown', { unit: rt.unitName })
                     : '—';
                 return (
                   <InfoCard
                     key={rt.kind}
                     title={rt.name ?? rt.kind}
                     badge={{
-                      label: statusLabel(rt.status),
+                      label: statusLabel(rt.status, t),
                       tone: statusTone(rt.status),
                     }}
                     facts={[
                       {
-                        label: '路徑',
+                        label: t('agents.path'),
                         value: pathLine,
                         mono: Boolean(rt.installPath),
                       },
@@ -692,7 +680,7 @@ intervalMs: 5000`}
                           loading={busy}
                           onClick={() => void probeKind(rt.kind)}
                         >
-                          探測
+                          {t('agents.probe')}
                         </Button>
                         <Button
                           variant="secondary"
@@ -708,7 +696,7 @@ intervalMs: 5000`}
                           loading={busy}
                           onClick={() => void installKind(rt.kind)}
                         >
-                          安裝
+                          {t('agents.install')}
                         </Button>
                       </ActionBar>
                     }
@@ -722,7 +710,7 @@ intervalMs: 5000`}
 
       {detailNotes.length > 0 || detailFacts.length > 0 ? (
         <Card>
-          <CardSection title="最近操作">
+          <CardSection title={t('agents.recentOps')}>
             {detailFacts.length > 0 ? (
               <DescriptionList columns={2} items={detailFacts} />
             ) : null}
@@ -740,8 +728,8 @@ intervalMs: 5000`}
       <Modal
         open={registerOpen}
         onClose={() => setRegisterOpen(false)}
-        title="登記 Agent"
-        description="只寫入控制面清單；唔等於節點已上線"
+        title={t('agents.registerTitle')}
+        description={t('agents.registerDesc')}
         footer={
           <>
             <Button
@@ -749,7 +737,7 @@ intervalMs: 5000`}
               size="md"
               onClick={() => setRegisterOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -758,7 +746,7 @@ intervalMs: 5000`}
               size="md"
               loading={busy}
             >
-              登記
+              {t('agents.register')}
             </Button>
           </>
         }
@@ -766,11 +754,11 @@ intervalMs: 5000`}
         <form id="agent-register" onSubmit={(e) => void onRegister(e)}>
           <FormLayout columns={1}>
             <Field
-              label="Agent 識別碼"
+              label={t('agents.agentId')}
               htmlFor="aid"
               flush
               required
-              hint="唯一 ID，例如 edge-1 或 office-gateway"
+              hint={t('agents.agentIdHint')}
             >
               <input
                 id="aid"
@@ -782,7 +770,7 @@ intervalMs: 5000`}
                 required
               />
             </Field>
-            <Field label="群組" htmlFor="agroup" flush hint="用於分區／列表篩選">
+            <Field label={t('agents.group')} htmlFor="agroup" flush hint={t('agents.groupHint')}>
               <input
                 id="agroup"
                 value={agentGroup}
@@ -793,7 +781,7 @@ intervalMs: 5000`}
             </Field>
           </FormLayout>
           <FormHint>
-            狀態會顯示「僅登記」。節點跑 outbound agent 並 heartbeat 後先變「上線」。
+            {t('agents.registerNote')}
           </FormHint>
         </form>
       </Modal>
@@ -801,12 +789,12 @@ intervalMs: 5000`}
       <Modal
         open={Boolean(cmdAgent)}
         onClose={() => setCmdAgent(null)}
-        title={cmdAgent ? `下指令 · ${cmdAgent.agent_id}` : '下指令'}
-        description="寫入佇列；邊緣 agent pull 後執行並 ack（未上線會一直 queued）"
+        title={cmdAgent ? t('agents.cmdTitle', { id: cmdAgent.agent_id }) : t('agents.cmdTitlePlain')}
+        description={t('agents.cmdDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCmdAgent(null)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -815,17 +803,17 @@ intervalMs: 5000`}
               size="md"
               loading={busy}
             >
-              排隊
+              {t('agents.enqueue')}
             </Button>
           </>
         }
       >
         <form id="agent-cmd" onSubmit={(e) => void onSendCommand(e)}>
           <FormLayout columns={1}>
-            <Field label="指令（CLI 優先）" htmlFor="cmd-preset" flush>
+            <Field label={t('agents.cmdPreset')} htmlFor="cmd-preset" flush>
               <SegRadio
                 name="cmd-preset"
-                aria-label="指令類型"
+                aria-label={t('agents.cmdTypeAria')}
                 value={cmdPreset}
                 onChange={(v) => setCmdPreset(v as CmdPreset)}
                 options={[
@@ -835,18 +823,18 @@ intervalMs: 5000`}
                   { value: 'cli-services', label: 'services' },
                   { value: 'cli-defense', label: 'defense' },
                   { value: 'cli-logs', label: 'logs' },
-                  { value: 'custom', label: '自訂 CLI' },
+                  { value: 'custom', label: t('agents.customCli') },
                   { value: 'ping', label: 'ping' },
                 ]}
               />
             </Field>
             {cmdPreset === 'custom' ? (
               <Field
-                label="CLI 參數"
+                label={t('agents.cliArgs')}
                 htmlFor="cmd-custom"
                 flush
                 required
-                hint="唔使寫 ysk-server；例：logs journal --unit nginx.service"
+                hint={t('agents.cliArgsHint')}
               >
                 <input
                   id="cmd-custom"
@@ -860,10 +848,7 @@ intervalMs: 5000`}
             ) : null}
           </FormLayout>
           <FormHint>
-            Edge <code className="inline">ysk-server agent run</code> 收到{' '}
-            <code className="inline">{`{ "cli": ["…"] }`}</code> 會喺本機執行 CLI（自動加
-            --json）。改系統仍要邊緣設 <code className="inline">YSK_EXECUTE=1</code>。
-            完成後喺「紀錄」睇 exit code 同 JSON。
+            {t('agents.cmdNote')}
           </FormHint>
         </form>
       </Modal>
@@ -873,15 +858,15 @@ intervalMs: 5000`}
         onClose={() => setResultCmd(null)}
         title={
           resultCmd
-            ? `指令結果 · exit ${exitCodeOf(resultCmd) ?? '—'}`
-            : '指令結果'
+            ? t('agents.resultTitle', { code: exitCodeOf(resultCmd) ?? '—' })
+            : t('agents.resultTitlePlain')
         }
         description={
           resultCmd ? summarizePayload(resultCmd.payload) : undefined
         }
         footer={
           <Button variant="primary" size="md" onClick={() => setResultCmd(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         }
       >
@@ -902,13 +887,13 @@ intervalMs: 5000`}
               ) : null}
             </ActionBar>
             <FormHint>
-              外層：edge ack（exitCode / stderr）。內層 <code className="inline">result</code>：
-              CLI --json stdout。
+              {t('agents.resultOuter')} <code className="inline">result</code>：CLI --json
+              stdout.
             </FormHint>
             {asCliAck(resultCmd.result)?.stderr ? (
               <div>
                 <div className="muted u-text-sm u-mb-1">stderr</div>
-                <pre className="ops-pre" style={{ whiteSpace: 'pre-wrap', maxHeight: 160 }}>
+                <pre className="ops-pre u-pre-wrap u-scroll-sm">
                   {String(asCliAck(resultCmd.result)?.stderr).slice(0, 4000)}
                 </pre>
               </div>
@@ -916,8 +901,7 @@ intervalMs: 5000`}
             <div>
               <div className="muted u-text-sm u-mb-1">ack + CLI JSON</div>
               <pre
-                className="ops-pre"
-                style={{ whiteSpace: 'pre-wrap', maxHeight: 420, overflow: 'auto' }}
+                className="ops-pre u-pre-wrap u-scroll-xl"
               >
                 {prettyJson(resultCmd.result)}
               </pre>
@@ -926,8 +910,7 @@ intervalMs: 5000`}
               <div>
                 <div className="muted u-text-sm u-mb-1">CLI stdout body</div>
                 <pre
-                  className="ops-pre"
-                  style={{ whiteSpace: 'pre-wrap', maxHeight: 320, overflow: 'auto' }}
+                  className="ops-pre u-pre-wrap u-scroll-lg"
                 >
                   {prettyJson(unwrapCliBody(asCliAck(resultCmd.result)))}
                 </pre>
@@ -940,10 +923,14 @@ intervalMs: 5000`}
       <ConfirmDialog
         open={delAgent != null}
         onClose={() => setDelAgent(null)}
-        title={delAgent ? `刪除 ${delAgent.agent_id}？` : '刪除 agent？'}
-        description="相關指令紀錄一併移除。"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={
+          delAgent
+            ? t('agents.deleteTitle', { id: delAgent.agent_id })
+            : t('agents.deleteTitlePlain')
+        }
+        description={t('agents.deleteDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         onConfirm={() => {
           const a = delAgent;

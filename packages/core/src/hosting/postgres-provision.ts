@@ -4,7 +4,7 @@
  */
 
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { probeEndpoint } from './db-client.js';
 
 export interface PostgresProvisionResult {
@@ -24,7 +24,7 @@ export interface PostgresProvisionResult {
 
 function assertIdent(value: string, field: string): void {
   if (!/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(value)) {
-    throw new YskError(ErrorCodes.VALIDATION, `欄位 ${field} 無效：${value}`, { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.fieldInvalid', { field, value }), { httpStatus: 400 });
   }
 }
 
@@ -75,8 +75,7 @@ export async function provisionPostgresDatabase(input: {
       sql: [],
       connectionHint: {},
       notes: ['password required (min 8 chars)'],
-      commandResults: [],
-    };
+      commandResults: [] };
   }
 
   const host = input.host ?? '127.0.0.1';
@@ -84,14 +83,12 @@ export async function provisionPostgresDatabase(input: {
   const sql = renderPostgresProvisionSql({
     dbName: input.dbName,
     username: input.username,
-    password: input.password,
-  });
+    password: input.password });
   const connectionHint = {
     database: input.dbName,
     user: input.username,
     host,
-    port,
-  };
+    port };
   const notes: string[] = [];
   const commandResults: PostgresProvisionResult['commandResults'] = [];
 
@@ -104,12 +101,11 @@ export async function provisionPostgresDatabase(input: {
   );
 
   const which = await input.hostExec.runCommand(['bash', '-c', 'command -v psql || true'], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   const psqlClient = which.stdout.trim().length > 0;
-  if (!psqlClient) notes.push('伺服器未安裝 PostgreSQL 客戶端');
+  if (!psqlClient) notes.push(tl('notes.auto.n0522'));
   if (!input.hostExec.executeEnabled()) {
-    notes.push('伺服器未開啟系統變更權限，無法在管理面板完成此操作');
+    notes.push(tl('ops.blocked.needExecute'));
   }
 
   const want = input.execute === true;
@@ -128,10 +124,9 @@ export async function provisionPostgresDatabase(input: {
       connectionHint,
       notes: [
         ...notes,
-        'dry-run：未建立資料庫。加 --execute 且 YSK_EXECUTE=1 先真正 provision',
+        tl('notes.db.dryRunMysql'),
       ],
-      commandResults: [],
-    };
+      commandResults: [] };
   }
 
   if (!can) {
@@ -146,10 +141,9 @@ export async function provisionPostgresDatabase(input: {
       connectionHint,
       notes: [
         ...notes,
-        '資料庫尚未建立。請確認 psql、TCP 與 YSK_EXECUTE=1 後再試。',
+        tl('notes.auto.n1450'),
       ],
-      commandResults: [],
-    };
+      commandResults: [] };
   }
 
   const adminDb = input.adminDb ?? 'postgres';
@@ -178,13 +172,12 @@ export async function provisionPostgresDatabase(input: {
     commandResults.push({
       argv: ['psql', '-c', '(redacted)'],
       exitCode: r.exitCode,
-      stderr: r.stderr,
-    });
+      stderr: r.stderr });
     // accept already-exists as soft success
     const already =
       /already exists/i.test(r.stderr) || /already exists/i.test(r.stdout);
     if (r.exitCode !== 0 && !already) {
-      notes.push(`psql 失敗：${r.stderr || r.stdout}`);
+      notes.push(tl('notes.tpl.psqlFailed', { detail: r.stderr || r.stdout }));
       return {
         ok: false,
         executed: true,
@@ -194,8 +187,7 @@ export async function provisionPostgresDatabase(input: {
         sql: sql.map((s) => s.replace(input.password, '***')),
         connectionHint,
         notes,
-        commandResults,
-      };
+        commandResults };
     }
     notes.push(already ? `ok (already exists): ${stmt.slice(0, 40)}…` : `ok: ${stmt.slice(0, 40)}…`);
   }
@@ -209,6 +201,5 @@ export async function provisionPostgresDatabase(input: {
     sql: sql.map((s) => s.replace(input.password, '***')),
     connectionHint,
     notes: [...notes, 'PostgreSQL provision executed'],
-    commandResults,
-  };
+    commandResults };
 }

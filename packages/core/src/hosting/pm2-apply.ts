@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * PM2 process manager artifacts + optional start/stop (Spec § PM2 / fleet).
  * Never fakes success: without YSK_EXECUTE, only writes ecosystem config.
@@ -119,7 +120,7 @@ export async function applyPm2Start(input: {
   const probe = await probePm2(input.host);
 
   if (!probe.available) {
-    notes.push('pm2 找不到 on PATH — install: npm i -g pm2');
+    notes.push(tl('notes.auto.n0380'));
     return {
       ok: false,
       appName: eco.appName,
@@ -133,7 +134,7 @@ export async function applyPm2Start(input: {
   notes.push(`pm2 binary: ${probe.path}`);
 
   if (want && !can) {
-    notes.push('無法啟動 PM2：伺服器未開啟系統變更權限');
+    notes.push(tl('notes.auto.n1149'));
     return {
       ok: false,
       appName: eco.appName,
@@ -146,7 +147,7 @@ export async function applyPm2Start(input: {
   }
 
   if (!can) {
-    notes.push('僅寫入 PM2 設定，未啟動程序');
+    notes.push(tl('notes.auto.n0566'));
     return {
       ok: false,
       appName: eco.appName,
@@ -177,7 +178,7 @@ export async function applyPm2Start(input: {
   });
 
   if (start.exitCode !== 0) {
-    notes.push(`pm2 start 失敗：${start.stderr || start.stdout}`);
+    notes.push(tl('notes.auto.t0306', { v0: (start.stderr || start.stdout) }));
     return {
       ok: false,
       appName: eco.appName,
@@ -189,7 +190,7 @@ export async function applyPm2Start(input: {
     };
   }
 
-  notes.push(`pm2 已啟動 ${eco.appName}`);
+  notes.push(tl('notes.auto.t0307', { v0: (eco.appName) }));
   // best-effort pid from pm2 jlist
   let pid: number | undefined;
   const jlist = await input.host.runCommand(['pm2', 'jlist'], { timeoutMs: 15_000 });
@@ -240,12 +241,12 @@ export async function applyPm2Stop(input: {
   const appName = pm2AppName(input.linuxUser);
   const notes: string[] = [];
   if (!input.host.executeEnabled()) {
-    notes.push('無法停止 PM2：伺服器未開啟系統變更權限');
+    notes.push(tl('notes.auto.n1145'));
     return { ok: false, notes, requiresExecute: true };
   }
   const probe = await probePm2(input.host);
   if (!probe.available) {
-    notes.push('找不到 pm2 — 無法以 PM2 停止');
+    notes.push(tl('notes.auto.n0854'));
     return { ok: true, notes, requiresExecute: false };
   }
   const r = await input.host.runCommand(['pm2', 'delete', appName], { timeoutMs: 30_000 });

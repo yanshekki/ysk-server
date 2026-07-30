@@ -13,12 +13,11 @@ import {
   renameSync,
   copyFileSync,
   cpSync,
-  chmodSync,
-} from 'node:fs';
+  chmodSync } from 'node:fs';
 import { join, resolve, relative, dirname, basename, extname } from 'node:path';
 import { createHash, randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { listFileVersions, restoreFileVersion, snapshotFileVersion } from './versions.js';
 
 export interface FileEntry {
@@ -56,14 +55,12 @@ function assertInside(root: string, target: string): string {
   const abs = resolve(rootAbs, target);
   const rel = relative(rootAbs, abs);
   if (rel.startsWith('..') || rel === '..') {
-    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `路徑超出沙箱範圍：${target}`, {
-      httpStatus: 403,
-    });
+    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {
+      httpStatus: 403 });
   }
   if (!abs.startsWith(rootAbs)) {
-    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, `路徑超出沙箱範圍：${target}`, {
-      httpStatus: 403,
-    });
+    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {
+      httpStatus: 403 });
   }
   return abs;
 }
@@ -92,8 +89,7 @@ function guessMime(name: string): string {
     '.gz': 'application/gzip',
     '.mp4': 'video/mp4',
     '.webm': 'video/webm',
-    '.mp3': 'audio/mpeg',
-  };
+    '.mp3': 'audio/mpeg' };
   return map[ext] ?? 'application/octet-stream';
 }
 
@@ -109,8 +105,7 @@ function toEntry(root: string, abs: string): FileEntry {
     mtime: s.mtime.toISOString(),
     mime: s.isFile() ? guessMime(name) : undefined,
     ext: s.isFile() ? extname(name).replace(/^\./, '') : undefined,
-    mode: (s.mode & 0o777).toString(8).padStart(3, '0'),
-  };
+    mode: (s.mode & 0o777).toString(8).padStart(3, '0') };
 }
 
 export class FileManager {
@@ -131,11 +126,11 @@ export class FileManager {
   list(relPath = '.', opts: ListOptions = {}): FileEntry[] {
     const abs = assertInside(this.root, relPath || '.');
     if (!existsSync(abs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.notFoundRel', { relPath }), { httpStatus: 404 });
     }
     const st = statSync(abs);
     if (!st.isDirectory()) {
-      throw new YskError(ErrorCodes.VALIDATION, '不是資料夾', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0499'), { httpStatus: 400 });
     }
     let items = readdirSync(abs)
       .filter((name) => {
@@ -169,34 +164,31 @@ export class FileManager {
   readText(relPath: string, maxBytes = 2_000_000): { path: string; content: string; bytes: number; mime?: string } {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs) || !statSync(abs).isFile()) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到檔案：${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.fileNotFoundRel', { relPath }), { httpStatus: 404 });
     }
     const buf = readFileSync(abs);
     if (buf.length > maxBytes) {
-      throw new YskError(ErrorCodes.VALIDATION, `檔案過大（>${maxBytes} bytes）`, {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0003', { v0: (maxBytes) }), {
+        httpStatus: 400 });
     }
     return {
       path: relPath,
       content: buf.toString('utf8'),
       bytes: buf.length,
-      mime: guessMime(basename(abs)),
-    };
+      mime: guessMime(basename(abs)) };
   }
 
   readBinary(relPath: string): { path: string; buffer: Buffer; mime: string; name: string } {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs) || !statSync(abs).isFile()) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到檔案：${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.fileNotFoundRel', { relPath }), { httpStatus: 404 });
     }
     const name = basename(abs);
     return {
       path: relPath,
       buffer: readFileSync(abs),
       mime: guessMime(name),
-      name,
-    };
+      name };
   }
 
   writeText(relPath: string, content: string): { path: string; bytes: number } {
@@ -253,7 +245,7 @@ export class FileManager {
   createTextFile(relPath: string, content = ''): { path: string; bytes: number } {
     const abs = assertInside(this.root, relPath);
     if (existsSync(abs)) {
-      throw new YskError(ErrorCodes.VALIDATION, `已存在：${relPath}`, { httpStatus: 409 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0004', { v0: (relPath) }), { httpStatus: 409 });
     }
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, content, 'utf8');
@@ -263,9 +255,8 @@ export class FileManager {
   /** Permanent delete (used by trash purge) */
   removePermanent(relPath: string): { path: string; deleted: boolean } {
     if (!relPath || relPath === '.' || relPath === '/') {
-      throw new YskError(ErrorCodes.VALIDATION, '不可刪除沙箱根目錄', {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0494'), {
+        httpStatus: 400 });
     }
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs)) {
@@ -281,9 +272,8 @@ export class FileManager {
    */
   remove(relPath: string): { path: string; deleted: boolean; trashId?: string } {
     if (!relPath || relPath === '.' || relPath === '/' || relPath.startsWith(TRASH_DIR)) {
-      throw new YskError(ErrorCodes.VALIDATION, '不可刪除沙箱根目錄或回收桶路徑', {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0495'), {
+        httpStatus: 400 });
     }
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs)) {
@@ -299,8 +289,7 @@ export class FileManager {
       originalPath: relPath.replace(/\\/g, '/'),
       name: basename(abs),
       deletedAt: new Date().toISOString(),
-      type: statSync(dest).isDirectory() ? 'dir' : 'file',
-    };
+      type: statSync(dest).isDirectory() ? 'dir' : 'file' };
     writeFileSync(join(destDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf8');
     return { path: relPath, deleted: true, trashId };
   }
@@ -331,8 +320,7 @@ export class FileManager {
           type: meta.type,
           size: s?.size ?? 0,
           mtime: s?.mtime.toISOString() ?? meta.deletedAt,
-          deletedAt: meta.deletedAt,
-        });
+          deletedAt: meta.deletedAt });
       } catch {
         /* skip corrupt */
       }
@@ -345,7 +333,7 @@ export class FileManager {
     const dir = join(this.trashRoot(), safe);
     const metaPath = join(dir, 'meta.json');
     if (!existsSync(metaPath)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到回收項目', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0860'), { httpStatus: 404 });
     }
     const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as {
       originalPath: string;
@@ -354,9 +342,8 @@ export class FileManager {
     const src = join(dir, meta.name);
     const dest = assertInside(this.root, meta.originalPath);
     if (existsSync(dest)) {
-      throw new YskError(ErrorCodes.VALIDATION, `目標已存在：${meta.originalPath}`, {
-        httpStatus: 409,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0005', { v0: (meta.originalPath) }), {
+        httpStatus: 409 });
     }
     mkdirSync(dirname(dest), { recursive: true });
     renameSync(src, dest);
@@ -385,7 +372,7 @@ export class FileManager {
     const fromAbs = assertInside(this.root, fromPath);
     const toAbs = assertInside(this.root, toPath);
     if (!existsSync(fromAbs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${fromPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.notFoundFrom', { fromPath }), { httpStatus: 404 });
     }
     mkdirSync(dirname(toAbs), { recursive: true });
     renameSync(fromAbs, toAbs);
@@ -400,7 +387,7 @@ export class FileManager {
     const fromAbs = assertInside(this.root, fromPath);
     const toAbs = assertInside(this.root, toPath);
     if (!existsSync(fromAbs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${fromPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.notFoundFrom', { fromPath }), { httpStatus: 404 });
     }
     mkdirSync(dirname(toAbs), { recursive: true });
     const st = statSync(fromAbs);
@@ -415,7 +402,7 @@ export class FileManager {
   stat(relPath: string): FileEntry {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.notFoundRel', { relPath }), { httpStatus: 404 });
     }
     return toEntry(this.root, abs);
   }
@@ -426,11 +413,11 @@ export class FileManager {
   chmod(relPath: string, mode: string): { path: string; mode: string } {
     const abs = assertInside(this.root, relPath);
     if (!existsSync(abs)) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${relPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.notFoundRel', { relPath }), { httpStatus: 404 });
     }
     const cleaned = String(mode).trim().replace(/^0x/i, '');
     if (!/^[0-7]{3,4}$/.test(cleaned)) {
-      throw new YskError(ErrorCodes.VALIDATION, '權限模式須為 3–4 位八進制數字', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1028'), { httpStatus: 400 });
     }
     const n = parseInt(cleaned, 8);
     chmodSync(abs, n);
@@ -443,35 +430,34 @@ export class FileManager {
    */
   zip(paths: string[], destZip: string): { path: string; bytes: number; notes: string[] } {
     if (!paths.length) {
-      throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
     }
     const destAbs = assertInside(this.root, destZip);
     if (!destZip.toLowerCase().endsWith('.zip')) {
-      throw new YskError(ErrorCodes.VALIDATION, '目的地必須以 .zip 結尾', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1283'), { httpStatus: 400 });
     }
     mkdirSync(dirname(destAbs), { recursive: true });
     const rels: string[] = [];
     for (const p of paths) {
       const abs = assertInside(this.root, p);
       if (!existsSync(abs)) {
-        throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${p}`, { httpStatus: 404 });
+        throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0006', { v0: (p) }), { httpStatus: 404 });
       }
       rels.push(relative(this.root, abs) || '.');
     }
     const r = spawnSync('zip', ['-r', '-q', destAbs, ...rels], {
       cwd: this.root,
       encoding: 'utf8',
-      timeout: 120_000,
-    });
+      timeout: 120_000 });
     if (r.error || r.status !== 0) {
       throw new YskError(
         ErrorCodes.INTERNAL,
-        `壓縮失敗： ${r.stderr || r.error?.message || 'exit ' + r.status}`,
+        tl('notes.auto.t0007', { v0: (r.stderr || r.error?.message || 'exit ' + r.status) }),
         { httpStatus: 500 },
       );
     }
     const bytes = existsSync(destAbs) ? statSync(destAbs).size : 0;
-    return { path: destZip, bytes, notes: [`已壓縮 ${paths.length} 項 → ${destZip}`] };
+    return { path: destZip, bytes, notes: [tl('notes.auto.t0008', { v0: (paths.length), v1: (destZip) })] };
   }
 
   /**
@@ -481,22 +467,21 @@ export class FileManager {
     const zipAbs = assertInside(this.root, zipPath);
     const destAbs = assertInside(this.root, destDir || '.');
     if (!existsSync(zipAbs) || !statSync(zipAbs).isFile()) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到：${zipPath}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0009', { v0: (zipPath) }), { httpStatus: 404 });
     }
     mkdirSync(destAbs, { recursive: true });
     const r = spawnSync('unzip', ['-o', '-q', zipAbs, '-d', destAbs], {
       encoding: 'utf8',
-      timeout: 120_000,
-    });
+      timeout: 120_000 });
     if (r.error || (r.status !== 0 && r.status !== 1)) {
       // unzip exit 1 = warnings
       throw new YskError(
         ErrorCodes.INTERNAL,
-        `un壓縮失敗： ${r.stderr || r.error?.message || 'exit ' + r.status}`,
+        tl('notes.auto.t0010', { v0: (r.stderr || r.error?.message || 'exit ' + r.status) }),
         { httpStatus: 500 },
       );
     }
-    return { path: destDir || '.', notes: [`已解壓 ${zipPath} → ${destDir || '.'}`] };
+    return { path: destDir || '.', notes: [tl('notes.auto.t0011', { v0: (zipPath), v1: (destDir || '.') })] };
   }
 
   /** Disk usage under root (excluding .trash for "used") */

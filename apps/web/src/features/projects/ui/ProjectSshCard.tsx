@@ -2,6 +2,7 @@
  * Compact SSH card on project resources — points to full SSH workspace.
  */
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { ProjectDto } from '@ysk/shared';
 import {
@@ -22,6 +23,7 @@ export function ProjectSshCard(props: {
   project: ProjectDto;
   onMessage?: (msg: string) => void;
 }) {
+  const { t } = useTranslation();
   const { project, onMessage } = props;
   const [busy, setBusy] = useState(false);
   const [loginN, setLoginN] = useState(0);
@@ -61,19 +63,19 @@ export function ProjectSshCard(props: {
     <Card>
       <CardSection
         title="SSH"
-        description="登入公鑰決定誰能進來；出站身份決定這用戶出去用哪把匙。"
+        description={t('projects.sshCardDesc')}
       >
         <FormLayout columns={2}>
-          <Field label="允許登入的公鑰" htmlFor="p-ssh-login" flush>
-            <input id="p-ssh-login" value={`${loginN} 把`} readOnly disabled />
+          <Field label={t('projects.sshLoginKeys')} htmlFor="p-ssh-login" flush>
+            <input id="p-ssh-login" value={t('projects.sshKeyCount', { count: loginN })} readOnly disabled />
           </Field>
-          <Field label="出站身份" htmlFor="p-ssh-out" flush>
+          <Field label={t('projects.sshOutbound')} htmlFor="p-ssh-out" flush>
             <input
               id="p-ssh-out"
               value={
                 identity
-                  ? `${identity.name} · ${statusLabel(identity.status)}`
-                  : '尚未建立'
+                  ? `${identity.name} · ${statusLabel(identity.status, t)}`
+                  : t('projects.sshOutboundNone')
               }
               readOnly
               disabled
@@ -82,13 +84,13 @@ export function ProjectSshCard(props: {
         </FormLayout>
         {identity ? (
           <FormHint>
-            <Badge tone={statusTone(identity.status)}>{statusLabel(identity.status)}</Badge>{' '}
+            <Badge tone={statusTone(identity.status)}>{statusLabel(identity.status, t)}</Badge>{' '}
             <code className="inline u-break-all">
               {shortFingerprint(identity.fingerprintSha256)}
             </code>
           </FormHint>
         ) : (
-          <FormHint>建立出站身份後，此專案用戶可用於 git／腳本連外。</FormHint>
+          <FormHint>{t('projects.sshOutboundHint')}</FormHint>
         )}
         <FormActions>
           {!identity ? (
@@ -113,7 +115,7 @@ export function ProjectSshCard(props: {
                   .then((r) => {
                     onMessage?.(
                       (r.notes ?? []).join('；') ||
-                        (r.ok ? '已建立出站身份（私鑰已加密保存）' : '建立失敗'),
+                        (r.ok ? t('projects.sshOutboundCreated') : t('common.createFailed')),
                     );
                     return refresh();
                   })
@@ -121,7 +123,7 @@ export function ProjectSshCard(props: {
                   .finally(() => setBusy(false));
               }}
             >
-              一鍵建立出站身份
+              {t('projects.sshCreateOutbound')}
             </Button>
           ) : (
             <Button
@@ -133,24 +135,24 @@ export function ProjectSshCard(props: {
                 void sshApi
                   .install(identity.id, true)
                   .then((r) => {
-                    onMessage?.((r.notes ?? []).join('；') || '已嘗試寫入磁碟');
+                    onMessage?.((r.notes ?? []).join('；') || t('projects.sshWriteTried'));
                     return refresh();
                   })
                   .catch((e: Error) => onMessage?.(e.message))
                   .finally(() => setBusy(false));
               }}
             >
-              寫入 home/.ssh
+              {t('projects.sshWriteHome')}
             </Button>
           )}
           <Link
             to="/security?tab=ssh&ssh=outbound"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
           >
-            開啟 SSH 工作台
+            {t('projects.sshOpenWorkspace')}
           </Link>
           <Link to="/security?tab=ssh&ssh=login" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            管理登入公鑰
+            {t('projects.sshManageLoginKeys')}
           </Link>
         </FormActions>
       </CardSection>

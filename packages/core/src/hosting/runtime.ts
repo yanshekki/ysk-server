@@ -4,7 +4,7 @@
  * PHP-FPM: php · Static files: static
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export type RuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust';
 
@@ -134,7 +134,7 @@ export function selectNodeRuntime(version: string): RuntimeSelection {
   if (!NODE_SUPPORTED.includes(major as (typeof NODE_SUPPORTED)[number])) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `不支援的 Node.js 版本 ${version}；可用主版本：${NODE_SUPPORTED.join(', ')}`,
+      tl('notes.auto.t0254', { v0: (version), v1: (NODE_SUPPORTED.join(', ')) }),
       { httpStatus: 400 },
     );
   }
@@ -151,7 +151,7 @@ export function selectPhpRuntime(version: string): RuntimeSelection {
   if (!PHP_SUPPORTED.includes(normalized as (typeof PHP_SUPPORTED)[number])) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `不支援的 PHP 版本 ${version}；可用：${PHP_SUPPORTED.join(', ')}`,
+      tl('notes.auto.t0255', { v0: (version), v1: (PHP_SUPPORTED.join(', ')) }),
       { httpStatus: 400 },
     );
   }
@@ -169,7 +169,7 @@ export function selectPythonRuntime(version: string): RuntimeSelection {
   if (!PYTHON_SUPPORTED.includes(minor as (typeof PYTHON_SUPPORTED)[number])) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `不支援的 Python 版本 ${version}；可用：${PYTHON_SUPPORTED.join(', ')}`,
+      tl('notes.auto.t0256', { v0: (version), v1: (PYTHON_SUPPORTED.join(', ')) }),
       { httpStatus: 400 },
     );
   }
@@ -187,7 +187,7 @@ export function selectGoRuntime(version: string): RuntimeSelection {
   if (!GO_SUPPORTED.includes(minor as (typeof GO_SUPPORTED)[number])) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `不支援的 Go 版本 ${version}；可用：${GO_SUPPORTED.join(', ')}`,
+      tl('notes.auto.t0257', { v0: (version), v1: (GO_SUPPORTED.join(', ')) }),
       { httpStatus: 400 },
     );
   }
@@ -218,7 +218,7 @@ export function selectRuntime(kind: RuntimeKind, version: string): RuntimeSelect
   if (kind === 'python') return selectPythonRuntime(version);
   if (kind === 'go') return selectGoRuntime(version);
   if (kind === 'rust') return selectRustRuntime(version);
-  throw new YskError(ErrorCodes.VALIDATION, `未知 runtime：${kind}`, { httpStatus: 400 });
+  throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0258', { v0: (kind) }), { httpStatus: 400 });
 }
 
 /**

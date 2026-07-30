@@ -1,0 +1,10 @@
+{
+  "customPlaceholder": "Custom code",
+  "searchPlaceholder": "Search…",
+  "emptyText": "No matching items",
+  "removeTitle": "Click to remove",
+  "noneSelected": "Nothing selected",
+  "optionsAria": "Options",
+  "showingCapped": "Showing first {{shown}} of {{total}} — use search to narrow",
+  "add": "Add"
+}

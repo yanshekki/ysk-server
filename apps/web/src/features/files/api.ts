@@ -1,36 +1,10 @@
 /**
  * Files feature — ownCloud-style sandboxed API client.
  */
+import type { FileEntry, TrashEntry, FileShare } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type FileEntry = {
-  name: string;
-  path: string;
-  type: 'file' | 'dir' | string;
-  size: number;
-  mtime: string;
-  mime?: string;
-  ext?: string;
-  favorite?: boolean;
-};
-
-export type TrashEntry = FileEntry & {
-  trashId: string;
-  originalPath: string;
-  deletedAt: string;
-};
-
-export type FileShare = {
-  id: string;
-  token: string;
-  root: string;
-  path: string;
-  expiresAt?: string;
-  createdAt: string;
-  createdBy: string;
-  downloadCount: number;
-  url?: string;
-};
+export type { FileEntry, TrashEntry, FileShare } from '@ysk/shared';
 
 function q(root: string, extra: Record<string, string | undefined> = {}) {
   const p = new URLSearchParams({ root });

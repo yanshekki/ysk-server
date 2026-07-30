@@ -31,6 +31,8 @@ import {
 } from './cluster-api';
 import { useFeatureAction } from '../system/useFeatureAction';
 import { api } from '../../shared/services/api';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 
 function statusTone(
   s: string,
@@ -49,22 +51,23 @@ function defaultKind(engine: DbServiceEngine): DbClusterKind {
 }
 
 function wizardTitle(kind: DbClusterKind): string {
-  if (kind === 'mariadb-galera') return '簡易 Galera';
-  if (kind === 'mysql-replica') return 'MySQL 主從複製';
-  if (kind === 'postgres-replica') return 'PostgreSQL 串流複製';
+  if (kind === 'mariadb-galera') return i18n.t('db.cluster.kindGalera');
+  if (kind === 'mysql-replica') return i18n.t('db.cluster.kindMysqlReplica');
+  if (kind === 'postgres-replica') return i18n.t('db.cluster.kindPgReplica');
   if (kind === 'redis-sentinel') return 'Redis Sentinel';
-  return 'Redis 主從';
+  return i18n.t('db.cluster.kindRedisReplica');
 }
 
 function ctaLabel(kind: DbClusterKind): string {
-  if (kind === 'mariadb-galera') return '建立簡易 Galera';
-  if (kind === 'mysql-replica') return '建立主從複製';
-  if (kind === 'postgres-replica') return '建立串流複製';
-  if (kind === 'redis-sentinel') return '建立 Sentinel';
-  return '建立 Redis 主從';
+  if (kind === 'mariadb-galera') return i18n.t('db.cluster.createGalera');
+  if (kind === 'mysql-replica') return i18n.t('db.cluster.createMysqlReplica');
+  if (kind === 'postgres-replica') return i18n.t('db.cluster.createPgReplica');
+  if (kind === 'redis-sentinel') return i18n.t('db.cluster.createSentinel');
+  return i18n.t('db.cluster.createRedisReplica');
 }
 
 export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<DbCluster[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [wizOpen, setWizOpen] = useState(false);
@@ -96,7 +99,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       const r = await dbClusterApi.list(engine);
       setItems(r.items ?? []);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
   }, [engine]);
 
@@ -116,7 +119,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   async function onCreatePlan(e: FormEvent) {
     e.preventDefault();
     if (!localHost.trim() || !peerHost.trim()) {
-      setError('請填寫本機與 peer 真實 IP／主機名');
+      setError(t('db.cluster.needRealIps'));
       return;
     }
     await run(async () => {
@@ -194,13 +197,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         dryRun: true,
         notes: [
           ...(planned.plan.notes ?? []),
-          `狀態：${planned.cluster.status}（計劃成功 ≠ 叢集健康）`,
+          t('db.cluster.statusNote', { status: planned.cluster.status }),
           planned.cluster.artifactDir
-            ? `產物：${planned.cluster.artifactDir}`
+            ? t('db.cluster.artifactNote', { dir: planned.cluster.artifactDir })
             : '',
         ].filter(Boolean),
       } as OpsResultLike;
-    }, '已產生計劃（dry-run）');
+    }, t('db.cluster.planGenerated'));
   }
 
   async function replan(id: string) {
@@ -214,7 +217,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         dryRun: true,
         notes: planned.plan.notes,
       } as OpsResultLike;
-    }, '已更新計劃');
+    }, t('db.cluster.planUpdated'));
   }
 
   /** Dry-run apply: materialize + mark local written (no system) */
@@ -229,7 +232,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         notes: r.notes,
         written: r.written,
       } as OpsResultLike;
-    }, '已寫管理檔（dry-run）');
+    }, t('db.cluster.manageWritten'));
   }
 
   async function applySystem(id: string, bootstrap: boolean) {
@@ -246,7 +249,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         requiresExecute: r.requiresExecute,
         requiresRoot: r.requiresRoot,
       } as OpsResultLike;
-    }, bootstrap ? '已嘗試 bootstrap' : '已嘗試套用系統 conf');
+    }, bootstrap ? t('db.cluster.bootstrapTried') : t('db.cluster.applyTried'));
   }
 
   async function doProbe(id: string, peers = false) {
@@ -263,11 +266,11 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           peers
             ? `peersProbed=${r.peersProbed ?? 0}`
             : r.localOk
-              ? '本機 OK'
-              : '本機 probe 未過',
+              ? t('db.cluster.localOk')
+              : t('db.cluster.localProbeFail'),
         ],
       } as OpsResultLike;
-    }, peers ? '已探測（含 peer）' : '已探測本機');
+    }, peers ? t('db.cluster.probedWithPeers') : t('db.cluster.probedLocal'));
   }
 
   async function downloadBundle(id: string) {
@@ -279,9 +282,9 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       );
       return {
         ok: true,
-        notes: ['已下載 peer 打包（.tar.gz）— 解壓後喺 peer 上安裝 conf'],
+        notes: [t('db.cluster.peerTarNote')],
       } as OpsResultLike;
-    }, '已下載');
+    }, t('protection.downloaded'));
   }
 
   async function pushPeers(id: string, execute: boolean) {
@@ -300,7 +303,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           ),
         ],
       } as OpsResultLike;
-    }, execute ? '已推送 peer' : '已產生 push 計劃');
+    }, execute ? t('db.cluster.peerPushed') : t('db.cluster.pushPlanGenerated'));
   }
 
   async function removeCluster(id: string) {
@@ -313,7 +316,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       }
       await refresh();
       return { ok: r.ok, notes: r.notes ?? [] } as OpsResultLike;
-    }, '已刪除登記');
+    }, t('db.cluster.registrationDeleted'));
   }
 
   return (
@@ -324,15 +327,15 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <Card>
         <CardSection
-          title="叢集"
-          description="計劃 → 寫管理檔 → 套用 → 探測 → peer 分發 / fleet。預設 dry-run。"
+          title={t('dns.tabs.cluster')}
+          description={t('db.cluster.description')}
         >
           <ActionBar className="u-mb-3">
             <Button
@@ -352,7 +355,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               loading={busy}
               onClick={() => void refresh()}
             >
-              重新整理
+              {t('common.refresh')}
             </Button>
           </ActionBar>
 
@@ -360,19 +363,19 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             columns={[
               {
                 key: 'name',
-                header: '名稱',
+                header: t('common.name'),
                 render: (c) => <code className="inline">{c.name}</code>,
               },
               {
                 key: 'kind',
-                header: '類型',
+                header: t('common.type'),
                 className: 'muted',
                 nowrap: true,
                 render: (c) => c.kind,
               },
               {
                 key: 'status',
-                header: '狀態',
+                header: t('common.status'),
                 nowrap: true,
                 render: (c) => (
                   <Badge tone={statusTone(c.status)}>{c.status}</Badge>
@@ -380,7 +383,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               },
               {
                 key: 'members',
-                header: '節點',
+                header: t('db.cluster.nodes'),
                 className: 'muted',
                 render: (c) => c.members.map((m) => m.host).join(', '),
               },
@@ -395,7 +398,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => void replan(c.id)}
                 >
-                  計劃
+                  {t('db.cluster.plan')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -403,7 +406,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => void applyDry(c.id)}
                 >
-                  寫檔
+                  {t('db.cluster.writeFile')}
                 </Button>
                 <Button
                   variant="primary"
@@ -411,7 +414,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => setApplyTarget({ id: c.id, bootstrap: false })}
                 >
-                  套用本機
+                  {t('db.cluster.applyLocal')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -427,7 +430,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => void doProbe(c.id, false)}
                 >
-                  探測
+                  {t('common.probe')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -435,7 +438,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => void doProbe(c.id, true)}
                 >
-                  全節點探測
+                  {t('db.cluster.probeAll')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -451,10 +454,10 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                         dryRun: r.dryRun,
                         notes: r.notes,
                       } as OpsResultLike;
-                    }, '遠端安裝計劃')
+                    }, t('db.cluster.remoteInstallPlan'))
                   }
                 >
-                  遠端安裝計劃
+                  {t('db.cluster.remoteInstallPlan')}
                 </Button>
                 <Button
                   variant="primary"
@@ -464,7 +467,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                     setPendingConfirm({ kind: 'installPeers', id: c.id })
                   }
                 >
-                  遠端安裝
+                  {t('db.cluster.remoteInstall')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -472,7 +475,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => void downloadBundle(c.id)}
                 >
-                  下載包
+                  {t('db.cluster.downloadBundle')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -480,7 +483,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => void pushPeers(c.id, false)}
                 >
-                  Push 計劃
+                  {t('db.cluster.pushPlan')}
                 </Button>
                 <Button
                   variant="primary"
@@ -488,7 +491,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => setPendingConfirm({ kind: 'push', id: c.id })}
                 >
-                  Push 執行
+                  {t('db.cluster.pushExecute')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -505,10 +508,10 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                         dryRun: r.dryRun,
                         notes: r.notes,
                       } as OpsResultLike;
-                    }, 'Fleet sync 計劃')
+                    }, t('db.cluster.fleetSyncPlan'))
                   }
                 >
-                  Fleet 同步計劃
+                  {t('db.cluster.fleetSyncPlan')}
                 </Button>
                 <Button
                   variant="primary"
@@ -518,7 +521,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                     setPendingConfirm({ kind: 'fleetSync', id: c.id })
                   }
                 >
-                  Fleet 同步
+                  {t('db.cluster.fleetSync')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -536,26 +539,17 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   loading={busy}
                   onClick={() => setPendingConfirm({ kind: 'remove', id: c.id })}
                 >
-                  刪除
+                  {t('common.delete')}
                 </Button>
               </ActionBar>
             )}
             empty={
               <EmptyState
-                title="目前：單機"
+                title={t('db.cluster.standaloneTitle')}
                 description={
                   isRepl
-                    ? '未登記主從／串流。指定 primary/master + replica 後產生 conf 與腳本。'
-                    : '未登記 HA。加 peer 節點後產生 conf 計劃，再分步 bootstrap / join。'
-                }
-                action={
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => setWizOpen(true)}
-                  >
-                    {ctaLabel(kind)}
-                  </Button>
+                    ? t('db.cluster.standaloneRepl')
+                    : t('db.cluster.standaloneHa')
                 }
               />
             }
@@ -565,7 +559,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
 
       {probeFacts && Object.keys(probeFacts).length > 0 ? (
         <Card>
-          <CardSection title="最近 probe（本機 wsrep）" description="healthy 必須 probe 通過">
+          <CardSection title={t('db.cluster.recentProbe')} description={t('db.cluster.probeRequired')}>
             <DescriptionList
               columns={2}
               items={Object.entries(probeFacts)
@@ -582,24 +576,24 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       {lastPlan ? (
         <Card>
           <CardSection
-            title="計劃預覽"
-            description="dry-run · 成功只代表步驟/conf 已生成"
+            title={t('db.cluster.planPreview')}
+            description={t('db.cluster.planPreviewDesc')}
           >
             <DescriptionList
               columns={2}
               items={[
                 { label: 'cluster', value: lastPlan.clusterId.slice(0, 8) + '…' },
                 {
-                  label: '步驟',
+                  label: t('common.steps'),
                   value: String(lastPlan.steps.length),
                 },
                 {
-                  label: '檔案',
+                  label: t('common.files'),
                   value: String(lastPlan.files.length),
                 },
                 {
-                  label: '系統變更',
-                  value: lastPlan.requiresExecute ? '套用時需要' : '否',
+                  label: t('db.systemChange'),
+                  value: lastPlan.requiresExecute ? t('db.cluster.systemChangeNeed') : t('common.no'),
                 },
               ]}
             />
@@ -615,8 +609,8 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             </ul>
             {lastPlan.files[0]?.body ? (
               <details className="u-mt-3">
-                <summary className="muted">本機 conf 預覽</summary>
-                <pre className="ops-pre" style={{ whiteSpace: 'pre-wrap', maxHeight: 280 }}>
+                <summary className="muted">{t('db.cluster.localConfPreview')}</summary>
+                <pre className="ops-pre u-pre-wrap u-scroll-md">
                   {lastPlan.files.find((f) => f.relativePath.includes('99-ysk'))?.body ??
                     lastPlan.files[0].body}
                 </pre>
@@ -632,11 +626,11 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         open={wizOpen}
         onClose={() => setWizOpen(false)}
         title={wizardTitle(kind)}
-        description="選擇節點 → 產生計劃（唔會自動改 peer 系統）"
+        description={t('db.cluster.planModalDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setWizOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -645,14 +639,14 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               size="md"
               loading={busy}
             >
-              產生計劃
+              {t('db.cluster.generatePlan')}
             </Button>
           </>
         }
       >
         <form id="dbc-wiz" onSubmit={(e) => void onCreatePlan(e)}>
           <FormLayout columns={1}>
-            <Field label="叢集名稱" htmlFor="dbc-name" flush required>
+            <Field label={t('db.cluster.clusterName')} htmlFor="dbc-name" flush required>
               <input
                 id="dbc-name"
                 value={name}
@@ -662,64 +656,64 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               />
             </Field>
             <Field
-              label={isRepl ? 'Primary / Master IP' : '本機 IP／主機'}
+              label={isRepl ? 'Primary / Master IP' : t('db.cluster.localIp')}
               htmlFor="dbc-local"
               flush
               required
               hint={
                 isRepl
-                  ? '控制面所在機（primary/master + access=local）'
-                  : '控制面所在機（access=local）'
+                  ? t('db.cluster.primaryIpHint')
+                  : t('db.cluster.localIpHint')
               }
             >
               <input
                 id="dbc-local"
                 value={localHost}
                 onChange={(e) => setLocalHost(e.target.value)}
-                placeholder="例如 10.0.0.1"
+                placeholder={t('db.cluster.ipExample1')}
                 required
                 spellCheck={false}
                 autoComplete="off"
               />
             </Field>
             <Field
-              label={isRepl ? 'Replica IP／主機' : 'Peer IP／主機'}
+              label={isRepl ? t('db.cluster.replicaIp') : t('db.cluster.peerIp')}
               htmlFor="dbc-peer"
               flush
               required
               hint={
                 isRepl
-                  ? '從庫節點'
-                  : '第二節點（Galera 建議 3 節點）'
+                  ? t('db.cluster.replicaHint')
+                  : t('db.cluster.peerHint')
               }
             >
               <input
                 id="dbc-peer"
                 value={peerHost}
                 onChange={(e) => setPeerHost(e.target.value)}
-                placeholder="例如 10.0.0.2"
+                placeholder={t('db.cluster.ipExample2')}
                 required
                 spellCheck={false}
                 autoComplete="off"
               />
             </Field>
             <Field
-              label="第 3 節點（可選）"
+              label={t('db.cluster.thirdNode')}
               htmlFor="dbc-peer3"
               flush
-              hint="Galera / 多 replica 建議填"
+              hint={t('db.cluster.thirdNodeHint')}
             >
               <input
                 id="dbc-peer3"
                 value={peer3Host}
                 onChange={(e) => setPeer3Host(e.target.value)}
-                placeholder="例如 10.0.0.3"
+                placeholder={t('db.cluster.ipExample3')}
                 spellCheck={false}
                 autoComplete="off"
               />
             </Field>
             {isGalera ? (
-              <Field label="SST 方式" htmlFor="dbc-sst" flush>
+              <Field label={t('db.cluster.sstMethod')} htmlFor="dbc-sst" flush>
                 <SegRadio
                   name="dbc-sst"
                   aria-label="SST"
@@ -733,19 +727,19 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               </Field>
             ) : null}
             <FormHint>
-              禁止示範 IP（203.0.113.x）。
+              {t('db.cluster.forbidDemoIp')}
               {isGalera
-                ? '防火牆內網開 3306 / 4567 / 4444 / 4568。'
+                ? t('db.cluster.fwGalera')
                 : kind === 'postgres-replica'
-                  ? '串流需內網 5432；腳本密碼改 CHANGE_ME。'
+                  ? t('db.cluster.fwPg')
                   : kind.startsWith('redis')
-                    ? 'Redis 內網 6379（sentinel 26379）。'
-                    : '主從需內網對應埠；腳本密碼改 CHANGE_ME。'}
-              套用系統 conf 需 YSK_EXECUTE=1 + root。
+                    ? t('db.cluster.fwRedis')
+                    : t('db.cluster.fwRepl')}
+              {t('db.cluster.needExecuteRoot')}
             </FormHint>
           </FormLayout>
           <FormActions>
-            <span className="muted u-text-sm">拓撲：{kind}</span>
+            <span className="muted u-text-sm">{t('db.cluster.topology', { kind })}</span>
           </FormActions>
         </form>
       </Modal>
@@ -753,13 +747,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       <ConfirmDialog
         open={Boolean(applyTarget)}
         onClose={() => setApplyTarget(null)}
-        title="套用本機系統 conf？"
+        title={t('db.cluster.applyLocalTitle')}
         description={
           applyTarget?.bootstrap
-            ? '會安裝 Galera drop-in 並 bootstrap（galera_new_cluster）。僅第一個節點用一次。'
-            : '會安裝 Galera drop-in 並 systemctl restart mariadb。需 YSK_EXECUTE=1 + root。首節點請改用「Bootstrap」。'
+            ? t('db.cluster.applyBootstrapDesc')
+            : t('db.cluster.applyJoinDesc')
         }
-        confirmLabel="確認套用"
+        confirmLabel={t('db.cluster.confirmApply')}
         danger
         onConfirm={() => {
           if (!applyTarget) return;
@@ -774,32 +768,32 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         onClose={() => !busy && setPendingConfirm(null)}
         title={
           pendingConfirm?.kind === 'remove'
-            ? '刪除叢集登記？'
+            ? t('db.cluster.deleteClusterTitle')
             : pendingConfirm?.kind === 'installPeers'
-              ? '遠端安裝 peer？'
+              ? t('db.cluster.remoteInstallTitle')
               : pendingConfirm?.kind === 'push'
-                ? 'Push 到 peer？'
+                ? t('db.cluster.pushTitle')
                 : pendingConfirm?.kind === 'fleetSync'
-                  ? 'Fleet 同步？'
+                  ? t('db.cluster.fleetSyncTitle')
                   : pendingConfirm?.kind === 'fleetApply'
                     ? 'Fleet Apply？'
-                    : '確認操作'
+                    : t('db.cluster.confirmOp')
         }
         description={
           pendingConfirm?.kind === 'remove'
-            ? '系統 conf 唔會自動清（v1）。'
+            ? t('db.cluster.deleteClusterDesc')
             : pendingConfirm?.kind === 'installPeers'
-              ? '在 peer 上 install conf + restart。需 YSK_EXECUTE + SSH。'
+              ? t('db.cluster.remoteInstallDesc')
               : pendingConfirm?.kind === 'push'
-                ? 'scp 檔案到 peer /tmp？需 YSK_EXECUTE=1 與 SSH key。成功 ≠ peer 已 restart。'
+                ? t('db.cluster.pushDesc')
                 : pendingConfirm?.kind === 'fleetSync'
-                  ? '同步 cluster 快照到 fleet 邊緣，再可 apply。'
+                  ? t('db.cluster.fleetSyncDesc')
                   : pendingConfirm?.kind === 'fleetApply'
-                    ? 'enqueue apply 到 fleet 成員。'
+                    ? t('db.cluster.fleetApplyDesc')
                     : ''
         }
-        confirmLabel="確認"
-        cancelLabel="取消"
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
         danger={pendingConfirm?.kind === 'remove'}
         busy={busy}
         onConfirm={() => {
@@ -811,7 +805,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             void run(async () => {
               const r = await dbClusterApi.installPeers(p.id, { execute: true });
               return { ok: r.ok, notes: r.notes } as OpsResultLike;
-            }, '遠端已安裝');
+            }, t('db.cluster.remoteInstalled'));
           } else if (p.kind === 'push') void pushPeers(p.id, true);
           else if (p.kind === 'fleetSync') {
             void run(async () => {
@@ -820,7 +814,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 op: 'sync',
               });
               return { ok: sync.ok, notes: sync.notes } as OpsResultLike;
-            }, 'Fleet 已同步排隊');
+            }, t('db.cluster.fleetSynced'));
           } else if (p.kind === 'fleetApply') {
             void run(async () => {
               const r = await dbClusterApi.fleet(p.id, {
@@ -829,7 +823,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 edgeExecute: true,
               });
               return { ok: r.ok, notes: r.notes } as OpsResultLike;
-            }, 'Fleet apply 已排隊');
+            }, t('db.cluster.fleetApplyQueued'));
           }
         }}
       />

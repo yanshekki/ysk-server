@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Host power actions (reboot / poweroff / cancel) — fail-closed.
  * Uses `shutdown` so cancel works; never bare `reboot` without policy.
@@ -45,7 +46,7 @@ export async function hostPowerAction(input: {
   if (action !== 'reboot' && action !== 'poweroff' && action !== 'cancel') {
     return {
       ok: false,
-      notes: ['未知電源動作'],
+      notes: [tl('notes.auto.n0970')],
       action: action as HostPowerAction,
       executeEnabled,
       isRoot,
@@ -56,8 +57,8 @@ export async function hostPowerAction(input: {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '無法執行電源操作：需要系統變更權限（YSK_EXECUTE）與 root',
-      notes: ['需要 YSK_EXECUTE=1 與 root'],
+      blockMessage: tl('notes.auto.n1159'),
+      notes: [tl('ops.blocked.needExecuteRoot')],
       action,
       executeEnabled,
       isRoot,
@@ -69,8 +70,8 @@ export async function hostPowerAction(input: {
     const ok = r.exitCode === 0;
     notes.push(
       ok
-        ? '已取消排程關機／重啟'
-        : `取消失敗: ${(r.stderr || r.stdout || '').trim() || `exit ${r.exitCode}`}`,
+        ? tl('notes.auto.n0742')
+        : tl('notes.tpl.cancelFailed', { detail: (r.stderr || r.stdout || '').trim() || `exit ${r.exitCode}` }),
     );
     return { ok, notes, action, executeEnabled, isRoot };
   }
@@ -79,7 +80,7 @@ export async function hostPowerAction(input: {
   if ((input.confirm ?? '').trim() !== need) {
     return {
       ok: false,
-      notes: [`請在 confirm 欄位輸入正確字串：${need}`],
+      notes: [tl('notes.auto.t0101', { v0: (need) })],
       action,
       executeEnabled,
       isRoot,
@@ -100,7 +101,7 @@ export async function hostPowerAction(input: {
   } else {
     const mins = Math.max(1, Math.ceil(delaySec / 60));
     if (delaySec < 60) {
-      notes.push(`延遲 ${delaySec}s 會以最少 1 分鐘排程（shutdown +N 以分鐘計）`);
+      notes.push(tl('notes.auto.t0102', { v0: (delaySec) }));
     }
     used = action === 'reboot' ? ['shutdown', '-r', `+${mins}`] : ['shutdown', '-h', `+${mins}`];
   }
@@ -114,15 +115,15 @@ export async function hostPowerAction(input: {
     notes.push(
       action === 'reboot'
         ? delaySec === 0
-          ? '已送出立即重啟指令'
-          : `已排程重啟（約 ${Math.max(1, Math.ceil(delaySec / 60))} 分鐘後）`
+          ? tl('notes.auto.n0802')
+          : tl('notes.auto.t0103', { v0: (Math.max(1, Math.ceil(delaySec / 60))) })
         : delaySec === 0
-          ? '已送出立即關機指令'
-          : `已排程關機（約 ${Math.max(1, Math.ceil(delaySec / 60))} 分鐘後）`,
+          ? tl('notes.auto.n0803')
+          : tl('notes.auto.t0104', { v0: (Math.max(1, Math.ceil(delaySec / 60))) }),
     );
-    notes.push('面板連線即將中斷；可用「取消排程」撤回（若仍在線）');
+    notes.push(tl('notes.auto.n1594'));
   } else {
-    notes.push(`電源指令失敗: ${(r.stderr || r.stdout || '').trim() || `exit ${r.exitCode}`}`);
+    notes.push(tl('notes.tpl.powerCmdFailed', { detail: (r.stderr || r.stdout || '').trim() || `exit ${r.exitCode}` }));
   }
 
   return {

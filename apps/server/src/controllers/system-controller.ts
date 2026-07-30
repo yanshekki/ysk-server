@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * System apply + protection routes extracted for modularity.
  * (Main router still may handle some; this owns /api/v1/system/* and protection probe helpers.)
@@ -300,7 +301,7 @@ export async function handleSystemRoutes(
     const cur = loadAutoBanPolicy(ctx.db);
     const ip = (data.ip ?? '').trim();
     if (!ip) {
-      sendJson(res, 400, { ok: false, notes: ['需要 ip'] });
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n1562')] });
       return true;
     }
     let whitelist = [...cur.whitelist];
@@ -843,7 +844,7 @@ export async function handleSystemRoutes(
     const id = url.pathname.split('/').pop()!;
     const spec = getSoftware(id);
     if (!spec) {
-      sendJson(res, 404, { ok: false, message: '未知軟件項目' });
+      sendJson(res, 404, { ok: false, message: tl('notes.auto.n0969') });
       return true;
     }
     const items = await probeAllSoftware(ctx.host);
@@ -1603,7 +1604,7 @@ export async function handleSystemRoutes(
       sendJson(res, 422, {
         ok: false,
         blocked: true,
-        notes: ['無法變更主機名稱／時區：需要系統變更權限與 root'],
+        notes: [tl('notes.auto.n1190')],
       });
       return true;
     }
@@ -1614,7 +1615,7 @@ export async function handleSystemRoutes(
       notes.push(
         r.exitCode === 0
           ? `hostname → ${data.hostname.trim()}`
-          : `hostname 失敗: ${r.stderr || r.stdout}`,
+          : tl('notes.auto.t0795', { v0: (r.stderr || r.stdout) }),
       );
     }
     if (data.prettyHostname !== undefined) {
@@ -1626,7 +1627,7 @@ export async function handleSystemRoutes(
       notes.push(
         r.exitCode === 0
           ? `pretty hostname → ${pretty || '(cleared)'}`
-          : `pretty hostname 失敗: ${r.stderr || r.stdout}`,
+          : tl('notes.auto.t0796', { v0: (r.stderr || r.stdout) }),
       );
     }
     if (data.timezone?.trim()) {
@@ -1636,7 +1637,7 @@ export async function handleSystemRoutes(
       notes.push(
         r.exitCode === 0
           ? `timezone → ${data.timezone.trim()}`
-          : `timezone 失敗: ${r.stderr || r.stdout}`,
+          : tl('notes.auto.t0797', { v0: (r.stderr || r.stdout) }),
       );
     }
     ctx.audit.append({
@@ -1666,7 +1667,7 @@ export async function handleSystemRoutes(
   if (method === 'POST' && url.pathname === '/api/v1/system/host/power') {
     const user = ctx.auth.authenticate(getBearer(req));
     if (!user.roles.includes('admin')) {
-      sendJson(res, 403, { ok: false, notes: ['僅 admin 可執行整機電源操作'] });
+      sendJson(res, 403, { ok: false, notes: [tl('notes.auto.n0563')] });
       return true;
     }
     const raw = await readBody(req);
@@ -1677,7 +1678,7 @@ export async function handleSystemRoutes(
     };
     const action = data.action;
     if (action !== 'reboot' && action !== 'poweroff' && action !== 'cancel') {
-      sendJson(res, 400, { ok: false, notes: ['action 須為 reboot | poweroff | cancel'] });
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0217')] });
       return true;
     }
     const { hostPowerAction } = await import('@ysk/core');
@@ -1861,7 +1862,7 @@ export async function handleSystemRoutes(
       action?: 'start' | 'stop' | 'restart' | 'reload';
     };
     if (!data.unit || !data.action) {
-      sendJson(res, 400, { ok: false, notes: ['unit 與 action 必填'] });
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0458')] });
       return true;
     }
     const result = await lifecycleServiceUnit(ctx.host, data.unit, data.action);
@@ -1925,7 +1926,7 @@ export async function handleSystemRoutes(
     const { createReadStream, existsSync } = await import('node:fs');
     const r = resolveExportFile(ctx.dataDir, name);
     if (!r.ok || !existsSync(r.path)) {
-      sendJson(res, 404, { ok: false, notes: r.ok ? ['不存在'] : r.notes });
+      sendJson(res, 404, { ok: false, notes: r.ok ? [tl('notes.auto.n0496')] : r.notes });
       return true;
     }
     res.writeHead(200, {
@@ -2009,7 +2010,7 @@ export async function handleSystemRoutes(
     const { loadMigrateJob } = await import('@ysk/core');
     const job = loadMigrateJob(ctx.dataDir, id);
     if (!job) {
-      sendJson(res, 404, { ok: false, notes: ['找不到 migrate job'] });
+      sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0853')] });
       return true;
     }
     sendJson(res, 200, { ok: true, job });
@@ -2038,7 +2039,7 @@ export async function handleSystemRoutes(
     if (!target && !data.jobId) {
       sendJson(res, 400, {
         ok: false,
-        notes: ['需要 target（root@host）或 jobId 以 resume'],
+        notes: [tl('notes.auto.n1573')],
       });
       return true;
     }
@@ -2046,7 +2047,7 @@ export async function handleSystemRoutes(
       sendJson(res, 403, {
         ok: false,
         blocked: true,
-        notes: ['需 execute:true 或 dryRun:true'],
+        notes: [tl('notes.auto.n1544')],
       });
       return true;
     }
@@ -2055,7 +2056,7 @@ export async function handleSystemRoutes(
         ok: false,
         blocked: true,
         requiresExecute: true,
-        notes: ['伺服器未開啟 YSK_EXECUTE'],
+        notes: [tl('notes.auto.n0525')],
       });
       return true;
     }
@@ -2092,7 +2093,7 @@ export async function handleSystemRoutes(
     if (!targetStr) {
       sendJson(res, 400, {
         ok: false,
-        notes: ['需要 target，或含 target 的 jobId'],
+        notes: [tl('notes.auto.n1574')],
       });
       return true;
     }
@@ -2136,7 +2137,7 @@ export async function handleSystemRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { jobId?: string };
     if (!data.jobId) {
-      sendJson(res, 400, { ok: false, notes: ['需要 jobId'] });
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n1563')] });
       return true;
     }
     if (!ctx.host.executeEnabled()) {
@@ -2144,7 +2145,7 @@ export async function handleSystemRoutes(
         ok: false,
         blocked: true,
         requiresExecute: true,
-        notes: ['migrate post 需要 YSK_EXECUTE=1（應在目標機執行）'],
+        notes: [tl('notes.auto.n0332')],
       });
       return true;
     }

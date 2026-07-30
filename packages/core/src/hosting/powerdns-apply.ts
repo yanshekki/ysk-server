@@ -5,7 +5,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listManagedDnsZones, writeManagedDnsZone } from './dns-zone.js';
 
@@ -48,7 +48,7 @@ export async function probePowerDns(host: HostExecutor): Promise<PowerDnsProbe> 
   if (pdnsControl) notes.push(`pdns_control: ${pdnsControl}`);
   if (pdnsServer) notes.push(`pdns_server: ${pdnsServer}`);
   if (!pdnsutil && !pdnsControl) {
-    notes.push('找不到 PowerDNS 工具 — 請安裝 pdns-server / pdns-tools');
+    notes.push(tl('notes.auto.n0846'));
   }
   return {
     pdnsutil,
@@ -81,7 +81,7 @@ export async function applyPowerDnsZone(input: {
 }): Promise<PowerDnsLoadResult> {
   const zone = input.zone.trim().toLowerCase().replace(/\.$/, '');
   if (!zone) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫 zone', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1391'), { httpStatus: 400 });
   }
 
   const notes: string[] = [];
@@ -140,7 +140,7 @@ export async function applyPowerDnsZone(input: {
       '  pdnsutil rectify-zone "$ZONE" || true',
       '  echo "loaded $ZONE"',
       'else',
-      '  echo "pdnsutil 找不到" >&2',
+      tl('notes.auto.n0052'),
       '  exit 1',
       'fi',
       '',
@@ -159,7 +159,7 @@ export async function applyPowerDnsZone(input: {
       mode: 'plan',
       notes: [
         ...notes,
-        '尚未載入 zone：請於管理面板重試',
+        tl('notes.auto.n0715'),
         `Preview (first 400 chars):\n${readFileSync(zonePath, 'utf8').slice(0, 400)}`,
       ],
       written,
@@ -176,7 +176,7 @@ export async function applyPowerDnsZone(input: {
       zone,
       zonePath,
       mode: 'refused',
-      notes: [...notes, '無法載入 PowerDNS zone：伺服器未開啟系統變更權限'],
+      notes: [...notes, tl('notes.auto.n1192')],
       written,
       commandResults,
       requiresExecute: true,
@@ -193,7 +193,7 @@ export async function applyPowerDnsZone(input: {
       mode: 'refused',
       notes: [
         ...notes,
-        'pdnsutil 找不到 — install PowerDNS tools or run helper script as root after install',
+        tl('notes.auto.n0370'),
       ],
       written,
       commandResults,
@@ -214,7 +214,7 @@ export async function applyPowerDnsZone(input: {
   });
 
   if (load.exitCode !== 0) {
-    notes.push(`pdnsutil load-zone 失敗：${load.stderr || load.stdout}`);
+    notes.push(tl('notes.auto.t0293', { v0: (load.stderr || load.stdout) }));
     return {
       ok: false,
       zone,
@@ -229,7 +229,7 @@ export async function applyPowerDnsZone(input: {
     };
   }
 
-  notes.push(`已透過 pdnsutil 載入 zone ${zone}`);
+  notes.push(tl('notes.auto.t0294', { v0: (zone) }));
   const rect = await input.host.runCommand(['pdnsutil', 'rectify-zone', zone], {
     timeoutMs: 30_000,
   });
@@ -238,7 +238,7 @@ export async function applyPowerDnsZone(input: {
     exitCode: rect.exitCode,
     stderr: rect.stderr,
   });
-  if (rect.exitCode === 0) notes.push('zone rectify 完成');
+  if (rect.exitCode === 0) notes.push(tl('notes.auto.n0482'));
   else notes.push(`rectify-zone exit=${rect.exitCode} (non-fatal)`);
 
   return {
@@ -326,7 +326,7 @@ export async function installPowerDnsPackages(input: {
   }
   const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
   if (want && !execute) {
-    notes.push('無法安裝 PowerDNS：需要系統管理員權限');
+    notes.push(tl('notes.auto.n1163'));
   }
   if (execute) {
     for (const argv of commands) {

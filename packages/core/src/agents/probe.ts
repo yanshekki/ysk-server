@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Probe managed AI agent runtimes on disk + systemd (real host truth).
  */
@@ -68,21 +69,21 @@ export async function probeAgentRuntime(
   if (host.pathExists('/bin/systemctl') || host.pathExists('/usr/bin/systemctl')) {
     const r = await host.runCommand(['systemctl', 'is-active', unitName], { timeoutMs: 5_000 });
     unitActive = (r.stdout || r.stderr || `exit_${r.exitCode}`).trim();
-    notes.push(`服務狀態：${unitActive}`);
+    notes.push(tl('notes.auto.t0494', { v0: (unitActive) }));
   } else {
-    notes.push('此主機無 systemd 服務管理');
+    notes.push(tl('notes.auto.n1035'));
   }
 
   const binaryPath = await resolveAgentBinary(k, host);
-  if (binaryPath) notes.push(`已偵測到可執行檔：${binaryPath}`);
-  else notes.push('伺服器尚未安裝對應程式（command -v 無結果）');
+  if (binaryPath) notes.push(tl('notes.auto.t0495', { v0: (binaryPath) }));
+  else notes.push(tl('notes.auto.n0519'));
 
   let status: AgentRuntimeDto['status'] = 'unknown';
   if (unitActive === 'active') {
     // active unit with only placeholder is still "running" but probe notes honesty
     status = 'running';
     if (!binaryPath) {
-      notes.push('警告：unit 為 active 但找不到 CLI binary（可能係舊 placeholder unit）');
+      notes.push(tl('notes.auto.n1431'));
     }
   } else if (pathExists || binaryPath) status = 'stopped';
   else status = 'not_installed';

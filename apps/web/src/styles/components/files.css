@@ -1,0 +1,195 @@
+/* —— ownCloud-style file manager —— */
+.fm-layout {
+  display: grid;
+  grid-template-columns: 12.5rem minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+  min-width: 0;
+}
+
+@media (max-width: 800px) {
+  .fm-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fm-sidebar {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  position: sticky;
+  top: calc(var(--header-height) + 0.5rem);
+}
+
+.fm-sidebar__section {
+  margin-bottom: var(--space-4);
+}
+
+.fm-sidebar__label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-sub);
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fm-side-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-sub);
+  cursor: pointer;
+}
+
+.fm-side-item:hover {
+  background: rgba(59, 130, 246, 0.06);
+  color: var(--brand-blue);
+}
+
+.fm-side-item.is-active {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--brand-blue);
+}
+
+.fm-main {
+  min-width: 0;
+}
+
+.fm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.fm-search {
+  min-width: 10rem;
+  max-width: 16rem;
+}
+
+.fm-upload-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.fm-breadcrumb {
+  margin-bottom: var(--space-3);
+}
+
+.fm-drop {
+  position: relative;
+  min-height: 12rem;
+  border: 1px dashed transparent;
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  padding: var(--space-3);
+}
+
+.fm-drop.is-drag {
+  border-color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.fm-drop-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.12);
+  font-weight: 700;
+  color: var(--brand-blue);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+.fm-name-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.fm-name-btn:hover {
+  color: var(--brand-blue);
+}
+
+.fm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: var(--space-3);
+}
+
+.fm-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: var(--space-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  cursor: pointer;
+  font: inherit;
+}
+
+.fm-grid-item:hover,
+.fm-grid-item.is-selected {
+  border-color: var(--brand-blue-light);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.fm-grid-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.fm-grid-name {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Button sizes live only in buttons.css (single system height). */
+
+/* Wider form on feature pages */
+.feature-form {
+  max-width: 42rem;
+}
+
+.feature-form--wide {
+  max-width: 56rem;
+}
+
+/* Checkbox / radio not forced to control-height */
+input[type='checkbox'],
+input[type='radio'] {
+  min-height: auto;
+  width: auto;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  appearance: auto;
+  -webkit-appearance: auto;
+  background: transparent;
+}
+

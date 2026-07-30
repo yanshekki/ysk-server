@@ -3,7 +3,6 @@
  */
 import type { HealthResponse } from '@ysk/shared';
 import { api } from '../../shared/services/api';
-import { authStore } from '../../shared/stores/auth-store';
 
 export const dashboardApi = {
   health: (): Promise<HealthResponse> => api.health(),
@@ -43,19 +42,13 @@ export const dashboardApi = {
       summary: { ok: number; warn: number; bad: number; total: number };
     }>('/api/v1/system/apply-audit'),
   readiness: async () => {
-    // 503 when not productionReady still carries full report body
-    const t = authStore.getToken();
-    const res = await fetch('/api/v1/readiness', {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(t ? { Authorization: `Bearer ${t}` } : {}),
-      },
-    });
-    return (await res.json()) as {
+    // 503 when not productionReady still carries full report body — must not throw.
+    // Still send Accept-Language so summary strings match the UI locale.
+    return api.requestRawAllowStatus<{
       productionReady: boolean;
       mode: string;
       summary: string[];
       score: { ready: number; degraded: number; missing: number; total: number };
-    };
+    }>('/api/v1/readiness', { allowStatuses: [503] });
   },
 };

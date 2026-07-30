@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface PlaybookStep {
   tool: string;
@@ -152,7 +152,7 @@ export function listPlaybooks(): Playbook[] {
 export function getPlaybook(id: string): Playbook {
   const p = BUILTIN_PLAYBOOKS.find((x) => x.id === id);
   if (!p) {
-    throw new YskError(ErrorCodes.NOT_FOUND, `找不到 Playbook：${id}`, { httpStatus: 404 });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0022', { v0: (id) }), { httpStatus: 404 });
   }
   return { ...p, steps: p.steps.map((s) => ({ ...s })) };
 }

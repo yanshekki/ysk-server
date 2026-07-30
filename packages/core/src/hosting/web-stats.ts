@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Lightweight web access stats from managed nginx access logs (honest sample).
  */
@@ -76,8 +77,8 @@ export function parseAccessLogTail(content: string, maxLines = 5000): WebStatsSu
     topStatus,
     bytesHint,
     notes: lines.length
-      ? [`已解析最近 ${lines.length} 行`]
-      : ['無可用 access log 行（或格式不符）'],
+      ? [tl('notes.auto.t0260', { v0: (lines.length) })]
+      : [tl('notes.auto.n1095')],
   };
 }
 
@@ -131,8 +132,8 @@ export async function collectProjectWebStats(input: {
   summary.logPath = logPath;
   if (!logPath) {
     summary.notes = [
-      '找不到專案 access log — 請確認 nginx access_log 路徑或日誌檔存在',
-      '狀態：無資料（非假統計）',
+      tl('notes.auto.n0862'),
+      tl('notes.auto.n1239'),
     ];
   }
   return summary;

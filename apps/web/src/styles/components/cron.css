@@ -1,0 +1,164 @@
+/* —— Cron schedule builder —— */
+.cron-sched {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--form-field-gap);
+}
+
+.cron-sched__modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: var(--space-2);
+}
+
+.cron-sched__mode {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-page);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--text-main);
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.cron-sched__mode:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.cron-sched__mode.is-active {
+  border-color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.08);
+  box-shadow: inset 0 0 0 1px var(--brand-blue);
+}
+
+.cron-sched__mode-label {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  line-height: 1.3;
+}
+
+.cron-sched__mode-hint {
+  font-size: var(--text-xs);
+  color: var(--text-sub);
+  line-height: 1.3;
+}
+
+.cron-sched__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 32rem;
+}
+
+.cron-sched__weekdays {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cron-sched__weekdays-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.cron-sched__weekday-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cron-sched__dow {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+  font: inherit;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.cron-sched__dow:hover {
+  border-color: rgba(59, 130, 246, 0.45);
+  color: var(--brand-blue);
+}
+
+.cron-sched__dow.is-active {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+  color: #fff;
+}
+
+.cron-sched__preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  background: rgba(59, 130, 246, 0.06);
+  max-width: 36rem;
+}
+
+.cron-sched__preview-human {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.cron-sched__preview-label {
+  font-size: var(--text-xs);
+  color: var(--text-sub);
+  font-weight: 600;
+}
+
+.cron-sched__preview-human strong {
+  font-size: var(--text-base);
+  color: var(--text-main);
+}
+
+.cron-sched__preview-expr {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+
+.cron-cmd-presets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--form-field-gap);
+}
+
+.cron-cmd-presets__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.cron-cmd-presets__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+

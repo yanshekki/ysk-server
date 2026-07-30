@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * MariaDB Galera plan + conf render (pure; never mutates host).
  */
@@ -126,14 +127,13 @@ export function planMariadbGalera(c: DbCluster): ClusterPlan {
       engine: c.engine,
       steps: [],
       files: [],
-      notes: ['此 planner 僅支援 mariadb + mariadb-galera'],
+      notes: [tl('notes.auto.n1033')],
       requiresExecute: true,
-      requiresRoot: true,
-    };
+      requiresRoot: true };
   }
 
   if (c.members.length < 2) {
-    notes.push('建議至少 2 個節點（生產建議 3）；而家計劃仍可產生');
+    notes.push(tl('notes.auto.n0826'));
   }
 
   const local = c.members.find((m) => m.access === 'local') ?? c.members[0];
@@ -151,58 +151,52 @@ export function planMariadbGalera(c: DbCluster): ClusterPlan {
   steps.push({
     id: 'conf-local',
     memberId: local.id,
-    title: `本機 Galera conf（${thisHost}）`,
+    title: tl('notes.auto.t0581', { v0: (thisHost) }),
     kind: 'conf',
     body: cnf,
-    risk: 'write-panel',
-  });
+    risk: 'write-panel' });
 
   for (const m of c.members.filter((x) => x.id !== local.id)) {
     const peerCnf = renderGaleraCnf(c, m.host);
     files.push({
       relativePath: `conf/peers/${m.host.replace(/[^a-zA-Z0-9._-]/g, '_')}.cnf`,
-      body: peerCnf,
-    });
+      body: peerCnf });
     steps.push({
       id: `conf-peer-${m.id}`,
       memberId: m.id,
       title: `Peer conf ${m.host}`,
       kind: 'conf',
       body: peerCnf,
-      risk: 'write-panel',
-    });
+      risk: 'write-panel' });
     steps.push({
       id: `manual-peer-${m.id}`,
       memberId: m.id,
-      title: `在 ${m.host} 安裝 conf 並 join（手動 / SSH / fleet）`,
+      title: tl('notes.auto.t0582', { v0: (m.host) }),
       kind: 'manual',
-      body: `install conf → systemctl restart mariadb（非 bootstrap 節點）`,
-      risk: 'execute-host',
-    });
+      body: tl('notes.auto.t0583'),
+      risk: 'execute-host' });
   }
 
   steps.push({
     id: 'bootstrap',
     memberId: local.id,
-    title: 'Bootstrap 第一個節點（僅一次）',
+    title: tl('notes.auto.n0083'),
     kind: 'command',
     argv: ['galera_new_cluster'],
-    risk: 'execute-host',
-  });
+    risk: 'execute-host' });
 
   steps.push({
     id: 'probe',
-    title: "探測 wsrep（SHOW STATUS LIKE 'wsrep%'）",
+    title: tl('notes.auto.n0889'),
     kind: 'probe',
-    risk: 'read',
-  });
+    risk: 'read' });
 
   notes.push(
-    'dry-run：此計劃未改系統',
+    tl('notes.auto.n0032'),
     `wsrep_cluster_address=gcomm://${galeraAddressList(c)}`,
-    '防火牆（內網）：TCP 3306, 4567, 4444, 4568',
+    tl('notes.auto.n1524'),
     sstMethod(c) === 'mariabackup'
-      ? 'SST=mariabackup：各節點需 mariadb-backup'
+      ? tl('notes.auto.n0190')
       : 'SST=rsync',
   );
 
@@ -216,6 +210,5 @@ export function planMariadbGalera(c: DbCluster): ClusterPlan {
     files,
     notes,
     requiresExecute: true,
-    requiresRoot: true,
-  };
+    requiresRoot: true };
 }

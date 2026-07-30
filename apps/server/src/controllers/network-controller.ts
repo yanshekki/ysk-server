@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Host network interfaces / routes / DNS — view + mutate (fail-closed).
  */
@@ -45,7 +46,7 @@ export async function handleNetworkRoutes(
     const ifname = decodeURIComponent(addrMatch[1]);
     const data = await readJson(req);
     if (data == null) {
-      sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+      sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
     const {
@@ -88,7 +89,7 @@ export async function handleNetworkRoutes(
     const ifname = decodeURIComponent(linkMatch[1]);
     const data = await readJson(req);
     if (data == null) {
-      sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+      sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
     const { networkSetLink, collectNetworkSnapshot } = await import('@ysk/core');
@@ -135,7 +136,7 @@ export async function handleNetworkRoutes(
     const snap = await collectNetworkSnapshot(ctx.host);
     const iface = snap.interfaces.find((i) => i.name === name);
     if (!iface) {
-      sendJson(res, 404, { ok: false, message: `找不到介面 ${name}` });
+      sendJson(res, 404, { ok: false, message: tl('notes.auto.t0794', { v0: (name) }) });
       return true;
     }
     sendJson(res, 200, { ok: true, interface: iface, caps: snap.caps });
@@ -163,7 +164,7 @@ export async function handleNetworkRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const data = await readJson(req);
     if (data == null) {
-      sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+      sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
     const { networkAddRoute, networkDelRoute } = await import('@ysk/core');
@@ -207,7 +208,7 @@ export async function handleNetworkRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const data = await readJson(req);
     if (data == null) {
-      sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+      sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
     const { networkSetDns } = await import('@ysk/core');
@@ -255,7 +256,7 @@ export async function handleNetworkRoutes(
     ctx.auth.authenticate(getBearer(req));
     const data = await readJson(req);
     if (data == null) {
-      sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+      sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
     const { networkTestDns } = await import('@ysk/core');

@@ -22,6 +22,7 @@ import {
   PageTabs,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 
 const UPD_TABS = ['packages', 'panel', 'schedule', 'policy', 'about'] as const;
@@ -34,11 +35,11 @@ function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' 
   return 'neutral';
 }
 
-function riskLabel(risk?: string): string {
-  if (risk === 'critical') return '嚴重';
-  if (risk === 'high') return '高';
-  if (risk === 'medium') return '中';
-  if (risk === 'low') return '低';
+function riskLabel(risk: string | undefined, tr: (k: string) => string): string {
+  if (risk === 'critical') return tr('updates.risk.critical');
+  if (risk === 'high') return tr('updates.risk.high');
+  if (risk === 'medium') return tr('updates.risk.medium');
+  if (risk === 'low') return tr('updates.risk.low');
   return risk ?? '—';
 }
 
@@ -50,16 +51,16 @@ function isHighRisk(row: AdviceRow): boolean {
   );
 }
 
-function relTime(iso: string | null): string {
+function relTime(iso: string | null, tr: (k: string, o?: Record<string, unknown>) => string): string {
   if (!iso) return '—';
   try {
-    const t = new Date(iso).getTime();
-    const sec = Math.max(0, Math.round((Date.now() - t) / 1000));
-    if (sec < 15) return '剛剛';
-    if (sec < 60) return `${sec} 秒前`;
-    if (sec < 3600) return `${Math.floor(sec / 60)} 分鐘前`;
-    if (sec < 86400) return `${Math.floor(sec / 3600)} 小時前`;
-    return new Date(iso).toLocaleString('zh-TW');
+    const ms = new Date(iso).getTime();
+    const sec = Math.max(0, Math.round((Date.now() - ms) / 1000));
+    if (sec < 15) return tr('updates.justNow');
+    if (sec < 60) return tr('updates.secAgo', { n: sec });
+    if (sec < 3600) return tr('updates.minAgo', { n: Math.floor(sec / 60) });
+    if (sec < 86400) return tr('updates.hourAgo', { n: Math.floor(sec / 3600) });
+    return new Date(iso).toLocaleString();
   } catch {
     return iso;
   }
@@ -67,6 +68,8 @@ function relTime(iso: string | null): string {
 
 export function UpdatesPage() {
   const { t } = useTranslation();
+  const { can } = useCapabilities();
+  const canApply = can('updates.apply');
   const {
     inventory,
     selfUpdate,
@@ -135,44 +138,44 @@ export function UpdatesPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.updates', { defaultValue: '更新' })}
+      title={t('nav.updates')}
       showCapability={false}
       status={{
         pill: {
           label:
             highRisk > 0
-              ? `${highRisk} 項高風險`
+              ? t('updates.highRiskN', { count: highRisk })
               : selfAvailable
-                ? '面板有更新'
+                ? t('updates.panelUpdate')
                 : inventory.length
-                  ? '風險可控'
-                  : '待掃描',
+                  ? t('updates.riskOk')
+                  : t('updates.pendingScan'),
           tone: heroTone,
         },
         items: [
-          { label: '套件', value: inventory.length },
+          { label: t('updates.packages'), value: inventory.length },
           {
-            label: '高風險',
+            label: t('updates.highRisk'),
             value: highRisk,
             tone: highRisk > 0 ? 'danger' : 'ok',
           },
           {
-            label: '需審批',
+            label: t('updates.needApproval'),
             value: needApproval,
             tone: needApproval > 0 ? 'warn' : 'neutral',
           },
           {
-            label: '有 CVE',
+            label: t('updates.hasCve'),
             value: withCve,
             tone: withCve > 0 ? 'warn' : 'neutral',
           },
           {
-            label: '面板',
+            label: t('updates.panel'),
             value: selfAvailable ? `${selfVersion}→${selfLatest}` : selfVersion,
             tone: selfAvailable ? 'warn' : 'ok',
           },
           {
-            label: '排程',
+            label: t('updates.schedule'),
             value: jobs.length,
           },
         ],
@@ -185,16 +188,16 @@ export function UpdatesPage() {
             loading={busy}
             onClick={() => void load(false)}
           >
-            重新載入
+            {t('updates.reload')}
           </Button>
           <Button
             variant="secondary"
             size="sm"
             loading={busy}
             onClick={() => void load(true, true)}
-            title="對前 12 個建議套件查 OSV（需外網）"
+            title={t('updates.osvTitle')}
           >
-            掃描 + OSV
+            {t('updates.scanOsv')}
           </Button>
           <Button
             variant="primary"
@@ -202,7 +205,7 @@ export function UpdatesPage() {
             loading={busy}
             onClick={() => void load(true, false)}
           >
-            掃描套件
+            {t('updates.scanPkgs')}
           </Button>
         </ActionBar>
       }
@@ -212,7 +215,7 @@ export function UpdatesPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -221,20 +224,21 @@ export function UpdatesPage() {
         tabs={[
           {
             id: 'packages',
-            label: '套件清點',
+            label: t('updates.tabInventory'),
             badge: inventory.length || undefined,
           },
           {
             id: 'panel',
-            label: '面板自身',
-            badge: selfAvailable ? '更新' : undefined,
+            label: t('updates.tabSelf'),
+            badge: selfAvailable ? t('updates.badgeUpdate') : undefined,
           },
           {
             id: 'schedule',
-            label: '排程',
+            label: t('updates.schedule'),
             badge: jobs.length || undefined,
           },
-          { id: 'policy', label: '政策' },
+          { id: 'policy', label: t('updates.tabPolicy') },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -243,31 +247,31 @@ export function UpdatesPage() {
         {tab === 'packages' ? (
           <div className="tab-panel stack">
             {busy && inventory.length === 0 ? (
-              <LoadingBlock label="掃描中…" />
+              <LoadingBlock label={t('updates.scanning')} />
             ) : (
               <DataTable
-                title="套件清點"
-                description={`顯示 ${filtered.length} / ${inventory.length} · 清點 ${relTime(lastAt)}`}
+                title={t('updates.inventoryTitle')}
+                description={t('updates.inventoryDesc', { shown: filtered.length, total: inventory.length, when: relTime(lastAt, t) })}
                 filters={
                   <div className="upd-toolbar">
-                    <div className="upd-chips" role="tablist" aria-label="風險篩選">
+                    <div className="upd-chips" role="tablist" aria-label={t('updates.riskFilterAria')}>
                       {(
                         [
-                          ['all', '全部', inventory.length],
-                          ['upgradable', '可升級', upgradableCount],
-                          ['high', '高風險', highRisk],
+                          ['all', t('updates.all'), inventory.length],
+                          ['upgradable', t('updates.upgradable'), upgradableCount],
+                          ['high', t('updates.highRisk'), highRisk],
                           [
                             'medium',
-                            '中',
+                            t('updates.mediumFilter'),
                             inventory.filter((i) => i.risk === 'medium').length,
                           ],
                           [
                             'low',
-                            '低／未標',
+                            t('updates.lowUnmarked'),
                             inventory.filter((i) => !i.risk || i.risk === 'low')
                               .length,
                           ],
-                          ['approval', '需審批', needApproval],
+                          ['approval', t('updates.needApproval'), needApproval],
                         ] as const
                       ).map(([id, label, n]) => (
                         <button
@@ -292,14 +296,14 @@ export function UpdatesPage() {
                       ))}
                     </div>
                     <label className="upd-field">
-                      <span className="upd-field__lab">搜尋</span>
+                      <span className="upd-field__lab">{t('common.search')}</span>
                       <input
                         id="upd-q"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
-                        placeholder="套件名 / 建議 / CVE…"
+                        placeholder={t('updates.searchPh')}
                         autoComplete="off"
-                        aria-label="搜尋套件"
+                        aria-label={t('updates.searchAria')}
                       />
                     </label>
                   </div>
@@ -307,7 +311,7 @@ export function UpdatesPage() {
                 columns={[
                   {
                     key: 'pkg',
-                    header: '套件',
+                    header: t('updates.colPackage'),
                     render: (i) => (
                       <div className="upd-pkg-cell">
                         <div className="upd-pkg-cell__title">
@@ -315,10 +319,10 @@ export function UpdatesPage() {
                             {i.packageName}
                           </strong>
                           <Badge tone={riskTone(i.risk)}>
-                            {riskLabel(i.risk)}
+                            {riskLabel(i.risk, t)}
                           </Badge>
                           {i.requiresApproval ? (
-                            <Badge tone="warn">需審批</Badge>
+                            <Badge tone="warn">{t('updates.needApproval')}</Badge>
                           ) : null}
                         </div>
                         {i.cves?.length ? (
@@ -340,14 +344,14 @@ export function UpdatesPage() {
                   },
                   {
                     key: 'ver',
-                    header: '版本（已裝 → apt Candidate）',
+                    header: t('updates.colVersion'),
                     render: (i) => {
                       const cur = i.currentVersion ?? '—';
                       const cand = i.candidateVersion ?? cur;
                       const hasUpgrade = Boolean(cand && cand !== cur);
                       return (
                         <div className="upd-pkg-cell__ver">
-                          <code title="已安裝">{cur}</code>
+                          <code title={t('updates.installedTitle')}>{cur}</code>
                           {hasUpgrade ? (
                             <>
                               <span className="upd-pkg__arrow">→</span>
@@ -356,7 +360,7 @@ export function UpdatesPage() {
                               </code>
                             </>
                           ) : (
-                            <span className="muted u-text-sm">（無可用升級）</span>
+                            <span className="muted u-text-sm">{t('updates.noUpgrade')}</span>
                           )}
                         </div>
                       );
@@ -364,7 +368,7 @@ export function UpdatesPage() {
                   },
                   {
                     key: 'advice',
-                    header: '建議',
+                    header: t('updates.colAdvice'),
                     render: (i) => {
                       const advice =
                         humanizeOperatorNote(i.advice ?? i.summary ?? '') ??
@@ -397,14 +401,16 @@ export function UpdatesPage() {
                         }
                         size="sm"
                         loading={busy}
-                        disabled={!hasUpgrade}
+                        disabled={!hasUpgrade || !canApply}
                         title={
-                          hasUpgrade
-                            ? `升級至 ${i.candidateVersion}`
-                            : 'apt Candidate 與已裝版本相同'
+                          !canApply
+                            ? t('rbac.cap.updatesApply')
+                            : hasUpgrade
+                              ? t('updates.upgradeTo', { v: i.candidateVersion })
+                              : t('updates.sameVersion')
                         }
                         onClick={() => {
-                          if (!hasUpgrade) return;
+                          if (!hasUpgrade || !canApply) return;
                           const high = isHighRisk(i);
                           if (high) {
                             setHighRiskApply(i);
@@ -413,7 +419,7 @@ export function UpdatesPage() {
                           void applyPackage(i, false);
                         }}
                       >
-                        {hasUpgrade ? '套用' : '無需升級'}
+                        {hasUpgrade ? t('common.apply') : t('updates.noNeedUpgrade')}
                       </Button>
                     </ActionBar>
                   );
@@ -421,25 +427,13 @@ export function UpdatesPage() {
                 empty={
                   inventory.length === 0 ? (
                     <EmptyState
-                      title="尚無套件資料"
-                      description="按頁面右上「掃描套件」由管理面板掃描主機"
+                      title={t('updates.emptyInventory')}
+                      description={t('updates.emptyInventoryDesc')}
                     />
                   ) : (
                     <EmptyState
-                      title="沒有符合篩選的套件"
-                      description="試下改風險篩選或清搜尋"
-                      action={
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
-                            setRiskFilter('all');
-                            setQ('');
-                          }}
-                        >
-                          重設篩選
-                        </Button>
-                      }
+                      title={t('updates.emptyFilter')}
+                      description={t('updates.emptyFilterDesc')}
                     />
                   )
                 }
@@ -451,27 +445,27 @@ export function UpdatesPage() {
         {tab === 'panel' ? (
           <div className="tab-panel">
             {!selfUpdate ? (
-              <LoadingBlock label="載入自身更新狀態…" />
+              <LoadingBlock label={t('updates.selfLoading')} />
             ) : (
               <InfoCardGrid cols={2}>
                 <InfoCard
-                  title="面板自身更新"
+                  title={t('updates.selfTitle')}
                   badge={{
                     label: !selfOk
-                      ? '檢查失敗'
+                      ? t('updates.selfCheckFailed')
                       : selfAvailable
-                        ? '可更新'
-                        : '已是最新',
+                        ? t('updates.selfUpdatable')
+                        : t('updates.selfUpToDate'),
                     tone: !selfOk ? 'danger' : selfAvailable ? 'warn' : 'ok',
                   }}
                   facts={[
-                    { label: '目前', value: selfVersion, mono: true },
-                    { label: '最新', value: selfLatest, mono: true },
-                    { label: '通道', value: selfChannel },
+                    { label: t('updates.selfCurrentShort'), value: selfVersion, mono: true },
+                    { label: t('updates.selfLatestShort'), value: selfLatest, mono: true },
+                    { label: t('updates.selfChannel'), value: selfChannel },
                     ...(selfUpdate.packageName != null
                       ? [
                           {
-                            label: '套件',
+                            label: t('updates.packages'),
                             value: String(selfUpdate.packageName),
                             mono: true as const,
                           },
@@ -481,7 +475,7 @@ export function UpdatesPage() {
                     (selfUpdate.notes as string[]).length
                       ? [
                           {
-                            label: '說明',
+                            label: t('common.about'),
                             value: humanizeOperatorNote(
                               String((selfUpdate.notes as string[])[0]),
                             ),
@@ -489,12 +483,12 @@ export function UpdatesPage() {
                         ]
                       : []),
                     {
-                      label: '狀態',
+                      label: t('common.status'),
                       value: !selfOk
-                        ? '未確認遠端'
+                        ? t('updates.remoteUnknown')
                         : selfAvailable
-                          ? '有更新'
-                          : '已是最新',
+                          ? t('updates.hasUpdate')
+                          : t('updates.selfUpToDate'),
                     },
                   ]}
                   actions={
@@ -503,10 +497,11 @@ export function UpdatesPage() {
                         variant="primary"
                         size="sm"
                         loading={busy}
-                        disabled={!selfAvailable}
+                        disabled={!selfAvailable || !canApply}
+                        title={!canApply ? t('rbac.cap.updatesApply') : undefined}
                         onClick={() => void applySelf()}
                       >
-                        套用面板更新
+                        {t('updates.applyPanelUpdate')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -514,26 +509,26 @@ export function UpdatesPage() {
                         loading={busy}
                         onClick={() => void load(false)}
                       >
-                        重新檢查
+                        {t('updates.recheck')}
                       </Button>
                     </ActionBar>
                   }
                 />
                 <InfoCard
-                  title="說明"
+                  title={t('common.about')}
                   facts={[
                     {
-                      label: '範圍',
-                      value: 'ysk-server 控制面版本 · 非系統 apt 全量升級',
+                      label: t('updates.aboutScope'),
+                      value: t('updates.aboutScopeV'),
                     },
                     {
-                      label: '頻道',
+                      label: t('updates.aboutChannel'),
                       value:
-                        'npm → GitHub release → package.json；套用：npm install -g 或 git（YSK_SOURCE_ROOT）',
+                        t('updates.aboutChannelV'),
                     },
                     {
-                      label: '失敗',
-                      value: '頻道不可用唔會假裝已是最新；套用需 EXECUTE；git 後需重啟服務',
+                      label: t('updates.aboutFail'),
+                      value: t('updates.aboutFailV'),
                     },
                   ]}
                 />
@@ -547,17 +542,17 @@ export function UpdatesPage() {
             <section className="data-table">
               <header className="data-table__head">
                 <div className="data-table__head-text">
-                  <h3 className="data-table__title">排程任務</h3>
+                  <h3 className="data-table__title">{t('updates.jobsTitle')}</h3>
                   <p className="data-table__desc">
-                    控制面 scheduler（唯讀）· {jobs.length} 項
+                    {t('updates.jobsSub', { count: jobs.length })}
                   </p>
                 </div>
               </header>
               {jobs.length === 0 ? (
                 <div className="data-table__empty">
                   <EmptyState
-                    title="尚無可見排程"
-                    description="未啟用或目前無 scheduler 任務"
+                    title={t('updates.noJobs')}
+                    description={t('updates.noJobsDesc')}
                   />
                 </div>
               ) : (
@@ -572,7 +567,9 @@ export function UpdatesPage() {
                             ? String(j.interval)
                             : '—'}
                         {j.lastRunAt
-                          ? ` · 上次 ${relTime(String(j.lastRunAt))}`
+                          ? t('updates.lastRun', {
+                              when: relTime(String(j.lastRunAt), t),
+                            })
                           : ''}
                       </span>
                     </li>
@@ -586,42 +583,42 @@ export function UpdatesPage() {
         {tab === 'policy' ? (
           <div className="tab-panel stack">
             <InfoCard
-              title="更新政策"
+              title={t('updates.policyTitle')}
               facts={[
                 {
-                  label: '掃描',
-                  value: '掃描 ≠ 已升級；套用才會改系統',
+                  label: t('updates.scanPolicy'),
+                  value: t('updates.scanPolicyV'),
                 },
                 {
-                  label: '高風險',
-                  value: '需審批：二次確認後才送出',
+                  label: t('updates.highRisk'),
+                  value: t('updates.highRiskPolicyV'),
                 },
                 {
-                  label: '權限',
-                  value: '無 EXECUTE／root → blocked，唔假成功',
+                  label: t('updates.permPolicy'),
+                  value: t('updates.permPolicyV'),
                 },
                 {
                   label: 'OSV',
-                  value: '需外網，只補強前 12 項建議',
+                  value: t('updates.osvPolicyV'),
                 },
               ]}
             />
-            <nav className="upd-shortcuts" aria-label="相關">
+            <nav className="upd-shortcuts" aria-label={t('updates.relatedAria')}>
               <Link to="/system" className="upd-shortcut">
-                <span className="upd-shortcut__t">主機設定</span>
+                <span className="upd-shortcut__t">{t('updates.scHost')}</span>
                 <span className="upd-shortcut__d">EXECUTE / root</span>
               </Link>
               <Link to="/system/readiness" className="upd-shortcut">
-                <span className="upd-shortcut__t">就緒探測</span>
-                <span className="upd-shortcut__d">生產閘門</span>
+                <span className="upd-shortcut__t">{t('updates.scReadiness')}</span>
+                <span className="upd-shortcut__d">{t('updates.scReadinessD')}</span>
               </Link>
               <Link to="/system/unit" className="upd-shortcut">
-                <span className="upd-shortcut__t">systemd 單元</span>
-                <span className="upd-shortcut__d">控制面服務</span>
+                <span className="upd-shortcut__t">{t('updates.scSystemd')}</span>
+                <span className="upd-shortcut__d">{t('updates.scSystemdD')}</span>
               </Link>
               <Link to="/security" className="upd-shortcut">
-                <span className="upd-shortcut__t">安全中心</span>
-                <span className="upd-shortcut__d">審批 / 工具</span>
+                <span className="upd-shortcut__t">{t('updates.scSecurity')}</span>
+                <span className="upd-shortcut__d">{t('updates.scSecurityD')}</span>
               </Link>
             </nav>
           </div>
@@ -635,16 +632,16 @@ export function UpdatesPage() {
         onClose={() => setHighRiskApply(null)}
         title={
           highRiskApply
-            ? `套用高風險更新 ${highRiskApply.packageName}？`
-            : '高風險更新'
+            ? t('updates.applyHighRisk', { name: highRiskApply.packageName })
+            : t('updates.highRiskUpdate')
         }
         description={
           highRiskApply
             ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${highRiskApply.summary ?? highRiskApply.advice ?? ''}`
             : ''
         }
-        confirmLabel="套用"
-        cancelLabel="取消"
+        confirmLabel={t('common.apply')}
+        cancelLabel={t('common.cancel')}
         danger
         onConfirm={() => {
           const row = highRiskApply;

@@ -1,94 +1,17 @@
 /**
  * Host network interfaces / routes / DNS.
  */
+import type { NetApplyResult, NetworkSnapshot } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 
-export type NetAddress = {
-  family: 'inet' | 'inet6';
-  local: string;
-  prefixlen: number;
-  scope?: string;
-  label?: string;
-  dynamic?: boolean;
-};
-
-export type NetInterface = {
-  name: string;
-  ifindex: number;
-  mac?: string;
-  mtu?: number;
-  operstate: string;
-  flags: string[];
-  linkType?: string;
-  addrs: NetAddress[];
-  stats?: {
-    rxBytes: number;
-    txBytes: number;
-    rxPackets: number;
-    txPackets: number;
-  };
-  isLoopback: boolean;
-  isDefaultEgress?: boolean;
-};
-
-export type NetRoute = {
-  dst: string;
-  gateway?: string;
-  dev?: string;
-  protocol?: string;
-  metric?: number;
-  scope?: string;
-  prefsrc?: string;
-};
-
-export type NetworkSnapshot = {
-  ok: boolean;
-  at: string;
-  interfaces: NetInterface[];
-  routes: NetRoute[];
-  dns: {
-    nameservers: string[];
-    search: string[];
-    source: string;
-    notes: string[];
-    mode?: 'networkmanager' | 'resolved' | 'static' | 'unknown';
-    canApply?: boolean;
-    connection?: string;
-    device?: string;
-    stubServers?: string[];
-    uplinkServers?: string[];
-    ignoreAutoDns?: boolean | null;
-    gatewayDns?: string;
-  };
-  backend: {
-    hasIp: boolean;
-    networkManager: string;
-    networkd: string;
-    canPersist: boolean;
-  };
-  caps: {
-    executeEnabled: boolean;
-    isRoot: boolean;
-    canMutate: boolean;
-  };
-  defaultGateway?: string;
-  defaultDev?: string;
-  notes: string[];
-  raw?: { addr?: string; route?: string };
-};
-
-export type NetApplyResult = {
-  ok: boolean;
-  blocked?: boolean;
-  blockMessage?: string;
-  notes: string[];
-  executeEnabled?: boolean;
-  isRoot?: boolean;
-  ephemeral?: boolean;
-  persistent?: boolean;
-  interface?: string;
-};
+export type {
+  NetAddress,
+  NetInterface,
+  NetRoute,
+  NetworkSnapshot,
+  NetApplyResult,
+} from '@ysk/shared';
 
 async function opsPost(
   path: string,

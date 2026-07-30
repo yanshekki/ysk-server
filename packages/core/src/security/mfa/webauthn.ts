@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * WebAuthn / passkey (panel second factor) via @simplewebauthn/server v13.
  */
@@ -109,7 +110,7 @@ export async function finishWebAuthnRegistration(input: {
 }) {
   const blob = loadBlob(input.db, input.userId);
   if (!blob.currentChallenge) {
-    return { ok: false as const, notes: ['無 registration challenge'] };
+    return { ok: false as const, notes: [tl('notes.auto.n1084')] };
   }
   let verification;
   try {
@@ -131,7 +132,7 @@ export async function finishWebAuthnRegistration(input: {
   blob.currentChallenge = undefined;
   if (!verification.verified || !verification.registrationInfo) {
     saveBlob(input.db, input.userId, blob);
-    return { ok: false as const, notes: ['WebAuthn 註冊驗證失敗'] };
+    return { ok: false as const, notes: [tl('notes.auto.n0205')] };
   }
   const cred = verification.registrationInfo.credential;
   const row: WebAuthnCredentialRow = {
@@ -148,7 +149,7 @@ export async function finishWebAuthnRegistration(input: {
   return {
     ok: true as const,
     credential: { id: row.id, name: row.name },
-    notes: ['passkey 已登記'],
+    notes: [tl('notes.auto.n0367')],
   };
 }
 
@@ -159,7 +160,7 @@ export async function beginWebAuthnAuthentication(input: {
 }) {
   const blob = loadBlob(input.db, input.userId);
   if (!blob.credentials.length) {
-    return { ok: false as const, notes: ['尚未登記 passkey'] };
+    return { ok: false as const, notes: [tl('notes.auto.n0712')] };
   }
   const options = await generateAuthenticationOptions({
     rpID: getRpID(input.origin),
@@ -182,11 +183,11 @@ export async function finishWebAuthnAuthentication(input: {
 }): Promise<{ ok: boolean; notes: string[] }> {
   const blob = loadBlob(input.db, input.userId);
   if (!blob.currentChallenge) {
-    return { ok: false, notes: ['無 authentication challenge'] };
+    return { ok: false, notes: [tl('notes.auto.n1072')] };
   }
   const use = blob.credentials.find((c) => c.credentialID === input.response.id);
   if (!use) {
-    return { ok: false, notes: ['未知 passkey'] };
+    return { ok: false, notes: [tl('notes.auto.n0964')] };
   }
   try {
     const verification = await verifyAuthenticationResponse({
@@ -205,11 +206,11 @@ export async function finishWebAuthnAuthentication(input: {
     blob.currentChallenge = undefined;
     if (!verification.verified) {
       saveBlob(input.db, input.userId, blob);
-      return { ok: false, notes: ['passkey 驗證失敗'] };
+      return { ok: false, notes: [tl('notes.auto.n0368')] };
     }
     use.counter = verification.authenticationInfo.newCounter;
     saveBlob(input.db, input.userId, blob);
-    return { ok: true, notes: ['passkey 驗證成功'] };
+    return { ok: true, notes: [tl('notes.auto.n0369')] };
   } catch (e) {
     blob.currentChallenge = undefined;
     saveBlob(input.db, input.userId, blob);

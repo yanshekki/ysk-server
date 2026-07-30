@@ -30,12 +30,12 @@ import { usePageTab } from '../shared/hooks/usePageTab';
 
 const TABS = ['domains', 'queue', 'stack', 'ops', 'about'] as const;
 
-function applyLabel(status?: string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
+function applyLabel(status: string | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
   const s = (status ?? 'draft').toLowerCase();
-  if (s === 'applied') return { text: '已套用', tone: 'ok' };
-  if (s === 'written') return { text: '已寫入', tone: 'info' };
-  if (s === 'failed') return { text: '失敗', tone: 'warn' };
-  return { text: '草稿', tone: 'neutral' };
+  if (s === 'applied') return { text: t('email.applyApplied'), tone: 'ok' };
+  if (s === 'written') return { text: t('email.applyWritten'), tone: 'info' };
+  if (s === 'failed') return { text: t('email.applyFailed'), tone: 'warn' };
+  return { text: t('email.applyDraft'), tone: 'neutral' };
 }
 
 export function EmailPage() {
@@ -103,10 +103,10 @@ export function EmailPage() {
       const r = await emailApi.mailQueue();
       setQueueItems(r.items ?? []);
       setQueueOk(r.ok !== false && !r.blocked);
-      setQueueMsg((r.notes ?? []).join(' · ') || `佇列 ${(r.items ?? []).length} 封`);
+      setQueueMsg((r.notes ?? []).join(' · ') || t('email.queueMsgCount', { count: (r.items ?? []).length }));
     } catch (e) {
       setQueueOk(false);
-      setQueueMsg(e instanceof Error ? e.message : '讀取佇列失敗');
+      setQueueMsg(e instanceof Error ? e.message : t('email.queueLoadFailed'));
       setQueueItems([]);
     } finally {
       setQueueBusy(false);
@@ -120,11 +120,11 @@ export function EmailPage() {
       setQueueItems([]);
       setQueueOk(r.ok !== false && !(r as { blocked?: boolean }).blocked);
       setQueueMsg(
-        ((r as { notes?: string[] }).notes ?? []).join(' · ') || '已請求清空佇列',
+        ((r as { notes?: string[] }).notes ?? []).join(' · ') || t('email.queueFlushRequested'),
       );
     } catch (e) {
       setQueueOk(false);
-      setQueueMsg(e instanceof Error ? e.message : '清空失敗');
+      setQueueMsg(e instanceof Error ? e.message : t('email.queueFlushFailed'));
     } finally {
       setQueueBusy(false);
     }
@@ -134,12 +134,12 @@ export function EmailPage() {
     setQueueBusy(true);
     try {
       const r = await emailApi.flushQueue({ id });
-      setQueueMsg(((r as { notes?: string[] }).notes ?? []).join(' · ') || `已刪 ${id}`);
+      setQueueMsg(((r as { notes?: string[] }).notes ?? []).join(' · ') || t('email.queueDeleted', { id }));
       setQueueOk(r.ok !== false);
       setQueueItems((prev) => prev.filter((x) => x.id !== id));
     } catch (e) {
       setQueueOk(false);
-      setQueueMsg(e instanceof Error ? e.message : '刪除失敗');
+      setQueueMsg(e instanceof Error ? e.message : t('email.queueDeleteFailed'));
     } finally {
       setQueueBusy(false);
     }
@@ -147,26 +147,26 @@ export function EmailPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.email', { defaultValue: '郵件' })}
+      title={t('nav.email')}
       status={{
         pill: {
-          label: items.length ? `${items.length} 域名` : '無域名',
+          label: items.length ? t('email.pillDomains', { count: items.length }) : t('email.pillNoDomain'),
           tone: items.length ? 'ok' : 'warn',
         },
         items: [
-          { label: '域名', value: items.length },
+          { label: t('email.statDomains'), value: items.length },
           {
-            label: '健康≥80',
+            label: t('email.statHealthy80'),
             value: healthy,
             tone: healthy > 0 ? 'ok' : undefined,
           },
           {
-            label: '已套用',
+            label: t('email.statApplied'),
             value: applied,
             tone: applied > 0 ? 'ok' : undefined,
           },
           {
-            label: '草稿',
+            label: t('email.statDraft'),
             value: draft,
             tone: draft > 0 ? 'warn' : undefined,
           },
@@ -179,31 +179,31 @@ export function EmailPage() {
             loading={busy}
             onClick={() => void refresh().catch((e: Error) => setError(e.message))}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
+      <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <PageTabs
         tabs={[
           {
             id: 'domains',
-            label: '域名',
+            label: t('email.tabDomains'),
             badge: items.length || undefined,
           },
           {
             id: 'queue',
-            label: '佇列',
+            label: t('email.tabQueue'),
             badge: queueItems.length || undefined,
           },
-          { id: 'stack', label: '軟件' },
-          { id: 'ops', label: '分工' },
+          { id: 'stack', label: t('email.tabStack') },
+          { id: 'ops', label: t('email.tabOps') },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -212,7 +212,7 @@ export function EmailPage() {
         {tab === 'domains' ? (
           <div className="tab-panel mail-panel">
             <ListPanel
-              title={`域名 (${filtered.length}/${items.length})`}
+              title={t('email.domainsTitle', { filtered: filtered.length, total: items.length })}
               description={t('email.searchPlaceholder')}
               toolbar={
                 <ActionBar>
@@ -238,13 +238,13 @@ export function EmailPage() {
               emptyTitle={t('email.empty')}
               emptyDescription={
                 items.length === 0
-                  ? '用列表右上角「建立」登記域名；成功後進入詳情完成一鍵設定與 DNS。'
-                  : '沒有符合搜尋的域名'
+                  ? t('email.emptyCreateHint')
+                  : t('email.emptyFilterHint')
               }
             >
               <div className="list-panel mail-domain-list" role="list">
                 {filtered.map((d) => {
-                  const st = applyLabel(d.apply_status);
+                  const st = applyLabel(d.apply_status, t);
                   return (
                     <Link
                       key={d.id}
@@ -281,9 +281,9 @@ export function EmailPage() {
             <div className="mail-card">
               <div className="mail-card__head">
                 <div>
-                  <h3 className="mail-card__title">本機郵件佇列</h3>
+                  <h3 className="mail-card__title">{t('email.queueLocalTitle')}</h3>
                   <p className="mail-card__desc muted u-text-sm">
-                    需 YSK_EXECUTE
+                    {t('email.needExecute')}
                   </p>
                 </div>
                 <ActionBar>
@@ -293,7 +293,7 @@ export function EmailPage() {
                     loading={queueBusy}
                     onClick={() => void loadQueue()}
                   >
-                    查看佇列
+                    {t('email.viewQueue')}
                   </Button>
                   <Button
                     variant="danger"
@@ -301,7 +301,7 @@ export function EmailPage() {
                     loading={queueBusy}
                     onClick={() => setFlushConfirmOpen(true)}
                   >
-                    清空佇列
+                    {t('email.flushQueue')}
                   </Button>
                 </ActionBar>
               </div>
@@ -320,7 +320,7 @@ export function EmailPage() {
                 </Alert>
               ) : (
                 <Alert variant="info">
-                  按「查看佇列」讀取本機 Postfix 佇列。無 EXECUTE 或無 postqueue 時會顯示失敗原因。
+                  {t('email.queueHint')}
                 </Alert>
               )}
 
@@ -335,13 +335,13 @@ export function EmailPage() {
                         loading={queueBusy}
                         onClick={() => void flushOne(it.id)}
                       >
-                        刪除此 ID
+                        {t('email.deleteThisId')}
                       </Button>
                     </li>
                   ))}
                 </ul>
               ) : queueOk === true ? (
-                <EmptyState title="佇列為空" description="目前沒有待送郵件" />
+                <EmptyState title={t('email.queueEmpty')} description={t('email.queueEmptyHint')} />
               ) : null}
             </div>
           </div>
@@ -352,39 +352,39 @@ export function EmailPage() {
             <div className="mail-ops-grid">
               <div className="mail-card">
                 <div className="mail-card__head">
-                  <h3 className="mail-card__title">MTA 軟件</h3>
+                  <h3 className="mail-card__title">{t('email.mtaTitle')}</h3>
                 </div>
                 <p className="muted u-text-sm">
-                  探測與一鍵安裝由上方橫幅驅動。列表頁<strong>不</strong>假裝已安裝。
+                  {t('email.mtaBody')}
                 </p>
                 <ul className="mail-stack-list">
                   <li>
                     <strong>Postfix</strong>
-                    <span className="muted">SMTP 出站／入站</span>
+                    <span className="muted">{t('email.mtaSmtp')}</span>
                   </li>
                   <li>
                     <strong>Dovecot</strong>
-                    <span className="muted">IMAP／POP3 信箱</span>
+                    <span className="muted">{t('email.mtaImap')}</span>
                   </li>
                   <li>
                     <strong>OpenDKIM</strong>
-                    <span className="muted">出站 DKIM 簽署</span>
+                    <span className="muted">{t('email.mtaDkim')}</span>
                   </li>
                 </ul>
                 <FormHint>
-                  缺軟件時橫幅會顯示「一鍵安裝／重新探測」。安裝成功 ≠ 域名已可收發。
+                  {t('email.mtaMissingHint')}
                 </FormHint>
               </div>
 
               <div className="mail-card">
                 <div className="mail-card__head">
-                  <h3 className="mail-card__title">域名設定路徑</h3>
+                  <h3 className="mail-card__title">{t('email.pathTitle')}</h3>
                 </div>
                 <ol className="mail-steps">
-                  <li>右上角登記域名</li>
-                  <li>進入域名詳情 → 一鍵設定郵件</li>
-                  <li>DNS 頁或外部 checklist 加 MX／SPF／DKIM／DMARC</li>
-                  <li>SSL 綁定 mail／webmail 主機名</li>
+                  <li>{t('email.path1')}</li>
+                  <li>{t('email.path2')}</li>
+                  <li>{t('email.path3')}</li>
+                  <li>{t('email.path4')}</li>
                 </ol>
                 <FormActions>
                   <Button
@@ -392,7 +392,7 @@ export function EmailPage() {
                     size="md"
                     onClick={() => setTab('domains')}
                   >
-                    查看域名列表
+                    {t('email.viewDomainList')}
                   </Button>
                 </FormActions>
               </div>
@@ -405,38 +405,24 @@ export function EmailPage() {
             <div className="mail-ops-grid">
               <div className="mail-card">
                 <div className="mail-card__head">
-                  <h3 className="mail-card__title">面板 vs 外部</h3>
+                  <h3 className="mail-card__title">{t('email.opsPanelTitle')}</h3>
                 </div>
                 <ul className="mail-bullets">
-                  <li>
-                    <strong>本頁</strong>：域名登記、佇列觀測、軟件探測
-                  </li>
-                  <li>
-                    <strong>域名詳情</strong>：一鍵 bootstrap、信箱、別名、relay、webmail
-                  </li>
-                  <li>
-                    <strong>主機商</strong>：PTR、Port 25 出站策略
-                  </li>
-                  <li>
-                    <strong>域名商</strong>：MX／SPF／DKIM／DMARC 發佈
-                  </li>
+                  <li>{t('email.opsThisPage')}</li>
+                  <li>{t('email.opsDetail')}</li>
+                  <li>{t('email.opsHost')}</li>
+                  <li>{t('email.opsRegistrar')}</li>
                 </ul>
               </div>
               <div className="mail-card mail-card--muted">
                 <div className="mail-card__head">
-                  <h3 className="mail-card__title">狀態</h3>
+                  <h3 className="mail-card__title">{t('email.statusTitle')}</h3>
                 </div>
                 <ul className="mail-bullets">
-                  <li>
-                    <code>draft</code>：僅面板
-                  </li>
-                  <li>
-                    <code>written</code>：已寫管理檔，未必套到系統
-                  </li>
-                  <li>
-                    <code>applied</code>：曾成功套用（仍視服務 is-active）
-                  </li>
-                  <li>國際收件匣信譽永遠無法 100% 自動化</li>
+                  <li>{t('email.statusDraft')}</li>
+                  <li>{t('email.statusWritten')}</li>
+                  <li>{t('email.statusApplied')}</li>
+                  <li>{t('email.statusReputation')}</li>
                 </ul>
               </div>
             </div>
@@ -450,7 +436,7 @@ export function EmailPage() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title={t('email.create')}
-        description="詳情頁完成安裝與 DNS"
+        description={t('email.createModalDesc')}
         footer={
           <>
             <Button
@@ -468,7 +454,7 @@ export function EmailPage() {
               size="md"
               loading={busy}
             >
-              登記域名
+              {t('email.registerDomain')}
             </Button>
           </>
         }
@@ -480,7 +466,7 @@ export function EmailPage() {
               htmlFor="edomain"
               flush
               required
-              hint="apex 域名，例如 example.com（不含 mail. 前綴）"
+              hint={t('email.domainApexHint')}
             >
               <input
                 id="edomain"
@@ -497,7 +483,7 @@ export function EmailPage() {
               htmlFor="eip"
               flush
               required
-              hint="此域名郵件服務對外 IPv4（MX／A／SPF ip4:）"
+              hint={t('email.serverIpv4Hint')}
             >
               <input
                 id="eip"
@@ -507,15 +493,15 @@ export function EmailPage() {
                   setServerContext({ serverIp: e.target.value });
                 }}
                 required
-                placeholder="此主機公網 IPv4"
+                placeholder={t('email.serverIpv4Ph')}
                 spellCheck={false}
               />
             </Field>
             <Field
-              label="伺服器 IPv6（可選）"
+              label={t('email.serverIpv6')}
               htmlFor="eip6"
               flush
-              hint="有公網 v6 時寫入 AAAA 與 SPF ip6:"
+              hint={t('email.serverIpv6Hint')}
             >
               <input
                 id="eip6"
@@ -524,13 +510,13 @@ export function EmailPage() {
                   setServerIpv6(e.target.value);
                   setServerContext({ serverIpv6: e.target.value });
                 }}
-                placeholder="此主機公網 IPv6（可留空）"
+                placeholder={t('email.serverIpv6Ph')}
                 spellCheck={false}
               />
             </Field>
           </FormLayout>
           <FormHint>
-            登記成功 ≠ 郵件已可收發。請到域名詳情完成一鍵設定、DNS 與 SSL。
+            {t('email.registerNote')}
           </FormHint>
         </form>
       </Modal>
@@ -542,10 +528,10 @@ export function EmailPage() {
           setFlushConfirmOpen(false);
           void flushAll();
         }}
-        title="清空全部郵件佇列？"
-        description="此操作不可復原，佇列中的郵件將被刪除。"
-        confirmLabel="清空"
-        cancelLabel="取消"
+        title={t('email.flushConfirmTitle')}
+        description={t('email.flushConfirmDesc')}
+        confirmLabel={t('email.flushConfirm')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={queueBusy}
       />

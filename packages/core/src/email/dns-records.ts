@@ -3,7 +3,7 @@
  */
 
 import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface EmailDomainInput {
   domain: string;
@@ -23,10 +23,10 @@ export interface EmailDomainInput {
 export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord[] {
   assertDomain(input.domain);
   if (!input.serverIp) {
-    throw new YskError(ErrorCodes.VALIDATION, '請指定伺服器 IP', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.needServerIp'), { httpStatus: 400 });
   }
   if (!input.dkimPublicKey) {
-    throw new YskError(ErrorCodes.VALIDATION, '請提供 DKIM 公鑰', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1413'), { httpStatus: 400 });
   }
   const mailHost = input.mailHostname ?? `mail.${input.domain}`;
   const selector = input.selector ?? 'default';
@@ -45,37 +45,32 @@ export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord
       name: mailHost.replace(`.${input.domain}`, '') === mailHost ? mailHost : 'mail',
       value: input.serverIp,
       importance: 'required',
-      description: '郵件主機 A 記錄',
-    },
+      description: tl('notes.auto.n1505') },
     {
       type: 'MX',
       name: '@',
       value: mailHost,
       priority: 10,
       importance: 'required',
-      description: 'MX 指向郵件主機名',
-    },
+      description: tl('notes.auto.n0131') },
     {
       type: 'TXT',
       name: '@',
       value: spf,
       importance: 'required',
-      description: 'SPF 政策',
-    },
+      description: tl('notes.auto.n0183') },
     {
       type: 'TXT',
       name: `${selector}._domainkey`,
       value: dkim,
       importance: 'required',
-      description: 'DKIM 公鑰',
-    },
+      description: tl('notes.auto.n0096') },
     {
       type: 'TXT',
       name: '_dmarc',
       value: dmarc,
       importance: 'recommended',
-      description: 'DMARC 政策',
-    },
+      description: tl('notes.auto.n0097') },
   ];
   if (v6) {
     records.splice(1, 0, {
@@ -83,8 +78,7 @@ export function generateEmailDnsRecords(input: EmailDomainInput): EmailDnsRecord
       name: mailHost.replace(`.${input.domain}`, '') === mailHost ? mailHost : 'mail',
       value: v6,
       importance: 'recommended',
-      description: '郵件主機 AAAA 記錄（IPv6）',
-    });
+      description: tl('notes.auto.n1506') });
   }
   return records;
 }
@@ -111,19 +105,17 @@ export function buildExternalTodos(input: {
       {
         id: 'dns-a-www',
         category: 'dns',
-        title: '新增 A／AAAA（apex 與 www）',
-        description: `將 ${input.domain} 與 www.${input.domain} 指到伺服器公開 IP。CDN（Cloudflare）可灰雲或橙雲。`,
+        title: tl('notes.auto.n0902'),
+        description: tl('notes.auto.t0077', { v0: (input.domain), v1: (input.domain) }),
         required: true,
-        completed: Boolean(input.dnsApplied),
-      },
+        completed: Boolean(input.dnsApplied) },
       {
         id: 'dns-ssl-http01',
         category: 'dns',
-        title: '確認 80／443 可從公網到達（LE HTTP-01）',
-        description: 'Let’s Encrypt HTTP-01 需要 80 可達；DNS-01 則需 API token。',
+        title: tl('notes.auto.n1288'),
+        description: tl('notes.auto.n0128'),
         required: true,
-        completed: false,
-      },
+        completed: false },
     );
   }
 
@@ -132,46 +124,41 @@ export function buildExternalTodos(input: {
       {
         id: 'dns-mx-spf-dkim',
         category: 'dns',
-        title: '新增 MX／SPF／DKIM DNS 記錄',
+        title: tl('notes.auto.n0904'),
         description:
-          '於 DNS 供應商新增產生的 MX、SPF（TXT）與 DKIM（TXT）。Cloudflare：郵件相關記錄請用僅 DNS（灰雲）。',
+          tl('notes.auto.n0907'),
         required: true,
-        completed: Boolean(input.dnsApplied),
-      },
+        completed: Boolean(input.dnsApplied) },
       {
         id: 'dns-dmarc',
         category: 'dns',
-        title: '新增 DMARC TXT 記錄',
-        description: '新增 _dmarc TXT 以改善投遞與回報。',
+        title: tl('notes.auto.n0903'),
+        description: tl('notes.auto.n0905'),
         required: false,
-        completed: Boolean(input.dmarcPresent),
-      },
+        completed: Boolean(input.dmarcPresent) },
       {
         id: 'ptr',
         category: 'ptr',
-        title: '設定反向 DNS（PTR）',
-        description: `PTR 須由 VPS／雲端 IP 擁有者設定，並與 HELO/EHLO（${input.mailHostname}）一致。請於供應商控制台申請（AWS/GCP 常需工單）。`,
+        title: tl('notes.auto.n1366'),
+        description: tl('notes.auto.t0078', { v0: (input.mailHostname) }),
         required: true,
-        completed: Boolean(input.ptrOk),
-      },
+        completed: Boolean(input.ptrOk) },
       {
         id: 'port25',
         category: 'port25',
-        title: '確認出站 Port 25 已開放',
+        title: tl('notes.auto.n1290'),
         description:
-          '許多雲供應商封鎖出站 TCP 25。請申請解鎖，或改用外部 SMTP 中繼。',
+          tl('notes.auto.n1374'),
         required: true,
-        completed: input.port25Open === true,
-      },
+        completed: input.port25Open === true },
       {
         id: 'reputation',
         category: 'reputation',
-        title: '監控 IP／域名聲譽並暖機',
+        title: tl('notes.auto.n1265'),
         description:
-          '新 IP／域名不宜立刻高量出站。請檢查 Spamhaus 等黑名單，並遵循暖機指引。',
+          tl('notes.auto.n0901'),
         required: false,
-        completed: false,
-      },
+        completed: false },
     );
   }
 
@@ -200,16 +187,14 @@ export function scoreEmailHealth(input: {
     serverIpv6: input.serverIpv6,
     mailHostname,
     dkimPublicKey: input.dkimPublicKey,
-    dmarcPolicy: input.dmarcPolicy,
-  });
+    dmarcPolicy: input.dmarcPolicy });
   const externalTodos = buildExternalTodos({
     domain: input.domain,
     mailHostname,
     ptrOk: input.ptrOk,
     port25Open: input.port25Open,
     dnsApplied: input.dnsApplied,
-    dmarcPresent: input.dmarcPresent,
-  });
+    dmarcPresent: input.dmarcPresent });
 
   let score = 0;
   const maxScore = 100;
@@ -252,8 +237,7 @@ export function scoreEmailHealth(input: {
     externalTodos,
     ptrOk: Boolean(input.ptrOk),
     port25Open: input.port25Open ?? null,
-    messages,
-  };
+    messages };
 }
 
 /**
@@ -278,8 +262,7 @@ export function planEmailStackInstall(domain: string): {
     notes: [
       'TLS certs via Let’s Encrypt for SMTP/IMAP',
       'External DNS/PTR/Port25 still required for deliverability',
-    ],
-  };
+    ] };
 }
 
 /**
@@ -291,9 +274,8 @@ export function planTestSend(input: {
   subject?: string;
 }): { command: string; notes: string[]; analysisHints: string[] } {
   if (!input.from || !input.to) {
-    throw new YskError(ErrorCodes.VALIDATION, '測試寄信需要寄件者與收件者', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1054'), {
+      httpStatus: 400 });
   }
   const subject = input.subject ?? 'YSK Server mail test';
   return {
@@ -306,12 +288,11 @@ export function planTestSend(input: {
       'If deferred: check Port 25 block or relay credentials',
       'If accepted but spam: improve SPF/DKIM/DMARC/PTR and warm-up',
       'Inspect /var/log/mail.log or journalctl -u postfix',
-    ],
-  };
+    ] };
 }
 
 function assertDomain(domain: string): void {
-  if (!domain || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
-    throw new YskError(ErrorCodes.VALIDATION, `域名無效：${domain}`, { httpStatus: 400 });
+  if (!domain || !/^[a-z0-9.-]+\.[a-z]{2 }$/i.test(domain)) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.tpl.domainInvalid', { domain: domain }), { httpStatus: 400 });
   }
 }

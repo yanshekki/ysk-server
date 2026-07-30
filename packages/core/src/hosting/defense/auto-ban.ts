@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Defense auto-ban policy, suspect IP list, batch ban, whitelist.
  */
@@ -11,16 +12,14 @@ import type {
   AutoBanMode,
   AutoBanPolicy,
   BanMethod,
-  SuspectIp,
-} from './types.js';
+  SuspectIp } from './types.js';
 import {
   extractIpsFromText,
   isPrivateOrLocalIp,
   isValidIp,
   ipMatchesList,
   normalizeIp,
-  normalizeIpOrCidr,
-} from '../../net/ip.js';
+  normalizeIpOrCidr } from '../../net/ip.js';
 
 const POLICY_KEY = 'defense_auto_ban';
 const TIMELINE_KEY = 'defense_timeline';
@@ -34,8 +33,7 @@ export const DEFAULT_AUTO_BAN: AutoBanPolicy = {
   method: 'fail2ban',
   cooldownMinutes: 60,
   maxAutoBansPerHour: 40,
-  whitelist: ['127.0.0.1', '::1'],
-};
+  whitelist: ['127.0.0.1', '::1'] };
 
 export { isValidIp, normalizeIp, normalizeIpOrCidr };
 
@@ -72,8 +70,7 @@ export function loadAutoBanPolicy(db: JsonStore): AutoBanPolicy {
         : [],
       lastTickAt: p.lastTickAt,
       lastTickNotes: p.lastTickNotes,
-      pausedReason: p.pausedReason,
-    };
+      pausedReason: p.pausedReason };
   } catch {
     return { ...DEFAULT_AUTO_BAN, whitelist: [...DEFAULT_AUTO_BAN.whitelist] };
   }
@@ -86,8 +83,7 @@ export function saveAutoBanPolicy(db: JsonStore, policy: AutoBanPolicy): AutoBan
       .map((s) => normalizeIpOrCidr(String(s)) || String(s).trim())
       .filter(Boolean)
       .slice(0, 200),
-    recentAutoBanAts: (policy.recentAutoBanAts ?? []).slice(0, 500),
-  };
+    recentAutoBanAts: (policy.recentAutoBanAts ?? []).slice(0, 500) };
   db.snapshot.settings[POLICY_KEY] = JSON.stringify(next);
   db.persist();
   return next;
@@ -101,8 +97,7 @@ export function updateAutoBanPolicy(
   const next = saveAutoBanPolicy(db, {
     ...cur,
     ...patch,
-    whitelist: patch.whitelist ?? cur.whitelist,
-  });
+    whitelist: patch.whitelist ?? cur.whitelist });
   return next;
 }
 
@@ -206,7 +201,7 @@ export function parseAccessLogSuspects(content: string, maxLines = 4000): Map<st
     const pathM = line.match(/"(?:GET|POST|HEAD|PUT|DELETE|OPTIONS)\s+([^\s"]+)/);
     if (pathM && SCAN_PATH_RE.test(pathM[1])) {
       a.scan += 1;
-      a.reasons.add('掃描路徑');
+      a.reasons.add(tl('notes.auto.n0885'));
     }
   }
   return map;
@@ -285,7 +280,7 @@ export async function listSuspectIps(input: {
     const bans = await listDefenseBans({ host: input.host, db: input.db });
     for (const b of bans.items) banned.add(b.ip);
   } catch {
-    notes.push('讀取已封禁清單失敗');
+    notes.push(tl('notes.auto.n1440'));
   }
 
   // Access + auth logs
@@ -302,7 +297,7 @@ export async function listSuspectIps(input: {
         a.sources.forEach((s) => cur.sources.add(s));
         cur.lastSeen = Math.max(cur.lastSeen, a.lastSeen);
       }
-      notes.push('已掃描 nginx access log 樣本');
+      notes.push(tl('notes.auto.n0781'));
       // SSH / auth failures
       try {
         const { parseAuthFailIps } = await import('./intel.js');
@@ -312,19 +307,19 @@ export async function listSuspectIps(input: {
           const cur = ensureAcc(map, ip);
           cur.hits += n;
           cur.scan += Math.min(n, 15);
-          cur.reasons.add(`SSH 失敗×${n}`);
+          cur.reasons.add(tl('notes.auto.t0533', { v0: (n) }));
           cur.sources.add('auth_log');
           cur.lastSeen = Date.now();
         }
-        if (authMap.size) notes.push(`auth 失敗來源 ${authMap.size} IP`);
+        if (authMap.size) notes.push(tl('notes.auto.t0534', { v0: (authMap.size) }));
       } catch {
         /* */
       }
     } else {
-      notes.push('無可用 access log（仍可用手動 / 自動 ban）');
+      notes.push(tl('notes.auto.n1096'));
     }
   } catch {
-    notes.push('access log 解析失敗');
+    notes.push(tl('notes.auto.n0215'));
   }
 
   // fail2ban currently banned → show as already banned for context (still list high activity)
@@ -353,9 +348,9 @@ export async function listSuspectIps(input: {
     const score = scoreAcc(a);
     if (score < 8 && a.hits < 15 && a.scan < 2) continue;
     const reasons = [...a.reasons];
-    if (a.hits >= 20) reasons.unshift(`請求×${a.hits}`);
+    if (a.hits >= 20) reasons.unshift(tl('notes.auto.t0535', { v0: (a.hits) }));
     if (a.s429) reasons.push(`429×${a.s429}`);
-    if (a.scan) reasons.push(`掃描×${a.scan}`);
+    if (a.scan) reasons.push(tl('notes.auto.t0536', { v0: (a.scan) }));
     items.push({
       ip,
       score,
@@ -364,8 +359,7 @@ export async function listSuspectIps(input: {
       sources: [...a.sources],
       lastSeen: new Date(a.lastSeen || Date.now()).toISOString(),
       alreadyBanned: banned.has(ip),
-      whitelisted: ipMatchesWhitelist(ip, policy.whitelist),
-    });
+      whitelisted: ipMatchesWhitelist(ip, policy.whitelist) });
   }
 
   items.sort((x, y) => y.score - x.score || y.hits - x.hits);
@@ -392,13 +386,13 @@ export async function defenseBanBatch(input: {
         .filter((x): x is string => x != null && isValidIp(x)),
     ),
   ].slice(0, 50);
-  if (!ips.length) return { ok: false, results: [], notes: ['無有效 IP'] };
+  if (!ips.length) return { ok: false, results: [], notes: [tl('notes.auto.n1121')] };
   const policy = loadAutoBanPolicy(input.db);
   const results: Array<{ ip: string; ok: boolean; notes: string[] }> = [];
   let anyBlocked = false;
   for (const ip of ips) {
     if (ipMatchesWhitelist(ip, policy.whitelist)) {
-      results.push({ ip, ok: false, notes: ['白名單：略過'] });
+      results.push({ ip, ok: false, notes: [tl('notes.auto.n1264')] });
       continue;
     }
     const { defenseBanIp } = await import('./defense-service.js');
@@ -406,10 +400,9 @@ export async function defenseBanBatch(input: {
       host: input.host,
       db: input.db,
       ip,
-      reason: input.reason ?? '批量封禁',
+      reason: input.reason ?? tl('notes.auto.n0843'),
       method: input.method ?? policy.method,
-      jail: input.jail,
-    });
+      jail: input.jail });
     if (r.blocked) anyBlocked = true;
     results.push({ ip, ok: r.ok, notes: r.notes });
   }
@@ -417,18 +410,16 @@ export async function defenseBanBatch(input: {
   pushTimeline(input.db, {
     at: new Date().toISOString(),
     kind: 'ban_batch',
-    title: `批量封禁 ${okCount}/${ips.length}`,
-    detail: ips.slice(0, 8).join(', '),
-  });
+    title: tl('notes.auto.t0537', { v0: (okCount), v1: (ips.length) }),
+    detail: ips.slice(0, 8).join(', ') });
   return {
     ok: okCount > 0 || !anyBlocked,
     blocked: anyBlocked,
     results,
     notes: [
-      `完成 ${results.length} 個 IP：成功 ${okCount}`,
-      anyBlocked ? '部分或全部未套用到系統（需 YSK_EXECUTE）' : '',
-    ].filter(Boolean),
-  };
+      tl('notes.auto.t0538', { v0: (results.length), v1: (okCount) }),
+      anyBlocked ? tl('notes.auto.n1493') : '',
+    ].filter(Boolean) };
 }
 
 /**
@@ -454,26 +445,23 @@ export async function runAutoBanTick(input: {
     const next = saveAutoBanPolicy(input.db, {
       ...policy,
       lastTickAt: new Date().toISOString(),
-      lastTickNotes: ['自動 ban 未開啟'],
-      pausedReason: undefined,
-    });
-    return { ok: true, banned, skipped, notes: ['自動 ban 未開啟'], policy: next };
+      lastTickNotes: [tl('notes.auto.n0031')],
+      pausedReason: undefined });
+    return { ok: true, banned, skipped, notes: [tl('notes.auto.n0031')], policy: next };
   }
 
   if (!input.host.executeEnabled()) {
     const next = saveAutoBanPolicy(input.db, {
       ...policy,
       lastTickAt: new Date().toISOString(),
-      lastTickNotes: ['需 YSK_EXECUTE 才會真正 auto-ban'],
-      pausedReason: 'no_execute',
-    });
+      lastTickNotes: [tl('notes.auto.n1540')],
+      pausedReason: 'no_execute' });
     return {
       ok: false,
       banned,
       skipped,
-      notes: ['自動 ban 暫停：未開啟系統變更（YSK_EXECUTE）'],
-      policy: next,
-    };
+      notes: [tl('notes.auto.n1330')],
+      policy: next };
   }
 
   const hourCount = countAutoBansLastHour(policy);
@@ -481,16 +469,14 @@ export async function runAutoBanTick(input: {
     const next = saveAutoBanPolicy(input.db, {
       ...policy,
       lastTickAt: new Date().toISOString(),
-      lastTickNotes: [`熔斷：本小時已 auto-ban ${hourCount} 次`],
-      pausedReason: 'circuit_breaker',
-    });
-    notes.push(`熔斷：本小時已達上限 ${policy.maxAutoBansPerHour}`);
+      lastTickNotes: [tl('notes.auto.t0539', { v0: (hourCount) })],
+      pausedReason: 'circuit_breaker' });
+    notes.push(tl('notes.auto.t0540', { v0: (policy.maxAutoBansPerHour) }));
     pushTimeline(input.db, {
       at: new Date().toISOString(),
       kind: 'auto_ban',
-      title: '自動 ban 熔斷',
-      detail: notes[0],
-    });
+      title: tl('notes.auto.n1331'),
+      detail: notes[0] });
     return { ok: false, banned, skipped, notes, policy: next };
   }
 
@@ -508,8 +494,7 @@ export async function runAutoBanTick(input: {
         minScore: Number(c.minScore) || th.minScore,
         minHits: Number(c.minHits) || th.minHits,
         min429: Number(c.min429) || th.min429,
-        minScan: Number(c.minScan) || th.minScan,
-      };
+        minScan: Number(c.minScan) || th.minScan };
     }
   } catch {
     /* use mode defaults */
@@ -550,7 +535,7 @@ export async function runAutoBanTick(input: {
       continue;
     }
     const hit429 = s.reasons.some((r) => r.startsWith('429'));
-    const hitScan = s.reasons.some((r) => r.includes('掃描'));
+    const hitScan = s.reasons.some((r) => r.includes(tl('notes.auto.n0884')));
     const pass =
       s.score >= th.minScore ||
       s.hits >= th.minHits ||
@@ -567,8 +552,7 @@ export async function runAutoBanTick(input: {
       db: input.db,
       ip: s.ip,
       reason: `auto-ban(${policy.mode}): ${s.reasons.slice(0, 2).join(', ')}`,
-      method: policy.method,
-    });
+      method: policy.method });
     if (r.ok) {
       banned.push(s.ip);
       remaining -= 1;
@@ -596,25 +580,22 @@ export async function runAutoBanTick(input: {
     recentAutoBanAts: recentAts.slice(0, 200),
     lastTickAt: new Date().toISOString(),
     lastTickNotes: notes.slice(0, 12),
-    pausedReason: undefined,
-  });
+    pausedReason: undefined });
 
   if (banned.length) {
     pushTimeline(input.db, {
       at: new Date().toISOString(),
       kind: 'auto_ban',
-      title: `自動 ban ${banned.length} 個 IP`,
-      detail: banned.slice(0, 10).join(', '),
-    });
+      title: tl('notes.auto.t0541', { v0: (banned.length) }),
+      detail: banned.slice(0, 10).join(', ') });
   }
 
   return {
     ok: true,
     banned,
     skipped: skipped.slice(0, 40),
-    notes: notes.length ? notes : ['本輪無可 ban 對象'],
-    policy: next,
-  };
+    notes: notes.length ? notes : [tl('notes.auto.n1004')],
+    policy: next };
 }
 
 export function humanizeFirewall(active?: string, installed?: boolean, isRoot?: boolean): {
@@ -622,18 +603,17 @@ export function humanizeFirewall(active?: string, installed?: boolean, isRoot?: 
   tone: 'ok' | 'warn' | 'danger' | 'default';
   detail?: string;
 } {
-  if (!installed) return { short: '未安裝', tone: 'default', detail: '系統未偵測到 UFW' };
+  if (!installed) return { short: tl('notes.notInstalled'), tone: 'default', detail: tl('notes.tpl.ufwNotDetected') };
   const a = (active ?? '').toLowerCase();
   if (a.includes('need to be root') || a.includes('error')) {
     return {
-      short: isRoot ? '讀取失敗' : '需 root',
+      short: isRoot ? tl('notes.readFailed') : tl('ops.blocked.needRoot'),
       tone: 'warn',
-      detail: '目前權限讀不到防火牆狀態（非攻擊）',
-    };
+      detail: tl('notes.auto.n1270') };
   }
-  if (a === 'active' || a.includes('active')) return { short: '運作中', tone: 'ok' };
-  if (a === 'inactive') return { short: '已關閉', tone: 'warn', detail: 'UFW inactive' };
-  return { short: active?.slice(0, 16) || '未知', tone: 'default' };
+  if (a === 'active' || a.includes('active')) return { short: tl('notes.state.active'), tone: 'ok' };
+  if (a === 'inactive') return { short: tl('notes.state.closed'), tone: 'warn', detail: 'UFW inactive' };
+  return { short: active?.slice(0, 16) || tl('notes.unknown'), tone: 'default' };
 }
 
 export function humanizeFail2ban(active?: string, installed?: boolean): {
@@ -641,8 +621,8 @@ export function humanizeFail2ban(active?: string, installed?: boolean): {
   tone: 'ok' | 'warn' | 'danger' | 'default';
   detail?: string;
 } {
-  if (installed === false) return { short: '未安裝', tone: 'default' };
-  if (active === 'active') return { short: '運作中', tone: 'ok' };
-  if (active === 'inactive') return { short: '未運行', tone: 'warn', detail: '可到 fail2ban 頁啟動' };
-  return { short: active || '未知', tone: 'default' };
+  if (installed === false) return { short: tl('notes.notInstalled'), tone: 'default' };
+  if (active === 'active') return { short: tl('notes.state.active'), tone: 'ok' };
+  if (active === 'inactive') return { short: tl('notes.auto.n0013'), tone: 'warn', detail: tl('notes.tpl.fail2banStartHint') };
+  return { short: active || tl('notes.unknown'), tone: 'default' };
 }

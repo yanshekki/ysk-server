@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Host service matrix — real systemctl probes for known panel services.
  * Used by /services page (not a fake protection-only probe).
@@ -18,43 +19,53 @@ export type ServiceMatrixItem = {
   activeLabel: string;
 };
 
+/**
+ * Static catalog — never call tl() here (module load freezes default locale).
+ * Resolve label/category keys inside getServiceMatrix under request locale.
+ */
 const CATALOG: Array<{
   id: string;
-  label: string;
+  /** Literal brand name, or i18n key when labelKey set */
+  label?: string;
+  labelKey?: string;
   unit: string;
   href?: string;
-  category: string;
+  categoryKey: string;
   /** Binary hints for "installed" when unit missing */
   bins?: string[];
 }> = [
-  { id: 'nginx', label: 'Nginx', unit: 'nginx', href: '/nginx', category: '網頁', bins: ['nginx'] },
-  { id: 'mysql', label: 'MySQL', unit: 'mysql', href: '/databases/mysql/service', category: '資料庫', bins: ['mysqld', 'mysql'] },
-  { id: 'mariadb', label: 'MariaDB', unit: 'mariadb', href: '/databases/mariadb/service', category: '資料庫', bins: ['mariadbd', 'mariadb'] },
+  { id: 'nginx', label: 'Nginx', unit: 'nginx', href: '/nginx', categoryKey: 'notes.auto.n1318', bins: ['nginx'] },
+  { id: 'mysql', label: 'MySQL', unit: 'mysql', href: '/databases/mysql/service', categoryKey: 'notes.cat.database', bins: ['mysqld', 'mysql'] },
+  { id: 'mariadb', label: 'MariaDB', unit: 'mariadb', href: '/databases/mariadb/service', categoryKey: 'notes.cat.database', bins: ['mariadbd', 'mariadb'] },
   {
     id: 'postgres',
     label: 'PostgreSQL',
     unit: 'postgresql',
     href: '/databases/postgres/service',
-    category: '資料庫',
-    bins: ['postgres', 'psql'],
-  },
-  { id: 'redis', label: 'Redis', unit: 'redis-server', href: '/databases/redis/service', category: '資料庫', bins: ['redis-server', 'redis-cli'] },
-  { id: 'vsftpd', label: 'vsftpd (FTPS)', unit: 'vsftpd', href: '/ftp/service', category: '檔案', bins: ['vsftpd'] },
-  { id: 'fail2ban', label: 'fail2ban', unit: 'fail2ban', href: '/fail2ban', category: '安全', bins: ['fail2ban-client'] },
-  { id: 'ufw', label: 'UFW 防火牆', unit: 'ufw', href: '/firewall', category: '安全', bins: ['ufw'] },
-  { id: 'postfix', label: 'Postfix', unit: 'postfix', href: '/email', category: '郵件', bins: ['postfix'] },
-  { id: 'dovecot', label: 'Dovecot', unit: 'dovecot', href: '/email', category: '郵件', bins: ['dovecot'] },
-  { id: 'php-fpm', label: 'PHP-FPM', unit: 'php8.2-fpm', href: '/runtimes/php', category: '執行環境', bins: ['php-fpm8.2', 'php-fpm'] },
-  { id: 'ysk-server', label: 'YSK 控制面', unit: 'ysk-server', href: '/system/unit', category: '控制面' },
+    categoryKey: 'notes.cat.database',
+    bins: ['postgres', 'psql'] },
+  { id: 'redis', label: 'Redis', unit: 'redis-server', href: '/databases/redis/service', categoryKey: 'notes.cat.database', bins: ['redis-server', 'redis-cli'] },
+  { id: 'vsftpd', label: 'vsftpd (FTPS)', unit: 'vsftpd', href: '/ftp/service', categoryKey: 'notes.auto.n1019', bins: ['vsftpd'] },
+  { id: 'fail2ban', label: 'fail2ban', unit: 'fail2ban', href: '/protection/fail2ban', categoryKey: 'notes.readiness.security', bins: ['fail2ban-client'] },
+  { id: 'ufw', labelKey: 'notes.auto.n0017', unit: 'ufw', href: '/protection/firewall', categoryKey: 'notes.readiness.security', bins: ['ufw'] },
+  { id: 'postfix', label: 'Postfix', unit: 'postfix', href: '/email', categoryKey: 'notes.readiness.email', bins: ['postfix'] },
+  { id: 'dovecot', label: 'Dovecot', unit: 'dovecot', href: '/email', categoryKey: 'notes.readiness.email', bins: ['dovecot'] },
+  { id: 'php-fpm', label: 'PHP-FPM', unit: 'php8.2-fpm', href: '/runtimes/php', categoryKey: 'notes.auto.n0018', bins: ['php-fpm8.2', 'php-fpm'] },
+  { id: 'ysk-server', labelKey: 'notes.tpl.yskControlPlane', unit: 'ysk-server', href: '/system/unit', categoryKey: 'notes.readiness.core' },
 ];
 
+function resolveCatalogLabel(entry: (typeof CATALOG)[number]): string {
+  if (entry.labelKey) return tl(entry.labelKey);
+  return entry.label ?? entry.id;
+}
+
 function activeLabel(active: string, installed: boolean): string {
-  if (!installed && active !== 'active') return '未安裝';
-  if (active === 'active') return '運行中';
-  if (active === 'inactive') return '已停止';
-  if (active === 'failed') return '失敗';
-  if (active === 'activating') return '啟動中';
-  return active || '未知';
+  if (!installed && active !== 'active') return tl('notes.notInstalled');
+  if (active === 'active') return tl('notes.running');
+  if (active === 'inactive') return tl('notes.stopped');
+  if (active === 'failed') return tl('notes.failed');
+  if (active === 'activating') return tl('notes.auto.n0014');
+  return active || tl('notes.unknown');
 }
 
 async function probeUnit(
@@ -86,8 +97,7 @@ async function hasAnyBin(host: HostExecutor, bins?: string[]): Promise<boolean> 
         return true;
       }
       const r = await host.runCommand(['bash', '-c', `command -v ${b} >/dev/null 2>&1 && echo yes || echo no`], {
-        timeoutMs: 3_000,
-      });
+        timeoutMs: 3_000 });
       if ((r.stdout || '').trim() === 'yes') return true;
     } catch {
       /* continue */
@@ -101,8 +111,7 @@ const UNIT_ALIASES: Record<string, string[]> = {
   mysql: ['mysql', 'mysqld'],
   redis: ['redis-server', 'redis'],
   postgres: ['postgresql', 'postgresql@16-main', 'postgresql@15-main', 'postgresql@14-main'],
-  'php-fpm': ['php8.3-fpm', 'php8.2-fpm', 'php8.1-fpm', 'php-fpm'],
-};
+  'php-fpm': ['php8.3-fpm', 'php8.2-fpm', 'php8.1-fpm', 'php-fpm'] };
 
 export async function getServiceMatrix(host: HostExecutor): Promise<{
   items: ServiceMatrixItem[];
@@ -132,20 +141,22 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
       }
     }
 
+    const label = resolveCatalogLabel(entry);
+    const category = tl(entry.categoryKey);
+
     // not-found from systemctl often means inactive wording differs — normalize
     if (bestActive === 'unknown' || bestActive === 'not-found') {
       const binOk = await hasAnyBin(host, entry.bins);
       items.push({
         id: entry.id,
-        label: entry.label,
+        label,
         unit: bestUnit,
         href: entry.href,
-        category: entry.category,
+        category,
         installed: binOk,
         active: binOk ? 'inactive' : 'not-found',
         enabled: bestEnabled,
-        activeLabel: activeLabel(binOk ? 'inactive' : 'not-found', binOk),
-      });
+        activeLabel: activeLabel(binOk ? 'inactive' : 'not-found', binOk) });
       continue;
     }
 
@@ -158,23 +169,21 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
 
     items.push({
       id: entry.id,
-      label: entry.label,
+      label,
       unit: bestUnit,
       href: entry.href,
-      category: entry.category,
+      category,
       installed,
       active: bestActive,
       enabled: bestEnabled,
-      activeLabel: activeLabel(bestActive, installed),
-    });
+      activeLabel: activeLabel(bestActive, installed) });
   }
 
   return {
     items,
     executeEnabled: host.executeEnabled(),
     isRoot: host.isRoot(),
-    probedAt: new Date().toISOString(),
-  };
+    probedAt: new Date().toISOString() };
 }
 
 export async function lifecycleServiceUnit(
@@ -192,28 +201,25 @@ export async function lifecycleServiceUnit(
     return {
       ok: false,
       blocked: true,
-      blockMessage: '伺服器未開啟系統變更權限，無法在管理面板完成此操作',
-      notes: ['需要系統變更權限'],
-    };
+      blockMessage: tl('ops.blocked.needExecute'),
+      notes: [tl('notes.auto.n0006')] };
   }
   if (!host.isRoot()) {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '需要系統管理員（root）權限才能完成',
-      notes: ['需要 root'],
-    };
+      blockMessage: tl('notes.auto.n0008'),
+      notes: [tl('notes.auto.n1570')] };
   }
   const safe = unit.replace(/[^a-zA-Z0-9@._-]/g, '');
-  if (!safe) return { ok: false, notes: ['無效 unit'] };
+  if (!safe) return { ok: false, notes: [tl('notes.auto.n1107')] };
   const r = await host.runCommand(['systemctl', action, safe], { timeoutMs: 60_000 });
   const p = await probeUnit(host, safe);
   const ok = r.exitCode === 0;
   return {
     ok,
     notes: ok
-      ? [`已 ${action} ${safe}`]
-      : [`${action} 失敗: ${(r.stderr || r.stdout).trim() || String(r.exitCode)}`],
-    active: p.active,
-  };
+      ? [tl('notes.auto.t0316', { v0: (action), v1: (safe) })]
+      : [tl('notes.tpl.actionFailed', { action: action, detail: (r.stderr || r.stdout).trim() || String(r.exitCode) })],
+    active: p.active };
 }

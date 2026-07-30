@@ -1,0 +1,63 @@
+/**
+ * HTTP helpers for capability checks.
+ */
+import {
+  matchMutatingRouteCap,
+  type CapabilityId,
+  type UserDto,
+} from '@ysk/shared';
+import type { AppContext } from '../app-context.js';
+import { getBearer } from './util.js';
+import type { IncomingMessage } from 'node:http';
+
+/** Resolve store fields + require capability (throws YskError 403). */
+export function requireCap(ctx: AppContext, user: UserDto, cap: CapabilityId): void {
+  const row = ctx.db.snapshot.users.find((u) => u.id === user.id);
+  ctx.rbac.requireCapability(
+    {
+      roles: user.roles,
+      capability_grants: row?.capability_grants ?? user.capabilityGrants,
+      capability_revokes: row?.capability_revokes ?? user.capabilityRevokes,
+    },
+    cap,
+  );
+}
+
+export function effectiveCaps(ctx: AppContext, user: UserDto): string[] {
+  const row = ctx.db.snapshot.users.find((u) => u.id === user.id);
+  return ctx.rbac.effectiveForUser({
+    roles: user.roles,
+    capability_grants: row?.capability_grants ?? user.capabilityGrants,
+    capability_revokes: row?.capability_revokes ?? user.capabilityRevokes,
+  });
+}
+
+/** Paths that may mutate without panel session (public / consume). */
+const PUBLIC_MUTATING_PREFIXES = [
+  '/api/v1/email/webmail/sso/consume',
+  '/api/v1/auth/login',
+  '/api/v1/auth/webauthn/login',
+];
+
+/**
+ * Central gate for mutating /api/v1 routes listed in MUTATING_ROUTE_CAP_RULES.
+ * Call early in the HTTP pipeline; throws YskError on deny.
+ * No-op when method is not mutating or path has no rule.
+ */
+export function enforceMutatingRouteCaps(
+  ctx: AppContext,
+  req: IncomingMessage,
+  method: string,
+  pathname: string,
+): void {
+  if (!pathname.startsWith('/api/v1/')) return;
+  const m = method.toUpperCase();
+  if (m !== 'POST' && m !== 'PUT' && m !== 'PATCH' && m !== 'DELETE') return;
+  if (PUBLIC_MUTATING_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return;
+  }
+  const cap = matchMutatingRouteCap(m, pathname);
+  if (!cap) return;
+  const user = ctx.auth.authenticate(getBearer(req));
+  requireCap(ctx, user, cap);
+}

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Remote backup destination + exclusion list (panel settings).
  */
@@ -96,16 +97,16 @@ export async function pushBackupRemote(input: {
     return {
       ok: true,
       skipped: true,
-      notes: ['遠端備份未啟用（略過推送）'],
+      notes: [tl('notes.auto.n1479')],
     };
   }
   if (!existsSync(input.localArchivePath)) {
-    return { ok: false, notes: ['本地備份檔不存在'] };
+    return { ok: false, notes: [tl('notes.auto.n0990')] };
   }
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
-      notes: ['無法推送遠端：未開啟系統變更權限（本地備份仍成功）'],
+      notes: [tl('notes.auto.n1173')],
     };
   }
   if (remote.kind === 'local' && remote.path) {
@@ -117,8 +118,8 @@ export async function pushBackupRemote(input: {
       ok: r.exitCode === 0,
       notes: [
         r.exitCode === 0
-          ? `已複製到本機路徑 ${remote.path}`
-          : `複製失敗: ${r.stderr || r.stdout}`,
+          ? tl('notes.auto.t0374', { v0: (remote.path) })
+          : tl('notes.tpl.copyFailed2', { detail: r.stderr || r.stdout }),
       ],
     };
   }
@@ -126,7 +127,7 @@ export async function pushBackupRemote(input: {
     return pushBackupS3(input.host, remote, input.localArchivePath);
   }
   if (!remote.host || !remote.username || !remote.path) {
-    return { ok: false, notes: ['遠端 SFTP 設定不完整（host/username/path）'] };
+    return { ok: false, notes: [tl('notes.auto.n1474')] };
   }
   const port = remote.port ?? 22;
   const dest = `${remote.username}@${remote.host}:${remote.path}/`;
@@ -142,7 +143,7 @@ export async function pushBackupRemote(input: {
     if (!key.ok || !key.path) {
       return {
         ok: false,
-        notes: [`identity ${identityId}: ${(key.notes ?? []).join('; ') || '不可用'}`],
+        notes: [tl('notes.auto.t0375', { v0: (identityId), v1: ((key.notes ?? []).join('; ') || tl('notes.tpl.unavailable')) })],
       };
     }
     const argv = buildScpIdentityArgv(key.path, {
@@ -155,8 +156,8 @@ export async function pushBackupRemote(input: {
       ok: r.exitCode === 0,
       notes: [
         r.exitCode === 0
-          ? `已 scp（identity）到 ${dest}`
-          : `scp(identity) 失敗: ${(r.stderr || r.stdout).slice(0, 300)}`,
+          ? tl('notes.auto.t0376', { v0: (dest) })
+          : tl('notes.auto.t0377', { v0: ((r.stderr || r.stdout).slice(0, 300)) }),
       ],
     };
   }
@@ -175,12 +176,12 @@ export async function pushBackupRemote(input: {
     if (out.includes('NEED_SSHPASS')) {
       return {
         ok: false,
-        notes: ['需要 sshpass、YSK 身份金鑰（identityId），或本機預設 SSH key'],
+        notes: [tl('notes.auto.n1572')],
       };
     }
     return {
       ok: r.exitCode === 0,
-      notes: [r.exitCode === 0 ? `已 scp 到 ${dest}` : `scp 失敗: ${out.slice(0, 300)}`],
+      notes: [r.exitCode === 0 ? tl('notes.auto.t0378', { v0: (dest) }) : tl('notes.auto.t0379', { v0: (out.slice(0, 300)) })],
     };
   }
   const r = await input.host.runCommand(
@@ -201,8 +202,8 @@ export async function pushBackupRemote(input: {
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? `已 scp 到 ${dest}`
-        : `scp 失敗: ${r.stderr || r.stdout}（可設 backup remote identityId）`,
+        ? tl('notes.auto.t0380', { v0: (dest) })
+        : tl('notes.auto.t0381', { v0: (r.stderr || r.stdout) }),
     ],
   };
 }
@@ -214,7 +215,7 @@ async function pushBackupS3(
 ): Promise<{ ok: boolean; notes: string[] }> {
   const bucket = (remote.s3Bucket || remote.path || '').trim();
   if (!bucket) {
-    return { ok: false, notes: ['S3 bucket/path 未設定'] };
+    return { ok: false, notes: [tl('notes.auto.n0179')] };
   }
   const region = remote.s3Region || 'us-east-1';
   const dest = bucket.startsWith('s3://')
@@ -246,11 +247,11 @@ async function pushBackupS3(
   if (out.includes('NEED_AWS_CLI')) {
     return {
       ok: false,
-      notes: ['需要 aws CLI（或改用 restic s3 repo）'],
+      notes: [tl('notes.auto.n1560')],
     };
   }
   return {
     ok: r.exitCode === 0,
-    notes: [r.exitCode === 0 ? `已上傳 S3 ${dest}` : `S3 失敗: ${out.slice(0, 300)}`],
+    notes: [r.exitCode === 0 ? tl('notes.auto.t0382', { v0: (dest) }) : tl('notes.auto.t0383', { v0: (out.slice(0, 300)) })],
   };
 }

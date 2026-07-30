@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Mail queue list / flush via postqueue/postsuper when available.
  * Honest: blocked without execute; never fakes success.
@@ -21,7 +22,7 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
       blocked: true,
       requiresExecute: true,
       items: [],
-      notes: ['無法讀取佇列：伺服器未開啟系統變更權限'],
+      notes: [tl('notes.auto.n1186')],
     };
   }
   const r = await host.runCommand(['bash', '-c', 'command -v postqueue >/dev/null && postqueue -p || echo NO_POSTQUEUE'], {
@@ -33,11 +34,11 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
       ok: false,
       requiresExecute: false,
       items: [],
-      notes: ['postqueue 不可用或郵件堆疊未安裝', out.slice(0, 500)],
+      notes: [tl('notes.auto.n0386'), out.slice(0, 500)],
     };
   }
   if (/Mail queue is empty|queue is empty/i.test(out)) {
-    return { ok: true, requiresExecute: false, items: [], notes: ['佇列為空'] };
+    return { ok: true, requiresExecute: false, items: [], notes: [tl('notes.auto.n0535')] };
   }
   const items: Array<{ id: string; raw: string }> = [];
   for (const line of out.split('\n')) {
@@ -48,7 +49,7 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
     ok: true,
     requiresExecute: false,
     items,
-    notes: [`佇列 ${items.length} 封`],
+    notes: [tl('notes.auto.t0079', { v0: (items.length) })],
   };
 }
 
@@ -62,7 +63,7 @@ export async function flushMailQueue(
       blocked: true,
       requiresExecute: true,
       items: [],
-      notes: ['無法清除佇列：伺服器未開啟系統變更權限'],
+      notes: [tl('notes.auto.n1175')],
     };
   }
   if (opts?.all) {
@@ -73,7 +74,7 @@ export async function flushMailQueue(
       items: [],
       flushed: r.exitCode === 0 ? -1 : 0,
       notes: [
-        r.exitCode === 0 ? '已清空全部佇列' : `postsuper 失敗: ${r.stderr || r.stdout}`,
+        r.exitCode === 0 ? tl('notes.auto.n0786') : tl('notes.auto.t0080', { v0: (r.stderr || r.stdout) }),
       ],
     };
   }
@@ -85,8 +86,8 @@ export async function flushMailQueue(
       requiresExecute: false,
       items: [],
       flushed: r.exitCode === 0 ? 1 : 0,
-      notes: [r.exitCode === 0 ? `已刪除 ${id}` : `失敗: ${r.stderr || r.stdout}`],
+      notes: [r.exitCode === 0 ? tl('notes.tpl.deleted', { name: id }) : tl('notes.tpl.failedColon', { detail: r.stderr || r.stdout })],
     };
   }
-  return { ok: false, requiresExecute: false, items: [], notes: ['需要 id 或 all'] };
+  return { ok: false, requiresExecute: false, items: [], notes: [tl('notes.auto.n1561')] };
 }

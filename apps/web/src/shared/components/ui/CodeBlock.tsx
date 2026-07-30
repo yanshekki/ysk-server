@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export interface CodeBlockProps {
   children: string;
@@ -53,6 +54,20 @@ function isPublicIp(ip: string): boolean {
   return true;
 }
 
+function LogIpLink({ ip }: { ip: string }) {
+  const { t } = useTranslation();
+  return (
+    <Link
+      to={`/protection?tab=bans&ip=${encodeURIComponent(ip)}`}
+      className="log-viewer__ip"
+      title={t('logViewer.banIpTitle', { ip })}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {ip}
+    </Link>
+  );
+}
+
 function renderLineContent(line: string, linkIps: boolean): ReactNode {
   if (!linkIps) return line;
   const nodes: React.ReactNode[] = [];
@@ -64,17 +79,7 @@ function renderLineContent(line: string, linkIps: boolean): ReactNode {
     const start = m.index;
     if (start > last) nodes.push(line.slice(last, start));
     if (isPublicIp(ip)) {
-      nodes.push(
-        <Link
-          key={`${start}-${ip}`}
-          to={`/protection?tab=bans&ip=${encodeURIComponent(ip)}`}
-          className="log-viewer__ip"
-          title={`到防護中心 ban ${ip}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {ip}
-        </Link>,
-      );
+      nodes.push(<LogIpLink key={`${start}-${ip}`} ip={ip} />);
     } else {
       nodes.push(ip);
     }

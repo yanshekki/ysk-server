@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * GeoIP / ASN database providers — free-tier max = city lite (region + city).
  */
@@ -32,18 +33,16 @@ export function sapicsSources(): GeoipSource[] {
       filename: 'user-country.mmdb',
       url: `${SAPICS_BASE}/user-country.mmdb`,
       license: 'PDDL-1.0',
-      updateHint: '每日（GitHub Releases latest）',
-      attribution: '',
-    },
+      updateHint: tl('notes.auto.n0045'),
+      attribution: '' },
     {
       provider: 'sapics',
       kind: 'asn',
       filename: 'origin-asn.mmdb',
       url: `${SAPICS_BASE}/origin-asn.mmdb`,
       license: 'PDDL-1.0',
-      updateHint: '每日（GitHub Releases latest）',
-      attribution: '',
-    },
+      updateHint: tl('notes.auto.n0045'),
+      attribution: '' },
   ];
 }
 
@@ -67,7 +66,7 @@ export function dbipCityLiteSources(env: NodeJS.ProcessEnv = process.env): Geoip
       filename: 'dbip-city-lite.mmdb',
       url,
       license: 'CC-BY-4.0',
-      updateHint: `每月（DB-IP City Lite ${ym}；失敗試上月）`,
+      updateHint: tl('notes.auto.t0772', { v0: (ym) }),
       attribution: DBIP_ATTR,
       gzip: !override || /\.gz(\?|$)/i.test(override),
       // stash fallback month in url via custom field — handled in downloader
@@ -81,10 +80,9 @@ export function dbipCityLiteSources(env: NodeJS.ProcessEnv = process.env): Geoip
         env.YSK_GEOIP_CITY_URL_FALLBACK?.trim() ||
         `https://download.db-ip.com/free/dbip-city-lite-${prev}.mmdb.gz`,
       license: 'CC-BY-4.0',
-      updateHint: `每月 fallback ${prev}`,
+      updateHint: tl('notes.auto.t0773', { v0: (prev) }),
       attribution: DBIP_ATTR,
-      gzip: true,
-    },
+      gzip: true },
   ];
 }
 
@@ -96,9 +94,8 @@ export function ipinfoLiteSource(token: string): GeoipSource {
     filename: 'ipinfo_lite.mmdb',
     url: `https://ipinfo.io/data/ipinfo_lite.mmdb?token=${t}`,
     license: 'CC-BY-SA-4.0',
-    updateHint: '每日（IPinfo Lite）',
-    attribution: 'IP address data powered by IPinfo (https://ipinfo.io)',
-  };
+    updateHint: tl('notes.auto.n1045'),
+    attribution: 'IP address data powered by IPinfo (https://ipinfo.io)' };
 }
 
 /**

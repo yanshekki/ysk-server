@@ -7,7 +7,7 @@ import type {
   MigrateJobDto,
   OpsResultDto,
 } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { buildHostManifest, summarizeManifest } from './inventory.js';
@@ -93,7 +93,7 @@ export async function runSourceMigrateHost(input: {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: [`無效 target: ${input.target}（需要 root@host 或 host）`],
+      notes: [tl('notes.auto.t0686', { v0: (input.target) })],
       phases,
     }) as SourceMigrateResult;
   }
@@ -107,7 +107,7 @@ export async function runSourceMigrateHost(input: {
       return assertHonestOps({
         ok: false,
         apply_status: 'failed',
-        notes: [`找不到 job ${input.jobId}`],
+        notes: [tl('notes.auto.t0687', { v0: (input.jobId) })],
         phases,
       }) as SourceMigrateResult;
     }
@@ -149,12 +149,12 @@ export async function runSourceMigrateHost(input: {
     });
     phases.tempKey = tk;
     if (!tk.ok || !tk.auth) {
-      setMigratePhase(input.dataDir, job, 'failed', '臨時金鑰失敗');
+      setMigratePhase(input.dataDir, job, 'failed', tl('notes.auto.n1326'));
       return assertHonestOps({
         ok: false,
         blocked: tk.blocked,
         apply_status: tk.apply_status ?? 'failed',
-        notes: ['臨時金鑰安裝失敗', ...tk.notes],
+        notes: [tl('notes.auto.n1327'), ...tk.notes],
         job,
         phases,
       }) as SourceMigrateResult;
@@ -187,7 +187,7 @@ export async function runSourceMigrateHost(input: {
   });
   phases.preflight = pf;
   if (!pf.ok) {
-    setMigratePhase(input.dataDir, job, 'failed', 'preflight 失敗');
+    setMigratePhase(input.dataDir, job, 'failed', tl('notes.auto.n0387'));
     return assertHonestOps({
       ok: false,
       blocked: pf.blocked,
@@ -205,7 +205,7 @@ export async function runSourceMigrateHost(input: {
       ok: true,
       apply_status: 'written',
       notes: [
-        'dry-run：inventory + preflight 通過，未 package/transfer',
+        tl('notes.auto.n0270'),
         ...pf.notes.slice(0, 4),
       ],
       job: loadMigrateJob(input.dataDir, job.id) ?? job,
@@ -250,7 +250,7 @@ export async function runSourceMigrateHost(input: {
   });
   phases.transferBootstrap = xfer;
   if (!xfer.ok) {
-    setMigratePhase(input.dataDir, job, 'failed', 'transfer/bootstrap 失敗');
+    setMigratePhase(input.dataDir, job, 'failed', tl('notes.auto.n0456'));
     return assertHonestOps({
       ok: false,
       blocked: xfer.blocked,
@@ -277,16 +277,16 @@ export async function runSourceMigrateHost(input: {
         input.dataDir,
         job,
         'failed',
-        'remote post 失敗 — 可於目標機手動 migrate post',
+        tl('notes.auto.n0406'),
       );
       return assertHonestOps({
         ok: false,
         blocked: post.blocked,
         apply_status: post.apply_status ?? 'failed',
         notes: [
-          'transfer 已完成，但目標 restore/reapply/verify 失敗',
+          tl('notes.auto.n0452'),
           ...post.notes,
-          `手動：在目標執行 YSK_EXECUTE=1 ysk-server migrate post --job ${job.id} --data-dir ${job.targetDataDir}`,
+          tl('notes.auto.t0688', { v0: (job.id), v1: (job.targetDataDir) }),
         ],
         job: loadMigrateJob(input.dataDir, job.id) ?? job,
         manifest: packedManifest,
@@ -303,10 +303,10 @@ export async function runSourceMigrateHost(input: {
     ok: true,
     apply_status: 'applied',
     notes: [
-      `整機遷移完成 → ${userAtHost(ep)}`,
+      tl('notes.auto.t0689', { v0: (userAtHost(ep)) }),
       `job=${finalJob.id}`,
-      `cutover 主機名: ${(packedManifest.cutoverHostnames ?? []).slice(0, 8).join(', ')}`,
-      '請將 DNS A/AAAA 指向新 IP；檢查雲防火牆與郵件 PTR',
+      tl('notes.auto.t0690', { v0: ((packedManifest.cutoverHostnames ?? []).slice(0, 8).join(', ')) }),
+      tl('notes.auto.n1398'),
       ...xfer.notes.slice(0, 3),
     ],
     job: loadMigrateJob(input.dataDir, job.id) ?? finalJob,
@@ -351,7 +351,7 @@ export async function triggerRemotePost(input: {
       blocked: r.blocked,
       apply_status: r.apply_status ?? 'failed',
       notes: [
-        '遠端 migrate post 失敗',
+        tl('notes.auto.n1476'),
         ...r.notes,
         (r.stdout || r.stderr || '').slice(0, 400),
       ],
@@ -363,7 +363,7 @@ export async function triggerRemotePost(input: {
       ok: false,
       apply_status: 'failed',
       notes: [
-        '目標尚無 ysk-server CLI — 請確認 bootstrap 或手動 npm i -g ysk-server',
+        tl('notes.auto.n1273'),
       ],
     });
   }
@@ -387,8 +387,8 @@ export async function triggerRemotePost(input: {
     apply_status: remoteOk ? 'applied' : 'failed',
     notes: [
       remoteOk
-        ? `遠端 post 完成 @ ${userAtHost(input.endpoint)}`
-        : '遠端 post 回報 ok=false',
+        ? tl('notes.auto.t0691', { v0: (userAtHost(input.endpoint)) })
+        : tl('notes.auto.n1478'),
       out.slice(0, 300),
     ],
   });
@@ -407,14 +407,14 @@ export async function runLocalMigratePost(input: {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: [`找不到 job ${input.jobId}（確認 dataDir 已 rsync）`],
+      notes: [tl('notes.auto.t0692', { v0: (input.jobId) })],
     });
   }
   if (!job.manifest) {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: ['job 無 manifest'],
+      notes: [tl('notes.auto.n0310')],
       job,
     });
   }
@@ -423,7 +423,7 @@ export async function runLocalMigratePost(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      notes: ['migrate post 需要 YSK_EXECUTE=1'],
+      notes: [tl('notes.auto.n0331')],
       job,
     });
   }

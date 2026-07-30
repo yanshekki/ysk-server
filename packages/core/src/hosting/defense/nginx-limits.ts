@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Generate nginx limit_req / limit_conn drop-in for defense presets.
  * Zones → http conf.d; server limits → .inc + inject into managed vhosts.
@@ -101,7 +102,7 @@ export function injectDefenseLimitsIntoManagedVhosts(
   const updated: string[] = [];
   const notes: string[] = [];
   if (!existsSync(confDir)) {
-    notes.push('尚無 managed nginx conf.d');
+    notes.push(tl('notes.auto.n0717'));
     return { updated, notes };
   }
   const files = readdirSync(confDir).filter(
@@ -118,13 +119,13 @@ export function injectDefenseLimitsIntoManagedVhosts(
         updated.push(path);
       }
     } catch (e) {
-      notes.push(`略過 ${f}：${e instanceof Error ? e.message : String(e)}`);
+      notes.push(tl('notes.auto.t0558', { v0: (f), v1: (e instanceof Error ? e.message : String(e)) }));
     }
   }
   notes.push(
     updated.length
-      ? `已注入限速到 ${updated.length} 個 vhost`
-      : '無 vhost 需要更新（或 conf 尚無 server 塊）',
+      ? tl('notes.auto.t0559', { v0: (updated.length) })
+      : tl('notes.auto.n1089'),
   );
   return { updated, notes };
 }

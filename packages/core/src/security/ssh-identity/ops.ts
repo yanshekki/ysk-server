@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Identity ops: test connectivity, rotate, authorize-self (public → authorized_keys).
  * Outbound helpers for ssh/scp with -i.
@@ -12,8 +13,7 @@ import {
   createSshIdentity,
   getSshIdentityInternal,
   listSshIdentities,
-  updateSshIdentityRecord,
-} from './store.js';
+  updateSshIdentityRecord } from './store.js';
 import { toPublicIdentity, type SshIdentityPublic } from './types.js';
 
 export type TestSshIdentityResult = {
@@ -41,8 +41,7 @@ export function parseSshTarget(target: string): {
     return {
       user: m[1]!,
       host: m[2]!,
-      port: m[3] ? Number(m[3]) : 22,
-    };
+      port: m[3] ? Number(m[3]) : 22 };
   }
   if (/^[\w.-]+$/.test(t)) {
     return { user: 'root', host: t, port: 22 };
@@ -111,13 +110,12 @@ export function resolveIdentityKeyPath(
   identityId: string,
 ): { ok: boolean; path?: string; notes: string[] } {
   const row = getSshIdentityInternal(dataDir, identityId);
-  if (!row) return { ok: false, notes: ['找不到 identity'] };
+  if (!row) return { ok: false, notes: [tl('notes.ssh.identityNotFound')] };
   if (row.install?.path && existsSync(row.install.path)) {
     return {
       ok: true,
       path: row.install.path,
-      notes: [`using install path ${row.install.path}`],
-    };
+      notes: [`using install path ${row.install.path}`] };
   }
   return materializeIdentityKeyFile(dataDir, identityId);
 }
@@ -139,8 +137,7 @@ export async function testSshIdentity(input: {
       applied: false,
       blocked: false,
       requiresExecute: true,
-      notes: ['找不到 identity'],
-    };
+      notes: [tl('notes.ssh.identityNotFound')] };
   }
 
   const parsed = parseSshTarget(input.target);
@@ -151,8 +148,7 @@ export async function testSshIdentity(input: {
       applied: false,
       blocked: false,
       requiresExecute: false,
-      notes: ['target 格式：user@host 或 user@host:port'],
-    };
+      notes: [tl('notes.auto.n0445')] };
   }
 
   const mat = resolveIdentityKeyPath(input.dataDir, input.id);
@@ -164,20 +160,18 @@ export async function testSshIdentity(input: {
       blocked: false,
       requiresExecute: false,
       identity: toPublicIdentity(row),
-      notes: mat.notes,
-    };
+      notes: mat.notes };
   }
 
   const argv = buildSshIdentityArgv(mat.path, {
     port: parsed.port,
     userAtHost: `${parsed.user}@${parsed.host}`,
-    remoteCommand: ['true'],
-  });
+    remoteCommand: ['true'] });
   notes.push(`plan: ${argv.join(' ')}`);
-  notes.push('成功僅代表此 target 可 BatchMode 登入，≠ 全域授權');
+  notes.push(tl('notes.auto.n0839'));
 
   if (!input.apply) {
-    notes.push('dry-run — pass apply/execute 才真正 ssh');
+    notes.push(tl('notes.auto.n0267'));
     return {
       ok: true,
       dryRun: true,
@@ -186,12 +180,11 @@ export async function testSshIdentity(input: {
       requiresExecute: true,
       target: `${parsed.user}@${parsed.host}:${parsed.port}`,
       identity: toPublicIdentity(row),
-      notes,
-    };
+      notes };
   }
 
   if (!input.executeEnabled || !input.host) {
-    notes.push('blocked: 需要 HostExecutor + YSK_EXECUTE=1');
+    notes.push(tl('notes.auto.n0230'));
     return {
       ok: false,
       dryRun: false,
@@ -200,16 +193,15 @@ export async function testSshIdentity(input: {
       requiresExecute: true,
       target: `${parsed.user}@${parsed.host}:${parsed.port}`,
       identity: toPublicIdentity(row),
-      notes,
-    };
+      notes };
   }
 
   const r = await input.host.runCommand(argv, { timeoutMs: 20_000 });
   const ok = r.exitCode === 0;
   notes.push(
     ok
-      ? 'ssh true 成功 → verified'
-      : `ssh 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
+      ? tl('notes.auto.n0434')
+      : tl('notes.auto.t0519', { v0: ((r.stderr || r.stdout || '').slice(0, 160)) }),
   );
 
   const identity = updateSshIdentityRecord(input.dataDir, row.id, {
@@ -217,8 +209,7 @@ export async function testSshIdentity(input: {
     lastVerifiedAt: new Date().toISOString(),
     lastVerifyNote: ok
       ? `ok ${parsed.user}@${parsed.host}`
-      : notes[notes.length - 1],
-  });
+      : notes[notes.length - 1] });
 
   return {
     ok,
@@ -229,8 +220,7 @@ export async function testSshIdentity(input: {
     target: `${parsed.user}@${parsed.host}:${parsed.port}`,
     identity: identity ?? undefined,
     notes,
-    exitCode: r.exitCode,
-  };
+    exitCode: r.exitCode };
 }
 
 export type RotateSshIdentityResult = {
@@ -249,13 +239,12 @@ export function rotateSshIdentity(input: {
   db?: JsonStore;
 }): RotateSshIdentityResult {
   const old = getSshIdentityInternal(input.dataDir, input.id);
-  if (!old) return { ok: false, notes: ['找不到 identity'] };
+  if (!old) return { ok: false, notes: [tl('notes.ssh.identityNotFound')] };
 
   const notes: string[] = [`retire ${old.id} (${old.fingerprintSha256})`];
   updateSshIdentityRecord(input.dataDir, old.id, {
     status: 'retired',
-    name: old.name.endsWith(' (retired)') ? old.name : `${old.name} (retired)`,
-  });
+    name: old.name.endsWith(' (retired)') ? old.name : `${old.name} (retired)` });
 
   const baseName = old.name.replace(/\s*\(retired\)\s*$/, '').trim() || old.name;
   const created = createSshIdentity(
@@ -267,8 +256,7 @@ export function rotateSshIdentity(input: {
       binding: old.binding,
       comment: old.comment ?? `rotated from ${old.fingerprintSha256}`,
       createdBy: old.createdBy,
-      revealPrivate: input.revealPrivate,
-    },
+      revealPrivate: input.revealPrivate },
     input.db,
   );
 
@@ -276,20 +264,18 @@ export function rotateSshIdentity(input: {
     return {
       ok: false,
       oldIdentity: toPublicIdentity(old),
-      notes: [...notes, ...(created.notes ?? ['create failed'])],
-    };
+      notes: [...notes, ...(created.notes ?? ['create failed'])] };
   }
   notes.push(...created.notes);
   notes.push(`new ${created.identity.id} ${created.identity.fingerprintSha256}`);
-  notes.push('舊公鑰若在 remote authorized_keys，需手動更新或 authorize-self');
+  notes.push(tl('notes.auto.n1345'));
 
   return {
     ok: true,
     oldIdentity: listSshIdentities(input.dataDir).find((i) => i.id === old.id),
     newIdentity: created.identity,
     privateKey: created.privateKey,
-    notes,
-  };
+    notes };
 }
 
 export type AuthorizeSelfResult = {
@@ -307,7 +293,7 @@ export async function authorizeSelfSshIdentity(input: {
   host?: HostExecutor;
 }): Promise<AuthorizeSelfResult> {
   const row = getSshIdentityInternal(input.dataDir, input.id);
-  if (!row) return { ok: false, notes: ['找不到 identity'] };
+  if (!row) return { ok: false, notes: [tl('notes.ssh.identityNotFound')] };
 
   const linuxUser = row.binding?.linuxUser;
   const homeDir = row.binding?.homeDir;
@@ -315,8 +301,7 @@ export async function authorizeSelfSshIdentity(input: {
   if (!linuxUser && !projectId && !homeDir) {
     return {
       ok: false,
-      notes: ['identity 未綁定 linuxUser/project — 無法寫 authorized_keys'],
-    };
+      notes: [tl('notes.auto.n0305')] };
   }
 
   const r = addSftpKey(input.db, input.dataDir, {
@@ -325,8 +310,7 @@ export async function authorizeSelfSshIdentity(input: {
     comment: `ysk-identity:${row.id.slice(0, 8)} ${row.name}`,
     projectId,
     linuxUser,
-    homeDir,
-  });
+    homeDir });
 
   if (r.ok && homeDir && linuxUser && input.host) {
     const ch = await chownSftpProjectKeys(input.host, homeDir, linuxUser);
@@ -337,6 +321,5 @@ export async function authorizeSelfSshIdentity(input: {
     ok: r.ok,
     notes: r.notes,
     written: r.written,
-    keyId: r.key?.id,
-  };
+    keyId: r.key?.id };
 }

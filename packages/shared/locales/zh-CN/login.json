@@ -1,0 +1,13 @@
+{
+  "title": "登录 YSK Server",
+  "subtitle": "服务器控制台",
+  "username": "用户名",
+  "password": "密码",
+  "submit": "登录控制台",
+  "failed": "登录失败，请检查账号或密码",
+  "footer": "产品由 YSK Limited 提供",
+  "totpRequired": "此账户已开启 2FA，请输入 6 位验证码",
+  "totpLabel": "双重验证码",
+  "totpHint": "Authenticator 应用中的 6 位数字",
+  "submitting": "登录中…"
+}

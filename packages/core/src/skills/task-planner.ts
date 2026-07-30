@@ -5,7 +5,7 @@
 
 import { randomUUID } from 'node:crypto';
 import type { RiskTier } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { Allowlist } from '../security/allowlist.js';
 import type { LlmGateway } from '../llm/gateway.js';
 
@@ -127,7 +127,7 @@ export function createAiTask(input: {
   store: TaskStore;
 }): AiTask {
   if (!input.prompt?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, '請輸入提示內容', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1427'), { httpStatus: 400 });
   }
   const planned = planStepsFromPrompt(input.prompt, input.allowlist);
   const now = new Date().toISOString();

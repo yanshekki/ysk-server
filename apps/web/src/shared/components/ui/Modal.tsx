@@ -7,7 +7,9 @@ export interface ModalProps {
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Extra class on the panel (e.g. feature-specific layouts) */
+  className?: string;
 }
 
 /**
@@ -22,6 +24,7 @@ export function Modal({
   children,
   footer,
   size = 'md',
+  className,
 }: ModalProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -71,7 +74,14 @@ export function Modal({
 
   if (!open) return null;
 
-  const sizeClass = size === 'sm' ? 'modal--sm' : size === 'lg' ? 'modal--lg' : '';
+  const sizeClass =
+    size === 'sm'
+      ? 'modal--sm'
+      : size === 'lg'
+        ? 'modal--lg'
+        : size === 'xl'
+          ? 'modal--xl'
+          : '';
 
   return (
     <div
@@ -83,7 +93,7 @@ export function Modal({
     >
       <div
         ref={panelRef}
-        className={['modal', sizeClass].filter(Boolean).join(' ')}
+        className={['modal', sizeClass, className].filter(Boolean).join(' ')}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

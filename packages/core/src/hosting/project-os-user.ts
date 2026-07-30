@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Live OS-user probe + apply Linux/systemd limits for a project.
  * Honest: applied only with root + YSK_EXECUTE; else written/blocked notes.
@@ -61,7 +62,7 @@ export async function probeOsUser(
       const st = statSync(row.home_dir);
       live.homeMode = (st.mode & 0o777).toString(8).padStart(3, '0');
     } catch {
-      notes.push('無法 stat home');
+      notes.push(tl('notes.auto.n1137'));
     }
   }
 
@@ -102,14 +103,14 @@ export async function probeOsUser(
     else if (/\s[PN]\s/.test(out) || out.length > 0) live.locked = false;
     else live.locked = null;
   } else {
-    notes.push('系統用戶不存在（尚未 provision 或已刪）');
+    notes.push(tl('notes.auto.n1307'));
   }
 
   if (row.os_provisioned && !live.userExists) {
-    notes.push('DB 標記已隔離但 id 找不到用戶 — 請重新建立系統用戶');
+    notes.push(tl('notes.auto.n0093'));
   }
   if (live.homeExists && live.homeDir !== canonicalHome) {
-    notes.push(`目前 home 非意圖路徑（意圖 ${canonicalHome}）`);
+    notes.push(tl('notes.auto.t0429', { v0: (canonicalHome) }));
   }
 
   return live;
@@ -133,7 +134,7 @@ export async function applyOsUserLimits(input: {
 
   if (!can) {
     blocked = true;
-    notes.push('限制已寫入控制面；套用到 OS 需 YSK_EXECUTE + root');
+    notes.push(tl('notes.auto.n1530'));
     const live = await probeOsUser(input.host, input.row);
     const quota = await checkProjectQuota({
       host: input.host,
@@ -168,7 +169,7 @@ export async function applyOsUserLimits(input: {
       notes.push(`shell → ${shell}`);
       applied = true;
     } else {
-      notes.push(`usermod -s 失敗：${(us.stderr || us.stdout).slice(0, 160)}`);
+      notes.push(tl('notes.auto.t0430', { v0: ((us.stderr || us.stdout).slice(0, 160)) }));
     }
 
     // Lock / unlock
@@ -177,20 +178,20 @@ export async function applyOsUserLimits(input: {
         timeoutMs: 10_000,
       });
       if (lk.exitCode === 0) {
-        notes.push('帳號已鎖定 (usermod -L)');
+        notes.push(tl('notes.auto.n0816'));
         applied = true;
-      } else notes.push(`鎖定失敗：${(lk.stderr || '').slice(0, 120)}`);
+      } else notes.push(tl('notes.auto.t0431', { v0: ((lk.stderr || '').slice(0, 120)) }));
     } else if (row.account_locked === false) {
       const uk = await input.host.runCommand(['usermod', '-U', row.linux_user], {
         timeoutMs: 10_000,
       });
       if (uk.exitCode === 0) {
-        notes.push('帳號已解鎖 (usermod -U)');
+        notes.push(tl('notes.auto.n0815'));
         applied = true;
-      } else notes.push(`解鎖失敗：${(uk.stderr || '').slice(0, 120)}`);
+      } else notes.push(tl('notes.auto.t0432', { v0: ((uk.stderr || '').slice(0, 120)) }));
     }
   } else {
-    notes.push('略過 usermod（未 os_provisioned）');
+    notes.push(tl('notes.auto.n1259'));
   }
 
   // systemd set-property (live unit if active)
@@ -219,11 +220,11 @@ export async function applyOsUserLimits(input: {
         applied = true;
       } else {
         notes.push(
-          `set-property 失敗：${(sp.stderr || sp.stdout).slice(0, 160)}（下次 deploy 會寫入 unit）`,
+          tl('notes.auto.t0433', { v0: ((sp.stderr || sp.stdout).slice(0, 160)) }),
         );
       }
     } else {
-      notes.push(`unit ${unit} 未 active — 限制已存 DB，下次 deploy 寫入 unit`);
+      notes.push(tl('notes.auto.t0434', { v0: (unit) }));
     }
   }
 
@@ -258,11 +259,11 @@ async function applySetquota(
   notes: string[],
 ): Promise<boolean> {
   if (row.quota_mb == null || row.quota_mb <= 0) {
-    notes.push('未設定磁碟配額（軟配額關閉）');
+    notes.push(tl('notes.auto.n0981'));
     return false;
   }
   if (!row.os_provisioned) {
-    notes.push('硬配額略過：未 os_provisioned');
+    notes.push(tl('notes.auto.n1286'));
     return false;
   }
   // blocks: soft=hard for simplicity; 0 inodes unlimited-ish large
@@ -272,7 +273,7 @@ async function applySetquota(
     { timeoutMs: 5_000 },
   );
   if (!has.stdout.includes('yes')) {
-    notes.push('setquota 不在 PATH — 僅控制面軟配額（deploy 前 du 擋）');
+    notes.push(tl('notes.auto.n0431'));
     return false;
   }
   // Try root filesystem; if fails, report honestly
@@ -290,7 +291,7 @@ async function applySetquota(
     return true;
   }
   notes.push(
-    `setquota 未成功（檔案系統可能未啟 user_xattr/quota）：${out.slice(0, 180) || 'exit ' + r.exitCode}`,
+    tl('notes.auto.t0435', { v0: (out.slice(0, 180) || 'exit ' + r.exitCode) }),
   );
   return false;
 }
@@ -303,11 +304,11 @@ export async function chownHomeNow(
   if (!host.executeEnabled() || !host.isRoot()) {
     return {
       ok: false,
-      notes: ['chown 需要 YSK_EXECUTE + root'],
+      notes: [tl('notes.auto.n0237')],
     };
   }
   if (!existsSync(row.home_dir)) {
-    return { ok: false, notes: [`home 不存在：${row.home_dir}`] };
+    return { ok: false, notes: [tl('notes.auto.t0436', { v0: (row.home_dir) })] };
   }
   const r = await host.runCommand(
     [
@@ -318,11 +319,11 @@ export async function chownHomeNow(
     { timeoutMs: 60_000 },
   );
   if (r.exitCode === 0) {
-    notes.push(`已 chown ${row.linux_user} → ${row.home_dir}`);
+    notes.push(tl('notes.auto.t0437', { v0: (row.linux_user), v1: (row.home_dir) }));
     return { ok: true, notes };
   }
   return {
     ok: false,
-    notes: [`chown 失敗：${(r.stderr || r.stdout).slice(0, 200)}`],
+    notes: [tl('notes.tpl.chownFailed', { detail: (r.stderr || r.stdout).slice(0, 200) })],
   };
 }

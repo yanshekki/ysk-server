@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Optional WordPress core download into project public/ (Spec one-click apps).
  * Requires network + host tools; never fakes success without YSK_EXECUTE.
@@ -49,7 +50,7 @@ export async function downloadWordpressCore(input: {
   }
 
   if (!input.host.executeEnabled()) {
-    notes.push('無法下載 WordPress：伺服器未開啟系統變更權限');
+    notes.push(tl('notes.auto.n1142'));
     writeFileSync(
       join(input.homeDir, 'app', 'WORDPRESS_DOWNLOAD.txt'),
       'Download WordPress via admin panel when host mutations are enabled.\n',

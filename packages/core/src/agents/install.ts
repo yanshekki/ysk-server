@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Apply agent runtime install plan under EXECUTE policy (never fake success).
  */
@@ -70,7 +71,7 @@ export async function applyAgentInstall(input: {
   let binaryPath: string | undefined;
 
   if (want && !can) {
-    notes.push('伺服器未開啟系統變更權限，無法在管理面板完成安裝');
+    notes.push(tl('ops.blocked.install'));
   }
 
   if (can) {
@@ -94,7 +95,7 @@ export async function applyAgentInstall(input: {
       });
       notes.push(`${cmd} => exit ${r.exitCode}`);
       if (r.exitCode !== 0) {
-        notes.push(`安裝指令失敗（唔會假裝成功）：${(r.stderr || r.stdout).slice(0, 300)}`);
+        notes.push(tl('notes.auto.t0498', { v0: ((r.stderr || r.stdout).slice(0, 300)) }));
       }
     }
   }
@@ -102,7 +103,7 @@ export async function applyAgentInstall(input: {
   // Resolve binary after install attempt (or probe existing)
   binaryPath = await resolveAgentBinary(kind, input.host);
   if (binaryPath) notes.push(`CLI binary: ${binaryPath}`);
-  else notes.push('找不到 CLI binary — systemd 唔會 enable 成 silent placeholder');
+  else notes.push(tl('notes.auto.n0844'));
 
   const unitsDir = join(input.dataDir, 'systemd');
   mkdirSync(unitsDir, { recursive: true });
@@ -120,9 +121,9 @@ export async function applyAgentInstall(input: {
 
   if (can && input.enableUnit !== false) {
     if (!binaryPath) {
-      notes.push('拒絕 systemctl enable：未安裝真實 agent CLI（避免 placeholder 假 running）');
+      notes.push(tl('notes.auto.n0871'));
     } else if (!input.host.isRoot()) {
-      notes.push('無法啟用服務：需要系統管理員權限');
+      notes.push(tl('notes.auto.n1155'));
     } else {
       const cp = await input.host.runCommand(
         ['cp', unitPath, `/etc/systemd/system/${unitName}`],
@@ -161,7 +162,7 @@ export async function applyAgentInstall(input: {
   const ok = want ? can && ranOk && Boolean(binaryPath) : true;
 
   if (want && can && ranOk && !binaryPath) {
-    notes.push('npm 指令 exit 0 但仍找不到 binary — 套件可能未提供 CLI 或 PATH 未更新');
+    notes.push(tl('notes.auto.n0348'));
   }
 
   return {

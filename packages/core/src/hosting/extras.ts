@@ -2,7 +2,7 @@
  * Phase 3 hosting remainder: File Server, FTPS, DNS, Firewall, cron, logs, backup, monitoring.
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface FileServerPlan {
   publicRoot: string;
@@ -18,7 +18,7 @@ export function planPublicFileServer(opts: {
   const publicRoot = opts.root ?? '/var/lib/ysk-server/files';
   const quotaMb = opts.quotaMb ?? 1024;
   if (quotaMb < 1) {
-    throw new YskError(ErrorCodes.VALIDATION, '配額須至少 1 MiB', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1511'), { httpStatus: 400 });
   }
   return {
     publicRoot,
@@ -28,8 +28,7 @@ export function planPublicFileServer(opts: {
       `mkdir -p ${publicRoot}`,
       `chown ysk-server:ysk-server ${publicRoot}`,
       `chmod 750 ${publicRoot}`,
-    ],
-  };
+    ] };
 }
 
 export interface FtpsPlan {
@@ -42,7 +41,7 @@ export interface FtpsPlan {
 
 export function planFtps(opts: { domain: string; pasvMin?: number; pasvMax?: number }): FtpsPlan {
   if (!opts.domain) {
-    throw new YskError(ErrorCodes.VALIDATION, 'FTPS 需要域名', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0104'), { httpStatus: 400 });
   }
   const pasvMin = opts.pasvMin ?? 30000;
   const pasvMax = opts.pasvMax ?? 30100;
@@ -62,8 +61,7 @@ pasv_max_port=${pasvMax}
     pasvMax,
     sslCert: `/etc/letsencrypt/live/${opts.domain}/fullchain.pem`,
     configSnippet,
-    commands: ['apt-get install -y vsftpd', 'systemctl enable --now vsftpd'],
-  };
+    commands: ['apt-get install -y vsftpd', 'systemctl enable --now vsftpd'] };
 }
 
 export interface DnsRecordPlan {
@@ -80,15 +78,14 @@ export const DNS_ZONE_TEMPLATES: Array<{
   label: string;
   description: string;
 }> = [
-  { id: 'minimal', label: '最小', description: '僅 apex A' },
-  { id: 'web', label: '網站', description: 'apex + www' },
-  { id: 'mail', label: '郵件', description: 'apex + mail + MX + SPF' },
-  { id: 'full', label: '完整', description: 'web + mail + ftp + SPF' },
+  { id: 'minimal', label: tl('notes.auto.n0939'), description: tl('notes.auto.n0564') },
+  { id: 'web', label: tl('notes.auto.n1315'), description: 'apex + www' },
+  { id: 'mail', label: tl('notes.readiness.email'), description: 'apex + mail + MX + SPF' },
+  { id: 'full', label: tl('notes.auto.n0659'), description: 'web + mail + ftp + SPF' },
   {
     id: 'cdn',
     label: 'CDN',
-    description: 'apex + www（多 edge 預留）+ cdn 主機名佔位',
-  },
+    description: tl('notes.auto.n0218') },
 ];
 
 export function normalizeDnsZoneTemplate(raw?: string | null): DnsZoneTemplate {
@@ -115,7 +112,7 @@ export function planDnsZone(opts: {
   template?: DnsZoneTemplate | string;
 }): DnsRecordPlan {
   if (!opts.zone || !opts.serverIp) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫 zone 與 server IP', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.dns.needZoneServerIp'), { httpStatus: 400 });
   }
   const template = normalizeDnsZoneTemplate(opts.template);
   const mail = opts.mailHost ?? `mail.${opts.zone}`;
@@ -140,8 +137,7 @@ export function planDnsZone(opts: {
       type: 'TXT',
       name: '_ysk-cdn',
       value: 'ysk-cdn-ready v1',
-      ttl,
-    });
+      ttl });
   }
   if (template === 'mail' || template === 'full') {
     records.push({ type: 'A', name: 'mail', value: ip, ttl });
@@ -154,8 +150,7 @@ export function planDnsZone(opts: {
       type: 'TXT',
       name: '@',
       value: spf,
-      ttl,
-    });
+      ttl });
   }
   if (template === 'full') {
     records.push({ type: 'A', name: 'ftp', value: ip, ttl });
@@ -175,8 +170,7 @@ export function planDnsZone(opts: {
             'Use CDN module later for health-based multi-A (managedBy=cdn)',
           ]
         : []),
-    ],
-  };
+    ] };
 }
 
 export interface FirewallPlan {
@@ -201,7 +195,7 @@ export function planFirewall(opts: {
   }
   for (const p of opts.extraTcpPorts ?? []) {
     if (!Number.isInteger(p) || p < 1 || p > 65535) {
-      throw new YskError(ErrorCodes.VALIDATION, `埠號無效：${p}`, { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0358', { v0: (p) }), { httpStatus: 400 });
     }
     rules.push(`ufw allow ${p}/tcp`);
   }
@@ -218,8 +212,7 @@ export function planFirewall(opts: {
       'postfix',
       'dovecot',
     ],
-    commands: [...rules],
-  };
+    commands: [...rules] };
 }
 
 export function planCronJob(opts: {
@@ -228,14 +221,12 @@ export function planCronJob(opts: {
   command: string;
 }): { crontabLine: string; notes: string[] } {
   if (!opts.user || !opts.schedule || !opts.command) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫用戶、排程與指令', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {
+      httpStatus: 400 });
   }
   return {
     crontabLine: `${opts.schedule} ${opts.command} # ysk-server`,
-    notes: [`以用戶 ${opts.user} 安裝 crontab`, '日誌建議寫入專案 logs 目錄'],
-  };
+    notes: [tl('notes.auto.t0359', { v0: (opts.user) }), tl('notes.auto.n0916')] };
 }
 
 export function planBackup(opts: {
@@ -244,7 +235,7 @@ export function planBackup(opts: {
   dest: string;
 }): { commands: string[]; notes: string[] } {
   if (!opts.sources.length) {
-    throw new YskError(ErrorCodes.VALIDATION, '請指定備份來源', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1405'), { httpStatus: 400 });
   }
   const stamp = '${STAMP}';
   return {
@@ -253,8 +244,7 @@ export function planBackup(opts: {
       `mkdir -p ${opts.dest}/${opts.projectId}`,
       `tar -czf ${opts.dest}/${opts.projectId}/backup-${stamp}.tar.gz ${opts.sources.join(' ')}`,
     ],
-    notes: ['應設定保留策略清理舊備份', '資料庫轉儲需另行納入'],
-  };
+    notes: [tl('notes.auto.n0838'), tl('notes.auto.n1453')] };
 }
 
 export function planMonitoringChecks(projectId: string): {
@@ -266,14 +256,12 @@ export function planMonitoringChecks(projectId: string): {
       { name: 'disk', type: 'disk', target: '/' },
       { name: 'memory', type: 'memory', target: 'host' },
       { name: 'load', type: 'load', target: 'host' },
-    ],
-  };
+    ] };
 }
 
 export function planLogPaths(projectHome: string): { app: string; access: string; error: string } {
   return {
     app: `${projectHome}/logs/app.log`,
     access: `${projectHome}/logs/access.log`,
-    error: `${projectHome}/logs/error.log`,
-  };
+    error: `${projectHome}/logs/error.log` };
 }

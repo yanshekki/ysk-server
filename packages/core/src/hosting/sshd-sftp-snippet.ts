@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Generate sshd_config Match snippet so project Linux users can SFTP
  * with authorized_keys under their home (isolation).
@@ -81,12 +82,12 @@ export async function applySshdSftpSnippet(input: {
   const managedPath = join(managedDir, SSHD_SNIPPET_NAME);
   writeFileSync(managedPath, snippet, 'utf8');
   written.push(managedPath);
-  notes.push(`已寫入管理片段：${managedPath}`);
+  notes.push(tl('notes.auto.t0123', { v0: (managedPath) }));
 
   // Count project users for notes
   if (input.db) {
     const n = (input.db.snapshot.projects ?? []).filter((p) => p.linux_user).length;
-    notes.push(`專案 Linux 用戶約 ${n} 個（Match User ysks_*,ysk_*）`);
+    notes.push(tl('notes.auto.t0124', { v0: (n) }));
   }
 
   const want = input.installSystem !== false;
@@ -94,15 +95,15 @@ export async function applySshdSftpSnippet(input: {
     return {
       ok: true,
       written,
-      notes: [...notes, '未請求安裝到系統（installSystem=false）'],
+      notes: [...notes, tl('notes.auto.n0983')],
       snippet,
       applied: false,
     };
   }
 
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
-    notes.push('無法安裝到 /etc/ssh：需要 YSK_EXECUTE + root');
-    notes.push(`請手動：cp ${managedPath} /etc/ssh/sshd_config.d/ && systemctl reload sshd`);
+    notes.push(tl('notes.auto.n1164'));
+    notes.push(tl('notes.auto.t0125', { v0: (managedPath) }));
     return {
       ok: false,
       written,
@@ -122,7 +123,7 @@ export async function applySshdSftpSnippet(input: {
   }
   const cp = await input.host.runCommand(['cp', managedPath, systemPath], { timeoutMs: 10_000 });
   if (cp.exitCode !== 0) {
-    notes.push(`複製失敗：${cp.stderr || cp.stdout}`);
+    notes.push(tl('notes.tpl.copyFailed', { detail: cp.stderr || cp.stdout }));
     return {
       ok: false,
       written,
@@ -138,8 +139,8 @@ export async function applySshdSftpSnippet(input: {
   // Validate and reload (ssh or sshd unit name varies)
   const test = await input.host.runCommand(['sshd', '-t'], { timeoutMs: 10_000 });
   if (test.exitCode !== 0) {
-    notes.push(`sshd -t 失敗，未 reload：${test.stderr || test.stdout}`);
-    notes.push('片段已複製；請修正後手動 reload');
+    notes.push(tl('notes.auto.t0126', { v0: (test.stderr || test.stdout) }));
+    notes.push(tl('notes.auto.n1204'));
     return {
       ok: false,
       written,
@@ -156,8 +157,8 @@ export async function applySshdSftpSnippet(input: {
   const applied = reload.exitCode === 0;
   notes.push(
     applied
-      ? `已安裝 ${systemPath} 並 reload sshd`
-      : `已安裝片段但 reload 失敗：${reload.stderr || reload.stdout}`,
+      ? tl('notes.auto.t0127', { v0: (systemPath) })
+      : tl('notes.auto.t0128', { v0: (reload.stderr || reload.stdout) }),
   );
   return {
     ok: applied,

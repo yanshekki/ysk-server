@@ -1,0 +1,10 @@
+{
+  "title": "操作结果",
+  "status": "状态",
+  "port": "端口",
+  "url": "网址",
+  "blocked": "无法执行",
+  "success": "成功",
+  "failed": "失败",
+  "retry": "重试"
+}

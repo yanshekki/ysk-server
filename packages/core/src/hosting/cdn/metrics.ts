@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * CDN status dashboard + cache hit-rate estimate (PR-C5).
  * Hit-rate is honest: sample nginx access logs when available; else unknown.
@@ -157,10 +158,10 @@ export async function estimateSiteCacheHitRate(input: {
             ? Math.round((parsed.hits / denom) * 1000) / 10
             : undefined;
         notes.push(
-          `access_log 抽樣 ${logPath}（${parsed.sample} 個 cache status token）`,
+          tl('notes.auto.t0747', { v0: (logPath), v1: (parsed.sample) }),
         );
         notes.push(
-          '需 nginx log_format 含 $upstream_cache_status（或 X-YSK-Cache）先有 HIT/MISS',
+          tl('notes.auto.n1545'),
         );
         return {
           siteId: site.id,
@@ -185,7 +186,7 @@ export async function estimateSiteCacheHitRate(input: {
         const parsed = parseCacheStatuses(tail);
         if (parsed.sample > 0) {
           const denom = parsed.hits + parsed.misses;
-          notes.push(`讀取本地 log ${logPath}`);
+          notes.push(tl('notes.auto.t0748', { v0: (logPath) }));
           return {
             siteId: site.id,
             siteName: site.name,
@@ -213,13 +214,13 @@ export async function estimateSiteCacheHitRate(input: {
   let cacheBytes = 0;
   if (existsSync(cachePath)) {
     cacheBytes = dirSizeBytes(cachePath);
-    notes.push(`cache 目錄 ${cachePath} ≈ ${cacheBytes} bytes（非命中率）`);
+    notes.push(tl('notes.auto.t0749', { v0: (cachePath), v1: (cacheBytes) }));
   } else if (existsSync(localManaged)) {
     cacheBytes = dirSizeBytes(localManaged);
     notes.push(`managed cache-stats ${localManaged}`);
   } else {
     notes.push(
-      '無 access log cache status、亦無 cache 目錄 — hit-rate 未知（請開 log_format 或先 apply edge）',
+      tl('notes.auto.n1067'),
     );
     return {
       siteId: site.id,
@@ -236,7 +237,7 @@ export async function estimateSiteCacheHitRate(input: {
     cacheBytes,
     notes: [
       ...notes,
-      '僅有磁碟佔用粗估，唔係 HIT 比率',
+      tl('notes.auto.n0573'),
     ],
   };
 }
@@ -315,7 +316,7 @@ export async function collectCdnDashboard(input: {
   }
   if (sites.length > maxSamples) {
     notes.push(
-      `cache 抽樣僅前 ${maxSamples}/${sites.length} 個站點`,
+      tl('notes.auto.t0750', { v0: (maxSamples), v1: (sites.length) }),
     );
   }
 
@@ -329,11 +330,11 @@ export async function collectCdnDashboard(input: {
       overallHitRatePct = Math.round((totalHits / d) * 1000) / 10;
     }
   } else {
-    notes.push('尚無可用 HIT/MISS 抽樣 — overall hit-rate 未知');
+    notes.push(tl('notes.auto.n0718'));
   }
 
   notes.push(
-    '儀表為控制面彙總；公網流量／真實 CDN 命中率需 edge access log 含 cache status',
+    tl('notes.auto.n0576'),
   );
 
   return {

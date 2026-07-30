@@ -1,5 +1,6 @@
 export * from './auth.js';
 export * from './users-admin.js';
+export * from './rbac-policy.js';
 export * from './protection.js';
 export * from './protection-probe.js';
 export * from './ai-task-service.js';

@@ -3,6 +3,8 @@
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
+import i18n from '../../shared/lib/i18n';
 import { Link } from 'react-router-dom';
 import {
   WithPageGuide,
@@ -31,13 +33,16 @@ import {
 } from '../../features/redis';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 
-function formatTtl(ttl?: number): string {
+function formatTtl(
+  ttl: number | undefined,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
   if (ttl == null || ttl === -2) return '—';
-  if (ttl === -1) return '永不過期';
-  if (ttl < 60) return `${ttl} 秒`;
-  if (ttl < 3600) return `${Math.floor(ttl / 60)} 分鐘`;
-  if (ttl < 86400) return `${Math.floor(ttl / 3600)} 小時`;
-  return `${Math.floor(ttl / 86400)} 天`;
+  if (ttl === -1) return i18n.t('redis.neverExpire');
+  if (ttl < 60) return i18n.t('redis.ttlSeconds', { ttl });
+  if (ttl < 3600) return i18n.t('redis.ttlMinutes', { n: Math.floor(ttl / 60) });
+  if (ttl < 86400) return i18n.t('redis.ttlHours', { n: Math.floor(ttl / 3600) });
+  return i18n.t('redis.ttlDays', { n: Math.floor(ttl / 86400) });
 }
 
 function typeTone(type?: string): 'ok' | 'warn' | 'info' | 'neutral' {
@@ -53,13 +58,16 @@ function typeTone(type?: string): 'ok' | 'warn' | 'info' | 'neutral' {
   }
 }
 
-function typeLabel(type?: string): string {
+function typeLabel(
+  type: string | undefined,
+  t: (k: string) => string,
+): string {
   const map: Record<string, string> = {
-    string: '字串',
-    hash: '雜湊',
-    list: '列表',
-    set: '集合',
-    zset: '有序集合',
+    string: i18n.t('redis.typeString'),
+    hash: i18n.t('redis.typeHash'),
+    list: i18n.t('redis.typeList'),
+    set: i18n.t('redis.typeSet'),
+    zset: i18n.t('redis.typeZset'),
   };
   return type ? map[type] ?? type : '—';
 }
@@ -96,7 +104,7 @@ export function RedisPage() {
     try {
       setSvc(await redisApi.status());
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '狀態載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.statusLoadFailed'));
     }
   }, []);
 
@@ -108,7 +116,7 @@ export function RedisPage() {
       setKeys(r.keys ?? []);
     } catch (e) {
       setKeys([]);
-      setLoadError(e instanceof Error ? e.message : '無法載入鍵列表');
+      setLoadError(e instanceof Error ? e.message : t('redis.keysLoadFailed'));
     } finally {
       setLoadingKeys(false);
     }
@@ -130,10 +138,10 @@ export function RedisPage() {
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '安裝失敗';
+        const m = e instanceof Error ? e.message : t('common.installFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, 'Redis 已安裝');
+    }, t('redis.installedOk'));
   }
 
   async function onStart() {
@@ -143,10 +151,10 @@ export function RedisPage() {
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '啟動失敗';
+        const m = e instanceof Error ? e.message : t('common.startFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, 'Redis 已啟動');
+    }, t('redis.startedOk'));
   }
 
   async function openKey(key: string) {
@@ -179,10 +187,10 @@ export function RedisPage() {
         void openKey(keyToOpen);
         return r as unknown as OpsResultLike;
       } catch (err) {
-        const m = err instanceof Error ? err.message : '寫入失敗';
-        return { ok: false, blocked: /權限|系統變更/.test(m), blockMessage: m, notes: [m] };
+        const m = err instanceof Error ? err.message : t('redis.writeFailed');
+        return { ok: false, blocked: looksLikeBlockedMessage(m), blockMessage: m, notes: [m] };
       }
-    }, '已儲存');
+    }, t('common.savedOk'));
   }
 
   async function onDeleteKey() {
@@ -199,10 +207,10 @@ export function RedisPage() {
         await loadKeys();
         return r as unknown as OpsResultLike;
       } catch (err) {
-        const m = err instanceof Error ? err.message : '刪除失敗';
-        return { ok: false, blocked: /權限|系統變更/.test(m), blockMessage: m, notes: [m] };
+        const m = err instanceof Error ? err.message : t('common.deleteFailed');
+        return { ok: false, blocked: looksLikeBlockedMessage(m), blockMessage: m, notes: [m] };
       }
-    }, '已刪除');
+    }, t('redis.deleted'));
   }
 
   const online = Boolean(svc?.canRead);
@@ -235,17 +243,17 @@ export function RedisPage() {
     if (!svc) return [];
     return [
       {
-        label: '狀態',
-        value: online ? '運行中' : '離線',
+        label: t('common.status'),
+        value: online ? t('common.running') : t('redis.offline'),
         tone: online ? ('ok' as const) : ('danger' as const),
       },
-      { label: '版本', value: svc.version ?? '—' },
-      { label: '記憶體', value: svc.usedMemory ?? '—' },
-      { label: '連線數', value: svc.connectedClients ?? '—' },
-      { label: '總鍵數', value: totalKeys },
+      { label: t('common.version'), value: svc.version ?? '—' },
+      { label: t('common.memory'), value: svc.usedMemory ?? '—' },
+      { label: t('redis.connections'), value: svc.connectedClients ?? '—' },
+      { label: t('redis.totalKeys'), value: totalKeys },
       {
-        label: '寫入',
-        value: online ? '可用' : '不可用',
+        label: t('redis.writable'),
+        value: online ? t('common.available') : t('network.unavailable'),
         tone: online ? ('ok' as const) : ('warn' as const),
       },
     ];
@@ -262,7 +270,7 @@ export function RedisPage() {
       title={t('nav.redis', { defaultValue: 'Redis' })}
       status={{
         pill: {
-          label: online ? '已連線' : '未連線',
+          label: online ? t('redis.connected') : t('redis.notConnected'),
           tone: online ? 'ok' : 'warn',
         },
         items: summaryItems.length
@@ -271,16 +279,16 @@ export function RedisPage() {
               value: s.value,
             }))
           : [
-              { label: '狀態', value: online ? 'online' : 'offline' },
+              { label: t('common.status'), value: online ? 'online' : 'offline' },
               { label: 'DB', value: db },
-              { label: '鍵', value: keys.length },
-              { label: '選中', value: selectedKey ? '1' : '0' },
+              { label: t('redis.keys'), value: keys.length },
+              { label: t('redis.selected'), value: selectedKey ? '1' : '0' },
             ],
       }}
       actions={<ActionBar>
           <Link to="/databases/redis/service">
             <Button variant="secondary" size="sm">
-              服務設定
+              {t('db.serviceSettings')}
             </Button>
           </Link>
           <Button
@@ -294,11 +302,11 @@ export function RedisPage() {
               if (online) void loadKeys();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           {online ? (
             <Button variant="primary" size="sm" onClick={() => setSetOpen(true)}>
-              新增鍵
+              {t('redis.addKey')}
             </Button>
           ) : null}
         </ActionBar>
@@ -308,7 +316,7 @@ export function RedisPage() {
 
       <SoftwareInstallBanner
         feature="redis"
-        title="Redis 所需軟件尚未安裝"
+        title={t('redis.softwareMissing')}
         onInstalled={() => void refreshSvc()}
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -317,30 +325,18 @@ export function RedisPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       {!online ? (
         <EmptyState
-          title="尚未連上 Redis"
+          title={t('redis.notConnectedTitle')}
           description={
             !svc?.serverInstalled
-              ? '請先使用上方橫幅一鍵安裝 Redis，再啟動服務。'
-              : '服務已安裝但未連上，請啟動服務後即可瀏覽鍵與內容。'
-          }
-          action={
-            svc?.serverInstalled ? (
-              <Button
-                variant="primary"
-                size="lg"
-                loading={busy}
-                onClick={() => void onStart()}
-              >
-                啟動服務
-              </Button>
-            ) : undefined
+              ? t('redis.installThenStart')
+              : t('redis.installedNotConnected')
           }
         />
       ) : (
@@ -349,7 +345,7 @@ export function RedisPage() {
           <div className="redis-db-picker">
             <div className="redis-db-picker__row">
               <div className="redis-db-picker__select">
-                <label htmlFor="redis-db-select">資料庫</label>
+                <label htmlFor="redis-db-select">{t('common.database')}</label>
                 <select
                   id="redis-db-select"
                   value={db}
@@ -359,20 +355,20 @@ export function RedisPage() {
                     const n = keysInDb(svc, i);
                     return (
                       <option key={i} value={i}>
-                        資料庫 {i}
-                        {n > 0 ? ` · ${n} 個鍵` : ''}
+                        {t('redis.dbLabel', { i })}
+                        {n > 0 ? t('redis.keysInDb', { n }) : ''}
                       </option>
                     );
                   })}
                 </select>
-                <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
-                  共 {dbCount} 個庫（0–{dbCount - 1}）。
-                  <Link to="/databases/redis/service">在服務設定加減數量</Link>
+                <p className="muted u-text-sm u-mt-2">
+                  {t('redis.dbRange', { n: dbCount, max: dbCount - 1 })}
+                  <Link to="/databases/redis/service">{t('redis.serviceLink')}</Link>
                 </p>
               </div>
               {busyDbs.length > 0 ? (
                 <div className="redis-db-picker__quick">
-                  <span className="redis-db-picker__quick-label">有資料的庫（快捷）</span>
+                  <span className="redis-db-picker__quick-label">{t('redis.dbsWithData')}</span>
                   <div className="redis-db-picker__pills">
                     {busyDbs.map((k) => (
                       <button
@@ -382,7 +378,7 @@ export function RedisPage() {
                         onClick={() => selectDb(k.db)}
                       >
                         DB {k.db}
-                        <span className="redis-db-pill__meta">{k.keys} 鍵</span>
+                        <span className="redis-db-pill__meta">{t('redis.keysShort', { k: k.keys })}</span>
                       </button>
                     ))}
                   </div>
@@ -401,11 +397,11 @@ export function RedisPage() {
             <input
               value={patternDraft}
               onChange={(e) => setPatternDraft(e.target.value)}
-              placeholder="搜尋鍵名，例如 user:* 或 *"
-              aria-label="搜尋鍵"
+              placeholder={t('redis.searchPlaceholder')}
+              aria-label={t('redis.searchKeys')}
             />
             <Button type="submit" variant="secondary" size="md" loading={loadingKeys}>
-              搜尋
+              {t('common.search')}
             </Button>
           </form>
 
@@ -414,38 +410,33 @@ export function RedisPage() {
             ratio="1fr 1.15fr"
             leftTitle={
               <>
-                鍵列表
-                <span className="muted u-text-sm" style={{ fontWeight: 500 }}>
-                  {loadingKeys ? '載入中' : `${keys.length} 筆`}
+                {t('redis.keyList')}
+                <span className="muted u-text-sm u-font-medium">
+                  {loadingKeys ? t('runtime.loading') : t('redis.rows', { n: keys.length })}
                 </span>
               </>
             }
-            rightTitle="內容"
+            rightTitle={t('redis.content')}
             rightActions={
               selected ? (
                 <Button variant="danger" size="sm" disabled={busy} onClick={() => setDelKey(selected.key)}>
-                  刪除
+                  {t('common.delete')}
                 </Button>
               ) : null
             }
             left={
               loadingKeys ? (
-                <p className="muted" style={{ padding: '1.25rem' }}>
-                  載入中…
+                <p className="muted u-pad-panel">
+                  {t('common.loading')}
                 </p>
               ) : keys.length === 0 ? (
-                <div style={{ padding: '1.25rem', flex: 1 }}>
+                <div className="u-pad-panel u-flex-1">
                   <EmptyState
-                    title="沒有符合的鍵"
+                    title={t('redis.noMatchingKeys')}
                     description={
                       pattern === '*'
-                        ? `資料庫 ${db} 目前是空的。`
-                        : `沒有符合「${pattern}」的鍵。`
-                    }
-                    action={
-                      <Button variant="primary" size="md" onClick={() => setSetOpen(true)}>
-                        新增鍵
-                      </Button>
+                        ? t('redis.dbEmpty', { db })
+                        : t('redis.noMatchPattern', { pattern })
                     }
                   />
                 </div>
@@ -460,8 +451,8 @@ export function RedisPage() {
                       >
                         <span className="redis-key-row__name">{k.key}</span>
                         <span className="redis-key-row__meta">
-                          <Badge tone={typeTone(k.type)}>{typeLabel(k.type)}</Badge>
-                          <span className="muted u-text-sm">{formatTtl(k.ttl)}</span>
+                          <Badge tone={typeTone(k.type)}>{typeLabel(k.type, t)}</Badge>
+                          <span className="muted u-text-sm">{formatTtl(k.ttl, t)}</span>
                         </span>
                       </button>
                     </li>
@@ -472,15 +463,15 @@ export function RedisPage() {
             right={
               !selected ? (
                 <div className="redis-detail-empty">
-                  <p className="muted">從左側選擇一個鍵，即可查看內容。</p>
+                  <p className="muted">{t('redis.pickKey')}</p>
                 </div>
               ) : (
                 <div className="redis-detail-body">
                   <div className="redis-detail-meta">
                     <div className="redis-detail-key">{selected.key}</div>
                     <ActionBar>
-                      <Badge tone={typeTone(selected.type)}>{typeLabel(selected.type)}</Badge>
-                      <span className="muted u-text-sm">過期：{formatTtl(selected.ttl)}</span>
+                      <Badge tone={typeTone(selected.type)}>{typeLabel(selected.type, t)}</Badge>
+                      <span className="muted u-text-sm">{t('redis.ttlPrefix', { ttl: formatTtl(selected.ttl, t) })}</span>
                     </ActionBar>
                   </div>
                   <div className="redis-detail-value">
@@ -495,22 +486,22 @@ export function RedisPage() {
 
       {result ? (
         <div className="u-mt-4">
-          <OpsResultPanel title="操作結果" result={result} message={null} busy={busy} />
+          <OpsResultPanel title={t('systemd.opsResult')} result={result} message={null} busy={busy} />
         </div>
       ) : null}
 
       <Modal
         open={setOpen}
         onClose={() => setSetOpen(false)}
-        title="新增字串鍵"
-        description={`寫入 Redis 資料庫 ${db}（即時生效，請謹慎）`}
+        title={t('redis.addStringKey')}
+        description={t('redis.writeToDb', { db })}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setSetOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button type="submit" form="redis-set" variant="primary" size="md" loading={busy}>
-              儲存
+              {t('common.save')}
             </Button>
           </>
         }
@@ -518,11 +509,11 @@ export function RedisPage() {
         <form id="redis-set" onSubmit={(e) => void onSetKey(e)}>
           <FormLayout columns={2}>
             <Field
-              label="鍵名"
+              label={t('redis.keyName')}
               htmlFor="nk"
               flush
               required
-              hint="建議用冒號分層，例如 session:user:1"
+              hint={t('redis.keyNameHint')}
             >
               <input
                 id="nk"
@@ -536,39 +527,39 @@ export function RedisPage() {
               />
             </Field>
             <Field
-              label="過期時間（秒）"
+              label={t('redis.ttlLabel')}
               htmlFor="nt"
               flush
-              hint="可留空表示永不過期"
+              hint={t('redis.ttlHint')}
             >
               <PresetChips
                 options={[
-                  { value: '', label: '永不過期' },
-                  { value: '60', label: '1 分' },
-                  { value: '300', label: '5 分' },
-                  { value: '3600', label: '1 時' },
-                  { value: '86400', label: '1 日' },
-                  { value: '604800', label: '7 日' },
+                  { value: '', label: t('redis.neverExpire') },
+                  { value: '60', label: t('redis.m1') },
+                  { value: '300', label: t('redis.m5') },
+                  { value: '3600', label: t('runtime.h1') },
+                  { value: '86400', label: t('runtime.d1') },
+                  { value: '604800', label: t('runtime.d7') },
                 ]}
                 value={newTtl}
                 onChange={setNewTtl}
                 allowCustom
-                customPlaceholder="自訂秒數"
+                customPlaceholder={t('redis.customSeconds')}
               />
             </Field>
-            <Field label="內容" htmlFor="nv" fullWidth flush required hint="字串值，會以 SET 寫入">
+            <Field label={t('redis.content')} htmlFor="nv" fullWidth flush required hint={t('redis.stringValue')}>
               <textarea
                 id="nv"
                 value={newVal}
                 onChange={(e) => setNewVal(e.target.value)}
                 rows={6}
                 required
-                placeholder="字串內容"
+                placeholder={t('redis.stringContent')}
                 spellCheck={false}
               />
             </Field>
           </FormLayout>
-          <FormHint>此操作直接寫入執行中的 Redis，無法從面板一鍵還原。</FormHint>
+          <FormHint>{t('redis.writeLiveHint')}</FormHint>
         </form>
       </Modal>
 
@@ -576,10 +567,10 @@ export function RedisPage() {
         open={Boolean(delKey)}
         onClose={() => setDelKey(null)}
         onConfirm={() => void onDeleteKey()}
-        title="刪除此鍵？"
-        description={`確定從資料庫 ${db} 刪除「${delKey}」？此操作無法復原。`}
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('redis.deleteKeyTitle')}
+        description={t('redis.deleteKeyDesc', { db, key: delKey })}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />

@@ -1,9 +1,10 @@
 /**
- * FTPS accounts — tabbed UX: 帳戶列表 | SFTP 公鑰
+ * FTPS accounts — tabbed UX: {i18n.t('ftp.accountsList')} | SFTP 公鑰
  * List-first; create/edit always in Modal (no huge empty forms).
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 import { Link } from 'react-router-dom';
 import {
   PageGuide,
@@ -133,38 +134,38 @@ export function FtpPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.ftp', { defaultValue: 'FTPS 帳戶' })}
+      title={t('nav.ftp', { defaultValue: t('nav.ftp') })}
       status={{
         pill: {
-          label: `${crud.items.length} 帳戶`,
+          label: t('ftp.accountsCount', { count: crud.items.length }),
           tone: draft > 0 ? 'warn' : crud.items.length ? 'ok' : 'warn',
         },
         items: [
-          { label: '帳戶', value: crud.items.length },
+          { label: t('ftp.accounts'), value: crud.items.length },
           {
-            label: '已套用',
+            label: t('common.applied'),
             value: applied,
             tone: applied > 0 ? 'ok' : 'neutral',
           },
           {
-            label: '待套用',
+            label: t('ftp.pendingApply'),
             value: draft,
             tone: draft > 0 ? 'warn' : 'ok',
           },
-          { label: 'SFTP 鑰', value: sftpKeys.length },
+          { label: t('ftp.sftpKeys'), value: sftpKeys.length },
         ],
       }}
       actions={
         <ActionBar>
           <Link to="/ftp/service">
             <Button variant="secondary" size="sm">
-              vsftpd 服務
+              {t('nav.ftpService')}
             </Button>
           </Link>
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner feature="ftp" title="尚未安裝 FTPS 服務軟件" />
+      <SoftwareInstallBanner feature="ftp" title={t('ftp.softwareMissing')} />
 
       {crud.error || keyErr ? <Alert variant="error">{crud.error ?? keyErr}</Alert> : null}
       {crud.msg || keyMsg ? (
@@ -178,7 +179,7 @@ export function FtpPage() {
               setKeyMsg(null);
             }}
           >
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
@@ -198,16 +199,16 @@ export function FtpPage() {
         tabs={[
           {
             id: 'accounts',
-            label: 'FTP 帳戶',
+            label: t('ftp.ftpAccounts'),
             badge: crud.items.length || undefined,
           },
           {
             id: 'sftp',
-            label: 'SFTP 公鑰',
+            label: t('ftp.sftpPubkeys'),
             badge: sftpKeys.length || undefined,
           },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -218,20 +219,20 @@ export function FtpPage() {
             <Card flush>
               <div className="card__header card__header--pad">
                 <div>
-                  <h2 className="card__title">帳戶列表</h2>
+                  <h2 className="card__title">{t('ftp.accountsList')}</h2>
                   <p className="card__desc u-mb-0">
-                    建立後按「套用」同步到 vsftpd。服務未裝時請先用上方安裝，再到{' '}
-                    <Link to="/ftp/service">vsftpd 服務</Link> 啟動。
+                    {t('ftp.accountsListDesc')}{' '}
+                    <Link to="/ftp/service">{t('nav.ftpService')}</Link>{t('ftp.startService')}
                   </p>
                 </div>
                 <Button variant="primary" size="sm" onClick={openCreate}>
-                  + 建立帳戶
+                  {t('ftp.createAccountPlus')}
                 </Button>
               </div>
               {crud.items.length === 0 ? (
                 <div className="empty empty--compact">
-                  <div className="empty__title">尚未有 FTP 帳戶</div>
-                  <p>用列表右上角「建立帳戶」新增；可指定家目錄與網域，再套用到系統。</p>
+                  <div className="empty__title">{t('ftp.noFtpAccounts')}</div>
+                  <p>{t('ftp.noFtpAccountsDesc')}</p>
                 </div>
               ) : (
                 <DataTable
@@ -239,12 +240,12 @@ export function FtpPage() {
                   columns={[
                     {
                       key: 'user',
-                      header: '用戶名',
+                      header: t('common.username'),
                       render: (r) => <strong>{String(r.username)}</strong>,
                     },
                     {
                       key: 'home',
-                      header: '家目錄',
+                      header: t('ftp.homeDir'),
                       render: (r) => (
                         <span className="u-break-all muted u-text-sm">
                           {String(r.homePath ?? '—')}
@@ -253,12 +254,12 @@ export function FtpPage() {
                     },
                     {
                       key: 'domain',
-                      header: '網域',
+                      header: t('runtime.domain'),
                       render: (r) => String(r.domain ?? '—'),
                     },
                     {
                       key: 'status',
-                      header: '狀態',
+                      header: t('common.status'),
                       render: (r) => (
                         <ResourceStatusBadge status={String(r.apply_status)} />
                       ),
@@ -273,7 +274,7 @@ export function FtpPage() {
                         loading={crud.busy}
                         onClick={() => void crud.apply(r.id)}
                       >
-                        套用
+                        {t('common.apply')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -288,7 +289,7 @@ export function FtpPage() {
                           setOpen(true);
                         }}
                       >
-                        編輯
+                        {t('common.edit')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -298,7 +299,7 @@ export function FtpPage() {
                           openKeyCreate(String(r.username ?? ''));
                         }}
                       >
-                        公鑰
+                        {t('security.ssh.publicKeyStrong')}
                       </Button>
                       <Button
                         variant="danger"
@@ -306,7 +307,7 @@ export function FtpPage() {
                         disabled={crud.busy}
                         onClick={() => setDelId(r.id)}
                       >
-                        刪除
+                        {t('common.delete')}
                       </Button>
                     </ActionBar>
                   )}
@@ -316,7 +317,7 @@ export function FtpPage() {
 
             {crud.items.length > 0 ? (
               <p className="muted u-text-sm">
-                提示：套用只寫入管理設定；真正聽埠需 vsftpd 服務為 active。
+                {t('ftp.applyHint')}
               </p>
             ) : null}
           </div>
@@ -327,14 +328,14 @@ export function FtpPage() {
             <Card flush>
               <div className="card__header card__header--pad">
                 <div>
-                  <h2 className="card__title">SFTP 公鑰</h2>
+                  <h2 className="card__title">{t('ftp.sftpPubkeys')}</h2>
                   <p className="card__desc u-mb-0">
-                    寫入 <code className="inline">dataDir/ftps/ssh/&lt;user&gt;/authorized_keys</code>
-                    ；系統 sshd Match 設定後才真正生效。
+                    {t('redis.writable')} <code className="inline">dataDir/ftps/ssh/&lt;user&gt;/authorized_keys</code>
+                    {t('ftp.sshdMatchNote')}
                   </p>
                 </div>
                 <Button variant="primary" size="sm" onClick={() => openKeyCreate()}>
-                  + 新增公鑰
+                  {t('ftp.addPubkeyPlus')}
                 </Button>
               </div>
 
@@ -342,18 +343,18 @@ export function FtpPage() {
                 columns={[
                   {
                     key: 'username',
-                    header: '用戶',
+                    header: t('common.user'),
                     render: (k) => <strong>{k.username}</strong>,
                   },
                   {
                     key: 'comment',
-                    header: '備註',
+                    header: t('common.notes'),
                     className: 'muted',
                     render: (k) => k.comment ?? '—',
                   },
                   {
                     key: 'key',
-                    header: '金鑰指紋（前綴）',
+                    header: t('ftp.keyFingerprint'),
                     render: (k) => (
                       <code className="inline u-break-all">
                         {k.publicKey.slice(0, 56)}
@@ -363,7 +364,7 @@ export function FtpPage() {
                   },
                   {
                     key: 'created',
-                    header: '建立',
+                    header: t('common.create'),
                     className: 'muted u-nowrap u-text-sm',
                     nowrap: true,
                     render: (k) =>
@@ -380,17 +381,17 @@ export function FtpPage() {
                       loading={keyBusy}
                       onClick={() => setDelKeyId(k.id)}
                     >
-                      刪除
+                      {t('common.delete')}
                     </Button>
                   </ActionBar>
                 )}
                 empty={
                   <div className="empty empty--compact">
-                    <div className="empty__title">尚未登錄公鑰</div>
+                    <div className="empty__title">{t('ftp.noPubkeys')}</div>
                     <p>
                       {crud.items.length === 0
-                        ? '建議先建立 FTP 帳戶，再為該用戶加 SSH 公鑰（列表右上角）。'
-                        : '用列表右上角為既有 FTP 用戶登錄 ssh-ed25519 / ssh-rsa 公鑰。'}
+                        ? t('ftp.createHint')
+                        : t('ftp.pubkeyHint')}
                     </p>
                   </div>
                 }
@@ -399,7 +400,7 @@ export function FtpPage() {
 
             {crud.items.length > 0 ? (
               <Card>
-                <CardSection title="快速選擇帳戶" description="點用戶名帶入新增公鑰表單">
+                <CardSection title={t('ftp.quickSelect')} description={t('ftp.quickSelectHint')}>
                   <div className="chip-row">
                     {crud.items.map((r) => (
                       <button
@@ -425,15 +426,15 @@ export function FtpPage() {
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title={editId ? '編輯 FTP 帳戶' : '建立 FTP 帳戶'}
-        description="網域與家目錄請從清單選擇；無清單時可手填。儲存後需「套用」才寫入 vsftpd"
+        title={editId ? t('ftp.editAccount') : t('ftp.createAccount')}
+        description={t('ftp.accountModalDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button type="submit" form="ftp-f" variant="primary" size="md" loading={crud.busy}>
-              儲存
+              {t('common.save')}
             </Button>
           </>
         }
@@ -441,11 +442,11 @@ export function FtpPage() {
         <form id="ftp-f" onSubmit={(e) => void onSave(e)}>
           <FormLayout columns={2}>
             <Field
-              label="用戶名"
+              label={t('common.username')}
               htmlFor="fu"
               flush
               required
-              hint="英數、點、底線、減號；建立後不可改"
+              hint={t('ftp.usernameHintCreate')}
             >
               <input
                 id="fu"
@@ -454,17 +455,17 @@ export function FtpPage() {
                 required
                 disabled={Boolean(editId)}
                 pattern="[a-zA-Z0-9._-]+"
-                title="英數、點、底線、減號"
+                title={t('ftp.usernameHint')}
                 spellCheck={false}
                 autoComplete="off"
               />
             </Field>
             <Field
-              label={editId ? '新密碼（可留空）' : '密碼'}
+              label={editId ? t('ftp.newPasswordOptional') : t('common.password')}
               htmlFor="fp"
               flush
               required={!editId}
-              hint={editId ? '留空表示不變更' : '至少 8 字元'}
+              hint={editId ? t('ftp.passwordKeepHint') : t('ftp.passwordMin8')}
             >
               <input
                 id="fp"
@@ -477,11 +478,11 @@ export function FtpPage() {
               />
             </Field>
             <Field
-              label="網域"
+              label={t('runtime.domain')}
               htmlFor="fd"
               flush
               required={!editId}
-              hint="對應站點或郵件網域，用於分組與路徑建議"
+              hint={t('ftp.domainHint')}
             >
               {domains.length > 0 ? (
                 <select
@@ -490,14 +491,14 @@ export function FtpPage() {
                   onChange={(e) => setDomain(e.target.value)}
                   required={!editId}
                 >
-                  <option value="">— 選擇網域 —</option>
+                  <option value="">{t('ftp.pickDomain')}</option>
                   {domains.map((d) => (
                     <option key={d.value} value={d.value}>
                       {d.label}
                     </option>
                   ))}
                   {domain && !domains.some((d) => d.value === domain) ? (
-                    <option value={domain}>{domain}（目前）</option>
+                    <option value={domain}>{t('ftp.currentDomain', { domain })}</option>
                   ) : null}
                 </select>
               ) : (
@@ -505,18 +506,18 @@ export function FtpPage() {
                   id="fd"
                   value={domain}
                   onChange={(e) => setDomain(e.target.value)}
-                  placeholder="可先建立站點／郵件網域，或暫時輸入"
+                  placeholder={t('ftp.domainPh')}
                   required={!editId}
                   spellCheck={false}
                 />
               )}
             </Field>
             <Field
-              label="家目錄"
+              label={t('ftp.homeDir')}
               htmlFor="fh"
               flush
               required={!editId}
-              hint="用戶登入後的根目錄（chroot 後可見範圍）"
+              hint={t('ftp.homeHint')}
             >
               <select
                 id="fh"
@@ -524,24 +525,24 @@ export function FtpPage() {
                 onChange={(e) => setHomePath(e.target.value)}
                 required={!editId}
               >
-                <option value="">— 選擇家目錄 —</option>
+                <option value="">{t('ftp.pickHome')}</option>
                 {homes.map((h) => (
                   <option key={h.value} value={h.value}>
                     {h.label}
                   </option>
                 ))}
                 {homePath && !homes.some((h) => h.value === homePath) ? (
-                  <option value={homePath}>{homePath}（目前）</option>
+                  <option value={homePath}>{t('ftp.currentHome', { path: homePath })}</option>
                 ) : null}
               </select>
             </Field>
           </FormLayout>
           {homePath ? (
             <FormHint>
-              完整路徑：<code className="inline">{homePath}</code>
+              {t('ftp.fullPath')}<code className="inline">{homePath}</code>
             </FormHint>
           ) : (
-            <FormHint>若清單為空，請先建立專案或站點以產生家目錄選項。</FormHint>
+            <FormHint>{t('ftp.emptyHomes')}</FormHint>
           )}
         </form>
       </Modal>
@@ -550,12 +551,12 @@ export function FtpPage() {
       <Modal
         open={keyOpen}
         onClose={() => setKeyOpen(false)}
-        title="新增 SFTP 公鑰"
-        description="貼上一行完整公鑰（ssh-ed25519 / ssh-rsa …）；寫入 authorized_keys ≠ 已驗證可連"
+        title={t('ftp.addPubkey')}
+        description={t('ftp.addPubkeyDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setKeyOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -575,7 +576,7 @@ export function FtpPage() {
                     }),
                   })
                   .then((r) => {
-                    setKeyMsg(r.notes?.join('；') ?? '已新增公鑰');
+                    setKeyMsg(r.notes?.join('；') ?? t('ftp.pubkeyAdded'));
                     setKeyOpen(false);
                     setKeyPub('');
                     setKeyComment('');
@@ -585,18 +586,18 @@ export function FtpPage() {
                   .finally(() => setKeyBusy(false));
               }}
             >
-              新增
+              {t('network.add')}
             </Button>
           </>
         }
       >
         <FormLayout columns={2}>
           <Field
-            label="FTP 用戶名"
+            label={t('ftp.ftpUsername')}
             htmlFor="sk-user"
             flush
             required
-            hint="須與已登記的 FTP 帳戶相同"
+            hint={t('ftp.ftpUsernameHint')}
           >
             {crud.items.length > 0 ? (
               <select
@@ -605,7 +606,7 @@ export function FtpPage() {
                 onChange={(e) => setKeyUser(e.target.value)}
                 required
               >
-                <option value="">— 選擇帳戶 —</option>
+                <option value="">{t('ftp.pickAccount')}</option>
                 {crud.items.map((r) => (
                   <option key={r.id} value={String(r.username)}>
                     {String(r.username)}
@@ -617,27 +618,27 @@ export function FtpPage() {
                 id="sk-user"
                 value={keyUser}
                 onChange={(e) => setKeyUser(e.target.value)}
-                placeholder="與 FTP 帳戶相同"
+                placeholder={t('ftp.ftpUsernamePh')}
                 required
                 spellCheck={false}
               />
             )}
           </Field>
-          <Field label="備註" htmlFor="sk-cmt" flush hint="方便辨識裝置，例如 筆電／公司">
+          <Field label={t('common.notes')} htmlFor="sk-cmt" flush hint={t('ftp.noteHint')}>
             <input
               id="sk-cmt"
               value={keyComment}
               onChange={(e) => setKeyComment(e.target.value)}
-              placeholder="筆電 / 公司主機"
+              placeholder={t('ftp.notePh')}
             />
           </Field>
           <Field
-            label="SSH 公鑰"
+            label={t('ftp.sshPubkey')}
             htmlFor="sk-pub"
             fullWidth
             flush
             required
-            hint="通常來自 ~/.ssh/id_ed25519.pub，整行貼上"
+            hint={t('ftp.sshPubkeyHint')}
           >
             <textarea
               id="sk-pub"
@@ -658,10 +659,10 @@ export function FtpPage() {
         onConfirm={() => {
           if (delId) void crud.remove(delId).then(() => setDelId(null));
         }}
-        title="刪除 FTP 帳戶？"
-        description="移除後請再套用"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('ftp.deleteAccountTitle')}
+        description={t('ftp.deleteAccountDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={crud.busy}
       />
@@ -681,10 +682,10 @@ export function FtpPage() {
             .catch((e: Error) => setKeyErr(e.message))
             .finally(() => setKeyBusy(false));
         }}
-        title="刪除 SFTP 公鑰？"
-        description="會從管理檔移除；系統 authorized_keys 可能仍需重載才生效。"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('ftp.deleteKeyTitle')}
+        description={t('ftp.deleteKeyDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={keyBusy}
       />

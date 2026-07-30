@@ -10,19 +10,16 @@ import {
   YskError,
   type ApplyStatus,
   type CdnNodeDto,
-  type CdnSiteDto,
-} from '@ysk/shared';
+  type CdnSiteDto,  tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import {
   findCertForDomain,
-  resolveManagedCertPaths,
-} from '../ssl-certs.js';
+  resolveManagedCertPaths } from '../ssl-certs.js';
 import { planLetsEncrypt } from '../nginx-ssl.js';
 import {
   applyCdnSiteEdgeRender,
-  type CdnEdgeSslPaths,
-} from './edge-render.js';
+  type CdnEdgeSslPaths } from './edge-render.js';
 import { fanOutCdnSite, type CdnEdgeApplyItem, type CdnFanOutResult } from './fan-out.js';
 import { getCdnNode } from './nodes.js';
 import { getCdnSite, upsertCdnSite } from './sites.js';
@@ -48,8 +45,7 @@ export function edgeSslPaths(siteId: string): CdnEdgeSslPaths {
     fullchain: `${dir}/fullchain.pem`,
     privkey: `${dir}/privkey.pem`,
     acmeWebroot: `/var/www/ysk-cdn-acme/${siteId}`,
-    redirectHttp: true,
-  };
+    redirectHttp: true };
 }
 
 /**
@@ -63,7 +59,7 @@ export function resolveCdnSiteCertificate(input: {
   const notes: string[] = [];
   const primary = input.site.domains[0];
   if (!primary) {
-    throw new YskError(ErrorCodes.VALIDATION, '站點無域名', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0042'), { httpStatus: 400 });
   }
 
   // By certId
@@ -89,12 +85,11 @@ export function resolveCdnSiteCertificate(input: {
           provider:
             row.provider === 'letsencrypt' ? 'letsencrypt' : 'upload',
           certId: String(row.id),
-          notes: [`使用 certId=${row.id} domain=${domain}`],
-        };
+          notes: [tl('notes.auto.t0714', { v0: String(row.id), v1: String(domain) })] };
       }
-      notes.push(`certId=${row.id} 檔案不存在：${fullchain}`);
+      notes.push(tl('notes.auto.t0715', { v0: String(row.id), v1: String(fullchain) }));
     } else {
-      notes.push(`找不到 certId=${input.site.ssl.certId}`);
+      notes.push(tl('notes.auto.t0716', { v0: (input.site.ssl.certId) }));
     }
   }
 
@@ -110,8 +105,7 @@ export function resolveCdnSiteCertificate(input: {
         privkey: managed.privkey,
         provider: row?.provider === 'letsencrypt' ? 'letsencrypt' : 'upload',
         certId: row?.id,
-        notes: [`使用 dataDir 憑證 ${d}`],
-      };
+        notes: [tl('notes.auto.t0717', { v0: (d) })] };
     }
     const leFull = `/etc/letsencrypt/live/${d}/fullchain.pem`;
     const leKey = `/etc/letsencrypt/live/${d}/privkey.pem`;
@@ -122,8 +116,7 @@ export function resolveCdnSiteCertificate(input: {
         fullchain: leFull,
         privkey: leKey,
         provider: 'letsencrypt',
-        notes: [`使用本機 Let’s Encrypt ${d}`],
-      };
+        notes: [tl('notes.auto.t0718', { v0: (d) })] };
     }
   }
 
@@ -135,9 +128,8 @@ export function resolveCdnSiteCertificate(input: {
     provider: 'unknown',
     notes: [
       ...notes,
-      '找不到可用憑證 — 請先於 SSL 頁上傳，或執行 LE 簽發',
-    ],
-  };
+      tl('notes.auto.n0858'),
+    ] };
 }
 
 function resolveSshTarget(node: CdnNodeDto): {
@@ -161,8 +153,7 @@ function resolveSshTarget(node: CdnNodeDto): {
   return {
     host,
     port: node.sshPort && node.sshPort > 0 ? node.sshPort : 22,
-    username: node.sshUsername?.trim() || 'root',
-  };
+    username: node.sshUsername?.trim() || 'root' };
 }
 
 function isLocalEdge(node: CdnNodeDto): boolean {
@@ -218,8 +209,7 @@ async function scpFile(
   if (r.exitCode !== 0) {
     return {
       ok: false,
-      note: `scp 失敗 ${(r.stderr || r.stdout).slice(0, 100)}`,
-    };
+      note: tl('notes.auto.t0719', { v0: ((r.stderr || r.stdout).slice(0, 100)) }) };
   }
   return { ok: true, note: `scp → ${remotePath}` };
 }
@@ -236,12 +226,13 @@ export async function distributeCdnSiteSsl(input: {
   applyNginx?: boolean;
   skipDraining?: boolean;
   edgeNodeId?: string;
+  /** Pass-through for fleet-only edges */
+  enqueue?: import('./fleet-payload.js').CdnFleetEnqueueFn;
 }): Promise<CdnFanOutResult & { cert?: CdnCertResolve }> {
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 站點', {
-      httpStatus: 404,
-    });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.cdn.siteNotFound'), {
+      httpStatus: 404 });
   }
 
   if (!input.host.executeEnabled()) {
@@ -251,17 +242,15 @@ export async function distributeCdnSiteSsl(input: {
       requiresExecute: true,
       apply_status: 'blocked',
       siteId: site.id,
-      notes: ['無法分發 SSL：未開啟系統變更權限'],
+      notes: [tl('notes.auto.n1146')],
       edges: [],
-      edge_status: {},
-    };
+      edge_status: {} };
   }
 
   const cert = resolveCdnSiteCertificate({
     db: input.db,
     dataDir: input.dataDir,
-    site,
-  });
+    site });
   if (!cert.ok) {
     return {
       ok: false,
@@ -270,8 +259,7 @@ export async function distributeCdnSiteSsl(input: {
       notes: cert.notes,
       edges: [],
       edge_status: {},
-      cert,
-    };
+      cert };
   }
 
   const notes = [...cert.notes];
@@ -298,8 +286,7 @@ export async function distributeCdnSiteSsl(input: {
         name: eid,
         apply_status: 'failed',
         method: 'skip',
-        notes: ['節點不存在'],
-      });
+        notes: [tl('notes.cdn.nodeMissing')] });
       edge_status[eid] = 'failed';
       continue;
     }
@@ -309,8 +296,7 @@ export async function distributeCdnSiteSsl(input: {
         name: node.name,
         apply_status: 'planned',
         method: 'skip',
-        notes: ['略過 draining'],
-      });
+        notes: [tl('notes.auto.n0043')] });
       continue;
     }
 
@@ -326,8 +312,7 @@ export async function distributeCdnSiteSsl(input: {
           name: node.name,
           apply_status: 'written',
           method: 'local',
-          notes: [`local certs → ${remoteDir}`],
-        });
+          notes: [`local certs → ${remoteDir}`] });
         notes.push(`${node.name}: certs written local`);
       } catch (e) {
         edges.push({
@@ -335,8 +320,7 @@ export async function distributeCdnSiteSsl(input: {
           name: node.name,
           apply_status: 'failed',
           method: 'local',
-          notes: [e instanceof Error ? e.message : String(e)],
-        });
+          notes: [e instanceof Error ? e.message : String(e)] });
         edge_status[eid] = 'failed';
       }
       continue;
@@ -349,8 +333,7 @@ export async function distributeCdnSiteSsl(input: {
         name: node.name,
         apply_status: 'failed',
         method: 'skip',
-        notes: ['無 SSH 目標'],
-      });
+        notes: [tl('notes.auto.n1065')] });
       edge_status[eid] = 'failed';
       continue;
     }
@@ -389,8 +372,7 @@ export async function distributeCdnSiteSsl(input: {
         name: node.name,
         apply_status: 'failed',
         method: 'ssh',
-        notes: [`mkdir 失敗 ${(mk.stderr || mk.stdout).slice(0, 80)}`],
-      });
+        notes: [tl('notes.auto.t0720', { v0: ((mk.stderr || mk.stdout).slice(0, 80)) })] });
       edge_status[eid] = 'failed';
       continue;
     }
@@ -433,8 +415,7 @@ export async function distributeCdnSiteSsl(input: {
       name: node.name,
       apply_status: ok ? 'written' : 'failed',
       method: 'ssh',
-      notes: [a.note, b.note],
-    });
+      notes: [a.note, b.note] });
     edge_status[eid] = ok ? 'written' : 'failed';
     notes.push(`${node.name}@${target.host}: ${ok ? 'certs ok' : 'certs fail'}`);
   }
@@ -446,9 +427,7 @@ export async function distributeCdnSiteSsl(input: {
       name: site.name,
       ssl: {
         mode: site.ssl.mode === 'off' ? 'upload' : site.ssl.mode,
-        certId: cert.certId,
-      },
-    });
+        certId: cert.certId } });
   }
 
   // Re-render with TLS paths
@@ -458,9 +437,8 @@ export async function distributeCdnSiteSsl(input: {
     dataDir: input.dataDir,
     siteId: site.id,
     host: input.host,
-    sslPaths,
-  });
-  notes.push('已重渲染 TLS edge conf（控制面）');
+    sslPaths });
+  notes.push(tl('notes.auto.n0809'));
 
   if (input.applyNginx !== false) {
     const fo = await fanOutCdnSite({
@@ -471,7 +449,7 @@ export async function distributeCdnSiteSsl(input: {
       edgeNodeId: input.edgeNodeId,
       skipDraining: input.skipDraining,
       renderFirst: false,
-    });
+      enqueue: input.enqueue });
     notes.push(...fo.notes.map((n) => `nginx: ${n}`));
     // merge edge status: cert written + nginx applied
     for (const e of fo.edges) {
@@ -510,7 +488,7 @@ export async function distributeCdnSiteSsl(input: {
   }
 
   notes.push(
-    'SSL distribute：cert 在 edge ≠ 瀏覽器信任鏈完整；請 dig / curl -vI https:// 驗證',
+    tl('notes.tpl.sslDistributeNote'),
   );
 
   return {
@@ -520,8 +498,7 @@ export async function distributeCdnSiteSsl(input: {
     notes,
     edges,
     edge_status,
-    cert,
-  };
+    cert };
 }
 
 /**
@@ -532,6 +509,7 @@ export async function prepareCdnSiteAcme(input: {
   host: HostExecutor;
   dataDir: string;
   siteId: string;
+  enqueue?: import('./fleet-payload.js').CdnFleetEnqueueFn;
 }): Promise<CdnFanOutResult> {
   if (!input.host.executeEnabled()) {
     return {
@@ -540,16 +518,14 @@ export async function prepareCdnSiteAcme(input: {
       requiresExecute: true,
       apply_status: 'blocked',
       siteId: input.siteId,
-      notes: ['無法準備 ACME：未開啟系統變更權限'],
+      notes: [tl('notes.auto.n1176')],
       edges: [],
-      edge_status: {},
-    };
+      edge_status: {} };
   }
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 站點', {
-      httpStatus: 404,
-    });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.cdn.siteNotFound'), {
+      httpStatus: 404 });
   }
   mkdirSync(`/var/www/ysk-cdn-acme/${site.id}`, { recursive: true });
   await applyCdnSiteEdgeRender({
@@ -561,16 +537,14 @@ export async function prepareCdnSiteAcme(input: {
     sslPaths: {
       fullchain: '',
       privkey: '',
-      acmeWebroot: `/var/www/ysk-cdn-acme/${site.id}`,
-    },
-  });
+      acmeWebroot: `/var/www/ysk-cdn-acme/${site.id}` } });
   return fanOutCdnSite({
     db: input.db,
     host: input.host,
     dataDir: input.dataDir,
     siteId: site.id,
     renderFirst: false,
-  });
+    enqueue: input.enqueue });
 }
 
 /**
@@ -586,6 +560,7 @@ export async function issueCdnSiteLetsEncrypt(input: {
   run?: boolean;
   /** After issue, distribute to edges (default true) */
   distribute?: boolean;
+  enqueue?: import('./fleet-payload.js').CdnFleetEnqueueFn;
 }): Promise<{
   ok: boolean;
   apply_status: ApplyStatus;
@@ -599,15 +574,13 @@ export async function issueCdnSiteLetsEncrypt(input: {
 }> {
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 站點', {
-      httpStatus: 404,
-    });
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.cdn.siteNotFound'), {
+      httpStatus: 404 });
   }
   const email = input.email.trim();
   if (!email || !email.includes('@')) {
-    throw new YskError(ErrorCodes.VALIDATION, '需要有效 email', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1578'), {
+      httpStatus: 400 });
   }
 
   const mode = site.ssl?.mode || 'le_http01';
@@ -620,19 +593,17 @@ export async function issueCdnSiteLetsEncrypt(input: {
       domain: primary.startsWith('*.') ? primary : `*.${primary}`,
       email,
       provider: 'letsencrypt',
-      challenge: 'dns-01',
-    });
+      challenge: 'dns-01' });
     commands.push(...plan.commands);
     notes.push(...plan.notes);
-    notes.push('dns-01：面板唔代填公網 TXT — 完成後再「分發 SSL」');
+    notes.push(tl('notes.auto.n0253'));
     return {
       ok: true,
       apply_status: 'planned',
       siteId: site.id,
       notes,
       commands,
-      executed: false,
-    };
+      executed: false };
   }
 
   // http-01 via webroot
@@ -640,7 +611,7 @@ export async function issueCdnSiteLetsEncrypt(input: {
   const dFlags = site.domains.map((d) => `-d ${d}`).join(' ');
   const cmd = `certbot certonly --webroot -w ${webroot} ${dFlags} --email ${email} --agree-tos --non-interactive --keep-until-expiring`;
   commands.push(cmd);
-  notes.push('http-01 webroot — 需 80 端口可達且 ACME conf 已 fan-out');
+  notes.push(tl('notes.auto.n0304'));
 
   if (input.run === false) {
     return {
@@ -649,8 +620,7 @@ export async function issueCdnSiteLetsEncrypt(input: {
       siteId: site.id,
       notes: [...notes, 'dry plan only（run=false）'],
       commands,
-      executed: false,
-    };
+      executed: false };
   }
 
   if (!input.host.executeEnabled()) {
@@ -660,9 +630,8 @@ export async function issueCdnSiteLetsEncrypt(input: {
       requiresExecute: true,
       apply_status: 'blocked',
       siteId: site.id,
-      notes: ['無法執行 certbot：未開啟系統變更權限'],
-      commands,
-    };
+      notes: [tl('notes.auto.n1158')],
+      commands };
   }
 
   // Prepare ACME conf first
@@ -670,18 +639,16 @@ export async function issueCdnSiteLetsEncrypt(input: {
     db: input.db,
     host: input.host,
     dataDir: input.dataDir,
-    siteId: site.id,
-  });
+    siteId: site.id });
   notes.push(...prep.notes.map((n) => `acme-prep: ${n}`));
 
   mkdirSync(webroot, { recursive: true });
   const r = await input.host.runCommand(['bash', '-c', cmd], {
-    timeoutMs: 180_000,
-  });
+    timeoutMs: 180_000 });
   const executed = true;
   if (r.exitCode !== 0) {
     notes.push(
-      `certbot 失敗：${(r.stderr || r.stdout).slice(0, 200)}`,
+      tl('notes.auto.t0721', { v0: ((r.stderr || r.stdout).slice(0, 200)) }),
     );
     return {
       ok: false,
@@ -689,17 +656,15 @@ export async function issueCdnSiteLetsEncrypt(input: {
       siteId: site.id,
       notes,
       commands,
-      executed,
-    };
+      executed };
   }
-  notes.push('certbot exit 0 — 檢查 /etc/letsencrypt/live/');
+  notes.push(tl('notes.auto.n0236'));
 
   // Point site ssl mode
   upsertCdnSite(input.db, {
     ...site,
     name: site.name,
-    ssl: { mode: 'le_http01', certId: site.ssl?.certId },
-  });
+    ssl: { mode: 'le_http01', certId: site.ssl?.certId } });
 
   let dist: CdnFanOutResult | undefined;
   if (input.distribute !== false) {
@@ -708,7 +673,7 @@ export async function issueCdnSiteLetsEncrypt(input: {
       host: input.host,
       dataDir: input.dataDir,
       siteId: site.id,
-    });
+      enqueue: input.enqueue });
     notes.push(...dist.notes.map((n) => `distribute: ${n}`));
   }
 
@@ -719,6 +684,5 @@ export async function issueCdnSiteLetsEncrypt(input: {
     notes,
     commands,
     executed,
-    distribute: dist,
-  };
+    distribute: dist };
 }

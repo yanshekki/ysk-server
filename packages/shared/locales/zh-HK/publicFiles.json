@@ -1,0 +1,21 @@
+{
+  "notSet": "未設定",
+  "quota": "配額",
+  "reloadOnApply": "套用時",
+  "path": "路徑",
+  "fileManager": "檔案管理",
+  "overview": "概覽",
+  "overviewDesc": "即將套用的設定（唯讀摘要）",
+  "serverName": "伺服器名稱",
+  "reloadNginx": "重載 Nginx",
+  "reloadTry": "套用時嘗試",
+  "siteSettings": "站點設定",
+  "siteSettingsDesc": "寫入管理 conf；套用時可嘗試 reload Nginx（套用後才可連）",
+  "serverNameHint": "Nginx server_name，例如 files.example.com",
+  "quotaMiB": "配額（MiB）",
+  "quotaHint": "可選；限制公開目錄總量",
+  "unlimited": "不限",
+  "applyHint": "套用成功只代表設定已寫入；DNS、SSL 與防火牆需另行就緒才會對外服務。",
+  "appliedOk": "已套用公開檔案站點",
+  "applyReload": "套用並重載 Nginx"
+}

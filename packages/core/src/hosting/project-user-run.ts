@@ -7,7 +7,7 @@
 import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process';
 import type { HostExecutor } from '../host/executor.js';
 import type { ProjectRow } from '../repositories/project-repo.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export type IsolationMode = 'isolated' | 'degraded';
 
@@ -18,19 +18,19 @@ export type IsolationMode = 'isolated' | 'degraded';
 export function assertOsIsolationForDeploy(
   row: ProjectRow,
   host: HostExecutor,
-  action = '部署',
+  action = tl('notes.auto.n1497'),
 ): void {
   if (!host.executeEnabled() || !host.isRoot()) return;
   if (!row.os_provisioned) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `${action}前必須完成專案 Linux 用戶隔離（資源分頁 → 建立系統用戶）。` +
-        ` 預期 home：/home/ysk-server-${row.id} · user：${row.linux_user}`,
+      tl('notes.auto.t0141', { v0: (action) }) +
+        tl('notes.auto.t0142', { v0: (row.id), v1: (row.linux_user) }),
       { httpStatus: 403, details: { projectId: row.id, linuxUser: row.linux_user } },
     );
   }
   if (!row.linux_user?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, '專案缺少 linux_user', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0697'), { httpStatus: 400 });
   }
 }
 
@@ -57,7 +57,7 @@ export async function chownProjectHome(
   notes?: string[],
 ): Promise<{ ok: boolean }> {
   if (!canRunAsProjectUser(row, host)) {
-    notes?.push('略過 chown（未以 root 隔離模式執行）');
+    notes?.push(tl('notes.auto.n1254'));
     return { ok: false };
   }
   const home = row.home_dir;
@@ -68,10 +68,10 @@ export async function chownProjectHome(
     { timeoutMs: 60_000 },
   );
   if (r.exitCode === 0) {
-    notes?.push(`已 chown ${u}:${g} → ${home}`);
+    notes?.push(tl('notes.auto.t0143', { v0: (u), v1: (g), v2: (home) }));
     return { ok: true };
   }
-  notes?.push(`chown 失敗：${(r.stderr || r.stdout || '').slice(0, 200)}`);
+  notes?.push(tl('notes.tpl.chownFailed', { detail: (r.stderr || r.stdout || '').slice(0, 200) }));
   return { ok: false };
 }
 
@@ -93,10 +93,10 @@ export async function runAsProjectUser(
       ['runuser', '-u', row.linux_user, '--', 'bash', '-lc', wrapped],
       { timeoutMs },
     );
-    opts?.notes?.push(`以專案用戶 ${row.linux_user} 執行指令`);
+    opts?.notes?.push(tl('notes.auto.t0144', { v0: (row.linux_user) }));
     return { ...r, mode };
   }
-  opts?.notes?.push('以控制面用戶執行指令（degraded — 非專案 Linux 用戶）');
+  opts?.notes?.push(tl('notes.auto.n0516'));
   const r = await host.runCommand(['bash', '-c', `cd ${shellQuote(cwd)} && ${shellCmd}`], {
     timeoutMs,
   });
@@ -126,7 +126,7 @@ export function spawnAsProjectUser(input: {
     stdio: ['ignore', input.logOutFd, input.logErrFd],
   };
   if (mode === 'isolated') {
-    input.notes?.push(`pidfile 以 runuser -u ${input.row.linux_user} 啟動`);
+    input.notes?.push(tl('notes.auto.t0145', { v0: (input.row.linux_user) }));
     const child = spawn(
       'runuser',
       ['-u', input.row.linux_user, '--', 'bash', '-lc', input.shellCmd],
@@ -134,7 +134,7 @@ export function spawnAsProjectUser(input: {
     );
     return { child, mode };
   }
-  input.notes?.push('pidfile 以控制面用戶啟動（degraded）');
+  input.notes?.push(tl('notes.auto.n0377'));
   const child = spawn('bash', ['-lc', input.shellCmd], opts);
   return { child, mode };
 }

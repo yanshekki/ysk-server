@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * One-click create wizard: project + optional DNS zone + mail domain + MySQL DB.
  * Honest notes for each step; partial success is reported per-step.
@@ -75,7 +76,7 @@ export async function runCreateWizard(input: {
       ok: true,
       id: created.project.id,
       notes: [
-        `專案 ${created.project.name}`,
+        tl('notes.tpl.project', { name: created.project.name }),
         created.osProvision.detail,
         ...(created.scaffold?.notes ?? []),
       ],
@@ -84,7 +85,7 @@ export async function runCreateWizard(input: {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     steps.push({ step: 'project', ok: false, notes: [msg] });
-    return { ok: false, steps, notes: [msg, '專案建立失敗，已中止'] };
+    return { ok: false, steps, notes: [msg, tl('notes.auto.n0692')] };
   }
 
   const projectId = steps[0]?.id;
@@ -119,8 +120,8 @@ export async function runCreateWizard(input: {
         ok: true,
         id,
         notes: [
-          `DNS zone draft ${domain}（需到 DNS 頁寫入/套用）`,
-          ...(serverIpv6 ? [`已含 IPv6 ${serverIpv6}`] : []),
+          tl('notes.auto.t0321', { v0: (domain) }),
+          ...(serverIpv6 ? [tl('notes.auto.t0322', { v0: (serverIpv6) })] : []),
         ],
       });
     } catch (e) {
@@ -145,7 +146,7 @@ export async function runCreateWizard(input: {
         step: 'mail',
         ok: true,
         id: d.domain.id,
-        notes: [`郵件域名 ${domain} 已登記`],
+        notes: [tl('notes.auto.t0323', { v0: (domain) })],
       });
     } catch (e) {
       steps.push({
@@ -181,7 +182,7 @@ export async function runCreateWizard(input: {
         step: 'database',
         ok: true,
         id,
-        notes: [`MySQL DB draft ${name}（需到資料庫頁套用）`],
+        notes: [tl('notes.auto.t0324', { v0: (name) })],
       });
     } catch (e) {
       steps.push({
@@ -195,8 +196,8 @@ export async function runCreateWizard(input: {
   const ok = steps.every((s) => s.ok);
   notes.push(
     ok
-      ? '一鍵建立完成（draft 資源請到各頁「套用」）'
-      : '部分步驟失敗 — 見 steps',
+      ? tl('notes.auto.n0488')
+      : tl('notes.auto.n1495'),
   );
   return { ok, steps, projectId, notes };
 }

@@ -2,8 +2,9 @@
 
 路由：`/protection` · API：`/api/v1/defense/*`
 
-側欄安全區：**防護中心** + **帳號安全**。  
-UFW `/firewall` · fail2ban `/fail2ban` 由「底層」分頁進入（路由保留）。
+側欄安全區：**防護中心** + **帳號安全**（單一入口）。  
+UFW `/protection/firewall` · fail2ban `/protection/fail2ban` 由「底層」進入（子工具，非側欄一級）。  
+舊路徑 `/firewall`、`/fail2ban` **redirect** 到上述子路由（保留 query）。
 
 ## 產品完成度
 

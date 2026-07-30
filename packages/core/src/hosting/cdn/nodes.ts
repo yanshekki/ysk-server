@@ -9,8 +9,7 @@ import {
   YskError,
   type CdnNodeDto,
   type CdnNodeRole,
-  type CdnNodeStatus,
-} from '@ysk/shared';
+  type CdnNodeStatus,  tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import { probeTcp } from '../../email/live-checks.js';
 
@@ -41,10 +40,9 @@ export type UpsertCdnNodeInput = {
 function assertName(name: string): string {
   const n = name.trim();
   if (!n || n.length > 80) {
-    throw new YskError(ErrorCodes.VALIDATION, '節點名稱無效', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1304'), {
       httpStatus: 400,
-      details: { name },
-    });
+      details: { name } });
   }
   return n;
 }
@@ -55,9 +53,8 @@ function normalizeRoles(raw?: string[] | CdnNodeRole[]): CdnNodeRole[] {
     .filter(Boolean) as CdnNodeRole[];
   const uniq = [...new Set(list.filter((r) => ROLES.includes(r)))];
   if (!uniq.length) {
-    throw new YskError(ErrorCodes.VALIDATION, '至少需要一個角色（control/origin/edge/dns）', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1343'), {
+      httpStatus: 400 });
   }
   return uniq;
 }
@@ -70,14 +67,12 @@ function normalizeIps(list: string[] | undefined, family: 4 | 6): string[] {
     if (!ip) continue;
     if (family === 4) {
       if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
-        throw new YskError(ErrorCodes.VALIDATION, `IPv4 無效：${ip}`, {
-          httpStatus: 400,
-        });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0751', { v0: (ip) }), {
+          httpStatus: 400 });
       }
     } else if (!ip.includes(':')) {
-      throw new YskError(ErrorCodes.VALIDATION, `IPv6 無效：${ip}`, {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0752', { v0: (ip) }), {
+        httpStatus: 400 });
     }
     if (!out.includes(ip)) out.push(ip);
   }
@@ -88,10 +83,9 @@ function normalizeHealthUrl(raw?: string): string | undefined {
   if (!raw?.trim()) return undefined;
   const u = raw.trim();
   if (!/^https?:\/\//i.test(u)) {
-    throw new YskError(ErrorCodes.VALIDATION, 'healthUrl 必須是 http(s) URL', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0303'), {
       httpStatus: 400,
-      details: { healthUrl: u },
-    });
+      details: { healthUrl: u } });
   }
   return u.slice(0, 500);
 }
@@ -122,9 +116,8 @@ export function upsertCdnNode(db: JsonStore, input: UpsertCdnNodeInput): CdnNode
   const id = input.id?.trim() || randomUUID();
   const prev = all.find((n) => n.id === id);
   if (!prev && all.length >= MAX) {
-    throw new YskError(ErrorCodes.VALIDATION, `CDN 節點上限 ${MAX}`, {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0753', { v0: (MAX) }), {
+      httpStatus: 400 });
   }
 
   const name = assertName(input.name);
@@ -175,13 +168,12 @@ export function upsertCdnNode(db: JsonStore, input: UpsertCdnNodeInput): CdnNode
     weight,
     status,
     lastHeartbeatAt: prev?.lastHeartbeatAt,
-    lastHealth: prev?.lastHealth,
-  };
+    lastHealth: prev?.lastHealth };
 
   if (!row.publicIpv4.length && !row.publicIpv6.length && !row.healthUrl && !row.baseUrl) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      '請至少提供 publicIpv4 / publicIpv6 / healthUrl / baseUrl 其中一項',
+      tl('notes.auto.n1426'),
       { httpStatus: 400 },
     );
   }
@@ -210,10 +202,9 @@ export function setCdnNodeDrain(
 ): CdnNodeDto {
   const node = getCdnNode(db, id);
   if (!node) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 節點', {
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0044'), {
       httpStatus: 404,
-      details: { id },
-    });
+      details: { id } });
   }
   if (draining) {
     return upsertCdnNode(db, { ...node, status: 'draining' });
@@ -221,8 +212,7 @@ export function setCdnNodeDrain(
   // undrain → unknown until next probe
   return upsertCdnNode(db, {
     ...node,
-    status: node.lastHealth?.ok ? 'online' : 'unknown',
-  });
+    status: node.lastHealth?.ok ? 'online' : 'unknown' });
 }
 
 export type CdnNodeProbeResult = {
@@ -243,10 +233,9 @@ export async function probeCdnNode(
 ): Promise<CdnNodeProbeResult> {
   const node = getCdnNode(db, id);
   if (!node) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 節點', {
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0044'), {
       httpStatus: 404,
-      details: { id },
-    });
+      details: { id } });
   }
 
   const notes: string[] = [];
@@ -269,25 +258,24 @@ export async function probeCdnNode(
         method: 'GET',
         redirect: 'manual',
         signal: ac.signal,
-        headers: { 'User-Agent': 'ysk-cdn-probe/1' },
-      });
+        headers: { 'User-Agent': 'ysk-cdn-probe/1' } });
       clearTimeout(timer);
       // 2xx–3xx and even 404 on custom path still proves host reachable
       ok = res.status > 0 && res.status < 500;
       notes.push(
         ok
           ? `HTTP ${res.status} ${healthTarget}`
-          : `HTTP ${res.status}（視為不健康）${healthTarget}`,
+          : tl('notes.auto.t0754', { v0: (res.status), v1: (healthTarget) }),
       );
       if (!node.healthUrl && node.baseUrl) {
         notes.push(
-          '使用 baseUrl/.ysk-cdn-health 預設探活路徑（C2 可裝 health location）',
+          tl('notes.auto.n0539'),
         );
       }
     } catch (e) {
       ok = false;
       notes.push(
-        `HTTP 探活失敗：${e instanceof Error ? e.message : String(e)}`,
+        tl('notes.auto.t0755', { v0: (e instanceof Error ? e.message : String(e)) }),
       );
     }
   } else if (node.publicIpv4[0]) {
@@ -302,11 +290,11 @@ export async function probeCdnNode(
       const p80 = await probeTcp(ip, 80, 4_000);
       ok = p80;
       notes.push(
-        p80 ? `TCP ${ip}:80 open` : `TCP ${ip}:443/80 皆無法連線`,
+        p80 ? `TCP ${ip}:80 open` : tl('notes.auto.t0756', { v0: (ip) }),
       );
     }
   } else {
-    notes.push('無可探活目標（無 healthUrl / baseUrl / publicIpv4）');
+    notes.push(tl('notes.auto.n1094'));
   }
 
   const latencyMs = Date.now() - t0;
@@ -319,15 +307,14 @@ export async function probeCdnNode(
       : 'offline';
 
   if (wasDraining) {
-    notes.push('節點處於 draining — 健康結果僅供參考，狀態保持 draining');
+    notes.push(tl('notes.auto.n1305'));
   }
 
   const updated: CdnNodeDto = {
     ...node,
     status,
     lastHeartbeatAt: at,
-    lastHealth: { ok, latencyMs, at },
-  };
+    lastHealth: { ok, latencyMs, at } };
 
   const all = loadAll(db).map((n) => (n.id === id ? updated : n));
   saveAll(db, all);
@@ -342,7 +329,7 @@ export async function probeAllCdnNodes(db: JsonStore): Promise<{
 }> {
   const nodes = loadAll(db);
   if (!nodes.length) {
-    return { ok: true, notes: ['尚未登記 CDN 節點'], items: [] };
+    return { ok: true, notes: [tl('notes.auto.n0711')], items: [] };
   }
   const items: CdnNodeProbeResult[] = [];
   for (const n of nodes) {
@@ -353,12 +340,11 @@ export async function probeAllCdnNodes(db: JsonStore): Promise<{
   return {
     ok,
     notes: [
-      `探活 ${healthy}/${items.length} 健康`,
+      tl('notes.auto.t0757', { v0: (healthy), v1: (items.length) }),
       ...items.map(
         (i) =>
           `${i.node.name}: ${i.ok ? 'ok' : 'fail'} (${i.method}${i.latencyMs != null ? ` ${i.latencyMs}ms` : ''})`,
       ),
     ],
-    items,
-  };
+    items };
 }

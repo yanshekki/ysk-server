@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Parse `ip -j` JSON into DTOs.
  */
@@ -184,21 +185,21 @@ export function parseCidr(
 ): { ok: true; cidr: string; ip: string; prefix: number; family: 4 | 6 } | { ok: false; reason: string } {
   const s = cidr.trim();
   const m = s.match(/^([^/]+)\/(\d{1,3})$/);
-  if (!m) return { ok: false, reason: '請使用 CIDR 格式，例如 192.168.1.10/24' };
+  if (!m) return { ok: false, reason: tl('notes.auto.n1378') };
   const ip = m[1].trim();
   const prefix = Number(m[2]);
   // light check: no spaces, basic v4/v6 shape
   if (ip.includes(' ') || ip.includes('%')) {
-    return { ok: false, reason: 'IP 無效' };
+    return { ok: false, reason: tl('notes.auto.n0119') };
   }
   const isV4 = /^\d{1,3}(\.\d{1,3}){3}$/.test(ip);
   const isV6 = ip.includes(':');
-  if (!isV4 && !isV6) return { ok: false, reason: '無法辨識 IPv4/IPv6' };
+  if (!isV4 && !isV6) return { ok: false, reason: tl('notes.auto.n1193') };
   if (isV4 && (prefix < 0 || prefix > 32)) {
-    return { ok: false, reason: 'IPv4 前綴須 0–32' };
+    return { ok: false, reason: tl('notes.auto.n0120') };
   }
   if (isV6 && (prefix < 0 || prefix > 128)) {
-    return { ok: false, reason: 'IPv6 前綴須 0–128' };
+    return { ok: false, reason: tl('notes.auto.n0121') };
   }
   return {
     ok: true,

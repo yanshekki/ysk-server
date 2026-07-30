@@ -37,19 +37,22 @@ import { dbEngineApi, type DbEngineKind, type DbEngineStatus } from '../../featu
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { api } from '../../shared/services/api';
+import { useTranslation } from 'react-i18next';
+import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 
-function serviceLabel(s: DbEngineStatus | null): {
+function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
   text: string;
   tone: 'ok' | 'warn' | 'danger' | 'neutral';
 } {
-  if (!s) return { text: '載入中', tone: 'neutral' };
-  if (!s.serverInstalled) return { text: '未安裝', tone: 'danger' };
-  if (s.active === 'active') return { text: '運行中', tone: 'ok' };
-  if (s.active === 'inactive') return { text: '已停止', tone: 'warn' };
-  return { text: s.active || '未知', tone: 'warn' };
+  if (!s) return { text: t('common.loading'), tone: 'neutral' };
+  if (!s.serverInstalled) return { text: t('common.notInstalled'), tone: 'danger' };
+  if (s.active === 'active') return { text: t('common.running'), tone: 'ok' };
+  if (s.active === 'inactive') return { text: t('common.stopped'), tone: 'warn' };
+  return { text: s.active || t('common.unknown'), tone: 'warn' };
 }
 
 export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
+  const { t } = useTranslation();
   const title = engine === 'mysql' ? 'MySQL' : 'MariaDB';
   const servicePath =
     engine === 'mysql' ? '/databases/mysql/service' : '/databases/mariadb/service';
@@ -97,7 +100,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     try {
       setSvc(await dbEngineApi.status(engine));
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '狀態載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.statusLoadFailed'));
     }
   }, [engine]);
 
@@ -126,15 +129,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '安裝失敗';
+        const m = e instanceof Error ? e.message : t('common.installFailed');
         return {
           ok: false,
-          blocked: /權限|系統變更|管理員/.test(m),
+          blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
           notes: [m],
         } satisfies OpsResultLike;
       }
-    }, `${title} 已安裝`);
+    }, t('db.installedOk', { engine: title }));
   }
 
   async function onStart() {
@@ -144,15 +147,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '啟動失敗';
+        const m = e instanceof Error ? e.message : t('common.startFailed');
         return {
           ok: false,
-          blocked: /權限|系統變更|管理員/.test(m),
+          blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
           notes: [m],
         } satisfies OpsResultLike;
       }
-    }, `${title} 已啟動`);
+    }, t('db.startedOk', { engine: title }));
   }
 
   async function onCreateDb(e: FormEvent) {
@@ -193,7 +196,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     return m;
   }, [dbs.items]);
 
-  const st = serviceLabel(svc);
+  const st = serviceLabel(svc, t);
   const installed = Boolean(svc?.serverInstalled);
   const running = svc?.active === 'active';
 
@@ -208,25 +211,25 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         },
         items: [
           {
-            label: '狀態',
+            label: t('common.status'),
             value: st.text,
             tone: st.tone === 'neutral' ? 'neutral' : st.tone,
           },
           {
             label: 'EXECUTE',
-            value: svc?.executeEnabled ? '開' : '關',
+            value: svc?.executeEnabled ? t('common.on') : t('common.off'),
             tone: svc?.executeEnabled ? 'ok' : 'warn',
           },
-          { label: '資料庫', value: dbs.items.length },
-          { label: '用戶', value: users.items.length },
+          { label: t('common.database'), value: dbs.items.length },
+          { label: t('common.user'), value: users.items.length },
           {
             label: 'Root',
-            value: svc?.isRoot ? '是' : '否',
+            value: svc?.isRoot ? t('common.yes') : t('common.no'),
             tone: svc?.isRoot ? 'ok' : 'warn',
           },
           {
-            label: '客戶端',
-            value: svc?.clientInstalled ? '有' : '無',
+            label: t('db.client'),
+            value: svc?.clientInstalled ? t('ssl.filesYes') : t('ssl.filesNo'),
             tone: svc?.clientInstalled ? 'ok' : 'danger',
           },
         ],
@@ -234,7 +237,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       actions={<ActionBar>
           <Link to={servicePath}>
             <Button variant="secondary" size="sm">
-              服務設定
+              {t('db.serviceSettings')}
             </Button>
           </Link>
           <Button
@@ -249,7 +252,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               void users.refresh();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Button
             variant="secondary"
@@ -267,13 +270,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 })
                 .then((r) => {
                   const notes = (r as { notes?: string[]; ok?: boolean }).notes;
-                  if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? '已 dump');
-                  else setError(notes?.[0] ?? 'dump 失敗');
+                  if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? t('db.dumpOk'));
+                  else setError(notes?.[0] ?? t('db.dumpFailed'));
                 })
                 .catch((e: Error) => setError(e.message));
             }}
           >
-            Dump 首個庫
+            {t('db.dumpFirstDb')}
           </Button>
           <Button
             variant="secondary"
@@ -287,7 +290,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 .then((list) => {
                   const first = list.items[0];
                   if (!first) {
-                    setError('尚無 dump 檔可 import');
+                    setError(t('db.noDumpToImport'));
                     return;
                   }
                   setImportConfirm({ dbName: name, dumpName: first.name });
@@ -295,7 +298,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 .catch((e: Error) => setError(e.message));
             }}
           >
-            Import 最新 dump
+            {t('db.importLatestDump')}
           </Button>
           <Button
             variant="ghost"
@@ -309,14 +312,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 })
                 .then((r) => {
                   setMsg(
-                    ((r as { notes?: string[] }).notes ?? []).join('；') || '已處理過期臨時用戶',
+                    ((r as { notes?: string[] }).notes ?? []).join('；') || t('db.expiredTempUsersProcessed'),
                   );
                   return refreshExtras();
                 })
                 .catch((e: Error) => setError(e.message));
             }}
           >
-            清理過期臨時用戶
+            {t('db.cleanupExpiredTempUsers')}
           </Button>
           <Button
             variant="secondary"
@@ -328,23 +331,23 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               setAdminerOpen(true);
             }}
           >
-            Adminer 入口
+            {t('db.adminerEntry')}
           </Button>
           <Button
             variant="primary"
             size="sm"
             disabled={busy || !installed}
-            title={!installed ? `請先安裝 ${title}` : undefined}
+            title={!installed ? t('db.installFirst', { engine: title }) : undefined}
             onClick={() => setCreateOpen(true)}
           >
-            建立資料庫
+            {t('db.createDatabase')}
           </Button>
         </ActionBar>
       }
     >
       <SoftwareInstallBanner
         feature={engine === 'mysql' ? 'mysql' : 'mariadb'}
-        title={`${title} 所需軟件尚未安裝`}
+        title={t('db.softwareMissing', { engine: title })}
         onInstalled={() => void refreshSvc()}
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -352,45 +355,45 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       {dbs.msg || users.msg ? <Alert variant="ok">{dbs.msg ?? users.msg}</Alert> : null}
 
       <Card>
-        <CardSection title="服務概覽" description="唯讀狀態">
+        <CardSection title={t('db.serviceOverview')} description={t('db.readonlyStatus')}>
           <DescriptionList
             columns={2}
             items={[
-              { label: '狀態', value: <Badge tone={st.tone}>{st.text}</Badge> },
-              { label: '版本', value: svc?.version ?? '—' },
+              { label: t('common.status'), value: <Badge tone={st.tone}>{st.text}</Badge> },
+              { label: t('common.version'), value: svc?.version ?? '—' },
               {
-                label: '系統變更',
-                value: svc?.executeEnabled ? '已開啟' : '未開啟',
+                label: t('db.systemChange'),
+                value: svc?.executeEnabled ? t('db.opened') : t('db.notOpened'),
               },
-              { label: '管理員', value: svc?.isRoot ? '是' : '否' },
+              { label: t('roles.admin'), value: svc?.isRoot ? t('common.yes') : t('common.no') },
               {
-                label: '客戶端',
-                value: svc?.clientInstalled ? '已安裝' : '未安裝',
+                label: t('db.client'),
+                value: svc?.clientInstalled ? t('common.installed') : t('common.notInstalled'),
               },
               {
-                label: '可開庫',
-                value: svc?.canProvision ? '是' : '否',
+                label: t('db.canProvision'),
+                value: svc?.canProvision ? t('common.yes') : t('common.no'),
               },
             ]}
           />
           {svc?.blockMessage && !svc.canProvision ? (
-            <p className="muted u-text-sm u-mt-3" style={{ marginBottom: 0 }}>
+            <p className="muted u-text-sm u-mt-3">
               {svc.blockMessage}
             </p>
           ) : null}
           <div className="lifecycle-toolbar u-mt-3">
             {!installed ? (
               <p className="muted u-text-sm u-mb-0">
-                請使用上方橫幅「一鍵安裝」安裝 {title}。
+                {t('db.installBannerHint', { engine: title })}
               </p>
             ) : !running ? (
               <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
-                啟動服務
+                {t('fail2ban.startService')}
               </Button>
             ) : (
               <Link to={servicePath}>
                 <Button variant="secondary" size="md">
-                  開啟服務控制台
+                  {t('db.openServiceConsole')}
                 </Button>
               </Link>
             )}
@@ -399,7 +402,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       </Card>
 
       <OpsResultPanel
-        title="操作結果"
+        title={t('systemd.opsResult')}
         result={result}
         message={msg}
         onRetry={
@@ -410,54 +413,54 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
       {lastTempPassword ? (
         <Alert variant="ok">
-          臨時只讀密碼（只顯示一次）：
+          {t('db.tempPasswordOnce')}
           <code className="inline">{lastTempPassword}</code>
         </Alert>
       ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'databases', label: `資料庫 (${dbs.items.length})` },
-          { id: 'users', label: `用戶 (${users.items.length})` },
-          { id: 'temp', label: `臨時只讀 (${tempUsers.length})` },
-          { id: 'remote', label: `遠端主機 (${remoteHosts.length})` },
-          { id: 'about', label: '說明' },
+          { id: 'databases', label: t('db.tabDatabases', { count: dbs.items.length }) },
+          { id: 'users', label: t('db.tabUsers', { count: users.items.length }) },
+          { id: 'temp', label: t('db.tabTemp', { count: tempUsers.length }) },
+          { id: 'remote', label: t('db.tabRemote', { count: remoteHosts.length }) },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
       >
         {tab === 'databases' ? (
           <Card>
-            <CardSection title="資料庫列表">
+            <CardSection title={t('db.dbList')}>
               <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
                 columns={[
                   {
                     key: 'name',
-                    header: '資料庫',
+                    header: t('common.database'),
                     render: (r) => <strong>{String(r.name)}</strong>,
                   },
                   {
                     key: 'charset',
-                    header: '字元集',
+                    header: t('db.charset'),
                     render: (r) => String(r.charset ?? 'utf8mb4'),
                   },
                   {
                     key: 'status',
-                    header: '狀態',
+                    header: t('common.status'),
                     render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
                   },
                 ]}
                 rows={dbs.items}
                 empty={
                   <EmptyState
-                    title="尚未有資料庫"
+                    title={t('db.noDatabasesYet')}
                     description={
                       !installed
-                        ? `請先使用上方橫幅一鍵安裝 ${title}，再用右上角「建立資料庫」`
+                        ? t('db.emptyDbInstallFirst', { engine: title })
                         : !svc?.canProvision
-                          ? svc?.blockMessage ?? '目前無法在伺服器建立資料庫'
-                          : '用右上角「建立資料庫」新增；建立後請再按「套用」'
+                          ? svc?.blockMessage ?? t('db.emptyDbCannotProvision')
+                          : t('db.emptyDbCreateHint')
                     }
                   />
                 }
@@ -469,7 +472,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       disabled={busy}
                       onClick={() => void dbs.apply(r.id, true)}
                     >
-                      套用
+                      {t('common.apply')}
                     </button>
                     <button
                       type="button"
@@ -477,7 +480,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       disabled={busy}
                       onClick={() => setDelDb(r.id)}
                     >
-                      刪除
+                      {t('common.delete')}
                     </button>
                   </ActionBar>
                 )}
@@ -488,7 +491,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
         {tab === 'users' ? (
           <Card>
-            <CardSection title="用戶列表" description="可為資料庫授權用戶">
+            <CardSection title={t('db.userList')} description={t('db.userListDesc')}>
               <div className="form-actions">
                 <button
                   type="button"
@@ -496,7 +499,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   disabled={!installed}
                   onClick={() => setUserOpen(true)}
                 >
-                  + 建立用戶
+                  {t('users.createUserPlus')}
                 </button>
               </div>
               <DataTable
@@ -504,7 +507,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 columns={[
                   {
                     key: 'username',
-                    header: '用戶',
+                    header: t('common.user'),
                     render: (r) => (
                       <strong>
                         {String(r.username)}@{String(r.host ?? '%')}
@@ -513,7 +516,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   },
                   {
                     key: 'db',
-                    header: '資料庫',
+                    header: t('common.database'),
                     render: (r) =>
                       r.databaseId
                         ? dbNameById.get(String(r.databaseId)) ?? String(r.databaseId)
@@ -521,12 +524,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   },
                   {
                     key: 'status',
-                    header: '狀態',
+                    header: t('common.status'),
                     render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
                   },
                 ]}
                 rows={users.items}
-                empty={<EmptyState title="尚未有用戶" />}
+                empty={<EmptyState title={t('db.noUsersYet')} />}
                 rowActions={(r: ResourceRow) => (
                   <button
                     type="button"
@@ -534,7 +537,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     disabled={busy}
                     onClick={() => setDelUser(r.id)}
                   >
-                    刪除
+                    {t('common.delete')}
                   </button>
                 )}
               />
@@ -546,11 +549,11 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <div className="tab-panel">
           <Card>
             <CardSection
-              title="臨時只讀用戶"
-              description="到期後控制面標記 expired；系統 DROP 需另開權限操作（標示）"
+              title={t('db.tempReadonlyUsers')}
+              description={t('db.tempReadonlyDesc')}
             >
               <FormLayout columns={2}>
-                <Field label="資料庫名稱" htmlFor="tmp-db" required flush>
+                <Field label={t('db.dbName')} htmlFor="tmp-db" required flush>
                   <input
                     id="tmp-db"
                     value={tempDb}
@@ -558,10 +561,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     placeholder="app_db"
                   />
                 </Field>
-                <Field label="有效時數" htmlFor="tmp-ttl" hint="到期後標記失效" flush>
+                <Field label={t('db.ttlHours')} htmlFor="tmp-ttl" hint={t('db.ttlHoursHint')} flush>
                   <SegRadio
                     name="tmp-ttl"
-                    aria-label="有效時數"
+                    aria-label={t('db.ttlHours')}
                     value={String(
                       [1, 6, 12, 24, 48, 72].includes(Number(tempTtl))
                         ? Number(tempTtl)
@@ -607,17 +610,17 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                         ok: r.ok,
                         notes: r.notes ?? [],
                       } as OpsResultLike;
-                    }, '已建立臨時只讀用戶');
+                    }, t('db.tempUserCreated'));
                   }}
                 >
-                  建立只讀用戶
+                  {t('db.createReadonlyUser')}
                 </Button>
                 <Button
                   variant="secondary"
                   size="md"
                   onClick={() => void refreshExtras()}
                 >
-                  重新整理
+                  {t('common.refresh')}
                 </Button>
               </FormActions>
               <ul className="list-plain list-spaced u-mt-3">
@@ -625,7 +628,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <li key={String(u.id)} className="">
                     <span>
                       <strong>{String(u.username)}</strong> @ {String(u.database)} ·{' '}
-                      <Badge>{String(u.apply_status)}</Badge> · 到期{' '}
+                      <Badge>{String(u.apply_status)}</Badge> · {t('db.expiresLabel')}{' '}
                       {u.expiresAt ? new Date(String(u.expiresAt)).toLocaleString() : '—'}
                     </span>
                     <Button
@@ -638,7 +641,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                           .catch((e: Error) => setError(e.message));
                       }}
                     >
-                      撤銷登記
+                      {t('db.revokeRegistration')}
                     </Button>
                   </li>
                 ))}
@@ -652,19 +655,19 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <div className="tab-panel">
           <Card>
             <CardSection
-              title="遠端資料庫主機"
-              description="登記連線目標（密碼不回顯）"
+              title={t('db.remoteDbHosts')}
+              description={t('db.remoteDbHostsDesc')}
             >
               <FormLayout columns={2}>
-                <Field label="顯示名稱" htmlFor="rh-label" flush>
+                <Field label={t('security.ssh.displayName')} htmlFor="rh-label" flush>
                   <input
                     id="rh-label"
                     value={remoteLabel}
                     onChange={(e) => setRemoteLabel(e.target.value)}
-                    placeholder="生產從庫"
+                    placeholder={t('db.prodReplicaPlaceholder')}
                   />
                 </Field>
-                <Field label="主機" htmlFor="rh-host" required flush>
+                <Field label={t('common.host')} htmlFor="rh-host" required flush>
                   <input
                     id="rh-host"
                     value={remoteHost}
@@ -672,21 +675,21 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     required
                   />
                 </Field>
-                <Field label="埠" htmlFor="rh-port" flush>
+                <Field label={t('common.port')} htmlFor="rh-port" flush>
                   <input
                     id="rh-port"
                     value={remotePort}
                     onChange={(e) => setRemotePort(e.target.value)}
                   />
                 </Field>
-                <Field label="用戶名" htmlFor="rh-user" flush>
+                <Field label={t('common.username')} htmlFor="rh-user" flush>
                   <input
                     id="rh-user"
                     value={remoteUser}
                     onChange={(e) => setRemoteUser(e.target.value)}
                   />
                 </Field>
-                <Field label="密碼" htmlFor="rh-pass" flush>
+                <Field label={t('common.password')} htmlFor="rh-pass" flush>
                   <input
                     id="rh-pass"
                     type="password"
@@ -715,13 +718,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       })
                       .then(() => {
                         setRemotePass('');
-                        setMsg('已儲存遠端主機');
+                        setMsg(t('db.remoteHostSaved'));
                         return refreshExtras();
                       })
                       .catch((e: Error) => setError(e.message));
                   }}
                 >
-                  儲存
+                  {t('common.save')}
                 </Button>
               </FormActions>
               <ul className="list-plain list-spaced u-mt-4">
@@ -744,7 +747,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                           .catch((e: Error) => setError(e.message));
                       }}
                     >
-                      刪除
+                      {t('common.delete')}
                     </Button>
                   </li>
                 ))}
@@ -761,15 +764,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title={`建立 ${title} 資料庫`}
-        description="建立控制面登記後，請按「套用」寫入伺服器"
+        title={t('db.createDbTitle', { engine: title })}
+        description={t('db.createDbDesc')}
         footer={
           <>
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setCreateOpen(false)}>
-              取消
+              {t('common.cancel')}
             </button>
             <button type="submit" form="sql-create" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
-              建立
+              {t('common.create')}
             </button>
           </>
         }
@@ -777,11 +780,11 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         <form id="sql-create" onSubmit={(e) => void onCreateDb(e)}>
           <FormLayout>
             <Field
-              label="資料庫名稱"
+              label={t('db.dbName')}
               htmlFor="dn"
               required
               flush
-              hint="小寫英數與底線；建立後需再套用到系統"
+              hint={t('db.dbNameHint')}
             >
               <input
                 id="dn"
@@ -796,15 +799,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <div className="form-check-row u-mt-3">
             <CheckboxField
               id="sql-cu"
-              label="同時建立用戶"
-              description="一併建立可連線此庫的帳號"
+              label={t('db.alsoCreateUser')}
+              description={t('db.alsoCreateUserDesc')}
               checked={createUser}
               onChange={setCreateUser}
             />
           </div>
           {createUser ? (
             <FormLayout columns={2}>
-              <Field label="用戶名" htmlFor="un" flush>
+              <Field label={t('common.username')} htmlFor="un" flush>
                 <input
                   id="un"
                   value={username}
@@ -813,7 +816,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   spellCheck={false}
                 />
               </Field>
-              <Field label="密碼" htmlFor="pw" hint="至少 8 位" flush required>
+              <Field label={t('common.password')} htmlFor="pw" hint={t('users.passwordHint')} flush required>
                 <input
                   id="pw"
                   type="password"
@@ -825,9 +828,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 />
               </Field>
               <Field
-                label="允許連線主機"
+                label={t('db.allowConnectHost')}
                 htmlFor="hh"
-                hint="常用 %（任意）或 localhost"
+                hint={t('db.allowConnectHostHint')}
                 flush
               >
                 <input
@@ -839,29 +842,29 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </Field>
             </FormLayout>
           ) : null}
-          <FormHint>僅寫入控制面登記；列表按「套用」才會在伺服器 CREATE DATABASE。</FormHint>
+          <FormHint>{t('db.createDbHint')}</FormHint>
         </form>
       </Modal>
 
       <Modal
         open={userOpen}
         onClose={() => setUserOpen(false)}
-        title={`建立 ${title} 用戶`}
-        description="建立後請套用"
+        title={t('db.createUserTitle', { engine: title })}
+        description={t('db.createUserDesc')}
         footer={
           <>
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setUserOpen(false)}>
-              取消
+              {t('common.cancel')}
             </button>
             <button type="submit" form="sql-user" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
-              建立
+              {t('common.create')}
             </button>
           </>
         }
       >
         <form id="sql-user" onSubmit={(e) => void onCreateUser(e)}>
           <FormLayout columns={2}>
-            <Field label="用戶名" htmlFor="uun" required flush>
+            <Field label={t('common.username')} htmlFor="uun" required flush>
               <input
                 id="uun"
                 value={username}
@@ -870,7 +873,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 spellCheck={false}
               />
             </Field>
-            <Field label="密碼" htmlFor="upw" required hint="至少 8 位" flush>
+            <Field label={t('common.password')} htmlFor="upw" required hint={t('users.passwordHint')} flush>
               <input
                 id="upw"
                 type="password"
@@ -881,7 +884,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 autoComplete="new-password"
               />
             </Field>
-            <Field label="允許連線主機" htmlFor="uh" flush hint="常用 % 或 localhost">
+            <Field label={t('db.allowConnectHost')} htmlFor="uh" flush hint={t('db.allowConnectHostHintShort')}>
               <input
                 id="uh"
                 value={host}
@@ -889,9 +892,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 spellCheck={false}
               />
             </Field>
-            <Field label="綁定資料庫" htmlFor="udb" flush hint="可選；授權此庫權限">
+            <Field label={t('db.bindDatabase')} htmlFor="udb" flush hint={t('db.bindDatabaseHint')}>
               <select id="udb" value={dbId} onChange={(e) => setDbId(e.target.value)}>
-                <option value="">— 無 —</option>
+                <option value="">{t('users.noneOption')}</option>
                 {dbs.items.map((d) => (
                   <option key={d.id} value={d.id}>
                     {String(d.name)}
@@ -920,19 +923,19 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             })
             .then((r) => {
               const notes = (r as { notes?: string[]; ok?: boolean }).notes;
-              if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? '已 import');
-              else setError(notes?.[0] ?? 'import 失敗');
+              if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? t('db.importOk'));
+              else setError(notes?.[0] ?? t('db.importFailed'));
             })
             .catch((e: Error) => setError(e.message));
         }}
-        title="匯入 dump？"
+        title={t('db.importDumpTitle')}
         description={
           importConfirm
-            ? `將 ${importConfirm.dumpName} 匯入 ${importConfirm.dbName}`
+            ? t('db.importDumpDesc', { dump: importConfirm.dumpName, db: importConfirm.dbName })
             : ''
         }
-        confirmLabel="匯入"
-        cancelLabel="取消"
+        confirmLabel={t('db.import')}
+        cancelLabel={t('common.cancel')}
         danger
       />
 
@@ -942,10 +945,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         onConfirm={() => {
           if (delDb) void dbs.remove(delDb).then(() => setDelDb(null));
         }}
-        title="刪除資料庫登記？"
-        description="僅移除控制面紀錄；不會自動 DROP 伺服器上的庫。"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('db.deleteDbTitle')}
+        description={t('db.deleteDbDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />
@@ -955,10 +958,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         onConfirm={() => {
           if (delUser) void users.remove(delUser).then(() => setDelUser(null));
         }}
-        title="刪除用戶登記？"
-        description="僅移除控制面紀錄。"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('db.deleteUserTitle')}
+        description={t('db.deleteUserDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />
@@ -966,8 +969,8 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <Modal
         open={adminerOpen}
         onClose={() => !busy && setAdminerOpen(false)}
-        title="Adminer 資料庫瀏覽器"
-        description="下載輕量 Adminer + 寫入 Nginx 管理 conf；套用到系統才會 nginx -t + reload"
+        title={t('db.adminerTitle')}
+        description={t('db.adminerDesc')}
         size="md"
         footer={
           <FormActions align="end">
@@ -977,7 +980,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               disabled={busy}
               onClick={() => setAdminerOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="secondary"
@@ -1008,13 +1011,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     notes: [
                       ...(r.notes ?? []),
                       r.apply_status ? `apply_status=${r.apply_status}` : '',
-                      r.urlHint ? `入口: ${r.urlHint}` : '',
+                      r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
                     ].filter(Boolean),
                   } as OpsResultLike;
-                }, 'Adminer 已寫入管理檔');
+                }, t('db.adminerWritten'));
               }}
             >
-              只寫入（written）
+              {t('db.writeOnly')}
             </Button>
             <Button
               variant="primary"
@@ -1045,28 +1048,27 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     notes: [
                       ...(r.notes ?? []),
                       r.apply_status ? `apply_status=${r.apply_status}` : '',
-                      r.urlHint ? `入口: ${r.urlHint}` : '',
+                      r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
                     ].filter(Boolean),
                   } as OpsResultLike;
-                }, 'Adminer 套用完成');
+                }, t('db.adminerApplied'));
               }}
             >
-              套用到系統
+              {t('firewall.applyToSystem')}
             </Button>
           </FormActions>
         }
       >
         <FormHint>
-          公開 Adminer 有風險 — 請先限制來源 IP 或加 HTTP 認證。需 PHP-FPM socket（預設
-          php8.2）。
+          {t('db.adminerRiskFull')}
         </FormHint>
         <FormLayout columns={1}>
           <Field
-            label="虛擬主機名"
+            label={t('db.vhostName')}
             htmlFor="adminer-domain"
             required
             flush
-            hint="DNS A 指到此主機後才能從外網開"
+            hint={t('db.vhostHint')}
           >
             <input
               id="adminer-domain"
@@ -1078,15 +1080,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </Field>
           <CheckboxField
             id="adminer-dl"
-            label="下載 Adminer PHP（需 YSK_EXECUTE + 外網）"
-            description="關閉則僅用已下載檔案"
+            label={t('db.downloadAdminer')}
+            description={t('db.downloadAdminerDesc')}
             checked={adminerDownload}
             onChange={setAdminerDownload}
             disabled={busy}
           />
           <FormHint>
-            「只寫入」= 管理檔 written；「套用到系統」= 複製 conf + nginx -t +
-            reload（需 root，否則 blocked）
+            {t('db.adminerWriteHintFull')}
           </FormHint>
         </FormLayout>
       </Modal>

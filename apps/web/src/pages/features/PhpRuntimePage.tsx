@@ -3,6 +3,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 import {
   PageGuide,
   Alert,
@@ -49,7 +50,7 @@ function phpIniPresets(
         { value: '256M', label: '256M' },
         { value: '512M', label: '512M' },
         { value: '1G', label: '1G' },
-        { value: '-1', label: '無限' },
+        { value: '-1', label: i18n.t('runtime.unlimited') },
       ];
     }
     return [
@@ -64,7 +65,7 @@ function phpIniPresets(
     case 'max_execution_time':
     case 'max_input_time':
       return [
-        { value: '0', label: '0 無限' },
+        { value: '0', label: i18n.t('runtime.zeroUnlimited') },
         { value: '30', label: '30' },
         { value: '60', label: '60' },
         { value: '120', label: '120' },
@@ -92,10 +93,10 @@ function phpIniPresets(
       ];
     case 'session.gc_maxlifetime':
       return [
-        { value: '1440', label: '24 分' },
-        { value: '3600', label: '1 時' },
-        { value: '86400', label: '1 日' },
-        { value: '604800', label: '7 日' },
+        { value: '1440', label: i18n.t('runtime.m24') },
+        { value: '3600', label: i18n.t('runtime.h1') },
+        { value: '86400', label: i18n.t('runtime.d1') },
+        { value: '604800', label: i18n.t('runtime.d7') },
       ];
     case 'opcache.memory_consumption':
       return [
@@ -205,7 +206,7 @@ export function PhpRuntimePage() {
   useEffect(() => {
     if (tab === 'ini') {
       void loadIni(version).catch((e) =>
-        setError(e instanceof Error ? e.message : '載入 php.ini 失敗'),
+        setError(e instanceof Error ? e.message : t('runtime.phpIniLoadFailed')),
       );
     }
   }, [tab, version, loadIni, setError]);
@@ -236,7 +237,7 @@ export function PhpRuntimePage() {
           { label: 'Pool', value: poolName || '—' },
           {
             label: 'php.ini',
-            value: iniLoaded ? (iniUpdatedAt ? '已載入' : '預設') : '—',
+            value: iniLoaded ? (iniUpdatedAt ? t('runtime.loaded') : t('runtime.default')) : '—',
           },
         ],
       }}
@@ -250,33 +251,33 @@ export function PhpRuntimePage() {
             void run(async () => {
               const r = (await systemApi.runtimes()) as Record<string, unknown>;
               setProbe(r);
-              return { ok: true, notes: ['已探測'], ...r } as unknown as OpsResultLike;
-            }, '已探測');
+              return { ok: true, notes: [t('common.probed')], ...r } as unknown as OpsResultLike;
+            }, t('common.probed'));
           }}
         >
-          重新探測
+          {t('common.reprobe')}
         </Button>
       }
     >
-      <SoftwareInstallBanner feature="php" title="PHP 尚未安裝" />
+      <SoftwareInstallBanner feature="php" title={t('runtime.phpMissing')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'overview', label: '總覽' },
+          { id: 'overview', label: t('runtime.overview') },
           { id: 'ini', label: 'php.ini' },
-          { id: 'site', label: 'FPM / 站點' },
-          { id: 'tools', label: '工具' },
+          { id: 'site', label: t('runtime.fpmSites') },
+          { id: 'tools', label: t('runtime.tools') },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -285,12 +286,12 @@ export function PhpRuntimePage() {
         {tab === 'overview' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title="安裝 PHP" description="需系統變更權限；安裝後需設定 FPM">
+              <CardSection title={t('runtime.installPhp')} description={t('runtime.phpInstallHint')}>
                 <FormLayout columns={2}>
-                  <Field label="PHP 版本" htmlFor="php-ver" flush required>
+                  <Field label={t('runtime.phpVersion')} htmlFor="php-ver" flush required>
                     <SegRadio
                       name="php-ver"
-                      aria-label="PHP 版本"
+                      aria-label={t('runtime.phpVersion')}
                       value={version}
                       onChange={setVersion}
                       options={[
@@ -315,10 +316,10 @@ export function PhpRuntimePage() {
                         });
                         await refresh();
                         return r as OpsResultLike;
-                      }, `已安裝 PHP ${version}`)
+                      }, t('runtime.installedPhp', { version }))
                     }
                   >
-                    安裝 PHP {version}
+                    {t('runtime.installPhpVBtn', { version })}
                   </Button>
                 </FormActions>
               </CardSection>
@@ -326,7 +327,7 @@ export function PhpRuntimePage() {
 
             {probe ? (
               <Card>
-                <CardSection title="探測結果" description="唯讀">
+                <CardSection title={t('runtime.probeResult')} description={t('runtime.readonly')}>
                   <DescriptionList
                     columns={2}
                     items={Object.entries(probe)
@@ -339,18 +340,18 @@ export function PhpRuntimePage() {
             ) : null}
 
             <Card>
-              <CardSection title="下一步" description="建議流程">
+              <CardSection title={t('security.ssh.nextStep')} description={t('runtime.suggestedFlow')}>
                 <ol className="list-plain list-spaced">
                   <li>
-                    在 <strong>php.ini</strong> 分頁設計全域數值並儲存
+                    {t('runtime.phpIniSteps1')}
                   </li>
                   <li>
-                    可選：<strong>套用到系統</strong>（寫入 /etc/php/…/conf.d，需 root）
+                    {t('runtime.phpIniSteps2')}
                   </li>
                   <li>
-                    專案部署時會把合併後 ini 寫入 FPM pool 的 php_admin_*
+                    {t('runtime.phpIniSteps3')}
                   </li>
-                  <li>專案可再覆寫個別鍵（專案 → 部署）</li>
+                  <li>{t('runtime.phpIniSteps4')}</li>
                 </ol>
               </CardSection>
             </Card>
@@ -361,14 +362,14 @@ export function PhpRuntimePage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="全域 php.ini"
-                description="每一列一個設定值（表單）。寫入管理檔後可「套用到系統」或於專案部署注入 pool"
+                title={t('runtime.globalPhpIni')}
+                description={t('runtime.globalPhpIniDesc')}
               >
                 <FormLayout columns={2}>
-                  <Field label="PHP 版本" htmlFor="ini-ver" flush required>
+                  <Field label={t('runtime.phpVersion')} htmlFor="ini-ver" flush required>
                     <SegRadio
                       name="ini-ver"
-                      aria-label="PHP 版本"
+                      aria-label={t('runtime.phpVersion')}
                       value={version}
                       onChange={setVersion}
                       options={[
@@ -378,40 +379,39 @@ export function PhpRuntimePage() {
                       ]}
                     />
                   </Field>
-                  <Field label="管理檔路徑" htmlFor="ini-path" flush>
+                  <Field label={t('runtime.managePath')} htmlFor="ini-path" flush>
                     <input id="ini-path" value={managedPath || '—'} readOnly spellCheck={false} />
                   </Field>
                 </FormLayout>
                 <FormHint>
-                  變更會先存到面板 dataDir；「套用到系統」才複製到 /etc/php 並 reload FPM。專案 pool
-                  會在部署時注入 php_admin_value。
+                  {t('runtime.phpIniNote')}
                 </FormHint>
               </CardSection>
             </Card>
 
             {!iniLoaded && !error ? (
               <Card>
-                <CardSection title="載入中">
-                  <p className="muted">正在讀取 php.ini 設定表單…</p>
+                <CardSection title={t('runtime.loading')}>
+                  <p className="muted">{t('runtime.phpIniLoading')}</p>
                 </CardSection>
               </Card>
             ) : null}
 
             {iniLoaded && catalog.length === 0 ? (
               <Card>
-                <CardSection title="無法載入設定表">
-                  <p className="muted">catalog 為空 — 請重新載入或確認 API 已啟動。</p>
+                <CardSection title={t('runtime.cannotLoadSettings')}>
+                  <p className="muted">{t('runtime.phpIniEmpty')}</p>
                   <FormActions>
                     <Button
                       variant="secondary"
                       size="md"
                       onClick={() =>
                         void loadIni(version).catch((e) =>
-                          setError(e instanceof Error ? e.message : '重新載入失敗'),
+                          setError(e instanceof Error ? e.message : t('runtime.reloadFailed')),
                         )
                       }
                     >
-                      重新載入表單
+                      {t('runtime.reloadForm')}
                     </Button>
                   </FormActions>
                 </CardSection>
@@ -428,7 +428,7 @@ export function PhpRuntimePage() {
                       const val = values[f.key] ?? f.default;
                       const hintParts = [
                         f.hint,
-                        f.danger ? '敏感設定，請小心' : undefined,
+                        f.danger ? t('runtime.sensitive') : undefined,
                       ].filter(Boolean);
                       return (
                         <Field
@@ -443,7 +443,7 @@ export function PhpRuntimePage() {
                           {f.type === 'bool' ? (
                             <CheckboxField
                               id={id}
-                              label={val === true || val === 1 || val === '1' ? '開啟' : '關閉'}
+                              label={val === true || val === 1 || val === '1' ? t('common.open') : t('common.close')}
                               checked={val === true || val === 1 || val === '1'}
                               onChange={(c) => setValue(f.key, c)}
                             />
@@ -486,7 +486,7 @@ export function PhpRuntimePage() {
                               value={String(val ?? f.default ?? '')}
                               onChange={(v) => setValue(f.key, Number(v))}
                               allowCustom
-                              customPlaceholder="自訂數字"
+                              customPlaceholder={t('runtime.customNumber')}
                             />
                           ) : f.type === 'bytes' ? (
                             <PresetChips
@@ -494,7 +494,7 @@ export function PhpRuntimePage() {
                               value={String(val ?? f.default ?? '')}
                               onChange={(v) => setValue(f.key, v)}
                               allowCustom
-                              customPlaceholder="自訂，例 768M"
+                              customPlaceholder={t('runtime.customExample')}
                             />
                           ) : (
                             <input
@@ -515,15 +515,15 @@ export function PhpRuntimePage() {
 
             <Card>
               <CardSection
-                title="進階：額外鍵與 raw"
-                description="catalog 未列的指令；每行 key=value；raw 直接附加到 ini 尾"
+                title={t('runtime.advancedExtra')}
+                description={t('runtime.advancedExtraDesc')}
               >
                 <FormLayout columns={1}>
                   <Field
-                    label="額外指令"
+                    label={t('runtime.extraDirectives')}
                     htmlFor="ini-extra"
                     techKey="extra"
-                    hint="每行一個 key=value（非上方表單已有的鍵）"
+                    hint={t('runtime.extraDirectivesHint')}
                     flush
                     fullWidth
                   >
@@ -540,7 +540,7 @@ export function PhpRuntimePage() {
                     label="Raw append"
                     htmlFor="ini-raw"
                     techKey="rawAppend"
-                    hint="直接附加到 ini 檔末尾"
+                    hint={t('runtime.rawAppend')}
                     flush
                     fullWidth
                   >
@@ -573,10 +573,10 @@ export function PhpRuntimePage() {
                     });
                     await loadIni(version);
                     return r as OpsResultLike;
-                  }, '已儲存 php.ini')
+                  }, t('runtime.phpIniSaved'))
                 }
               >
-                儲存 php.ini
+                {t('runtime.savePhpIni')}
               </Button>
               <Button
                 variant="secondary"
@@ -591,10 +591,10 @@ export function PhpRuntimePage() {
                       rawAppend,
                     });
                     return (await systemApi.phpIniApply(version)) as OpsResultLike;
-                  }, '已套用到系統')
+                  }, t('runtime.appliedSystem'))
                 }
               >
-                套用到系統
+                {t('firewall.applyToSystem')}
               </Button>
               <Button
                 variant="ghost"
@@ -603,11 +603,11 @@ export function PhpRuntimePage() {
                 onClick={() => {
                   setError(null);
                   void loadIni(version).catch((e) =>
-                    setError(e instanceof Error ? e.message : '重新載入失敗'),
+                    setError(e instanceof Error ? e.message : t('runtime.reloadFailed')),
                   );
                 }}
               >
-                重新載入
+                {t('updates.reload')}
               </Button>
             </FormActions>
           </div>
@@ -616,18 +616,18 @@ export function PhpRuntimePage() {
         {tab === 'site' ? (
           <div className="tab-panel">
             <Alert variant="info">
-              <strong>生產站請用「專案」路徑</strong>
-              ：建立 PHP 專案 → 部署／套用 FPM（pool = 專案 Linux 用戶 + 隔離 home）。本頁係{' '}
-              <strong>系統級 demo／工具</strong>
-              （手填 pool 名），唔會自動綁專案隔離。php.ini 全域預設請用「php.ini」分頁。
+              <strong>{t('runtime.prodUseProjects')}</strong>
+              {t('runtime.prodPathDesc')}{' '}
+              <strong>{t('runtime.systemDemo')}</strong>
+              {t('runtime.demoNotBind')}
             </Alert>
             <Card>
               <CardSection
-                title="系統工具：示範 vhost / Pool"
-                description="進階／除錯用；日常開站請到 專案 → 部署"
+                title={t('runtime.demoVhost')}
+                description={t('runtime.demoVhostDesc')}
               >
                 <FormLayout columns={2}>
-                  <Field label="網域" htmlFor="php-dom" flush required hint="虛擬主機 server_name">
+                  <Field label={t('runtime.domain')} htmlFor="php-dom" flush required hint={t('runtime.vhostServerName')}>
                     <input
                       id="php-dom"
                       value={domain}
@@ -640,11 +640,11 @@ export function PhpRuntimePage() {
                     />
                   </Field>
                   <Field
-                    label="Pool 名稱"
+                    label={t('runtime.poolName')}
                     htmlFor="php-pool"
                     flush
                     required
-                    hint="手填識別名（示範）；專案路徑會用 ysks_* 用戶"
+                    hint={t('runtime.poolNameHint')}
                   >
                     <input
                       id="php-pool"
@@ -658,14 +658,14 @@ export function PhpRuntimePage() {
                 <div className="form-check-row u-mt-4">
                   <CheckboxField
                     id="php-en"
-                    label="啟用並重載服務"
-                    description="需要系統變更權限；關閉則只寫管理檔"
+                    label={t('runtime.enableReload')}
+                    description={t('runtime.enableReloadHint')}
                     checked={enableSite}
                     onChange={setEnableSite}
                   />
                 </div>
                 <FormHint>
-                  套用成功 = 檔案已寫入（written）。生產請優先用專案部署，確保 User=專案 Linux 用戶。
+                  {t('runtime.applyOkWritten')}
                 </FormHint>
                 <FormActions>
                   <Button
@@ -681,13 +681,13 @@ export function PhpRuntimePage() {
                             enableSite,
                           })) as OpsResultLike;
                         } catch (e) {
-                          const m = e instanceof Error ? e.message : '套用失敗';
+                          const m = e instanceof Error ? e.message : t('common.applyFailed');
                           return { ok: false, blocked: true, blockMessage: m, notes: [m] };
                         }
-                      }, '已套用 PHP vhost / pool')
+                      }, t('runtime.phpVhostApplied'))
                     }
                   >
-                    套用 PHP vhost / pool
+                    {t('runtime.applyPhpVhost')}
                   </Button>
                 </FormActions>
               </CardSection>
@@ -699,8 +699,8 @@ export function PhpRuntimePage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="Composer / WP-CLI / 模組"
-                description="即時探測 PATH 上工具與 php -m（唯讀）"
+                title={t('runtime.composerTools')}
+                description={t('runtime.composerToolsDesc')}
               >
                 <FormActions>
                   <Button
@@ -709,16 +709,16 @@ export function PhpRuntimePage() {
                     loading={busy}
                     onClick={() =>
                       void run(async () => {
-                        const t = await api.requestRaw<ToolsProbe>('/api/v1/runtimes/tools');
-                        setTools(t);
+                        const probe = await api.requestRaw<ToolsProbe>('/api/v1/runtimes/tools');
+                        setTools(probe);
                         return {
                           ok: true,
-                          notes: t.notes ?? ['已探測工具'],
+                          notes: probe.notes ?? [t('runtime.toolsProbed')],
                         } as OpsResultLike;
-                      }, '已探測工具')
+                      }, t('runtime.toolsProbed'))
                     }
                   >
-                    重新探測工具
+                    {t('runtime.reprobeTools')}
                   </Button>
                 </FormActions>
                 {tools ? (
@@ -726,25 +726,25 @@ export function PhpRuntimePage() {
                     <DescriptionList
                       columns={2}
                       items={[
-                        { label: 'PHP', value: tools.php?.version ?? '未找到' },
+                        { label: 'PHP', value: tools.php?.version ?? t('runtime.notFound') },
                         {
                           label: 'Composer',
                           value: tools.composer?.available ? (
-                            <Badge tone="ok">{tools.composer.version ?? '可用'}</Badge>
+                            <Badge tone="ok">{tools.composer.version ?? t('common.available')}</Badge>
                           ) : (
-                            <Badge tone="warn">不可用</Badge>
+                            <Badge tone="warn">{t('network.unavailable')}</Badge>
                           ),
                         },
                         {
                           label: 'WP-CLI',
                           value: tools.wpCli?.available ? (
-                            <Badge tone="ok">{tools.wpCli.version ?? '可用'}</Badge>
+                            <Badge tone="ok">{tools.wpCli.version ?? t('common.available')}</Badge>
                           ) : (
-                            <Badge tone="warn">不可用</Badge>
+                            <Badge tone="warn">{t('network.unavailable')}</Badge>
                           ),
                         },
                         {
-                          label: '模組數',
+                          label: t('runtime.moduleCount'),
                           value: String(tools.php?.modules?.length ?? 0),
                         },
                       ]}
@@ -757,7 +757,7 @@ export function PhpRuntimePage() {
                     ) : null}
                   </>
                 ) : (
-                  <p className="muted">按「重新探測工具」載入</p>
+                  <p className="muted">{t('runtime.pressReprobeLoad')}</p>
                 )}
               </CardSection>
             </Card>
@@ -767,7 +767,7 @@ export function PhpRuntimePage() {
         {tab === 'about' ? <PageGuide guideId="php" /> : null}
       </PageTabs>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
     </FeaturePageLayout>
   );
 }

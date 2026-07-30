@@ -6,13 +6,12 @@ import { randomUUID } from 'node:crypto';
 import { existsSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ProjectDto } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import {
   isCanonicalProjectHome,
   isSafeProjectHomePath,
   planProjectIsolation,
-  projectHomeDir,
-} from './project.js';
+  projectHomeDir } from './project.js';
 import { planIsolationMigration } from './project-isolation-status.js';
 import { webGroupProvisionCommands } from './project-web-group.js';
 import { renderNginxProxy } from './nginx-ssl.js';
@@ -38,7 +37,7 @@ export class ProjectService {
   get(id: string): ProjectDto {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     return this.healRuntimeVersion(row);
   }
@@ -75,7 +74,7 @@ export class ProjectService {
     scaffold?: ReturnType<typeof scaffoldAppTemplate>;
   }> {
     if (!input.name?.trim()) {
-      throw new YskError(ErrorCodes.VALIDATION, '請填寫專案名稱', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.needProjectName'), { httpStatus: 400 });
     }
     let runtime = input.runtime;
     let runtimeVersion = input.runtimeVersion;
@@ -93,8 +92,7 @@ export class ProjectService {
       domain: input.domain,
       runtime,
       runtimeVersion,
-      env: input.env,
-    });
+      env: input.env });
 
     const canOs = this.host.executeEnabled() && this.host.isRoot();
     // Canonical production home: /home/ysk-server-{id}
@@ -107,9 +105,8 @@ export class ProjectService {
       attempted: false,
       ok: false,
       detail: canOs
-        ? '準備建立系統用戶…'
-        : `尚未建立系統用戶（需要系統管理員權限）。意圖 home：${canonicalHome}；目前使用控制面陰影目錄。`,
-    };
+        ? tl('notes.auto.n1055')
+        : tl('notes.auto.t0286', { v0: (canonicalHome) }) };
 
     if (canOs) {
       osProvision = await this.provisionOsUser(
@@ -125,8 +122,7 @@ export class ProjectService {
         osProvision = {
           ...osProvision,
           ok: false,
-          detail: `${osProvision.detail}；已改用陰影 home ${shadowHome}`,
-        };
+          detail: tl('notes.auto.t0287', { v0: (osProvision.detail), v1: (shadowHome) }) };
       }
     }
 
@@ -141,8 +137,7 @@ export class ProjectService {
           name: input.name,
           linuxUser: plan.project.linuxUser,
           canonicalHome,
-          createdAt: new Date().toISOString(),
-        },
+          createdAt: new Date().toISOString() },
         null,
         2,
       ),
@@ -170,8 +165,7 @@ export class ProjectService {
         serverName: input.domain,
         upstream: `http://127.0.0.1:3100`,
         ssl: false,
-        cloudflareRealIp: true,
-      });
+        cloudflareRealIp: true });
       nginxPath = join(confDir, `${plan.project.linuxUser}.conf`);
       writeFileSync(nginxPath, conf, 'utf8');
     }
@@ -183,8 +177,7 @@ export class ProjectService {
         homeDir,
         projectName: input.name,
         domain: input.domain,
-        force: input.forceTemplate,
-      });
+        force: input.forceTemplate });
     }
 
     const aliases = normalizeAliases(input.domainAliases, input.domain);
@@ -206,8 +199,7 @@ export class ProjectService {
       force_https: false,
       hsts: false,
       created_at: now,
-      updated_at: now,
-    };
+      updated_at: now };
     this.projects.insert(row);
     this.audit?.append({
       actor: input.actor,
@@ -219,17 +211,14 @@ export class ProjectService {
         canonicalHome,
         osProvision,
         templateId: input.templateId,
-        scaffold,
-      },
-      ok: true,
-    });
+        scaffold },
+      ok: true });
 
     return {
       project: toDto(row),
       osProvision,
       plan: plan.commands,
-      scaffold,
-    };
+      scaffold };
   }
 
   /**
@@ -249,7 +238,7 @@ export class ProjectService {
   }> {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     if (!this.host.executeEnabled() || !this.host.isRoot()) {
       return {
@@ -257,11 +246,9 @@ export class ProjectService {
         osProvision: {
           attempted: false,
           ok: false,
-          detail: '建立系統用戶需要系統管理員權限',
-        },
+          detail: tl('notes.auto.n0819') },
         requiresExecute: !this.host.executeEnabled(),
-        requiresRoot: !this.host.isRoot(),
-      };
+        requiresRoot: !this.host.isRoot() };
     }
 
     const canonicalHome = projectHomeDir(id);
@@ -282,8 +269,7 @@ export class ProjectService {
       isSafeProjectHomePath(previousHome, {
         projectId: id,
         dataDir: this.dataDir,
-        linuxUser: row.linux_user,
-      })
+        linuxUser: row.linux_user })
     ) {
       commands.push(
         `cp -a ${JSON.stringify(previousHome + '/.')} ${JSON.stringify(canonicalHome + '/')} 2>/dev/null || true`,
@@ -309,15 +295,13 @@ export class ProjectService {
       action: 'project.os_provision',
       resource: id,
       detail: { osProvision, plan: commands, previousHome, canonicalHome },
-      ok: osProvision.ok,
-    });
+      ok: osProvision.ok });
     return {
       ok: osProvision.ok,
       osProvision,
       requiresExecute: false,
       requiresRoot: false,
-      homeDir: osProvision.ok ? canonicalHome : previousHome,
-    };
+      homeDir: osProvision.ok ? canonicalHome : previousHome };
   }
 
   /**
@@ -340,38 +324,35 @@ export class ProjectService {
   }> {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     const plan = planIsolationMigration({
       id: row.id,
       name: row.name,
       linuxUser: row.linux_user,
       homeDir: row.home_dir,
-      osProvisioned: row.os_provisioned,
-    });
+      osProvisioned: row.os_provisioned });
     const notes = [...plan.reasons];
 
     if (!plan.needsMigration && row.os_provisioned && isCanonicalProjectHome(row.home_dir, id)) {
-      notes.push('已符合意圖隔離，無需遷移');
+      notes.push(tl('notes.auto.n0798'));
       return {
         ok: true,
         notes,
         plan,
         requiresExecute: !this.host.executeEnabled(),
         requiresRoot: !this.host.isRoot(),
-        homeDir: row.home_dir,
-      };
+        homeDir: row.home_dir };
     }
 
     if (!this.host.executeEnabled() || !this.host.isRoot()) {
-      notes.push('遷移需要 YSK_EXECUTE + root');
+      notes.push(tl('notes.auto.n1487'));
       return {
         ok: false,
         notes,
         plan,
         requiresExecute: !this.host.executeEnabled(),
-        requiresRoot: !this.host.isRoot(),
-      };
+        requiresRoot: !this.host.isRoot() };
     }
 
     // Stop project unit before moving home
@@ -379,7 +360,7 @@ export class ProjectService {
     await this.host
       .runCommand(['systemctl', 'stop', unit], { timeoutMs: 15_000 })
       .catch(() => undefined);
-    notes.push(`已嘗試停止 ${unit}`);
+    notes.push(tl('notes.auto.t0288', { v0: (unit) }));
 
     const previousHome = row.home_dir;
     const prov = await this.provisionOsIsolation(id, actor);
@@ -392,22 +373,21 @@ export class ProjectService {
         isSafeProjectHomePath(previousHome, {
           projectId: id,
           dataDir: this.dataDir,
-          linuxUser: row.linux_user,
-        })
+          linuxUser: row.linux_user })
       ) {
         // Only remove if canonical has content (project.json or app)
         const canonical = projectHomeDir(id);
         if (existsSync(join(canonical, 'app')) || existsSync(join(canonical, 'project.json'))) {
           try {
             rmSync(previousHome, { recursive: true, force: true });
-            notes.push(`已移除舊 home：${previousHome}`);
+            notes.push(tl('notes.auto.t0289', { v0: (previousHome) }));
           } catch (e) {
             notes.push(
-              `舊 home 未刪（可手動）：${previousHome} — ${e instanceof Error ? e.message : String(e)}`,
+              tl('notes.auto.t0290', { v0: (previousHome), v1: (e instanceof Error ? e.message : String(e)) }),
             );
           }
         } else {
-          notes.push('跳過刪舊 home：目標 canonical 內容不完整');
+          notes.push(tl('notes.auto.n1462'));
         }
       }
     }
@@ -417,8 +397,7 @@ export class ProjectService {
       action: 'project.os_migrate',
       resource: id,
       detail: { plan, notes, ok: prov.ok },
-      ok: prov.ok,
-    });
+      ok: prov.ok });
 
     return {
       ok: prov.ok,
@@ -427,8 +406,7 @@ export class ProjectService {
       osProvision: prov.osProvision,
       requiresExecute: false,
       requiresRoot: false,
-      homeDir: prov.homeDir,
-    };
+      homeDir: prov.homeDir };
   }
 
   private async provisionOsUser(
@@ -458,8 +436,7 @@ export class ProjectService {
     return {
       attempted: true,
       ok,
-      detail: [...results, `id ${linuxUser}: ${userExists}`, `home exists: ${homeOk}`].join('; '),
-    };
+      detail: [...results, `id ${linuxUser}: ${userExists}`, `home exists: ${homeOk}`].join('; ') };
   }
 
   /**
@@ -473,7 +450,7 @@ export class ProjectService {
   ): { project: ProjectDto; scaffold: ReturnType<typeof scaffoldAppTemplate> } {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     const meta = getAppTemplate(templateId);
     const scaffold = scaffoldAppTemplate({
@@ -481,26 +458,23 @@ export class ProjectService {
       homeDir: row.home_dir,
       projectName: row.name,
       domain: row.domain,
-      force,
-    });
+      force });
     this.projects.updateMeta(id, {
       runtime: meta.runtime,
-      runtime_version: meta.runtimeVersion,
-    });
+      runtime_version: meta.runtimeVersion });
     this.audit?.append({
       actor,
       action: 'project.template',
       resource: id,
       detail: { templateId, scaffold },
-      ok: scaffold.ok,
-    });
+      ok: scaffold.ok });
     return { project: this.get(id), scaffold };
   }
 
   async delete(id: string, actor: string, removeFiles = true): Promise<void> {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     // Best-effort stop managed process before removing files
     const pid = row.pid;
@@ -530,10 +504,9 @@ export class ProjectService {
       const safe = isSafeProjectHomePath(row.home_dir, {
         projectId: id,
         dataDir: this.dataDir,
-        linuxUser: row.linux_user,
-      });
+        linuxUser: row.linux_user });
       if (!safe) {
-        deleteNotes.push(`拒絕刪除不安全 home 路徑：${row.home_dir}`);
+        deleteNotes.push(tl('notes.auto.t0291', { v0: (row.home_dir) }));
       } else if (this.host.executeEnabled() && this.host.isRoot()) {
         // Prefer userdel -r when home is passwd home; else rm after userdel
         const ud = await this.host.runCommand(
@@ -567,7 +540,7 @@ export class ProjectService {
           deleteNotes.push(`removed control-plane home ${row.home_dir}`);
         } else {
           deleteNotes.push(
-            `未刪 OS home（需 root）：${row.home_dir}；系統用戶 ${row.linux_user} 可能仍存在`,
+            tl('notes.auto.t0292', { v0: (row.home_dir), v1: (row.linux_user) }),
           );
         }
       }
@@ -589,8 +562,7 @@ export class ProjectService {
       action: 'project.delete',
       resource: id,
       detail: { home_dir: row.home_dir, linux_user: row.linux_user, notes: deleteNotes },
-      ok: true,
-    });
+      ok: true });
   }
 
   /**
@@ -603,7 +575,7 @@ export class ProjectService {
   ): { project: ProjectDto; notes: string[] } {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     const { dirs: cleaned, notes } = normalizeExtraLogDirs(dirs);
     this.projects.updateMeta(id, { log_extra_dirs: cleaned });
@@ -612,8 +584,7 @@ export class ProjectService {
       action: 'project.log_extra_dirs',
       resource: id,
       detail: { dirs: cleaned, notes },
-      ok: true,
-    });
+      ok: true });
     return { project: this.get(id), notes };
   }
 
@@ -635,7 +606,7 @@ export class ProjectService {
   ): ProjectDto {
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
     const domain = patch.domain !== undefined ? patch.domain.trim() || undefined : row.domain;
     const aliases =
@@ -676,15 +647,13 @@ export class ProjectService {
           ? undefined
           : patch.bindIp !== undefined
             ? patch.bindIp.trim() || undefined
-            : row.bind_ip,
-    });
+            : row.bind_ip });
     this.audit?.append({
       actor,
       action: 'project.update_network',
       resource: id,
       detail: { ...patch, httpAuthPass: patch.httpAuthPass ? '***' : undefined },
-      ok: true,
-    });
+      ok: true });
     return this.get(id);
   }
 }
@@ -730,8 +699,7 @@ function toDto(row: ProjectRow): ProjectDto {
     accountLocked: row.account_locked,
     deployEntry: row.deploy_entry,
     lastDeployNotes: row.last_deploy_notes,
-    logExtraDirs: row.log_extra_dirs ?? [],
-  };
+    logExtraDirs: row.log_extra_dirs ?? [] };
 }
 
 function normalizeAliases(aliases: string[] | undefined, primary?: string): string[] {

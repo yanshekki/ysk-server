@@ -3,6 +3,7 @@
  * enroll → confirm code → write ~/.google_authenticator → PAM notes
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionBar,
   Alert,
   Badge,
@@ -38,16 +39,16 @@ type Props = {
   onFlash: (tone: 'ok' | 'error', text: string) => void;
 };
 
-function statusLabel(s: string): string {
+function statusLabel(s: string, t: (k: string) => string): string {
   switch (s) {
     case 'enrolled':
-      return '已產生密鑰';
+      return t('security.ssh.enrollStatusSecret');
     case 'confirmed':
-      return '已確認 App';
+      return t('security.ssh.enrollStatusConfirmed');
     case 'file_written':
-      return '已寫入 home';
+      return t('security.ssh.enrollStatusWritten');
     case 'retired':
-      return '已退役';
+      return t('security.ssh.enrollStatusRetired');
     default:
       return s;
   }
@@ -62,6 +63,7 @@ function statusTone(s: string): 'ok' | 'warn' | 'info' | 'neutral' | 'danger' {
 }
 
 export function Ssh2faPanel({ onFlash }: Props) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<Row[]>([]);
   const [hostNotes, setHostNotes] = useState<string[]>([]);
   const [lights, setLights] = useState<{
@@ -139,7 +141,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
       if (projectId) body.projectId = projectId;
       else if (linuxUser.trim()) body.linuxUser = linuxUser.trim();
       else {
-        onFlash('error', '請選專案或填 Linux 用戶名');
+        onFlash('error', t('security.ssh.needProjectOrUser'));
         return;
       }
       const r = await api.requestRaw<{
@@ -150,7 +152,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
         notes?: string[];
       }>('/api/v1/ssh/2fa', { method: 'POST', body: JSON.stringify(body) });
       if (!r.ok) {
-        onFlash('error', (r.notes ?? []).join('；') || '登記失敗');
+        onFlash('error', (r.notes ?? []).join(' · ') || t('security.ssh.enrollFailed'));
         return;
       }
       setEnrollOpen(false);
@@ -163,10 +165,10 @@ export function Ssh2faPanel({ onFlash }: Props) {
         setConfirmId(r.record.id);
         setConfirmCode('');
       }
-      onFlash('ok', '已產生 SSH 專用 TOTP（與 panel 2FA 分開，除非勾選同步）');
+      onFlash('ok', t('security.ssh.totpGenerated'));
       await refresh();
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '失敗');
+      onFlash('error', e instanceof Error ? e.message : t('common.failed'));
     } finally {
       setBusy(false);
     }
@@ -180,14 +182,14 @@ export function Ssh2faPanel({ onFlash }: Props) {
         `/api/v1/ssh/2fa/${confirmId}/confirm`,
         { method: 'POST', body: JSON.stringify({ code: confirmCode.trim() }) },
       );
-      onFlash(r.ok ? 'ok' : 'error', (r.notes ?? []).join('；') || (r.ok ? '已確認' : '碼錯誤'));
+      onFlash(r.ok ? 'ok' : 'error', (r.notes ?? []).join(' · ') || (r.ok ? t('security.ssh.confirmed') : t('security.ssh.codeWrong')));
       if (r.ok) {
         setReveal(null);
         setConfirmId(null);
         await refresh();
       }
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '失敗');
+      onFlash('error', e instanceof Error ? e.message : t('common.failed'));
     } finally {
       setBusy(false);
     }
@@ -207,16 +209,16 @@ export function Ssh2faPanel({ onFlash }: Props) {
       });
       onFlash(
         r.ok && r.applied ? 'ok' : r.blocked ? 'error' : 'ok',
-        (r.notes ?? []).join('；') ||
+        (r.notes ?? []).join(' · ') ||
           (r.applied
-            ? '已寫入 .google_authenticator'
+            ? t('security.ssh.gaWritten')
             : r.blocked
-              ? '需開啟系統執行權限'
-              : '未完成'),
+              ? t('security.ssh.needExecute')
+              : t('security.ssh.notDone')),
       );
       await refresh();
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '失敗');
+      onFlash('error', e instanceof Error ? e.message : t('common.failed'));
     } finally {
       setBusy(false);
     }
@@ -228,21 +230,21 @@ export function Ssh2faPanel({ onFlash }: Props) {
 
       <Card>
         <CardSection
-          title="SSH 登入第二因素"
-          description="保護 ssh 登入 Linux 用戶。與「帳戶安全」的 panel 2FA 分開；預設獨立 secret。"
+          title={t('security.ssh.ssh2faTitle')}
+          description={t('security.ssh.ssh2faDesc')}
         >
           <div className="ssh-callout">
             <ol className="list-spaced u-mb-0">
-              <li>為 Linux 用戶登記 TOTP（掃碼）</li>
-              <li>確認 App 6 位碼</li>
-              <li>寫入 home <code className="inline">.google_authenticator</code></li>
-              <li>系統安裝 PAM 模組並合併片段（下方）</li>
+              <li>{t('security.ssh.ssh2faStep1')}</li>
+              <li>{t('security.ssh.ssh2faStep2')}</li>
+              <li>{t('security.ssh.ssh2faStep3')} <code className="inline">.google_authenticator</code></li>
+              <li>{t('security.ssh.ssh2faStep4')}</li>
             </ol>
           </div>
           {lights ? (
             <ActionBar className="u-mb-3 u-flex-wrap">
               <Badge tone={lights.package === 'green' ? 'ok' : 'danger'}>
-                套件 {lights.package}
+                {t('security.ssh.pkgLabel', { name: lights.package })}
               </Badge>
               <Badge
                 tone={
@@ -284,7 +286,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                 setEnrollOpen(true);
               }}
             >
-              為用戶登記 SSH 2FA
+              {t('security.ssh.enrollForUser')}
             </Button>
             <Button
               variant="ghost"
@@ -292,19 +294,14 @@ export function Ssh2faPanel({ onFlash }: Props) {
               loading={busy}
               onClick={() => void refresh().catch((e: Error) => setErr(e.message))}
             >
-              重新整理
+              {t('common.refresh')}
             </Button>
           </ActionBar>
 
           {items.length === 0 ? (
             <EmptyState
-              title="尚未為任何 Linux 用戶開啟 SSH 2FA"
-              description="建議先用金鑰登入；2FA 作第二道門。專案 SFTP-only 用戶通常不需要 keyboard-interactive。"
-              action={
-                <Button variant="primary" size="md" onClick={() => setEnrollOpen(true)}>
-                  開始登記
-                </Button>
-              }
+              title={t('security.ssh.ssh2faEmpty')}
+              description={t('security.ssh.ssh2faEmptyHint')}
             />
           ) : (
             <div className="list-panel">
@@ -313,8 +310,8 @@ export function Ssh2faPanel({ onFlash }: Props) {
                   <div className="list-row__main">
                     <div className="list-row__title">
                       <span>{row.linuxUser}</span>
-                      <Badge tone={statusTone(row.status)}>{statusLabel(row.status)}</Badge>
-                      {row.fromPanel ? <Badge tone="warn">與 panel 同源</Badge> : null}
+                      <Badge tone={statusTone(row.status)}>{statusLabel(row.status, t)}</Badge>
+                      {row.fromPanel ? <Badge tone="warn">{t('security.ssh.fromPanelBadge')}</Badge> : null}
                     </div>
                     <div className="list-row__meta">
                       <span>{row.homeDir}</span>
@@ -333,7 +330,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                             setReveal(null);
                           }}
                         >
-                          輸入驗證碼
+                          {t('security.ssh.enterCode')}
                         </Button>
                       ) : null}
                       {row.status === 'confirmed' || row.status === 'file_written' ? (
@@ -343,7 +340,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                           loading={busy}
                           onClick={() => void doInstall(row.id)}
                         >
-                          {row.status === 'file_written' ? '重寫 home 檔' : '寫入 home'}
+                          {row.status === 'file_written' ? t('security.ssh.rewriteHome') : t('security.ssh.writeHome')}
                         </Button>
                       ) : null}
                       <Button
@@ -357,14 +354,14 @@ export function Ssh2faPanel({ onFlash }: Props) {
                               method: 'DELETE',
                             })
                             .then(() => {
-                              onFlash('ok', '已退役');
+                              onFlash('ok', t('security.ssh.retiredOk'));
                               return refresh();
                             })
                             .catch((e: Error) => onFlash('error', e.message))
                             .finally(() => setBusy(false));
                         }}
                       >
-                        退役
+                        {t('security.ssh.retire')}
                       </Button>
                     </ActionBar>
                   </div>
@@ -377,10 +374,10 @@ export function Ssh2faPanel({ onFlash }: Props) {
 
       <Card>
         <CardSection
-          title="系統：PAM / sshd（手動或有權限時套用）"
-          description="nullok 避免未寫檔用戶被鎖死。寫檔 ≠ 已要求 TOTP。"
+          title={t('security.ssh.pamTitle')}
+          description={t('security.ssh.pamDesc')}
         >
-          <Field label="PAM 片段（建議併入 /etc/pam.d/sshd）" htmlFor="pam-snip" flush fullWidth>
+          <Field label={t('security.ssh.pamSnippet')} htmlFor="pam-snip" flush fullWidth>
             <textarea
               id="pam-snip"
               rows={5}
@@ -389,7 +386,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               className="u-font-mono"
             />
           </Field>
-          <Field label="sshd 提示" htmlFor="sshd-hint" flush fullWidth>
+          <Field label={t('security.ssh.sshdHint')} htmlFor="sshd-hint" flush fullWidth>
             <textarea
               id="sshd-hint"
               rows={6}
@@ -399,7 +396,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             />
           </Field>
           <Field
-            label="救援用戶（逗號分隔，永不進 strict Match）"
+            label={t('security.ssh.rescueUsers')}
             htmlFor="rec-u"
             flush
           >
@@ -411,7 +408,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             />
           </Field>
           <Field
-            label="Strict Match 預覽（publickey+TOTP、關 password）"
+            label={t('security.ssh.strictPreview')}
             htmlFor="strict-snip"
             flush
             fullWidth
@@ -439,10 +436,10 @@ export function Ssh2faPanel({ onFlash }: Props) {
               size="md"
               onClick={() => {
                 void navigator.clipboard?.writeText(pamSnippet);
-                onFlash('ok', '已複製 PAM 片段');
+                onFlash('ok', t('security.ssh.copiedPam'));
               }}
             >
-              複製 PAM
+              {t('security.ssh.copyPam')}
             </Button>
             <Button
               variant="secondary"
@@ -462,7 +459,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                     },
                   )
                   .then((r) => {
-                    onFlash('ok', (r.notes ?? []).join('；') || 'strict dry-run');
+                    onFlash('ok', (r.notes ?? []).join(' · ') || 'strict dry-run');
                     return refresh();
                   })
                   .catch((e: Error) => onFlash('error', e.message))
@@ -477,12 +474,11 @@ export function Ssh2faPanel({ onFlash }: Props) {
               loading={busy}
               onClick={() => setStrictTotpOpen(true)}
             >
-              套用 Strict 到系統
+              {t('security.ssh.applyStrict')}
             </Button>
           </FormActions>
           <FormHint>
-            套件：<code className="inline">libpam-google-authenticator</code>。保留至少一名未寫
-            2FA 檔的救援管理員（預設 root）。
+            {t('security.ssh.pamPkgHint')}<code className="inline">libpam-google-authenticator</code>{t('security.ssh.pamRescueHint')}
           </FormHint>
         </CardSection>
       </Card>
@@ -490,21 +486,21 @@ export function Ssh2faPanel({ onFlash }: Props) {
       <Modal
         open={enrollOpen}
         onClose={() => setEnrollOpen(false)}
-        title="登記 SSH 2FA"
-        description="預設產生獨立 secret（唔共用 panel）。進階才可同步 panel TOTP。"
+        title={t('security.ssh.enrollModalTitle')}
+        description={t('security.ssh.enrollModalDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setEnrollOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" size="md" loading={busy} onClick={() => void doEnroll()}>
-              產生並顯示密鑰
+              {t('security.ssh.generateShowSecret')}
             </Button>
           </>
         }
       >
         <FormLayout columns={1}>
-          <Field label="專案（建議）" htmlFor="e2-proj" flush>
+          <Field label={t('security.ssh.projectSuggested')} htmlFor="e2-proj" flush>
             <select
               id="e2-proj"
               value={projectId}
@@ -513,7 +509,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                 if (e.target.value) setLinuxUser('');
               }}
             >
-              <option value="">— 或手動填用戶 —</option>
+              <option value="">{t('security.ssh.orManualUser')}</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} · {p.linuxUser}
@@ -522,7 +518,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             </select>
           </Field>
           {!projectId ? (
-            <Field label="Linux 用戶" htmlFor="e2-user" flush>
+            <Field label={t('security.ssh.linuxUser')} htmlFor="e2-user" flush>
               <input
                 id="e2-user"
                 value={linuxUser}
@@ -545,7 +541,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               }}
             />
             <span>
-              進階：使用目前 panel 操作員的 TOTP secret（需輸入 SHARED 確認）
+              {t('security.ssh.advancedSharePanel')}
             </span>
           </label>
         </FormLayout>
@@ -557,8 +553,8 @@ export function Ssh2faPanel({ onFlash }: Props) {
           setReveal(null);
           setConfirmId(null);
         }}
-        title="設定 Authenticator"
-        description="掃碼或輸入密鑰後，用 App 的 6 位碼確認。確認後才寫 home 檔。"
+        title={t('security.ssh.setupAuthTitle')}
+        description={t('security.ssh.setupAuthDesc')}
         size="lg"
         footer={
           <>
@@ -570,7 +566,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                 setConfirmId(null);
               }}
             >
-              稍後
+              {t('security.ssh.later')}
             </Button>
             <Button
               variant="primary"
@@ -579,7 +575,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               disabled={confirmCode.trim().length < 6}
               onClick={() => void doConfirm()}
             >
-              確認驗證碼
+              {t('security.ssh.confirmCodeBtn')}
             </Button>
           </>
         }
@@ -590,7 +586,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               otpauth：
               <code className="inline u-break-all">{reveal.otpauthUrl}</code>
             </FormHint>
-            <Field label="密鑰（base32）" htmlFor="sec" flush fullWidth>
+            <Field label={t('security.ssh.secretBase32')} htmlFor="sec" flush fullWidth>
               <input
                 id="sec"
                 readOnly
@@ -604,17 +600,17 @@ export function Ssh2faPanel({ onFlash }: Props) {
               size="sm"
               onClick={() => {
                 void navigator.clipboard?.writeText(reveal.secret);
-                onFlash('ok', '已複製 secret');
+                onFlash('ok', t('security.ssh.copiedSecret'));
               }}
             >
-              複製 secret
+              {t('security.ssh.copySecret')}
             </Button>
           </>
         ) : (
-          <FormHint>若已掃碼，直接輸入目前 6 位碼即可。</FormHint>
+          <FormHint>{t('security.ssh.scanThenCode')}</FormHint>
         )}
         <div className="u-mt-3">
-          <Field label="驗證碼" htmlFor="c2" flush required>
+          <Field label={t('security.ssh.verifyCode')} htmlFor="c2" flush required>
             <input
               id="c2"
               value={confirmCode}
@@ -631,12 +627,12 @@ export function Ssh2faPanel({ onFlash }: Props) {
       <PromptDialog
         open={strictTotpOpen}
         onClose={() => !busy && setStrictTotpOpen(false)}
-        title="套用 Strict · step-up"
-        description="輸入目前 panel TOTP 驗證碼"
+        title={t('security.ssh.applyStrictStepUp')}
+        description={t('security.ssh.enterPanelTotp')}
         label="TOTP"
         secret
-        placeholder="6 位數字"
-        confirmLabel="套用"
+        placeholder={t('security.digit6Placeholder')}
+        confirmLabel={t('security.ssh.applyBtn')}
         busy={busy}
         onSubmit={async (totp) => {
           setBusy(true);
@@ -655,13 +651,13 @@ export function Ssh2faPanel({ onFlash }: Props) {
             });
             onFlash(
               r.ok ? 'ok' : 'error',
-              (r.notes ?? []).join('；') || (r.ok ? '已套用' : '失敗'),
+              (r.notes ?? []).join(' · ') || (r.ok ? t('security.ssh.appliedOk') : t('common.failed')),
             );
             await refresh();
             setStrictTotpOpen(false);
             return true;
           } catch (e) {
-            onFlash('error', e instanceof Error ? e.message : '失敗');
+            onFlash('error', e instanceof Error ? e.message : t('common.failed'));
             return false;
           } finally {
             setBusy(false);
@@ -672,12 +668,12 @@ export function Ssh2faPanel({ onFlash }: Props) {
       <PromptDialog
         open={sharedConfirmOpen}
         onClose={() => setSharedConfirmOpen(false)}
-        title="共用 panel TOTP secret？"
-        description="風險高。請輸入 SHARED 確認。"
-        label="確認字串"
+        title={t('security.ssh.sharePanelTitle')}
+        description={t('security.ssh.sharePanelDesc')}
+        label={t('security.ssh.confirmString')}
         placeholder="SHARED"
         expectExact="SHARED"
-        confirmLabel="啟用共用"
+        confirmLabel={t('security.ssh.enableShare')}
         danger
         onSubmit={() => {
           setFromPanel(true);

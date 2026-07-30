@@ -56,16 +56,16 @@ export function NodeRuntimePage() {
       title={t('nav.node', { defaultValue: 'Node.js' })}
       status={{
         pill: {
-          label: probe ? '已探測' : '未探測',
+          label: probe ? t('common.probed') : t('common.notProbed'),
           tone: probe ? 'ok' : 'warn',
         },
         items: [
           {
-            label: '探測',
-            value: probe ? '已讀取' : '未探測',
+            label: t('common.probe'),
+            value: probe ? t('runtime.read') : t('common.notProbed'),
             tone: probe ? 'ok' : 'neutral',
           },
-          { label: '目標版本', value: version },
+          { label: t('runtime.targetVersion'), value: version },
         ],
       }}
       actions={<Button
@@ -78,30 +78,30 @@ export function NodeRuntimePage() {
             void run(async () => {
               const r = (await systemApi.runtimes()) as Record<string, unknown>;
               setProbe(r);
-              return { ok: true, notes: ['已探測'], ...r } as unknown as OpsResultLike;
-            }, '已探測');
+              return { ok: true, notes: [t('common.probed')], ...r } as unknown as OpsResultLike;
+            }, t('common.probed'));
           }}
         >
-          重新探測
+          {t('common.reprobe')}
         </Button>
       }
     >
       <WithPageGuide guideId="node">
 
-      <SoftwareInstallBanner feature="node" title="Node.js 尚未安裝" />
+      <SoftwareInstallBanner feature="node" title={t('runtime.nodeMissing')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       {probe ? (
         <Card>
-          <CardSection title="探測結果" description="唯讀">
+          <CardSection title={t('runtime.probeResult')} description={t('runtime.readonly')}>
             <DescriptionList
               columns={2}
               items={Object.entries(probe)
@@ -110,8 +110,8 @@ export function NodeRuntimePage() {
                 .map(([k, v]) => ({ label: k, value: String(v) }))}
             />
             {nodePath != null ? (
-              <p className="muted u-text-sm u-mt-2" style={{ marginBottom: 0 }}>
-                參考：{String(nodePath)}
+              <p className="muted u-text-sm u-mt-2">
+                {t('redis.refPath', { path: String(nodePath) })}
               </p>
             ) : null}
           </CardSection>
@@ -119,18 +119,18 @@ export function NodeRuntimePage() {
       ) : null}
 
       <Card>
-        <CardSection title="安裝 Node.js" description="需系統變更權限與管理員">
+        <CardSection title={t('runtime.installNode')} description={t('runtime.needExecuteAdmin')}>
           <FormLayout columns={2}>
             <Field
-              label="Node 主版本"
+              label={t('runtime.nodeMajor')}
               htmlFor="node-ver"
               flush
               required
-              hint="LTS 建議 20 或 22；與專案 runtime 對齊"
+              hint={t('runtime.nodeMajorHint')}
             >
               <SegRadio
                 name="node-ver"
-                aria-label="Node 主版本"
+                aria-label={t('runtime.nodeMajor')}
                 value={version}
                 onChange={setVersion}
                 options={[
@@ -142,9 +142,9 @@ export function NodeRuntimePage() {
             </Field>
           </FormLayout>
           {hasNode ? (
-            <FormHint>主機上已偵測到 Node；重裝會依權限執行，可能覆蓋現有安裝。</FormHint>
+            <FormHint>{t('runtime.nodeDetectedHint')}</FormHint>
           ) : (
-            <FormHint>安裝完成後請再「重新探測」確認 PATH 與版本。</FormHint>
+            <FormHint>{t('runtime.nodeProbeAfter')}</FormHint>
           )}
           <FormActions>
             <Button
@@ -160,16 +160,16 @@ export function NodeRuntimePage() {
                   });
                   await refresh();
                   return r as OpsResultLike;
-                }, `已安裝 Node ${version}`)
+                }, t('runtime.installedNode', { version }))
               }
             >
-              安裝 Node {version}
+              {t('runtime.installNodeVBtn', { version })}
             </Button>
           </FormActions>
         </CardSection>
       </Card>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('db.opsResult')} result={result} message={msg} busy={busy} />
     
       </WithPageGuide>
     </FeaturePageLayout>

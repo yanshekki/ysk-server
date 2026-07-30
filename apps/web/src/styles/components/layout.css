@@ -1,0 +1,117 @@
+/* —— Lists —— */
+.list-plain {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.list-spaced > li {
+  margin-bottom: var(--space-3);
+}
+
+.list-spaced > li:last-child {
+  margin-bottom: 0;
+}
+
+.list-flush {
+  margin: 0;
+}
+
+/* —— List rows —— */
+.list-panel {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.list-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-4) 1.15rem;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: background var(--transition);
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  font: inherit;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row:hover {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.list-row:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: -2px;
+}
+
+.list-row.is-selected {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.list-row--static {
+  cursor: default;
+}
+
+.list-row--static:hover {
+  background: transparent;
+}
+
+.list-row__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.list-row__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--text-main);
+}
+
+.list-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-sub);
+}
+
+.list-row__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.list-row__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.list-row__chevron {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+

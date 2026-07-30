@@ -3,7 +3,7 @@
  */
 
 import { planSelfUpdate, runSelfUpdate, LocalHostExecutor } from '@ysk/core';
-import { PRODUCT_NAME, type StructuredResult } from '@ysk/shared';
+import { PRODUCT_NAME, type StructuredResult, tl} from '@ysk/shared';
 import { VERSION } from '../version.js';
 
 export async function runUpdate(opts: {
@@ -65,7 +65,7 @@ export async function runUpdate(opts: {
         plan,
         notes: [
           e instanceof Error ? e.message : String(e),
-          '未能確認遠端最新版 — 唔會假裝已是最新',
+          tl('notes.auto.n0975'),
         ],
       },
     };

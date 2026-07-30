@@ -258,4 +258,87 @@ describe('cdn fan-out (PR-C3)', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('fleet-only edge without enqueue is blocked (not fake applied)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnfo-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const edge = upsertCdnNode(db, {
+        name: 'fleet-edge',
+        roles: ['edge'],
+        // no IPv4 → not SSH; healthUrl satisfies node validation
+        publicIpv4: [],
+        healthUrl: 'https://fleet-edge.example.com/health',
+        fleetAgentId: 'session-abc',
+      });
+      const site = upsertCdnSite(db, {
+        name: 'demo',
+        domains: ['f.example.com'],
+        origin: { kind: 'url', url: 'http://o.example.com' },
+        edgeNodeIds: [edge.id],
+      });
+      const r = await fanOutCdnSite({
+        db,
+        host: mockHost({ execute: true }),
+        dataDir: dir,
+        siteId: site.id,
+      });
+      expect(r.edges[0].method).toBe('fleet');
+      expect(r.edges[0].apply_status).toBe('blocked');
+      expect(r.apply_status).toBe('blocked');
+      expect(r.ok).toBe(false);
+      expect(r.blocked).toBe(true);
+      expect(r.edges[0].notes.some((n) => /enqueue|SSH/i.test(n))).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('fleet-only edge with enqueue is written (queued ≠ applied)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnfo-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const edge = upsertCdnNode(db, {
+        name: 'fleet-edge',
+        roles: ['edge'],
+        publicIpv4: [],
+        healthUrl: 'https://fleet-edge.example.com/health',
+        fleetAgentId: 'session-xyz',
+      });
+      const site = upsertCdnSite(db, {
+        name: 'demo',
+        domains: ['q.example.com'],
+        origin: { kind: 'url', url: 'http://o.example.com' },
+        edgeNodeIds: [edge.id],
+      });
+      const payloads: unknown[] = [];
+      const r = await fanOutCdnSite({
+        db,
+        host: mockHost({ execute: true }),
+        dataDir: dir,
+        siteId: site.id,
+        enqueue: (sessionId, payload) => {
+          expect(sessionId).toBe('session-xyz');
+          payloads.push(payload);
+          return { id: 'cmd-12345678' };
+        },
+      });
+      expect(r.edges[0].method).toBe('fleet');
+      expect(r.edges[0].apply_status).toBe('written');
+      expect(r.edges[0].reloaded).toBe(false);
+      expect(r.apply_status).toBe('written');
+      expect(r.ok).toBe(true);
+      expect(payloads[0]).toMatchObject({
+        op: 'cdn.edge.apply',
+        siteId: site.id,
+        edgeNodeId: edge.id,
+      });
+      expect(
+        r.notes.some((n) => /queued|佇列/i.test(n)),
+      ).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
+

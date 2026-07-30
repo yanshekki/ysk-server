@@ -6,12 +6,11 @@
 import { existsSync } from 'node:fs';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
 import type { OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import {
   buildIdentityFileOpts,
   parseSshTarget,
-  resolveIdentityKeyPath,
-} from '../../security/ssh-identity/ops.js';
+  resolveIdentityKeyPath } from '../../security/ssh-identity/ops.js';
 
 export type MigrateSshAuth =
   | { kind: 'identity'; privateKeyPath: string }
@@ -44,8 +43,7 @@ export function parseMigrateTarget(
   return {
     user: p.user,
     host: p.host,
-    port: portOverride && portOverride > 0 ? portOverride : p.port,
-  };
+    port: portOverride && portOverride > 0 ? portOverride : p.port };
 }
 
 export function userAtHost(ep: MigrateSshEndpoint): string {
@@ -61,43 +59,37 @@ export function resolveMigrateAuth(auth: MigrateSshAuth): ResolvedSshAuth {
     if (!existsSync(auth.privateKeyPath)) {
       return {
         ok: false,
-        notes: [`私鑰不存在: ${auth.privateKeyPath}`],
-      };
+        notes: [tl('notes.auto.t0666', { v0: (auth.privateKeyPath) })] };
     }
     return {
       ok: true,
       privateKeyPath: auth.privateKeyPath,
-      notes: [`using key ${auth.privateKeyPath}`],
-    };
+      notes: [`using key ${auth.privateKeyPath}`] };
   }
   if (auth.kind === 'identityId') {
     const key = resolveIdentityKeyPath(auth.dataDir, auth.identityId);
     if (!key.ok || !key.path) {
       return {
         ok: false,
-        notes: key.notes.length ? key.notes : [`identity ${auth.identityId} 不可用`],
-      };
+        notes: key.notes.length ? key.notes : [tl('notes.auto.t0667', { v0: (auth.identityId) })] };
     }
     return {
       ok: true,
       privateKeyPath: key.path,
-      notes: key.notes,
-    };
+      notes: key.notes };
   }
   if (auth.kind === 'password') {
     if (!auth.password) {
-      return { ok: false, notes: ['密碼為空'] };
+      return { ok: false, notes: [tl('notes.auto.n0664')] };
     }
     return {
       ok: true,
       password: auth.password,
-      notes: ['using password (sshpass; not stored)'],
-    };
+      notes: ['using password (sshpass; not stored)'] };
   }
   return {
     ok: true,
-    notes: ['using default agent/keys (BatchMode)'],
-  };
+    notes: ['using default agent/keys (BatchMode)'] };
 }
 
 /** SSH options common to key-based auth */
@@ -134,8 +126,7 @@ export function buildSshArgv(
         '--',
         remoteCommand,
       ],
-      notes: auth.notes,
-    };
+      notes: auth.notes };
   }
   if (auth.password) {
     // sshpass + ssh; password via env SSHPASS safer than -p on cmdline in some cases,
@@ -149,8 +140,7 @@ export function buildSshArgv(
     return {
       ok: true,
       argv: ['bash', '-c', script],
-      notes: [...auth.notes, 'sshpass required for password auth'],
-    };
+      notes: [...auth.notes, 'sshpass required for password auth'] };
   }
   // agent
   return {
@@ -169,8 +159,7 @@ export function buildSshArgv(
       '--',
       remoteCommand,
     ],
-    notes: auth.notes,
-  };
+    notes: auth.notes };
 }
 
 /**
@@ -226,8 +215,7 @@ export function buildRsyncArgv(
     return {
       ok: true,
       argv: ['bash', '-c', script],
-      notes: [...auth.notes, 'rsync via sshpass'],
-    };
+      notes: [...auth.notes, 'rsync via sshpass'] };
   } else {
     sshCmd = `ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=12 -p ${ep.port}`;
   }
@@ -254,8 +242,8 @@ export type SshCommandResult = OpsResultDto & {
 };
 
 function needToolNote(out: string): string | undefined {
-  if (out.includes('YSK_NEED_SSHPASS')) return '目標認證需要 sshpass（未安裝）';
-  if (out.includes('YSK_NEED_RSYNC')) return '來源需要 rsync（未安裝）';
+  if (out.includes('YSK_NEED_SSHPASS')) return tl('notes.auto.n1279');
+  if (out.includes('YSK_NEED_RSYNC')) return tl('notes.auto.n0547');
   return undefined;
 }
 
@@ -276,12 +264,11 @@ export async function runSshCommand(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '伺服器未開啟系統變更權限，無法建立 SSH 連線',
-      notes: ['SSH 需要 YSK_EXECUTE=1'],
+      blockMessage: tl('notes.auto.n0530'),
+      notes: [tl('notes.auto.n0187')],
       stdout: '',
       stderr: '',
-      exitCode: -1,
-    }) as SshCommandResult;
+      exitCode: -1 }) as SshCommandResult;
   }
 
   const resolved = resolveMigrateAuth(input.auth);
@@ -292,8 +279,7 @@ export async function runSshCommand(input: {
       notes: resolved.notes,
       stdout: '',
       stderr: '',
-      exitCode: -1,
-    }) as SshCommandResult;
+      exitCode: -1 }) as SshCommandResult;
   }
 
   const built = buildSshArgv(input.endpoint, resolved, input.remoteCommand);
@@ -304,13 +290,11 @@ export async function runSshCommand(input: {
       notes: built.notes,
       stdout: '',
       stderr: '',
-      exitCode: -1,
-    }) as SshCommandResult;
+      exitCode: -1 }) as SshCommandResult;
   }
 
   const r = await input.host.runCommand(built.argv, {
-    timeoutMs: input.timeoutMs ?? 60_000,
-  });
+    timeoutMs: input.timeoutMs ?? 60_000 });
   const out = `${r.stdout || ''}${r.stderr || ''}`;
   const tool = needToolNote(out);
   if (tool) {
@@ -321,8 +305,7 @@ export async function runSshCommand(input: {
       notes: [tool, ...built.notes],
       stdout: r.stdout,
       stderr: r.stderr,
-      exitCode: r.exitCode,
-    }) as SshCommandResult;
+      exitCode: r.exitCode }) as SshCommandResult;
   }
 
   const ok = r.exitCode === 0;
@@ -332,13 +315,12 @@ export async function runSshCommand(input: {
     notes: [
       ok
         ? `SSH ok ${userAtHost(input.endpoint)}`
-        : `SSH 失敗 exit=${r.exitCode}: ${out.slice(0, 400)}`,
+        : tl('notes.auto.t0668', { v0: (r.exitCode), v1: (out.slice(0, 400)) }),
       ...built.notes,
     ],
     stdout: r.stdout,
     stderr: r.stderr,
-    exitCode: r.exitCode,
-  }) as SshCommandResult;
+    exitCode: r.exitCode }) as SshCommandResult;
 }
 
 /**
@@ -359,22 +341,20 @@ export async function rsyncToRemote(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '伺服器未開啟系統變更權限，無法 rsync',
-      notes: ['rsync 需要 YSK_EXECUTE=1'],
+      blockMessage: tl('notes.auto.n0036'),
+      notes: [tl('notes.auto.n0422')],
       stdout: '',
       stderr: '',
-      exitCode: -1,
-    }) as SshCommandResult;
+      exitCode: -1 }) as SshCommandResult;
   }
   if (!existsSync(input.localPath)) {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: [`本地路徑不存在: ${input.localPath}`],
+      notes: [tl('notes.auto.t0669', { v0: (input.localPath) })],
       stdout: '',
       stderr: '',
-      exitCode: -1,
-    }) as SshCommandResult;
+      exitCode: -1 }) as SshCommandResult;
   }
 
   const resolved = resolveMigrateAuth(input.auth);
@@ -385,8 +365,7 @@ export async function rsyncToRemote(input: {
       notes: resolved.notes,
       stdout: '',
       stderr: '',
-      exitCode: -1,
-    }) as SshCommandResult;
+      exitCode: -1 }) as SshCommandResult;
   }
 
   const built = buildRsyncArgv(
@@ -403,13 +382,11 @@ export async function rsyncToRemote(input: {
       notes: built.notes,
       stdout: '',
       stderr: '',
-      exitCode: -1,
-    }) as SshCommandResult;
+      exitCode: -1 }) as SshCommandResult;
   }
 
   const r = await input.host.runCommand(built.argv, {
-    timeoutMs: input.timeoutMs ?? 3_600_000,
-  });
+    timeoutMs: input.timeoutMs ?? 3_600_000 });
   const out = `${r.stdout || ''}${r.stderr || ''}`;
   const tool = needToolNote(out);
   if (tool) {
@@ -420,8 +397,7 @@ export async function rsyncToRemote(input: {
       notes: [tool],
       stdout: r.stdout,
       stderr: r.stderr,
-      exitCode: r.exitCode,
-    }) as SshCommandResult;
+      exitCode: r.exitCode }) as SshCommandResult;
   }
   const ok = r.exitCode === 0;
   return assertHonestOps({
@@ -430,13 +406,12 @@ export async function rsyncToRemote(input: {
     notes: [
       ok
         ? `rsync ${input.dryRun ? 'dry-run ' : ''}${input.localPath} → ${userAtHost(input.endpoint)}:${input.remotePath}`
-        : `rsync 失敗 exit=${r.exitCode}: ${out.slice(0, 400)}`,
+        : tl('notes.auto.t0670', { v0: (r.exitCode), v1: (out.slice(0, 400)) }),
       ...built.notes,
     ],
     stdout: r.stdout,
     stderr: r.stderr,
-    exitCode: r.exitCode,
-  }) as SshCommandResult;
+    exitCode: r.exitCode }) as SshCommandResult;
 }
 
 /** Exported for tests */

@@ -1,27 +1,10 @@
 /**
  * AI / LLM feature — tasks + playbooks (untrusted LLM; allowlist only).
  */
+import type { AiTask, PlaybookSummary } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type AiTask = {
-  id: string;
-  prompt: string;
-  status: string;
-  planSummary: string;
-  steps: Array<{
-    id: string;
-    tool: string;
-    status: string;
-    requiresApproval: boolean;
-    error?: string;
-  }>;
-};
-
-export type PlaybookSummary = {
-  id: string;
-  name: string;
-  description: string;
-};
+export type { AiTask, PlaybookSummary } from '@ysk/shared';
 
 export const llmApi = {
   listTasks: () => api.requestRaw<{ items: AiTask[] }>('/api/v1/ai/tasks'),

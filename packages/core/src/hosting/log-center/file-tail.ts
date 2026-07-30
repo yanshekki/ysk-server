@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Path-safe file tail for log center.
  */
@@ -67,8 +68,7 @@ export function queryFileLog(opts: {
       lineCount: 0,
       truncated: false,
       notes: allowed.notes,
-      blocked: true,
-    };
+      blocked: true };
   }
   const maxLines = clampLines(opts.lines);
   const maxBytes = opts.maxBytes ?? 2 * 1024 * 1024;
@@ -78,12 +78,12 @@ export function queryFileLog(opts: {
     if (g) {
       const lower = g.toLowerCase();
       lines = lines.filter((l) => l.toLowerCase().includes(lower));
-      notes.push(`應用層 filter：${lines.length} 行匹配`);
+      notes.push(tl('notes.auto.t0765', { v0: (lines.length) }));
     }
     if (opts.maskSecrets !== false) {
       lines = lines.map(maskSecrets);
     }
-    notes.push(`檔案 ${allowed.path} · ${bytes} bytes · 顯示 ${lines.length} 行`);
+    notes.push(tl('notes.auto.t0766', { v0: (allowed.path), v1: (bytes), v2: (lines.length) }));
     return {
       ok: true,
       source: allowed.path,
@@ -91,8 +91,7 @@ export function queryFileLog(opts: {
       lineCount: lines.length,
       truncated,
       notes,
-      rawBytes: bytes,
-    };
+      rawBytes: bytes };
   } catch (e) {
     return {
       ok: false,
@@ -100,8 +99,7 @@ export function queryFileLog(opts: {
       lines: [],
       lineCount: 0,
       truncated: false,
-      notes: [e instanceof Error ? e.message : '讀取失敗'],
-      blocked: true,
-    };
+      notes: [e instanceof Error ? e.message : tl('notes.readFailed')],
+      blocked: true };
   }
 }

@@ -12,6 +12,7 @@ export interface FieldProps {
   fullWidth?: boolean;
   /** Optional technical key chip (subtle; avoid for primary labels) */
   techKey?: string;
+  className?: string;
 }
 
 /**
@@ -29,12 +30,14 @@ export function Field({
   flush,
   fullWidth,
   techKey,
+  className,
 }: FieldProps) {
   const cls = [
     'field',
     flush ? 'field--flush' : '',
     fullWidth ? 'field--full' : '',
     error ? 'field--error' : '',
+    className ?? '',
   ]
     .filter(Boolean)
     .join(' ');

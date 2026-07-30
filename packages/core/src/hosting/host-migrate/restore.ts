@@ -16,7 +16,7 @@ import type {
   MigrateJobDto,
   OpsResultDto,
 } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { importSqlDatabase } from '../db-dump.js';
@@ -49,16 +49,16 @@ export function ensureControlPlaneFiles(dataDir: string): RestoreItem {
   let ok = true;
   if (!existsSync(ysk)) {
     ok = false;
-    notes.push(`缺少 ${ysk}`);
-  } else notes.push('ysk.json 存在');
+    notes.push(tl('notes.tpl.missing', { name: ysk }));
+  } else notes.push(tl('notes.auto.n0479'));
   if (!existsSync(master) && !process.env.YSK_SECRETS_KEY) {
-    notes.push('警告：無 secrets/ssh/.master.key 且無 YSK_SECRETS_KEY（vault/2FA 可能無法解密）');
+    notes.push(tl('notes.auto.n1434'));
   } else if (existsSync(master)) {
-    notes.push('secrets master key 存在');
+    notes.push(tl('notes.auto.n0426'));
   }
   const config = join(dataDir, 'config.json');
   if (!existsSync(config)) {
-    notes.push('警告：缺 config.json（可稍後 setup 補）');
+    notes.push(tl('notes.auto.n1435'));
   }
   return {
     id: 'control-plane',
@@ -83,13 +83,13 @@ export async function restoreOsUser(input: {
       kind: 'os-user',
       ok: false,
       blocked: true,
-      notes: ['useradd 需要 YSK_EXECUTE + root'],
+      notes: [tl('notes.auto.n0459')],
     };
   }
 
   const user = p.linux_user.replace(/[^a-zA-Z0-9_-]/g, '');
   if (!user) {
-    return { id, kind: 'os-user', ok: false, notes: ['無效 linux_user'] };
+    return { id, kind: 'os-user', ok: false, notes: [tl('notes.auto.n1103')] };
   }
   const group = (p.linux_group || user).replace(/[^a-zA-Z0-9_-]/g, '') || user;
   const home = p.home_dir;
@@ -133,9 +133,9 @@ export async function restoreOsUser(input: {
   notes.push(
     ok
       ? out.includes('YSK_USER_CREATED')
-        ? `已建立用戶 ${user} uid=${p.uid ?? 'auto'}`
-        : `用戶已存在 ${user}`
-      : `useradd 失敗: ${out.slice(0, 200)}`,
+        ? tl('notes.auto.t0607', { v0: (user), v1: (p.uid ?? 'auto') })
+        : tl('notes.auto.t0608', { v0: (user) })
+      : tl('notes.auto.t0609', { v0: (out.slice(0, 200)) }),
   );
 
   // Ensure ysk-web group optional
@@ -159,7 +159,7 @@ export async function restoreOsUser(input: {
       { timeoutMs: 120_000 },
     );
     const chOk = ch.exitCode === 0 && ch.stdout.includes('YSK_CHOWN_OK');
-    notes.push(chOk ? `chown ${home}` : `chown 失敗: ${(ch.stderr || ch.stdout).slice(0, 120)}`);
+    notes.push(chOk ? `chown ${home}` : tl('notes.auto.t0610', { v0: ((ch.stderr || ch.stdout).slice(0, 120)) }));
     return {
       id,
       kind: 'os-user',
@@ -167,7 +167,7 @@ export async function restoreOsUser(input: {
       notes,
     };
   }
-  notes.push(`home 不存在，略過 chown: ${home}`);
+  notes.push(tl('notes.auto.t0611', { v0: (home) }));
   return { id, kind: 'os-user', ok, notes };
 }
 
@@ -186,7 +186,7 @@ export async function restoreSqlDatabase(input: {
       id: `sql:${name}`,
       kind: 'sql',
       ok: false,
-      notes: ['manifest 無 dumpRelPath — 未打包？'],
+      notes: [tl('notes.auto.n0326')],
     };
   }
   const sqlPath = join(input.dataDir, input.db.dumpRelPath);
@@ -195,7 +195,7 @@ export async function restoreSqlDatabase(input: {
       id: `sql:${name}`,
       kind: 'sql',
       ok: false,
-      notes: [`dump 檔不存在或空: ${sqlPath}`],
+      notes: [tl('notes.auto.t0612', { v0: (sqlPath) })],
     };
   }
 
@@ -255,12 +255,12 @@ export async function restoreRedisInstance(input: {
       id,
       kind: 'redis',
       ok: false,
-      notes: ['manifest 無 rdbRelPath'],
+      notes: [tl('notes.auto.n0327')],
     };
   }
   const rdb = join(input.dataDir, input.redis.rdbRelPath);
   if (!existsSync(rdb)) {
-    return { id, kind: 'redis', ok: false, notes: [`RDB 不存在: ${rdb}`] };
+    return { id, kind: 'redis', ok: false, notes: [tl('notes.auto.t0613', { v0: (rdb) })] };
   }
   if (!input.host.executeEnabled()) {
     return {
@@ -268,7 +268,7 @@ export async function restoreRedisInstance(input: {
       kind: 'redis',
       ok: false,
       blocked: true,
-      notes: ['Redis 還原需要 YSK_EXECUTE'],
+      notes: [tl('notes.auto.n0176')],
     };
   }
 
@@ -282,7 +282,7 @@ export async function restoreRedisInstance(input: {
     ['bash', '-c', 'systemctl stop redis-server 2>/dev/null || systemctl stop redis 2>/dev/null || true'],
     { timeoutMs: 30_000 },
   );
-  notes.push('已嘗試 stop redis');
+  notes.push(tl('notes.auto.n0750'));
 
   const cfg = await input.host.runCommand(
     [
@@ -323,8 +323,8 @@ export async function restoreRedisInstance(input: {
     (outCp.includes('YSK_RDB_RESTORED') || existsSync(dest));
   notes.push(
     copied
-      ? `已還原 RDB → ${dest}`
-      : `複製 RDB 失敗: ${outCp.slice(0, 150)}`,
+      ? tl('notes.auto.t0614', { v0: (dest) })
+      : tl('notes.auto.t0615', { v0: (outCp.slice(0, 150)) }),
   );
 
   const start = await input.host.runCommand(
@@ -336,7 +336,7 @@ export async function restoreRedisInstance(input: {
     { timeoutMs: 30_000 },
   );
   const pong = (start.stdout || '').includes('PONG');
-  notes.push(pong ? 'redis PONG' : `redis 啟動/ping: ${(start.stdout || start.stderr || '').slice(0, 80)}`);
+  notes.push(pong ? 'redis PONG' : tl('notes.auto.t0616', { v0: ((start.stdout || start.stderr || '').slice(0, 80)) }));
 
   return {
     id,
@@ -365,8 +365,8 @@ export async function restoreOnHost(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: 'restore 需要 YSK_EXECUTE=1',
-      notes: ['未開啟系統變更權限'],
+      blockMessage: tl('notes.auto.n0419'),
+      notes: [tl('ops.blocked.needExecuteShort')],
       items: [],
     }) as RestoreResult;
   }
@@ -386,7 +386,7 @@ export async function restoreOnHost(input: {
     },
   });
   if (!cp.ok) {
-    setMigratePhase(dataDir, input.job, 'failed', 'control plane 檔案不完整');
+    setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n0241'));
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
@@ -450,7 +450,7 @@ export async function restoreOnHost(input: {
         id: `redis:${red.id}`,
         kind: 'redis',
         ok: false,
-        notes: ['無 rdbRelPath'],
+        notes: [tl('notes.auto.n1083')],
       });
       continue;
     }
@@ -459,7 +459,7 @@ export async function restoreOnHost(input: {
         id: `redis:${red.id}`,
         kind: 'redis',
         ok: true,
-        notes: ['共用同一 RDB，已還原'],
+        notes: [tl('notes.auto.n0592')],
       });
       continue;
     }
@@ -495,7 +495,7 @@ export async function restoreOnHost(input: {
       kind: 'control-plane',
       ok: true,
       notes: [
-        `提示：${pkg} 不存在 — dump 應在 dataDir 隨 rsync 到達（dumpRelPath）`,
+        tl('notes.auto.t0617', { v0: (pkg) }),
       ],
     });
   }
@@ -511,7 +511,7 @@ export async function restoreOnHost(input: {
   const blocked = items.some((i) => i.blocked);
 
   if (hardFail || !cp.ok) {
-    setMigratePhase(dataDir, input.job, 'failed', 'restore 有失敗項');
+    setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n0417'));
   }
 
   writeMigrateProgress(dataDir, input.job.id, {
@@ -524,7 +524,7 @@ export async function restoreOnHost(input: {
     blocked: blocked || undefined,
     apply_status: hardFail ? (blocked ? 'blocked' : 'failed') : 'applied',
     notes: [
-      hardFail ? 'restore 未完全成功' : 'restore 完成',
+      hardFail ? tl('notes.auto.n0418') : tl('notes.auto.n0416'),
       `users ${input.manifest.projects.length} · sql ${input.manifest.databases.length} · redis ${input.manifest.redis.length}`,
       ...items.filter((i) => !i.ok).flatMap((i) => i.notes),
     ],

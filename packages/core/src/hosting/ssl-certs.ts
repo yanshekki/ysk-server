@@ -13,7 +13,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID, X509Certificate } from 'node:crypto';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { YskDatabase } from '../db/database.js';
 
 export interface StoredCertificate {
@@ -56,12 +56,12 @@ const PEM_KEY =
 
 export function validatePemBundle(fullchain: string, privkey: string): void {
   if (!PEM_CERT.test(fullchain)) {
-    throw new YskError(ErrorCodes.VALIDATION, 'fullchain 必須是 PEM 憑證', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0295'), {
       httpStatus: 400,
     });
   }
   if (!PEM_KEY.test(privkey)) {
-    throw new YskError(ErrorCodes.VALIDATION, 'privkey 必須是 PEM 私鑰', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0389'), {
       httpStatus: 400,
     });
   }
@@ -73,12 +73,12 @@ export function normalizeDomain(domain: string): string {
   if (d.startsWith('*.')) {
     const base = d.slice(2);
     if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(base) || base.length < 3 || base.includes('..')) {
-      throw new YskError(ErrorCodes.VALIDATION, '萬用字元域名無效', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1346'), { httpStatus: 400 });
     }
     return d;
   }
   if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(d) || d.length < 3 || d.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, '域名無效', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0629'), { httpStatus: 400 });
   }
   return d;
 }
@@ -149,7 +149,7 @@ export function uploadCertificate(input: {
     privkey_path,
     apply_status: 'uploaded',
     ok: true,
-    notes: [`憑證檔已寫入 ${dir}`],
+    notes: [tl('notes.auto.t0412', { v0: (dir) })],
     created_at: existing?.created_at ?? now,
     updated_at: now,
     actor: input.actor,
@@ -346,15 +346,15 @@ export function deleteCertificate(
   else if (domain.startsWith('disk-')) domain = domain.slice(5);
 
   if (!domain) {
-    return { ok: false, domain: '', notes: ['domain 找不到'] };
+    return { ok: false, domain: '', notes: [tl('notes.auto.n0260')] };
   }
 
   const certDir = join(dataDir, 'certs', domain);
   if (existsSync(certDir)) {
     rmSync(certDir, { recursive: true, force: true });
-    notes.push(`已刪除 ${certDir}`);
+    notes.push(tl('notes.tpl.deleted', { name: certDir }));
   } else {
-    notes.push('本地無憑證檔（或從未上傳）');
+    notes.push(tl('notes.auto.n0992'));
   }
 
   const before = db.snapshot.certificates.length;
@@ -362,7 +362,7 @@ export function deleteCertificate(
     (c) => String(c.domain).toLowerCase() !== domain,
   );
   const removed = before - db.snapshot.certificates.length;
-  notes.push(removed > 0 ? `已移除 ${removed} 筆登記` : '無登記紀錄');
+  notes.push(removed > 0 ? tl('notes.auto.t0413', { v0: (removed) }) : tl('notes.auto.n1196'));
   db.persist();
   return { ok: true, domain, notes };
 }

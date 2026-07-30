@@ -4,7 +4,7 @@
  * Never fakes success without a token or when API fails.
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { planDnsZone, type DnsRecordPlan } from './extras.js';
 import type { YskDatabase } from '../db/database.js';
 
@@ -40,8 +40,7 @@ const defaultFetch: CfFetch = async (url, init) => {
   return {
     ok: res.ok,
     status: res.status,
-    json: () => res.json() as Promise<unknown>,
-  };
+    json: () => res.json() as Promise<unknown> };
 };
 
 export function planToCloudflareRecords(
@@ -60,8 +59,7 @@ export function planToCloudflareRecords(
         ttl: r.ttl,
         proxied: false,
         // store priority in content as CF API uses priority field — handled in apply
-        ...({ priority: m ? Number(m[1]) : 10 } as { priority?: number }),
-      } as CfDnsRecordInput & { priority?: number };
+        ...({ priority: m ? Number(m[1]) : 10 } as { priority?: number }) } as CfDnsRecordInput & { priority?: number };
     }
     return {
       type: r.type,
@@ -69,8 +67,7 @@ export function planToCloudflareRecords(
       content: r.value,
       ttl: r.ttl,
       // grey cloud default for hosting (Spec: MX/A often DNS-only)
-      proxied: false,
-    };
+      proxied: false };
   });
 }
 
@@ -87,9 +84,7 @@ export async function resolveCloudflareZoneId(
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+      'Content-Type': 'application/json' } });
   if (!res.ok) return null;
   const body = (await res.json()) as {
     success?: boolean;
@@ -115,14 +110,13 @@ export async function applyCloudflareDns(input: {
 }): Promise<CloudflareApplyResult> {
   const zone = input.zone.trim().toLowerCase();
   if (!zone || !input.serverIp) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫 zone 與 server IP', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.dns.needZoneServerIp'), { httpStatus: 400 });
   }
   const plan = planDnsZone({
     zone,
     serverIp: input.serverIp,
     serverIpv6: input.serverIpv6,
-    mailHost: input.mailHost,
-  });
+    mailHost: input.mailHost });
   const planned = [
     ...planToCloudflareRecords(plan, zone),
     ...(input.extraRecords ?? []),
@@ -135,7 +129,7 @@ export async function applyCloudflareDns(input: {
   const notes = [...plan.providerHints];
 
   if (!token) {
-    notes.push('未設定 Cloudflare API Token — 僅 dry-run');
+    notes.push(tl('notes.auto.n0980'));
     return {
       ok: false,
       zoneName: zone,
@@ -145,11 +139,10 @@ export async function applyCloudflareDns(input: {
       errors: ['missing Cloudflare API token'],
       notes,
       requiresToken: true,
-      dryRun: true,
-    };
+      dryRun: true };
   }
   if (input.dryRun) {
-    notes.push('dryRun=true — 不實際變更 API');
+    notes.push(tl('notes.auto.n0275'));
     return {
       ok: true,
       zoneName: zone,
@@ -159,8 +152,7 @@ export async function applyCloudflareDns(input: {
       errors: [],
       notes,
       requiresToken: false,
-      dryRun: true,
-    };
+      dryRun: true };
   }
 
   const fetchImpl = input.fetchImpl ?? defaultFetch;
@@ -175,8 +167,7 @@ export async function applyCloudflareDns(input: {
       errors: [`Could not resolve Cloudflare zone id for ${zone}`],
       notes,
       requiresToken: false,
-      dryRun: false,
-    };
+      dryRun: false };
   }
 
   const created: CloudflareApplyResult['created'] = [];
@@ -190,8 +181,7 @@ export async function applyCloudflareDns(input: {
       name: rec.name,
       content: rec.content,
       ttl: rec.ttl ?? 300,
-      proxied: rec.proxied ?? false,
-    };
+      proxied: rec.proxied ?? false };
     if (rec.type === 'MX' && priority != null) body.priority = priority;
 
     const res = await fetchImpl(
@@ -200,10 +190,8 @@ export async function applyCloudflareDns(input: {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      },
+          'Content-Type': 'application/json' },
+        body: JSON.stringify(body) },
     );
     const json = (await res.json()) as {
       success?: boolean;
@@ -226,7 +214,7 @@ export async function applyCloudflareDns(input: {
   }
 
   const ok = errors.length === 0;
-  notes.push(`已建立 ${created.length}、略過 ${skipped.length}、錯誤 ${errors.length}`);
+  notes.push(tl('notes.auto.t0140', { v0: (created.length), v1: (skipped.length), v2: (errors.length) }));
   return {
     ok,
     zoneId,
@@ -237,8 +225,7 @@ export async function applyCloudflareDns(input: {
     errors,
     notes,
     requiresToken: false,
-    dryRun: false,
-  };
+    dryRun: false };
 }
 
 /**
@@ -259,8 +246,7 @@ export function persistDnsZoneApply(
     ok: result.ok,
     actor,
     updated_at: now,
-    created_at: now,
-  };
+    created_at: now };
   db.snapshot.dns_zones = db.snapshot.dns_zones.filter(
     (z) => String(z.zone) !== result.zoneName,
   );

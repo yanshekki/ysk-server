@@ -10,8 +10,7 @@ import {
   type ApplyStatus,
   type CdnDnsStrategy,
   type CdnNodeDto,
-  type CdnSiteDto,
-} from '@ysk/shared';
+  type CdnSiteDto,  tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import {
@@ -19,8 +18,7 @@ import {
   deleteResource,
   getResource,
   listResources,
-  applyDnsZone,
-} from '../managed-resources.js';
+  applyDnsZone } from '../managed-resources.js';
 import { getCdnNode, probeCdnNode } from './nodes.js';
 import { getCdnSite } from './sites.js';
 
@@ -90,7 +88,7 @@ export function selectGeoEdges(input: {
 
   if (!regions.length) {
     notes.push(
-      'geo：未設定 geoMap — 等同 multi_a（全部健康 edge）。請在站點 dns.geoMap 填 region→nodeIds',
+      tl('notes.auto.n0299'),
     );
     return { selected: input.healthy, notes, byRegion };
   }
@@ -103,7 +101,7 @@ export function selectGeoEdges(input: {
     for (const id of ids ?? []) {
       const e = idToEdge.get(id);
       if (!e) {
-        notes.push(`geo ${region}: 未知節點 ${id}`);
+        notes.push(tl('notes.auto.t0739', { v0: (region), v1: (id) }));
         continue;
       }
       if (e.healthy) {
@@ -124,11 +122,11 @@ export function selectGeoEdges(input: {
   }
 
   if (!selected.length) {
-    notes.push('geoMap 內無健康 edge — 回退全部健康 edge');
+    notes.push(tl('notes.auto.n0298'));
     selected = input.healthy;
   } else {
     notes.push(
-      'geo apex：無 EDNS 時寫入所有 geo 健康 edge 的 multi-A（唔係真·用戶就近 Anycast）',
+      tl('notes.auto.n0297'),
     );
   }
 
@@ -147,7 +145,7 @@ export function expandWeightedRRset(
   const maxRr = opts?.maxRr ?? 20;
   const notes: string[] = [];
   if (!edges.length) {
-    return { ipv4: [], ipv6: [], notes: ['weighted: 無 edge'], replicaPlan: [] };
+    return { ipv4: [], ipv6: [], notes: [tl('notes.auto.n0466')], replicaPlan: [] };
   }
 
   const weights = edges.map((e) => Math.max(1, Math.round(e.node.weight || 100)));
@@ -165,7 +163,7 @@ export function expandWeightedRRset(
       copies[i] -= 1;
     }
     total = copies.reduce((a, b) => a + b, 0);
-    notes.push(`weighted 縮放至 maxRr=${maxRr}（總副本 ${total}）`);
+    notes.push(tl('notes.auto.t0740', { v0: (maxRr), v1: (total) }));
   }
 
   const ipv4: string[] = [];
@@ -178,8 +176,7 @@ export function expandWeightedRRset(
     replicaPlan.push({
       name: e.node.name,
       weight: weights[i],
-      copies: n,
-    });
+      copies: n });
     for (let c = 0; c < n; c++) {
       for (const ip of e.ipv4) ipv4.push(ip);
       for (const ip of e.ipv6) ipv6.push(ip);
@@ -190,7 +187,7 @@ export function expandWeightedRRset(
     `weighted RRset: ${replicaPlan.map((p) => `${p.name}×${p.copies}(w=${p.weight})`).join(', ')}`,
   );
   notes.push(
-    '誠實：部分公網 resolver 會去重相同 A 記錄 — 權重偏差唔保證；高權重 edge 仍建議用更多獨立 IP 或 Anycast',
+    tl('notes.auto.n1377'),
   );
 
   return { ipv4, ipv6, notes, replicaPlan };
@@ -245,8 +242,7 @@ export function planCdnDnsTargets(input: {
     const geo = selectGeoEdges({
       site: input.site,
       healthy,
-      allEdges: input.edges,
-    });
+      allEdges: input.edges });
     selected = geo.selected;
     geoByRegion = geo.byRegion;
     notes.push(...geo.notes);
@@ -257,13 +253,13 @@ export function planCdnDnsTargets(input: {
   if (selected.length < minH) {
     guarded = true;
     notes.push(
-      `minHealthyEdges=${minH} 但僅 ${selected.length} 個健康 edge — 防全滅：改用全部有 IP 的 edge（含 offline）`,
+      tl('notes.auto.t0741', { v0: (minH), v1: (selected.length) }),
     );
     selected = allWithIp.length ? allWithIp : input.edges;
   }
 
   if (!selected.length) {
-    notes.push('無可用 edge IP — 不修改 DNS（保留既有 managed 記錄）');
+    notes.push(tl('notes.auto.n1098'));
   }
 
   let ipv4RRset: string[];
@@ -289,8 +285,7 @@ export function planCdnDnsTargets(input: {
     ipv4RRset,
     ipv6RRset,
     weightedPlan,
-    geoByRegion,
-  };
+    geoByRegion };
 }
 
 function writeManagedARecords(input: {
@@ -326,8 +321,7 @@ function writeManagedARecords(input: {
       ttl: input.ttl,
       managedBy: 'cdn',
       cdnSiteId: input.siteId,
-      apply_status: 'draft',
-    });
+      apply_status: 'draft' });
     touched += 1;
   }
   for (const ip of input.ipv6) {
@@ -339,8 +333,7 @@ function writeManagedARecords(input: {
       ttl: input.ttl,
       managedBy: 'cdn',
       cdnSiteId: input.siteId,
-      apply_status: 'draft',
-    });
+      apply_status: 'draft' });
     touched += 1;
   }
   return touched;
@@ -397,8 +390,7 @@ function collectEdgeSnapshot(node: CdnNodeDto): CdnHealthyEdge {
       node.lastHealth
         ? `lastHealth=${node.lastHealth.ok ? 'ok' : 'fail'}`
         : 'lastHealth=none',
-    ],
-  };
+    ] };
 }
 
 /**
@@ -416,10 +408,9 @@ export async function syncCdnSiteDns(input: {
 }): Promise<CdnDnsSyncResult> {
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 站點', {
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.cdn.siteNotFound'), {
       httpStatus: 404,
-      details: { id: input.siteId },
-    });
+      details: { id: input.siteId } });
   }
 
   const notes: string[] = [];
@@ -428,7 +419,7 @@ export async function syncCdnSiteDns(input: {
   for (const eid of site.edgeNodeIds) {
     let node = getCdnNode(input.db, eid);
     if (!node) {
-      notes.push(`edge ${eid} 不存在 — 略過`);
+      notes.push(tl('notes.auto.t0742', { v0: (eid) }));
       continue;
     }
     if (input.probeFirst !== false) {
@@ -440,7 +431,7 @@ export async function syncCdnSiteDns(input: {
         );
       } catch (e) {
         notes.push(
-          `probe ${node.name} 例外：${e instanceof Error ? e.message : String(e)}`,
+          tl('notes.auto.t0743', { v0: (node.name), v1: (e instanceof Error ? e.message : String(e)) }),
         );
       }
     }
@@ -466,9 +457,8 @@ export async function syncCdnSiteDns(input: {
       selectedIpv6: [],
       weightedPlan: plan.weightedPlan,
       recordsTouched: 0,
-      notes: [...notes, '無 IP 可寫入 DNS'],
-      edges,
-    };
+      notes: [...notes, tl('notes.auto.n1060')],
+      edges };
   }
 
   const zoneRef = resolveZoneId(input.db, site);
@@ -485,10 +475,9 @@ export async function syncCdnSiteDns(input: {
       recordsTouched: 0,
       notes: [
         ...notes,
-        '找不到 DNS zone — 請在站點 dns.zoneId 指定，或先建立匹配域名的 zone',
+        tl('notes.auto.n0845'),
       ],
-      edges,
-    };
+      edges };
   }
 
   // Persist resolved zoneId on site if missing
@@ -497,9 +486,8 @@ export async function syncCdnSiteDns(input: {
     upsertCdnSite(input.db, {
       ...site,
       name: site.name,
-      dns: { ...site.dns, zoneId: zoneRef.zoneId },
-    });
-    notes.push(`已綁定 zoneId=${zoneRef.zoneId} (${zoneRef.zoneName})`);
+      dns: { ...site.dns, zoneId: zoneRef.zoneId } });
+    notes.push(tl('notes.auto.t0744', { v0: (zoneRef.zoneId), v1: (zoneRef.zoneName) }));
   }
 
   const ttl =
@@ -521,7 +509,7 @@ export async function syncCdnSiteDns(input: {
     );
     if (userConflict.length) {
       notes.push(
-        `名稱 ${rel} 已有 user 管理記錄 ${userConflict.length} 筆 — CDN 仍寫入 managedBy=cdn（可能並存；請檢查 zone）`,
+        tl('notes.auto.t0745', { v0: (rel), v1: (userConflict.length) }),
       );
     }
 
@@ -532,8 +520,7 @@ export async function syncCdnSiteDns(input: {
       relName: rel,
       ipv4: selectedIpv4,
       ipv6: selectedIpv6,
-      ttl,
-    });
+      ttl });
     notes.push(
       `${domain} → ${rel} A×${selectedIpv4.length} AAAA×${selectedIpv6.length} ttl=${ttl}`,
     );
@@ -558,7 +545,7 @@ export async function syncCdnSiteDns(input: {
         ...new Set(regionEdges.flatMap((e) => e.ipv6)),
       ];
       if (!v4.length && !v6.length) {
-        notes.push(`geo subdomain ${slug}: 無 IP — 略過`);
+        notes.push(tl('notes.auto.t0746', { v0: (slug) }));
         continue;
       }
       recordsTouched += writeManagedARecords({
@@ -568,8 +555,7 @@ export async function syncCdnSiteDns(input: {
         relName: slug,
         ipv4: v4,
         ipv6: v6,
-        ttl,
-      });
+        ttl });
       notes.push(
         `geo subdomain ${slug} → A×${v4.length} AAAA×${v6.length}`,
       );
@@ -585,8 +571,7 @@ export async function syncCdnSiteDns(input: {
     const zr = await applyDnsZone(input.db, input.dataDir, zoneRef.zoneId, {
       host: input.host,
       validate: true,
-      tryReload: Boolean(input.host?.executeEnabled()),
-    });
+      tryReload: Boolean(input.host?.executeEnabled()) });
     notes.push(...(zr.notes ?? []).map((n) => `zone: ${n}`));
     zoneApplied = zr.apply_status === 'applied';
     apply_status =
@@ -595,16 +580,16 @@ export async function syncCdnSiteDns(input: {
     ok = zr.ok;
     blocked = Boolean(zr.blocked);
     if (zr.blocked) {
-      notes.push('zone apply blocked（無 EXECUTE）— 記錄已更新於控制面');
+      notes.push(tl('notes.auto.n0481'));
       apply_status = 'written';
       ok = true; // control-plane DNS records still updated
     }
   } else {
-    notes.push('略過 zone apply（applyZone=false）— 僅更新控制面 records');
+    notes.push(tl('notes.auto.n1260'));
   }
 
   notes.push(
-    'DNS written ≠ 公網 resolver 立即生效（受 TTL／上游快取影響）',
+    tl('notes.auto.n0098'),
   );
 
   return {
@@ -622,8 +607,7 @@ export async function syncCdnSiteDns(input: {
     notes,
     edges,
     blocked: blocked || undefined,
-    requiresExecute: blocked || undefined,
-  };
+    requiresExecute: blocked || undefined };
 }
 
 /**
@@ -639,8 +623,7 @@ export async function runCdnSiteHealthLoop(input: {
   return syncCdnSiteDns({
     ...input,
     probeFirst: true,
-    applyZone: input.applyZone,
-  });
+    applyZone: input.applyZone });
 }
 
 /**
@@ -659,7 +642,7 @@ export async function runAllCdnSitesHealthLoop(input: {
   const { listCdnSites } = await import('./sites.js');
   const sites = listCdnSites(input.db);
   if (!sites.length) {
-    return { ok: true, notes: ['尚無 CDN 站點'], results: [] };
+    return { ok: true, notes: [tl('notes.auto.n0716')], results: [] };
   }
   const results: CdnDnsSyncResult[] = [];
   for (const s of sites) {
@@ -669,8 +652,7 @@ export async function runAllCdnSitesHealthLoop(input: {
         dataDir: input.dataDir,
         siteId: s.id,
         host: input.host,
-        applyZone: input.applyZone,
-      }),
+        applyZone: input.applyZone }),
     );
   }
   const ok = results.every((r) => r.ok);
@@ -683,8 +665,7 @@ export async function runAllCdnSitesHealthLoop(input: {
           `${r.siteId.slice(0, 8)}: ${r.ok ? 'ok' : 'fail'} ${r.strategy} v4=${r.selectedIpv4.join(',')}`,
       ),
     ],
-    results,
-  };
+    results };
 }
 
 /** List CDN-managed records for a site (debug/UI) */

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Package inventory — real host apt/dpkg data.
  * candidateVersion comes from apt-cache policy / apt list --upgradable, never faked to current.
@@ -30,15 +31,18 @@ export async function collectInventory(host: HostExecutor): Promise<{
   const byName = new Map<string, PackageInventoryItem>();
 
   // —— 1) Upgradable list (authoritative upgrade set) ——
-  const up = await host.runCommand(
-    [
-      'bash',
-      '-c',
-      // -qq quiet; allow non-zero when apt warns about auth
-      `apt-get update -qq 2>/dev/null || true; apt list --upgradable -qq 2>/dev/null | head -n 200`,
-    ],
-    { dryRun: false, timeoutMs: 120_000 },
-  );
+  // apt-get update mutates indexes and needs YSK_EXECUTE; apt list is read-only and works without it.
+  const refreshIndexes = host.executeEnabled();
+  const upScript = refreshIndexes
+    ? `apt-get update -qq 2>/dev/null || true; apt list --upgradable -qq 2>/dev/null | head -n 200`
+    : `apt list --upgradable -qq 2>/dev/null | head -n 200`;
+  if (!refreshIndexes) {
+    notes.push(tl('notes.auto.n1610'));
+  }
+  const up = await host.runCommand(['bash', '-c', upScript], {
+    dryRun: false,
+    timeoutMs: refreshIndexes ? 120_000 : 60_000,
+  });
 
   let upgradableCount = 0;
   if (up.stdout.trim()) {
@@ -61,13 +65,13 @@ export async function collectInventory(host: HostExecutor): Promise<{
       });
     }
     if (upgradableCount > 0) {
-      notes.push(`apt list --upgradable: ${upgradableCount} 可升級`);
+      notes.push(tl('notes.auto.t0463', { v0: (upgradableCount) }));
     }
   } else {
     notes.push(
       up.exitCode !== 0
-        ? `apt list --upgradable 不可用（exit ${up.exitCode}）；改用 apt-cache policy`
-        : 'apt list --upgradable：無輸出（可能無更新或 apt 未就緒）',
+        ? tl('notes.auto.t0464', { v0: (up.exitCode) })
+        : tl('notes.auto.n0226'),
     );
   }
 
@@ -121,10 +125,10 @@ done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 8
         });
       }
     }
-    notes.push(`dpkg+apt-cache policy: ${policyRows} 套件`);
+    notes.push(tl('notes.auto.t0465', { v0: (policyRows) }));
   } else {
     notes.push(
-      `dpkg/apt-cache policy 失敗或空白（exit ${pol.exitCode}）— 可能無 apt 或權限不足`,
+      tl('notes.auto.t0466', { v0: (pol.exitCode) }),
     );
   }
 
@@ -133,7 +137,7 @@ done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 8
   if (!nodeDeb) {
     // Optional: show runtime as info-only when not an apt package — omit fake upgrade path
     notes.push(
-      `Node 進程 ${process.version}（非 apt nodejs 套件則不列入可升級清單）`,
+      tl('notes.auto.t0467', { v0: (process.version) }),
     );
   }
 
@@ -154,7 +158,7 @@ done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 8
   else if (policyRows > 0) source = 'dpkg-only';
   else source = 'dpkg-only';
 
-  notes.push(`真實可升級（candidate ≠ current）: ${realUpgrades}`);
+  notes.push(tl('notes.auto.t0468', { v0: (realUpgrades) }));
 
   return {
     items,

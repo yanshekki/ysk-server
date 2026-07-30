@@ -1,11 +1,14 @@
+import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 /**
  * Hook: probe + one-click install for a feature's required software.
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { softwareApi, type SoftwareInstallResult, type SoftwareStatus } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
 export function useFeatureSoftware(feature: string) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<SoftwareStatus[]>([]);
   const [missing, setMissing] = useState<SoftwareStatus[]>([]);
   const [ready, setReady] = useState(true);
@@ -22,10 +25,10 @@ export function useFeatureSoftware(feature: string) {
       setReady(r.ready);
       return r;
     } catch (e) {
-      setError(e instanceof Error ? e.message : '探測失敗');
+      setError(e instanceof Error ? e.message : t('softwareBanner.probeFailed'));
       throw e;
     }
-  }, [feature]);
+  }, [feature, t]);
 
   useEffect(() => {
     void refresh().catch(() => {
@@ -33,34 +36,37 @@ export function useFeatureSoftware(feature: string) {
     });
   }, [refresh]);
 
-  const present = useCallback((r: SoftwareInstallResult, okLabel: string) => {
-    const notes = sanitizeOperatorNotes([
-      ...(r.blockMessage ? [r.blockMessage] : []),
-      ...(r.notes ?? []),
-      ...(r.results?.flatMap((x) => [
-        ...(x.blockMessage ? [x.blockMessage] : []),
-        ...(x.notes ?? []),
-      ]) ?? []),
-    ]);
-    const blocked = Boolean(r.blocked || r.results?.some((x) => x.blocked));
-    const blockMessage =
-      r.blockMessage ??
-      r.results?.find((x) => x.blockMessage)?.blockMessage ??
-      (blocked ? notes[0] : undefined);
-    setLastResult({
-      ...r,
-      blocked,
-      blockMessage,
-      notes,
-    });
-    if (blocked || r.ok === false) {
-      setError(blockMessage ?? notes[0] ?? '安裝未完成');
-      setMsg(null);
-    } else {
-      setError(null);
-      setMsg(notes[0] ?? okLabel);
-    }
-  }, []);
+  const present = useCallback(
+    (r: SoftwareInstallResult, okLabel: string) => {
+      const notes = sanitizeOperatorNotes([
+        ...(r.blockMessage ? [r.blockMessage] : []),
+        ...(r.notes ?? []),
+        ...(r.results?.flatMap((x) => [
+          ...(x.blockMessage ? [x.blockMessage] : []),
+          ...(x.notes ?? []),
+        ]) ?? []),
+      ]);
+      const blocked = Boolean(r.blocked || r.results?.some((x) => x.blocked));
+      const blockMessage =
+        r.blockMessage ??
+        r.results?.find((x) => x.blockMessage)?.blockMessage ??
+        (blocked ? notes[0] : undefined);
+      setLastResult({
+        ...r,
+        blocked,
+        blockMessage,
+        notes,
+      });
+      if (blocked || r.ok === false) {
+        setError(blockMessage ?? notes[0] ?? t('softwareBanner.installIncomplete'));
+        setMsg(null);
+      } else {
+        setError(null);
+        setMsg(notes[0] ?? okLabel);
+      }
+    },
+    [t],
+  );
 
   const installOne = useCallback(
     async (id: string) => {
@@ -70,14 +76,15 @@ export function useFeatureSoftware(feature: string) {
       setLastResult(null);
       try {
         const r = await softwareApi.installOne(id);
-        present(r, `已安裝 ${r.title ?? id}`);
+        present(r, t('softwareBanner.installedOne', { name: r.title ?? id }));
         await refresh();
         return r;
       } catch (e) {
-        const m = e instanceof Error ? e.message : '安裝失敗';
+        const m = e instanceof Error ? e.message : t('common.installFailed');
         const fail: SoftwareInstallResult = {
           ok: false,
-          blocked: /權限|系統變更|管理員/.test(m),
+          // L3: match backend Chinese / mixed permission notes until error codes exist
+          blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
           notes: [m],
         };
@@ -87,7 +94,7 @@ export function useFeatureSoftware(feature: string) {
         setBusy(false);
       }
     },
-    [present, refresh],
+    [present, refresh, t],
   );
 
   const installAll = useCallback(async () => {
@@ -97,14 +104,15 @@ export function useFeatureSoftware(feature: string) {
     setLastResult(null);
     try {
       const r = await softwareApi.installFeature(feature);
-      present(r, '所需軟件已安裝');
+      present(r, t('softwareBanner.allInstalled'));
       await refresh();
       return r;
     } catch (e) {
-      const m = e instanceof Error ? e.message : '安裝失敗';
+      const m = e instanceof Error ? e.message : t('common.installFailed');
       const fail: SoftwareInstallResult = {
         ok: false,
-        blocked: /權限|系統變更|管理員/.test(m),
+        // L3: match backend Chinese / mixed permission notes until error codes exist
+        blocked: looksLikeBlockedMessage(m),
         blockMessage: m,
         notes: [m],
       };
@@ -113,7 +121,7 @@ export function useFeatureSoftware(feature: string) {
     } finally {
       setBusy(false);
     }
-  }, [feature, present, refresh]);
+  }, [feature, present, refresh, t]);
 
   return {
     items,

@@ -4,17 +4,17 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { parseConfig, type YskConfig } from '@ysk/core';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 /**
  * Load and parse a YSK config file path produced by `ysk-server setup`.
  */
 export function loadConfigFile(configPath: string): YskConfig {
   if (!configPath) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, '請指定設定檔路徑', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.n1409'), { httpStatus: 400 });
   }
   if (!existsSync(configPath)) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, `找不到設定檔：${configPath}`, {
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.t0779', { v0: (configPath) }), {
       httpStatus: 400,
     });
   }
@@ -22,7 +22,7 @@ export function loadConfigFile(configPath: string): YskConfig {
   try {
     raw = JSON.parse(readFileSync(configPath, 'utf8'));
   } catch (err) {
-    throw new YskError(ErrorCodes.CONFIG_INVALID, `無法解析設定檔：${configPath}`, {
+    throw new YskError(ErrorCodes.CONFIG_INVALID, tl('notes.auto.t0780', { v0: (configPath) }), {
       httpStatus: 400,
       cause: err,
     });

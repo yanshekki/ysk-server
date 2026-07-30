@@ -12,7 +12,7 @@ import { applyEmailStack } from '../hosting/system-apply.js';
 import { writeDovecotPassdb } from './dovecot-passdb.js';
 import { applyWebmail } from './webmail-apply.js';
 import { applySmtpRelay } from './relay.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface EmailBootstrapResult {
   ok: boolean;
@@ -56,10 +56,10 @@ export async function bootstrapEmailServer(input: {
 }): Promise<EmailBootstrapResult> {
   const domain = input.domain.trim().toLowerCase();
   if (!domain) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫域名', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.needDomain'), { httpStatus: 400 });
   }
   if (!input.serverIp?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, '請指定伺服器 IP', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.needServerIp'), { httpStatus: 400 });
   }
 
   const email = new EmailService(input.db, input.host, input.audit, input.dataDir);
@@ -79,14 +79,12 @@ export async function bootstrapEmailServer(input: {
         domain,
         serverIp: input.serverIp,
         mailHostname: input.mailHostname,
-        actor: input.actor,
-      });
+        actor: input.actor });
       domainId = created.domain.id;
       steps.push({
         id: 'domain',
         ok: true,
-        detail: `Created domain with DKIM selector ${created.domain.dkim_selector ?? 'default'}`,
-      });
+        detail: `Created domain with DKIM selector ${created.domain.dkim_selector ?? 'default'}` });
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -100,8 +98,7 @@ export async function bootstrapEmailServer(input: {
       written,
       requiresExecute: !input.host.executeEnabled(),
       requiresRoot: !input.host.isRoot(),
-      externalTodos: [],
-    };
+      externalTodos: [] };
   }
 
   // 2. MTA configs under dataDir
@@ -110,8 +107,7 @@ export async function bootstrapEmailServer(input: {
     domain,
     mailHostname: input.mailHostname,
     host: input.host,
-    installPackages: input.installPackages,
-  });
+    installPackages: input.installPackages });
   written.push(...mta.written);
   notes.push(...mta.notes);
   steps.push({
@@ -119,8 +115,7 @@ export async function bootstrapEmailServer(input: {
     ok: mta.ok,
     detail: mta.ok
       ? `MTA configs written (${mta.written.length} files)`
-      : `MTA install incomplete: ${mta.notes.filter((n) => /skip|YSK_EXECUTE|fail/i.test(n)).join('; ') || 'see notes'}`,
-  });
+      : `MTA install incomplete: ${mta.notes.filter((n) => /skip|YSK_EXECUTE|fail/i.test(n)).join('; ') || 'see notes'}` });
 
   // 3. Optional admin mailbox
   if (input.adminLocalPart) {
@@ -128,15 +123,13 @@ export async function bootstrapEmailServer(input: {
       const mb = await email.createMailbox(domainId, {
         localPart: input.adminLocalPart,
         password: input.adminPassword,
-        actor: input.actor,
-      });
+        actor: input.actor });
       written.push(...mb.written);
       notes.push(...mb.notes);
       steps.push({
         id: 'mailbox',
         ok: mb.ok,
-        detail: `Mailbox ${String(mb.mailbox.address)} status=${String(mb.mailbox.status)}`,
-      });
+        detail: `Mailbox ${String(mb.mailbox.address)} status=${String(mb.mailbox.status)}` });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       // already exists is soft-ok
@@ -151,21 +144,18 @@ export async function bootstrapEmailServer(input: {
       dataDir: input.dataDir,
       db: input.db,
       domain,
-      domainId,
-    });
+      domainId });
     written.push(...pd.written);
     notes.push(...pd.notes);
     steps.push({
       id: 'dovecot-passdb',
       ok: pd.ok,
-      detail: `Passdb mailboxes=${pd.mailboxCount}`,
-    });
+      detail: `Passdb mailboxes=${pd.mailboxCount}` });
   } catch (e) {
     steps.push({
       id: 'dovecot-passdb',
       ok: false,
-      detail: e instanceof Error ? e.message : String(e),
-    });
+      detail: e instanceof Error ? e.message : String(e) });
   }
 
   // 5. Optional relay
@@ -179,21 +169,18 @@ export async function bootstrapEmailServer(input: {
         username: input.relay.username,
         password: input.relay.password,
         security: 'starttls',
-        domain,
-      },
+        domain },
       applySystem: Boolean(input.installPackages),
       db: input.db,
-      actor: input.actor,
-    });
+      actor: input.actor });
     written.push(...relay.written);
     notes.push(...relay.notes);
     steps.push({
       id: 'smtp-relay',
       ok: relay.ok,
       detail: relay.appliedToSystem
-        ? '中繼已套用到系統'
-        : '中繼設定已寫入 dataDir（套用到系統需開啟系統變更）',
-    });
+        ? tl('notes.auto.n0502')
+        : tl('notes.auto.n0503') });
   }
 
   // 6. Webmail plan
@@ -204,15 +191,13 @@ export async function bootstrapEmailServer(input: {
       domain: `webmail.${domain}`,
       imapHost: input.mailHostname ?? `mail.${domain}`,
       smtpHost: input.mailHostname ?? `mail.${domain}`,
-      download: false,
-    });
+      download: false });
     written.push(...wm.written);
     notes.push(...wm.notes);
     steps.push({
       id: 'webmail',
       ok: wm.ok,
-      detail: `Webmail ${wm.mode} for webmail.${domain}`,
-    });
+      detail: `Webmail ${wm.mode} for webmail.${domain}` });
   }
 
   const bundle = email.getDnsBundle(domainId);
@@ -230,10 +215,8 @@ export async function bootstrapEmailServer(input: {
     detail: {
       domainId,
       steps,
-      installPackages: Boolean(input.installPackages),
-    },
-    ok: steps.every((s) => s.ok),
-  });
+      installPackages: Boolean(input.installPackages) },
+    ok: steps.every((s) => s.ok) });
 
   const ok = steps.every((s) => s.ok);
   return {
@@ -248,7 +231,5 @@ export async function bootstrapEmailServer(input: {
     externalTodos: bundle.externalTodos.map((t) => ({
       id: t.id,
       title: t.title,
-      description: t.description,
-    })),
-  };
+      description: t.description })) };
 }

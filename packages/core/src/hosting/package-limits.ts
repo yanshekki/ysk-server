@@ -3,7 +3,24 @@
  */
 
 import type { YskDatabase } from '../db/database.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@ysk/shared';
+
+/** Host-level totals (honest: not per-user isolation). */
+export function hostPackageUsage(db: YskDatabase): {
+  scope: 'host';
+  projects: number;
+  mailboxes: number;
+  databases: number;
+} {
+  return {
+    scope: 'host',
+    projects: db.snapshot.projects?.length ?? 0,
+    mailboxes: (db.snapshot.mailboxes ?? []).length,
+    databases:
+      (db.snapshot.mysql_databases ?? []).length +
+      (db.snapshot.postgres_databases ?? []).length,
+  };
+}
 
 export function getUserPackage(db: YskDatabase, userId: string) {
   const u = db.snapshot.users.find((x) => x.id === userId);
@@ -20,7 +37,7 @@ export function assertCanCreateProject(db: YskDatabase, actorUserId?: string): v
   if (pkg.max_projects > 0 && count >= pkg.max_projects) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `已達方案專案上限 ${pkg.max_projects}（package: ${pkg.name}）`,
+      tl('notes.auto.t0302', { v0: (pkg.max_projects), v1: (pkg.name) }),
       { httpStatus: 403 },
     );
   }
@@ -34,7 +51,7 @@ export function assertCanCreateMailbox(db: YskDatabase, actorUserId?: string): v
   if (count >= pkg.max_mailboxes) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `已達方案信箱上限 ${pkg.max_mailboxes}（package: ${pkg.name}）`,
+      tl('notes.auto.t0303', { v0: (pkg.max_mailboxes), v1: (pkg.name) }),
       { httpStatus: 403 },
     );
   }
@@ -49,7 +66,7 @@ export function assertCanCreateDatabase(db: YskDatabase, actorUserId?: string): 
   if (count >= pkg.max_databases) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `已達方案資料庫上限 ${pkg.max_databases}（package: ${pkg.name}）`,
+      tl('notes.auto.t0304', { v0: (pkg.max_databases), v1: (pkg.name) }),
       { httpStatus: 403 },
     );
   }

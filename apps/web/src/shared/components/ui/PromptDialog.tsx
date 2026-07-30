@@ -2,6 +2,7 @@
  * Modal text prompt — replaces window.prompt for operator UX.
  */
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { Field, FormLayout } from './Field';
@@ -32,19 +33,24 @@ export function PromptDialog({
   onSubmit,
   title,
   description,
-  label = '輸入',
+  label,
   placeholder,
   defaultValue = '',
-  confirmLabel = '確認',
-  cancelLabel = '取消',
+  confirmLabel,
+  cancelLabel,
   secret = false,
   danger = false,
   busy = false,
   expectExact,
 }: PromptDialogProps) {
+  const { t } = useTranslation();
   const [value, setValue] = useState(defaultValue);
   const [localBusy, setLocalBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const resolvedLabel = label ?? t('common.input');
+  const resolvedConfirm = confirmLabel ?? t('dialogs.confirmDefault');
+  const resolvedCancel = cancelLabel ?? t('dialogs.cancelDefault');
 
   useEffect(() => {
     if (open) {
@@ -62,7 +68,7 @@ export function PromptDialog({
   async function submit() {
     if (!canSubmit) {
       if (expectExact && value.trim() !== expectExact) {
-        setErr(`請輸入 ${expectExact}`);
+        setErr(t('common.pleaseEnter', { value: expectExact }));
       }
       return;
     }
@@ -73,7 +79,7 @@ export function PromptDialog({
       if (r === false) return;
       onClose();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '失敗');
+      setErr(e instanceof Error ? e.message : t('common.failed'));
     } finally {
       setLocalBusy(false);
     }
@@ -94,7 +100,7 @@ export function PromptDialog({
             onClick={onClose}
             disabled={working}
           >
-            {cancelLabel}
+            {resolvedCancel}
           </Button>
           <Button
             variant={danger ? 'danger' : 'primary'}
@@ -103,13 +109,13 @@ export function PromptDialog({
             disabled={!canSubmit}
             onClick={() => void submit()}
           >
-            {confirmLabel}
+            {resolvedConfirm}
           </Button>
         </>
       }
     >
       <FormLayout>
-        <Field label={label} htmlFor="ysk-prompt-input" flush required>
+        <Field label={resolvedLabel} htmlFor="ysk-prompt-input" flush required>
           <input
             id="ysk-prompt-input"
             type={secret ? 'password' : 'text'}
@@ -128,7 +134,7 @@ export function PromptDialog({
         </Field>
       </FormLayout>
       {err ? (
-        <p className="muted u-text-sm" style={{ color: 'var(--danger, #b91c1c)' }}>
+        <p className="muted u-text-sm u-text-danger">
           {err}
         </p>
       ) : null}

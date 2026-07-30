@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../shared/lib/i18n';
 import type { ProjectDto } from '@ysk/shared';
 import {
   Badge,
@@ -52,18 +53,18 @@ export interface ProjectDeployTabProps {
 
 function processDeployHint(runtime: string): string {
   if (runtime === 'python') {
-    return '預設：venv + pip；ASGI 用 uvicorn（main:app）、Django WSGI 用 gunicorn（pkg.wsgi:application）、腳本則 python app.py。';
+    return i18n.t('projects.deployPyHint');
   }
   if (runtime === 'go') {
-    return '預設：go build -o app . 後啟動 ./app；可略過建置若二進位已存在。';
+    return i18n.t('projects.deployGoHint');
   }
   if (runtime === 'rust') {
-    return '預設：cargo build --release 後啟動 target/release/{crate}；可略過建置。';
+    return i18n.t('projects.deployRustHint');
   }
   if (runtime === 'node') {
-    return '依 Node 啟動行程（entry 預設 server.js）；生產環境建議 systemd。';
+    return i18n.t('projects.deployNodeHint');
   }
-  return '依 runtime 啟動；套用後才對外。';
+  return i18n.t('projects.deployDefaultHint');
 }
 
 function defaultEntryHint(runtime: string): string {
@@ -82,36 +83,36 @@ function envPlaceholder(runtime: string, deployIsPhp: boolean): string {
 }
 
 function checklistItems(runtime: string): string[] {
-  const osFirst = '獨立 Linux 用戶 + /home/ysk-server-{專案 id}（資源分頁可建立）';
+  const osFirst = i18n.t('projects.deployOsStep');
   if (runtime === 'python') {
     return [
       osFirst,
-      'Python 執行環境已就緒',
-      '有 requirements.txt 時需外網 pip',
-      '部署後檢查埠與 /health',
-      '發布 Nginx 反代',
+      i18n.t('projects.deployPyReady'),
+      i18n.t('projects.deployPipNet'),
+      i18n.t('projects.deployCheckPort'),
+      i18n.t('projects.deployPublishProxy'),
     ];
   }
   if (runtime === 'go' || runtime === 'rust') {
     return [
       osFirst,
-      `${runtime === 'go' ? 'Go' : 'Rust'} toolchain 已就緒`,
-      '首次部署會 build（可能較久）',
-      'build 成功後才有可執行檔',
-      '發布 Nginx 反代',
+      i18n.t('projects.deployToolchainReady', { runtime: runtime === 'go' ? 'Go' : 'Rust' }),
+      i18n.t('projects.deployFirstBuild'),
+      i18n.t('projects.deployNeedBinary'),
+      i18n.t('projects.deployPublishProxy'),
     ];
   }
   if (runtime === 'php') {
-    return [osFirst, 'PHP-FPM 版本正確', '部署 PHP／套用 pool', '發布 Nginx + 可選 SSL'];
+    return [osFirst, i18n.t('projects.deployPhpFpmOk'), i18n.t('projects.deployPhpPool'), i18n.t('projects.deployNginxSsl')];
   }
   if (runtime === 'static') {
-    return [osFirst, '確認 public/ 有內容', '到「網絡」發布 Nginx'];
+    return [osFirst, i18n.t('projects.deployPublicContent'), i18n.t('projects.deployNetPublish')];
   }
   return [
     osFirst,
-    '確認執行環境頁已安裝對應 toolchain（或主機已有）',
-    '確認 app/ 內有程式碼（範本或 Git）',
-    '按「部署」啟動；成功後到「網絡」發布 Nginx',
+    i18n.t('projects.deployConfirmToolchain'),
+    i18n.t('projects.deployConfirmCode'),
+    i18n.t('projects.deployPressDeploy'),
   ];
 }
 
@@ -161,7 +162,7 @@ export function ProjectDeployTab({
     () => project.deployEntry || prefs.entry || '',
   );
   const [skipBuild, setSkipBuild] = useState(Boolean(prefs.skipBuild));
-  const runtimeLabel = formatRuntimeName(project.runtime);
+  const runtimeLabel = formatRuntimeName(project.runtime, t);
   const processRuntime =
     project.runtime === 'node' ||
     project.runtime === 'python' ||
@@ -242,9 +243,9 @@ export function ProjectDeployTab({
     try {
       await projectsApi.setRuntimeVersion(project.id, next);
       onRuntimeVersionSaved?.(next);
-      onOpsMessage?.(`已儲存 ${runtimeLabel} 版本 ${next}（部署時會用此版本）`);
+      onOpsMessage?.(t('projects.deployVersionSaved', { runtime: runtimeLabel, version: next }));
     } catch (e) {
-      onOpsMessage?.(e instanceof Error ? e.message : '儲存 runtime 版本失敗');
+      onOpsMessage?.(e instanceof Error ? e.message : t('projects.deployVersionSaveFailed'));
     } finally {
       setVerBusy(false);
     }
@@ -256,7 +257,7 @@ export function ProjectDeployTab({
       return;
     }
     setChainBusy(true);
-    onOpsMessage?.('正在安裝／確認 toolchain…');
+    onOpsMessage?.(t('projects.deployInstallingToolchain'));
     try {
       const version =
         rtVer ||
@@ -274,16 +275,16 @@ export function ProjectDeployTab({
       if (r.blocked || r.ok === false) {
         onOpsMessage?.(
           r.blockMessage ??
-            (notes || 'Toolchain 安裝未完成（權限或網路）；可改手動到執行環境頁'),
+            (notes || t('projects.deployToolchainIncomplete')),
         );
         // Still attempt deploy — host may already have toolchain
       } else {
-        onOpsMessage?.(notes || 'Toolchain 步驟完成，開始部署…');
+        onOpsMessage?.(notes || t('projects.deployToolchainDone'));
       }
       persist();
       await onDeploy(deployOpts());
     } catch (e) {
-      onOpsMessage?.(e instanceof Error ? e.message : '安裝 toolchain 失敗');
+      onOpsMessage?.(e instanceof Error ? e.message : t('projects.deployToolchainFailed'));
     } finally {
       setChainBusy(false);
     }
@@ -297,10 +298,10 @@ export function ProjectDeployTab({
       {showFreshChecklist ? (
         <Card>
           <CardSection
-            title="建立完成 — 部署檢查清單"
-            description={`${runtimeLabel} 專案骨架已就緒；完成下列步驟才會對外服務`}
+            title={t('projects.deployChecklistTitle')}
+            description={t('projects.deployChecklistDesc', { runtime: runtimeLabel })}
           >
-            <ol className="u-mt-0" style={{ paddingLeft: '1.25rem', marginBottom: 0 }}>
+            <ol className="u-mt-0 u-pl-5 u-mb-0">
               {steps.map((s) => (
                 <li key={s} className="u-mb-2">
                   {s}
@@ -308,7 +309,7 @@ export function ProjectDeployTab({
               ))}
             </ol>
             <FormHint>
-              安裝 toolchain ≠ 專案已上線；部署成功 ≠ Nginx 已對外（需在「網絡」發布）。
+              {t('projects.toolchainNote')}
             </FormHint>
             <FormActions>
               <Button
@@ -320,7 +321,7 @@ export function ProjectDeployTab({
                   void installToolchainThenDeploy();
                 }}
               >
-                安裝 toolchain 並部署
+                {t('projects.installToolchainDeploy')}
               </Button>
               <Button
                 variant="secondary"
@@ -331,15 +332,15 @@ export function ProjectDeployTab({
                   onDeploy(deployOpts());
                 }}
               >
-                僅部署
+                {t('projects.deployOnly')}
               </Button>
               {rtPath ? (
                 <Link to={rtPath} className={buttonClassName({ variant: 'ghost', size: 'md' })}>
-                  開啟 {runtimeLabel} 執行環境
+                  {t('projects.openRuntime', { runtime: runtimeLabel })}
                 </Link>
               ) : null}
               <Button variant="ghost" size="md" onClick={onDismissChecklist}>
-                稍後再說
+                {t('projects.later')}
               </Button>
             </FormActions>
           </CardSection>
@@ -350,26 +351,26 @@ export function ProjectDeployTab({
         <Card>
           <CardSection
             title={
-              ui.deployIsPhp ? t('projects.sectionPhpDeploy') : `${runtimeLabel} 部署`
+              ui.deployIsPhp ? t('projects.sectionPhpDeploy') : t('projects.deploySectionTitle', { runtime: runtimeLabel })
             }
             description={
               ui.deployIsPhp
                 ? t('projects.sectionPhpDeployDesc')
-                : `依 ${runtimeLabel} 啟動行程（埠／systemd 或 pidfile）`
+                : t('projects.deploySectionDesc', { runtime: runtimeLabel })
             }
           >
             <FormLayout columns={2}>
               {ui.deployIsPhp ? (
                 <Field
-                  label="PHP 版本"
+                  label={t('runtime.phpVersion')}
                   htmlFor="php-ver"
-                  hint="本站使用的 PHP 版本（需主機已安裝對應 FPM）"
+                  hint={t('projects.deployPhpVersionHint')}
                   flush
                 >
                   {versionChoices.length <= 8 ? (
                     <SegRadio
                       name="php-ver"
-                      aria-label="PHP 版本"
+                      aria-label={t('runtime.phpVersion')}
                       value={phpVer}
                       onChange={(v) => {
                         setPhpVer(v);
@@ -396,19 +397,19 @@ export function ProjectDeployTab({
                 </Field>
               ) : versionChoices.length > 0 ? (
                 <Field
-                  label={`${runtimeLabel} 版本`}
+                  label={t('projects.deployRuntimeVersion', { runtime: runtimeLabel })}
                   htmlFor="rt-ver"
                   hint={
                     rtPath
-                      ? '寫入專案後部署會用此版本；安裝請到執行環境頁'
-                      : '建立時寫入；部署時參考'
+                      ? t('projects.deployRuntimeVersionHint')
+                      : t('projects.deployRuntimeVersionCreateHint')
                   }
                   flush
                 >
                   {versionChoices.length <= 8 ? (
                     <SegRadio
                       name="rt-ver"
-                      aria-label={`${runtimeLabel} 版本`}
+                      aria-label={t('projects.deployRuntimeVersion', { runtime: runtimeLabel })}
                       value={rtVer}
                       onChange={(v) => {
                         if (!(verBusy || anyBusy)) void saveRuntimeVersion(v);
@@ -433,7 +434,7 @@ export function ProjectDeployTab({
                   )}
                 </Field>
               ) : (
-                <Field label="Runtime 版本" htmlFor="rt-ver-ro" flush>
+                <Field label={t('projects.deployRuntimeVersionGeneric')} htmlFor="rt-ver-ro" flush>
                   <input
                     id="rt-ver-ro"
                     value={project.runtimeVersion || '—'}
@@ -444,9 +445,9 @@ export function ProjectDeployTab({
               )}
               {processRuntime ? (
                 <Field
-                  label="啟動 entry"
+                  label={t('projects.deployEntry')}
                   htmlFor="deploy-entry"
-                  hint={`可留空用預設（${defaultEntryHint(project.runtime)}）；會同步到伺服器`}
+                  hint={t('projects.deployEntryHint', { hint: defaultEntryHint(project.runtime) })}
                   flush
                 >
                   <input
@@ -473,8 +474,8 @@ export function ProjectDeployTab({
               <div className="form-check-row u-mt-3">
                 <CheckboxField
                   id="skip-build"
-                  label="略過建置"
-                  description="已有 venv／二進位時可勾選，加快重啟（會記住本機偏好）"
+                  label={t('projects.deploySkipBuild')}
+                  description={t('projects.deploySkipBuildHint')}
                   checked={skipBuild}
                   onChange={(v) => {
                     setSkipBuild(v);
@@ -486,19 +487,14 @@ export function ProjectDeployTab({
             <FormHint>{processDeployHint(project.runtime)}</FormHint>
             {project.lastDeployAt || (project.lastDeployNotes && project.lastDeployNotes.length) ? (
               <div
-                className="u-mt-3 u-mb-2"
-                style={{
-                  padding: '0.75rem 1rem',
-                  background: 'var(--bg-subtle, #f6f8fa)',
-                  borderRadius: 8,
-                }}
+                className="u-mt-3 u-mb-2 u-callout"
               >
                 <p className="u-mb-1 u-mt-0">
-                  <strong>上次部署</strong>
+                  <strong>{t('projects.lastDeploy')}</strong>
                   {project.lastDeployAt
                     ? ` · ${new Date(project.lastDeployAt).toLocaleString()}`
                     : ''}
-                  {project.port != null ? ` · 埠 ${project.port}` : ''}
+                  {project.port != null ? t('projects.deployPort', { port: project.port }) : ''}
                   {project.processStatus ? ` · ${project.processStatus}` : ''}
                 </p>
                 {project.deployEntry ? (
@@ -507,7 +503,7 @@ export function ProjectDeployTab({
                   </p>
                 ) : null}
                 {project.lastDeployNotes?.length ? (
-                  <ul className="u-mb-0 u-mt-1" style={{ paddingLeft: '1.1rem' }}>
+                  <ul className="u-mb-0 u-mt-1 u-pl-5">
                     {project.lastDeployNotes.slice(0, 5).map((n) => (
                       <li key={n} className="muted u-text-sm">
                         {n}
@@ -536,12 +532,12 @@ export function ProjectDeployTab({
                   loading={anyBusy}
                   onClick={() => void installToolchainThenDeploy()}
                 >
-                  裝 toolchain 並部署
+                  {t('projects.installToolchainDeployShort')}
                 </Button>
               ) : null}
               {rtPath ? (
                 <Link to={rtPath} className={buttonClassName({ variant: 'ghost', size: 'md' })}>
-                  {runtimeLabel} 環境
+                  {t('projects.runtimeEnv', { runtime: runtimeLabel })}
                 </Link>
               ) : null}
               {ui.deployIsPhp ? (
@@ -557,21 +553,21 @@ export function ProjectDeployTab({
                         const notes = (r as { notes?: string[] }).notes;
                         onOpsMessage?.(
                           notes?.join('；') ??
-                            ((r as { ok?: boolean }).ok ? '已套用 PHP-FPM pool' : 'FPM 未完成'),
+                            ((r as { ok?: boolean }).ok ? t('projects.deployFpmApplied') : t('projects.deployFpmIncomplete')),
                         );
                       })
                       .catch((e: Error) => onOpsMessage?.(e.message))
                       .finally(() => setPhpBusy(false));
                   }}
                 >
-                  套用 FPM pool
+                  {t('projects.applyFpmPool')}
                 </Button>
               ) : null}
             </FormActions>
             <p className="muted u-text-sm u-mt-3 u-mb-0">
               {ui.deployIsPhp
-                ? '會寫入站點／pool 設定；真正 reload 需系統變更權限。'
-                : '建置／啟動失敗會在操作結果顯示原因，不會假裝成功。entry 會寫入伺服器；略過建置另存本機偏好。'}
+                ? t('projects.deployFpmNote')
+                : t('projects.deployBuildNote')}
             </p>
           </CardSection>
         </Card>
@@ -583,7 +579,7 @@ export function ProjectDeployTab({
           >
             <p className="muted">{t('projects.staticDeployHint')}</p>
             <p className="muted u-text-sm u-mt-2">
-              靜態站以「發布 Nginx」為主 — 請到「網絡」或總覽快捷操作。
+              {t('projects.staticNginxHint')}
             </p>
           </CardSection>
         </Card>
@@ -592,14 +588,14 @@ export function ProjectDeployTab({
       {ui.deployIsPhp ? (
         <Card>
           <CardSection
-            title="專案 php.ini 覆寫"
-            description="只填要改的鍵；空白＝沿用全域（執行環境 → PHP → php.ini）。部署／套用 FPM 時寫入 php_admin_*"
+            title={t('projects.deployPhpIniTitle')}
+            description={t('projects.deployPhpIniDesc')}
           >
             <FormLayout columns={2}>
-              <Field label="memory_limit" htmlFor="pini-mem" flush hint="例如 256M；留空用全域">
+              <Field label="memory_limit" htmlFor="pini-mem" flush hint={t('projects.deployPhpIniExample')}>
                 <PresetChips
                   options={[
-                    { value: '', label: '全域' },
+                    { value: '', label: t('projects.deployGlobal') },
                     { value: '128M', label: '128M' },
                     { value: '256M', label: '256M' },
                     { value: '512M', label: '512M' },
@@ -608,13 +604,13 @@ export function ProjectDeployTab({
                   value={phpIniMem}
                   onChange={setPhpIniMem}
                   allowCustom
-                  customPlaceholder="自訂"
+                  customPlaceholder={t('common.custom')}
                 />
               </Field>
               <Field label="max_execution_time" htmlFor="pini-exec" flush>
                 <PresetChips
                   options={[
-                    { value: '', label: '全域' },
+                    { value: '', label: t('projects.deployGlobal') },
                     { value: '30', label: '30' },
                     { value: '60', label: '60' },
                     { value: '120', label: '120' },
@@ -623,13 +619,13 @@ export function ProjectDeployTab({
                   value={phpIniExec}
                   onChange={setPhpIniExec}
                   allowCustom
-                  customPlaceholder="自訂"
+                  customPlaceholder={t('common.custom')}
                 />
               </Field>
               <Field label="upload_max_filesize" htmlFor="pini-up" flush>
                 <PresetChips
                   options={[
-                    { value: '', label: '全域' },
+                    { value: '', label: t('projects.deployGlobal') },
                     { value: '32M', label: '32M' },
                     { value: '64M', label: '64M' },
                     { value: '128M', label: '128M' },
@@ -638,7 +634,7 @@ export function ProjectDeployTab({
                   value={phpIniUpload}
                   onChange={setPhpIniUpload}
                   allowCustom
-                  customPlaceholder="自訂"
+                  customPlaceholder={t('common.custom')}
                 />
               </Field>
               <Field label="display_errors" htmlFor="pini-disp" flush>
@@ -648,16 +644,16 @@ export function ProjectDeployTab({
                   value={phpIniDisplay === null ? '' : phpIniDisplay ? '1' : '0'}
                   onChange={(v) => setPhpIniDisplay(v === '' ? null : v === '1')}
                   options={[
-                    { value: '', label: '全域' },
-                    { value: '0', label: '關' },
-                    { value: '1', label: '開 · 慎' },
+                    { value: '', label: t('projects.deployGlobal') },
+                    { value: '0', label: t('common.off') },
+                    { value: '1', label: t('projects.deployOnCareful') },
                   ]}
                 />
               </Field>
             </FormLayout>
             <FormHint>
-              完整目錄與 opcache／session 等請到{' '}
-              <Link to="/runtimes/php?tab=ini">PHP 執行環境 → php.ini</Link>。
+              {t('projects.fullIniLink')}{' '}
+              <Link to="/runtimes/php?tab=ini">{t('projects.phpIniLink')}</Link>。
             </FormHint>
             <FormActions>
               <Button
@@ -676,12 +672,12 @@ export function ProjectDeployTab({
                   if (phpIniDisplay !== null) values.display_errors = phpIniDisplay;
                   void projectsApi
                     .phpIniSave(project.id, { version: phpVer, values })
-                    .then(() => onOpsMessage?.('已儲存專案 php.ini 覆寫；請再部署或套用 FPM'))
+                    .then(() => onOpsMessage?.(t('projects.deployPhpIniSaved')))
                     .catch((e: Error) => onOpsMessage?.(e.message))
                     .finally(() => setPhpIniBusy(false));
                 }}
               >
-                儲存 php.ini 覆寫
+                {t('projects.savePhpIniOverride')}
               </Button>
             </FormActions>
           </CardSection>
@@ -691,8 +687,8 @@ export function ProjectDeployTab({
       {history.length > 0 ? (
         <Card>
           <CardSection
-            title={`部署歷史（${history.length}）`}
-            description="來自操作稽核；newest first"
+            title={t('projects.deployHistory', { count: history.length })}
+            description={t('projects.deployHistoryDesc')}
           >
             <ul className="list-plain list-spaced u-mb-0">
               {history.map((h) => {
@@ -705,7 +701,7 @@ export function ProjectDeployTab({
                 return (
                   <li key={h.id} className="u-justify-between u-flex-wrap">
                     <span>
-                      <Badge tone={h.ok ? 'ok' : 'danger'}>{h.ok ? '成功' : '失敗'}</Badge>{' '}
+                      <Badge tone={h.ok ? 'ok' : 'danger'}>{h.ok ? t('common.success') : t('common.failed')}</Badge>{' '}
                       <code className="inline u-text-sm">{h.action.replace(/^project\./, '')}</code>
                       {detail?.entry ? (
                         <span className="muted u-text-sm"> · {detail.entry}</span>
@@ -732,7 +728,7 @@ export function ProjectDeployTab({
               <Field
                 label={t('projects.gitUrl')}
                 htmlFor="giturl"
-                hint="HTTPS 或 SSH 倉庫位址；同步後會依 runtime 自動 redeploy"
+                hint={t('projects.deployGitUrlHint')}
                 flush
               >
                 <input
@@ -757,7 +753,7 @@ export function ProjectDeployTab({
               </Button>
             </FormActions>
             <FormHint>
-              若 app/ 為 YSK 範本佔位（含 .ysk-scaffold），會先清除再 clone；已有自訂內容會拒絕覆寫。
+              {t('projects.scaffoldNote')}
             </FormHint>
           </CardSection>
         </Card>
@@ -770,7 +766,7 @@ export function ProjectDeployTab({
               <Field
                 label={t('projects.envFile')}
                 htmlFor="penv"
-                hint="每行 KEY=value；# 開頭為註解"
+                hint={t('projects.deployEnvHint')}
                 flush
               >
                 <textarea

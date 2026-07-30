@@ -8,10 +8,9 @@ import {
   readdirSync,
   realpathSync,
   statSync,
-  lstatSync,
-} from 'node:fs';
+  lstatSync } from 'node:fs';
 import { join, relative, sep, normalize } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { tailFileLines } from './log-center/file-tail.js';
 
 const MAX_DEPTH = 4;
@@ -86,20 +85,20 @@ export function normalizeExtraLogDirs(raw: unknown): {
     if (!s) continue;
     if (s.startsWith('~/')) s = s.slice(2);
     if (s.startsWith('/') || s.includes('..') || s.includes('\0') || s.includes(':')) {
-      notes.push(`拒絕額外目錄：${item}`);
+      notes.push(tl('notes.auto.t0234', { v0: (item) }));
       continue;
     }
     if (!/^[a-zA-Z0-9._@+-]+(?:\/[a-zA-Z0-9._@+-]+)*$/.test(s)) {
-      notes.push(`目錄名不合法：${item}`);
+      notes.push(tl('notes.auto.t0235', { v0: (item) }));
       continue;
     }
     if (s === 'logs' || s === 'log' || s.startsWith('logs/') || s.startsWith('log/')) {
-      notes.push(`略過預設目錄（已掃描）：${s}`);
+      notes.push(tl('notes.auto.t0236', { v0: (s) }));
       continue;
     }
     if (!dirs.includes(s)) dirs.push(s);
     if (dirs.length >= 12) {
-      notes.push('最多 12 個額外目錄');
+      notes.push(tl('notes.auto.n0931'));
       break;
     }
   }
@@ -150,7 +149,7 @@ export function resolveProjectLogPath(
   extraDirs: string[] = [],
 ): { ok: true; path: string; rel: string; root: string } | { ok: false; notes: string[] } {
   if (!homeDir || !relPath || relPath.includes('\0')) {
-    return { ok: false, notes: ['無效路徑'] };
+    return { ok: false, notes: [tl('notes.invalidPath')] };
   }
   let raw = relPath.replace(/\\/g, '/').replace(/^\/+/, '');
 
@@ -165,7 +164,7 @@ export function resolveProjectLogPath(
         homeRel.includes('..') ||
         !/^[a-zA-Z0-9._@+-]+(?:\/[a-zA-Z0-9._@+-]+)*$/.test(homeRel)
       ) {
-        return { ok: false, notes: ['額外日誌路徑無效'] };
+        return { ok: false, notes: [tl('notes.auto.n1602')] };
       }
       // must be under one of extraDirs
       const allowed = normalizeExtraLogDirs(extraDirs).dirs;
@@ -173,11 +172,11 @@ export function resolveProjectLogPath(
         (d) => homeRel === d || homeRel.startsWith(d + '/'),
       );
       if (!underExtra) {
-        return { ok: false, notes: ['路徑不在已允許的額外 log 目錄'] };
+        return { ok: false, notes: [tl('notes.auto.n1459')] };
       }
       const candidate = join(homeReal, ...homeRel.split('/'));
       if (!existsSync(candidate)) {
-        return { ok: false, notes: [`找不到日誌：${homeRel}`] };
+        return { ok: false, notes: [tl('notes.tpl.logNotFound', { path: homeRel })] };
       }
       let real: string;
       try {
@@ -187,13 +186,13 @@ export function resolveProjectLogPath(
         } else if (lst.isFile()) {
           real = realpathSync(candidate);
         } else {
-          return { ok: false, notes: ['不是一般檔案'] };
+          return { ok: false, notes: [tl('notes.notRegularFile')] };
         }
       } catch {
-        return { ok: false, notes: ['路徑解析失敗'] };
+        return { ok: false, notes: [tl('notes.pathResolveFailed')] };
       }
       if (real !== homeReal && !real.startsWith(homeReal + sep)) {
-        return { ok: false, notes: ['symlink 逃出專案 home'] };
+        return { ok: false, notes: [tl('notes.auto.n0441')] };
       }
       return { ok: true, path: real, rel: `~${homeRel}`, root: 'extra' };
     }
@@ -204,10 +203,10 @@ export function resolveProjectLogPath(
     else if (rel.startsWith('log/')) rel = rel.slice(4);
 
     if (!rel || rel.includes('..') || rel.startsWith('/') || rel.includes(':')) {
-      return { ok: false, notes: ['拒絕路徑穿越或非法字元'] };
+      return { ok: false, notes: [tl('notes.auto.n0879')] };
     }
     if (!/^[a-zA-Z0-9._@+-]+(?:\/[a-zA-Z0-9._@+-]+)*$/.test(rel)) {
-      return { ok: false, notes: ['日誌相對路徑含不允許字元'] };
+      return { ok: false, notes: [tl('notes.auto.n0919')] };
     }
 
     for (const rootName of LOG_SUBDIRS) {
@@ -232,26 +231,25 @@ export function resolveProjectLogPath(
         } else if (lst.isFile()) {
           real = realpathSync(candidate);
         } else {
-          return { ok: false, notes: ['不是一般檔案'] };
+          return { ok: false, notes: [tl('notes.notRegularFile')] };
         }
       } catch {
-        return { ok: false, notes: ['路徑解析失敗'] };
+        return { ok: false, notes: [tl('notes.pathResolveFailed')] };
       }
       if (real !== rootReal && !real.startsWith(rootReal + sep)) {
-        return { ok: false, notes: ['symlink 逃出 log 目錄'] };
+        return { ok: false, notes: [tl('notes.auto.n0440')] };
       }
       const st = statSync(real);
       if (!st.isFile()) {
-        return { ok: false, notes: ['不是一般檔案'] };
+        return { ok: false, notes: [tl('notes.notRegularFile')] };
       }
       return { ok: true, path: real, rel, root: rootName };
     }
-    return { ok: false, notes: [`找不到日誌：${rel}`] };
+    return { ok: false, notes: [tl('notes.tpl.logNotFound', { path: rel })] };
   } catch (e) {
     return {
       ok: false,
-      notes: [e instanceof Error ? e.message : '路徑解析失敗'],
-    };
+      notes: [e instanceof Error ? e.message : tl('notes.pathResolveFailed')] };
   }
 }
 
@@ -344,8 +342,7 @@ function pushFile(
     mtime: st.mtime.toISOString(),
     root: rootLabel,
     kind: classifyName(displayName),
-    previewable: isPreviewable(displayName),
-  });
+    previewable: isPreviewable(displayName) });
 }
 
 /**
@@ -421,8 +418,7 @@ export function listProjectRelatedLogSources(input: {
       label: 'systemd journal',
       source: `journal:${unit}`,
       available: true,
-      meta: unit,
-    });
+      meta: unit });
 
     if (input.dataDir) {
       for (const [suffix, label] of [
@@ -440,8 +436,7 @@ export function listProjectRelatedLogSources(input: {
             ? `file:managed:${name}`
             : `project-managed:${input.projectId}:${suffix}`,
           available: exists,
-          meta: exists ? p : `${name}（未產生）`,
-        });
+          meta: exists ? p : tl('notes.auto.t0237', { v0: (name) }) });
       }
     }
 
@@ -457,8 +452,7 @@ export function listProjectRelatedLogSources(input: {
           ? `project-fpm:${input.projectId}`
           : `journal:php${ver}-fpm.service`,
         available: true,
-        meta: exists ? p : `journal php${ver}-fpm（pool log 未見）`,
-      });
+        meta: exists ? p : tl('notes.auto.t0238', { v0: (ver) }) });
     }
   }
   return items;
@@ -480,9 +474,8 @@ export function tailProjectLog(
     opts?.extraDirs ?? [],
   );
   if (!resolved.ok) {
-    throw new YskError(ErrorCodes.VALIDATION, resolved.notes[0] || '日誌路徑無效', {
-      httpStatus: 400,
-    });
+    throw new YskError(ErrorCodes.VALIDATION, resolved.notes[0] || tl('notes.auto.n0921'), {
+      httpStatus: 400 });
   }
   if (!isPreviewable(resolved.rel)) {
     return {
@@ -491,8 +484,7 @@ export function tailProjectLog(
       path: resolved.path,
       lines: [],
       bytes: 0,
-      notes: ['壓縮檔唔支援預覽（.gz 等）'],
-    };
+      notes: [tl('notes.auto.n0636')] };
   }
   try {
     let { lines, bytes, truncated } = tailFileLines(
@@ -519,16 +511,15 @@ export function tailProjectLog(
       matchedLines,
       notes: [
         g
-          ? `grep「${g}」：${matchedLines ?? 0} 行命中（尾端掃描 ${bytes} bytes）`
+          ? tl('notes.auto.t0239', { v0: (g), v1: (matchedLines ?? 0), v2: (bytes) })
           : truncated
-            ? `顯示尾端 ${lines.length} 行（檔案 ${bytes} bytes，已截斷）`
-            : `顯示尾端 ${lines.length} 行（檔案 ${bytes} bytes）`,
-      ],
-    };
+            ? tl('notes.auto.t0240', { v0: (lines.length), v1: (bytes) })
+            : tl('notes.auto.t0241', { v0: (lines.length), v1: (bytes) }),
+      ] };
   } catch (e) {
     throw new YskError(
       ErrorCodes.INTERNAL,
-      e instanceof Error ? e.message : '讀取日誌失敗',
+      e instanceof Error ? e.message : tl('notes.auto.n1441'),
       { httpStatus: 500 },
     );
   }
@@ -557,8 +548,7 @@ export function searchProjectLogs(
   const notes: string[] = [];
   const files = listProjectLogs(homeDir, {
     extraDirs: opts.extraDirs,
-    nameFilter: opts.nameFilter,
-  });
+    nameFilter: opts.nameFilter });
   const grep = (opts.grep || '').trim().slice(0, 200);
   if (!grep) {
     return {
@@ -566,9 +556,8 @@ export function searchProjectLogs(
       files,
       hits: [],
       notes: files.length
-        ? [`找到 ${files.length} 個日誌檔（未指定內容關鍵字）`]
-        : ['無匹配檔名的日誌'],
-    };
+        ? [tl('notes.auto.t0242', { v0: (files.length) })]
+        : [tl('notes.auto.n1092')] };
   }
   const maxFiles = Math.min(40, Math.max(1, opts.maxFiles ?? 20));
   const maxLines = Math.min(500, Math.max(20, opts.maxLinesPerFile ?? 120));
@@ -590,15 +579,14 @@ export function searchProjectLogs(
         hits.push({
           file: f.name,
           lines: matched.slice(-maxLines),
-          matched: matched.length,
-        });
+          matched: matched.length });
       }
     } catch {
-      notes.push(`無法讀取：${f.name}`);
+      notes.push(tl('notes.auto.t0243', { v0: (f.name) }));
     }
   }
   notes.push(
-    `內容搜尋「${grep}」：掃 ${scanned} 檔、${hits.length} 檔有命中（只掃各檔尾端）`,
+    tl('notes.auto.t0244', { v0: (grep), v1: (scanned), v2: (hits.length) }),
   );
   return { ok: true, files, hits, notes };
 }
@@ -617,8 +605,7 @@ export function parseProjectLogSourceRest(rest: string): {
   }
   return {
     projectId: rest.slice(0, idx),
-    fileName: rest.slice(idx + 1) || undefined,
-  };
+    fileName: rest.slice(idx + 1) || undefined };
 }
 
 export { normalize };

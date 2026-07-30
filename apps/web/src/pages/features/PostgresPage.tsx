@@ -49,7 +49,7 @@ export function PostgresPage() {
     try {
       setSvc(await consoleApi.get('postgres'));
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '狀態載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.statusLoadFailed'));
     }
   }, []);
 
@@ -78,10 +78,10 @@ export function PostgresPage() {
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (err) {
-        const m = err instanceof Error ? err.message : '安裝失敗';
+        const m = err instanceof Error ? err.message : t('common.installFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, 'PostgreSQL 已安裝');
+    }, t('db.pgInstalled'));
   }
 
   async function onStart() {
@@ -91,10 +91,10 @@ export function PostgresPage() {
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (err) {
-        const m = err instanceof Error ? err.message : '啟動失敗';
+        const m = err instanceof Error ? err.message : t('common.startFailed');
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
-    }, 'PostgreSQL 已啟動');
+    }, t('db.pgStarted'));
   }
 
   const busy = dbs.busy || actBusy;
@@ -107,32 +107,32 @@ export function PostgresPage() {
       title={t('nav.postgres', { defaultValue: 'PostgreSQL' })}
       status={{
         pill: {
-          label: svc?.activeLabel ?? (installed ? '已裝' : '未裝'),
+          label: svc?.activeLabel ?? (installed ? t('common.installed') : t('db.notInstalledShort')),
           tone: running ? 'ok' : installed ? 'warn' : 'danger',
         },
         items: [
           {
-            label: '狀態',
+            label: t('common.status'),
             value: svc?.activeLabel ?? '—',
             tone: running ? 'ok' : installed ? 'warn' : 'danger',
           },
           {
             label: 'EXECUTE',
-            value: svc?.executeEnabled ? '開' : '關',
+            value: svc?.executeEnabled ? t('common.on') : t('common.off'),
             tone: svc?.executeEnabled ? 'ok' : 'warn',
           },
           {
             label: 'Root',
-            value: svc?.isRoot ? '是' : '否',
+            value: svc?.isRoot ? t('common.yes') : t('common.no'),
             tone: svc?.isRoot ? 'ok' : 'warn',
           },
-          { label: '資料庫', value: dbs.items.length },
+          { label: t('common.database'), value: dbs.items.length },
         ],
       }}
       actions={<ActionBar>
           <Link to="/databases/postgres/service">
             <Button variant="secondary" size="sm">
-              服務控制台
+              {t('db.serviceConsole')}
             </Button>
           </Link>
           <Button
@@ -146,73 +146,73 @@ export function PostgresPage() {
               void dbs.refresh();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Button
             variant="primary"
             size="sm"
             disabled={busy || !installed}
-            title={!installed ? '請先安裝 PostgreSQL' : undefined}
+            title={!installed ? t('db.installPgFirst') : undefined}
             onClick={() => setCreateOpen(true)}
           >
-            建立資料庫
+            {t('db.createDatabase')}
           </Button>
         </ActionBar>
       }
     >
       <WithPageGuide guideId="postgres">
 
-      <SoftwareInstallBanner feature="postgres" title="PostgreSQL 所需軟件尚未安裝" />
+      <SoftwareInstallBanner feature="postgres" title={t('db.pgSoftwareMissing')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
       {dbs.msg ? <Alert variant="ok">{dbs.msg}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <Card>
-        <CardSection title="服務概覽" description="唯讀探測">
+        <CardSection title={t('db.serviceOverview')} description={t('db.readonlyProbe')}>
           <DescriptionList
             columns={2}
             items={[
               {
-                label: '狀態',
+                label: t('common.status'),
                 value: (
                   <Badge tone={running ? 'ok' : installed ? 'warn' : 'danger'}>
                     {svc?.activeLabel ?? '—'}
                   </Badge>
                 ),
               },
-              { label: '版本', value: svc?.version ?? '—' },
+              { label: t('common.version'), value: svc?.version ?? '—' },
               { label: 'unit', value: svc?.unit ?? 'postgresql' },
               {
-                label: '系統變更',
-                value: svc?.executeEnabled ? '已開啟' : '未開啟',
+                label: t('db.systemChange'),
+                value: svc?.executeEnabled ? t('db.opened') : t('db.notOpened'),
               },
             ]}
           />
           {svc?.blockMessage ? (
-            <p className="muted u-text-sm u-mt-3" style={{ marginBottom: 0 }}>
+            <p className="muted u-text-sm u-mt-3">
               {svc.blockMessage}
             </p>
           ) : null}
           <div className="lifecycle-toolbar u-mt-3">
             {!installed ? (
               <p className="muted u-text-sm u-mb-0">
-                請使用上方橫幅「一鍵安裝」安裝 PostgreSQL。
+                {t('db.installPgBanner')}
               </p>
             ) : !running ? (
               <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
-                啟動服務
+                {t('fail2ban.startService')}
               </Button>
             ) : (
               <Link to="/databases/postgres/service">
                 <Button variant="secondary" size="md">
-                  開啟服務控制台
+                  {t('db.openServiceConsole')}
                 </Button>
               </Link>
             )}
@@ -220,22 +220,22 @@ export function PostgresPage() {
         </CardSection>
       </Card>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
 
       <Card>
-        <CardSection title={`資料庫 (${dbs.items.length})`}>
+        <CardSection title={t('db.tabDatabasesSimple', { count: dbs.items.length })}>
           <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
             columns={[
-              { key: 'name', header: '資料庫', render: (r) => <strong>{String(r.name)}</strong> },
+              { key: 'name', header: t('common.database'), render: (r) => <strong>{String(r.name)}</strong> },
               {
                 key: 'status',
-                header: '狀態',
+                header: t('common.status'),
                 render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
               },
               {
                 key: 'updated',
-                header: '更新',
+                header: t('updates.badgeUpdate'),
                 render: (r) => (
                   <span className="muted u-nowrap">
                     {String(r.updated_at ?? '').slice(0, 19).replace('T', ' ') || '—'}
@@ -246,18 +246,11 @@ export function PostgresPage() {
             rows={dbs.items}
             empty={
               <EmptyState
-                title="尚未有 PostgreSQL 庫"
+                title={t('db.pgNoDbs')}
                 description={
                   !installed
-                    ? '請先使用上方橫幅一鍵安裝 PostgreSQL'
-                    : '建立後按「套用到系統」寫入伺服器'
-                }
-                action={
-                  installed ? (
-                    <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
-                      + 建立
-                    </Button>
-                  ) : undefined
+                    ? t('db.pgInstallBanner')
+                    : t('db.pgEmptyCreateHint')
                 }
               />
             }
@@ -269,10 +262,10 @@ export function PostgresPage() {
                   loading={busy}
                   onClick={() => void dbs.apply(r.id, true)}
                 >
-                  套用到系統
+                  {t('firewall.applyToSystem')}
                 </Button>
                 <Button variant="danger" size="sm" loading={busy} onClick={() => setDelId(r.id)}>
-                  刪除
+                  {t('common.delete')}
                 </Button>
               </ActionBar>
             )}
@@ -283,15 +276,15 @@ export function PostgresPage() {
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="建立 PostgreSQL 資料庫"
-        description="寫入控制面登記；需再「套用到系統」才 CREATE DATABASE（套用後才上線）"
+        title={t('db.pgCreateTitle')}
+        description={t('db.pgCreateDesc')}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCreateOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button type="submit" form="pg-c" variant="primary" size="md" loading={busy}>
-              建立
+              {t('common.create')}
             </Button>
           </>
         }
@@ -299,12 +292,12 @@ export function PostgresPage() {
         <form id="pg-c" onSubmit={(e) => void onCreate(e)}>
           <FormLayout columns={2}>
             <Field
-              label="資料庫名稱"
+              label={t('db.dbName')}
               htmlFor="pn"
               fullWidth
               flush
               required
-              hint="小寫英數與底線；建立後請再套用到系統"
+              hint={t('db.dbNameHintPg')}
             >
               <input
                 id="pn"
@@ -320,8 +313,8 @@ export function PostgresPage() {
           <div className="form-check-row u-mt-4">
             <CheckboxField
               id="pg-create-user"
-              label="同時建立角色"
-              description="一併建立登入角色並授予此資料庫權限"
+              label={t('db.alsoCreateRole')}
+              description={t('db.pgAlsoCreateRoleDesc')}
               checked={createUser}
               onChange={setCreateUser}
             />
@@ -329,11 +322,11 @@ export function PostgresPage() {
           {createUser ? (
             <FormLayout columns={2}>
               <Field
-                label="角色名稱"
+                label={t('db.roleName')}
                 htmlFor="pu"
                 flush
                 required
-                hint="PostgreSQL role／登入用戶"
+                hint={t('db.roleHint')}
               >
                 <input
                   id="pu"
@@ -345,7 +338,7 @@ export function PostgresPage() {
                   autoComplete="off"
                 />
               </Field>
-              <Field label="密碼" htmlFor="pp" flush required hint="至少 8 字元">
+              <Field label={t('common.password')} htmlFor="pp" flush required hint={t('ftp.passwordMin8')}>
                 <input
                   id="pp"
                   type="password"
@@ -359,7 +352,7 @@ export function PostgresPage() {
             </FormLayout>
           ) : null}
           <FormHint>
-            刪除登記不會自動 DROP 伺服器上的庫；套用成功才代表主機已執行 DDL。
+            {t('db.deleteNotePg')}
           </FormHint>
         </form>
       </Modal>
@@ -370,10 +363,10 @@ export function PostgresPage() {
         onConfirm={() => {
           if (delId) void dbs.remove(delId).then(() => setDelId(null));
         }}
-        title="刪除資料庫登記？"
-        description="移除控制面紀錄（唔會自動 DROP 伺服器上的庫，除非另有套用撤銷）。"
-        confirmLabel="刪除"
-        cancelLabel="取消"
+        title={t('db.deleteDbTitle')}
+        description={t('db.pgDeleteDbDesc')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />

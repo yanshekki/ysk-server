@@ -1,0 +1,64 @@
+/* —— Feature icon grid (Dashboard / System index) —— */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: var(--space-grid);
+}
+
+.feature-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-tile);
+  min-height: 8rem;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.feature-tile:hover {
+  border-color: var(--brand-blue-light);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.feature-tile__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  margin-bottom: var(--space-1);
+}
+
+.feature-tile__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.feature-tile__badge {
+  flex-shrink: 0;
+  font-size: 0.7rem !important;
+  padding: 0.2rem 0.5rem !important;
+}
+
+.feature-tile__title {
+  font-weight: 800;
+  font-size: var(--text-md);
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-top: var(--space-1);
+}
+
+.feature-tile__desc {
+  font-size: var(--text-xs);
+  color: var(--text-sub);
+  line-height: 1.45;
+  margin-top: var(--space-1);
+}
+

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Peer probe (SSH) + remote conf install/restart after scp.
  * Fixed argv templates only; honest status aggregation.
@@ -14,8 +15,7 @@ import {
   parseReplicaStatus,
   parseWsrepStatus,
   probeDbCluster,
-  type ClusterProbeResult,
-} from './probe.js';
+  type ClusterProbeResult } from './probe.js';
 import { listDbClusterArtifacts } from './push-peer.js';
 import { getDbCluster, updateDbCluster } from './store.js';
 import type {
@@ -23,8 +23,7 @@ import type {
   DbClusterKind,
   DbClusterMember,
   DbClusterMemberProbe,
-  DbClusterStatus,
-} from './types.js';
+  DbClusterStatus } from './types.js';
 
 function sshBase(
   m: DbClusterMember,
@@ -117,8 +116,7 @@ async function probeMemberSsh(
           at,
           ok: false,
           facts: {},
-          notes: [`ssh probe 失敗：${(r2.stderr || r.stderr).slice(0, 120)}`],
-        };
+          notes: [tl('notes.auto.t0591', { v0: ((r2.stderr || r.stderr).slice(0, 120)) })] };
       }
       const facts = parseWsrepStatus(r2.stdout);
       const ev = evaluateGaleraHealth(facts, cluster.members.length);
@@ -138,8 +136,7 @@ async function probeMemberSsh(
           at,
           ok: false,
           facts: {},
-          notes: [`replica probe 失敗：${out.stderr.slice(0, 120)}`],
-        };
+          notes: [tl('notes.auto.t0592', { v0: (out.stderr.slice(0, 120)) })] };
       }
       const facts = parseReplicaStatus(out.stdout);
       const ev = evaluateMysqlReplicaLocal('replica', facts);
@@ -151,8 +148,7 @@ async function probeMemberSsh(
         at,
         ok: false,
         facts: {},
-        notes: [`primary probe 失敗：${r.stderr.slice(0, 120)}`],
-      };
+        notes: [tl('notes.auto.t0593', { v0: (r.stderr.slice(0, 120)) })] };
     }
     const facts = parseMasterStatus(r.stdout);
     const ev = evaluateMysqlReplicaLocal('primary', facts);
@@ -170,8 +166,7 @@ async function probeMemberSsh(
         at,
         ok: false,
         facts: {},
-        notes: [`psql 失敗：${r.stderr.slice(0, 120)}`],
-      };
+        notes: [tl('notes.tpl.psqlFailed', { detail: r.stderr.slice(0, 120) })] };
     }
     const recovery = r.stdout.trim().toLowerCase();
     const facts = { pg_is_in_recovery: recovery };
@@ -183,8 +178,7 @@ async function probeMemberSsh(
       at,
       ok,
       facts,
-      notes: [ok ? `pg_is_in_recovery=${recovery}` : `unexpected recovery=${recovery}`],
-    };
+      notes: [ok ? `pg_is_in_recovery=${recovery}` : `unexpected recovery=${recovery}`] };
   }
 
   // redis
@@ -194,8 +188,7 @@ async function probeMemberSsh(
       at,
       ok: false,
       facts: {},
-      notes: [`redis-cli 失敗：${r.stderr.slice(0, 120)}`],
-    };
+      notes: [tl('notes.tpl.redisCliFailed', { detail: r.stderr.slice(0, 120) })] };
   }
   const facts: Record<string, string> = {};
   for (const line of r.stdout.split('\n')) {
@@ -218,8 +211,7 @@ async function probeMemberSsh(
     at,
     ok,
     facts,
-    notes: [`role=${facts.role ?? '—'} link=${facts.master_link_status ?? '—'}`],
-  };
+    notes: [`role=${facts.role ?? '—'} link=${facts.master_link_status ?? '—'}`] };
 }
 
 function aggregateStatus(
@@ -235,26 +227,25 @@ function aggregateStatus(
     const local = members.find((m) => m.access === 'local');
     const size = Number(local?.lastProbe?.facts?.wsrep_cluster_size || 0);
     if (okCount >= total && size >= total) {
-      return { status: 'healthy', notes: [`全部 ${total} 節點 probe OK · size=${size}`] };
+      return { status: 'healthy', notes: [tl('notes.auto.t0594', { v0: (total), v1: (size) })] };
     }
     if (localOk || okCount >= 1) {
       notes.push(`probe OK ${okCount}/${total}` + (size ? ` · wsrep_size=${size}` : ''));
       return { status: okCount >= 2 || size >= 2 ? 'partial' : 'degraded', notes };
     }
-    return { status: 'failed', notes: ['無節點 probe 成功'] };
+    return { status: 'failed', notes: [tl('notes.auto.n0035')] };
   }
 
   // replica topologies: healthy if all members lastProbe.ok
   if (okCount >= total && total >= 2) {
-    return { status: 'healthy', notes: [`全部 ${total} 節點 probe OK`] };
+    return { status: 'healthy', notes: [tl('notes.auto.t0595', { v0: (total) })] };
   }
   if (okCount >= 1) {
     return {
       status: 'partial',
-      notes: [`probe OK ${okCount}/${total}`],
-    };
+      notes: [`probe OK ${okCount}/${total}`] };
   }
-  return { status: 'failed', notes: ['無節點 probe 成功'] };
+  return { status: 'failed', notes: [tl('notes.auto.n0035')] };
 }
 
 /**
@@ -277,7 +268,7 @@ export async function probeDbClusterFull(input: {
 
   if (input.localOnly || !input.host.executeEnabled()) {
     if (!input.localOnly && !input.host.executeEnabled()) {
-      notes.push('peer SSH probe 需 YSK_EXECUTE=1（已只做本機）');
+      notes.push(tl('notes.auto.n0371'));
     }
     return { ...localResult, notes, peersProbed: 0 };
   }
@@ -293,9 +284,7 @@ export async function probeDbClusterFull(input: {
           at: new Date().toISOString(),
           ok: false,
           facts: {},
-          notes: ['fleet 成員請用 db-cluster fleet --op probe --execute'],
-        },
-      };
+          notes: [tl('notes.auto.n0292')] } };
       continue;
     }
     // ssh
@@ -318,8 +307,7 @@ export async function probeDbClusterFull(input: {
   cluster = updateDbCluster(input.db, cluster.id, {
     members,
     status: agg.status,
-    notes: notes.slice(0, 40),
-  });
+    notes: notes.slice(0, 40) });
 
   return {
     ok: agg.status === 'healthy',
@@ -327,8 +315,7 @@ export async function probeDbClusterFull(input: {
     facts: localResult.facts,
     notes: cluster.notes,
     localOk: localResult.localOk,
-    peersProbed,
-  };
+    peersProbed };
 }
 
 export type RemoteInstallResult = {
@@ -398,9 +385,8 @@ export async function installDbClusterOnPeers(input: {
       dryRun: !want,
       executed: false,
       cluster,
-      notes: ['無 ssh peer'],
-      installed: [],
-    };
+      notes: [tl('notes.auto.n1085')],
+      installed: [] };
   }
 
   if (!want) {
@@ -408,17 +394,15 @@ export async function installDbClusterOnPeers(input: {
       installed.push({
         host: m.host,
         ok: true,
-        detail: `會安裝到 ${remoteConfDest(cluster, m)} 並 ${restart ? 'restart ' + unitFor(cluster, m) : '不 restart'}`,
-      });
+        detail: tl('notes.auto.t0596', { v0: (remoteConfDest(cluster, m)), v1: (restart ? 'restart ' + unitFor(cluster, m) : tl('notes.tpl.noRestart')) }) });
     }
     return {
       ok: true,
       dryRun: true,
       executed: false,
       cluster,
-      notes: ['dry-run remote install（未 ssh）', ...installed.map((i) => `${i.host}: ${i.detail}`)],
-      installed,
-    };
+      notes: [tl('notes.auto.n0264'), ...installed.map((i) => `${i.host}: ${i.detail}`)],
+      installed };
   }
 
   if (!input.host.executeEnabled()) {
@@ -428,9 +412,8 @@ export async function installDbClusterOnPeers(input: {
       executed: false,
       blocked: true,
       cluster,
-      notes: ['遠端安裝需 YSK_EXECUTE=1'],
-      installed: [],
-    };
+      notes: [tl('notes.auto.n1480')],
+      installed: [] };
   }
 
   let anyFail = false;
@@ -462,7 +445,7 @@ export async function installDbClusterOnPeers(input: {
 
     if (!localRel || !existsSync(join(listed.artifactDir, localRel))) {
       anyFail = true;
-      installed.push({ host: m.host, ok: false, detail: '本地 conf 缺失，請先 plan' });
+      installed.push({ host: m.host, ok: false, detail: tl('notes.auto.n0989') });
       continue;
     }
 
@@ -512,8 +495,7 @@ export async function installDbClusterOnPeers(input: {
       installed.push({
         host: m.host,
         ok: false,
-        detail: `scp 失敗 ${(scp.stderr || scp.stdout).slice(0, 80)}`,
-      });
+        detail: tl('notes.auto.t0597', { v0: ((scp.stderr || scp.stdout).slice(0, 80)) }) });
       continue;
     }
 
@@ -531,8 +513,7 @@ export async function installDbClusterOnPeers(input: {
       installed.push({
         host: m.host,
         ok: false,
-        detail: `install conf 失敗：${(inst.stderr || inst.stdout).slice(0, 100)}`,
-      });
+        detail: tl('notes.auto.t0598', { v0: ((inst.stderr || inst.stdout).slice(0, 100)) }) });
       continue;
     }
 
@@ -543,8 +524,7 @@ export async function installDbClusterOnPeers(input: {
         installed.push({
           host: m.host,
           ok: false,
-          detail: `conf 已寫但 restart ${unit} 失敗`,
-        });
+          detail: tl('notes.auto.t0599', { v0: (unit) }) });
         continue;
       }
     }
@@ -552,8 +532,7 @@ export async function installDbClusterOnPeers(input: {
     installed.push({
       host: m.host,
       ok: true,
-      detail: `已寫 ${dest}${restart ? ` + restart ${unit}` : ''}`,
-    });
+      detail: tl('notes.tpl.peerInstalled', { dest, restart: restart ? ` + restart ${unit}` : '' }) });
   }
 
   const members = cluster.members.map((m) => {
@@ -561,18 +540,16 @@ export async function installDbClusterOnPeers(input: {
     if (!row) return m;
     return {
       ...m,
-      applyStatus: row.ok ? ('applied' as const) : ('failed' as const),
-    };
+      applyStatus: row.ok ? ('applied' as const) : ('failed' as const) };
   });
 
   notes.push(...installed.map((i) => `${i.host}: ${i.ok ? 'OK' : 'FAIL'} — ${i.detail}`));
-  notes.push('遠端 applied ≠ cluster healthy — 請跑 probe --peers');
+  notes.push(tl('notes.auto.n1475'));
 
   const next = updateDbCluster(input.db, cluster.id, {
     members,
     status: anyFail ? 'partial' : 'partial',
-    notes: notes.slice(0, 40),
-  });
+    notes: notes.slice(0, 40) });
 
   return {
     ok: !anyFail,
@@ -580,8 +557,7 @@ export async function installDbClusterOnPeers(input: {
     executed: true,
     cluster: next,
     notes,
-    installed,
-  };
+    installed };
 }
 
 /** Firewall ports recommended for a cluster kind */

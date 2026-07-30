@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Control-plane export + rebuild managed nginx confs from store (fail-closed).
  */
@@ -8,8 +9,7 @@ import {
   readdirSync,
   existsSync,
   statSync,
-  readFileSync,
-} from 'node:fs';
+  readFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import type { YskDatabase } from '../db/database.js';
 import type { HostExecutor } from '../host/executor.js';
@@ -49,22 +49,18 @@ export function exportControlPlaneSnapshot(db: YskDatabase): ControlPlaneSnapsho
       email_domains: s.email_domains.length,
       certificates: (s.certificates ?? []).length,
       dns_zones: (s.dns_zones ?? []).length,
-      cron_jobs: (s.cron_jobs ?? []).length,
-    },
+      cron_jobs: (s.cron_jobs ?? []).length },
     projects: s.projects.map((p) => ({
       id: p.id,
       name: p.name,
       domain: p.domain,
       runtime: p.runtime,
-      status: p.status,
-    })),
+      status: p.status })),
     emailDomains: s.email_domains.map((e) => ({
       id: String(e.id ?? ''),
-      domain: String(e.domain ?? ''),
-    })),
+      domain: String(e.domain ?? '') })),
     packages: (s.packages ?? []).length,
-    users: s.users.length,
-  };
+    users: s.users.length };
 }
 
 /** Managed nginx conf.d under dataDir (with mtime). */
@@ -98,8 +94,7 @@ export function listControlPlaneExports(dataDir: string): ExportArchiveInfo[] {
         name,
         path,
         bytes: st.size,
-        mtime: st.mtime.toISOString(),
-      });
+        mtime: st.mtime.toISOString() });
     } catch {
       /* skip */
     }
@@ -116,20 +111,20 @@ export function resolveExportFile(
 ): { ok: true; path: string } | { ok: false; notes: string[] } {
   const base = basename(name || '');
   if (!base || base !== name || !/^ysk-export-\d+\.json$/.test(base)) {
-    return { ok: false, notes: ['無效 export 檔名'] };
+    return { ok: false, notes: [tl('notes.auto.n1102')] };
   }
   const dir = join(dataDir, 'exports');
   const path = join(dir, base);
   if (!existsSync(path)) {
-    return { ok: false, notes: ['檔案不存在或已刪除'] };
+    return { ok: false, notes: [tl('notes.auto.n1022')] };
   }
   try {
     const real = path; // already under dataDir/exports + basename
     if (!real.startsWith(dir)) {
-      return { ok: false, notes: ['路徑不允許'] };
+      return { ok: false, notes: [tl('notes.auto.n1458')] };
     }
   } catch {
-    return { ok: false, notes: ['路徑解析失敗'] };
+    return { ok: false, notes: [tl('notes.pathResolveFailed')] };
   }
   return { ok: true, path };
 }
@@ -182,13 +177,13 @@ export async function rebuildManagedConfigs(input: {
     const w = writeControlPlaneExport(input.dataDir, input.db);
     exportPath = w.path;
     written.push(w.path);
-    notes.push(`已寫入控制面摘要 ${w.path}（${w.bytes} bytes）`);
+    notes.push(tl('notes.auto.t0129', { v0: (w.path), v1: (w.bytes) }));
     mode = 'export_only';
   }
 
   const nginxConfDetails = listManagedNginxDetailed(input.dataDir);
   const nginxConfs = nginxConfDetails.map((c) => c.path);
-  notes.push(`管理面 Nginx conf：${nginxConfs.length} 個（dataDir/nginx/conf.d）`);
+  notes.push(tl('notes.auto.t0130', { v0: (nginxConfs.length) }));
 
   if (input.dryRun) {
     mode = 'dry_run';
@@ -196,13 +191,12 @@ export async function rebuildManagedConfigs(input: {
       dataDir: input.dataDir,
       systemConfDir: '/etc/nginx/conf.d',
       host: input.host,
-      dryRun: true,
-    });
+      dryRun: true });
     notes.push(...sync.notes);
     notes.push(
       executeEnabled && isRoot
-        ? '模擬完成 — 未複製、未 reload（正式同步請關 dryRun）'
-        : '模擬完成 — 正式同步仍需 root + YSK_EXECUTE',
+        ? tl('notes.auto.n1015')
+        : tl('notes.auto.n1016'),
     );
     return {
       ok: true,
@@ -214,8 +208,7 @@ export async function rebuildManagedConfigs(input: {
       dryRun: true,
       mode,
       executeEnabled,
-      isRoot,
-    };
+      isRoot };
   }
 
   if (input.syncNginx) {
@@ -223,34 +216,31 @@ export async function rebuildManagedConfigs(input: {
     if (!executeEnabled || !isRoot) {
       return {
         ok: false,
-        notes: [...notes, '無法同步 Nginx：需開啟系統變更權限與管理員（root）'],
+        notes: [...notes, tl('notes.auto.n1147')],
         written,
         exportPath,
         nginxConfs,
         nginxConfDetails,
         blocked: true,
-        blockMessage: '需要系統變更權限才能重建系統 Nginx',
+        blockMessage: tl('notes.auto.n1588'),
         mode,
         executeEnabled,
-        isRoot,
-      };
+        isRoot };
     }
     const sync = await syncNginxConfigs({
       dataDir: input.dataDir,
       systemConfDir: '/etc/nginx/conf.d',
       host: input.host,
-      dryRun: false,
-    });
+      dryRun: false });
     written.push(...sync.copied);
     notes.push(...sync.notes);
     if (sync.tested) {
       const rel = await input.host.runCommand(['systemctl', 'reload', 'nginx'], {
-        timeoutMs: 15_000,
-      });
+        timeoutMs: 15_000 });
       notes.push(
         rel.exitCode === 0
-          ? '已重載 Nginx（systemctl reload）'
-          : `nginx reload 失敗：${(rel.stderr || rel.stdout || '').slice(0, 300)}`,
+          ? tl('notes.auto.n0811')
+          : tl('notes.tpl.nginxReloadFailed', { detail: (rel.stderr || rel.stdout || '').slice(0, 300) }),
       );
       if (rel.exitCode !== 0) {
         return {
@@ -262,17 +252,16 @@ export async function rebuildManagedConfigs(input: {
           nginxConfDetails,
           mode,
           executeEnabled,
-          isRoot,
-        };
+          isRoot };
       }
     } else {
-      notes.push('未執行 nginx -t 成功路徑 — 請檢查 sync 備註');
+      notes.push(tl('notes.auto.n0952'));
     }
   } else if (input.writeExport === false) {
     mode = 'list';
-    notes.push('僅列出 managed conf（未寫 export、未同步系統）');
+    notes.push(tl('notes.auto.n0565'));
   } else {
-    notes.push('未請求同步系統 — dataDir 管理檔 ≠ /etc/nginx 已套用');
+    notes.push(tl('notes.auto.n0982'));
   }
 
   return {
@@ -284,8 +273,7 @@ export async function rebuildManagedConfigs(input: {
     nginxConfDetails,
     mode,
     executeEnabled,
-    isRoot,
-  };
+    isRoot };
 }
 
 /** Read managed conf text (basename only under dataDir/nginx/conf.d). */
@@ -295,14 +283,14 @@ export function readManagedNginxConf(
 ): { ok: boolean; content?: string; notes: string[] } {
   const base = basename(name || '');
   if (!base.endsWith('.conf') || base !== name || base.includes('..')) {
-    return { ok: false, notes: ['無效 conf 名稱'] };
+    return { ok: false, notes: [tl('notes.auto.n1100')] };
   }
   const path = join(dataDir, 'nginx', 'conf.d', base);
-  if (!existsSync(path)) return { ok: false, notes: ['檔案不存在'] };
+  if (!existsSync(path)) return { ok: false, notes: [tl('notes.fileMissing')] };
   try {
     const content = readFileSync(path, 'utf8');
     return { ok: true, content: content.slice(0, 200_000), notes: [`${base} · ${content.length} chars`] };
   } catch (e) {
-    return { ok: false, notes: [e instanceof Error ? e.message : '讀取失敗'] };
+    return { ok: false, notes: [e instanceof Error ? e.message : tl('notes.readFailed')] };
   }
 }

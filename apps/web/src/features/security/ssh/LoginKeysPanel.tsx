@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionBar,
   Alert,
   Badge,
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function LoginKeysPanel({ onFlash, onChanged }: Props) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<SftpKeyRow[]>([]);
   const [projects, setProjects] = useState<ProjectOpt[]>([]);
   const [busy, setBusy] = useState(false);
@@ -46,7 +48,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
 
   async function addKey() {
     if (!projectId || !pub.trim().startsWith('ssh-')) {
-      onFlash('error', '請選擇專案並貼上以 ssh- 開頭的公鑰');
+      onFlash('error', t('security.ssh.loginNeedPub'));
       return;
     }
     setBusy(true);
@@ -56,7 +58,10 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
         publicKey: pub.trim(),
         comment: comment.trim() || undefined,
       });
-      onFlash(r.ok ? 'ok' : 'error', (r.notes ?? []).join('；') || (r.ok ? '已加入' : '失敗'));
+      onFlash(
+        r.ok ? 'ok' : 'error',
+        (r.notes ?? []).join(' · ') || (r.ok ? t('security.ssh.loginAdded') : t('common.failed')),
+      );
       if (r.ok) {
         setOpen(false);
         setPub('');
@@ -65,7 +70,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
         onChanged();
       }
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : '失敗');
+      onFlash('error', e instanceof Error ? e.message : t('common.failed'));
     } finally {
       setBusy(false);
     }
@@ -77,8 +82,8 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
 
       <Card>
         <CardSection
-          title="登入授權（公鑰）"
-          description="決定「誰可以進來」。只存公鑰，寫入專案 home 的 authorized_keys。與出站私鑰無關。"
+          title={t('security.ssh.loginTitle')}
+          description={t('security.ssh.loginDesc')}
         >
           <ActionBar className="u-mb-3">
             <Button
@@ -89,7 +94,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
                 setOpen(true);
               }}
             >
-              新增登入公鑰
+              {t('security.ssh.loginAdd')}
             </Button>
             <Button
               variant="ghost"
@@ -97,19 +102,14 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
               loading={busy}
               onClick={() => void refresh().catch((e: Error) => setErr(e.message))}
             >
-              重新整理
+              {t('common.refresh')}
             </Button>
           </ActionBar>
 
           {items.length === 0 ? (
             <EmptyState
-              title="還沒有允許登入的公鑰"
-              description="把筆電或 CI 的公鑰貼上來，綁到專案用戶後即可 SFTP／SSH（需 sshd 片段）。"
-              action={
-                <Button variant="primary" size="md" onClick={() => setOpen(true)}>
-                  新增第一把登入公鑰
-                </Button>
-              }
+              title={t('security.ssh.loginEmpty')}
+              description={t('security.ssh.loginEmptyHint')}
             />
           ) : (
             <div className="list-panel">
@@ -120,9 +120,9 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
                       <span>{k.username}</span>
                       {k.comment ? <span className="muted">· {k.comment}</span> : null}
                       {k.projectId ? (
-                        <Badge tone="info">專案</Badge>
+                        <Badge tone="info">{t('security.ssh.boundProject')}</Badge>
                       ) : (
-                        <Badge tone="neutral">未綁專案</Badge>
+                        <Badge tone="neutral">{t('security.ssh.unboundProject')}</Badge>
                       )}
                     </div>
                     <div className="list-row__meta">
@@ -143,7 +143,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
                         void sshApi
                           .removeLoginKey(k.id)
                           .then(() => {
-                            onFlash('ok', '已移除公鑰');
+                            onFlash('ok', t('security.ssh.loginRemoved'));
                             return refresh();
                           })
                           .then(() => onChanged())
@@ -151,7 +151,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
                           .finally(() => setBusy(false));
                       }}
                     >
-                      移除
+                      {t('security.ssh.remove')}
                     </Button>
                   </div>
                 </div>
@@ -164,13 +164,13 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="允許一把公鑰登入"
-        description="選擇專案後，公鑰會寫入該 Linux 用戶 home/.ssh/authorized_keys"
+        title={t('security.ssh.loginModalTitle')}
+        description={t('security.ssh.loginModalDesc')}
         size="lg"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -179,19 +179,19 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
               disabled={!projectId || !pub.trim()}
               onClick={() => void addKey()}
             >
-              加入授權
+              {t('security.ssh.addAuth')}
             </Button>
           </>
         }
       >
         <FormLayout columns={1}>
-          <Field label="專案" htmlFor="login-proj" flush required>
+          <Field label={t('common.project')} htmlFor="login-proj" flush required>
             <select
               id="login-proj"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
             >
-              <option value="">— 選擇 —</option>
+              <option value="">{t('security.ssh.selectOption')}</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} · {p.linuxUser}
@@ -200,12 +200,12 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
             </select>
           </Field>
           <Field
-            label="公鑰"
+            label={t('security.ssh.publicKey')}
             htmlFor="login-pub"
             flush
             required
             fullWidth
-            hint="整行貼上，例如 ssh-ed25519 AAAA… comment"
+            hint={t('security.ssh.publicKeyHint')}
           >
             <textarea
               id="login-pub"
@@ -217,17 +217,17 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
               placeholder="ssh-ed25519 AAAA… user@laptop"
             />
           </Field>
-          <Field label="備註（可選）" htmlFor="login-cmt" flush>
+          <Field label={t('security.ssh.commentOptional')} htmlFor="login-cmt" flush>
             <input
               id="login-cmt"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="筆電 / CI"
+              placeholder={t('security.ssh.commentPlaceholder')}
             />
           </Field>
         </FormLayout>
         {projects.length === 0 ? (
-          <FormHint>請先建立專案。系統用戶就緒後再綁公鑰效果最佳。</FormHint>
+          <FormHint>{t('security.ssh.loginNeedProject')}</FormHint>
         ) : null}
       </Modal>
     </div>

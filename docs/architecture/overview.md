@@ -4,12 +4,13 @@
 
 | Layer | Package / path | Responsibility |
 |-------|----------------|----------------|
-| **Contracts** | `@ysk/shared` (`types.ts`, `dto.ts`, `ops.ts`, `errors.ts`) | Enums, DTOs, **OpsResultDto / ApplyStatus**, errors — **only** cross-process public types |
+| **Contracts** | `@ysk/shared` (`types`, `dto`, `ops`, `errors`, **domain DTO modules**) | Enums, DTOs, **OpsResultDto / ApplyStatus**, metrics/network/system/db/ftp/files/email/fleet/… — **only** cross-process public types |
 | **Business logic** | `@ysk/core` (`hosting/`, `email/`, `security/`, `net/`, `monitoring/`, …) | Pure domain services; unit-tested; returns honest ops results |
 | **Persistence** | `@ysk/core` `db/` + `repositories/` | JSON store + repositories |
 | **Host adapter** | `@ysk/core` `host/` | Executor (YSK_EXECUTE / root gates) |
-| **HTTP + CLI** | `apps/server` | Thin controllers / CLI → core; use `sendOpsResult` |
-| **Web UI** | `apps/web` | FSD-lite React; import DTOs from `@ysk/shared`; UI kit only |
+| **HTTP + CLI** | `apps/server` | Thin `http-server` dispatcher → `routes/*` + `controllers/*` → core; use `sendOpsResult` |
+| **Web UI** | `apps/web` | FSD-lite React; import DTOs from `@ysk/shared`; UI kit only; i18n via shared locales |
+| **i18n** | `@ysk/shared` `locales/` + `i18n/t` | zh-HK（香港書面語）· zh-CN · en；前後端共用 `t(locale, key)` |
 
 ## Dependency rule
 
@@ -19,7 +20,17 @@ HTTP / CLI        →  @ysk/core (services)
 @ysk/core         →  @ysk/shared
 ```
 
-No circular deps. Controllers must not own business rules.
+No circular deps. Controllers / route modules must not own business rules.
+
+### HTTP route layout (`apps/server`)
+
+| Path | Role |
+|------|------|
+| `http-server.ts` | Dispatcher only (~120 LOC): rate window, OPTIONS, static SPA, 404 |
+| `controllers/*` | Existing modular handlers (files, system, resources, logs, metrics, network) |
+| `routes/*` | Domain handlers extracted in Wave2 R2 (`auth`, `cdn`, `email`, `hosting`, … + residual `misc`) |
+
+Each handler: `(ctx, req, res, url, method) => Promise<boolean>` — `true` = response sent.
 
 ## Ops honesty contract
 
@@ -49,11 +60,25 @@ Use `assertHonestOps()` before returning HTTP/CLI bodies when in doubt.
 ## Packages
 
 ```
-packages/shared  — DTOs, types, ops honesty, errors
-packages/core    — business logic (highly unit-tested)
-apps/server      — HTTP + CLI binary `ysk-server`
-apps/web         — React control plane
+packages/shared  — DTOs, types, ops honesty, errors, domain API contracts
+packages/core    — business logic (highly unit-tested); reuses shared DTO shapes
+apps/server      — HTTP (`http-server` + `routes/*` + `controllers/*`) + CLI `ysk-server`
+apps/web         — React control plane; features/*/api.ts re-exports shared types
 ```
+
+### Domain DTO modules (`@ysk/shared`)
+
+| Module | Covers |
+|--------|--------|
+| `ops.ts` | ApplyStatus, OpsResultDto |
+| `dto.ts` | Auth, Project, LLM chat, email DNS health |
+| `cdn.ts` / `migrate.ts` | CDN, host migrate jobs |
+| `metrics.ts` | MetricsSnapshot, processes, top header |
+| `network.ts` | Network snapshot / apply |
+| `system.ts` | Readiness, host overview, firewall/fail2ban status |
+| `databases.ts` | DB engine/service + Redis keys |
+| `ftp.ts` / `files.ts` / `ssl.ts` / `software.ts` | FTPS, files, certs, install |
+| `email-domain.ts` / `fleet.ts` / `updates.ts` / `ai.ts` | Mail domains, agents, updates, AI tasks |
 
 ## Deprecated / empty shells
 
@@ -69,10 +94,16 @@ Root script **`pnpm gates`** (also in GitHub Actions before typecheck/build):
 | Honesty lint | `pnpm honesty:lint` | No `sendJson(ok?200:422)`; no obvious `ok:true`+`blocked:true` in `apps/server` |
 | Page primitives | `pnpm primitives:check` | No raw `<table>` / `btn-row` / create-in-layout on feature pages |
 | Page chrome | `pnpm chrome:check` | Feature pages use FeaturePageLayout; OpsHero banned |
+| About tab | `pnpm about-tab:check` | PageGuide pages expose trailing「說明」tab |
+| CSS reuse | `pnpm css:reuse` | No disallowed inline styles; core class patterns present; CSS under `styles/` only |
+| i18n keys | `pnpm i18n:check-keys` | zh-HK / zh-CN / en translation key sets match |
 
-Then: `pnpm typecheck` → `pnpm build` → `pnpm test` → `pnpm e2e:real-ops`.
+Then: `pnpm typecheck` → `pnpm build` → `pnpm test` → `pnpm e2e:real-ops`.  
+i18n guide: [../i18n.md](../i18n.md).
 
-See [code-review-2026-07-30.md](./code-review-2026-07-30.md) for the full PR1–PR6 stack close-out.
+See [code-review-2026-07-30.md](./code-review-2026-07-30.md) (PR1–PR6 close-out) and **[code-review-wave2.md](./code-review-wave2.md)** (**Wave 2 CLOSED** R0–R7).  
+Single-entry IA: [feature-single-entry.md](./feature-single-entry.md).  
+Changelog: root [CHANGELOG.md](../../CHANGELOG.md) § Wave 2.
 
 ## Runtime data
 

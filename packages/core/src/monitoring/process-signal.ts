@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Send signals to host processes (kill) — honest, fail-closed without YSK_EXECUTE.
  * Never pretends success; never signals PID 1 without refusal.
@@ -45,15 +46,15 @@ export function isProcessSignal(v: unknown): v is ProcessSignal {
 export function normalizePid(raw: string | number): { ok: true; pid: string } | { ok: false; reason: string } {
   const s = String(raw ?? '').trim();
   if (!/^\d+$/.test(s)) {
-    return { ok: false, reason: 'PID 必須為正整數' };
+    return { ok: false, reason: tl('notes.auto.n0149') };
   }
   // no leading zeros abuse; allow "01" → treat as number
   const n = Number(s);
   if (!Number.isSafeInteger(n) || n < 1) {
-    return { ok: false, reason: 'PID 無效' };
+    return { ok: false, reason: tl('notes.auto.n0150') };
   }
   if (n === 1) {
-    return { ok: false, reason: '拒絕訊號 PID 1（init/systemd 保護）' };
+    return { ok: false, reason: tl('notes.auto.n0875') };
   }
   return { ok: true, pid: String(n) };
 }
@@ -105,7 +106,7 @@ export async function collectProcessDetail(
   const pid = norm.pid;
   const notes: string[] = [];
   const command = await readProcessCmdline(host, pid);
-  if (!command) notes.push('無法讀取 cmdline（進程可能已結束或無權限）');
+  if (!command) notes.push(tl('notes.auto.n1183'));
 
   let cwd: string | undefined;
   const cwdR = await host.runCommand(
@@ -115,7 +116,7 @@ export async function collectProcessDetail(
   if (cwdR.exitCode === 0 && cwdR.stdout.trim()) {
     cwd = cwdR.stdout.trim();
   } else {
-    notes.push('cwd 不可讀');
+    notes.push(tl('notes.auto.n0242'));
   }
 
   let fdCount: number | undefined;
@@ -127,7 +128,7 @@ export async function collectProcessDetail(
     const n = Number(fdR.stdout.trim());
     if (Number.isFinite(n)) fdCount = n;
   } else {
-    notes.push('fd 計數不可用');
+    notes.push(tl('notes.auto.n0289'));
   }
 
   return {
@@ -177,7 +178,7 @@ export async function reniceProcess(input: {
     return {
       ok: false,
       pid,
-      notes: ['nice 須在 -20（最高優先）至 19（最低）'],
+      notes: [tl('notes.auto.n0345')],
       executeEnabled,
     };
   }
@@ -185,9 +186,9 @@ export async function reniceProcess(input: {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '拒絕 renice 自身控制面進程',
+      blockMessage: tl('notes.auto.n0870'),
       pid,
-      notes: ['保護 ysk-server process.pid'],
+      notes: [tl('notes.auto.n0557')],
       executeEnabled,
     };
   }
@@ -195,9 +196,9 @@ export async function reniceProcess(input: {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '無法 renice：需要系統變更權限（YSK_EXECUTE）',
+      blockMessage: tl('ops.blocked.renice'),
       pid,
-      notes: ['需要 YSK_EXECUTE=1'],
+      notes: [tl('ops.blocked.needExecuteYsk')],
       executeEnabled,
     };
   }
@@ -213,7 +214,7 @@ export async function reniceProcess(input: {
       pid,
       nice,
       notes: [
-        `renice 失敗：${(r.stderr || r.stdout || '').trim().slice(0, 200) || `exit ${r.exitCode}`}`,
+        tl('notes.tpl.reniceFailed', { detail: (r.stderr || r.stdout || '').trim().slice(0, 200) || `exit ${r.exitCode}` }),
       ],
       executeEnabled,
     };
@@ -225,7 +226,7 @@ export async function reniceProcess(input: {
     { timeoutMs: 3_000 },
   );
   if (ps.exitCode === 0 && ps.stdout.trim()) {
-    notes.push(`目前 NI=${ps.stdout.trim()}`);
+    notes.push(tl('notes.auto.t0440', { v0: (ps.stdout.trim()) }));
   }
   return { ok: true, pid, nice, notes, executeEnabled };
 }
@@ -251,7 +252,7 @@ export async function signalProcess(input: {
       ok: false,
       pid: String(input.pid),
       signal: 'TERM',
-      notes: ['不支援的訊號（只允許 TERM / KILL / HUP / USR1）'],
+      notes: [tl('notes.auto.n0498')],
       executeEnabled,
     };
   }
@@ -273,10 +274,10 @@ export async function signalProcess(input: {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '拒絕訊號自身進程（ysk-server）；若確定需要請 forceSelf',
+      blockMessage: tl('notes.auto.n0877'),
       pid,
       signal,
-      notes: [`PID ${pid} 是本控制面進程（process.pid）`],
+      notes: [tl('notes.auto.t0441', { v0: (pid) })],
       executeEnabled,
       command: process.argv.join(' ').slice(0, 200),
     };
@@ -297,10 +298,10 @@ export async function signalProcess(input: {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '拒絕訊號疑似 ysk 控制面進程；進階可 forceControlPlane',
+      blockMessage: tl('notes.auto.n0876'),
       pid,
       signal,
-      notes: [...notes, 'command 含 ysk-server / @ysk/server 特徵'],
+      notes: [...notes, tl('notes.auto.n0240')],
       executeEnabled,
       command,
     };
@@ -310,10 +311,10 @@ export async function signalProcess(input: {
     return {
       ok: false,
       blocked: true,
-      blockMessage: '無法送出訊號：需要系統變更權限（YSK_EXECUTE）',
+      blockMessage: tl('ops.blocked.signal'),
       pid,
       signal,
-      notes: [...notes, '需要 YSK_EXECUTE=1 才會真 kill'],
+      notes: [...notes, tl('ops.blocked.signalNote')],
       executeEnabled,
       command,
     };
@@ -322,7 +323,7 @@ export async function signalProcess(input: {
   // Existence check first
   const probe0 = await input.host.runCommand(['kill', '-0', pid], { timeoutMs: 3_000 });
   if (probe0.exitCode !== 0) {
-    notes.push(`進程不存在或無權探測（kill -0 exit ${probe0.exitCode}）`);
+    notes.push(tl('notes.auto.t0442', { v0: (probe0.exitCode) }));
     return {
       ok: false,
       pid,
@@ -330,7 +331,7 @@ export async function signalProcess(input: {
       stillAlive: false,
       notes: [
         ...notes,
-        (probe0.stderr || probe0.stdout || '').trim().slice(0, 160) || 'kill -0 失敗',
+        (probe0.stderr || probe0.stdout || '').trim().slice(0, 160) || tl('notes.auto.n0316'),
       ],
       executeEnabled,
       command,
@@ -343,7 +344,7 @@ export async function signalProcess(input: {
   });
   if (killR.exitCode !== 0) {
     const err = (killR.stderr || killR.stdout || '').trim().slice(0, 200);
-    notes.push(`kill -s ${sigName} 失敗：${err || `exit ${killR.exitCode}`}`);
+    notes.push(tl('notes.tpl.killFailed', { sig: sigName, detail: err || `exit ${killR.exitCode}` }));
     // still probe
     const still = await input.host.runCommand(['kill', '-0', pid], { timeoutMs: 3_000 });
     return {
@@ -357,7 +358,7 @@ export async function signalProcess(input: {
     };
   }
 
-  notes.push(`已送 ${sigName} → PID ${pid}`);
+  notes.push(tl('notes.auto.t0444', { v0: (sigName), v1: (pid) }));
 
   // Brief settle for TERM
   if (signal === 'TERM') {
@@ -369,11 +370,11 @@ export async function signalProcess(input: {
   if (stillAlive) {
     notes.push(
       signal === 'KILL'
-        ? 'kill -0 仍成功：進程可能為 zombie 或權限不足'
-        : '進程仍在（可再送 KILL）',
+        ? tl('notes.auto.n0315')
+        : tl('notes.auto.n1469'),
     );
   } else {
-    notes.push('進程已結束（kill -0 失敗）');
+    notes.push(tl('notes.auto.n1470'));
   }
 
   return {

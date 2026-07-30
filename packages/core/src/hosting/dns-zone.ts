@@ -5,7 +5,7 @@
 
 import { mkdirSync, writeFileSync, readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { ipFamily, isValidIp, normalizeIp } from '../net/ip.js';
 import {
@@ -35,7 +35,7 @@ export interface ZoneFileResult {
 function assertZoneName(zone: string): string {
   const z = zone.trim().toLowerCase().replace(/\.$/, '');
   if (!z || z.length > 253 || !/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(z) || z.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'zone 名稱無效', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0483'), {
       httpStatus: 400,
       details: { zone },
     });
@@ -46,7 +46,7 @@ function assertZoneName(zone: string): string {
 function assertIpv4(ip: string): string {
   const n = normalizeIp(ip);
   if (!n || ipFamily(n) !== 4) {
-    throw new YskError(ErrorCodes.VALIDATION, 'server IP 必須是 IPv4', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0429'), {
       httpStatus: 400,
       details: { ip },
     });
@@ -58,7 +58,7 @@ function assertIpv6Optional(ip: string | undefined): string | undefined {
   if (ip == null || !String(ip).trim()) return undefined;
   const n = normalizeIp(ip);
   if (!n || ipFamily(n) !== 6) {
-    throw new YskError(ErrorCodes.VALIDATION, 'server IPv6 無效', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0430'), {
       httpStatus: 400,
       details: { ip },
     });
@@ -131,13 +131,13 @@ export function renderBindZoneFile(input: {
     } else if (r.type === 'A' || r.type === 'AAAA') {
       // Validate address family for safety
       if (r.type === 'A' && isValidIp(r.value) && ipFamily(r.value) !== 4) {
-        throw new YskError(ErrorCodes.VALIDATION, 'A 記錄值必須是 IPv4', {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0069'), {
           httpStatus: 400,
           details: { value: r.value },
         });
       }
       if (r.type === 'AAAA' && isValidIp(r.value) && ipFamily(r.value) !== 6) {
-        throw new YskError(ErrorCodes.VALIDATION, 'AAAA 記錄值必須是 IPv6', {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0071'), {
           httpStatus: 400,
           details: { value: r.value },
         });
@@ -237,7 +237,7 @@ export async function writeManagedDnsZone(input: {
   const canExecute = Boolean(input.host?.executeEnabled());
 
   if ((wantValidate || wantReload) && !canExecute) {
-    notes.push('未驗證／重載：伺服器未開啟系統變更權限（僅寫入管理檔）');
+    notes.push(tl('notes.auto.n0988'));
   }
 
   if (wantValidate && canExecute && input.host) {
@@ -261,7 +261,7 @@ export async function writeManagedDnsZone(input: {
           : `named-checkzone failed: ${r.stderr || r.stdout}`,
       );
     } else {
-      notes.push('named-checkzone 不在 PATH — 檔已寫入，語法未驗證');
+      notes.push(tl('notes.auto.n0337'));
       validated = undefined;
     }
   }
@@ -270,7 +270,7 @@ export async function writeManagedDnsZone(input: {
   if (wantReload && canExecute && input.host && validated !== false) {
     reloaded = await tryReloadNameserver(input.host, notes, commandResults);
   } else if (wantReload && canExecute && validated === false) {
-    notes.push('略過 reload：zone 驗證失敗');
+    notes.push(tl('notes.auto.n1257'));
   }
 
   let applyStatus: ZoneFileResult['applyStatus'] = 'written';
@@ -280,10 +280,10 @@ export async function writeManagedDnsZone(input: {
     ok = false;
   } else if (reloaded) {
     applyStatus = 'applied';
-    notes.push('狀態：已寫入並成功 reload 本機 nameserver');
+    notes.push(tl('notes.auto.n1236'));
   } else {
     applyStatus = 'written';
-    notes.push('狀態：已寫入管理 zone 檔（尚未成為權威 DNS，除非你已 reload nameserver）');
+    notes.push(tl('notes.auto.n1237'));
   }
 
   return {
@@ -331,9 +331,9 @@ async function tryReloadNameserver(
       notes.push(`nameserver reload OK: ${argv.join(' ')}`);
       return true;
     }
-    notes.push(`reload 嘗試失敗 (${argv.join(' ')}): ${(r.stderr || r.stdout).trim()}`);
+    notes.push(tl('notes.auto.t0170', { v0: (argv.join(' ')), v1: ((r.stderr || r.stdout).trim()) }));
   }
-  notes.push('找不到可 reload 的本機 nameserver（rndc/named/bind9/pdns）');
+  notes.push(tl('notes.auto.n0857'));
   return false;
 }
 

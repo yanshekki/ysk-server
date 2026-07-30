@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * fail2ban deep operations — log-driven temporary bans / jails.
  * Distinct from UFW (port policy) and Defense Center (attack orchestration).
@@ -14,14 +15,14 @@ export const FAIL2BAN_JAIL_CATALOG: Array<{
   desc: string;
   group: 'ssh' | 'web' | 'mail' | 'other';
 }> = [
-  { id: 'sshd', label: 'SSH', desc: 'SSH 暴力破解', group: 'ssh' },
-  { id: 'nginx-http-auth', label: 'Nginx Auth', desc: 'HTTP 基本認證失敗', group: 'web' },
-  { id: 'nginx-botsearch', label: 'Bot 掃描', desc: '常見漏洞路徑掃描', group: 'web' },
-  { id: 'nginx-badbots', label: '壞 Bot', desc: '已知惡意 UA', group: 'web' },
-  { id: 'nginx-limit-req', label: '限速越界', desc: '觸發 limit_req 過多', group: 'web' },
-  { id: 'postfix', label: 'Postfix', desc: 'SMTP 濫用／暴力', group: 'mail' },
-  { id: 'dovecot', label: 'Dovecot', desc: 'IMAP／POP 登入失敗', group: 'mail' },
-  { id: 'recidive', label: '累犯', desc: '重複被 ban 再加重', group: 'other' },
+  { id: 'sshd', label: 'SSH', desc: tl('notes.auto.n0185'), group: 'ssh' },
+  { id: 'nginx-http-auth', label: 'Nginx Auth', desc: tl('notes.auto.n0115'), group: 'web' },
+  { id: 'nginx-botsearch', label: tl('notes.auto.n0084'), desc: tl('notes.auto.n0817'), group: 'web' },
+  { id: 'nginx-badbots', label: tl('notes.auto.n0637'), desc: tl('notes.auto.n0793'), group: 'web' },
+  { id: 'nginx-limit-req', label: tl('notes.auto.n1532'), desc: tl('notes.auto.n1352'), group: 'web' },
+  { id: 'postfix', label: 'Postfix', desc: tl('notes.auto.n0182'), group: 'mail' },
+  { id: 'dovecot', label: 'Dovecot', desc: tl('notes.auto.n0117'), group: 'mail' },
+  { id: 'recidive', label: tl('notes.auto.n1313'), desc: tl('notes.auto.n1513'), group: 'other' },
 ];
 
 export type Fail2banPolicy = {
@@ -35,38 +36,34 @@ export const DEFAULT_F2B_POLICY: Fail2banPolicy = {
   bantime: '1h',
   findtime: '10m',
   maxretry: 5,
-  jails: ['sshd', 'nginx-http-auth', 'postfix', 'dovecot'],
-};
+  jails: ['sshd', 'nginx-http-auth', 'postfix', 'dovecot'] };
 
 export async function fail2banService(
   host: HostExecutor,
   action: 'start' | 'stop' | 'restart' | 'reload' | 'enable',
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
   if (!host.executeEnabled()) {
-    return { ok: false, blocked: true, notes: ['需 YSK_EXECUTE 才能控制 fail2ban 服務'] };
+    return { ok: false, blocked: true, notes: [tl('notes.auto.n1542')] };
   }
   if (action === 'enable') {
     const r = await host.runCommand(['systemctl', 'enable', '--now', 'fail2ban'], {
-      timeoutMs: 30_000,
-    });
+      timeoutMs: 30_000 });
     return {
       ok: r.exitCode === 0,
       notes: [
         r.exitCode === 0
-          ? '已 enable --now fail2ban'
-          : `失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-      ],
-    };
+          ? tl('notes.auto.n0723')
+          : tl('notes.tpl.failedDetail', { detail: (r.stderr || r.stdout || '').slice(0, 300) }),
+      ] };
   }
   const r = await host.runCommand(['systemctl', action, 'fail2ban'], { timeoutMs: 30_000 });
   return {
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? `systemctl ${action} fail2ban 成功`
-        : `${action} 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-    ],
-  };
+        ? tl('notes.auto.t0295', { v0: (action) })
+        : tl('notes.auto.t0296', { v0: (action), v1: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+    ] };
 }
 
 export async function fail2banBanIp(
@@ -75,12 +72,12 @@ export async function fail2banBanIp(
   ip: string,
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
   if (!host.executeEnabled()) {
-    return { ok: false, blocked: true, notes: ['需 YSK_EXECUTE 才能 banip'] };
+    return { ok: false, blocked: true, notes: [tl('notes.auto.n1541')] };
   }
   const safeJail = jail.replace(/[^a-zA-Z0-9._-]/g, '') || 'sshd';
   const safeIp = ip.trim();
   if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(safeIp) && !safeIp.includes(':')) {
-    return { ok: false, notes: ['無效 IP'] };
+    return { ok: false, notes: [tl('notes.invalidIp')] };
   }
   const r = await host.runCommand(
     ['fail2ban-client', 'set', safeJail, 'banip', safeIp],
@@ -90,10 +87,9 @@ export async function fail2banBanIp(
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? `fail2ban ban ${safeIp} @ ${safeJail}（臨時，受 bantime 限制）`
-        : `banip 失敗：${(r.stderr || r.stdout || '').slice(0, 300)}`,
-    ],
-  };
+        ? tl('notes.auto.t0297', { v0: (safeIp), v1: (safeJail) })
+        : tl('notes.auto.t0298', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
+    ] };
 }
 
 export function readIgnoreIpList(dataDir: string): string[] {
@@ -166,19 +162,18 @@ export async function applyFail2banPolicy(input: {
 }> {
   const { path } = writeFail2banJailLocal(input.dataDir, input.policy);
   const notes = [
-    `已寫 ${path}`,
-    `jails: ${input.policy.jails.join(', ') || '(無)'}`,
+    tl('notes.tpl.wrote', { path: path }),
+    tl('notes.auto.t0299', { v0: (input.policy.jails.join(', ') || tl('notes.tpl.noParen')) }),
     `bantime=${input.policy.bantime} findtime=${input.policy.findtime} maxretry=${input.policy.maxretry}`,
-    `ignoreip 來源：dataDir/fail2ban/ignoreip.txt`,
+    tl('notes.auto.t0300'),
   ];
   const written = [path];
   if (!input.apply) {
     return {
       ok: true,
       written,
-      notes: [...notes, '狀態：written（預覽／只寫管理檔）'],
-      apply_status: 'written',
-    };
+      notes: [...notes, tl('notes.auto.n1235')],
+      apply_status: 'written' };
   }
   const can = input.host.executeEnabled() && input.host.isRoot();
   if (!can) {
@@ -186,11 +181,10 @@ export async function applyFail2banPolicy(input: {
       ok: false,
       blocked: true,
       written,
-      notes: [...notes, '未套用到系統：需 YSK_EXECUTE + root'],
+      notes: [...notes, tl('notes.auto.n0954')],
       requiresExecute: !input.host.executeEnabled(),
       requiresRoot: !input.host.isRoot(),
-      apply_status: 'blocked',
-    };
+      apply_status: 'blocked' };
   }
   // ensure package
   const install = await input.host.runCommand(
@@ -202,41 +196,35 @@ export async function applyFail2banPolicy(input: {
     { timeoutMs: 180_000 },
   );
   if (install.exitCode !== 0) {
-    notes.push(`安裝檢查：${(install.stderr || install.stdout || '').slice(0, 200)}`);
+    notes.push(tl('notes.auto.t0301', { v0: ((install.stderr || install.stdout || '').slice(0, 200)) }));
   }
   const cp = await input.host.runCommand(['cp', path, '/etc/fail2ban/jail.local'], {
-    timeoutMs: 10_000,
-  });
-  notes.push(cp.exitCode === 0 ? '已複製到 /etc/fail2ban/jail.local' : '複製 jail.local 失敗');
+    timeoutMs: 10_000 });
+  notes.push(cp.exitCode === 0 ? tl('notes.auto.n0800') : tl('notes.auto.n1349'));
   const en = await input.host.runCommand(['systemctl', 'enable', '--now', 'fail2ban'], {
-    timeoutMs: 30_000,
-  });
-  notes.push(en.exitCode === 0 ? 'fail2ban enable --now' : 'enable 失敗');
+    timeoutMs: 30_000 });
+  notes.push(en.exitCode === 0 ? 'fail2ban enable --now' : tl('notes.auto.n0278'));
   const rel = await input.host.runCommand(['systemctl', 'reload', 'fail2ban'], {
-    timeoutMs: 15_000,
-  });
+    timeoutMs: 15_000 });
   // reload may fail if never started — try restart
   if (rel.exitCode !== 0) {
     const rst = await input.host.runCommand(['systemctl', 'restart', 'fail2ban'], {
-      timeoutMs: 30_000,
-    });
-    notes.push(rst.exitCode === 0 ? '已 restart fail2ban' : 'reload/restart 失敗');
+      timeoutMs: 30_000 });
+    notes.push(rst.exitCode === 0 ? tl('notes.auto.n0727') : tl('notes.auto.n0405'));
     const ok = cp.exitCode === 0 && (en.exitCode === 0 || rst.exitCode === 0);
     return {
       ok,
       written,
-      notes: [...notes, ok ? '狀態：applied' : '狀態：failed'],
-      apply_status: ok ? 'applied' : 'failed',
-    };
+      notes: [...notes, ok ? tl('notes.auto.n0001') : tl('notes.auto.n0012')],
+      apply_status: ok ? 'applied' : 'failed' };
   }
-  notes.push('已 reload fail2ban');
+  notes.push(tl('notes.auto.n0725'));
   const ok = cp.exitCode === 0;
   return {
     ok,
     written,
-    notes: [...notes, ok ? '狀態：applied' : '狀態：failed'],
-    apply_status: ok ? 'applied' : 'failed',
-  };
+    notes: [...notes, ok ? tl('notes.auto.n0001') : tl('notes.auto.n0012')],
+    apply_status: ok ? 'applied' : 'failed' };
 }
 
 export async function getFail2banDeepStatus(input: {
@@ -267,16 +255,16 @@ export async function getFail2banDeepStatus(input: {
       if (r.blocked) notes.push(...(r.notes ?? []));
     }
   } catch {
-    notes.push('讀取 banned 列表失敗');
+    notes.push(tl('notes.auto.n1436'));
   }
   const activeLabel =
     !st.installed
-      ? '未安裝'
+      ? tl('notes.notInstalled')
       : st.active === 'active'
-        ? '運作中'
+        ? tl('notes.state.active')
         : st.active === 'inactive'
-          ? '未運行'
-          : st.active || '未知';
+          ? tl('notes.auto.n0013')
+          : st.active || tl('notes.unknown');
 
   return {
     installed: st.installed,
@@ -289,8 +277,7 @@ export async function getFail2banDeepStatus(input: {
     catalog: FAIL2BAN_JAIL_CATALOG,
     executeEnabled: st.executeEnabled,
     isRoot: st.isRoot,
-    notes,
-  };
+    notes };
 }
 
 export { fail2banBannedIps, fail2banUnban, probeFail2banStatus };

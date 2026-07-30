@@ -1,0 +1,140 @@
+/* —— Email control plane —— */
+
+.mail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.mail-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.mail-toolbar__search {
+  flex: 1 1 16rem;
+  max-width: 28rem;
+}
+
+.mail-domain-name {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.mail-domain-row:hover {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.mail-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mail-card--muted {
+  background: var(--bg-subtle);
+}
+
+.mail-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.mail-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.mail-card__desc {
+  margin: 0.25rem 0 0;
+}
+
+.mail-queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mail-queue-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--bg-subtle);
+}
+
+.mail-queue-list__raw {
+  font-size: 0.78rem;
+  word-break: break-all;
+  flex: 1 1 12rem;
+}
+
+.mail-ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-4);
+}
+
+.mail-stack-list,
+.mail-bullets,
+.mail-steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--text-sub);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.mail-stack-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mail-stack-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+}
+
+.mail-steps {
+  padding-left: 1.25rem;
+}
+
+table.data tr.is-selected td {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+code.inline {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  background: var(--bg-subtle);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+

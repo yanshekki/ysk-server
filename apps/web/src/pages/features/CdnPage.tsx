@@ -120,6 +120,8 @@ export function CdnPage() {
   const [sshIdentityId, setSshIdentityId] = useState('');
   const [sshHost, setSshHost] = useState('');
   const [sshUsername, setSshUsername] = useState('root');
+  /** Fleet session id — queues conf to agent; not sync nginx apply */
+  const [fleetAgentId, setFleetAgentId] = useState('');
 
   // site form
   const [siteOpen, setSiteOpen] = useState(false);
@@ -196,14 +198,14 @@ export function CdnPage() {
         setNotes(r.notes ?? []);
         setMsg(
           r.created
-            ? '已從專案建立 CDN 站點 — 請套用 edges / DNS'
-            : '已更新專案綁定嘅 CDN 站點',
+            ? t('cdn.fromProjectOk')
+            : t('cdn.fromProjectUpdatedAlt'),
         );
         setTab('sites');
         await refresh();
         if (r.site) openEditSite(r.site);
       } catch (e) {
-        setMsg(e instanceof Error ? e.message : 'from-project 失敗');
+        setMsg(e instanceof Error ? e.message : t('cdn.fromProjectFailed'));
       } finally {
         setBusy(false);
         searchParams.delete('fromProject');
@@ -226,6 +228,7 @@ export function CdnPage() {
     setSshIdentityId('');
     setSshHost('');
     setSshUsername('root');
+    setFleetAgentId('');
   }
 
   function resetSiteForm() {
@@ -266,6 +269,7 @@ export function CdnPage() {
     setSshIdentityId(n.sshIdentityId ?? '');
     setSshHost(n.sshHost ?? '');
     setSshUsername(n.sshUsername ?? 'root');
+    setFleetAgentId(n.fleetAgentId ?? '');
     setNodeOpen(true);
   }
 
@@ -332,14 +336,15 @@ export function CdnPage() {
           sshIdentityId: sshIdentityId.trim() || undefined,
           sshHost: sshHost.trim() || undefined,
           sshUsername: sshUsername.trim() || undefined,
+          fleetAgentId: fleetAgentId.trim() || undefined,
         }),
       });
       setNodeOpen(false);
       resetNodeForm();
-      setMsg(editNode ? '節點已更新' : '節點已建立');
+      setMsg(editNode ? t('cdn.nodeUpdated') : t('cdn.nodeCreated'));
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '儲存失敗');
+      setMsg(err instanceof Error ? err.message : t('cdn.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -355,7 +360,7 @@ export function CdnPage() {
         try {
           geoMap = JSON.parse(geoMapText) as Record<string, string[]>;
         } catch {
-          setMsg('geoMap JSON 無效，例：{"hkg":["node-id"]}');
+          setMsg(t('cdn.geoMapInvalid'));
           setBusy(false);
           return;
         }
@@ -394,10 +399,10 @@ export function CdnPage() {
       });
       setSiteOpen(false);
       resetSiteForm();
-      setMsg(editSite ? '站點已更新' : '站點已建立');
+      setMsg(editSite ? t('cdn.siteUpdated') : t('cdn.siteCreated'));
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '儲存失敗');
+      setMsg(err instanceof Error ? err.message : t('cdn.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -421,10 +426,10 @@ export function CdnPage() {
       );
       const r = (await res.json()) as { ok?: boolean; notes?: string[] };
       setNotes(r.notes ?? []);
-      setMsg(r.ok ? '探活成功（online）' : '探活失敗（offline）');
+      setMsg(r.ok ? t('cdn.probeOnline') : t('cdn.probeOffline'));
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '探活失敗');
+      setMsg(err instanceof Error ? err.message : t('cdn.probeFailed'));
     } finally {
       setBusy(false);
     }
@@ -445,10 +450,10 @@ export function CdnPage() {
       });
       const r = (await res.json()) as { ok?: boolean; notes?: string[] };
       setNotes(r.notes ?? []);
-      setMsg(r.ok ? '全部節點探活完成' : '部分／全部節點不健康');
+      setMsg(r.ok ? t('cdn.batchProbeOk') : t('cdn.batchProbePartial'));
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '批次探活失敗');
+      setMsg(err instanceof Error ? err.message : t('cdn.batchProbeFailed'));
     } finally {
       setBusy(false);
     }
@@ -464,42 +469,42 @@ export function CdnPage() {
           body: JSON.stringify({ draining }),
         },
       );
-      setMsg(draining ? '已設為 draining' : '已解除 drain');
+      setMsg(draining ? t('cdn.drainingSet') : t('cdn.drainCleared'));
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '操作失敗');
+      setMsg(err instanceof Error ? err.message : t('common.opFailed'));
     } finally {
       setBusy(false);
     }
   }
 
   async function onDeleteNode(id: string) {
-    if (!window.confirm('確定刪除此 CDN 節點？')) return;
+    if (!window.confirm(t('cdn.confirmDeleteNode'))) return;
     setBusy(true);
     try {
       await api.requestRaw(`/api/v1/cdn/nodes/${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
-      setMsg('已刪除節點');
+      setMsg(t('cdn.nodeDeleted'));
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '刪除失敗');
+      setMsg(err instanceof Error ? err.message : t('cdn.deleteFailed'));
     } finally {
       setBusy(false);
     }
   }
 
   async function onDeleteSite(id: string) {
-    if (!window.confirm('確定刪除此 CDN 站點？')) return;
+    if (!window.confirm(t('cdn.confirmDeleteSite'))) return;
     setBusy(true);
     try {
       await api.requestRaw(`/api/v1/cdn/sites/${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
-      setMsg('已刪除站點');
+      setMsg(t('cdn.siteDeleted'));
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '刪除失敗');
+      setMsg(err instanceof Error ? err.message : t('cdn.deleteFailed'));
     } finally {
       setBusy(false);
     }
@@ -551,31 +556,31 @@ export function CdnPage() {
       ]);
       if (r.conf) setConfPreview(r.conf);
       if (r.blocked) {
-        setMsg('已封鎖（需系統變更權限）');
+        setMsg(t('cdn.blocked'));
       } else if (action === 'render' && body.dryRun) {
         setMsg(
-          `預覽渲染（${r.apply_status ?? 'planned'}）hash=${r.contentHash ?? '—'}`,
+          t('cdn.previewRender', { status: r.apply_status ?? 'planned', hash: r.contentHash ?? '—' }),
         );
       } else if (r.ok) {
         setMsg(
           action === 'apply'
-            ? `Fan-out 完成（${r.apply_status}）`
+            ? t('cdn.fanoutDone', { status: r.apply_status })
             : action === 'purge'
-              ? `Purge 完成（${r.apply_status}）`
+              ? t('cdn.purgeDone', { status: r.apply_status })
               : action === 'dns-sync' || action === 'health-loop'
-                ? `DNS 同步完成（${r.apply_status}）`
+                ? t('cdn.dnsSyncDone', { status: r.apply_status })
                 : action.startsWith('ssl/')
-                  ? `SSL 操作完成（${r.apply_status}）`
-                  : `已寫入 conf（${r.apply_status}）`,
+                  ? t('cdn.sslDone', { status: r.apply_status })
+                  : t('cdn.confWritten', { status: r.apply_status }),
         );
       } else {
         setMsg(
-          `未全部成功（${r.apply_status ?? res.status}）— 見 notes`,
+          t('cdn.partialFail', { status: r.apply_status ?? res.status }),
         );
       }
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '操作失敗');
+      setMsg(err instanceof Error ? err.message : t('common.opFailed'));
     } finally {
       setBusy(false);
     }
@@ -588,7 +593,7 @@ export function CdnPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.cdn', { defaultValue: 'CDN' })}
+      title={t('nav.cdn')}
       showCapability={false}
       status={{
         pill: {
@@ -596,9 +601,9 @@ export function CdnPage() {
           tone: nodes.length ? 'ok' : 'warn',
         },
         items: [
-          { label: '節點', value: nodes.length },
+          { label: t('cdn.statNodes'), value: nodes.length },
           { label: 'Online', value: online },
-          { label: '站點', value: sites.length },
+          { label: t('cdn.statSites'), value: sites.length },
           {
             label: 'Hit%',
             value:
@@ -618,7 +623,7 @@ export function CdnPage() {
               if (tab === 'dashboard') void refreshDashboard();
             }}
           >
-            重新整理
+            {t('cdn.refresh')}
           </Button>
           <Link
             to="/dns"
@@ -637,13 +642,13 @@ export function CdnPage() {
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
             onClick={() => setMsg(null)}
           >
-            關閉
+            {t('common.close')}
           </button>
         </Alert>
       ) : null}
       {notes.length ? (
         <Card>
-          <CardSection title="最近 notes">
+          <CardSection title={t('cdn.recentNotes')}>
             <ul className="notes-list">
               {notes.map((n) => (
                 <li key={n} className="muted u-text-sm">
@@ -656,14 +661,9 @@ export function CdnPage() {
       ) : null}
       {confPreview ? (
         <Card>
-          <CardSection title="Nginx edge conf 預覽">
+          <CardSection title={t('cdn.edgeConfPreview')}>
             <pre
-              className="u-text-sm"
-              style={{
-                maxHeight: 320,
-                overflow: 'auto',
-                whiteSpace: 'pre-wrap',
-              }}
+              className="u-text-sm u-pre-wrap u-scroll-lg"
             >
               {confPreview}
             </pre>
@@ -673,7 +673,7 @@ export function CdnPage() {
                 size="sm"
                 onClick={() => setConfPreview(null)}
               >
-                關閉預覽
+                {t('cdn.closePreview')}
               </Button>
             </FormActions>
           </CardSection>
@@ -682,10 +682,10 @@ export function CdnPage() {
 
       <PageTabs
         tabs={[
-          { id: 'nodes', label: '節點', badge: nodes.length || undefined },
-          { id: 'sites', label: '站點', badge: sites.length || undefined },
-          { id: 'dashboard', label: '儀表' },
-          { id: 'about', label: '說明' },
+          { id: 'nodes', label: t('cdn.statNodes'), badge: nodes.length || undefined },
+          { id: 'sites', label: t('cdn.statSites'), badge: sites.length || undefined },
+          { id: 'dashboard', label: t('cdn.tabs.dashboard') },
+          { id: 'about', label: t('cdn.tabs.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -695,12 +695,12 @@ export function CdnPage() {
           <div className="tab-panel">
             <DataTable<CdnNodeDto>
               rowKey={(r) => r.id}
-              title={`CDN 節點（${nodes.length}）`}
-              description="登記 control / origin / edge / dns。探活更新 status。"
+              title={t('cdn.nodesTitle', { count: nodes.length })}
+              description={t('cdn.nodesDesc')}
               toolbar={
                 <ActionBar>
                   <Button variant="primary" size="sm" onClick={openCreateNode}>
-                    + 新增節點
+                    {t('cdn.addNodeBtn')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -709,14 +709,14 @@ export function CdnPage() {
                     disabled={!nodes.length}
                     onClick={() => void onProbeAll()}
                   >
-                    全部探活
+                    {t('cdn.probeAll')}
                   </Button>
                 </ActionBar>
               }
               columns={[
                 {
                   key: 'name',
-                  header: '名稱',
+                  header: t('cdn.colName'),
                   render: (n) => (
                     <button
                       type="button"
@@ -734,7 +734,7 @@ export function CdnPage() {
                 },
                 {
                   key: 'roles',
-                  header: '角色',
+                  header: t('cdn.colRole'),
                   render: (n) =>
                     n.roles.map((role) => (
                       <Badge key={role} className="u-mr-1">
@@ -755,7 +755,7 @@ export function CdnPage() {
                 },
                 {
                   key: 'status',
-                  header: '狀態',
+                  header: t('cdn.colStatus'),
                   render: (n) => (
                     <Badge tone={statusTone(n.status)}>{n.status}</Badge>
                   ),
@@ -771,7 +771,7 @@ export function CdnPage() {
                         loading={busy}
                         onClick={() => void onProbe(n.id)}
                       >
-                        探活
+                        {t('cdn.probe')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -781,7 +781,7 @@ export function CdnPage() {
                           void onDrain(n.id, n.status !== 'draining')
                         }
                       >
-                        {n.status === 'draining' ? '解除 drain' : 'Drain'}
+                        {n.status === 'draining' ? t('cdn.clearDrain') : 'Drain'}
                       </Button>
                       <Button
                         variant="ghost"
@@ -789,7 +789,7 @@ export function CdnPage() {
                         loading={busy}
                         onClick={() => void onDeleteNode(n.id)}
                       >
-                        刪除
+                        {t('common.delete')}
                       </Button>
                     </ActionBar>
                   ),
@@ -798,8 +798,8 @@ export function CdnPage() {
               rows={nodes}
               empty={
                 <EmptyState
-                  title="尚未登記 CDN 節點"
-                  description="請使用右上角「+ 新增節點」登記 edge，再建立站點。"
+                  title={t('cdn.emptyNodesTitle')}
+                  description={t('cdn.emptyNodesDesc')}
                 />
               }
             />
@@ -810,8 +810,8 @@ export function CdnPage() {
           <div className="tab-panel">
             <DataTable<CdnSiteDto>
               rowKey={(r) => r.id}
-              title={`CDN 站點（${sites.length}）`}
-              description="域名 + origin + edges + cache + multi-A DNS。套用 edges / DNS 同步 / purge。"
+              title={t('cdn.sitesTitle', { count: sites.length })}
+              description={t('cdn.sitesDesc')}
               toolbar={
                 <ActionBar>
                   <Button
@@ -820,7 +820,7 @@ export function CdnPage() {
                     onClick={openCreateSite}
                     disabled={!nodes.length}
                   >
-                    + 新增站點
+                    {t('cdn.addSiteBtn')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -849,13 +849,13 @@ export function CdnPage() {
                           setNotes(r.notes ?? []);
                           setMsg(
                             r.ok
-                              ? '全部站點健康迴圈完成'
-                              : '健康迴圈部分失敗',
+                              ? t('cdn.healthLoopOk')
+                              : t('cdn.healthLoopPartial'),
                           );
                           await refresh();
                         } catch (e) {
                           setMsg(
-                            e instanceof Error ? e.message : 'health-loop 失敗',
+                            e instanceof Error ? e.message : t('cdn.healthLoopFailed'),
                           );
                         } finally {
                           setBusy(false);
@@ -863,14 +863,14 @@ export function CdnPage() {
                       })()
                     }
                   >
-                    全站健康迴圈
+                    {t('cdn.healthLoopAll')}
                   </Button>
                 </ActionBar>
               }
               columns={[
                 {
                   key: 'name',
-                  header: '名稱',
+                  header: t('cdn.colName'),
                   render: (s) => (
                     <button
                       type="button"
@@ -883,7 +883,7 @@ export function CdnPage() {
                 },
                 {
                   key: 'domains',
-                  header: '域名',
+                  header: t('cdn.colDomain'),
                   render: (s) => (
                     <code className="inline u-text-sm">
                       {s.domains.join(', ')}
@@ -892,7 +892,7 @@ export function CdnPage() {
                 },
                 {
                   key: 'mode',
-                  header: '模式',
+                  header: t('cdn.colMode'),
                   render: (s) => s.mode,
                 },
                 {
@@ -933,7 +933,7 @@ export function CdnPage() {
                           void postSiteOp(s.id, 'render', { dryRun: true })
                         }
                       >
-                        預覽
+                        {t('cdn.preview')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -943,7 +943,7 @@ export function CdnPage() {
                           void postSiteOp(s.id, 'render', { dryRun: false })
                         }
                       >
-                        寫入 conf
+                        {t('cdn.writeConf')}
                       </Button>
                       <Button
                         variant="primary"
@@ -951,7 +951,7 @@ export function CdnPage() {
                         loading={busy}
                         onClick={() => void postSiteOp(s.id, 'apply', {})}
                       >
-                        套用 edges
+                        {t('cdn.applyEdges')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -971,7 +971,7 @@ export function CdnPage() {
                           })
                         }
                       >
-                        DNS 同步
+                        {t('cdn.dnsSync')}
                       </Button>
                       <Button
                         variant="primary"
@@ -981,7 +981,7 @@ export function CdnPage() {
                           void postSiteOp(s.id, 'health-loop', {})
                         }
                       >
-                        探活+DNS
+                        {t('cdn.probeDns')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -991,7 +991,7 @@ export function CdnPage() {
                           void postSiteOp(s.id, 'ssl/distribute', {})
                         }
                       >
-                        分發 SSL
+                        {t('cdn.distSsl')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -1010,7 +1010,7 @@ export function CdnPage() {
                           });
                         }}
                       >
-                        LE 簽發
+                        {t('cdn.leIssue')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -1018,7 +1018,7 @@ export function CdnPage() {
                         loading={busy}
                         onClick={() => void onDeleteSite(s.id)}
                       >
-                        刪除
+                        {t('common.delete')}
                       </Button>
                     </ActionBar>
                   ),
@@ -1027,11 +1027,11 @@ export function CdnPage() {
               rows={sites}
               empty={
                 <EmptyState
-                  title="尚未有 CDN 站點"
+                  title={t('cdn.emptySitesTitle')}
                   description={
                     nodes.length
-                      ? '請用表格右上角「+ 新增站點」建立站點。'
-                      : '尚無 edge：先到「節點」分頁，用表格右上角「+ 新增節點」登記，再回來建立站點。'
+                      ? t('cdn.emptySitesDesc')
+                      : t('cdn.emptySitesNoEdge')
                   }
                 />
               }
@@ -1043,11 +1043,11 @@ export function CdnPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="CDN 儀表"
+                title={t('cdn.dashboardTitle')}
                 description={
                   dashboard
-                    ? `更新於 ${new Date(dashboard.at).toLocaleString()}`
-                    : '載入中…'
+                    ? t('cdn.updatedAt', { at: new Date(dashboard.at).toLocaleString() })
+                    : t('common.loading')
                 }
               >
                 <FormActions>
@@ -1057,7 +1057,7 @@ export function CdnPage() {
                     loading={busy}
                     onClick={() => void refreshDashboard()}
                   >
-                    重新彙總
+                    {t('cdn.reaggregate')}
                   </Button>
                 </FormActions>
                 {dashboard ? (
@@ -1083,7 +1083,7 @@ export function CdnPage() {
                         hit-rate{' '}
                         {dashboard.overallHitRatePct != null
                           ? `${dashboard.overallHitRatePct}%`
-                          : '未知'}
+                          : t('common.unknown')}
                       </Badge>
                     </div>
                     {Object.keys(dashboard.nodes.byRegion).length ? (
@@ -1104,7 +1104,7 @@ export function CdnPage() {
                     ) : null}
                   </>
                 ) : (
-                  <EmptyState title="尚未載入儀表" />
+                  <EmptyState title={t('cdn.dashboardEmpty')} />
                 )}
               </CardSection>
             </Card>
@@ -1112,11 +1112,11 @@ export function CdnPage() {
             {dashboard?.sites.rows.length ? (
               <DataTable
                 rowKey={(r) => String((r as { id: string }).id)}
-                title="站點狀態"
+                title={t('cdn.siteStatus')}
                 columns={[
                   {
                     key: 'name',
-                    header: '站點',
+                    header: t('cdn.statSites'),
                     render: (r) => String((r as { name: string }).name),
                   },
                   {
@@ -1165,7 +1165,7 @@ export function CdnPage() {
 
             {dashboard?.cache.length ? (
               <Card>
-                <CardSection title="快取命中率粗估">
+                <CardSection title={t('cdn.cacheHitEstimate')}>
                   <ul className="list-plain list-spaced">
                     {dashboard.cache.map((c) => (
                       <li key={c.siteId}>
@@ -1199,7 +1199,7 @@ export function CdnPage() {
 
             {dashboard?.notes.length ? (
               <Card>
-                <CardSection title="儀表 notes">
+                <CardSection title={t('cdn.dashboardNotes')}>
                   <ul className="notes-list">
                     {dashboard.notes.map((n) => (
                       <li key={n} className="muted u-text-sm">
@@ -1223,8 +1223,8 @@ export function CdnPage() {
           setNodeOpen(false);
           resetNodeForm();
         }}
-        title={editNode ? '編輯 CDN 節點' : '新增 CDN 節點'}
-        description="至少填 IPv4 / IPv6 / healthUrl / baseUrl 其中一項"
+        title={editNode ? t('cdn.editNode') : t('cdn.addNode')}
+        description={t('cdn.nodeAddrHint')}
         footer={
           <>
             <button
@@ -1235,7 +1235,7 @@ export function CdnPage() {
                 resetNodeForm();
               }}
             >
-              取消
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -1243,14 +1243,14 @@ export function CdnPage() {
               className={buttonClassName({ variant: 'primary', size: 'md' })}
               disabled={busy}
             >
-              儲存
+              {t('common.save')}
             </button>
           </>
         }
       >
         <form id="cdn-node-form" onSubmit={(e) => void onSaveNode(e)}>
           <FormLayout columns={2}>
-            <Field label="名稱" htmlFor="cdn-name" flush required>
+            <Field label={t('cdn.colName')} htmlFor="cdn-name" flush required>
               <input
                 id="cdn-name"
                 value={name}
@@ -1267,7 +1267,7 @@ export function CdnPage() {
                 placeholder="hkg"
               />
             </Field>
-            <Field label="角色" htmlFor="cdn-roles" fullWidth flush>
+            <Field label={t('cdn.colRole')} htmlFor="cdn-roles" fullWidth flush>
               <div className="u-flex u-flex-wrap gap-2">
                 {ROLE_OPTS.map((r) => (
                   <label key={r} className="u-text-sm">
@@ -1327,17 +1327,17 @@ export function CdnPage() {
               label="SSH host"
               htmlFor="cdn-ssh-host"
               flush
-              hint="可空＝用 IPv4；127.0.0.1＝本機 local apply"
+              hint={t('cdn.sshHostHint')}
             >
               <input
                 id="cdn-ssh-host"
                 value={sshHost}
                 onChange={(e) => setSshHost(e.target.value)}
-                placeholder="留空用 public IPv4"
+                placeholder={t('cdn.sshHostPlaceholder')}
                 spellCheck={false}
               />
             </Field>
-            <Field label="SSH 用戶" htmlFor="cdn-ssh-user" flush>
+            <Field label={t('cdn.sshUser')} htmlFor="cdn-ssh-user" flush>
               <input
                 id="cdn-ssh-user"
                 value={sshUsername}
@@ -1353,6 +1353,20 @@ export function CdnPage() {
                 spellCheck={false}
               />
             </Field>
+            <Field
+              label="Fleet agent session id"
+              htmlFor="cdn-fleet"
+              flush
+              hint={t('cdn.fleetHint')}
+            >
+              <input
+                id="cdn-fleet"
+                value={fleetAgentId}
+                onChange={(e) => setFleetAgentId(e.target.value)}
+                placeholder={t('cdn.fleetPlaceholder')}
+                spellCheck={false}
+              />
+            </Field>
           </FormLayout>
         </form>
       </Modal>
@@ -1364,8 +1378,8 @@ export function CdnPage() {
           setSiteOpen(false);
           resetSiteForm();
         }}
-        title={editSite ? '編輯 CDN 站點' : '新增 CDN 站點'}
-        description="origin 先支援 URL；project 綁定後續強化"
+        title={editSite ? t('cdn.editSite') : t('cdn.addSite')}
+        description={t('cdn.originHint')}
         footer={
           <>
             <button
@@ -1376,7 +1390,7 @@ export function CdnPage() {
                 resetSiteForm();
               }}
             >
-              取消
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -1384,14 +1398,14 @@ export function CdnPage() {
               className={buttonClassName({ variant: 'primary', size: 'md' })}
               disabled={busy}
             >
-              儲存
+              {t('common.save')}
             </button>
           </>
         }
       >
         <form id="cdn-site-form" onSubmit={(e) => void onSaveSite(e)}>
           <FormLayout columns={2}>
-            <Field label="名稱" htmlFor="site-name" flush required>
+            <Field label={t('cdn.colName')} htmlFor="site-name" flush required>
               <input
                 id="site-name"
                 value={siteName}
@@ -1400,7 +1414,7 @@ export function CdnPage() {
                 placeholder="my-app-cdn"
               />
             </Field>
-            <Field label="模式" htmlFor="site-mode" flush>
+            <Field label={t('cdn.colMode')} htmlFor="site-mode" flush>
               <select
                 id="site-mode"
                 value={mode}
@@ -1414,12 +1428,12 @@ export function CdnPage() {
               </select>
             </Field>
             <Field
-              label="域名"
+              label={t('cdn.colDomain')}
               htmlFor="site-domains"
               fullWidth
               flush
               required
-              hint="逗號分隔"
+              hint={t('cdn.commaSeparated')}
             >
               <input
                 id="site-domains"
@@ -1436,7 +1450,7 @@ export function CdnPage() {
               fullWidth
               flush
               required
-              hint="edge 回源地址"
+              hint={t('cdn.originUrl')}
             >
               <input
                 id="site-origin"
@@ -1447,9 +1461,9 @@ export function CdnPage() {
                 spellCheck={false}
               />
             </Field>
-            <Field label="Edge 節點" htmlFor="site-edges" fullWidth flush>
+            <Field label={t('cdn.edgeNodes')} htmlFor="site-edges" fullWidth flush>
               {edgeNodes.length === 0 ? (
-                <p className="muted u-text-sm">請先建立 edge 節點</p>
+                <p className="muted u-text-sm">{t('cdn.createEdgeFirst')}</p>
               ) : (
                 <div className="u-flex u-flex-wrap gap-2">
                   {edgeNodes.map((n) => (
@@ -1465,14 +1479,14 @@ export function CdnPage() {
                 </div>
               )}
             </Field>
-            <Field label="快取" htmlFor="site-cache" flush>
+            <Field label={t('cdn.cache')} htmlFor="site-cache" flush>
               <label className="u-text-sm">
                 <input
                   type="checkbox"
                   checked={cacheEnabled}
                   onChange={(e) => setCacheEnabled(e.target.checked)}
                 />{' '}
-                啟用 proxy_cache
+                {t('cdn.enableProxyCache')}
               </label>
             </Field>
             <Field label="maxAge" htmlFor="site-maxage" flush>
@@ -1484,10 +1498,10 @@ export function CdnPage() {
               />
             </Field>
             <Field
-              label="DNS 策略"
+              label={t('cdn.dnsPolicy')}
               htmlFor="site-dns-strategy"
               flush
-              hint="multi_a=多 IP；failover=只寫最健康一顆"
+              hint={t('cdn.dnsPolicyHint')}
             >
               <select
                 id="site-dns-strategy"
@@ -1507,14 +1521,14 @@ export function CdnPage() {
               label="DNS Zone"
               htmlFor="site-zone"
               flush
-              hint="可空＝依域名自動匹配 zone"
+              hint={t('cdn.zoneOptional')}
             >
               <select
                 id="site-zone"
                 value={dnsZoneId}
                 onChange={(e) => setDnsZoneId(e.target.value)}
               >
-                <option value="">（自動匹配）</option>
+                <option value="">{t('cdn.autoMatch')}</option>
                 {dnsZones.map((z) => (
                   <option key={z.id} value={z.id}>
                     {z.zone ?? z.id}
@@ -1523,10 +1537,10 @@ export function CdnPage() {
               </select>
             </Field>
             <Field
-              label="SSL 模式"
+              label={t('cdn.sslMode')}
               htmlFor="site-ssl"
               flush
-              hint="upload＝SSL 頁已有憑證；le_http01＝edge ACME"
+              hint={t('cdn.sslModeHint')}
             >
               <select
                 id="site-ssl"
@@ -1548,10 +1562,10 @@ export function CdnPage() {
               </select>
             </Field>
             <Field
-              label="LE email（可選）"
+              label={t('cdn.leEmailOptional')}
               htmlFor="site-ssl-email"
               flush
-              hint="簽發時預填"
+              hint={t('cdn.leEmailHint')}
             >
               <input
                 id="site-ssl-email"
@@ -1564,14 +1578,14 @@ export function CdnPage() {
               label="Origin shield"
               htmlFor="site-shield"
               flush
-              hint="非 shield edge 經此節點回源"
+              hint={t('cdn.shieldHint')}
             >
               <select
                 id="site-shield"
                 value={shieldId}
                 onChange={(e) => setShieldId(e.target.value)}
               >
-                <option value="">（無）</option>
+                <option value="">{t('cdn.none')}</option>
                 {edgeNodes.map((n) => (
                   <option key={n.id} value={n.id}>
                     {n.name}
@@ -1584,7 +1598,7 @@ export function CdnPage() {
               htmlFor="site-geo"
               fullWidth
               flush
-              hint='strategy=geo 時用，例 {"hkg":["id1"],"nrt":["id2"]}'
+              hint={t('cdn.geoMapHint')}
             >
               <textarea
                 id="site-geo"
@@ -1595,21 +1609,19 @@ export function CdnPage() {
                 spellCheck={false}
               />
             </Field>
-            <Field label="geo 子域名" htmlFor="site-geo-sub" flush>
+            <Field label={t('cdn.geoSubdomain')} htmlFor="site-geo-sub" flush>
               <label className="u-text-sm">
                 <input
                   type="checkbox"
                   checked={geoSubdomains}
                   onChange={(e) => setGeoSubdomains(e.target.checked)}
                 />{' '}
-                寫入 region 子域名 A/AAAA（如 hkg）
+                {t('cdn.writeRegionDns')}
               </label>
             </Field>
           </FormLayout>
           <FormHint>
-            流程：寫入 conf → 套用 edges → 探活+DNS → SSL。專案一鍵：
-            /cdn?fromProject=專案ID
-          </FormHint>
+            {t('cdn.workflowHint')}</FormHint>
         </form>
       </Modal>
     </FeaturePageLayout>

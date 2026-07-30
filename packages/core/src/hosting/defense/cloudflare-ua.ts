@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Cloudflare Under Attack / security level API (Phase B).
  * Uses CF_API_TOKEN — fail-closed when missing or API fails.
@@ -55,7 +56,7 @@ async function resolveZoneId(
     return {
       error:
         body.errors?.[0]?.message ||
-        `無法解析 zone ${zoneName}（HTTP ${res.status}）`,
+        tl('notes.auto.t0542', { v0: (zoneName), v1: (res.status) }),
     };
   }
   return { zoneId: body.result[0].id };
@@ -79,7 +80,7 @@ export async function setCloudflareSecurityLevel(input: {
       dryRun: Boolean(input.dryRun),
       requiresToken: true,
       notes: [],
-      errors: ['需要 zone 域名'],
+      errors: [tl('notes.auto.n1576')],
     };
   }
   const token = tokenFrom(input.token);
@@ -91,8 +92,8 @@ export async function setCloudflareSecurityLevel(input: {
       zone,
       level: input.level,
       notes: [
-        '未設定 CF_API_TOKEN — 無法呼叫 Cloudflare API',
-        `計劃：將 ${zone} security_level → ${input.level}`,
+        tl('notes.auto.n0979'),
+        tl('notes.auto.t0543', { v0: (zone), v1: (input.level) }),
       ],
       errors: ['missing CF_API_TOKEN'],
     };
@@ -104,7 +105,7 @@ export async function setCloudflareSecurityLevel(input: {
       requiresToken: false,
       zone,
       level: input.level,
-      notes: [`模擬：${zone} → security_level=${input.level}`],
+      notes: [tl('notes.auto.t0544', { v0: (zone), v1: (input.level) })],
       errors: [],
     };
   }
@@ -119,7 +120,7 @@ export async function setCloudflareSecurityLevel(input: {
         requiresToken: false,
         zone,
         notes,
-        errors: [z.error || 'zone 解析失敗'],
+        errors: [z.error || tl('notes.auto.n0485')],
       };
     }
     // read current

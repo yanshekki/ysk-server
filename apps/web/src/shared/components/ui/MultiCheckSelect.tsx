@@ -2,6 +2,7 @@
  * Searchable multi-select with checkboxes + selected chips.
  */
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { buttonClassName } from './Button';
 
 export type MultiCheckOption = {
@@ -30,16 +31,21 @@ export function MultiCheckSelect({
   value,
   onChange,
   allowCustom = false,
-  customPlaceholder = '自訂代碼',
-  searchPlaceholder = '搜尋…',
-  emptyText = '無符合項目',
+  customPlaceholder,
+  searchPlaceholder,
+  emptyText,
   /** Only truncate when option count exceeds this (default 100). */
   maxVisible = 100,
   disabled = false,
 }: MultiCheckSelectProps) {
+  const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [custom, setCustom] = useState('');
   const selected = useMemo(() => new Set(value), [value]);
+
+  const resolvedSearch = searchPlaceholder ?? t('multiCheck.searchPlaceholder');
+  const resolvedEmpty = emptyText ?? t('multiCheck.emptyText');
+  const resolvedCustom = customPlaceholder ?? t('multiCheck.customPlaceholder');
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -88,7 +94,7 @@ export function MultiCheckSelect({
               role="listitem"
               disabled={disabled}
               onClick={() => toggle(v)}
-              title="點擊移除"
+              title={t('multiCheck.removeTitle')}
             >
               <span className="mcs__chip-lab">
                 {labelByValue.get(v) ?? v}
@@ -103,7 +109,7 @@ export function MultiCheckSelect({
           ))}
         </div>
       ) : (
-        <p className="mcs__empty muted u-text-sm">尚未選擇</p>
+        <p className="mcs__empty muted u-text-sm">{t('multiCheck.noneSelected')}</p>
       )}
 
       <input
@@ -111,14 +117,14 @@ export function MultiCheckSelect({
         className="mcs__search"
         value={q}
         disabled={disabled}
-        placeholder={searchPlaceholder}
+        placeholder={resolvedSearch}
         onChange={(e) => setQ(e.target.value)}
-        aria-label={searchPlaceholder}
+        aria-label={resolvedSearch}
       />
 
-      <div className="mcs__list" role="group" aria-label="選項">
+      <div className="mcs__list" role="group" aria-label={t('multiCheck.optionsAria')}>
         {shown.length === 0 ? (
-          <p className="mcs__empty muted u-text-sm">{emptyText}</p>
+          <p className="mcs__empty muted u-text-sm">{resolvedEmpty}</p>
         ) : (
           shown.map((o) => {
             const on = selected.has(o.value);
@@ -143,7 +149,10 @@ export function MultiCheckSelect({
         )}
         {shouldCap ? (
           <p className="mcs__more muted u-text-sm">
-            顯示前 {maxVisible}／共 {filtered.length} 項 — 用搜尋收窄
+            {t('multiCheck.showingCapped', {
+              shown: maxVisible,
+              total: filtered.length,
+            })}
           </p>
         ) : null}
       </div>
@@ -153,7 +162,7 @@ export function MultiCheckSelect({
           <input
             value={custom}
             disabled={disabled}
-            placeholder={customPlaceholder}
+            placeholder={resolvedCustom}
             onChange={(e) => setCustom(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -169,7 +178,7 @@ export function MultiCheckSelect({
             disabled={disabled || !custom.trim()}
             onClick={addCustom}
           >
-            加入
+            {t('multiCheck.add')}
           </button>
         </div>
       ) : null}

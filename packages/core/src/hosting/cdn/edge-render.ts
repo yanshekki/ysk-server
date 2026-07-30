@@ -9,16 +9,14 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
-  writeFileSync,
-} from 'node:fs';
+  writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   ErrorCodes,
   YskError,
   type ApplyStatus,
   type CdnNodeDto,
-  type CdnSiteDto,
-} from '@ysk/shared';
+  type CdnSiteDto,  tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import { getCdnNode } from './nodes.js';
@@ -74,15 +72,14 @@ function resolveOriginUpstream(
     site.originShieldNodeId
   ) {
     notes.push(
-      `origin shield：本 edge 回源經 shield ${site.originShieldNodeId} → ${opts.shieldUpstreamUrl}`,
+      tl('notes.auto.t0707', { v0: (site.originShieldNodeId), v1: (opts.shieldUpstreamUrl) }),
     );
     return {
       upstream: opts.shieldUpstreamUrl.replace(/\/$/, ''),
-      notes,
-    };
+      notes };
   }
   if (opts?.isShieldEdge && site.originShieldNodeId) {
-    notes.push('origin shield：此節點為 shield，直接連 origin');
+    notes.push(tl('notes.auto.n0355'));
   }
 
   if (site.origin.kind === 'url') {
@@ -94,12 +91,11 @@ function resolveOriginUpstream(
     );
     return {
       upstream: opts.projectOriginUrl.replace(/\/$/, ''),
-      notes,
-    };
+      notes };
   }
   const fallback = 'http://127.0.0.1:8080';
   notes.push(
-    `origin.kind=project 但未提供 projectOriginUrl — 使用佔位 ${fallback}`,
+    tl('notes.auto.t0708', { v0: (fallback) }),
   );
   return { upstream: fallback, notes };
 }
@@ -140,13 +136,12 @@ export function renderCdnEdgeNginxConf(input: {
 } {
   const site = input.site;
   if (!site.domains.length) {
-    throw new YskError(ErrorCodes.VALIDATION, '站點無域名', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0042'), { httpStatus: 400 });
   }
   const { upstream, notes } = resolveOriginUpstream(site, {
     projectOriginUrl: input.projectOriginUrl,
     shieldUpstreamUrl: input.shieldUpstreamUrl,
-    isShieldEdge: input.isShieldEdge,
-  });
+    isShieldEdge: input.isShieldEdge });
   const zone = safeZoneId(site.id);
   const cachePath = `/var/cache/ysk-cdn/${site.id}`;
   const serverNames = site.domains.join(' ');
@@ -254,7 +249,7 @@ server {
 ${acmeLoc}
 ${locationSlash}${staticLoc}}
 `;
-    notes.push('HTTP conf with ACME webroot（尚未掛 TLS）');
+    notes.push(tl('notes.auto.n0114'));
   } else if (sslEnabled && input.sslPaths) {
     const redir =
       input.sslPaths.redirectHttp !== false
@@ -362,8 +357,7 @@ ${locationSlash}${staticLoc}}
     originUpstream: upstream,
     contentHash,
     notes,
-    sslEnabled,
-  };
+    sslEnabled };
 }
 
 /**
@@ -383,10 +377,9 @@ export async function applyCdnSiteEdgeRender(input: {
 }): Promise<CdnEdgeRenderResult> {
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
-    throw new YskError(ErrorCodes.NOT_FOUND, '找不到 CDN 站點', {
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.cdn.siteNotFound'), {
       httpStatus: 404,
-      details: { id: input.siteId },
-    });
+      details: { id: input.siteId } });
   }
 
   // SSL conf only when explicitly requested (PR-C6 distribute) or acmeOnly
@@ -394,8 +387,7 @@ export async function applyCdnSiteEdgeRender(input: {
     site,
     projectOriginUrl: input.projectOriginUrl,
     sslPaths: input.sslPaths,
-    acmeOnly: input.acmeOnly,
-  });
+    acmeOnly: input.acmeOnly });
 
   const notes = [...rendered.notes];
   const written: string[] = [];
@@ -406,13 +398,13 @@ export async function applyCdnSiteEdgeRender(input: {
     const node: CdnNodeDto | null = getCdnNode(input.db, eid);
     notes.push(
       node
-        ? `edge ${node.name} (${eid.slice(0, 8)}): planned（未 fan-out — PR-C3）`
-        : `edge ${eid}: 節點缺失`,
+        ? tl('notes.auto.t0709', { v0: (node.name), v1: (eid.slice(0, 8)) })
+        : tl('notes.auto.t0710', { v0: (eid) }),
     );
   }
 
   if (input.dryRun) {
-    notes.push('dryRun：未寫入磁碟');
+    notes.push(tl('notes.auto.n0276'));
     return {
       ok: true,
       apply_status: 'planned',
@@ -424,8 +416,7 @@ export async function applyCdnSiteEdgeRender(input: {
       originUpstream: rendered.originUpstream,
       notes,
       written: [],
-      edge_status,
-    };
+      edge_status };
   }
 
   const siteDir = join(input.dataDir, 'cdn', 'sites', site.id);
@@ -443,8 +434,7 @@ export async function applyCdnSiteEdgeRender(input: {
         contentHash: rendered.contentHash,
         originUpstream: rendered.originUpstream,
         renderedAt: new Date().toISOString(),
-        edgeNodeIds: site.edgeNodeIds,
-      },
+        edgeNodeIds: site.edgeNodeIds },
       null,
       2,
     ),
@@ -462,12 +452,12 @@ export async function applyCdnSiteEdgeRender(input: {
     );
     writeFileSync(managedNginxPath, rendered.conf, 'utf8');
     written.push(managedNginxPath);
-    notes.push(`已寫入 managed nginx：${managedNginxPath}`);
+    notes.push(tl('notes.auto.t0711', { v0: (managedNginxPath) }));
   }
 
-  notes.push(`已寫入 edge 模板：${confPath}`);
+  notes.push(tl('notes.auto.t0712', { v0: (confPath) }));
   notes.push(
-    '狀態：written（控制面）— 遠端 edge 尚未套用；PR-C3 才 fan-out + nginx -t/reload',
+    tl('notes.auto.n1228'),
   );
 
   if (
@@ -475,23 +465,21 @@ export async function applyCdnSiteEdgeRender(input: {
     input.host.pathExists('/usr/sbin/nginx')
   ) {
     const r = await input.host.runCommand(['nginx', '-t'], {
-      timeoutMs: 10_000,
-    });
+      timeoutMs: 10_000 });
     if (r.exitCode === 0) {
       notes.push(
-        '本機 nginx -t OK（僅控制面 managed conf，≠ edge applied）',
+        tl('notes.auto.n0996'),
       );
     } else {
       notes.push(
-        `本機 nginx -t 失敗（proxy_cache_path 可能需在 http{}）：${(r.stderr || r.stdout).slice(0, 120)}`,
+        tl('notes.auto.t0713', { v0: ((r.stderr || r.stdout).slice(0, 120)) }),
       );
     }
   }
 
   const updated = patchCdnSiteStatus(input.db, site.id, {
     apply_status: 'written',
-    edge_status,
-  });
+    edge_status });
 
   return {
     ok: true,
@@ -504,8 +492,7 @@ export async function applyCdnSiteEdgeRender(input: {
     originUpstream: rendered.originUpstream,
     notes,
     written,
-    edge_status,
-  };
+    edge_status };
 }
 
 export function readCdnSiteRenderedConf(

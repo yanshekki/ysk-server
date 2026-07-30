@@ -1,0 +1,193 @@
+/* —— Tabs (horizontal scroll when many) —— */
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+/* Tab bar with optional left/right arrows for overflow */
+.tabs {
+  min-width: 0;
+}
+
+.tabs__bar {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  margin-bottom: var(--space-tab-panel);
+  border-bottom: 1px solid var(--border-color);
+  min-width: 0;
+  padding: 0;
+}
+
+.tabs__scroll-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tabs__bar--fade-left .tabs__scroll-wrap::before,
+.tabs__bar--fade-right .tabs__scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 2px;
+  width: 1.5rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tabs__bar--fade-left .tabs__scroll-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg-page), transparent);
+}
+
+.tabs__bar--fade-right .tabs__scroll-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg-page), transparent);
+}
+
+.tabs__list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  padding: 0 0.15rem;
+}
+
+.tabs--wrap .tabs__list {
+  flex-wrap: wrap;
+  overflow-x: visible;
+}
+
+.tabs__list::-webkit-scrollbar {
+  height: 3px;
+}
+
+.tabs__list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.tabs__arrow {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 2rem;
+  align-self: stretch;
+  border: none;
+  background: var(--bg-page);
+  color: var(--text-main);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.tabs__arrow:hover {
+  color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.tabs__arrow--left {
+  border-right: 1px solid var(--border-light);
+}
+
+.tabs__arrow--right {
+  border-left: 1px solid var(--border-light);
+}
+
+.tabs__tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0.85rem 1.15rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--text-sub);
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+}
+
+.tabs__tab-label {
+  line-height: 1.2;
+}
+
+.tabs__tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  color: var(--text-sub);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tabs__tab[aria-selected='true'] .tabs__tab-badge {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--brand-blue);
+}
+
+.tabs__tab:hover {
+  color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.tabs__tab[aria-selected='true'] {
+  color: var(--brand-blue);
+  border-bottom-color: var(--brand-blue);
+}
+
+.tabs__panel {
+  min-width: 0;
+  padding-top: var(--space-1);
+}
+
+/* Tab panel body: consistent stack inside feature tabs */
+.tabs__panel > .stack,
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack);
+  min-width: 0;
+}
+
+.tab-panel > .card:first-child,
+.tab-panel > .alert:first-child {
+  margin-top: 0;
+}
+
+/* Dirty marker for service console Form Kit fields */
+.field-wrap.is-dirty {
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin: calc(var(--space-2) * -1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.field-wrap.is-dirty .field {
+  margin-bottom: 0;
+}
+

@@ -1,3 +1,4 @@
+import { getLocale, tl } from '@ysk/shared';
 /**
  * Spec-aligned production readiness probe — honest report, never over-claim.
  * Maps to AI-Secure-Linux-Server-Manager-Spec phases / hosting gates.
@@ -5,6 +6,7 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import type { ProductionReadinessDto, ReadinessItemDto } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listSupportedRuntimes } from './runtime.js';
 import { probeRuntimes } from './runtime-probe.js';
@@ -12,39 +14,15 @@ import { probePowerDns } from './powerdns-apply.js';
 import { probePm2 } from './pm2-apply.js';
 import { buildProjectIsolationReadinessItems } from './project-isolation-status.js';
 
-export type ReadinessLevel = 'ready' | 'degraded' | 'missing' | 'unknown';
+export type { ReadinessLevel } from '@ysk/shared';
+export type ReadinessItem = ReadinessItemDto;
 
-export interface ReadinessItem {
-  id: string;
-  category: string;
-  title: string;
-  level: ReadinessLevel;
-  detail: string;
-  /** Spec section reference */
-  spec?: string;
-  fixHint?: string;
-  /** SPA path for operator to fix (panel deep-link) */
-  fixHref?: string;
-  /** critical = blocks productionReady or hard fail; optional = nice-to-have */
-  severity?: 'critical' | 'recommended' | 'optional';
-}
-
-export interface ProductionReadinessReport {
-  product: string;
-  generatedAt: string;
+/** Core report uses required blockers/categories (always filled by assessor). */
+export type ProductionReadinessReport = ProductionReadinessDto & {
   mode: 'production_capable' | 'degraded';
-  executeEnabled: boolean;
-  isRoot: boolean;
-  score: { ready: number; degraded: number; missing: number; total: number };
-  items: ReadinessItem[];
-  summary: string[];
-  /** Honest: false until production_capable and critical hosting gates ready */
-  productionReady: boolean;
-  /** Items that should be fixed first (missing critical + security gates) */
-  blockers: ReadinessItem[];
-  /** Category order for UI grouping */
+  blockers: ReadinessItemDto[];
   categories: string[];
-}
+};
 
 /** Human category labels (UI may re-map) */
 export const READINESS_CATEGORY_ORDER = [
@@ -60,22 +38,20 @@ export const READINESS_CATEGORY_ORDER = [
 
 export function readinessCategoryLabel(cat: string): string {
   const map: Record<string, string> = {
-    core: '控制面',
-    security: '權限與安全',
-    binaries: '系統軟體',
-    hosting: '執行環境',
-    dns: 'DNS',
-    email: '郵件',
-    isolation: '專案隔離',
-    ops: '運維',
-  };
+    core: tl('notes.readiness.core'),
+    security: tl('notes.auto.n1029'),
+    binaries: tl('notes.auto.n1312'),
+    hosting: tl('notes.auto.n0018'),
+    dns: tl('notes.readiness.dns'),
+    email: tl('notes.readiness.email'),
+    isolation: tl('notes.readiness.isolation'),
+    ops: tl('notes.auto.n1473') };
   return map[cat] ?? cat;
 }
 
 async function hasCmd(host: HostExecutor, bin: string): Promise<boolean> {
   const r = await host.runCommand(['bash', '-c', `command -v ${bin} || true`], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   return Boolean(r.stdout.trim());
 }
 
@@ -106,42 +82,39 @@ export async function assessProductionReadiness(input: {
   push({
     id: 'control-plane',
     category: 'core',
-    title: '控制面資料目錄',
+    title: tl('notes.auto.n0893'),
     level: existsSync(input.dataDir) ? 'ready' : 'missing',
     detail: input.dataDir,
     spec: '§2.3',
-    fixHint: '請確認 dataDir 已建立且程序可寫入',
+    fixHint: tl('notes.auto.n1424'),
     fixHref: '/system',
-    severity: 'critical',
-  });
+    severity: 'critical' });
 
   push({
     id: 'execute-policy',
     category: 'security',
-    title: '系統變更權限',
+    title: tl('notes.auto.n1310'),
     level: executeEnabled ? 'ready' : 'degraded',
     detail: executeEnabled
-      ? '已開啟系統變更權限（YSK_EXECUTE）'
-      : '未開啟系統變更權限（僅寫入控制面設定）',
+      ? tl('notes.auto.n0812')
+      : tl('notes.auto.n0985'),
     spec: '§3.2',
-    fixHint: '以 root 啟動並設定 YSK_EXECUTE=1（見主機設定／部署文件）',
+    fixHint: tl('notes.auto.n0515'),
     fixHref: '/system',
-    severity: 'critical',
-  });
+    severity: 'critical' });
 
   push({
     id: 'root',
     category: 'security',
-    title: '系統管理員權限',
+    title: tl('notes.auto.n1308'),
     level: isRoot ? 'ready' : 'degraded',
     detail: isRoot
-      ? '以 root 執行'
-      : '非 root — useradd／systemd／nginx 系統路徑受限',
+      ? tl('notes.auto.n0021')
+      : tl('notes.auto.n1591'),
     spec: '§4.1',
-    fixHint: '以 root 啟動 ysk-server 服務（systemctl / 控制面 unit）',
+    fixHint: tl('notes.auto.n0514'),
     fixHref: '/system/unit',
-    severity: 'critical',
-  });
+    severity: 'critical' });
 
   // Admin 2FA policy / enrollment (read-only open of panel store)
   try {
@@ -167,7 +140,7 @@ export async function assessProductionReadiness(input: {
         push({
           id: 'admin-2fa',
           category: 'security',
-          title: '管理員雙重驗證',
+          title: tl('notes.auto.n0022'),
           level: allOk
             ? 'ready'
             : requireTotp
@@ -178,13 +151,12 @@ export async function assessProductionReadiness(input: {
                 ? 'degraded'
                 : 'missing',
           detail: requireTotp
-            ? `政策已開：${with2fa.length}/${admins.length} admin 已啟用 2FA`
-            : `政策未強制：${with2fa.length}/${admins.length} admin 已啟用 2FA`,
+            ? tl('notes.auto.t0384', { v0: (with2fa.length), v1: (admins.length) })
+            : tl('notes.auto.t0385', { v0: (with2fa.length), v1: (admins.length) }),
           spec: '§3.1',
-          fixHint: '安全 → 帳戶安全 → 啟用 2FA；政策可開 requireAdminTotp',
+          fixHint: tl('notes.auto.n0650'),
           fixHref: '/security?tab=account',
-          severity: requireTotp ? 'critical' : 'recommended',
-        });
+          severity: requireTotp ? 'critical' : 'recommended' });
       } finally {
         closeDatabase(db);
       }
@@ -193,12 +165,11 @@ export async function assessProductionReadiness(input: {
     push({
       id: 'admin-2fa',
       category: 'security',
-      title: '管理員雙重驗證',
+      title: tl('notes.auto.n0022'),
       level: 'unknown',
-      detail: '無法讀取用戶庫以檢查 2FA',
+      detail: tl('notes.auto.n1187'),
       severity: 'recommended',
-      fixHref: '/security?tab=account',
-    });
+      fixHref: '/security?tab=account' });
   }
 
   const bins: Array<{
@@ -212,76 +183,67 @@ export async function assessProductionReadiness(input: {
     {
       id: 'bin-nginx',
       bin: 'nginx',
-      title: 'nginx 可執行檔',
+      title: tl('notes.auto.n0342'),
       spec: '§4.7',
       critical: true,
-      fixHref: '/nginx',
-    },
+      fixHref: '/nginx' },
     {
       id: 'bin-node',
       bin: 'node',
-      title: 'node 可執行檔',
+      title: tl('notes.auto.n0346'),
       spec: '§4.2',
       critical: true,
-      fixHref: '/runtimes/node',
-    },
-    { id: 'bin-git', bin: 'git', title: 'git 可執行檔', spec: '§4.2', fixHref: '/runtimes/node' },
-    { id: 'bin-php', bin: 'php', title: 'php 可執行檔', spec: '§4.3', fixHref: '/runtimes/php' },
+      fixHref: '/runtimes/node' },
+    { id: 'bin-git', bin: 'git', title: tl('notes.auto.n0301'), spec: '§4.2', fixHref: '/runtimes/node' },
+    { id: 'bin-php', bin: 'php', title: tl('notes.auto.n0375'), spec: '§4.3', fixHref: '/runtimes/php' },
     {
       id: 'bin-python',
       bin: 'python3',
-      title: 'python3 可執行檔',
+      title: tl('notes.auto.n0396'),
       spec: '§4.2',
-      fixHref: '/runtimes/python',
-    },
-    { id: 'bin-go', bin: 'go', title: 'go 可執行檔', spec: '§4.2', fixHref: '/runtimes/go' },
+      fixHref: '/runtimes/python' },
+    { id: 'bin-go', bin: 'go', title: tl('notes.auto.n0302'), spec: '§4.2', fixHref: '/runtimes/go' },
     {
       id: 'bin-cargo',
       bin: 'cargo',
-      title: 'cargo 可執行檔',
+      title: tl('notes.auto.n0235'),
       spec: '§4.2',
-      fixHref: '/runtimes/rust',
-    },
+      fixHref: '/runtimes/rust' },
     {
       id: 'bin-mysql',
       bin: 'mysql',
-      title: 'mysql 用戶端',
+      title: tl('notes.auto.n0334'),
       spec: '§4.4',
-      fixHref: '/databases/mysql/service',
-    },
+      fixHref: '/databases/mysql/service' },
     {
       id: 'bin-psql',
       bin: 'psql',
-      title: 'psql 用戶端',
+      title: tl('notes.auto.n0394'),
       spec: '§4.4',
-      fixHref: '/databases/postgres/service',
-    },
+      fixHref: '/databases/postgres/service' },
     {
       id: 'bin-redis',
       bin: 'redis-cli',
       title: 'redis-cli',
       spec: '§4.4',
-      fixHref: '/databases/redis/service',
-    },
-    { id: 'bin-openssl', bin: 'openssl', title: 'openssl（信箱雜湊）', spec: '§5', fixHref: '/email' },
+      fixHref: '/databases/redis/service' },
+    { id: 'bin-openssl', bin: 'openssl', title: tl('notes.auto.n0353'), spec: '§5', fixHref: '/email' },
     { id: 'bin-postfix', bin: 'postfix', title: 'postfix', spec: '§5', fixHref: '/email' },
     { id: 'bin-dovecot', bin: 'dovecot', title: 'dovecot', spec: '§5', fixHref: '/email' },
     { id: 'bin-certbot', bin: 'certbot', title: 'certbot', spec: '§4.6', fixHref: '/ssl' },
-    { id: 'bin-ufw', bin: 'ufw', title: 'ufw', spec: '§4.9', fixHref: '/firewall' },
+    { id: 'bin-ufw', bin: 'ufw', title: 'ufw', spec: '§4.9', fixHref: '/protection/firewall' },
     {
       id: 'bin-fail2ban',
       bin: 'fail2ban-client',
       title: 'fail2ban',
       spec: '§4.9',
-      fixHref: '/fail2ban',
-    },
+      fixHref: '/protection/fail2ban' },
     {
       id: 'bin-pdnsutil',
       bin: 'pdnsutil',
       title: 'pdnsutil（PowerDNS）',
       spec: '§4.8',
-      fixHref: '/dns',
-    },
+      fixHref: '/dns' },
   ];
 
   for (const b of bins) {
@@ -291,12 +253,11 @@ export async function assessProductionReadiness(input: {
       category: 'binaries',
       title: b.title,
       level: ok ? 'ready' : b.critical ? 'missing' : 'degraded',
-      detail: ok ? `${b.bin} 在 PATH` : `${b.bin} 找不到`,
+      detail: ok ? tl('notes.auto.t0386', { v0: (b.bin) }) : tl('notes.auto.t0387', { v0: (b.bin) }),
       spec: b.spec,
-      fixHint: ok ? undefined : `請於系統安裝 ${b.bin}，或於面板軟件／runtime 安裝`,
+      fixHint: ok ? undefined : tl('notes.auto.t0388', { v0: (b.bin) }),
       fixHref: ok ? undefined : b.fixHref,
-      severity: b.critical ? 'critical' : 'optional',
-    });
+      severity: b.critical ? 'critical' : 'optional' });
   }
 
   const runtimes = await probeRuntimes(host);
@@ -308,127 +269,118 @@ export async function assessProductionReadiness(input: {
   push({
     id: 'runtimes-node',
     category: 'hosting',
-    title: 'Node 多版本',
+    title: tl('notes.auto.n0141'),
     level: nodeReady.length ? 'ready' : 'degraded',
     detail: nodeReady.length
-      ? `可用主版本：${nodeReady.join(', ')}`
-      : `支援 ${listSupportedRuntimes().node.join(', ')} — 尚未探測到`,
+      ? tl('notes.auto.t0389', { v0: (nodeReady.join(', ')) })
+      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().node.join(', ') }),
     spec: '§4.2',
-    fixHint: '於面板 Node 執行環境安裝目標版本',
+    fixHint: tl('notes.auto.n0910'),
     fixHref: nodeReady.length ? undefined : '/runtimes/node',
-    severity: 'recommended',
-  });
+    severity: 'recommended' });
   push({
     id: 'runtimes-php',
     category: 'hosting',
-    title: 'PHP 多版本',
+    title: tl('notes.auto.n0146'),
     level: phpReady.length ? 'ready' : 'degraded',
     detail: phpReady.length
-      ? `可用：${phpReady.join(', ')}`
-      : `支援 ${listSupportedRuntimes().php.join(', ')} — 尚未探測到`,
+      ? tl('notes.tpl.available', { detail: phpReady.join(', ') })
+      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().php.join(', ') }),
     spec: '§4.3',
-    fixHint: '於面板 PHP 執行環境安裝目標版本',
+    fixHint: tl('notes.auto.n0911'),
     fixHref: phpReady.length ? undefined : '/runtimes/php',
-    severity: 'optional',
-  });
+    severity: 'optional' });
   push({
     id: 'runtimes-python',
     category: 'hosting',
-    title: 'Python 多版本',
+    title: tl('notes.auto.n0164'),
     level: pyReady.length ? 'ready' : 'degraded',
     detail: pyReady.length
-      ? `可用：${pyReady.join(', ')}`
-      : `支援 ${listSupportedRuntimes().python.join(', ')} — 尚未探測到`,
+      ? tl('notes.tpl.available', { detail: pyReady.join(', ') })
+      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().python.join(', ') }),
     spec: '§4.2',
-    fixHint: '於面板 Python 執行環境安裝目標版本',
+    fixHint: tl('notes.auto.n0912'),
     fixHref: pyReady.length ? undefined : '/runtimes/python',
-    severity: 'optional',
-  });
+    severity: 'optional' });
   push({
     id: 'runtimes-go',
     category: 'hosting',
-    title: 'Go 多版本',
+    title: tl('notes.auto.n0113'),
     level: goReady.length ? 'ready' : 'degraded',
     detail: goReady.length
-      ? `可用：${goReady.join(', ')}`
-      : `支援 ${listSupportedRuntimes().go.join(', ')} — 尚未探測到`,
+      ? tl('notes.tpl.available', { detail: goReady.join(', ') })
+      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().go.join(', ') }),
     spec: '§4.2',
-    fixHint: '於面板 Go 執行環境安裝目標版本',
+    fixHint: tl('notes.auto.n0909'),
     fixHref: goReady.length ? undefined : '/runtimes/go',
-    severity: 'optional',
-  });
+    severity: 'optional' });
   push({
     id: 'runtimes-rust',
     category: 'hosting',
     title: 'Rust toolchain',
     level: rustReady.length ? 'ready' : 'degraded',
     detail: rustReady.length
-      ? `可用：${rustReady.join(', ')}`
-      : `支援 ${listSupportedRuntimes().rust.join(', ')} — 尚未探測到`,
+      ? tl('notes.tpl.available', { detail: rustReady.join(', ') })
+      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().rust.join(', ') }),
     spec: '§4.2',
-    fixHint: '於面板 Rust 執行環境安裝 rustup／cargo',
+    fixHint: tl('notes.auto.n0913'),
     fixHref: rustReady.length ? undefined : '/runtimes/rust',
-    severity: 'optional',
-  });
+    severity: 'optional' });
 
   const pm2 = await probePm2(host);
   push({
     id: 'pm2',
     category: 'hosting',
-    title: 'PM2 行程管理',
+    title: tl('notes.auto.n0153'),
     level: pm2.available ? 'ready' : 'degraded',
     detail: pm2.available
       ? `pm2：${pm2.path}`
-      : 'pm2 不在 PATH（仍可用 pidfile／systemd）',
+      : tl('notes.auto.n0379'),
     spec: '§4.2',
-    fixHint: '可選安裝 pm2：npm i -g pm2',
+    fixHint: tl('notes.auto.n0615'),
     fixHref: pm2.available ? undefined : '/runtimes/node',
-    severity: 'optional',
-  });
+    severity: 'optional' });
 
   const pdns = await probePowerDns(host);
   push({
     id: 'powerdns',
     category: 'dns',
-    title: 'PowerDNS 工具',
+    title: tl('notes.auto.n0161'),
     level: pdns.available ? 'ready' : 'degraded',
-    detail: pdns.notes.join('；') || '未安裝',
+    detail: pdns.notes.join('；') || tl('notes.notInstalled'),
     spec: '§4.8',
-    fixHint: '於 DNS 頁安裝 PowerDNS 相關套件',
+    fixHint: tl('notes.auto.n0908'),
     fixHref: pdns.available ? undefined : '/dns',
-    severity: 'optional',
-  });
+    severity: 'optional' });
 
   const webDist = join(process.cwd(), 'apps/web/dist/index.html');
   const webAlt = existsSync(join(input.dataDir, 'web/index.html'));
   push({
     id: 'web-ui',
     category: 'core',
-    title: 'Web 介面建置',
+    title: tl('notes.auto.n0204'),
     level: existsSync(webDist) || webAlt ? 'ready' : 'degraded',
     detail: existsSync(webDist)
-      ? 'apps/web/dist 已存在'
+      ? tl('notes.auto.n0225')
       : webAlt
-        ? 'dataDir/web 已存在'
-        : '尚未建置 Web 介面 — 僅 API 模式',
+        ? tl('notes.auto.n0246')
+        : tl('notes.auto.n0708'),
     spec: '§3.9',
     fixHint: 'pnpm --filter @ysk/web build',
-    severity: 'recommended',
-  });
+    severity: 'recommended' });
 
   push({
     id: 'email-managed',
     category: 'email',
-    title: '郵件管理設定目錄',
+    title: tl('notes.auto.n1507'),
     level: existsSync(join(input.dataDir, 'email')) ? 'ready' : 'degraded',
     detail: existsSync(join(input.dataDir, 'email'))
-      ? 'dataDir/email 已存在'
-      : '尚未套用郵件域名',
+      ? tl('notes.auto.n0245')
+      : tl('notes.auto.n0707'),
     spec: '§5',
-    fixHint: '建立郵件域名並於詳情頁套用',
+    fixHint: tl('notes.auto.n0820'),
     fixHref: existsSync(join(input.dataDir, 'email')) ? undefined : '/email',
-    severity: 'optional',
-  });
+    severity: 'optional' });
 
   // Ops: resource pressure + key service activity (best-effort, never fake ready)
   try {
@@ -440,17 +392,16 @@ export async function assessProductionReadiness(input: {
     push({
       id: 'ops-memory',
       category: 'ops',
-      title: '記憶體壓力',
+      title: tl('notes.auto.n1358'),
       level: memPct >= 95 ? 'missing' : memPct >= 85 ? 'degraded' : 'ready',
-      detail: `使用率約 ${memPct}%（總 ${Math.round(m.memory.total / 1024 / 1024)} MB）`,
-      fixHint: memPct >= 85 ? '檢查佔用行程；見主機指標' : undefined,
+      detail: tl('notes.auto.t0390', { v0: (memPct), v1: (Math.round(m.memory.total / 1024 / 1024)) }),
+      fixHint: memPct >= 85 ? tl('notes.auto.n1023') : undefined,
       fixHref: memPct >= 85 ? '/metrics' : undefined,
-      severity: 'recommended',
-    });
+      severity: 'recommended' });
     push({
       id: 'ops-disk',
       category: 'ops',
-      title: '根磁碟空間',
+      title: tl('notes.auto.n1009'),
       level:
         diskPct == null
           ? 'unknown'
@@ -461,16 +412,15 @@ export async function assessProductionReadiness(input: {
               : 'ready',
       detail:
         diskPct == null
-          ? '無法讀取 statfs'
-          : `使用率約 ${diskPct}%（${m.disk?.path ?? '/'}）`,
-      fixHint: diskPct != null && diskPct >= 85 ? '清理日誌／備份；見主機設定儲存' : undefined,
+          ? tl('notes.auto.n1185')
+          : tl('notes.auto.t0391', { v0: (diskPct), v1: (m.disk?.path ?? '/') }),
+      fixHint: diskPct != null && diskPct >= 85 ? tl('notes.auto.n1052') : undefined,
       fixHref: diskPct != null && diskPct >= 85 ? '/system' : undefined,
-      severity: 'recommended',
-    });
+      severity: 'recommended' });
     push({
       id: 'ops-load',
       category: 'ops',
-      title: '系統負載',
+      title: tl('notes.auto.n1311'),
       level:
         m.loadavg[0] > m.cpuCount * 3
           ? 'degraded'
@@ -479,29 +429,26 @@ export async function assessProductionReadiness(input: {
             : 'ready',
       detail: `load ${m.loadavg.map((x) => x.toFixed(2)).join(' / ')}（CPU ×${m.cpuCount}）`,
       fixHref: '/metrics',
-      severity: 'optional',
-    });
+      severity: 'optional' });
   } catch {
     push({
       id: 'ops-metrics',
       category: 'ops',
-      title: '主機指標',
+      title: tl('notes.auto.n0505'),
       level: 'unknown',
-      detail: '無法收集 metrics',
-      fixHref: '/metrics',
-    });
+      detail: tl('notes.auto.n1174'),
+      fixHref: '/metrics' });
   }
 
   // Key unit activity (read-only systemctl)
   for (const unit of [
-    { id: 'svc-nginx', name: 'nginx', title: 'nginx 服務', href: '/nginx', critical: true },
+    { id: 'svc-nginx', name: 'nginx', title: tl('notes.auto.n0344'), href: '/nginx', critical: true },
     {
       id: 'svc-fail2ban',
       name: 'fail2ban',
-      title: 'fail2ban 服務',
-      href: '/fail2ban',
-      critical: false,
-    },
+      title: tl('notes.auto.n0283'),
+      href: '/protection/fail2ban',
+      critical: false },
   ] as const) {
     try {
       const st = await host.serviceStatus(unit.name);
@@ -514,10 +461,9 @@ export async function assessProductionReadiness(input: {
           category: 'ops',
           title: unit.title,
           level: 'missing',
-          detail: '二進位不在 PATH，服務無法就緒',
+          detail: tl('notes.auto.n0507'),
           fixHref: unit.href,
-          severity: unit.critical ? 'critical' : 'optional',
-        });
+          severity: unit.critical ? 'critical' : 'optional' });
       } else {
         push({
           id: unit.id,
@@ -525,10 +471,9 @@ export async function assessProductionReadiness(input: {
           title: unit.title,
           level: active ? 'ready' : unit.critical ? 'degraded' : 'degraded',
           detail: active ? 'systemctl is-active: active' : `systemctl is-active: ${(st.stdout || st.stderr || 'inactive').trim()}`,
-          fixHint: active ? undefined : `於服務矩陣啟動 ${unit.name}`,
+          fixHint: active ? undefined : tl('notes.auto.t0392', { v0: (unit.name) }),
           fixHref: active ? undefined : '/services',
-          severity: unit.critical ? 'critical' : 'optional',
-        });
+          severity: unit.critical ? 'critical' : 'optional' });
       }
     } catch {
       push({
@@ -536,9 +481,8 @@ export async function assessProductionReadiness(input: {
         category: 'ops',
         title: unit.title,
         level: 'unknown',
-        detail: '無法探測 systemctl',
-        fixHref: '/services',
-      });
+        detail: tl('notes.auto.n1171'),
+        fixHref: '/services' });
     }
   }
 
@@ -580,23 +524,27 @@ export async function assessProductionReadiness(input: {
   });
 
   const summary: string[] = [
-    mode === 'production_capable' ? '模式：可生產' : `模式：${mode}`,
+    mode === 'production_capable' ? tl('notes.auto.n1013') : tl('notes.auto.t0393', { v0: (mode) }),
     productionReady
-      ? '生產門檻：通過（權限、Nginx、Node 就緒）'
-      : '生產門檻：尚未完全達標，請查看下方缺項',
-    `就緒 ${ready} / 降級 ${degraded} / 缺少 ${missing}（共 ${items.length} 項）`,
+      ? tl('notes.auto.n1246')
+      : tl('notes.auto.n1245'),
+    tl('notes.auto.t0394', { v0: (ready), v1: (degraded), v2: (missing), v3: (items.length) }),
     blockers.length
-      ? `優先處理 ${blockers.length} 項阻擋：${blockers
-          .slice(0, 5)
-          .map((b) => b.title)
-          .join('、')}${blockers.length > 5 ? '…' : ''}`
-      : '無硬阻擋項（仍可能有建議項）',
+      ? tl('notes.tpl.priorityBlockers', {
+          count: blockers.length,
+          list:
+            blockers
+              .slice(0, 5)
+              .map((b) => b.title)
+              .join(getLocale() === 'en' ? ', ' : '、') + (blockers.length > 5 ? '…' : ''),
+        })
+      : tl('notes.auto.n1197'),
   ];
   if (!executeEnabled) {
-    summary.push('伺服器未開啟系統變更權限，管理面板無法完成系統層操作');
+    summary.push(tl('notes.auto.n0532'));
   }
   if (!isRoot) {
-    summary.push('目前非系統管理員權限，部分系統設定無法套用');
+    summary.push(tl('notes.auto.n1271'));
   }
 
   const catSet = new Set(items.map((i) => i.category));
@@ -616,6 +564,5 @@ export async function assessProductionReadiness(input: {
     summary,
     productionReady,
     blockers,
-    categories,
-  };
+    categories };
 }

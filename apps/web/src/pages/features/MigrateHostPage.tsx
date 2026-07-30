@@ -22,6 +22,8 @@ import {
   PageTabs,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../shared/lib/i18n';
 import {
   migrateApi,
   type MigrateJob,
@@ -31,13 +33,14 @@ import {
 const TABS = ['wizard', 'jobs', 'about'] as const;
 
 const STEPS = [
-  { id: 'scan', label: '盤點' },
-  { id: 'target', label: '目標' },
-  { id: 'run', label: '執行' },
-  { id: 'done', label: '完成' },
+  { id: 'scan', label: i18n.t('migrate.tabInventory') },
+  { id: 'target', label: i18n.t('common.target') },
+  { id: 'run', label: i18n.t('migrate.tabRun') },
+  { id: 'done', label: i18n.t('ssl.step.ok') },
 ] as const;
 
 export function MigrateHostPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'wizard');
   const [inventory, setInventory] = useState<MigrateOpsResult | null>(null);
   const [invLoading, setInvLoading] = useState(false);
@@ -78,7 +81,7 @@ export function MigrateHostPage() {
       ]);
       setInventory(inv);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '重新整理失敗');
+      setErr(e instanceof Error ? e.message : t('migrate.refreshFailed'));
       setInventory(null);
     } finally {
       setInvLoading(false);
@@ -113,10 +116,10 @@ export function MigrateHostPage() {
       setPassword('');
       await loadJobs(); // keep job list in sync after run
       if (!r.ok && r.notes?.length) {
-        setErr(r.blockMessage || r.notes[0] || '遷移未完成');
+        setErr(r.blockMessage || r.notes[0] || t('projects.resMigrateIncomplete'));
       }
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '遷移請求失敗');
+      setErr(e instanceof Error ? e.message : t('migrate.requestFailed'));
     } finally {
       setBusy(false);
       setConfirmOpen(false);
@@ -150,29 +153,29 @@ export function MigrateHostPage() {
 
   return (
     <FeaturePageLayout
-      title="整機遷移"
-      subtitle="來源控制面 → 新機全量複製。完成後只改公網 IP／DNS，帳號、路徑與專案保持一致。"
+      title={t('nav.migrate')}
+      subtitle={t('migrate.subtitle')}
       status={{
         pill: {
           label: invLoading
-            ? '盤點中'
+            ? t('migrate.inventorying')
             : inventory?.ok
-              ? '已盤點'
+              ? t('migrate.inventoried')
               : err
-                ? '盤點失敗'
-                : '待盤點',
+                ? t('migrate.inventoryFailed')
+                : t('migrate.pendingInventory'),
           tone: inventory?.ok ? 'ok' : err ? 'danger' : 'neutral',
         },
         items: [
-          { label: '專案', value: counts.projects ?? '—' },
-          { label: '信箱', value: counts.mailboxes ?? '—' },
-          { label: '用戶', value: counts.users ?? '—' },
+          { label: t('common.project'), value: counts.projects ?? '—' },
+          { label: t('users.mailboxes'), value: counts.mailboxes ?? '—' },
+          { label: t('common.user'), value: counts.users ?? '—' },
           {
-            label: '軟體',
+            label: t('migrate.software'),
             value: softwareNeeded.length || '—',
           },
           {
-            label: '工作',
+            label: t('migrate.jobs'),
             value: jobs.length,
           },
         ],
@@ -185,7 +188,7 @@ export function MigrateHostPage() {
             loading={invLoading}
             onClick={() => void refreshAll()}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
         </ActionBar>
       }
@@ -193,12 +196,12 @@ export function MigrateHostPage() {
       {err ? (
         <Alert variant="error">
           {err}
-          {err.includes('找不到') || err.includes('404') ? (
+          {err.includes(t('migrate.notFound')) || err.includes('404') ? (
             <span className="u-block u-mt-2 muted u-text-sm">
-              若剛部署新版本，請重啟 API（
+              {t('migrate.restartApiHint')}
               <code>ysk-server serve</code> /{' '}
               <code>pnpm --filter @ysk/server dev</code>
-              ）後再按「重新整理」。
+              {t('migrate.afterRestart')}
             </span>
           ) : null}
         </Alert>
@@ -206,10 +209,10 @@ export function MigrateHostPage() {
 
       <PageTabs
         tabs={[
-          { id: 'wizard', label: '遷移精靈' },
-          { id: 'jobs', label: '工作紀錄', badge: jobs.length || undefined },
+          { id: 'wizard', label: t('migrate.wizard') },
+          { id: 'jobs', label: t('migrate.jobLog'), badge: jobs.length || undefined },
         
-          { id: 'about', label: '說明' },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={(id) => setTab(id as (typeof TABS)[number])}
@@ -217,7 +220,7 @@ export function MigrateHostPage() {
         {tab === 'wizard' ? (
           <div className="tab-panel mig-wizard">
             {/* Step rail */}
-            <nav className="mig-steps" aria-label="遷移步驟">
+            <nav className="mig-steps" aria-label={t('migrate.steps')}>
               {STEPS.map((s, i) => (
                 <div
                   key={s.id}
@@ -236,18 +239,18 @@ export function MigrateHostPage() {
             {/* 1 Inventory */}
             <Card>
               <CardSection
-                title="來源盤點"
-                description="唯讀掃描控制面與專案路徑，不會修改系統"
+                title={t('migrate.sourceInventory')}
+                description={t('migrate.sourceInventoryDesc')}
               >
                 {invLoading && !inventory ? (
-                  <LoadingBlock label="正在盤點本機…" />
+                  <LoadingBlock label={t('migrate.inventoryRunning')} />
                 ) : inventory?.ok ? (
                   <>
                     <DescriptionList
                       columns={2}
                       items={[
                         {
-                          label: '主機',
+                          label: t('common.host'),
                           value: String(
                             (inventory.manifest as { source?: { hostname?: string } })
                               ?.source?.hostname ?? '—',
@@ -265,11 +268,11 @@ export function MigrateHostPage() {
                           ),
                         },
                         {
-                          label: '專案 / home',
+                          label: t('migrate.projectHome'),
                           value: `${counts.projects ?? 0} / ${counts.homes_on_disk ?? '—'}`,
                         },
                         {
-                          label: '信箱',
+                          label: t('users.mailboxes'),
                           value: String(counts.mailboxes ?? 0),
                         },
                         {
@@ -280,7 +283,7 @@ export function MigrateHostPage() {
                           } / ${counts.redis_instances ?? 0}`,
                         },
                         {
-                          label: '需安裝軟體',
+                          label: t('migrate.needSoftware'),
                           value: softwareNeeded.length
                             ? softwareNeeded.slice(0, 6).join(', ') +
                               (softwareNeeded.length > 6 ? '…' : '')
@@ -295,13 +298,13 @@ export function MigrateHostPage() {
                     ) : null}
                     {warnings.length > 0 ? (
                       <Alert variant="info" className="u-mt-3">
-                        <strong>盤點警告（{warnings.length}）</strong>
+                        <strong>{t('migrate.inventoryWarnings', { count: warnings.length })}</strong>
                         <ul className="mig-warn-list">
                           {warnings.slice(0, 6).map((w) => (
                             <li key={w}>{w}</li>
                           ))}
                           {warnings.length > 6 ? (
-                            <li>…另有 {warnings.length - 6} 則</li>
+                            <li>{t('migrate.moreWarnings', { n: warnings.length - 6 })}</li>
                           ) : null}
                         </ul>
                       </Alert>
@@ -309,18 +312,8 @@ export function MigrateHostPage() {
                   </>
                 ) : (
                   <EmptyState
-                    title="尚未取得盤點"
-                    description="按右上角「重新整理」掃描本機狀態與工作紀錄。API 需已載入 migrate 路由。"
-                    action={
-                      <Button
-                        variant="primary"
-                        size="md"
-                        loading={invLoading}
-                        onClick={() => void refreshAll()}
-                      >
-                        重新整理
-                      </Button>
-                    }
+                    title={t('migrate.noInventory')}
+                    description={t('migrate.noInventoryHint')}
                   />
                 )}
               </CardSection>
@@ -329,11 +322,11 @@ export function MigrateHostPage() {
             {/* 2 Target */}
             <Card>
               <CardSection
-                title="目標主機"
-                description="僅需 root SSH；密碼只用於本次請求，不會寫入資料庫"
+                title={t('migrate.targetHost')}
+                description={t('migrate.targetHostDesc')}
               >
                 <FormLayout columns={2}>
-                  <Field label="SSH 目標" htmlFor="mig-target" required fullWidth>
+                  <Field label={t('migrate.sshTarget')} htmlFor="mig-target" required fullWidth>
                     <input
                       id="mig-target"
                       value={target}
@@ -343,7 +336,7 @@ export function MigrateHostPage() {
                       spellCheck={false}
                     />
                   </Field>
-                  <Field label="SSH 埠" htmlFor="mig-port">
+                  <Field label={t('migrate.sshPort')} htmlFor="mig-port">
                     <input
                       id="mig-port"
                       value={port}
@@ -351,7 +344,7 @@ export function MigrateHostPage() {
                       inputMode="numeric"
                     />
                   </Field>
-                  <Field label="目標 dataDir" htmlFor="mig-dd" fullWidth>
+                  <Field label={t('migrate.targetDataDir')} htmlFor="mig-dd" fullWidth>
                     <input
                       id="mig-dd"
                       value={targetDataDir}
@@ -359,7 +352,7 @@ export function MigrateHostPage() {
                       spellCheck={false}
                     />
                   </Field>
-                  <Field label="認證方式" htmlFor="mig-auth">
+                  <Field label={t('migrate.authMethod')} htmlFor="mig-auth">
                     <select
                       id="mig-auth"
                       value={authMode}
@@ -368,21 +361,21 @@ export function MigrateHostPage() {
                       }
                     >
                       <option value="password">
-                        root 密碼（安裝臨時金鑰後改用 key）
+                        {t('migrate.authPassword')}
                       </option>
-                      <option value="identityId">SSH 身份庫 identityId</option>
-                      <option value="agent">本機預設 agent / 金鑰</option>
+                      <option value="identityId">{t('migrate.authIdentity')}</option>
+                      <option value="agent">{t('migrate.authAgent')}</option>
                     </select>
                   </Field>
                   {authMode === 'password' ? (
-                    <Field label="Root 密碼" htmlFor="mig-pw" required fullWidth>
+                    <Field label={t('migrate.rootPassword')} htmlFor="mig-pw" required fullWidth>
                       <input
                         id="mig-pw"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         autoComplete="new-password"
-                        placeholder="不會持久化"
+                        placeholder={t('migrate.notPersisted')}
                       />
                     </Field>
                   ) : null}
@@ -392,7 +385,7 @@ export function MigrateHostPage() {
                         id="mig-id"
                         value={identityId}
                         onChange={(e) => setIdentityId(e.target.value)}
-                        placeholder="vault 內 outbound identity"
+                        placeholder={t('migrate.outboundIdentity')}
                         spellCheck={false}
                       />
                     </Field>
@@ -407,10 +400,10 @@ export function MigrateHostPage() {
                       onChange={(e) => setMaintenance(e.target.checked)}
                     />
                     <span>
-                      <strong>確認維護窗</strong>
+                      <strong>{t('migrate.confirmMaint')}</strong>
                       <span className="muted u-text-sm">
                         {' '}
-                        · 來源將短暫停服以保證 dump 一致（正式遷移必勾）
+                        {t('migrate.confirmMaintDesc')}
                       </span>
                     </span>
                   </label>
@@ -421,10 +414,10 @@ export function MigrateHostPage() {
                       onChange={(e) => setForceWipe(e.target.checked)}
                     />
                     <span>
-                      <strong>允許覆寫目標既有 YSK 資料</strong>
+                      <strong>{t('migrate.allowOverwrite')}</strong>
                       <span className="muted u-text-sm">
                         {' '}
-                        · 目標已有 ysk.json 時需勾選
+                        {t('migrate.allowOverwriteDesc')}
                       </span>
                     </span>
                   </label>
@@ -435,18 +428,17 @@ export function MigrateHostPage() {
                       onChange={(e) => setDryRun(e.target.checked)}
                     />
                     <span>
-                      <strong>僅 dry-run</strong>
+                      <strong>{t('migrate.dryRunOnly')}</strong>
                       <span className="muted u-text-sm">
                         {' '}
-                        · 只做盤點 + 預檢，不 rsync、不寫目標
+                        {t('migrate.dryRunOnlyDesc')}
                       </span>
                     </span>
                   </label>
                 </div>
 
                 <Alert variant="info" className="u-mt-3">
-                  本機需 <code>YSK_EXECUTE=1</code> 且以 root 執行 API。遷移完成後請改
-                  DNS A/AAAA，並檢查雲防火牆與郵件 PTR。
+                  {t('migrate.executeNote')}
                 </Alert>
 
                 <ActionBar className="u-mt-4">
@@ -460,17 +452,17 @@ export function MigrateHostPage() {
                       else setConfirmOpen(true);
                     }}
                   >
-                    {dryRun ? '執行預檢（dry-run）' : '開始整機遷移'}
+                    {dryRun ? t('migrate.dryRun') : t('migrate.startMigrate')}
                   </Button>
                   {!canRun && !busy ? (
                     <span className="muted u-text-sm">
                       {!target.trim()
-                        ? '請填寫 SSH 目標'
+                        ? t('migrate.needSshTarget')
                         : !dryRun && !maintenance
-                          ? '請勾選維護窗'
+                          ? t('migrate.needMaintWindow')
                           : authMode === 'password' && !password
-                            ? '請輸入 root 密碼'
-                            : '請完成必要欄位'}
+                            ? t('migrate.needRootPassword')
+                            : t('migrate.needRequired')}
                     </span>
                   ) : null}
                 </ActionBar>
@@ -481,7 +473,7 @@ export function MigrateHostPage() {
             {last ? (
               <Card>
                 <CardSection
-                  title={last.ok ? '遷移結果' : '遷移未完成'}
+                  title={last.ok ? t('migrate.result') : t('projects.resMigrateIncomplete')}
                   description={
                     last.job
                       ? `Job ${last.job.id.slice(0, 8)}… · phase ${last.job.phase}`
@@ -499,10 +491,10 @@ export function MigrateHostPage() {
                       }
                     >
                       {last.ok
-                        ? '成功'
+                        ? t('common.success')
                         : last.blocked
-                          ? '已阻擋'
-                          : '失敗'}
+                          ? t('migrate.blocked')
+                          : t('common.failed')}
                     </Badge>
                     {last.job ? (
                       <Badge tone="neutral">{last.job.phase}</Badge>
@@ -533,7 +525,7 @@ export function MigrateHostPage() {
                   ) : null}
 
                   <OpsResultPanel
-                    title="詳細說明"
+                    title={t('migrate.detail')}
                     result={{
                       ok: last.ok,
                       blocked: last.blocked,
@@ -552,10 +544,9 @@ export function MigrateHostPage() {
 
                   {cutover.length > 0 ? (
                     <div className="mig-cutover u-mt-4">
-                      <h4 className="mig-cutover__title">DNS cutover（需人工）</h4>
+                      <h4 className="mig-cutover__title">{t('migrate.dnsCutover')}</h4>
                       <p className="muted u-text-sm u-mb-2">
-                        將下列主機名的 A / AAAA 指到<strong>新機公網 IP</strong>
-                        ；並確認 80/443/25/587 等防火牆與郵件 rDNS。
+                        {t('migrate.dnsCutoverDesc')}
                       </p>
                       <ul className="mig-cutover__list">
                         {cutover.map((h) => (
@@ -575,8 +566,8 @@ export function MigrateHostPage() {
         {tab === 'jobs' ? (
           <div className="tab-panel">
             <DataTable
-              title={`遷移工作（${jobs.length}）`}
-              description="狀態落在 dataDir/migrate/；密碼從不寫入 job 檔。按右上角「重新整理」更新。"
+              title={t('migrate.jobsTitle', { count: jobs.length })}
+              description={t('migrate.jobsDesc')}
               columns={[
                 {
                   key: 'id',
@@ -590,7 +581,7 @@ export function MigrateHostPage() {
                 },
                 {
                   key: 'phase',
-                  header: '階段',
+                  header: t('migrate.phase'),
                   nowrap: true,
                   render: (j) => (
                     <Badge
@@ -608,7 +599,7 @@ export function MigrateHostPage() {
                 },
                 {
                   key: 'target',
-                  header: '目標',
+                  header: t('common.target'),
                   render: (j) =>
                     j.target
                       ? `${j.target.user}@${j.target.host}:${j.target.port}`
@@ -616,14 +607,14 @@ export function MigrateHostPage() {
                 },
                 {
                   key: 'at',
-                  header: '更新',
+                  header: t('updates.badgeUpdate'),
                   nowrap: true,
                   render: (j) =>
                     new Date(j.updatedAt).toLocaleString(),
                 },
                 {
                   key: 'err',
-                  header: '備註',
+                  header: t('common.notes'),
                   render: (j) => (
                     <span className="muted u-text-sm">
                       {j.lastError || '—'}
@@ -635,8 +626,8 @@ export function MigrateHostPage() {
               rowKey={(j) => j.id}
               empty={
                 <EmptyState
-                  title="尚無遷移工作"
-                  description="在「遷移精靈」完成一次 dry-run 或正式遷移後會出現在此。"
+                  title={t('migrate.noJobs')}
+                  description={t('migrate.noJobsHint')}
                 />
               }
             />
@@ -650,10 +641,10 @@ export function MigrateHostPage() {
         open={confirmOpen}
         onClose={() => !busy && setConfirmOpen(false)}
         onConfirm={() => void runMigrate()}
-        title="確認整機遷移"
-        description={`即將對 ${target.trim() || '（未填目標）'} 執行全量 rsync 與目標 bootstrap。來源進入維護窗，過程可能數十分鐘。密碼僅本次使用。`}
-        confirmLabel="確認開始"
-        cancelLabel="取消"
+        title={t('migrate.confirmTitle')}
+        description={t('migrate.confirmDesc', { target: target.trim() || t('migrate.unfilledTarget') })}
+        confirmLabel={t('migrate.confirmStart')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={busy}
       />

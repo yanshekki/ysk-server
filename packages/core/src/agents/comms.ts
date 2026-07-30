@@ -2,7 +2,7 @@
  * Remote Agent outbound communication path (control-plane side).
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { randomUUID } from 'node:crypto';
 
 export interface AgentSession {
@@ -31,7 +31,7 @@ export class AgentComms {
 
   register(agentId: string): AgentSession {
     if (!agentId?.trim()) {
-      throw new YskError(ErrorCodes.VALIDATION, '請指定 agentId', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0027'), { httpStatus: 400 });
     }
     const now = new Date().toISOString();
     const session: AgentSession = {
@@ -39,8 +39,7 @@ export class AgentComms {
       agentId: agentId.trim(),
       connectedAt: now,
       lastSeenAt: now,
-      status: 'connected',
-    };
+      status: 'connected' };
     this.sessions.set(session.id, session);
     this.push(session.id, 'inbound', 'register', { agentId });
     return { ...session };
@@ -70,9 +69,8 @@ export class AgentComms {
   private require(sessionId: string): AgentSession {
     const s = this.sessions.get(sessionId);
     if (!s) {
-      throw new YskError(ErrorCodes.NOT_FOUND, `Agent 找不到 session：${sessionId}`, {
-        httpStatus: 404,
-      });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0499', { v0: (sessionId) }), {
+        httpStatus: 404 });
     }
     return s;
   }
@@ -89,8 +87,7 @@ export class AgentComms {
       direction,
       type,
       payload,
-      createdAt: new Date().toISOString(),
-    };
+      createdAt: new Date().toISOString() };
     this.messages.push(msg);
     return { ...msg };
   }

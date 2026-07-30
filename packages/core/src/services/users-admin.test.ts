@@ -66,12 +66,11 @@ describe('UsersAdminService', () => {
       expect(imp.token.length).toBeGreaterThan(10);
       expect(imp.user.username).toBe('op1');
 
-      expect(() =>
-        svc.impersonate(u.id, { id: 'x', username: 'op1', roles: ['operator'] }),
-      ).toThrow(/admin/);
+      // Package with subscribers cannot be deleted
+      expect(() => svc.deletePackage(pkg.id, 'admin')).toThrow();
 
       expect(svc.deleteUser(u.id, 'admin')).toBe(true);
-      expect(() => svc.deleteUser('admin1', 'admin')).toThrow(/最後一個 admin/);
+      expect(() => svc.deleteUser('admin1', 'admin')).toThrow(/最後一個 admin|last|admin/i);
       expect(svc.deletePackage(pkg.id, 'admin')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });

@@ -65,18 +65,20 @@ export function Fail2banPage() {
         if (prev.length) return prev;
         const live = s.jails?.map((j) => j.name) ?? [];
         if (live.length) return live;
-        return s.catalog?.slice(0, 4).map((c) => c.id) ?? [
-          'sshd',
-          'nginx-http-auth',
-          'postfix',
-          'dovecot',
-        ];
+        return (
+          s.catalog?.slice(0, 4).map((c) => c.id) ?? [
+            'sshd',
+            'nginx-http-auth',
+            'postfix',
+            'dovecot',
+          ]
+        );
       });
       if (s.jails?.[0]?.name) setBanJail((j) => j || s.jails[0].name);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '載入失敗');
+      setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();
@@ -97,9 +99,9 @@ export function Fail2banPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.fail2ban', { defaultValue: 'fail2ban' })}
+      title={t('nav.fail2ban')}
       backTo="/protection"
-      backLabel="防護中心"
+      backLabel={t('fail2ban.backToProtection')}
       status={{
         pill: {
           label: status?.activeLabel ?? '—',
@@ -107,24 +109,27 @@ export function Fail2banPage() {
         },
         items: [
           {
-            label: '目前 ban',
+            label: t('fail2ban.statCurrentBan'),
             value:
               status?.jails?.reduce((a, j) => a + (j.currentlyBanned ?? 0), 0) ?? 0,
           },
           {
-            label: '累計',
+            label: t('fail2ban.statTotal'),
             value: status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0,
           },
           { label: 'Jail', value: status?.jails?.length ?? 0 },
-          { label: '封鎖列表', value: banned.length },
+          { label: t('fail2ban.statBanList'), value: banned.length },
           { label: 'ignoreip', value: status?.ignoreIps?.length ?? 0 },
           {
-            label: '開機',
-            value: status?.installed ? (status.enabled ?? '—') : '未安裝',
+            label: t('fail2ban.statBoot'),
+            value: status?.installed
+              ? (status.enabled ?? '—')
+              : t('common.notInstalled'),
           },
         ],
       }}
-      actions={<div className="def-head-actions">
+      actions={
+        <div className="def-head-actions">
           <Button
             variant="secondary"
             size="sm"
@@ -135,7 +140,7 @@ export function Fail2banPage() {
               void refresh();
             }}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           {status?.installed && !running ? (
             <Button
@@ -147,21 +152,23 @@ export function Fail2banPage() {
                   const r = (await systemApi.fail2banService('enable')) as OpsResultLike;
                   await refresh();
                   return r;
-                }, '已啟動 fail2ban')
+                }, t('fail2ban.startedOk'))
               }
             >
-              啟動服務
+              {t('fail2ban.startService')}
             </Button>
           ) : null}
         </div>
       }
     >
-      <SoftwareInstallBanner feature="fail2ban" title="fail2ban 尚未安裝" />
+      <SoftwareInstallBanner feature="fail2ban" title={t('fail2ban.notInstalled')} />
 
       <Alert variant="info">
-        <strong>分工：</strong> fail2ban = 掃 log 後<strong>臨時</strong> ban ·{' '}
-        <Link to="/firewall">UFW</Link> = 埠／永久規則 ·{' '}
-        <Link to="/protection">防護中心</Link> = 攻擊應變（可疑列表 + 自動 ban + Nginx 限速）
+        <strong>{t('fail2ban.toolHintPrefix')}</strong> {t('fail2ban.toolHintBody')}
+        <strong>{t('fail2ban.toolHintTemp')}</strong> {t('fail2ban.toolHintBody2')}{' '}
+        <Link to="/protection">{t('nav.protection')}</Link>
+        {' · '}
+        <Link to="/protection/firewall">UFW</Link> = {t('fail2ban.toolHintUfw')}
       </Alert>
 
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -170,24 +177,31 @@ export function Fail2banPage() {
         <Alert variant="ok">
           {msg}{' '}
           <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
+            {t('common.close')}
           </Button>
         </Alert>
       ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'bans', label: '封鎖列表', badge: banned.length || undefined },
+          {
+            id: 'bans',
+            label: t('fail2ban.tabs.bans'),
+            badge: banned.length || undefined,
+          },
           {
             id: 'whitelist',
-            label: '白名單',
+            label: t('fail2ban.tabs.whitelist'),
             badge: status?.ignoreIps?.length || undefined,
           },
-          { id: 'jails', label: 'Jail', badge: status?.jails?.length || undefined },
-          { id: 'policy', label: '策略' },
-          { id: 'service', label: '服務' },
-        
-          { id: 'about', label: '說明' },
+          {
+            id: 'jails',
+            label: t('fail2ban.tabs.jails'),
+            badge: status?.jails?.length || undefined,
+          },
+          { id: 'policy', label: t('fail2ban.tabs.policy') },
+          { id: 'service', label: t('fail2ban.tabs.service') },
+          { id: 'about', label: t('fail2ban.tabs.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -197,7 +211,7 @@ export function Fail2banPage() {
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">手動 ban（臨時）</h3>
+                <h3 className="def-section-head__title">{t('fail2ban.manualBanTitle')}</h3>
               </div>
               <FormLayout columns={2}>
                 <Field label="IP" htmlFor="f2b-ban-ip" flush required>
@@ -205,7 +219,7 @@ export function Fail2banPage() {
                     id="f2b-ban-ip"
                     value={banIp}
                     onChange={(e) => setBanIp(e.target.value)}
-                    placeholder="IPv4 或 IPv6"
+                    placeholder={t('fail2ban.ipPlaceholder')}
                     spellCheck={false}
                   />
                 </Field>
@@ -256,26 +270,25 @@ export function Fail2banPage() {
                       setBanIp('');
                       await refresh();
                       return r;
-                    }, '已 banip')
+                    }, t('fail2ban.banipOk'))
                   }
                 >
                   banip
                 </Button>
               </FormActions>
-              <FormHint>
-                臨時封鎖，過 bantime 會自動解；永久拒請用 UFW。白名單見「白名單」分頁。
-              </FormHint>
+              <FormHint>{t('fail2ban.manualBanHint')}</FormHint>
             </div>
 
             <div className="def-panel-card">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">
-                  目前封鎖 <Badge tone="neutral">{banned.length}</Badge>
+                  {t('fail2ban.currentBans')}{' '}
+                  <Badge tone="neutral">{banned.length}</Badge>
                 </h3>
               </div>
               <DataTable
-                title="Banned IPs（真實 fail2ban-client）"
-                description="需能讀取 client；unban 需 YSK_EXECUTE"
+                title={t('fail2ban.bannedTableTitle')}
+                description={t('fail2ban.bannedTableDesc')}
                 columns={[
                   {
                     key: 'jail',
@@ -298,7 +311,7 @@ export function Fail2banPage() {
                       size="sm"
                       onClick={() => void navigator.clipboard?.writeText(b.ip)}
                     >
-                      複製
+                      {t('common.copy')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -312,16 +325,16 @@ export function Fail2banPage() {
                           )) as OpsResultLike;
                           await refresh();
                           return r;
-                        }, '已 unban')
+                        }, t('fail2ban.unbanOk'))
                       }
                     >
-                      解封
+                      {t('fail2ban.unban')}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       loading={busy}
-                      title="加入 ignoreip 白名單"
+                      title={t('fail2ban.addWhitelistTitle')}
                       onClick={() =>
                         void run(async () => {
                           const r = (await systemApi.fail2banIgnoreIp(
@@ -330,17 +343,17 @@ export function Fail2banPage() {
                           )) as OpsResultLike;
                           await refresh();
                           return r;
-                        }, '已加入白名單')
+                        }, t('fail2ban.whitelistAdded'))
                       }
                     >
-                      +白名單
+                      {t('fail2ban.addWhitelistShort')}
                     </Button>
                   </ActionBar>
                 )}
                 empty={
                   <EmptyState
-                    title="無封鎖中 IP"
-                    description="或無權讀取 fail2ban-client"
+                    title={t('fail2ban.emptyBansTitle')}
+                    description={t('fail2ban.emptyBansDesc')}
                   />
                 }
               />
@@ -353,19 +366,19 @@ export function Fail2banPage() {
             <div className="def-panel-card">
               <div className="def-section-head">
                 <div>
-                  <h3 className="def-section-head__title">ignoreip 白名單</h3>
-                  <p className="def-section-head__desc">
-                    永不被 ban 的 IP（管理檔 + 可選 live fail2ban-client）。建議加入你的辦公／家居 IP。
-                  </p>
+                  <h3 className="def-section-head__title">
+                    {t('fail2ban.ignoreipTitle')}
+                  </h3>
+                  <p className="def-section-head__desc">{t('fail2ban.ignoreipDesc')}</p>
                 </div>
               </div>
               <FormLayout columns={2}>
-                <Field label="新增 IP" htmlFor="f2b-ignore" flush required>
+                <Field label={t('fail2ban.addIp')} htmlFor="f2b-ignore" flush required>
                   <input
                     id="f2b-ignore"
                     value={ignoreIp}
                     onChange={(e) => setIgnoreIp(e.target.value)}
-                    placeholder="IPv4 或 IPv6"
+                    placeholder={t('fail2ban.ipPlaceholder')}
                     spellCheck={false}
                   />
                 </Field>
@@ -385,10 +398,10 @@ export function Fail2banPage() {
                       setIgnoreIp('');
                       await refresh();
                       return r;
-                    }, '已加入白名單')
+                    }, t('fail2ban.whitelistAdded'))
                   }
                 >
-                  加入白名單
+                  {t('fail2ban.addWhitelist')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -406,19 +419,18 @@ export function Fail2banPage() {
                       })) as OpsResultLike;
                       await refresh();
                       return r;
-                    }, '已把 ignoreip 寫入 jail.local 並套用')
+                    }, t('fail2ban.applyIgnoreipOk'))
                   }
                 >
-                  套用策略（含 ignoreip）
+                  {t('fail2ban.applyPolicyIgnoreip')}
                 </Button>
               </FormActions>
-              <FormHint>
-                無 YSK_EXECUTE 時只寫管理檔（apply_status=written）；「套用策略」會重建
-                jail.local 的 ignoreip= 行並 reload。
-              </FormHint>
+              <FormHint>{t('fail2ban.ignoreipHint')}</FormHint>
               <DataTable
                 className="u-mt-4"
-                title={`白名單 (${status?.ignoreIps?.length ?? 0})`}
+                title={t('fail2ban.whitelistTitle', {
+                  count: status?.ignoreIps?.length ?? 0,
+                })}
                 description="dataDir/fail2ban/ignoreip.txt"
                 columns={[
                   {
@@ -436,7 +448,7 @@ export function Fail2banPage() {
                       size="sm"
                       onClick={() => void navigator.clipboard?.writeText(row.ip)}
                     >
-                      複製
+                      {t('common.copy')}
                     </Button>
                     <Button
                       variant="danger"
@@ -450,17 +462,17 @@ export function Fail2banPage() {
                           )) as OpsResultLike;
                           await refresh();
                           return r;
-                        }, '已移除白名單')
+                        }, t('fail2ban.whitelistRemoved'))
                       }
                     >
-                      移除
+                      {t('fail2ban.remove')}
                     </Button>
                   </ActionBar>
                 )}
                 empty={
                   <EmptyState
-                    title="尚未有白名單 IP"
-                    description="加入管理 IP，避免自己被 ban"
+                    title={t('fail2ban.emptyWhitelistTitle')}
+                    description={t('fail2ban.emptyWhitelistDesc')}
                   />
                 }
               />
@@ -472,7 +484,7 @@ export function Fail2banPage() {
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">作用中 Jail</h3>
+                <h3 className="def-section-head__title">{t('fail2ban.activeJails')}</h3>
               </div>
               <DataTable
                 columns={[
@@ -483,19 +495,19 @@ export function Fail2banPage() {
                   },
                   {
                     key: 'currently',
-                    header: '目前',
+                    header: t('fail2ban.colCurrent'),
                     nowrap: true,
                     render: (j) => j.currentlyBanned ?? '—',
                   },
                   {
                     key: 'total',
-                    header: '累計',
+                    header: t('fail2ban.colTotal'),
                     nowrap: true,
                     render: (j) => j.totalBanned ?? '—',
                   },
                   {
                     key: 'desc',
-                    header: '說明',
+                    header: t('fail2ban.colDesc'),
                     className: 'muted u-text-sm',
                     render: (j) => descFor(j.name) ?? '—',
                   },
@@ -504,8 +516,8 @@ export function Fail2banPage() {
                 rowKey={(j) => j.name}
                 empty={
                   <EmptyState
-                    title="無 jail"
-                    description="服務未啟動或尚未套用 jail.local"
+                    title={t('fail2ban.emptyJailsTitle')}
+                    description={t('fail2ban.emptyJailsDesc')}
                   />
                 }
               />
@@ -518,45 +530,58 @@ export function Fail2banPage() {
             <div className="def-panel-card">
               <div className="def-section-head">
                 <div>
-                  <h3 className="def-section-head__title">Jail 策略</h3>
-                  <p className="def-section-head__desc">
-                    寫入管理 jail.local；套用時 copy + reload（唔經 UFW）
-                  </p>
+                  <h3 className="def-section-head__title">{t('fail2ban.policyTitle')}</h3>
+                  <p className="def-section-head__desc">{t('fail2ban.policyDesc')}</p>
                 </div>
               </div>
               <FormLayout columns={2}>
-                <Field label="bantime" htmlFor="f2b-bt" flush hint="封鎖時長">
+                <Field
+                  label="bantime"
+                  htmlFor="f2b-bt"
+                  flush
+                  hint={t('fail2ban.bantimeHint')}
+                >
                   <PresetChips
                     options={[
-                      { value: '10m', label: '10 分' },
-                      { value: '1h', label: '1 時' },
-                      { value: '6h', label: '6 時' },
-                      { value: '24h', label: '24 時' },
-                      { value: '1w', label: '1 週' },
+                      { value: '10m', label: t('fail2ban.min', { n: 10 }) },
+                      { value: '1h', label: t('fail2ban.hour', { n: 1 }) },
+                      { value: '6h', label: t('fail2ban.hour', { n: 6 }) },
+                      { value: '24h', label: t('fail2ban.hour', { n: 24 }) },
+                      { value: '1w', label: t('fail2ban.week', { n: 1 }) },
                       { value: '3600', label: '3600s' },
                     ]}
                     value={bantime}
                     onChange={setBantime}
                     allowCustom
-                    customPlaceholder="自訂，例 2h"
+                    customPlaceholder={t('fail2ban.customExample2h')}
                   />
                 </Field>
-                <Field label="findtime" htmlFor="f2b-ft" flush hint="統計窗口">
+                <Field
+                  label="findtime"
+                  htmlFor="f2b-ft"
+                  flush
+                  hint={t('fail2ban.findtimeHint')}
+                >
                   <PresetChips
                     options={[
-                      { value: '5m', label: '5 分' },
-                      { value: '10m', label: '10 分' },
-                      { value: '30m', label: '30 分' },
-                      { value: '1h', label: '1 時' },
+                      { value: '5m', label: t('fail2ban.min', { n: 5 }) },
+                      { value: '10m', label: t('fail2ban.min', { n: 10 }) },
+                      { value: '30m', label: t('fail2ban.min', { n: 30 }) },
+                      { value: '1h', label: t('fail2ban.hour', { n: 1 }) },
                       { value: '600', label: '600s' },
                     ]}
                     value={findtime}
                     onChange={setFindtime}
                     allowCustom
-                    customPlaceholder="自訂，例 15m"
+                    customPlaceholder={t('fail2ban.customExample15m')}
                   />
                 </Field>
-                <Field label="maxretry" htmlFor="f2b-mr" flush hint="窗口內最多失敗次數">
+                <Field
+                  label="maxretry"
+                  htmlFor="f2b-mr"
+                  flush
+                  hint={t('fail2ban.maxretryHint')}
+                >
                   <PresetChips
                     options={[
                       { value: '3', label: '3' },
@@ -566,13 +591,15 @@ export function Fail2banPage() {
                       { value: '15', label: '15' },
                     ]}
                     value={String(maxretry)}
-                    onChange={(v) => setMaxretry(Math.max(1, Math.min(50, Number(v) || 5)))}
+                    onChange={(v) =>
+                      setMaxretry(Math.max(1, Math.min(50, Number(v) || 5)))
+                    }
                     allowCustom
-                    customPlaceholder="自訂 1–50"
+                    customPlaceholder={t('fail2ban.customMaxretry')}
                   />
                 </Field>
               </FormLayout>
-              <FormHint>啟用 jail（勾選後套用）：</FormHint>
+              <FormHint>{t('fail2ban.enableJailsHint')}</FormHint>
               <div className="form-check-row f2b-jail-grid">
                 {(catalog.length
                   ? catalog
@@ -609,10 +636,10 @@ export function Fail2banPage() {
                         maxretry,
                       })) as OpsResultLike;
                       return r;
-                    }, '已寫管理檔（未套用系統）')
+                    }, t('fail2ban.writtenOnlyMsg'))
                   }
                 >
-                  只寫管理檔
+                  {t('fail2ban.writeOnly')}
                 </Button>
                 <Button
                   variant="primary"
@@ -630,10 +657,10 @@ export function Fail2banPage() {
                       })) as OpsResultLike;
                       await refresh();
                       return r;
-                    }, '已套用 fail2ban')
+                    }, t('fail2ban.appliedOk'))
                   }
                 >
-                  套用到系統
+                  {t('fail2ban.applyToSystem')}
                 </Button>
               </FormActions>
             </div>
@@ -644,12 +671,12 @@ export function Fail2banPage() {
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
-                <h3 className="def-section-head__title">systemd 控制</h3>
+                <h3 className="def-section-head__title">{t('fail2ban.systemdTitle')}</h3>
               </div>
               <div className="def-head-actions">
                 {(
                   [
-                    ['enable', '啟用並啟動'],
+                    ['enable', t('fail2ban.enableAndStart')],
                     ['start', 'start'],
                     ['reload', 'reload'],
                     ['restart', 'restart'],
@@ -663,7 +690,9 @@ export function Fail2banPage() {
                     loading={busy}
                     onClick={() =>
                       void run(async () => {
-                        const r = (await systemApi.fail2banService(action)) as OpsResultLike;
+                        const r = (await systemApi.fail2banService(
+                          action,
+                        )) as OpsResultLike;
                         await refresh();
                         return r;
                       }, `systemctl ${action}`)
@@ -674,17 +703,18 @@ export function Fail2banPage() {
                 ))}
               </div>
               <FormHint>
-                攻擊應變請用 <Link to="/protection">防護中心</Link>
-                （會呼叫本頁 jail + Nginx 限速，唔重複建第二套 UFW）。
+                {t('fail2ban.serviceHint')}{' '}
+                <Link to="/protection">{t('nav.protection')}</Link>
+                {t('fail2ban.serviceHintSuffix')}
               </FormHint>
             </div>
           </div>
         ) : null}
-      
+
         {tab === 'about' ? <PageGuide guideId="fail2ban" /> : null}
       </PageTabs>
 
-      <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+      <OpsResultPanel result={result} message={msg} busy={busy} />
     </FeaturePageLayout>
   );
 }

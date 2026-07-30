@@ -5,7 +5,7 @@
 
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { renderNginxProxy } from '../hosting/nginx-ssl.js';
 import { writeManagedNginxConf } from '../hosting/nginx-sync.js';
@@ -43,7 +43,7 @@ export async function applyWebmail(input: {
 }): Promise<WebmailApplyResult> {
   const domain = input.domain.trim().toLowerCase();
   if (!domain || domain.includes('..')) {
-    throw new YskError(ErrorCodes.VALIDATION, 'Webmail 域名無效', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0207'), { httpStatus: 400 });
   }
 
   const notes: string[] = [];
@@ -136,11 +136,10 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
       serverName: domain,
       upstream: 'http://127.0.0.1:8088',
       ssl: false,
-      cloudflareRealIp: true,
-    }),
+      cloudflareRealIp: true }),
   );
   written.push(nginxPath);
-  notes.push(`已寫入 Nginx 設定：${nginxPath}`);
+  notes.push(tl('notes.email.wroteNginx', { nginxPath }));
 
   const readme = join(base, 'README.txt');
   writeFileSync(
@@ -148,7 +147,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
     [
       `YSK Webmail (Roundcube) for ${domain}`,
       `IMAP ${imapHost}:993  SMTP ${smtpHost}:587`,
-      'Install and publish via admin panel (Webmail 安裝).',
+      tl('notes.auto.n0125'),
       '',
     ].join('\n'),
     'utf8',
@@ -159,7 +158,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
   const wantDl = input.download !== false;
   const can = wantDl && input.host.executeEnabled();
   if (wantDl && !can) {
-    notes.push('伺服器未開啟系統變更權限，無法在管理面板下載安裝 Webmail');
+    notes.push(tl('notes.auto.n0528'));
     return {
       ok: false,
       domain,
@@ -171,8 +170,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
       commandResults,
       requiresExecute: true,
       requiresRoot: !input.host.isRoot(),
-      mode: 'refused',
-    };
+      mode: 'refused' };
   }
 
   if (can) {
@@ -180,10 +178,9 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
     commandResults.push({
       argv: ['bash', installScript],
       exitCode: r.exitCode,
-      stderr: r.stderr,
-    });
+      stderr: r.stderr });
     if (r.exitCode !== 0) {
-      notes.push(`Webmail 下載安裝失敗：${r.stderr || r.stdout}`);
+      notes.push(tl('notes.auto.t0062', { v0: (r.stderr || r.stdout) }));
       return {
         ok: false,
         domain,
@@ -195,21 +192,18 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
         commandResults,
         requiresExecute: false,
         requiresRoot: !input.host.isRoot(),
-        mode: 'refused',
-      };
+        mode: 'refused' };
     }
-    notes.push('已下載並解壓 Roundcube');
+    notes.push(tl('notes.auto.n0731'));
     if (input.systemInstall && input.host.isRoot()) {
       const dest = `/var/www/ysk-webmail/${domain}`;
       const cp = await input.host.runCommand(['bash', '-c', `mkdir -p ${dest} && cp -a ${webRoot}/. ${dest}/`], {
-        timeoutMs: 60_000,
-      });
+        timeoutMs: 60_000 });
       commandResults.push({
         argv: ['cp', '-a', webRoot, dest],
         exitCode: cp.exitCode,
-        stderr: cp.stderr,
-      });
-      notes.push(cp.exitCode === 0 ? `已部署至 ${dest}` : `系統部署失敗：${cp.stderr}`);
+        stderr: cp.stderr });
+      notes.push(cp.exitCode === 0 ? tl('notes.auto.t0063', { v0: (dest) }) : tl('notes.auto.t0064', { v0: (cp.stderr) }));
     }
     return {
       ok: true,
@@ -222,8 +216,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
       commandResults,
       requiresExecute: false,
       requiresRoot: !input.host.isRoot(),
-      mode: 'downloaded',
-    };
+      mode: 'downloaded' };
   }
 
   return {
@@ -233,12 +226,11 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
     configPath,
     nginxPath,
     written,
-    notes: [...notes, '已寫入設定檔（未下載套件）'],
+    notes: [...notes, tl('notes.auto.n0766')],
     commandResults,
     requiresExecute: !input.host.executeEnabled(),
     requiresRoot: !input.host.isRoot(),
-    mode: 'plan',
-  };
+    mode: 'plan' };
 }
 
 function randomDesKey(): string {

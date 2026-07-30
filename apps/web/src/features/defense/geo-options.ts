@@ -1,93 +1,99 @@
 /**
  * Selectable options for IP access policy (country / continent / ASN).
+ * Labels via i18n: geo.continents.*, geo.countries.*, geo.regions.*, geo.asn.*
+ * English `hint` is the neutral fallback for search.
  */
+
+import type { TFunction } from 'i18next';
 
 export type GeoOption = { value: string; label: string; hint?: string };
 
-/** Continent / 大陸（Phase1 地區） */
-export const GEO_CONTINENTS: GeoOption[] = [
-  { value: 'AS', label: '亞洲', hint: 'Asia' },
-  { value: 'EU', label: '歐洲', hint: 'Europe' },
-  { value: 'NA', label: '北美洲', hint: 'North America' },
-  { value: 'SA', label: '南美洲', hint: 'South America' },
-  { value: 'AF', label: '非洲', hint: 'Africa' },
-  { value: 'OC', label: '大洋洲', hint: 'Oceania' },
-  { value: 'AN', label: '南極洲', hint: 'Antarctica' },
+type GeoValue = { value: string; hint: string };
+
+/** Continent codes + English hint (Phase1 region) */
+const CONTINENT_VALUES: GeoValue[] = [
+  { value: 'AS', hint: 'Asia' },
+  { value: 'EU', hint: 'Europe' },
+  { value: 'NA', hint: 'North America' },
+  { value: 'SA', hint: 'South America' },
+  { value: 'AF', hint: 'Africa' },
+  { value: 'OC', hint: 'Oceania' },
+  { value: 'AN', hint: 'Antarctica' },
 ];
 
-/** Common countries — ISO + 中文名（可搜尋） */
-export const GEO_COUNTRIES: GeoOption[] = [
-  { value: 'CN', label: '中國', hint: 'China' },
-  { value: 'HK', label: '香港', hint: 'Hong Kong' },
-  { value: 'MO', label: '澳門', hint: 'Macao' },
-  { value: 'TW', label: '台灣', hint: 'Taiwan' },
-  { value: 'JP', label: '日本', hint: 'Japan' },
-  { value: 'KR', label: '南韓', hint: 'South Korea' },
-  { value: 'KP', label: '北韓', hint: 'North Korea' },
-  { value: 'SG', label: '新加坡', hint: 'Singapore' },
-  { value: 'MY', label: '馬來西亞', hint: 'Malaysia' },
-  { value: 'TH', label: '泰國', hint: 'Thailand' },
-  { value: 'VN', label: '越南', hint: 'Vietnam' },
-  { value: 'PH', label: '菲律賓', hint: 'Philippines' },
-  { value: 'ID', label: '印尼', hint: 'Indonesia' },
-  { value: 'IN', label: '印度', hint: 'India' },
-  { value: 'AU', label: '澳洲', hint: 'Australia' },
-  { value: 'NZ', label: '紐西蘭', hint: 'New Zealand' },
-  { value: 'US', label: '美國', hint: 'United States' },
-  { value: 'CA', label: '加拿大', hint: 'Canada' },
-  { value: 'MX', label: '墨西哥', hint: 'Mexico' },
-  { value: 'BR', label: '巴西', hint: 'Brazil' },
-  { value: 'AR', label: '阿根廷', hint: 'Argentina' },
-  { value: 'GB', label: '英國', hint: 'United Kingdom' },
-  { value: 'IE', label: '愛爾蘭', hint: 'Ireland' },
-  { value: 'DE', label: '德國', hint: 'Germany' },
-  { value: 'FR', label: '法國', hint: 'France' },
-  { value: 'NL', label: '荷蘭', hint: 'Netherlands' },
-  { value: 'BE', label: '比利時', hint: 'Belgium' },
-  { value: 'CH', label: '瑞士', hint: 'Switzerland' },
-  { value: 'AT', label: '奧地利', hint: 'Austria' },
-  { value: 'SE', label: '瑞典', hint: 'Sweden' },
-  { value: 'NO', label: '挪威', hint: 'Norway' },
-  { value: 'DK', label: '丹麥', hint: 'Denmark' },
-  { value: 'FI', label: '芬蘭', hint: 'Finland' },
-  { value: 'PL', label: '波蘭', hint: 'Poland' },
-  { value: 'CZ', label: '捷克', hint: 'Czechia' },
-  { value: 'ES', label: '西班牙', hint: 'Spain' },
-  { value: 'PT', label: '葡萄牙', hint: 'Portugal' },
-  { value: 'IT', label: '意大利', hint: 'Italy' },
-  { value: 'RU', label: '俄羅斯', hint: 'Russia' },
-  { value: 'UA', label: '烏克蘭', hint: 'Ukraine' },
-  { value: 'TR', label: '土耳其', hint: 'Turkey' },
-  { value: 'IL', label: '以色列', hint: 'Israel' },
-  { value: 'AE', label: '阿聯酋', hint: 'UAE' },
-  { value: 'SA', label: '沙特', hint: 'Saudi Arabia' },
-  { value: 'EG', label: '埃及', hint: 'Egypt' },
-  { value: 'ZA', label: '南非', hint: 'South Africa' },
-  { value: 'NG', label: '尼日利亞', hint: 'Nigeria' },
-  { value: 'PK', label: '巴基斯坦', hint: 'Pakistan' },
-  { value: 'BD', label: '孟加拉', hint: 'Bangladesh' },
-  { value: 'IR', label: '伊朗', hint: 'Iran' },
-  { value: 'IQ', label: '伊拉克', hint: 'Iraq' },
-  { value: 'RO', label: '羅馬尼亞', hint: 'Romania' },
-  { value: 'BG', label: '保加利亞', hint: 'Bulgaria' },
-  { value: 'HU', label: '匈牙利', hint: 'Hungary' },
-  { value: 'GR', label: '希臘', hint: 'Greece' },
-  { value: 'LT', label: '立陶宛', hint: 'Lithuania' },
-  { value: 'LV', label: '拉脫維亞', hint: 'Latvia' },
-  { value: 'EE', label: '愛沙尼亞', hint: 'Estonia' },
-  { value: 'BY', label: '白俄羅斯', hint: 'Belarus' },
-  { value: 'KZ', label: '哈薩克', hint: 'Kazakhstan' },
-  { value: 'UZ', label: '烏茲別克', hint: 'Uzbekistan' },
-  { value: 'CL', label: '智利', hint: 'Chile' },
-  { value: 'CO', label: '哥倫比亞', hint: 'Colombia' },
-  { value: 'PE', label: '秘魯', hint: 'Peru' },
-  { value: 'VE', label: '委內瑞拉', hint: 'Venezuela' },
-  { value: 'CU', label: '古巴', hint: 'Cuba' },
-  { value: 'SC', label: '塞舌爾', hint: 'Seychelles' },
-  { value: 'PA', label: '巴拿馬', hint: 'Panama' },
+/** Common country ISO codes + English hint */
+const COUNTRY_VALUES: GeoValue[] = [
+  { value: 'CN', hint: 'China' },
+  { value: 'HK', hint: 'Hong Kong' },
+  { value: 'MO', hint: 'Macao' },
+  { value: 'TW', hint: 'Taiwan' },
+  { value: 'JP', hint: 'Japan' },
+  { value: 'KR', hint: 'South Korea' },
+  { value: 'KP', hint: 'North Korea' },
+  { value: 'SG', hint: 'Singapore' },
+  { value: 'MY', hint: 'Malaysia' },
+  { value: 'TH', hint: 'Thailand' },
+  { value: 'VN', hint: 'Vietnam' },
+  { value: 'PH', hint: 'Philippines' },
+  { value: 'ID', hint: 'Indonesia' },
+  { value: 'IN', hint: 'India' },
+  { value: 'AU', hint: 'Australia' },
+  { value: 'NZ', hint: 'New Zealand' },
+  { value: 'US', hint: 'United States' },
+  { value: 'CA', hint: 'Canada' },
+  { value: 'MX', hint: 'Mexico' },
+  { value: 'BR', hint: 'Brazil' },
+  { value: 'AR', hint: 'Argentina' },
+  { value: 'GB', hint: 'United Kingdom' },
+  { value: 'IE', hint: 'Ireland' },
+  { value: 'DE', hint: 'Germany' },
+  { value: 'FR', hint: 'France' },
+  { value: 'NL', hint: 'Netherlands' },
+  { value: 'BE', hint: 'Belgium' },
+  { value: 'CH', hint: 'Switzerland' },
+  { value: 'AT', hint: 'Austria' },
+  { value: 'SE', hint: 'Sweden' },
+  { value: 'NO', hint: 'Norway' },
+  { value: 'DK', hint: 'Denmark' },
+  { value: 'FI', hint: 'Finland' },
+  { value: 'PL', hint: 'Poland' },
+  { value: 'CZ', hint: 'Czechia' },
+  { value: 'ES', hint: 'Spain' },
+  { value: 'PT', hint: 'Portugal' },
+  { value: 'IT', hint: 'Italy' },
+  { value: 'RU', hint: 'Russia' },
+  { value: 'UA', hint: 'Ukraine' },
+  { value: 'TR', hint: 'Turkey' },
+  { value: 'IL', hint: 'Israel' },
+  { value: 'AE', hint: 'UAE' },
+  { value: 'SA', hint: 'Saudi Arabia' },
+  { value: 'EG', hint: 'Egypt' },
+  { value: 'ZA', hint: 'South Africa' },
+  { value: 'NG', hint: 'Nigeria' },
+  { value: 'PK', hint: 'Pakistan' },
+  { value: 'BD', hint: 'Bangladesh' },
+  { value: 'IR', hint: 'Iran' },
+  { value: 'IQ', hint: 'Iraq' },
+  { value: 'RO', hint: 'Romania' },
+  { value: 'BG', hint: 'Bulgaria' },
+  { value: 'HU', hint: 'Hungary' },
+  { value: 'GR', hint: 'Greece' },
+  { value: 'LT', hint: 'Lithuania' },
+  { value: 'LV', hint: 'Latvia' },
+  { value: 'EE', hint: 'Estonia' },
+  { value: 'BY', hint: 'Belarus' },
+  { value: 'KZ', hint: 'Kazakhstan' },
+  { value: 'UZ', hint: 'Uzbekistan' },
+  { value: 'CL', hint: 'Chile' },
+  { value: 'CO', hint: 'Colombia' },
+  { value: 'PE', hint: 'Peru' },
+  { value: 'VE', hint: 'Venezuela' },
+  { value: 'CU', hint: 'Cuba' },
+  { value: 'SC', hint: 'Seychelles' },
+  { value: 'PA', hint: 'Panama' },
 ];
 
-/** Common network providers (ASN) for multi-select */
+/** Common network providers (ASN) — brand labels (no locale CJK) */
 export const GEO_ASN_PROVIDERS: GeoOption[] = [
   { value: 'AS13335', label: 'Cloudflare', hint: 'AS13335' },
   { value: 'AS16509', label: 'Amazon AWS', hint: 'AS16509' },
@@ -108,9 +114,9 @@ export const GEO_ASN_PROVIDERS: GeoOption[] = [
   { value: 'AS45102', label: 'Alibaba Cloud', hint: 'AS45102' },
   { value: 'AS45090', label: 'Tencent Cloud', hint: 'AS45090' },
   { value: 'AS55967', label: 'Baidu', hint: 'AS55967' },
-  { value: 'AS4134', label: 'Chinanet / 電信', hint: 'AS4134' },
-  { value: 'AS4837', label: 'China Unicom / 聯通', hint: 'AS4837' },
-  { value: 'AS9808', label: 'China Mobile / 移動', hint: 'AS9808' },
+  { value: 'AS4134', label: 'Chinanet', hint: 'AS4134' },
+  { value: 'AS4837', label: 'China Unicom', hint: 'AS4837' },
+  { value: 'AS9808', label: 'China Mobile', hint: 'AS9808' },
   { value: 'AS56040', label: 'China Mobile CMNET', hint: 'AS56040' },
   { value: 'AS4766', label: 'Korea Telecom', hint: 'AS4766' },
   { value: 'AS9318', label: 'SK Broadband', hint: 'AS9318' },
@@ -137,6 +143,140 @@ export const GEO_ASN_PROVIDERS: GeoOption[] = [
   { value: 'AS12876', label: 'Scaleway', hint: 'AS12876' },
 ];
 
+type RegionValue = GeoValue & { country: string };
+
+/** Region codes (country-regionKey) for free-tier province/state policy */
+const REGION_VALUES: RegionValue[] = [
+  { value: 'CN-BJ', country: 'CN', hint: 'Beijing' },
+  { value: 'CN-SH', country: 'CN', hint: 'Shanghai' },
+  { value: 'CN-TJ', country: 'CN', hint: 'Tianjin' },
+  { value: 'CN-CQ', country: 'CN', hint: 'Chongqing' },
+  { value: 'CN-GD', country: 'CN', hint: 'Guangdong' },
+  { value: 'CN-ZJ', country: 'CN', hint: 'Zhejiang' },
+  { value: 'CN-JS', country: 'CN', hint: 'Jiangsu' },
+  { value: 'CN-SD', country: 'CN', hint: 'Shandong' },
+  { value: 'CN-HN', country: 'CN', hint: 'Henan' },
+  { value: 'CN-HB', country: 'CN', hint: 'Hubei' },
+  { value: 'CN-HU', country: 'CN', hint: 'Hunan' },
+  { value: 'CN-SC', country: 'CN', hint: 'Sichuan' },
+  { value: 'CN-HE', country: 'CN', hint: 'Hebei' },
+  { value: 'CN-FJ', country: 'CN', hint: 'Fujian' },
+  { value: 'CN-AH', country: 'CN', hint: 'Anhui' },
+  { value: 'CN-JX', country: 'CN', hint: 'Jiangxi' },
+  { value: 'CN-LN', country: 'CN', hint: 'Liaoning' },
+  { value: 'CN-JL', country: 'CN', hint: 'Jilin' },
+  { value: 'CN-HL', country: 'CN', hint: 'Heilongjiang' },
+  { value: 'CN-SX', country: 'CN', hint: 'Shanxi' },
+  { value: 'CN-SN', country: 'CN', hint: 'Shaanxi' },
+  { value: 'CN-GS', country: 'CN', hint: 'Gansu' },
+  { value: 'CN-QH', country: 'CN', hint: 'Qinghai' },
+  { value: 'CN-HA', country: 'CN', hint: 'Hainan' },
+  { value: 'CN-YN', country: 'CN', hint: 'Yunnan' },
+  { value: 'CN-GZ', country: 'CN', hint: 'Guizhou' },
+  { value: 'CN-GX', country: 'CN', hint: 'Guangxi' },
+  { value: 'CN-NX', country: 'CN', hint: 'Ningxia' },
+  { value: 'CN-XJ', country: 'CN', hint: 'Xinjiang' },
+  { value: 'CN-XZ', country: 'CN', hint: 'Tibet' },
+  { value: 'CN-NM', country: 'CN', hint: 'Inner Mongolia' },
+  { value: 'TW-TPE', country: 'TW', hint: 'Taipei' },
+  { value: 'TW-TXG', country: 'TW', hint: 'Taichung' },
+  { value: 'TW-KHH', country: 'TW', hint: 'Kaohsiung' },
+  { value: 'HK-HK', country: 'HK', hint: 'Hong Kong' },
+  { value: 'MO-MO', country: 'MO', hint: 'Macao' },
+  { value: 'US-CA', country: 'US', hint: 'CA' },
+  { value: 'US-NY', country: 'US', hint: 'NY' },
+  { value: 'US-TX', country: 'US', hint: 'TX' },
+  { value: 'US-FL', country: 'US', hint: 'FL' },
+  { value: 'US-WA', country: 'US', hint: 'WA' },
+  { value: 'US-IL', country: 'US', hint: 'IL' },
+  { value: 'US-VA', country: 'US', hint: 'VA' },
+  { value: 'US-OR', country: 'US', hint: 'OR' },
+  { value: 'US-GA', country: 'US', hint: 'GA' },
+  { value: 'US-NJ', country: 'US', hint: 'NJ' },
+  { value: 'US-MA', country: 'US', hint: 'MA' },
+  { value: 'US-OH', country: 'US', hint: 'OH' },
+  { value: 'US-PA', country: 'US', hint: 'PA' },
+  { value: 'US-AZ', country: 'US', hint: 'AZ' },
+  { value: 'US-CO', country: 'US', hint: 'CO' },
+  { value: 'US-NC', country: 'US', hint: 'NC' },
+  { value: 'US-MI', country: 'US', hint: 'MI' },
+  { value: 'US-NV', country: 'US', hint: 'NV' },
+  { value: 'JP-13', country: 'JP', hint: 'Tokyo' },
+  { value: 'JP-27', country: 'JP', hint: 'Osaka' },
+  { value: 'JP-14', country: 'JP', hint: 'Kanagawa' },
+  { value: 'JP-23', country: 'JP', hint: 'Aichi' },
+  { value: 'KR-11', country: 'KR', hint: 'Seoul' },
+  { value: 'KR-26', country: 'KR', hint: 'Busan' },
+  { value: 'SG-01', country: 'SG', hint: 'SG' },
+  { value: 'AU-NSW', country: 'AU', hint: 'NSW' },
+  { value: 'AU-VIC', country: 'AU', hint: 'VIC' },
+  { value: 'GB-ENG', country: 'GB', hint: 'ENG' },
+  { value: 'DE-BE', country: 'DE', hint: 'BE' },
+  { value: 'DE-BY', country: 'DE', hint: 'BY' },
+  { value: 'RU-MOW', country: 'RU', hint: 'MOW' },
+  { value: 'RU-SPE', country: 'RU', hint: 'SPE' },
+];
+
+function labelOf(t: TFunction | undefined, key: string, fallback: string): string {
+  if (!t) return fallback;
+  const translated = t(key);
+  return translated === key ? fallback : translated;
+}
+
+/** @deprecated Prefer getGeoContinents(t) for localized labels */
+export const GEO_CONTINENTS: GeoOption[] = CONTINENT_VALUES.map((c) => ({
+  value: c.value,
+  label: c.hint,
+  hint: c.hint,
+}));
+
+/** @deprecated Prefer getGeoCountries(t) for localized labels */
+export const GEO_COUNTRIES: GeoOption[] = COUNTRY_VALUES.map((c) => ({
+  value: c.value,
+  label: c.hint,
+  hint: c.hint,
+}));
+
+/** @deprecated Prefer getGeoRegions(t) for localized labels */
+export const GEO_REGIONS: (GeoOption & { country: string })[] = REGION_VALUES.map((r) => ({
+  value: r.value,
+  label: r.hint,
+  hint: r.hint,
+  country: r.country,
+}));
+
+export function getGeoContinents(t?: TFunction): GeoOption[] {
+  return CONTINENT_VALUES.map((c) => ({
+    value: c.value,
+    label: labelOf(t, `geo.continents.${c.value}`, c.hint),
+    hint: c.hint,
+  }));
+}
+
+export function getGeoCountries(t?: TFunction): GeoOption[] {
+  return COUNTRY_VALUES.map((c) => ({
+    value: c.value,
+    label: labelOf(t, `geo.countries.${c.value}`, c.hint),
+    hint: c.hint,
+  }));
+}
+
+export type GeoRegionOption = GeoOption & { country: string };
+
+export function getGeoRegions(t?: TFunction, countries?: string[]): GeoRegionOption[] {
+  let list = REGION_VALUES;
+  if (countries && countries.length) {
+    const set = new Set(countries.map((c) => c.toUpperCase()));
+    list = list.filter((r) => set.has(r.country));
+  }
+  return list.map((r) => ({
+    value: r.value,
+    country: r.country,
+    label: labelOf(t, `geo.regions.${r.value}`, r.hint),
+    hint: r.hint,
+  }));
+}
+
 export function normalizeAsnInput(raw: string): string {
   const s = raw.trim().toUpperCase().replace(/^AS/, '');
   if (!/^\d+$/.test(s)) return '';
@@ -154,88 +294,7 @@ export function filterGeoOptions(options: GeoOption[], q: string): GeoOption[] {
   );
 }
 
-/** Region options (country-regionKey) for free-tier province/state policy */
-export type GeoRegionOption = GeoOption & { country: string };
-
-export const GEO_REGIONS: GeoRegionOption[] = [
-  // China
-  { value: 'CN-BJ', label: '北京', country: 'CN', hint: 'Beijing' },
-  { value: 'CN-SH', label: '上海', country: 'CN', hint: 'Shanghai' },
-  { value: 'CN-TJ', label: '天津', country: 'CN', hint: 'Tianjin' },
-  { value: 'CN-CQ', label: '重慶', country: 'CN', hint: 'Chongqing' },
-  { value: 'CN-GD', label: '廣東', country: 'CN', hint: 'Guangdong' },
-  { value: 'CN-ZJ', label: '浙江', country: 'CN', hint: 'Zhejiang' },
-  { value: 'CN-JS', label: '江蘇', country: 'CN', hint: 'Jiangsu' },
-  { value: 'CN-SD', label: '山東', country: 'CN', hint: 'Shandong' },
-  { value: 'CN-HN', label: '河南', country: 'CN', hint: 'Henan' },
-  { value: 'CN-HB', label: '湖北', country: 'CN', hint: 'Hubei' },
-  { value: 'CN-HU', label: '湖南', country: 'CN', hint: 'Hunan' },
-  { value: 'CN-SC', label: '四川', country: 'CN', hint: 'Sichuan' },
-  { value: 'CN-HE', label: '河北', country: 'CN', hint: 'Hebei' },
-  { value: 'CN-FJ', label: '福建', country: 'CN', hint: 'Fujian' },
-  { value: 'CN-AH', label: '安徽', country: 'CN', hint: 'Anhui' },
-  { value: 'CN-JX', label: '江西', country: 'CN', hint: 'Jiangxi' },
-  { value: 'CN-LN', label: '遼寧', country: 'CN', hint: 'Liaoning' },
-  { value: 'CN-JL', label: '吉林', country: 'CN', hint: 'Jilin' },
-  { value: 'CN-HL', label: '黑龍江', country: 'CN', hint: 'Heilongjiang' },
-  { value: 'CN-SX', label: '山西', country: 'CN', hint: 'Shanxi' },
-  { value: 'CN-SN', label: '陝西', country: 'CN', hint: 'Shaanxi' },
-  { value: 'CN-GS', label: '甘肅', country: 'CN', hint: 'Gansu' },
-  { value: 'CN-QH', label: '青海', country: 'CN', hint: 'Qinghai' },
-  { value: 'CN-HA', label: '海南', country: 'CN', hint: 'Hainan' },
-  { value: 'CN-YN', label: '雲南', country: 'CN', hint: 'Yunnan' },
-  { value: 'CN-GZ', label: '貴州', country: 'CN', hint: 'Guizhou' },
-  { value: 'CN-GX', label: '廣西', country: 'CN', hint: 'Guangxi' },
-  { value: 'CN-NX', label: '寧夏', country: 'CN', hint: 'Ningxia' },
-  { value: 'CN-XJ', label: '新疆', country: 'CN', hint: 'Xinjiang' },
-  { value: 'CN-XZ', label: '西藏', country: 'CN', hint: 'Tibet' },
-  { value: 'CN-NM', label: '內蒙古', country: 'CN', hint: 'Inner Mongolia' },
-  // Taiwan / HK / MO as regions under own country codes often
-  { value: 'TW-TPE', label: '台北', country: 'TW', hint: 'Taipei' },
-  { value: 'TW-TXG', label: '台中', country: 'TW', hint: 'Taichung' },
-  { value: 'TW-KHH', label: '高雄', country: 'TW', hint: 'Kaohsiung' },
-  { value: 'HK-HK', label: '香港', country: 'HK', hint: 'Hong Kong' },
-  { value: 'MO-MO', label: '澳門', country: 'MO', hint: 'Macao' },
-  // US states (subset + common)
-  { value: 'US-CA', label: 'California', country: 'US', hint: 'CA' },
-  { value: 'US-NY', label: 'New York', country: 'US', hint: 'NY' },
-  { value: 'US-TX', label: 'Texas', country: 'US', hint: 'TX' },
-  { value: 'US-FL', label: 'Florida', country: 'US', hint: 'FL' },
-  { value: 'US-WA', label: 'Washington', country: 'US', hint: 'WA' },
-  { value: 'US-IL', label: 'Illinois', country: 'US', hint: 'IL' },
-  { value: 'US-VA', label: 'Virginia', country: 'US', hint: 'VA' },
-  { value: 'US-OR', label: 'Oregon', country: 'US', hint: 'OR' },
-  { value: 'US-GA', label: 'Georgia', country: 'US', hint: 'GA' },
-  { value: 'US-NJ', label: 'New Jersey', country: 'US', hint: 'NJ' },
-  { value: 'US-MA', label: 'Massachusetts', country: 'US', hint: 'MA' },
-  { value: 'US-OH', label: 'Ohio', country: 'US', hint: 'OH' },
-  { value: 'US-PA', label: 'Pennsylvania', country: 'US', hint: 'PA' },
-  { value: 'US-AZ', label: 'Arizona', country: 'US', hint: 'AZ' },
-  { value: 'US-CO', label: 'Colorado', country: 'US', hint: 'CO' },
-  { value: 'US-NC', label: 'North Carolina', country: 'US', hint: 'NC' },
-  { value: 'US-MI', label: 'Michigan', country: 'US', hint: 'MI' },
-  { value: 'US-NV', label: 'Nevada', country: 'US', hint: 'NV' },
-  // JP
-  { value: 'JP-13', label: '東京', country: 'JP', hint: 'Tokyo' },
-  { value: 'JP-27', label: '大阪', country: 'JP', hint: 'Osaka' },
-  { value: 'JP-14', label: '神奈川', country: 'JP', hint: 'Kanagawa' },
-  { value: 'JP-23', label: '愛知', country: 'JP', hint: 'Aichi' },
-  // KR
-  { value: 'KR-11', label: '首爾', country: 'KR', hint: 'Seoul' },
-  { value: 'KR-26', label: '釜山', country: 'KR', hint: 'Busan' },
-  // SG / AU / GB / DE / RU sample
-  { value: 'SG-01', label: 'Singapore', country: 'SG', hint: 'SG' },
-  { value: 'AU-NSW', label: 'New South Wales', country: 'AU', hint: 'NSW' },
-  { value: 'AU-VIC', label: 'Victoria', country: 'AU', hint: 'VIC' },
-  { value: 'GB-ENG', label: 'England', country: 'GB', hint: 'ENG' },
-  { value: 'DE-BE', label: 'Berlin', country: 'DE', hint: 'BE' },
-  { value: 'DE-BY', label: 'Bayern', country: 'DE', hint: 'BY' },
-  { value: 'RU-MOW', label: 'Moscow', country: 'RU', hint: 'MOW' },
-  { value: 'RU-SPE', label: 'St Petersburg', country: 'RU', hint: 'SPE' },
-];
-
+/** Region options filtered by selected countries (English labels — use getGeoRegions(t, …)) */
 export function regionsForCountries(countries: string[]): GeoRegionOption[] {
-  if (!countries.length) return GEO_REGIONS;
-  const set = new Set(countries.map((c) => c.toUpperCase()));
-  return GEO_REGIONS.filter((r) => set.has(r.country));
+  return getGeoRegions(undefined, countries);
 }

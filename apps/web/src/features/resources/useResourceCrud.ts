@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { resourcesApi, type ResourceRow } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
 export function useResourceCrud(collection: string, query?: Record<string, string>) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<ResourceRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -28,16 +30,16 @@ export function useResourceCrud(collection: string, query?: Record<string, strin
       try {
         const r = await resourcesApi.create(collection, body);
         await refresh();
-        setMsg('已建立');
+        setMsg(t('resources.created'));
         return r.item;
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'create failed');
+        setError(e instanceof Error ? e.message : t('common.createFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [collection, refresh],
+    [collection, refresh, t],
   );
 
   const update = useCallback(
@@ -47,16 +49,16 @@ export function useResourceCrud(collection: string, query?: Record<string, strin
       try {
         const r = await resourcesApi.update(collection, id, body);
         await refresh();
-        setMsg('已更新');
+        setMsg(t('resources.updated'));
         return r.item;
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'update failed');
+        setError(e instanceof Error ? e.message : t('common.saveFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [collection, refresh],
+    [collection, refresh, t],
   );
 
   const remove = useCallback(
@@ -66,15 +68,15 @@ export function useResourceCrud(collection: string, query?: Record<string, strin
       try {
         await resourcesApi.remove(collection, id);
         await refresh();
-        setMsg('已刪除');
+        setMsg(t('resources.deleted'));
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'delete failed');
+        setError(e instanceof Error ? e.message : t('common.deleteFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [collection, refresh],
+    [collection, refresh, t],
   );
 
   /** Always execute from admin panel (execute defaults true). */
@@ -88,20 +90,20 @@ export function useResourceCrud(collection: string, query?: Record<string, strin
         const notes = sanitizeOperatorNotes(r.notes);
         setLastNotes(notes);
         if (r.ok) {
-          setMsg(notes[0] ?? '套用完成');
+          setMsg(notes[0] ?? t('resources.applyDone'));
         } else {
-          setError(notes[0] ?? '套用未完成');
+          setError(notes[0] ?? t('resources.applyIncomplete'));
           setMsg(null);
         }
         return r;
       } catch (e) {
-        setError(e instanceof Error ? e.message : '套用失敗');
+        setError(e instanceof Error ? e.message : t('common.applyFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [collection, refresh],
+    [collection, refresh, t],
   );
 
   return {

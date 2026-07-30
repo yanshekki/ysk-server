@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Install / uninstall identity private keys to Linux user home or panel secrets path.
  * Honest: dry-run default; apply needs root + YSK_EXECUTE via HostExecutor.
@@ -11,8 +12,7 @@ import { decryptPrivateKey, resolveMasterKey, secretsSshDir } from './crypto.js'
 import {
   exportSshIdentityPrivate,
   getSshIdentityInternal,
-  updateSshIdentityRecord,
-} from './store.js';
+  updateSshIdentityRecord } from './store.js';
 import { toPublicIdentity, type SshIdentityPublic } from './types.js';
 
 export type InstallSshIdentityResult = {
@@ -36,8 +36,7 @@ function defaultInstallPaths(
     const dir = join(secretsSshDir(dataDir), 'keys', identity.id);
     return {
       privatePath: join(dir, 'id_ed25519'),
-      publicPath: join(dir, 'id_ed25519.pub'),
-    };
+      publicPath: join(dir, 'id_ed25519.pub') };
   }
   const home = identity.binding.homeDir;
   const base =
@@ -45,8 +44,7 @@ function defaultInstallPaths(
   return {
     privatePath: join(home, '.ssh', base),
     publicPath: join(home, '.ssh', `${base}.pub`),
-    owner: identity.binding.linuxUser,
-  };
+    owner: identity.binding.linuxUser };
 }
 
 export async function installSshIdentity(input: {
@@ -67,8 +65,7 @@ export async function installSshIdentity(input: {
       blocked: false,
       requiresRoot: true,
       requiresExecute: true,
-      notes: ['找不到 identity'],
-    };
+      notes: [tl('notes.ssh.identityNotFound')] };
   }
 
   const paths = defaultInstallPaths(input.dataDir, row);
@@ -89,14 +86,13 @@ export async function installSshIdentity(input: {
       plannedPath: paths.privatePath,
       plannedPublicPath: paths.publicPath,
       identity: toPublicIdentity(row),
-      notes,
-    };
+      notes };
   }
 
   const requiresRoot = true;
   const requiresExecute = true;
   if (!input.executeEnabled) {
-    notes.push('blocked: 需要 YSK_EXECUTE=1');
+    notes.push(tl('notes.auto.n0003'));
     return {
       ok: false,
       dryRun: false,
@@ -106,8 +102,7 @@ export async function installSshIdentity(input: {
       requiresExecute,
       plannedPath: paths.privatePath,
       plannedPublicPath: paths.publicPath,
-      notes,
-    };
+      notes };
   }
 
   let privateKey: string;
@@ -123,8 +118,7 @@ export async function installSshIdentity(input: {
       blocked: false,
       requiresRoot,
       requiresExecute,
-      notes,
-    };
+      notes };
   }
 
   // Write via process (panel dataDir) or host for user homes
@@ -132,8 +126,7 @@ export async function installSshIdentity(input: {
     const sshDir = join(paths.privatePath, '..');
     mkdirSync(sshDir, { recursive: true });
     writeFileSync(paths.privatePath, privateKey.endsWith('\n') ? privateKey : privateKey + '\n', {
-      mode: 0o600,
-    });
+      mode: 0o600 });
     writeFileSync(
       paths.publicPath,
       row.publicKey.endsWith('\n') ? row.publicKey : row.publicKey + '\n',
@@ -157,8 +150,7 @@ export async function installSshIdentity(input: {
       requiresExecute,
       plannedPath: paths.privatePath,
       plannedPublicPath: paths.publicPath,
-      notes,
-    };
+      notes };
   }
 
   if (paths.owner && input.host) {
@@ -171,12 +163,12 @@ export async function installSshIdentity(input: {
       { timeoutMs: 10_000 },
     );
     if (ch.exitCode !== 0) {
-      notes.push(`chown 可能失敗：${(ch.stderr || ch.stdout).slice(0, 120)}`);
+      notes.push(tl('notes.auto.t0518', { v0: ((ch.stderr || ch.stdout).slice(0, 120)) }));
     } else {
       notes.push(`chown ${paths.owner} ok`);
     }
   } else if (paths.owner && !input.host) {
-    notes.push('無 HostExecutor — 跳過 chown（請手動 chown）');
+    notes.push(tl('notes.auto.n1059'));
   }
 
   const identity = updateSshIdentityRecord(input.dataDir, row.id, {
@@ -184,10 +176,8 @@ export async function installSshIdentity(input: {
       path: paths.privatePath,
       publicPath: paths.publicPath,
       installedAt: new Date().toISOString(),
-      mode: '600',
-    },
-    status: 'installed',
-  });
+      mode: '600' },
+    status: 'installed' });
 
   notes.push('written to disk (installed ≠ remote ssh verified)');
   return {
@@ -200,8 +190,7 @@ export async function installSshIdentity(input: {
     plannedPath: paths.privatePath,
     plannedPublicPath: paths.publicPath,
     identity: identity ?? undefined,
-    notes,
-  };
+    notes };
 }
 
 export async function uninstallSshIdentity(input: {
@@ -220,19 +209,17 @@ export async function uninstallSshIdentity(input: {
       blocked: false,
       requiresRoot: false,
       requiresExecute: false,
-      notes: ['找不到 identity'],
-    };
+      notes: [tl('notes.ssh.identityNotFound')] };
   }
 
   const path = row.install?.path;
   const pub = row.install?.publicPath;
   if (!path) {
-    notes.push('無 install 記錄 — 庫狀態改為 stored');
+    notes.push(tl('notes.auto.n1079'));
     if (input.apply) {
       updateSshIdentityRecord(input.dataDir, row.id, {
         install: undefined,
-        status: 'stored',
-      });
+        status: 'stored' });
     }
     return {
       ok: true,
@@ -241,8 +228,7 @@ export async function uninstallSshIdentity(input: {
       blocked: false,
       requiresRoot: false,
       requiresExecute: false,
-      notes,
-    };
+      notes };
   }
 
   notes.push(`will remove: ${path}`);
@@ -259,8 +245,7 @@ export async function uninstallSshIdentity(input: {
       requiresExecute: false,
       plannedPath: path,
       plannedPublicPath: pub,
-      notes,
-    };
+      notes };
   }
 
   if (input.purgeFiles !== false) {
@@ -278,8 +263,7 @@ export async function uninstallSshIdentity(input: {
 
   const identity = updateSshIdentityRecord(input.dataDir, row.id, {
     install: undefined,
-    status: 'stored',
-  });
+    status: 'stored' });
 
   return {
     ok: true,
@@ -289,8 +273,7 @@ export async function uninstallSshIdentity(input: {
     requiresRoot: false,
     requiresExecute: false,
     identity: identity ?? undefined,
-    notes,
-  };
+    notes };
 }
 
 /** Materialize private key to panel path for -i use (idempotent install for panel purpose). */
@@ -303,12 +286,11 @@ export function materializeIdentityKeyFile(
     return { ok: false, notes: exp.notes };
   }
   const row = getSshIdentityInternal(dataDir, id);
-  if (!row) return { ok: false, notes: ['找不到 identity'] };
+  if (!row) return { ok: false, notes: [tl('notes.ssh.identityNotFound')] };
   const paths = defaultInstallPaths(dataDir, row);
   mkdirSync(join(paths.privatePath, '..'), { recursive: true });
   writeFileSync(paths.privatePath, exp.privateKey.endsWith('\n') ? exp.privateKey : exp.privateKey + '\n', {
-    mode: 0o600,
-  });
+    mode: 0o600 });
   writeFileSync(
     paths.publicPath,
     row.publicKey.endsWith('\n') ? row.publicKey : row.publicKey + '\n',

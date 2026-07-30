@@ -101,18 +101,18 @@ export function ProjectOverviewTab({
       {usage ? (
         <SummaryStrip
           items={[
-            { label: '已用', value: `${usage.usedMb} MiB` },
+            { label: t('projects.ovUsed'), value: `${usage.usedMb} MiB` },
             {
-              label: '配額',
-              value: usage.quotaMb != null ? `${usage.quotaMb} MiB` : '未設',
+              label: t('publicFiles.quota'),
+              value: usage.quotaMb != null ? `${usage.quotaMb} MiB` : t('projects.ovQuotaUnset'),
             },
             {
-              label: '配額狀態',
+              label: t('projects.ovQuotaStatus'),
               value:
                 usage.withinQuota === false
-                  ? '超額'
+                  ? t('projects.ovOverQuota')
                   : usage.withinQuota === true
-                    ? '正常'
+                    ? t('common.normal')
                     : '—',
               tone:
                 usage.withinQuota === false
@@ -122,14 +122,14 @@ export function ProjectOverviewTab({
                     : 'default',
             },
             {
-              label: '文件根目錄',
+              label: t('projects.ovDocroot'),
               value: project.docRoot || 'app/public',
             },
             ...(webStats
               ? [
                   {
-                    label: 'Access 樣本',
-                    value: `${webStats.linesRead} 行`,
+                    label: t('projects.ovAccessSample'),
+                    value: t('projects.ovLines', { count: webStats.linesRead }),
                   },
                   {
                     label: '2xx / 4xx / 5xx',
@@ -142,7 +142,7 @@ export function ProjectOverviewTab({
                           : ('ok' as const),
                   },
                   {
-                    label: '日統計天數',
+                    label: t('projects.ovDailyDays'),
                     value: String(webStats.daily?.length ?? 0),
                   },
                 ]
@@ -152,7 +152,7 @@ export function ProjectOverviewTab({
       ) : null}
       {webStats?.daily && webStats.daily.length > 0 ? (
         <Card>
-          <CardSection title="訪問日統計（最多 60 日）" description="由 access log 樣本滾動記錄">
+          <CardSection title={t('projects.ovDailyTitle')} description={t('projects.ovDailyDesc')}>
             <ul className="list-plain list-spaced">
               {webStats.daily
                 .slice(-14)
@@ -175,8 +175,8 @@ export function ProjectOverviewTab({
 
       <Card>
         <CardSection
-          title="站點快捷操作"
-          description="發布與備份（主部署請用頁頂按鈕或「部署」分頁）"
+          title={t('projects.ovQuickTitle')}
+          description={t('projects.ovQuickDesc')}
         >
           <div className="lifecycle-toolbar">
             <Button
@@ -184,20 +184,20 @@ export function ProjectOverviewTab({
               size="md"
               loading={busy}
               disabled={!hasDomain || !onPublishNginx}
-              title={!hasDomain ? '請先到「網絡」分頁設定域名' : undefined}
+              title={!hasDomain ? t('projects.ovNeedNetworkDomain') : undefined}
               onClick={() => onPublishNginx?.()}
             >
-              發布 Nginx
+              {t('projects.ovPublishNginx')}
             </Button>
             <Button
               variant="secondary"
               size="md"
               loading={busy}
               disabled={!hasDomain || !onPublishSsl}
-              title={!hasDomain ? '請先到「網絡」分頁設定域名' : undefined}
+              title={!hasDomain ? t('projects.ovNeedNetworkDomain') : undefined}
               onClick={() => onPublishSsl?.()}
             >
-              發布 Nginx + SSL
+              {t('projects.ovPublishSsl')}
             </Button>
             <Button
               variant="secondary"
@@ -206,23 +206,23 @@ export function ProjectOverviewTab({
               disabled={!onBackup}
               onClick={() => onBackup?.()}
             >
-              備份本專案
+              {t('projects.advBackupProject')}
             </Button>
             <Button
               variant="secondary"
               size="md"
               onClick={() => navigate(`/files?root=${encodeURIComponent(`project:${project.id}`)}`)}
             >
-              開啟專案檔案
+              {t('projects.ovOpenFiles')}
             </Button>
           </div>
           {!hasDomain ? (
             <p className="muted u-text-sm u-mt-3 u-mb-0">
-              未設定域名 — 請到「網絡」分頁設定後再發布站點。
+              {t('projects.ovNoDomainHint')}
             </p>
           ) : (
             <p className="muted u-text-sm u-mt-3 u-mb-0">
-              發布會寫入管理設定；真正 reload 系統 Nginx 需系統變更權限。
+              {t('projects.ovPublishNote')}
             </p>
           )}
         </CardSection>
@@ -251,7 +251,7 @@ export function ProjectOverviewTab({
                         : project.runtime === 'node'
                           ? 'Node.js'
                           : project.runtime === 'static'
-                            ? '靜態'
+                            ? t('common.static')
                             : project.runtime === 'python'
                               ? 'Python'
                               : project.runtime === 'go'
@@ -267,7 +267,7 @@ export function ProjectOverviewTab({
                 ),
               },
               {
-                label: '別名',
+                label: t('projects.ovAliases'),
                 value:
                   project.domainAliases && project.domainAliases.length > 0 ? (
                     <span className="muted">{project.domainAliases.join(', ')}</span>
@@ -279,7 +279,7 @@ export function ProjectOverviewTab({
                 label: 'HTTPS',
                 value: (
                   <span className="muted">
-                    {project.forceHttps ? '強制' : '唔強制'}
+                    {project.forceHttps ? t('projects.ovForceOn') : t('projects.ovForceOff')}
                     {project.hsts ? ' · HSTS' : ''}
                   </span>
                 ),

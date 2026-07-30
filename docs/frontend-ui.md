@@ -28,7 +28,10 @@ Professional control-plane UI patterns for `apps/web`.
 | `/dns`, `/ssl`, `/nginx` | DNS / SSL / reverse proxy |
 | `/runtimes/node`, `/runtimes/php` | Runtimes |
 | `/databases/*` | MySQL / Postgres / Redis |
-| `/security`, `/firewall`, `/fail2ban` | Security |
+| `/security` | Auth / SSH / 2FA |
+| `/protection` | Host defense (single nav entry) |
+| `/protection/firewall` | UFW tool (nested; legacy `/firewall` redirects) |
+| `/protection/fail2ban` | fail2ban tool (nested; legacy `/fail2ban` redirects) |
 | `/services`, `/metrics`, `/cron`, `/backups` | Services / stats / cron / backups |
 | `/system`, `/system/*`, `/updates` | System tools |
 | `/ai`, `/agents` | AI |
@@ -40,7 +43,7 @@ Registry: `shared/nav/features.ts` (sidebar sections + dashboard tiles).
 | Layer | Path | Role |
 |-------|------|------|
 | Shared UI | `shared/components/ui/` | PageHeader, Modal, Tabs, Badge, OpsResultPanel… |
-| Styles | `styles/tokens.css` + `components.css` | Brand tokens + reusable patterns |
+| Styles | `styles/tokens.css` + `styles/components/*` + `utilities.css` | Brand tokens + modular components (R6) |
 | Feature UI | `features/<name>/ui/` | Domain components (e.g. ProjectList) |
 | Feature model | `features/<name>/model/` | Status derivation, ops helpers |
 | Pages | `pages/*` | Thin assembly + routing |
@@ -52,7 +55,8 @@ Import from `shared/components/ui` **only** (no page-level parallel kits):
 - **FeaturePageLayout** + **PageTabs** — page chrome  
 - **ActionBar** — all button groups (no `btn-row`, no raw flex action rows)  
 - **Button** — no raw `className="btn …"` on feature pages  
-- **DataTable** — **only** table primitive (no raw `<table>`; ResourceTable must wrap DataTable)  
+- **DataTable** — **only** table primitive (no raw `<table>`)  
+
 - **Card / CardSection** — content blocks  
 - **Badge** — tones: `ok` | `warn` | `danger` | `neutral` | `info`  
 - **Alert** — error / ok / info banners  
@@ -66,23 +70,25 @@ Import from `shared/components/ui` **only** (no page-level parallel kits):
 ### CSS freeze
 
 - **Do not add** new feature prefixes (`.met-*`, `.def-*`, `.fm-*`, …) when a shared class exists.  
-- Prefer tokens in `styles/tokens.css` + patterns in `components.css`.  
+- Prefer tokens in `styles/tokens.css` + modules under `styles/components/*.css` + `utilities.css`.  
 - **DataTable only** for tabular data — including live/process grids (`className="data-table--live"` for dense sticky tables).  
-- Allowed residual feature classes: domain chrome only (e.g. `.met-live-bar`, `.met-icon-btn`, top header meters) — **not** parallel table systems.  
+- Allowed residual feature classes: domain chrome only (e.g. `.met-live-bar`, `.met-icon-btn`) — **not** parallel table systems.  
+- **Inline `style={{`**: only CSS variables (e.g. `--meter-pct` for bars). Layout/spacing → utility classes.  
 
 ### CI hard gates (UI)
 
 From repo root (also in GitHub Actions):
 
 ```bash
-pnpm gates   # honesty:lint + primitives:check + chrome:check
+pnpm gates   # honesty + primitives + chrome + about-tab + css:reuse
 ```
 
 | Script | Path | Fails on |
 |--------|------|----------|
 | `primitives:check` | `apps/web/scripts/page-primitives-check.mjs` | raw `<table>`, `btn-row`, create in FeaturePageLayout.actions |
 | `chrome:check` | `apps/web/scripts/page-chrome-check.mjs` | OpsHero / `*-hero` markup; missing FeaturePageLayout |
-| `css:reuse` | `apps/web/scripts/css-reuse-check.mjs` | **local / soft** — not CI-hard yet (dynamic `style={{ width }}` meters remain) |
+| `about-tab:check` | `apps/web/scripts/about-tab-check.mjs` | PageGuide without「說明」tab |
+| `css:reuse` | `apps/web/scripts/css-reuse-check.mjs` | disallowed inline styles; missing core class patterns |
 
 ### Related navigation
 
@@ -138,7 +144,7 @@ Use **one** primary badge; put secondary signals on the status rail.
 
 ## Do / Don't
 
-- **Do** put new visual rules in `styles/components.css` with tokens.  
+- **Do** put new visual rules in the matching `styles/components/<domain>.css` with tokens.  
 - **Do** keep destructive actions behind `ConfirmDialog`.  
 - **Don't** dump raw JSON as the primary result UI.  
 - **Don't** put 10+ equal-weight buttons in one row.  

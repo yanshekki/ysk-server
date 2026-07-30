@@ -6,7 +6,7 @@
 
 import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { SystemRole, ApprovalStatus, RiskTier } from '@ysk/shared';
+import type { CapabilityId, SystemRole, ApprovalStatus, RiskTier, OperationLevel } from '@ysk/shared';
 
 export interface StoreUser {
   id: string;
@@ -27,8 +27,21 @@ export interface StoreUser {
   totp_last_step?: number;
   /** SHA-256 hashes of one-time recovery codes */
   totp_recovery_hashes?: string[];
+  /** Per-user capability grants on top of role policy */
+  capability_grants?: CapabilityId[];
+  /** Per-user capability revokes */
+  capability_revokes?: CapabilityId[];
   created_at: string;
   updated_at: string;
+}
+
+/** Persisted role policy override (null/missing role → factory) */
+export interface StoreRolePolicy {
+  maxLevel: OperationLevel;
+  capabilities: CapabilityId[];
+  defaultsVersion?: number;
+  updated_at?: string;
+  updated_by?: string;
 }
 
 /** Hosting package quotas (Hestia/DA style) */
@@ -195,6 +208,11 @@ export interface StoreData {
   file_favorites: Array<Record<string, unknown>>;
   /** Panel API access keys (token hash) */
   api_keys: Array<Record<string, unknown>>;
+  /**
+   * Role-level RBAC policy overrides. Missing role key → factory defaults.
+   * One-click restore deletes the role entry (or clears the whole map).
+   */
+  rbac_policies?: Partial<Record<SystemRole, StoreRolePolicy>>;
   /** Remote backup destination settings */
   backup_remote?: {
     enabled: boolean;

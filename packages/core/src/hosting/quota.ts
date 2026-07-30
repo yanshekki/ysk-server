@@ -4,7 +4,7 @@
 
 import { existsSync } from 'node:fs';
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface QuotaStatus {
   projectId: string;
@@ -57,7 +57,7 @@ export async function checkProjectQuota(input: {
   let withinQuota: boolean | null = null;
   if (quotaMb != null && quotaMb > 0) {
     withinQuota = usedMb <= quotaMb;
-    if (!withinQuota) notes.push(`超出配額：${usedMb}MB > ${quotaMb}MB`);
+    if (!withinQuota) notes.push(tl('notes.auto.t0367', { v0: (usedMb), v1: (quotaMb) }));
   }
   return {
     projectId: input.projectId,
@@ -72,7 +72,7 @@ export async function checkProjectQuota(input: {
 
 export function assertQuotaMb(quotaMb: number): void {
   if (!Number.isFinite(quotaMb) || quotaMb < 1 || quotaMb > 1_000_000) {
-    throw new YskError(ErrorCodes.VALIDATION, '配額須為 1–1000000 MiB', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1510'), { httpStatus: 400 });
   }
 }
 
@@ -94,7 +94,7 @@ export async function assertWithinQuota(input: {
   if (st.withinQuota === false) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      `磁碟配額已超限（${st.usedMb} / ${st.quotaMb} MiB），無法${input.action ?? '繼續操作'}`,
+      tl('notes.auto.t0368', { v0: (st.usedMb), v1: (st.quotaMb), v2: (input.action ?? tl('notes.tpl.continueOp')) }),
       { httpStatus: 403 },
     );
   }

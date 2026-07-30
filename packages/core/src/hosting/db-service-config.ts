@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Managed service settings for Redis / MySQL / MariaDB / PostgreSQL.
  * Panel save + apply (conf write + restart when permitted).
@@ -48,21 +49,18 @@ export const DEFAULT_REDIS: RedisServiceSettings = {
   requirepass: '',
   appendonly: false,
   protectedMode: true,
-  timeout: 0,
-};
+  timeout: 0 };
 
 export const DEFAULT_MYSQL: SqlServiceSettings = {
   port: 3306,
   bindAddress: '127.0.0.1',
   maxConnections: 151,
-  characterSetServer: 'utf8mb4',
-};
+  characterSetServer: 'utf8mb4' };
 
 export const DEFAULT_POSTGRES: PostgresServiceSettings = {
   port: 5432,
   listenAddresses: 'localhost',
-  maxConnections: 100,
-};
+  maxConnections: 100 };
 
 function settingsKey(engine: DbServiceEngine): string {
   return `${engine}_service_settings`;
@@ -86,8 +84,7 @@ export function loadRedisSettings(db: JsonStore): RedisServiceSettings {
     maxmemoryPolicy: String(p.maxmemoryPolicy ?? 'noeviction').slice(0, 40),
     requirepass: String(p.requirepass ?? '').slice(0, 200),
     appendonly: Boolean(p.appendonly),
-    protectedMode: p.protectedMode !== false,
-  }));
+    protectedMode: p.protectedMode !== false }));
 }
 
 export function saveRedisSettings(db: JsonStore, patch: Partial<RedisServiceSettings>): RedisServiceSettings {
@@ -108,8 +105,7 @@ export function loadSqlSettings(db: JsonStore, engine: 'mysql' | 'mariadb'): Sql
     port: clampInt(p.port, 1, 65535, 3306),
     maxConnections: clampInt(p.maxConnections, 1, 100000, 151),
     bindAddress: String(p.bindAddress ?? '127.0.0.1').slice(0, 120),
-    characterSetServer: String(p.characterSetServer ?? 'utf8mb4').slice(0, 32),
-  }));
+    characterSetServer: String(p.characterSetServer ?? 'utf8mb4').slice(0, 32) }));
 }
 
 export function saveSqlSettings(
@@ -132,8 +128,7 @@ export function loadPostgresSettings(db: JsonStore): PostgresServiceSettings {
     ...p,
     port: clampInt(p.port, 1, 65535, 5432),
     maxConnections: clampInt(p.maxConnections, 1, 100000, 100),
-    listenAddresses: String(p.listenAddresses ?? 'localhost').slice(0, 120),
-  }));
+    listenAddresses: String(p.listenAddresses ?? 'localhost').slice(0, 120) }));
 }
 
 export function savePostgresSettings(
@@ -237,14 +232,14 @@ export async function applyRedisServiceConfig(input: {
   const confPath = join(dir, 'redis.ysk.conf');
   writeFileSync(confPath, renderRedisConf(settings), 'utf8');
   const written = [confPath];
-  const notes = [`已寫入設定 ${confPath}`, `資料庫數量：${settings.databases}（索引 0–${settings.databases - 1}）`];
+  const notes = [tl('notes.tpl.wroteSettings', { path: confPath }), tl('notes.auto.t0228', { v0: (settings.databases), v1: (settings.databases - 1) })];
 
   const can = input.host.executeEnabled() && input.host.isRoot();
   if (!can) {
     const reason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
     const blockMessage = panelBlockMessage(reason);
     notes.push(blockMessage);
-    notes.push('設定已儲存於管理面；系統 conf／重啟需權限');
+    notes.push(tl('notes.auto.n1367'));
     return {
       ok: false,
       executed: false,
@@ -252,8 +247,7 @@ export async function applyRedisServiceConfig(input: {
       blockMessage,
       notes,
       written,
-      settings,
-    };
+      settings };
   }
 
   // Copy snippet + CONFIG SET; ok requires real system effect
@@ -261,8 +255,8 @@ export async function applyRedisServiceConfig(input: {
   const dest = join(confDir, 'ysk-redis.conf');
   const cp = await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
   const confInstalled = cp.exitCode === 0;
-  if (confInstalled) notes.push(`已複製到 ${dest}`);
-  else notes.push(`無法複製到系統 conf 目錄：${(cp.stderr || cp.stdout).slice(0, 200)}`);
+  if (confInstalled) notes.push(tl('notes.auto.t0229', { v0: (dest) }));
+  else notes.push(tl('notes.auto.t0230', { v0: ((cp.stderr || cp.stdout).slice(0, 200)) }));
 
   // Runtime CONFIG SET where possible
   const cfg = await input.host.runCommand(
@@ -271,9 +265,9 @@ export async function applyRedisServiceConfig(input: {
   );
   const cfgOk = cfg.exitCode === 0 && cfg.stdout.trim().toUpperCase() === 'OK';
   if (cfgOk) {
-    notes.push('已即時套用 databases（部分選項仍需重啟）');
+    notes.push(tl('notes.auto.n0741'));
   } else {
-    notes.push('CONFIG SET databases 未成功（可能需重啟後生效）');
+    notes.push(tl('notes.auto.n0086'));
   }
   if (settings.maxmemory && settings.maxmemory !== '0') {
     await input.host.runCommand(
@@ -289,23 +283,21 @@ export async function applyRedisServiceConfig(input: {
   let restartOk = true;
   if (input.restart !== false) {
     const r = await input.host.runCommand(['systemctl', 'restart', 'redis-server'], {
-      timeoutMs: 60_000,
-    });
+      timeoutMs: 60_000 });
     restartOk = r.exitCode === 0;
-    notes.push(restartOk ? '已重啟 redis-server' : `重啟失敗：${r.stderr}`);
+    notes.push(restartOk ? tl('notes.auto.n0805') : tl('notes.tpl.restartFailed', { detail: r.stderr }));
   }
 
   // Success if conf installed OR runtime CONFIG worked, and restart not failed
   const applied = confInstalled || cfgOk;
-  if (!applied) notes.push('未對系統產生可驗證變更 — 唔會標 ok');
+  if (!applied) notes.push(tl('notes.auto.n0957'));
 
   return {
     ok: applied && restartOk,
     executed: true,
     notes,
     written,
-    settings,
-  };
+    settings };
 }
 
 export async function applySqlServiceConfig(input: {
@@ -324,7 +316,7 @@ export async function applySqlServiceConfig(input: {
   const confPath = join(dir, 'ysk.cnf');
   writeFileSync(confPath, renderMysqlConf(settings, input.engine), 'utf8');
   const written = [confPath];
-  const notes = [`已寫入 ${confPath}`];
+  const notes = [tl('notes.email.wrotePath', { path: confPath })];
   const unit = input.engine === 'mysql' ? 'mysql' : 'mariadb';
 
   const can = input.host.executeEnabled() && input.host.isRoot();
@@ -339,8 +331,7 @@ export async function applySqlServiceConfig(input: {
       blockMessage,
       notes,
       written,
-      settings,
-    };
+      settings };
   }
 
   const confD =
@@ -349,21 +340,20 @@ export async function applySqlServiceConfig(input: {
   const dest = join(confD, '99-ysk.cnf');
   const cp = await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
   if (cp.exitCode !== 0) {
-    notes.push(`複製 conf 失敗：${cp.stderr || cp.stdout}`);
+    notes.push(tl('notes.auto.t0231', { v0: (cp.stderr || cp.stdout) }));
     return {
       ok: false,
       executed: true,
       notes,
       written,
-      settings,
-    };
+      settings };
   }
-  notes.push(`已安裝 ${dest}`);
+  notes.push(tl('notes.software.installedSpec', { title: dest }));
   let restartOk = true;
   if (input.restart !== false) {
     const r = await input.host.runCommand(['systemctl', 'restart', unit], { timeoutMs: 120_000 });
     restartOk = r.exitCode === 0;
-    notes.push(restartOk ? `已重啟 ${unit}` : `重啟失敗：${r.stderr}`);
+    notes.push(restartOk ? tl('notes.auto.t0232', { v0: (unit) }) : tl('notes.tpl.restartFailed', { detail: r.stderr }));
   }
   return { ok: restartOk, executed: true, notes, written, settings };
 }
@@ -383,7 +373,7 @@ export async function applyPostgresServiceConfig(input: {
   const confPath = join(dir, 'ysk-postgresql.conf');
   writeFileSync(confPath, renderPostgresConf(settings), 'utf8');
   const written = [confPath];
-  const notes = [`已寫入 ${confPath}`, '請將此檔 include 到 postgresql.conf 或於套用時複製'];
+  const notes = [tl('notes.email.wrotePath', { path: confPath }), tl('notes.tpl.pgIncludeHint')];
 
   const can = input.host.executeEnabled() && input.host.isRoot();
   if (!can) {
@@ -397,8 +387,7 @@ export async function applyPostgresServiceConfig(input: {
       blockMessage,
       notes,
       written,
-      settings,
-    };
+      settings };
   }
 
   // Install drop-in into first existing conf.d (Debian/Ubuntu layout)
@@ -425,33 +414,31 @@ export async function applyPostgresServiceConfig(input: {
       const dest = join(d, '99-ysk.conf');
       const cp = await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
       if (cp.exitCode === 0) {
-        notes.push(`已安裝 ${dest}`);
+        notes.push(tl('notes.software.installedSpec', { title: dest }));
         installed = true;
       } else {
-        notes.push(`複製到 ${dest} 失敗：${cp.stderr || cp.stdout}`);
+        notes.push(tl('notes.auto.t0233', { v0: (dest), v1: (cp.stderr || cp.stdout) }));
       }
     }
   }
   if (!installed) {
     notes.push(
-      '未找到 postgresql conf.d — conf 只寫在 dataDir；唔會假裝已套用系統',
+      tl('notes.auto.n0958'),
     );
   }
   let restartOk = true;
   if (input.restart !== false) {
     const r = await input.host.runCommand(['systemctl', 'restart', 'postgresql'], {
-      timeoutMs: 120_000,
-    });
+      timeoutMs: 120_000 });
     restartOk = r.exitCode === 0;
-    notes.push(restartOk ? '已重啟 postgresql' : `重啟失敗：${r.stderr}`);
+    notes.push(restartOk ? tl('notes.auto.n0804') : tl('notes.tpl.restartFailed', { detail: r.stderr }));
   }
   return {
     ok: installed && restartOk,
     executed: true,
     notes,
     written,
-    settings,
-  };
+    settings };
 }
 
 /** Enrich redis probe with configured databases count */
@@ -469,8 +456,7 @@ export async function getRedisServiceView(input: {
   let configuredDatabases = settings.databases;
   if (status.canRead) {
     const r = await input.host.runCommand(['redis-cli', 'CONFIG', 'GET', 'databases'], {
-      timeoutMs: 5_000,
-    });
+      timeoutMs: 5_000 });
     const lines = r.stdout.trim().split('\n');
     const n = Number(lines[lines.length - 1]);
     if (Number.isFinite(n) && n >= 1) configuredDatabases = n;
@@ -505,18 +491,15 @@ export async function getPostgresServiceView(input: {
 }> {
   const settings = loadPostgresSettings(input.db);
   const which = await input.host.runCommand(['bash', '-c', 'command -v psql || true'], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   const clientInstalled = which.stdout.trim().length > 0;
   const whichS = await input.host.runCommand(['bash', '-c', 'command -v postgres || true'], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   const serverInstalled = whichS.stdout.trim().length > 0;
   let active = 'unknown';
   if (input.host.pathExists('/bin/systemctl') || input.host.pathExists('/usr/bin/systemctl')) {
     const r = await input.host.runCommand(['systemctl', 'is-active', 'postgresql'], {
-      timeoutMs: 5_000,
-    });
+      timeoutMs: 5_000 });
     active = (r.stdout || r.stderr || 'unknown').trim().split('\n')[0] || 'unknown';
   }
   let version: string | undefined;
@@ -527,9 +510,9 @@ export async function getPostgresServiceView(input: {
   const executeEnabled = input.host.executeEnabled();
   const isRoot = input.host.isRoot();
   let blockMessage: string | undefined;
-  if (!serverInstalled) blockMessage = 'PostgreSQL 伺服器尚未安裝';
-  else if (active !== 'active') blockMessage = 'PostgreSQL 服務未運行';
-  else if (!executeEnabled) blockMessage = '系統變更未開啟；設定可儲存，套用系統需權限';
+  if (!serverInstalled) blockMessage = tl('notes.auto.n0158');
+  else if (active !== 'active') blockMessage = tl('notes.auto.n0160');
+  else if (!executeEnabled) blockMessage = tl('notes.auto.n1309');
   return {
     settings,
     serverInstalled,
@@ -538,8 +521,7 @@ export async function getPostgresServiceView(input: {
     executeEnabled,
     isRoot,
     version,
-    blockMessage,
-  };
+    blockMessage };
 }
 
 // silence unused

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Real FTPS (vsftpd) control plane: settings, conf generation, virtual users, status, apply.
  * Panel-only execution — never asks the user to run CLI.
@@ -22,8 +23,7 @@ export function hashFtpPassword(plain: string): string {
     const out = execFileSync('openssl', ['passwd', '-6', '-stdin'], {
       input: p + '\n',
       encoding: 'utf8',
-      timeout: 5_000,
-    });
+      timeout: 5_000 });
     const line = out.trim().split('\n').filter(Boolean).pop();
     if (line && line.startsWith('$')) return line;
   } catch {
@@ -33,8 +33,7 @@ export function hashFtpPassword(plain: string): string {
     const out = execFileSync('openssl', ['passwd', '-1', '-stdin'], {
       input: p + '\n',
       encoding: 'utf8',
-      timeout: 5_000,
-    });
+      timeout: 5_000 });
     const line = out.trim().split('\n').filter(Boolean).pop();
     if (line && line.startsWith('$')) return line;
   } catch {
@@ -97,8 +96,7 @@ export const DEFAULT_FTPS_SETTINGS: FtpsSettings = {
   chrootLocalUser: true,
   allowWriteableChroot: true,
   banner: 'YSK FTPS',
-  guestUsername: 'ftp',
-};
+  guestUsername: 'ftp' };
 
 export type FtpsStep = {
   name: string;
@@ -144,18 +142,16 @@ export function createProjectFtpAccount(
     return {
       ok: false,
       account: {},
-      notes: ['密碼至少 8 字元'],
-      written: [],
-    };
+      notes: [tl('notes.passwordMin8')],
+      written: [] };
   }
   const linuxUser = String(input.linuxUser || '').trim();
   if (!linuxUser) {
     return {
       ok: false,
       account: {},
-      notes: ['專案缺少 linuxUser — 無法建立對齊隔離的 FTP 帳戶'],
-      written: [],
-    };
+      notes: [tl('notes.auto.n0696')],
+      written: [] };
   }
   const linuxGroup = (input.linuxGroup || linuxUser).trim();
   // Strip ysk_ / ysks_ prefixes for virtual login name
@@ -171,9 +167,8 @@ export function createProjectFtpAccount(
     return {
       ok: false,
       account: existing,
-      notes: [`FTP 用戶已存在: ${username}`],
-      written: [],
-    };
+      notes: [tl('notes.auto.t0267', { v0: (username) })],
+      written: [] };
   }
   const appDir = join(input.projectHome, 'app');
   const homePath =
@@ -188,9 +183,8 @@ export function createProjectFtpAccount(
     return {
       ok: false,
       account: {},
-      notes: ['無法產生 crypt 密碼雜湊（需要 openssl passwd）'],
-      written: [],
-    };
+      notes: [tl('notes.auto.n1177')],
+      written: [] };
   }
   const account = createResource(db, 'ftp_accounts', {
     username,
@@ -202,8 +196,7 @@ export function createProjectFtpAccount(
     linuxUser,
     linuxGroup,
     chroot: true,
-    apply_status: 'draft',
-  });
+    apply_status: 'draft' });
   return {
     ok: true,
     account: {
@@ -214,17 +207,15 @@ export function createProjectFtpAccount(
       linuxUser,
       linuxGroup,
       apply_status: 'draft',
-      passwordHashed: true,
-    },
+      passwordHashed: true },
     notes: [
-      `已建立 FTP 帳戶 ${username}`,
-      `Jail 路徑: ${homePath}`,
-      `密碼已以 crypt 雜湊儲存（唔存明文）`,
-      `上傳檔將以專案 Linux 用戶擁有：${linuxUser}（套用 vsftpd 後生效）`,
-      '狀態 draft — 請到 FTP 服務頁「套用」才會寫入 vsftpd',
+      tl('notes.auto.t0268', { v0: (username) }),
+      tl('notes.auto.t0269', { v0: (homePath) }),
+      tl('notes.auto.t0270'),
+      tl('notes.auto.t0271', { v0: (linuxUser) }),
+      tl('notes.auto.n1205'),
     ],
-    written: [homePath],
-  };
+    written: [homePath] };
 }
 
 export function loadFtpsSettings(db: JsonStore): FtpsSettings {
@@ -269,8 +260,7 @@ export function ftpsPaths(dataDir: string) {
     userDb: join(root, 'virtual_users.db'),
     userConfDir: join(root, 'user_conf'),
     homes: join(root, 'homes'),
-    mapPath: join(root, 'virtual_users.map'),
-  };
+    mapPath: join(root, 'virtual_users.map') };
 }
 
 /** Resolve cert/key paths from settings + dataDir certs */
@@ -282,22 +272,19 @@ export function resolveCertPaths(
     return {
       cert: settings.certPath,
       key: settings.keyPath,
-      ok: existsSync(settings.certPath) && existsSync(settings.keyPath),
-    };
+      ok: existsSync(settings.certPath) && existsSync(settings.keyPath) };
   }
   const domain = settings.sslDomain;
   if (domain) {
     const managed = {
       cert: join(dataDir, 'certs', domain, 'fullchain.pem'),
-      key: join(dataDir, 'certs', domain, 'privkey.pem'),
-    };
+      key: join(dataDir, 'certs', domain, 'privkey.pem') };
     if (existsSync(managed.cert) && existsSync(managed.key)) {
       return { ...managed, ok: true };
     }
     const le = {
       cert: `/etc/letsencrypt/live/${domain}/fullchain.pem`,
-      key: `/etc/letsencrypt/live/${domain}/privkey.pem`,
-    };
+      key: `/etc/letsencrypt/live/${domain}/privkey.pem` };
     if (existsSync(le.cert) && existsSync(le.key)) {
       return { ...le, ok: true };
     }
@@ -362,7 +349,7 @@ export function buildVsftpdConf(input: {
   if (s.sslEnable && cert && key) {
     lines.push(`rsa_cert_file=${cert}`, `rsa_private_key_file=${key}`);
   } else if (s.sslEnable) {
-    lines.push('# rsa_cert_file= (尚未選擇有效憑證)', '# rsa_private_key_file=');
+    lines.push(tl('notes.auto.n0054'), '# rsa_private_key_file=');
   }
   return lines.join('\n') + '\n';
 }
@@ -408,7 +395,7 @@ export function writeManagedFtpAccounts(input: {
   for (const a of accounts) {
     const username = String(a.username ?? '').trim();
     if (!username || !/^[a-zA-Z0-9._-]+$/.test(username)) {
-      notes.push(`略過無效用戶名`);
+      notes.push(tl('notes.auto.t0272'));
       continue;
     }
     const home = String(a.homePath || join(paths.homes, username));
@@ -422,9 +409,8 @@ export function writeManagedFtpAccounts(input: {
         try {
           updateResource(input.db, 'ftp_accounts', String(a.id), {
             password_hash: passwordHash,
-            password_plain: '',
-          });
-          notes.push(`帳戶 ${username}：已遷移明文密碼 → crypt 雜湊`);
+            password_plain: '' });
+          notes.push(tl('notes.auto.t0273', { v0: (username) }));
         } catch {
           /* best-effort */
         }
@@ -436,11 +422,11 @@ export function writeManagedFtpAccounts(input: {
       dbLines.push(username, passwordHash);
     } else if (passwordHash.startsWith('{SHA256}')) {
       notes.push(
-        `帳戶 ${username} 雜湊格式非 crypt（openssl 不可用）— 登入可能失敗`,
+        tl('notes.auto.t0274', { v0: (username) }),
       );
       dbLines.push(username, passwordHash);
     } else {
-      notes.push(`帳戶 ${username} 無密碼雜湊，無法登入直至重設`);
+      notes.push(tl('notes.auto.t0275', { v0: (username) }));
     }
 
     // Resolve project Linux user for ownership of uploaded files
@@ -456,7 +442,7 @@ export function writeManagedFtpAccounts(input: {
       linuxUser = settings.guestUsername;
       if (projectId) {
         notes.push(
-          `帳戶 ${username} 綁專案但無 linuxUser — 暫用全域 guest「${linuxUser}」（請重建 FTP 帳戶）`,
+          tl('notes.auto.t0276', { v0: (username), v1: (linuxUser) }),
         );
       }
     }
@@ -490,7 +476,7 @@ export function writeManagedFtpAccounts(input: {
   writeFileSync(paths.pam, buildPamSnippet(input.dataDir), 'utf8');
   written.push(paths.pam);
 
-  notes.push(`已寫入 ${list.length} 個帳戶設定`);
+  notes.push(tl('notes.auto.t0277', { v0: (list.length) }));
   return { written, accounts: list, notes };
 }
 
@@ -502,14 +488,12 @@ export async function probeFtpsStatus(input: {
   const settings = loadFtpsSettings(input.db);
   const paths = ftpsPaths(input.dataDir);
   const which = await input.host.runCommand(['bash', '-c', 'command -v vsftpd || true'], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   const installed = which.stdout.trim().length > 0;
   let active = 'unknown';
   if (input.host.pathExists('/bin/systemctl') || input.host.pathExists('/usr/bin/systemctl')) {
     const r = await input.host.runCommand(['systemctl', 'is-active', 'vsftpd'], {
-      timeoutMs: 5_000,
-    });
+      timeoutMs: 5_000 });
     active = (r.stdout || r.stderr || `exit_${r.exitCode}`).trim().split('\n')[0] ?? 'unknown';
   } else {
     active = installed ? 'unknown' : 'not_installed';
@@ -522,8 +506,7 @@ export async function probeFtpsStatus(input: {
     confSystemExists: existsSync('/etc/vsftpd.conf'),
     accountCount: listResources(input.db, 'ftp_accounts').length,
     settings,
-    lastAppliedAt: typeof meta === 'string' ? meta : undefined,
-  };
+    lastAppliedAt: typeof meta === 'string' ? meta : undefined };
 }
 
 /**
@@ -560,13 +543,13 @@ export async function applyFtpsService(input: {
   const conf = buildVsftpdConf({ dataDir: input.dataDir, settings });
   writeFileSync(paths.conf, conf, 'utf8');
   written.push(paths.conf);
-  steps.push({ name: '寫入 vsftpd 設定', status: 'ok', detail: paths.conf });
+  steps.push({ name: tl('notes.ftp.writeVsftpd'), status: 'ok', detail: paths.conf });
 
   // 2. accounts
   const acc = writeManagedFtpAccounts({ db: input.db, dataDir: input.dataDir });
   written.push(...acc.written);
   notes.push(...acc.notes);
-  steps.push({ name: '同步帳戶', status: 'ok', detail: `${acc.accounts.length} 個帳戶` });
+  steps.push({ name: tl('notes.auto.n0617'), status: 'ok', detail: tl('notes.auto.t0278', { v0: (acc.accounts.length) }) });
 
   const wantSystem = input.applySystem !== false;
   const can =
@@ -578,15 +561,14 @@ export async function applyFtpsService(input: {
     blockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
     blockMessage = panelBlockMessage(blockReason);
     notes.push(blockMessage);
-    steps.push({ name: '套用到系統', status: 'blocked', detail: blockMessage });
+    steps.push({ name: tl('notes.auto.n0644'), status: 'blocked', detail: blockMessage });
     // mark accounts pending
     for (const a of listResources(input.db, 'ftp_accounts')) {
       updateResource(input.db, 'ftp_accounts', String(a.id), {
         apply_status: 'pending_execute',
         homePath:
           a.homePath ||
-          join(paths.homes, String(a.username)),
-      });
+          join(paths.homes, String(a.username)) });
     }
     return {
       ok: false,
@@ -602,8 +584,7 @@ export async function applyFtpsService(input: {
       requiresExecute: !input.host.executeEnabled(),
       requiresRoot: !input.host.isRoot(),
       settings,
-      status: await probeFtpsStatus(input),
-    };
+      status: await probeFtpsStatus(input) };
   }
 
   if (can) {
@@ -616,13 +597,11 @@ export async function applyFtpsService(input: {
     commandResults.push({
       argv: ['useradd', gu],
       exitCode: idr.exitCode,
-      stderr: idr.stderr,
-    });
+      stderr: idr.stderr });
     steps.push({
-      name: '確保 guest 用戶',
+      name: tl('notes.auto.n1287'),
       status: idr.exitCode === 0 ? 'ok' : 'failed',
-      detail: idr.exitCode === 0 ? gu : idr.stderr || '失敗',
-    });
+      detail: idr.exitCode === 0 ? gu : idr.stderr || tl('notes.failed') });
 
     // install packages
     const inst = await input.host.runCommand(
@@ -636,13 +615,11 @@ export async function applyFtpsService(input: {
     commandResults.push({
       argv: ['apt-get', 'install', 'vsftpd'],
       exitCode: inst.exitCode,
-      stderr: inst.stderr,
-    });
+      stderr: inst.stderr });
     steps.push({
-      name: '安裝 vsftpd',
+      name: tl('notes.auto.n0653'),
       status: inst.exitCode === 0 ? 'ok' : 'failed',
-      detail: inst.exitCode === 0 ? '就緒' : inst.stderr || '安裝失敗',
-    });
+      detail: inst.exitCode === 0 ? tl('notes.auto.n0721') : inst.stderr || tl('notes.auto.n0654') });
 
     // build userdb if db_load available
     const dbLoad = await input.host.runCommand(
@@ -656,106 +633,89 @@ export async function applyFtpsService(input: {
     commandResults.push({
       argv: ['db_load'],
       exitCode: dbLoad.exitCode,
-      stderr: dbLoad.stderr,
-    });
+      stderr: dbLoad.stderr });
     if (existsSync(paths.userDb)) {
       try {
         chmodSync(paths.userDb, 0o600);
       } catch {
         /* ignore */
       }
-      steps.push({ name: '建立帳戶資料庫', status: 'ok' });
+      steps.push({ name: tl('notes.auto.n0009'), status: 'ok' });
     } else {
       steps.push({
-        name: '建立帳戶資料庫',
+        name: tl('notes.auto.n0009'),
         status: 'failed',
-        detail: '無法建立 virtual user 資料庫（缺 db_load）',
-      });
-      notes.push('無法建立帳戶資料庫，登入可能失敗');
+        detail: tl('notes.auto.n1167') });
+      notes.push(tl('notes.auto.n1168'));
     }
 
     // copy conf + pam
     const cpConf = await input.host.runCommand(['cp', paths.conf, '/etc/vsftpd.conf'], {
-      timeoutMs: 10_000,
-    });
+      timeoutMs: 10_000 });
     commandResults.push({
       argv: ['cp', 'vsftpd.conf'],
       exitCode: cpConf.exitCode,
-      stderr: cpConf.stderr,
-    });
+      stderr: cpConf.stderr });
     steps.push({
-      name: '安裝系統設定',
+      name: tl('notes.auto.n0658'),
       status: cpConf.exitCode === 0 ? 'ok' : 'failed',
-      detail: cpConf.exitCode === 0 ? '/etc/vsftpd.conf' : cpConf.stderr,
-    });
+      detail: cpConf.exitCode === 0 ? '/etc/vsftpd.conf' : cpConf.stderr });
 
     mkdirSync('/etc/pam.d', { recursive: true });
     const cpPam = await input.host.runCommand(['cp', paths.pam, '/etc/pam.d/ysk-vsftpd'], {
-      timeoutMs: 10_000,
-    });
+      timeoutMs: 10_000 });
     commandResults.push({
       argv: ['cp', 'pam'],
       exitCode: cpPam.exitCode,
-      stderr: cpPam.stderr,
-    });
+      stderr: cpPam.stderr });
     steps.push({
-      name: '安裝 PAM',
-      status: cpPam.exitCode === 0 ? 'ok' : 'failed',
-    });
+      name: tl('notes.auto.n0652'),
+      status: cpPam.exitCode === 0 ? 'ok' : 'failed' });
 
     // Ownership: project-bound jails → project linuxUser; FTPS-only homes → guest
     const chownNotes = await chownFtpAccountHomes(input.host, input.db, settings.guestUsername);
     notes.push(...chownNotes);
     steps.push({
-      name: '對齊 jail 擁有權',
+      name: tl('notes.auto.n0700'),
       status: 'ok',
-      detail: chownNotes.slice(0, 3).join('；') || '完成',
-    });
+      detail: chownNotes.slice(0, 3).join('；') || tl('notes.auto.n0010') });
 
     const en = await input.host.runCommand(['systemctl', 'enable', '--now', 'vsftpd'], {
-      timeoutMs: 60_000,
-    });
+      timeoutMs: 60_000 });
     commandResults.push({
       argv: ['systemctl', 'enable', '--now', 'vsftpd'],
       exitCode: en.exitCode,
-      stderr: en.stderr,
-    });
+      stderr: en.stderr });
     const rel = await input.host.runCommand(['systemctl', 'restart', 'vsftpd'], {
-      timeoutMs: 30_000,
-    });
+      timeoutMs: 30_000 });
     commandResults.push({
       argv: ['systemctl', 'restart', 'vsftpd'],
       exitCode: rel.exitCode,
-      stderr: rel.stderr,
-    });
+      stderr: rel.stderr });
     const act = await input.host.runCommand(['systemctl', 'is-active', 'vsftpd'], {
-      timeoutMs: 5_000,
-    });
+      timeoutMs: 5_000 });
     const active = (act.stdout || '').trim();
     const svcOk = active === 'active';
     steps.push({
-      name: '啟動 vsftpd',
+      name: tl('notes.ftp.startVsftpd'),
       status: svcOk ? 'ok' : 'failed',
-      detail: active || en.stderr || rel.stderr,
-    });
+      detail: active || en.stderr || rel.stderr });
 
     const ok = svcOk && cpConf.exitCode === 0;
     if (ok) {
-      notes.push('vsftpd 已啟動');
+      notes.push(tl('notes.ftp.vsftpdStarted'));
       input.db.snapshot.settings['ftps_last_applied_at'] = new Date().toISOString();
       input.db.persist();
       for (const a of listResources(input.db, 'ftp_accounts')) {
         updateResource(input.db, 'ftp_accounts', String(a.id), {
           apply_status: 'applied',
-          homePath: a.homePath || join(paths.homes, String(a.username)),
-        });
+          homePath: a.homePath || join(paths.homes, String(a.username)) });
       }
     } else {
-      notes.push('vsftpd 未能成功啟動');
+      notes.push(tl('notes.auto.n0465'));
       for (const a of listResources(input.db, 'ftp_accounts')) {
         updateResource(input.db, 'ftp_accounts', String(a.id), {
-          apply_status: 'failed',
-        });
+          apply_status: 'failed' });
       }
     }
 
@@ -771,12 +731,11 @@ export async function applyFtpsService(input: {
       requiresExecute: false,
       requiresRoot: false,
       settings,
-      status: await probeFtpsStatus(input),
-    };
+      status: await probeFtpsStatus(input) };
   }
 
   // applySystem false: config only
-  notes.push('已儲存管理設定（未套用到系統服務）');
+  notes.push(tl('notes.auto.n0734'));
   return {
     ok: true,
     executed: false,
@@ -788,8 +747,7 @@ export async function applyFtpsService(input: {
     requiresExecute: !input.host.executeEnabled(),
     requiresRoot: !input.host.isRoot(),
     settings,
-    status: await probeFtpsStatus(input),
-  };
+    status: await probeFtpsStatus(input) };
 }
 
 /**
@@ -809,7 +767,7 @@ export async function applyFtpAccountReal(input: {
   steps?: FtpsStep[];
 }> {
   const acc = listResources(input.db, 'ftp_accounts').find((a) => a.id === input.id);
-  if (!acc) return { ok: false, notes: ['找不到帳戶'] };
+  if (!acc) return { ok: false, notes: [tl('notes.auto.n0011')] };
 
   const paths = ftpsPaths(input.dataDir);
   const home = String(acc.homePath || join(paths.homes, String(acc.username)));
@@ -820,7 +778,7 @@ export async function applyFtpAccountReal(input: {
   const managed = writeManagedFtpAccounts({ db: input.db, dataDir: input.dataDir });
   const notes = [...managed.notes];
   const steps: FtpsStep[] = [
-    { name: '寫入帳戶檔', status: 'ok', detail: home },
+    { name: tl('notes.auto.n0677'), status: 'ok', detail: home },
   ];
   if (input.host.executeEnabled() && input.host.isRoot()) {
     const settings = loadFtpsSettings(input.db);
@@ -833,22 +791,20 @@ export async function applyFtpAccountReal(input: {
   if (!can) {
     updateResource(input.db, 'ftp_accounts', input.id, {
       apply_status: 'pending_execute',
-      homePath: home,
-    });
+      homePath: home });
     const blockMessage = panelBlockMessage(
       !input.host.executeEnabled() ? 'no_execute' : 'no_root',
     );
     notes.push(blockMessage);
-    notes.push('帳戶已登記於管理面；需系統權限才能讓 FTP 服務生效');
-    steps.push({ name: '套用到 vsftpd', status: 'blocked', detail: blockMessage });
+    notes.push(tl('notes.auto.n0814'));
+    steps.push({ name: tl('notes.auto.n0643'), status: 'blocked', detail: blockMessage });
     return {
       ok: false,
       notes,
       blocked: true,
       blockMessage,
       executed: false,
-      steps,
-    };
+      steps };
   }
 
   // Full light apply: rebuild db + reload (conf already expected)
@@ -871,22 +827,19 @@ export async function applyFtpAccountReal(input: {
   await input.host.runCommand(['cp', paths.conf, '/etc/vsftpd.conf'], { timeoutMs: 10_000 });
   await input.host.runCommand(['cp', paths.pam, '/etc/pam.d/ysk-vsftpd'], { timeoutMs: 10_000 });
   const rel = await input.host.runCommand(['systemctl', 'reload', 'vsftpd'], {
-    timeoutMs: 30_000,
-  });
+    timeoutMs: 30_000 });
   if (rel.exitCode !== 0) {
     await input.host.runCommand(['systemctl', 'restart', 'vsftpd'], { timeoutMs: 30_000 });
   }
   const act = await input.host.runCommand(['systemctl', 'is-active', 'vsftpd'], {
-    timeoutMs: 5_000,
-  });
+    timeoutMs: 5_000 });
   const active = (act.stdout || '').trim();
   if (active === 'active') {
     updateResource(input.db, 'ftp_accounts', input.id, {
       apply_status: 'applied',
-      homePath: home,
-    });
-    notes.push(`帳戶 ${acc.username} 已套用，vsftpd 運行中`);
-    steps.push({ name: '重載 vsftpd', status: 'ok', detail: active });
+      homePath: home });
+    notes.push(tl('notes.auto.t0279', { v0: String(acc.username) }));
+    steps.push({ name: tl('notes.auto.n1514'), status: 'ok', detail: active });
     return { ok: true, notes, executed: true, steps };
   }
 
@@ -895,16 +848,14 @@ export async function applyFtpAccountReal(input: {
     db: input.db,
     dataDir: input.dataDir,
     host: input.host,
-    applySystem: true,
-  });
+    applySystem: true });
   return {
     ok: full.ok,
     notes: full.notes,
     blocked: full.blocked,
     blockMessage: full.blockMessage,
     executed: full.executed,
-    steps: full.steps as FtpsStep[],
-  };
+    steps: full.steps as FtpsStep[] };
 }
 
 /**
@@ -933,7 +884,7 @@ export async function chownFtpAccountHomes(
       { timeoutMs: 5_000 },
     );
     if (!idCheck.stdout.trim().endsWith('0') && idCheck.stdout.trim() !== '0') {
-      notes.push(`略過 chown ${home}：系統用戶「${user}」不存在（請先建立專案系統用戶）`);
+      notes.push(tl('notes.auto.t0280', { v0: (home), v1: (user) }));
       continue;
     }
     const r = await host.runCommand(
@@ -947,7 +898,7 @@ export async function chownFtpAccountHomes(
     if (r.exitCode === 0) {
       notes.push(`chown ${user} → ${home}`);
     } else {
-      notes.push(`chown 失敗 ${home}：${(r.stderr || r.stdout).slice(0, 120)}`);
+      notes.push(tl('notes.auto.t0281', { v0: (home), v1: ((r.stderr || r.stdout).slice(0, 120)) }));
     }
   }
   return notes;
@@ -964,17 +915,16 @@ export function listFtpHomeOptions(input: {
   const opts: Array<{ value: string; label: string }> = [
     {
       value: join(paths.homes, user),
-      label: `FTP 專用家目錄（${user}）`,
-    },
+      label: tl('notes.auto.t0282', { v0: (user) }) },
   ];
   const projects = (input.db.snapshot.projects ?? []) as unknown as Array<Record<string, unknown>>;
   for (const p of projects) {
     const name = String(p.name ?? p.id ?? 'project');
     const home = String(p.homeDir ?? p.home_dir ?? '');
     if (home) {
-      opts.push({ value: home, label: `專案 ${name} 根目錄` });
+      opts.push({ value: home, label: tl('notes.auto.t0283', { v0: (name) }) });
       const pub = join(home, 'app', 'public');
-      opts.push({ value: pub, label: `專案 ${name} public` });
+      opts.push({ value: pub, label: tl('notes.auto.t0284', { v0: (name) }) });
     }
   }
   return opts;
@@ -985,7 +935,7 @@ export function listFtpDomainOptions(db: JsonStore): Array<{ value: string; labe
   const set = new Map<string, string>();
   for (const d of db.snapshot.email_domains ?? []) {
     const domain = String((d as Record<string, unknown>).domain ?? '').toLowerCase();
-    if (domain) set.set(domain, `郵件 ${domain}`);
+    if (domain) set.set(domain, tl('notes.auto.t0285', { v0: (domain) }));
   }
   for (const s of listResources(db, 'nginx_sites')) {
     const sn = String(s.serverName ?? '').toLowerCase();
@@ -997,7 +947,7 @@ export function listFtpDomainOptions(db: JsonStore): Array<{ value: string; labe
   }
   for (const p of (db.snapshot.projects ?? []) as unknown as Array<Record<string, unknown>>) {
     const domain = String(p.domain ?? '').toLowerCase();
-    if (domain) set.set(domain, `專案 ${domain}`);
+    if (domain) set.set(domain, tl('notes.tpl.project', { name: domain }));
   }
   return [...set.entries()].map(([value, label]) => ({ value, label }));
 }

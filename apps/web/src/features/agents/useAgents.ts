@@ -1,7 +1,9 @@
+import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 /**
  * Agents feature — fleet + runtimes hooks (panel executes installs).
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   agentsApi,
   type FleetAgent,
@@ -11,6 +13,7 @@ import {
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
 export function useAgents() {
+  const { t } = useTranslation();
   const [agents, setAgents] = useState<FleetAgent[]>([]);
   const [runtimes, setRuntimes] = useState<RuntimeProbe[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -30,43 +33,49 @@ export function useAgents() {
     void refresh().catch((e: Error) => setError(e.message));
   }, [refresh]);
 
-  const presentResult = useCallback((r: Record<string, unknown>, fallbackMsg: string) => {
-    const notes = sanitizeOperatorNotes(
-      Array.isArray(r.notes) ? r.notes.map(String) : r.message ? [String(r.message)] : [],
-    );
-    setDetailNotes(notes);
-    const FACT_LABELS: Record<string, string> = {
-      kind: '類型',
-      name: '名稱',
-      status: '狀態',
-      unitActive: '服務',
-      unitName: '單元',
-      pathExists: '路徑存在',
-      installPath: '安裝路徑',
-    };
-    const facts: Array<{ label: string; value: string }> = [];
-    for (const [k, v] of Object.entries(r)) {
-      if (
-        k === 'notes' ||
-        k === 'commands' ||
-        k === 'commandResults' ||
-        k === 'installPlan' ||
-        k === 'requiresExecute' ||
-        k === 'requiresRoot' ||
-        k === 'ok' ||
-        k === 'probedAt' ||
-        typeof v === 'object'
-      ) {
-        continue;
+  const presentResult = useCallback(
+    (r: Record<string, unknown>, fallbackMsg: string) => {
+      const notes = sanitizeOperatorNotes(
+        Array.isArray(r.notes) ? r.notes.map(String) : r.message ? [String(r.message)] : [],
+      );
+      setDetailNotes(notes);
+      const FACT_LABEL_KEYS: Record<string, string> = {
+        kind: 'agents.fact.kind',
+        name: 'agents.fact.name',
+        status: 'agents.fact.status',
+        unitActive: 'agents.fact.unitActive',
+        unitName: 'agents.fact.unitName',
+        pathExists: 'agents.fact.pathExists',
+        installPath: 'agents.fact.installPath',
+      };
+      const facts: Array<{ label: string; value: string }> = [];
+      for (const [k, v] of Object.entries(r)) {
+        if (
+          k === 'notes' ||
+          k === 'commands' ||
+          k === 'commandResults' ||
+          k === 'installPlan' ||
+          k === 'requiresExecute' ||
+          k === 'requiresRoot' ||
+          k === 'ok' ||
+          k === 'probedAt' ||
+          typeof v === 'object'
+        ) {
+          continue;
+        }
+        const labelKey = FACT_LABEL_KEYS[k];
+        facts.push({ label: labelKey ? t(labelKey) : k, value: String(v) });
       }
-      facts.push({ label: FACT_LABELS[k] ?? k, value: String(v) });
-    }
-    setDetailFacts(facts.slice(0, 12));
-    const blocked = Boolean(
-      r.ok === false && (r.requiresExecute || notes.some((n) => /權限|無法在管理面板/.test(n))),
-    );
-    setMsg(blocked ? notes[0] ?? '無法在管理面板完成安裝' : fallbackMsg);
-  }, []);
+      setDetailFacts(facts.slice(0, 12));
+      // L3: match backend Chinese / mixed permission notes until error codes exist
+      const blocked = Boolean(
+        r.ok === false &&
+          (r.requiresExecute || notes.some((n) => looksLikeBlockedMessage(n))),
+      );
+      setMsg(blocked ? notes[0] ?? t('agents.installBlocked') : fallbackMsg);
+    },
+    [t],
+  );
 
   const register = useCallback(
     async (agentId: string, group = 'default') => {
@@ -75,17 +84,15 @@ export function useAgents() {
       try {
         await agentsApi.register({ agentId, group, meta: { source: 'panel' } });
         await refresh();
-        setMsg(
-          `已登記 ${agentId}（僅控制面；節點需跑 outbound agent 並 heartbeat 先算上線）`,
-        );
+        setMsg(t('agents.registeredMsg', { id: agentId }));
       } catch (e) {
-        setError(e instanceof Error ? e.message : '登記失敗');
+        setError(e instanceof Error ? e.message : t('agents.registerFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [refresh],
+    [refresh, t],
   );
 
   const removeAgent = useCallback(
@@ -96,15 +103,15 @@ export function useAgents() {
         await agentsApi.remove(sessionId);
         setCommands([]);
         await refresh();
-        setMsg('已刪除機群登記');
+        setMsg(t('agents.removedFleet'));
       } catch (e) {
-        setError(e instanceof Error ? e.message : '刪除失敗');
+        setError(e instanceof Error ? e.message : t('common.deleteFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [refresh],
+    [refresh, t],
   );
 
   const enqueueCommand = useCallback(
@@ -115,32 +122,35 @@ export function useAgents() {
         const cmd = await agentsApi.enqueue(sessionId, payload);
         const hist = await agentsApi.listCommands(sessionId);
         setCommands(hist.items);
-        setMsg(`已排隊指令 ${cmd.id.slice(0, 8)}…（節點 pull 後先執行）`);
+        setMsg(t('agents.enqueuedMsg', { id: cmd.id.slice(0, 8) }));
         return cmd;
       } catch (e) {
-        setError(e instanceof Error ? e.message : '下指令失敗');
+        setError(e instanceof Error ? e.message : t('agents.enqueueFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [],
+    [t],
   );
 
-  const loadCommands = useCallback(async (sessionId: string) => {
-    setBusy(true);
-    setError(null);
-    try {
-      const hist = await agentsApi.listCommands(sessionId);
-      setCommands(hist.items);
-      return hist.items;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '載入指令失敗');
-      throw e;
-    } finally {
-      setBusy(false);
-    }
-  }, []);
+  const loadCommands = useCallback(
+    async (sessionId: string) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const hist = await agentsApi.listCommands(sessionId);
+        setCommands(hist.items);
+        return hist.items;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : t('agents.loadCommandsFailed'));
+        throw e;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [t],
+  );
 
   const probeKind = useCallback(
     async (kind: string) => {
@@ -148,16 +158,20 @@ export function useAgents() {
       setError(null);
       try {
         const r = await agentsApi.probe(kind);
-        presentResult((r.runtime as Record<string, unknown>) ?? (r as Record<string, unknown>), `已探測 ${kind}`);
+        presentResult(
+          (r.runtime as unknown as Record<string, unknown>) ??
+            (r as unknown as Record<string, unknown>),
+          t('agents.probedMsg', { kind }),
+        );
         await refresh();
       } catch (e) {
-        setError(e instanceof Error ? e.message : '探測失敗');
+        setError(e instanceof Error ? e.message : t('agents.probeFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [refresh, presentResult],
+    [refresh, presentResult, t],
   );
 
   const writeUnit = useCallback(
@@ -166,15 +180,15 @@ export function useAgents() {
       setError(null);
       try {
         const r = (await agentsApi.writeUnit(kind)) as Record<string, unknown>;
-        presentResult(r, `已寫入 ${kind} 服務設定`);
+        presentResult(r, t('agents.wroteUnitMsg', { kind }));
       } catch (e) {
-        setError(e instanceof Error ? e.message : '寫入失敗');
+        setError(e instanceof Error ? e.message : t('agents.writeFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [presentResult],
+    [presentResult, t],
   );
 
   /** Always try real install from panel (execute=true). */
@@ -186,18 +200,18 @@ export function useAgents() {
         const r = (await agentsApi.install(kind, true)) as Record<string, unknown>;
         presentResult(
           r,
-          r.ok ? `已安裝 ${kind}` : '安裝未完成',
+          r.ok ? t('agents.installedMsg', { kind }) : t('agents.installIncomplete'),
         );
         await refresh();
         return r;
       } catch (e) {
-        setError(e instanceof Error ? e.message : '安裝失敗');
+        setError(e instanceof Error ? e.message : t('common.installFailed'));
         throw e;
       } finally {
         setBusy(false);
       }
     },
-    [refresh, presentResult],
+    [refresh, presentResult, t],
   );
 
   return {

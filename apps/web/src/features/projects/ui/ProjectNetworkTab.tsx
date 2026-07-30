@@ -97,13 +97,13 @@ export function ProjectNetworkTab({
         ssl,
       });
       if (res.publish) {
-        onOpsResult?.(res.publish, publish ? '網絡已儲存並發布 Nginx' : undefined);
+        onOpsResult?.(res.publish, publish ? t('projects.netSavedPublished') : undefined);
       } else {
-        onOpsResult?.(null, '網絡設定已儲存（未發布）');
+        onOpsResult?.(null, t('projects.netSavedOnly'));
       }
       await onSaved?.();
     } catch (e) {
-      onOpsResult?.(null, e instanceof Error ? e.message : '儲存失敗');
+      onOpsResult?.(null, e instanceof Error ? e.message : t('common.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -117,22 +117,22 @@ export function ProjectNetworkTab({
     <div className="tab-panel">
       {suspended ? (
         <Alert variant="info">
-          專案已暫停 — 訪客會收到 503。恢復後再發布站點。
+          {t('projects.netSuspended')}
         </Alert>
       ) : null}
 
       {/* 1. Domain */}
       <Card>
         <CardSection
-          title="域名"
-          description="主要域名與別名；儲存後可一併寫入 Nginx 管理設定"
+          title={t('common.domain')}
+          description={t('projects.netDomainDesc')}
         >
           <FormLayout>
             <Field
-              label="主要域名"
+              label={t('projects.netPrimaryDomain')}
               htmlFor="net-domain"
               required
-              hint="訪客用來開啟網站的域名，例如 app.example.com"
+              hint={t('projects.netPrimaryHint')}
               flush
             >
               <input
@@ -145,9 +145,9 @@ export function ProjectNetworkTab({
               />
             </Field>
             <Field
-              label="別名"
+              label={t('projects.ovAliases')}
               htmlFor="net-aliases"
-              hint="每行一個，例如 www 或 blog 子域名"
+              hint={t('projects.netAliasesHint')}
               flush
               fullWidth
             >
@@ -169,21 +169,21 @@ export function ProjectNetworkTab({
               disabled={suspended}
               onClick={() => void saveNetwork(false)}
             >
-              只儲存
+              {t('projects.saveOnly')}
             </Button>
             <Button
               variant="primary"
               size="md"
               loading={localBusy}
               disabled={suspended || !hasDomain}
-              title={!hasDomain ? '請先填寫主要域名' : undefined}
+              title={!hasDomain ? t('projects.netNeedPrimary') : undefined}
               onClick={() => void saveNetwork(true, false)}
             >
-              儲存並發布 Nginx
+              {t('projects.savePublishNginx')}
             </Button>
           </FormActions>
           {!hasDomain ? (
-            <p className="muted u-text-sm u-mt-3 u-mb-0">填寫主要域名後才可發布站點。</p>
+            <p className="muted u-text-sm u-mt-3 u-mb-0">{t('projects.needDomainToPublish')}</p>
           ) : null}
         </CardSection>
       </Card>
@@ -191,22 +191,22 @@ export function ProjectNetworkTab({
       {/* 2. HTTPS + whole-site redirect */}
       <Card>
         <CardSection
-          title="HTTPS 與整站重新導向"
-          description="儲存後請發布 Nginx。整站 301 會蓋過 proxy／PHP／static 內容"
+          title={t('projects.netHttpsTitle')}
+          description={t('projects.netHttpsDesc')}
         >
           <div className="form-switches">
             <CheckboxField
               id="net-https"
-              label="強制使用 HTTPS"
-              description="HTTP → HTTPS（301）；需已有 SSL 憑證並用 SSL 發布"
+              label={t('projects.netForceHttps')}
+              description={t('projects.netForceHttpsDesc')}
               checked={forceHttps}
               onChange={setForceHttps}
               disabled={suspended}
             />
             <CheckboxField
               id="net-hsts"
-              label="啟用 HSTS"
-              description="瀏覽器記住只走 HTTPS（建議在強制 HTTPS 後開啟）"
+              label={t('projects.netHsts')}
+              description={t('projects.netHstsDesc')}
               checked={hsts}
               onChange={setHsts}
               disabled={suspended || !forceHttps}
@@ -214,9 +214,9 @@ export function ProjectNetworkTab({
           </div>
           <FormLayout>
             <Field
-              label="整站重新導向網址"
+              label={t('projects.netRedirectUrl')}
               htmlFor="net-redir"
-              hint="可留空。填寫後整站 301 到此網址（例如搬站／apex→www）"
+              hint={t('projects.netRedirectHint')}
               flush
               fullWidth
             >
@@ -237,7 +237,7 @@ export function ProjectNetworkTab({
               disabled={suspended}
               onClick={() => void saveNetwork(false)}
             >
-              儲存
+              {t('common.save')}
             </Button>
             <Button
               variant="primary"
@@ -246,7 +246,7 @@ export function ProjectNetworkTab({
               disabled={suspended || !hasDomain}
               onClick={() => void saveNetwork(true, forceHttps)}
             >
-              儲存並發布
+              {t('projects.savePublish')}
             </Button>
           </FormActions>
         </CardSection>
@@ -255,11 +255,11 @@ export function ProjectNetworkTab({
       {/* 3. HTTP Basic Auth */}
       <Card>
         <CardSection
-          title="HTTP 基本認證（瀏覽器登入保護）"
-          description="發布時寫入 htpasswd；用戶名留空 = 關閉。密碼留空 = 沿用已存密碼"
+          title={t('projects.netBasicAuthTitle')}
+          description={t('projects.netBasicAuthDesc')}
         >
           <FormLayout columns={2}>
-            <Field label="用戶名" htmlFor="net-au" flush hint="留空關閉認證">
+            <Field label={t('common.username')} htmlFor="net-au" flush hint={t('projects.netAuthUserHint')}>
               <input
                 id="net-au"
                 value={authUser}
@@ -269,7 +269,7 @@ export function ProjectNetworkTab({
                 placeholder="admin"
               />
             </Field>
-            <Field label="密碼" htmlFor="net-ap" flush hint="首次設定必填；之後不改可留空">
+            <Field label={t('common.password')} htmlFor="net-ap" flush hint={t('projects.netAuthPassHint')}>
               <input
                 id="net-ap"
                 type="password"
@@ -277,7 +277,7 @@ export function ProjectNetworkTab({
                 onChange={(e) => setAuthPass(e.target.value)}
                 disabled={suspended}
                 autoComplete="new-password"
-                placeholder={authUser ? '設定或更新密碼' : '—'}
+                placeholder={authUser ? t('projects.netAuthPassSet') : '—'}
               />
             </Field>
           </FormLayout>
@@ -289,7 +289,7 @@ export function ProjectNetworkTab({
               disabled={suspended}
               onClick={() => void saveNetwork(false)}
             >
-              儲存認證
+              {t('projects.saveAuth')}
             </Button>
             <Button
               variant="primary"
@@ -298,7 +298,7 @@ export function ProjectNetworkTab({
               disabled={suspended || !hasDomain}
               onClick={() => void saveNetwork(true, false)}
             >
-              儲存並發布 Nginx
+              {t('projects.savePublishNginx')}
             </Button>
           </FormActions>
         </CardSection>
@@ -308,10 +308,10 @@ export function ProjectNetworkTab({
       <Card>
         <CardSection
           title="Cache"
-          description="靜態／PHP 靜態資源預設 Cache-Control 7d；purge 清主機 nginx cache 目錄（需 YSK_EXECUTE）"
+          description={t('projects.netCacheNote')}
         >
           <FormHint>
-            完整 FastCGI／proxy_cache zone 需主機 nginx.conf 先定義 keys_zone；面板提供 best-effort 清除。
+            {t('projects.cacheZoneNote')}
           </FormHint>
           <FormActions>
             <Button
@@ -332,14 +332,14 @@ export function ProjectNetworkTab({
                         processStatus: 'stopped',
                         listening: false,
                       } as OpsApplyResultDto,
-                      r.ok ? '已嘗試 purge cache' : r.notes?.join('；') ?? 'purge 失敗',
+                      r.ok ? t('projects.netPurgeOk') : r.notes?.join('；') ?? t('projects.netPurgeFailed'),
                     );
                   })
                   .catch((e: Error) => onOpsResult?.(null, e.message))
                   .finally(() => setSaving(false));
               }}
             >
-              清除 Nginx cache
+              {t('projects.purgeNginxCache')}
             </Button>
           </FormActions>
         </CardSection>
@@ -348,15 +348,15 @@ export function ProjectNetworkTab({
       {/* 5. Document root (first-class) + publish */}
       <Card>
         <CardSection
-          title="網站目錄（docroot）"
-          description="相對專案 home；發布 Nginx 時會用此路徑作為 root（預設 app/public）"
+          title={t('projects.netDocrootTitle')}
+          description={t('projects.netDocrootDesc')}
         >
           <FormLayout columns={1}>
             <Field
-              label="文件根目錄"
+              label={t('projects.ovDocroot')}
               htmlFor="net-doc"
               flush
-              hint={`完整路徑：${project.homeDir}/${(docRoot.trim() || 'app/public').replace(/^\//, '')}`}
+              hint={t('projects.netDocrootFull', { path: `${project.homeDir}/${(docRoot.trim() || 'app/public').replace(/^\//, '')}` })}
             >
               <div className="u-mb-2">
                 <PresetChips
@@ -371,7 +371,7 @@ export function ProjectNetworkTab({
                   value={docRoot || 'app/public'}
                   onChange={setDocRoot}
                   allowCustom
-                  customPlaceholder="自訂相對路徑…"
+                  customPlaceholder={t('projects.netDocrootCustom')}
                   disabled={suspended || localBusy}
                 />
               </div>
@@ -389,16 +389,16 @@ export function ProjectNetworkTab({
       </Card>
 
       <Card>
-        <CardSection title="進階與發布" description="綁定 IP、發布到系統 Nginx">
+        <CardSection title={t('projects.netAdvancedTitle')} description={t('projects.netAdvancedDesc')}>
           <FormHint>
-            Nginx 管理檔：{' '}
+            {t('projects.nginxManageFile')}{' '}
             {project.nginxConfigPath ? (
               <code className="inline">{project.nginxConfigPath}</code>
             ) : (
               <span className="muted">{t('projects.nginxNone')}</span>
             )}
             {' · '}
-            發布會依 runtime 產生 proxy／PHP-FPM／static conf（含認證、導向與 docroot）
+            {t('projects.publishRuntimeNote')}
           </FormHint>
 
           <button
@@ -406,17 +406,17 @@ export function ProjectNetworkTab({
             className={`${buttonClassName({ variant: 'ghost', size: 'sm' })} u-mb-4`}
             onClick={() => setAdvancedOpen((v) => !v)}
           >
-            {advancedOpen ? '收起綁定 IP' : '展開綁定 IP'}
+            {advancedOpen ? t('projects.netCollapseBind') : t('projects.netExpandBind')}
           </button>
 
           {advancedOpen ? (
             <FormLayout columns={2}>
-              <Field label="綁定 IP" htmlFor="net-ip" hint="留空 = 聽全部網卡" flush>
+              <Field label={t('projects.netBindIp')} htmlFor="net-ip" hint={t('projects.netBindHint')} flush>
                 <input
                   id="net-ip"
                   value={bindIp}
                   onChange={(e) => setBindIp(e.target.value)}
-                  placeholder="留空 = 聽全部；可填綁定 IP"
+                  placeholder={t('projects.netBindPh')}
                   disabled={suspended}
                   spellCheck={false}
                 />
@@ -430,10 +430,10 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended || !hasDomain}
-              title={!hasDomain ? '請先填寫並儲存主要域名' : undefined}
+              title={!hasDomain ? t('projects.netNeedDomainSave') : undefined}
               onClick={() => void saveNetwork(true, false)}
             >
-              發布 Nginx
+              {t('projects.ovPublishNginx')}
             </Button>
             <Button
               variant="secondary"
@@ -442,7 +442,7 @@ export function ProjectNetworkTab({
               disabled={suspended || !hasDomain}
               onClick={() => void saveNetwork(true, true)}
             >
-              發布 Nginx + SSL
+              {t('projects.ovPublishSsl')}
             </Button>
             <Button
               variant="ghost"
@@ -451,7 +451,7 @@ export function ProjectNetworkTab({
               disabled={suspended}
               onClick={onPublish}
             >
-              用已存設定發布
+              {t('projects.publishStored')}
             </Button>
             <Button
               variant="ghost"
@@ -460,11 +460,11 @@ export function ProjectNetworkTab({
               disabled={suspended || !hasDomain}
               onClick={onPublishSsl}
             >
-              用已存設定 + SSL
+              {t('projects.publishStoredSsl')}
             </Button>
           </FormActions>
           <p className="muted u-text-sm u-mt-3 u-mb-0">
-            「發布」寫入管理 conf；同步到 /etc/nginx 並 reload 需系統變更權限。
+            {t('projects.publishNote')}
           </p>
         </CardSection>
       </Card>

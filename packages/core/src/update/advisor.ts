@@ -3,7 +3,7 @@
  */
 
 import type { RiskTier, UpdateAdvice, UpdateItemDto } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface PackageInventoryItem {
   packageName: string;
@@ -24,7 +24,7 @@ export interface PackageInventoryItem {
  */
 export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
   if (!item.packageName || !item.currentVersion) {
-    throw new YskError(ErrorCodes.VALIDATION, '請提供套件名稱與目前版本', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1417'), {
       httpStatus: 400,
     });
   }
@@ -36,8 +36,8 @@ export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
   let risk: RiskTier = 'low';
   let requiresApproval = false;
   let summary = same
-    ? '已裝版本 = apt Candidate，無可用升級'
-    : '有可用升級';
+    ? tl('notes.auto.n0799')
+    : tl('notes.auto.n0943');
 
   if (!same) {
     const hasCritical = cves.some((c) => /CRITICAL/i.test(c));
@@ -47,30 +47,30 @@ export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
       advice = 'urgent';
       risk = 'critical';
       requiresApproval = true;
-      summary = `可升級 ${item.currentVersion} → ${candidate}（CRITICAL CVE，需確認）`;
+      summary = tl('notes.auto.t0488', { v0: (item.currentVersion), v1: (candidate) });
     } else if (hasHigh) {
       advice = 'update';
       risk = 'high';
       requiresApproval = true;
-      summary = `可升級 ${item.currentVersion} → ${candidate}（HIGH CVE，需確認）`;
+      summary = tl('notes.auto.t0489', { v0: (item.currentVersion), v1: (candidate) });
     } else if (item.hasBreakingChange) {
       advice = 'watch';
       risk = 'high';
       requiresApproval = true;
-      summary = `可升級 ${item.currentVersion} → ${candidate}（可能不相容，需確認）`;
+      summary = tl('notes.auto.t0490', { v0: (item.currentVersion), v1: (candidate) });
     } else if (item.hasSecurityFix) {
       advice = 'update';
       risk = 'low';
       requiresApproval = false;
-      summary = `可升級 ${item.currentVersion} → ${candidate}（安全修補）`;
+      summary = tl('notes.auto.t0491', { v0: (item.currentVersion), v1: (candidate) });
     } else {
       advice = 'update';
       risk = 'medium';
       requiresApproval = true;
-      summary = `可升級 ${item.currentVersion} → ${candidate}（apt Candidate）`;
+      summary = tl('notes.auto.t0492', { v0: (item.currentVersion), v1: (candidate) });
     }
   } else if (cves.length > 0) {
-    summary = `無可用升級，但 OSV 標註已裝版有 ${cves.length} 項漏洞信號`;
+    summary = tl('notes.auto.t0493', { v0: (cves.length) });
     risk = cves.some((c) => /CRITICAL|HIGH/i.test(c)) ? 'high' : 'medium';
     requiresApproval = true;
     advice = 'watch';
@@ -101,7 +101,7 @@ export function buildAdvisoryQueries(
   version: string,
 ): Array<{ source: string; query: string }> {
   if (!packageName) {
-    throw new YskError(ErrorCodes.VALIDATION, '請提供套件名稱', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1416'), { httpStatus: 400 });
   }
   return [
     { source: 'nvd', query: `cpe:2.3:a:*:${packageName}:${version}:*:*:*:*:*:*:*` },

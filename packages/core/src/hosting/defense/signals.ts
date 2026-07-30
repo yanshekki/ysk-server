@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Collect host signals and score threat level.
  */
@@ -125,7 +126,7 @@ export async function collectDefenseSignals(input: {
   const netPts = probe.networkReachable ? 0 : scale(15, 'networkDown');
   signals.push({
     id: 'network',
-    label: '外網探測',
+    label: tl('notes.auto.n0638'),
     value: probe.networkReachable,
     points: netPts,
     detail: probe.details.join('; '),
@@ -135,10 +136,10 @@ export async function collectDefenseSignals(input: {
   const reqPts = probe.highRequestRate ? scale(20, 'highReqRate') : 0;
   signals.push({
     id: 'req_rate',
-    label: '面板請求/分',
+    label: tl('notes.auto.n1593'),
     value: input.requestCountLastMinute ?? 0,
     points: reqPts,
-    detail: probe.highRequestRate ? '超過閾值' : '正常',
+    detail: probe.highRequestRate ? tl('notes.auto.n1457') : tl('notes.auto.n1030'),
   });
   score += reqPts;
 
@@ -147,10 +148,10 @@ export async function collectDefenseSignals(input: {
     score += dPts;
     signals.push({
       id: 'ddos_heuristic',
-      label: 'DDoS 啟發式',
+      label: tl('notes.auto.n0095'),
       value: true,
       points: dPts,
-      detail: '高請求率 + 邊緣探測失敗',
+      detail: tl('notes.auto.n1610'),
     });
   }
 
@@ -160,7 +161,7 @@ export async function collectDefenseSignals(input: {
   score += tcpPoints;
   signals.push({
     id: 'tcp_inuse',
-    label: 'TCP 連接 (inuse)',
+    label: tl('notes.auto.n0194'),
     value: sock.tcp,
     points: tcpPoints,
     detail: sock.detail,
@@ -187,7 +188,7 @@ export async function collectDefenseSignals(input: {
     });
     score += ufwPts;
   } catch {
-    notes.push('UFW 狀態讀取失敗');
+    notes.push(tl('notes.auto.n0198'));
   }
 
   try {
@@ -208,13 +209,13 @@ export async function collectDefenseSignals(input: {
     score += banPoints;
     signals.push({
       id: 'f2b_bans',
-      label: 'fail2ban 活躍封禁',
+      label: tl('notes.auto.n0286'),
       value: bans.length,
       points: banPoints,
-      detail: f2b.active === 'active' ? `${f2b.jails?.length ?? 0} jails` : 'fail2ban 未 active',
+      detail: f2b.active === 'active' ? `${f2b.jails?.length ?? 0} jails` : tl('notes.auto.n0284'),
     });
   } catch {
-    notes.push('fail2ban 狀態讀取失敗');
+    notes.push(tl('notes.auto.n0287'));
   }
 
   score = Math.min(100, score);

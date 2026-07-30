@@ -3,7 +3,7 @@
  */
 
 import type { JsonStore } from '../db/store.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { hashSharePassword, newShareToken, type FileShareRecord } from './manager.js';
 
 function list(store: JsonStore): FileShareRecord[] {
@@ -30,7 +30,7 @@ export function createFileShare(
   },
 ): FileShareRecord {
   if (!input.path || input.path === '.') {
-    throw new YskError(ErrorCodes.VALIDATION, '請指定路徑', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
   }
   const row: FileShareRecord = {
     id: newShareToken().slice(0, 12),
@@ -41,8 +41,7 @@ export function createFileShare(
     expiresAt: input.expiresAt,
     createdAt: new Date().toISOString(),
     createdBy: input.createdBy,
-    downloadCount: 0,
-  };
+    downloadCount: 0 };
   list(store).unshift(row as unknown as FileShareRecord);
   store.persist();
   return { ...row };

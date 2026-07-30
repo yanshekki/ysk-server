@@ -2,7 +2,7 @@
  * Kernel Sandbox policy planner — pure orchestration (no real nsenter/seccomp apply here).
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export interface SandboxPolicy {
   /** Linux user the process should run as */
@@ -42,7 +42,7 @@ export function planSandbox(
   overrides: Partial<SandboxPolicy> = {},
 ): SandboxPlan {
   if (!command.length) {
-    throw new YskError(ErrorCodes.VALIDATION, '沙箱指令不可為空', {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1051'), {
       httpStatus: 400,
     });
   }
@@ -50,7 +50,7 @@ export function planSandbox(
   if (policy.seccompProfile === 'unconfined' && !policy.runAsUser) {
     throw new YskError(
       ErrorCodes.SANDBOX_VIOLATION,
-      '非受限 seccomp 需要明確指定 runAsUser',
+      tl('notes.auto.n1592'),
       { httpStatus: 400 },
     );
   }

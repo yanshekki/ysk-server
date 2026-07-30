@@ -5,6 +5,56 @@
 Production-oriented control plane with **real** Node/PHP listen paths, durable JSON store,
 Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 
+### Wave 2 — architecture · honesty · unification (2026-07-30)
+
+Full-system coding review stack **R0–R7** (see [docs/architecture/code-review-wave2.md](./docs/architecture/code-review-wave2.md)).
+
+**Architecture & contracts**
+
+- `@ysk/shared` domain DTO modules: metrics, network, system, databases, ftp, files, email-domain, fleet, software, ssl, updates, ai — web `features/*/api.ts` re-exports; core metrics/readiness/host overview align
+- HTTP: `http-server.ts` reduced to ~120 LOC dispatcher; domain handlers under `apps/server/src/routes/*` (+ existing `controllers/*`)
+- Inventory: `pnpm review:inventory`; feature single-entry map in `docs/architecture/feature-single-entry.md`
+
+**Product IA / honesty**
+
+- Defense single entry: `/protection`; tools at `/protection/firewall` and `/protection/fail2ban`; legacy paths redirect (query preserved)
+- Removed dual Dashboard/Services/Readiness fail2ban+firewall CTAs; deleted deprecated `DbServicePage`
+- CDN fleet: real `enqueue` of `cdn.edge.apply` / `cdn.edge.purge`; agent CLI handler `runCdnFleetPayload`; UI fleet session field; **queued ≠ applied** (never fake applied)
+- Ops honesty: remaining `sendJson(ok?200:422)` CDN/DNS paths → `sendOpsResult`
+
+**UI kit & CSS**
+
+- PageGuide「說明」tab gate: `pnpm about-tab:check` (in `pnpm gates`)
+- Removed dead UI: `ExecutionResultPanel`, `KeyValueList`, `ResourceTable`, `CapabilityBanner`, `SettingField` (+ related CSS)
+- CSS: monorepo `styles/components/*.css` modules (barrel `components/index.css`); `components.css` is re-export shim
+- Inline style policy: layout/spacing via utilities; meters use `--meter-pct` CSS variables only
+
+**CI hard gates (root `pnpm gates`)**
+
+```text
+honesty:lint → primitives:check → chrome:check → about-tab:check → css:reuse
+→ i18n:check-keys → i18n:check-ui → i18n:check-api
+```
+
+Then typecheck / build / test / e2e as before.
+
+### i18n L0–L5 (2026-07-30)
+
+- **L0–L2**: Shared locales, shell/UI, feature pages
+- **L3**: Request locale (`tl` / Accept-Language / CLI); `errors.*` + `ops.*`; auth; EXECUTE blocked; `ApiError`
+- **L4**: Core/server operator notes under `notes.*`; web blocked detection + i18n operator messages
+- **L5**: Hard gates — `i18n:check-ui` + `i18n:check-api` in `pnpm gates`
+- **L2.1**: Page guide bodies in `guides/data/{zh-HK,zh-CN,en}.json` (45); locale-aware `getPageGuide`; PATCH `/api/v1/auth/locale` + login applies `user.locale`
+- **Polish**: `scripts/polish-i18n-followup.py` clears CJK from `notes` EN; regenerates zh-CN page guides from zh-HK
+
+See [docs/i18n.md](./docs/i18n.md).
+
+**Deferred (documented, not blocking Wave 2 close)**
+
+- Fat `system-controller.ts` / residual `routes/misc.ts` further slice
+- God pages (Protection, Logs, Cdn, …) feature-ui split
+- DescriptionList vs InfoCard documentation-only overlap
+
 ### Implemented (usable)
 
 - Monorepo: `@ysk/shared`, `@ysk/core`, `@ysk/server`, `@ysk/web`

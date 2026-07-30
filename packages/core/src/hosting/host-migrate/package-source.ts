@@ -21,7 +21,7 @@ import type {
   HostManifestRedis,
   OpsResultDto,
 } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { dumpSqlDatabase } from '../db-dump.js';
@@ -88,7 +88,7 @@ export async function quiesceProjects(input: {
       name: 'quiesce',
       ok: false,
       blocked: true,
-      notes: ['無法停服：未開啟 YSK_EXECUTE'],
+      notes: [tl('notes.auto.n1144')],
     };
   }
 
@@ -114,9 +114,9 @@ export async function quiesceProjects(input: {
 
   // Optional: FLUSH not used — we dump RDB instead
   notes.unshift(
-    `已嘗試停止 ${input.manifest.projects.length} 個專案 unit（ok-ish ${stopped}）`,
+    tl('notes.auto.t0603', { v0: (input.manifest.projects.length), v1: (stopped) }),
   );
-  if (failed) notes.push(`部分 stop 非零 exit（共 ${failed}）— 仍繼續 dump`);
+  if (failed) notes.push(tl('notes.auto.t0604', { v0: (failed) }));
 
   return {
     kind: 'quiesce',
@@ -155,7 +155,7 @@ export async function packageSqlDumps(input: {
       kind: 'sql',
       name: '(none)',
       ok: true,
-      notes: ['無 SQL 資料庫需 dump'],
+      notes: [tl('notes.auto.n1064')],
     });
     return { ok: true, items, databases };
   }
@@ -166,7 +166,7 @@ export async function packageSqlDumps(input: {
         kind: 'sql',
         name: db.id || '?',
         ok: false,
-        notes: ['資料庫缺 name'],
+        notes: [tl('notes.auto.n1452')],
       });
       continue;
     }
@@ -234,7 +234,7 @@ export async function packageRedisDumps(input: {
       kind: 'redis',
       name: '(none)',
       ok: true,
-      notes: ['無 Redis 實例需 dump'],
+      notes: [tl('notes.auto.n1063')],
     });
     return { ok: true, items, redis };
   }
@@ -259,7 +259,7 @@ export async function packageRedisDumps(input: {
         kind: 'redis',
         name: row.id,
         ok: true,
-        notes: [`與 ${key} 共用同一 RDB（略過重複 dump）`],
+        notes: [tl('notes.auto.t0605', { v0: (key) })],
         path: first ? join(input.dataDir, first.rdbRelPath!) : undefined,
       });
       redis.push({
@@ -390,8 +390,8 @@ export async function packageSourceForMigrate(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: '伺服器未開啟系統變更權限，無法打包 dump',
-      notes: ['package 需要 YSK_EXECUTE=1'],
+      blockMessage: tl('notes.auto.n0531'),
+      notes: [tl('notes.auto.n0362')],
       packageDir,
       items: [
         {
@@ -411,8 +411,8 @@ export async function packageSourceForMigrate(input: {
     return assertHonestOps({
       ok: false,
       blocked: true,
-      blockMessage: '未確認維護窗，拒絕打包（避免熱 dump 不一致）',
-      notes: ['請先確認 maintenanceAccepted'],
+      blockMessage: tl('notes.auto.n0971'),
+      notes: [tl('notes.auto.n1381')],
       packageDir,
       items: [],
       manifest: input.manifest,
@@ -544,17 +544,17 @@ export async function packageSourceForMigrate(input: {
       dataDir,
       input.job,
       'failed',
-      'package dump 未完成 — 禁止 transfer',
+      tl('notes.auto.n0360'),
     );
     return assertHonestOps({
       ok: false,
       blocked: blocked || undefined,
       apply_status: blocked ? 'blocked' : 'failed',
       blockMessage: blocked
-        ? '打包被權限/工具阻擋'
-        : '有資料庫/Redis dump 失敗，已中止（不會 transfer）',
+        ? tl('notes.auto.n0842')
+        : tl('notes.auto.n0946'),
       notes: [
-        'package 失敗 — 不得進入 transfer',
+        tl('notes.auto.n0361'),
         ...items.filter((i) => !i.ok).flatMap((i) => i.notes),
       ],
       packageDir,
@@ -591,9 +591,9 @@ export async function packageSourceForMigrate(input: {
     ok: true,
     apply_status: 'written',
     notes: [
-      `打包完成 → ${packageDir}`,
+      tl('notes.auto.t0606', { v0: (packageDir) }),
       `SQL ${sql.databases.filter((d) => d.dumpRelPath).length} · Redis ${red.redis.filter((r) => r.rdbRelPath).length}`,
-      'dump 已寫入 dataDir，尚未 transfer',
+      tl('notes.auto.n0277'),
     ],
     written: writtenRel.map((r) => join(dataDir, r)),
     packageDir,

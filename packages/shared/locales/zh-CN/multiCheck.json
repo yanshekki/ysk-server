@@ -1,0 +1,10 @@
+{
+  "customPlaceholder": "自定义代码",
+  "searchPlaceholder": "搜索…",
+  "emptyText": "无符合项目",
+  "removeTitle": "点击移除",
+  "noneSelected": "尚未选择",
+  "optionsAria": "选项",
+  "showingCapped": "显示前 {{shown}}／共 {{total}} 项 — 用搜索收窄",
+  "add": "加入"
+}

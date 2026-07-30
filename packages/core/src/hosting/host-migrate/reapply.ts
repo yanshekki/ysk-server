@@ -6,7 +6,7 @@
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { CronJobService } from '../backup-cron.js';
@@ -15,8 +15,7 @@ import {
   applyEmailStack,
   applyFail2ban,
   applyFirewall,
-  installControlPlaneSystemd,
-} from '../system-apply.js';
+  installControlPlaneSystemd } from '../system-apply.js';
 import { appendMigrateStep, setMigratePhase, writeMigrateProgress } from './job-store.js';
 
 export type ReapplyItem = {
@@ -43,7 +42,7 @@ export function noteBindIpMigrations(
   for (const p of manifest.projects) {
     if (!p.bind_ip) continue;
     notes.push(
-      `專案 ${p.id} 來源 bind_ip=${p.bind_ip} — 新機應改為空（全介面）`,
+      tl('notes.auto.t0662', { v0: (p.id), v1: (p.bind_ip) }),
     );
     const row = db.snapshot.projects.find((x) => x.id === p.id);
     if (row && row.bind_ip) {
@@ -54,17 +53,16 @@ export function noteBindIpMigrations(
   if (changed) {
     try {
       db.persist();
-      notes.push(`已清空 ${changed} 個 project.bind_ip`);
+      notes.push(tl('notes.auto.t0663', { v0: (changed) }));
     } catch (e) {
-      notes.push(`無法 persist bind_ip 修正: ${e instanceof Error ? e.message : String(e)}`);
+      notes.push(tl('notes.auto.t0664', { v0: (e instanceof Error ? e.message : String(e)) }));
     }
   }
   return {
     id: 'bind-ip',
     ok: true,
-    notes: notes.length ? notes : ['無 bind_ip 需清理'],
-    apply_status: 'written',
-  };
+    notes: notes.length ? notes : [tl('notes.auto.n1073')],
+    apply_status: 'written' };
 }
 
 /**
@@ -90,10 +88,9 @@ export async function reapplyOnHost(input: {
       ok: false,
       blocked: true,
       requiresExecute: true,
-      blockMessage: 'reapply 需要 YSK_EXECUTE=1',
-      notes: ['未開啟系統變更權限'],
-      items: [],
-    }) as ReapplyResult;
+      blockMessage: tl('notes.auto.n0402'),
+      notes: [tl('ops.blocked.needExecuteShort')],
+      items: [] }) as ReapplyResult;
   }
 
   setMigratePhase(dataDir, input.job, 'reapply');
@@ -108,15 +105,12 @@ export async function reapplyOnHost(input: {
     result: {
       ok: bind.ok,
       apply_status: 'written',
-      notes: bind.notes,
-    },
-  });
+      notes: bind.notes } });
 
   // 1) control plane unit
   writeMigrateProgress(dataDir, input.job.id, {
     phase: 'reapply',
-    status: 'systemd',
-  });
+    status: 'systemd' });
   const cliPath =
     input.cliPath ||
     (existsSync('/usr/bin/ysk-server')
@@ -139,8 +133,7 @@ export async function reapplyOnHost(input: {
       ? resolvedCli
       : join(dataDir, 'systemd', 'ysk-serve-entry.js'),
     host,
-    enable: true,
-  });
+    enable: true });
   // If we pointed at a missing entry, write a tiny launcher
   if (!resolvedCli.endsWith('.js')) {
     try {
@@ -166,8 +159,7 @@ export async function reapplyOnHost(input: {
         ? unit.executed
           ? 'applied'
           : 'written'
-        : 'failed',
-  });
+        : 'failed' });
   appendMigrateStep(dataDir, input.job, {
     phase: 'reapply',
     name: 'control-plane-unit',
@@ -176,9 +168,7 @@ export async function reapplyOnHost(input: {
       blocked: unit.blocked,
       apply_status: items[items.length - 1]!.apply_status,
       notes: unit.notes,
-      written: unit.written,
-    },
-  });
+      written: unit.written } });
 
   // 2) nginx
   writeMigrateProgress(dataDir, input.job.id, { phase: 'reapply', status: 'nginx' });
@@ -192,30 +182,28 @@ export async function reapplyOnHost(input: {
     const ngx = await syncNginxConfigs({
       dataDir,
       host,
-      systemConfDir,
-    });
+      systemConfDir });
     ngxNotes = [...ngx.notes];
     ngxOk = ngx.ok !== false;
     if (systemConfDir && host.executeEnabled() && host.isRoot()) {
       const t = await host.runCommand(['nginx', '-t'], { timeoutMs: 15_000 });
       if (t.exitCode === 0) {
         const rel = await host.runCommand(['systemctl', 'reload', 'nginx'], {
-          timeoutMs: 15_000,
-        });
+          timeoutMs: 15_000 });
         ngxReloadOk = rel.exitCode === 0;
       } else {
         ngxReloadOk = false;
-        ngxNotes.push(`nginx -t 失敗: ${(t.stderr || t.stdout).slice(0, 120)}`);
+        ngxNotes.push(tl('notes.tpl.nginxTestFailed', { detail: (t.stderr || t.stdout).slice(0, 120) }));
       }
     } else {
-      ngxNotes.push('未複製到 /etc/nginx（非 root 或未 EXECUTE）— managed conf 已在 dataDir');
+      ngxNotes.push(tl('notes.auto.n0978'));
       ngxReloadOk = true;
     }
   } catch (e) {
     ngxOk = false;
     ngxReloadOk = false;
     ngxNotes.push(
-      `nginx sync 例外: ${e instanceof Error ? e.message : String(e)}`,
+      tl('notes.auto.t0665', { v0: (e instanceof Error ? e.message : String(e)) }),
     );
   }
   items.push({
@@ -223,19 +211,16 @@ export async function reapplyOnHost(input: {
     ok: ngxOk && ngxReloadOk,
     notes: [
       ...ngxNotes,
-      ngxReloadOk ? 'nginx reload ok / skipped' : 'nginx reload 失敗',
+      ngxReloadOk ? 'nginx reload ok / skipped' : tl('notes.auto.n0341'),
     ],
-    apply_status: ngxOk && ngxReloadOk ? 'applied' : 'partial',
-  });
+    apply_status: ngxOk && ngxReloadOk ? 'applied' : 'partial' });
   appendMigrateStep(dataDir, input.job, {
     phase: 'reapply',
     name: 'nginx',
     result: {
       ok: items[items.length - 1]!.ok,
       apply_status: items[items.length - 1]!.apply_status,
-      notes: items[items.length - 1]!.notes,
-    },
-  });
+      notes: items[items.length - 1]!.notes } });
 
   // 3) email per domain
   for (const d of input.manifest.emailDomains) {
@@ -243,15 +228,13 @@ export async function reapplyOnHost(input: {
     writeMigrateProgress(dataDir, input.job.id, {
       phase: 'reapply',
       status: 'email',
-      domain: d.domain,
-    });
+      domain: d.domain });
     try {
       const em = await applyEmailStack({
         dataDir,
         domain: d.domain,
         host,
-        installPackages: false,
-      });
+        installPackages: false });
       items.push({
         id: `email:${d.domain}`,
         ok: em.ok,
@@ -263,15 +246,13 @@ export async function reapplyOnHost(input: {
             ? em.executed
               ? 'applied'
               : 'written'
-            : 'failed',
-      });
+            : 'failed' });
     } catch (e) {
       items.push({
         id: `email:${d.domain}`,
         ok: false,
         notes: [e instanceof Error ? e.message : String(e)],
-        apply_status: 'failed',
-      });
+        apply_status: 'failed' });
     }
     appendMigrateStep(dataDir, input.job, {
       phase: 'reapply',
@@ -280,29 +261,24 @@ export async function reapplyOnHost(input: {
         ok: items[items.length - 1]!.ok,
         blocked: items[items.length - 1]!.blocked,
         apply_status: items[items.length - 1]!.apply_status,
-        notes: items[items.length - 1]!.notes,
-      },
-    });
+        notes: items[items.length - 1]!.notes } });
   }
 
   // 4) firewall / fail2ban optional
   if (input.applyFirewall !== false && (input.manifest.counts.firewall_rules ?? 0) > 0) {
     writeMigrateProgress(dataDir, input.job.id, {
       phase: 'reapply',
-      status: 'firewall',
-    });
+      status: 'firewall' });
     const fw = await applyFirewall({
       host,
       dataDir,
-      apply: true,
-    });
+      apply: true });
     items.push({
       id: 'firewall',
       ok: fw.ok,
       blocked: fw.blocked,
       notes: fw.notes,
-      apply_status: fw.blocked ? 'blocked' : fw.ok ? 'applied' : 'failed',
-    });
+      apply_status: fw.blocked ? 'blocked' : fw.ok ? 'applied' : 'failed' });
     appendMigrateStep(dataDir, input.job, {
       phase: 'reapply',
       name: 'firewall',
@@ -310,28 +286,23 @@ export async function reapplyOnHost(input: {
         ok: fw.ok,
         blocked: fw.blocked,
         apply_status: items[items.length - 1]!.apply_status,
-        notes: fw.notes,
-      },
-    });
+        notes: fw.notes } });
   }
 
   if (input.applyFail2ban !== false) {
     writeMigrateProgress(dataDir, input.job.id, {
       phase: 'reapply',
-      status: 'fail2ban',
-    });
+      status: 'fail2ban' });
     const f2b = await applyFail2ban({
       host,
       dataDir,
-      apply: true,
-    });
+      apply: true });
     items.push({
       id: 'fail2ban',
       ok: f2b.ok,
       blocked: f2b.blocked,
       notes: f2b.notes,
-      apply_status: f2b.blocked ? 'blocked' : f2b.ok ? 'applied' : 'partial',
-    });
+      apply_status: f2b.blocked ? 'blocked' : f2b.ok ? 'applied' : 'partial' });
     appendMigrateStep(dataDir, input.job, {
       phase: 'reapply',
       name: 'fail2ban',
@@ -339,9 +310,7 @@ export async function reapplyOnHost(input: {
         ok: f2b.ok,
         blocked: f2b.blocked,
         apply_status: items[items.length - 1]!.apply_status,
-        notes: f2b.notes,
-      },
-    });
+        notes: f2b.notes } });
   }
 
   // 5) cron
@@ -358,15 +327,13 @@ export async function reapplyOnHost(input: {
         ? 'blocked'
         : inst.ok
           ? 'applied'
-          : 'failed',
-    });
+          : 'failed' });
   } catch (e) {
     items.push({
       id: 'cron',
       ok: false,
       notes: [e instanceof Error ? e.message : String(e)],
-      apply_status: 'failed',
-    });
+      apply_status: 'failed' });
   }
   appendMigrateStep(dataDir, input.job, {
     phase: 'reapply',
@@ -375,14 +342,11 @@ export async function reapplyOnHost(input: {
       ok: items[items.length - 1]!.ok,
       blocked: items[items.length - 1]!.blocked,
       apply_status: items[items.length - 1]!.apply_status,
-      notes: items[items.length - 1]!.notes,
-    },
-  });
+      notes: items[items.length - 1]!.notes } });
 
   writeMigrateProgress(dataDir, input.job.id, {
     phase: 'reapply',
-    status: 'done',
-  });
+    status: 'done' });
 
   // Critical: nginx + control plane; email/fw soft
   const criticalIds = new Set(['control-plane-unit', 'nginx']);
@@ -392,7 +356,7 @@ export async function reapplyOnHost(input: {
 
   const ok = !criticalFail && !blocked;
   if (!ok) {
-    setMigratePhase(dataDir, input.job, 'failed', 'reapply 關鍵步驟失敗');
+    setMigratePhase(dataDir, input.job, 'failed', tl('notes.auto.n0037'));
   }
 
   return assertHonestOps({
@@ -406,9 +370,8 @@ export async function reapplyOnHost(input: {
         ? 'blocked'
         : 'failed',
     notes: [
-      ok ? 'reapply 關鍵步驟完成' : 'reapply 關鍵步驟失敗',
+      ok ? tl('notes.tpl.reapplyDone') : tl('notes.auto.n0037'),
       ...items.filter((i) => !i.ok).flatMap((i) => [`[${i.id}] ${i.notes[0] ?? ''}`]),
     ],
-    items,
-  }) as ReapplyResult;
+    items }) as ReapplyResult;
 }

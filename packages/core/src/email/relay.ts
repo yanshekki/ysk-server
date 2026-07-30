@@ -4,7 +4,7 @@
 
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { YskDatabase } from '../db/database.js';
 
@@ -44,10 +44,10 @@ export async function applySmtpRelay(input: {
 }): Promise<SmtpRelayApplyResult> {
   const r = input.relay;
   if (!r.host?.trim()) {
-    throw new YskError(ErrorCodes.VALIDATION, '請填寫中繼主機', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1393'), { httpStatus: 400 });
   }
   if (!Number.isInteger(r.port) || r.port < 1 || r.port > 65535) {
-    throw new YskError(ErrorCodes.VALIDATION, '中繼埠號無效', { httpStatus: 400 });
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0501'), { httpStatus: 400 });
   }
   const dir = join(input.dataDir, 'email', 'relay');
   mkdirSync(dir, { recursive: true });
@@ -102,7 +102,7 @@ export async function applySmtpRelay(input: {
   const want = Boolean(input.applySystem);
   const can = want && input.host.executeEnabled() && input.host.isRoot();
   if (want && !can) {
-    notes.push('無法套用系統中繼設定：需要系統變更權限');
+    notes.push(tl('notes.auto.n1161'));
   }
   if (can) {
     const steps: string[][] = [
@@ -122,7 +122,7 @@ export async function applySmtpRelay(input: {
       commandResults.push({ argv, exitCode: res.exitCode, stderr: res.stderr });
     }
     appliedToSystem = commandResults.every((c) => c.exitCode === 0);
-    notes.push(appliedToSystem ? '已套用中繼設定到系統 Postfix' : '部分系統步驟失敗');
+    notes.push(appliedToSystem ? tl('notes.auto.n0755') : tl('notes.auto.n1496'));
   }
 
   const publicConfig = {

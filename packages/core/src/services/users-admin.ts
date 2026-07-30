@@ -4,7 +4,7 @@
 
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { SystemRole, UserDto } from '@ysk/shared';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { UserRepository } from '../repositories/user-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import type { SessionRepository } from '../repositories/session-repo.js';
@@ -28,8 +28,7 @@ export class UsersAdminService {
       locale: u.locale,
       totpEnabled: Boolean(u.totp_enabled),
       packageId: u.package_id,
-      suspended: Boolean(u.suspended),
-    }));
+      suspended: Boolean(u.suspended) }));
   }
 
   createUser(input: {
@@ -42,15 +41,14 @@ export class UsersAdminService {
   }): UserDto {
     const username = input.username.trim().toLowerCase();
     if (!/^[a-z0-9._-]{2,32}$/.test(username)) {
-      throw new YskError(ErrorCodes.VALIDATION, '用戶名 2–32 字元 [a-z0-9._-]', {
-        httpStatus: 400,
-      });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1248'), {
+        httpStatus: 400 });
     }
     if (input.password.length < 8) {
-      throw new YskError(ErrorCodes.VALIDATION, '密碼至少 8 字元', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.passwordMin8'), { httpStatus: 400 });
     }
     if (this.users.findByUsername(username)) {
-      throw new YskError(ErrorCodes.VALIDATION, `用戶已存在: ${username}`, { httpStatus: 409 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0501', { v0: (username) }), { httpStatus: 409 });
     }
     const roles = (input.roles?.length ? input.roles : ['operator']) as SystemRole[];
     if (roles.includes('admin') === false && roles.length === 0) {
@@ -64,27 +62,24 @@ export class UsersAdminService {
       password_hash: hashPassword(input.password, salt),
       password_salt: salt,
       roles,
-      locale: input.locale ?? 'zh-TW',
+      locale: input.locale ?? 'zh-HK',
       package_id: input.packageId,
       suspended: false,
       created_at: now,
-      updated_at: now,
-    };
+      updated_at: now };
     this.users.insert(user);
     this.audit?.append({
       actor: input.actor,
       action: 'users.create',
       resource: username,
       detail: { roles, packageId: input.packageId },
-      ok: true,
-    });
+      ok: true });
     return {
       id: user.id,
       username,
       roles: [...roles],
       locale: user.locale,
-      totpEnabled: false,
-    };
+      totpEnabled: false };
   }
 
   updateUser(
@@ -99,7 +94,7 @@ export class UsersAdminService {
   ): UserDto {
     const existing = this.users.findById(id);
     if (!existing) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0002'), { httpStatus: 404 });
     }
     const upd: Parameters<UserRepository['update']>[1] = {};
     if (patch.roles) upd.roles = patch.roles;
@@ -108,35 +103,33 @@ export class UsersAdminService {
     if (patch.suspended !== undefined) upd.suspended = patch.suspended;
     if (patch.password) {
       if (patch.password.length < 8) {
-        throw new YskError(ErrorCodes.VALIDATION, '密碼至少 8 字元', { httpStatus: 400 });
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.passwordMin8'), { httpStatus: 400 });
       }
       const salt = randomBytes(16).toString('hex');
       upd.password_salt = salt;
       upd.password_hash = hashPassword(patch.password, salt);
     }
     const u = this.users.update(id, upd);
-    if (!u) throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
+    if (!u) throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0002'), { httpStatus: 404 });
     this.audit?.append({
       actor,
       action: 'users.update',
       resource: id,
       detail: { ...patch, password: patch.password ? '***' : undefined },
-      ok: true,
-    });
+      ok: true });
     return {
       id: u.id,
       username: u.username,
       roles: [...u.roles],
       locale: u.locale,
-      totpEnabled: Boolean(u.totp_enabled),
-    };
+      totpEnabled: Boolean(u.totp_enabled) };
   }
 
   deleteUser(id: string, actor: string): boolean {
     const u = this.users.findById(id);
     if (!u) return false;
     if (u.roles.includes('admin') && this.users.list().filter((x) => x.roles.includes('admin')).length <= 1) {
-      throw new YskError(ErrorCodes.VALIDATION, '不能刪除最後一個 admin', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0500'), { httpStatus: 400 });
     }
     const ok = this.users.delete(id);
     this.audit?.append({
@@ -144,27 +137,25 @@ export class UsersAdminService {
       action: 'users.delete',
       resource: id,
       detail: { username: u.username },
-      ok,
-    });
+      ok });
     return ok;
   }
 
   /**
-   * Impersonate: issue a short-lived session for target user (admin only caller).
+   * Impersonate: issue a short-lived session for target user.
+   * Authorization is enforced at the route layer via `users.impersonate` capability
+   * (factory default: admin only). This method assumes the caller is authorized.
    */
   impersonate(
     targetUserId: string,
     actor: { id: string; username: string; roles: SystemRole[] },
   ): { token: string; user: UserDto; expiresAt: string } {
-    if (!actor.roles.includes('admin')) {
-      throw new YskError(ErrorCodes.FORBIDDEN, '僅 admin 可 impersonate', { httpStatus: 403 });
-    }
     const target = this.users.findById(targetUserId);
     if (!target) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到用戶', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0002'), { httpStatus: 404 });
     }
     if (target.suspended) {
-      throw new YskError(ErrorCodes.VALIDATION, '目標用戶已暫停', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1277'), { httpStatus: 400 });
     }
     const token = randomBytes(24).toString('hex');
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
@@ -172,15 +163,13 @@ export class UsersAdminService {
       token,
       user_id: target.id,
       expires_at: expiresAt,
-      created_at: new Date().toISOString(),
-    });
+      created_at: new Date().toISOString() });
     this.audit?.append({
       actor: actor.username,
       action: 'users.impersonate',
       resource: target.username,
       detail: { targetId: target.id },
-      ok: true,
-    });
+      ok: true });
     return {
       token,
       expiresAt,
@@ -189,9 +178,7 @@ export class UsersAdminService {
         username: target.username,
         roles: [...target.roles],
         locale: target.locale,
-        totpEnabled: Boolean(target.totp_enabled),
-      },
-    };
+        totpEnabled: Boolean(target.totp_enabled) } };
   }
 
   listPackages(): StorePackage[] {
@@ -214,7 +201,7 @@ export class UsersAdminService {
   ): StorePackage {
     const name = input.name.trim();
     if (!name) {
-      throw new YskError(ErrorCodes.VALIDATION, '請填寫方案名稱', { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1395'), { httpStatus: 400 });
     }
     const now = new Date().toISOString();
     const row: StorePackage = {
@@ -229,8 +216,7 @@ export class UsersAdminService {
       allow_ftp: input.allowFtp ?? true,
       notes: input.notes,
       created_at: now,
-      updated_at: now,
-    };
+      updated_at: now };
     if (!this.db.snapshot.packages) this.db.snapshot.packages = [];
     this.db.snapshot.packages.unshift(row);
     this.db.persist();
@@ -239,8 +225,7 @@ export class UsersAdminService {
       action: 'packages.create',
       resource: row.id,
       detail: { name },
-      ok: true,
-    });
+      ok: true });
     return { ...row };
   }
 
@@ -264,7 +249,7 @@ export class UsersAdminService {
   ): StorePackage {
     const p = (this.db.snapshot.packages ?? []).find((x) => x.id === id);
     if (!p) {
-      throw new YskError(ErrorCodes.NOT_FOUND, '找不到方案', { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0863'), { httpStatus: 404 });
     }
     Object.assign(p, patch, { updated_at: new Date().toISOString() });
     this.db.persist();
@@ -273,12 +258,18 @@ export class UsersAdminService {
       action: 'packages.update',
       resource: id,
       detail: patch,
-      ok: true,
-    });
+      ok: true });
     return { ...p };
   }
 
   deletePackage(id: string, actor: string): boolean {
+    const subscribers = this.users.list().filter((u) => u.package_id === id).length;
+    if (subscribers > 0) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1395'), {
+        httpStatus: 400,
+        details: { reason: 'package_has_subscribers', subscribers },
+      });
+    }
     const before = (this.db.snapshot.packages ?? []).length;
     this.db.snapshot.packages = (this.db.snapshot.packages ?? []).filter((p) => p.id !== id);
     this.db.persist();
@@ -288,8 +279,7 @@ export class UsersAdminService {
       action: 'packages.delete',
       resource: id,
       detail: { ok },
-      ok,
-    });
+      ok });
     return ok;
   }
 }

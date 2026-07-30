@@ -5,6 +5,7 @@
  */
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Link } from 'react-router-dom';
 import { useAiTasks } from '../features/llm';
 import type { AiTask } from '../features/llm';
@@ -41,21 +42,10 @@ function taskTone(status: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral'
   return 'info';
 }
 
-function statusLabel(status: string): string {
-  const map: Record<string, string> = {
-    completed: '已完成',
-    done: '已完成',
-    executed: '已執行',
-    failed: '失敗',
-    error: '錯誤',
-    rejected: '已拒絕',
-    pending: '待處理',
-    planned: '待審批',
-    approved: '已批准',
-    running: '執行中',
-    cancelled: '已取消',
-  };
-  return map[status] ?? status;
+function statusLabel(status: string, t: TFunction): string {
+  const key = `ai.status.${status}`;
+  const translated = t(key);
+  return translated === key ? status : translated;
 }
 
 function isTerminal(status: string): boolean {
@@ -108,25 +98,24 @@ export function AiPage() {
   const [pbFilter, setPbFilter] = useState('');
 
   const stats = useMemo(() => {
-    const active = tasks.filter((t) =>
-      ['pending', 'planned', 'running', 'approved'].includes(t.status),
+    const active = tasks.filter((task) =>
+      ['pending', 'planned', 'running', 'approved'].includes(task.status),
     ).length;
-    const failed = tasks.filter((t) =>
-      ['failed', 'error'].includes(t.status),
+    const failed = tasks.filter((task) =>
+      ['failed', 'error'].includes(task.status),
     ).length;
-    const done = tasks.filter((t) =>
-      ['completed', 'done'].includes(t.status),
+    const done = tasks.filter((task) =>
+      ['completed', 'done'].includes(task.status),
     ).length;
     return { active, failed, done };
   }, [tasks]);
 
-  // Keep selected in sync with list after refresh
   useEffect(() => {
     if (!selected) {
       if (tasks[0]) setSelected(tasks[0]);
       return;
     }
-    const fresh = tasks.find((t) => t.id === selected.id);
+    const fresh = tasks.find((task) => task.id === selected.id);
     if (fresh) setSelected(fresh);
     else if (tasks[0]) setSelected(tasks[0]);
     else setSelected(null);
@@ -161,41 +150,49 @@ export function AiPage() {
   }
 
   const phase = selected ? pipelinePhase(selected.status) : 0;
+  const phases = [
+    t('ai.phase.plan'),
+    t('ai.phase.approve'),
+    t('ai.phase.run'),
+    t('ai.phase.done'),
+  ] as const;
 
   return (
     <FeaturePageLayout
-      title={t('nav.ai', { defaultValue: 'AI 任務' })}
+      title={t('nav.ai')}
       showCapability={false}
       status={{
         pill: {
           label:
-            stats.active > 0 ? `${stats.active} 進行中` : `${tasks.length} 任務`,
+            stats.active > 0
+              ? t('ai.activeCount', { count: stats.active })
+              : t('ai.taskCount', { count: tasks.length }),
           tone: stats.failed ? 'warn' : stats.active ? 'ok' : 'neutral',
         },
         items: [
-          { label: '任務', value: tasks.length },
-          { label: '進行中', value: stats.active },
-          { label: '已完成', value: stats.done },
+          { label: t('ai.tasks'), value: tasks.length },
+          { label: t('ai.active'), value: stats.active },
+          { label: t('common.completed'), value: stats.done },
           {
-            label: '失敗',
+            label: t('common.failed'),
             value: stats.failed,
             tone: stats.failed ? 'danger' : 'ok',
           },
         ],
       }}
-      actions={<ActionBar>
+      actions={
+        <ActionBar>
           <Button
             variant="ghost"
             size="sm"
             loading={busy}
             onClick={() => void refresh().catch(() => undefined)}
           >
-            重新整理
+            {t('common.refresh')}
           </Button>
           <Link to="/agents" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             Agents
           </Link>
-          
         </ActionBar>
       }
     >
@@ -203,10 +200,9 @@ export function AiPage() {
 
       <PageTabs
         tabs={[
-          { id: 'tasks', label: `任務 (${tasks.length})` },
-          { id: 'playbooks', label: `劇本 (${playbooks.length})` },
-        
-          { id: 'about', label: '說明' },
+          { id: 'tasks', label: t('ai.tasksTab', { count: tasks.length }) },
+          { id: 'playbooks', label: t('ai.playbooksTab', { count: playbooks.length }) },
+          { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
@@ -215,33 +211,22 @@ export function AiPage() {
         {tab === 'tasks' ? (
           <div className="tab-panel">
             <div className="ai-console">
-                <section className="ai-console__list ops-panel">
-                  <header className="ops-panel__head">
-                    <div>
-                      <h3 className="ops-panel__title">任務佇列</h3>
-                      <p className="ops-panel__sub">
-                        點選查看計劃與步驟 · 終態唔顯示多餘操作
-                      </p>
-                    </div>
-                    <Button variant="primary" size="sm" onClick={openCreate}>
-                      + 建立任務
-                    </Button>
-                  </header>
-                  {tasks.length === 0 ? (
-                    <EmptyState
-                      title="尚未有任務"
-                      description="用列表右上角建立任務，或從劇本庫一鍵產生"
-                      action={
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setTab('playbooks')}
-                        >
-                          瀏覽劇本
-                        </Button>
-                      }
-                    />
-                  ) : (
+              <section className="ai-console__list ops-panel">
+                <header className="ops-panel__head">
+                  <div>
+                    <h3 className="ops-panel__title">{t('ai.queueTitle')}</h3>
+                    <p className="ops-panel__sub">{t('ai.queueSub')}</p>
+                  </div>
+                  <Button variant="primary" size="sm" onClick={openCreate}>
+                    {t('ai.createTaskPlus')}
+                  </Button>
+                </header>
+                {tasks.length === 0 ? (
+                  <EmptyState
+                    title={t('ai.emptyTasks')}
+                    description={t('ai.emptyTasksDesc')}
+                  />
+                ) : (
                   <div className="ai-task-list">
                     {tasks.map((task) => {
                       const sc = stepCount(task);
@@ -259,13 +244,16 @@ export function AiPage() {
                           <div className="ai-task-row__main">
                             <div className="ai-task-row__title">
                               <span className="ai-task-row__prompt">
-                                {task.prompt || '（無提示）'}
+                                {task.prompt || t('ai.noPrompt')}
                               </span>
-                              <Badge tone={tone}>{statusLabel(task.status)}</Badge>
+                              <Badge tone={tone}>{statusLabel(task.status, t)}</Badge>
                             </div>
                             <div className="ai-task-row__meta">
                               <span>
-                                步驟 {sc.done}/{sc.total || '—'}
+                                {t('ai.stepsOf', {
+                                  done: sc.done,
+                                  total: sc.total || t('common.noneSelectedShort'),
+                                })}
                               </span>
                               <span className="ai-task-row__id">
                                 {task.id.slice(0, 8)}
@@ -279,127 +267,122 @@ export function AiPage() {
                       );
                     })}
                   </div>
-                  )}
-                </section>
+                )}
+              </section>
 
-                <section className="ai-console__detail ops-panel">
-                  {selected ? (
-                    <>
-                      <header className="ops-panel__head ops-panel__head--stack">
-                        <div className="ops-panel__head-row">
-                          <div>
-                            <h3 className="ops-panel__title ai-detail__prompt">
-                              {selected.prompt}
-                            </h3>
-                            <p className="ops-panel__sub">
-                              {selected.planSummary || '（無計劃摘要）'}
-                            </p>
-                          </div>
-                          <Badge tone={taskTone(selected.status)}>
-                            {statusLabel(selected.status)}
-                          </Badge>
+              <section className="ai-console__detail ops-panel">
+                {selected ? (
+                  <>
+                    <header className="ops-panel__head ops-panel__head--stack">
+                      <div className="ops-panel__head-row">
+                        <div>
+                          <h3 className="ops-panel__title ai-detail__prompt">
+                            {selected.prompt}
+                          </h3>
+                          <p className="ops-panel__sub">
+                            {selected.planSummary || t('ai.noPlanSummary')}
+                          </p>
                         </div>
-                        <div className="ai-pipeline" aria-label="任務階段">
-                          {(['計劃', '審批', '執行', '完成'] as const).map(
-                            (label, i) => (
-                              <div
-                                key={label}
-                                className={`ai-pipeline__step${
-                                  i <= phase ? ' is-done' : ''
-                                }${i === phase ? ' is-current' : ''}`}
-                              >
-                                <span className="ai-pipeline__dot">{i + 1}</span>
-                                <span className="ai-pipeline__lab">{label}</span>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                        <ActionBar>
-                          {canApprove(selected.status) ? (
-                            <Button
-                              variant="primary"
-                              size="md"
-                              loading={busy}
-                              onClick={() => void approveAndRun(selected.id)}
-                            >
-                              批准並執行
-                            </Button>
-                          ) : null}
-                          {canCancel(selected.status) ? (
-                            <Button
-                              variant="ghost"
-                              size="md"
-                              loading={busy}
-                              onClick={() => void cancelTask(selected.id)}
-                            >
-                              取消任務
-                            </Button>
-                          ) : null}
-                          {isTerminal(selected.status) ? (
-                            <span className="muted u-text-sm">
-                              任務已終結，可建立新任務或執行劇本
-                            </span>
-                          ) : null}
-                        </ActionBar>
-                      </header>
-
-                      <div className="ai-steps">
-                        <h4 className="ai-steps__title">
-                          步驟（{selected.steps.length}）
-                        </h4>
-                        {selected.steps.length === 0 ? (
-                          <p className="ops-muted">尚未產生步驟</p>
-                        ) : (
-                          <ol className="ai-steps__list">
-                            {selected.steps.map((s, idx) => (
-                              <li
-                                key={s.id}
-                                className={`ai-step ai-step--${taskTone(s.status)}`}
-                              >
-                                <div className="ai-step__idx">{idx + 1}</div>
-                                <div className="ai-step__body">
-                                  <div className="ai-step__head">
-                                    <code className="ai-step__tool">{s.tool}</code>
-                                    <Badge tone={taskTone(s.status)}>
-                                      {statusLabel(s.status)}
-                                    </Badge>
-                                    {s.requiresApproval ? (
-                                      <Badge tone="warn">需審批</Badge>
-                                    ) : (
-                                      <span className="muted u-text-sm">免審批</span>
-                                    )}
-                                  </div>
-                                  {s.error ? (
-                                    <p className="ai-step__err">{s.error}</p>
-                                  ) : null}
-                                </div>
-                                {(s.status === 'planned' ||
-                                  s.status === 'approved') && (
-                                  <Button
-                                    variant="danger"
-                                    size="sm"
-                                    loading={busy}
-                                    onClick={() =>
-                                      void rejectStep(selected.id, s.id)
-                                    }
-                                  >
-                                    拒絕
-                                  </Button>
-                                )}
-                              </li>
-                            ))}
-                          </ol>
-                        )}
+                        <Badge tone={taskTone(selected.status)}>
+                          {statusLabel(selected.status, t)}
+                        </Badge>
                       </div>
-                    </>
-                  ) : (
-                    <EmptyState
-                      title="選擇任務"
-                      description="左側點一筆任務查看計劃與步驟"
-                    />
-                  )}
-                </section>
-              </div>
+                      <div className="ai-pipeline" aria-label={t('ai.pipelineAria')}>
+                        {phases.map((label, i) => (
+                          <div
+                            key={label}
+                            className={`ai-pipeline__step${
+                              i <= phase ? ' is-done' : ''
+                            }${i === phase ? ' is-current' : ''}`}
+                          >
+                            <span className="ai-pipeline__dot">{i + 1}</span>
+                            <span className="ai-pipeline__lab">{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <ActionBar>
+                        {canApprove(selected.status) ? (
+                          <Button
+                            variant="primary"
+                            size="md"
+                            loading={busy}
+                            onClick={() => void approveAndRun(selected.id)}
+                          >
+                            {t('ai.approveRun')}
+                          </Button>
+                        ) : null}
+                        {canCancel(selected.status) ? (
+                          <Button
+                            variant="ghost"
+                            size="md"
+                            loading={busy}
+                            onClick={() => void cancelTask(selected.id)}
+                          >
+                            {t('ai.cancelTask')}
+                          </Button>
+                        ) : null}
+                        {isTerminal(selected.status) ? (
+                          <span className="muted u-text-sm">{t('ai.terminalHint')}</span>
+                        ) : null}
+                      </ActionBar>
+                    </header>
+
+                    <div className="ai-steps">
+                      <h4 className="ai-steps__title">
+                        {t('ai.stepsTitle', { count: selected.steps.length })}
+                      </h4>
+                      {selected.steps.length === 0 ? (
+                        <p className="ops-muted">{t('ai.noSteps')}</p>
+                      ) : (
+                        <ol className="ai-steps__list">
+                          {selected.steps.map((s, idx) => (
+                            <li
+                              key={s.id}
+                              className={`ai-step ai-step--${taskTone(s.status)}`}
+                            >
+                              <div className="ai-step__idx">{idx + 1}</div>
+                              <div className="ai-step__body">
+                                <div className="ai-step__head">
+                                  <code className="ai-step__tool">{s.tool}</code>
+                                  <Badge tone={taskTone(s.status)}>
+                                    {statusLabel(s.status, t)}
+                                  </Badge>
+                                  {s.requiresApproval ? (
+                                    <Badge tone="warn">{t('ai.needsApproval')}</Badge>
+                                  ) : (
+                                    <span className="muted u-text-sm">
+                                      {t('ai.noApproval')}
+                                    </span>
+                                  )}
+                                </div>
+                                {s.error ? (
+                                  <p className="ai-step__err">{s.error}</p>
+                                ) : null}
+                              </div>
+                              {(s.status === 'planned' || s.status === 'approved') && (
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  loading={busy}
+                                  onClick={() => void rejectStep(selected.id, s.id)}
+                                >
+                                  {t('ai.reject')}
+                                </Button>
+                              )}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <EmptyState
+                    title={t('ai.selectTask')}
+                    description={t('ai.selectTaskDesc')}
+                  />
+                )}
+              </section>
+            </div>
           </div>
         ) : null}
 
@@ -409,24 +392,27 @@ export function AiPage() {
               <header className="ops-panel__head ops-panel__head--stack">
                 <div className="ops-panel__head-row">
                   <div>
-                    <h3 className="ops-panel__title">劇本庫</h3>
-                    <p className="ops-panel__sub">
-                      預設操作組合 · 執行後會建立任務並切去任務 tab
-                    </p>
+                    <h3 className="ops-panel__title">{t('ai.playbooksTitle')}</h3>
+                    <p className="ops-panel__sub">{t('ai.playbooksSub')}</p>
                   </div>
-                  <span className="ops-muted">{filteredPlaybooks.length} 個</span>
+                  <span className="ops-muted">
+                    {t('ai.countItems', { count: filteredPlaybooks.length })}
+                  </span>
                 </div>
-                <Field label="搜尋" htmlFor="pb-filter" flush>
+                <Field label={t('common.search')} htmlFor="pb-filter" flush>
                   <input
                     id="pb-filter"
                     value={pbFilter}
                     onChange={(e) => setPbFilter(e.target.value)}
-                    placeholder="名稱 / 說明"
+                    placeholder={t('ai.searchPh')}
                   />
                 </Field>
               </header>
               {filteredPlaybooks.length === 0 ? (
-                <EmptyState title="無符合劇本" description="改關鍵字或清空搜尋" />
+                <EmptyState
+                  title={t('ai.noPlaybooks')}
+                  description={t('ai.noPlaybooksDesc')}
+                />
               ) : (
                 <div className="ai-pb-grid">
                   {filteredPlaybooks.map((p) => (
@@ -434,7 +420,7 @@ export function AiPage() {
                       <div className="ai-pb-card__body">
                         <h4 className="ai-pb-card__name">{p.name}</h4>
                         <p className="ai-pb-card__desc">
-                          {p.description || '—'}
+                          {p.description || t('common.noneSelectedShort')}
                         </p>
                       </div>
                       <footer className="ai-pb-card__foot">
@@ -453,7 +439,7 @@ export function AiPage() {
                             })();
                           }}
                         >
-                          執行
+                          {t('ai.run')}
                         </Button>
                       </footer>
                     </article>
@@ -463,15 +449,15 @@ export function AiPage() {
             </section>
           </div>
         ) : null}
-      
+
         {tab === 'about' ? <PageGuide guideId="ai" /> : null}
       </PageTabs>
 
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="建立 AI 任務"
-        description="產生計劃 ≠ 已執行。工具只會在 allowlist 內。"
+        title={t('ai.createTitle')}
+        description={t('ai.createDesc')}
         size="lg"
         footer={
           <>
@@ -480,7 +466,7 @@ export function AiPage() {
               size="md"
               onClick={() => setCreateOpen(false)}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -489,7 +475,7 @@ export function AiPage() {
               size="md"
               loading={busy}
             >
-              產生計劃
+              {t('ai.generatePlan')}
             </Button>
           </>
         }
@@ -497,12 +483,12 @@ export function AiPage() {
         <form id="ai-create" onSubmit={(e) => void onCreate(e)}>
           <FormLayout>
             <Field
-              label="自然語言指令"
+              label={t('ai.promptLabel')}
               htmlFor="prompt"
               fullWidth
               flush
               required
-              hint="例如：檢查主機負載並回報；或 nginx 狀態"
+              hint={t('ai.promptHint')}
             >
               <textarea
                 id="prompt"
@@ -510,13 +496,11 @@ export function AiPage() {
                 onChange={(e) => setPrompt(e.target.value)}
                 required
                 rows={5}
-                placeholder="描述想做的事…"
+                placeholder={t('ai.promptPh')}
               />
             </Field>
           </FormLayout>
-          <FormHint>
-            下一步：在任務詳情按「批准並執行」，或拒絕個別步驟。
-          </FormHint>
+          <FormHint>{t('ai.createHint')}</FormHint>
         </form>
       </Modal>
     </FeaturePageLayout>

@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Fail2ban jail / filter snippets for panel login + sshd (honest: written under dataDir).
  */
@@ -11,8 +12,8 @@ export function buildYskLoginFilter(): string {
     '# Install: /etc/fail2ban/filter.d/ysk-login.conf',
     '[Definition]',
     'failregex = ^.*auth\\.login.*ok["\']?\\s*:\\s*false.*$',
-    '            ^.*帳號或密碼不正確.*$',
-    '            ^.*需要有效的雙重驗證碼.*$',
+    tl('notes.auto.n0050'),
+    tl('notes.auto.n0051'),
     '            ^.*"reason"\\s*:\\s*"totp".*$',
     'ignoreregex =',
     '',
@@ -69,9 +70,9 @@ export function writeFail2banSnippets(dataDir: string): {
   return {
     written,
     notes: [
-      '片段已寫入 dataDir/security/fail2ban（未自動裝到 /etc）',
-      '複製 filter/jail 後 systemctl reload fail2ban',
-      'panel 需把 login 失敗寫入可被 fail2ban 讀的 log（journal 或檔）',
+      tl('notes.auto.n1203'),
+      tl('notes.auto.n1348'),
+      tl('notes.auto.n0366'),
     ],
   };
 }

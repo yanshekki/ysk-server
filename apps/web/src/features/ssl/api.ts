@@ -1,22 +1,10 @@
 /**
  * Real SSL certificate API — disk + upsert registry, no fake "mark applied".
  */
+import type { CertificateView } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type CertificateView = {
-  id: string;
-  domain: string;
-  provider: string;
-  status: string;
-  files_exist: boolean;
-  fullchain_path?: string;
-  privkey_path?: string;
-  expires_at?: string | null;
-  bytes?: number;
-  notes?: string[];
-  updated_at?: string;
-  commands?: string[];
-};
+export type { CertificateView } from '@ysk/shared';
 
 export const sslApi = {
   list: () => api.requestRaw<{ items: CertificateView[] }>('/api/v1/ssl/certificates'),

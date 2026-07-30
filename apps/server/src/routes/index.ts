@@ -1,0 +1,22 @@
+/** Route modules — Wave2 R2 */
+export { handleAdminRoutes } from './admin.js';
+export { handleAgentsRoutes } from './agents.js';
+export { handleAiRoutes } from './ai.js';
+export { handleAuthRoutes } from './auth.js';
+export { handleBackupsRoutes } from './backups.js';
+export { handleCdnRoutes } from './cdn.js';
+export { handleCronRoutes } from './cron.js';
+export { handleDbRoutes } from './db.js';
+export { handleDefenseRoutes } from './defense.js';
+export { handleDnsRoutes } from './dns.js';
+export { handleEmailRoutes } from './email.js';
+export { handleHostingRoutes } from './hosting.js';
+export { handleMiscRoutes } from './misc.js';
+export { handleProjectsRoutes } from './projects.js';
+export { handlePublicRoutes } from './public.js';
+export { handleRbacRoutes } from './rbac.js';
+export { handleSettingsRoutes } from './settings.js';
+export { handleSshRoutes } from './ssh.js';
+export { handleSslRoutes } from './ssl.js';
+export { handleToolsRoutes } from './tools.js';
+export { handleUpdatesRoutes } from './updates.js';

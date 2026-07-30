@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * One-click WordPress path: download core + write wp-config from env + chown + checklist.
  * Honest: download needs EXECUTE+network; DB provision is separate step.
@@ -50,7 +51,7 @@ export function ensureWpConfig(input: {
   const notes: string[] = [];
   const cfg = join(input.docRoot, 'wp-config.php');
   if (existsSync(cfg) && !input.forceConfig) {
-    return { written: false, path: cfg, notes: ['wp-config.php 已存在 — 已略過'] };
+    return { written: false, path: cfg, notes: [tl('notes.auto.n0467')] };
   }
   const sample =
     join(input.docRoot, 'wp-config-sample.php');
@@ -121,9 +122,9 @@ if (getenv('WP_DB_HOST')) define('DB_HOST', getenv('WP_DB_HOST'));
   }
 
   writeFileSync(cfg, out, 'utf8');
-  notes.push(`已寫入 ${cfg}（DB 預設 ${dbName}@${dbHost}；可用環境變數覆寫）`);
+  notes.push(tl('notes.auto.t0305', { v0: (cfg), v1: (dbName), v2: (dbHost) }));
   if (!dbPass) {
-    notes.push('DB_PASSWORD 為空 — 請在資源頁建立 MySQL 後填入或設 WP_DB_* 環境變數');
+    notes.push(tl('notes.auto.n0094'));
   }
   return { written: true, path: cfg, notes };
 }
@@ -176,11 +177,11 @@ export async function setupWordpress(input: {
   }
 
   const nextSteps = [
-    '確認 PHP runtime 與 FPM 已就緒',
-    '在「資源」建立 MySQL（或填入現有 DB）並設 WP_DB_* 環境變數',
-    '部署 PHP + 發布 Nginx（文件根 app/public）',
-    '瀏覽器開啟站點完成 WP 安裝精靈',
-    '可選：SSL、WP-CLI、外掛',
+    tl('notes.auto.n1289'),
+    tl('notes.auto.n0627'),
+    tl('notes.auto.n1498'),
+    tl('notes.auto.n1056'),
+    tl('notes.auto.n0616'),
   ];
 
   return {

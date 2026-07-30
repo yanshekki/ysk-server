@@ -1,14 +1,21 @@
 /**
  * top(1)-style summary: load, tasks, %Cpu (aggregate / per-core), Mem, Swap.
  */
+import { useTranslation } from 'react-i18next';
 import type { CpuTimesPct, TopHeader } from './api';
 
-function formatUptime(sec: number): string {
+function formatUptime(sec: number, t: (k: string, o?: Record<string, unknown>) => string): string {
   if (!Number.isFinite(sec) || sec < 0) return '—';
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  if (d > 0) return `${d} days, ${h}:${String(m).padStart(2, '0')}`;
+  if (d > 0) {
+    return t('metrics.uptimeDays', {
+      d,
+      h,
+      m: String(m).padStart(2, '0'),
+    });
+  }
   return `${h}:${String(m).padStart(2, '0')}`;
 }
 
@@ -45,14 +52,14 @@ function CpuStackBar({
           s.v > 0.05 ? (
             <div
               key={s.key}
-              className={`top-cpu-seg ${s.cls}`}
-              style={{ width: `${Math.min(100, s.v)}%` }}
+              className={`top-cpu-seg ${s.cls} u-meter-fill`}
+              style={{ ['--meter-pct' as string]: `${Math.min(100, s.v)}%` }}
             />
           ) : null,
         )}
         <div
-          className="top-cpu-seg top-cpu-seg--id"
-          style={{ width: `${Math.min(100, Math.max(0, cpu.id))}%` }}
+          className="top-cpu-seg top-cpu-seg--id u-meter-fill"
+          style={{ ['--meter-pct' as string]: `${Math.min(100, Math.max(0, cpu.id))}%` }}
         />
       </div>
       <span className="top-cpu-row__pct">{cpu.busyPct.toFixed(1)}%</span>
@@ -69,11 +76,11 @@ export function TopHeaderPanel({
   perCpu: boolean;
   onTogglePerCpu: (v: boolean) => void;
 }) {
+  const { t } = useTranslation();
+
   if (!header) {
     return (
-      <div className="top-panel top-panel--empty">
-        載入 top 摘要中…（/proc/stat 雙樣本）
-      </div>
+      <div className="top-panel top-panel--empty">{t('metrics.topLoading')}</div>
     );
   }
 
@@ -86,13 +93,13 @@ export function TopHeaderPanel({
     swap.totalKiB > 0 ? Math.min(100, (swap.usedKiB / swap.totalKiB) * 100) : 0;
 
   return (
-    <section className="top-panel" aria-label="top 摘要">
+    <section className="top-panel" aria-label={t('metrics.topAria')}>
       <div className="top-panel__head">
         <div className="top-panel__title">
           <strong>top</strong>
           <span className="muted">
             {new Date(header.at).toLocaleTimeString()} · up{' '}
-            {formatUptime(uptimeSec)} · load{' '}
+            {formatUptime(uptimeSec, t)} · load{' '}
             {loadavg.map((n) => n.toFixed(2)).join(', ')}
           </span>
         </div>
@@ -102,20 +109,15 @@ export function TopHeaderPanel({
             checked={perCpu}
             onChange={(e) => onTogglePerCpu(e.target.checked)}
           />
-          <span>每核</span>
+          <span>{t('metrics.perCore')}</span>
         </label>
       </div>
 
       <div className="top-panel__tasks">
-        Tasks:{' '}
-        <strong>{tasks.total}</strong> total,{' '}
-        <strong className={tasks.running ? 'top-hl' : undefined}>
-          {tasks.running}
-        </strong>{' '}
+        Tasks: <strong>{tasks.total}</strong> total,{' '}
+        <strong className={tasks.running ? 'top-hl' : undefined}>{tasks.running}</strong>{' '}
         running, {tasks.sleeping} sleeping, {tasks.stopped} stopped,{' '}
-        <strong className={tasks.zombie ? 'top-hl-warn' : undefined}>
-          {tasks.zombie}
-        </strong>{' '}
+        <strong className={tasks.zombie ? 'top-hl-warn' : undefined}>{tasks.zombie}</strong>{' '}
         zombie
       </div>
 
@@ -124,24 +126,19 @@ export function TopHeaderPanel({
           <>
             <div className="top-panel__cpu-legend">
               %Cpu(s):{' '}
-              <span className="top-leg top-leg--us">{cpu.us.toFixed(1)} us</span>
-              ,{' '}
-              <span className="top-leg top-leg--sy">{cpu.sy.toFixed(1)} sy</span>
-              ,{' '}
-              <span className="top-leg top-leg--ni">{cpu.ni.toFixed(1)} ni</span>
-              ,{' '}
-              <span className="top-leg top-leg--id">{cpu.id.toFixed(1)} id</span>
-              ,{' '}
-              <span className="top-leg top-leg--wa">{cpu.wa.toFixed(1)} wa</span>
-              , {cpu.hi.toFixed(1)} hi, {cpu.si.toFixed(1)} si,{' '}
-              {cpu.st.toFixed(1)} st
+              <span className="top-leg top-leg--us">{cpu.us.toFixed(1)} us</span>,{' '}
+              <span className="top-leg top-leg--sy">{cpu.sy.toFixed(1)} sy</span>,{' '}
+              <span className="top-leg top-leg--ni">{cpu.ni.toFixed(1)} ni</span>,{' '}
+              <span className="top-leg top-leg--id">{cpu.id.toFixed(1)} id</span>,{' '}
+              <span className="top-leg top-leg--wa">{cpu.wa.toFixed(1)} wa</span>,{' '}
+              {cpu.hi.toFixed(1)} hi, {cpu.si.toFixed(1)} si, {cpu.st.toFixed(1)} st
             </div>
             <CpuStackBar cpu={cpu} />
           </>
         ) : (
           <div className="top-panel__percpu">
             {cpus.length === 0 ? (
-              <span className="muted">無每核資料</span>
+              <span className="muted">{t('metrics.noPerCore')}</span>
             ) : (
               cpus.map((c, i) => (
                 <CpuStackBar key={i} cpu={c} label={`Cpu${i}`} compact />
@@ -154,38 +151,35 @@ export function TopHeaderPanel({
       <div className="top-panel__memgrid">
         <div className="top-mem">
           <div className="top-mem__lab">
-            MiB Mem : {kibToHuman(memory.totalKiB)} total,{' '}
-            {kibToHuman(memory.freeKiB)} free, {kibToHuman(memory.usedKiB)} used,{' '}
-            {kibToHuman(memory.buffCacheKiB)} buff/cache · avail{' '}
-            {kibToHuman(memory.availableKiB)}
+            MiB Mem : {kibToHuman(memory.totalKiB)} total, {kibToHuman(memory.freeKiB)} free,{' '}
+            {kibToHuman(memory.usedKiB)} used, {kibToHuman(memory.buffCacheKiB)} buff/cache ·
+            avail {kibToHuman(memory.availableKiB)}
           </div>
           <div className="top-mem__track">
             <div
-              className="top-mem__fill top-mem__fill--mem"
-              style={{ width: `${memPct}%` }}
+              className="top-mem__fill top-mem__fill--mem u-meter-fill"
+              style={{ ['--meter-pct' as string]: `${memPct}%` }}
             />
           </div>
         </div>
         <div className="top-mem">
           <div className="top-mem__lab">
-            MiB Swap: {kibToHuman(swap.totalKiB)} total,{' '}
-            {kibToHuman(swap.freeKiB)} free, {kibToHuman(swap.usedKiB)} used
+            MiB Swap: {kibToHuman(swap.totalKiB)} total, {kibToHuman(swap.freeKiB)} free,{' '}
+            {kibToHuman(swap.usedKiB)} used
           </div>
           <div className="top-mem__track">
             <div
               className={`top-mem__fill top-mem__fill--swap${
                 swapPct > 50 ? ' is-high' : ''
-              }`}
-              style={{ width: `${swapPct}%` }}
+              } u-meter-fill`}
+              style={{ ['--meter-pct' as string]: `${swapPct}%` }}
             />
           </div>
         </div>
       </div>
 
       {header.notes?.length ? (
-        <p className="top-panel__notes muted u-text-sm">
-          {header.notes.join(' · ')}
-        </p>
+        <p className="top-panel__notes muted u-text-sm">{header.notes.join(' · ')}</p>
       ) : null}
     </section>
   );

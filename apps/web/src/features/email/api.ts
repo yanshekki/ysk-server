@@ -1,30 +1,10 @@
 /**
  * Email feature — API surface.
  */
+import type { EmailDomain, EmailBundle } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 
-export type EmailDomain = {
-  id: string;
-  domain: string;
-  health_score: number;
-  server_ip: string;
-  apply_status?: string;
-  last_apply?: Record<string, unknown>;
-  /** Control-plane suspend flag — not live MTA reject unless system-applied */
-  suspended?: boolean;
-  status?: string;
-  autoreply_enabled?: boolean;
-  /** Outbound rate limit (msgs/hour); null/omit = use defaults */
-  rate_limit_per_hour?: number | null;
-  /** Domain antispam flag (Rspamd multimap) */
-  antispam?: boolean;
-};
-
-export type EmailBundle = {
-  records: Array<{ type: string; name: string; value: string; description: string }>;
-  externalTodos: Array<{ id: string; title: string; description: string; completed: boolean }>;
-  health: { score: number; maxScore: number; messages: string[] };
-};
+export type { EmailDomain, EmailBundle } from '@ysk/shared';
 
 export const emailApi = {
   list: () => api.requestRaw<{ items: EmailDomain[] }>('/api/v1/email/domains'),

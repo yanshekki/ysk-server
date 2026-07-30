@@ -14,7 +14,7 @@ import {
 import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import type { OpsResultDto } from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+import { assertHonestOps, tl} from '@ysk/shared';
 import { generateSshKeyPair } from '../../security/ssh-identity/generate.js';
 import { migrateJobDir } from './types.js';
 import {
@@ -63,7 +63,7 @@ export function createMigrateTempKey(input: {
     return assertHonestOps({
       ok: true,
       apply_status: 'written',
-      notes: [`已產生臨時金鑰 ${pair.fingerprintSha256}`],
+      notes: [tl('notes.auto.t0641', { v0: (pair.fingerprintSha256) })],
       privateKeyPath,
       publicKeyPath,
       publicKey: pair.publicKey.trim(),
@@ -74,7 +74,7 @@ export function createMigrateTempKey(input: {
       ok: false,
       apply_status: 'failed',
       notes: [
-        `無法產生臨時金鑰: ${e instanceof Error ? e.message : String(e)}`,
+        tl('notes.auto.t0642', { v0: (e instanceof Error ? e.message : String(e)) }),
       ],
       privateKeyPath: '',
       publicKeyPath: '',
@@ -99,7 +99,7 @@ export async function installTempKeyOnTarget(input: {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: ['無效 public key'],
+      notes: [tl('notes.auto.n1104')],
     });
   }
   // Avoid shell injection: base64 the key for remote decode
@@ -132,7 +132,7 @@ export async function installTempKeyOnTarget(input: {
         ok: false,
         apply_status: 'failed',
         notes: [
-          `目標未確認寫入 authorized_keys: ${(r.stdout || r.stderr).slice(0, 200)}`,
+          tl('notes.auto.t0643', { v0: ((r.stdout || r.stderr).slice(0, 200)) }),
         ],
       });
     }
@@ -141,7 +141,7 @@ export async function installTempKeyOnTarget(input: {
     ok: true,
     apply_status: 'applied',
     notes: [
-      `已在 ${userAtHost(input.endpoint)} 安裝臨時公鑰（後續改用 key 登入）`,
+      tl('notes.auto.t0644', { v0: (userAtHost(input.endpoint)) }),
     ],
   });
 }
@@ -194,7 +194,7 @@ export function destroyLocalTempKey(dataDir: string, jobId: string): OpsResultDt
     return assertHonestOps({
       ok: true,
       apply_status: 'written',
-      notes: ['無臨時金鑰目錄'],
+      notes: [tl('notes.auto.n1198')],
     });
   }
   try {
@@ -202,13 +202,13 @@ export function destroyLocalTempKey(dataDir: string, jobId: string): OpsResultDt
     return assertHonestOps({
       ok: true,
       apply_status: 'applied',
-      notes: ['已刪除本機臨時金鑰'],
+      notes: [tl('notes.auto.n0739')],
     });
   } catch (e) {
     return assertHonestOps({
       ok: false,
       apply_status: 'failed',
-      notes: [`刪除臨時金鑰失敗: ${e instanceof Error ? e.message : String(e)}`],
+      notes: [tl('notes.auto.t0645', { v0: (e instanceof Error ? e.message : String(e)) })],
     });
   }
 }

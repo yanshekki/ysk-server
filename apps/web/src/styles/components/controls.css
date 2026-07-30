@@ -1,0 +1,357 @@
+/* —— MultiCheckSelect (geo country / continent / ASN) —— */
+.mcs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.mcs__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.mcs__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.5rem 0.28rem 0.55rem;
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #2563eb) 35%, var(--border-color));
+  background: color-mix(in srgb, var(--color-primary, #2563eb) 10%, white);
+  color: var(--text-main);
+  font-size: var(--text-xs);
+  font-weight: 650;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.mcs__chip:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary, #2563eb) 16%, white);
+}
+
+.mcs__chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mcs__chip-code {
+  font-weight: 600;
+  opacity: 0.7;
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.mcs__chip-x {
+  font-size: 0.95rem;
+  line-height: 1;
+  opacity: 0.65;
+}
+
+.mcs__search {
+  width: 100%;
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+}
+
+.mcs__list {
+  max-height: 12.5rem;
+  overflow: auto;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle, #f8fafc);
+  padding: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mcs__opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+.mcs__opt:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.mcs__opt.is-on {
+  background: color-mix(in srgb, var(--color-primary, #2563eb) 8%, white);
+}
+
+.mcs__opt input {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.mcs__opt-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  min-width: 0;
+}
+
+.mcs__opt-lab {
+  font-weight: 650;
+  color: var(--text-main);
+}
+
+.mcs__opt-code {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  background: var(--bg-white);
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  border: 1px solid var(--border-light);
+}
+
+.mcs__empty {
+  margin: 0.15rem 0;
+}
+
+.mcs__more {
+  margin: 0.25rem 0.35rem 0.15rem;
+}
+
+.mcs__custom {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.mcs__custom input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+}
+
+/* IP 准入：國家 / 省 / 大陸 / ASN 並排、等高 */
+.geo-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.geo-select-grid--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1280px) {
+  .geo-select-grid--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.geo-select-grid > .field,
+.geo-select-grid > .field.field--full {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.geo-select-grid .field__control,
+.geo-select-grid .field > :last-child {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.geo-select-grid .mcs {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+/* 列表區固定同一高度，少項目亦撐滿 */
+.geo-select-grid .mcs__list {
+  flex: 1 1 auto;
+  height: 22rem;
+  max-height: 22rem;
+  min-height: 22rem;
+}
+
+@media (max-width: 1100px) {
+  .geo-select-grid,
+  .geo-select-grid--4 {
+    grid-template-columns: 1fr;
+  }
+  .geo-select-grid .mcs__list {
+    height: 14rem;
+    max-height: 14rem;
+    min-height: 14rem;
+  }
+}
+
+/* GeoIP status loading / error — flush inside def-panel-card (no nested .card) */
+.geo-status-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-2) 0;
+  padding: var(--space-4) var(--space-5);
+  padding-left: var(--space-6, 1.5rem);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background: var(--bg-subtle, #f8fafc);
+  min-height: 3.25rem;
+}
+
+.geo-status-box--loading {
+  justify-content: flex-start;
+  padding-left: var(--space-6, 1.5rem);
+  gap: var(--space-4);
+}
+
+.geo-status-box--err {
+  flex-direction: column;
+  align-items: stretch;
+  background: color-mix(in srgb, var(--danger, #dc2626) 4%, white);
+  border-color: color-mix(in srgb, var(--danger, #dc2626) 25%, var(--border-color));
+}
+
+.geo-status-box .spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  margin-left: 0.15rem;
+}
+
+/* —— Selection-first: SegRadio + PresetChips —— */
+.seg-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.2rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-muted, #f1f5f9);
+  border: 1px solid var(--border-light, var(--border-color));
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.seg-radios--sm .seg-radios__opt {
+  min-width: 1.9rem;
+  height: 1.85rem;
+  padding: 0 0.45rem;
+  font-size: var(--text-xs);
+}
+
+.seg-radios__opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.1rem;
+  padding: 0 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.seg-radios__opt input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.seg-radios__opt:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.seg-radios__opt--on {
+  background: var(--bg-white);
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+
+.seg-radios__opt:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary, #2563eb);
+  outline-offset: 1px;
+}
+
+.seg-radios__opt:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.preset-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.preset-chips__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.preset-chips__chip {
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 650;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+  color: var(--text-sub);
+  cursor: pointer;
+}
+
+.preset-chips__chip:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-primary, #2563eb) 40%, var(--border-color));
+  color: var(--text-main);
+}
+
+.preset-chips__chip.is-on {
+  background: color-mix(in srgb, var(--color-primary, #2563eb) 12%, white);
+  border-color: color-mix(in srgb, var(--color-primary, #2563eb) 45%, var(--border-color));
+  color: var(--text-main);
+  font-weight: 750;
+}
+
+.preset-chips__chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.preset-chips__custom {
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+  width: 100%;
+  max-width: 16rem;
+}
+

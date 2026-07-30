@@ -1,0 +1,38 @@
+/* —— Badge —— */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-chip-y) var(--space-chip-x);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--brand-blue);
+}
+
+.badge--ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.badge--warn {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.badge--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.badge--beside {
+  margin-left: var(--space-2);
+}
+
+/* —— Badge neutral —— */
+.badge--neutral {
+  background: var(--bg-subtle);
+  color: var(--text-sub);
+}
+

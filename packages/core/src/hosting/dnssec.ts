@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * DNSSEC key material + optional zone signing under dataDir — honest, not auto-publish DS.
  */
@@ -53,10 +54,10 @@ export async function generateDnssecKeys(input: {
         );
         notes.push(r.stdout || r.stderr || `exit ${r.exitCode}`);
         if (r.exitCode !== 0) {
-          notes.push('dnssec-keygen 失敗');
+          notes.push(tl('notes.auto.n0256'));
         }
       } else {
-        notes.push(`沿用已有金鑰 ${existingKeys.length} 個`);
+        notes.push(tl('notes.auto.t0360', { v0: (existingKeys.length) }));
       }
 
       const files = readdirSync(dir).filter((f) => f.endsWith('.key'));
@@ -79,16 +80,16 @@ export async function generateDnssecKeys(input: {
           const dsPath = join(dir, 'DS.txt');
           writeFileSync(dsPath, dsRecord + '\n', 'utf8');
           written.push(dsPath);
-          notes.push('已產生 DS 紀錄（請自行提交 registrar — 面板唔會自動發佈）');
+          notes.push(tl('notes.auto.n0788'));
         } else {
-          notes.push('dnssec-dsfromkey 未能產生 DS');
+          notes.push(tl('notes.auto.n0254'));
         }
       }
     } else {
-      notes.push('dnssec-keygen 不在 PATH（apt install bind9-dnsutils）');
+      notes.push(tl('notes.auto.n0255'));
     }
   } else {
-    notes.push('未開啟系統變更：無法執行 dnssec-keygen');
+    notes.push(tl('notes.auto.n0986'));
   }
 
   // Optional: sign managed zone file
@@ -112,7 +113,7 @@ export async function generateDnssecKeys(input: {
           copyFileSync(zoneFile, localZone);
           written.push(localZone);
         } catch {
-          notes.push('無法複製 zone 檔到 dnssec 目錄');
+          notes.push(tl('notes.auto.n1180'));
         }
         if (existsSync(localZone)) {
           const sign = await input.host.runCommand(
@@ -130,18 +131,18 @@ export async function generateDnssecKeys(input: {
             signedZonePath = signedPath;
             written.push(signedPath);
             notes.push(
-              `已簽署 zone → ${signedPath}（需 reload 權威 DNS；DS 仍要人手上 registrar）`,
+              tl('notes.auto.t0361', { v0: (signedPath) }),
             );
           } else {
-            notes.push('dnssec-signzone 未產生 .signed 檔');
+            notes.push(tl('notes.auto.n0258'));
           }
         }
       } else {
-        notes.push('dnssec-signzone 不可用 — 只保留金鑰／DS');
+        notes.push(tl('notes.auto.n0257'));
       }
     } else {
       notes.push(
-        `未找到 managed zone 檔（試過 dns/zones/${zone}.zone）— 跳過簽署`,
+        tl('notes.auto.t0362', { v0: (zone) }),
       );
     }
   }
@@ -164,8 +165,8 @@ export async function generateDnssecKeys(input: {
       notes: [
         ...notes,
         signed
-          ? '狀態：applied（金鑰+簽署本地 zone；非 registrar 上線）'
-          : '狀態：written（金鑰/DS 已有；zone 未簽署或未找 zone 檔）',
+          ? tl('notes.auto.n1213')
+          : tl('notes.auto.n1232'),
       ],
       written,
       publicKey,
@@ -181,8 +182,8 @@ export async function generateDnssecKeys(input: {
     meta,
     [
       `YSK DNSSEC for ${zone}`,
-      '需安裝 bind9-dnsutils 並開啟系統變更權限，才可真正執行 dnssec-keygen。',
-      'DS 在 registrar 發佈前，請勿宣稱已上線。',
+      tl('notes.auto.n1552'),
+      tl('notes.auto.n0099'),
       '',
     ].join('\n'),
     'utf8',
@@ -192,8 +193,8 @@ export async function generateDnssecKeys(input: {
     ok: false,
     notes: [
       ...notes,
-      '已建立 DNSSEC 目錄（僅說明檔）',
-      '狀態：written（非已簽署／非已上線）— 唔假成功',
+      tl('notes.auto.n0773'),
+      tl('notes.auto.n1234'),
     ],
     written,
     requiresExecute: !input.host?.executeEnabled(),
@@ -206,7 +207,7 @@ export function listDnssecMaterial(
   zone: string,
 ): { files: string[]; notes: string[] } {
   const dir = join(dataDir, 'dns', 'dnssec', zone.trim().toLowerCase().replace(/\.$/, ''));
-  if (!existsSync(dir)) return { files: [], notes: ['尚未產生 DNSSEC 金鑰'] };
+  if (!existsSync(dir)) return { files: [], notes: [tl('notes.auto.n0710')] };
   const files = readdirSync(dir).map((f) => join(dir, f));
-  return { files, notes: [`${files.length} 個檔案 under ${dir}`] };
+  return { files, notes: [tl('notes.auto.t0363', { v0: (files.length), v1: (dir) })] };
 }

@@ -1,4 +1,5 @@
 import type { ProjectDto } from '@ysk/shared';
+import type { TFunction } from 'i18next';
 
 export type ProjectRuntime = ProjectDto['runtime'];
 
@@ -17,13 +18,14 @@ export interface ProjectUiProfile {
   showResourcesTab: boolean;
   showWordpress: boolean;
   showLogsTab: boolean;
-  /** Labels */
+  /** Labels — use t(processLabelKey); processLabelFallback is English neutral */
   processLabelKey: string;
   processLabelFallback: string;
 }
 
 function processProfile(
   runtime: ProjectRuntime,
+  labelKey: string,
   labelFallback: string,
 ): ProjectUiProfile {
   return {
@@ -39,7 +41,7 @@ function processProfile(
     showResourcesTab: true,
     showWordpress: false,
     showLogsTab: true,
-    processLabelKey: 'projects.railProcess',
+    processLabelKey: labelKey,
     processLabelFallback: labelFallback,
   };
 }
@@ -60,7 +62,7 @@ export function getProjectUiProfile(runtime: ProjectRuntime): ProjectUiProfile {
       showWordpress: true,
       showLogsTab: true,
       processLabelKey: 'projects.railPhp',
-      processLabelFallback: 'PHP / 站點',
+      processLabelFallback: 'PHP / site',
     };
   }
   if (runtime === 'static') {
@@ -78,20 +80,35 @@ export function getProjectUiProfile(runtime: ProjectRuntime): ProjectUiProfile {
       showWordpress: false,
       showLogsTab: true,
       processLabelKey: 'projects.railStatic',
-      processLabelFallback: '靜態站點',
+      processLabelFallback: 'Static site',
     };
   }
-  if (runtime === 'python') return processProfile('python', 'Python 行程');
-  if (runtime === 'go') return processProfile('go', 'Go 行程');
-  if (runtime === 'rust') return processProfile('rust', 'Rust 行程');
+  if (runtime === 'python') {
+    return processProfile('python', 'projects.railPython', 'Python process');
+  }
+  if (runtime === 'go') {
+    return processProfile('go', 'projects.railGo', 'Go process');
+  }
+  if (runtime === 'rust') {
+    return processProfile('rust', 'projects.railRust', 'Rust process');
+  }
   // node (default)
-  return processProfile('node', 'Node 行程');
+  return processProfile('node', 'projects.railNode', 'Node process');
 }
 
-export function formatRuntimeName(runtime?: string): string {
+export function formatRuntimeName(runtime?: string, t?: TFunction): string {
+  if (t) {
+    if (runtime === 'php') return t('projects.runtimeName.php');
+    if (runtime === 'node') return t('projects.runtimeName.node');
+    if (runtime === 'static') return t('projects.runtimeName.static');
+    if (runtime === 'python') return t('projects.runtimeName.python');
+    if (runtime === 'go') return t('projects.runtimeName.go');
+    if (runtime === 'rust') return t('projects.runtimeName.rust');
+    return runtime ?? t('common.noneSelectedShort');
+  }
   if (runtime === 'php') return 'PHP';
   if (runtime === 'node') return 'Node.js';
-  if (runtime === 'static') return '靜態';
+  if (runtime === 'static') return 'Static';
   if (runtime === 'python') return 'Python';
   if (runtime === 'go') return 'Go';
   if (runtime === 'rust') return 'Rust';

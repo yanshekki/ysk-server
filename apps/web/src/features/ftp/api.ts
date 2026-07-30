@@ -1,40 +1,11 @@
 /**
  * FTPS accounts + vsftpd service API
  */
+import type { FtpsSettings, FtpsStatus, SelectOption } from '@ysk/shared';
 import { api } from '../../shared/services/api';
 import { resourcesApi } from '../resources/api';
 
-export type FtpsSettings = {
-  listen: boolean;
-  /** vsftpd listen_ipv6; mutually exclusive with classic listen on many builds */
-  listenIpv6?: boolean;
-  listenPort: number;
-  sslEnable: boolean;
-  forceSsl: boolean;
-  sslDomain: string;
-  certPath?: string;
-  keyPath?: string;
-  pasvMin: number;
-  pasvMax: number;
-  pasvAddress?: string;
-  writeEnable: boolean;
-  chrootLocalUser: boolean;
-  allowWriteableChroot: boolean;
-  banner: string;
-  guestUsername: string;
-};
-
-export type FtpsStatus = {
-  installed: boolean;
-  active: string;
-  confManaged: string;
-  confSystemExists: boolean;
-  accountCount: number;
-  settings: FtpsSettings;
-  lastAppliedAt?: string;
-};
-
-export type SelectOption = { value: string; label: string };
+export type { FtpsSettings, FtpsStatus, SelectOption } from '@ysk/shared';
 
 export const ftpApi = {
   accounts: {

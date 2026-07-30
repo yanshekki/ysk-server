@@ -1,14 +1,19 @@
 /**
- * System-wide button — only three sizes: sm | md | lg.
+ * System-wide button.
+ * One visual size only (md / 40px). `size` prop is accepted for API stability
+ * but always maps to the same CSS — never mix sm/md/lg looks in the product.
  * Prefer this over raw className="btn …".
  */
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link';
+/** @deprecated All sizes render identically — prefer omitting size (defaults to md). */
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+  /** Ignored for geometry — all sizes are the same system height. */
   size?: ButtonSize;
   /** Show busy state (disables + optional label) */
   loading?: boolean;
@@ -25,11 +30,8 @@ const VARIANT: Record<ButtonVariant, string> = {
   link: 'btn btn--link',
 };
 
-const SIZE: Record<ButtonSize, string> = {
-  sm: 'btn--sm',
-  md: 'btn--md',
-  lg: 'btn--lg',
-};
+/** Single system size class — sm/md/lg aliases kept so call sites need no rewrite. */
+const SIZE_CLASS = 'btn--md';
 
 /** Build class string for Link / anchor that should look like Button */
 export function buttonClassName(opts: {
@@ -39,10 +41,9 @@ export function buttonClassName(opts: {
   className?: string;
 }): string {
   const v = opts.variant ?? 'secondary';
-  const s = opts.size ?? 'md';
   return [
     VARIANT[v],
-    SIZE[s],
+    SIZE_CLASS,
     opts.fullWidth ? 'btn--block' : '',
     opts.className ?? '',
   ]
@@ -61,6 +62,7 @@ export function Button({
   type = 'button',
   ...rest
 }: ButtonProps) {
+  const { t } = useTranslation();
   return (
     <button
       type={type}
@@ -68,7 +70,7 @@ export function Button({
       disabled={disabled || loading}
       {...rest}
     >
-      {loading ? '處理中…' : children}
+      {loading ? t('common.processing') : children}
     </button>
   );
 }

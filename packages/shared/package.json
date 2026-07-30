@@ -8,10 +8,14 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+      "browser": "./dist/browser.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./locales/*": "./locales/*"
   },
-  "files": ["dist"],
+  "files": ["dist", "locales"],
+  "sideEffects": false,
   "publishConfig": { "access": "public" },
   "license": "MIT",
   "repository": {

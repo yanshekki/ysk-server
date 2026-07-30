@@ -2,23 +2,9 @@
  * MySQL / MariaDB engine status + install + start
  */
 import { api } from '../../shared/services/api';
+import type { DbEngineKind, DbEngineStatus } from '@ysk/shared';
 
-export type DbEngineKind = 'mysql' | 'mariadb';
-
-export type DbEngineStatus = {
-  engine: DbEngineKind;
-  title: string;
-  clientInstalled: boolean;
-  serverInstalled: boolean;
-  unit: string;
-  active: string;
-  version?: string;
-  executeEnabled: boolean;
-  isRoot: boolean;
-  canProvision: boolean;
-  canInstall: boolean;
-  blockMessage?: string;
-};
+export type { DbEngineKind, DbEngineStatus } from '@ysk/shared';
 
 export const dbEngineApi = {
   status: (engine: DbEngineKind) =>

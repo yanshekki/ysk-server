@@ -1,3 +1,4 @@
+import { tl } from '@ysk/shared';
 /**
  * Restic-class incremental backup under dataDir (fail-closed, honest notes).
  */
@@ -36,8 +37,7 @@ export function getResticSettingsPublic(db: JsonStore): ResticSettings {
   return {
     ...s,
     password: s.password ? '***' : undefined,
-    awsSecretAccessKey: s.awsSecretAccessKey ? '***' : undefined,
-  };
+    awsSecretAccessKey: s.awsSecretAccessKey ? '***' : undefined };
 }
 
 export function setResticSettings(
@@ -74,32 +74,27 @@ export async function resticBackupProject(input: {
     return {
       ok: true,
       skipped: true,
-      notes: ['restic 未啟用（略過增量）'],
-    };
+      notes: [tl('notes.auto.n0413')] };
   }
   if (!settings.password?.trim()) {
     return {
       ok: false,
       notes: [
-        'restic 已啟用但未設定 password — 拒絕使用內建預設密碼（請在備份設定填寫）',
-      ],
-    };
+        tl('notes.auto.n0408'),
+      ] };
   }
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
       blocked: true,
-      notes: ['無法 restic：未開啟系統變更權限'],
-    };
+      notes: [tl('notes.auto.n1134')] };
   }
   const check = await input.host.runCommand(['bash', '-c', 'command -v restic || true'], {
-    timeoutMs: 3_000,
-  });
+    timeoutMs: 3_000 });
   if (!check.stdout.trim()) {
     return {
       ok: false,
-      notes: ['restic 未安裝（不在 PATH），請於系統安裝 restic 後再試'],
-    };
+      notes: [tl('notes.auto.n0414')] };
   }
 
   const defaultRepo = join(input.dataDir, 'restic-repo');
@@ -120,7 +115,7 @@ export async function resticBackupProject(input: {
   const notes = [`repo=${repo}`, (init.stdout || init.stderr || '').slice(0, 200)];
 
   if (!existsSync(input.homeDir)) {
-    return { ok: false, notes: [...notes, `home 不存在: ${input.homeDir}`] };
+    return { ok: false, notes: [...notes, tl('notes.auto.t0115', { v0: (input.homeDir) })] };
   }
 
   const tag = `project:${input.projectId}`;
@@ -146,17 +141,15 @@ export async function resticBackupProject(input: {
       ok,
       snapshotId: snapMatch?.[1],
       repo,
-      notes,
-    }),
+      notes }),
     'utf8',
   );
   return {
     ok,
     notes: ok
-      ? [...notes, 'restic 增量備份完成（written/applied 視 restic exit）']
+      ? [...notes, tl('notes.auto.n0407')]
       : [...notes, `restic exit=${backup.exitCode}`],
-    snapshotId: snapMatch?.[1],
-  };
+    snapshotId: snapMatch?.[1] };
 }
 
 function buildResticEnv(settings: ResticSettings, password: string, repo: string): string {
@@ -197,29 +190,25 @@ export async function listResticSnapshots(input: {
     return {
       ok: false,
       snapshots: [],
-      notes: ['restic 未啟用 — 無法列出 snapshots'],
-    };
+      notes: [tl('notes.auto.n0410')] };
   }
   if (!settings.password?.trim()) {
     return {
       ok: false,
       snapshots: [],
-      notes: ['restic 已啟用但未設定 password'],
-    };
+      notes: [tl('notes.backup.resticNoPassword')] };
   }
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
       snapshots: [],
       blocked: true,
-      notes: ['無法 list：未開啟系統變更權限'],
-    };
+      notes: [tl('notes.auto.n1128')] };
   }
   const check = await input.host.runCommand(['bash', '-c', 'command -v restic || true'], {
-    timeoutMs: 3_000,
-  });
+    timeoutMs: 3_000 });
   if (!check.stdout.trim()) {
-    return { ok: false, snapshots: [], notes: ['restic 不在 PATH'] };
+    return { ok: false, snapshots: [], notes: [tl('notes.backup.resticNotInPath')] };
   }
   const defaultRepo = join(input.dataDir, 'restic-repo');
   const repo = settings.s3Repo || settings.repoPath || defaultRepo;
@@ -240,20 +229,17 @@ export async function listResticSnapshots(input: {
       time: s.time ? String(s.time) : undefined,
       hostname: s.hostname ? String(s.hostname) : undefined,
       tags: Array.isArray(s.tags) ? (s.tags as string[]) : undefined,
-      paths: Array.isArray(s.paths) ? (s.paths as string[]) : undefined,
-    }));
+      paths: Array.isArray(s.paths) ? (s.paths as string[]) : undefined }));
   } catch {
     return {
       ok: false,
       snapshots: [],
-      notes: [`無法解析 snapshots JSON: ${(r.stderr || r.stdout).slice(0, 200)}`],
-    };
+      notes: [tl('notes.auto.t0116', { v0: ((r.stderr || r.stdout).slice(0, 200)) })] };
   }
   return {
     ok: true,
     snapshots,
-    notes: [`共 ${snapshots.length} 個 restic 快照`],
-  };
+    notes: [tl('notes.auto.t0117', { v0: (snapshots.length) })] };
 }
 
 /** Required confirm phrase when overwriteHome is true */
@@ -289,20 +275,19 @@ export async function resticRestoreProject(input: {
 }> {
   const settings = getResticSettings(input.db);
   if (!settings.enabled) {
-    return { ok: false, notes: ['restic 未啟用'] };
+    return { ok: false, notes: [tl('notes.auto.n0409')] };
   }
   if (!settings.password?.trim()) {
-    return { ok: false, notes: ['restic 已啟用但未設定 password'] };
+    return { ok: false, notes: [tl('notes.backup.resticNoPassword')] };
   }
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
       blocked: true,
-      notes: ['無法 restore：未開啟系統變更權限'],
-    };
+      notes: [tl('notes.auto.n1135')] };
   }
   const snap = input.snapshotId.replace(/[^a-fA-F0-9]/g, '').slice(0, 64);
-  if (!snap) return { ok: false, notes: ['無效 snapshot id'] };
+  if (!snap) return { ok: false, notes: [tl('notes.auto.n1105')] };
 
   if (input.overwriteHome) {
     if (input.confirmPhrase !== RESTIC_OVERWRITE_CONFIRM) {
@@ -310,18 +295,16 @@ export async function resticRestoreProject(input: {
         ok: false,
         blocked: true,
         notes: [
-          `覆寫 home 需 confirmPhrase="${RESTIC_OVERWRITE_CONFIRM}"（雙重確認）`,
-          '否則只允許還原到 .restic-restore-* 安全目錄',
-        ],
-      };
+          tl('notes.auto.t0118', { v0: (RESTIC_OVERWRITE_CONFIRM) }),
+          tl('notes.auto.n0618'),
+        ] };
     }
   }
 
   const check = await input.host.runCommand(['bash', '-c', 'command -v restic || true'], {
-    timeoutMs: 3_000,
-  });
+    timeoutMs: 3_000 });
   if (!check.stdout.trim()) {
-    return { ok: false, notes: ['restic 不在 PATH'] };
+    return { ok: false, notes: [tl('notes.backup.resticNotInPath')] };
   }
 
   const defaultRepo = join(input.dataDir, 'restic-repo');
@@ -351,12 +334,11 @@ export async function resticRestoreProject(input: {
       notes:
         ls.exitCode === 0
           ? [
-              `dry-run：snapshot ${snap} 含 ${lines.length} 條路徑（最多顯示 100）`,
-              '未寫入任何檔案',
-              '狀態：preview only',
+              tl('notes.auto.t0119', { v0: (snap), v1: (lines.length) }),
+              tl('notes.auto.n0956'),
+              tl('notes.auto.n1222'),
             ]
-          : [`dry-run 失敗: ${(ls.stderr || ls.stdout).slice(0, 300)}`],
-    };
+          : [tl('notes.auto.t0120', { v0: ((ls.stderr || ls.stdout).slice(0, 300)) })] };
   }
 
   let target =
@@ -368,8 +350,7 @@ export async function resticRestoreProject(input: {
   if (target === input.homeDir && !input.overwriteHome) {
     return {
       ok: false,
-      notes: ['拒絕覆寫 homeDir — 請設 overwriteHome + confirmPhrase 或改用安全目標目錄'],
-    };
+      notes: [tl('notes.auto.n0874')] };
   }
 
   mkdirSync(target === input.homeDir ? input.homeDir : target, { recursive: true });
@@ -388,13 +369,12 @@ export async function resticRestoreProject(input: {
     targetDir: target,
     notes: ok
       ? [
-          `已還原 snapshot ${snap} → ${target}`,
+          tl('notes.auto.t0121', { v0: (snap), v1: (target) }),
           out,
           input.overwriteHome
-            ? '狀態：applied（已覆寫 homeDir）'
-            : '狀態：applied（安全目錄）',
+            ? tl('notes.auto.n1211')
+            : tl('notes.auto.n1210'),
         ]
-      : [`restore 失敗 exit=${r.exitCode}`, out],
-  };
+      : [tl('notes.auto.t0122', { v0: (r.exitCode) }), out] };
 }
 

@@ -4,12 +4,13 @@
  * Create buttons go only in `toolbar` (never FeaturePageLayout.actions).
  */
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EmptyState } from './EmptyState';
 
 export interface ListPanelProps {
   title?: string;
   description?: string;
-  /** Top-right — only place for “+ 建立/新增 …” */
+  /** Top-right — only place for create actions */
   toolbar?: ReactNode;
   filters?: ReactNode;
   children: ReactNode;
@@ -26,10 +27,11 @@ export function ListPanel({
   filters,
   children,
   empty,
-  emptyTitle = '沒有資料',
+  emptyTitle,
   emptyDescription,
   className,
 }: ListPanelProps) {
+  const { t } = useTranslation();
   const cls = ['data-table', 'list-panel-shell', className ?? ''].filter(Boolean).join(' ');
   return (
     <section className={cls}>
@@ -45,7 +47,10 @@ export function ListPanel({
       {filters ? <div className="data-table__filters">{filters}</div> : null}
       {empty ? (
         <div className="data-table__empty">
-          <EmptyState title={emptyTitle} description={emptyDescription} />
+          <EmptyState
+            title={emptyTitle ?? t('dataTable.empty')}
+            description={emptyDescription}
+          />
         </div>
       ) : (
         <div className="list-panel-shell__body">{children}</div>

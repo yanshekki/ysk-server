@@ -4,5 +4,5 @@
  */
 @import './tokens.css';
 @import './base.css';
-@import './components.css';
+@import './components/index.css';
 @import './utilities.css';

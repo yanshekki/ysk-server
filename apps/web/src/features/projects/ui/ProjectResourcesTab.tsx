@@ -117,17 +117,17 @@ export function ProjectResourcesTab({
       const notes = r.notes?.join('；') ?? '';
       if (r.blocked) {
         onOpsMessage?.(
-          `已寫入控制面；OS 未套用（需 root）。${notes}`,
+          t('projects.resWrittenOnly', { notes }),
         );
       } else if (r.applied) {
-        onOpsMessage?.(`限制已套用到 OS。${notes}`);
+        onOpsMessage?.(t('projects.resAppliedOs', { notes }));
       } else {
-        onOpsMessage?.(notes || (r.ok ? '已儲存' : '未完成'));
+        onOpsMessage?.(notes || (r.ok ? t('common.savedOk') : t('common.incomplete')));
       }
       await refreshLive();
       await onProjectRefresh?.();
     } catch (e) {
-      onOpsMessage?.(e instanceof Error ? e.message : '套用限制失敗');
+      onOpsMessage?.(e instanceof Error ? e.message : t('projects.resApplyLimitsFailed'));
     } finally {
       setLocalBusy(false);
     }
@@ -137,10 +137,10 @@ export function ProjectResourcesTab({
     setLocalBusy(true);
     try {
       const r = await projectsApi.applyOsLimits(project.id);
-      onOpsMessage?.(r.notes?.join('；') || (r.ok ? '已套用' : '未完成'));
+      onOpsMessage?.(r.notes?.join('；') || (r.ok ? t('common.applied') : t('common.incomplete')));
       await refreshLive();
     } catch (e) {
-      onOpsMessage?.(e instanceof Error ? e.message : '套用失敗');
+      onOpsMessage?.(e instanceof Error ? e.message : t('common.applyFailed'));
     } finally {
       setLocalBusy(false);
     }
@@ -150,10 +150,10 @@ export function ProjectResourcesTab({
     setLocalBusy(true);
     try {
       const r = await projectsApi.chownOsHome(project.id);
-      onOpsMessage?.(r.notes?.join('；') || (r.ok ? 'chown 完成' : 'chown 失敗'));
+      onOpsMessage?.(r.notes?.join('；') || (r.ok ? t('projects.resChownOk') : t('projects.resChownFailed')));
       await refreshLive();
     } catch (e) {
-      onOpsMessage?.(e instanceof Error ? e.message : 'chown 失敗');
+      onOpsMessage?.(e instanceof Error ? e.message : t('projects.resChownFailed'));
     } finally {
       setLocalBusy(false);
     }
@@ -165,25 +165,25 @@ export function ProjectResourcesTab({
 
       <Card>
         <CardSection
-          title="系統用戶隔離"
-          description="每個專案獨立 Linux 用戶；意圖 home：/home/ysk-server-{專案 id}"
+          title={t('projects.resOsTitle')}
+          description={t('projects.resOsDesc')}
         >
           <FormLayout columns={2}>
-            <Field label="Linux 用戶" htmlFor="lu" flush>
+            <Field label={t('security.ssh.linuxUser')} htmlFor="lu" flush>
               <input id="lu" value={project.linuxUser || '—'} readOnly disabled />
             </Field>
-            <Field label="OS 隔離" htmlFor="osok" flush>
+            <Field label={t('projects.resOsIsolation')} htmlFor="osok" flush>
               <input
                 id="osok"
-                value={project.osProvisioned ? '已就緒' : '未建立（需系統管理員）'}
+                value={project.osProvisioned ? t('ssl.status.ready') : t('projects.resOsNotCreated')}
                 readOnly
                 disabled
               />
             </Field>
-            <Field label="Home 目錄" htmlFor="home" flush>
+            <Field label={t('projects.resHomeDir')} htmlFor="home" flush>
               <input id="home" value={project.homeDir || '—'} readOnly disabled />
             </Field>
-            <Field label="意圖路徑" htmlFor="canon" flush>
+            <Field label={t('projects.resCanonical')} htmlFor="canon" flush>
               <input
                 id="canon"
                 value={`/home/ysk-server-${project.id}`}
@@ -198,23 +198,23 @@ export function ProjectResourcesTab({
                   live?.userExists
                     ? `${live.uid ?? '—'} / ${live.gid ?? '—'}`
                     : live
-                      ? '用戶不存在'
+                      ? t('projects.resUserMissing')
                       : '…'
                 }
                 readOnly
                 disabled
               />
             </Field>
-            <Field label="即時 shell / 鎖定" htmlFor="shlive" flush>
+            <Field label={t('projects.resShellLive')} htmlFor="shlive" flush>
               <input
                 id="shlive"
                 value={
                   live
                     ? `${live.shellLive ?? '—'} · ${
                         live.locked === true
-                          ? '已鎖定'
+                          ? t('projects.resLocked')
                           : live.locked === false
-                            ? '未鎖定'
+                            ? t('projects.resUnlocked')
                             : '—'
                       }`
                     : '…'
@@ -223,24 +223,24 @@ export function ProjectResourcesTab({
                 disabled
               />
             </Field>
-            <Field label="home 模式" htmlFor="hmode" flush>
+            <Field label={t('projects.resHomeMode')} htmlFor="hmode" flush>
               <input
                 id="hmode"
                 value={
                   live?.homeExists
-                    ? `存在 · mode ${live.homeMode ?? '?'}`
+                    ? t('projects.resHomeExists', { mode: live.homeMode ?? '?' })
                     : live
-                      ? '不存在'
+                      ? t('systemd.missing')
                       : '…'
                 }
                 readOnly
                 disabled
               />
             </Field>
-            <Field label="狀態" htmlFor="st" flush>
+            <Field label={t('common.status')} htmlFor="st" flush>
               <div id="st" className="action-bar u-gap-2">
                 <Badge tone={project.osProvisioned && live?.userExists ? 'ok' : 'warn'}>
-                  {project.osProvisioned && live?.userExists ? '隔離中' : '待隔離'}
+                  {project.osProvisioned && live?.userExists ? t('projects.resIsolationOn') : t('projects.resIsolationPending')}
                 </Badge>
               </div>
             </Field>
@@ -249,20 +249,20 @@ export function ProjectResourcesTab({
             <FormHint>{live.notes.slice(0, 3).join('；')}</FormHint>
           ) : (
             <FormHint>
-              行程以專案用戶執行。建立系統用戶需 YSK_EXECUTE + root；否則為 degraded。
+              {t('projects.resOsHint')}
             </FormHint>
           )}
           <FormActions>
             {onProvisionOs && !project.osProvisioned ? (
               <Button variant="primary" size="md" loading={anyBusy} onClick={onProvisionOs}>
-                建立／修復系統用戶
+                {t('projects.resProvisionUser')}
               </Button>
             ) : null}
             <Button variant="secondary" size="md" loading={anyBusy} onClick={() => void refreshLive()}>
-              重新整理狀態
+              {t('protection.refreshStatus')}
             </Button>
             <Button variant="secondary" size="md" loading={anyBusy} onClick={() => void chownHome()}>
-              修復 home 擁有權
+              {t('projects.resFixHome')}
             </Button>
             {project.homeDir !== `/home/ysk-server-${project.id}` || !project.osProvisioned ? (
               <Button
@@ -271,7 +271,7 @@ export function ProjectResourcesTab({
                 loading={anyBusy}
                 onClick={() => setMigrateConfirm(true)}
               >
-                遷移到 /home/ysk-server-…
+                {t('projects.resMigrateHome')}
               </Button>
             ) : null}
           </FormActions>
@@ -280,14 +280,14 @@ export function ProjectResourcesTab({
 
       <Card>
         <CardSection
-          title={t('projects.sectionQuota', { defaultValue: '磁碟配額' })}
-          description="軟配額（deploy 前 du 擋）+ 有 setquota 時可硬強制"
+          title={t('projects.sectionQuota', { defaultValue: t('projects.sectionQuota') })}
+          description={t('projects.resQuotaDesc')}
         >
           <FormLayout>
             <Field
-              label={t('projects.quotaMb', { defaultValue: '配額（MiB）' })}
+              label={t('projects.quotaMb', { defaultValue: t('publicFiles.quotaMiB') })}
               htmlFor="qmb"
-              hint="例如 1024 = 1 GiB"
+              hint={t('projects.resQuotaHint')}
               flush
             >
               <PresetChips
@@ -308,7 +308,7 @@ export function ProjectResourcesTab({
           </FormLayout>
           <FormActions>
             <Button variant="primary" size="md" loading={anyBusy} onClick={onSetQuota}>
-              {t('projects.setQuota', { defaultValue: '儲存軟配額' })}
+              {t('projects.setQuota', { defaultValue: t('projects.resSetSoftQuota') })}
             </Button>
           </FormActions>
         </CardSection>
@@ -316,11 +316,11 @@ export function ProjectResourcesTab({
 
       <Card>
         <CardSection
-          title="行程與帳號限制"
-          description="systemd MemoryMax / CPUQuota / TasksMax / NOFILE + shell／鎖定"
+          title={t('projects.resLimitsTitle')}
+          description={t('projects.resLimitsDesc')}
         >
           <FormLayout columns={2}>
-            <Field label="記憶體上限" htmlFor="mem" hint="例如 512M 或 1G" flush>
+            <Field label={t('projects.resMemMax')} htmlFor="mem" hint={t('projects.resMemHint')} flush>
               <PresetChips
                 options={[
                   { value: '256M', label: '256M' },
@@ -332,10 +332,10 @@ export function ProjectResourcesTab({
                 value={memoryMax}
                 onChange={setMemoryMax}
                 allowCustom
-                customPlaceholder="自訂"
+                customPlaceholder={t('common.custom')}
               />
             </Field>
-            <Field label="CPU 配額 %" htmlFor="cpuq" hint="100 = 一顆 CPU" flush>
+            <Field label={t('projects.cpuQuota')} htmlFor="cpuq" hint={t('projects.resCpuHint')} flush>
               <PresetChips
                 options={[
                   { value: '25', label: '25%' },
@@ -347,10 +347,10 @@ export function ProjectResourcesTab({
                 value={cpuQuota}
                 onChange={setCpuQuota}
                 allowCustom
-                customPlaceholder="自訂 %"
+                customPlaceholder={t('projects.resCustomPct')}
               />
             </Field>
-            <Field label="TasksMax" htmlFor="tmax" hint="行程數上限" flush>
+            <Field label="TasksMax" htmlFor="tmax" hint={t('projects.resTasksHint')} flush>
               <PresetChips
                 options={[
                   { value: '128', label: '128' },
@@ -362,10 +362,10 @@ export function ProjectResourcesTab({
                 value={tasksMax}
                 onChange={setTasksMax}
                 allowCustom
-                customPlaceholder="自訂"
+                customPlaceholder={t('common.custom')}
               />
             </Field>
-            <Field label="LimitNOFILE" htmlFor="nofile" hint="開檔上限" flush>
+            <Field label="LimitNOFILE" htmlFor="nofile" hint={t('projects.resNofileHint')} flush>
               <PresetChips
                 options={[
                   { value: '1024', label: '1024' },
@@ -376,10 +376,10 @@ export function ProjectResourcesTab({
                 value={limitNofile}
                 onChange={setLimitNofile}
                 allowCustom
-                customPlaceholder="自訂"
+                customPlaceholder={t('common.custom')}
               />
             </Field>
-            <Field label="Shell" htmlFor="shell" hint="預設 nologin" flush>
+            <Field label="Shell" htmlFor="shell" hint={t('projects.resShellHint')} flush>
               <SegRadio
                 name="shell"
                 aria-label="Shell"
@@ -388,7 +388,7 @@ export function ProjectResourcesTab({
                 options={[
                   { value: '/usr/sbin/nologin', label: 'nologin' },
                   { value: '/bin/false', label: 'false' },
-                  { value: '/bin/bash', label: 'bash · 風險' },
+                  { value: '/bin/bash', label: t('projects.resShellBashRisk') },
                 ]}
               />
             </Field>
@@ -396,14 +396,14 @@ export function ProjectResourcesTab({
           <div className="form-check-row u-mt-3">
             <CheckboxField
               id="alock"
-              label="鎖定 Linux 帳號"
-              description="usermod -L；解鎖時取消勾選"
+              label={t('projects.resLockAccount')}
+              description={t('projects.resLockDesc')}
               checked={locked}
               onChange={setLocked}
             />
           </div>
           <FormHint>
-            「儲存並套用」會寫 DB 並嘗試 usermod / setquota / systemctl set-property。無權限時只寫控制面。
+            {t('projects.resLimitsHint')}
           </FormHint>
           <FormActions>
             <Button
@@ -412,7 +412,7 @@ export function ProjectResourcesTab({
               loading={anyBusy}
               onClick={() => void saveAndApplyLimits()}
             >
-              儲存並套用限制到 OS
+              {t('projects.resSaveApply')}
             </Button>
             <Button
               variant="secondary"
@@ -422,10 +422,10 @@ export function ProjectResourcesTab({
                 onSetResources();
               }}
             >
-              僅存 Mem/CPU 到控制面
+              {t('projects.resSaveControlOnly')}
             </Button>
             <Button variant="ghost" size="md" loading={anyBusy} onClick={() => void applyOnly()}>
-              再套用一次（不改表單）
+              {t('projects.resReapply')}
             </Button>
           </FormActions>
         </CardSection>
@@ -442,17 +442,17 @@ export function ProjectResourcesTab({
             .then((r) => {
               onOpsMessage?.(
                 (r.notes ?? []).join('；') ||
-                  (r.ok ? '遷移完成' : '遷移未完成'),
+                  (r.ok ? t('projects.resMigrateDone') : t('projects.resMigrateIncomplete')),
               );
               return onProjectRefresh?.();
             })
             .catch((e: Error) => onOpsMessage?.(e.message))
             .finally(() => setLocalBusy(false));
         }}
-        title="遷移系統用戶 home？"
-        description="將遷移到 /home/ysk-server-{id} 並建立／修復系統用戶。需 root。"
-        confirmLabel="遷移"
-        cancelLabel="取消"
+        title={t('projects.resMigrateTitle')}
+        description={t('projects.resMigrateDesc')}
+        confirmLabel={t('projects.resMigrate')}
+        cancelLabel={t('common.cancel')}
         danger
         busy={localBusy}
       />

@@ -1,0 +1,10 @@
+{
+  "title": "Result",
+  "status": "Status",
+  "port": "Port",
+  "url": "URL",
+  "blocked": "Cannot run",
+  "success": "Success",
+  "failed": "Failed",
+  "retry": "Retry"
+}
