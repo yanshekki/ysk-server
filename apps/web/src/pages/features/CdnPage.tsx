@@ -69,6 +69,8 @@ export function CdnPage() {
   const [baseUrl, setBaseUrl] = useState('');
   const [weight, setWeight] = useState('100');
   const [sshIdentityId, setSshIdentityId] = useState('');
+  const [sshHost, setSshHost] = useState('');
+  const [sshUsername, setSshUsername] = useState('root');
 
   // site form
   const [siteOpen, setSiteOpen] = useState(false);
@@ -105,6 +107,8 @@ export function CdnPage() {
     setBaseUrl('');
     setWeight('100');
     setSshIdentityId('');
+    setSshHost('');
+    setSshUsername('root');
   }
 
   function resetSiteForm() {
@@ -136,6 +140,8 @@ export function CdnPage() {
     setBaseUrl(n.baseUrl ?? '');
     setWeight(String(n.weight ?? 100));
     setSshIdentityId(n.sshIdentityId ?? '');
+    setSshHost(n.sshHost ?? '');
+    setSshUsername(n.sshUsername ?? 'root');
     setNodeOpen(true);
   }
 
@@ -192,6 +198,8 @@ export function CdnPage() {
           baseUrl: baseUrl.trim() || undefined,
           weight: Number(weight) || 100,
           sshIdentityId: sshIdentityId.trim() || undefined,
+          sshHost: sshHost.trim() || undefined,
+          sshUsername: sshUsername.trim() || undefined,
         }),
       });
       setNodeOpen(false);
@@ -351,21 +359,25 @@ export function CdnPage() {
     }
   }
 
-  async function onRender(id: string, dryRun: boolean) {
+  async function postSiteOp(
+    id: string,
+    action: 'render' | 'apply' | 'purge',
+    body: Record<string, unknown> = {},
+  ) {
     setBusy(true);
     setNotes([]);
-    setConfPreview(null);
+    if (action === 'render') setConfPreview(null);
     try {
       const token = authStore.getToken();
       const res = await fetch(
-        `/api/v1/cdn/sites/${encodeURIComponent(id)}/render`,
+        `/api/v1/cdn/sites/${encodeURIComponent(id)}/${action}`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ dryRun }),
+          body: JSON.stringify(body),
         },
       );
       const r = (await res.json()) as {
@@ -374,19 +386,38 @@ export function CdnPage() {
         notes?: string[];
         conf?: string;
         contentHash?: string;
+        edges?: Array<{ name?: string; apply_status?: string; notes?: string[] }>;
+        blocked?: boolean;
       };
-      setNotes(r.notes ?? []);
+      setNotes([
+        ...(r.notes ?? []),
+        ...(r.edges ?? []).flatMap((e) =>
+          (e.notes ?? []).map((n) => `${e.name ?? '?'}: ${n}`),
+        ),
+      ]);
       if (r.conf) setConfPreview(r.conf);
-      setMsg(
-        dryRun
-          ? `預覽渲染（${r.apply_status ?? 'planned'}）hash=${r.contentHash ?? '—'}`
-          : r.ok
-            ? `已寫入控制面 conf（${r.apply_status}）— 未 fan-out edge`
-            : `渲染失敗（${r.apply_status ?? res.status}）`,
-      );
+      if (r.blocked) {
+        setMsg('已封鎖（需系統變更權限）');
+      } else if (action === 'render' && body.dryRun) {
+        setMsg(
+          `預覽渲染（${r.apply_status ?? 'planned'}）hash=${r.contentHash ?? '—'}`,
+        );
+      } else if (r.ok) {
+        setMsg(
+          action === 'apply'
+            ? `Fan-out 完成（${r.apply_status}）`
+            : action === 'purge'
+              ? `Purge 完成（${r.apply_status}）`
+              : `已寫入 conf（${r.apply_status}）`,
+        );
+      } else {
+        setMsg(
+          `未全部成功（${r.apply_status ?? res.status}）— 見 notes`,
+        );
+      }
       await refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : '渲染失敗');
+      setMsg(err instanceof Error ? err.message : '操作失敗');
     } finally {
       setBusy(false);
     }
@@ -687,17 +718,37 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() => void onRender(s.id, true)}
+                        onClick={() =>
+                          void postSiteOp(s.id, 'render', { dryRun: true })
+                        }
                       >
                         預覽
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void postSiteOp(s.id, 'render', { dryRun: false })
+                        }
+                      >
+                        寫入 conf
                       </Button>
                       <Button
                         variant="primary"
                         size="sm"
                         loading={busy}
-                        onClick={() => void onRender(s.id, false)}
+                        onClick={() => void postSiteOp(s.id, 'apply', {})}
                       >
-                        寫入 conf
+                        套用 edges
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => void postSiteOp(s.id, 'purge', {})}
+                      >
+                        Purge
                       </Button>
                       <Button
                         variant="ghost"
@@ -750,18 +801,18 @@ export function CdnPage() {
                     <strong>PR-C1</strong>：節點 registry、探活、drain ✓
                   </li>
                   <li>
-                    <strong>PR-C2（本頁站點）</strong>：site 政策 + Nginx
-                    edge 渲染寫入控制面 ✓
+                    <strong>PR-C2</strong>：site 政策 + Nginx edge 渲染 ✓
                   </li>
                   <li>
-                    <strong>PR-C3</strong>：fleet/SSH fan-out + purge
+                    <strong>PR-C3（套用 edges / purge）</strong>：SSH/local
+                    fan-out + cache purge ✓
                   </li>
                   <li>
                     <strong>PR-C4 MVP</strong>：multi-A / failover DNS
                   </li>
                 </ul>
                 <FormHint>
-                  written ≠ edge applied。詳見{' '}
+                  partial = 部分 edge 失敗。draining 節點預設略過。詳見{' '}
                   <code className="inline">docs/product/dns-cdn-design.md</code>
                 </FormHint>
               </CardSection>
@@ -875,6 +926,28 @@ export function CdnPage() {
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
                 inputMode="numeric"
+              />
+            </Field>
+            <Field
+              label="SSH host"
+              htmlFor="cdn-ssh-host"
+              flush
+              hint="可空＝用 IPv4；127.0.0.1＝本機 local apply"
+            >
+              <input
+                id="cdn-ssh-host"
+                value={sshHost}
+                onChange={(e) => setSshHost(e.target.value)}
+                placeholder="留空用 public IPv4"
+                spellCheck={false}
+              />
+            </Field>
+            <Field label="SSH 用戶" htmlFor="cdn-ssh-user" flush>
+              <input
+                id="cdn-ssh-user"
+                value={sshUsername}
+                onChange={(e) => setSshUsername(e.target.value)}
+                placeholder="root"
               />
             </Field>
             <Field label="SSH identity id" htmlFor="cdn-ssh" flush>

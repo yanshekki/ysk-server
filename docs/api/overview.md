@@ -94,6 +94,8 @@ Base URL: `http://127.0.0.1:9287`
 | GET/POST | `/api/v1/cdn/sites` | Bearer | CDN site list / upsert (PR-C2) |
 | GET/DELETE | `/api/v1/cdn/sites/:id` | Bearer | Get / delete site (+ rendered conf) |
 | POST | `/api/v1/cdn/sites/:id/render` | Bearer | Render edge nginx (dryRun or write managed) |
+| POST | `/api/v1/cdn/sites/:id/apply` | Bearer | Fan-out conf to edges (SSH/local) + reload |
+| POST | `/api/v1/cdn/sites/:id/purge` | Bearer | Purge proxy_cache on edges |
 | POST | `/api/v1/hosting/firewall/plan` | Bearer | Firewall plan |
 | GET | `/api/v1/hosting/files/plan` | Bearer | Public file server plan |
 | GET | `/api/v1/backups` | Bearer | List backup archives |

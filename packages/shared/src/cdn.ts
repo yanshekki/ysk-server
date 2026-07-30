@@ -24,6 +24,12 @@ export interface CdnNodeDto {
   baseUrl?: string;
   fleetAgentId?: string;
   sshIdentityId?: string;
+  /** SSH target for fan-out (PR-C3); falls back to publicIpv4[0] */
+  sshHost?: string;
+  sshPort?: number;
+  sshUsername?: string;
+  /** Remote path for ysk-cdn-*.conf (default /etc/nginx/conf.d) */
+  remoteNginxConfDir?: string;
   roles: CdnNodeRole[];
   region: string;
   publicIpv4: string[];

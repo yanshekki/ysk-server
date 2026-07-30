@@ -4083,6 +4083,17 @@ export function createHttpServer(ctx: AppContext): Server {
             typeof data.fleetAgentId === 'string' ? data.fleetAgentId : undefined,
           sshIdentityId:
             typeof data.sshIdentityId === 'string' ? data.sshIdentityId : undefined,
+          sshHost: typeof data.sshHost === 'string' ? data.sshHost : undefined,
+          sshPort:
+            typeof data.sshPort === 'number'
+              ? data.sshPort
+              : Number(data.sshPort) || undefined,
+          sshUsername:
+            typeof data.sshUsername === 'string' ? data.sshUsername : undefined,
+          remoteNginxConfDir:
+            typeof data.remoteNginxConfDir === 'string'
+              ? data.remoteNginxConfDir
+              : undefined,
           roles: Array.isArray(data.roles) ? (data.roles as string[]) : undefined,
           region: typeof data.region === 'string' ? data.region : undefined,
           publicIpv4: Array.isArray(data.publicIpv4)
@@ -4300,6 +4311,74 @@ export function createHttpServer(ctx: AppContext): Server {
             apply_status: r.apply_status,
             contentHash: r.contentHash,
             dryRun: data.dryRun === true,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/apply$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          edgeNodeId?: string;
+          skipDraining?: boolean;
+          projectOriginUrl?: string;
+        };
+        const { fanOutCdnSite } = await import('@ysk/core');
+        const r = await fanOutCdnSite({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          edgeNodeId: data.edgeNodeId,
+          skipDraining: data.skipDraining,
+          projectOriginUrl: data.projectOriginUrl,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.apply',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            edges: r.edges?.length,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/purge$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          edgeNodeId?: string;
+          skipDraining?: boolean;
+        };
+        const { purgeCdnSite } = await import('@ysk/core');
+        const r = await purgeCdnSite({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          edgeNodeId: data.edgeNodeId,
+          skipDraining: data.skipDraining,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.purge',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            edges: r.edges?.length,
           },
           ok: r.ok,
         });

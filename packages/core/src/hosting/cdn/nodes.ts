@@ -25,6 +25,10 @@ export type UpsertCdnNodeInput = {
   baseUrl?: string;
   fleetAgentId?: string;
   sshIdentityId?: string;
+  sshHost?: string;
+  sshPort?: number;
+  sshUsername?: string;
+  remoteNginxConfDir?: string;
   roles?: CdnNodeRole[] | string[];
   region?: string;
   publicIpv4?: string[];
@@ -144,12 +148,25 @@ export function upsertCdnNode(db: JsonStore, input: UpsertCdnNodeInput): CdnNode
     status = 'unknown';
   }
 
+  const sshPortRaw = input.sshPort ?? prev?.sshPort;
+  const sshPort =
+    typeof sshPortRaw === 'number' && sshPortRaw > 0 && sshPortRaw <= 65535
+      ? Math.round(sshPortRaw)
+      : undefined;
+
   const row: CdnNodeDto = {
     id,
     name,
     baseUrl: input.baseUrl?.trim() || prev?.baseUrl,
     fleetAgentId: input.fleetAgentId?.trim() || prev?.fleetAgentId,
     sshIdentityId: input.sshIdentityId?.trim() || prev?.sshIdentityId,
+    sshHost: (input.sshHost ?? prev?.sshHost)?.trim() || undefined,
+    sshPort,
+    sshUsername:
+      (input.sshUsername ?? prev?.sshUsername)?.trim() || undefined,
+    remoteNginxConfDir:
+      (input.remoteNginxConfDir ?? prev?.remoteNginxConfDir)?.trim() ||
+      undefined,
     roles,
     region: (input.region ?? prev?.region ?? 'default').trim() || 'default',
     publicIpv4,

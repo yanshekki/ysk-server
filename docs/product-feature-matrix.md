@@ -114,9 +114,9 @@
 | CDN2 | Node health probe + drain | — | — | ✓ | P0 |
 | CDN3 | Site policy (domains, origin, edges, cache) | — | — | ✓ | P0 |
 | CDN4 | Nginx edge renderer (proxy_cache + bypass) | — | — | ✓ | P0 |
-| CDN5 | Fan-out apply (fleet/SSH) + partial honesty | — | — | ✗ | P0 |
+| CDN5 | Fan-out apply (fleet/SSH) + partial honesty | — | — | ✓ | P0 |
 | CDN6 | Multi-A / failover DNS sync | — | — | ✗ | P0 |
-| CDN7 | Cache purge all edges | H | D | ✗ | P1 |
+| CDN7 | Cache purge all edges | H | D | ✓ | P1 |
 | CDN8 | Weighted / geo DNS | — | — | ✗ | P2 |
 | CDN9 | SSL distribute / LE on edge | — | — | ✗ | P1 |
 | CDN10 | Hit-rate / status dashboard | — | — | ✗ | P1 |
