@@ -3,7 +3,7 @@
  */
 
 import { mkdirSync, existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 
 export type SqlDumpEngine = 'mysql' | 'mariadb' | 'postgres';
@@ -23,6 +23,11 @@ export async function dumpSqlDatabase(input: {
   dbName: string;
   username?: string;
   password?: string;
+  /**
+   * Absolute path for the dump file. When set, skips default
+   * dataDir/db-dumps/{engine}/{db}-{stamp}.sql layout.
+   */
+  outputPath?: string;
 }): Promise<DumpResult> {
   const db = input.dbName.replace(/[^a-zA-Z0-9_]/g, '');
   if (!db) return { ok: false, notes: ['無效資料庫名'], requiresExecute: false };
@@ -34,10 +39,16 @@ export async function dumpSqlDatabase(input: {
       notes: ['無法 dump：伺服器未開啟系統變更權限'],
     };
   }
-  const dir = join(input.dataDir, 'db-dumps', input.engine);
-  mkdirSync(dir, { recursive: true });
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const out = join(dir, `${db}-${stamp}.sql`);
+  let out: string;
+  if (input.outputPath) {
+    out = input.outputPath;
+    mkdirSync(dirname(out), { recursive: true });
+  } else {
+    const dir = join(input.dataDir, 'db-dumps', input.engine);
+    mkdirSync(dir, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    out = join(dir, `${db}-${stamp}.sql`);
+  }
 
   if (input.engine === 'postgres') {
     const user = input.username || 'postgres';

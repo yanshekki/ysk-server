@@ -242,6 +242,7 @@ Each engine: **data page** + **service page**.
 
 | ID | Feature | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
+| L0 | Full host migrate (SSH target) | — | — | ✓ | P0 |
 | L1 | Manual backup (project/user) | 兩 | 兩 | ✓ | P0 |
 | L2 | Scheduled backup | 兩 | 兩 | △ | P0 |
 | L3 | Download backup | 兩 | 兩 | △ | P0 |

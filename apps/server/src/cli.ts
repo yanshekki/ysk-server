@@ -57,6 +57,7 @@ const CLI_COMMANDS = [
   'agent',
   'readiness',
   'doctor',
+  'migrate',
   'version',
   'help',
 ] as const;
@@ -203,6 +204,7 @@ Commands:
   agents                List/probe agent runtimes (experimental)
   agent run             Outbound fleet poller (experimental)
   readiness | doctor    Production readiness (honest)
+  migrate               inventory|host|post|status|resume (整機遷移)
   version | help
 
 Global:
@@ -2513,6 +2515,186 @@ async function main(argv: string[]): Promise<number> {
       }
       process.stderr.write(
         `Usage: ${CLI_NAME} defense status|ban|unban|whitelist [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'migrate') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const configPath = getOpt(args, '--config');
+    const dataDirOpt = getOpt(args, '--data-dir');
+    let config = configPath ? loadConfigFile(configPath) : undefined;
+    if (dataDirOpt) {
+      config = config
+        ? { ...config, dataDir: dataDirOpt }
+        : ({ dataDir: dataDirOpt } as NonNullable<typeof config>);
+    }
+    const { createAppContext, closeAppContext } = await import('./app-context.js');
+    const {
+      migrateInventory,
+      runSourceMigrateHost,
+      runLocalMigratePost,
+      loadMigrateJob,
+      listMigrateJobs,
+    } = await import('@ysk/core');
+    const ctx = createAppContext({
+      version: VERSION,
+      config,
+      configPath,
+      dataDir: dataDirOpt ?? config?.dataDir,
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
+    try {
+      if (sub === 'inventory') {
+        const r = await migrateInventory({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          yskVersion: VERSION,
+        });
+        printJson(r);
+        return r.ok ? 0 : 1;
+      }
+      if (sub === 'status') {
+        const jobId = getOpt(args, '--job');
+        if (jobId) {
+          const job = loadMigrateJob(ctx.dataDir, jobId);
+          if (!job) {
+            printJson({ ok: false, notes: [`找不到 job ${jobId}`] });
+            return 4;
+          }
+          printJson({ ok: true, job });
+          return 0;
+        }
+        printJson({ ok: true, jobs: listMigrateJobs(ctx.dataDir) });
+        return 0;
+      }
+      if (sub === 'post') {
+        const jobId = getOpt(args, '--job');
+        if (!jobId) {
+          process.stderr.write(
+            'Usage: ysk-server migrate post --job <id> --data-dir PATH --execute\n',
+          );
+          return 2;
+        }
+        if (!wantsHostExecute(args)) {
+          printJson({
+            ok: false,
+            blocked: true,
+            notes: ['migrate post 需 --execute 且 YSK_EXECUTE=1（在目標機執行）'],
+          });
+          return 3;
+        }
+        const r = await runLocalMigratePost({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          jobId,
+        });
+        printJson(r);
+        return r.ok ? 0 : r.blocked ? 3 : 1;
+      }
+      if (sub === 'host' || sub === 'resume') {
+        const target =
+          getOpt(args, '--target') ??
+          (sub === 'resume' ? undefined : undefined);
+        const jobId = getOpt(args, '--job');
+        if (sub === 'host' && !target && !jobId) {
+          process.stderr.write(
+            'Usage: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n',
+          );
+          return 2;
+        }
+        if (!wantsHostExecute(args) && !hasFlag(args, '--dry-run')) {
+          printJson({
+            ok: false,
+            blocked: true,
+            notes: [
+              'migrate host 需 --execute + YSK_EXECUTE=1，或 --dry-run（僅 inventory+preflight）',
+            ],
+          });
+          return 3;
+        }
+        const identityFile = getOpt(args, '--identity-file');
+        const identityId = getOpt(args, '--identity-id');
+        let auth:
+          | { kind: 'identity'; privateKeyPath: string }
+          | { kind: 'identityId'; dataDir: string; identityId: string }
+          | { kind: 'password'; password: string }
+          | { kind: 'agent' } = { kind: 'agent' };
+        let passwordForTempKey: string | undefined;
+        if (identityFile) {
+          auth = { kind: 'identity', privateKeyPath: identityFile };
+        } else if (identityId) {
+          auth = {
+            kind: 'identityId',
+            dataDir: ctx.dataDir,
+            identityId,
+          };
+        } else if (hasFlag(args, '--password') || process.env.YSK_MIGRATE_SSH_PASSWORD) {
+          const pw =
+            getOpt(args, '--password') ||
+            process.env.YSK_MIGRATE_SSH_PASSWORD ||
+            '';
+          if (!pw) {
+            printJson({
+              ok: false,
+              notes: ['--password 需值，或設 YSK_MIGRATE_SSH_PASSWORD'],
+            });
+            return 2;
+          }
+          passwordForTempKey = pw;
+          auth = { kind: 'password', password: pw };
+        }
+        // resume: load job target
+        let targetStr = target;
+        if (!targetStr && jobId) {
+          const j = loadMigrateJob(ctx.dataDir, jobId);
+          if (j?.target) {
+            targetStr = `${j.target.user}@${j.target.host}`;
+          }
+        }
+        if (!targetStr) {
+          printJson({ ok: false, notes: ['需要 --target 或可 resume 的 --job'] });
+          return 2;
+        }
+        const port = getOpt(args, '--port')
+          ? Number(getOpt(args, '--port'))
+          : undefined;
+        const r = await runSourceMigrateHost({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          target: targetStr,
+          port,
+          auth: passwordForTempKey
+            ? { kind: 'agent' } // will switch after temp key
+            : auth,
+          passwordForTempKey,
+          maintenanceAccepted:
+            hasFlag(args, '--maintenance') ||
+            hasFlag(args, '--yes') ||
+            wantsHostExecute(args),
+          forceWipeTarget: hasFlag(args, '--force-wipe-target'),
+          targetDataDir: getOpt(args, '--target-data-dir'),
+          dryRun: hasFlag(args, '--dry-run'),
+          remotePost: !hasFlag(args, '--skip-remote-post'),
+          yskVersion: VERSION,
+          jobId,
+        });
+        printJson(r);
+        return r.ok ? 0 : r.blocked ? 3 : 1;
+      }
+      process.stderr.write(
+        `Usage:
+  ysk-server migrate inventory [--data-dir PATH] --json
+  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]
+  ysk-server migrate post --job ID --data-dir PATH --execute   # on target
+  ysk-server migrate status [--job ID]
+  ysk-server migrate resume --job ID --execute
+`,
       );
       return 2;
     } finally {

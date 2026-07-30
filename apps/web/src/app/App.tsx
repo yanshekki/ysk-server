@@ -40,6 +40,7 @@ import { RedisPage } from '../pages/features/RedisPage';
 import { ServicesPage } from '../pages/features/ServicesPage';
 import { SystemdUnitPage } from '../pages/features/SystemdUnitPage';
 import { ReadinessPage } from '../pages/features/ReadinessPage';
+import { MigrateHostPage } from '../pages/features/MigrateHostPage';
 import { PublicFilesPage } from '../pages/features/PublicFilesPage';
 import { CronPage } from '../pages/features/CronPage';
 import { BackupsPage } from '../pages/features/BackupsPage';
@@ -110,6 +111,7 @@ export function App() {
           <Route path="system" element={<SystemPage />} />
           <Route path="system/unit" element={<SystemdUnitPage />} />
           <Route path="system/readiness" element={<ReadinessPage />} />
+          <Route path="system/migrate" element={<MigrateHostPage />} />
           <Route path="updates" element={<UpdatesPage />} />
           <Route path="agents" element={<AgentsPage />} />
         </Route>

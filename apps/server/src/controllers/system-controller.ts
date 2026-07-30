@@ -1982,5 +1982,187 @@ export async function handleSystemRoutes(
     return true;
   }
 
+  // —— Host full migrate (整機遷移) ——
+  if (method === 'POST' && url.pathname === '/api/v1/system/migrate/inventory') {
+    ctx.auth.authenticate(getBearer(req));
+    const { migrateInventory } = await import('@ysk/core');
+    const r = await migrateInventory({
+      host: ctx.host,
+      db: ctx.db,
+      dataDir: ctx.dataDir,
+      yskVersion: VERSION,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
+
+  if (method === 'GET' && url.pathname === '/api/v1/system/migrate/jobs') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listMigrateJobs } = await import('@ysk/core');
+    sendJson(res, 200, { ok: true, jobs: listMigrateJobs(ctx.dataDir) });
+    return true;
+  }
+
+  if (method === 'GET' && url.pathname.startsWith('/api/v1/system/migrate/jobs/')) {
+    ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/').pop() || '';
+    const { loadMigrateJob } = await import('@ysk/core');
+    const job = loadMigrateJob(ctx.dataDir, id);
+    if (!job) {
+      sendJson(res, 404, { ok: false, notes: ['找不到 migrate job'] });
+      return true;
+    }
+    sendJson(res, 200, { ok: true, job });
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/migrate/jobs') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      target?: string;
+      port?: number;
+      identityId?: string;
+      identityFile?: string;
+      /** one-shot; never stored */
+      password?: string;
+      maintenanceAccepted?: boolean;
+      forceWipeTarget?: boolean;
+      targetDataDir?: string;
+      dryRun?: boolean;
+      skipRemotePost?: boolean;
+      jobId?: string;
+      execute?: boolean;
+    };
+    const target = (data.target || '').trim();
+    if (!target && !data.jobId) {
+      sendJson(res, 400, {
+        ok: false,
+        notes: ['需要 target（root@host）或 jobId 以 resume'],
+      });
+      return true;
+    }
+    if (!data.execute && !data.dryRun) {
+      sendJson(res, 403, {
+        ok: false,
+        blocked: true,
+        notes: ['需 execute:true 或 dryRun:true'],
+      });
+      return true;
+    }
+    if (data.execute && !ctx.host.executeEnabled()) {
+      sendOpsResult(res, {
+        ok: false,
+        blocked: true,
+        requiresExecute: true,
+        notes: ['伺服器未開啟 YSK_EXECUTE'],
+      });
+      return true;
+    }
+
+    const { runSourceMigrateHost, loadMigrateJob } = await import('@ysk/core');
+    type Auth =
+      | { kind: 'identity'; privateKeyPath: string }
+      | { kind: 'identityId'; dataDir: string; identityId: string }
+      | { kind: 'password'; password: string }
+      | { kind: 'agent' };
+    let auth: Auth = { kind: 'agent' };
+    let passwordForTempKey: string | undefined;
+    if (data.identityFile) {
+      auth = { kind: 'identity', privateKeyPath: data.identityFile };
+    } else if (data.identityId) {
+      auth = {
+        kind: 'identityId',
+        dataDir: ctx.dataDir,
+        identityId: data.identityId,
+      };
+    } else if (data.password) {
+      passwordForTempKey = data.password;
+      auth = { kind: 'agent' };
+    }
+
+    let targetStr = target;
+    if (!targetStr && data.jobId) {
+      const prev = loadMigrateJob(ctx.dataDir, data.jobId);
+      if (prev?.target) {
+        targetStr = `${prev.target.user}@${prev.target.host}`;
+        if (!data.port && prev.target.port) data.port = prev.target.port;
+      }
+    }
+    if (!targetStr) {
+      sendJson(res, 400, {
+        ok: false,
+        notes: ['需要 target，或含 target 的 jobId'],
+      });
+      return true;
+    }
+
+    const r = await runSourceMigrateHost({
+      host: ctx.host,
+      db: ctx.db,
+      dataDir: ctx.dataDir,
+      target: targetStr,
+      port: data.port,
+      auth,
+      passwordForTempKey,
+      maintenanceAccepted: data.maintenanceAccepted === true || data.execute === true,
+      forceWipeTarget: data.forceWipeTarget === true,
+      targetDataDir: data.targetDataDir,
+      dryRun: data.dryRun === true,
+      remotePost: data.skipRemotePost !== true,
+      yskVersion: VERSION,
+      jobId: data.jobId,
+    });
+
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.migrate.host',
+      detail: {
+        ok: r.ok,
+        blocked: r.blocked,
+        jobId: r.job?.id,
+        target: target || undefined,
+        dryRun: data.dryRun === true,
+        phase: r.job?.phase,
+      },
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/migrate/post') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { jobId?: string };
+    if (!data.jobId) {
+      sendJson(res, 400, { ok: false, notes: ['需要 jobId'] });
+      return true;
+    }
+    if (!ctx.host.executeEnabled()) {
+      sendOpsResult(res, {
+        ok: false,
+        blocked: true,
+        requiresExecute: true,
+        notes: ['migrate post 需要 YSK_EXECUTE=1（應在目標機執行）'],
+      });
+      return true;
+    }
+    const { runLocalMigratePost } = await import('@ysk/core');
+    const r = await runLocalMigratePost({
+      host: ctx.host,
+      dataDir: ctx.dataDir,
+      jobId: data.jobId,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.migrate.post',
+      detail: { ok: r.ok, jobId: data.jobId },
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
+
   return false;
 }
