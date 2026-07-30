@@ -55,6 +55,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
     sectionKey: 'dnsSsl',
     items: [
       { to: '/dns', key: 'dns', icon: '🌐' },
+      { to: '/cdn', key: 'cdn', icon: '📡' },
       { to: '/ssl', key: 'ssl', icon: '🔒' },
       { to: '/nginx', key: 'nginx', icon: '🔀' },
     ],

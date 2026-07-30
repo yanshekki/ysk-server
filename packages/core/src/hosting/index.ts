@@ -70,4 +70,5 @@ export * from './firewall-ops.js';
 export * from './fail2ban-ops.js';
 export * from './log-center/index.js';
 export * from './host-migrate/index.js';
+export * from './cdn/index.js';
 

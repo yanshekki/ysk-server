@@ -303,7 +303,7 @@ CDN 頁建議分頁：**節點** | **站點** | **健康** | **工具（purge / 
 |----|------|------|
 | **PR-D1** | CDN zone 模板、validate、lookup、Tools UI、shared cdn types、本設計文 | — |
 | **PR-D2** | DNS cluster remote reload + peer 狀態誠實化 | D1 |
-| **PR-C1** | cdn_nodes CRUD + probe + UI 骨架 | shared types |
+| **PR-C1** | cdn_nodes CRUD + probe + UI 骨架 (**done**) | shared types |
 | **PR-C2** | cdn_sites + Nginx renderer（單 edge dry-run） | C1 |
 | **PR-C3** | fleet/SSH fan-out 多 edge apply + purge | C2, migrate/db-cluster 模式 |
 | **PR-C4** | DNS multi-A/failover + managedBy + 健康迴圈 **MVP** | C3, D1 |

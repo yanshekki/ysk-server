@@ -110,8 +110,8 @@
 
 | ID | Feature | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
-| CDN1 | Node registry (roles control/origin/edge/dns) | — | — | ✗ | P0 |
-| CDN2 | Node health probe + drain | — | — | ✗ | P0 |
+| CDN1 | Node registry (roles control/origin/edge/dns) | — | — | ✓ | P0 |
+| CDN2 | Node health probe + drain | — | — | ✓ | P0 |
 | CDN3 | Site policy (domains, origin, edges, cache) | — | — | ✗ | P0 |
 | CDN4 | Nginx edge renderer (proxy_cache + bypass) | — | — | ✗ | P0 |
 | CDN5 | Fan-out apply (fleet/SSH) + partial honesty | — | — | ✗ | P0 |

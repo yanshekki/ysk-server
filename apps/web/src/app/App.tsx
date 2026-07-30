@@ -24,6 +24,7 @@ import {
 } from '../pages/features/GenericRuntimePage';
 import { SslPage } from '../pages/features/SslPage';
 import { DnsPage } from '../pages/features/DnsPage';
+import { CdnPage } from '../pages/features/CdnPage';
 import { FtpPage } from '../pages/features/FtpPage';
 import { FtpsServicePage } from '../pages/features/FtpsServicePage';
 import { FirewallPage } from '../pages/features/FirewallPage';
@@ -84,6 +85,7 @@ export function App() {
           <Route path="ftp" element={<FtpPage />} />
           <Route path="ftp/service" element={<FtpsServicePage />} />
           <Route path="dns" element={<DnsPage />} />
+          <Route path="cdn" element={<CdnPage />} />
           <Route path="ssl" element={<SslPage />} />
           <Route path="nginx" element={<NginxPage />} />
           <Route path="runtimes/node" element={<NodeRuntimePage />} />

@@ -4064,6 +4064,118 @@ export function createHttpServer(ctx: AppContext): Server {
         });
       }
 
+      // —— CDN nodes (PR-C1): registry + probe + drain ——
+      if (method === 'GET' && url.pathname === '/api/v1/cdn/nodes') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listCdnNodes } = await import('@ysk/core');
+        return sendJson(res, 200, { items: listCdnNodes(ctx.db) });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/cdn/nodes') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+        const { upsertCdnNode } = await import('@ysk/core');
+        const node = upsertCdnNode(ctx.db, {
+          id: typeof data.id === 'string' ? data.id : undefined,
+          name: String(data.name ?? ''),
+          baseUrl: typeof data.baseUrl === 'string' ? data.baseUrl : undefined,
+          fleetAgentId:
+            typeof data.fleetAgentId === 'string' ? data.fleetAgentId : undefined,
+          sshIdentityId:
+            typeof data.sshIdentityId === 'string' ? data.sshIdentityId : undefined,
+          roles: Array.isArray(data.roles) ? (data.roles as string[]) : undefined,
+          region: typeof data.region === 'string' ? data.region : undefined,
+          publicIpv4: Array.isArray(data.publicIpv4)
+            ? (data.publicIpv4 as string[])
+            : typeof data.publicIpv4 === 'string'
+              ? String(data.publicIpv4)
+                  .split(/[\s,]+/)
+                  .filter(Boolean)
+              : undefined,
+          publicIpv6: Array.isArray(data.publicIpv6)
+            ? (data.publicIpv6 as string[])
+            : typeof data.publicIpv6 === 'string'
+              ? String(data.publicIpv6)
+                  .split(/[\s,]+/)
+                  .filter(Boolean)
+              : undefined,
+          healthUrl: typeof data.healthUrl === 'string' ? data.healthUrl : undefined,
+          weight: typeof data.weight === 'number' ? data.weight : Number(data.weight) || undefined,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.node.upsert',
+          resource: node.id,
+          detail: { name: node.name, roles: node.roles },
+          ok: true,
+        });
+        return sendJson(res, 200, { node });
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getCdnNode } = await import('@ysk/core');
+        const node = getCdnNode(ctx.db, id);
+        if (!node) return sendJson(res, 404, { ok: false, notes: ['找不到節點'] });
+        return sendJson(res, 200, { node });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { deleteCdnNode } = await import('@ysk/core');
+        const ok = deleteCdnNode(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.node.delete',
+          resource: id,
+          detail: { ok },
+          ok,
+        });
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+\/probe$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { probeCdnNode } = await import('@ysk/core');
+        const r = await probeCdnNode(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.node.probe',
+          resource: id,
+          detail: { ok: r.ok, method: r.method },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+\/drain$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { draining?: boolean };
+        const { setCdnNodeDrain } = await import('@ysk/core');
+        const node = setCdnNodeDrain(ctx.db, id, data.draining !== false);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.node.drain',
+          resource: id,
+          detail: { status: node.status },
+          ok: true,
+        });
+        return sendJson(res, 200, { node });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/cdn/nodes/probe-all') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { probeAllCdnNodes } = await import('@ysk/core');
+        const r = await probeAllCdnNodes(ctx.db);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.nodes.probe_all',
+          detail: { ok: r.ok, count: r.items.length },
+          ok: r.ok,
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/web-stats$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
