@@ -136,6 +136,10 @@ export function CdnPage() {
     Array<{ id: string; zone?: string }>
   >([]);
   const [dashboard, setDashboard] = useState<CdnDashboardDto | null>(null);
+  const [sslMode, setSslMode] = useState<
+    'off' | 'upload' | 'le_http01' | 'le_dns01'
+  >('off');
+  const [sslEmail, setSslEmail] = useState('');
 
   const refresh = useCallback(async () => {
     const [n, s, z] = await Promise.all([
@@ -195,6 +199,8 @@ export function CdnPage() {
     setMaxAge('10m');
     setDnsStrategy('multi_a');
     setDnsZoneId('');
+    setSslMode('off');
+    setSslEmail('');
   }
 
   function openCreateNode() {
@@ -234,6 +240,7 @@ export function CdnPage() {
     setMaxAge(s.cache?.maxAge ?? '10m');
     setDnsStrategy(s.dns?.strategy ?? 'multi_a');
     setDnsZoneId(s.dns?.zoneId ?? '');
+    setSslMode(s.ssl?.mode ?? 'off');
     setSiteOpen(true);
   }
 
@@ -319,7 +326,7 @@ export function CdnPage() {
             ttlUnhealthy: 30,
             minHealthyEdges: 1,
           },
-          ssl: { mode: 'off' },
+          ssl: { mode: sslMode },
         }),
       });
       setSiteOpen(false);
@@ -437,7 +444,15 @@ export function CdnPage() {
 
   async function postSiteOp(
     id: string,
-    action: 'render' | 'apply' | 'purge' | 'dns-sync' | 'health-loop',
+    action:
+      | 'render'
+      | 'apply'
+      | 'purge'
+      | 'dns-sync'
+      | 'health-loop'
+      | 'ssl/distribute'
+      | 'ssl/issue'
+      | 'ssl/prepare-acme',
     body: Record<string, unknown> = {},
   ) {
     setBusy(true);
@@ -486,7 +501,9 @@ export function CdnPage() {
               ? `Purge 完成（${r.apply_status}）`
               : action === 'dns-sync' || action === 'health-loop'
                 ? `DNS 同步完成（${r.apply_status}）`
-                : `已寫入 conf（${r.apply_status}）`,
+                : action.startsWith('ssl/')
+                  ? `SSL 操作完成（${r.apply_status}）`
+                  : `已寫入 conf（${r.apply_status}）`,
         );
       } else {
         setMsg(
@@ -909,6 +926,35 @@ export function CdnPage() {
                         探活+DNS
                       </Button>
                       <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void postSiteOp(s.id, 'ssl/distribute', {})
+                        }
+                      >
+                        分發 SSL
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => {
+                          const email =
+                            sslEmail.trim() ||
+                            window.prompt('Let’s Encrypt email') ||
+                            '';
+                          if (!email) return;
+                          void postSiteOp(s.id, 'ssl/issue', {
+                            email,
+                            run: true,
+                            distribute: true,
+                          });
+                        }}
+                      >
+                        LE 簽發
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="sm"
                         loading={busy}
@@ -1134,15 +1180,18 @@ export function CdnPage() {
                     MVP ✓
                   </li>
                   <li>
-                    <strong>PR-C5</strong>：weighted DNS RRset + 命中率儀表 ✓
+                    <strong>PR-C5</strong>：weighted DNS + 儀表 ✓
                   </li>
                   <li>
-                    <strong>PR-C6+</strong>：SSL 分發 / geo / project 一鍵
+                    <strong>PR-C6</strong>：SSL 分發 / LE http-01 on edge ✓
+                  </li>
+                  <li>
+                    <strong>PR-C7</strong>：geo / project 一鍵
                   </li>
                 </ul>
                 <FormHint>
-                  Weighted 以重複 A 記錄表達權重（resolver 可能去重）。Hit-rate
-                  需 nginx log 含 $upstream_cache_status。詳見{' '}
+                  SSL：upload 用控制面 certs；LE 先 ACME conf fan-out 再
+                  certbot webroot，再 scp 到各 edge。詳見{' '}
                   <code className="inline">docs/product/dns-cdn-design.md</code>
                 </FormHint>
               </CardSection>
@@ -1457,10 +1506,49 @@ export function CdnPage() {
                 ))}
               </select>
             </Field>
+            <Field
+              label="SSL 模式"
+              htmlFor="site-ssl"
+              flush
+              hint="upload＝SSL 頁已有憑證；le_http01＝edge ACME"
+            >
+              <select
+                id="site-ssl"
+                value={sslMode}
+                onChange={(e) =>
+                  setSslMode(
+                    e.target.value as
+                      | 'off'
+                      | 'upload'
+                      | 'le_http01'
+                      | 'le_dns01',
+                  )
+                }
+              >
+                <option value="off">off</option>
+                <option value="upload">upload</option>
+                <option value="le_http01">le_http01</option>
+                <option value="le_dns01">le_dns01</option>
+              </select>
+            </Field>
+            <Field
+              label="LE email（可選）"
+              htmlFor="site-ssl-email"
+              flush
+              hint="簽發時預填"
+            >
+              <input
+                id="site-ssl-email"
+                value={sslEmail}
+                onChange={(e) => setSslEmail(e.target.value)}
+                placeholder="admin@example.com"
+              />
+            </Field>
           </FormLayout>
           <FormHint>
-            流程：寫入 conf → 套用 edges → 探活+DNS（multi-A）。CDN 記錄
-            managedBy=cdn，唔覆寫你手動嘅 user 記錄。
+            流程：寫入 conf → 套用 edges → 探活+DNS → 分發 SSL / LE
+            簽發。憑證只推到 edge
+            /etc/ysk-cdn/certs/&lt;siteId&gt;/。
           </FormHint>
         </form>
       </Modal>

@@ -118,7 +118,7 @@
 | CDN6 | Multi-A / failover DNS sync | — | — | ✓ | P0 |
 | CDN7 | Cache purge all edges | H | D | ✓ | P1 |
 | CDN8 | Weighted DNS (RR expand) / geo | — | — | △ | P2 |
-| CDN9 | SSL distribute / LE on edge | — | — | ✗ | P1 |
+| CDN9 | SSL distribute / LE on edge | — | — | ✓ | P1 |
 | CDN10 | Hit-rate / status dashboard | — | — | ✓ | P1 |
 | CDN11 | Project one-click enable CDN | — | — | ✗ | P1 |
 

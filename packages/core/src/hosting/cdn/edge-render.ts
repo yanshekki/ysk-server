@@ -80,18 +80,34 @@ function resolveOriginUpstream(
   return { upstream: fallback, notes };
 }
 
+export type CdnEdgeSslPaths = {
+  /** Paths as seen on the edge (after distribute) */
+  fullchain: string;
+  privkey: string;
+  /** ACME webroot for http-01 */
+  acmeWebroot?: string;
+  /** When true, HTTP only serves ACME + redirect (no full proxy on :80) */
+  redirectHttp?: boolean;
+};
+
 /**
  * Pure renderer — no I/O.
+ * PR-C6: optional TLS server block when sslPaths provided.
  */
 export function renderCdnEdgeNginxConf(input: {
   site: CdnSiteDto;
   projectOriginUrl?: string;
   listenPort?: number;
+  /** Edge-local cert paths (PR-C6) */
+  sslPaths?: CdnEdgeSslPaths;
+  /** Force HTTP-only ACME staging conf (before cert issued) */
+  acmeOnly?: boolean;
 }): {
   conf: string;
   originUpstream: string;
   contentHash: string;
   notes: string[];
+  sslEnabled: boolean;
 } {
   const site = input.site;
   if (!site.domains.length) {
@@ -109,6 +125,14 @@ export function renderCdnEdgeNginxConf(input: {
   const cacheOn = site.cache.enabled !== false;
   const shortCache = site.mode === 'reverse_proxy' ? '30s' : maxAge;
   const upstreamPeer = originHostPort(upstream);
+  const acmeRoot =
+    input.sslPaths?.acmeWebroot ||
+    `/var/www/ysk-cdn-acme/${site.id}`;
+  const sslEnabled = Boolean(
+    input.sslPaths?.fullchain &&
+      input.sslPaths?.privkey &&
+      !input.acmeOnly,
+  );
 
   const bypass: string[] = ['$http_pragma'];
   if (site.cache.bypassCookies !== false) {
@@ -137,6 +161,17 @@ export function renderCdnEdgeNginxConf(input: {
     add_header X-YSK-CDN-Site ${site.id} always;
 `;
 
+  const locationSlash = `  location / {
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Connection "";
+${sniBlock}    proxy_pass ${upstream};
+${cacheBlock}  }
+`;
+
   const staticLoc =
     cacheOn &&
     (site.mode === 'origin_pull' || site.mode === 'static_edge')
@@ -155,7 +190,91 @@ ${sniBlock}    proxy_pass ${upstream};
 `
       : '';
 
-  const conf = `# Managed by YSK CDN (PR-C2) — site ${site.id}
+  const acmeLoc = `  location ^~ /.well-known/acme-challenge/ {
+    default_type "text/plain";
+    root ${acmeRoot};
+  }
+
+  location = /.ysk-cdn-health {
+    access_log off;
+    default_type text/plain;
+    return 200 "ysk-cdn-ok\\n";
+  }
+`;
+
+  let conf: string;
+
+  if (input.acmeOnly || (site.ssl?.mode === 'le_http01' && !sslEnabled)) {
+    conf = `# Managed by YSK CDN — site ${site.id} (ACME / HTTP)
+# managedBy=cdn
+
+proxy_cache_path ${cachePath} levels=1:2 keys_zone=${zone}:${zoneSize} max_size=1g inactive=60m use_temp_path=off;
+
+upstream ysk_cdn_origin_${zone} {
+  server ${upstreamPeer};
+  keepalive 16;
+}
+
+server {
+  listen ${listen};
+  listen [::]:${listen};
+  server_name ${serverNames};
+
+${acmeLoc}
+${locationSlash}${staticLoc}}
+`;
+    notes.push('HTTP conf with ACME webroot（尚未掛 TLS）');
+  } else if (sslEnabled && input.sslPaths) {
+    const redir =
+      input.sslPaths.redirectHttp !== false
+        ? `  location / {
+    return 301 https://$host$request_uri;
+  }
+`
+        : locationSlash + staticLoc;
+
+    conf = `# Managed by YSK CDN — site ${site.id} (TLS PR-C6)
+# managedBy=cdn
+# ssl fullchain=${input.sslPaths.fullchain}
+
+proxy_cache_path ${cachePath} levels=1:2 keys_zone=${zone}:${zoneSize} max_size=1g inactive=60m use_temp_path=off;
+
+upstream ysk_cdn_origin_${zone} {
+  server ${upstreamPeer};
+  keepalive 16;
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name ${serverNames};
+
+${acmeLoc}
+${redir}}
+
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  http2 on;
+  server_name ${serverNames};
+
+  ssl_certificate ${input.sslPaths.fullchain};
+  ssl_certificate_key ${input.sslPaths.privkey};
+  ssl_session_timeout 1d;
+  ssl_session_cache shared:ysk_cdn_ssl:10m;
+  ssl_protocols TLSv1.2 TLSv1.3;
+
+  location = /.ysk-cdn-health {
+    access_log off;
+    default_type text/plain;
+    return 200 "ysk-cdn-ok\\n";
+  }
+
+${locationSlash}${staticLoc}}
+`;
+    notes.push(`TLS enabled cert=${input.sslPaths.fullchain}`);
+  } else {
+    conf = `# Managed by YSK CDN (PR-C2) — site ${site.id}
 # managedBy=cdn — re-render from control plane; do not hand-edit
 # NOTE: proxy_cache_path must live in http{} — if conf.d is server-only, move it to nginx.conf
 
@@ -177,17 +296,9 @@ server {
     return 200 "ysk-cdn-ok\\n";
   }
 
-  location / {
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header Connection "";
-${sniBlock}    proxy_pass ${upstream};
-${cacheBlock}  }
-${staticLoc}}
+${locationSlash}${staticLoc}}
 `;
+  }
 
   const contentHash = createHash('sha256')
     .update(conf)
@@ -202,6 +313,7 @@ ${staticLoc}}
     `mode=${site.mode}`,
     `domains=${site.domains.join(',')}`,
     `origin=${upstream}`,
+    sslEnabled ? 'ssl=on' : 'ssl=off',
   );
 
   return {
@@ -209,6 +321,7 @@ ${staticLoc}}
     originUpstream: upstream,
     contentHash,
     notes,
+    sslEnabled,
   };
 }
 
@@ -223,6 +336,9 @@ export async function applyCdnSiteEdgeRender(input: {
   dryRun?: boolean;
   copyToNginxManaged?: boolean;
   projectOriginUrl?: string;
+  /** Override SSL paths (edge-local) */
+  sslPaths?: CdnEdgeSslPaths;
+  acmeOnly?: boolean;
 }): Promise<CdnEdgeRenderResult> {
   const site = getCdnSite(input.db, input.siteId);
   if (!site) {
@@ -232,9 +348,12 @@ export async function applyCdnSiteEdgeRender(input: {
     });
   }
 
+  // SSL conf only when explicitly requested (PR-C6 distribute) or acmeOnly
   const rendered = renderCdnEdgeNginxConf({
     site,
     projectOriginUrl: input.projectOriginUrl,
+    sslPaths: input.sslPaths,
+    acmeOnly: input.acmeOnly,
   });
 
   const notes = [...rendered.notes];

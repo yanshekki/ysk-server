@@ -101,6 +101,9 @@ Base URL: `http://127.0.0.1:9287`
 | POST | `/api/v1/cdn/health-loop` | Bearer | Health loop all sites |
 | GET | `/api/v1/cdn/sites/:id/dns-records` | Bearer | List managedBy=cdn records |
 | GET | `/api/v1/cdn/dashboard` | Bearer | Nodes/sites status + cache hit-rate estimate |
+| POST | `/api/v1/cdn/sites/:id/ssl/distribute` | Bearer | Copy certs to edges + TLS conf + optional reload |
+| POST | `/api/v1/cdn/sites/:id/ssl/issue` | Bearer | LE http-01/dns-01 plan or run + distribute |
+| POST | `/api/v1/cdn/sites/:id/ssl/prepare-acme` | Bearer | Fan-out ACME webroot HTTP conf |
 | POST | `/api/v1/hosting/firewall/plan` | Bearer | Firewall plan |
 | GET | `/api/v1/hosting/files/plan` | Bearer | Public file server plan |
 | GET | `/api/v1/backups` | Bearer | List backup archives |
