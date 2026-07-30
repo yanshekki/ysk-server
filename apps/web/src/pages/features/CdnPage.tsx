@@ -798,12 +798,7 @@ export function CdnPage() {
               empty={
                 <EmptyState
                   title="尚未登記 CDN 節點"
-                  description="請先新增 edge 節點，再建立站點。"
-                  action={
-                    <Button variant="primary" size="md" onClick={openCreateNode}>
-                      + 新增節點
-                    </Button>
-                  }
+                  description="請使用右上角「+ 新增節點」登記 edge，再建立站點。"
                 />
               }
             />
@@ -1034,23 +1029,8 @@ export function CdnPage() {
                   title="尚未有 CDN 站點"
                   description={
                     nodes.length
-                      ? '建立站點並渲染 edge nginx 模板'
-                      : '請先在「節點」分頁登記 edge'
-                  }
-                  action={
-                    nodes.length ? (
-                      <Button variant="primary" size="md" onClick={openCreateSite}>
-                        + 新增站點
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        onClick={() => setTab('nodes')}
-                      >
-                        前往節點
-                      </Button>
-                    )
+                      ? '請使用右上角「+ 新增站點」建立站點並渲染 edge nginx 模板。'
+                      : '請先在「節點」分頁用右上角按鈕登記 edge，再回來新增站點。'
                   }
                 />
               }
