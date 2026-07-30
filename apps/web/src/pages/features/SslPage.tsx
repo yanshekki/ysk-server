@@ -20,7 +20,7 @@ import {
   SoftwareInstallBanner,
   FormActions,
   FormHint,
-
+  WithPageGuide,
   buttonClassName,} from '../../shared/components/ui';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
@@ -155,6 +155,7 @@ export function SslPage() {
         </ActionBar>
       }
     >
+      <WithPageGuide guideId="ssl">
       <SoftwareInstallBanner feature="ssl" title="Certbot 尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
 
@@ -431,6 +432,7 @@ export function SslPage() {
         danger
         busy={busy}
       />
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

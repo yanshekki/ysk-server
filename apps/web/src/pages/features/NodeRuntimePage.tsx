@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  WithPageGuide,
   Alert,
   Button,
   Card,
@@ -17,7 +18,6 @@ import {
   OpsResultPanel,
   SegRadio,
   SoftwareInstallBanner,
-
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -86,6 +86,8 @@ export function NodeRuntimePage() {
         </Button>
       }
     >
+      <WithPageGuide guideId="node">
+
       <SoftwareInstallBanner feature="node" title="Node.js 尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
@@ -168,6 +170,8 @@ export function NodeRuntimePage() {
       </Card>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+    
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   Alert,
   Badge,
   Button,
@@ -13,8 +14,8 @@ import {
   LoadingBlock,
   OpsResultPanel,
   PageTabs,
-
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -253,7 +254,9 @@ export function ServicesPage() {
             tabs={[
               { id: 'matrix', label: `服務矩陣 (${items.length})` },
               { id: 'protection', label: '保護探測' },
-            ]}
+            
+          { id: 'about', label: '說明' },
+        ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -439,7 +442,9 @@ export function ServicesPage() {
                 )}
               </section>
             ) : null}
-          </PageTabs>
+          
+        {tab === 'about' ? <PageGuide guideId="services" /> : null}
+      </PageTabs>
 
           <OpsResultPanel
             title="操作結果"

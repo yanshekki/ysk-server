@@ -4,7 +4,8 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { 
+import {
+  WithPageGuide,
   DataTable,
   ActionBar,
   Alert,
@@ -159,6 +160,8 @@ export function PostgresPage() {
         </ActionBar>
       }
     >
+      <WithPageGuide guideId="postgres">
+
       <SoftwareInstallBanner feature="postgres" title="PostgreSQL 所需軟件尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
       {dbs.msg ? <Alert variant="ok">{dbs.msg}</Alert> : null}
@@ -374,6 +377,8 @@ export function PostgresPage() {
         danger
         busy={busy}
       />
+    
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

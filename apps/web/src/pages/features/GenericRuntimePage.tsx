@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  PageGuide,
   Alert,
   Badge,
   Button,
@@ -16,14 +17,13 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-
   OpsResultPanel,
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
   PageTabs,
-
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import { Link } from 'react-router-dom';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -80,7 +80,7 @@ const META: Record<
   },
 };
 
-const RT_TABS = ['overview', 'tuning'] as const;
+const RT_TABS = ['overview', 'tuning', 'about'] as const;
 
 type TuningGroup = {
   id: string;
@@ -248,6 +248,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         tabs={[
           { id: 'overview', label: '總覽 / 安裝' },
           { id: 'tuning', label: '執行調校' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -587,6 +589,22 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               </Button>
             </FormActions>
           </div>
+        ) : null}
+      
+        {tab === 'about' ? (
+          <PageGuide
+            guideId={
+              kind === 'php'
+                ? 'php'
+                : kind === 'python'
+                  ? 'python'
+                  : kind === 'go'
+                    ? 'go'
+                    : kind === 'rust'
+                      ? 'rust'
+                      : 'node'
+            }
+          />
         ) : null}
       </PageTabs>
 

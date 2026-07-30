@@ -4,7 +4,9 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { ActionBar,
+import {
+  WithPageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -302,6 +304,8 @@ export function RedisPage() {
         </ActionBar>
       }
     >
+      <WithPageGuide guideId="redis">
+
       <SoftwareInstallBanner
         feature="redis"
         title="Redis 所需軟件尚未安裝"
@@ -579,6 +583,8 @@ export function RedisPage() {
         danger
         busy={busy}
       />
+    
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

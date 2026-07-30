@@ -8,7 +8,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useSecurity } from '../features/security';
 import { SshWorkspace } from '../features/security/ssh';
 import { api } from '../shared/services/api';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -28,7 +30,7 @@ import { ActionBar,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
-const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'allowlist'] as const;
+const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'allowlist', 'about'] as const;
 
 export function SecurityPage() {
   const { t } = useTranslation();
@@ -198,6 +200,8 @@ export function SecurityPage() {
           },
           { id: 'approvals', label: '審批', badge: approvals.length || undefined },
           { id: 'allowlist', label: '允許清單', badge: tools.length || undefined },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -802,6 +806,8 @@ export function SecurityPage() {
             />
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="security" /> : null}
       </PageTabs>
 
       <Modal

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  WithPageGuide,
   Alert,
   Button,
   Card,
@@ -14,11 +15,10 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-
   OpsResultPanel,
   PresetChips,
-
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
@@ -58,6 +58,8 @@ export function PublicFilesPage() {
         </>
       }
     >
+      <WithPageGuide guideId="publicFiles">
+
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
@@ -157,6 +159,8 @@ export function PublicFilesPage() {
       </Card>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+    
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

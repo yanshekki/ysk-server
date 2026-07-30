@@ -8,7 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAgents } from '../features/agents';
 import type { FleetAgent, FleetCommand } from '../features/agents/api';
-import { ActionBar,
+import {
+  WithPageGuide,
+  ActionBar,
   ConfirmDialog,
   Alert,
   Badge,
@@ -334,6 +336,8 @@ export function AgentsPage() {
         </ActionBar>
       }
     >
+      <WithPageGuide guideId="agents">
+
       <Alert variant="info">
         <strong>實驗。</strong> 登記 ≠ 上線。真實運維用 CLI：
         <code className="inline"> ysk-server … --json</code>
@@ -947,6 +951,8 @@ intervalMs: 5000`}
           if (a) void removeAgent(a.id);
         }}
       />
+    
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

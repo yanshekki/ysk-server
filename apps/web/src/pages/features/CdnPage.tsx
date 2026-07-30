@@ -1,5 +1,5 @@
 /**
- * CDN — PR-C1 nodes + PR-C2 sites/render（未 fan-out / multi-A）
+ * CDN — CDN 節點、站點、套用、DNS 與 SSL 管理
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ import {
   FormHint,
   FormLayout,
   Modal,
+  PageGuide,
   PageTabs,
   buttonClassName,
 } from '../../shared/components/ui';
@@ -1042,7 +1043,7 @@ export function CdnPage() {
           <div className="tab-panel">
             <Card>
               <CardSection
-                title="CDN 儀表（PR-C5）"
+                title="CDN 儀表"
                 description={
                   dashboard
                     ? `更新於 ${new Date(dashboard.at).toLocaleString()}`
@@ -1212,35 +1213,7 @@ export function CdnPage() {
           </div>
         ) : null}
 
-        {tab === 'about' ? (
-          <div className="tab-panel">
-            <Card>
-              <CardSection title="自建 CDN 路線（誠實）">
-                <ul className="list-plain list-spaced">
-                  <li>
-                    <strong>PR-C1–C4</strong>：節點 / 站點 / fan-out / multi-A
-                    MVP ✓
-                  </li>
-                  <li>
-                    <strong>PR-C5</strong>：weighted DNS + 儀表 ✓
-                  </li>
-                  <li>
-                    <strong>PR-C6</strong>：SSL 分發 / LE ✓
-                  </li>
-                  <li>
-                    <strong>PR-C7</strong>：geoMap + origin shield + 專案一鍵 ✓
-                  </li>
-                </ul>
-                <FormHint>
-                  Geo 無 EDNS/Anycast：apex multi-A 為所有 geo 健康
-                  edge；可開 region 子域名。Origin shield：非 shield edge 經
-                  shield 回源。詳見{' '}
-                  <code className="inline">docs/product/dns-cdn-design.md</code>
-                </FormHint>
-              </CardSection>
-            </Card>
-          </div>
-        ) : null}
+        {tab === 'about' ? <PageGuide guideId="cdn" /> : null}
       </PageTabs>
 
       {/* Node modal */}
@@ -1591,7 +1564,7 @@ export function CdnPage() {
               label="Origin shield"
               htmlFor="site-shield"
               flush
-              hint="非 shield edge 經此節點回源（PR-C7）"
+              hint="非 shield edge 經此節點回源"
             >
               <select
                 id="site-shield"

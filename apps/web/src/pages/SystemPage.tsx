@@ -4,7 +4,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -26,7 +28,7 @@ import type { HostOverviewDto } from '../features/system/api';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
-const SYS_TABS = ['host', 'export'] as const;
+const SYS_TABS = ['host', 'export', 'about'] as const;
 
 type ExportSnapshot = {
   exportedAt: string;
@@ -393,6 +395,8 @@ export function SystemPage() {
         tabs={[
           { id: 'host', label: '主機控制台' },
           { id: 'export', label: '匯出 / Rebuild' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -1191,6 +1195,8 @@ export function SystemPage() {
             />
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="systemIndex" /> : null}
       </PageTabs>
 
       <ConfirmDialog

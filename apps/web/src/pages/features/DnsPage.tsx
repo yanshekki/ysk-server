@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { 
+import {
+  PageGuide,
   DataTable,
   ActionBar,
   Alert,
@@ -20,11 +21,11 @@ import {
   FormHint,
   PresetChips,
   SegRadio,
-
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec', 'tools'] as const;
+const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec', 'tools', 'about'] as const;
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
@@ -401,6 +402,8 @@ export function DnsPage() {
           { id: 'cluster', label: '叢集', badge: peers.length || undefined },
           { id: 'dnssec', label: 'DNSSEC' },
           { id: 'tools', label: '工具' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={(id) => {
@@ -1219,6 +1222,8 @@ export function DnsPage() {
             </Card>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="dns" /> : null}
       </PageTabs>
 
       <Modal

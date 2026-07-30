@@ -5,14 +5,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   Alert,
   Badge,
   Button,
   FeaturePageLayout,
   LoadingBlock,
   PageTabs,
-
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import type {
   ProductionReadinessDto,
@@ -21,7 +22,7 @@ import type {
 } from '../../features/system/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const RDY_TABS = ['priority', 'checklist', 'summary'] as const;
+const RDY_TABS = ['priority', 'checklist', 'summary', 'about'] as const;
 
 const CAT_LABEL: Record<string, string> = {
   core: '控制面',
@@ -313,7 +314,9 @@ export function ReadinessPage() {
                 badge: report.items.length || undefined,
               },
               { id: 'summary', label: '摘要與快捷' },
-            ]}
+            
+          { id: 'about', label: '說明' },
+        ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -572,7 +575,9 @@ export function ReadinessPage() {
                 </p>
               </div>
             ) : null}
-          </PageTabs>
+          
+        {tab === 'about' ? <PageGuide guideId="readiness" /> : null}
+      </PageTabs>
         </div>
       ) : null}
 

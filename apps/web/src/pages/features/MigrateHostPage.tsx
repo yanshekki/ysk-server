@@ -3,6 +3,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -27,7 +28,7 @@ import {
   type MigrateOpsResult,
 } from '../../features/migrate/api';
 
-const TABS = ['wizard', 'jobs'] as const;
+const TABS = ['wizard', 'jobs', 'about'] as const;
 
 const STEPS = [
   { id: 'scan', label: '盤點' },
@@ -207,6 +208,8 @@ export function MigrateHostPage() {
         tabs={[
           { id: 'wizard', label: '遷移精靈' },
           { id: 'jobs', label: '工作紀錄', badge: jobs.length || undefined },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={(id) => setTab(id as (typeof TABS)[number])}
@@ -639,6 +642,8 @@ export function MigrateHostPage() {
             />
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="migrate" /> : null}
       </PageTabs>
 
       <ConfirmDialog

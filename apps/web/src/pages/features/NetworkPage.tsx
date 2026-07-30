@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -39,7 +40,7 @@ import {
   type NetworkSnapshot,
 } from '../../features/network/api';
 
-const TABS = ['ifaces', 'routes', 'dns', 'advanced'] as const;
+const TABS = ['ifaces', 'routes', 'dns', 'advanced', 'about'] as const;
 
 function formatBytes(n?: number): string {
   if (n == null || !Number.isFinite(n)) return '—';
@@ -286,7 +287,9 @@ export function NetworkPage() {
                 badge: snap.dns.nameservers.length || undefined,
               },
               { id: 'advanced', label: '進階' },
-            ]}
+            
+          { id: 'about', label: '說明' },
+        ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -1014,7 +1017,9 @@ export function NetworkPage() {
                 ) : null}
               </div>
             ) : null}
-          </PageTabs>
+          
+        {tab === 'about' ? <PageGuide guideId="network" /> : null}
+      </PageTabs>
         </div>
       ) : null}
 

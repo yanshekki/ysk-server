@@ -19,7 +19,9 @@ import {
 import { envToText, formatRuntimeLabel } from '../features/projects/model/ops';
 import { getProjectUiProfile } from '../features/projects/model/runtime-ui';
 import { deriveProjectStatus } from '../features/projects/model/status';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Button,
   ConfirmDialog,
@@ -27,8 +29,8 @@ import { ActionBar,
   LoadingBlock,
   OpsResultPanel,
   PageTabs,
-
-  buttonClassName,} from '../shared/components/ui';
+  buttonClassName,
+} from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
 type ConfirmKind = 'stop' | 'delete' | null;
@@ -200,6 +202,7 @@ export function ProjectDetailPage() {
     if (ui.showResourcesTab) ids.push('resources');
     if (ui.showLogsTab) ids.push('logs');
     ids.push('advanced');
+    ids.push('about');
     return ids;
   }, [ui]);
 
@@ -250,6 +253,7 @@ export function ProjectDetailPage() {
     ...(ui.showResourcesTab ? [{ id: 'resources', label: t('projects.tabResources') }] : []),
     ...(ui.showLogsTab ? [{ id: 'logs', label: t('projects.tabLogs') }] : []),
     { id: 'advanced', label: t('projects.tabAdvanced') },
+    { id: 'about', label: '說明' },
   ];
   const activeTab = tabs.some((x) => x.id === tab) ? tab : 'overview';
   const display = deriveProjectStatus(project);
@@ -503,6 +507,8 @@ export function ProjectDetailPage() {
             />
           </div>
         ) : null}
+      
+        {activeTab === 'about' ? <PageGuide guideId="projectDetail" /> : null}
       </PageTabs>
 
       <OpsResultPanel title={t('projects.opsResult')} result={opsLog} message={msg} busy={busy} />

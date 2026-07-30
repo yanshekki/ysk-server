@@ -4,7 +4,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -38,7 +40,7 @@ import {
   regionsForCountries,
 } from '../../features/defense/geo-options';
 
-const TABS = ['command', 'automation', 'bans', 'geo', 'stack', 'intel'] as const;
+const TABS = ['command', 'automation', 'bans', 'geo', 'stack', 'intel', 'about'] as const;
 
 type IpAccessPolicy = {
   enabled: boolean;
@@ -753,6 +755,8 @@ export function ProtectionPage() {
             label: '情報',
             badge: status?.signals.filter((s) => s.points > 0).length || undefined,
           },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -2844,6 +2848,8 @@ export function ProtectionPage() {
             </div>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="protection" /> : null}
       </PageTabs>
 
       <OpsResultPanel

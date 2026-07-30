@@ -3,7 +3,9 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -25,7 +27,7 @@ import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const BK_TABS = ['files', 'ops', 'remote'] as const;
+const BK_TABS = ['files', 'ops', 'remote', 'about'] as const;
 
 type BackupItem = {
   projectId: string;
@@ -336,6 +338,8 @@ export function BackupsPage() {
           { id: 'files', label: '備份檔', badge: items.length || undefined },
           { id: 'ops', label: '操作' },
           { id: 'remote', label: '遠端 / 排除' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -1137,6 +1141,8 @@ export function BackupsPage() {
             </section>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="backups" /> : null}
       </PageTabs>
 
       <ConfirmDialog

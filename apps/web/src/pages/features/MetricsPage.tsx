@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -40,7 +41,7 @@ import {
   formatRes,
 } from '../../features/metrics/TopHeaderPanel';
 
-const MET_TABS = ['overview', 'live', 'storage', 'projects', 'alerts'] as const;
+const MET_TABS = ['overview', 'live', 'storage', 'projects', 'alerts', 'about'] as const;
 
 type QuickFilter = 'none' | 'mine' | 'cpu5' | 'mem5';
 
@@ -483,7 +484,9 @@ export function MetricsPage() {
                 label: '告警',
                 badge: alerts.length || undefined,
               },
-            ]}
+            
+          { id: 'about', label: '說明' },
+        ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -1479,7 +1482,9 @@ export function MetricsPage() {
                 </section>
               </div>
             ) : null}
-          </PageTabs>
+          
+        {tab === 'about' ? <PageGuide guideId="metrics" /> : null}
+      </PageTabs>
         </div>
       ) : null}
     </FeaturePageLayout>

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useUpdates } from '../features/updates';
 import type { AdviceRow } from '../features/updates';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -23,7 +24,7 @@ import {
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 
-const UPD_TABS = ['packages', 'panel', 'schedule', 'policy'] as const;
+const UPD_TABS = ['packages', 'panel', 'schedule', 'policy', 'about'] as const;
 type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';
 
 function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
@@ -625,6 +626,8 @@ export function UpdatesPage() {
             </nav>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="updates" /> : null}
       </PageTabs>
 
       <ConfirmDialog

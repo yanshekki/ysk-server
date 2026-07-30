@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -13,14 +14,14 @@ import {
   LoadingBlock,
   OpsResultPanel,
   PageTabs,
-
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const SDU_TABS = ['guide', 'status', 'install', 'policy'] as const;
+const SDU_TABS = ['guide', 'status', 'install', 'policy', 'about'] as const;
 
 type SystemdStatus = {
   unit: string;
@@ -300,7 +301,9 @@ export function SystemdUnitPage() {
               { id: 'status', label: '狀態' },
               { id: 'install', label: '安裝' },
               { id: 'policy', label: '政策' },
-            ]}
+            
+          { id: 'about', label: '說明' },
+        ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -534,7 +537,9 @@ export function SystemdUnitPage() {
                 </nav>
               </div>
             ) : null}
-          </PageTabs>
+          
+        {tab === 'about' ? <PageGuide guideId="systemd" /> : null}
+      </PageTabs>
 
           <OpsResultPanel
             title="操作結果"

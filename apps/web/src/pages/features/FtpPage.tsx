@@ -5,7 +5,9 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -18,7 +20,6 @@ import { ActionBar,
   FormLayout,
   Modal,
   SoftwareInstallBanner,
-
   PageTabs,
   FormHint,
 } from '../../shared/components/ui';
@@ -36,7 +37,7 @@ type SftpKey = {
   created_at: string;
 };
 
-const FTP_TABS = ['accounts', 'sftp'] as const;
+const FTP_TABS = ['accounts', 'sftp', 'about'] as const;
 
 export function FtpPage() {
   const { t } = useTranslation();
@@ -205,6 +206,8 @@ export function FtpPage() {
             label: 'SFTP 公鑰',
             badge: sftpKeys.length || undefined,
           },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -414,6 +417,8 @@ export function FtpPage() {
             ) : null}
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="ftp" /> : null}
       </PageTabs>
 
       {/* Create / edit account */}

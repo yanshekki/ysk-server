@@ -1,0 +1,889 @@
+/**
+ * Product help catalog — one doc per feature page (zh-Hant).
+ * Operator-facing only; no PR / roadmap language.
+ */
+import type { PageGuideDoc } from './types';
+
+function dbGuide(
+  id: string,
+  title: string,
+  engine: string,
+  extra?: Partial<PageGuideDoc>,
+): PageGuideDoc {
+  return {
+    id,
+    title,
+    summary: `管理本機 ${engine} 的資料庫、使用者與連線設定，並以誠實狀態反映是否已真正寫入系統。`,
+    audience: '需要為網站／應用提供資料庫的站長與開發者',
+    chips: [engine, '資料', '權限'],
+    features: [
+      {
+        name: '資料庫 CRUD',
+        purpose: `建立、列出、刪除 ${engine} 資料庫（schema）。`,
+        how: '在列表新增後，需「套用到系統」才會在伺服器生效。',
+      },
+      {
+        name: '使用者與授權',
+        purpose: '建立資料庫帳號並綁定存取權限。',
+      },
+      {
+        name: '套用與狀態',
+        purpose: '區分草稿、已寫入、已套用、被封鎖，避免假成功。',
+      },
+    ],
+    useCases: [
+      `為新網站專案配置獨立的 ${engine} 資料庫與帳號`,
+      '輪替應用密碼或回收已下線站點的資料庫資源',
+    ],
+    workflow: [
+      '確認服務頁已安裝並啟動資料庫引擎',
+      '建立資料庫與使用者，綁定權限',
+      '按「套用到系統」並檢查回傳狀態',
+      '將連線字串設定到專案環境變數',
+    ],
+    caveats: [
+      '面板顯示成功 ≠ 應用一定連得上：請核對 host、埠、防火牆與帳號權限',
+      '刪除資料庫為高風險操作，套用前請確認無生產依賴',
+    ],
+    related: [
+      { label: `${engine} 服務`, to: extra?.related?.[0]?.to ?? '#' },
+      { label: '專案', to: '/projects' },
+    ],
+    ...extra,
+  };
+}
+
+function dbServiceGuide(
+  id: string,
+  title: string,
+  engine: string,
+  dataPath: string,
+): PageGuideDoc {
+  return {
+    id,
+    title,
+    summary: `安裝、啟動、停止與調整 ${engine} 服務本身（非資料庫內容），是資料頁的前置條件。`,
+    audience: '負責伺服器基礎服務的管理員',
+    chips: [engine, '服務', '生命週期'],
+    features: [
+      {
+        name: '一鍵安裝',
+        purpose: `在主機安裝 ${engine} 套件（需系統變更權限）。`,
+        how: '使用頁面上方橫幅的「一鍵安裝」，勿重複在其他位置安裝。',
+      },
+      {
+        name: '啟動／停止／重載',
+        purpose: '控制 systemd 單元狀態並回報真實結果。',
+      },
+      {
+        name: '連線探測',
+        purpose: '檢查埠是否可連、服務是否就緒。',
+      },
+    ],
+    useCases: [
+      `新主機首次部署 ${engine}`,
+      '維護視窗重啟資料庫服務並確認恢復',
+    ],
+    workflow: [
+      '開啟系統變更權限（EXECUTE）',
+      '一鍵安裝並等待結果面板',
+      '啟動服務並確認 active',
+      '到資料頁建立庫與使用者',
+    ],
+    caveats: [
+      '未開 EXECUTE 時只能寫入計劃／腳本，無法真正 apt／systemctl',
+      'root 與非 root 能力不同，部分操作會誠實標記 blocked',
+    ],
+    related: [
+      { label: `${engine} 資料`, to: dataPath },
+      { label: '服務總覽', to: '/services' },
+    ],
+  };
+}
+
+function runtimeGuide(id: string, title: string, runtime: string): PageGuideDoc {
+  return {
+    id,
+    title,
+    summary: `管理主機上的 ${runtime} 執行環境版本、工具鏈與與專案部署相關的執行能力。`,
+    audience: '部署對應語言應用的開發者／站長',
+    chips: [runtime, '執行環境'],
+    features: [
+      {
+        name: '環境探測',
+        purpose: `偵測已安裝的 ${runtime} 與常用 CLI 是否可用。`,
+      },
+      {
+        name: '安裝／升級輔助',
+        purpose: '在權限允許時安裝或切換執行環境。',
+      },
+      {
+        name: '與專案銜接',
+        purpose: '專案部署時會使用此頁確認過的執行環境。',
+      },
+    ],
+    useCases: [
+      `為 Node／PHP 等站點準備正確版本的 ${runtime}`,
+      '新主機初始化執行環境後再建立專案',
+    ],
+    workflow: [
+      '探測目前環境狀態',
+      '依需求安裝或切換版本',
+      '到專案頁建立站點並部署',
+    ],
+    caveats: [
+      '全域執行環境變更可能影響所有使用該 runtime 的專案',
+      '實際 process 狀態仍以專案詳情與服務頁為準',
+    ],
+    related: [
+      { label: '專案', to: '/projects' },
+      { label: '服務', to: '/services' },
+    ],
+  };
+}
+
+const GUIDES: PageGuideDoc[] = [
+  {
+    id: 'dashboard',
+    title: '儀表板',
+    summary: '一眼掌握主機健康、待辦與常用入口，作為每日開機檢查的起點。',
+    audience: '所有操作員',
+    chips: ['總覽', '健康', '捷徑'],
+    features: [
+      { name: '健康摘要', purpose: '彙總服務、磁碟、保護模式等關鍵狀態。' },
+      { name: '快捷入口', purpose: '跳到常用功能頁，減少在選單中搜尋。' },
+      { name: '通知與待辦', purpose: '顯示需要關注的項目（如更新、配額）。' },
+    ],
+    useCases: ['每日巡檢主機是否正常', '出問題時先看總覽再鑽入子系統'],
+    workflow: ['開啟儀表板確認狀態燈', '處理標紅／警告項目', '進入對應功能頁深究'],
+    caveats: ['儀表板為彙總視圖，細節與套用結果以各功能頁為準'],
+    related: [
+      { label: '就緒檢查', to: '/system/readiness' },
+      { label: '監控', to: '/metrics' },
+    ],
+  },
+  {
+    id: 'projects',
+    title: '網站專案',
+    summary: '以專案為單位管理網站根目錄、執行環境、域名與部署生命週期。',
+    audience: '託管多個站點的站長',
+    chips: ['站點', '部署', '隔離'],
+    features: [
+      { name: '專案列表', purpose: '建立、搜尋、進入各站點詳情。' },
+      { name: '系統使用者隔離', purpose: '每專案可對應獨立 Linux 使用者與家目錄。' },
+      { name: '範本建立', purpose: '用預設範本快速開站。' },
+    ],
+    useCases: ['新客戶開站', '批次查看哪些站已停止或異常'],
+    workflow: [
+      '建立專案並指定域名與 runtime',
+      '完成 OS 隔離／權限',
+      '部署程式碼並發布 Nginx／SSL',
+    ],
+    caveats: ['刪除專案會影響檔案與服務，請先備份', 'published ≠ 公網一定可解析，需 DNS 正確'],
+    related: [
+      { label: 'Nginx', to: '/nginx' },
+      { label: 'SSL', to: '/ssl' },
+      { label: 'CDN', to: '/cdn' },
+    ],
+  },
+  {
+    id: 'projectDetail',
+    title: '專案詳情',
+    summary: '單一站點的部署、環境變數、健康檢查、備份與網路端點控制中心。',
+    audience: '維護特定站點的開發者／站長',
+    chips: ['部署', '環境', '健康'],
+    features: [
+      { name: '部署與 Git', purpose: '推送靜態／應用、自 Git 拉取並重建。' },
+      { name: '環境變數', purpose: '寫入專案 .env，供 runtime 讀取。' },
+      { name: 'Nginx／SSL 發布', purpose: '產生虛擬主機設定並可掛憑證。' },
+      { name: '健康與程序', purpose: '查看埠、程序狀態與健康探測。' },
+      { name: '啟用 CDN', purpose: '一鍵帶入域名與回源，建立 CDN 站點政策。' },
+    ],
+    useCases: ['上線新版本', '排查 502／連不上 DB', '為站點開啟邊緣加速'],
+    workflow: [
+      '確認 runtime 與環境變數',
+      '部署或 Git 更新',
+      '發布 Nginx，必要時掛 SSL',
+      '健康檢查通過後再切流量',
+    ],
+    caveats: [
+      '套用結果以 Ops 面板的 written／applied／blocked 為準',
+      'CDN 一鍵只建立政策，仍需在 CDN 頁套用 edges 與 DNS',
+    ],
+    related: [
+      { label: '專案列表', to: '/projects' },
+      { label: 'CDN', to: '/cdn' },
+      { label: '日誌', to: '/logs' },
+    ],
+  },
+  {
+    id: 'email',
+    title: '郵件',
+    summary: '管理郵件域名、信箱與投遞相關設定，並提供 DNS 建議記錄。',
+    audience: '需要自架或管理企業信箱的站長',
+    chips: ['域名', '信箱', '投遞'],
+    features: [
+      { name: '郵件域名', purpose: '新增要收發信的網域。' },
+      { name: 'DNS 建議', purpose: '提供 MX／SPF／DKIM／DMARC 等應加入的記錄。' },
+      { name: '健康與聲譽', purpose: '輔助檢查投遞就緒度（部分項目屬外部責任）。' },
+    ],
+    useCases: ['公司域名開信箱', '檢查為何信進垃圾匣'],
+    workflow: [
+      '新增郵件域名',
+      '依說明到 DNS 加入記錄',
+      '建立信箱並測試收發',
+    ],
+    caveats: [
+      'PTR、部分埠（如 25）與 IP 聲譽常需向主機商／IP 擁有者處理',
+      '面板無法代替外部 DNS 供應商或封鎖列表解封',
+    ],
+    related: [
+      { label: 'DNS', to: '/dns' },
+      { label: 'SSL', to: '/ssl' },
+    ],
+  },
+  {
+    id: 'emailDomain',
+    title: '郵件域名詳情',
+    summary: '單一郵件域名下的信箱、別名、DKIM、轉送與健康檢查。',
+    audience: '郵件管理員',
+    chips: ['信箱', 'DKIM', '健康'],
+    features: [
+      { name: '信箱管理', purpose: '建立信箱、配額與密碼。' },
+      { name: 'DNS／DKIM', purpose: '顯示應公布的密鑰與記錄。' },
+      { name: '進階政策', purpose: '轉送、限速、反垃圾等（依實作）。' },
+    ],
+    useCases: ['為員工開信箱', '輪替 DKIM 或檢查未通過的 DNS'],
+    workflow: ['建立信箱', '確認 DNS 綠燈', '用客戶端測試收發'],
+    caveats: ['DNS 生效受 TTL 影響', 'Webmail SSO 若啟用需另設密碼與外掛'],
+    related: [
+      { label: '郵件總覽', to: '/email' },
+      { label: 'DNS', to: '/dns' },
+    ],
+  },
+  {
+    id: 'files',
+    title: '檔案',
+    summary: '在授權範圍內瀏覽、上傳、下載與管理伺服器檔案。',
+    audience: '需要直接操作站點檔案的站長',
+    chips: ['瀏覽', '上傳', '權限'],
+    features: [
+      { name: '目錄瀏覽', purpose: '在允許的根路徑下導覽檔案。' },
+      { name: '上傳／下載', purpose: '傳輸網站資源或備份檔。' },
+      { name: '專案根捷徑', purpose: '從專案跳入對應家目錄。' },
+    ],
+    useCases: ['緊急修改設定檔', '上傳靜態資源'],
+    workflow: ['選擇根目錄或專案', '瀏覽目標路徑', '上傳或編輯後驗證站點'],
+    caveats: [
+      '僅限允許清單路徑，無法任意讀全碟',
+      '錯誤刪除可能導致站點失效，重要檔請先備份',
+    ],
+    related: [
+      { label: '公開檔案', to: '/files/public' },
+      { label: '備份', to: '/backups' },
+    ],
+  },
+  {
+    id: 'publicFiles',
+    title: '公開檔案',
+    summary: '對外提供受控的公開檔案下載區（例如釋出包、靜態素材）。',
+    audience: '需要公開下載連結的站長',
+    chips: ['公開', '下載'],
+    features: [
+      { name: '公開區管理', purpose: '管理可被 HTTP 存取的檔案集合。' },
+      { name: '配額', purpose: '限制公開區用量。' },
+    ],
+    useCases: ['發佈客戶下載檔', '分享不含敏感資料的資源'],
+    workflow: ['確認公開前綴與配額', '上傳檔案', '用公開 URL 驗證'],
+    caveats: ['公開區勿放私密金鑰或客戶個資'],
+    related: [{ label: '檔案', to: '/files' }],
+  },
+  {
+    id: 'ftp',
+    title: 'FTP 帳戶',
+    summary: '為使用者建立 FTP／SFTP 登入帳戶與家目錄綁定。',
+    audience: '需給外包或客戶上傳權限的站長',
+    chips: ['帳戶', '上傳'],
+    features: [
+      { name: '帳戶 CRUD', purpose: '建立、停用、刪除 FTP 使用者。' },
+      { name: '家目錄', purpose: '限制帳戶只能存取指定路徑。' },
+    ],
+    useCases: ['給設計師上傳靜態檔', '臨時外包帳號'],
+    workflow: ['先確認 FTPS 服務已安裝啟動', '建立帳戶並指定家目錄', '用客戶端測試登入'],
+    caveats: ['明文 FTP 不安全，建議 FTPS／SFTP', '帳戶生效取決於服務套用結果'],
+    related: [
+      { label: 'FTPS 服務', to: '/ftp/service' },
+      { label: '檔案', to: '/files' },
+    ],
+  },
+  {
+    id: 'ftpService',
+    title: 'FTPS 服務',
+    summary: '安裝與調整 vsftpd 等 FTPS 服務生命週期與被動模式埠。',
+    audience: '伺服器管理員',
+    chips: ['vsftpd', 'TLS'],
+    features: [
+      { name: '安裝與啟動', purpose: '一鍵安裝橫幅完成軟體部署。' },
+      { name: 'TLS／被動埠', purpose: '設定安全傳輸與防火牆所需埠段。' },
+    ],
+    useCases: ['新主機啟用安全檔案傳輸'],
+    workflow: ['一鍵安裝', '調整 SSL 與 PASV 埠', '放行防火牆', '建立 FTP 帳戶'],
+    caveats: ['需系統變更權限', '防火牆未放行 PASV 會導致列表成功但傳輸失敗'],
+    related: [
+      { label: 'FTP 帳戶', to: '/ftp' },
+      { label: '防護中心', to: '/protection' },
+    ],
+  },
+  dbGuide('mysql', 'MySQL 資料庫', 'MySQL', {
+    related: [
+      { label: 'MySQL 服務', to: '/databases/mysql/service' },
+      { label: '專案', to: '/projects' },
+    ],
+  }),
+  dbServiceGuide('mysqlService', 'MySQL 服務', 'MySQL', '/databases/mysql'),
+  dbGuide('mariadb', 'MariaDB 資料庫', 'MariaDB', {
+    related: [
+      { label: 'MariaDB 服務', to: '/databases/mariadb/service' },
+      { label: '專案', to: '/projects' },
+    ],
+  }),
+  dbServiceGuide(
+    'mariadbService',
+    'MariaDB 服務',
+    'MariaDB',
+    '/databases/mariadb',
+  ),
+  dbGuide('postgres', 'PostgreSQL 資料庫', 'PostgreSQL', {
+    related: [
+      { label: 'PostgreSQL 服務', to: '/databases/postgres/service' },
+      { label: '專案', to: '/projects' },
+    ],
+  }),
+  dbServiceGuide(
+    'postgresService',
+    'PostgreSQL 服務',
+    'PostgreSQL',
+    '/databases/postgres',
+  ),
+  {
+    id: 'redis',
+    title: 'Redis',
+    summary: '瀏覽與管理 Redis 鍵值、資料庫編號，並套用連線相關設定。',
+    audience: '使用快取／佇列的開發者',
+    chips: ['快取', '鍵值'],
+    features: [
+      { name: '鍵瀏覽', purpose: '查看各 DB 的鍵與內容（受權限與大小限制）。' },
+      { name: '實例設定', purpose: '管理 Redis 連線目標。' },
+    ],
+    useCases: ['檢查 session 快取', '清掉錯誤佇列鍵'],
+    workflow: ['確認 Redis 服務已啟動', '連線後瀏覽 DB', '謹慎刪除鍵'],
+    caveats: ['生產環境刪鍵需極謹慎', '大型 key 可能截斷顯示'],
+    related: [
+      { label: 'Redis 服務', to: '/databases/redis/service' },
+    ],
+  },
+  dbServiceGuide('redisService', 'Redis 服務', 'Redis', '/databases/redis'),
+  {
+    id: 'dns',
+    title: 'DNS',
+    summary: '管理權威 DNS 區域與記錄、叢集同步、DNSSEC 與查詢工具，讓域名解析受控且可驗證。',
+    audience: '負責域名解析的站長',
+    chips: ['區域', '記錄', 'DNSSEC', '工具'],
+    features: [
+      {
+        name: '區域與記錄',
+        purpose: '建立 zone、A／AAAA／MX／TXT 等記錄並寫入區域檔。',
+        how: '編輯後需「寫入區域檔」；有權限時可 reload 本機 nameserver。',
+      },
+      {
+        name: '區域模板',
+        purpose: '快速產生網站、郵件、CDN 等常用記錄組合。',
+      },
+      {
+        name: '叢集 peer',
+        purpose: '以 SCP 推送 zone 到次要 NS，並可 remote reload。',
+      },
+      {
+        name: 'DNSSEC',
+        purpose: '產生金鑰與 DS，供在註冊商登記（不自動上 registrar）。',
+      },
+      {
+        name: '查詢工具',
+        purpose: 'dig／解析器查詢，驗證公網所見答案。',
+      },
+    ],
+    useCases: [
+      '新域名指向本機或 CDN 邊緣',
+      '郵件 SPF／MX 調整',
+      '多機 NS 同步',
+    ],
+    workflow: [
+      '建立區域並選模板',
+      '檢查記錄後寫入區域檔',
+      '必要時推送叢集並 reload',
+      '用工具分頁 dig 驗證',
+    ],
+    caveats: [
+      '寫入控制面 ≠ 公網立即生效（TTL、上游快取）',
+      'CDN 管理的記錄帶 managedBy=cdn，與手動記錄分開',
+    ],
+    related: [
+      { label: 'CDN', to: '/cdn' },
+      { label: 'SSL', to: '/ssl' },
+      { label: '郵件', to: '/email' },
+    ],
+  },
+  {
+    id: 'cdn',
+    title: 'CDN（自建邊緣網）',
+    summary:
+      '用多台 YSK 節點組成邊緣加速：登記 edge、定義站點回源與快取、下發 Nginx、以 DNS 做 multi-A／failover，並可分發 TLS 憑證。',
+    audience: '有多台主機、希望自建加速與容錯的站長',
+    chips: ['邊緣', '快取', 'DNS 選路', 'TLS'],
+    features: [
+      {
+        name: '節點登記',
+        purpose: '登錄 control／origin／edge／dns 角色、公網 IP 與健康檢查。',
+        how: '新增節點後按「探活」更新 online／offline；維護可 Drain。',
+      },
+      {
+        name: '站點政策',
+        purpose: '綁定域名、回源 URL／專案、快取、DNS 策略與 SSL 模式。',
+      },
+      {
+        name: '套用 edges',
+        purpose: '將 Nginx 設定 fan-out 到各 edge（本機或 SSH）並 reload。',
+      },
+      {
+        name: 'DNS 同步',
+        purpose: '依健康 edge 寫入 multi-A／failover／weighted／geo 記錄（managedBy=cdn）。',
+      },
+      {
+        name: '快取清除',
+        purpose: '清除各 edge 上該站的 proxy_cache。',
+      },
+      {
+        name: 'SSL 分發／簽發',
+        purpose: '把憑證推到 edge，或走 Let’s Encrypt http-01 後再分發。',
+      },
+      {
+        name: 'Origin shield',
+        purpose: '指定一 edge 為回源盾，其他 edge 經 shield 拉源，降低源站壓力。',
+      },
+      {
+        name: '專案一鍵啟用',
+        purpose: '從專案帶入域名與本機回源，建立 CDN 站點草稿。',
+      },
+      {
+        name: '儀表',
+        purpose: '節點／站點狀態與快取命中率粗估。',
+      },
+    ],
+    useCases: [
+      '兩岸或多機房靜態／動態站加速',
+      '單機故障時 DNS failover 摘除不健康 IP',
+      '為熱門站啟用 proxy_cache 降低源站負載',
+    ],
+    workflow: [
+      '登記至少一個 edge（建議兩個）並探活',
+      '建立站點：域名、回源、選 edges、DNS 策略',
+      '寫入 conf → 套用 edges',
+      'DNS 同步或健康迴圈',
+      '需要時分發 SSL 或 LE 簽發',
+      '用 DNS 工具 dig 與瀏覽器驗證',
+    ],
+    caveats: [
+      '這是 DNS 級分流 + Nginx 邊緣，不是 Anycast 商業 CDN',
+      '套用 edges 成功 ≠ 使用者解析器已看到新 IP（受 TTL 影響）',
+      'weighted 重複 A 記錄在部分解析器會被去重',
+      'geo 無 EDNS 時無法做真·用戶就近，僅能依 geoMap 管理 edge 集合與可選 region 子域名',
+      '命中率粗估需 access log 含 cache status',
+    ],
+    related: [
+      { label: 'DNS', to: '/dns' },
+      { label: 'SSL', to: '/ssl' },
+      { label: 'Nginx', to: '/nginx' },
+      { label: '專案', to: '/projects' },
+    ],
+  },
+  {
+    id: 'ssl',
+    title: 'SSL 憑證',
+    summary: '申請、上傳與管理 TLS 憑證，供網站、郵件或面板主機名稱使用。',
+    audience: '需要 HTTPS 的站長',
+    chips: ['TLS', 'Let’s Encrypt', '上傳'],
+    features: [
+      { name: '憑證列表', purpose: '查看域名、到期日與檔案是否存在。' },
+      { name: 'Let’s Encrypt', purpose: '以 http-01 或 dns-01 申請憑證。' },
+      { name: '上傳 PEM', purpose: '匯入既有 fullchain 與 privkey。' },
+    ],
+    useCases: ['站點啟用 HTTPS', '更新即將到期憑證'],
+    workflow: [
+      '確認域名已指向本機或挑戰可完成',
+      '申請或上傳憑證',
+      '到專案／Nginx／CDN 綁定使用',
+    ],
+    caveats: [
+      'dns-01 萬用字元需在 DNS 供應商完成 TXT',
+      'issued ≠ 所有服務已自動重載，請到對應頁發布',
+    ],
+    related: [
+      { label: '專案', to: '/projects' },
+      { label: 'CDN', to: '/cdn' },
+      { label: 'Nginx', to: '/nginx' },
+    ],
+  },
+  {
+    id: 'nginx',
+    title: 'Nginx',
+    summary: '檢視與同步面板管理的 Nginx 虛擬主機設定，並驗證 nginx -t／reload。',
+    audience: '調整站點反代與靜態根目錄的管理員',
+    chips: ['反代', '虛擬主機'],
+    features: [
+      { name: '設定清單', purpose: '列出 dataDir 管理的 conf。' },
+      { name: '同步與檢測', purpose: '同步到系統路徑並執行語法檢查。' },
+    ],
+    useCases: ['排查 vhost 錯誤', '確認專案發布的 conf 已載入'],
+    workflow: ['由專案發布 Nginx', '在本頁同步／檢測', '必要時 reload'],
+    caveats: [
+      'CDN 管理的 conf 有獨立生命週期，勿與手改檔混用',
+      'nginx -t 失敗時不會假標 applied',
+    ],
+    related: [
+      { label: '專案', to: '/projects' },
+      { label: 'CDN', to: '/cdn' },
+    ],
+  },
+  runtimeGuide('node', 'Node.js', 'Node.js'),
+  runtimeGuide('php', 'PHP', 'PHP'),
+  runtimeGuide('python', 'Python', 'Python'),
+  runtimeGuide('go', 'Go', 'Go'),
+  runtimeGuide('rust', 'Rust', 'Rust'),
+  {
+    id: 'protection',
+    title: '防護中心',
+    summary: '統一主機防火牆、Fail2ban、自動化封鎖與防護策略的指揮面。',
+    audience: '負責主機安全的管理員',
+    chips: ['防火牆', 'Fail2ban', '策略'],
+    features: [
+      { name: '防護模式', purpose: '調整整體防禦強度與自動化策略。' },
+      { name: '封鎖與白名單', purpose: '查看／解除 ban，維護信任 IP。' },
+      { name: '底層堆疊', purpose: '進入 UFW／Fail2ban 細節（與獨立頁銜接）。' },
+    ],
+    useCases: ['被掃埠時加強封鎖', '誤殺合法 IP 時解封'],
+    workflow: ['查看目前 ban 與模式', '調整策略或白名單', '套用並確認狀態'],
+    caveats: [
+      '過度嚴格可能鎖住自己，請保留帶外救援管道',
+      '套用需 EXECUTE；否則僅計劃',
+    ],
+    related: [
+      { label: '防火牆', to: '/firewall' },
+      { label: 'Fail2ban', to: '/fail2ban' },
+    ],
+  },
+  {
+    id: 'firewall',
+    title: '防火牆',
+    summary: '管理 UFW 規則與基本進出站政策。',
+    audience: '網路／主機管理員',
+    chips: ['UFW', '埠'],
+    features: [
+      { name: '規則計劃', purpose: '產生允許 SSH／HTTP／HTTPS 等規則。' },
+      { name: '套用', purpose: '在權限允許時啟用防火牆。' },
+    ],
+    useCases: ['新主機鎖降暴露面', '開放應用埠'],
+    workflow: ['檢查現有規則', '調整允許埠', '套用並從外網驗證'],
+    caveats: ['錯誤規則可能導致 SSH 斷線'],
+    related: [{ label: '防護中心', to: '/protection' }],
+  },
+  {
+    id: 'fail2ban',
+    title: 'Fail2ban',
+    summary: '依日誌特徵自動封鎖暴力破解與惡意來源。',
+    audience: '安全管理員',
+    chips: ['Ban', 'Jail'],
+    features: [
+      { name: 'Jail 狀態', purpose: '查看各 jail 是否啟用。' },
+      { name: '封鎖列表', purpose: '檢視與解除 ban。' },
+      { name: '白名單', purpose: '避免辦公室出口 IP 被鎖。' },
+    ],
+    useCases: ['防 SSH 爆破', '保護 Nginx 登入'],
+    workflow: ['確認 jails 啟用', '觀察 ban 列表', '必要時加白名單'],
+    caveats: ['依賴正確的日誌路徑與 jail 設定'],
+    related: [{ label: '防護中心', to: '/protection' }],
+  },
+  {
+    id: 'security',
+    title: '帳號安全',
+    summary: '面板登入安全：密碼、雙因素、通行密鑰與工作階段。',
+    audience: '所有面板使用者',
+    chips: ['2FA', '工作階段'],
+    features: [
+      { name: '密碼', purpose: '變更面板登入密碼。' },
+      { name: '雙因素／WebAuthn', purpose: '加強登入驗證。' },
+      { name: '工作階段', purpose: '查看或終止登入工作階段。' },
+    ],
+    useCases: ['強制啟用 2FA', '裝置遺失時撤銷工作階段'],
+    workflow: ['設定 2FA', '用第二因素登入驗證', '定期檢查工作階段'],
+    caveats: ['遺失 2FA 裝置可能需帶外救援，請妥善備份回復碼'],
+    related: [{ label: '用戶與方案', to: '/users' }],
+  },
+  {
+    id: 'users',
+    title: '用戶與方案',
+    summary: '管理面板使用者、角色與資源方案配額。',
+    audience: '主管理員',
+    chips: ['帳號', '配額'],
+    features: [
+      { name: '使用者 CRUD', purpose: '建立操作員帳號與角色。' },
+      { name: '方案', purpose: '限制專案數、郵件、資料庫等配額。' },
+    ],
+    useCases: ['多人協作分權', '為客戶方案設上限'],
+    workflow: ['建立方案', '建立使用者並綁定', '驗證配額是否生效'],
+    caveats: ['高權限帳號請強制 2FA'],
+    related: [{ label: '帳號安全', to: '/security' }],
+  },
+  {
+    id: 'services',
+    title: '服務',
+    summary: '總覽主機上關鍵 systemd 服務狀態並執行啟動／停止等操作。',
+    audience: '系統管理員',
+    chips: ['systemd', '狀態'],
+    features: [
+      { name: '服務矩陣', purpose: '一次查看多個服務 active 狀態。' },
+      { name: '操作', purpose: '對單一服務下達 start／stop／restart。' },
+    ],
+    useCases: ['故障時快速定位哪個服務掛了'],
+    workflow: ['掃描狀態', '重啟異常服務', '回對應功能頁驗證'],
+    caveats: ['重啟資料庫等服務會中斷連線'],
+    related: [{ label: 'systemd 單元', to: '/system/unit' }],
+  },
+  {
+    id: 'metrics',
+    title: '監控',
+    summary: '檢視 CPU、記憶體、磁碟與專案用量等營運指標。',
+    audience: '營運與容量規劃人員',
+    chips: ['資源', '趨勢'],
+    features: [
+      { name: '主機指標', purpose: '即時或近期資源使用。' },
+      { name: '專案用量', purpose: '各站磁碟等用量摘要。' },
+    ],
+    useCases: ['判斷是否該升級規格', '找出吃滿磁碟的專案'],
+    workflow: ['查看總覽', '鑽入異常指標', '到對應專案或服務處理'],
+    caveats: ['取樣間隔與精度依實作而定，非完整 APM'],
+    related: [{ label: '儀表板', to: '/' }],
+  },
+  {
+    id: 'network',
+    title: '網路',
+    summary: '檢視網卡、路由、DNS 解析器與進階網路資訊。',
+    audience: '網路管理員',
+    chips: ['介面', '路由'],
+    features: [
+      { name: '介面與位址', purpose: '查看 IPv4／IPv6 綁定。' },
+      { name: '路由', purpose: '檢查預設閘道與路由表。' },
+      { name: '解析器', purpose: '主機如何解析域名。' },
+    ],
+    useCases: ['主機上線後確認公網 IP', '排查路由錯誤'],
+    workflow: ['確認介面 UP', '檢查預設路由', '用 ping／dig 驗證'],
+    caveats: ['部分變更需系統權限且可能中斷連線'],
+    related: [{ label: 'DNS', to: '/dns' }],
+  },
+  {
+    id: 'logs',
+    title: '日誌中心',
+    summary: '在安全邊界內檢視 journal 與允許清單中的日誌來源。',
+    audience: '除錯與稽核人員',
+    chips: ['journal', '追蹤'],
+    features: [
+      { name: '來源目錄', purpose: '選擇允許的日誌來源。' },
+      { name: '即時／歷史', purpose: '尾隨或回看日誌內容。' },
+    ],
+    useCases: ['排查 Nginx 5xx', '查看登入失敗'],
+    workflow: ['選來源', '過濾關鍵字', '據此調整服務或防護'],
+    caveats: ['不提供任意路徑讀全碟，以安全邊界為準'],
+    related: [{ label: '專案', to: '/projects' }],
+  },
+  {
+    id: 'cron',
+    title: '排程',
+    summary: '管理系統或專案相關的定時任務。',
+    audience: '需要自動化任務的站長',
+    chips: ['排程', '自動化'],
+    features: [
+      { name: '工作列表', purpose: '查看啟用中的 cron。' },
+      { name: '建立／編輯', purpose: '設定時間表達式與命令。' },
+    ],
+    useCases: ['每日備份', '定期清理暫存'],
+    workflow: ['設計排程', '建立工作', '觀察下一次執行與日誌'],
+    caveats: ['錯誤命令會反覆失敗，請先手動驗證命令'],
+    related: [{ label: '備份', to: '/backups' }],
+  },
+  {
+    id: 'backups',
+    title: '備份',
+    summary: '排程與執行專案／資料備份，並管理備份成品。',
+    audience: '負責災難復原的管理員',
+    chips: ['備份', '還原'],
+    features: [
+      { name: '立即備份', purpose: '對專案執行一次備份。' },
+      { name: '排程', purpose: '定期自動備份。' },
+      { name: '列表與下載', purpose: '管理成品檔。' },
+    ],
+    useCases: ['上線前快照', '定期異地備份'],
+    workflow: ['選目標', '執行或排程', '抽樣驗證還原'],
+    caveats: ['未驗證的備份等於沒有備份', '注意磁碟空間'],
+    related: [
+      { label: '專案', to: '/projects' },
+      { label: '整機遷移', to: '/system/migrate' },
+    ],
+  },
+  {
+    id: 'migrate',
+    title: '整機遷移',
+    summary: '將本機 YSK 環境盤點後，透過 SSH 遷移到新主機（公網 IP 變更場景）。',
+    audience: '換機、升級硬體的管理員',
+    chips: ['遷移', 'SSH'],
+    features: [
+      { name: '盤點', purpose: '掃描本機已管理的資源與軟體。' },
+      { name: '預檢與執行', purpose: '連線目標機、傳輸與還原。' },
+      { name: '驗證', purpose: '遷移後檢查關鍵服務。' },
+    ],
+    useCases: ['VPS 到期搬遷', '升配到更大主機'],
+    workflow: [
+      '盤點來源',
+      '填寫目標 SSH 並預檢',
+      '執行遷移',
+      '切 DNS 並驗證',
+    ],
+    caveats: [
+      '需目標機 root 與 EXECUTE 能力',
+      'TTL 未降時切 DNS 可能雙寫或短暫異常',
+    ],
+    related: [
+      { label: '備份', to: '/backups' },
+      { label: 'DNS', to: '/dns' },
+    ],
+  },
+  {
+    id: 'updates',
+    title: '更新',
+    summary: '查看系統套件更新建議與面板自身更新狀態。',
+    audience: '維運人員',
+    chips: ['套件', '安全'],
+    features: [
+      { name: '套件列表', purpose: '可更新項目與摘要。' },
+      { name: '套用更新', purpose: '在權限允許時安裝更新。' },
+    ],
+    useCases: ['修補 CVE', '例行維護'],
+    workflow: ['掃描更新', '閱讀說明', '維護窗套用並驗證服務'],
+    caveats: ['更新可能重啟服務，請排程維護窗'],
+    related: [{ label: '就緒檢查', to: '/system/readiness' }],
+  },
+  {
+    id: 'systemd',
+    title: 'systemd 單元',
+    summary: '檢視與操作個別 systemd unit 的細節。',
+    audience: '進階系統管理員',
+    chips: ['unit'],
+    features: [
+      { name: '單元狀態', purpose: 'active、enabled 等。' },
+      { name: '操作', purpose: 'start／stop／restart／enable。' },
+    ],
+    useCases: ['微調自訂 unit'],
+    workflow: ['搜尋 unit', '查看狀態', '謹慎操作'],
+    caveats: ['錯誤操作可能使關鍵服務下線'],
+    related: [{ label: '服務', to: '/services' }],
+  },
+  {
+    id: 'readiness',
+    title: '就緒檢查',
+    summary: '對照產品就緒清單，檢查生產環境是否具備必要元件與設定。',
+    audience: '上線前檢查的管理員',
+    chips: ['檢查清單'],
+    features: [
+      { name: '項目掃描', purpose: '二進位、服務、設定是否齊全。' },
+      { name: '修復導向', purpose: '連到對應功能頁補齊。' },
+    ],
+    useCases: ['正式開站前驗收', '遷移後復核'],
+    workflow: ['執行檢查', '處理未通過項', '重跑至可接受'],
+    caveats: ['就緒 ≠ 業務壓測通過'],
+    related: [{ label: '儀表板', to: '/' }],
+  },
+  {
+    id: 'systemIndex',
+    title: '系統工具',
+    summary: '系統層雜項工具與主機資訊入口。',
+    audience: '系統管理員',
+    chips: ['主機'],
+    features: [
+      { name: '主機資訊', purpose: '主機名、時區等。' },
+      { name: '工具入口', purpose: '連到單元、就緒、遷移等。' },
+    ],
+    useCases: ['快速找到系統層功能'],
+    workflow: ['查看主機資訊', '進入需要的子工具'],
+    caveats: ['變更主機名／時區可能影響憑證與日誌時間'],
+    related: [
+      { label: '網路', to: '/network' },
+      { label: '更新', to: '/updates' },
+    ],
+  },
+  {
+    id: 'ai',
+    title: 'AI 任務',
+    summary: '在面板內發起受控的 AI 輔助任務（需配置提供者）。',
+    audience: '希望用 AI 輔助維運的操作員',
+    chips: ['AI'],
+    features: [
+      { name: '任務', purpose: '送出提示並查看結果。' },
+      { name: '設定', purpose: '綁定模型提供者與金鑰（若適用）。' },
+    ],
+    useCases: ['草擬設定說明', '協助解讀錯誤日誌'],
+    workflow: ['確認 AI 已設定', '建立任務', '審核後再套用到系統'],
+    caveats: [
+      'AI 輸出需人工審核，不可直接當生產指令',
+      '可能產生 API 費用',
+    ],
+    related: [{ label: 'Agents', to: '/agents' }],
+  },
+  {
+    id: 'agents',
+    title: 'Agents',
+    summary: '管理可執行的維運代理與 playbook 式自動化（受監督）。',
+    audience: '進階維運',
+    chips: ['自動化'],
+    features: [
+      { name: '代理列表', purpose: '查看可用 agent。' },
+      { name: '執行', purpose: '在授權範圍內跑預設流程。' },
+    ],
+    useCases: ['重複性檢查自動化'],
+    workflow: ['選 playbook', '確認範圍', '執行並審結果'],
+    caveats: ['代理不得繞過 EXECUTE／權限模型'],
+    related: [{ label: 'AI 任務', to: '/ai' }],
+  },
+  {
+    id: 'servicesConsole',
+    title: '服務主控台',
+    summary: '針對單一服務類型的操作與狀態主控介面。',
+    audience: '系統管理員',
+    chips: ['服務'],
+    features: [
+      { name: '狀態', purpose: '即時 active／安裝狀態。' },
+      { name: '操作', purpose: '安裝、啟動、重載等。' },
+    ],
+    useCases: ['統一操作多種後端服務'],
+    workflow: ['選服務', '查看狀態', '執行操作並讀結果'],
+    caveats: ['高風險操作前請確認影響範圍'],
+    related: [{ label: '服務總覽', to: '/services' }],
+  },
+];
+
+const BY_ID = new Map(GUIDES.map((g) => [g.id, g]));
+
+export function getPageGuide(id: string): PageGuideDoc | null {
+  return BY_ID.get(id) ?? null;
+}
+
+export function listPageGuideIds(): string[] {
+  return GUIDES.map((g) => g.id);
+}

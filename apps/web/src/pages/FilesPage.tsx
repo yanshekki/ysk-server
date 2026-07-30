@@ -4,7 +4,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -27,7 +29,7 @@ import { ActionBar,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
-const FILE_TABS = ['browse', 'trash', 'shares', 'webdav'] as const;
+const FILE_TABS = ['browse', 'trash', 'shares', 'webdav', 'about'] as const;
 import { filesApi, fileToBase64, type FileEntry, type TrashEntry, type FileShare } from '../features/files/api';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
@@ -350,6 +352,8 @@ export function FilesPage() {
           { id: 'trash', label: '回收桶', badge: trash.length || undefined },
           { id: 'shares', label: '分享', badge: shares.length || undefined },
           { id: 'webdav', label: 'WebDAV' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={(id) => {
@@ -1005,6 +1009,8 @@ export function FilesPage() {
       </Card>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="files" /> : null}
       </PageTabs>
 
       {/* Mkdir */}

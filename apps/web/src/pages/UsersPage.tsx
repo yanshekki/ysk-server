@@ -5,6 +5,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -18,9 +19,9 @@ import {
   ConfirmDialog,
   PageTabs,
   PresetChips,
-  SegRadio
-,
-  buttonClassName} from '../shared/components/ui';
+  SegRadio,
+  buttonClassName,
+} from '../shared/components/ui';
 import { api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -237,7 +238,9 @@ export function UsersPage() {
               label: '方案',
               badge: packages.length || undefined,
             },
-          ]}
+          
+          { id: 'about', label: '說明' },
+        ]}
           active={tab}
           onChange={setTab}
           variant="scroll"
@@ -453,7 +456,9 @@ export function UsersPage() {
             />
           </div>
         ) : null}
-        </PageTabs>
+        
+        {tab === 'about' ? <PageGuide guideId="users" /> : null}
+      </PageTabs>
       )}
 
       <Modal

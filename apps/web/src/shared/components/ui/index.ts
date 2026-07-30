@@ -75,6 +75,12 @@ export { StructuredFacts } from './StructuredFacts';
 export type { FactItem } from './StructuredFacts';
 
 export { CapabilityBanner } from './CapabilityBanner';
+export { PageGuide } from './PageGuide';
+export type { PageGuideProps } from './PageGuide';
+
+export { WithPageGuide } from './WithPageGuide';
+export type { WithPageGuideProps } from './WithPageGuide';
+
 export { FeaturePageLayout } from './FeaturePageLayout';
 export type {
   FeaturePageLayoutProps,

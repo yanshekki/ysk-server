@@ -4,7 +4,9 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -100,8 +102,13 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       { id: 'overview', label: '概覽' },
       { id: 'cluster', label: '叢集' },
     ];
-    if (!console) return base;
-    return [...base, ...console.categories.map((c) => ({ id: c.id, label: c.label }))];
+    const about = { id: 'about', label: '說明' };
+    if (!console) return [...base, about];
+    return [
+      ...base,
+      ...console.categories.map((c) => ({ id: c.id, label: c.label })),
+      about,
+    ];
   }, [console]);
 
   async function doLifecycle(action: string) {
@@ -499,6 +506,20 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             </Card>
           ) : null,
         )}
+      
+        {tab === 'about' ? (
+          <PageGuide
+            guideId={
+              engine === 'postgres'
+                ? 'postgresService'
+                : engine === 'redis'
+                  ? 'redisService'
+                  : engine === 'mariadb'
+                    ? 'mariadbService'
+                    : 'mysqlService'
+            }
+          />
+        ) : null}
       </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />

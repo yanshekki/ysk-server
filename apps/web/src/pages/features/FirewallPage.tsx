@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -29,7 +30,7 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const FW_TABS = ['rules', 'ports', 'deny', 'profiles'] as const;
+const FW_TABS = ['rules', 'ports', 'deny', 'profiles', 'about'] as const;
 
 type FwStatus = Awaited<ReturnType<typeof systemApi.firewallStatus>>;
 
@@ -220,6 +221,8 @@ export function FirewallPage() {
           { id: 'ports', label: '開埠' },
           { id: 'deny', label: '永久拒 IP', badge: status?.denyFromIps?.length || undefined },
           { id: 'profiles', label: '設定檔' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -547,6 +550,8 @@ export function FirewallPage() {
             </div>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="firewall" /> : null}
       </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />

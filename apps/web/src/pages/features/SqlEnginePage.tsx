@@ -20,6 +20,7 @@ import {
   FormLayout,
   Modal,
   OpsResultPanel,
+  PageGuide,
   PageTabs,
   FormActions,
   FormHint,
@@ -420,6 +421,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           { id: 'users', label: `用戶 (${users.items.length})` },
           { id: 'temp', label: `臨時只讀 (${tempUsers.length})` },
           { id: 'remote', label: `遠端主機 (${remoteHosts.length})` },
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -750,6 +752,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             </CardSection>
           </Card>
           </div>
+        ) : null}
+        {tab === 'about' ? (
+          <PageGuide guideId={engine === 'mariadb' ? 'mariadb' : 'mysql'} />
         ) : null}
       </PageTabs>
 

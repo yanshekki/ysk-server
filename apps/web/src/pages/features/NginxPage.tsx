@@ -1,7 +1,8 @@
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { 
+import {
+  WithPageGuide,
   DataTable,
   ActionBar,
   Alert,
@@ -18,8 +19,8 @@ import {
   FormHint,
   CheckboxField,
   SegRadio,
-
-  buttonClassName,} from '../../shared/components/ui';
+  buttonClassName,
+} from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
@@ -135,6 +136,8 @@ export function NginxPage() {
         </ActionBar>
       }
     >
+      <WithPageGuide guideId="nginx">
+
       <SoftwareInstallBanner feature="nginx" title="Nginx 尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
       {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
@@ -307,6 +310,8 @@ export function NginxPage() {
         danger
         busy={busy}
       />
+    
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

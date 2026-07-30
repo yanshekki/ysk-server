@@ -8,7 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAiTasks } from '../features/llm';
 import type { AiTask } from '../features/llm';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -19,11 +21,11 @@ import { ActionBar,
   FormLayout,
   Modal,
   PageTabs,
-
-  buttonClassName,} from '../shared/components/ui';
+  buttonClassName,
+} from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
-const AI_TABS = ['tasks', 'playbooks'] as const;
+const AI_TABS = ['tasks', 'playbooks', 'about'] as const;
 
 function taskTone(status: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
   if (status === 'completed' || status === 'done' || status === 'executed') return 'ok';
@@ -203,6 +205,8 @@ export function AiPage() {
         tabs={[
           { id: 'tasks', label: `任務 (${tasks.length})` },
           { id: 'playbooks', label: `劇本 (${playbooks.length})` },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -459,6 +463,8 @@ export function AiPage() {
             </section>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="ai" /> : null}
       </PageTabs>
 
       <Modal

@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  PageGuide,
   Alert,
   Badge,
   Button,
@@ -20,7 +21,6 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
-
   PageTabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -150,7 +150,7 @@ type IniCatalogGroup = {
   }>;
 };
 
-const PHP_TABS = ['overview', 'ini', 'site', 'tools'] as const;
+const PHP_TABS = ['overview', 'ini', 'site', 'tools', 'about'] as const;
 
 export function PhpRuntimePage() {
   const { t } = useTranslation();
@@ -275,6 +275,8 @@ export function PhpRuntimePage() {
           { id: 'ini', label: 'php.ini' },
           { id: 'site', label: 'FPM / 站點' },
           { id: 'tools', label: '工具' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -761,6 +763,8 @@ export function PhpRuntimePage() {
             </Card>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="php" /> : null}
       </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />

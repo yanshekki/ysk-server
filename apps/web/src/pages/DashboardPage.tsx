@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../shared/hooks/useAuth';
 import { useDashboard } from '../features/dashboard';
 import { softwareApi, type SoftwareStatus } from '../features/software';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -25,8 +27,8 @@ import { ActionBar,
   FormHint,
   CheckboxField,
   SegRadio,
-
-  buttonClassName,} from '../shared/components/ui';
+  buttonClassName,
+} from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -35,7 +37,7 @@ import {
   runtimeVersionChoices,
 } from '../features/projects/model/deploy-prefs';
 
-const DASH_TABS = ['overview', 'wizard', 'notifications', 'features'] as const;
+const DASH_TABS = ['overview', 'wizard', 'notifications', 'features', 'about'] as const;
 
 /** Map nav key → software feature id (for install probe) */
 const KEY_TO_FEATURE: Record<string, string> = {
@@ -299,6 +301,8 @@ export function DashboardPage() {
             badge: notifBadge || undefined,
           },
           { id: 'features', label: '功能入口' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -925,6 +929,8 @@ export function DashboardPage() {
             <FeatureIconGrid items={tiles} />
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="dashboard" /> : null}
       </PageTabs>
     </FeaturePageLayout>
   );

@@ -4,7 +4,9 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -17,7 +19,6 @@ import { ActionBar,
   FormActions,
   FormHint,
   FormLayout,
-
   OpsResultPanel,
   PresetChips,
   SegRadio,
@@ -487,6 +488,8 @@ export function FtpsServicePage() {
             </CardSection>
           </Card>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="ftpService" /> : null}
       </PageTabs>
 
       <OpsResultPanel

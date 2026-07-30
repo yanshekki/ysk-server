@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { emailApi, useEmailDomains } from '../features/email';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -27,7 +28,7 @@ import {
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
-const TABS = ['domains', 'queue', 'stack', 'ops'] as const;
+const TABS = ['domains', 'queue', 'stack', 'ops', 'about'] as const;
 
 function applyLabel(status?: string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
   const s = (status ?? 'draft').toLowerCase();
@@ -201,6 +202,8 @@ export function EmailPage() {
           },
           { id: 'stack', label: '軟件' },
           { id: 'ops', label: '分工' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -439,6 +442,8 @@ export function EmailPage() {
             </div>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="email" /> : null}
       </PageTabs>
 
       <Modal

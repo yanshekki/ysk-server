@@ -5,7 +5,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { emailApi, type EmailBundle, type EmailDomain } from '../features/email';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -1436,6 +1438,8 @@ export function EmailDomainPage() {
             </Card>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="emailDomain" /> : null}
       </PageTabs>
 
       <Modal

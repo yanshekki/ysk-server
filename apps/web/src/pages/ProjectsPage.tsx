@@ -17,6 +17,7 @@ import {
   FeaturePageLayout,
   ListPanel,
   SegRadio,
+  WithPageGuide,
 } from '../shared/components/ui';
 
 export function ProjectsPage() {
@@ -82,6 +83,7 @@ export function ProjectsPage() {
         </ActionBar>
       }
     >
+      <WithPageGuide guideId="projects">
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (
         <Alert variant="ok">
@@ -164,6 +166,7 @@ export function ProjectsPage() {
           }
         }}
       />
+      </WithPageGuide>
     </FeaturePageLayout>
   );
 }

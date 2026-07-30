@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  PageGuide,
   ActionBar,
   Alert,
   Badge,
@@ -29,7 +30,7 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service'] as const;
+const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service', 'about'] as const;
 
 type F2bStatus = Awaited<ReturnType<typeof systemApi.fail2banStatus>>;
 
@@ -185,6 +186,8 @@ export function Fail2banPage() {
           { id: 'jails', label: 'Jail', badge: status?.jails?.length || undefined },
           { id: 'policy', label: '策略' },
           { id: 'service', label: '服務' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -677,6 +680,8 @@ export function Fail2banPage() {
             </div>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="fail2ban" /> : null}
       </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />

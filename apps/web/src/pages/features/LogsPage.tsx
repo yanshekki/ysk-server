@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
+  PageGuide,
   Alert,
   Badge,
   Button,
@@ -27,7 +28,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
 /** Public tabs — old journal/files/projects deep-links map into explore */
-const TABS = ['explore', 'ops', 'settings'] as const;
+const TABS = ['explore', 'ops', 'settings', 'about'] as const;
 const LEGACY_TAB_MAP: Record<string, (typeof TABS)[number]> = {
   overview: 'explore',
   journal: 'explore',
@@ -846,6 +847,8 @@ export function LogsPage() {
           { id: 'explore', label: '探索' },
           { id: 'ops', label: '維護' },
           { id: 'settings', label: '設定' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -1578,6 +1581,8 @@ export function LogsPage() {
             </footer>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="logs" /> : null}
       </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />

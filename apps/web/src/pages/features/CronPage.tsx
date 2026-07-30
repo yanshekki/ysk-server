@@ -3,7 +3,9 @@
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActionBar,
+import {
+  PageGuide,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -28,7 +30,7 @@ import {
   type ScheduleState,
 } from './CronScheduleBuilder';
 
-const CRON_TABS = ['jobs', 'status'] as const;
+const CRON_TABS = ['jobs', 'status', 'about'] as const;
 
 type CronProjectOpt = {
   id: string;
@@ -398,6 +400,8 @@ export function CronPage() {
         tabs={[
           { id: 'jobs', label: `工作 (${items.length})` },
           { id: 'status', label: '狀態' },
+        
+          { id: 'about', label: '說明' },
         ]}
         active={tab}
         onChange={setTab}
@@ -629,6 +633,8 @@ export function CronPage() {
             </div>
           </div>
         ) : null}
+      
+        {tab === 'about' ? <PageGuide guideId="cron" /> : null}
       </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
