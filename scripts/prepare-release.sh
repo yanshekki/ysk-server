@@ -15,6 +15,12 @@ log() { printf '[prepare-release] %s\n' "$*"; }
 log "pnpm install (frozen if lock present)…"
 pnpm install --frozen-lockfile 2>/dev/null || pnpm install
 
+log "honesty + UI gates…"
+pnpm gates
+
+log "typecheck…"
+pnpm typecheck
+
 log "build…"
 pnpm build
 

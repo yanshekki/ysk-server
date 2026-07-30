@@ -63,7 +63,12 @@ export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: stri
     try {
       result = opts.onCommand
         ? await opts.onCommand(cmd)
-        : { echo: cmd.payload, agentId: opts.agentId, ok: true };
+        : {
+            ok: false,
+            agentId: opts.agentId,
+            error: 'no command handler — refuse silent echo success',
+            payload: cmd.payload,
+          };
       // CLI / handler results: non-zero exit or ok:false → error status in history
       if (isCommandFailure(result)) err = true;
     } catch (e) {

@@ -1,9 +1,10 @@
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
+import { 
+  DataTable,
+  ActionBar,
   Alert,
-  Badge,
   Button,
   Card,
   CardSection,
@@ -13,14 +14,13 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
-  OpsHero,
   SoftwareInstallBanner,
   FormHint,
   CheckboxField,
   SegRadio,
-} from '../../shared/components/ui';
+
+  buttonClassName,} from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
-import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { systemApi } from '../../features/system';
@@ -87,11 +87,31 @@ export function NginxPage() {
   return (
     <FeaturePageLayout
       title={t('nav.nginx', { defaultValue: 'Nginx' })}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label: `${items.length} 站點`,
+          tone: items.length ? 'ok' : 'warn',
+        },
+        items: [
+          { label: '站點', value: items.length },
+          {
+            label: 'Proxy',
+            value: items.filter((r) => r.kind === 'proxy').length,
+          },
+          {
+            label: 'Static/PHP',
+            value: items.filter((r) => r.kind !== 'proxy').length,
+          },
+          {
+            label: 'SSL 標記',
+            value: items.filter((r) => r.ssl).length,
+          },
+        ],
+      }}
+      actions={<ActionBar>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={purgeBusy}
             onClick={() => {
               setPurgeBusy(true);
@@ -108,17 +128,11 @@ export function NginxPage() {
           >
             清除 Cache + Reload
           </Button>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => {
-              resetForm();
-              setCreateOpen(true);
-            }}
-          >
-            + 建立站點
-          </Button>
-        </div>
+          
+          <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            SSL
+          </Link>
+        </ActionBar>
       }
     >
       <SoftwareInstallBanner feature="nginx" title="Nginx 尚未安裝" />
@@ -133,56 +147,24 @@ export function NginxPage() {
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={`${items.length} 站點`}
-        pillTone={items.length ? 'ok' : 'warn'}
-        tone={items.length ? 'ok' : 'warn'}
-        cta={
-          <>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => {
-                resetForm();
-                setCreateOpen(true);
-              }}
-            >
-              + 建立站點
-            </Button>
-            <Link to="/ssl" className="btn btn--secondary btn--md">
-              SSL
-            </Link>
-            <Link to="/projects" className="btn btn--ghost btn--md">
-              專案
-            </Link>
-          </>
-        }
-        stats={[
-          { label: '站點', value: items.length },
-          {
-            label: 'Proxy',
-            value: items.filter((r) => r.kind === 'proxy').length,
-          },
-          {
-            label: 'Static/PHP',
-            value: items.filter((r) => r.kind !== 'proxy').length,
-          },
-          {
-            label: 'SSL 標記',
-            value: items.filter((r) => r.ssl).length,
-          },
-        ]}
-        rail={
-          <li>
-            <span className="ops-rail__k">Cache</span>
-            <Badge tone="neutral">purge 可重載</Badge>
-          </li>
-        }
-      />
-
-      <Card>
-        <CardSection title={`站點列表 (${items.length})`}>
-          <ResourceTable
+      <DataTable
+                  rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+            title={`站點列表 (${items.length})`}
+            description="建立後請再按「套用」同步到系統"
+            toolbar={
+              <ActionBar>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    resetForm();
+                    setCreateOpen(true);
+                  }}
+                >
+                  + 建立站點
+                </Button>
+              </ActionBar>
+            }
             columns={[
               {
                 key: 'serverName',
@@ -224,11 +206,11 @@ export function NginxPage() {
             empty={
               <EmptyState
                 title="尚未有 Nginx 站點"
-                description="用右上角「建立站點」新增；建立後請再按「套用」"
+                description="用列表右上角「建立站點」新增；建立後請再按「套用」"
               />
             }
             rowActions={(r) => (
-              <div className="btn-row">
+              <ActionBar>
                 <Button
                   variant="primary"
                   size="sm"
@@ -244,11 +226,9 @@ export function NginxPage() {
                 <Button variant="danger" size="sm" loading={busy} onClick={() => setDelId(r.id)}>
                   刪除
                 </Button>
-              </div>
+              </ActionBar>
             )}
           />
-        </CardSection>
-      </Card>
 
       <Modal
         open={createOpen}

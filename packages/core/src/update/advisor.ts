@@ -35,7 +35,9 @@ export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
   let advice: UpdateAdvice = 'skip';
   let risk: RiskTier = 'low';
   let requiresApproval = false;
-  let summary = 'No update available';
+  let summary = same
+    ? '已裝版本 = apt Candidate，無可用升級'
+    : '有可用升級';
 
   if (!same) {
     const hasCritical = cves.some((c) => /CRITICAL/i.test(c));
@@ -45,30 +47,33 @@ export function adviseUpdate(item: PackageInventoryItem): UpdateItemDto {
       advice = 'urgent';
       risk = 'critical';
       requiresApproval = true;
-      summary = 'Critical CVE-linked update; human approval required';
+      summary = `可升級 ${item.currentVersion} → ${candidate}（CRITICAL CVE，需確認）`;
     } else if (hasHigh) {
       advice = 'update';
       risk = 'high';
       requiresApproval = true;
-      summary = 'High-severity CVE update; human approval required';
+      summary = `可升級 ${item.currentVersion} → ${candidate}（HIGH CVE，需確認）`;
     } else if (item.hasBreakingChange) {
       advice = 'watch';
       risk = 'high';
       requiresApproval = true;
-      summary = 'Update available but may include breaking changes';
+      summary = `可升級 ${item.currentVersion} → ${candidate}（可能不相容，需確認）`;
     } else if (item.hasSecurityFix) {
-      // Security fix without HIGH/CRITICAL CVE tags and without breaking changes → auto-eligible
       advice = 'update';
       risk = 'low';
       requiresApproval = false;
-      summary = 'Low-risk security update; eligible for auto-update';
+      summary = `可升級 ${item.currentVersion} → ${candidate}（安全修補）`;
     } else {
-      // Routine upgrade
       advice = 'update';
       risk = 'medium';
       requiresApproval = true;
-      summary = 'Routine update available; approval required';
+      summary = `可升級 ${item.currentVersion} → ${candidate}（apt Candidate）`;
     }
+  } else if (cves.length > 0) {
+    summary = `無可用升級，但 OSV 標註已裝版有 ${cves.length} 項漏洞信號`;
+    risk = cves.some((c) => /CRITICAL|HIGH/i.test(c)) ? 'high' : 'medium';
+    requiresApproval = true;
+    advice = 'watch';
   }
 
   // Invariant: high and critical always require approval

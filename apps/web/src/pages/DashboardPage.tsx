@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../shared/hooks/useAuth';
 import { useDashboard } from '../features/dashboard';
 import { softwareApi, type SoftwareStatus } from '../features/software';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -18,15 +18,15 @@ import {
   Field,
   FormLayout,
   LoadingBlock,
-  PageHeader,
-  OpsHero,
-  Tabs,
+  FeaturePageLayout,
+  PageTabs,
   type FeatureTileBadge,
   FormActions,
   FormHint,
   CheckboxField,
   SegRadio,
-} from '../shared/components/ui';
+
+  buttonClassName,} from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -223,100 +223,73 @@ export function DashboardPage() {
       : 0);
 
   return (
-    <div className="stack stack--lg">
-      <PageHeader title={t('nav.dashboard', { defaultValue: t('dashboard.title') })} />
-
+    <FeaturePageLayout
+      title={t('nav.dashboard', { defaultValue: t('dashboard.title') })}
+      status={{
+        pill: {
+          label:
+            health?.status === 'ok'
+              ? '健康'
+              : readiness?.productionReady
+                ? '可生產'
+                : '需檢查',
+          tone:
+            health?.status === 'ok'
+              ? 'ok'
+              : notifCounts.critical > 0
+                ? 'danger'
+                : 'warn',
+        },
+        items: [
+          { label: t('nav.projects'), value: projects.length },
+          {
+            label: t('projects.statRunning'),
+            value: running,
+            tone: running > 0 ? 'ok' : 'neutral',
+          },
+          { label: '備份', value: backups },
+          {
+            label: '通知',
+            value: notifications.length,
+            tone:
+              notifCounts.critical > 0
+                ? 'danger'
+                : notifCounts.warn > 0
+                  ? 'warn'
+                  : 'ok',
+          },
+          {
+            label: 'EXECUTE',
+            value:
+              executeEnabled === true ? '開' : executeEnabled === false ? '關' : '—',
+            tone: executeEnabled === true ? 'ok' : 'warn',
+          },
+          {
+            label: '憑證到期',
+            value: expiringCerts?.length ?? 0,
+            tone: (expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok',
+          },
+        ],
+      }}
+      actions={<ActionBar>
+          <Link to="/projects" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            專案
+          </Link>
+          <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            服務
+          </Link>
+          <Link to="/system/readiness" className={buttonClassName({ variant: 'primary', size: 'sm' })}>
+            就緒探測
+          </Link>
+        </ActionBar>
+      }
+    >
       {error ? <Alert variant="error">{error}</Alert> : null}
       {wizErr ? <Alert variant="error">{wizErr}</Alert> : null}
       {wizMsg ? <Alert variant="ok">{wizMsg}</Alert> : null}
       {loading ? <LoadingBlock /> : null}
 
-      <OpsHero
-        pill={
-          health?.status === 'ok'
-            ? '健康'
-            : readiness?.productionReady
-              ? '可生產'
-              : '需檢查'
-        }
-        pillTone={
-          health?.status === 'ok'
-            ? 'ok'
-            : notifCounts.critical > 0
-              ? 'danger'
-              : 'warn'
-        }
-        tone={
-          notifCounts.critical > 0
-            ? 'danger'
-            : executeEnabled === false
-              ? 'warn'
-              : 'ok'
-        }
-        cta={
-          <>
-            <Link to="/system/readiness" className="btn btn--primary btn--md">
-              就緒探測
-            </Link>
-            <Link to="/projects" className="btn btn--secondary btn--md">
-              專案
-            </Link>
-            <Link to="/services" className="btn btn--ghost btn--md">
-              服務
-            </Link>
-          </>
-        }
-        stats={[
-          { label: t('nav.projects'), value: projects.length },
-          {
-            label: t('projects.statRunning'),
-            value: (
-              <Badge tone={running > 0 ? 'ok' : 'neutral'}>{running}</Badge>
-            ),
-          },
-          { label: '備份', value: backups },
-          {
-            label: '通知',
-            value: (
-              <Badge
-                tone={
-                  notifCounts.critical > 0
-                    ? 'danger'
-                    : notifCounts.warn > 0
-                      ? 'warn'
-                      : 'ok'
-                }
-              >
-                {notifications.length}
-              </Badge>
-            ),
-          },
-        ]}
-        rail={
-          <>
-            <li>
-              <span className="ops-rail__k">Health</span>
-              <Badge tone={health?.status === 'ok' ? 'ok' : 'warn'}>
-                {health?.status ?? '—'}
-              </Badge>
-            </li>
-            <li>
-              <span className="ops-rail__k">EXECUTE</span>
-              <Badge tone={executeEnabled === true ? 'ok' : 'warn'}>
-                {executeEnabled === true ? '開' : executeEnabled === false ? '關' : '—'}
-              </Badge>
-            </li>
-            <li>
-              <span className="ops-rail__k">憑證到期</span>
-              <Badge tone={(expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok'}>
-                {expiringCerts?.length ?? 0}
-              </Badge>
-            </li>
-          </>
-        }
-      />
-
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'overview', label: '概覽' },
           { id: 'wizard', label: '一鍵建立' },
@@ -387,6 +360,125 @@ export function DashboardPage() {
                 <Link to="/ssl">SSL</Link>
               </Alert>
             ) : null}
+
+            {/* Security strip — notifications + apply honesty + shortcuts */}
+            <Card>
+              <CardSection
+                title="安全與套用狀態"
+                description="真實通知 + apply 誠實審計（written ≠ applied）"
+              >
+                <div className="chip-row u-mb-3">
+                  <Badge
+                    tone={
+                      notifCounts.critical > 0
+                        ? 'danger'
+                        : notifCounts.warn > 0
+                          ? 'warn'
+                          : 'ok'
+                    }
+                  >
+                    通知 {notifications.length}
+                    {notifCounts.critical > 0
+                      ? ` · 嚴重 ${notifCounts.critical}`
+                      : notifCounts.warn > 0
+                        ? ` · 警告 ${notifCounts.warn}`
+                        : ''}
+                  </Badge>
+                  {applyAudit ? (
+                    <Badge
+                      tone={
+                        applyAudit.summary.bad > 0
+                          ? 'danger'
+                          : applyAudit.summary.warn > 0
+                            ? 'warn'
+                            : 'ok'
+                      }
+                    >
+                      套用 audit · ok {applyAudit.summary.ok} · warn{' '}
+                      {applyAudit.summary.warn} · bad {applyAudit.summary.bad}
+                    </Badge>
+                  ) : null}
+                  <Badge tone={executeEnabled === true ? 'ok' : 'warn'}>
+                    EXECUTE {executeEnabled === true ? '開' : '關'}
+                  </Badge>
+                </div>
+                {notifications.length > 0 ? (
+                  <ul className="list-plain list-spaced u-mb-3">
+                    {notifications
+                      .filter(
+                        (n) => n.level === 'critical' || n.level === 'warn',
+                      )
+                      .slice(0, 5)
+                      .map((n) => (
+                        <li key={n.id}>
+                          <Badge
+                            tone={n.level === 'critical' ? 'danger' : 'warn'}
+                          >
+                            {n.level}
+                          </Badge>{' '}
+                          <strong>{n.title}</strong>
+                          <span className="muted u-text-sm"> — {n.body}</span>
+                          {n.href ? (
+                            <>
+                              {' '}
+                              <Link to={n.href}>前往</Link>
+                            </>
+                          ) : null}
+                        </li>
+                      ))}
+                  </ul>
+                ) : (
+                  <p className="muted u-text-sm u-mb-3">
+                    目前無嚴重／警告通知
+                  </p>
+                )}
+                {applyAudit &&
+                (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0) ? (
+                  <ul className="list-plain list-spaced u-mb-3">
+                    {applyAudit.findings
+                      .filter((f) => f.severity !== 'ok')
+                      .slice(0, 4)
+                      .map((f, i) => (
+                        <li key={`${f.kind}-${f.name}-${i}`}>
+                          <Badge
+                            tone={f.severity === 'bad' ? 'danger' : 'warn'}
+                          >
+                            {f.severity}
+                          </Badge>{' '}
+                          <span className="muted u-text-sm">{f.kind}</span>{' '}
+                          <strong>{f.name}</strong>
+                          {f.issue ? (
+                            <span className="muted"> — {f.issue}</span>
+                          ) : null}
+                          {f.href ? (
+                            <>
+                              {' '}
+                              <Link to={f.href}>開啟</Link>
+                            </>
+                          ) : null}
+                        </li>
+                      ))}
+                  </ul>
+                ) : null}
+                <ActionBar>
+                  <Link to="/?tab=notifications" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+                    通知中心
+                  </Link>
+                  <Link to="/fail2ban" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                    fail2ban
+                  </Link>
+                  <Link to="/firewall" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                    防火牆
+                  </Link>
+                  <Link to="/protection" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                    防護中心
+                  </Link>
+                  <Link to="/security" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                    安全（2FA／金鑰）
+                  </Link>
+                </ActionBar>
+              </CardSection>
+            </Card>
 
             {(() => {
               const memPct =
@@ -833,7 +925,7 @@ export function DashboardPage() {
             <FeatureIconGrid items={tiles} />
           </div>
         ) : null}
-      </Tabs>
-    </div>
+      </PageTabs>
+    </FeaturePageLayout>
   );
 }

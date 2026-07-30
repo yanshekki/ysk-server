@@ -1,16 +1,20 @@
 /**
- * Security — tabbed: 2FA · API Keys · 審批 · Allowlist
+ * Security — 2FA · API Keys · SSH 工作台 · 審批 · Allowlist
+ * SSH UX lives in features/security/ssh (job-to-be-done workspace).
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { useSecurity } from '../features/security';
+import { SshWorkspace } from '../features/security/ssh';
 import { api } from '../shared/services/api';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
   Card,
   CardSection,
+  DataTable,
   DescriptionList,
   EmptyState,
   FeaturePageLayout,
@@ -19,20 +23,19 @@ import {
   FormHint,
   FormLayout,
   Modal,
-  OpsHero,
-  Tabs,
+  PromptDialog,
+  PageTabs,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
-import { Link } from 'react-router-dom';
 
-const TAB_IDS = ['account', 'keys', 'sftp', 'approvals', 'allowlist'] as const;
+const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'allowlist'] as const;
 
 export function SecurityPage() {
   const { t } = useTranslation();
   const { tools, approvals, error, result, busy, runSysInfo, approve } = useSecurity();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = usePageTab(TAB_IDS, 'account');
   const [createKeyOpen, setCreateKeyOpen] = useState(false);
-  const [createSftpOpen, setCreateSftpOpen] = useState(false);
   const [totpStatus, setTotpStatus] = useState<{ enabled: boolean; enrolled: boolean } | null>(
     null,
   );
@@ -42,34 +45,41 @@ export function SecurityPage() {
   const [totpMsg, setTotpMsg] = useState<string | null>(null);
   const [totpErr, setTotpErr] = useState<string | null>(null);
   const [totpBusy, setTotpBusy] = useState(false);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const [reauthPassword, setReauthPassword] = useState('');
+  const [sessions, setSessions] = useState<
+    Array<{
+      id: string;
+      created_at: string;
+      last_seen_at?: string;
+      ip?: string;
+      user_agent?: string;
+      current?: boolean;
+    }>
+  >([]);
+  const [requireAdminTotp, setRequireAdminTotp] = useState(false);
+  const [requireStrict, setRequireStrict] = useState(false);
+  const [policyTotp, setPolicyTotp] = useState('');
   const [apiKeys, setApiKeys] = useState<
     Array<{ id: string; name: string; prefix: string; created_at: string }>
   >([]);
   const [newKeyName, setNewKeyName] = useState('panel-api');
   const [newKeyToken, setNewKeyToken] = useState<string | null>(null);
+  const [totpPrompt, setTotpPrompt] = useState<
+    null | { kind: 'backup' } | { kind: 'apiKey' }
+  >(null);
+  const [sshCounts, setSshCounts] = useState({ identities: 0, loginKeys: 0 });
 
-  type SftpKeyRow = {
-    id: string;
-    username: string;
-    comment?: string;
-    publicKey: string;
-    created_at: string;
-    projectId?: string;
-    linuxUser?: string;
-    homeDir?: string;
-  };
-  const [sftpKeys, setSftpKeys] = useState<SftpKeyRow[]>([]);
-  const [sftpProjects, setSftpProjects] = useState<
-    Array<{ id: string; name: string; linuxUser: string; homeDir: string }>
-  >([]);
-  const [sftpProjectId, setSftpProjectId] = useState('');
-  const [sftpPubKey, setSftpPubKey] = useState('');
-  const [sftpComment, setSftpComment] = useState('');
-  const [sshdSnippet, setSshdSnippet] = useState('');
-  const [sshdNotes, setSshdNotes] = useState<string[]>([]);
-  const [sftpBusy, setSftpBusy] = useState(false);
-  const [sftpMsg, setSftpMsg] = useState<string | null>(null);
-  const [sftpErr, setSftpErr] = useState<string | null>(null);
+  // Legacy ?tab=identities|sftp → ssh workspace
+  useEffect(() => {
+    const legacy = searchParams.get('tab');
+    if (legacy === 'identities' || legacy === 'sftp') {
+      const next = new URLSearchParams(searchParams);
+      next.set('tab', 'ssh');
+      next.set('ssh', legacy === 'sftp' ? 'login' : 'outbound');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const refreshTotp = useCallback(async () => {
     setTotpStatus(await api.totpStatus());
@@ -80,39 +90,27 @@ export function SecurityPage() {
     setApiKeys(r.items ?? []);
   }, []);
 
-  const refreshSftp = useCallback(async () => {
-    const [keysRes, projRes] = await Promise.all([
-      api.requestRaw<{ items: SftpKeyRow[] }>('/api/v1/sftp/keys'),
-      api.listProjects(),
-    ]);
-    setSftpKeys(keysRes.items ?? []);
-    setSftpProjects(
-      (projRes.items ?? []).map((p) => ({
-        id: p.id,
-        name: p.name,
-        linuxUser: p.linuxUser,
-        homeDir: p.homeDir,
-      })),
-    );
+  const refreshSessions = useCallback(async () => {
+    const r = await api.listSessions();
+    setSessions(r.items ?? []);
+  }, []);
+
+  const refreshPolicy = useCallback(async () => {
+    try {
+      const r = await api.getSecuritySettings();
+      setRequireAdminTotp(Boolean(r.requireAdminTotp));
+      setRequireStrict(Boolean(r.requireAdminTotpStrict));
+    } catch {
+      /* non-admin */
+    }
   }, []);
 
   useEffect(() => {
     void refreshTotp().catch(() => undefined);
     void refreshKeys().catch(() => undefined);
-  }, [refreshTotp, refreshKeys]);
-
-  useEffect(() => {
-    if (tab !== 'sftp') return;
-    setSftpErr(null);
-    void refreshSftp().catch((e: Error) => setSftpErr(e.message));
-    void api
-      .requestRaw<{ snippet: string; notes: string[] }>('/api/v1/sftp/sshd-snippet')
-      .then((r) => {
-        setSshdSnippet(r.snippet ?? '');
-        setSshdNotes(r.notes ?? []);
-      })
-      .catch((e: Error) => setSftpErr(e.message));
-  }, [tab, refreshSftp]);
+    void refreshSessions().catch(() => undefined);
+    void refreshPolicy().catch(() => undefined);
+  }, [refreshTotp, refreshKeys, refreshSessions, refreshPolicy]);
 
   const allowed = tools.filter((tool) => tool.allowed).length;
   const needsApproval = tools.filter((tool) => tool.requiresApproval).length;
@@ -134,104 +132,70 @@ export function SecurityPage() {
     <FeaturePageLayout
       title={t('nav.security', { defaultValue: '帳號安全' })}
       showCapability={false}
-      actions={
-        <>
-          <Button variant="primary" size="md" loading={busy} onClick={() => void runSysInfo()}>
-            {t('security.runSysInfo')}
-          </Button>
-          <Link to="/users" className="btn btn--ghost btn--md">
-            用戶
-          </Link>
-          <Link to="/protection" className="btn btn--ghost btn--md">
-            防護
-          </Link>
-        </>
+      status={{
+        pill: {
+          label:
+            approvals.length > 0
+              ? `${approvals.length} 待批`
+              : totpStatus?.enabled
+                ? '就緒'
+                : '2FA 未啟用',
+          tone: approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn',
+        },
+        items: [
+          {
+            label: '2FA',
+            value: totpStatus?.enabled ? '開' : '關',
+            tone: totpStatus?.enabled ? 'ok' : 'warn',
+          },
+          { label: 'API', value: apiKeys.length },
+          {
+            label: 'SSH',
+            value: `${sshCounts.identities}/${sshCounts.loginKeys}`,
+          },
+          {
+            label: '待批',
+            value: approvals.length,
+            tone: approvals.length > 0 ? 'danger' : 'ok',
+          },
+        ],
+      }}
+      actions={<Button variant="secondary" size="sm" loading={busy} onClick={() => void runSysInfo()}>
+          {t('security.runSysInfo')}
+        </Button>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
       {totpErr ? <Alert variant="error">{totpErr}</Alert> : null}
       {totpMsg ? <Alert variant="ok">{totpMsg}</Alert> : null}
-      {sftpErr ? <Alert variant="error">{sftpErr}</Alert> : null}
-      {sftpMsg ? (
+      {newKeyToken ? (
         <Alert variant="ok">
-          {sftpMsg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setSftpMsg(null)}>
+          API token（只顯示一次）：<code className="inline u-break-all">{newKeyToken}</code>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              void navigator.clipboard?.writeText(newKeyToken);
+              setTotpMsg('已複製 token');
+            }}
+          >
+            複製
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setNewKeyToken(null)}>
             關閉
           </Button>
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={approvals.length > 0 ? `${approvals.length} 待批` : '就緒'}
-        pillTone={approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn'}
-        tone={approvals.length > 0 ? 'warn' : 'ok'}
-        meta={
-          <>
-            <span>
-              工具 <strong>{tools.length}</strong>
-            </span>
-            <span className="ops-hero__dot" />
-            <span>
-              允許 <strong>{allowed}</strong>
-            </span>
-            <span className="ops-hero__dot" />
-            <span>
-              2FA <strong>{totpStatus?.enabled ? '開' : '關'}</strong>
-            </span>
-          </>
-        }
-        cta={
-          <>
-            <Button variant="primary" size="md" loading={busy} onClick={() => void runSysInfo()}>
-              {t('security.runSysInfo')}
-            </Button>
-            <Button variant="secondary" size="md" onClick={() => setTab('approvals')}>
-              審批
-            </Button>
-            <Button variant="ghost" size="md" onClick={() => setTab('account')}>
-              2FA
-            </Button>
-          </>
-        }
-        stats={[
-          { label: '工具', value: tools.length },
-          { label: '允許', value: <Badge tone="ok">{allowed}</Badge> },
-          {
-            label: '需批准',
-            value: <Badge tone={needsApproval ? 'warn' : 'neutral'}>{needsApproval}</Badge>,
-          },
-          {
-            label: '待批',
-            value: (
-              <Badge tone={approvals.length > 0 ? 'danger' : 'ok'}>{approvals.length}</Badge>
-            ),
-          },
-        ]}
-        rail={
-          <>
-            <li>
-              <span className="ops-rail__k">2FA</span>
-              <Badge tone={totpStatus?.enabled ? 'ok' : 'warn'}>
-                {totpStatus?.enabled ? '已啟用' : '未啟用'}
-              </Badge>
-            </li>
-            <li>
-              <span className="ops-rail__k">API keys</span>
-              <span className="ops-rail__text">{apiKeys.length}</span>
-            </li>
-            <li>
-              <span className="ops-rail__k">SFTP keys</span>
-              <span className="ops-rail__text">{sftpKeys.length}</span>
-            </li>
-          </>
-        }
-      />
-
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'account', label: '帳戶安全' },
           { id: 'keys', label: 'API 金鑰', badge: apiKeys.length || undefined },
-          { id: 'sftp', label: 'SFTP / sshd' },
+          {
+            id: 'ssh',
+            label: 'SSH',
+            badge: sshCounts.identities + sshCounts.loginKeys || undefined,
+          },
           { id: 'approvals', label: '審批', badge: approvals.length || undefined },
           { id: 'allowlist', label: '允許清單', badge: tools.length || undefined },
         ]}
@@ -251,20 +215,38 @@ export function SecurityPage() {
                       ? '已產生密鑰、未確認'
                       : '未設定'}
                 </p>
-                <div className="btn-row u-mt-3">
+                <FormLayout columns={2}>
+                  <Field
+                    label="重新驗證密碼"
+                    htmlFor="reauth-pw"
+                    flush
+                    hint="開始／重設 2FA 需要再輸入密碼（防 session 被盜）"
+                  >
+                    <input
+                      id="reauth-pw"
+                      type="password"
+                      value={reauthPassword}
+                      onChange={(e) => setReauthPassword(e.target.value)}
+                      autoComplete="current-password"
+                    />
+                  </Field>
+                </FormLayout>
+                <ActionBar className="u-mt-3">
                   <Button
                     variant="primary"
                     size="md"
                     loading={totpBusy}
+                    disabled={!reauthPassword}
                     onClick={() => {
                       setTotpBusy(true);
                       setTotpErr(null);
                       void api
-                        .totpBegin()
+                        .totpBegin({ password: reauthPassword })
                         .then((r) => {
                           setTotpSecret(r.secret);
                           setTotpUrl(r.otpauthUrl);
                           setTotpMsg('已產生密鑰 — 用驗證器 App 掃描後輸入 6 位碼確認');
+                          setReauthPassword('');
                           return refreshTotp();
                         })
                         .catch((e: Error) => setTotpErr(e.message))
@@ -273,7 +255,7 @@ export function SecurityPage() {
                   >
                     {totpStatus?.enabled ? '重新設定 2FA' : '開始設定 2FA'}
                   </Button>
-                </div>
+                </ActionBar>
                 {totpSecret ? (
                   <div className="u-mt-4">
                     <FormHint>
@@ -315,9 +297,13 @@ export function SecurityPage() {
                           setTotpErr(null);
                           void api
                             .totpConfirm(totpCode)
-                            .then(() => {
-                              setTotpMsg('2FA 已啟用');
+                            .then((r) => {
+                              setTotpMsg(
+                                '2FA 已啟用 — 請立即保存下方 recovery codes（只顯示一次）',
+                              );
+                              setRecoveryCodes(r.recoveryCodes ?? null);
                               setTotpSecret(null);
+                              setTotpUrl(null);
                               setTotpCode('');
                               return refreshTotp();
                             })
@@ -327,345 +313,416 @@ export function SecurityPage() {
                       >
                         確認啟用
                       </Button>
-                      {totpStatus?.enabled ? (
-                        <Button
-                          variant="danger"
-                          size="md"
-                          loading={totpBusy}
-                          onClick={() => {
-                            setTotpBusy(true);
-                            setTotpErr(null);
-                            void api
-                              .totpDisable(totpCode)
-                              .then(() => {
-                                setTotpMsg('2FA 已關閉');
-                                setTotpSecret(null);
-                                setTotpCode('');
-                                return refreshTotp();
-                              })
-                              .catch((e: Error) => setTotpErr(e.message))
-                              .finally(() => setTotpBusy(false));
-                          }}
-                        >
-                          關閉 2FA
-                        </Button>
-                      ) : null}
                     </FormActions>
+                  </div>
+                ) : null}
+                {recoveryCodes && recoveryCodes.length > 0 ? (
+                  <div className="u-mt-4">
+                    <FormHint>
+                      恢復碼（離線保存；每個只用一次）。登入時可填 recoveryCode 代替 App 碼。
+                    </FormHint>
+                    <pre className="u-font-mono u-text-sm">
+                      {recoveryCodes.join('\n')}
+                    </pre>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        void navigator.clipboard?.writeText(recoveryCodes.join('\n'));
+                        setTotpMsg('已複製 recovery codes');
+                      }}
+                    >
+                      複製全部
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setRecoveryCodes(null)}
+                    >
+                      我已保存，關閉
+                    </Button>
                   </div>
                 ) : null}
               </CardSection>
             </Card>
+
             <Card>
-              <CardSection title="主機探測" description="讀取主機資訊（allowlist 工具）">
-                {probeItems.length > 0 ? (
-                  <DescriptionList columns={2} items={probeItems} />
+              <CardSection
+                title="工作階段"
+                description="閒置 4 小時或最長 24 小時會失效。可撤銷其他裝置。"
+              >
+                <ActionBar className="u-mb-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void refreshSessions().catch(() => undefined)}
+                  >
+                    重新整理
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => {
+                      void api
+                        .revokeOtherSessions()
+                        .then((r) => {
+                          setTotpMsg(`已撤銷 ${r.revoked} 個其他工作階段`);
+                          return refreshSessions();
+                        })
+                        .catch((e: Error) => setTotpErr(e.message));
+                    }}
+                  >
+                    撤銷其他階段
+                  </Button>
+                </ActionBar>
+                {sessions.length === 0 ? (
+                  <EmptyState title="無工作階段資料" />
                 ) : (
-                  <p className="muted">
-                    尚未執行 — 按右上角「{t('security.runSysInfo')}」
-                  </p>
+                  <ul className="list-plain list-spaced">
+                    {sessions.map((s) => (
+                      <li key={s.id} className="u-justify-between u-flex-wrap">
+                        <span>
+                          <code className="inline">{s.id}…</code>
+                          {s.current ? <Badge tone="ok">目前</Badge> : null}
+                          <div className="muted u-text-sm">
+                            {s.ip ?? '—'} · {s.last_seen_at ?? s.created_at}
+                          </div>
+                          {s.user_agent ? (
+                            <div className="muted u-text-sm u-break-all">
+                              {s.user_agent.slice(0, 80)}
+                            </div>
+                          ) : null}
+                        </span>
+                        {!s.current ? (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => {
+                              void api
+                                .revokeSession(s.id)
+                                .then(() => refreshSessions())
+                                .catch((e: Error) => setTotpErr(e.message));
+                            }}
+                          >
+                            撤銷
+                          </Button>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </CardSection>
             </Card>
+
+            <Card>
+              <CardSection
+                title="Passkey / WebAuthn"
+                description="硬體或平台驗證器作為第二因素（step-up）。需 HTTPS 或 localhost。"
+              >
+                <ActionBar className="u-mb-3">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={totpBusy}
+                    onClick={() => {
+                      setTotpBusy(true);
+                      void (async () => {
+                        try {
+                          const { startRegistration } = await import(
+                            '@simplewebauthn/browser'
+                          );
+                          const begin = await api.requestRaw<{
+                            options: PublicKeyCredentialCreationOptionsJSON;
+                          }>('/api/v1/auth/webauthn/register/begin', {
+                            method: 'POST',
+                            body: '{}',
+                          });
+                          const att = await startRegistration({
+                            optionsJSON: begin.options as never,
+                          });
+                          const fin = await api.requestRaw<{
+                            ok: boolean;
+                            notes?: string[];
+                          }>('/api/v1/auth/webauthn/register/finish', {
+                            method: 'POST',
+                            body: JSON.stringify({ response: att, name: 'Passkey' }),
+                          });
+                          setTotpMsg(
+                            fin.ok
+                              ? 'Passkey 已登記'
+                              : (fin.notes ?? []).join('；') || '失敗',
+                          );
+                        } catch (e) {
+                          setTotpErr(e instanceof Error ? e.message : 'WebAuthn 失敗');
+                        } finally {
+                          setTotpBusy(false);
+                        }
+                      })();
+                    }}
+                  >
+                    登記 Passkey
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={totpBusy}
+                    onClick={() => {
+                      setTotpBusy(true);
+                      void (async () => {
+                        try {
+                          const { startAuthentication } = await import(
+                            '@simplewebauthn/browser'
+                          );
+                          const begin = await api.requestRaw<{
+                            ok: boolean;
+                            options?: PublicKeyCredentialRequestOptionsJSON;
+                            notes?: string[];
+                          }>('/api/v1/auth/webauthn/authenticate/begin', {
+                            method: 'POST',
+                            body: '{}',
+                          });
+                          if (!begin.ok || !begin.options) {
+                            setTotpErr((begin.notes ?? []).join('；') || '無 passkey');
+                            return;
+                          }
+                          const ass = await startAuthentication({
+                            optionsJSON: begin.options as never,
+                          });
+                          const fin = await api.requestRaw<{ ok: boolean; notes?: string[] }>(
+                            '/api/v1/auth/webauthn/authenticate/finish',
+                            {
+                              method: 'POST',
+                              body: JSON.stringify({ response: ass }),
+                            },
+                          );
+                          setTotpMsg(
+                            fin.ok
+                              ? 'Passkey 驗證成功（已 step-up）'
+                              : (fin.notes ?? []).join('；') || '失敗',
+                          );
+                        } catch (e) {
+                          setTotpErr(e instanceof Error ? e.message : '驗證失敗');
+                        } finally {
+                          setTotpBusy(false);
+                        }
+                      })();
+                    }}
+                  >
+                    用 Passkey 驗證 (step-up)
+                  </Button>
+                </ActionBar>
+                <FormHint>
+                  登入仍用密碼+TOTP；Passkey 用於高危操作 step-up。詳見安全文件。
+                </FormHint>
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title="記住的裝置 / 加密備份 / Fail2ban"
+                description="deviceToken 可跳過 TOTP（30 天）；備份含 secret 加密；Fail2ban 片段寫入 dataDir"
+              >
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      void api
+                        .requestRaw<{ items: Array<{ id: string; ip?: string }> }>(
+                          '/api/v1/auth/devices',
+                        )
+                        .then((r) =>
+                          setTotpMsg(`信任裝置：${(r.items ?? []).length} 個`),
+                        )
+                        .catch((e: Error) => setTotpErr(e.message));
+                    }}
+                  >
+                    查看信任裝置
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => {
+                      void api
+                        .requestRaw('/api/v1/auth/devices', { method: 'DELETE' })
+                        .then(() => setTotpMsg('已撤銷全部信任裝置'))
+                        .catch((e: Error) => setTotpErr(e.message));
+                    }}
+                  >
+                    撤銷全部裝置
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setTotpPrompt({ kind: 'backup' })}
+                  >
+                    匯出 2FA 加密備份
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      void api
+                        .requestRaw<{ written?: string[]; notes?: string[] }>(
+                          '/api/v1/security/fail2ban-snippets',
+                        )
+                        .then((r) =>
+                          setTotpMsg(
+                            `Fail2ban 片段：${(r.written ?? []).join(', ')} — ${(r.notes ?? []).join('；')}`,
+                          ),
+                        )
+                        .catch((e: Error) => setTotpErr(e.message));
+                    }}
+                  >
+                    產生 Fail2ban 片段
+                  </Button>
+                </FormActions>
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title="管理員 2FA 政策"
+                description="建議開啟。Strict 會拒絕未開 2FA 的 admin 登入（需已有 2FA 帳號才能關）。"
+              >
+                <label className="ssh-check">
+                  <input
+                    type="checkbox"
+                    checked={requireAdminTotp}
+                    onChange={(e) => setRequireAdminTotp(e.target.checked)}
+                  />
+                  <span>要求 admin 啟用 2FA（登入後提示 mustEnrollTotp）</span>
+                </label>
+                <label className="ssh-check u-mt-2">
+                  <input
+                    type="checkbox"
+                    checked={requireStrict}
+                    onChange={(e) => setRequireStrict(e.target.checked)}
+                  />
+                  <span>Strict：未開 2FA 的 admin 直接拒絕登入</span>
+                </label>
+                <Field
+                  label="確認 TOTP（改政策時）"
+                  htmlFor="pol-totp"
+                  flush
+                  hint="開啟政策需 step-up"
+                >
+                  <input
+                    id="pol-totp"
+                    value={policyTotp}
+                    onChange={(e) => setPolicyTotp(e.target.value)}
+                    maxLength={12}
+                    placeholder="6 位碼"
+                  />
+                </Field>
+                <FormActions>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => {
+                      void api
+                        .setSecuritySettings({
+                          requireAdminTotp,
+                          requireAdminTotpStrict: requireStrict,
+                          totp: policyTotp || undefined,
+                        })
+                        .then(() => {
+                          setTotpMsg('安全政策已更新');
+                          setPolicyTotp('');
+                          return refreshPolicy();
+                        })
+                        .catch((e: Error) => setTotpErr(e.message));
+                    }}
+                  >
+                    儲存政策
+                  </Button>
+                </FormActions>
+              </CardSection>
+            </Card>
+
+            {probeItems.length > 0 ? (
+              <Card>
+                <CardSection title="最近探測">
+                  <DescriptionList
+                    items={probeItems.map((i) => ({ label: i.label, value: i.value }))}
+                  />
+                </CardSection>
+              </Card>
+            ) : null}
           </div>
         ) : null}
 
         {tab === 'keys' ? (
           <div className="tab-panel">
-            <Card>
-              <CardSection
-                title="API 存取金鑰"
-                description="建立後完整 token 只顯示一次。請求時：Authorization: Bearer ysk_…"
-              >
-                {newKeyToken ? (
-                  <Alert variant="ok">
-                    新金鑰（僅顯示一次）：<code className="inline">{newKeyToken}</code>
-                    <FormHint>
-                      curl 範例：Authorization: Bearer {newKeyToken.slice(0, 12)}…
-                    </FormHint>
-                  </Alert>
-                ) : null}
-                <FormHint>
-                  API key 與登入 session 同等權限（所屬用戶角色）。請勿提交到 git 或公開日誌。
-                </FormHint>
-                <div className="btn-row u-mb-3">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      setNewKeyName('');
-                      setCreateKeyOpen(true);
-                    }}
-                  >
-                    + 建立金鑰
-                  </Button>
-                </div>
-                {apiKeys.length > 0 ? (
-                  <ul className="list-plain list-spaced">
-                    {apiKeys.map((k) => (
-                      <li key={k.id} className="btn-row u-justify-between">
-                        <span>
-                          <strong>{k.name}</strong> · <code className="inline">{k.prefix}…</code>
-                        </span>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => {
-                            void api
-                              .deleteApiKey(k.id)
-                              .then(() => refreshKeys())
-                              .catch((e: Error) => setTotpErr(e.message));
-                          }}
-                        >
-                          刪除
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <EmptyState
-                    title="尚未有 API key"
-                    description="按「建立金鑰」開啟對話框"
-                    action={
-                      <Button
-                        variant="primary"
-                        size="md"
-                        onClick={() => {
-                          setNewKeyName('');
-                          setCreateKeyOpen(true);
-                        }}
-                      >
-                        + 建立金鑰
-                      </Button>
-                    }
-                  />
-                )}
-              </CardSection>
-            </Card>
-          </div>
-        ) : null}
-
-        {tab === 'sftp' ? (
-          <div className="tab-panel">
-            <Card>
-              <CardSection
-                title="SFTP 說明"
-                description="跟專案 Linux 用戶隔離，唔係共用一個全局 SFTP 帳戶"
-              >
-                <ul className="list-plain list-spaced u-mb-0">
-                  <li>
-                    每個專案有自己嘅 <code className="inline">ysks_*</code> 用戶與{' '}
-                    <code className="inline">/home/ysk-server-{'{id}'}</code>
-                  </li>
-                  <li>SSH 公鑰寫入該專案 home 的 <code className="inline">.ssh/authorized_keys</code></li>
-                  <li>
-                    系統 sshd 需安裝 Match 片段（下方）先允許專案用戶用{' '}
-                    <code className="inline">internal-sftp</code>
-                  </li>
-                  <li>
-                    寫入 ≠ 線上生效：安裝片段需 <strong>root + YSK_EXECUTE</strong>
-                  </li>
-                </ul>
-              </CardSection>
-            </Card>
-
-            <Card>
-              <CardSection
-                title="SSH 公鑰（綁專案）"
-                description="選擇專案後，金鑰會寫入該專案 home/.ssh"
-              >
-                <div className="btn-row u-mb-3">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      setSftpPubKey('');
-                      setSftpComment('');
-                      setCreateSftpOpen(true);
-                    }}
-                  >
-                    + 新增公鑰
-                  </Button>
+            <DataTable
+              title="API 存取金鑰"
+              description="給腳本／CI 用。完整 token 只在建立時顯示一次。"
+              toolbar={
+                <ActionBar>
                   <Button
                     variant="ghost"
                     size="sm"
-                    loading={sftpBusy}
-                    onClick={() => {
-                      setSftpBusy(true);
-                      void refreshSftp()
-                        .catch((e: Error) => setSftpErr(e.message))
-                        .finally(() => setSftpBusy(false));
-                    }}
+                    onClick={() => void refreshKeys().catch(() => undefined)}
                   >
                     重新整理
                   </Button>
-                </div>
-                {sftpProjects.length === 0 ? (
-                  <EmptyState
-                    title="尚未有專案"
-                    description="請先建立專案並（建議）建立系統用戶，再綁 SFTP 金鑰"
-                  />
-                ) : null}
-              </CardSection>
-            </Card>
-
-            <Card>
-              <CardSection
-                title={`已登記金鑰（${sftpKeys.length}）`}
-                description="面板管理記錄；實際登入仍取決於 sshd 與檔案權限"
-              >
-                {sftpKeys.length === 0 ? (
-                  <EmptyState
-                    title="尚未有 SFTP 公鑰"
-                    description="按「新增公鑰」開啟對話框"
-                    action={
-                      <Button
-                        variant="primary"
-                        size="md"
-                        onClick={() => {
-                          setSftpPubKey('');
-                          setSftpComment('');
-                          setCreateSftpOpen(true);
-                        }}
-                      >
-                        + 新增公鑰
-                      </Button>
-                    }
-                  />
-                ) : (
-                  <ul className="list-plain list-spaced u-mb-0">
-                    {sftpKeys.map((k) => (
-                      <li key={k.id} className="btn-row u-justify-between u-flex-wrap">
-                        <span>
-                          <strong>{k.username}</strong>
-                          {k.comment ? (
-                            <span className="muted"> · {k.comment}</span>
-                          ) : null}
-                          {k.projectId ? (
-                            <Badge tone="info">專案</Badge>
-                          ) : (
-                            <Badge tone="neutral">無專案</Badge>
-                          )}
-                          <div className="muted u-text-sm u-break-all">
-                            {k.publicKey.slice(0, 72)}
-                            {k.publicKey.length > 72 ? '…' : ''}
-                          </div>
-                          {k.homeDir ? (
-                            <div className="muted u-text-sm">{k.homeDir}/.ssh</div>
-                          ) : null}
-                        </span>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          loading={sftpBusy}
-                          onClick={() => {
-                            setSftpBusy(true);
-                            void api
-                              .requestRaw(`/api/v1/sftp/keys/${k.id}`, { method: 'DELETE' })
-                              .then(() => {
-                                setSftpMsg('已刪除金鑰');
-                                return refreshSftp();
-                              })
-                              .catch((e: Error) => setSftpErr(e.message))
-                              .finally(() => setSftpBusy(false));
-                          }}
-                        >
-                          刪除
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardSection>
-            </Card>
-
-            <Card>
-              <CardSection
-                title="sshd 系統片段"
-                description="Match ysks_* / ysk_* → internal-sftp；寫入 /etc/ssh/sshd_config.d"
-              >
-                <FormHint>
-                  預覽在下方。安裝會複製到系統並嘗試 reload sshd（需 root + YSK_EXECUTE）。未安裝時專案用戶可能無法 SFTP。
-                </FormHint>
-                {sshdNotes.length > 0 ? (
-                  <ul className="list-plain u-mb-3">
-                    {sshdNotes.map((n) => (
-                      <li key={n} className="muted u-text-sm">
-                        {n}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                <Field label="片段預覽" htmlFor="sshd-snip" flush fullWidth>
-                  <textarea
-                    id="sshd-snip"
-                    rows={12}
-                    readOnly
-                    value={sshdSnippet || '（載入中或失敗 — 按重新載入片段）'}
-                    spellCheck={false}
-                    className="u-font-mono"
-                  />
-                </Field>
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={sftpBusy}
-                    onClick={() => {
-                      setSftpBusy(true);
-                      setSftpErr(null);
-                      void api
-                        .requestRaw<{ snippet: string; notes: string[] }>(
-                          '/api/v1/sftp/sshd-snippet',
-                        )
-                        .then((r) => {
-                          setSshdSnippet(r.snippet ?? '');
-                          setSshdNotes(r.notes ?? []);
-                          void navigator.clipboard?.writeText(r.snippet ?? '');
-                          setSftpMsg('已重新載入並複製片段到剪貼簿');
-                        })
-                        .catch((e: Error) => setSftpErr(e.message))
-                        .finally(() => setSftpBusy(false));
-                    }}
-                  >
-                    重新載入並複製
-                  </Button>
                   <Button
                     variant="primary"
-                    size="md"
-                    loading={sftpBusy}
+                    size="sm"
+                    onClick={() => setCreateKeyOpen(true)}
+                  >
+                    + 建立金鑰
+                  </Button>
+                </ActionBar>
+              }
+              columns={[
+                {
+                  key: 'name',
+                  header: '名稱',
+                  render: (k) => <strong>{k.name}</strong>,
+                },
+                {
+                  key: 'prefix',
+                  header: '前綴',
+                  render: (k) => <span className="muted">{k.prefix}…</span>,
+                },
+                {
+                  key: 'created',
+                  header: '建立',
+                  className: 'muted u-text-sm',
+                  render: (k) => k.created_at,
+                },
+              ]}
+              rows={apiKeys}
+              rowKey={(k) => k.id}
+              empty={
+                <EmptyState
+                  title="尚未有 API 金鑰"
+                  description="用列表右上角建立；建立後可用 Bearer token 呼叫 API"
+                />
+              }
+              rowActions={(k) => (
+                <ActionBar align="end">
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={() => {
-                      if (
-                        !window.confirm(
-                          '將片段寫入 /etc/ssh/sshd_config.d 並 reload sshd？需 root + YSK_EXECUTE',
-                        )
-                      ) {
-                        return;
-                      }
-                      setSftpBusy(true);
-                      setSftpErr(null);
                       void api
-                        .requestRaw<{ ok: boolean; notes: string[] }>(
-                          '/api/v1/sftp/sshd-snippet/apply',
-                          {
-                            method: 'POST',
-                            body: JSON.stringify({ installSystem: true, chroot: false }),
-                          },
-                        )
-                        .then((r) => {
-                          setSftpMsg(
-                            (r.notes ?? []).join('；') || (r.ok ? '已套用 sshd 片段' : '未完成'),
-                          );
-                        })
-                        .catch((e: Error) => setSftpErr(e.message))
-                        .finally(() => setSftpBusy(false));
+                        .deleteApiKey(k.id)
+                        .then(() => refreshKeys())
+                        .catch((e: Error) => setTotpErr(e.message));
                     }}
                   >
-                    安裝到系統並 reload
+                    刪除
                   </Button>
-                </FormActions>
-              </CardSection>
-            </Card>
+                </ActionBar>
+              )}
+            />
           </div>
+        ) : null}
+
+        {tab === 'ssh' ? (
+          <SshWorkspace onCounts={(c) => setSshCounts(c)} />
         ) : null}
 
         {tab === 'approvals' ? (
@@ -708,41 +765,44 @@ export function SecurityPage() {
 
         {tab === 'allowlist' ? (
           <div className="tab-panel">
-            <Card>
-              <CardSection title={`Allowlist (${tools.length})`}>
-                <div className="table-wrap">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>Tool</th>
-                        <th>Allowed</th>
-                        <th>Risk</th>
-                        <th>Approval</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tools.map((tool) => (
-                        <tr key={String(tool.tool)}>
-                          <td>
-                            <code className="inline">{String(tool.tool)}</code>
-                          </td>
-                          <td>
-                            <Badge tone={tool.allowed ? 'ok' : 'danger'}>
-                              {String(tool.allowed)}
-                            </Badge>
-                          </td>
-                          <td>{String(tool.risk)}</td>
-                          <td>{String(tool.requiresApproval)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardSection>
-            </Card>
+            <DataTable
+              title={`Allowlist (${tools.length})`}
+              columns={[
+                {
+                  key: 'tool',
+                  header: 'Tool',
+                  render: (tool) => (
+                    <code className="inline">{String(tool.tool)}</code>
+                  ),
+                },
+                {
+                  key: 'allowed',
+                  header: 'Allowed',
+                  nowrap: true,
+                  render: (tool) => (
+                    <Badge tone={tool.allowed ? 'ok' : 'danger'}>
+                      {String(tool.allowed)}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: 'risk',
+                  header: 'Risk',
+                  render: (tool) => String(tool.risk),
+                },
+                {
+                  key: 'approval',
+                  header: 'Approval',
+                  render: (tool) => String(tool.requiresApproval),
+                },
+              ]}
+              rows={tools}
+              rowKey={(tool) => String(tool.tool)}
+              empty={<p className="muted">尚無 allowlist 工具</p>}
+            />
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <Modal
         open={createKeyOpen}
@@ -751,11 +811,7 @@ export function SecurityPage() {
         description="建立後完整 token 只顯示一次"
         footer={
           <>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => setCreateKeyOpen(false)}
-            >
+            <Button variant="secondary" size="md" onClick={() => setCreateKeyOpen(false)}>
               取消
             </Button>
             <Button
@@ -763,9 +819,21 @@ export function SecurityPage() {
               size="md"
               loading={totpBusy}
               onClick={() => {
+                if (totpStatus?.enabled) {
+                  setTotpPrompt({ kind: 'apiKey' });
+                  return;
+                }
                 setTotpBusy(true);
+                const scopeEl = document.getElementById('ak-scope') as HTMLSelectElement | null;
+                const scope = scopeEl?.value === 'read' ? 'read' : 'full';
                 void api
-                  .createApiKey(newKeyName)
+                  .requestRaw<{
+                    key: { id: string; name: string; prefix: string; created_at: string };
+                    token: string;
+                  }>('/api/v1/auth/api-keys', {
+                    method: 'POST',
+                    body: JSON.stringify({ name: newKeyName, scope }),
+                  })
                   .then((r) => {
                     setNewKeyToken(r.token);
                     setTotpMsg('API 金鑰已建立');
@@ -782,13 +850,7 @@ export function SecurityPage() {
         }
       >
         <FormLayout columns={1}>
-          <Field
-            label="名稱"
-            htmlFor="ak-name"
-            flush
-            required
-            hint="方便辨識，例如 CI／備份腳本"
-          >
+          <Field label="名稱" htmlFor="ak-name" flush required hint="方便辨識，例如 CI／備份腳本">
             <input
               id="ak-name"
               value={newKeyName}
@@ -797,112 +859,93 @@ export function SecurityPage() {
               spellCheck={false}
             />
           </Field>
+          <Field label="範圍" htmlFor="ak-scope" flush hint="read = 只讀（no full mutate）">
+            <select id="ak-scope" defaultValue="full">
+              <option value="full">full（完整 API）</option>
+              <option value="read">read（只讀）</option>
+            </select>
+          </Field>
+          <FormHint>若已開 2FA，建立金鑰會要求再輸入驗證碼（step-up）。</FormHint>
         </FormLayout>
       </Modal>
 
-      <Modal
-        open={createSftpOpen}
-        onClose={() => setCreateSftpOpen(false)}
-        title="新增 SSH 公鑰"
-        description="選擇專案後，金鑰會寫入該專案 home/.ssh"
-        size="lg"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => setCreateSftpOpen(false)}
-            >
-              取消
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={sftpBusy}
-              disabled={!sftpProjectId || !sftpPubKey.trim()}
-              onClick={() => {
-                setSftpBusy(true);
-                setSftpErr(null);
-                void api
-                  .requestRaw<{ ok: boolean; notes?: string[] }>('/api/v1/sftp/keys', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                      projectId: sftpProjectId,
-                      publicKey: sftpPubKey.trim(),
-                      comment: sftpComment.trim() || undefined,
-                    }),
-                  })
-                  .then((r) => {
-                    setSftpMsg(
-                      (r.notes ?? []).join('；') || (r.ok ? '已加入公鑰' : '未完成'),
-                    );
-                    setSftpPubKey('');
-                    setCreateSftpOpen(false);
-                    return refreshSftp();
-                  })
-                  .catch((e: Error) => setSftpErr(e.message))
-                  .finally(() => setSftpBusy(false));
-              }}
-            >
-              加入公鑰
-            </Button>
-          </>
+      <PromptDialog
+        open={totpPrompt != null}
+        onClose={() => !totpBusy && setTotpPrompt(null)}
+        title={
+          totpPrompt?.kind === 'backup'
+            ? '匯出 2FA 備份'
+            : '建立 API 金鑰 · step-up'
         }
-      >
-        <FormLayout columns={1}>
-          <Field
-            label="專案"
-            htmlFor="sftp-proj"
-            flush
-            required
-            hint="綁定 linux 用戶與 home"
-          >
-            <select
-              id="sftp-proj"
-              value={sftpProjectId}
-              onChange={(e) => setSftpProjectId(e.target.value)}
-            >
-              <option value="">— 選擇專案 —</option>
-              {sftpProjects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} · {p.linuxUser}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field
-            label="SSH 公鑰"
-            htmlFor="sftp-pub"
-            flush
-            required
-            hint="一整行 ssh-ed25519 / ssh-rsa …"
-          >
-            <textarea
-              id="sftp-pub"
-              rows={3}
-              value={sftpPubKey}
-              onChange={(e) => setSftpPubKey(e.target.value)}
-              placeholder="ssh-ed25519 AAAA… comment"
-              spellCheck={false}
-            />
-          </Field>
-          <Field label="備註" htmlFor="sftp-cmt" flush>
-            <input
-              id="sftp-cmt"
-              value={sftpComment}
-              onChange={(e) => setSftpComment(e.target.value)}
-              placeholder="筆電 / CI"
-              spellCheck={false}
-            />
-          </Field>
-        </FormLayout>
-        {sftpProjects.length === 0 ? (
-          <EmptyState
-            title="尚未有專案"
-            description="請先建立專案並（建議）建立系統用戶，再綁 SFTP 金鑰"
-          />
-        ) : null}
-      </Modal>
+        description="請輸入目前 TOTP 驗證碼"
+        label="TOTP"
+        secret
+        placeholder="6 位數字"
+        confirmLabel={totpPrompt?.kind === 'backup' ? '匯出' : '建立'}
+        busy={totpBusy}
+        onSubmit={async (totp) => {
+          if (totpPrompt?.kind === 'backup') {
+            setTotpBusy(true);
+            try {
+              const r = await api.requestRaw<{
+                ok: boolean;
+                blob?: string;
+                notes?: string[];
+              }>('/api/v1/auth/totp/backup', {
+                method: 'POST',
+                body: JSON.stringify({ totp }),
+              });
+              if (r.blob) {
+                void navigator.clipboard?.writeText(r.blob);
+                setTotpMsg('加密備份已複製到剪貼簿（離線保存）');
+              } else {
+                setTotpErr((r.notes ?? []).join('；') || '失敗');
+                return false;
+              }
+            } catch (e) {
+              setTotpErr(e instanceof Error ? e.message : '失敗');
+              return false;
+            } finally {
+              setTotpBusy(false);
+            }
+            setTotpPrompt(null);
+            return true;
+          }
+          if (totpPrompt?.kind === 'apiKey') {
+            setTotpBusy(true);
+            const scopeEl = document.getElementById(
+              'ak-scope',
+            ) as HTMLSelectElement | null;
+            const scope = scopeEl?.value === 'read' ? 'read' : 'full';
+            try {
+              const r = await api.requestRaw<{
+                key: {
+                  id: string;
+                  name: string;
+                  prefix: string;
+                  created_at: string;
+                };
+                token: string;
+              }>('/api/v1/auth/api-keys', {
+                method: 'POST',
+                body: JSON.stringify({ name: newKeyName, totp, scope }),
+              });
+              setNewKeyToken(r.token);
+              setTotpMsg('API 金鑰已建立');
+              setCreateKeyOpen(false);
+              setTotpPrompt(null);
+              await refreshKeys();
+            } catch (e) {
+              setTotpErr(e instanceof Error ? e.message : '失敗');
+              return false;
+            } finally {
+              setTotpBusy(false);
+            }
+            return true;
+          }
+          return true;
+        }}
+      />
     </FeaturePageLayout>
   );
 }

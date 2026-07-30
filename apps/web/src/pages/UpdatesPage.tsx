@@ -1,5 +1,5 @@
 /**
- * Smart updates — inventory + self-update (professional ops console).
+ * Smart updates — tabbed: packages · panel self · schedule · policy.
  */
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -7,16 +7,24 @@ import { useTranslation } from 'react-i18next';
 import { useUpdates } from '../features/updates';
 import type { AdviceRow } from '../features/updates';
 import {
+  ActionBar,
   Alert,
   Badge,
   Button,
+  ConfirmDialog,
+  DataTable,
   EmptyState,
   FeaturePageLayout,
+  InfoCard,
+  InfoCardGrid,
   LoadingBlock,
+  PageTabs,
 } from '../shared/components/ui';
+import { usePageTab } from '../shared/hooks/usePageTab';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 
-type RiskFilter = 'all' | 'high' | 'medium' | 'low' | 'approval';
+const UPD_TABS = ['packages', 'panel', 'schedule', 'policy'] as const;
+type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';
 
 function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
   if (risk === 'critical' || risk === 'high') return 'danger';
@@ -72,8 +80,10 @@ export function UpdatesPage() {
     applyPackage,
   } = useUpdates();
 
+  const [tab, setTab] = usePageTab(UPD_TABS, 'packages');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
   const [q, setQ] = useState('');
+  const [highRiskApply, setHighRiskApply] = useState<AdviceRow | null>(null);
 
   const highRisk = inventory.filter(
     (i) => i.risk === 'critical' || i.risk === 'high',
@@ -85,13 +95,22 @@ export function UpdatesPage() {
   const selfVersion = String(selfUpdate?.currentVersion ?? '—');
   const selfLatest = String(selfUpdate?.latestVersion ?? '—');
   const selfChannel = String(selfUpdate?.channel ?? '—');
-  const selfOk = selfUpdate?.ok !== false;
+  const selfChecked = selfUpdate?.checked !== false;
+  const selfOk = selfUpdate?.ok !== false && selfChecked;
 
   const heroTone = highRisk > 0 ? 'danger' : selfAvailable ? 'warn' : 'ok';
 
+  const upgradableCount = inventory.filter(
+    (i) => i.candidateVersion && i.candidateVersion !== i.currentVersion,
+  ).length;
+
   const filtered = useMemo(() => {
     let list = inventory;
-    if (riskFilter === 'high') {
+    if (riskFilter === 'upgradable') {
+      list = list.filter(
+        (i) => i.candidateVersion && i.candidateVersion !== i.currentVersion,
+      );
+    } else if (riskFilter === 'high') {
       list = list.filter((i) => i.risk === 'high' || i.risk === 'critical');
     } else if (riskFilter === 'medium') {
       list = list.filter((i) => i.risk === 'medium');
@@ -117,34 +136,74 @@ export function UpdatesPage() {
     <FeaturePageLayout
       title={t('nav.updates', { defaultValue: '更新' })}
       showCapability={false}
+      status={{
+        pill: {
+          label:
+            highRisk > 0
+              ? `${highRisk} 項高風險`
+              : selfAvailable
+                ? '面板有更新'
+                : inventory.length
+                  ? '風險可控'
+                  : '待掃描',
+          tone: heroTone,
+        },
+        items: [
+          { label: '套件', value: inventory.length },
+          {
+            label: '高風險',
+            value: highRisk,
+            tone: highRisk > 0 ? 'danger' : 'ok',
+          },
+          {
+            label: '需審批',
+            value: needApproval,
+            tone: needApproval > 0 ? 'warn' : 'neutral',
+          },
+          {
+            label: '有 CVE',
+            value: withCve,
+            tone: withCve > 0 ? 'warn' : 'neutral',
+          },
+          {
+            label: '面板',
+            value: selfAvailable ? `${selfVersion}→${selfLatest}` : selfVersion,
+            tone: selfAvailable ? 'warn' : 'ok',
+          },
+          {
+            label: '排程',
+            value: jobs.length,
+          },
+        ],
+      }}
       actions={
-        <>
+        <ActionBar align="end">
           <Button
-            variant="secondary"
-            size="md"
+            variant="ghost"
+            size="sm"
             loading={busy}
             onClick={() => void load(false)}
           >
             重新載入
           </Button>
           <Button
-            variant="primary"
-            size="md"
-            loading={busy}
-            onClick={() => void load(true, false)}
-          >
-            掃描套件
-          </Button>
-          <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => void load(true, true)}
             title="對前 12 個建議套件查 OSV（需外網）"
           >
             掃描 + OSV
           </Button>
-        </>
+          <Button
+            variant="primary"
+            size="sm"
+            loading={busy}
+            onClick={() => void load(true, false)}
+          >
+            掃描套件
+          </Button>
+        </ActionBar>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
@@ -157,217 +216,349 @@ export function UpdatesPage() {
         </Alert>
       ) : null}
 
-      <div className="upd">
-        {/* Hero */}
-        <section className={`upd-hero upd-hero--${heroTone}`} aria-label="更新總覽">
-          <div className="upd-hero__main">
-            <div className="upd-hero__copy">
-              <div className="upd-hero__eyebrow">Smart updates</div>
-              <h2 className="upd-hero__title">
-                <span className={`upd-hero__pill upd-hero__pill--${heroTone}`}>
-                  {highRisk > 0
-                    ? `${highRisk} 項高風險`
-                    : selfAvailable
-                      ? '面板有更新'
-                      : inventory.length
-                        ? '風險可控'
-                        : '待掃描'}
-                </span>
-                {inventory.length
-                  ? `清點 ${inventory.length} 套件`
-                  : '尚未有套件清點'}
-              </h2>
-              <p className="upd-hero__hint">
-                由管理面板掃描主機套件、標風險／CVE、審批後套用。高風險需確認；無
-                EXECUTE／root 會 blocked。OSV 需外網、只查前 12 項。
-              </p>
-              <div className="upd-hero__meta">
-                <span>
-                  清點 <strong>{relTime(lastAt)}</strong>
-                </span>
-                <span className="upd-hero__dot" />
-                <span>
-                  面板 <strong>{selfVersion}</strong>
-                  {selfAvailable ? ` → ${selfLatest}` : ''}
-                </span>
-                <span className="upd-hero__dot" />
-                <span>
-                  排程 <strong>{jobs.length}</strong>
-                </span>
-              </div>
-              <div className="upd-hero__cta">
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={() => void load(true, false)}
-                >
-                  掃描套件
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={() => void load(true, true)}
-                >
-                  掃描 + OSV
-                </Button>
-                {selfAvailable ? (
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    onClick={() => void applySelf()}
-                  >
-                    套用面板更新
-                  </Button>
-                ) : null}
-                <Link to="/system/readiness" className="btn btn--ghost btn--md">
-                  就緒探測
-                </Link>
-              </div>
-            </div>
-
-            <div className="upd-hero__stats" aria-label="指標">
-              <div className="upd-stat">
-                <span className="upd-stat__lab">套件</span>
-                <span className="upd-stat__val">{inventory.length}</span>
-              </div>
-              <div className="upd-stat">
-                <span className="upd-stat__lab">高風險</span>
-                <span className="upd-stat__val">
-                  <Badge tone={highRisk > 0 ? 'danger' : 'ok'}>{highRisk}</Badge>
-                </span>
-              </div>
-              <div className="upd-stat">
-                <span className="upd-stat__lab">需審批</span>
-                <span className="upd-stat__val">
-                  <Badge tone={needApproval > 0 ? 'warn' : 'neutral'}>
-                    {needApproval}
-                  </Badge>
-                </span>
-              </div>
-              <div className="upd-stat">
-                <span className="upd-stat__lab">有 CVE</span>
-                <span className="upd-stat__val">
-                  <Badge tone={withCve > 0 ? 'warn' : 'neutral'}>{withCve}</Badge>
-                </span>
-              </div>
-            </div>
+      <PageTabs
+        tabs={[
+          {
+            id: 'packages',
+            label: '套件清點',
+            badge: inventory.length || undefined,
+          },
+          {
+            id: 'panel',
+            label: '面板自身',
+            badge: selfAvailable ? '更新' : undefined,
+          },
+          {
+            id: 'schedule',
+            label: '排程',
+            badge: jobs.length || undefined,
+          },
+          { id: 'policy', label: '政策' },
+        ]}
+        active={tab}
+        onChange={setTab}
+        variant="scroll"
+      >
+        {tab === 'packages' ? (
+          <div className="tab-panel stack">
+            {busy && inventory.length === 0 ? (
+              <LoadingBlock label="掃描中…" />
+            ) : (
+              <DataTable
+                title="套件清點"
+                description={`顯示 ${filtered.length} / ${inventory.length} · 清點 ${relTime(lastAt)}`}
+                filters={
+                  <div className="upd-toolbar">
+                    <div className="upd-chips" role="tablist" aria-label="風險篩選">
+                      {(
+                        [
+                          ['all', '全部', inventory.length],
+                          ['upgradable', '可升級', upgradableCount],
+                          ['high', '高風險', highRisk],
+                          [
+                            'medium',
+                            '中',
+                            inventory.filter((i) => i.risk === 'medium').length,
+                          ],
+                          [
+                            'low',
+                            '低／未標',
+                            inventory.filter((i) => !i.risk || i.risk === 'low')
+                              .length,
+                          ],
+                          ['approval', '需審批', needApproval],
+                        ] as const
+                      ).map(([id, label, n]) => (
+                        <button
+                          key={id}
+                          type="button"
+                          role="tab"
+                          aria-selected={riskFilter === id}
+                          className={`upd-chip${riskFilter === id ? ' upd-chip--active' : ''}${
+                            id === 'high'
+                              ? ' upd-chip--danger'
+                              : id === 'approval' || id === 'medium'
+                                ? ' upd-chip--warn'
+                                : id === 'low'
+                                  ? ' upd-chip--ok'
+                                  : ''
+                          }`}
+                          onClick={() => setRiskFilter(id)}
+                        >
+                          {label}
+                          <span className="upd-chip__n">{n}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <label className="upd-field">
+                      <span className="upd-field__lab">搜尋</span>
+                      <input
+                        id="upd-q"
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                        placeholder="套件名 / 建議 / CVE…"
+                        autoComplete="off"
+                        aria-label="搜尋套件"
+                      />
+                    </label>
+                  </div>
+                }
+                columns={[
+                  {
+                    key: 'pkg',
+                    header: '套件',
+                    render: (i) => (
+                      <div className="upd-pkg-cell">
+                        <div className="upd-pkg-cell__title">
+                          <strong className="upd-pkg-cell__name">
+                            {i.packageName}
+                          </strong>
+                          <Badge tone={riskTone(i.risk)}>
+                            {riskLabel(i.risk)}
+                          </Badge>
+                          {i.requiresApproval ? (
+                            <Badge tone="warn">需審批</Badge>
+                          ) : null}
+                        </div>
+                        {i.cves?.length ? (
+                          <div className="upd-pkg-cell__cves">
+                            {i.cves.slice(0, 4).map((c) => (
+                              <code key={c} className="upd-pkg__cve">
+                                {c}
+                              </code>
+                            ))}
+                            {i.cves.length > 4 ? (
+                              <span className="muted u-text-sm">
+                                +{i.cves.length - 4}
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'ver',
+                    header: '版本（已裝 → apt Candidate）',
+                    render: (i) => {
+                      const cur = i.currentVersion ?? '—';
+                      const cand = i.candidateVersion ?? cur;
+                      const hasUpgrade = Boolean(cand && cand !== cur);
+                      return (
+                        <div className="upd-pkg-cell__ver">
+                          <code title="已安裝">{cur}</code>
+                          {hasUpgrade ? (
+                            <>
+                              <span className="upd-pkg__arrow">→</span>
+                              <code className="upd-pkg__cand" title="apt Candidate">
+                                {cand}
+                              </code>
+                            </>
+                          ) : (
+                            <span className="muted u-text-sm">（無可用升級）</span>
+                          )}
+                        </div>
+                      );
+                    },
+                  },
+                  {
+                    key: 'advice',
+                    header: '建議',
+                    render: (i) => {
+                      const advice =
+                        humanizeOperatorNote(i.advice ?? i.summary ?? '') ??
+                        i.advice ??
+                        i.summary ??
+                        null;
+                      return advice ? (
+                        <span className="upd-pkg-cell__advice">{advice}</span>
+                      ) : (
+                        <span className="muted">—</span>
+                      );
+                    },
+                  },
+                ]}
+                rows={filtered}
+                rowKey={(i) => `${i.packageName}-${i.currentVersion}`}
+                rowActions={(i) => {
+                  const hasUpgrade =
+                    Boolean(i.candidateVersion) &&
+                    i.candidateVersion !== i.currentVersion;
+                  return (
+                    <ActionBar align="end">
+                      <Button
+                        variant={
+                          !hasUpgrade
+                            ? 'ghost'
+                            : isHighRisk(i)
+                              ? 'danger'
+                              : 'primary'
+                        }
+                        size="sm"
+                        loading={busy}
+                        disabled={!hasUpgrade}
+                        title={
+                          hasUpgrade
+                            ? `升級至 ${i.candidateVersion}`
+                            : 'apt Candidate 與已裝版本相同'
+                        }
+                        onClick={() => {
+                          if (!hasUpgrade) return;
+                          const high = isHighRisk(i);
+                          if (high) {
+                            setHighRiskApply(i);
+                            return;
+                          }
+                          void applyPackage(i, false);
+                        }}
+                      >
+                        {hasUpgrade ? '套用' : '無需升級'}
+                      </Button>
+                    </ActionBar>
+                  );
+                }}
+                empty={
+                  inventory.length === 0 ? (
+                    <EmptyState
+                      title="尚無套件資料"
+                      description="按頁面右上「掃描套件」由管理面板掃描主機"
+                    />
+                  ) : (
+                    <EmptyState
+                      title="沒有符合篩選的套件"
+                      description="試下改風險篩選或清搜尋"
+                      action={
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            setRiskFilter('all');
+                            setQ('');
+                          }}
+                        >
+                          重設篩選
+                        </Button>
+                      }
+                    />
+                  )
+                }
+              />
+            )}
           </div>
+        ) : null}
 
-          <ul className="upd-rail" aria-label="能力摘要">
-            <li>
-              <span className="upd-rail__k">面板版本</span>
-              <code className="upd-rail__code">{selfVersion}</code>
-            </li>
-            <li>
-              <span className="upd-rail__k">通道</span>
-              <span className="upd-rail__text">{selfChannel}</span>
-            </li>
-            <li>
-              <span className="upd-rail__k">面板更新</span>
-              <Badge tone={selfAvailable ? 'warn' : 'ok'}>
-                {selfAvailable ? '有' : '最新'}
-              </Badge>
-            </li>
-            <li>
-              <span className="upd-rail__k">自身檢查</span>
-              <Badge tone={selfOk ? 'ok' : 'warn'}>{selfOk ? 'ok' : '異常'}</Badge>
-            </li>
-          </ul>
-        </section>
-
-        <div className="upd-grid">
-          {/* Self update */}
-          <section className="upd-panel upd-panel--self">
-            <header className="upd-panel__head">
-              <div>
-                <h3 className="upd-panel__title">面板自身更新</h3>
-                <p className="upd-panel__sub">
-                  ysk-server 控制面版本 · 非系統 apt 全量升級
-                </p>
-              </div>
-              <Badge tone={selfAvailable ? 'warn' : 'ok'}>
-                {selfAvailable ? '可更新' : '已是最新'}
-              </Badge>
-            </header>
-
+        {tab === 'panel' ? (
+          <div className="tab-panel">
             {!selfUpdate ? (
               <LoadingBlock label="載入自身更新狀態…" />
             ) : (
-              <>
-                <dl className="upd-dl">
-                  <div>
-                    <dt>目前</dt>
-                    <dd>
-                      <code>{selfVersion}</code>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>最新</dt>
-                    <dd>
-                      <code>{selfLatest}</code>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>通道</dt>
-                    <dd>{selfChannel}</dd>
-                  </div>
-                  {selfUpdate.packageName != null ? (
-                    <div>
-                      <dt>套件</dt>
-                      <dd>
-                        <code>{String(selfUpdate.packageName)}</code>
-                      </dd>
-                    </div>
-                  ) : null}
-                  {selfUpdate.applied != null ? (
-                    <div>
-                      <dt>上次套用</dt>
-                      <dd>{String(selfUpdate.applied)}</dd>
-                    </div>
-                  ) : null}
-                </dl>
-                <div className="upd-panel__actions">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    loading={busy}
-                    onClick={() => void applySelf()}
-                  >
-                    套用面板更新
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="md"
-                    loading={busy}
-                    onClick={() => void load(false)}
-                  >
-                    重新檢查
-                  </Button>
-                </div>
-                <p className="upd-footnote">
-                  控制面 self-update；失敗見 notes。
-                </p>
-              </>
+              <InfoCardGrid cols={2}>
+                <InfoCard
+                  title="面板自身更新"
+                  badge={{
+                    label: !selfOk
+                      ? '檢查失敗'
+                      : selfAvailable
+                        ? '可更新'
+                        : '已是最新',
+                    tone: !selfOk ? 'danger' : selfAvailable ? 'warn' : 'ok',
+                  }}
+                  facts={[
+                    { label: '目前', value: selfVersion, mono: true },
+                    { label: '最新', value: selfLatest, mono: true },
+                    { label: '通道', value: selfChannel },
+                    ...(selfUpdate.packageName != null
+                      ? [
+                          {
+                            label: '套件',
+                            value: String(selfUpdate.packageName),
+                            mono: true as const,
+                          },
+                        ]
+                      : []),
+                    ...(Array.isArray(selfUpdate.notes) &&
+                    (selfUpdate.notes as string[]).length
+                      ? [
+                          {
+                            label: '說明',
+                            value: humanizeOperatorNote(
+                              String((selfUpdate.notes as string[])[0]),
+                            ),
+                          },
+                        ]
+                      : []),
+                    {
+                      label: '狀態',
+                      value: !selfOk
+                        ? '未確認遠端'
+                        : selfAvailable
+                          ? '有更新'
+                          : '已是最新',
+                    },
+                  ]}
+                  actions={
+                    <ActionBar>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={busy}
+                        disabled={!selfAvailable}
+                        onClick={() => void applySelf()}
+                      >
+                        套用面板更新
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => void load(false)}
+                      >
+                        重新檢查
+                      </Button>
+                    </ActionBar>
+                  }
+                />
+                <InfoCard
+                  title="說明"
+                  facts={[
+                    {
+                      label: '範圍',
+                      value: 'ysk-server 控制面版本 · 非系統 apt 全量升級',
+                    },
+                    {
+                      label: '頻道',
+                      value:
+                        'npm → GitHub release → package.json；套用：npm install -g 或 git（YSK_SOURCE_ROOT）',
+                    },
+                    {
+                      label: '失敗',
+                      value: '頻道不可用唔會假裝已是最新；套用需 EXECUTE；git 後需重啟服務',
+                    },
+                  ]}
+                />
+              </InfoCardGrid>
             )}
-          </section>
+          </div>
+        ) : null}
 
-          {/* Scheduler + policy */}
-          <aside className="upd-side">
-            <section className="upd-panel">
-              <header className="upd-panel__head">
-                <div>
-                  <h3 className="upd-panel__title">排程</h3>
-                  <p className="upd-panel__sub">
-                    控制面 scheduler 任務（唯讀）
+        {tab === 'schedule' ? (
+          <div className="tab-panel">
+            <section className="data-table">
+              <header className="data-table__head">
+                <div className="data-table__head-text">
+                  <h3 className="data-table__title">排程任務</h3>
+                  <p className="data-table__desc">
+                    控制面 scheduler（唯讀）· {jobs.length} 項
                   </p>
                 </div>
-                <Badge tone="neutral">{jobs.length}</Badge>
               </header>
               {jobs.length === 0 ? (
-                <p className="upd-muted">尚無可見排程（或未啟用）</p>
+                <div className="data-table__empty">
+                  <EmptyState
+                    title="尚無可見排程"
+                    description="未啟用或目前無 scheduler 任務"
+                  />
+                </div>
               ) : (
                 <ul className="upd-job-list">
                   {jobs.map((j) => (
@@ -388,19 +579,32 @@ export function UpdatesPage() {
                 </ul>
               )}
             </section>
+          </div>
+        ) : null}
 
-            <section className="upd-panel">
-              <header className="upd-panel__head">
-                <h3 className="upd-panel__title">政策</h3>
-              </header>
-              <ul className="upd-bullets">
-                <li>掃描 ≠ 已升級；套用才會改系統</li>
-                <li>高風險／需審批：二次確認後才送出</li>
-                <li>無 EXECUTE／root → blocked，唔假成功</li>
-                <li>OSV 需外網，只補強前 12 項建議</li>
-              </ul>
-            </section>
-
+        {tab === 'policy' ? (
+          <div className="tab-panel stack">
+            <InfoCard
+              title="更新政策"
+              facts={[
+                {
+                  label: '掃描',
+                  value: '掃描 ≠ 已升級；套用才會改系統',
+                },
+                {
+                  label: '高風險',
+                  value: '需審批：二次確認後才送出',
+                },
+                {
+                  label: '權限',
+                  value: '無 EXECUTE／root → blocked，唔假成功',
+                },
+                {
+                  label: 'OSV',
+                  value: '需外網，只補強前 12 項建議',
+                },
+              ]}
+            />
             <nav className="upd-shortcuts" aria-label="相關">
               <Link to="/system" className="upd-shortcut">
                 <span className="upd-shortcut__t">主機設定</span>
@@ -419,182 +623,32 @@ export function UpdatesPage() {
                 <span className="upd-shortcut__d">審批 / 工具</span>
               </Link>
             </nav>
-          </aside>
-        </div>
+          </div>
+        ) : null}
+      </PageTabs>
 
-        {/* Inventory */}
-        <section className="upd-panel upd-panel--inventory">
-          <header className="upd-panel__head upd-panel__head--stack">
-            <div className="upd-panel__head-row">
-              <div>
-                <h3 className="upd-panel__title">套件清點</h3>
-                <p className="upd-panel__sub">
-                  顯示 {filtered.length} / {inventory.length} · 清點{' '}
-                  {relTime(lastAt)}
-                </p>
-              </div>
-            </div>
-
-            <div className="upd-toolbar">
-              <div className="upd-chips" role="tablist" aria-label="風險篩選">
-                {(
-                  [
-                    ['all', '全部', inventory.length],
-                    ['high', '高風險', highRisk],
-                    [
-                      'medium',
-                      '中',
-                      inventory.filter((i) => i.risk === 'medium').length,
-                    ],
-                    [
-                      'low',
-                      '低／未標',
-                      inventory.filter((i) => !i.risk || i.risk === 'low').length,
-                    ],
-                    ['approval', '需審批', needApproval],
-                  ] as const
-                ).map(([id, label, n]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={riskFilter === id}
-                    className={`upd-chip${riskFilter === id ? ' upd-chip--active' : ''}${
-                      id === 'high'
-                        ? ' upd-chip--danger'
-                        : id === 'approval' || id === 'medium'
-                          ? ' upd-chip--warn'
-                          : id === 'low'
-                            ? ' upd-chip--ok'
-                            : ''
-                    }`}
-                    onClick={() => setRiskFilter(id)}
-                  >
-                    {label}
-                    <span className="upd-chip__n">{n}</span>
-                  </button>
-                ))}
-              </div>
-              <label className="upd-field">
-                <span className="upd-field__lab">搜尋</span>
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="套件名 / 建議 / CVE…"
-                  autoComplete="off"
-                />
-              </label>
-            </div>
-          </header>
-
-          {busy && inventory.length === 0 ? (
-            <LoadingBlock label="掃描中…" />
-          ) : inventory.length === 0 ? (
-            <EmptyState
-              title="尚無套件資料"
-              description="按「掃描套件」由管理面板掃描主機"
-              action={
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={() => void load(true)}
-                >
-                  掃描套件
-                </Button>
-              }
-            />
-          ) : filtered.length === 0 ? (
-            <div className="upd-empty">
-              <strong>沒有符合篩選的套件</strong>
-              <p>試下改風險篩選或清搜尋。</p>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setRiskFilter('all');
-                  setQ('');
-                }}
-              >
-                重設篩選
-              </Button>
-            </div>
-          ) : (
-            <div className="upd-pkg-list">
-              {filtered.map((i) => {
-                const advice =
-                  humanizeOperatorNote(i.advice ?? i.summary ?? '') ??
-                  i.advice ??
-                  i.summary ??
-                  null;
-                return (
-                  <article
-                    key={`${i.packageName}-${i.currentVersion}`}
-                    className={`upd-pkg${isHighRisk(i) ? ' upd-pkg--risk' : ''}`}
-                  >
-                    <div
-                      className={`upd-pkg__risk upd-pkg__risk--${riskTone(i.risk)}`}
-                      aria-hidden
-                    />
-                    <div className="upd-pkg__body">
-                      <div className="upd-pkg__head">
-                        <h4 className="upd-pkg__name">{i.packageName}</h4>
-                        <Badge tone={riskTone(i.risk)}>{riskLabel(i.risk)}</Badge>
-                        {i.requiresApproval ? (
-                          <Badge tone="warn">需審批</Badge>
-                        ) : null}
-                      </div>
-                      <div className="upd-pkg__ver">
-                        <code>{i.currentVersion}</code>
-                        {i.candidateVersion ? (
-                          <>
-                            <span className="upd-pkg__arrow">→</span>
-                            <code className="upd-pkg__cand">{i.candidateVersion}</code>
-                          </>
-                        ) : null}
-                      </div>
-                      {advice ? <p className="upd-pkg__advice">{advice}</p> : null}
-                      {i.cves?.length ? (
-                        <div className="upd-pkg__cves">
-                          {i.cves.slice(0, 5).map((c) => (
-                            <code key={c} className="upd-pkg__cve">
-                              {c}
-                            </code>
-                          ))}
-                          {i.cves.length > 5 ? (
-                            <span className="upd-muted">+{i.cves.length - 5}</span>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="upd-pkg__action">
-                      <Button
-                        variant={isHighRisk(i) ? 'danger' : 'primary'}
-                        size="sm"
-                        loading={busy}
-                        onClick={() => {
-                          const high = isHighRisk(i);
-                          if (
-                            high &&
-                            !confirm(
-                              `確認套用高風險更新 ${i.packageName}？\n${i.summary ?? i.advice ?? ''}`,
-                            )
-                          ) {
-                            return;
-                          }
-                          void applyPackage(i, high);
-                        }}
-                      >
-                        套用
-                      </Button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      </div>
+      <ConfirmDialog
+        open={highRiskApply != null}
+        onClose={() => setHighRiskApply(null)}
+        title={
+          highRiskApply
+            ? `套用高風險更新 ${highRiskApply.packageName}？`
+            : '高風險更新'
+        }
+        description={
+          highRiskApply
+            ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${highRiskApply.summary ?? highRiskApply.advice ?? ''}`
+            : ''
+        }
+        confirmLabel="套用"
+        cancelLabel="取消"
+        danger
+        onConfirm={() => {
+          const row = highRiskApply;
+          setHighRiskApply(null);
+          if (row) void applyPackage(row, true);
+        }}
+      />
     </FeaturePageLayout>
   );
 }

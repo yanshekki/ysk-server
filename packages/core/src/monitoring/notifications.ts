@@ -6,6 +6,7 @@ import type { YskDatabase } from '../db/database.js';
 import type { HostExecutor } from '../host/executor.js';
 import { collectMetrics } from './metrics.js';
 import { parseCertExpiryFromPath } from '../hosting/ssl-certs.js';
+import { auditApplyStatuses } from '../hosting/apply-audit.js';
 import { existsSync } from 'node:fs';
 
 export type NotificationLevel = 'critical' | 'warn' | 'info';
@@ -237,6 +238,49 @@ export async function collectNotifications(input: {
     }
   } catch {
     /* ignore */
+  }
+
+  // Apply honesty audit — surface blocked / stuck-at-written resources
+  try {
+    const audit = auditApplyStatuses(input.db);
+    if (audit.summary.bad > 0) {
+      const sample = audit.findings
+        .filter((f) => f.severity === 'bad')
+        .slice(0, 3)
+        .map((f) => f.name)
+        .join('、');
+      push({
+        id: 'apply-audit-bad',
+        level: 'critical',
+        title: `${audit.summary.bad} 項套用失敗／blocked`,
+        body: sample || '請到通知 → 套用狀態審計',
+        href: '/?tab=notifications',
+        source: 'apply-audit',
+      });
+    } else if (audit.summary.warn > 0) {
+      push({
+        id: 'apply-audit-warn',
+        level: 'warn',
+        title: `${audit.summary.warn} 項仍為 written／draft`,
+        body: '控制面已寫入但尚未 applied 到系統 — 檢查各功能頁「套用」',
+        href: '/?tab=notifications',
+        source: 'apply-audit',
+      });
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // Root not available while EXECUTE on — production risk
+  if (exec && !input.host.isRoot()) {
+    push({
+      id: 'not-root',
+      level: 'warn',
+      title: '面板非 root',
+      body: 'YSK_EXECUTE 已開但進程非 root — 部分 systemctl／nginx reload 會 blocked',
+      href: '/system/readiness',
+      source: 'host',
+    });
   }
 
   // Automation: suggest emergency / last escalate

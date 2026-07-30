@@ -4,7 +4,9 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
+import { 
+  DataTable,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -17,7 +19,6 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
-  OpsHero,
   OpsResultPanel,
   SoftwareInstallBanner,
   FormHint,
@@ -25,7 +26,6 @@ import {
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
-import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { consoleApi, type ServiceConsole } from '../../features/db-service/console-api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -104,16 +104,39 @@ export function PostgresPage() {
   return (
     <FeaturePageLayout
       title={t('nav.postgres', { defaultValue: 'PostgreSQL' })}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label: svc?.activeLabel ?? (installed ? '已裝' : '未裝'),
+          tone: running ? 'ok' : installed ? 'warn' : 'danger',
+        },
+        items: [
+          {
+            label: '狀態',
+            value: svc?.activeLabel ?? '—',
+            tone: running ? 'ok' : installed ? 'warn' : 'danger',
+          },
+          {
+            label: 'EXECUTE',
+            value: svc?.executeEnabled ? '開' : '關',
+            tone: svc?.executeEnabled ? 'ok' : 'warn',
+          },
+          {
+            label: 'Root',
+            value: svc?.isRoot ? '是' : '否',
+            tone: svc?.isRoot ? 'ok' : 'warn',
+          },
+          { label: '資料庫', value: dbs.items.length },
+        ],
+      }}
+      actions={<ActionBar>
           <Link to="/databases/postgres/service">
-            <Button variant="secondary" size="md">
+            <Button variant="secondary" size="sm">
               服務控制台
             </Button>
           </Link>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => {
               setError(null);
@@ -126,14 +149,14 @@ export function PostgresPage() {
           </Button>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             disabled={busy || !installed}
             title={!installed ? '請先安裝 PostgreSQL' : undefined}
             onClick={() => setCreateOpen(true)}
           >
             建立資料庫
           </Button>
-        </div>
+        </ActionBar>
       }
     >
       <SoftwareInstallBanner feature="postgres" title="PostgreSQL 所需軟件尚未安裝" />
@@ -147,44 +170,6 @@ export function PostgresPage() {
           </Button>
         </Alert>
       ) : null}
-
-      <OpsHero
-        pill={svc?.activeLabel ?? (installed ? '已裝' : '未裝')}
-        pillTone={running ? 'ok' : installed ? 'warn' : 'danger'}
-        tone={running ? 'ok' : 'warn'}
-        cta={
-          <Link to="/databases/postgres/service" className="btn btn--secondary btn--md">
-            服務控制台
-          </Link>
-        }
-        stats={[
-          {
-            label: '狀態',
-            value: (
-              <Badge tone={running ? 'ok' : installed ? 'warn' : 'danger'}>
-                {svc?.activeLabel ?? '—'}
-              </Badge>
-            ),
-          },
-          {
-            label: 'EXECUTE',
-            value: (
-              <Badge tone={svc?.executeEnabled ? 'ok' : 'warn'}>
-                {svc?.executeEnabled ? '開' : '關'}
-              </Badge>
-            ),
-          },
-          {
-            label: 'Root',
-            value: (
-              <Badge tone={svc?.isRoot ? 'ok' : 'warn'}>
-                {svc?.isRoot ? '是' : '否'}
-              </Badge>
-            ),
-          },
-          { label: '資料庫', value: dbs.items.length },
-        ]}
-      />
 
       <Card>
         <CardSection title="服務概覽" description="唯讀探測">
@@ -236,7 +221,8 @@ export function PostgresPage() {
 
       <Card>
         <CardSection title={`資料庫 (${dbs.items.length})`}>
-          <ResourceTable
+          <DataTable
+                  rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
             columns={[
               { key: 'name', header: '資料庫', render: (r) => <strong>{String(r.name)}</strong> },
               {
@@ -277,7 +263,7 @@ export function PostgresPage() {
               />
             }
             rowActions={(r) => (
-              <div className="btn-row">
+              <ActionBar>
                 <Button
                   variant="primary"
                   size="sm"
@@ -289,7 +275,7 @@ export function PostgresPage() {
                 <Button variant="danger" size="sm" loading={busy} onClick={() => setDelId(r.id)}>
                   刪除
                 </Button>
-              </div>
+              </ActionBar>
             )}
           />
         </CardSection>

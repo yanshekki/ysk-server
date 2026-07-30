@@ -60,6 +60,7 @@ describe('mail-policy', () => {
         applySystem: true,
       });
       expect(blocked.blocked).toBe(true);
+      expect(blocked.ok).toBe(false);
       expect(blocked.apply_status).toBe('blocked');
     } finally {
       rmSync(dir, { recursive: true, force: true });

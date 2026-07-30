@@ -3,7 +3,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError } from '@ysk/shared';
+import { YskError, assertHonestOps, type OpsResultInput } from '@ysk/shared';
 
 export function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -24,6 +24,86 @@ export function sendJson(res: ServerResponse, status: number, body: unknown): vo
     'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
   });
   res.end(payload);
+}
+
+/**
+ * Honest HTTP status from ops result.
+ * - ok true → 200 (includes written-only control-plane success)
+ * - blocked / apply_status blocked → 403
+ * - failed apply missing EXECUTE (ok false + requires*) → 403
+ * - other ok false → 422
+ * - notFound option → 404 when !ok
+ */
+export function statusFromOpsResult(
+  result: {
+    ok?: boolean;
+    blocked?: boolean;
+    requiresExecute?: boolean;
+    requiresRoot?: boolean;
+    dryRun?: boolean;
+    apply_status?: string;
+  },
+  opts?: { notFound?: boolean },
+): number {
+  if (result.ok === true) return 200;
+  if (opts?.notFound) return 404;
+  if (
+    result.blocked === true ||
+    result.apply_status === 'blocked' ||
+    result.requiresExecute === true ||
+    result.requiresRoot === true
+  ) {
+    return 403;
+  }
+  return 422;
+}
+
+export type SendOpsOptions = {
+  /** When result is not ok, use 404 instead of 403/422 */
+  notFound?: boolean;
+};
+
+/**
+ * Normalize honesty then send JSON with correct status.
+ * Prefer this for every mutate / apply path that returns ops-shaped bodies.
+ * Accepts any object (domain-specific fields preserved); honesty fields normalized.
+ */
+export function sendOpsResult(
+  res: ServerResponse,
+  result: object,
+  opts?: SendOpsOptions,
+): void {
+  const raw = result as OpsResultInput & Record<string, unknown>;
+  const notes = Array.isArray(raw.notes) ? raw.notes.map(String) : [];
+  const honest = assertHonestOps({
+    ok: raw.ok,
+    apply_status: raw.apply_status as OpsResultInput['apply_status'],
+    blocked: raw.blocked,
+    blockMessage: raw.blockMessage,
+    requiresExecute: raw.requiresExecute,
+    requiresRoot: raw.requiresRoot,
+    notes,
+    written: Array.isArray(raw.written) ? raw.written.map(String) : undefined,
+  });
+  const body = { ...raw, ...honest };
+  sendJson(res, statusFromOpsResult(honest, opts), body);
+}
+
+/**
+ * Heuristic: body looks like an ops result (has ok + notes/blocked/apply_status).
+ * Used by honesty lint / optional middleware — not for silent coercion of CRUD items.
+ */
+export function looksLikeOpsResult(body: unknown): boolean {
+  if (!body || typeof body !== 'object') return false;
+  const o = body as Record<string, unknown>;
+  if (typeof o.ok !== 'boolean') return false;
+  if (Array.isArray(o.notes)) return true;
+  if (typeof o.blocked === 'boolean') return true;
+  if (typeof o.apply_status === 'string') return true;
+  if (typeof o.requiresExecute === 'boolean' || typeof o.requiresRoot === 'boolean') {
+    return true;
+  }
+  return false;
 }
 
 export function getBearer(req: IncomingMessage): string | undefined {

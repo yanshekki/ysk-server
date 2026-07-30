@@ -2,7 +2,13 @@ import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
-import { Alert, Field, FormActions, FormLayout } from '../shared/components/ui';
+import {
+  Alert,
+  Field,
+  FormActions,
+  FormLayout,
+  buttonClassName,
+} from '../shared/components/ui';
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -94,7 +100,11 @@ export function LoginPage() {
             ) : null}
           </FormLayout>
           <FormActions>
-            <button type="submit" className="btn btn--primary btn--block" disabled={loading}>
+            <button
+              type="submit"
+              className={buttonClassName({ variant: 'primary', fullWidth: true })}
+              disabled={loading}
+            >
               {loading ? '登入中…' : t('login.submit')}
             </button>
           </FormActions>

@@ -111,18 +111,75 @@ export const api = {
   me(): Promise<{ user: { username: string; roles: string[]; locale: string } }> {
     return request('/api/v1/auth/me');
   },
-  totpStatus(): Promise<{ enabled: boolean; enrolled: boolean }> {
+  totpStatus(): Promise<{
+    enabled: boolean;
+    enrolled: boolean;
+    recoveryRemaining?: number;
+  }> {
     return request('/api/v1/auth/totp');
   },
-  totpBegin(): Promise<{ secret: string; otpauthUrl: string; enabled: boolean }> {
-    return request('/api/v1/auth/totp/begin', { method: 'POST', body: '{}' });
+  totpBegin(opts?: {
+    password?: string;
+    totp?: string;
+  }): Promise<{ secret: string; otpauthUrl: string; enabled: boolean }> {
+    return request('/api/v1/auth/totp/begin', {
+      method: 'POST',
+      body: JSON.stringify(opts ?? {}),
+    });
   },
-  totpConfirm(code: string): Promise<{ enabled: boolean }> {
+  listSessions(): Promise<{
+    items: Array<{
+      id: string;
+      created_at: string;
+      expires_at: string;
+      last_seen_at?: string;
+      user_agent?: string;
+      ip?: string;
+      current?: boolean;
+    }>;
+  }> {
+    return request('/api/v1/auth/sessions');
+  },
+  revokeSession(id: string): Promise<{ ok: boolean }> {
+    return request(`/api/v1/auth/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  },
+  revokeOtherSessions(): Promise<{ ok: boolean; revoked: number }> {
+    return request('/api/v1/auth/sessions', { method: 'DELETE' });
+  },
+  getSecuritySettings(): Promise<{
+    requireAdminTotp: boolean;
+    requireAdminTotpStrict: boolean;
+  }> {
+    return request('/api/v1/settings/security');
+  },
+  setSecuritySettings(body: {
+    requireAdminTotp?: boolean;
+    requireAdminTotpStrict?: boolean;
+    totp?: string;
+  }): Promise<{
+    ok: boolean;
+    requireAdminTotp: boolean;
+    requireAdminTotpStrict: boolean;
+  }> {
+    return request('/api/v1/settings/security', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  totpConfirm(code: string): Promise<{ enabled: boolean; recoveryCodes?: string[] }> {
     return request('/api/v1/auth/totp/confirm', {
       method: 'POST',
       body: JSON.stringify({ code }),
     });
   },
+  totpStepUp(code: string): Promise<{ ok: boolean }> {
+    return request('/api/v1/auth/totp/step-up', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+  },
+
   totpDisable(code: string): Promise<{ enabled: boolean }> {
     return request('/api/v1/auth/totp/disable', {
       method: 'POST',

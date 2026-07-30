@@ -47,21 +47,46 @@ Registry: `shared/nav/features.ts` (sidebar sections + dashboard tiles).
 
 ## Shared components
 
-Import from `shared/components/ui`:
+Import from `shared/components/ui` **only** (no page-level parallel kits):
 
-- **PageHeader** — title, subtitle, action slot  
+- **FeaturePageLayout** + **PageTabs** — page chrome  
+- **ActionBar** — all button groups (no `btn-row`, no raw flex action rows)  
+- **Button** — no raw `className="btn …"` on feature pages  
+- **DataTable** — **only** table primitive (no raw `<table>`; ResourceTable must wrap DataTable)  
 - **Card / CardSection** — content blocks  
 - **Badge** — tones: `ok` | `warn` | `danger` | `neutral` | `info`  
 - **Alert** — error / ok / info banners  
 - **EmptyState** — empty list + CTA  
-- **Modal / ConfirmDialog** — create flows & destructive confirms  
-- **Tabs** — detail sections  
-- **Field / FormGrid** — forms  
-- **KeyValueList** — overview meta  
-- **CodeBlock / LogViewer** — technical output  
-- **OpsResultPanel** — human notes first, JSON collapsible  
-- **SummaryStrip** — count pills  
+- **Modal / ConfirmDialog** — create flows & destructive confirms (prefer over `window.confirm`)  
+- **Field / FormLayout / FormActions / PresetChips / SegRadio** — forms  
+- **OpsResultPanel** — ops results; props align **`OpsResultDto`** from `@ysk/shared`  
+- **SummaryStrip** / **DescriptionList** / **StructuredFacts** — scan-friendly facts  
 - **LoadingBlock** — spinner row  
+
+### CSS freeze
+
+- **Do not add** new feature prefixes (`.met-*`, `.def-*`, `.fm-*`, …) when a shared class exists.  
+- Prefer tokens in `styles/tokens.css` + patterns in `components.css`.  
+- **DataTable only** for tabular data — including live/process grids (`className="data-table--live"` for dense sticky tables).  
+- Allowed residual feature classes: domain chrome only (e.g. `.met-live-bar`, `.met-icon-btn`, top header meters) — **not** parallel table systems.  
+
+### CI hard gates (UI)
+
+From repo root (also in GitHub Actions):
+
+```bash
+pnpm gates   # honesty:lint + primitives:check + chrome:check
+```
+
+| Script | Path | Fails on |
+|--------|------|----------|
+| `primitives:check` | `apps/web/scripts/page-primitives-check.mjs` | raw `<table>`, `btn-row`, create in FeaturePageLayout.actions |
+| `chrome:check` | `apps/web/scripts/page-chrome-check.mjs` | OpsHero / `*-hero` markup; missing FeaturePageLayout |
+| `css:reuse` | `apps/web/scripts/css-reuse-check.mjs` | **local / soft** — not CI-hard yet (dynamic `style={{ width }}` meters remain) |
+
+### Related navigation
+
+- One **RelatedNav** / short ActionBar of deep-links (≤3) — no repeated “去 fail2ban / 防火牆 / 防護” button soup on every card.
 
 ## Page templates
 

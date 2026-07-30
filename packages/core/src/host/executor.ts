@@ -311,10 +311,52 @@ function isMutatingArgv(argv: string[]): boolean {
     return true;
   }
   if (bin === 'certbot') return true;
+  // NetworkManager: show/device/general are read-only; modify/up/down/add/delete mutate
+  if (bin === 'nmcli') {
+    const sub = argv[1] ?? '';
+    const rest = argv.slice(1).join(' ');
+    if (
+      sub === 'connection' &&
+      /\b(modify|add|delete|clone|up|down|reload)\b/.test(rest)
+    ) {
+      return true;
+    }
+    if (sub === 'device' && /\b(connect|disconnect|set|reapply|modify)\b/.test(rest)) {
+      return true;
+    }
+    if (sub === 'networking' && /\b(on|off)\b/.test(rest)) return true;
+    return false;
+  }
+  // kill -0 is existence probe (read-only); any other kill is mutating
+  if (bin === 'kill') {
+    if (argv[1] === '-0') return false;
+    return true;
+  }
+  if (bin === 'renice') return true;
+  // iproute2: JSON/show/list are read-only; add/del/set/flush/replace mutate
+  if (bin === 'ip') {
+    const joined = argv.join(' ');
+    if (/\b(add|del|delete|change|replace|set|flush|addrlabel)\b/.test(joined)) {
+      // allow "ip -j" pure reads even if word appears in ifname unlikely
+      if (argv.includes('-j') || argv.includes('-json')) {
+        // still mutating if has add/del/set after family
+        const mut = argv.some((a) =>
+          ['add', 'del', 'delete', 'change', 'replace', 'set', 'flush'].includes(a),
+        );
+        return mut;
+      }
+      return true;
+    }
+    return false;
+  }
   // bash -c with destructive patterns still run under higher-level allowlist; treat bash as mutating when not dry
   if (bin === 'bash' || bin === 'sh') {
     const script = argv.slice(1).join(' ');
-    if (/\b(rm|mv|cp|apt|useradd|systemctl\s+(enable|start|restart|stop)|crontab)\b/.test(script)) {
+    if (
+      /\b(rm|mv|cp|apt|useradd|systemctl\s+(enable|start|restart|stop)|crontab|kill\s+-)\b/.test(
+        script,
+      )
+    ) {
       return true;
     }
   }

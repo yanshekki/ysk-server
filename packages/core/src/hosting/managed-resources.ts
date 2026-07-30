@@ -6,6 +6,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
+import type { ApplyStatus as SharedApplyStatus } from '@ysk/shared';
 import type { JsonStore } from '../db/store.js';
 import { renderNginxProxy, renderNginxStatic, renderNginxPhpFpm } from './nginx-ssl.js';
 import { writeManagedDnsZone } from './dns-zone.js';
@@ -15,20 +16,15 @@ import { provisionPostgresDatabase } from './postgres-provision.js';
 import { provisionRedisBinding } from './redis-provision.js';
 import type { HostExecutor } from '../host/executor.js';
 
-/** Resource apply honesty:
- * draft — created in store only
- * written — config written under dataDir (not yet live on system)
- * planned / pending_execute — needs YSK_EXECUTE/root
- * applied — actually active on the host (reload/provision succeeded)
- * failed — last apply attempt failed
+/**
+ * Resource apply honesty (subset of @ysk/shared ApplyStatus):
+ * draft | written | planned | pending_execute | applied | failed
+ * Prefer importing ApplyStatus from @ysk/shared in new code.
  */
-export type ApplyStatus =
-  | 'draft'
-  | 'written'
-  | 'planned'
-  | 'pending_execute'
-  | 'applied'
-  | 'failed';
+export type ApplyStatus = Extract<
+  SharedApplyStatus,
+  'draft' | 'written' | 'planned' | 'pending_execute' | 'applied' | 'failed'
+>;
 
 export type CollectionKey =
   | 'nginx_sites'

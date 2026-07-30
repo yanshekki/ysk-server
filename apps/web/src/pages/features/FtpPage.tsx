@@ -5,24 +5,24 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
   Card,
   CardSection,
   ConfirmDialog,
+  DataTable,
   Field,
   FeaturePageLayout,
   FormLayout,
   Modal,
   SoftwareInstallBanner,
-  OpsHero,
-  Tabs,
+
+  PageTabs,
   FormHint,
 } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
-import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { ftpApi, type SelectOption } from '../../features/ftp';
 import { api } from '../../shared/services/api';
@@ -133,23 +133,34 @@ export function FtpPage() {
   return (
     <FeaturePageLayout
       title={t('nav.ftp', { defaultValue: 'FTPS 帳戶' })}
+      status={{
+        pill: {
+          label: `${crud.items.length} 帳戶`,
+          tone: draft > 0 ? 'warn' : crud.items.length ? 'ok' : 'warn',
+        },
+        items: [
+          { label: '帳戶', value: crud.items.length },
+          {
+            label: '已套用',
+            value: applied,
+            tone: applied > 0 ? 'ok' : 'neutral',
+          },
+          {
+            label: '待套用',
+            value: draft,
+            tone: draft > 0 ? 'warn' : 'ok',
+          },
+          { label: 'SFTP 鑰', value: sftpKeys.length },
+        ],
+      }}
       actions={
-        <div className="btn-row">
+        <ActionBar>
           <Link to="/ftp/service">
-            <Button variant="secondary" size="md">
+            <Button variant="secondary" size="sm">
               vsftpd 服務
             </Button>
           </Link>
-          {tab === 'accounts' ? (
-            <Button variant="primary" size="md" onClick={openCreate}>
-              + 建立帳戶
-            </Button>
-          ) : (
-            <Button variant="primary" size="md" onClick={() => openKeyCreate()}>
-              + 新增公鑰
-            </Button>
-          )}
-        </div>
+        </ActionBar>
       }
     >
       <SoftwareInstallBanner feature="ftp" title="尚未安裝 FTPS 服務軟件" />
@@ -182,30 +193,7 @@ export function FtpPage() {
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={`${crud.items.length} 帳戶`}
-        pillTone={crud.items.length ? 'ok' : 'warn'}
-        tone={draft > 0 ? 'warn' : 'ok'}
-        stats={[
-          { label: '帳戶', value: crud.items.length },
-          {
-            label: '已套用',
-            value: <Badge tone={applied > 0 ? 'ok' : 'neutral'}>{applied}</Badge>,
-          },
-          {
-            label: '待套用',
-            value: <Badge tone={draft > 0 ? 'warn' : 'ok'}>{draft}</Badge>,
-          },
-          { label: 'SFTP 鑰', value: sftpKeys.length },
-        ]}
-        cta={
-          <Link to="/ftp/service" className="btn btn--secondary btn--md">
-            vsftpd 服務
-          </Link>
-        }
-      />
-
-      <Tabs
+      <PageTabs
         tabs={[
           {
             id: 'accounts',
@@ -233,29 +221,18 @@ export function FtpPage() {
                     <Link to="/ftp/service">vsftpd 服務</Link> 啟動。
                   </p>
                 </div>
-                {crud.items.length > 0 ? (
-                  <Button variant="primary" size="sm" onClick={openCreate}>
-                    + 建立
-                  </Button>
-                ) : null}
+                <Button variant="primary" size="sm" onClick={openCreate}>
+                  + 建立帳戶
+                </Button>
               </div>
               {crud.items.length === 0 ? (
                 <div className="empty empty--compact">
                   <div className="empty__title">尚未有 FTP 帳戶</div>
-                  <p>建立虛擬帳戶後，可指定家目錄與網域，再套用到系統。</p>
-                  <div className="form-actions btn-row" style={{ justifyContent: 'center' }}>
-                    <Button variant="primary" size="md" onClick={openCreate}>
-                      + 建立帳戶
-                    </Button>
-                    <Link to="/ftp/service">
-                      <Button variant="secondary" size="md">
-                        前往 vsftpd 服務
-                      </Button>
-                    </Link>
-                  </div>
+                  <p>用列表右上角「建立帳戶」新增；可指定家目錄與網域，再套用到系統。</p>
                 </div>
               ) : (
-                <ResourceTable
+                <DataTable
+                  rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
                   columns={[
                     {
                       key: 'user',
@@ -286,7 +263,7 @@ export function FtpPage() {
                   ]}
                   rows={crud.items}
                   rowActions={(r) => (
-                    <div className="btn-row">
+                    <ActionBar>
                       <Button
                         variant="primary"
                         size="sm"
@@ -328,7 +305,7 @@ export function FtpPage() {
                       >
                         刪除
                       </Button>
-                    </div>
+                    </ActionBar>
                   )}
                 />
               )}
@@ -358,76 +335,63 @@ export function FtpPage() {
                 </Button>
               </div>
 
-              {sftpKeys.length === 0 ? (
-                <div className="empty empty--compact">
-                  <div className="empty__title">尚未登錄公鑰</div>
-                  <p>
-                    {crud.items.length === 0
-                      ? '建議先建立 FTP 帳戶，再為該用戶加 SSH 公鑰。'
-                      : '為既有 FTP 用戶登錄 ssh-ed25519 / ssh-rsa 公鑰。'}
-                  </p>
-                  <div className="form-actions btn-row" style={{ justifyContent: 'center' }}>
-                    <Button variant="primary" size="md" onClick={() => openKeyCreate()}>
-                      + 新增公鑰
+              <DataTable
+                columns={[
+                  {
+                    key: 'username',
+                    header: '用戶',
+                    render: (k) => <strong>{k.username}</strong>,
+                  },
+                  {
+                    key: 'comment',
+                    header: '備註',
+                    className: 'muted',
+                    render: (k) => k.comment ?? '—',
+                  },
+                  {
+                    key: 'key',
+                    header: '金鑰指紋（前綴）',
+                    render: (k) => (
+                      <code className="inline u-break-all">
+                        {k.publicKey.slice(0, 56)}
+                        {k.publicKey.length > 56 ? '…' : ''}
+                      </code>
+                    ),
+                  },
+                  {
+                    key: 'created',
+                    header: '建立',
+                    className: 'muted u-nowrap u-text-sm',
+                    nowrap: true,
+                    render: (k) =>
+                      String(k.created_at).slice(0, 19).replace('T', ' '),
+                  },
+                ]}
+                rows={sftpKeys}
+                rowKey={(k) => k.id}
+                rowActions={(k) => (
+                  <ActionBar align="end">
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      loading={keyBusy}
+                      onClick={() => setDelKeyId(k.id)}
+                    >
+                      刪除
                     </Button>
-                    {crud.items.length === 0 ? (
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        onClick={() => {
-                          setTab('accounts');
-                          openCreate();
-                        }}
-                      >
-                        先建立帳戶
-                      </Button>
-                    ) : null}
+                  </ActionBar>
+                )}
+                empty={
+                  <div className="empty empty--compact">
+                    <div className="empty__title">尚未登錄公鑰</div>
+                    <p>
+                      {crud.items.length === 0
+                        ? '建議先建立 FTP 帳戶，再為該用戶加 SSH 公鑰（列表右上角）。'
+                        : '用列表右上角為既有 FTP 用戶登錄 ssh-ed25519 / ssh-rsa 公鑰。'}
+                    </p>
                   </div>
-                </div>
-              ) : (
-                <div className="table-wrap">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>用戶</th>
-                        <th>備註</th>
-                        <th>金鑰指紋（前綴）</th>
-                        <th>建立</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sftpKeys.map((k) => (
-                        <tr key={k.id}>
-                          <td>
-                            <strong>{k.username}</strong>
-                          </td>
-                          <td className="muted">{k.comment ?? '—'}</td>
-                          <td>
-                            <code className="inline u-break-all">
-                              {k.publicKey.slice(0, 56)}
-                              {k.publicKey.length > 56 ? '…' : ''}
-                            </code>
-                          </td>
-                          <td className="muted u-nowrap u-text-sm">
-                            {String(k.created_at).slice(0, 19).replace('T', ' ')}
-                          </td>
-                          <td>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              loading={keyBusy}
-                              onClick={() => setDelKeyId(k.id)}
-                            >
-                              刪除
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                }
+              />
             </Card>
 
             {crud.items.length > 0 ? (
@@ -450,7 +414,7 @@ export function FtpPage() {
             ) : null}
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       {/* Create / edit account */}
       <Modal

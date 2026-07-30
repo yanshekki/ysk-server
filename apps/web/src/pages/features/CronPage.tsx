@@ -3,7 +3,7 @@
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -12,7 +12,7 @@ import {
   FeaturePageLayout,
   FormLayout,
   OpsResultPanel,
-  Tabs,
+  PageTabs,
   Modal,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -333,25 +333,46 @@ export function CronPage() {
     <FeaturePageLayout
       title={t('nav.cron', { defaultValue: 'Cron' })}
       showCapability={false}
-      actions={
-        <>
+      status={{
+        pill: {
+          label: hostOk ? '系統已同步' : hostNo ? '未裝到系統' : '狀態未知',
+          tone: heroTone,
+        },
+        items: [
+          { label: '工作', value: status?.totalJobs ?? items.length },
+          { label: '啟用', value: status?.enabledJobs ?? '—' },
+          {
+            label: '系統 crontab',
+            value: hostOk ? '已同步' : hostNo ? '未安裝' : '未知',
+            tone: hostOk ? 'ok' : hostNo ? 'warn' : 'neutral',
+          },
+          { label: '管理行數', value: status?.managedLines ?? '—' },
+          {
+            label: 'EXECUTE',
+            value: status?.executeEnabled ? '開' : '關',
+            tone: status?.executeEnabled ? 'ok' : 'warn',
+          },
+        ],
+      }}
+      actions={<ActionBar>
           <Button
-            variant="secondary"
-            size="md"
+            variant="ghost"
+            size="sm"
             loading={busy}
             onClick={() => void refresh().catch((e: Error) => setError(e.message))}
           >
             重新整理
           </Button>
+          
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => void onInstall()}
           >
             安裝到系統
           </Button>
-        </>
+        </ActionBar>
       }
     >
       {error || actErr ? <Alert variant="error">{error ?? actErr}</Alert> : null}
@@ -365,103 +386,6 @@ export function CronPage() {
       ) : null}
 
       <div className="ops">
-        <section className={`ops-hero ops-hero--${heroTone}`}>
-          <div className="ops-hero__main">
-            <div className="ops-hero__copy">
-              <div className="ops-hero__eyebrow">Cron jobs</div>
-              <h2 className="ops-hero__title">
-                <span className={`ops-hero__pill ops-hero__pill--${heroTone}`}>
-                  {hostOk ? '系統已同步' : hostNo ? '未裝到系統' : '狀態未知'}
-                </span>
-                排程工作
-              </h2>
-              <p className="ops-hero__hint">
-                先寫入管理 crontab，再「安裝到系統」才真正生效。專案工作以 runuser
-                無 EXECUTE／root 時安裝會失敗。
-              </p>
-              <div className="ops-hero__meta">
-                <span>
-                  登記 <strong>{status?.totalJobs ?? items.length}</strong>
-                </span>
-                <span className="ops-hero__dot" />
-                <span>
-                  已啟用 <strong>{status?.enabledJobs ?? '—'}</strong>
-                </span>
-                <span className="ops-hero__dot" />
-                <span>
-                  EXECUTE{' '}
-                  <strong>{status?.executeEnabled ? '開' : '關'}</strong>
-                </span>
-              </div>
-              <div className="ops-hero__cta">
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={() => void onInstall()}
-                >
-                  安裝到系統 crontab
-                </Button>
-                <Button variant="secondary" size="md" onClick={openCreate}>
-                  + 新增工作
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="md"
-                  onClick={() => setTab('status')}
-                >
-                  對照狀態
-                </Button>
-              </div>
-            </div>
-            <div className="ops-hero__stats">
-              <div className="ops-stat">
-                <span className="ops-stat__lab">工作</span>
-                <span className="ops-stat__val">
-                  {status?.totalJobs ?? items.length}
-                </span>
-              </div>
-              <div className="ops-stat">
-                <span className="ops-stat__lab">啟用</span>
-                <span className="ops-stat__val">{status?.enabledJobs ?? '—'}</span>
-              </div>
-              <div className="ops-stat">
-                <span className="ops-stat__lab">系統 crontab</span>
-                <span className="ops-stat__val">
-                  <Badge tone={hostOk ? 'ok' : hostNo ? 'warn' : 'neutral'}>
-                    {hostOk ? '已同步' : hostNo ? '未安裝' : '未知'}
-                  </Badge>
-                </span>
-              </div>
-              <div className="ops-stat">
-                <span className="ops-stat__lab">管理行數</span>
-                <span className="ops-stat__val">{status?.managedLines ?? '—'}</span>
-              </div>
-            </div>
-          </div>
-          <ul className="ops-rail">
-            <li>
-              <span className="ops-rail__k">管理路徑</span>
-              <code className="ops-rail__code">
-                {status?.managedPath ?? '—'}
-              </code>
-            </li>
-            <li>
-              <span className="ops-rail__k">上次安裝</span>
-              <span className="ops-rail__text">
-                {status?.lastInstallOk == null
-                  ? '—'
-                  : status.lastInstallOk
-                    ? 'OK'
-                    : '失敗'}
-                {status?.lastInstallAt
-                  ? ` · ${new Date(status.lastInstallAt).toLocaleString('zh-TW')}`
-                  : ''}
-              </span>
-            </li>
-          </ul>
-        </section>
-
         {needsInstallHint || (status && status.enabledJobs > 0 && hostNo) ? (
           <Alert variant="info">
             工作只寫在管理檔。系統 crontab{' '}
@@ -470,7 +394,7 @@ export function CronPage() {
           </Alert>
         ) : null}
 
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'jobs', label: `工作 (${items.length})` },
           { id: 'status', label: '狀態' },
@@ -496,12 +420,7 @@ export function CronPage() {
               {items.length === 0 ? (
                 <EmptyState
                   title="尚未有 cron"
-                  description="先建立一筆工作，再安裝到系統 crontab"
-                  action={
-                    <Button variant="primary" size="md" onClick={openCreate}>
-                      + 新增工作
-                    </Button>
-                  }
+                  description="用列表右上角新增工作，再安裝到系統 crontab"
                 />
               ) : (
                 <div className="ops-svc-list">
@@ -710,7 +629,7 @@ export function CronPage() {
             </div>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
       </div>

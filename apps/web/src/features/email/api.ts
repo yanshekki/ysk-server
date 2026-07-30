@@ -10,6 +10,14 @@ export type EmailDomain = {
   server_ip: string;
   apply_status?: string;
   last_apply?: Record<string, unknown>;
+  /** Control-plane suspend flag — not live MTA reject unless system-applied */
+  suspended?: boolean;
+  status?: string;
+  autoreply_enabled?: boolean;
+  /** Outbound rate limit (msgs/hour); null/omit = use defaults */
+  rate_limit_per_hour?: number | null;
+  /** Domain antispam flag (Rspamd multimap) */
+  antispam?: boolean;
 };
 
 export type EmailBundle = {
@@ -171,9 +179,19 @@ export const emailApi = {
       rateLimitPerHour?: number | null;
       antispam?: boolean;
       suspended?: boolean;
+      /** Live Postfix suspend map + Dovecot sieve (needs EXECUTE+root) */
+      applySystem?: boolean;
     },
   ) =>
-    api.requestRaw<{ domain: EmailDomain }>(`/api/v1/email/domains/${domainId}/flags`, {
+    api.requestRaw<{
+      ok: boolean;
+      apply_status: string;
+      notes: string[];
+      written?: string[];
+      blocked?: boolean;
+      blockMessage?: string;
+      domain: EmailDomain;
+    }>(`/api/v1/email/domains/${domainId}/flags`, {
       method: 'PATCH',
       body: JSON.stringify(body),
     }),
@@ -196,5 +214,25 @@ export const emailApi = {
     api.requestRaw<Record<string, unknown>>('/api/v1/email/queue/flush', {
       method: 'POST',
       body: JSON.stringify(body ?? { all: true }),
+    }),
+  /** Outbound rate + antispam → Postfix anvil / Rspamd (written vs applySystem) */
+  applyPolicy: (
+    domainId: string,
+    body: {
+      rateLimitPerHour?: number | null;
+      antispam?: boolean;
+      applySystem?: boolean;
+    },
+  ) =>
+    api.requestRaw<{
+      ok: boolean;
+      notes: string[];
+      written?: string[];
+      blocked?: boolean;
+      blockMessage?: string;
+      apply_status: string;
+    }>(`/api/v1/email/domains/${domainId}/policy`, {
+      method: 'POST',
+      body: JSON.stringify(body),
     }),
 };

@@ -12,7 +12,7 @@ describe('agent probe', () => {
     expect(['unknown', 'not_installed', 'stopped', 'running']).toContain(r.status);
   });
 
-  it('renders systemd unit template', () => {
+  it('renders fail-closed unit without binary (no silent placeholder)', () => {
     const u = renderAgentSystemdUnit({
       kind: 'hermes',
       installPath: '/opt/ysk-server/agents/hermes',
@@ -20,5 +20,17 @@ describe('agent probe', () => {
     });
     expect(u).toContain('ysk-agent-hermes');
     expect(u).toContain('YSK_AGENT_KIND=hermes');
+    expect(u).toMatch(/process\.exit\(1\)|refuse to run placeholder/);
+    expect(u).not.toMatch(/setInterval/);
+  });
+
+  it('renders real ExecStart when binaryPath provided', () => {
+    const u = renderAgentSystemdUnit({
+      kind: 'openclaw',
+      installPath: '/opt/ysk-server/agents/openclaw',
+      binaryPath: '/usr/bin/openclaw',
+    });
+    expect(u).toContain('ExecStart=/usr/bin/openclaw');
+    expect(u).not.toMatch(/process\.exit\(1\)/);
   });
 });

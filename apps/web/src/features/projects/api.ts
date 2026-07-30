@@ -260,15 +260,58 @@ export const projectsApi = {
   ) => api.gitDeploy(id, body),
   setEnv: (id: string, env: Record<string, string>) => api.setProjectEnv(id, env),
   backup: (id: string) => api.backupProject(id),
-  logs: (id: string, file?: string, lines = 80) => {
-    const q = file
-      ? `?file=${encodeURIComponent(file)}&lines=${lines}`
-      : '';
+  logs: (
+    id: string,
+    opts?: {
+      file?: string;
+      lines?: number;
+      name?: string;
+      grep?: string;
+    },
+  ) => {
+    const q = new URLSearchParams();
+    if (opts?.file) q.set('file', opts.file);
+    if (opts?.lines) q.set('lines', String(opts.lines));
+    if (opts?.name) q.set('name', opts.name);
+    if (opts?.grep) q.set('grep', opts.grep);
+    const qs = q.toString();
     return api.requestRaw<{
-      files: Array<{ name: string; bytes?: number; mtime?: string }>;
-      tail?: { lines: string[]; file: string };
-    }>(`/api/v1/projects/${id}/logs${q}`);
+      files: Array<{
+        name: string;
+        bytes?: number;
+        mtime?: string;
+        root?: string;
+        kind?: string;
+      }>;
+      extraDirs?: string[];
+      tail?: {
+        lines: string[];
+        file: string;
+        notes?: string[];
+        matchedLines?: number;
+      };
+      hits?: Array<{ file: string; lines: string[]; matched: number }>;
+      notes?: string[];
+      related?: Array<{
+        id: string;
+        kind: string;
+        label: string;
+        source: string;
+        available: boolean;
+        meta?: string;
+      }>;
+    }>(`/api/v1/projects/${id}/logs${qs ? `?${qs}` : ''}`);
   },
+  setLogDirs: (id: string, dirs: string[]) =>
+    api.requestRaw<{
+      ok: boolean;
+      extraDirs: string[];
+      notes?: string[];
+      project?: { logExtraDirs?: string[] };
+    }>(`/api/v1/projects/${id}/log-dirs`, {
+      method: 'PUT',
+      body: JSON.stringify({ dirs }),
+    }),
   createFtp: (
     id: string,
     body: { username?: string; password: string; homeSubdir?: 'app' | 'root' },

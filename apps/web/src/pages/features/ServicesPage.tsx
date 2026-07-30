@@ -9,10 +9,12 @@ import {
   Badge,
   Button,
   FeaturePageLayout,
+  Field,
   LoadingBlock,
   OpsResultPanel,
-  Tabs,
-} from '../../shared/components/ui';
+  PageTabs,
+
+  buttonClassName,} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -153,11 +155,42 @@ export function ServicesPage() {
     <FeaturePageLayout
       title={t('nav.services', { defaultValue: '服務狀態' })}
       showCapability={false}
-      actions={
-        <>
+      status={{
+        pill: {
+          label: `${running}/${items.length} 運行中`,
+          tone: heroTone,
+        },
+        items: [
+          { label: '運行中', value: running, tone: 'ok' },
+          {
+            label: '未安裝',
+            value: missing,
+            tone: missing ? 'warn' : 'neutral',
+          },
+          {
+            label: 'EXECUTE',
+            value: meta.executeEnabled ? '開' : '關',
+            tone: meta.executeEnabled ? 'ok' : 'warn',
+          },
+          {
+            label: 'Root',
+            value: meta.isRoot ? '是' : '否',
+            tone: meta.isRoot ? 'ok' : 'warn',
+          },
+          {
+            label: '可變更',
+            value: canMutate ? '是' : '鎖定',
+            tone: canMutate ? 'ok' : 'warn',
+          },
+          ...(failed > 0
+            ? [{ label: '失敗', value: failed, tone: 'danger' as const }]
+            : []),
+        ],
+      }}
+      actions={<>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy || loading}
             onClick={() => {
               setError(null);
@@ -168,10 +201,10 @@ export function ServicesPage() {
           >
             重新整理
           </Button>
-          <Link to="/system/unit" className="btn btn--ghost btn--md">
+          <Link to="/system/unit" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             控制面 unit
           </Link>
-          <Link to="/logs" className="btn btn--ghost btn--md">
+          <Link to="/logs" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             日誌
           </Link>
         </>
@@ -196,10 +229,10 @@ export function ServicesPage() {
             .map((x) => `${x.name}(${x.status})`)
             .join(' · ')}
           {haOverview.count > 4 ? ' …' : ''}{' '}
-          <Link to="/databases/mariadb/service" className="btn btn--ghost btn--sm">
+          <Link to="/databases/mariadb/service" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             MariaDB 叢集
           </Link>{' '}
-          <Link to="/databases/mysql/service" className="btn btn--ghost btn--sm">
+          <Link to="/databases/mysql/service" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             MySQL
           </Link>
         </Alert>
@@ -209,107 +242,6 @@ export function ServicesPage() {
         <LoadingBlock label="探測服務矩陣…" />
       ) : (
         <div className="ops">
-          <section className={`ops-hero ops-hero--${heroTone}`}>
-            <div className="ops-hero__main">
-              <div className="ops-hero__copy">
-                <div className="ops-hero__eyebrow">Service matrix</div>
-                <h2 className="ops-hero__title">
-                  <span className={`ops-hero__pill ops-hero__pill--${heroTone}`}>
-                    {running}/{items.length} 運行中
-                  </span>
-                  主機已知服務
-                </h2>
-                <p className="ops-hero__hint">
-                  systemctl is-active／is-enabled 探測。啟動／停止／重啟需{' '}
-                  <code>YSK_EXECUTE</code> + root；否則blocked。
-                </p>
-                <div className="ops-hero__meta">
-                  <span>
-                    探測{' '}
-                    <strong>
-                      {meta.probedAt
-                        ? new Date(meta.probedAt).toLocaleString('zh-TW')
-                        : '—'}
-                    </strong>
-                  </span>
-                  <span className="ops-hero__dot" />
-                  <span>
-                    未安裝 <strong>{missing}</strong>
-                  </span>
-                  {failed > 0 ? (
-                    <>
-                      <span className="ops-hero__dot" />
-                      <span>
-                        失敗 <strong>{failed}</strong>
-                      </span>
-                    </>
-                  ) : null}
-                </div>
-                <div className="ops-hero__cta">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    loading={busy || loading}
-                    onClick={() => {
-                      setLoading(true);
-                      void refresh().finally(() => setLoading(false));
-                    }}
-                  >
-                    重新探測
-                  </Button>
-                  <Link to="/system" className="btn btn--secondary btn--md">
-                    主機設定
-                  </Link>
-                  <Link to="/firewall" className="btn btn--ghost btn--md">
-                    防火牆
-                  </Link>
-                </div>
-              </div>
-              <div className="ops-hero__stats">
-                <div className="ops-stat">
-                  <span className="ops-stat__lab">運行中</span>
-                  <span className="ops-stat__val">
-                    <Badge tone="ok">{running}</Badge>
-                  </span>
-                </div>
-                <div className="ops-stat">
-                  <span className="ops-stat__lab">未安裝</span>
-                  <span className="ops-stat__val">
-                    <Badge tone={missing ? 'warn' : 'neutral'}>{missing}</Badge>
-                  </span>
-                </div>
-                <div className="ops-stat">
-                  <span className="ops-stat__lab">EXECUTE</span>
-                  <span className="ops-stat__val">
-                    <Badge tone={meta.executeEnabled ? 'ok' : 'warn'}>
-                      {meta.executeEnabled ? '開' : '關'}
-                    </Badge>
-                  </span>
-                </div>
-                <div className="ops-stat">
-                  <span className="ops-stat__lab">Root</span>
-                  <span className="ops-stat__val">
-                    <Badge tone={meta.isRoot ? 'ok' : 'warn'}>
-                      {meta.isRoot ? '是' : '否'}
-                    </Badge>
-                  </span>
-                </div>
-              </div>
-            </div>
-            <ul className="ops-rail">
-              <li>
-                <span className="ops-rail__k">可變更</span>
-                <Badge tone={canMutate ? 'ok' : 'warn'}>
-                  {canMutate ? '是' : '鎖定'}
-                </Badge>
-              </li>
-              <li>
-                <span className="ops-rail__k">類別</span>
-                <span className="ops-rail__text">{categories.length}</span>
-              </li>
-            </ul>
-          </section>
-
           {!canMutate ? (
             <Alert variant="info">
               生命週期操作已鎖定：需 root + YSK_EXECUTE。探測仍可用。見{' '}
@@ -317,7 +249,7 @@ export function ServicesPage() {
             </Alert>
           ) : null}
 
-          <Tabs
+          <PageTabs
             tabs={[
               { id: 'matrix', label: `服務矩陣 (${items.length})` },
               { id: 'protection', label: '保護探測' },
@@ -362,14 +294,14 @@ export function ServicesPage() {
                         );
                       })}
                     </div>
-                    <label className="ops-field">
-                      <span className="ops-field__lab">搜尋</span>
+                    <Field label="搜尋" htmlFor="svc-q" flush>
                       <input
+                        id="svc-q"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                         placeholder="名稱 / unit / 類別"
                       />
-                    </label>
+                    </Field>
                   </div>
                 </header>
 
@@ -432,14 +364,14 @@ export function ServicesPage() {
                           {row.href ? (
                             <Link
                               to={row.href}
-                              className="btn btn--ghost btn--sm"
+                              className={buttonClassName({ variant: 'ghost', size: 'sm' })}
                             >
                               控制頁
                             </Link>
                           ) : null}
                           <Link
                             to={`/logs?unit=${encodeURIComponent(row.unit)}`}
-                            className="btn btn--ghost btn--sm"
+                            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
                           >
                             日誌
                           </Link>
@@ -483,10 +415,10 @@ export function ServicesPage() {
                   >
                     執行保護探測
                   </Button>
-                  <Link to="/fail2ban" className="btn btn--secondary btn--md">
+                  <Link to="/fail2ban" className={buttonClassName({ variant: 'secondary', size: 'md' })}>
                     Fail2ban
                   </Link>
-                  <Link to="/firewall" className="btn btn--ghost btn--md">
+                  <Link to="/firewall" className={buttonClassName({ variant: 'ghost', size: 'md' })}>
                     防火牆
                   </Link>
                 </div>
@@ -507,7 +439,7 @@ export function ServicesPage() {
                 )}
               </section>
             ) : null}
-          </Tabs>
+          </PageTabs>
 
           <OpsResultPanel
             title="操作結果"

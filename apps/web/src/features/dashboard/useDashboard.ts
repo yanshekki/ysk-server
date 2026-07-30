@@ -39,7 +39,9 @@ export function useDashboard() {
     summary: { ok: number; warn: number; bad: number; total: number };
     findings: Array<{
       kind: string;
+      id?: string;
       name: string;
+      apply_status?: string;
       issue?: string;
       severity: string;
       href?: string;

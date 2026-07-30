@@ -1,13 +1,14 @@
 /**
  * Email control plane — SOC-style hub:
  * domains · queue · software stack · ops notes.
- * Create only in page header actions.
+ * Create only in domains ListPanel toolbar (table top-right).
  */
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { emailApi, useEmailDomains } from '../features/email';
 import {
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -17,11 +18,11 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-  KpiCard,
-  KpiGrid,
+  ListPanel,
   Modal,
+  ConfirmDialog,
+  PageTabs,
   SoftwareInstallBanner,
-  Tabs,
 } from '../shared/components/ui';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -48,6 +49,7 @@ export function EmailPage() {
   const [serverIpv6, setServerIpv6] = useState(ctx.serverIpv6 ?? '');
   const [query, setQuery] = useState('');
   const [queueBusy, setQueueBusy] = useState(false);
+  const [flushConfirmOpen, setFlushConfirmOpen] = useState(false);
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
   const [queueOk, setQueueOk] = useState<boolean | null>(null);
   const [queueItems, setQueueItems] = useState<Array<{ id: string; raw: string }>>([]);
@@ -111,7 +113,6 @@ export function EmailPage() {
   }
 
   async function flushAll() {
-    if (!window.confirm('確定清空全部郵件佇列？此操作不可復原。')) return;
     setQueueBusy(true);
     try {
       const r = await emailApi.flushQueue({ all: true });
@@ -146,41 +147,47 @@ export function EmailPage() {
   return (
     <FeaturePageLayout
       title={t('nav.email', { defaultValue: '郵件' })}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label: items.length ? `${items.length} 域名` : '無域名',
+          tone: items.length ? 'ok' : 'warn',
+        },
+        items: [
+          { label: '域名', value: items.length },
+          {
+            label: '健康≥80',
+            value: healthy,
+            tone: healthy > 0 ? 'ok' : undefined,
+          },
+          {
+            label: '已套用',
+            value: applied,
+            tone: applied > 0 ? 'ok' : undefined,
+          },
+          {
+            label: '草稿',
+            value: draft,
+            tone: draft > 0 ? 'warn' : undefined,
+          },
+        ],
+      }}
+      actions={<ActionBar>
           <Button
-            variant="secondary"
-            size="md"
+            variant="ghost"
+            size="sm"
             loading={busy}
             onClick={() => void refresh().catch((e: Error) => setError(e.message))}
           >
             重新整理
           </Button>
-          <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
-            + {t('email.create')}
-          </Button>
-        </div>
+          
+        </ActionBar>
       }
     >
-      <KpiGrid cols={4}>
-        <KpiCard label="域名">
-          <span className="mail-kpi-value">{items.length}</span>
-        </KpiCard>
-        <KpiCard label="健康 ≥80">
-          <span className="mail-kpi-value">{healthy}</span>
-        </KpiCard>
-        <KpiCard label="已套用">
-          <span className="mail-kpi-value">{applied}</span>
-        </KpiCard>
-        <KpiCard label="草稿">
-          <span className="mail-kpi-value">{draft}</span>
-        </KpiCard>
-      </KpiGrid>
-
       <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <Tabs
+      <PageTabs
         tabs={[
           {
             id: 'domains',
@@ -201,8 +208,21 @@ export function EmailPage() {
       >
         {tab === 'domains' ? (
           <div className="tab-panel mail-panel">
-            <div className="mail-toolbar">
-              <div className="page-toolbar__search mail-toolbar__search">
+            <ListPanel
+              title={`域名 (${filtered.length}/${items.length})`}
+              description={t('email.searchPlaceholder')}
+              toolbar={
+                <ActionBar>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setCreateOpen(true)}
+                  >
+                    + {t('email.create')}
+                  </Button>
+                </ActionBar>
+              }
+              filters={
                 <input
                   type="search"
                   value={query}
@@ -210,22 +230,15 @@ export function EmailPage() {
                   placeholder={t('email.searchPlaceholder')}
                   aria-label={t('email.searchPlaceholder')}
                 />
-              </div>
-              <span className="muted u-text-sm">
-                顯示 {filtered.length} / {items.length}
-              </span>
-            </div>
-
-            {filtered.length === 0 ? (
-              <EmptyState
-                title={t('email.empty')}
-                description={
-                  items.length === 0
-                    ? '用右上角「建立郵件域名」登記；成功後進入詳情完成一鍵設定與 DNS。'
-                    : '沒有符合搜尋的域名'
-                }
-              />
-            ) : (
+              }
+              empty={filtered.length === 0}
+              emptyTitle={t('email.empty')}
+              emptyDescription={
+                items.length === 0
+                  ? '用列表右上角「建立」登記域名；成功後進入詳情完成一鍵設定與 DNS。'
+                  : '沒有符合搜尋的域名'
+              }
+            >
               <div className="list-panel mail-domain-list" role="list">
                 {filtered.map((d) => {
                   const st = applyLabel(d.apply_status);
@@ -256,7 +269,7 @@ export function EmailPage() {
                   );
                 })}
               </div>
-            )}
+            </ListPanel>
           </div>
         ) : null}
 
@@ -270,7 +283,7 @@ export function EmailPage() {
                     需 YSK_EXECUTE
                   </p>
                 </div>
-                <div className="btn-row">
+                <ActionBar>
                   <Button
                     variant="secondary"
                     size="md"
@@ -283,11 +296,11 @@ export function EmailPage() {
                     variant="danger"
                     size="md"
                     loading={queueBusy}
-                    onClick={() => void flushAll()}
+                    onClick={() => setFlushConfirmOpen(true)}
                   >
                     清空佇列
                   </Button>
-                </div>
+                </ActionBar>
               </div>
 
               {queueMsg ? (
@@ -372,13 +385,6 @@ export function EmailPage() {
                 </ol>
                 <FormActions>
                   <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => setCreateOpen(true)}
-                  >
-                    + 建立郵件域名
-                  </Button>
-                  <Button
                     variant="secondary"
                     size="md"
                     onClick={() => setTab('domains')}
@@ -433,7 +439,7 @@ export function EmailPage() {
             </div>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <Modal
         open={createOpen}
@@ -523,6 +529,21 @@ export function EmailPage() {
           </FormHint>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={flushConfirmOpen}
+        onClose={() => !queueBusy && setFlushConfirmOpen(false)}
+        onConfirm={() => {
+          setFlushConfirmOpen(false);
+          void flushAll();
+        }}
+        title="清空全部郵件佇列？"
+        description="此操作不可復原，佇列中的郵件將被刪除。"
+        confirmLabel="清空"
+        cancelLabel="取消"
+        danger
+        busy={queueBusy}
+      />
     </FeaturePageLayout>
   );
 }

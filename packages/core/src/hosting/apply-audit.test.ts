@@ -32,7 +32,15 @@ describe('apply-audit', () => {
         },
       ] as never;
       store.snapshot.email_domains = [
-        { id: 'e1', domain: 'mail.com', apply_status: 'draft' },
+        {
+          id: 'e1',
+          domain: 'mail.com',
+          apply_status: 'draft',
+          last_apply: { ok: true, blocked: true, apply_status: 'applied' },
+        },
+      ] as never;
+      store.snapshot.mysql_databases = [
+        { id: 'm1', name: 'appdb', apply_status: 'written' },
       ] as never;
       store.persist();
       const r = auditApplyStatuses(store as unknown as YskDatabase);
@@ -42,8 +50,24 @@ describe('apply-audit', () => {
       expect(r.findings.some((f) => f.issue?.includes('written') || f.apply_status === 'written')).toBe(
         true,
       );
+      expect(
+        r.findings.some((f) => f.issue?.includes('不誠實') || f.issue?.includes('ok=true')),
+      ).toBe(true);
+      expect(r.findings.some((f) => f.kind === 'mysql_db')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('normalizeOpsHonesty flips ok when blocked (shared contract)', async () => {
+    const { normalizeOpsHonesty } = await import('./apply-audit.js');
+    const r = normalizeOpsHonesty({
+      ok: true,
+      blocked: true,
+      notes: ['x'],
+      apply_status: 'applied',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.apply_status).toBe('blocked');
   });
 });

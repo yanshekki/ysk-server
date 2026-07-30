@@ -21,6 +21,7 @@ import type { HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import { getAppTemplate, scaffoldAppTemplate, type AppTemplateId } from './app-templates.js';
 import { normalizeRuntimeVersion } from './runtime.js';
+import { normalizeExtraLogDirs } from './project-logs.js';
 
 export class ProjectService {
   constructor(
@@ -592,6 +593,30 @@ export class ProjectService {
     });
   }
 
+  /**
+   * Set extra log scan directories (relative to home). Always also scans logs/ and log/.
+   */
+  setLogExtraDirs(
+    id: string,
+    dirs: string[] | string,
+    actor: string,
+  ): { project: ProjectDto; notes: string[] } {
+    const row = this.projects.findById(id);
+    if (!row) {
+      throw new YskError(ErrorCodes.NOT_FOUND, `找不到專案：${id}`, { httpStatus: 404 });
+    }
+    const { dirs: cleaned, notes } = normalizeExtraLogDirs(dirs);
+    this.projects.updateMeta(id, { log_extra_dirs: cleaned });
+    this.audit?.append({
+      actor,
+      action: 'project.log_extra_dirs',
+      resource: id,
+      detail: { dirs: cleaned, notes },
+      ok: true,
+    });
+    return { project: this.get(id), notes };
+  }
+
   /** Update network fields (domain, aliases, HTTPS flags). Does not publish nginx. */
   updateNetwork(
     id: string,
@@ -705,6 +730,7 @@ function toDto(row: ProjectRow): ProjectDto {
     accountLocked: row.account_locked,
     deployEntry: row.deploy_entry,
     lastDeployNotes: row.last_deploy_notes,
+    logExtraDirs: row.log_extra_dirs ?? [],
   };
 }
 

@@ -19,7 +19,7 @@ import {
   type CollectionKey,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
-import { getBearer, readBody, sendJson } from '../http/util.js';
+import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
 const COLLECTIONS: Record<string, CollectionKey> = {
   'nginx/sites': 'nginx_sites',
@@ -130,6 +130,12 @@ export async function handleResourcesRoutes(
         sendJson(res, 400, { ok: false, message: '請填寫 zone 名稱' });
         return true;
       }
+      const nsName = data.nsName ? String(data.nsName).trim() : undefined;
+      const ttlRaw = data.ttl != null ? Number(data.ttl) : undefined;
+      const ttl =
+        ttlRaw != null && Number.isFinite(ttlRaw) && ttlRaw >= 0
+          ? Math.floor(ttlRaw)
+          : 300;
       const row = createResource(ctx.db, key, {
         zone,
         serverIp,
@@ -137,6 +143,8 @@ export async function handleResourcesRoutes(
         mailHost: data.mailHost,
         backend: data.backend ?? 'bind',
         template,
+        ...(nsName ? { nsName } : {}),
+        ttl,
         apply_status: 'draft',
       });
       seedDnsZoneRecords(
@@ -260,13 +268,13 @@ export async function handleResourcesRoutes(
         detail: r,
         ok: r.ok,
       });
-      sendJson(res, r.ok ? 200 : 404, r);
+      sendOpsResult(res, r, { notFound: true });
       return true;
     }
     if (key === 'certificates') {
       const { deleteCertificate } = await import('@ysk/core');
       const r = deleteCertificate(ctx.db, ctx.dataDir, id);
-      sendJson(res, r.ok ? 200 : 404, r);
+      sendOpsResult(res, r, { notFound: true });
       return true;
     }
     if (key === 'dns_zones') {
@@ -310,22 +318,22 @@ export async function handleResourcesRoutes(
         execute,
         systemConfDir: '/etc/nginx/conf.d',
       });
-      sendJson(res, r.ok ? 200 : 422, r);
+      sendOpsResult(res, r);
       return true;
     }
     if (key === 'mysql_databases') {
       const r = await applyMysqlDatabase(ctx.db, id, ctx.host, execute);
-      sendJson(res, r.ok ? 200 : 422, r);
+      sendOpsResult(res, r);
       return true;
     }
     if (key === 'postgres_databases') {
       const r = await applyPostgresDatabase(ctx.db, id, ctx.host, execute);
-      sendJson(res, r.ok ? 200 : 422, r);
+      sendOpsResult(res, r);
       return true;
     }
     if (key === 'redis_instances') {
       const r = await applyRedisInstance(ctx.db, id, ctx.host, execute);
-      sendJson(res, r.ok ? 200 : 422, r);
+      sendOpsResult(res, r);
       return true;
     }
     if (key === 'dns_zones') {
@@ -334,7 +342,7 @@ export async function handleResourcesRoutes(
         validate: true,
         tryReload: execute,
       });
-      sendJson(res, r.ok ? 200 : 422, r);
+      sendOpsResult(res, r);
       return true;
     }
     if (key === 'ftp_accounts') {
@@ -345,7 +353,7 @@ export async function handleResourcesRoutes(
         host: ctx.host,
         id,
       });
-      sendJson(res, r.ok ? 200 : 422, r);
+      sendOpsResult(res, r);
       return true;
     }
     if (key === 'certificates') {

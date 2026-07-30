@@ -6,3 +6,6 @@ export * from './tool-executor.js';
 export * from './operation-level.js';
 export * from './totp.js';
 export * from './api-keys.js';
+export * from './ssh-identity/index.js';
+export * from './ssh-2fa/index.js';
+export * from './mfa/index.js';

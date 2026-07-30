@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAiTasks } from '../features/llm';
 import type { AiTask } from '../features/llm';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -18,9 +18,9 @@ import {
   FormHint,
   FormLayout,
   Modal,
-  OpsHero,
-  Tabs,
-} from '../shared/components/ui';
+  PageTabs,
+
+  buttonClassName,} from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
 const AI_TABS = ['tasks', 'playbooks'] as const;
@@ -164,59 +164,42 @@ export function AiPage() {
     <FeaturePageLayout
       title={t('nav.ai', { defaultValue: 'AI 任務' })}
       showCapability={false}
-      actions={
-        <div className="btn-row">
-          <Button
-            variant="secondary"
-            size="md"
-            loading={busy}
-            onClick={() => void refresh().catch(() => undefined)}
-          >
-            重新整理
-          </Button>
-          <Button variant="primary" size="md" onClick={openCreate}>
-            + 建立任務
-          </Button>
-          <Link to="/agents" className="btn btn--ghost btn--md">
-            Agents
-          </Link>
-        </div>
-      }
-    >
-      {error ? <Alert variant="error">{error}</Alert> : null}
-
-      <OpsHero
-        pill={stats.active > 0 ? `${stats.active} 進行中` : `${tasks.length} 任務`}
-        pillTone={stats.failed ? 'warn' : stats.active ? 'ok' : 'neutral'}
-        tone={stats.failed ? 'warn' : 'ok'}
-        cta={
-          <>
-            <Button variant="primary" size="md" onClick={openCreate}>
-              + 建立任務
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => setTab('playbooks')}
-            >
-              劇本庫
-            </Button>
-          </>
-        }
-        stats={[
+      status={{
+        pill: {
+          label:
+            stats.active > 0 ? `${stats.active} 進行中` : `${tasks.length} 任務`,
+          tone: stats.failed ? 'warn' : stats.active ? 'ok' : 'neutral',
+        },
+        items: [
           { label: '任務', value: tasks.length },
           { label: '進行中', value: stats.active },
           { label: '已完成', value: stats.done },
           {
             label: '失敗',
-            value: (
-              <Badge tone={stats.failed ? 'danger' : 'ok'}>{stats.failed}</Badge>
-            ),
+            value: stats.failed,
+            tone: stats.failed ? 'danger' : 'ok',
           },
-        ]}
-      />
+        ],
+      }}
+      actions={<ActionBar>
+          <Button
+            variant="ghost"
+            size="sm"
+            loading={busy}
+            onClick={() => void refresh().catch(() => undefined)}
+          >
+            重新整理
+          </Button>
+          <Link to="/agents" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            Agents
+          </Link>
+          
+        </ActionBar>
+      }
+    >
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'tasks', label: `任務 (${tasks.length})` },
           { id: 'playbooks', label: `劇本 (${playbooks.length})` },
@@ -227,29 +210,7 @@ export function AiPage() {
       >
         {tab === 'tasks' ? (
           <div className="tab-panel">
-            {tasks.length === 0 ? (
-              <section className="ops-panel">
-                <EmptyState
-                  title="尚未有任務"
-                  description="用自然語言建立計劃，或從劇本庫一鍵產生任務"
-                  action={
-                    <div className="btn-row">
-                      <Button variant="primary" size="md" onClick={openCreate}>
-                        + 建立任務
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        onClick={() => setTab('playbooks')}
-                      >
-                        瀏覽劇本
-                      </Button>
-                    </div>
-                  }
-                />
-              </section>
-            ) : (
-              <div className="ai-console">
+            <div className="ai-console">
                 <section className="ai-console__list ops-panel">
                   <header className="ops-panel__head">
                     <div>
@@ -259,9 +220,24 @@ export function AiPage() {
                       </p>
                     </div>
                     <Button variant="primary" size="sm" onClick={openCreate}>
-                      + 建立
+                      + 建立任務
                     </Button>
                   </header>
+                  {tasks.length === 0 ? (
+                    <EmptyState
+                      title="尚未有任務"
+                      description="用列表右上角建立任務，或從劇本庫一鍵產生"
+                      action={
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setTab('playbooks')}
+                        >
+                          瀏覽劇本
+                        </Button>
+                      }
+                    />
+                  ) : (
                   <div className="ai-task-list">
                     {tasks.map((task) => {
                       const sc = stepCount(task);
@@ -299,6 +275,7 @@ export function AiPage() {
                       );
                     })}
                   </div>
+                  )}
                 </section>
 
                 <section className="ai-console__detail ops-panel">
@@ -333,7 +310,7 @@ export function AiPage() {
                             ),
                           )}
                         </div>
-                        <div className="btn-row">
+                        <ActionBar>
                           {canApprove(selected.status) ? (
                             <Button
                               variant="primary"
@@ -359,7 +336,7 @@ export function AiPage() {
                               任務已終結，可建立新任務或執行劇本
                             </span>
                           ) : null}
-                        </div>
+                        </ActionBar>
                       </header>
 
                       <div className="ai-steps">
@@ -419,7 +396,6 @@ export function AiPage() {
                   )}
                 </section>
               </div>
-            )}
           </div>
         ) : null}
 
@@ -436,14 +412,14 @@ export function AiPage() {
                   </div>
                   <span className="ops-muted">{filteredPlaybooks.length} 個</span>
                 </div>
-                <label className="ops-field">
-                  <span className="ops-field__lab">搜尋</span>
+                <Field label="搜尋" htmlFor="pb-filter" flush>
                   <input
+                    id="pb-filter"
                     value={pbFilter}
                     onChange={(e) => setPbFilter(e.target.value)}
                     placeholder="名稱 / 說明"
                   />
-                </label>
+                </Field>
               </header>
               {filteredPlaybooks.length === 0 ? (
                 <EmptyState title="無符合劇本" description="改關鍵字或清空搜尋" />
@@ -483,7 +459,7 @@ export function AiPage() {
             </section>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <Modal
         open={createOpen}

@@ -211,6 +211,8 @@ export async function writeManagedDnsZone(input: {
         mailHost: input.mailHost ?? `mail.${zone}`,
         serial: rendered.serial,
         template,
+        nsName: input.nsName ?? `ns1.${zone}.`,
+        ttl: input.ttl ?? 300,
         records: rendered.records,
         zonePath,
         updatedAt: new Date().toISOString(),

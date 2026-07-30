@@ -6,10 +6,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  ActionBar,
   Alert,
   Badge,
   Button,
   CheckboxField,
+  DataTable,
   EmptyState,
   FeaturePageLayout,
   Field,
@@ -20,14 +22,14 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
-  Tabs,
+  PageTabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const F2B_TABS = ['bans', 'jails', 'policy', 'service'] as const;
+const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service'] as const;
 
 type F2bStatus = Awaited<ReturnType<typeof systemApi.fail2banStatus>>;
 
@@ -97,11 +99,34 @@ export function Fail2banPage() {
       title={t('nav.fail2ban', { defaultValue: 'fail2ban' })}
       backTo="/protection"
       backLabel="防護中心"
-      actions={
-        <div className="def-head-actions">
+      status={{
+        pill: {
+          label: status?.activeLabel ?? '—',
+          tone: running ? 'ok' : status?.installed ? 'warn' : 'danger',
+        },
+        items: [
+          {
+            label: '目前 ban',
+            value:
+              status?.jails?.reduce((a, j) => a + (j.currentlyBanned ?? 0), 0) ?? 0,
+          },
+          {
+            label: '累計',
+            value: status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0,
+          },
+          { label: 'Jail', value: status?.jails?.length ?? 0 },
+          { label: '封鎖列表', value: banned.length },
+          { label: 'ignoreip', value: status?.ignoreIps?.length ?? 0 },
+          {
+            label: '開機',
+            value: status?.installed ? (status.enabled ?? '—') : '未安裝',
+          },
+        ],
+      }}
+      actions={<div className="def-head-actions">
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => {
               setError(null);
@@ -114,7 +139,7 @@ export function Fail2banPage() {
           {status?.installed && !running ? (
             <Button
               variant="primary"
-              size="md"
+              size="sm"
               loading={busy}
               onClick={() =>
                 void run(async () => {
@@ -149,35 +174,14 @@ export function Fail2banPage() {
         </Alert>
       ) : null}
 
-      <section className="fw-hero">
-        <div>
-          <div className="fw-hero__eyebrow">服務</div>
-          <h2 className="fw-hero__title">
-            <Badge tone={running ? 'ok' : status?.installed ? 'warn' : 'danger'}>
-              {status?.activeLabel ?? '—'}
-            </Badge>
-            {status?.installed ? `開機 ${status.enabled ?? '—'}` : '未安裝'}
-          </h2>
-          <p className="muted u-text-sm">
-            {status?.jails?.length ?? 0} 個 jail · 目前封鎖 {banned.length} · ignoreip{' '}
-            {status?.ignoreIps?.length ?? 0}
-          </p>
-        </div>
-        <div className="fw-hero__stats">
-          <div>
-            <strong>{status?.jails?.reduce((a, j) => a + (j.currentlyBanned ?? 0), 0) ?? 0}</strong>
-            <span>目前 ban</span>
-          </div>
-          <div>
-            <strong>{status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0}</strong>
-            <span>累計</span>
-          </div>
-        </div>
-      </section>
-
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'bans', label: '封鎖列表', badge: banned.length || undefined },
+          {
+            id: 'whitelist',
+            label: '白名單',
+            badge: status?.ignoreIps?.length || undefined,
+          },
           { id: 'jails', label: 'Jail', badge: status?.jails?.length || undefined },
           { id: 'policy', label: '策略' },
           { id: 'service', label: '服務' },
@@ -255,7 +259,9 @@ export function Fail2banPage() {
                   banip
                 </Button>
               </FormActions>
-              <FormHint>臨時封鎖，過 bantime 會自動解；永久拒請用 UFW。</FormHint>
+              <FormHint>
+                臨時封鎖，過 bantime 會自動解；永久拒請用 UFW。白名單見「白名單」分頁。
+              </FormHint>
             </div>
 
             <div className="def-panel-card">
@@ -264,87 +270,94 @@ export function Fail2banPage() {
                   目前封鎖 <Badge tone="neutral">{banned.length}</Badge>
                 </h3>
               </div>
-              {!banned.length ? (
-                <EmptyState title="無封鎖中 IP" description="或無權讀取 fail2ban-client" />
-              ) : (
-                <div className="table-wrap">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>Jail</th>
-                        <th>IP</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {banned.map((b) => (
-                        <tr key={`${b.jail}-${b.ip}`}>
-                          <td>
-                            <code className="inline">{b.jail}</code>
-                          </td>
-                          <td>
-                            <code className="inline">{b.ip}</code>
-                          </td>
-                          <td>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              loading={busy}
-                              onClick={() =>
-                                void run(async () => {
-                                  const r = (await systemApi.fail2banUnban(
-                                    b.jail,
-                                    b.ip,
-                                  )) as OpsResultLike;
-                                  await refresh();
-                                  return r;
-                                }, '已 unban')
-                              }
-                            >
-                              解封
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
-            <div className="def-panel-card">
-              <div className="def-section-head">
-                <h3 className="def-section-head__title">ignoreip（永不 ban）</h3>
-              </div>
-              <div className="def-wl">
-                {(status?.ignoreIps ?? []).map((w) => (
-                  <span key={w} className="def-wl__chip">
-                    <code>{w}</code>
-                    <button
-                      type="button"
-                      className="def-wl__x"
-                      disabled={busy}
+              <DataTable
+                title="Banned IPs（真實 fail2ban-client）"
+                description="需能讀取 client；unban 需 YSK_EXECUTE"
+                columns={[
+                  {
+                    key: 'jail',
+                    header: 'Jail',
+                    nowrap: true,
+                    render: (b) => <code className="inline">{b.jail}</code>,
+                  },
+                  {
+                    key: 'ip',
+                    header: 'IP',
+                    render: (b) => <code className="inline">{b.ip}</code>,
+                  },
+                ]}
+                rows={banned}
+                rowKey={(b) => `${b.jail}-${b.ip}`}
+                rowActions={(b) => (
+                  <ActionBar align="end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void navigator.clipboard?.writeText(b.ip)}
+                    >
+                      複製
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
                       onClick={() =>
                         void run(async () => {
-                          const r = (await systemApi.fail2banIgnoreIp(
-                            w,
-                            'remove',
+                          const r = (await systemApi.fail2banUnban(
+                            b.jail,
+                            b.ip,
                           )) as OpsResultLike;
                           await refresh();
                           return r;
-                        }, '已移除')
+                        }, '已 unban')
                       }
                     >
-                      ×
-                    </button>
-                  </span>
-                ))}
-                {!status?.ignoreIps?.length ? (
-                  <span className="muted u-text-sm">未設定（建議加入你嘅管理 IP）</span>
-                ) : null}
+                      解封
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      loading={busy}
+                      title="加入 ignoreip 白名單"
+                      onClick={() =>
+                        void run(async () => {
+                          const r = (await systemApi.fail2banIgnoreIp(
+                            b.ip,
+                            'add',
+                          )) as OpsResultLike;
+                          await refresh();
+                          return r;
+                        }, '已加入白名單')
+                      }
+                    >
+                      +白名單
+                    </Button>
+                  </ActionBar>
+                )}
+                empty={
+                  <EmptyState
+                    title="無封鎖中 IP"
+                    description="或無權讀取 fail2ban-client"
+                  />
+                }
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {tab === 'whitelist' ? (
+          <div className="tab-panel def-panel">
+            <div className="def-panel-card">
+              <div className="def-section-head">
+                <div>
+                  <h3 className="def-section-head__title">ignoreip 白名單</h3>
+                  <p className="def-section-head__desc">
+                    永不被 ban 的 IP（管理檔 + 可選 live fail2ban-client）。建議加入你的辦公／家居 IP。
+                  </p>
+                </div>
               </div>
               <FormLayout columns={2}>
-                <Field label="新增 IP" htmlFor="f2b-ignore" flush>
+                <Field label="新增 IP" htmlFor="f2b-ignore" flush required>
                   <input
                     id="f2b-ignore"
                     value={ignoreIp}
@@ -356,8 +369,8 @@ export function Fail2banPage() {
               </FormLayout>
               <FormActions>
                 <Button
-                  variant="secondary"
-                  size="sm"
+                  variant="primary"
+                  size="md"
                   loading={busy}
                   disabled={!ignoreIp.trim()}
                   onClick={() =>
@@ -369,12 +382,85 @@ export function Fail2banPage() {
                       setIgnoreIp('');
                       await refresh();
                       return r;
-                    }, '已加入 ignoreip')
+                    }, '已加入白名單')
                   }
                 >
-                  加入
+                  加入白名單
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  disabled={!selected.length}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = (await systemApi.fail2banApply({
+                        apply: true,
+                        jails: selected,
+                        bantime,
+                        findtime,
+                        maxretry,
+                      })) as OpsResultLike;
+                      await refresh();
+                      return r;
+                    }, '已把 ignoreip 寫入 jail.local 並套用')
+                  }
+                >
+                  套用策略（含 ignoreip）
                 </Button>
               </FormActions>
+              <FormHint>
+                無 YSK_EXECUTE 時只寫管理檔（apply_status=written）；「套用策略」會重建
+                jail.local 的 ignoreip= 行並 reload。
+              </FormHint>
+              <DataTable
+                className="u-mt-4"
+                title={`白名單 (${status?.ignoreIps?.length ?? 0})`}
+                description="dataDir/fail2ban/ignoreip.txt"
+                columns={[
+                  {
+                    key: 'ip',
+                    header: 'IP',
+                    render: (row) => <code className="inline">{row.ip}</code>,
+                  },
+                ]}
+                rows={(status?.ignoreIps ?? []).map((ip) => ({ ip }))}
+                rowKey={(row) => row.ip}
+                rowActions={(row) => (
+                  <ActionBar align="end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void navigator.clipboard?.writeText(row.ip)}
+                    >
+                      複製
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      loading={busy}
+                      onClick={() =>
+                        void run(async () => {
+                          const r = (await systemApi.fail2banIgnoreIp(
+                            row.ip,
+                            'remove',
+                          )) as OpsResultLike;
+                          await refresh();
+                          return r;
+                        }, '已移除白名單')
+                      }
+                    >
+                      移除
+                    </Button>
+                  </ActionBar>
+                )}
+                empty={
+                  <EmptyState
+                    title="尚未有白名單 IP"
+                    description="加入管理 IP，避免自己被 ban"
+                  />
+                }
+              />
             </div>
           </div>
         ) : null}
@@ -385,34 +471,41 @@ export function Fail2banPage() {
               <div className="def-section-head">
                 <h3 className="def-section-head__title">作用中 Jail</h3>
               </div>
-              {!status?.jails?.length ? (
-                <EmptyState title="無 jail" description="服務未啟動或尚未套用 jail.local" />
-              ) : (
-                <div className="table-wrap">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>Jail</th>
-                        <th>目前</th>
-                        <th>累計</th>
-                        <th>說明</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {status.jails.map((j) => (
-                        <tr key={j.name}>
-                          <td>
-                            <code className="inline">{j.name}</code>
-                          </td>
-                          <td>{j.currentlyBanned ?? '—'}</td>
-                          <td>{j.totalBanned ?? '—'}</td>
-                          <td className="muted u-text-sm">{descFor(j.name) ?? '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <DataTable
+                columns={[
+                  {
+                    key: 'name',
+                    header: 'Jail',
+                    render: (j) => <code className="inline">{j.name}</code>,
+                  },
+                  {
+                    key: 'currently',
+                    header: '目前',
+                    nowrap: true,
+                    render: (j) => j.currentlyBanned ?? '—',
+                  },
+                  {
+                    key: 'total',
+                    header: '累計',
+                    nowrap: true,
+                    render: (j) => j.totalBanned ?? '—',
+                  },
+                  {
+                    key: 'desc',
+                    header: '說明',
+                    className: 'muted u-text-sm',
+                    render: (j) => descFor(j.name) ?? '—',
+                  },
+                ]}
+                rows={status?.jails ?? []}
+                rowKey={(j) => j.name}
+                empty={
+                  <EmptyState
+                    title="無 jail"
+                    description="服務未啟動或尚未套用 jail.local"
+                  />
+                }
+              />
             </div>
           </div>
         ) : null}
@@ -584,7 +677,7 @@ export function Fail2banPage() {
             </div>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
     </FeaturePageLayout>

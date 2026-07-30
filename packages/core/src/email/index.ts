@@ -15,4 +15,5 @@ export * from './sieve.js';
 export * from './mail-policy.js';
 export * from './sender-rate-policy.js';
 export * from './roundcube-sso-plugin.js';
+export * from './domain-flags-apply.js';
 

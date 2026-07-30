@@ -44,6 +44,7 @@ import { PublicFilesPage } from '../pages/features/PublicFilesPage';
 import { CronPage } from '../pages/features/CronPage';
 import { BackupsPage } from '../pages/features/BackupsPage';
 import { MetricsPage } from '../pages/features/MetricsPage';
+import { NetworkPage } from '../pages/features/NetworkPage';
 import { LogsPage } from '../pages/features/LogsPage';
 import { UsersPage } from '../pages/UsersPage';
 
@@ -102,6 +103,7 @@ export function App() {
           <Route path="fail2ban" element={<Fail2banPage />} />
           <Route path="services" element={<ServicesPage />} />
           <Route path="metrics" element={<MetricsPage />} />
+          <Route path="network" element={<NetworkPage />} />
           <Route path="logs" element={<LogsPage />} />
           <Route path="cron" element={<CronPage />} />
           <Route path="backups" element={<BackupsPage />} />

@@ -182,8 +182,10 @@ export async function applyEmailStack(input: {
     `apt-get install -y ${plan.packages.join(' ')}`,
     'cp "$DIR/postfix/main.cf" /etc/postfix/main.cf',
     'cp "$DIR/dovecot/dovecot.conf" /etc/dovecot/dovecot.conf',
-    'cp "$DIR/opendkim/opendkim.conf" /etc/opendkim.conf || true',
-    'systemctl enable --now postfix dovecot opendkim || true',
+    'cp "$DIR/opendkim/opendkim.conf" /etc/opendkim.conf',
+    'systemctl enable --now postfix',
+    'systemctl enable --now dovecot',
+    'systemctl enable --now opendkim',
     'systemctl reload postfix || systemctl restart postfix',
     'echo "MTA configs applied for $DOMAIN — still need DNS/PTR/Port25"',
     '',
@@ -736,14 +738,27 @@ export async function fail2banIgnoreIp(
   dataDir: string | undefined,
   ip: string,
   action: 'add' | 'remove' = 'add',
-): Promise<{ ok: boolean; notes: string[]; written: string[]; requiresExecute: boolean; blocked?: boolean }> {
+): Promise<{
+  ok: boolean;
+  notes: string[];
+  written: string[];
+  requiresExecute: boolean;
+  blocked?: boolean;
+  apply_status: 'written' | 'applied' | 'blocked' | 'failed';
+}> {
   const written: string[] = [];
   const notes: string[] = [];
   const safeIp = ip.trim();
   if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(safeIp) && !safeIp.includes(':')) {
-    return { ok: false, notes: ['無效 IP'], written, requiresExecute: false };
+    return {
+      ok: false,
+      notes: ['無效 IP'],
+      written,
+      requiresExecute: false,
+      apply_status: 'failed',
+    };
   }
-  // Persist ignore list under dataDir
+  // Persist ignore list under dataDir (always — feeds jail.local ignoreip=)
   if (dataDir) {
     const dir = join(dataDir, 'fail2ban');
     mkdirSync(dir, { recursive: true });
@@ -762,25 +777,36 @@ export async function fail2banIgnoreIp(
     notes.push(`管理白名單: ${listPath} (${list.length} 項)`);
   }
   if (!host.executeEnabled()) {
+    // Control-plane written is success; live client needs EXECUTE (honest written, not fake applied)
     return {
       ok: true,
-      notes: [...notes, '僅寫入管理檔；套用到 fail2ban 需系統變更權限'],
+      notes: [
+        ...notes,
+        '狀態：written（管理白名單已存；live fail2ban-client 需 YSK_EXECUTE，或「策略→套用到系統」重寫 jail.local）',
+      ],
       written,
       requiresExecute: true,
-      blocked: true,
+      apply_status: 'written',
     };
   }
-  // Best-effort: set ignoreip on sshd jail
+  // set ignoreip on sshd jail — applied only when client succeeds
   const r = await host.runCommand(
     ['fail2ban-client', 'set', 'sshd', action === 'add' ? 'addignoreip' : 'delignoreip', safeIp],
     { timeoutMs: 10_000 },
   );
+  const ok = r.exitCode === 0;
   notes.push(
-    r.exitCode === 0
-      ? `sshd ignoreip ${action} ${safeIp}`
-      : `fail2ban-client ignoreip: ${r.stderr || r.stdout || 'failed'}（管理檔已寫）`,
+    ok
+      ? `sshd ignoreip ${action} ${safeIp} · 狀態：applied`
+      : `fail2ban-client ignoreip 失敗：${r.stderr || r.stdout || 'failed'}（管理檔已寫；唔假 applied）`,
   );
-  return { ok: true, notes, written, requiresExecute: false };
+  return {
+    ok,
+    notes,
+    written,
+    requiresExecute: false,
+    apply_status: ok ? 'applied' : 'failed',
+  };
 }
 
 /**

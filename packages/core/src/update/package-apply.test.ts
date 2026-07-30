@@ -80,4 +80,20 @@ describe('applyPackageUpdate', () => {
     expect(ok.applied).toBe(true);
     expect(ok.ok).toBe(true);
   });
+
+  it('blocks when candidate missing or equals current', async () => {
+    const same = await applyPackageUpdate({
+      host: mockHost({}),
+      item: { ...baseItem, candidateVersion: '1.0' },
+    });
+    expect(same.ok).toBe(false);
+    expect(same.blocked).toBe(true);
+
+    const missing = await applyPackageUpdate({
+      host: mockHost({}),
+      item: { ...baseItem, candidateVersion: '' },
+    });
+    expect(missing.ok).toBe(false);
+    expect(missing.blocked).toBe(true);
+  });
 });

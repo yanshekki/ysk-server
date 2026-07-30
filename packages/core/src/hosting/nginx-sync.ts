@@ -16,6 +16,10 @@ export interface NginxSyncResult {
   tested: boolean;
   testOutput?: string;
   notes: string[];
+  /** false when nginx -t failed after system copy was requested */
+  ok: boolean;
+  blocked?: boolean;
+  requiresExecute?: boolean;
 }
 
 /**
@@ -59,9 +63,11 @@ export async function syncNginxConfigs(opts: {
       copied: [],
       tested: false,
       notes: [...notes, '模擬執行：未實際複製'],
+      ok: true,
     };
   }
 
+  let blocked = false;
   if (targetDir && opts.host.executeEnabled()) {
     mkdirSync(targetDir, { recursive: true });
     for (const f of files) {
@@ -81,6 +87,7 @@ export async function syncNginxConfigs(opts: {
     notes.push(`已複製 ${copied.length} 個設定檔到系統目錄`);
   } else if (targetDir) {
     notes.push('無法同步到系統 Nginx：需要系統變更權限');
+    blocked = true;
   }
 
   let tested = false;
@@ -96,7 +103,25 @@ export async function syncNginxConfigs(opts: {
     notes.push('已略過 Nginx 設定檢查（未安裝或未開系統變更權限）');
   }
 
-  return { sourceDir, targetDir, files, copied, tested, testOutput, notes };
+  // ok: managed write always succeeds; system path blocked or nginx -t fail → not ok
+  const ok = blocked
+    ? false
+    : copied.length > 0
+      ? tested || !opts.host.pathExists('/usr/sbin/nginx')
+      : true;
+
+  return {
+    sourceDir,
+    targetDir,
+    files,
+    copied,
+    tested,
+    testOutput,
+    notes,
+    ok,
+    blocked: blocked || undefined,
+    requiresExecute: blocked || undefined,
+  };
 }
 
 /**

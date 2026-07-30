@@ -14,6 +14,8 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  PresetChips,
+  buttonClassName,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 
@@ -45,7 +47,9 @@ export function ProjectNetworkTab({
   const [docRoot, setDocRoot] = useState(project.docRoot ?? '');
   const [bindIp, setBindIp] = useState(project.bindIp ?? '');
   const [saving, setSaving] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(
+    () => Boolean(project.docRoot || project.bindIp),
+  );
 
   useEffect(() => {
     setDomain(project.domain ?? '');
@@ -56,6 +60,7 @@ export function ProjectNetworkTab({
     setAuthUser(project.httpAuthUser ?? '');
     setDocRoot(project.docRoot ?? '');
     setBindIp(project.bindIp ?? '');
+    if (project.docRoot || project.bindIp) setAdvancedOpen(true);
   }, [
     project.id,
     project.domain,
@@ -340,9 +345,51 @@ export function ProjectNetworkTab({
         </CardSection>
       </Card>
 
-      {/* 5. Advanced + publish */}
+      {/* 5. Document root (first-class) + publish */}
       <Card>
-        <CardSection title="進階與發布" description="網站目錄、綁定 IP、發布到系統 Nginx">
+        <CardSection
+          title="網站目錄（docroot）"
+          description="相對專案 home；發布 Nginx 時會用此路徑作為 root（預設 app/public）"
+        >
+          <FormLayout columns={1}>
+            <Field
+              label="文件根目錄"
+              htmlFor="net-doc"
+              flush
+              hint={`完整路徑：${project.homeDir}/${(docRoot.trim() || 'app/public').replace(/^\//, '')}`}
+            >
+              <div className="u-mb-2">
+                <PresetChips
+                  options={[
+                    { value: 'app/public', label: 'app/public' },
+                    { value: 'app', label: 'app' },
+                    { value: 'public', label: 'public' },
+                    { value: 'web', label: 'web' },
+                    { value: 'www', label: 'www' },
+                    { value: 'dist', label: 'dist' },
+                  ]}
+                  value={docRoot || 'app/public'}
+                  onChange={setDocRoot}
+                  allowCustom
+                  customPlaceholder="自訂相對路徑…"
+                  disabled={suspended || localBusy}
+                />
+              </div>
+              <input
+                id="net-doc"
+                value={docRoot}
+                onChange={(e) => setDocRoot(e.target.value)}
+                placeholder="app/public"
+                disabled={suspended}
+                spellCheck={false}
+              />
+            </Field>
+          </FormLayout>
+        </CardSection>
+      </Card>
+
+      <Card>
+        <CardSection title="進階與發布" description="綁定 IP、發布到系統 Nginx">
           <FormHint>
             Nginx 管理檔：{' '}
             {project.nginxConfigPath ? (
@@ -351,33 +398,19 @@ export function ProjectNetworkTab({
               <span className="muted">{t('projects.nginxNone')}</span>
             )}
             {' · '}
-            發布會依 runtime 產生 proxy／PHP-FPM／static conf（含認證與導向）
+            發布會依 runtime 產生 proxy／PHP-FPM／static conf（含認證、導向與 docroot）
           </FormHint>
 
           <button
             type="button"
-            className="btn btn--ghost btn--sm u-mb-4"
+            className={`${buttonClassName({ variant: 'ghost', size: 'sm' })} u-mb-4`}
             onClick={() => setAdvancedOpen((v) => !v)}
           >
-            {advancedOpen ? '收起進階選項' : '展開進階選項（docroot／IP）'}
+            {advancedOpen ? '收起綁定 IP' : '展開綁定 IP'}
           </button>
 
           {advancedOpen ? (
             <FormLayout columns={2}>
-              <Field
-                label="網站目錄"
-                htmlFor="net-doc"
-                hint="相對專案 home，例如 app/public"
-                flush
-              >
-                <input
-                  id="net-doc"
-                  value={docRoot}
-                  onChange={(e) => setDocRoot(e.target.value)}
-                  placeholder="app/public"
-                  disabled={suspended}
-                />
-              </Field>
               <Field label="綁定 IP" htmlFor="net-ip" hint="留空 = 聽全部網卡" flush>
                 <input
                   id="net-ip"
@@ -385,6 +418,7 @@ export function ProjectNetworkTab({
                   onChange={(e) => setBindIp(e.target.value)}
                   placeholder="留空 = 聽全部；可填綁定 IP"
                   disabled={suspended}
+                  spellCheck={false}
                 />
               </Field>
             </FormLayout>

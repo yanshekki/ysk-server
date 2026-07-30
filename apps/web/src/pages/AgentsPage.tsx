@@ -8,21 +8,25 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAgents } from '../features/agents';
 import type { FleetAgent, FleetCommand } from '../features/agents/api';
-import {
+import { ActionBar,
+  ConfirmDialog,
   Alert,
   Badge,
   Button,
   Card,
   CardSection,
+  DataTable,
   DescriptionList,
   EmptyState,
   FeaturePageLayout,
+  InfoCard,
+  InfoCardGrid,
   Field,
   FormHint,
   FormLayout,
   Modal,
-  OpsHero,
   SegRadio,
+  buttonClassName,
 } from '../shared/components/ui';
 
 function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
@@ -178,6 +182,7 @@ export function AgentsPage() {
 
   const [histAgent, setHistAgent] = useState<FleetAgent | null>(null);
   const [resultCmd, setResultCmd] = useState<FleetCommand | null>(null);
+  const [delAgent, setDelAgent] = useState<FleetAgent | null>(null);
 
   function buildCliPayload(cli: string[]): { cli: string[] } {
     const argv = cli.map(String);
@@ -288,23 +293,45 @@ export function AgentsPage() {
   return (
     <FeaturePageLayout
       title={t('nav.agents', { defaultValue: 'AI Agent' })}
-      actions={
-        <div className="btn-row">
-          <Button variant="primary" size="md" onClick={openRegister}>
-            + 登記 Agent
-          </Button>
+      status={{
+        pill: {
+          label:
+            liveAgents > 0
+              ? `${liveAgents} 上線`
+              : agents.length
+                ? '僅登記'
+                : '待探測',
+          tone: liveAgents > 0 ? 'ok' : 'warn',
+        },
+        items: [
+          { label: '運行時', value: runtimeList.length },
+          {
+            label: '運行中',
+            value: running,
+            tone: running > 0 ? 'ok' : 'neutral',
+          },
+          {
+            label: '上線 agent',
+            value: liveAgents,
+            tone: liveAgents > 0 ? 'ok' : 'warn',
+          },
+          { label: '機群', value: agents.length },
+        ],
+      }}
+      actions={<ActionBar>
           <Button
-            variant="secondary"
-            size="md"
+            variant="ghost"
+            size="sm"
             loading={busy}
             onClick={() => void refresh()}
           >
             重新整理
           </Button>
-          <Link to="/ai" className="btn btn--ghost btn--md">
+          <Link to="/ai" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             AI 任務
           </Link>
-        </div>
+          
+        </ActionBar>
       }
     >
       <Alert variant="info">
@@ -325,47 +352,6 @@ export function AgentsPage() {
           </Button>
         </Alert>
       ) : null}
-
-      <OpsHero
-        pill={
-          liveAgents > 0
-            ? `${liveAgents} 上線`
-            : agents.length
-              ? '僅登記'
-              : '待探測'
-        }
-        pillTone={liveAgents > 0 ? 'ok' : agents.length ? 'warn' : 'warn'}
-        tone={liveAgents > 0 ? 'ok' : 'warn'}
-        cta={
-          <>
-            <Button variant="primary" size="md" onClick={openRegister}>
-              + 登記 Agent
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              loading={busy}
-              onClick={() => void refresh()}
-            >
-              重新整理
-            </Button>
-          </>
-        }
-        stats={[
-          { label: '運行時', value: runtimeList.length },
-          {
-            label: '運行中',
-            value: <Badge tone={running > 0 ? 'ok' : 'neutral'}>{running}</Badge>,
-          },
-          {
-            label: '上線 agent',
-            value: (
-              <Badge tone={liveAgents > 0 ? 'ok' : 'warn'}>{liveAgents}</Badge>
-            ),
-          },
-          { label: '機群', value: agents.length },
-        ]}
-      />
 
       <Card>
         <CardSection
@@ -398,93 +384,84 @@ export function AgentsPage() {
           title={`機群（${agents.length}）`}
           description="控制面登記清單 · 登記 ≠ 節點已上線"
         >
-          <div className="btn-row u-mb-3">
-            <Button variant="primary" size="sm" onClick={openRegister}>
-              + 登記 Agent
-            </Button>
-          </div>
-          {agents.length === 0 ? (
-            <EmptyState
-              title="尚未登記 agent"
-              description="可先面板登記預留識別碼，或等邊緣進程自行 register"
-              action={
-                <Button variant="primary" size="md" onClick={openRegister}>
+          <DataTable
+            toolbar={
+              <ActionBar>
+                <Button variant="primary" size="sm" onClick={openRegister}>
                   + 登記 Agent
                 </Button>
-              }
-            />
-          ) : (
-            <div className="table-wrap">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th>識別碼</th>
-                    <th>狀態</th>
-                    <th>群組</th>
-                    <th>最後上線</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {agents.map((a) => (
-                    <tr key={a.id}>
-                      <td>
-                        <code className="inline">{a.agent_id}</code>
-                      </td>
-                      <td>
-                        <Badge tone={statusTone(a.status)}>
-                          {statusLabel(a.status)}
-                        </Badge>
-                      </td>
-                      <td>{a.group ?? '—'}</td>
-                      <td className="muted u-nowrap">
-                        {a.last_seen_at?.slice(0, 19).replace('T', ' ')}
-                      </td>
-                      <td>
-                        <div className="btn-row">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              setCmdPreset('ping');
-                              setCmdAgent(a);
-                            }}
-                          >
-                            下指令
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void openHistory(a)}
-                          >
-                            紀錄
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              if (
-                                !confirm(
-                                  `刪除 ${a.agent_id}？相關指令紀錄一併移除。`,
-                                )
-                              )
-                                return;
-                              void removeAgent(a.id);
-                            }}
-                          >
-                            刪除
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+              </ActionBar>
+            }
+            columns={[
+              {
+                key: 'id',
+                header: '識別碼',
+                render: (a) => <code className="inline">{a.agent_id}</code>,
+              },
+              {
+                key: 'status',
+                header: '狀態',
+                nowrap: true,
+                render: (a) => (
+                  <Badge tone={statusTone(a.status)}>
+                    {statusLabel(a.status)}
+                  </Badge>
+                ),
+              },
+              {
+                key: 'group',
+                header: '群組',
+                render: (a) => a.group ?? '—',
+              },
+              {
+                key: 'last_seen',
+                header: '最後上線',
+                nowrap: true,
+                className: 'muted',
+                render: (a) =>
+                  a.last_seen_at?.slice(0, 19).replace('T', ' ') ?? '—',
+              },
+            ]}
+            rows={agents}
+            rowKey={(a) => a.id}
+            rowActions={(a) => (
+              <ActionBar align="end">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => {
+                    setCmdPreset('ping');
+                    setCmdAgent(a);
+                  }}
+                >
+                  下指令
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void openHistory(a)}
+                >
+                  紀錄
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => setDelAgent(a)}
+                >
+                  刪除
+                </Button>
+              </ActionBar>
+            )}
+            empty={
+              <EmptyState
+                title="尚未登記 agent"
+                description="用列表右上角登記，或等邊緣進程自行 register"
+              />
+            }
+          />
         </CardSection>
       </Card>
 
@@ -494,126 +471,136 @@ export function AgentsPage() {
             title={`指令紀錄 · ${histAgent.agent_id}`}
             description="queued 等節點 pull；done/error 為 ack。CLI 結果含 exit code + JSON（約 4s 自動刷新）"
           >
-            <div className="btn-row u-mb-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                loading={busy}
-                onClick={() => void loadCommands(histAgent.id)}
-              >
-                重新整理紀錄
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  setCmdPreset('cli-readiness');
-                  setCmdAgent(histAgent);
-                }}
-              >
-                下指令
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setHistAgent(null)}
-              >
-                關閉
-              </Button>
-            </div>
-            {commands.length === 0 ? (
-              <EmptyState
-                title="尚未有指令"
-                description="按「下指令」排隊；邊緣 agent 未上線時會一直 queued"
-              />
-            ) : (
-              <div className="table-wrap">
-                <table className="data">
-                  <thead>
-                    <tr>
-                      <th>時間</th>
-                      <th>狀態</th>
-                      <th>exit</th>
-                      <th>指令</th>
-                      <th>結果摘要</th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commands.map((c: FleetCommand) => {
-                      const code = exitCodeOf(c);
-                      const ack = asCliAck(c.result);
-                      const body = unwrapCliBody(ack);
-                      const flags: string[] = [];
-                      if (ack?.dryRun) flags.push('dry-run');
-                      if (ack?.blocked) flags.push('blocked');
-                      if (ack && ack.ok === false) flags.push('ok:false');
-                      if (
-                        body &&
-                        typeof body === 'object' &&
-                        (body as { dryRun?: boolean }).dryRun
-                      ) {
-                        flags.push('plan');
-                      }
-                      const summary =
-                        c.result == null
-                          ? '—'
-                          : ack?.error
-                            ? String(ack.error)
-                            : flags.length
-                              ? flags.join(' · ')
-                              : code === 0
-                                ? 'ok'
-                                : code != null
-                                  ? exitHint(code)
-                                  : '有結果';
-                      return (
-                        <tr key={c.id}>
-                          <td className="muted u-nowrap">
-                            {c.created_at?.slice(0, 19).replace('T', ' ')}
-                            {c.finished_at ? (
-                              <div className="muted u-text-sm">
-                                完成 {c.finished_at.slice(0, 19).replace('T', ' ')}
-                              </div>
-                            ) : null}
-                          </td>
-                          <td>
-                            <Badge tone={cmdStatusTone(c.status)}>{c.status}</Badge>
-                          </td>
-                          <td>
-                            {code != null ? (
-                              <Badge tone={exitTone(code)}>
-                                {code}
-                                {exitHint(code) ? ` · ${exitHint(code)}` : ''}
-                              </Badge>
-                            ) : (
-                              <span className="muted">—</span>
-                            )}
-                          </td>
-                          <td>
-                            <code className="inline u-break-all">
-                              {summarizePayload(c.payload)}
-                            </code>
-                          </td>
-                          <td className="muted u-break-all">{summary}</td>
-                          <td>
-                            {c.result != null ? (
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => setResultCmd(c)}
-                              >
-                                JSON
-                              </Button>
-                            ) : null}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DataTable
+              toolbar={
+                <ActionBar>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => void loadCommands(histAgent.id)}
+                  >
+                    重新整理紀錄
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setCmdPreset('cli-readiness');
+                      setCmdAgent(histAgent);
+                    }}
+                  >
+                    下指令
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setHistAgent(null)}
+                  >
+                    關閉
+                  </Button>
+                </ActionBar>
+              }
+              columns={[
+                {
+                  key: 'time',
+                  header: '時間',
+                  nowrap: true,
+                  className: 'muted',
+                  render: (c) => (
+                    <>
+                      {c.created_at?.slice(0, 19).replace('T', ' ')}
+                      {c.finished_at ? (
+                        <div className="muted u-text-sm">
+                          完成 {c.finished_at.slice(0, 19).replace('T', ' ')}
+                        </div>
+                      ) : null}
+                    </>
+                  ),
+                },
+                {
+                  key: 'status',
+                  header: '狀態',
+                  nowrap: true,
+                  render: (c) => (
+                    <Badge tone={cmdStatusTone(c.status)}>{c.status}</Badge>
+                  ),
+                },
+                {
+                  key: 'exit',
+                  header: 'exit',
+                  nowrap: true,
+                  render: (c) => {
+                    const code = exitCodeOf(c);
+                    return code != null ? (
+                      <Badge tone={exitTone(code)}>
+                        {code}
+                        {exitHint(code) ? ` · ${exitHint(code)}` : ''}
+                      </Badge>
+                    ) : (
+                      <span className="muted">—</span>
+                    );
+                  },
+                },
+                {
+                  key: 'payload',
+                  header: '指令',
+                  render: (c) => (
+                    <code className="inline u-break-all">
+                      {summarizePayload(c.payload)}
+                    </code>
+                  ),
+                },
+                {
+                  key: 'summary',
+                  header: '結果摘要',
+                  className: 'muted u-break-all',
+                  render: (c) => {
+                    const code = exitCodeOf(c);
+                    const ack = asCliAck(c.result);
+                    const body = unwrapCliBody(ack);
+                    const flags: string[] = [];
+                    if (ack?.dryRun) flags.push('dry-run');
+                    if (ack?.blocked) flags.push('blocked');
+                    if (ack && ack.ok === false) flags.push('ok:false');
+                    if (
+                      body &&
+                      typeof body === 'object' &&
+                      (body as { dryRun?: boolean }).dryRun
+                    ) {
+                      flags.push('plan');
+                    }
+                    if (c.result == null) return '—';
+                    if (ack?.error) return String(ack.error);
+                    if (flags.length) return flags.join(' · ');
+                    if (code === 0) return 'ok';
+                    if (code != null) return exitHint(code);
+                    return '有結果';
+                  },
+                },
+              ]}
+              rows={commands}
+              rowKey={(c) => c.id}
+              rowActions={(c) =>
+                c.result != null ? (
+                  <ActionBar align="end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setResultCmd(c)}
+                    >
+                      JSON
+                    </Button>
+                  </ActionBar>
+                ) : null
+              }
+              empty={
+                <EmptyState
+                  title="尚未有指令"
+                  description="按「下指令」排隊；邊緣 agent 未上線時會一直 queued"
+                />
+              }
+            />
           </CardSection>
         </Card>
       ) : null}
@@ -654,7 +641,7 @@ intervalMs: 5000`}
               action={
                 <Button
                   variant="primary"
-                  size="md"
+                  size="sm"
                   loading={busy}
                   onClick={() => void refresh()}
                 >
@@ -663,67 +650,68 @@ intervalMs: 5000`}
               }
             />
           ) : (
-            <div className="kpi-grid kpi-grid--3">
-              {runtimeList.map((rt) => (
-                <article className="kpi-card" key={rt.kind} role="listitem">
-                  <header className="kpi-card__head">
-                    <span className="kpi-card__label">{rt.name ?? rt.kind}</span>
-                    <Badge tone={statusTone(rt.status)}>
-                      {statusLabel(rt.status)}
-                    </Badge>
-                  </header>
-                  <div className="kpi-card__body">
-                    <DescriptionList
-                      columns={1}
-                      items={[
-                        {
-                          label: '路徑',
-                          value: rt.installPath
-                            ? `${rt.pathExists ? '已存在' : '尚未安裝'} · ${rt.installPath}`
-                            : '—',
-                        },
-                        {
-                          label: 'systemd',
-                          value: rt.unitActive
-                            ? `${rt.unitName ?? 'unit'} · ${rt.unitActive}`
-                            : rt.unitName
-                              ? `${rt.unitName} · 未知`
-                              : '—',
-                        },
-                      ]}
-                    />
-                  </div>
-                  <footer className="kpi-card__foot">
-                    <div className="btn-row">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        loading={busy}
-                        onClick={() => void probeKind(rt.kind)}
-                      >
-                        探測
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        loading={busy}
-                        onClick={() => void writeUnit(rt.kind)}
-                      >
-                        unit
-                      </Button>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        loading={busy}
-                        onClick={() => void installKind(rt.kind)}
-                      >
-                        安裝
-                      </Button>
-                    </div>
-                  </footer>
-                </article>
-              ))}
-            </div>
+            <InfoCardGrid cols={3}>
+              {runtimeList.map((rt) => {
+                const pathLine = rt.installPath
+                  ? `${rt.pathExists ? '已存在' : '尚未安裝'} · ${rt.installPath}`
+                  : '—';
+                const unitLine = rt.unitActive
+                  ? `${rt.unitName ?? 'unit'} · ${rt.unitActive}`
+                  : rt.unitName
+                    ? `${rt.unitName} · 未知`
+                    : '—';
+                return (
+                  <InfoCard
+                    key={rt.kind}
+                    title={rt.name ?? rt.kind}
+                    badge={{
+                      label: statusLabel(rt.status),
+                      tone: statusTone(rt.status),
+                    }}
+                    facts={[
+                      {
+                        label: '路徑',
+                        value: pathLine,
+                        mono: Boolean(rt.installPath),
+                      },
+                      {
+                        label: 'systemd',
+                        value: unitLine,
+                        mono: Boolean(rt.unitName),
+                      },
+                    ]}
+                    actions={
+                      <ActionBar>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={busy}
+                          onClick={() => void probeKind(rt.kind)}
+                        >
+                          探測
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={busy}
+                          onClick={() => void writeUnit(rt.kind)}
+                        >
+                          unit
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          loading={busy}
+                          onClick={() => void installKind(rt.kind)}
+                        >
+                          安裝
+                        </Button>
+                      </ActionBar>
+                    }
+                  />
+                );
+              })}
+            </InfoCardGrid>
           )}
         </CardSection>
       </Card>
@@ -895,7 +883,7 @@ intervalMs: 5000`}
       >
         {resultCmd ? (
           <div className="stack-gap">
-            <div className="btn-row">
+            <ActionBar>
               <Badge tone={cmdStatusTone(resultCmd.status)}>{resultCmd.status}</Badge>
               {exitCodeOf(resultCmd) != null ? (
                 <Badge tone={exitTone(exitCodeOf(resultCmd))}>
@@ -908,7 +896,7 @@ intervalMs: 5000`}
               {asCliAck(resultCmd.result)?.blocked ? (
                 <Badge tone="warn">blocked</Badge>
               ) : null}
-            </div>
+            </ActionBar>
             <FormHint>
               外層：edge ack（exitCode / stderr）。內層 <code className="inline">result</code>：
               CLI --json stdout。
@@ -944,6 +932,21 @@ intervalMs: 5000`}
           </div>
         ) : null}
       </Modal>
+
+      <ConfirmDialog
+        open={delAgent != null}
+        onClose={() => setDelAgent(null)}
+        title={delAgent ? `刪除 ${delAgent.agent_id}？` : '刪除 agent？'}
+        description="相關指令紀錄一併移除。"
+        confirmLabel="刪除"
+        cancelLabel="取消"
+        danger
+        onConfirm={() => {
+          const a = delAgent;
+          setDelAgent(null);
+          if (a) void removeAgent(a.id);
+        }}
+      />
     </FeaturePageLayout>
   );
 }

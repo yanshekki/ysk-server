@@ -24,6 +24,7 @@ import {
   FleetService,
   Scheduler,
   collectInventory,
+  adviseInventory,
   createDefaultAllowlist,
   echoTransport,
   evaluateProtection,
@@ -103,7 +104,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   const projectRepo = new ProjectRepository(db);
   const settings = new SettingsRepository(db);
 
-  const auth = new AuthService(users, sessions, audit, db);
+  const auth = new AuthService(users, sessions, audit, db, dataDir);
   const usersAdmin = new UsersAdminService(users, sessions, db, audit);
   const adminUsername = opts.config?.adminUsername ?? 'admin';
   const locale = opts.config?.locale ?? 'zh-TW';
@@ -208,17 +209,21 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       24 * 60 * 60_000,
       async () => {
         try {
-          const inv = await collectInventory(host);
+          const { items: inv, meta } = await collectInventory(host);
+          const advice = adviseInventory(inv);
           settings.setJson('last_inventory', {
             at: new Date().toISOString(),
             count: inv.length,
+            upgradable: meta.upgradableCount,
+            meta,
             sample: inv.slice(0, 40),
-            items: inv.slice(0, 80),
+            items: inv.slice(0, 120),
+            advice: advice.slice(0, 120),
           });
           audit.append({
             actor: 'system',
             action: 'update.inventory.scheduled',
-            detail: { count: inv.length },
+            detail: { count: inv.length, upgradable: meta.upgradableCount },
             ok: true,
           });
         } catch {

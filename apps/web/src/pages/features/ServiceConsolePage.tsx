@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -15,11 +15,10 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-  OpsHero,
   OpsResultPanel,
   PresetChips,
   SegRadio,
-  Tabs,
+  PageTabs,
   FeaturePageLayout,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -354,16 +353,64 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   return (
     <FeaturePageLayout
       title={`${console?.title ?? engine} 服務`}
-      actions={
-        <div className="btn-row">
+      status={
+        console
+          ? {
+              pill: {
+                label: console.activeLabel,
+                tone:
+                  console.active === 'active'
+                    ? 'ok'
+                    : console.installed
+                      ? 'warn'
+                      : 'danger',
+              },
+              items: [
+                {
+                  label: '狀態',
+                  value: console.activeLabel,
+                  tone:
+                    console.active === 'active'
+                      ? 'ok'
+                      : console.installed
+                        ? 'warn'
+                        : 'danger',
+                },
+                {
+                  label: '版本',
+                  value:
+                    console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 28) ??
+                    '—',
+                },
+                {
+                  label: 'EXECUTE',
+                  value: console.executeEnabled ? '開' : '關',
+                  tone: console.executeEnabled ? 'ok' : 'warn',
+                },
+                { label: '變更', value: dirtyKeys.length },
+                {
+                  label: 'Root',
+                  value: console.isRoot ? '是' : '否',
+                  tone: console.isRoot ? 'ok' : 'warn',
+                },
+                {
+                  label: '開機自啟',
+                  value:
+                    console.enabled === 'enabled' ? '是' : console.enabled ?? '—',
+                },
+              ],
+            }
+          : undefined
+      }
+      actions={<ActionBar>
           <Link to={link.path}>
-            <Button variant="secondary" size="md">
+            <Button variant="secondary" size="sm">
               {link.label}
             </Button>
           </Link>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => {
               setError(null);
@@ -373,7 +420,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           >
             重新整理
           </Button>
-        </div>
+        </ActionBar>
       }
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -387,85 +434,9 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         </Alert>
       ) : null}
 
-      {console ? (
-        <>
-        <OpsHero
-          pill={console.activeLabel}
-          pillTone={
-            console.active === 'active' ? 'ok' : console.installed ? 'warn' : 'danger'
-          }
-          tone={console.active === 'active' ? 'ok' : 'warn'}
-          cta={
-            <>
-              <Link to={link.path} className="btn btn--secondary btn--md">
-                {link.label}
-              </Link>
-              <Button variant="ghost" size="md" loading={busy} onClick={() => void refresh()}>
-                重新整理
-              </Button>
-            </>
-          }
-          stats={[
-            {
-              label: '狀態',
-              value: (
-                <Badge
-                  tone={
-                    console.active === 'active'
-                      ? 'ok'
-                      : console.installed
-                        ? 'warn'
-                        : 'danger'
-                  }
-                >
-                  {console.activeLabel}
-                </Badge>
-              ),
-            },
-            {
-              label: '版本',
-              value: (
-                <span className="ops-stat__val--sm">
-                  {console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 28) ?? '—'}
-                </span>
-              ),
-            },
-            {
-              label: 'EXECUTE',
-              value: (
-                <Badge tone={console.executeEnabled ? 'ok' : 'warn'}>
-                  {console.executeEnabled ? '開' : '關'}
-                </Badge>
-              ),
-            },
-            {
-              label: '變更',
-              value: dirtyKeys.length,
-            },
-          ]}
-          rail={
-            <>
-              <li>
-                <span className="ops-rail__k">Root</span>
-                <Badge tone={console.isRoot ? 'ok' : 'warn'}>
-                  {console.isRoot ? '是' : '否'}
-                </Badge>
-              </li>
-              <li>
-                <span className="ops-rail__k">開機自啟</span>
-                <span className="ops-rail__text">
-                  {console.enabled === 'enabled' ? '是' : console.enabled ?? '—'}
-                </span>
-              </li>
-            </>
-          }
-        />
-        </>
-      ) : null}
-
       {console?.blockMessage ? <Alert variant="info">{console.blockMessage}</Alert> : null}
 
-      <Tabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
+      <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'overview' && console ? (
           <Card>
             <CardSection title="服務概覽" description="唯讀資訊，由探測取得（非輸入欄）">
@@ -524,7 +495,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             </Card>
           ) : null,
         )}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
     </FeaturePageLayout>

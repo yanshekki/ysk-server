@@ -1,4 +1,9 @@
+/**
+ * @deprecated Import DataTable from `shared/components/ui` instead.
+ * Kept as a thin adapter so old imports do not break mid-migration.
+ */
 import type { ReactNode } from 'react';
+import { DataTable, type DataColumn } from '../ui/DataTable';
 
 export type ResourceColumn<T> = {
   key: string;
@@ -7,46 +12,42 @@ export type ResourceColumn<T> = {
   className?: string;
 };
 
+/** @deprecated use DataTable */
 export function ResourceTable<T extends { id?: string }>({
   columns,
   rows,
   empty,
   rowActions,
+  title,
+  description,
+  toolbar,
 }: {
   columns: ResourceColumn<T>[];
   rows: T[];
   empty?: ReactNode;
   rowActions?: (row: T) => ReactNode;
+  title?: string;
+  description?: string;
+  toolbar?: ReactNode;
 }) {
-  if (rows.length === 0) {
-    return <>{empty}</>;
-  }
+  const cols: DataColumn<T>[] = columns.map((c) => ({
+    key: c.key,
+    header: c.header,
+    render: c.render,
+    className: c.className,
+  }));
+
   return (
-    <div className="table-wrap">
-      <table className="data">
-        <thead>
-          <tr>
-            {columns.map((c) => (
-              <th key={c.key} className={c.className}>
-                {c.header}
-              </th>
-            ))}
-            {rowActions ? <th className="u-nowrap">操作</th> : null}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={String(row.id ?? i)}>
-              {columns.map((c) => (
-                <td key={c.key} className={c.className}>
-                  {c.render(row)}
-                </td>
-              ))}
-              {rowActions ? <td className="u-nowrap">{rowActions(row)}</td> : null}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      title={title}
+      description={description}
+      toolbar={toolbar}
+      columns={cols}
+      rows={rows}
+      rowKey={(row, i) => String(row.id ?? i)}
+      rowActions={rowActions}
+      empty={empty}
+      dense
+    />
   );
 }

@@ -17,7 +17,7 @@ import {
   OpsResultPanel,
   SegRadio,
   SoftwareInstallBanner,
-  SummaryStrip,
+
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -54,10 +54,23 @@ export function NodeRuntimePage() {
   return (
     <FeaturePageLayout
       title={t('nav.node', { defaultValue: 'Node.js' })}
-      actions={
-        <Button
+      status={{
+        pill: {
+          label: probe ? '已探測' : '未探測',
+          tone: probe ? 'ok' : 'warn',
+        },
+        items: [
+          {
+            label: '探測',
+            value: probe ? '已讀取' : '未探測',
+            tone: probe ? 'ok' : 'neutral',
+          },
+          { label: '目標版本', value: version },
+        ],
+      }}
+      actions={<Button
           variant="secondary"
-          size="md"
+          size="sm"
           loading={busy}
           onClick={() => {
             setError(null);
@@ -83,17 +96,6 @@ export function NodeRuntimePage() {
           </Button>
         </Alert>
       ) : null}
-
-      <SummaryStrip
-        items={[
-          {
-            label: '探測',
-            value: probe ? '已讀取' : '未探測',
-            tone: probe ? 'ok' : 'default',
-          },
-          { label: '目標版本', value: version },
-        ]}
-      />
 
       {probe ? (
         <Card>

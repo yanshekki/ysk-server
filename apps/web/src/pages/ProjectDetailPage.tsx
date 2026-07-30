@@ -13,24 +13,22 @@ import {
   ProjectNetworkTab,
   ProjectOverviewTab,
   ProjectResourcesTab,
-  ProjectStatusBadge,
-  ProjectStatusRail,
   projectsApi,
   useProjectOps,
 } from '../features/projects';
 import { envToText, formatRuntimeLabel } from '../features/projects/model/ops';
 import { getProjectUiProfile } from '../features/projects/model/runtime-ui';
 import { deriveProjectStatus } from '../features/projects/model/status';
-import {
+import { ActionBar,
   Alert,
   Button,
   ConfirmDialog,
   FeaturePageLayout,
   LoadingBlock,
-  OpsHero,
   OpsResultPanel,
-  Tabs,
-} from '../shared/components/ui';
+  PageTabs,
+
+  buttonClassName,} from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
 type ConfirmKind = 'stop' | 'delete' | null;
@@ -52,10 +50,25 @@ export function ProjectDetailPage() {
   const [memoryMax, setMemoryMax] = useState('512M');
   const [cpuQuota, setCpuQuota] = useState('100');
   const [logTail, setLogTail] = useState('');
-  const [logFiles, setLogFiles] = useState<Array<{ name: string; bytes?: number; mtime?: string }>>(
-    [],
-  );
+  const [logFiles, setLogFiles] = useState<
+    Array<{ name: string; bytes?: number; mtime?: string; root?: string }>
+  >([]);
   const [logFile, setLogFile] = useState<string>('');
+  const [logExtraDirs, setLogExtraDirs] = useState<string[]>([]);
+  const [logHits, setLogHits] = useState<
+    Array<{ file: string; lines: string[]; matched: number }>
+  >([]);
+  const [logSearchNotes, setLogSearchNotes] = useState<string[]>([]);
+  const [logRelated, setLogRelated] = useState<
+    Array<{
+      id: string;
+      kind: string;
+      label: string;
+      source: string;
+      available: boolean;
+      meta?: string;
+    }>
+  >([]);
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
   const [phpVersion, setPhpVersion] = useState('8.2');
 
@@ -70,6 +83,7 @@ export function ProjectDetailPage() {
       if (found.memoryMax) setMemoryMax(found.memoryMax);
       if (found.cpuQuotaPercent != null) setCpuQuota(String(found.cpuQuotaPercent));
       if (found.runtimeVersion) setPhpVersion(found.runtimeVersion);
+      if (found.logExtraDirs) setLogExtraDirs(found.logExtraDirs);
     }
     return found;
   }, [id]);
@@ -98,18 +112,53 @@ export function ProjectDetailPage() {
     };
   }, [refreshProject, t]);
 
-  async function loadLogs(fileName?: string) {
+  async function loadLogs(opts?: {
+    fileName?: string;
+    name?: string;
+    grep?: string;
+  }) {
     if (!project) return;
     setBusy(true);
     setError(null);
     try {
-      const r = await projectsApi.logs(project.id);
+      const name = opts?.name;
+      const grep = opts?.grep;
+      const r = await projectsApi.logs(project.id, { name, grep });
       setLogFiles(r.files ?? []);
-      const pick = fileName || logFile || r.files[0]?.name;
+      if (r.extraDirs) setLogExtraDirs(r.extraDirs);
+      setLogHits(r.hits ?? []);
+      setLogSearchNotes(r.notes ?? []);
+      if (r.related) setLogRelated(r.related);
+
+      // Multi-file content search: show first hit preview if no file selected
+      if (grep && r.hits?.length && !opts?.fileName) {
+        const first = r.hits[0]!;
+        setLogFile(first.file);
+        const tail = await projectsApi.logs(project.id, {
+          file: first.file,
+          lines: 200,
+          grep,
+        });
+        const header = `# ${tail.tail?.file ?? first.file}${
+          tail.tail?.notes?.[0] ? ` · ${tail.tail.notes[0]}` : ''
+        }\n`;
+        setLogTail(header + (tail.tail?.lines ?? first.lines).join('\n'));
+        return;
+      }
+
+      const pick = opts?.fileName || logFile || r.files[0]?.name;
       if (pick) {
         setLogFile(pick);
-        const tail = await projectsApi.logs(project.id, pick, 200);
-        setLogTail(`# ${tail.tail?.file ?? pick}\n` + (tail.tail?.lines ?? []).join('\n'));
+        const tail = await projectsApi.logs(project.id, {
+          file: pick,
+          lines: 200,
+          grep,
+        });
+        const notes = tail.tail?.notes?.join(' · ') ?? '';
+        setLogTail(
+          `# ${tail.tail?.file ?? pick}${notes ? ` · ${notes}` : ''}\n` +
+            (tail.tail?.lines ?? []).join('\n'),
+        );
       } else {
         setLogTail(t('projects.logsNoFiles'));
       }
@@ -219,19 +268,66 @@ export function ProjectDetailPage() {
       subtitle={subtitle}
       backTo="/projects"
       backLabel={t('projects.backToList')}
-      actions={
-        <ProjectDetailHeader
-          project={project}
-          busy={busy}
-          onDeploy={() =>
-            void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
-              phpVersion,
-            }).catch(() => undefined)
-          }
-          onStop={() => setConfirm('stop')}
-          onHealth={() => void run('health', project.id).catch(() => undefined)}
-          onRefresh={() => void refreshProject()}
-        />
+      status={{
+        pill: {
+          label: project.runtime,
+          tone: 'ok',
+        },
+        items: [
+          {
+            label: '狀態',
+            value: project.status ?? project.processStatus ?? '—',
+          },
+          {
+            label: 'Port',
+            value: project.port != null ? String(project.port) : '—',
+          },
+          {
+            label: '用戶',
+            value: project.linuxUser || '—',
+          },
+          {
+            label: 'Nginx',
+            value: project.nginxConfigPath ? '已發布' : '未發布',
+            tone: project.nginxConfigPath ? 'ok' : 'neutral',
+          },
+          {
+            label: 'OS',
+            value: project.osProvisioned ? '已建' : '待建',
+            tone: project.osProvisioned ? 'ok' : 'warn',
+          },
+        ],
+        note: statusHint ? <span>{statusHint}</span> : undefined,
+      }}
+      actions={<ActionBar>
+          <Link
+            to={`/files?root=project:${project.id}`}
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+          >
+            檔案
+          </Link>
+          <Link
+            to={`/ssl?domain=${encodeURIComponent(project.domain || '')}&action=le`}
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+          >
+            SSL
+          </Link>
+          <Link to="/logs" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            日誌
+          </Link>
+          <ProjectDetailHeader
+            project={project}
+            busy={busy}
+            onDeploy={() =>
+              void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
+                phpVersion,
+              }).catch(() => undefined)
+            }
+            onStop={() => setConfirm('stop')}
+            onHealth={() => void run('health', project.id).catch(() => undefined)}
+            onRefresh={() => void refreshProject()}
+          />
+        </ActionBar>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
@@ -244,75 +340,7 @@ export function ProjectDetailPage() {
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={project.runtime}
-        pillTone="ok"
-        tone="ok"
-        meta={
-          <>
-            <ProjectStatusBadge project={project} />
-            {project.domain ? (
-              <>
-                <span className="ops-hero__dot" />
-                <span>{project.domain}</span>
-              </>
-            ) : null}
-            {statusHint ? (
-              <>
-                <span className="ops-hero__dot" />
-                <span>{statusHint}</span>
-              </>
-            ) : null}
-          </>
-        }
-        cta={
-          <>
-            <Link
-              to={`/files?root=project:${project.id}`}
-              className="btn btn--secondary btn--md"
-            >
-              檔案
-            </Link>
-            <Link
-              to={`/ssl?domain=${encodeURIComponent(project.domain || '')}&action=le`}
-              className="btn btn--ghost btn--md"
-            >
-              SSL
-            </Link>
-            <Link to="/logs" className="btn btn--ghost btn--md">
-              日誌
-            </Link>
-          </>
-        }
-        stats={[
-          {
-            label: 'Runtime',
-            value: formatRuntimeLabel(project.runtime, project.runtimeVersion),
-          },
-          {
-            label: 'Port',
-            value: project.port != null ? String(project.port) : '—',
-          },
-          {
-            label: '狀態',
-            value: project.status ?? project.processStatus ?? '—',
-          },
-          {
-            label: '用戶',
-            value: project.linuxUser || '—',
-          },
-        ]}
-        rail={
-          <li>
-            <span className="ops-rail__k">home</span>
-            <code className="ops-rail__code">{project.homeDir}</code>
-          </li>
-        }
-      />
-
-      <ProjectStatusRail project={project} />
-
-      <Tabs tabs={tabs} active={activeTab} onChange={setTab} variant="scroll">
+      <PageTabs tabs={tabs} active={activeTab} onChange={setTab} variant="scroll">
         {activeTab === 'overview' ? (
           <ProjectOverviewTab
             project={project}
@@ -425,10 +453,33 @@ export function ProjectDetailPage() {
               logTail={logTail}
               files={logFiles}
               selectedFile={logFile}
+              extraDirs={logExtraDirs}
+              hits={logHits}
+              searchNotes={logSearchNotes}
+              related={logRelated}
               projectId={project?.id}
-              onSelectFile={(name) => void loadLogs(name)}
-              onLoad={() => void loadLogs()}
-              onRefreshFile={() => void loadLogs(logFile)}
+              onSelectFile={(name, opts) =>
+                void loadLogs({ fileName: name, grep: opts?.grep })
+              }
+              onLoad={(opts) => void loadLogs(opts)}
+              onRefreshFile={(opts) =>
+                void loadLogs({ fileName: logFile, grep: opts?.grep })
+              }
+              onSaveExtraDirs={async (dirs) => {
+                if (!project) return;
+                setBusy(true);
+                setError(null);
+                try {
+                  const r = await projectsApi.setLogDirs(project.id, dirs);
+                  setLogExtraDirs(r.extraDirs ?? dirs);
+                  if (r.notes?.length) setMsg(r.notes.join(' · '));
+                  await loadLogs();
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : '儲存 log 目錄失敗');
+                } finally {
+                  setBusy(false);
+                }
+              }}
             />
           </div>
         ) : null}
@@ -446,7 +497,7 @@ export function ProjectDetailPage() {
             />
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title={t('projects.opsResult')} result={opsLog} message={msg} busy={busy} />
 

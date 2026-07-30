@@ -2,7 +2,9 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import {
+import { 
+  DataTable,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -10,17 +12,16 @@ import {
   CardSection,
   ConfirmDialog,
   EmptyState,
-  ExecutionResultPanel,
   Field,
   FeaturePageLayout,
   FormLayout,
   Modal,
-  OpsHero,
+  OpsResultPanel,
   SoftwareInstallBanner,
   FormActions,
   FormHint,
-} from '../../shared/components/ui';
-import { ResourceTable } from '../../shared/components/resource/ResourceTable';
+
+  buttonClassName,} from '../../shared/components/ui';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
 
@@ -115,44 +116,19 @@ export function SslPage() {
     setEmail('');
   }
 
+  const failedCount = items.filter(
+    (c) => (c.status || '').toLowerCase() === 'failed',
+  ).length;
+
   return (
     <FeaturePageLayout
       title={t('nav.ssl', { defaultValue: 'SSL 憑證' })}
-      actions={
-        <div className="btn-row">
-          <Button variant="secondary" size="md" onClick={() => setLeOpen(true)}>
-            申請 Let’s Encrypt
-          </Button>
-          <Button variant="primary" size="md" onClick={() => setUploadOpen(true)}>
-            + 上傳憑證
-          </Button>
-        </div>
-      }
-    >
-      <SoftwareInstallBanner feature="ssl" title="Certbot 尚未安裝" />
-      {error ? <Alert variant="error">{error}</Alert> : null}
-
-      <OpsHero
-        pill={`${items.length} 張`}
-        pillTone={items.length ? 'ok' : 'warn'}
-        tone={items.length ? 'ok' : 'warn'}
-        cta={
-          <>
-            <Button variant="primary" size="md" onClick={() => setLeOpen(true)}>
-              申請 Let’s Encrypt
-            </Button>
-            <Button variant="secondary" size="md" onClick={() => setUploadOpen(true)}>
-              + 上傳憑證
-            </Button>
-            <Link to="/nginx" className="btn btn--ghost btn--md">
-              Nginx
-            </Link>
-            <Link to="/dns" className="btn btn--ghost btn--md">
-              DNS
-            </Link>
-          </>
-        }
-        stats={[
+      status={{
+        pill: {
+          label: `${items.length} 張`,
+          tone: items.length ? 'ok' : 'warn',
+        },
+        items: [
           { label: '憑證', value: items.length },
           {
             label: '有檔案',
@@ -161,30 +137,54 @@ export function SslPage() {
           { label: '綁定', value: bindings.length },
           {
             label: '失敗',
-            value: (
-              <Badge
-                tone={
-                  items.some((c) => (c.status || '').toLowerCase() === 'failed')
-                    ? 'danger'
-                    : 'ok'
-                }
-              >
-                {items.filter((c) => (c.status || '').toLowerCase() === 'failed').length}
-              </Badge>
-            ),
+            value: failedCount,
+            tone: failedCount > 0 ? 'danger' : 'ok',
           },
-        ]}
-      />
+        ],
+      }}
+      actions={<ActionBar>
+          <Button variant="secondary" size="sm" onClick={() => setLeOpen(true)}>
+            申請 Let’s Encrypt
+          </Button>
+          <Button variant="primary" size="sm" onClick={() => setUploadOpen(true)}>
+            + 上傳憑證
+          </Button>
+          <Link to="/nginx" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            Nginx
+          </Link>
+        </ActionBar>
+      }
+    >
+      <SoftwareInstallBanner feature="ssl" title="Certbot 尚未安裝" />
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <ExecutionResultPanel
+      <OpsResultPanel
+        title="操作結果"
         message={msg}
-        ok={ok}
-        blocked={blocked}
-        blockMessage={blockMessage}
-        notes={notes}
-        steps={steps}
+        result={
+          ok != null || blocked || notes.length || steps.length
+            ? {
+                ok: blocked ? false : ok !== false,
+                blocked: Boolean(blocked),
+                blockMessage: blockMessage ?? undefined,
+                notes: [
+                  ...steps.map((s) => {
+                    const st =
+                      s.status === 'ok'
+                        ? '完成'
+                        : s.status === 'blocked'
+                          ? '無法執行'
+                          : s.status === 'failed'
+                            ? '失敗'
+                            : '略過';
+                    return s.detail ? `${s.name}: ${st} — ${s.detail}` : `${s.name}: ${st}`;
+                  }),
+                  ...notes,
+                ],
+              }
+            : null
+        }
         onRetry={blocked ? () => void retryLast() : undefined}
-        onDismiss={clearResult}
         busy={busy}
       />
 
@@ -225,7 +225,7 @@ export function SslPage() {
 
       <Card>
         <CardSection title={`憑證 (${items.length})`}>
-          <ResourceTable
+          <DataTable
             columns={[
               {
                 key: 'domain',
@@ -261,6 +261,7 @@ export function SslPage() {
               },
             ]}
             rows={items}
+            rowKey={(r) => String(r.id ?? r.domain)}
             empty={
               <EmptyState
                 title="尚未有憑證"
@@ -268,11 +269,11 @@ export function SslPage() {
               />
             }
             rowActions={(r) => (
-              <div className="btn-row">
+              <ActionBar>
                 <Button variant="danger" size="sm" loading={busy} onClick={() => setDel(r)}>
                   刪除
                 </Button>
-              </div>
+              </ActionBar>
             )}
           />
         </CardSection>
@@ -286,10 +287,10 @@ export function SslPage() {
         size="lg"
         footer={
           <>
-            <button type="button" className="btn btn--secondary" onClick={() => setUploadOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setUploadOpen(false)}>
               取消
             </button>
-            <button type="submit" form="ssl-up" className="btn btn--primary" disabled={busy}>
+            <button type="submit" form="ssl-up" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
               儲存
             </button>
           </>
@@ -361,10 +362,10 @@ export function SslPage() {
         description="由管理面板在伺服器上申請，無需手動執行 certbot"
         footer={
           <>
-            <button type="button" className="btn btn--secondary" onClick={() => setLeOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setLeOpen(false)}>
               取消
             </button>
-            <button type="submit" form="ssl-le" className="btn btn--primary" disabled={busy}>
+            <button type="submit" form="ssl-le" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
               申請憑證
             </button>
           </>

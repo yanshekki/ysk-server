@@ -9,17 +9,16 @@ import {
   Alert,
   Badge,
   Button,
-  EmptyState,
+  ConfirmDialog,
   FeaturePageLayout,
   Field,
-  FormActions,
-  FormHint,
-  FormLayout,
   LogViewer,
   OpsResultPanel,
   PresetChips,
+  PromptDialog,
   SegRadio,
-  Tabs,
+  PageTabs,
+  buttonClassName,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
@@ -199,6 +198,8 @@ export function LogsPage() {
   const [metaLoading, setMetaLoading] = useState(true);
   const [railFilter, setRailFilter] = useState('');
   const [vacuumDays, setVacuumDays] = useState('14d');
+  const [vacuumConfirm, setVacuumConfirm] = useState<null | 'time' | 'size'>(null);
+  const [bookmarkPromptOpen, setBookmarkPromptOpen] = useState(false);
   const [customPathInput, setCustomPathInput] = useState('');
   const [settingsDraft, setSettingsDraft] = useState<Partial<LogSettings>>({});
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
@@ -660,10 +661,7 @@ export function LogsPage() {
     }, format === 'jsonl' ? '已匯出 JSONL' : '已匯出');
   }
 
-  async function saveBookmark() {
-    const defaultName =
-      activeMeta?.label || activeSource.replace(/^(journal:|file:|project:)/, '');
-    const name = window.prompt('書籤名稱', defaultName) || defaultName;
+  async function saveBookmark(name: string) {
     await run(async () => {
       await api.requestRaw('/api/v1/logs/bookmarks', {
         method: 'POST',
@@ -693,26 +691,78 @@ export function LogsPage() {
     <FeaturePageLayout
       title={t('nav.logs', { defaultValue: '日誌中心' })}
       showCapability={false}
-      actions={
-        <div className="lc-head-actions">
+      status={{
+        pill: {
+          label: overview
+            ? overview.isRoot && overview.executeEnabled
+              ? '完整權限'
+              : !overview.isRoot
+                ? '非 root'
+                : '無 EXECUTE'
+            : '載入中',
+          tone:
+            overview?.isRoot && overview?.executeEnabled
+              ? 'ok'
+              : journalHigh || (overview?.recentErrors ?? 0) > 20
+                ? 'warn'
+                : 'warn',
+        },
+        items: [
+          {
+            label: 'Journal',
+            value:
+              overview?.journalDiskMb != null
+                ? `${overview.journalDiskMb} MB`
+                : '—',
+            tone: journalHigh ? 'warn' : undefined,
+          },
+          {
+            label: '/var/log',
+            value:
+              overview?.varLogMb != null ? `≈${overview.varLogMb}MB` : '—',
+          },
+          {
+            label: '錯誤',
+            value: overview?.recentErrors ?? '—',
+            tone: (overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok',
+          },
+          {
+            label: '專案 log',
+            value:
+              overview?.projectLogs?.fileCount ??
+              projects.reduce((n, p) => n + (p.files?.length ?? 0), 0),
+          },
+          {
+            label: 'EXECUTE',
+            value: overview?.executeEnabled ? '開' : '關',
+            tone: overview?.executeEnabled ? 'ok' : 'warn',
+          },
+          {
+            label: 'Root',
+            value: overview?.isRoot ? '是' : '否',
+            tone: overview?.isRoot ? 'ok' : 'warn',
+          },
+        ],
+      }}
+      actions={<div className="lc-head-actions">
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={metaLoading || busy}
             onClick={() => void refreshMeta()}
           >
             重新整理
           </Button>
-          <Link to="/services" className="btn btn--ghost btn--md">
+          <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             服務狀態
           </Link>
-          <Link to="/metrics" className="btn btn--ghost btn--md">
+          <Link to="/metrics" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             主機指標
           </Link>
-          <Link to="/system" className="btn btn--ghost btn--md">
+          <Link to="/system" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             主機設定
           </Link>
-          <Link to="/protection" className="btn btn--ghost btn--md">
+          <Link to="/protection" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             防護中心
           </Link>
         </div>
@@ -728,119 +778,6 @@ export function LogsPage() {
           </Button>
         </Alert>
       ) : null}
-
-      {/* Hero — aligned with System ops console density */}
-      <section
-        className={`lc-hero${journalHigh || (overview?.recentErrors ?? 0) > 20 ? ' lc-hero--warn' : ''}`}
-        aria-label="日誌健康總覽"
-      >
-        <div className="lc-hero__layout">
-          <div className="lc-hero__main">
-            <div className="lc-hero__eyebrow">System Log Center</div>
-            <h2 className="lc-hero__title">
-              <span
-                className={`ops-hero__pill ops-hero__pill--${
-                  overview?.isRoot && overview?.executeEnabled
-                    ? 'ok'
-                    : journalHigh
-                      ? 'warn'
-                      : 'warn'
-                }`}
-              >
-                {overview
-                  ? overview.isRoot && overview.executeEnabled
-                    ? '完整權限'
-                    : !overview.isRoot
-                      ? '非 root'
-                      : '無 EXECUTE'
-                  : '載入中'}
-              </span>
-              主機日誌觀測
-              {journalHigh ? <Badge tone="warn">Journal 偏高</Badge> : null}
-            </h2>
-            <p className="lc-hero__hint">
-              點來源即可查詢 · 行內公網 IP 可跳轉 ban · allowlist 安全 ·{' '}
-              <strong>唔會</strong>開放任意路徑讀取。written vacuum ≠ 磁碟已回收需 EXECUTE。
-            </p>
-            <div className="lc-hero__meta">
-              <span>
-                來源{' '}
-                <strong>
-                  {overview?.sourceCount?.available ?? '—'}/
-                  {overview?.sourceCount?.total ?? '—'}
-                </strong>
-              </span>
-              <span className="ops-hero__dot" />
-              <span>
-                近 1h err <strong>{overview?.recentErrors ?? '—'}</strong>
-              </span>
-              <span className="ops-hero__dot" />
-              <span>
-                採樣{' '}
-                <strong>
-                  {overview?.at
-                    ? new Date(overview.at).toLocaleString('zh-TW')
-                    : '—'}
-                </strong>
-              </span>
-            </div>
-          </div>
-          <div className="ops-hero__stats lc-hero__stats">
-            <div className="ops-stat">
-              <span className="ops-stat__lab">Journal</span>
-              <span className="ops-stat__val">
-                {overview?.journalDiskMb != null ? `${overview.journalDiskMb}` : '—'}
-                <span className="lc-kpi-unit"> MB</span>
-              </span>
-            </div>
-            <div className="ops-stat">
-              <span className="ops-stat__lab">/var/log</span>
-              <span className="ops-stat__val ops-stat__val--sm">
-                {overview?.varLogMb != null ? `≈${overview.varLogMb}MB` : '—'}
-              </span>
-            </div>
-            <div className="ops-stat">
-              <span className="ops-stat__lab">錯誤</span>
-              <span className="ops-stat__val">
-                <Badge
-                  tone={(overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok'}
-                >
-                  {overview?.recentErrors ?? '—'}
-                </Badge>
-              </span>
-            </div>
-            <div className="ops-stat">
-              <span className="ops-stat__lab">專案 log</span>
-              <span className="ops-stat__val">
-                {overview?.projectLogs?.fileCount ??
-                  projects.reduce((n, p) => n + (p.files?.length ?? 0), 0)}
-              </span>
-            </div>
-          </div>
-        </div>
-        <ul className="ops-rail lc-hero__rail">
-          <li>
-            <span className="ops-rail__k">EXECUTE</span>
-            <Badge tone={overview?.executeEnabled ? 'ok' : 'warn'}>
-              {overview?.executeEnabled ? '開' : '關'}
-            </Badge>
-          </li>
-          <li>
-            <span className="ops-rail__k">Root</span>
-            <Badge tone={overview?.isRoot ? 'ok' : 'warn'}>
-              {overview?.isRoot ? '是' : '否'}
-            </Badge>
-          </li>
-          <li>
-            <span className="ops-rail__k">logrotate</span>
-            <Badge
-              tone={overview?.logrotate?.installed ? 'ok' : 'neutral'}
-            >
-              {overview?.logrotate?.installed ? '有' : '—'}
-            </Badge>
-          </li>
-        </ul>
-      </section>
 
       {/* Quick + bookmarks */}
       <div className="lc-strip">
@@ -904,7 +841,7 @@ export function LogsPage() {
         ) : null}
       </div>
 
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'explore', label: '探索' },
           { id: 'ops', label: '維護' },
@@ -1148,7 +1085,7 @@ export function LogsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => void saveBookmark()}
+                        onClick={() => setBookmarkPromptOpen(true)}
                       >
                         書籤
                       </Button>
@@ -1188,9 +1125,9 @@ export function LogsPage() {
                     emptyLabel={
                       metaLoading
                         ? '載入來源中…'
-                        : '選左側來源，或按快捷 · 再「查詢」'
+                        : '選左側來源，或按快捷 · 再按「查詢」'
                     }
-                    maxHeight="min(62vh, 640px)"
+                    maxHeight="min(58vh, 620px)"
                   />
                 </div>
               </div>
@@ -1200,123 +1137,141 @@ export function LogsPage() {
 
         {tab === 'ops' ? (
           <div className="tab-panel lc-ops">
-            <div className="lc-ops-grid">
-              <div className="lc-card">
+            <div className="lc-section-stats" aria-label="維護概況">
+              <div className="lc-stat">
+                <span className="lc-stat__lab">Journal</span>
+                <span className="lc-stat__val">
+                  {overview?.journalDiskMb != null
+                    ? `${overview.journalDiskMb} MB`
+                    : overview?.journalDisk ?? '—'}
+                </span>
+              </div>
+              <div className="lc-stat">
+                <span className="lc-stat__lab">權限</span>
+                <span className="lc-stat__val">
+                  {overview?.executeEnabled && overview?.isRoot ? '可執行' : '受限'}
+                </span>
+              </div>
+            </div>
+
+            <div className="lc-ops-grid lc-ops-grid--maint">
+              <article className="lc-card lc-card--accent">
                 <div className="lc-card__head">
-                  <h3>Journal vacuum</h3>
-                  <Badge tone={overview?.executeEnabled && overview?.isRoot ? 'ok' : 'warn'}>
-                    {overview?.executeEnabled && overview?.isRoot ? '可執行' : '需 root+EXECUTE'}
+                  <div className="lc-card__titles">
+                    <h3>Journal vacuum</h3>
+                    <p className="lc-card__desc">
+                      釋放 systemd-journal 磁碟。無 EXECUTE 會 blocked，唔假成功。
+                    </p>
+                  </div>
+                  <Badge
+                    tone={
+                      overview?.executeEnabled && overview?.isRoot ? 'ok' : 'warn'
+                    }
+                  >
+                    {overview?.executeEnabled && overview?.isRoot
+                      ? '可執行'
+                      : '需 root+EXECUTE'}
                   </Badge>
                 </div>
-                <p className="muted u-text-sm">
-                  釋放 journal 磁碟。目前：{overview?.journalDisk ?? '—'}
-                  {overview?.journalDiskMb != null
-                    ? ` (≈${overview.journalDiskMb} MB)`
-                    : ''}
-                </p>
-                <FormLayout columns={2}>
-                  <Field label="保留時間" htmlFor="vac-t" flush hint="例 7d · 14d">
+                <div className="lc-card__body">
+                  <Field label="保留時間" htmlFor="vac-t" flush hint="例 7d · 14d · 30d">
                     <input
                       id="vac-t"
                       value={vacuumDays}
                       onChange={(e) => setVacuumDays(e.target.value)}
+                      placeholder="14d"
                     />
                   </Field>
-                </FormLayout>
-                <FormActions>
-                  <Button
-                    variant="danger"
-                    size="md"
-                    loading={busy}
-                    onClick={() => {
-                      if (!window.confirm(`確定 journalctl --vacuum-time=${vacuumDays}？`))
-                        return;
-                      void run(async () => {
-                        const r = (await api.requestRaw('/api/v1/logs/journal/vacuum', {
-                          method: 'POST',
-                          body: JSON.stringify({ mode: 'time', value: vacuumDays }),
-                        })) as OpsResultLike;
-                        await refreshMeta();
-                        return r;
-                      }, '已請求 vacuum');
-                    }}
-                  >
-                    Vacuum 時間
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    onClick={() => {
-                      if (!window.confirm('確定 vacuum-size=500M？')) return;
-                      void run(async () => {
-                        const r = (await api.requestRaw('/api/v1/logs/journal/vacuum', {
-                          method: 'POST',
-                          body: JSON.stringify({ mode: 'size', value: '500M' }),
-                        })) as OpsResultLike;
-                        await refreshMeta();
-                        return r;
-                      }, '已請求 vacuum size');
-                    }}
-                  >
-                    Vacuum 500M
-                  </Button>
-                </FormActions>
-                <FormHint>
-                  無 EXECUTE 會 blocked。建議保留 ≥7 日。
-                </FormHint>
-              </div>
+                  <div className="lc-card__actions">
+                    <Button
+                      variant="danger"
+                      size="md"
+                      loading={busy}
+                      onClick={() => setVacuumConfirm('time')}
+                    >
+                      Vacuum 時間
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={busy}
+                      onClick={() => setVacuumConfirm('size')}
+                    >
+                      Vacuum 500M
+                    </Button>
+                  </div>
+                  <p className="lc-card__hint">建議保留 ≥7 日；操作後重新探測磁碟用量。</p>
+                </div>
+              </article>
 
-              <div className="lc-card">
+              <article className="lc-card">
                 <div className="lc-card__head">
-                  <h3>logrotate</h3>
+                  <div className="lc-card__titles">
+                    <h3>logrotate</h3>
+                    <p className="lc-card__desc">系統 logrotate 狀態（唯讀探測）</p>
+                  </div>
                   <Badge tone={overview?.logrotate?.installed ? 'ok' : 'warn'}>
                     {overview?.logrotate?.installed ? '已安裝' : '未安裝'}
                   </Badge>
                 </div>
-                {overview?.logrotate?.statusText ? (
-                  <pre className="lc-pre">{overview.logrotate.statusText}</pre>
-                ) : (
-                  <p className="muted u-text-sm">無 status 檔或不可讀</p>
-                )}
-              </div>
-
-              <div className="lc-card lc-card--muted">
-                <div className="lc-card__head">
-                  <h3>分工</h3>
+                <div className="lc-card__body">
+                  {overview?.logrotate?.statusText ? (
+                    <pre className="lc-pre">{overview.logrotate.statusText}</pre>
+                  ) : (
+                    <div className="lc-empty-inline">
+                      無 status 檔或不可讀 — 可於服務矩陣檢查 logrotate 套件
+                    </div>
+                  )}
                 </div>
-                <ul className="lc-bullets">
-                  <li>
-                    <strong>日誌中心</strong> = 觀測 journal／檔案／專案
-                  </li>
-                  <li>
-                    <strong>防護中心</strong> = 攻擊應變、自動 ban（點 IP）
-                  </li>
-                  <li>
-                    <strong>專案 → 日誌</strong> = 單站快捷 + 深鏈
-                  </li>
-                </ul>
-                <FormActions>
-                  <Link to="/protection" className="btn btn--secondary btn--sm">
-                    開啟防護中心
-                  </Link>
-                  <Link to="/services" className="btn btn--ghost btn--sm">
-                    服務矩陣
-                  </Link>
-                </FormActions>
-              </div>
+              </article>
+
+              <article className="lc-card lc-card--links">
+                <div className="lc-card__head">
+                  <div className="lc-card__titles">
+                    <h3>相關運維</h3>
+                    <p className="lc-card__desc">日誌觀測 vs 攻擊應變分工</p>
+                  </div>
+                </div>
+                <div className="lc-card__body">
+                  <ul className="lc-bullets">
+                    <li>
+                      <strong>日誌中心</strong> — 觀測 journal／檔案／專案
+                    </li>
+                    <li>
+                      <strong>防護中心</strong> — 攻擊應變、自動 ban（點 IP）
+                    </li>
+                    <li>
+                      <strong>專案 → 日誌</strong> — 單站快捷 + 深鏈
+                    </li>
+                  </ul>
+                  <div className="lc-card__actions">
+                    <Link to="/protection" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+                      防護中心
+                    </Link>
+                    <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                      服務矩陣
+                    </Link>
+                    <Link to="/system" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                      主機設定
+                    </Link>
+                  </div>
+                </div>
+              </article>
             </div>
           </div>
         ) : null}
 
         {tab === 'settings' ? (
           <div className="tab-panel lc-settings">
-            <div className="lc-ops-grid">
-              <div className="lc-card">
+            <div className="lc-settings-grid">
+              <article className="lc-card">
                 <div className="lc-card__head">
-                  <h3>查詢與跟隨</h3>
+                  <div className="lc-card__titles">
+                    <h3>查詢與跟隨</h3>
+                    <p className="lc-card__desc">探索頁預設行數、跟隨節奏、回應上限</p>
+                  </div>
                 </div>
-                <FormLayout columns={2}>
+                <div className="lc-card__body lc-card__body--fields">
                   <Field label="預設行數" htmlFor="set-lines" flush>
                     <PresetChips
                       options={[
@@ -1370,26 +1325,34 @@ export function LogsPage() {
                     />
                   </Field>
                   <Field label="遮罩 secret" htmlFor="set-mask" flush>
-                    <label className="lc-toggle">
+                    <label className="lc-toggle lc-toggle--block">
                       <input
                         id="set-mask"
                         type="checkbox"
                         checked={settingsDraft.maskSecrets !== false}
                         onChange={(e) =>
-                          setSettingsDraft((d) => ({ ...d, maskSecrets: e.target.checked }))
+                          setSettingsDraft((d) => ({
+                            ...d,
+                            maskSecrets: e.target.checked,
+                          }))
                         }
                       />
                       <span>password / token → ***</span>
                     </label>
                   </Field>
-                </FormLayout>
-              </div>
-
-              <div className="lc-card">
-                <div className="lc-card__head">
-                  <h3>保留與告警</h3>
                 </div>
-                <FormLayout columns={2}>
+              </article>
+
+              <article className="lc-card">
+                <div className="lc-card__head">
+                  <div className="lc-card__titles">
+                    <h3>保留與告警</h3>
+                    <p className="lc-card__desc">
+                      vacuum 預設、journal 磁碟告警、自動清理時間窗
+                    </p>
+                  </div>
+                </div>
+                <div className="lc-card__body lc-card__body--fields">
                   <Field label="預設 vacuum 天數" htmlFor="set-vac-d" flush>
                     <PresetChips
                       options={[
@@ -1425,7 +1388,7 @@ export function LogsPage() {
                     />
                   </Field>
                   <Field label="自動 vacuum" htmlFor="set-auto-v" flush>
-                    <label className="lc-toggle">
+                    <label className="lc-toggle lc-toggle--block">
                       <input
                         id="set-auto-v"
                         type="checkbox"
@@ -1456,106 +1419,154 @@ export function LogsPage() {
                       customPlaceholder="HH:MM"
                     />
                   </Field>
-                </FormLayout>
-              </div>
-
-              <div className="lc-card">
-                <div className="lc-card__head">
-                  <h3>自訂 allow 路徑</h3>
                 </div>
-                <p className="muted u-text-sm">僅 /var/log 或 /run/log。拒絕 .ssh、金鑰、/etc。</p>
-                <FormLayout columns={1}>
-                  <Field label="新增路徑" htmlFor="set-custom" flush>
+              </article>
+
+              <article className="lc-card">
+                <div className="lc-card__head">
+                  <div className="lc-card__titles">
+                    <h3>自訂 allow 路徑</h3>
+                    <p className="lc-card__desc">
+                      僅 /var/log 或 /run/log · 拒絕 .ssh、金鑰、/etc
+                    </p>
+                  </div>
+                  <Badge tone="neutral">
+                    {(settingsDraft.customAllowPaths ?? []).length} 條
+                  </Badge>
+                </div>
+                <div className="lc-card__body">
+                  <div className="lc-inline-add">
                     <input
                       id="set-custom"
                       value={customPathInput}
                       onChange={(e) => setCustomPathInput(e.target.value)}
                       placeholder="/var/log/nginx/custom.log"
-                    />
-                  </Field>
-                </FormLayout>
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      const p = customPathInput.trim();
-                      if (!p) return;
-                      setSettingsDraft((d) => ({
-                        ...d,
-                        customAllowPaths: [...(d.customAllowPaths ?? []), p].slice(0, 40),
-                      }));
-                      setCustomPathInput('');
-                    }}
-                  >
-                    加入
-                  </Button>
-                </FormActions>
-                <ul className="lc-path-list">
-                  {(settingsDraft.customAllowPaths ?? []).map((p) => (
-                    <li key={p}>
-                      <code>{p}</code>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const p = customPathInput.trim();
+                          if (!p) return;
                           setSettingsDraft((d) => ({
                             ...d,
-                            customAllowPaths: (d.customAllowPaths ?? []).filter((x) => x !== p),
-                          }))
+                            customAllowPaths: [
+                              ...(d.customAllowPaths ?? []),
+                              p,
+                            ].slice(0, 40),
+                          }));
+                          setCustomPathInput('');
                         }
-                      >
-                        移除
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="lc-card">
-                <div className="lc-card__head">
-                  <h3>書籤</h3>
-                </div>
-                {!bookmarks.length ? (
-                  <EmptyState
-                    title="尚未有書籤"
-                    description="在探索頁查詢後按「書籤」儲存常用過濾"
-                  />
-                ) : (
-                  <ul className="lc-path-list">
-                    {bookmarks.map((b) => (
-                      <li key={b.id}>
-                        <span>
-                          <strong>{b.name}</strong>{' '}
-                          <code className="muted">{b.source}</code>
-                        </span>
-                        <span className="lc-path-list__acts">
-                          <Button variant="ghost" size="sm" onClick={() => applyBookmark(b)}>
-                            開啟
-                          </Button>
+                      }}
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        const p = customPathInput.trim();
+                        if (!p) return;
+                        setSettingsDraft((d) => ({
+                          ...d,
+                          customAllowPaths: [
+                            ...(d.customAllowPaths ?? []),
+                            p,
+                          ].slice(0, 40),
+                        }));
+                        setCustomPathInput('');
+                      }}
+                    >
+                      加入
+                    </Button>
+                  </div>
+                  {(settingsDraft.customAllowPaths ?? []).length === 0 ? (
+                    <div className="lc-empty-inline">尚未加入自訂路徑</div>
+                  ) : (
+                    <ul className="lc-path-list">
+                      {(settingsDraft.customAllowPaths ?? []).map((p) => (
+                        <li key={p}>
+                          <code>{p}</code>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              void run(async () => {
-                                await api.requestRaw(`/api/v1/logs/bookmarks/${b.id}`, {
-                                  method: 'DELETE',
-                                });
-                                await refreshMeta();
-                                return { ok: true, notes: ['已刪'] } as OpsResultLike;
-                              }, '已刪書籤');
-                            }}
+                            onClick={() =>
+                              setSettingsDraft((d) => ({
+                                ...d,
+                                customAllowPaths: (d.customAllowPaths ?? []).filter(
+                                  (x) => x !== p,
+                                ),
+                              }))
+                            }
                           >
-                            刪
+                            移除
                           </Button>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </article>
+
+              <article className="lc-card lc-card--span">
+                <div className="lc-card__head">
+                  <div className="lc-card__titles">
+                    <h3>書籤</h3>
+                    <p className="lc-card__desc">
+                      探索頁常用過濾；開啟會切回探索並套用來源
+                    </p>
+                  </div>
+                  <Badge tone="neutral">{bookmarks.length}</Badge>
+                </div>
+                <div className="lc-card__body">
+                  {!bookmarks.length ? (
+                    <div className="lc-empty-inline">
+                      尚未有書籤 — 在探索頁查詢後按「書籤」儲存
+                    </div>
+                  ) : (
+                    <ul className="lc-path-list lc-path-list--bookmarks">
+                      {bookmarks.map((b) => (
+                        <li key={b.id}>
+                          <span className="lc-bookmark-meta">
+                            <strong>{b.name}</strong>
+                            <code className="muted">{b.source}</code>
+                          </span>
+                          <span className="lc-path-list__acts">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => applyBookmark(b)}
+                            >
+                              開啟
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                void run(async () => {
+                                  await api.requestRaw(
+                                    `/api/v1/logs/bookmarks/${b.id}`,
+                                    { method: 'DELETE' },
+                                  );
+                                  await refreshMeta();
+                                  return {
+                                    ok: true,
+                                    notes: ['已刪'],
+                                  } as OpsResultLike;
+                                }, '已刪書籤');
+                              }}
+                            >
+                              刪
+                            </Button>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </article>
             </div>
-            <FormActions>
+
+            <footer className="lc-settings-bar">
+              <p className="lc-settings-bar__hint">
+                設定寫入面板 DB；自動 vacuum 由排程每 15 分鐘檢查時間窗。
+              </p>
               <Button
                 variant="primary"
                 size="md"
@@ -1564,13 +1575,68 @@ export function LogsPage() {
               >
                 儲存設定
               </Button>
-            </FormActions>
-            <FormHint>設定寫入面板 DB；自動 vacuum 由排程每 15 分鐘檢查時間窗。</FormHint>
+            </footer>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+
+      <PromptDialog
+        open={bookmarkPromptOpen}
+        onClose={() => setBookmarkPromptOpen(false)}
+        title="儲存書籤"
+        description="為目前查詢條件命名"
+        label="名稱"
+        defaultValue={
+          activeMeta?.label ||
+          activeSource.replace(/^(journal:|file:|project:)/, '')
+        }
+        confirmLabel="儲存"
+        onSubmit={(name) => {
+          setBookmarkPromptOpen(false);
+          void saveBookmark(name);
+          return true;
+        }}
+      />
+
+      <ConfirmDialog
+        open={vacuumConfirm != null}
+        onClose={() => !busy && setVacuumConfirm(null)}
+        title={
+          vacuumConfirm === 'time'
+            ? `Vacuum 時間 ${vacuumDays}？`
+            : 'Vacuum 大小 500M？'
+        }
+        description="journalctl vacuum 會刪除舊日誌，不可復原。"
+        confirmLabel="執行"
+        cancelLabel="取消"
+        danger
+        busy={busy}
+        onConfirm={() => {
+          const mode = vacuumConfirm;
+          setVacuumConfirm(null);
+          if (mode === 'time') {
+            void run(async () => {
+              const r = (await api.requestRaw('/api/v1/logs/journal/vacuum', {
+                method: 'POST',
+                body: JSON.stringify({ mode: 'time', value: vacuumDays }),
+              })) as OpsResultLike;
+              await refreshMeta();
+              return r;
+            }, '已請求 vacuum');
+          } else if (mode === 'size') {
+            void run(async () => {
+              const r = (await api.requestRaw('/api/v1/logs/journal/vacuum', {
+                method: 'POST',
+                body: JSON.stringify({ mode: 'size', value: '500M' }),
+              })) as OpsResultLike;
+              await refreshMeta();
+              return r;
+            }, '已請求 vacuum size');
+          }
+        }}
+      />
     </FeaturePageLayout>
   );
 }

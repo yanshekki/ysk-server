@@ -4,7 +4,7 @@
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import { getProjectUiProfile } from '../model/runtime-ui';
-import { Button } from '../../../shared/components/ui';
+import { ActionBar, Button } from '../../../shared/components/ui';
 
 export interface ProjectDetailHeaderProps {
   project: ProjectDto;
@@ -34,7 +34,7 @@ export function ProjectDetailHeader({
         : null;
 
   return (
-    <div className="project-primary-actions btn-row">
+    <ActionBar className="project-primary-actions">
       {ui.showDeploy ? (
         <Button variant="primary" size="md" loading={busy} onClick={onDeploy}>
           {ui.deployIsPhp ? t('projects.deployPhp') : t('projects.deploy')}
@@ -60,6 +60,6 @@ export function ProjectDetailHeader({
           {t('common.refresh')}
         </Button>
       ) : null}
-    </div>
+    </ActionBar>
   );
 }

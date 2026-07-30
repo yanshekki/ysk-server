@@ -31,6 +31,7 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
+    "@simplewebauthn/server": "^13.3.2",
     "@ysk/shared": "workspace:*",
     "maxmind": "^5.0.6"
   },

@@ -4,7 +4,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -17,11 +17,11 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-  OpsHero,
+
   OpsResultPanel,
   PresetChips,
   SegRadio,
-  Tabs,
+  PageTabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
@@ -145,16 +145,38 @@ export function FtpsServicePage() {
   return (
     <FeaturePageLayout
       title={t('nav.ftpService', { defaultValue: 'vsftpd 服務' })}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label: st.text,
+          tone: st.tone === 'neutral' ? 'warn' : st.tone,
+        },
+        items: [
+          {
+            label: '狀態',
+            value: st.text,
+            tone: st.tone === 'neutral' ? 'neutral' : st.tone,
+          },
+          { label: '埠', value: String(settings.listenPort) },
+          {
+            label: '帳戶',
+            value: status?.accountCount != null ? String(status.accountCount) : '—',
+          },
+          {
+            label: 'FTPS',
+            value: settings.sslEnable ? '開' : '關',
+            tone: settings.sslEnable ? 'ok' : 'warn',
+          },
+        ],
+      }}
+      actions={<ActionBar>
           <Link to="/ftp">
-            <Button variant="secondary" size="md">
+            <Button variant="secondary" size="sm">
               帳戶
             </Button>
           </Link>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => {
               setError(null);
@@ -164,7 +186,7 @@ export function FtpsServicePage() {
           >
             重新整理
           </Button>
-        </div>
+        </ActionBar>
       }
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -178,39 +200,7 @@ export function FtpsServicePage() {
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={st.text}
-        pillTone={st.tone === 'neutral' ? 'warn' : st.tone}
-        tone={status?.active === 'active' ? 'ok' : 'warn'}
-        cta={
-          <Link to="/ftp" className="btn btn--secondary btn--md">
-            帳戶
-          </Link>
-        }
-        stats={[
-          {
-            label: '狀態',
-            value: (
-              <Badge tone={st.tone === 'neutral' ? 'neutral' : st.tone}>{st.text}</Badge>
-            ),
-          },
-          { label: '埠', value: String(settings.listenPort) },
-          {
-            label: '帳戶',
-            value: status?.accountCount != null ? String(status.accountCount) : '—',
-          },
-          {
-            label: 'FTPS',
-            value: (
-              <Badge tone={settings.sslEnable ? 'ok' : 'warn'}>
-                {settings.sslEnable ? '開' : '關'}
-              </Badge>
-            ),
-          },
-        ]}
-      />
-
-      <Tabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
+      <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'lifecycle' ? (
           <Card>
             <CardSection title="生命週期" description="安裝與啟動">
@@ -491,7 +481,7 @@ export function FtpsServicePage() {
             </CardSection>
           </Card>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel
         title="操作結果"

@@ -25,6 +25,13 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # Fast static gates (no compile) — fail closed on honesty + UI primitives
+      - name: Honesty + UI gates
+        run: pnpm gates
+
+      - name: Typecheck
+        run: pnpm typecheck
+
       - name: Build
         run: pnpm build
 

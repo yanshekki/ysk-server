@@ -63,7 +63,7 @@ import {
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { applyProtection } from '../app-context.js';
-import { getBearer, readBody, sendJson } from '../http/util.js';
+import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 import { VERSION } from '../version.js';
 
 export async function handleSystemRoutes(
@@ -147,7 +147,7 @@ export async function handleSystemRoutes(
       detail: { preset, ok: r.ok, applied: r.applied },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/bans') {
@@ -180,7 +180,7 @@ export async function handleSystemRoutes(
       detail: { ip: data.ip, ...r },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/defense/unban') {
@@ -205,7 +205,7 @@ export async function handleSystemRoutes(
       detail: { ip: data.ip, ...r },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/timeline') {
@@ -247,7 +247,7 @@ export async function handleSystemRoutes(
       detail: { count: data.ips?.length, ok: r.ok, blocked: r.blocked },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/auto-ban') {
@@ -352,7 +352,7 @@ export async function handleSystemRoutes(
       },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/automation') {
@@ -431,7 +431,7 @@ export async function handleSystemRoutes(
       detail: { enable, zones, ok: r.ok },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'PUT' && url.pathname === '/api/v1/defense/automation') {
@@ -500,7 +500,7 @@ export async function handleSystemRoutes(
       detail: { ok: r.ok, notes: r.notes.slice(0, 8) },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, { ...r, status });
+    sendOpsResult(res, { ...r, status });
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/geoip/policy') {
@@ -565,7 +565,7 @@ export async function handleSystemRoutes(
       detail: { ok: a.ok, path: a.path },
       ok: a.ok,
     });
-    sendJson(res, a.ok ? 200 : 422, { ...a, status });
+    sendOpsResult(res, { ...a, status });
     return true;
   }
 
@@ -677,7 +677,7 @@ export async function handleSystemRoutes(
       detail: { ...result, applyStatus, domainId: match?.id },
       ok: result.ok,
     });
-    sendJson(res, result.ok || !data.installPackages ? 200 : 422, {
+    sendOpsResult(res, {
       ...result,
       applyStatus,
       domainId: match?.id ?? null,
@@ -717,7 +717,7 @@ export async function handleSystemRoutes(
       detail: { ...result, certId: certRow.id, domain },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, {
+    sendOpsResult(res, {
       ok: result.ok,
       executed: result.executed,
       blocked: result.blocked,
@@ -748,7 +748,7 @@ export async function handleSystemRoutes(
       detail: r,
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 404, r);
+    sendOpsResult(res, r, { notFound: true });
     return true;
   }
 
@@ -778,7 +778,7 @@ export async function handleSystemRoutes(
       commands: result.commands ?? [],
       notes: result.notes ?? [],
     });
-    sendJson(res, result.ok ? 200 : 422, {
+    sendOpsResult(res, {
       ok: result.ok,
       executed: result.executed,
       blocked: result.blocked,
@@ -880,7 +880,7 @@ export async function handleSystemRoutes(
       detail: { feature: data.feature, ids: data.ids, ok: result.ok },
       ok: Boolean(result.ok),
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -899,7 +899,7 @@ export async function handleSystemRoutes(
       detail: { id, ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -927,7 +927,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok, applied: result.applied },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/system\/db\/(mysql|mariadb|postgres|redis)\/lifecycle$/)) {
@@ -943,7 +943,7 @@ export async function handleSystemRoutes(
       detail: { action, ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/system\/db\/(mysql|mariadb|postgres|redis)\/install$/)) {
@@ -958,7 +958,7 @@ export async function handleSystemRoutes(
         detail: { ok: result.ok },
         ok: result.ok,
       });
-      sendJson(res, result.ok ? 200 : 422, result);
+      sendOpsResult(res, result);
       return true;
     }
   }
@@ -1012,7 +1012,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/db/postgres/status') {
@@ -1058,7 +1058,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -1076,7 +1076,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok, blocked: result.blocked },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -1090,7 +1090,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -1138,7 +1138,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/db/redis/install') {
@@ -1150,7 +1150,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/db/redis/start') {
@@ -1162,7 +1162,7 @@ export async function handleSystemRoutes(
       detail: { ok: result.ok },
       ok: result.ok,
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   // Content browser — must stay under /api/v1/system/* (handler gate below protection)
@@ -1173,7 +1173,7 @@ export async function handleSystemRoutes(
     const count = Number(url.searchParams.get('count') ?? 100);
     try {
       const result = await listRedisKeys({ host: ctx.host, db, pattern, count });
-      sendJson(res, result.ok ? 200 : 422, result);
+      sendOpsResult(res, result);
     } catch (e) {
       sendJson(res, 400, {
         ok: false,
@@ -1189,7 +1189,7 @@ export async function handleSystemRoutes(
     const key = url.searchParams.get('key') ?? '';
     try {
       const result = await getRedisKey({ host: ctx.host, db, key });
-      sendJson(res, result.ok ? 200 : 404, result);
+      sendOpsResult(res, result, { notFound: true });
     } catch (e) {
       sendJson(res, 400, { ok: false, notes: [e instanceof Error ? e.message : 'get failed'] });
     }
@@ -1218,7 +1218,7 @@ export async function handleSystemRoutes(
         detail: { key: data.key, db: data.db, ok: result.ok },
         ok: result.ok,
       });
-      sendJson(res, result.ok ? 200 : 422, result);
+      sendOpsResult(res, result);
     } catch (e) {
       sendJson(res, 400, {
         ok: false,
@@ -1243,7 +1243,7 @@ export async function handleSystemRoutes(
         detail: { key: data.key, db: data.db, ok: result.ok },
         ok: result.ok,
       });
-      sendJson(res, result.ok ? 200 : 422, result);
+      sendOpsResult(res, result);
     } catch (e) {
       sendJson(res, 400, {
         ok: false,
@@ -1338,7 +1338,7 @@ export async function handleSystemRoutes(
       detail: result,
       ok: Boolean(result.ok),
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -1370,7 +1370,7 @@ export async function handleSystemRoutes(
       detail: result,
       ok: result.ok,
     });
-    sendJson(res, result.ok || !data.apply ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/firewall/enable') {
@@ -1385,7 +1385,7 @@ export async function handleSystemRoutes(
       detail: { enabled: data.enabled !== false, ...r },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/firewall/deny') {
@@ -1400,7 +1400,7 @@ export async function handleSystemRoutes(
       detail: { ip: data.ip, ...r },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/firewall/delete-deny') {
@@ -1415,7 +1415,7 @@ export async function handleSystemRoutes(
       detail: { ip: data.ip, ...r },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/firewall/delete-rule') {
@@ -1430,7 +1430,7 @@ export async function handleSystemRoutes(
       detail: { num: data.num, ...r },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/firewall/allow-port') {
@@ -1445,7 +1445,7 @@ export async function handleSystemRoutes(
       detail: data,
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -1485,7 +1485,7 @@ export async function handleSystemRoutes(
       detail: result,
       ok: result.ok,
     });
-    sendJson(res, result.ok || !data.apply ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/service') {
@@ -1502,7 +1502,7 @@ export async function handleSystemRoutes(
       detail: { action: data.action, ...r },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/fail2ban/ban') {
@@ -1517,7 +1517,7 @@ export async function handleSystemRoutes(
       detail: data,
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -1540,7 +1540,7 @@ export async function handleSystemRoutes(
       detail: data,
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/fail2ban/ignoreip') {
@@ -1566,7 +1566,7 @@ export async function handleSystemRoutes(
       detail: data,
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -1659,7 +1659,7 @@ export async function handleSystemRoutes(
       detail: r,
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -1704,7 +1704,7 @@ export async function handleSystemRoutes(
       },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : r.blocked ? 422 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -1718,7 +1718,7 @@ export async function handleSystemRoutes(
       detail: r,
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -1746,7 +1746,7 @@ export async function handleSystemRoutes(
       detail: { engine: data.engine, dbName: data.dbName, ok: r.ok },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/db/dumps') {
@@ -1787,7 +1787,7 @@ export async function handleSystemRoutes(
       detail: { engine: data.engine, dbName: data.dbName, ok: r.ok },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -1814,7 +1814,7 @@ export async function handleSystemRoutes(
       detail: result,
       ok: Boolean(result.ok),
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -1835,7 +1835,7 @@ export async function handleSystemRoutes(
       detail: result,
       ok: Boolean(result.ok),
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -1871,7 +1871,7 @@ export async function handleSystemRoutes(
       detail: { unit: data.unit, action: data.action, ...result },
       ok: Boolean(result.ok),
     });
-    sendJson(res, result.ok ? 200 : 422, result);
+    sendOpsResult(res, result);
     return true;
   }
 
@@ -1890,10 +1890,17 @@ export async function handleSystemRoutes(
     ctx.audit.append({
       actor: user.username,
       action: 'update.self.apply',
-      detail: result,
-      ok: result.applied || !apply,
+      detail: {
+        applied: result.applied,
+        ok: result.ok,
+        checked: result.checked,
+        updateAvailable: result.updateAvailable,
+        channel: result.channel,
+      },
+      ok: result.ok,
     });
-    sendJson(res, 200, result);
+    // Honest HTTP: do not 200 when apply failed or channel check failed
+    sendJson(res, result.ok ? 200 : result.checked === false ? 502 : 422, result);
     return true;
   }
 
@@ -1939,7 +1946,7 @@ export async function handleSystemRoutes(
     const name = decodeURIComponent(url.pathname.split('/').pop() || '');
     const { readManagedNginxConf } = await import('@ysk/core');
     const r = readManagedNginxConf(ctx.dataDir, name);
-    sendJson(res, r.ok ? 200 : 404, r);
+    sendOpsResult(res, r, { notFound: true });
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/rebuild') {
@@ -1971,7 +1978,7 @@ export async function handleSystemRoutes(
       },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 

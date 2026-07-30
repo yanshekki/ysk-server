@@ -39,6 +39,9 @@ export type AgentRuntimeKind = 'openclaw' | 'hermes' | 'ionclaw';
 /** Hosting runtime kinds */
 export type HostingRuntime = 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
 
+/** Re-export apply lifecycle for discoverability (canonical: ops.ts) */
+export type { ApplyStatus } from './ops.js';
+
 /** Structured CLI output envelope */
 export interface StructuredResult<T = unknown> {
   ok: boolean;

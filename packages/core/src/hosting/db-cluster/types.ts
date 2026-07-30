@@ -44,7 +44,12 @@ export interface DbClusterMember {
   label?: string;
   access: MemberAccess;
   fleetAgentId?: string;
-  ssh?: { username: string; port: number };
+  ssh?: {
+    username: string;
+    port: number;
+    /** Optional vault identity for -i (panel_outbound) */
+    identityId?: string;
+  };
   applyStatus: MemberApplyStatus;
   lastProbe?: DbClusterMemberProbe;
 }

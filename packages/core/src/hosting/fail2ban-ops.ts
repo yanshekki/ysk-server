@@ -162,16 +162,23 @@ export async function applyFail2banPolicy(input: {
   notes: string[];
   requiresExecute?: boolean;
   requiresRoot?: boolean;
+  apply_status: 'written' | 'applied' | 'blocked' | 'failed';
 }> {
   const { path } = writeFail2banJailLocal(input.dataDir, input.policy);
   const notes = [
     `已寫 ${path}`,
     `jails: ${input.policy.jails.join(', ') || '(無)'}`,
     `bantime=${input.policy.bantime} findtime=${input.policy.findtime} maxretry=${input.policy.maxretry}`,
+    `ignoreip 來源：dataDir/fail2ban/ignoreip.txt`,
   ];
   const written = [path];
   if (!input.apply) {
-    return { ok: true, written, notes: [...notes, '預覽／只寫管理檔'] };
+    return {
+      ok: true,
+      written,
+      notes: [...notes, '狀態：written（預覽／只寫管理檔）'],
+      apply_status: 'written',
+    };
   }
   const can = input.host.executeEnabled() && input.host.isRoot();
   if (!can) {
@@ -182,6 +189,7 @@ export async function applyFail2banPolicy(input: {
       notes: [...notes, '未套用到系統：需 YSK_EXECUTE + root'],
       requiresExecute: !input.host.executeEnabled(),
       requiresRoot: !input.host.isRoot(),
+      apply_status: 'blocked',
     };
   }
   // ensure package
@@ -213,14 +221,22 @@ export async function applyFail2banPolicy(input: {
       timeoutMs: 30_000,
     });
     notes.push(rst.exitCode === 0 ? '已 restart fail2ban' : 'reload/restart 失敗');
+    const ok = cp.exitCode === 0 && (en.exitCode === 0 || rst.exitCode === 0);
     return {
-      ok: cp.exitCode === 0 && (en.exitCode === 0 || rst.exitCode === 0),
+      ok,
       written,
-      notes,
+      notes: [...notes, ok ? '狀態：applied' : '狀態：failed'],
+      apply_status: ok ? 'applied' : 'failed',
     };
   }
   notes.push('已 reload fail2ban');
-  return { ok: cp.exitCode === 0, written, notes };
+  const ok = cp.exitCode === 0;
+  return {
+    ok,
+    written,
+    notes: [...notes, ok ? '狀態：applied' : '狀態：failed'],
+    apply_status: ok ? 'applied' : 'failed',
+  };
 }
 
 export async function getFail2banDeepStatus(input: {

@@ -63,7 +63,12 @@ export class UserRepository {
 
   updateTotp(
     id: string,
-    patch: { totp_secret?: string | null; totp_enabled?: boolean },
+    patch: {
+      totp_secret?: string | null;
+      totp_enabled?: boolean;
+      totp_last_step?: number | null;
+      totp_recovery_hashes?: string[] | null;
+    },
   ): UserRow | undefined {
     const u = this.db.snapshot.users.find((x) => x.id === id);
     if (!u) return undefined;
@@ -73,6 +78,16 @@ export class UserRepository {
       u.totp_secret = patch.totp_secret;
     }
     if (patch.totp_enabled !== undefined) u.totp_enabled = patch.totp_enabled;
+    if (patch.totp_last_step === null) {
+      delete u.totp_last_step;
+    } else if (patch.totp_last_step !== undefined) {
+      u.totp_last_step = patch.totp_last_step;
+    }
+    if (patch.totp_recovery_hashes === null) {
+      delete u.totp_recovery_hashes;
+    } else if (patch.totp_recovery_hashes !== undefined) {
+      u.totp_recovery_hashes = [...patch.totp_recovery_hashes];
+    }
     u.updated_at = new Date().toISOString();
     this.db.persist();
     return { ...u };

@@ -1,6 +1,8 @@
-import { Alert } from './Alert';
-import { Badge } from './Badge';
-import { humanizeOperatorMessage, sanitizeOperatorNotes } from '../../lib/operator-messages';
+/**
+ * @deprecated Prefer OpsResultPanel with OpsResultDto / OpsResultLike.
+ * Thin adapter for SSL-style step results — maps to OpsResultPanel.
+ */
+import { OpsResultPanel, type OpsResultLike } from './OpsResultPanel';
 
 export type ExecutionStep = {
   name: string;
@@ -22,8 +24,21 @@ export type ExecutionResultProps = {
   busy?: boolean;
 };
 
+function stepLabel(s: ExecutionStep): string {
+  const st =
+    s.status === 'ok'
+      ? '完成'
+      : s.status === 'blocked'
+        ? '無法執行'
+        : s.status === 'failed'
+          ? '失敗'
+          : '略過';
+  return s.detail ? `${s.name}: ${st} — ${s.detail}` : `${s.name}: ${st}`;
+}
+
 /**
  * Panel-only execution feedback. Never shows "copy this shell command".
+ * Implementation: OpsResultPanel (single result primitive).
  */
 export function ExecutionResultPanel({
   title = '操作結果',
@@ -34,70 +49,32 @@ export function ExecutionResultPanel({
   notes = [],
   steps = [],
   onRetry,
-  onDismiss,
   busy,
 }: ExecutionResultProps) {
-  if (!message && !blockMessage && notes.length === 0 && steps.length === 0 && ok == null) {
+  if (
+    !message &&
+    !blockMessage &&
+    notes.length === 0 &&
+    steps.length === 0 &&
+    ok == null
+  ) {
     return null;
   }
 
-  const variant = blocked ? 'info' : ok === false ? 'error' : 'ok';
-  const cleanBlock = blockMessage ? humanizeOperatorMessage(blockMessage) : null;
-  const cleanMessage = message ? humanizeOperatorMessage(message) : null;
-  const headline =
-    cleanBlock ||
-    cleanMessage ||
-    (ok === false ? '操作未成功' : ok ? '操作完成' : null);
-
-  const cleanNotes = sanitizeOperatorNotes(notes).filter(
-    (n) => n !== cleanBlock && n !== cleanMessage && n !== blockMessage && n !== message,
-  );
+  const result: OpsResultLike = {
+    ok: blocked ? false : ok !== false,
+    blocked: Boolean(blocked),
+    blockMessage: blockMessage ?? undefined,
+    notes: [...steps.map(stepLabel), ...notes],
+  };
 
   return (
-    <div className="ops-result" role="status">
-      <div className="ops-result__head">
-        <h3 className="ops-result__title">{title}</h3>
-        {blocked ? <Badge tone="warn">無法執行</Badge> : null}
-        {!blocked && ok === true ? <Badge tone="ok">成功</Badge> : null}
-        {!blocked && ok === false ? <Badge tone="danger">失敗</Badge> : null}
-      </div>
-      {headline ? <Alert variant={variant}>{headline}</Alert> : null}
-      {steps.length > 0 ? (
-        <ul className="ops-result__notes">
-          {steps.map((s) => (
-            <li key={s.name}>
-              <strong>{s.name}</strong>:{' '}
-              {s.status === 'ok'
-                ? '完成'
-                : s.status === 'blocked'
-                  ? '無法執行'
-                  : s.status === 'failed'
-                    ? '失敗'
-                    : '略過'}
-              {s.detail ? ` — ${humanizeOperatorMessage(s.detail)}` : ''}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {cleanNotes.length > 0 ? (
-        <ul className="ops-result__notes">
-          {cleanNotes.map((n) => (
-            <li key={n}>{n}</li>
-          ))}
-        </ul>
-      ) : null}
-      <div className="btn-row u-mt-3">
-        {blocked && onRetry ? (
-          <button type="button" className="btn btn--primary btn--sm" disabled={busy} onClick={onRetry}>
-            再試
-          </button>
-        ) : null}
-        {onDismiss ? (
-          <button type="button" className="btn btn--ghost btn--sm" onClick={onDismiss}>
-            關閉
-          </button>
-        ) : null}
-      </div>
-    </div>
+    <OpsResultPanel
+      title={title}
+      result={result}
+      message={message}
+      onRetry={onRetry}
+      busy={busy}
+    />
   );
 }

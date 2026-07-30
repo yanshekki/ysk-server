@@ -169,9 +169,9 @@ export async function applySenderRatePolicyService(input: {
   const written = [...gen.written];
 
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
-    notes.push('狀態：written（policy daemon 已生成；系統套用需 EXECUTE+root）');
+    notes.push('狀態：blocked（policy daemon 已生成；系統套用需 EXECUTE+root）');
     return {
-      ok: true,
+      ok: false,
       notes,
       written,
       blocked: true,
@@ -185,38 +185,94 @@ export async function applySenderRatePolicyService(input: {
   const scriptSys = `${sysDir}/ysk-sender-rate-policy.py`;
   const ratesSys = `${sysDir}/sender-rates.json`;
 
-  const script = [
-    `mkdir -p ${JSON.stringify(sysDir)} ${JSON.stringify(stateDir)}`,
-    `cp -f ${JSON.stringify(gen.scriptPath)} ${JSON.stringify(scriptSys)}`,
-    `cp -f ${JSON.stringify(gen.ratesPath)} ${JSON.stringify(ratesSys)}`,
-    `chmod 755 ${JSON.stringify(scriptSys)}`,
-    // master.cf entry once
-    `grep -q '^ysk_rate' /etc/postfix/master.cf 2>/dev/null || printf '\\n# YSK sender rate\\nysk_rate  unix  -       n       n       -       0       spawn\\n  user=nobody argv=/usr/bin/python3 %s\\n' ${JSON.stringify(scriptSys)} >> /etc/postfix/master.cf`,
-    // main.cf: end-of-data + client restrictions
-    `postconf -e "smtpd_end_of_data_restrictions=check_policy_service unix:private/ysk_rate" 2>/dev/null || true`,
-    // Also on RCPT for earlier feedback (optional soft)
-    `grep -q 'private/ysk_rate' /etc/postfix/main.cf 2>/dev/null || postconf -e "smtpd_recipient_restrictions=\$smtpd_recipient_restrictions, check_policy_service unix:private/ysk_rate" 2>/dev/null || true`,
-    `postfix check 2>&1 | tail -5 || true`,
-    `systemctl reload postfix 2>&1 || service postfix reload 2>&1 || true`,
-  ].join(' && ');
+  // Stepwise — never mask postconf/reload with || true
+  const steps: Array<{ name: string; argv: string[] }> = [
+    {
+      name: 'mkdir+copy',
+      argv: [
+        'bash',
+        '-c',
+        [
+          `mkdir -p ${JSON.stringify(sysDir)} ${JSON.stringify(stateDir)}`,
+          `cp -f ${JSON.stringify(gen.scriptPath)} ${JSON.stringify(scriptSys)}`,
+          `cp -f ${JSON.stringify(gen.ratesPath)} ${JSON.stringify(ratesSys)}`,
+          `chmod 755 ${JSON.stringify(scriptSys)}`,
+        ].join(' && '),
+      ],
+    },
+    {
+      name: 'master.cf ysk_rate',
+      argv: [
+        'bash',
+        '-c',
+        `grep -q '^ysk_rate' /etc/postfix/master.cf 2>/dev/null || printf '\\n# YSK sender rate\\nysk_rate  unix  -       n       n       -       0       spawn\\n  user=nobody argv=/usr/bin/python3 %s\\n' ${JSON.stringify(scriptSys)} >> /etc/postfix/master.cf`,
+      ],
+    },
+    {
+      name: 'postconf end_of_data',
+      argv: [
+        'postconf',
+        '-e',
+        'smtpd_end_of_data_restrictions=check_policy_service unix:private/ysk_rate',
+      ],
+    },
+    {
+      name: 'postconf recipient (optional soft)',
+      argv: [
+        'bash',
+        '-c',
+        `grep -q 'private/ysk_rate' /etc/postfix/main.cf 2>/dev/null || postconf -e "smtpd_recipient_restrictions=\$smtpd_recipient_restrictions, check_policy_service unix:private/ysk_rate"`,
+      ],
+    },
+    {
+      name: 'postfix check',
+      argv: ['bash', '-c', 'postfix check 2>&1 | tail -20; exit ${PIPESTATUS[0]:-0}'],
+    },
+    {
+      name: 'reload postfix',
+      argv: [
+        'bash',
+        '-c',
+        'systemctl reload postfix 2>&1 || service postfix reload 2>&1',
+      ],
+    },
+  ];
 
-  const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 30_000 });
-  notes.push(
-    r.exitCode === 0
-      ? '已安裝 ysk_rate policy service 並 reload postfix'
-      : `安裝部分失敗: ${(r.stderr || r.stdout).slice(0, 300)}`,
-  );
+  let failed = 0;
+  for (const step of steps) {
+    const r = await input.host.runCommand(step.argv, { timeoutMs: 30_000 });
+    if (r.exitCode !== 0) {
+      failed += 1;
+      notes.push(
+        `${step.name} 失敗 (exit ${r.exitCode}): ${(r.stderr || r.stdout).slice(0, 200)}`,
+      );
+      // Hard fail on copy / postconf end_of_data / reload
+      if (
+        step.name === 'mkdir+copy' ||
+        step.name === 'postconf end_of_data' ||
+        step.name === 'reload postfix'
+      ) {
+        notes.push('狀態：written/partial（關鍵步驟失敗 — 唔標 applied）');
+        return {
+          ok: false,
+          notes,
+          written: [...written, scriptSys, ratesSys],
+          apply_status: 'written',
+        };
+      }
+    } else {
+      notes.push(`${step.name} ok`);
+    }
+  }
+
   notes.push('Per-sender：依 envelope sender domain 計 msgs/hour；超限 DEFER_IF_PERMIT');
-  notes.push(
-    r.exitCode === 0
-      ? '狀態：applied'
-      : '狀態：written/partial',
-  );
+  const ok = failed === 0;
+  notes.push(ok ? '狀態：applied' : '狀態：written/partial');
 
   return {
-    ok: r.exitCode === 0,
+    ok,
     notes,
     written: [...written, scriptSys, ratesSys],
-    apply_status: r.exitCode === 0 ? 'applied' : 'written',
+    apply_status: ok ? 'applied' : 'written',
   };
 }

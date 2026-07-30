@@ -2,7 +2,9 @@
  * Compact one-click install strip — single CTA, no repeated buttons.
  */
 import type { ReactNode } from 'react';
+import { ActionBar } from './ActionBar';
 import { Alert } from './Alert';
+import { buttonClassName } from './Button';
 import { useFeatureSoftware } from '../../../features/software';
 import { OpsResultPanel, type OpsResultLike } from './OpsResultPanel';
 
@@ -60,7 +62,7 @@ export function SoftwareInstallBanner({
     <div className="software-install-banner">
       {!ready && missing.length > 0 ? (
         <CardLike>
-          <div className="btn-row u-justify-between u-items-start u-flex-wrap u-gap-4">
+          <ActionBar align="between" className="u-items-start u-flex-wrap u-gap-4">
             <div className="u-min-w-0" style={{ flex: '1 1 12rem' }}>
               <h3 className="ops-result__title u-mt-0 u-mb-0">
                 {title ?? '尚未安裝所需軟件'}
@@ -69,10 +71,10 @@ export function SoftwareInstallBanner({
                 缺少：{names}
               </p>
             </div>
-            <div className="btn-row">
+            <div /* was action-bar */>
               <button
                 type="button"
-                className="btn btn--primary"
+                className={buttonClassName({ variant: 'primary', size: 'md' })}
                 disabled={busy}
                 onClick={() =>
                   void installAll().then((r) => {
@@ -84,7 +86,7 @@ export function SoftwareInstallBanner({
               </button>
               <button
                 type="button"
-                className="btn btn--secondary btn--sm"
+                className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                 disabled={busy}
                 onClick={() => {
                   setError(null);
@@ -95,14 +97,14 @@ export function SoftwareInstallBanner({
                 重新探測
               </button>
             </div>
-          </div>
+          </ActionBar>
         </CardLike>
       ) : null}
 
       {msg && !error ? (
         <Alert variant="ok">
           {msg}{' '}
-          <button type="button" className="btn btn--ghost btn--sm" onClick={() => setMsg(null)}>
+          <button type="button" className={buttonClassName({ variant: 'ghost', size: 'sm' })} onClick={() => setMsg(null)}>
             關閉
           </button>
         </Alert>

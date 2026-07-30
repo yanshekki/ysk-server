@@ -19,10 +19,14 @@ export interface StoreUser {
   package_id?: string;
   /** Suspended panel user */
   suspended?: boolean;
-  /** Base32 TOTP secret when 2FA enrolled */
+  /** Base32 TOTP secret when 2FA enrolled (plain or yskenc:v1:…) */
   totp_secret?: string;
   /** true only after user confirms a valid code */
   totp_enabled?: boolean;
+  /** Last accepted TOTP time-step (anti-replay) */
+  totp_last_step?: number;
+  /** SHA-256 hashes of one-time recovery codes */
+  totp_recovery_hashes?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -49,8 +53,14 @@ export interface StorePackage {
 export interface StoreSession {
   token: string;
   user_id: string;
+  /** Absolute expiry (max lifetime) */
   expires_at: string;
   created_at: string;
+  /** Sliding idle activity */
+  last_seen_at?: string;
+  user_agent?: string;
+  ip?: string;
+  label?: string;
 }
 
 export interface StoreProject {
@@ -116,6 +126,11 @@ export interface StoreProject {
   deploy_entry?: string;
   /** Last deploy operator notes (short, newest first, max ~8) */
   last_deploy_notes?: string[];
+  /**
+   * Extra log scan dirs relative to home_dir (e.g. storage/logs, var/log).
+   * Always also scans logs/ and log/.
+   */
+  log_extra_dirs?: string[];
   created_at: string;
   updated_at: string;
 }

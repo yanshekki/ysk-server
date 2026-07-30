@@ -235,14 +235,14 @@ export async function enableRoundcubeSsoPlugin(input: {
   notes.push(...configResult.notes);
   written.push(...configResult.written);
 
-  const applied = configResult.ok || true;
+  // Symlink succeeded; config may be partial — ok reflects full apply only
   notes.push(
     configResult.ok
-      ? '狀態：applied（symlink + config plugins[] 已嘗試啟用）'
-      : '狀態：applied partial（symlink 成功；config 需手動加 plugins）',
+      ? '狀態：applied（symlink + config plugins[] 已啟用）'
+      : '狀態：partial（symlink 成功；config 需手動加 plugins）— 唔會標成完整 applied',
   );
   return {
-    ok: applied,
+    ok: configResult.ok,
     notes,
     written,
     symlink: linkPath,

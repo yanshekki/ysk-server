@@ -1,0 +1,82 @@
+/**
+ * Encrypted break-glass backup of panel 2FA material (operator-held).
+ * Format: ysk2fabak:v1:<base64(iv|tag|json)>
+ */
+
+import { encryptPrivateKey, decryptPrivateKey, resolveMasterKey } from '../ssh-identity/crypto.js';
+import type { UserRow } from '../../repositories/user-repo.js';
+import { decryptTotpSecret } from './totp-crypto.js';
+
+export type TotpBackupPayload = {
+  v: 1;
+  userId: string;
+  username: string;
+  exportedAt: string;
+  totpSecret: string;
+  recoveryRemaining: number;
+  note: string;
+};
+
+export function exportTotpBackup(input: {
+  dataDir: string;
+  user: UserRow;
+}): { ok: boolean; blob?: string; notes: string[] } {
+  if (!input.user.totp_enabled || !input.user.totp_secret) {
+    return { ok: false, notes: ['未啟用 2FA'] };
+  }
+  try {
+    const secret = decryptTotpSecret(
+      input.dataDir,
+      input.user.id,
+      input.user.totp_secret,
+    );
+    const payload: TotpBackupPayload = {
+      v: 1,
+      userId: input.user.id,
+      username: input.user.username,
+      exportedAt: new Date().toISOString(),
+      totpSecret: secret,
+      recoveryRemaining: (input.user.totp_recovery_hashes ?? []).length,
+      note: '離線保存；含 TOTP secret。遺失 Authenticator 時可手動重建。',
+    };
+    const { key } = resolveMasterKey(input.dataDir);
+    const enc = encryptPrivateKey(
+      key,
+      `totp-bak:${input.user.id}`,
+      JSON.stringify(payload),
+    );
+    return {
+      ok: true,
+      blob: `ysk2fabak:v1:${enc}`,
+      notes: ['已產生加密備份（同一 dataDir master key 可解密）'],
+    };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : 'export failed'] };
+  }
+}
+
+export function importTotpBackupPreview(input: {
+  dataDir: string;
+  userId: string;
+  blob: string;
+}): { ok: boolean; payload?: Omit<TotpBackupPayload, 'totpSecret'> & { totpSecret: '***' }; notes: string[] } {
+  if (!input.blob.startsWith('ysk2fabak:v1:')) {
+    return { ok: false, notes: ['無效備份格式'] };
+  }
+  try {
+    const enc = input.blob.slice('ysk2fabak:v1:'.length);
+    const { key } = resolveMasterKey(input.dataDir);
+    const json = decryptPrivateKey(key, `totp-bak:${input.userId}`, enc);
+    const p = JSON.parse(json) as TotpBackupPayload;
+    return {
+      ok: true,
+      payload: {
+        ...p,
+        totpSecret: '***',
+      },
+      notes: ['解密預覽成功（secret 已遮罩）'],
+    };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : 'decrypt failed'] };
+  }
+}

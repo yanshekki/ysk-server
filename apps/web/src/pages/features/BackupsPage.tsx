@@ -3,20 +3,22 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
   ConfirmDialog,
+  DataTable,
   DescriptionList,
   EmptyState,
   FeaturePageLayout,
   Field,
   FormLayout,
   OpsResultPanel,
-  Tabs,
+  PageTabs,
   FormActions,
   SegRadio,
+  PromptDialog,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
@@ -88,6 +90,14 @@ export function BackupsPage() {
     Array<{ id: string; time?: string; tags?: string[]; paths?: string[] }>
   >([]);
   const [restoreProjectId, setRestoreProjectId] = useState('');
+  const [resticSafe, setResticSafe] = useState<{
+    projectId: string;
+    snapshotId: string;
+  } | null>(null);
+  const [resticOverwrite, setResticOverwrite] = useState<{
+    projectId: string;
+    snapshotId: string;
+  } | null>(null);
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -255,31 +265,56 @@ export function BackupsPage() {
       ? 'ok'
       : 'warn'
     : 'neutral';
-  const heroTone =
-    lastOk === false || (restic.enabled && !(resticPasswordSet || restic.password))
-      ? 'warn'
-      : 'ok';
-
   return (
     <FeaturePageLayout
       title={t('nav.backups', { defaultValue: '備份' })}
       showCapability={false}
-      actions={
-        <>
+      status={{
+        pill: {
+          label: `上次 ${lastLabel}`,
+          tone:
+            lastTone === 'danger'
+              ? 'danger'
+              : lastTone === 'warn'
+                ? 'warn'
+                : 'ok',
+        },
+        items: [
+          { label: '備份檔', value: items.length },
+          { label: '專案', value: liveProjectCount },
+          {
+            label: '上次全部',
+            value: lastLabel,
+            tone:
+              lastTone === 'danger'
+                ? 'danger'
+                : lastTone === 'warn'
+                  ? 'warn'
+                  : 'ok',
+          },
+          {
+            label: 'restic',
+            value: resticLabel,
+            tone: resticTone as 'ok' | 'warn' | 'neutral',
+          },
+          {
+            label: '遠端',
+            value: remote.enabled ? remote.kind : '關閉',
+            tone: remote.enabled ? 'ok' : 'neutral',
+          },
+          { label: '有備份專案', value: archiveProjectCount },
+        ],
+      }}
+      actions={<>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => void refresh().catch((e: Error) => setError(e.message))}
           >
             重新整理
           </Button>
-          <Button
-            variant="primary"
-            size="md"
-            loading={busy}
-            onClick={() => setTab('ops')}
-          >
+          <Button variant="primary" size="sm" loading={busy} onClick={() => setTab('ops')}>
             操作
           </Button>
         </>
@@ -296,111 +331,7 @@ export function BackupsPage() {
       ) : null}
 
       <div className="ops">
-        <section className={`ops-hero ops-hero--${heroTone}`}>
-          <div className="ops-hero__main">
-            <div className="ops-hero__copy">
-              <div className="ops-hero__eyebrow">Backups</div>
-              <h2 className="ops-hero__title">
-                <span className={`ops-hero__pill ops-hero__pill--${lastTone === 'danger' ? 'danger' : lastTone === 'warn' ? 'warn' : 'ok'}`}>
-                  上次 {lastLabel}
-                </span>
-                專案備份中心
-              </h2>
-              <p className="ops-hero__hint">
-                tar 歸檔於管理目錄；還原可 dry-run／web／完整。遠端與 restic
-                失敗會標示。
-              </p>
-              <div className="ops-hero__meta">
-                <span>
-                  檔案 <strong>{items.length}</strong>
-                </span>
-                <span className="ops-hero__dot" />
-                <span>
-                  面板專案 <strong>{liveProjectCount}</strong>
-                </span>
-                <span className="ops-hero__dot" />
-                <span>
-                  有備份專案 <strong>{archiveProjectCount}</strong>
-                </span>
-                <span className="ops-hero__dot" />
-                <span>
-                  restic <strong>{resticLabel}</strong>
-                </span>
-              </div>
-              <div className="ops-hero__cta">
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={() => setTab('ops')}
-                >
-                  備份／還原操作
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={() => setTab('files')}
-                >
-                  瀏覽備份檔
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="md"
-                  onClick={() => setTab('remote')}
-                >
-                  遠端設定
-                </Button>
-              </div>
-            </div>
-            <div className="ops-hero__stats">
-              <div className="ops-stat">
-                <span className="ops-stat__lab">備份檔</span>
-                <span className="ops-stat__val">{items.length}</span>
-              </div>
-              <div className="ops-stat">
-                <span className="ops-stat__lab">專案</span>
-                <span className="ops-stat__val">{liveProjectCount}</span>
-              </div>
-              <div className="ops-stat">
-                <span className="ops-stat__lab">上次全部</span>
-                <span className="ops-stat__val">
-                  <Badge
-                    tone={
-                      lastTone === 'danger'
-                        ? 'danger'
-                        : lastTone === 'warn'
-                          ? 'warn'
-                          : 'ok'
-                    }
-                  >
-                    {lastLabel}
-                  </Badge>
-                </span>
-              </div>
-              <div className="ops-stat">
-                <span className="ops-stat__lab">restic</span>
-                <span className="ops-stat__val">
-                  <Badge tone={resticTone as 'ok' | 'warn' | 'neutral'}>
-                    {resticLabel}
-                  </Badge>
-                </span>
-              </div>
-            </div>
-          </div>
-          <ul className="ops-rail">
-            <li>
-              <span className="ops-rail__k">遠端</span>
-              <Badge tone={remote.enabled ? 'ok' : 'neutral'}>
-                {remote.enabled ? remote.kind : '關閉'}
-              </Badge>
-            </li>
-            <li>
-              <span className="ops-rail__k">有備份專案</span>
-              <span className="ops-rail__text">{archiveProjectCount}</span>
-            </li>
-          </ul>
-        </section>
-
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'files', label: '備份檔', badge: items.length || undefined },
           { id: 'ops', label: '操作' },
@@ -682,40 +613,42 @@ export function BackupsPage() {
                 ]}
               />
               {lastResults.length > 0 ? (
-                <div className="table-wrap u-mt-3">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>專案</th>
-                        <th>狀態</th>
-                        <th>備註</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {lastResults.map((row, i) => (
-                        <tr key={`${row.projectId ?? i}`}>
-                          <td>
-                            <code className="inline">
-                              {(row.projectId ?? '—').slice(0, 8)}
-                              {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
-                            </code>
-                          </td>
-                          <td>
-                            {row.skipped ? (
-                              <Badge tone="neutral">略過</Badge>
-                            ) : row.ok ? (
-                              <Badge tone="ok">成功</Badge>
-                            ) : (
-                              <Badge tone="danger">失敗</Badge>
-                            )}
-                          </td>
-                          <td className="muted u-text-sm">
-                            {(row.notes ?? []).join('；') || '—'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="u-mt-3">
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'project',
+                        header: '專案',
+                        render: (row) => (
+                          <code className="inline">
+                            {(row.projectId ?? '—').slice(0, 8)}
+                            {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
+                          </code>
+                        ),
+                      },
+                      {
+                        key: 'status',
+                        header: '狀態',
+                        nowrap: true,
+                        render: (row) =>
+                          row.skipped ? (
+                            <Badge tone="neutral">略過</Badge>
+                          ) : row.ok ? (
+                            <Badge tone="ok">成功</Badge>
+                          ) : (
+                            <Badge tone="danger">失敗</Badge>
+                          ),
+                      },
+                      {
+                        key: 'notes',
+                        header: '備註',
+                        className: 'muted u-text-sm',
+                        render: (row) => (row.notes ?? []).join('；') || '—',
+                      },
+                    ]}
+                    rows={lastResults}
+                    rowKey={(row, i) => String(row.projectId ?? i)}
+                  />
                 </div>
               ) : (
                 <p className="muted u-text-sm u-mt-2">
@@ -725,43 +658,53 @@ export function BackupsPage() {
                 </p>
               )}
               {sideResults.length > 0 ? (
-                <div className="table-wrap u-mt-3">
-                  <h4 className="u-mb-2">遠端／restic 副步驟</h4>
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>專案</th>
-                        <th>步驟</th>
-                        <th>狀態</th>
-                        <th>備註</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sideResults.map((row, i) => (
-                        <tr key={`side-${row.projectId ?? i}-${row.kind ?? i}`}>
-                          <td>
-                            <code className="inline">
-                              {(row.projectId ?? '—').slice(0, 8)}
-                              {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
-                            </code>
-                          </td>
-                          <td>{row.kind === 'restic' ? 'restic' : '遠端'}</td>
-                          <td>
-                            {row.skipped ? (
-                              <Badge tone="neutral">略過</Badge>
-                            ) : row.ok ? (
-                              <Badge tone="ok">成功</Badge>
-                            ) : (
-                              <Badge tone="danger">失敗</Badge>
-                            )}
-                          </td>
-                          <td className="muted u-text-sm">
-                            {(row.notes ?? []).slice(0, 3).join('；') || '—'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="u-mt-3">
+                  <DataTable
+                    title="遠端／restic 副步驟"
+                    columns={[
+                      {
+                        key: 'project',
+                        header: '專案',
+                        render: (row) => (
+                          <code className="inline">
+                            {(row.projectId ?? '—').slice(0, 8)}
+                            {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
+                          </code>
+                        ),
+                      },
+                      {
+                        key: 'kind',
+                        header: '步驟',
+                        nowrap: true,
+                        render: (row) =>
+                          row.kind === 'restic' ? 'restic' : '遠端',
+                      },
+                      {
+                        key: 'status',
+                        header: '狀態',
+                        nowrap: true,
+                        render: (row) =>
+                          row.skipped ? (
+                            <Badge tone="neutral">略過</Badge>
+                          ) : row.ok ? (
+                            <Badge tone="ok">成功</Badge>
+                          ) : (
+                            <Badge tone="danger">失敗</Badge>
+                          ),
+                      },
+                      {
+                        key: 'notes',
+                        header: '備註',
+                        className: 'muted u-text-sm',
+                        render: (row) =>
+                          (row.notes ?? []).slice(0, 3).join('；') || '—',
+                      },
+                    ]}
+                    rows={sideResults}
+                    rowKey={(row, i) =>
+                      `side-${row.projectId ?? i}-${row.kind ?? i}`
+                    }
+                  />
                 </div>
               ) : null}
             </div>
@@ -777,153 +720,117 @@ export function BackupsPage() {
                   placeholder="uuid"
                 />
               </Field>
-              <div className="table-wrap u-mt-2">
-                <table className="data">
-                  <thead>
-                    <tr>
-                      <th>Snapshot</th>
-                      <th>時間</th>
-                      <th>Tags</th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {snapshots.map((s) => (
-                      <tr key={s.id}>
-                        <td>
-                          <code className="inline">{s.id}</code>
-                        </td>
-                        <td className="muted">
-                          {s.time ? new Date(s.time).toLocaleString() : '—'}
-                        </td>
-                        <td className="muted u-text-sm">{(s.tags ?? []).join(', ') || '—'}</td>
-                        <td>
-                          <div className="btn-row">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              loading={busy}
-                              onClick={() => {
-                                const pid =
-                                  restoreProjectId ||
-                                  (s.tags ?? [])
-                                    .find((t) => t.startsWith('project:'))
-                                    ?.replace('project:', '') ||
-                                  '';
-                                if (!pid) {
-                                  setError('請填 projectId 或 snapshot 需有 project: tag');
-                                  return;
-                                }
-                                void run(async () => {
-                                  return (await api.requestRaw(
-                                    '/api/v1/backups/restic/restore',
-                                    {
-                                      method: 'POST',
-                                      body: JSON.stringify({
-                                        projectId: pid,
-                                        snapshotId: s.id,
-                                        dryRun: true,
-                                      }),
-                                    },
-                                  )) as OpsResultLike;
-                                }, 'dry-run 完成（未寫檔）');
-                              }}
-                            >
-                              預覽
-                            </Button>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              loading={busy}
-                              onClick={() => {
-                                const pid =
-                                  restoreProjectId ||
-                                  (s.tags ?? [])
-                                    .find((t) => t.startsWith('project:'))
-                                    ?.replace('project:', '') ||
-                                  '';
-                                if (!pid) {
-                                  setError('請填 projectId 或 snapshot 需有 project: tag');
-                                  return;
-                                }
-                                if (
-                                  !confirm(
-                                    `還原 ${s.id} 到專案 ${pid.slice(0, 8)}… 的 .restic-restore-* 目錄？`,
-                                  )
-                                ) {
-                                  return;
-                                }
-                                void run(async () => {
-                                  return (await api.requestRaw(
-                                    '/api/v1/backups/restic/restore',
-                                    {
-                                      method: 'POST',
-                                      body: JSON.stringify({
-                                        projectId: pid,
-                                        snapshotId: s.id,
-                                        overwriteHome: false,
-                                      }),
-                                    },
-                                  )) as OpsResultLike;
-                                }, 'restic 還原完成');
-                              }}
-                            >
-                              安全目錄
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              loading={busy}
-                              onClick={() => {
-                                const pid =
-                                  restoreProjectId ||
-                                  (s.tags ?? [])
-                                    .find((t) => t.startsWith('project:'))
-                                    ?.replace('project:', '') ||
-                                  '';
-                                if (!pid) {
-                                  setError('請填 projectId 或 snapshot 需有 project: tag');
-                                  return;
-                                }
-                                if (
-                                  !confirm(
-                                    `危險：將覆寫專案 ${pid.slice(0, 8)}… 的 home 目錄！\n先確認已備份。`,
-                                  )
-                                ) {
-                                  return;
-                                }
-                                const phrase = window.prompt(
-                                  '請輸入 OVERWRITE 以確認覆寫 home',
-                                  '',
-                                );
-                                if (phrase !== 'OVERWRITE') {
-                                  setError('未輸入 OVERWRITE — 已取消');
-                                  return;
-                                }
-                                void run(async () => {
-                                  return (await api.requestRaw(
-                                    '/api/v1/backups/restic/restore',
-                                    {
-                                      method: 'POST',
-                                      body: JSON.stringify({
-                                        projectId: pid,
-                                        snapshotId: s.id,
-                                        overwriteHome: true,
-                                        confirmPhrase: 'OVERWRITE',
-                                      }),
-                                    },
-                                  )) as OpsResultLike;
-                                }, 'restic 覆寫 home 完成');
-                              }}
-                            >
-                              覆寫 home
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="u-mt-2">
+                <DataTable
+                  columns={[
+                    {
+                      key: 'id',
+                      header: 'Snapshot',
+                      render: (s) => <code className="inline">{s.id}</code>,
+                    },
+                    {
+                      key: 'time',
+                      header: '時間',
+                      className: 'muted',
+                      nowrap: true,
+                      render: (s) =>
+                        s.time ? new Date(s.time).toLocaleString() : '—',
+                    },
+                    {
+                      key: 'tags',
+                      header: 'Tags',
+                      className: 'muted u-text-sm',
+                      render: (s) => (s.tags ?? []).join(', ') || '—',
+                    },
+                  ]}
+                  rows={snapshots}
+                  rowKey={(s) => s.id}
+                  rowActions={(s) => (
+                    <ActionBar align="end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => {
+                          const pid =
+                            restoreProjectId ||
+                            (s.tags ?? [])
+                              .find((t) => t.startsWith('project:'))
+                              ?.replace('project:', '') ||
+                            '';
+                          if (!pid) {
+                            setError(
+                              '請填 projectId 或 snapshot 需有 project: tag',
+                            );
+                            return;
+                          }
+                          void run(async () => {
+                            return (await api.requestRaw(
+                              '/api/v1/backups/restic/restore',
+                              {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                  projectId: pid,
+                                  snapshotId: s.id,
+                                  dryRun: true,
+                                }),
+                              },
+                            )) as OpsResultLike;
+                          }, 'dry-run 完成（未寫檔）');
+                        }}
+                      >
+                        預覽
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => {
+                          const pid =
+                            restoreProjectId ||
+                            (s.tags ?? [])
+                              .find((t) => t.startsWith('project:'))
+                              ?.replace('project:', '') ||
+                            '';
+                          if (!pid) {
+                            setError(
+                              '請填 projectId 或 snapshot 需有 project: tag',
+                            );
+                            return;
+                          }
+                          setResticSafe({ projectId: pid, snapshotId: s.id });
+                        }}
+                      >
+                        安全目錄
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => {
+                          const pid =
+                            restoreProjectId ||
+                            (s.tags ?? [])
+                              .find((t) => t.startsWith('project:'))
+                              ?.replace('project:', '') ||
+                            '';
+                          if (!pid) {
+                            setError(
+                              '請填 projectId 或 snapshot 需有 project: tag',
+                            );
+                            return;
+                          }
+                          setResticOverwrite({
+                            projectId: pid,
+                            snapshotId: s.id,
+                          });
+                        }}
+                      >
+                        覆寫 home
+                      </Button>
+                    </ActionBar>
+                  )}
+                />
               </div>
             </div>
           ) : null}
@@ -1230,7 +1137,7 @@ export function BackupsPage() {
             </section>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <ConfirmDialog
         open={Boolean(restoreTarget)}
@@ -1307,6 +1214,69 @@ export function BackupsPage() {
         cancelLabel="取消"
         danger
         busy={busy}
+      />
+
+      <ConfirmDialog
+        open={resticSafe != null}
+        onClose={() => setResticSafe(null)}
+        title="restic 還原到安全目錄？"
+        description={
+          resticSafe
+            ? `還原 ${resticSafe.snapshotId} 到專案 ${resticSafe.projectId.slice(0, 8)}… 的 .restic-restore-* 目錄`
+            : ''
+        }
+        confirmLabel="還原"
+        cancelLabel="取消"
+        busy={busy}
+        onConfirm={() => {
+          const t = resticSafe;
+          setResticSafe(null);
+          if (!t) return;
+          void run(async () => {
+            return (await api.requestRaw('/api/v1/backups/restic/restore', {
+              method: 'POST',
+              body: JSON.stringify({
+                projectId: t.projectId,
+                snapshotId: t.snapshotId,
+                overwriteHome: false,
+              }),
+            })) as OpsResultLike;
+          }, 'restic 還原完成');
+        }}
+      />
+
+      <PromptDialog
+        open={resticOverwrite != null}
+        onClose={() => setResticOverwrite(null)}
+        title="危險：覆寫 home"
+        description={
+          resticOverwrite
+            ? `將覆寫專案 ${resticOverwrite.projectId.slice(0, 8)}… 的 home。輸入 OVERWRITE 確認。`
+            : ''
+        }
+        label="確認字串"
+        placeholder="OVERWRITE"
+        expectExact="OVERWRITE"
+        confirmLabel="覆寫 home"
+        danger
+        busy={busy}
+        onSubmit={() => {
+          const t = resticOverwrite;
+          setResticOverwrite(null);
+          if (!t) return true;
+          void run(async () => {
+            return (await api.requestRaw('/api/v1/backups/restic/restore', {
+              method: 'POST',
+              body: JSON.stringify({
+                projectId: t.projectId,
+                snapshotId: t.snapshotId,
+                overwriteHome: true,
+                confirmPhrase: 'OVERWRITE',
+              }),
+            })) as OpsResultLike;
+          }, 'restic 覆寫 home 完成');
+          return true;
+        }}
       />
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />

@@ -256,22 +256,21 @@ export async function applyRedisServiceConfig(input: {
     };
   }
 
-  // Best-effort: append include or copy snippet; CONFIG SET databases (runtime)
+  // Copy snippet + CONFIG SET; ok requires real system effect
   const confDir = existsSync('/etc/redis') ? '/etc/redis' : '/etc';
   const dest = join(confDir, 'ysk-redis.conf');
-  try {
-    await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
-    notes.push(`已複製到 ${dest}`);
-  } catch {
-    notes.push('無法複製到系統 conf 目錄');
-  }
+  const cp = await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
+  const confInstalled = cp.exitCode === 0;
+  if (confInstalled) notes.push(`已複製到 ${dest}`);
+  else notes.push(`無法複製到系統 conf 目錄：${(cp.stderr || cp.stdout).slice(0, 200)}`);
 
   // Runtime CONFIG SET where possible
   const cfg = await input.host.runCommand(
     ['redis-cli', 'CONFIG', 'SET', 'databases', String(settings.databases)],
     { timeoutMs: 10_000 },
   );
-  if (cfg.exitCode === 0 && cfg.stdout.trim().toUpperCase() === 'OK') {
+  const cfgOk = cfg.exitCode === 0 && cfg.stdout.trim().toUpperCase() === 'OK';
+  if (cfgOk) {
     notes.push('已即時套用 databases（部分選項仍需重啟）');
   } else {
     notes.push('CONFIG SET databases 未成功（可能需重啟後生效）');
@@ -287,14 +286,26 @@ export async function applyRedisServiceConfig(input: {
     { timeoutMs: 10_000 },
   );
 
+  let restartOk = true;
   if (input.restart !== false) {
     const r = await input.host.runCommand(['systemctl', 'restart', 'redis-server'], {
       timeoutMs: 60_000,
     });
-    notes.push(r.exitCode === 0 ? '已重啟 redis-server' : `重啟失敗：${r.stderr}`);
+    restartOk = r.exitCode === 0;
+    notes.push(restartOk ? '已重啟 redis-server' : `重啟失敗：${r.stderr}`);
   }
 
-  return { ok: true, executed: true, notes, written, settings };
+  // Success if conf installed OR runtime CONFIG worked, and restart not failed
+  const applied = confInstalled || cfgOk;
+  if (!applied) notes.push('未對系統產生可驗證變更 — 唔會標 ok');
+
+  return {
+    ok: applied && restartOk,
+    executed: true,
+    notes,
+    written,
+    settings,
+  };
 }
 
 export async function applySqlServiceConfig(input: {
@@ -336,13 +347,25 @@ export async function applySqlServiceConfig(input: {
     input.engine === 'mysql' ? '/etc/mysql/mysql.conf.d' : '/etc/mysql/mariadb.conf.d';
   mkdirSync(confD, { recursive: true });
   const dest = join(confD, '99-ysk.cnf');
-  await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
+  const cp = await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
+  if (cp.exitCode !== 0) {
+    notes.push(`複製 conf 失敗：${cp.stderr || cp.stdout}`);
+    return {
+      ok: false,
+      executed: true,
+      notes,
+      written,
+      settings,
+    };
+  }
   notes.push(`已安裝 ${dest}`);
+  let restartOk = true;
   if (input.restart !== false) {
     const r = await input.host.runCommand(['systemctl', 'restart', unit], { timeoutMs: 120_000 });
-    notes.push(r.exitCode === 0 ? `已重啟 ${unit}` : `重啟失敗：${r.stderr}`);
+    restartOk = r.exitCode === 0;
+    notes.push(restartOk ? `已重啟 ${unit}` : `重啟失敗：${r.stderr}`);
   }
-  return { ok: true, executed: true, notes, written, settings };
+  return { ok: restartOk, executed: true, notes, written, settings };
 }
 
 export async function applyPostgresServiceConfig(input: {
@@ -378,20 +401,57 @@ export async function applyPostgresServiceConfig(input: {
     };
   }
 
-  // Best-effort: write to conf.d if exists
-  const candidates = [
+  // Install drop-in into first existing conf.d (Debian/Ubuntu layout)
+  const confCandidates = [
     '/etc/postgresql',
-    '/var/lib/pgsql/data',
   ];
-  notes.push('已嘗試系統套用；實際 conf 路徑視發行版而定');
+  let installed = false;
+  for (const base of confCandidates) {
+    if (!existsSync(base)) continue;
+    // Find */main/conf.d or similar
+    const find = await input.host.runCommand(
+      [
+        'bash',
+        '-c',
+        `find ${JSON.stringify(base)} -type d -name conf.d 2>/dev/null | head -3`,
+      ],
+      { timeoutMs: 10_000 },
+    );
+    const dirs = find.stdout
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    for (const d of dirs) {
+      const dest = join(d, '99-ysk.conf');
+      const cp = await input.host.runCommand(['cp', confPath, dest], { timeoutMs: 10_000 });
+      if (cp.exitCode === 0) {
+        notes.push(`已安裝 ${dest}`);
+        installed = true;
+      } else {
+        notes.push(`複製到 ${dest} 失敗：${cp.stderr || cp.stdout}`);
+      }
+    }
+  }
+  if (!installed) {
+    notes.push(
+      '未找到 postgresql conf.d — conf 只寫在 dataDir；唔會假裝已套用系統',
+    );
+  }
+  let restartOk = true;
   if (input.restart !== false) {
     const r = await input.host.runCommand(['systemctl', 'restart', 'postgresql'], {
       timeoutMs: 120_000,
     });
-    notes.push(r.exitCode === 0 ? '已重啟 postgresql' : `重啟失敗：${r.stderr}`);
+    restartOk = r.exitCode === 0;
+    notes.push(restartOk ? '已重啟 postgresql' : `重啟失敗：${r.stderr}`);
   }
-  void candidates;
-  return { ok: true, executed: true, notes, written, settings };
+  return {
+    ok: installed && restartOk,
+    executed: true,
+    notes,
+    written,
+    settings,
+  };
 }
 
 /** Enrich redis probe with configured databases count */

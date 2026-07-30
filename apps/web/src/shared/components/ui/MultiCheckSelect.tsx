@@ -2,6 +2,7 @@
  * Searchable multi-select with checkboxes + selected chips.
  */
 import { useMemo, useState } from 'react';
+import { buttonClassName } from './Button';
 
 export type MultiCheckOption = {
   value: string;
@@ -164,7 +165,7 @@ export function MultiCheckSelect({
           />
           <button
             type="button"
-            className="btn btn--secondary btn--sm"
+            className={buttonClassName({ variant: 'secondary', size: 'sm' })}
             disabled={disabled || !custom.trim()}
             onClick={addCustom}
           >

@@ -48,6 +48,8 @@ const CLI_COMMANDS = [
   'nginx',
   'ssl',
   'db-cluster',
+  'ssh-key',
+  'ssh-2fa',
   'services',
   'defense',
   'protection',
@@ -194,6 +196,8 @@ Commands:
   nginx                 status|list|test|sync
   ssl                   list|get (certificates)
   db-cluster            list|get|create|plan (HA plan-first)
+  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)
+  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)
   services              Host service matrix (systemctl probe)
   defense | protection  status|ban|unban|whitelist
   agents                List/probe agent runtimes (experimental)
@@ -836,9 +840,9 @@ async function main(argv: string[]): Promise<number> {
           dryRun: !execute || hasFlag(args, '--dry-run'),
         });
         printJson({
-          ok: true,
-          dryRun: !execute || hasFlag(args, '--dry-run'),
           ...result,
+          ok: result.ok !== false,
+          dryRun: !execute || hasFlag(args, '--dry-run'),
           notes: [
             ...(result.notes ?? []),
             execute
@@ -846,7 +850,7 @@ async function main(argv: string[]): Promise<number> {
               : 'dry-run 預設：加 --execute 先同步到系統 nginx',
           ],
         });
-        return 0;
+        return result.ok === false ? 3 : 0;
       }
       if (sub === 'redis-provision') {
         const result = await provisionRedisBinding({
@@ -1373,6 +1377,8 @@ async function main(argv: string[]): Promise<number> {
               db: ctx.db,
               host: ctx.host,
               clusterId: id,
+              dataDir: ctx.dataDir,
+              identityId: getOpt(args, '--identity'),
             })
           : await probeDbCluster({
               db: ctx.db,
@@ -1386,7 +1392,7 @@ async function main(argv: string[]): Promise<number> {
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster install-peers --id UUID [--execute] [--no-restart] [--json]\n`,
+            `Usage: ${CLI_NAME} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n`,
           );
           return 2;
         }
@@ -1398,6 +1404,7 @@ async function main(argv: string[]): Promise<number> {
           memberId: getOpt(args, '--member'),
           execute: wantsHostExecute(args),
           restart: !hasFlag(args, '--no-restart'),
+          identityId: getOpt(args, '--identity'),
         });
         printJson(result);
         return exitFromResult(result);
@@ -1489,7 +1496,7 @@ async function main(argv: string[]): Promise<number> {
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster push --id UUID [--member ID] [--execute] [--json]\n`,
+            `Usage: ${CLI_NAME} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n`,
           );
           return 2;
         }
@@ -1500,6 +1507,7 @@ async function main(argv: string[]): Promise<number> {
           clusterId: id,
           memberId: getOpt(args, '--member'),
           execute: wantsHostExecute(args),
+          identityId: getOpt(args, '--identity'),
         });
         printJson(result);
         return exitFromResult(result);
@@ -1551,6 +1559,495 @@ async function main(argv: string[]): Promise<number> {
       }
       process.stderr.write(
         `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** SSH identity vault — encrypted private keys (user/panel outbound) */
+  if (command === 'ssh-key' || command === 'ssh-keys') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const {
+      listSshIdentities,
+      getSshIdentity,
+      createSshIdentity,
+      importSshIdentity,
+      exportSshIdentityPrivate,
+      deleteSshIdentity,
+      installSshIdentity,
+      uninstallSshIdentity,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'list' || sub === 'ls') {
+        const purposeRaw = getOpt(args, '--purpose');
+        const purpose =
+          purposeRaw === 'user_outbound' ||
+          purposeRaw === 'panel_outbound' ||
+          purposeRaw === 'unbound' ||
+          purposeRaw === 'user' ||
+          purposeRaw === 'panel'
+            ? purposeRaw === 'user'
+              ? 'user_outbound'
+              : purposeRaw === 'panel'
+                ? 'panel_outbound'
+                : purposeRaw
+            : undefined;
+        printJson({
+          ok: true,
+          items: listSshIdentities(ctx.dataDir, {
+            linuxUser: getOpt(args, '--user'),
+            projectId: getOpt(args, '--project'),
+            purpose,
+          }),
+        });
+        return 0;
+      }
+      if (sub === 'get' || sub === 'show') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} ssh-key get --id UUID [--json]\n`);
+          return 2;
+        }
+        const identity = getSshIdentity(ctx.dataDir, id);
+        if (!identity) {
+          printJson({ ok: false, code: 'YSK_NOT_FOUND', message: '找不到 identity' });
+          return 4;
+        }
+        printJson({ ok: true, identity });
+        return 0;
+      }
+      if (sub === 'create') {
+        const name = getOpt(args, '--name');
+        if (!name) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n`,
+          );
+          return 2;
+        }
+        const algoRaw = getOpt(args, '--algo') ?? 'ed25519';
+        const algorithm =
+          algoRaw === 'rsa-4096' || algoRaw === 'rsa' ? 'rsa-4096' : 'ed25519';
+        const purposeRaw = getOpt(args, '--purpose') ?? 'unbound';
+        const purpose =
+          purposeRaw === 'user' || purposeRaw === 'user_outbound'
+            ? 'user_outbound'
+            : purposeRaw === 'panel' || purposeRaw === 'panel_outbound'
+              ? 'panel_outbound'
+              : 'unbound';
+        const r = createSshIdentity(
+          ctx.dataDir,
+          {
+            name,
+            algorithm,
+            purpose,
+            comment: getOpt(args, '--comment'),
+            binding: {
+              projectId: getOpt(args, '--project'),
+              linuxUser: getOpt(args, '--user'),
+              homeDir: getOpt(args, '--home'),
+            },
+            revealPrivate: hasFlag(args, '--reveal'),
+          },
+          ctx.db,
+        );
+        if (r.ok && hasFlag(args, '--install') && r.identity) {
+          const inst = await installSshIdentity({
+            dataDir: ctx.dataDir,
+            id: r.identity.id,
+            apply: wantsHostExecute(args),
+            host: ctx.host,
+            executeEnabled: ctx.host.executeEnabled(),
+          });
+          printJson({ ok: r.ok && inst.ok, create: r, install: inst });
+          return exitFromResult(inst);
+        }
+        printJson(r);
+        return r.ok ? 0 : 2;
+      }
+      if (sub === 'import') {
+        const name = getOpt(args, '--name');
+        const file = getOpt(args, '--file');
+        if (!name || !file) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n`,
+          );
+          return 2;
+        }
+        const { readFileSync } = await import('node:fs');
+        let privateKey: string;
+        try {
+          privateKey = readFileSync(file, 'utf8');
+        } catch (e) {
+          printJson({
+            ok: false,
+            code: 'YSK_NOT_FOUND',
+            message: e instanceof Error ? e.message : String(e),
+          });
+          return 4;
+        }
+        const purposeRaw = getOpt(args, '--purpose') ?? 'panel_outbound';
+        const purpose =
+          purposeRaw === 'user' || purposeRaw === 'user_outbound'
+            ? 'user_outbound'
+            : purposeRaw === 'unbound'
+              ? 'unbound'
+              : 'panel_outbound';
+        const r = importSshIdentity(
+          ctx.dataDir,
+          {
+            name,
+            privateKey,
+            purpose,
+            binding: {
+              projectId: getOpt(args, '--project'),
+              linuxUser: getOpt(args, '--user'),
+              homeDir: getOpt(args, '--home'),
+            },
+            revealPrivate: hasFlag(args, '--reveal'),
+          },
+          ctx.db,
+        );
+        printJson(r);
+        return r.ok ? 0 : 2;
+      }
+      if (sub === 'public') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} ssh-key public --id UUID\n`);
+          return 2;
+        }
+        const identity = getSshIdentity(ctx.dataDir, id);
+        if (!identity) {
+          printJson({ ok: false, code: 'YSK_NOT_FOUND', message: '找不到 identity' });
+          return 4;
+        }
+        if (json) printJson({ ok: true, publicKey: identity.publicKey, fingerprintSha256: identity.fingerprintSha256 });
+        else process.stdout.write(`${identity.publicKey}\n`);
+        return 0;
+      }
+      if (sub === 'export') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const out = getOpt(args, '--out');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} ssh-key export --id UUID [--out PATH] [--json]\n`);
+          return 2;
+        }
+        const r = exportSshIdentityPrivate(ctx.dataDir, id);
+        if (!r.ok || !r.privateKey) {
+          printJson({ ok: false, notes: r.notes });
+          return 4;
+        }
+        if (out) {
+          const { writeFileSync, chmodSync } = await import('node:fs');
+          writeFileSync(out, r.privateKey.endsWith('\n') ? r.privateKey : r.privateKey + '\n', {
+            mode: 0o600,
+          });
+          try {
+            chmodSync(out, 0o600);
+          } catch {
+            /* ignore */
+          }
+          printJson({
+            ok: true,
+            written: out,
+            fingerprintSha256: r.fingerprintSha256,
+            notes: r.notes,
+          });
+          return 0;
+        }
+        if (json) {
+          printJson({
+            ok: true,
+            privateKey: r.privateKey,
+            fingerprintSha256: r.fingerprintSha256,
+            notes: r.notes,
+          });
+        } else {
+          process.stdout.write(r.privateKey.endsWith('\n') ? r.privateKey : r.privateKey + '\n');
+        }
+        return 0;
+      }
+      if (sub === 'install') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-key install --id UUID [--execute] [--json]\n`,
+          );
+          return 2;
+        }
+        const r = await installSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          apply: wantsHostExecute(args),
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled(),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'test') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const target = getOpt(args, '--target');
+        if (!id || !target) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n`,
+          );
+          return 2;
+        }
+        const { testSshIdentity } = await import('@ysk/core');
+        const r = await testSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          target,
+          apply: wantsHostExecute(args),
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled(),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'rotate') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-key rotate --id UUID [--reveal] [--json]\n`,
+          );
+          return 2;
+        }
+        const { rotateSshIdentity } = await import('@ysk/core');
+        const r = rotateSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          revealPrivate: hasFlag(args, '--reveal'),
+          db: ctx.db,
+        });
+        printJson(r);
+        return r.ok ? 0 : 4;
+      }
+      if (sub === 'authorize-self' || sub === 'authorize') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-key authorize-self --id UUID [--json]\n`,
+          );
+          return 2;
+        }
+        const { authorizeSelfSshIdentity } = await import('@ysk/core');
+        const r = await authorizeSelfSshIdentity({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          id,
+          host: ctx.host,
+        });
+        printJson(r);
+        return r.ok ? 0 : 1;
+      }
+      if (sub === 'uninstall') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-key uninstall --id UUID [--execute] [--json]\n`,
+          );
+          return 2;
+        }
+        const r = await uninstallSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          apply: wantsHostExecute(args),
+          purgeFiles: !hasFlag(args, '--keep-files'),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'delete' || sub === 'rm') {
+        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} ssh-key delete --id UUID [--json]\n`);
+          return 2;
+        }
+        if (hasFlag(args, '--purge-disk') || hasFlag(args, '--purge')) {
+          await uninstallSshIdentity({
+            dataDir: ctx.dataDir,
+            id,
+            apply: true,
+            purgeFiles: true,
+          });
+        }
+        const r = deleteSshIdentity(ctx.dataDir, id);
+        printJson(r);
+        return r.ok ? 0 : 4;
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** SSH login 2FA (PAM TOTP) — independent of panel operator 2FA */
+  if (command === 'ssh-2fa' || command === 'ssh2fa') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const {
+      listSsh2fa,
+      enrollSsh2fa,
+      confirmSsh2fa,
+      installSsh2faFile,
+      uninstallSsh2faFile,
+      retireSsh2fa,
+      buildPamSshSnippet,
+      buildSshdTotpHints,
+      probeSsh2faHost,
+      revealSsh2faSecret,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'list' || sub === 'ls') {
+        const host = await probeSsh2faHost(ctx.host);
+        printJson({
+          ok: true,
+          items: listSsh2fa(ctx.dataDir, {
+            linuxUser: getOpt(args, '--user'),
+            projectId: getOpt(args, '--project'),
+          }),
+          host,
+        });
+        return 0;
+      }
+      if (sub === 'enroll' || sub === 'create') {
+        const user = getOpt(args, '--user');
+        const project = getOpt(args, '--project');
+        if (!user && !project) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n`,
+          );
+          return 2;
+        }
+        let secret: string | undefined;
+        let fromPanel = false;
+        if (hasFlag(args, '--from-panel')) {
+          const me = ctx.db.snapshot.users[0];
+          // prefer admin with totp
+          const withTotp =
+            ctx.db.snapshot.users.find((u) => u.totp_secret && u.roles?.includes('admin')) ||
+            ctx.db.snapshot.users.find((u) => u.totp_secret);
+          if (!withTotp?.totp_secret) {
+            printJson({
+              ok: false,
+              notes: ['panel 無 TOTP secret — 先在 Web 啟用 2FA 或勿用 --from-panel'],
+            });
+            return 2;
+          }
+          secret = withTotp.totp_secret;
+          fromPanel = true;
+          void me;
+        }
+        const r = enrollSsh2fa(
+          ctx.dataDir,
+          {
+            linuxUser: user,
+            projectId: project,
+            homeDir: getOpt(args, '--home'),
+            secret,
+            fromPanel,
+          },
+          ctx.db,
+        );
+        printJson(r);
+        return r.ok ? 0 : 2;
+      }
+      if (sub === 'confirm') {
+        const id = getOpt(args, '--id');
+        const code = getOpt(args, '--code');
+        if (!id || !code) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-2fa confirm --id UUID --code 123456 [--json]\n`,
+          );
+          return 2;
+        }
+        const r = confirmSsh2fa(ctx.dataDir, id, code);
+        printJson(r);
+        return r.ok ? 0 : 2;
+      }
+      if (sub === 'install') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-2fa install --id UUID [--execute] [--json]\n`,
+          );
+          return 2;
+        }
+        const r = await installSsh2faFile({
+          dataDir: ctx.dataDir,
+          id,
+          apply: wantsHostExecute(args),
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled(),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'uninstall') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} ssh-2fa uninstall --id UUID [--execute] [--json]\n`,
+          );
+          return 2;
+        }
+        const r = await uninstallSsh2faFile({
+          dataDir: ctx.dataDir,
+          id,
+          apply: wantsHostExecute(args),
+          retire: true,
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'pam' || sub === 'snippet') {
+        printJson({
+          ok: true,
+          pamSnippet: buildPamSshSnippet(),
+          sshdHints: buildSshdTotpHints(),
+          notes: [
+            'nullok 避免未寫檔用戶被鎖',
+            '獨立於 panel operator 2FA',
+          ],
+        });
+        return 0;
+      }
+      if (sub === 'reveal') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} ssh-2fa reveal --id UUID [--json]\n`);
+          return 2;
+        }
+        printJson(revealSsh2faSecret(ctx.dataDir, id));
+        return 0;
+      }
+      if (sub === 'retire' || sub === 'delete' || sub === 'rm') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`Usage: ${CLI_NAME} ssh-2fa retire --id UUID [--json]\n`);
+          return 2;
+        }
+        if (hasFlag(args, '--purge-file')) {
+          await uninstallSsh2faFile({
+            dataDir: ctx.dataDir,
+            id,
+            apply: true,
+            retire: true,
+          });
+        }
+        printJson(retireSsh2fa(ctx.dataDir, id));
+        return 0;
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n`,
       );
       return 2;
     } finally {
@@ -1618,9 +2115,9 @@ async function main(argv: string[]): Promise<number> {
           dryRun: !execute || hasFlag(args, '--dry-run'),
         });
         printJson({
-          ok: true,
-          dryRun: !execute || hasFlag(args, '--dry-run'),
           ...result,
+          ok: result.ok !== false,
+          dryRun: !execute || hasFlag(args, '--dry-run'),
           notes: [
             ...(result.notes ?? []),
             execute
@@ -1628,7 +2125,7 @@ async function main(argv: string[]): Promise<number> {
               : 'dry-run 預設：加 --execute 先同步到系統 nginx',
           ],
         });
-        return 0;
+        return result.ok === false ? 3 : 0;
       }
       if (sub === 'status' || sub === 'info' || sub === 'overview') {
         const matrix = await getServiceMatrix(ctx.host);

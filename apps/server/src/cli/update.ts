@@ -52,14 +52,22 @@ export async function runUpdate(opts: {
       data: result,
     };
   } catch (e) {
-    // fallback offline plan
-    const latest = opts.latest ?? VERSION;
-    const plan = planSelfUpdate({ current: VERSION, latest });
+    // Honest fail — do not invent "up to date" from missing channel
+    const plan = planSelfUpdate({
+      current: VERSION,
+      latest: opts.latest ?? VERSION,
+    });
     return {
-      ok: true,
-      code: 'YSK_UPDATE_OFFLINE_PLAN',
+      ok: false,
+      code: 'YSK_UPDATE_CHECK_FAILED',
       message: e instanceof Error ? e.message : String(e),
-      data: plan,
+      data: {
+        plan,
+        notes: [
+          e instanceof Error ? e.message : String(e),
+          '未能確認遠端最新版 — 唔會假裝已是最新',
+        ],
+      },
     };
   }
 }

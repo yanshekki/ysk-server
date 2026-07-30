@@ -20,8 +20,8 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
-  OpsHero,
-  Tabs,
+
+  PageTabs,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
@@ -229,10 +229,20 @@ export function PhpRuntimePage() {
   return (
     <FeaturePageLayout
       title={t('nav.php', { defaultValue: 'PHP' })}
-      actions={
-        <Button
+      status={{
+        pill: { label: `PHP ${version}`, tone: 'ok' },
+        items: [
+          { label: 'PHP', value: version },
+          { label: 'Pool', value: poolName || '—' },
+          {
+            label: 'php.ini',
+            value: iniLoaded ? (iniUpdatedAt ? '已載入' : '預設') : '—',
+          },
+        ],
+      }}
+      actions={<Button
           variant="secondary"
-          size="md"
+          size="sm"
           loading={busy}
           onClick={() => {
             setError(null);
@@ -259,21 +269,7 @@ export function PhpRuntimePage() {
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={version}
-        pillTone="ok"
-        tone="ok"
-        stats={[
-          { label: 'PHP', value: version },
-          { label: 'Pool', value: poolName || '—' },
-          {
-            label: 'php.ini',
-            value: iniLoaded ? (iniUpdatedAt ? '已載入' : '預設') : '—',
-          },
-        ]}
-      />
-
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'overview', label: '總覽' },
           { id: 'ini', label: 'php.ini' },
@@ -765,7 +761,7 @@ export function PhpRuntimePage() {
             </Card>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
     </FeaturePageLayout>

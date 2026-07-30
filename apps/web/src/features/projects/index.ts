@@ -4,12 +4,10 @@ export { useProjectOps } from './useProjectOps';
 export { deriveProjectStatus, summarizeProjects } from './model/status';
 export {
   ProjectStatusBadge,
-  ProjectSummaryStrip,
   ProjectList,
   ProjectListItem,
   ProjectCreateModal,
   ProjectDetailHeader,
-  ProjectStatusRail,
   ProjectOverviewTab,
   ProjectDeployTab,
   ProjectNetworkTab,

@@ -1,9 +1,16 @@
+import type { OpsResultDto } from '@ysk/shared';
+import { ActionBar } from './ActionBar';
 import { useState } from 'react';
 import { Badge } from './Badge';
+import { buttonClassName } from './Button';
 import { StructuredFacts, type FactItem } from './StructuredFacts';
 import { humanizeOperatorMessage, sanitizeOperatorNotes } from '../../lib/operator-messages';
 
-export interface OpsResultLike {
+/**
+ * Panel input — shared OpsResultDto plus optional UI-only process facts.
+ * Canonical honesty fields live in @ysk/shared OpsResultDto.
+ */
+export type OpsResultLike = Partial<OpsResultDto> & {
   ok: boolean;
   notes?: string[];
   url?: string;
@@ -14,7 +21,8 @@ export interface OpsResultLike {
   blockMessage?: string;
   port?: number;
   pid?: number;
-}
+  apply_status?: OpsResultDto['apply_status'];
+};
 
 export interface OpsResultPanelProps {
   title?: string;
@@ -38,8 +46,14 @@ export function OpsResultPanel({
 }: OpsResultPanelProps) {
   if (!result && !message && facts.length === 0) return null;
 
-  const ok = result?.ok ?? true;
+  // Never default missing ok to success when blocked / requires*
   const blocked = Boolean(result?.blocked || result?.requiresExecute || result?.requiresRoot);
+  const ok =
+    result == null
+      ? true
+      : typeof result.ok === 'boolean'
+        ? result.ok
+        : !blocked;
   const blockMessage = result?.blockMessage
     ? humanizeOperatorMessage(result.blockMessage)
     : undefined;
@@ -91,16 +105,16 @@ export function OpsResultPanel({
         </ul>
       ) : null}
       {blocked && onRetry ? (
-        <div className="btn-row u-mt-3">
+        <ActionBar className="u-mt-3">
           <button
             type="button"
-            className="btn btn--primary btn--sm"
+            className={buttonClassName({ variant: 'primary', size: 'sm' })}
             disabled={busy}
             onClick={onRetry}
           >
             再試
           </button>
-        </div>
+        </ActionBar>
       ) : null}
     </div>
   );

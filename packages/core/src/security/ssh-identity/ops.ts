@@ -1,0 +1,342 @@
+/**
+ * Identity ops: test connectivity, rotate, authorize-self (public → authorized_keys).
+ * Outbound helpers for ssh/scp with -i.
+ */
+
+import { existsSync } from 'node:fs';
+import type { HostExecutor } from '../../host/executor.js';
+import type { JsonStore } from '../../db/store.js';
+import { addSftpKey, chownSftpProjectKeys } from '../../hosting/sftp-keys.js';
+import { materializeIdentityKeyFile } from './install.js';
+import {
+  createSshIdentity,
+  getSshIdentityInternal,
+  listSshIdentities,
+  updateSshIdentityRecord,
+} from './store.js';
+import { toPublicIdentity, type SshIdentityPublic } from './types.js';
+
+export type TestSshIdentityResult = {
+  ok: boolean;
+  dryRun: boolean;
+  applied: boolean;
+  blocked: boolean;
+  requiresExecute: boolean;
+  target?: string;
+  identity?: SshIdentityPublic;
+  notes: string[];
+  exitCode?: number;
+};
+
+/** Parse user@host[:port] or bare host (root@host). */
+export function parseSshTarget(target: string): {
+  user: string;
+  host: string;
+  port: number;
+} | null {
+  const t = target.trim();
+  if (!t) return null;
+  const m = t.match(/^([^@\s]+)@([^:\s]+)(?::(\d+))?$/);
+  if (m) {
+    return {
+      user: m[1]!,
+      host: m[2]!,
+      port: m[3] ? Number(m[3]) : 22,
+    };
+  }
+  if (/^[\w.-]+$/.test(t)) {
+    return { user: 'root', host: t, port: 22 };
+  }
+  return null;
+}
+
+export function buildIdentityFileOpts(privateKeyPath: string): string[] {
+  return [
+    '-i',
+    privateKeyPath,
+    '-o',
+    'IdentitiesOnly=yes',
+    '-o',
+    'BatchMode=yes',
+    '-o',
+    'StrictHostKeyChecking=accept-new',
+  ];
+}
+
+export function buildSshIdentityArgv(
+  privateKeyPath: string,
+  extra: {
+    port?: number;
+    userAtHost: string;
+    remoteCommand?: string[];
+    connectTimeout?: number;
+  },
+): string[] {
+  const argv = ['ssh', ...buildIdentityFileOpts(privateKeyPath)];
+  argv.push('-o', `ConnectTimeout=${extra.connectTimeout ?? 8}`);
+  if (extra.port) {
+    argv.push('-p', String(extra.port));
+  }
+  argv.push(extra.userAtHost);
+  if (extra.remoteCommand?.length) {
+    argv.push(...extra.remoteCommand);
+  }
+  return argv;
+}
+
+export function buildScpIdentityArgv(
+  privateKeyPath: string,
+  opts: {
+    port?: number;
+    localPath: string;
+    remoteSpec: string;
+  },
+): string[] {
+  return [
+    'scp',
+    ...buildIdentityFileOpts(privateKeyPath),
+    '-P',
+    String(opts.port ?? 22),
+    opts.localPath,
+    opts.remoteSpec,
+  ];
+}
+
+/**
+ * Resolve private key path for outbound ssh/scp (-i).
+ * Prefers install path; else materializes under dataDir/secrets/ssh/keys/{id}/.
+ */
+export function resolveIdentityKeyPath(
+  dataDir: string,
+  identityId: string,
+): { ok: boolean; path?: string; notes: string[] } {
+  const row = getSshIdentityInternal(dataDir, identityId);
+  if (!row) return { ok: false, notes: ['找不到 identity'] };
+  if (row.install?.path && existsSync(row.install.path)) {
+    return {
+      ok: true,
+      path: row.install.path,
+      notes: [`using install path ${row.install.path}`],
+    };
+  }
+  return materializeIdentityKeyFile(dataDir, identityId);
+}
+
+export async function testSshIdentity(input: {
+  dataDir: string;
+  id: string;
+  target: string;
+  apply?: boolean;
+  host?: HostExecutor;
+  executeEnabled?: boolean;
+}): Promise<TestSshIdentityResult> {
+  const notes: string[] = [];
+  const row = getSshIdentityInternal(input.dataDir, input.id);
+  if (!row) {
+    return {
+      ok: false,
+      dryRun: !input.apply,
+      applied: false,
+      blocked: false,
+      requiresExecute: true,
+      notes: ['找不到 identity'],
+    };
+  }
+
+  const parsed = parseSshTarget(input.target);
+  if (!parsed) {
+    return {
+      ok: false,
+      dryRun: !input.apply,
+      applied: false,
+      blocked: false,
+      requiresExecute: false,
+      notes: ['target 格式：user@host 或 user@host:port'],
+    };
+  }
+
+  const mat = resolveIdentityKeyPath(input.dataDir, input.id);
+  if (!mat.ok || !mat.path) {
+    return {
+      ok: false,
+      dryRun: !input.apply,
+      applied: false,
+      blocked: false,
+      requiresExecute: false,
+      identity: toPublicIdentity(row),
+      notes: mat.notes,
+    };
+  }
+
+  const argv = buildSshIdentityArgv(mat.path, {
+    port: parsed.port,
+    userAtHost: `${parsed.user}@${parsed.host}`,
+    remoteCommand: ['true'],
+  });
+  notes.push(`plan: ${argv.join(' ')}`);
+  notes.push('成功僅代表此 target 可 BatchMode 登入，≠ 全域授權');
+
+  if (!input.apply) {
+    notes.push('dry-run — pass apply/execute 才真正 ssh');
+    return {
+      ok: true,
+      dryRun: true,
+      applied: false,
+      blocked: false,
+      requiresExecute: true,
+      target: `${parsed.user}@${parsed.host}:${parsed.port}`,
+      identity: toPublicIdentity(row),
+      notes,
+    };
+  }
+
+  if (!input.executeEnabled || !input.host) {
+    notes.push('blocked: 需要 HostExecutor + YSK_EXECUTE=1');
+    return {
+      ok: false,
+      dryRun: false,
+      applied: false,
+      blocked: true,
+      requiresExecute: true,
+      target: `${parsed.user}@${parsed.host}:${parsed.port}`,
+      identity: toPublicIdentity(row),
+      notes,
+    };
+  }
+
+  const r = await input.host.runCommand(argv, { timeoutMs: 20_000 });
+  const ok = r.exitCode === 0;
+  notes.push(
+    ok
+      ? 'ssh true 成功 → verified'
+      : `ssh 失敗：${(r.stderr || r.stdout || '').slice(0, 160)}`,
+  );
+
+  const identity = updateSshIdentityRecord(input.dataDir, row.id, {
+    status: ok ? 'verified' : 'error',
+    lastVerifiedAt: new Date().toISOString(),
+    lastVerifyNote: ok
+      ? `ok ${parsed.user}@${parsed.host}`
+      : notes[notes.length - 1],
+  });
+
+  return {
+    ok,
+    dryRun: false,
+    applied: true,
+    blocked: false,
+    requiresExecute: false,
+    target: `${parsed.user}@${parsed.host}:${parsed.port}`,
+    identity: identity ?? undefined,
+    notes,
+    exitCode: r.exitCode,
+  };
+}
+
+export type RotateSshIdentityResult = {
+  ok: boolean;
+  oldIdentity?: SshIdentityPublic;
+  newIdentity?: SshIdentityPublic;
+  privateKey?: string;
+  notes: string[];
+};
+
+/** Generate new key; mark old retired. Optionally reveal private once. */
+export function rotateSshIdentity(input: {
+  dataDir: string;
+  id: string;
+  revealPrivate?: boolean;
+  db?: JsonStore;
+}): RotateSshIdentityResult {
+  const old = getSshIdentityInternal(input.dataDir, input.id);
+  if (!old) return { ok: false, notes: ['找不到 identity'] };
+
+  const notes: string[] = [`retire ${old.id} (${old.fingerprintSha256})`];
+  updateSshIdentityRecord(input.dataDir, old.id, {
+    status: 'retired',
+    name: old.name.endsWith(' (retired)') ? old.name : `${old.name} (retired)`,
+  });
+
+  const baseName = old.name.replace(/\s*\(retired\)\s*$/, '').trim() || old.name;
+  const created = createSshIdentity(
+    input.dataDir,
+    {
+      name: baseName,
+      algorithm: old.algorithm,
+      purpose: old.purpose,
+      binding: old.binding,
+      comment: old.comment ?? `rotated from ${old.fingerprintSha256}`,
+      createdBy: old.createdBy,
+      revealPrivate: input.revealPrivate,
+    },
+    input.db,
+  );
+
+  if (!created.ok || !created.identity) {
+    return {
+      ok: false,
+      oldIdentity: toPublicIdentity(old),
+      notes: [...notes, ...(created.notes ?? ['create failed'])],
+    };
+  }
+  notes.push(...created.notes);
+  notes.push(`new ${created.identity.id} ${created.identity.fingerprintSha256}`);
+  notes.push('舊公鑰若在 remote authorized_keys，需手動更新或 authorize-self');
+
+  return {
+    ok: true,
+    oldIdentity: listSshIdentities(input.dataDir).find((i) => i.id === old.id),
+    newIdentity: created.identity,
+    privateKey: created.privateKey,
+    notes,
+  };
+}
+
+export type AuthorizeSelfResult = {
+  ok: boolean;
+  notes: string[];
+  written?: string[];
+  keyId?: string;
+};
+
+/** Append this identity's public key to binding user's authorized_keys. */
+export async function authorizeSelfSshIdentity(input: {
+  dataDir: string;
+  db: JsonStore;
+  id: string;
+  host?: HostExecutor;
+}): Promise<AuthorizeSelfResult> {
+  const row = getSshIdentityInternal(input.dataDir, input.id);
+  if (!row) return { ok: false, notes: ['找不到 identity'] };
+
+  const linuxUser = row.binding?.linuxUser;
+  const homeDir = row.binding?.homeDir;
+  const projectId = row.binding?.projectId;
+  if (!linuxUser && !projectId && !homeDir) {
+    return {
+      ok: false,
+      notes: ['identity 未綁定 linuxUser/project — 無法寫 authorized_keys'],
+    };
+  }
+
+  const r = addSftpKey(input.db, input.dataDir, {
+    username: linuxUser || 'unknown',
+    publicKey: row.publicKey,
+    comment: `ysk-identity:${row.id.slice(0, 8)} ${row.name}`,
+    projectId,
+    linuxUser,
+    homeDir,
+  });
+
+  if (r.ok && homeDir && linuxUser && input.host) {
+    const ch = await chownSftpProjectKeys(input.host, homeDir, linuxUser);
+    r.notes.push(...ch);
+  }
+
+  return {
+    ok: r.ok,
+    notes: r.notes,
+    written: r.written,
+    keyId: r.key?.id,
+  };
+}

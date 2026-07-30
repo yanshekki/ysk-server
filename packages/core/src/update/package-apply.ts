@@ -66,8 +66,30 @@ export async function applyPackageUpdate(input: {
     };
   }
 
-  // Prefer apt-get only-upgrade; candidate may not match exact =version on all distros
-  const cmd = `export DEBIAN_FRONTEND=noninteractive; apt-get install -y --only-upgrade ${JSON.stringify(pkg)} 2>&1`;
+  const rawCand = (input.item.candidateVersion ?? '').trim();
+  const cand = rawCand.replace(/[^a-zA-Z0-9.+~:_-]/g, '');
+  const hasCand =
+    Boolean(cand) &&
+    cand === rawCand &&
+    cand !== input.item.currentVersion;
+
+  if (!hasCand) {
+    return {
+      ok: false,
+      applied: false,
+      blocked: true,
+      blockMessage:
+        !rawCand || rawCand === input.item.currentVersion
+          ? '沒有可套用的真實升級（缺 candidate 或與目前版本相同）'
+          : 'candidateVersion 含非法字元',
+      notes: [...notes, '已封鎖：無真實 candidateVersion'],
+      commands: [],
+    };
+  }
+
+  // Exact candidate only — never fall back to unversioned upgrade (wrong version risk)
+  const cmd = `export DEBIAN_FRONTEND=noninteractive; apt-get install -y --only-upgrade ${JSON.stringify(pkg)}=${JSON.stringify(cand)} 2>&1`;
+
   const r = await input.host.runCommand(['bash', '-c', cmd], { timeoutMs: 300_000 });
   const out = ((r.stdout || '') + (r.stderr || '')).slice(0, 800);
   const ok = r.exitCode === 0;
@@ -76,6 +98,7 @@ export async function applyPackageUpdate(input: {
     applied: ok,
     notes: [
       ...notes,
+      `目標版本 ${input.item.currentVersion} → ${cand}`,
       ok ? `已嘗試升級 ${pkg}` : `升級失敗 exit=${r.exitCode}`,
       out.slice(0, 400),
     ],

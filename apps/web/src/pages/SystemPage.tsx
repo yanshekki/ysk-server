@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -13,10 +13,12 @@ import {
   Field,
   FormLayout,
   Modal,
+  ConfirmDialog,
   OpsResultPanel,
-  Tabs,
+  PageTabs,
   LogViewer,
   LoadingBlock,
+  buttonClassName,
 } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { systemApi } from '../features/system';
@@ -92,6 +94,7 @@ export function SystemPage() {
   const [err, setErr] = useState<string | null>(null);
   const [powerDlg, setPowerDlg] = useState<PowerDialog | null>(null);
   const [powerConfirm, setPowerConfirm] = useState('');
+  const [rebuildSyncConfirm, setRebuildSyncConfirm] = useState(false);
 
   const [snapshot, setSnapshot] = useState<ExportSnapshot | null>(null);
   const [managed, setManaged] = useState<ManagedConf[]>([]);
@@ -217,36 +220,156 @@ export function SystemPage() {
     <FeaturePageLayout
       title={t('nav.systemIndex', { defaultValue: '系統工具' })}
       showCapability={false}
-      actions={
-        <>
+      status={
+        tab === 'host'
+          ? {
+              pill: {
+                label: host?.identity.hostname || hostname || '主機',
+                tone: heroTone === 'neutral' ? 'ok' : heroTone,
+              },
+              items: [
+                {
+                  label: 'Uptime',
+                  value: formatUptime(host?.runtime.uptimeSec),
+                },
+                {
+                  label: 'Load 1m',
+                  value: load1 != null ? load1.toFixed(2) : '—',
+                },
+                {
+                  label: '記憶體',
+                  value: memPct != null ? `${memPct}%` : '—',
+                  tone: memTone(host?.runtime.memory.usedRatio),
+                },
+                {
+                  label: '磁碟峰值',
+                  value:
+                    worstDisk?.usePct != null
+                      ? `${worstDisk.mount} ${worstDisk.usePct}%`
+                      : '—',
+                  tone:
+                    worstDisk?.usePct != null
+                      ? worstDisk.usePct >= 90
+                        ? 'danger'
+                        : worstDisk.usePct >= 75
+                          ? 'warn'
+                          : 'ok'
+                      : undefined,
+                },
+                {
+                  label: 'EXECUTE',
+                  value: host?.caps.executeEnabled ? '開' : '關',
+                  tone: host?.caps.executeEnabled ? 'ok' : 'warn',
+                },
+                {
+                  label: 'Root',
+                  value: host?.caps.isRoot ? '是' : '否',
+                  tone: host?.caps.isRoot ? 'ok' : 'warn',
+                },
+              ],
+            }
+          : {
+              pill: { label: '匯出 / Rebuild', tone: 'ok' },
+              items: [
+                { label: '專案', value: counts?.projects ?? '—' },
+                { label: '郵件', value: counts?.email_domains ?? '—' },
+                {
+                  label: 'DNS / 憑證',
+                  value: `${counts?.dns_zones ?? '—'}/${counts?.certificates ?? '—'}`,
+                },
+                { label: 'Managed', value: managed.length },
+                {
+                  label: 'EXECUTE',
+                  value:
+                    caps.executeEnabled === undefined
+                      ? '?'
+                      : caps.executeEnabled
+                        ? '開'
+                        : '關',
+                  tone:
+                    caps.executeEnabled === false
+                      ? 'warn'
+                      : caps.executeEnabled
+                        ? 'ok'
+                        : 'neutral',
+                },
+                {
+                  label: 'Exports',
+                  value: archives.length,
+                },
+              ],
+            }
+      }
+      actions={<ActionBar>
           {tab === 'host' ? (
-            <Button
-              variant="secondary"
-              size="md"
-              loading={busy || hostLoading}
-              onClick={() => {
-                setBusy(true);
-                void refresh()
-                  .catch((e: Error) => setErr(e.message))
-                  .finally(() => setBusy(false));
-              }}
-            >
-              重新整理
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                loading={busy || hostLoading}
+                onClick={() => {
+                  setBusy(true);
+                  void refresh()
+                    .catch((e: Error) => setErr(e.message))
+                    .finally(() => setBusy(false));
+                }}
+              >
+                重新整理
+              </Button>
+              <a href="#sys-identity" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+                編輯身份
+              </a>
+              <a href="#sys-power" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+                電源
+              </a>
+              <Link to="/metrics" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                指標
+              </Link>
+            </>
           ) : (
-            <Button
-              variant="secondary"
-              size="md"
-              loading={busy}
-              onClick={() => void refreshExportMeta()}
-            >
-              重新整理
-            </Button>
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                loading={busy}
+                onClick={() =>
+                  void runRebuild({
+                    writeExport: true,
+                    syncNginx: false,
+                    dryRun: false,
+                  })
+                }
+              >
+                寫入 exports/
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={busy}
+                onClick={() =>
+                  void runRebuild({
+                    writeExport: false,
+                    syncNginx: false,
+                    dryRun: true,
+                  })
+                }
+              >
+                Dry-run 同步
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                loading={busy}
+                onClick={() => void refreshExportMeta()}
+              >
+                重新整理
+              </Button>
+            </>
           )}
-          <Link to="/system/readiness" className="btn btn--ghost btn--md">
+          <Link to="/system/readiness" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             就緒探測
           </Link>
-        </>
+        </ActionBar>
       }
     >
       {err ? (
@@ -266,7 +389,7 @@ export function SystemPage() {
         </Alert>
       ) : null}
 
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'host', label: '主機控制台' },
           { id: 'export', label: '匯出 / Rebuild' },
@@ -282,157 +405,6 @@ export function SystemPage() {
               <LoadingBlock label="載入主機概況…" />
             ) : (
               <>
-                <section className={`sys-hero sys-hero--${heroTone}`} aria-label="主機總覽">
-                  <div className="sys-hero__main">
-                    <div className="sys-hero__identity">
-                      <div className="sys-hero__eyebrow">Host console</div>
-                      <h2 className="sys-hero__title">
-                        <span className="sys-hero__hn">
-                          {host?.identity.hostname || hostname || '—'}
-                        </span>
-                        {host?.identity.prettyHostname ? (
-                          <span className="sys-hero__pretty">
-                            {host.identity.prettyHostname}
-                          </span>
-                        ) : null}
-                      </h2>
-                      <p className="sys-hero__hint">
-                        {host?.os.platform ?? '—'} / {host?.os.arch ?? '—'} · kernel{' '}
-                        {host?.os.kernel ?? host?.os.release ?? '—'} · uptime{' '}
-                        {formatUptime(host?.runtime.uptimeSec)}
-                      </p>
-                      <div className="sys-hero__meta">
-                        <span>
-                          時區 <strong>{host?.identity.timezone || timezone || '—'}</strong>
-                        </span>
-                        <span className="sys-hero__dot" />
-                        <span>
-                          CPU ×{host?.runtime.cpus ?? '—'}
-                        </span>
-                        <span className="sys-hero__dot" />
-                        <span>
-                          記憶體 {formatBytes(host?.runtime.memory.total)}
-                        </span>
-                        <span className="sys-hero__dot" />
-                        <span>node {host?.runtime.node ?? '—'}</span>
-                      </div>
-                      <div className="sys-hero__cta">
-                        <a href="#sys-identity" className="btn btn--primary btn--md">
-                          編輯身份
-                        </a>
-                        <a href="#sys-power" className="btn btn--secondary btn--md">
-                          電源
-                        </a>
-                        <Link to="/metrics" className="btn btn--ghost btn--md">
-                          主機指標
-                        </Link>
-                        <Link to="/services" className="btn btn--ghost btn--md">
-                          服務矩陣
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="sys-hero__stats" aria-label="即時狀態">
-                      <div className="sys-stat">
-                        <span className="sys-stat__lab">Uptime</span>
-                        <span className="sys-stat__val">
-                          {formatUptime(host?.runtime.uptimeSec)}
-                        </span>
-                      </div>
-                      <div className="sys-stat">
-                        <span className="sys-stat__lab">Load 1m</span>
-                        <span className="sys-stat__val">
-                          {load1 != null ? load1.toFixed(2) : '—'}
-                        </span>
-                      </div>
-                      <div className="sys-stat">
-                        <span className="sys-stat__lab">記憶體</span>
-                        <span className="sys-stat__val">
-                          <Badge tone={memTone(host?.runtime.memory.usedRatio)}>
-                            {memPct != null ? `${memPct}%` : '—'}
-                          </Badge>
-                        </span>
-                      </div>
-                      <div className="sys-stat">
-                        <span className="sys-stat__lab">磁碟峰值</span>
-                        <span className="sys-stat__val">
-                          {worstDisk?.usePct != null ? (
-                            <Badge
-                              tone={
-                                worstDisk.usePct >= 90
-                                  ? 'danger'
-                                  : worstDisk.usePct >= 75
-                                    ? 'warn'
-                                    : 'ok'
-                              }
-                            >
-                              {worstDisk.mount} {worstDisk.usePct}%
-                            </Badge>
-                          ) : (
-                            '—'
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <ul className="sys-rail" aria-label="能力">
-                    <li>
-                      <span className="sys-rail__k">EXECUTE</span>
-                      <Badge tone={host?.caps.executeEnabled ? 'ok' : 'warn'}>
-                        {host?.caps.executeEnabled ? '開' : '關'}
-                      </Badge>
-                    </li>
-                    <li>
-                      <span className="sys-rail__k">Root</span>
-                      <Badge tone={host?.caps.isRoot ? 'ok' : 'warn'}>
-                        {host?.caps.isRoot ? '是' : '否'}
-                      </Badge>
-                    </li>
-                    <li>
-                      <span className="sys-rail__k">電源</span>
-                      <Badge tone={host?.caps.canPower ? 'ok' : 'warn'}>
-                        {host?.caps.canPower ? '可操作' : '鎖定'}
-                      </Badge>
-                    </li>
-                    <li>
-                      <span className="sys-rail__k">NTP</span>
-                      <Badge
-                        tone={
-                          host?.time.ntpSynchronized
-                            ? 'ok'
-                            : host?.time.ntpEnabled
-                              ? 'warn'
-                              : 'neutral'
-                        }
-                      >
-                        {host?.time.ntpSynchronized
-                          ? '已同步'
-                          : host?.time.ntpEnabled
-                            ? '未同步'
-                            : host?.time.ntpEnabled === false
-                              ? '未啟用'
-                              : '—'}
-                      </Badge>
-                    </li>
-                    <li>
-                      <span className="sys-rail__k">Boot</span>
-                      <code className="sys-rail__code">
-                        {host?.boot.defaultTarget?.replace('.target', '') ?? '—'}
-                      </code>
-                    </li>
-                    <li>
-                      <span className="sys-rail__k">IP</span>
-                      <code className="sys-rail__code">
-                        {host?.network.ips?.[0] ?? '—'}
-                        {(host?.network.ips?.length ?? 0) > 1
-                          ? ` +${(host?.network.ips.length ?? 0) - 1}`
-                          : ''}
-                      </code>
-                    </li>
-                  </ul>
-                </section>
-
                 <div className="sys-grid">
                   {/* Identity + time */}
                   <div className="sys-col">
@@ -518,7 +490,7 @@ export function SystemPage() {
                         {hostname ? (
                           <Link
                             to={`/ssl?domain=${encodeURIComponent(hostname)}&action=le`}
-                            className="btn btn--ghost btn--md"
+                            className={buttonClassName({ variant: 'ghost', size: 'md' })}
                           >
                             面板 SSL
                           </Link>
@@ -911,122 +883,10 @@ export function SystemPage() {
         {/* ═══════════ EXPORT ═══════════ */}
         {tab === 'export' ? (
           <div className="tab-panel sys sys-export">
-            <section className="sys-hero sys-hero--export" aria-label="匯出總覽">
-              <div className="sys-hero__main sys-hero__main--export">
-                <div className="sys-hero__identity">
-                  <div className="sys-hero__eyebrow">Control plane</div>
-                  <h2 className="sys-hero__title">匯出與 Nginx 重建</h2>
-                  <p className="sys-hero__hint">
-                    <strong>匯出</strong> = 面板 DB 摘要 JSON。
-                    <strong> Rebuild</strong> = managed conf →{' '}
-                    <code>/etc/nginx/conf.d</code> + reload。
-                    同步需 root + EXECUTE
-                  </p>
-                  <div className="sys-hero__cta">
-                    <Button
-                      variant="primary"
-                      size="md"
-                      loading={busy}
-                      onClick={() =>
-                        void runRebuild({
-                          writeExport: true,
-                          syncNginx: false,
-                          dryRun: false,
-                        })
-                      }
-                    >
-                      寫入 exports/
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      loading={busy}
-                      onClick={() =>
-                        void runRebuild({
-                          writeExport: false,
-                          syncNginx: false,
-                          dryRun: true,
-                        })
-                      }
-                    >
-                      Dry-run 同步
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      loading={busy}
-                      onClick={() => void refreshExportMeta()}
-                    >
-                      重新整理
-                    </Button>
-                  </div>
-                </div>
-                <div className="sys-kpi-row" aria-label="控制面計數">
-                  <div className="sys-kpi">
-                    <span className="sys-kpi__lab">專案</span>
-                    <span className="sys-kpi__val">{counts?.projects ?? '—'}</span>
-                  </div>
-                  <div className="sys-kpi">
-                    <span className="sys-kpi__lab">郵件</span>
-                    <span className="sys-kpi__val">
-                      {counts?.email_domains ?? '—'}
-                    </span>
-                  </div>
-                  <div className="sys-kpi">
-                    <span className="sys-kpi__lab">DNS / 憑證</span>
-                    <span className="sys-kpi__val">
-                      {counts?.dns_zones ?? '—'}
-                      <span className="sys-kpi__sub">
-                        /{counts?.certificates ?? '—'}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="sys-kpi">
-                    <span className="sys-kpi__lab">Managed</span>
-                    <span className="sys-kpi__val">{managed.length}</span>
-                    <span className="sys-kpi__sub">nginx conf</span>
-                  </div>
-                </div>
-              </div>
-              <ul className="sys-rail">
-                <li>
-                  <span className="sys-rail__k">EXECUTE</span>
-                  <Badge
-                    tone={
-                      caps.executeEnabled === false
-                        ? 'warn'
-                        : caps.executeEnabled
-                          ? 'ok'
-                          : 'neutral'
-                    }
-                  >
-                    {caps.executeEnabled === undefined
-                      ? '?'
-                      : caps.executeEnabled
-                        ? '開'
-                        : '關'}
-                  </Badge>
-                </li>
-                <li>
-                  <span className="sys-rail__k">Root</span>
-                  <Badge
-                    tone={
-                      caps.isRoot === false
-                        ? 'warn'
-                        : caps.isRoot
-                          ? 'ok'
-                          : 'neutral'
-                    }
-                  >
-                    {caps.isRoot === undefined ? '?' : caps.isRoot ? '是' : '否'}
-                  </Badge>
-                </li>
-                <li>
-                  <span className="sys-rail__k">Exports</span>
-                  <Badge tone="neutral">{archives.length}</Badge>
-                </li>
-              </ul>
-            </section>
+            <Alert variant="info">
+              <strong>匯出</strong> = 面板 DB 摘要 JSON。 <strong>Rebuild</strong> = managed
+              conf → <code>/etc/nginx/conf.d</code> + reload。同步需 root + EXECUTE。
+            </Alert>
 
             <div className="sys-steps">
               {/* Step 1 */}
@@ -1227,20 +1087,7 @@ export function SystemPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() => {
-                      if (
-                        !window.confirm(
-                          '確定將 managed nginx conf 同步到 /etc/nginx/conf.d 並 reload？\n需 root + YSK_EXECUTE。',
-                        )
-                      ) {
-                        return;
-                      }
-                      void runRebuild({
-                        writeExport: true,
-                        syncNginx: true,
-                        dryRun: false,
-                      });
-                    }}
+                    onClick={() => setRebuildSyncConfirm(true)}
                   >
                     同步 + reload
                   </Button>
@@ -1344,7 +1191,26 @@ export function SystemPage() {
             />
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
+
+      <ConfirmDialog
+        open={rebuildSyncConfirm}
+        onClose={() => !busy && setRebuildSyncConfirm(false)}
+        title="同步 nginx 到系統？"
+        description="將 managed nginx conf 同步到 /etc/nginx/conf.d 並 reload。需 root + YSK_EXECUTE。"
+        confirmLabel="同步 + reload"
+        cancelLabel="取消"
+        danger
+        busy={busy}
+        onConfirm={() => {
+          setRebuildSyncConfirm(false);
+          void runRebuild({
+            writeExport: true,
+            syncNginx: true,
+            dryRun: false,
+          });
+        }}
+      />
     </FeaturePageLayout>
   );
 }

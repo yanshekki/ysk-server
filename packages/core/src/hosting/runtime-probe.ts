@@ -273,7 +273,9 @@ export async function planOrInstallRuntime(input: {
       'apt-get install -y nodejs',
       'node -v',
       `mkdir -p $(dirname ${plan.binaryPath})`,
-      `ln -sfn "$(command -v node)" ${plan.binaryPath} || true`,
+      'NODE_BIN="$(command -v node)"',
+      'test -n "$NODE_BIN"',
+      `ln -sfn "$NODE_BIN" ${plan.binaryPath}`,
       '',
     ].join('\n');
     notes.push(`準備安裝 Node ${plan.version}`);
@@ -286,11 +288,11 @@ export async function planOrInstallRuntime(input: {
       'export DEBIAN_FRONTEND=noninteractive',
       'apt-get update',
       'apt-get install -y software-properties-common',
-      'add-apt-repository -y ppa:ondrej/php || true',
+      'add-apt-repository -y ppa:ondrej/php 2>/dev/null || echo "skip ondrej PPA"',
       'apt-get update',
       `apt-get install -y php${plan.version}-fpm php${plan.version}-cli php${plan.version}-mysql php${plan.version}-xml php${plan.version}-mbstring`,
       `php${plan.version} -v`,
-      'systemctl enable --now php' + plan.version + '-fpm || true',
+      'systemctl enable --now php' + plan.version + '-fpm',
       '',
     ].join('\n');
     notes.push(`準備安裝 PHP ${plan.version}`);
@@ -303,10 +305,10 @@ export async function planOrInstallRuntime(input: {
       'export DEBIAN_FRONTEND=noninteractive',
       'apt-get update',
       'apt-get install -y software-properties-common',
-      'add-apt-repository -y ppa:deadsnakes/ppa || true',
+      'add-apt-repository -y ppa:deadsnakes/ppa 2>/dev/null || echo "skip deadsnakes PPA"',
       'apt-get update',
-      `apt-get install -y python${plan.version} python${plan.version}-venv python${plan.version}-dev || apt-get install -y python3 python3-venv python3-dev`,
-      `python${plan.version} --version || python3 --version`,
+      `if ! apt-get install -y python${plan.version} python${plan.version}-venv python${plan.version}-dev; then apt-get install -y python3 python3-venv python3-dev; fi`,
+      `python${plan.version} --version 2>/dev/null || python3 --version`,
       '',
     ].join('\n');
     notes.push(`準備安裝 Python ${plan.version}`);

@@ -1,9 +1,10 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
+import { 
+  DataTable,
+  ActionBar,
   Alert,
-  Badge,
   Button,
   Card,
   CardSection,
@@ -13,19 +14,18 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
-  OpsHero,
   SoftwareInstallBanner,
-  Tabs,
+  PageTabs,
   FormActions,
   FormHint,
   PresetChips,
   SegRadio,
-} from '../../shared/components/ui';
+
+  buttonClassName,} from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
 const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec'] as const;
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
-import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
@@ -68,12 +68,25 @@ export function DnsPage() {
   const [peers, setPeers] = useState<Array<Record<string, unknown>>>([]);
   const [soaNs, setSoaNs] = useState('');
   const [soaTtl, setSoaTtl] = useState('300');
+  /** Edit SOA for selected zone (persist + re-write zone file) */
+  const [editSoaNs, setEditSoaNs] = useState('');
+  const [editSoaTtl, setEditSoaTtl] = useState('300');
+  const [soaBusy, setSoaBusy] = useState(false);
+  const [soaMsg, setSoaMsg] = useState<string | null>(null);
 
   // Keep selected zone row in sync after apply/refresh
   const selectedLive = useMemo(() => {
     if (!selectedZone) return null;
     return zones.items.find((z) => z.id === selectedZone.id) ?? selectedZone;
   }, [zones.items, selectedZone]);
+
+  // Prefill SOA fields when selection changes
+  useEffect(() => {
+    if (!selectedLive) return;
+    setEditSoaNs(String(selectedLive.nsName ?? ''));
+    setEditSoaTtl(String(selectedLive.ttl ?? 300));
+    setSoaMsg(null);
+  }, [selectedLive?.id, selectedLive?.nsName, selectedLive?.ttl]);
 
   async function onDnssec(zoneName: string) {
     setDnssecBusy(true);
@@ -95,8 +108,8 @@ export function DnsPage() {
       setDnssecDs(r.dsRecord ?? null);
       setDnssecMsg(
         r.ok
-          ? '已產生 DNSSEC 金鑰（未上線）'
-          : 'DNSSEC 產生未完成',
+          ? '已產生 DNSSEC 金鑰（written — 未簽署 zone／未上 registrar）'
+          : 'DNSSEC 未產生金鑰（只寫說明檔或工具不可用 — 唔假成功）',
       );
       const listed = await api.requestRaw<{ files?: string[]; notes?: string[] }>(
         `/api/v1/dns/zones/${encodeURIComponent(zoneName)}/dnssec`,
@@ -166,67 +179,50 @@ export function DnsPage() {
     <FeaturePageLayout
       title={t('nav.dns', { defaultValue: 'DNS' })}
       showCapability={false}
-      actions={
-        <>
-          <Button variant="primary" size="md" onClick={() => setZoneOpen(true)}>
-            + 建立區域
+      status={{
+        pill: {
+          label: `${zones.items.length} zones`,
+          tone: zones.items.length ? 'ok' : 'warn',
+        },
+        items: [
+          { label: 'Zones', value: zones.items.length },
+          { label: '紀錄', value: records.items.length },
+          { label: 'Peers', value: peers.length },
+          {
+            label: '選中',
+            value: selectedLive ? String(selectedLive.zone ?? selectedLive.id) : '—',
+          },
+        ],
+      }}
+      actions={<>
+          
+          <Button variant="secondary" size="sm" onClick={() => setTab('records')}>
+            紀錄
           </Button>
-          <Link to="/ssl" className="btn btn--ghost btn--md">
+          <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             SSL
           </Link>
         </>
       }
     >
       <SoftwareInstallBanner feature="dns" title="DNS 所需軟件尚未安裝" />
-      <OpsHero
-        pill={`${zones.items.length}`}
-        pillTone={zones.items.length ? 'ok' : 'warn'}
-        tone={zones.items.length ? 'ok' : 'warn'}
-        cta={
-          <>
-            <Button variant="primary" size="md" onClick={() => setZoneOpen(true)}>
-              + 建立區域
-            </Button>
-            <Button variant="secondary" size="md" onClick={() => setTab('records')}>
-              紀錄
-            </Button>
-            <Button variant="ghost" size="md" onClick={() => setTab('dnssec')}>
-              DNSSEC
-            </Button>
-          </>
-        }
-        stats={[
-          { label: 'Zones', value: zones.items.length },
-          {
-            label: '紀錄',
-            value: records.items.length,
-          },
-          { label: 'Peers', value: peers.length },
-          {
-            label: '選中',
-            value: selectedLive ? String(selectedLive.zone ?? selectedLive.id) : '—',
-          },
-        ]}
-        rail={
-          <li>
-            <span className="ops-rail__k">狀態</span>
-            <Badge tone="neutral">未上線 DNS</Badge>
-          </li>
-        }
-      />
       {zones.error || records.error ? (
         <Alert variant="error">{zones.error ?? records.error}</Alert>
       ) : null}
       {zones.msg ? (
         <Alert variant="ok">
           {zones.msg}{' '}
-          <button type="button" className="btn btn--ghost btn--sm" onClick={() => zones.setMsg(null)}>
+          <button type="button" className={buttonClassName({ variant: 'ghost', size: 'sm' })} onClick={() => zones.setMsg(null)}>
             關閉
           </button>
         </Alert>
       ) : null}
       {dnssecMsg ? (
-        <Alert variant={dnssecMsg.includes('失敗') || dnssecMsg.includes('未完成') ? 'error' : 'ok'}>
+        <Alert
+          variant={
+            /失敗|未完成|未產生|唔假成功/.test(dnssecMsg) ? 'error' : 'ok'
+          }
+        >
           {dnssecMsg}
           {dnssecDs ? (
             <p className="u-mt-2">
@@ -245,7 +241,7 @@ export function DnsPage() {
           ) : null}
         </Alert>
       ) : null}
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'zones', label: '區域', badge: zones.items.length || undefined },
           {
@@ -280,9 +276,17 @@ export function DnsPage() {
                 </CardSection>
               </Card>
             ) : null}
-            <Card>
-              <CardSection title={`區域 (${zones.items.length})`}>
-                <ResourceTable
+            <DataTable
+                  rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+                  title={`區域 (${zones.items.length})`}
+                  description="建立區域後可寫入／套用 zone"
+                  toolbar={
+                    <ActionBar>
+                      <Button variant="primary" size="sm" onClick={() => setZoneOpen(true)}>
+                        + 建立區域
+                      </Button>
+                    </ActionBar>
+                  }
                   columns={[
                     {
                       key: 'zone',
@@ -290,7 +294,7 @@ export function DnsPage() {
                       render: (r) => (
                         <button
                           type="button"
-                          className="btn btn--link"
+                          className={buttonClassName({ variant: 'link', size: 'md' })}
                           onClick={() => {
                             setSelectedZone(r);
                             setTab('records');
@@ -316,14 +320,14 @@ export function DnsPage() {
                   empty={
                     <EmptyState
                       title="尚未有 DNS 區域"
-                      description="用右上角「建立區域」新增"
+                      description="用列表右上角「建立區域」新增"
                     />
                   }
                   rowActions={(r) => (
-                    <div className="btn-row">
+                    <ActionBar>
                       <button
                         type="button"
-                        className="btn btn--secondary btn--sm"
+                        className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                         disabled={zones.busy}
                         onClick={() => void zones.apply(r.id)}
                         title="寫入管理 zone 檔；有權限時 named-checkzone + 嘗試 reload"
@@ -332,7 +336,7 @@ export function DnsPage() {
                       </button>
                       <button
                         type="button"
-                        className="btn btn--secondary btn--sm"
+                        className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                         onClick={() => {
                           setSelectedZone(r);
                           setTab('records');
@@ -342,17 +346,15 @@ export function DnsPage() {
                       </button>
                       <button
                         type="button"
-                        className="btn btn--danger btn--sm"
+                        className={buttonClassName({ variant: 'danger', size: 'sm' })}
                         disabled={zones.busy}
                         onClick={() => setDelZone(r.id)}
                       >
                         刪除
                       </button>
-                    </div>
+                    </ActionBar>
                   )}
                 />
-              </CardSection>
-            </Card>
           </div>
         ) : null}
 
@@ -380,13 +382,13 @@ export function DnsPage() {
                     <FormActions>
                       <button
                         type="button"
-                        className="btn btn--secondary btn--sm"
+                        className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                         onClick={() => {
                           setEditRec(null);
                           setRtype('A');
                           setRname('@');
                           setRvalue(String(selectedLive.serverIp ?? ''));
-                          setRttl('300');
+                          setRttl(String(selectedLive.ttl ?? 300));
                           setRecOpen(true);
                         }}
                       >
@@ -394,7 +396,7 @@ export function DnsPage() {
                       </button>
                       <button
                         type="button"
-                        className="btn btn--primary btn--sm"
+                        className={buttonClassName({ variant: 'primary', size: 'sm' })}
                         disabled={zones.busy}
                         onClick={() => void zones.apply(selectedLive.id)}
                       >
@@ -402,13 +404,121 @@ export function DnsPage() {
                       </button>
                       <Link
                         to={`/ssl?domain=${encodeURIComponent(String(selectedLive.zone))}&action=le`}
-                        className="btn btn--ghost btn--sm"
+                        className={buttonClassName({ variant: 'ghost', size: 'sm' })}
                         title={`申請 ${String(selectedLive.zone)} Let’s Encrypt`}
                       >
                         申請本區域 SSL
                       </Link>
                     </FormActions>
-                    <ResourceTable
+
+                    <div className="u-mt-4">
+                      <h3 className="section-block__title">SOA / 預設 TTL</h3>
+                      <p className="section-block__desc">
+                        寫入 zone 檔時的 SOA 名稱伺服器與 $TTL；儲存後請再「寫入區域檔」才落到磁碟
+                      </p>
+                      <FormLayout columns={2}>
+                        <Field
+                          label="SOA 名稱伺服器"
+                          htmlFor="edit-soa-ns"
+                          flush
+                          hint="可留空 → 預設 ns1.區域."
+                        >
+                          <input
+                            id="edit-soa-ns"
+                            value={editSoaNs}
+                            onChange={(e) => setEditSoaNs(e.target.value)}
+                            placeholder={`ns1.${String(selectedLive.zone)}.`}
+                            spellCheck={false}
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
+                        <Field label="預設 TTL（秒）" htmlFor="edit-soa-ttl" flush>
+                          <PresetChips
+                            options={[
+                              { value: '60', label: '1 分' },
+                              { value: '300', label: '5 分' },
+                              { value: '600', label: '10 分' },
+                              { value: '3600', label: '1 時' },
+                              { value: '86400', label: '1 日' },
+                            ]}
+                            value={editSoaTtl}
+                            onChange={setEditSoaTtl}
+                            allowCustom
+                            customPlaceholder="自訂秒數"
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
+                      </FormLayout>
+                      <FormActions align="end">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={soaBusy}
+                          disabled={zones.busy}
+                          onClick={() => {
+                            void (async () => {
+                              setSoaBusy(true);
+                              setSoaMsg(null);
+                              try {
+                                const ttl = Number(editSoaTtl) || 300;
+                                await zones.update(selectedLive.id, {
+                                  nsName: editSoaNs.trim() || undefined,
+                                  ttl,
+                                });
+                                setSoaMsg('已儲存 SOA 設定（控制面）— 請「寫入區域檔」套用');
+                              } catch (e) {
+                                setSoaMsg(
+                                  e instanceof Error ? e.message : '儲存 SOA 失敗',
+                                );
+                              } finally {
+                                setSoaBusy(false);
+                              }
+                            })();
+                          }}
+                        >
+                          儲存 SOA 設定
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          loading={soaBusy || zones.busy}
+                          onClick={() => {
+                            void (async () => {
+                              setSoaBusy(true);
+                              setSoaMsg(null);
+                              try {
+                                const ttl = Number(editSoaTtl) || 300;
+                                await zones.update(selectedLive.id, {
+                                  nsName: editSoaNs.trim() || undefined,
+                                  ttl,
+                                });
+                                await zones.apply(selectedLive.id);
+                                setSoaMsg('已儲存並寫入區域檔');
+                              } catch (e) {
+                                setSoaMsg(
+                                  e instanceof Error ? e.message : 'SOA 寫入失敗',
+                                );
+                              } finally {
+                                setSoaBusy(false);
+                              }
+                            })();
+                          }}
+                        >
+                          儲存並寫入區域檔
+                        </Button>
+                      </FormActions>
+                      {soaMsg ? (
+                        <Alert
+                          variant={
+                            soaMsg.includes('失敗') ? 'error' : 'ok'
+                          }
+                        >
+                          {soaMsg}
+                        </Alert>
+                      ) : null}
+                    </div>
+
+                    <DataTable
                       columns={[
                         { key: 'type', header: '類型', render: (r) => String(r.type) },
                         { key: 'name', header: '名稱', render: (r) => String(r.name) },
@@ -422,12 +532,13 @@ export function DnsPage() {
                         { key: 'ttl', header: 'TTL', render: (r) => String(r.ttl ?? 300) },
                       ]}
                       rows={records.items}
+                  rowKey={(r) => String((r as { id?: string }).id ?? '')}
                       empty={<EmptyState title="尚無記錄" />}
                       rowActions={(r) => (
-                        <div className="btn-row">
+                        <ActionBar>
                           <button
                             type="button"
-                            className="btn btn--secondary btn--sm"
+                            className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                             onClick={() => {
                               setEditRec(r);
                               setRtype(String(r.type ?? 'A'));
@@ -441,12 +552,12 @@ export function DnsPage() {
                           </button>
                           <button
                             type="button"
-                            className="btn btn--danger btn--sm"
+                            className={buttonClassName({ variant: 'danger', size: 'sm' })}
                             onClick={() => setDelRec(r.id)}
                           >
                             刪除
                           </button>
-                        </div>
+                        </ActionBar>
                       )}
                     />
                   </>
@@ -455,7 +566,7 @@ export function DnsPage() {
                     title="尚未選擇區域"
                     description="到「區域」分頁點選一個 zone"
                     action={
-                      <button type="button" className="btn btn--secondary" onClick={() => setTab('zones')}>
+                      <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setTab('zones')}>
                         前往區域
                       </button>
                     }
@@ -570,7 +681,8 @@ export function DnsPage() {
                       目前區域：<strong>{String(selectedLive.zone)}</strong>
                     </p>
                     <FormHint>
-                      金鑰寫入 dataDir；不會自動簽署 zone 或更新 registrar DS。
+                      產生金鑰／DS；若 dataDir 有 zone 檔會嘗試 dnssec-signzone。DS
+                      唔會自動上 registrar。
                     </FormHint>
                     <FormActions>
                       <Button
@@ -579,7 +691,7 @@ export function DnsPage() {
                         loading={dnssecBusy}
                         onClick={() => void onDnssec(String(selectedLive.zone))}
                       >
-                        產生 DNSSEC 金鑰
+                        產生金鑰並嘗試簽署 zone
                       </Button>
                     </FormActions>
                   </>
@@ -587,7 +699,7 @@ export function DnsPage() {
                   <EmptyState
                     title="請先選擇區域"
                     action={
-                      <button type="button" className="btn btn--secondary" onClick={() => setTab('zones')}>
+                      <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setTab('zones')}>
                         前往區域
                       </button>
                     }
@@ -597,7 +709,7 @@ export function DnsPage() {
             </Card>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <Modal
         open={zoneOpen}
@@ -606,10 +718,10 @@ export function DnsPage() {
         description="依模板產生記錄"
         footer={
           <>
-            <button type="button" className="btn btn--secondary" onClick={() => setZoneOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setZoneOpen(false)}>
               取消
             </button>
-            <button type="submit" form="dz" className="btn btn--primary" disabled={zones.busy}>
+            <button type="submit" form="dz" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={zones.busy}>
               建立
             </button>
           </>
@@ -718,10 +830,10 @@ export function DnsPage() {
         }
         footer={
           <>
-            <button type="button" className="btn btn--secondary" onClick={() => setRecOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setRecOpen(false)}>
               取消
             </button>
-            <button type="submit" form="dr" className="btn btn--primary" disabled={records.busy}>
+            <button type="submit" form="dr" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={records.busy}>
               儲存
             </button>
           </>

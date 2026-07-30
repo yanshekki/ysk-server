@@ -65,9 +65,11 @@
   --space-stack-lg: var(--space-8); /* 2rem header → body */
   --space-card: var(--space-6); /* 1.5rem card padding */
   --space-card-gap: var(--space-6);
-  --space-section: var(--space-5); /* title → content */
-  --space-field: var(--space-4); /* form fields */
+  --space-section: var(--space-6); /* title → content (was 5; labels need air) */
+  --space-field: var(--space-5); /* form fields */
   --space-control-gap: var(--space-2); /* label ↔ input */
+  /** Gap between major blocks inside a .card (table → form, header → body) */
+  --space-card-block: var(--space-6);
   --space-chip-y: 0.35rem;
   --space-chip-x: 0.7rem;
   --space-grid: var(--space-5);
@@ -94,7 +96,7 @@
   --form-max: 36rem;
   --form-max-wide: 48rem;
   --form-field-gap: var(--space-5);
-  --form-label-gap: var(--space-2);
+  --form-label-gap: 0.4rem; /* label ↔ control: slightly more than space-1 */
 
   --font-sans: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);

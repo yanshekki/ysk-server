@@ -14,17 +14,33 @@ export type AdviceRow = {
   requiresApproval?: boolean;
 };
 
+export type InventoryMeta = {
+  source?: string;
+  upgradableCount?: number;
+  notes?: string[];
+};
+
 export const updatesApi = {
   inventory: () =>
     api.requestRaw<{
-      inventory: Array<{ packageName: string; currentVersion: string }>;
+      inventory: Array<{
+        packageName: string;
+        currentVersion: string;
+        candidateVersion?: string;
+      }>;
       advice: AdviceRow[];
+      meta?: InventoryMeta;
       collectedAt?: string;
     }>('/api/v1/updates/inventory'),
   refresh: (osv = false) =>
     api.requestRaw<{
-      inventory: Array<{ packageName: string; currentVersion: string }>;
+      inventory: Array<{
+        packageName: string;
+        currentVersion: string;
+        candidateVersion?: string;
+      }>;
       advice: AdviceRow[];
+      meta?: InventoryMeta;
       collectedAt?: string;
     }>('/api/v1/updates/inventory/refresh', {
       method: 'POST',

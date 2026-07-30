@@ -19,7 +19,7 @@ import {
   chownProjectPath,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
-import { getBearer, readBody, sendJson } from '../http/util.js';
+import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
 function resolveRoot(
   ctx: AppContext,
@@ -620,7 +620,7 @@ export async function handleFilesRoutes(
       detail: { versionId: data.versionId, ok: r.ok },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 404, r);
+    sendOpsResult(res, r, { notFound: true });
     return true;
   }
 

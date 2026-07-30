@@ -63,7 +63,7 @@ See [docs/deploy/spec-readiness.md](docs/deploy/spec-readiness.md). Degraded mod
 - **Mailbox passwords**: `{SHA512-CRYPT}` via openssl when available (else YSK-SCRYPT)
 - **Webmail (Roundcube)**: managed config + install helper + nginx; download needs EXECUTE
 - **Email bootstrap** (`POST /api/v1/email/bootstrap` / `hosting email-bootstrap`): domain+DKIM+MTA+mailbox+passdb+webmail plan
-- **CI**: GitHub Actions `pnpm test` + `e2e:real-ops` on push/PR
+- **CI**: GitHub Actions `pnpm gates` (honesty + UI primitives) → typecheck → build → test → `e2e:real-ops`
 - **FTPS**: vsftpd config + install helper (fail-closed install)
 - **UFW script** under `dataDir/firewall/ufw-apply.sh` (apply needs root+EXECUTE; no fake ok)
 - **systemd resource limits** (MemoryMax / CPUQuota) on Node units

@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import type { AgentRuntimeKind } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { planAgentInstall, parseAgentKind } from './runtime.js';
-import { renderAgentSystemdUnit, probeAgentRuntime } from './probe.js';
+import { renderAgentSystemdUnit, probeAgentRuntime, resolveAgentBinary } from './probe.js';
 
 export interface AgentInstallResult {
   ok: boolean;
@@ -18,6 +18,7 @@ export interface AgentInstallResult {
   requiresExecute: boolean;
   requiresRoot: boolean;
   enabled: boolean;
+  binaryPath?: string;
   probe?: Awaited<ReturnType<typeof probeAgentRuntime>>;
 }
 
@@ -52,6 +53,9 @@ export async function applyAgentInstall(input: {
       'Commands:',
       ...plan.commands.map((c) => `  ${c}`),
       '',
+      'Binaries:',
+      ...plan.binNames.map((b) => `  - ${b}`),
+      '',
       'Supervision:',
       ...plan.supervision.map((s) => `  - ${s}`),
       '',
@@ -60,29 +64,16 @@ export async function applyAgentInstall(input: {
   );
   written.push(readme);
 
-  const unitsDir = join(input.dataDir, 'systemd');
-  mkdirSync(unitsDir, { recursive: true });
-  const unitName = `ysk-agent-${kind}.service`;
-  const unitPath = join(unitsDir, unitName);
-  const unit = renderAgentSystemdUnit({
-    kind,
-    installPath,
-    nodePath: input.nodePath ?? process.execPath,
-  });
-  writeFileSync(unitPath, unit, 'utf8');
-  written.push(unitPath);
-  notes.push(`Unit template: ${unitPath}`);
-
   const want = Boolean(input.execute);
   const can = want && input.host.executeEnabled();
   let enabled = false;
+  let binaryPath: string | undefined;
 
   if (want && !can) {
     notes.push('伺服器未開啟系統變更權限，無法在管理面板完成安裝');
   }
 
   if (can) {
-    // mkdir install path (may need root for /opt)
     const mk = await input.host.runCommand(['mkdir', '-p', installPath], { timeoutMs: 10_000 });
     commandResults.push({
       argv: ['mkdir', '-p', installPath],
@@ -93,6 +84,8 @@ export async function applyAgentInstall(input: {
       notes.push(`mkdir ${installPath} failed (need root for /opt?): ${mk.stderr}`);
     }
     for (const cmd of plan.commands) {
+      // Skip redundant mkdir already done; keep npm install honest (no || true)
+      if (cmd.startsWith('mkdir -p ')) continue;
       const r = await input.host.runCommand(['bash', '-c', cmd], { timeoutMs: 180_000 });
       commandResults.push({
         argv: ['bash', '-c', cmd],
@@ -100,9 +93,37 @@ export async function applyAgentInstall(input: {
         stderr: r.stderr,
       });
       notes.push(`${cmd} => exit ${r.exitCode}`);
+      if (r.exitCode !== 0) {
+        notes.push(`安裝指令失敗（唔會假裝成功）：${(r.stderr || r.stdout).slice(0, 300)}`);
+      }
     }
+  }
 
-    if (input.enableUnit !== false && input.host.isRoot()) {
+  // Resolve binary after install attempt (or probe existing)
+  binaryPath = await resolveAgentBinary(kind, input.host);
+  if (binaryPath) notes.push(`CLI binary: ${binaryPath}`);
+  else notes.push('找不到 CLI binary — systemd 唔會 enable 成 silent placeholder');
+
+  const unitsDir = join(input.dataDir, 'systemd');
+  mkdirSync(unitsDir, { recursive: true });
+  const unitName = `ysk-agent-${kind}.service`;
+  const unitPath = join(unitsDir, unitName);
+  const unit = renderAgentSystemdUnit({
+    kind,
+    installPath,
+    nodePath: input.nodePath ?? process.execPath,
+    binaryPath,
+  });
+  writeFileSync(unitPath, unit, 'utf8');
+  written.push(unitPath);
+  notes.push(`Unit template: ${unitPath}${binaryPath ? ' (real ExecStart)' : ' (fail-closed, no binary)'}`);
+
+  if (can && input.enableUnit !== false) {
+    if (!binaryPath) {
+      notes.push('拒絕 systemctl enable：未安裝真實 agent CLI（避免 placeholder 假 running）');
+    } else if (!input.host.isRoot()) {
+      notes.push('無法啟用服務：需要系統管理員權限');
+    } else {
       const cp = await input.host.runCommand(
         ['cp', unitPath, `/etc/systemd/system/${unitName}`],
         { timeoutMs: 10_000 },
@@ -130,15 +151,18 @@ export async function applyAgentInstall(input: {
       });
       enabled = cp.exitCode === 0 && en.exitCode === 0;
       notes.push(enabled ? `systemd enabled ${unitName}` : `systemd enable failed: ${en.stderr}`);
-    } else if (input.enableUnit !== false) {
-      notes.push('無法啟用服務：需要系統管理員權限');
     }
   }
 
   const probe = await probeAgentRuntime(kind, input.host);
   const ranOk = commandResults.every((c) => c.exitCode === 0);
-  // ok only if we either only wrote files (no execute) or all executed commands succeeded
-  const ok = want ? can && ranOk : true;
+  // execute path: all cmds ok + binary present (enable optional)
+  // plan-only: artifacts written only
+  const ok = want ? can && ranOk && Boolean(binaryPath) : true;
+
+  if (want && can && ranOk && !binaryPath) {
+    notes.push('npm 指令 exit 0 但仍找不到 binary — 套件可能未提供 CLI 或 PATH 未更新');
+  }
 
   return {
     ok,
@@ -149,6 +173,7 @@ export async function applyAgentInstall(input: {
     requiresExecute: !input.host.executeEnabled(),
     requiresRoot: !input.host.isRoot(),
     enabled,
+    binaryPath,
     probe,
   };
 }

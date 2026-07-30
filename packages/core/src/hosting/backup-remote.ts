@@ -14,6 +14,8 @@ export type BackupRemoteSettings = {
   username?: string;
   path?: string;
   password?: string;
+  /** SSH identity vault id — preferred over password for scp */
+  identityId?: string;
   /** S3: bucket name or s3://bucket/prefix */
   s3Bucket?: string;
   s3Region?: string;
@@ -79,12 +81,15 @@ export function setBackupExclusions(db: JsonStore, patterns: string[]): string[]
 }
 
 /**
- * After local backup, optionally scp to remote (needs execute + sshpass or key auth).
+ * After local backup, optionally scp to remote (needs execute + identity / sshpass / default key).
  */
 export async function pushBackupRemote(input: {
   host: HostExecutor;
   db: JsonStore;
   localArchivePath: string;
+  /** override settings identityId */
+  identityId?: string;
+  dataDir?: string;
 }): Promise<{ ok: boolean; notes: string[]; skipped?: boolean }> {
   const remote = getBackupRemote(input.db);
   if (!remote.enabled) {
@@ -125,6 +130,37 @@ export async function pushBackupRemote(input: {
   }
   const port = remote.port ?? 22;
   const dest = `${remote.username}@${remote.host}:${remote.path}/`;
+  const identityId = input.identityId || remote.identityId;
+  const dataDir = input.dataDir;
+
+  // Prefer vault identity when configured
+  if (identityId && dataDir) {
+    const { resolveIdentityKeyPath, buildScpIdentityArgv } = await import(
+      '../security/ssh-identity/ops.js'
+    );
+    const key = resolveIdentityKeyPath(dataDir, identityId);
+    if (!key.ok || !key.path) {
+      return {
+        ok: false,
+        notes: [`identity ${identityId}: ${(key.notes ?? []).join('; ') || '不可用'}`],
+      };
+    }
+    const argv = buildScpIdentityArgv(key.path, {
+      port,
+      localPath: input.localArchivePath,
+      remoteSpec: dest,
+    });
+    const r = await input.host.runCommand(argv, { timeoutMs: 180_000 });
+    return {
+      ok: r.exitCode === 0,
+      notes: [
+        r.exitCode === 0
+          ? `已 scp（identity）到 ${dest}`
+          : `scp(identity) 失敗: ${(r.stderr || r.stdout).slice(0, 300)}`,
+      ],
+    };
+  }
+
   // Prefer scp; with password use sshpass if available
   if (remote.password) {
     const r = await input.host.runCommand(
@@ -139,7 +175,7 @@ export async function pushBackupRemote(input: {
     if (out.includes('NEED_SSHPASS')) {
       return {
         ok: false,
-        notes: ['需要 sshpass 或改用 SSH key 做 scp'],
+        notes: ['需要 sshpass、YSK 身份金鑰（identityId），或本機預設 SSH key'],
       };
     }
     return {
@@ -152,6 +188,8 @@ export async function pushBackupRemote(input: {
       'scp',
       '-o',
       'StrictHostKeyChecking=no',
+      '-o',
+      'BatchMode=yes',
       '-P',
       String(port),
       input.localArchivePath,
@@ -161,7 +199,11 @@ export async function pushBackupRemote(input: {
   );
   return {
     ok: r.exitCode === 0,
-    notes: [r.exitCode === 0 ? `已 scp 到 ${dest}` : `scp 失敗: ${r.stderr || r.stdout}`],
+    notes: [
+      r.exitCode === 0
+        ? `已 scp 到 ${dest}`
+        : `scp 失敗: ${r.stderr || r.stdout}（可設 backup remote identityId）`,
+    ],
   };
 }
 

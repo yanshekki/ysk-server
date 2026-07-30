@@ -16,13 +16,14 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-  OpsHero,
+
   OpsResultPanel,
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
-  Tabs,
-} from '../../shared/components/ui';
+  PageTabs,
+
+  buttonClassName,} from '../../shared/components/ui';
 import { Link } from 'react-router-dom';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -190,23 +191,46 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   return (
     <FeaturePageLayout
       title={meta.title}
-      actions={
-        <Button
-          variant="secondary"
-          size="md"
-          loading={busy}
-          onClick={() => {
-            setError(null);
-            setMsg(null);
-            void run(async () => {
-              const r = (await systemApi.runtimes()) as Record<string, unknown>;
-              setProbe(r);
-              return { ok: true, notes: ['已探測'], ...r } as unknown as OpsResultLike;
-            }, '已探測');
-          }}
-        >
-          重新探測
-        </Button>
+      status={{
+        pill: {
+          label: probeData.available.length
+            ? `${probeData.available.length} 可用`
+            : '未探測到',
+          tone: probeData.available.length ? 'ok' : 'warn',
+        },
+        items: [
+          {
+            label: '探測',
+            value: probe ? '已讀' : '—',
+            tone: probe ? 'ok' : 'neutral',
+          },
+          { label: '可用', value: probeData.available.length || 0 },
+          { label: '目標', value: version },
+          { label: '調校', value: tuningLoaded ? '已載' : '—' },
+          { label: '主機', value: probeData.host || '—' },
+        ],
+      }}
+      actions={<>
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={busy}
+            onClick={() => {
+              setError(null);
+              setMsg(null);
+              void run(async () => {
+                const r = (await systemApi.runtimes()) as Record<string, unknown>;
+                setProbe(r);
+                return { ok: true, notes: ['已探測'], ...r } as unknown as OpsResultLike;
+              }, '已探測');
+            }}
+          >
+            重新探測
+          </Button>
+          <Link to="/projects" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            專案
+          </Link>
+        </>
       }
     >
       <SoftwareInstallBanner feature={kind} title={meta.bannerTitle} />
@@ -220,63 +244,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={
-          probeData.available.length
-            ? `${probeData.available.length} 可用`
-            : '未探測到'
-        }
-        pillTone={probeData.available.length ? 'ok' : 'warn'}
-        tone={probeData.available.length ? 'ok' : 'warn'}
-        cta={
-          <>
-            <Button
-              variant="primary"
-              size="md"
-              loading={busy}
-              onClick={() => {
-                setError(null);
-                setMsg(null);
-                void run(async () => {
-                  const r = (await systemApi.runtimes()) as Record<string, unknown>;
-                  setProbe(r);
-                  return { ok: true, notes: ['已探測'], ...r } as unknown as OpsResultLike;
-                }, '已探測');
-              }}
-            >
-              重新探測
-            </Button>
-            <Link to="/projects" className="btn btn--ghost btn--md">
-              專案
-            </Link>
-          </>
-        }
-        stats={[
-          {
-            label: '探測',
-            value: (
-              <Badge tone={probe ? 'ok' : 'neutral'}>{probe ? '已讀' : '—'}</Badge>
-            ),
-          },
-          {
-            label: '可用',
-            value: probeData.available.length || 0,
-          },
-          { label: '目標', value: version },
-          {
-            label: '調校',
-            value: tuningLoaded ? '已載' : '—',
-          },
-        ]}
-        rail={
-          <li>
-            <span className="ops-rail__k">主機</span>
-            <code className="ops-rail__code">{probeData.host}</code>
-          </li>
-        }
-      />
-
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'overview', label: '總覽 / 安裝' },
           { id: 'tuning', label: '執行調校' },
@@ -300,7 +268,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     {
                       label: '已就緒',
                       value: probeData.available.length ? (
-                        <span className="btn-row">
+                        <span /* was action-bar */>
                           {probeData.available.map((v) => (
                             <Badge key={v} tone="ok">
                               {v}
@@ -620,7 +588,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             </FormActions>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
     </FeaturePageLayout>

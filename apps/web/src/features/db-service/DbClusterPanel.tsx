@@ -3,13 +3,14 @@
  * MariaDB Galera + MySQL primary/replica. Mounted in ServiceConsole «叢集» tab.
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
   Card,
   CardSection,
   ConfirmDialog,
+  DataTable,
   DescriptionList,
   EmptyState,
   Field,
@@ -79,6 +80,14 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
     bootstrap: boolean;
   } | null>(null);
   const [probeFacts, setProbeFacts] = useState<Record<string, string> | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<
+    | { kind: 'remove'; id: string }
+    | { kind: 'installPeers'; id: string }
+    | { kind: 'push'; id: string }
+    | { kind: 'fleetSync'; id: string }
+    | { kind: 'fleetApply'; id: string }
+    | null
+  >(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -295,7 +304,6 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   }
 
   async function removeCluster(id: string) {
-    if (!confirm('刪除叢集登記？系統 conf 唔會自動清（v1）。')) return;
     await run(async () => {
       const r = await dbClusterApi.remove(id);
       if (activeId === id) {
@@ -326,7 +334,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           title="叢集"
           description="計劃 → 寫管理檔 → 套用 → 探測 → peer 分發 / fleet。預設 dry-run。"
         >
-          <div className="btn-row u-mb-3">
+          <ActionBar className="u-mb-3">
             <Button
               variant="primary"
               size="md"
@@ -346,254 +354,212 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             >
               重新整理
             </Button>
-          </div>
+          </ActionBar>
 
-          {items.length === 0 ? (
-            <EmptyState
-              title="目前：單機"
-              description={
-                isRepl
-                  ? '未登記主從／串流。指定 primary/master + replica 後產生 conf 與腳本。'
-                  : '未登記 HA。加 peer 節點後產生 conf 計劃，再分步 bootstrap / join。'
-              }
-              action={
-                <Button variant="primary" size="md" onClick={() => setWizOpen(true)}>
-                  {ctaLabel(kind)}
+          <DataTable
+            columns={[
+              {
+                key: 'name',
+                header: '名稱',
+                render: (c) => <code className="inline">{c.name}</code>,
+              },
+              {
+                key: 'kind',
+                header: '類型',
+                className: 'muted',
+                nowrap: true,
+                render: (c) => c.kind,
+              },
+              {
+                key: 'status',
+                header: '狀態',
+                nowrap: true,
+                render: (c) => (
+                  <Badge tone={statusTone(c.status)}>{c.status}</Badge>
+                ),
+              },
+              {
+                key: 'members',
+                header: '節點',
+                className: 'muted',
+                render: (c) => c.members.map((m) => m.host).join(', '),
+              },
+            ]}
+            rows={items}
+            rowKey={(c) => c.id}
+            rowActions={(c) => (
+              <ActionBar align="end">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void replan(c.id)}
+                >
+                  計劃
                 </Button>
-              }
-            />
-          ) : (
-            <div className="table-wrap">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th>名稱</th>
-                    <th>類型</th>
-                    <th>狀態</th>
-                    <th>節點</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((c) => (
-                    <tr key={c.id}>
-                      <td>
-                        <code className="inline">{c.name}</code>
-                      </td>
-                      <td className="muted">{c.kind}</td>
-                      <td>
-                        <Badge tone={statusTone(c.status)}>{c.status}</Badge>
-                      </td>
-                      <td className="muted">
-                        {c.members.map((m) => m.host).join(', ')}
-                      </td>
-                      <td>
-                        <div className="btn-row">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void replan(c.id)}
-                          >
-                            計劃
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void applyDry(c.id)}
-                          >
-                            寫檔
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => setApplyTarget({ id: c.id, bootstrap: false })}
-                          >
-                            套用本機
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => setApplyTarget({ id: c.id, bootstrap: true })}
-                          >
-                            Bootstrap
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void doProbe(c.id, false)}
-                          >
-                            探測
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void doProbe(c.id, true)}
-                          >
-                            全節點探測
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() =>
-                              void run(async () => {
-                                const r = await dbClusterApi.installPeers(c.id, {
-                                  execute: false,
-                                });
-                                return {
-                                  ok: r.ok || r.dryRun,
-                                  dryRun: r.dryRun,
-                                  notes: r.notes,
-                                } as OpsResultLike;
-                              }, '遠端安裝計劃')
-                            }
-                          >
-                            遠端安裝計劃
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              if (
-                                !confirm(
-                                  '在 peer 上 install conf + restart？需 YSK_EXECUTE + SSH。',
-                                )
-                              )
-                                return;
-                              void run(async () => {
-                                const r = await dbClusterApi.installPeers(c.id, {
-                                  execute: true,
-                                });
-                                return {
-                                  ok: r.ok,
-                                  notes: r.notes,
-                                } as OpsResultLike;
-                              }, '遠端已安裝');
-                            }}
-                          >
-                            遠端安裝
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void downloadBundle(c.id)}
-                          >
-                            下載包
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void pushPeers(c.id, false)}
-                          >
-                            Push 計劃
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              if (
-                                !confirm(
-                                  'scp 檔案到 peer /tmp？需 YSK_EXECUTE=1 與 SSH key。成功 ≠ peer 已 restart。',
-                                )
-                              )
-                                return;
-                              void pushPeers(c.id, true);
-                            }}
-                          >
-                            Push 執行
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() =>
-                              void run(async () => {
-                                const r = await dbClusterApi.fleet(c.id, {
-                                  execute: false,
-                                  op: 'sync',
-                                });
-                                return {
-                                  ok: r.ok || r.dryRun,
-                                  dryRun: r.dryRun,
-                                  notes: r.notes,
-                                } as OpsResultLike;
-                              }, 'Fleet sync 計劃')
-                            }
-                          >
-                            Fleet 同步計劃
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              if (
-                                !confirm(
-                                  '同步 cluster 快照到 fleet 邊緣，再可 apply？',
-                                )
-                              )
-                                return;
-                              void run(async () => {
-                                const sync = await dbClusterApi.fleet(c.id, {
-                                  execute: true,
-                                  op: 'sync',
-                                });
-                                return {
-                                  ok: sync.ok,
-                                  notes: sync.notes,
-                                } as OpsResultLike;
-                              }, 'Fleet 已同步排隊');
-                            }}
-                          >
-                            Fleet 同步
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => {
-                              if (!confirm('enqueue apply 到 fleet 成員？')) return;
-                              void run(async () => {
-                                const r = await dbClusterApi.fleet(c.id, {
-                                  execute: true,
-                                  op: 'apply',
-                                  edgeExecute: true,
-                                });
-                                return {
-                                  ok: r.ok,
-                                  notes: r.notes,
-                                } as OpsResultLike;
-                              }, 'Fleet apply 已排隊');
-                            }}
-                          >
-                            Fleet Apply
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            loading={busy}
-                            onClick={() => void removeCluster(c.id)}
-                          >
-                            刪除
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void applyDry(c.id)}
+                >
+                  寫檔
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => setApplyTarget({ id: c.id, bootstrap: false })}
+                >
+                  套用本機
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => setApplyTarget({ id: c.id, bootstrap: true })}
+                >
+                  Bootstrap
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void doProbe(c.id, false)}
+                >
+                  探測
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void doProbe(c.id, true)}
+                >
+                  全節點探測
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = await dbClusterApi.installPeers(c.id, {
+                        execute: false,
+                      });
+                      return {
+                        ok: r.ok || r.dryRun,
+                        dryRun: r.dryRun,
+                        notes: r.notes,
+                      } as OpsResultLike;
+                    }, '遠端安裝計劃')
+                  }
+                >
+                  遠端安裝計劃
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() =>
+                    setPendingConfirm({ kind: 'installPeers', id: c.id })
+                  }
+                >
+                  遠端安裝
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void downloadBundle(c.id)}
+                >
+                  下載包
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void pushPeers(c.id, false)}
+                >
+                  Push 計劃
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => setPendingConfirm({ kind: 'push', id: c.id })}
+                >
+                  Push 執行
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = await dbClusterApi.fleet(c.id, {
+                        execute: false,
+                        op: 'sync',
+                      });
+                      return {
+                        ok: r.ok || r.dryRun,
+                        dryRun: r.dryRun,
+                        notes: r.notes,
+                      } as OpsResultLike;
+                    }, 'Fleet sync 計劃')
+                  }
+                >
+                  Fleet 同步計劃
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() =>
+                    setPendingConfirm({ kind: 'fleetSync', id: c.id })
+                  }
+                >
+                  Fleet 同步
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() =>
+                    setPendingConfirm({ kind: 'fleetApply', id: c.id })
+                  }
+                >
+                  Fleet Apply
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => setPendingConfirm({ kind: 'remove', id: c.id })}
+                >
+                  刪除
+                </Button>
+              </ActionBar>
+            )}
+            empty={
+              <EmptyState
+                title="目前：單機"
+                description={
+                  isRepl
+                    ? '未登記主從／串流。指定 primary/master + replica 後產生 conf 與腳本。'
+                    : '未登記 HA。加 peer 節點後產生 conf 計劃，再分步 bootstrap / join。'
+                }
+                action={
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => setWizOpen(true)}
+                  >
+                    {ctaLabel(kind)}
+                  </Button>
+                }
+              />
+            }
+          />
         </CardSection>
       </Card>
 
@@ -800,6 +766,71 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           const t = applyTarget;
           setApplyTarget(null);
           void applySystem(t.id, t.bootstrap);
+        }}
+      />
+
+      <ConfirmDialog
+        open={pendingConfirm != null}
+        onClose={() => !busy && setPendingConfirm(null)}
+        title={
+          pendingConfirm?.kind === 'remove'
+            ? '刪除叢集登記？'
+            : pendingConfirm?.kind === 'installPeers'
+              ? '遠端安裝 peer？'
+              : pendingConfirm?.kind === 'push'
+                ? 'Push 到 peer？'
+                : pendingConfirm?.kind === 'fleetSync'
+                  ? 'Fleet 同步？'
+                  : pendingConfirm?.kind === 'fleetApply'
+                    ? 'Fleet Apply？'
+                    : '確認操作'
+        }
+        description={
+          pendingConfirm?.kind === 'remove'
+            ? '系統 conf 唔會自動清（v1）。'
+            : pendingConfirm?.kind === 'installPeers'
+              ? '在 peer 上 install conf + restart。需 YSK_EXECUTE + SSH。'
+              : pendingConfirm?.kind === 'push'
+                ? 'scp 檔案到 peer /tmp？需 YSK_EXECUTE=1 與 SSH key。成功 ≠ peer 已 restart。'
+                : pendingConfirm?.kind === 'fleetSync'
+                  ? '同步 cluster 快照到 fleet 邊緣，再可 apply。'
+                  : pendingConfirm?.kind === 'fleetApply'
+                    ? 'enqueue apply 到 fleet 成員。'
+                    : ''
+        }
+        confirmLabel="確認"
+        cancelLabel="取消"
+        danger={pendingConfirm?.kind === 'remove'}
+        busy={busy}
+        onConfirm={() => {
+          const p = pendingConfirm;
+          setPendingConfirm(null);
+          if (!p) return;
+          if (p.kind === 'remove') void removeCluster(p.id);
+          else if (p.kind === 'installPeers') {
+            void run(async () => {
+              const r = await dbClusterApi.installPeers(p.id, { execute: true });
+              return { ok: r.ok, notes: r.notes } as OpsResultLike;
+            }, '遠端已安裝');
+          } else if (p.kind === 'push') void pushPeers(p.id, true);
+          else if (p.kind === 'fleetSync') {
+            void run(async () => {
+              const sync = await dbClusterApi.fleet(p.id, {
+                execute: true,
+                op: 'sync',
+              });
+              return { ok: sync.ok, notes: sync.notes } as OpsResultLike;
+            }, 'Fleet 已同步排隊');
+          } else if (p.kind === 'fleetApply') {
+            void run(async () => {
+              const r = await dbClusterApi.fleet(p.id, {
+                execute: true,
+                op: 'apply',
+                edgeExecute: true,
+              });
+              return { ok: r.ok, notes: r.notes } as OpsResultLike;
+            }, 'Fleet apply 已排隊');
+          }
         }}
       />
     </div>

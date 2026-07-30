@@ -16,7 +16,7 @@ import {
   statSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError, type OpsResultDto, type ApplyStatus } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { checkHttp, findFreePort, isPortListening, waitHttpOk } from '../host/health.js';
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
@@ -76,23 +76,20 @@ export function resolveProjectDocRoot(row: ProjectRow): string {
   return join(row.home_dir, rel || 'app/public');
 }
 
-export interface OpsApplyResult {
-  ok: boolean;
+/**
+ * Project ops result — extends shared OpsResultDto (single honesty contract).
+ */
+export interface OpsApplyResult extends OpsResultDto {
   projectId: string;
-  port?: number;
-  pid?: number;
   pidfile?: string;
-  url?: string;
   processStatus: OpsProcessStatus;
   health?: { ok: boolean; status?: number; body?: string; ms?: number; error?: string };
   listening: boolean;
   nginxPath?: string;
-  notes: string[];
   written: string[];
   /** true when process was only pidfile-spawned (not system systemd) */
   degraded?: boolean;
-  requiresRoot?: boolean;
-  requiresExecute?: boolean;
+  apply_status?: ApplyStatus;
   deployMode?: DeployMode;
   nginxReloaded?: boolean;
   systemdUnit?: string;

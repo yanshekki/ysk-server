@@ -6,9 +6,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  ActionBar,
   Alert,
   Badge,
   Button,
+  DataTable,
   EmptyState,
   FeaturePageLayout,
   Field,
@@ -19,7 +21,8 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
-  Tabs,
+  PageTabs,
+  ConfirmDialog,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -80,6 +83,7 @@ export function FirewallPage() {
   const [denyIp, setDenyIp] = useState('');
   const [portInput, setPortInput] = useState('8080');
   const [portProto, setPortProto] = useState<'tcp' | 'udp'>('tcp');
+  const [delRuleNum, setDelRuleNum] = useState<number | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -114,11 +118,43 @@ export function FirewallPage() {
       title={t('nav.firewall', { defaultValue: '防火牆' })}
       backTo="/protection"
       backLabel="防護中心"
-      actions={
-        <div className="def-head-actions">
+      status={{
+        pill: {
+          label: status?.activeLabel ?? '—',
+          tone: active ? 'ok' : status?.installed ? 'warn' : 'danger',
+        },
+        items: [
+          {
+            label: '規則',
+            value: status?.rules?.length ?? status?.numberedRules?.length ?? 0,
+          },
+          {
+            label: '永久拒 IP',
+            value: status?.denyFromIps?.length ?? 0,
+          },
+          {
+            label: '允許',
+            value: status?.allowCount ?? 0,
+          },
+          {
+            label: '拒絕',
+            value: status?.denyCount ?? 0,
+          },
+          {
+            label: '入站預設',
+            value: status?.defaultIncoming ?? '—',
+          },
+          {
+            label: 'EXECUTE',
+            value: status?.executeEnabled ? '開' : '關',
+            tone: status?.executeEnabled ? 'ok' : 'warn',
+          },
+        ],
+      }}
+      actions={<div className="def-head-actions">
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => {
               setError(null);
@@ -131,7 +167,7 @@ export function FirewallPage() {
           {status?.installed ? (
             <Button
               variant={active ? 'ghost' : 'primary'}
-              size="md"
+              size="sm"
               loading={busy}
               onClick={() =>
                 void run(async () => {
@@ -174,33 +210,7 @@ export function FirewallPage() {
         </Alert>
       ) : null}
 
-      <section className="fw-hero">
-        <div>
-          <div className="fw-hero__eyebrow">UFW 狀態</div>
-          <h2 className="fw-hero__title">
-            <Badge tone={active ? 'ok' : status?.installed ? 'warn' : 'danger'}>
-              {status?.activeLabel ?? '—'}
-            </Badge>
-            {status?.installed ? (active ? '入站受控' : '未攔截入站') : '請先安裝'}
-          </h2>
-          <p className="muted u-text-sm">
-            預設入站 {status?.defaultIncoming ?? '—'} · 出站 {status?.defaultOutgoing ?? '—'} ·
-            允許 {status?.allowCount ?? 0} · 拒絕 {status?.denyCount ?? 0}
-          </p>
-        </div>
-        <div className="fw-hero__stats">
-          <div>
-            <strong>{status?.rules?.length ?? status?.numberedRules?.length ?? 0}</strong>
-            <span>規則</span>
-          </div>
-          <div>
-            <strong>{status?.denyFromIps?.length ?? 0}</strong>
-            <span>永久拒 IP</span>
-          </div>
-        </div>
-      </section>
-
-      <Tabs
+      <PageTabs
         tabs={[
           {
             id: 'rules',
@@ -222,90 +232,90 @@ export function FirewallPage() {
                 <h3 className="def-section-head__title">目前規則</h3>
                 <span className="muted u-text-sm">ufw status numbered</span>
               </div>
-              {!status?.rules?.length && !status?.numberedRules?.length ? (
-                <EmptyState
-                  title="無規則或無權讀取"
-                  description={
-                    status?.installed
-                      ? 'UFW inactive 或需 root 讀取'
-                      : '安裝 UFW 後再整理'
-                  }
-                />
-              ) : (
-                <div className="table-wrap">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>動作</th>
-                        <th>目標</th>
-                        <th>來源</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(status.rules?.length
-                        ? status.rules.map((r) => ({
-                            num: r.num,
-                            action: r.action,
-                            to: r.to,
-                            from: r.from,
-                            raw: r.raw,
-                          }))
-                        : (status.numberedRules ?? []).map((raw) => ({
-                            num: undefined as number | undefined,
-                            action: '?',
-                            to: raw,
-                            from: '—',
-                            raw,
-                          }))
-                      ).map((r, i) => (
-                        <tr key={r.raw + i}>
-                          <td className="muted">{r.num ?? '—'}</td>
-                          <td>
-                            <Badge
-                              tone={
-                                /DENY|REJECT/i.test(r.action)
-                                  ? 'danger'
-                                  : /ALLOW/i.test(r.action)
-                                    ? 'ok'
-                                    : 'neutral'
-                              }
-                            >
-                              {r.action}
-                            </Badge>
-                          </td>
-                          <td>
-                            <code className="inline">{r.to ?? r.raw}</code>
-                          </td>
-                          <td className="u-text-sm">{r.from ?? '—'}</td>
-                          <td>
-                            {r.num ? (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                loading={busy}
-                                onClick={() => {
-                                  if (!window.confirm(`刪規則 #${r.num}？`)) return;
-                                  void run(async () => {
-                                    const res = (await systemApi.firewallDeleteRule(
-                                      r.num!,
-                                    )) as OpsResultLike;
-                                    await refresh();
-                                    return res;
-                                  }, `已刪 #${r.num}`);
-                                }}
-                              >
-                                刪
-                              </Button>
-                            ) : null}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <DataTable
+                columns={[
+                  {
+                    key: 'num',
+                    header: '#',
+                    className: 'muted',
+                    nowrap: true,
+                    render: (r) => r.num ?? '—',
+                  },
+                  {
+                    key: 'action',
+                    header: '動作',
+                    nowrap: true,
+                    render: (r) => (
+                      <Badge
+                        tone={
+                          /DENY|REJECT/i.test(r.action)
+                            ? 'danger'
+                            : /ALLOW/i.test(r.action)
+                              ? 'ok'
+                              : 'neutral'
+                        }
+                      >
+                        {r.action}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: 'to',
+                    header: '目標',
+                    render: (r) => (
+                      <code className="inline">{r.to ?? r.raw}</code>
+                    ),
+                  },
+                  {
+                    key: 'from',
+                    header: '來源',
+                    className: 'u-text-sm',
+                    render: (r) => r.from ?? '—',
+                  },
+                ]}
+                rows={
+                  status?.rules?.length
+                    ? status.rules.map((r) => ({
+                        num: r.num,
+                        action: r.action,
+                        to: r.to,
+                        from: r.from,
+                        raw: r.raw,
+                      }))
+                    : (status?.numberedRules ?? []).map((raw) => ({
+                        num: undefined as number | undefined,
+                        action: '?',
+                        to: raw,
+                        from: '—',
+                        raw,
+                      }))
+                }
+                rowKey={(r, i) => r.raw + i}
+                rowActions={(r) =>
+                  r.num ? (
+                    <ActionBar align="end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => setDelRuleNum(r.num!)}
+                      >
+                        刪
+                      </Button>
+                    </ActionBar>
+                  ) : null
+                }
+                empty={
+                  <EmptyState
+                    title="無規則或無權讀取"
+                    description={
+                      status?.installed
+                        ? 'UFW inactive 或需 root 讀取'
+                        : '安裝 UFW 後再整理'
+                    }
+                  />
+                }
+              />
             </div>
           </div>
         ) : null}
@@ -537,9 +547,30 @@ export function FirewallPage() {
             </div>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel title="操作結果" result={result} message={msg} busy={busy} />
+
+      <ConfirmDialog
+        open={delRuleNum != null}
+        onClose={() => !busy && setDelRuleNum(null)}
+        onConfirm={() => {
+          const n = delRuleNum;
+          setDelRuleNum(null);
+          if (n == null) return;
+          void run(async () => {
+            const res = (await systemApi.firewallDeleteRule(n)) as OpsResultLike;
+            await refresh();
+            return res;
+          }, `已刪 #${n}`);
+        }}
+        title={`刪規則 #${delRuleNum ?? ''}？`}
+        description="將從 UFW 移除該規則編號（需系統變更權限）。"
+        confirmLabel="刪除"
+        cancelLabel="取消"
+        danger
+        busy={busy}
+      />
     </FeaturePageLayout>
   );
 }

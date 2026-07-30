@@ -106,7 +106,7 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     const users = new UserRepository(db);
     const sessions = new SessionRepository(db);
     const audit = new AuditRepository(db);
-    const auth = new AuthService(users, sessions, audit, db);
+    const auth = new AuthService(users, sessions, audit, db, dataDir);
     const password = opts.adminPassword ?? process.env.YSK_ADMIN_PASSWORD ?? 'admin';
     // force recreate admin when --force
     if (opts.force && users.findByUsername(config.adminUsername)) {

@@ -3,7 +3,7 @@
  */
 
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk/shared';
 import { ErrorCodes, YskError } from '@ysk/shared';
@@ -561,8 +561,13 @@ export class EmailService {
     return { ok: true, notes: ['已刪除', ...written.notes], written: written.written };
   }
 
-  /** Catch-all / autoreply flags on domain record */
-  updateDomainMailFlags(
+  /**
+   * Catch-all / autoreply / suspend flags on domain record.
+   * Always writes control-plane + dataDir artifacts.
+   * When applySystem=true: attempt Postfix suspend map + Dovecot sieve (EXECUTE+root).
+   * Never pretends applied without successful host commands.
+   */
+  async updateDomainMailFlags(
     domainId: string,
     patch: {
       catchallAddress?: string | null;
@@ -572,9 +577,20 @@ export class EmailService {
       rateLimitPerHour?: number | null;
       antispam?: boolean;
       suspended?: boolean;
+      /** Attempt live Postfix/Dovecot apply */
+      applySystem?: boolean;
     },
     actor: string,
-  ): EmailDomainRecord {
+  ): Promise<{
+    domain: EmailDomainRecord;
+    ok: boolean;
+    notes: string[];
+    written: string[];
+    apply_status: 'written' | 'applied' | 'partial' | 'blocked';
+    blocked?: boolean;
+    blockMessage?: string;
+    commandResults?: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+  }> {
     const row = domains(this.db).find((e) => e.id === domainId) as EmailDomainRecord &
       Record<string, unknown>;
     if (!row) {
@@ -582,6 +598,9 @@ export class EmailService {
         httpStatus: 404,
       });
     }
+    const notes: string[] = [];
+    const written: string[] = [];
+
     if (patch.catchallAddress !== undefined) {
       row.catchall_address = patch.catchallAddress || undefined;
       // sync catchall alias row
@@ -602,6 +621,11 @@ export class EmailService {
       } else if (existing) {
         this.deleteAlias(domainId, String(existing.id), actor);
       }
+      notes.push(
+        patch.catchallAddress
+          ? `catch-all → ${patch.catchallAddress}（virtual_alias map）`
+          : '已清除 catch-all',
+      );
     }
     if (patch.autoreplyEnabled !== undefined) row.autoreply_enabled = patch.autoreplyEnabled;
     if (patch.autoreplySubject !== undefined) row.autoreply_subject = patch.autoreplySubject;
@@ -613,18 +637,186 @@ export class EmailService {
     if (patch.suspended !== undefined) {
       row.suspended = patch.suspended;
       row.status = patch.suspended ? 'suspended' : 'active';
+      notes.push(
+        patch.suspended
+          ? '域名狀態：suspended（控制面旗標；唔等於 Postfix 已拒信）'
+          : '域名狀態：active（控制面旗標）',
+      );
     }
     row.updated_at = new Date().toISOString();
     this.db.persist();
-    this.rewriteVirtualAliasMap(domainId);
+    const map = this.rewriteVirtualAliasMap(domainId);
+    written.push(...map.written);
+    notes.push(...map.notes);
+
+    // Managed sieve vacation draft (written only — not auto-loaded by Dovecot)
+    if (
+      this.dataDir &&
+      (patch.autoreplyEnabled !== undefined ||
+        patch.autoreplySubject !== undefined ||
+        patch.autoreplyBody !== undefined)
+    ) {
+      const domainName = String(row.domain);
+      const sieveDirPath = join(this.dataDir, 'email', domainName, 'sieve');
+      mkdirSync(sieveDirPath, { recursive: true });
+      const enabled = Boolean(row.autoreply_enabled);
+      const subject = String(row.autoreply_subject ?? '自動回覆');
+      const body = String(row.autoreply_body ?? '');
+      const sievePath = join(sieveDirPath, 'vacation.sieve');
+      const content = enabled
+        ? [
+            'require ["vacation"];',
+            `# YSK managed vacation for @${domainName}`,
+            `# written ≠ Dovecot active until applySystem + .dovecot.sieve`,
+            `vacation :days 1 :subject ${JSON.stringify(subject)} ${JSON.stringify(body)};`,
+            '',
+          ].join('\n')
+        : [
+            `# YSK vacation disabled for @${domainName}`,
+            '# autoreply_enabled=false — no vacation action',
+            '',
+          ].join('\n');
+      writeFileSync(sievePath, content, 'utf8');
+      written.push(sievePath);
+      notes.push(
+        enabled
+          ? `已寫 vacation 草稿 ${sievePath}`
+          : `已寫停用標記 ${sievePath}`,
+      );
+      notes.push(
+        '自動回覆：狀態 written — 未自動進 Dovecot/Pigeonhole（需 ManageSieve 或 symlink）',
+      );
+    }
+
+    if (this.dataDir && patch.suspended !== undefined) {
+      const domainName = String(row.domain);
+      const flagDir = join(this.dataDir, 'email', domainName);
+      mkdirSync(flagDir, { recursive: true });
+      const flagPath = join(flagDir, 'SUSPENDED.flag');
+      if (patch.suspended) {
+        writeFileSync(
+          flagPath,
+          [
+            `domain=${domainName}`,
+            `suspended_at=${new Date().toISOString()}`,
+            'status=written',
+            'note=Use applySystem to install Postfix REJECT map',
+            '',
+          ].join('\n'),
+          'utf8',
+        );
+        written.push(flagPath);
+        notes.push(`已寫 ${flagPath}`);
+      } else if (existsSync(flagPath)) {
+        unlinkSync(flagPath);
+        notes.push(`已移除 ${flagPath}`);
+      } else {
+        notes.push('恢復：控制面 status=active');
+      }
+    }
+
+    if (patch.rateLimitPerHour !== undefined || patch.antispam !== undefined) {
+      notes.push(
+        '限速／反垃圾旗標已存 DB；要進 Postfix/Rspamd 請用「套用限速/反垃圾到系統」',
+      );
+    }
+
+    // Per-mailbox vacation copies (written)
+    if (
+      this.dataDir &&
+      (patch.autoreplyEnabled !== undefined ||
+        patch.autoreplySubject !== undefined ||
+        patch.autoreplyBody !== undefined)
+    ) {
+      const { writeMailboxVacationCopies } = await import('./domain-flags-apply.js');
+      const locals = this.listMailboxes(domainId).map((m) => {
+        const addr = String(m.address ?? '');
+        return addr.split('@')[0] ?? '';
+      }).filter(Boolean);
+      const copies = writeMailboxVacationCopies({
+        dataDir: this.dataDir,
+        domain: String(row.domain),
+        mailboxes: locals,
+        enabled: Boolean(row.autoreply_enabled),
+      });
+      written.push(...copies.written);
+      notes.push(...copies.notes);
+    }
+
+    // Always rebuild aggregate suspend map under dataDir
+    if (this.dataDir && patch.suspended !== undefined) {
+      const { rebuildSuspendDomainMap } = await import('./domain-flags-apply.js');
+      const map = rebuildSuspendDomainMap(this.dataDir);
+      written.push(map.path);
+      notes.push(...map.notes);
+    }
+
+    let apply_status: 'written' | 'applied' | 'partial' | 'blocked' = 'written';
+    let ok = true;
+    let blocked: boolean | undefined;
+    let blockMessage: string | undefined;
+    let commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }> | undefined;
+
+    const wantSystem = patch.applySystem === true;
+    const touchesLive =
+      patch.suspended !== undefined ||
+      patch.autoreplyEnabled !== undefined ||
+      patch.autoreplySubject !== undefined ||
+      patch.autoreplyBody !== undefined;
+
+    if (wantSystem && touchesLive && this.dataDir) {
+      const { applyDomainFlagsToSystem } = await import('./domain-flags-apply.js');
+      const locals = this.listMailboxes(domainId)
+        .map((m) => {
+          const addr = String(m.address ?? '');
+          return addr.split('@')[0] ?? '';
+        })
+        .filter(Boolean);
+      const sys = await applyDomainFlagsToSystem({
+        host: this.host,
+        dataDir: this.dataDir,
+        domain: String(row.domain),
+        mailboxes: locals,
+        suspended: Boolean(row.suspended),
+        vacationEnabled: Boolean(row.autoreply_enabled),
+        applySuspend: patch.suspended !== undefined,
+        applyVacation:
+          patch.autoreplyEnabled !== undefined ||
+          patch.autoreplySubject !== undefined ||
+          patch.autoreplyBody !== undefined,
+      });
+      notes.push(...sys.notes);
+      written.push(...sys.written);
+      commandResults = sys.commandResults;
+      apply_status = sys.apply_status;
+      ok = sys.ok;
+      blocked = sys.blocked;
+      blockMessage = sys.blockMessage;
+    } else {
+      notes.push(
+        wantSystem && !touchesLive
+          ? 'applySystem 已傳但本次無 suspend/autoreply 變更'
+          : 'apply_status=written（控制面成功 ≠ 系統 MTA 已生效；加 applySystem:true 先套用）',
+      );
+    }
+
     this.audit?.append({
       actor,
       action: 'email.domain.flags',
       resource: domainId,
-      detail: patch,
-      ok: true,
+      detail: { patch, written, apply_status, ok, blocked },
+      ok,
     });
-    return { ...row, dkim_private_key: '***redacted***' };
+    return {
+      domain: { ...row, dkim_private_key: '***redacted***' },
+      ok,
+      notes,
+      written,
+      apply_status,
+      blocked,
+      blockMessage,
+      commandResults,
+    };
   }
 
   private rewriteVirtualAliasMap(domainId: string): { written: string[]; notes: string[] } {

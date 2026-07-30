@@ -1,27 +1,29 @@
 /**
  * Defense Center — SOC-simple command UI for DDoS / attack response.
  */
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
+  DataTable,
   EmptyState,
   FeaturePageLayout,
   Field,
   FormActions,
   FormHint,
   FormLayout,
-  KpiCard,
-  KpiGrid,
   LoadingBlock,
   MultiCheckSelect,
   OpsResultPanel,
   PresetChips,
   SegRadio,
-  Tabs,
+  SummaryStrip,
+  PageTabs,
+  ConfirmDialog,
+  PromptDialog,
   buttonClassName,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -284,6 +286,8 @@ export function ProtectionPage() {
   const [wlInput, setWlInput] = useState('');
   const [showManual, setShowManual] = useState(false);
   const [showWl, setShowWl] = useState(false);
+  const [presetConfirmId, setPresetConfirmId] = useState<string | null>(null);
+  const [emergencyPromptOpen, setEmergencyPromptOpen] = useState(false);
   const [showMech, setShowMech] = useState(true);
   const [automation, setAutomation] = useState<DefenseAutomation | null>(null);
   const [mechanisms, setMechanisms] = useState<
@@ -482,28 +486,29 @@ export function ProtectionPage() {
     [suspects],
   );
 
-  async function applyPreset(id: string, danger?: boolean, preview = false) {
-    if (!preview && danger) {
-      const ok = window.confirm(
-        id === 'emergency'
-          ? '緊急檔會極度限速。請確認白名單有你嘅 IP。繼續？'
-          : '將套用較嚴防護檔（可能開啟自動 ban）。繼續？',
-      );
-      if (!ok) return;
+  async function applyPreset(
+    id: string,
+    danger?: boolean,
+    preview = false,
+    confirmToken?: string,
+  ) {
+    if (!preview && danger && id === 'emergency' && confirmToken !== 'EMERGENCY') {
+      setEmergencyPromptOpen(true);
+      return;
     }
-    let confirm: string | undefined;
-    if (!preview && id === 'emergency') {
-      const c = window.prompt('請輸入 EMERGENCY 以確認', '');
-      if (c !== 'EMERGENCY') {
-        setError('已取消：未輸入 EMERGENCY');
-        return;
-      }
-      confirm = 'EMERGENCY';
+    if (!preview && danger && id !== 'emergency' && !confirmToken) {
+      setPresetConfirmId(id);
+      return;
     }
+    const confirm = id === 'emergency' ? 'EMERGENCY' : undefined;
     await run(async () => {
       const r = (await api.requestRaw('/api/v1/defense/preset', {
         method: 'POST',
-        body: JSON.stringify({ preset: id, apply: !preview, confirm }),
+        body: JSON.stringify({
+          preset: id,
+          apply: !preview,
+          confirm,
+        }),
       })) as OpsResultLike;
       if (!preview) await refresh();
       if (r.notes) r.notes = summarizeOpsNotes(r.notes);
@@ -603,11 +608,51 @@ export function ProtectionPage() {
   return (
     <FeaturePageLayout
       title={t('nav.protection', { defaultValue: '防護中心' })}
-      actions={
-        <div className="def-head-actions">
+      status={
+        status
+          ? {
+              pill: {
+                label: `${meta.label} · ${score}/100`,
+                tone: meta.tone,
+              },
+              items: [
+                {
+                  label: 'fail2ban',
+                  value: labels?.fail2ban.short ?? '—',
+                  tone: toneToBadge(labels?.fail2ban.tone),
+                },
+                {
+                  label: '防火牆',
+                  value: labels?.firewall.short ?? '—',
+                  tone: toneToBadge(labels?.firewall.tone),
+                },
+                {
+                  label: '自動 ban',
+                  value: labels?.autoBan.short ?? '關閉',
+                  tone: toneToBadge(labels?.autoBan.tone),
+                },
+                {
+                  label: '系統套用',
+                  value: labels?.apply.short ?? '—',
+                  tone: toneToBadge(labels?.apply.tone),
+                },
+                {
+                  label: '活躍封禁',
+                  value: status.bans.count,
+                  tone: (status.bans.count ?? 0) > 10 ? 'warn' : 'neutral',
+                },
+                {
+                  label: '防護檔',
+                  value: activePreset?.label ?? '—',
+                },
+              ],
+            }
+          : undefined
+      }
+      actions={<div className="def-head-actions">
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() =>
               void run(async () => {
@@ -626,11 +671,31 @@ export function ProtectionPage() {
           >
             重新探測
           </Button>
+          {status &&
+          recommendedPreset &&
+          status.activePreset !== recommendedPreset ? (
+            <Button
+              variant="danger"
+              size="sm"
+              loading={busy}
+              onClick={() => void applyPreset(recommendedPreset, true)}
+            >
+              一鍵套用建議檔
+            </Button>
+          ) : (
+            <Button variant="primary" size="sm" onClick={() => setTab('command')}>
+              檢視防護檔
+            </Button>
+          )}
           {actionableSuspects.length > 0 ? (
-            <Button variant="danger" size="md" onClick={() => setTab('bans')}>
+            <Button variant="danger" size="sm" onClick={() => setTab('bans')}>
               可疑 IP {actionableSuspects.length}
             </Button>
-          ) : null}
+          ) : (
+            <Button variant="secondary" size="sm" onClick={() => setTab('bans')}>
+              去封禁
+            </Button>
+          )}
         </div>
       }
     >
@@ -647,100 +712,6 @@ export function ProtectionPage() {
 
       {loading && !status ? <LoadingBlock label="載入防護狀態…" /> : null}
 
-      {status ? (
-        <section className={`def-hero def-hero--${threat}`} aria-label="威脅總覽">
-          <div className="def-hero__main">
-            <div className="def-hero__gauge" aria-hidden>
-              <div
-                className="def-hero__ring"
-                style={
-                  {
-                    ['--def-score' as string]: String(Math.min(100, score)),
-                  } as CSSProperties
-                }
-              >
-                <div className="def-hero__ring-inner">
-                  <span className="def-hero__score">{score}</span>
-                  <span className="def-hero__score-unit">/100</span>
-                </div>
-              </div>
-            </div>
-            <div className="def-hero__copy">
-              <div className="def-hero__eyebrow">即時威脅</div>
-              <h2 className="def-hero__title">
-                <span className={`def-hero__pill def-hero__pill--${meta.tone}`}>{meta.label}</span>
-                {meta.verb}
-              </h2>
-              <p className="def-hero__hint">{meta.hint}</p>
-              <div className="def-hero__meta">
-                <span>防護檔 · <strong>{activePreset?.label ?? '—'}</strong></span>
-                <span className="def-hero__dot" />
-                <span>更新 {relTime(status.at)}</span>
-                {!status.executeEnabled ? (
-                  <>
-                    <span className="def-hero__dot" />
-                    <Link to="/system/readiness" className="def-hero__link">
-                      系統套用未開
-                    </Link>
-                  </>
-                ) : null}
-              </div>
-              <div className="def-hero__cta">
-                {recommendedPreset && status.activePreset !== recommendedPreset ? (
-                  <Button
-                    variant="danger"
-                    size="md"
-                    loading={busy}
-                    onClick={() => void applyPreset(recommendedPreset, true)}
-                  >
-                    一鍵套用建議檔
-                  </Button>
-                ) : (
-                  <Button variant="primary" size="md" onClick={() => setTab('command')}>
-                    檢視防護檔
-                  </Button>
-                )}
-                <Button variant="secondary" size="md" onClick={() => setTab('bans')}>
-                  去封禁
-                </Button>
-              </div>
-            </div>
-          </div>
-          <ul className="def-status-rail" aria-label="元件狀態">
-            <li>
-              <span className="def-status-rail__k">fail2ban</span>
-              <Badge tone={toneToBadge(labels?.fail2ban.tone)}>
-                {labels?.fail2ban.short ?? '—'}
-              </Badge>
-            </li>
-            <li>
-              <span className="def-status-rail__k">防火牆</span>
-              <Badge tone={toneToBadge(labels?.firewall.tone)}>
-                {labels?.firewall.short ?? '—'}
-              </Badge>
-            </li>
-            <li>
-              <span className="def-status-rail__k">自動 ban</span>
-              <Badge tone={toneToBadge(labels?.autoBan.tone)}>
-                {labels?.autoBan.short ?? '關閉'}
-              </Badge>
-            </li>
-            <li>
-              <span className="def-status-rail__k">系統套用</span>
-              <Badge tone={toneToBadge(labels?.apply.tone)}>
-                {labels?.apply.short ?? '—'}
-              </Badge>
-            </li>
-            <li>
-              <span className="def-status-rail__k">活躍封禁</span>
-              <Badge tone={(status.bans.count ?? 0) > 10 ? 'warn' : 'neutral'}>
-                {status.bans.count}
-              </Badge>
-            </li>
-          </ul>
-        </section>
-      ) : null}
-
       <Alert variant="info">
         <strong>單一入口：</strong> 側欄只留本頁擋攻擊。UFW／fail2ban 喺「底層」分頁。
         自動化＝探測→評分→可升檔／ban；<strong>緊急檔永不自動</strong>。
@@ -754,7 +725,7 @@ export function ProtectionPage() {
         </Alert>
       ) : null}
 
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'command', label: '應變', badge: recommendedPreset ? '!' : undefined },
           {
@@ -892,51 +863,38 @@ export function ProtectionPage() {
               })}
             </div>
 
-            <KpiGrid cols={3} className="def-kpi">
-              <KpiCard
-                label="Nginx 限速"
-                badge={{
-                  label: status?.nginxLimits.exists ? '已寫入' : '未寫',
+            <SummaryStrip
+              items={[
+                {
+                  label: 'Nginx 限速',
+                  value: status?.nginxLimits.exists
+                    ? `${status.nginxLimits.reqRate ?? '—'}/${status.nginxLimits.burst ?? '—'}/${status.nginxLimits.connLimit ?? '—'}`
+                    : '未寫',
                   tone: status?.nginxLimits.exists ? 'ok' : 'warn',
-                }}
-              >
-                <div className="def-kpi-nums">
-                  <div>
-                    <span className="def-kpi-nums__v">{status?.nginxLimits.reqRate ?? '—'}</span>
-                    <span className="def-kpi-nums__l">req rate</span>
-                  </div>
-                  <div>
-                    <span className="def-kpi-nums__v">{status?.nginxLimits.burst ?? '—'}</span>
-                    <span className="def-kpi-nums__l">burst</span>
-                  </div>
-                  <div>
-                    <span className="def-kpi-nums__v">{status?.nginxLimits.connLimit ?? '—'}</span>
-                    <span className="def-kpi-nums__l">conn/IP</span>
-                  </div>
-                </div>
-              </KpiCard>
-              <KpiCard label="控制面" hint={status?.protectionMode ?? '—'}>
-                <p className="def-kpi-body">
-                  {status?.executeEnabled
+                },
+                {
+                  label: '模式',
+                  value: status?.protectionMode ?? '—',
+                },
+                {
+                  label: '控制面',
+                  value: status?.executeEnabled
                     ? status.isRoot
-                      ? '可以套用到系統（EXECUTE + root）'
-                      : '有 EXECUTE，但仍需 root 先完整套用'
-                    : '只寫管理檔'}
-                </p>
-              </KpiCard>
-              <KpiCard
-                label="快捷連結"
-                footer={
-                  <div className="def-links">
-                    <Link to="/fail2ban">fail2ban</Link>
-                    <Link to="/firewall">防火牆</Link>
-                    <Link to="/system/readiness">就緒</Link>
-                  </div>
-                }
-              >
-                <p className="def-kpi-body muted">底層工具分開管理；本頁係應變總控。</p>
-              </KpiCard>
-            </KpiGrid>
+                      ? '可套用'
+                      : '需 root'
+                    : '只寫檔',
+                  tone: status?.executeEnabled && status.isRoot ? 'ok' : 'warn',
+                },
+              ]}
+            />
+            <p className="muted u-text-sm" style={{ margin: '0.35rem 0 0' }}>
+              底層工具分開管理 ·{' '}
+              <Link to="/fail2ban">fail2ban</Link>
+              {' · '}
+              <Link to="/firewall">防火牆</Link>
+              {' · '}
+              <Link to="/system/readiness">就緒</Link>
+            </p>
           </div>
         ) : null}
 
@@ -1372,42 +1330,45 @@ export function ProtectionPage() {
                 </Button>
               </div>
               {showMech ? (
-                <div className="table-wrap">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>步驟</th>
-                        <th>機制</th>
-                        <th>你可調</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(mechanisms.length
-                        ? mechanisms
-                        : [
-                            {
-                              step: '探測',
-                              mechanism: '外網／請求率／TCP／f2b／UFW',
-                              tunable: '升檔門檻',
-                            },
-                            {
-                              step: '緊急',
-                              mechanism: '永不自動',
-                              tunable: '人手 EMERGENCY',
-                            },
-                          ]
-                      ).map((row) => (
-                        <tr key={row.step}>
-                          <td>
-                            <strong>{row.step}</strong>
-                          </td>
-                          <td className="u-text-sm">{row.mechanism}</td>
-                          <td className="u-text-sm muted">{row.tunable}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <DataTable
+                  columns={[
+                    {
+                      key: 'step',
+                      header: '步驟',
+                      nowrap: true,
+                      render: (row) => <strong>{row.step}</strong>,
+                    },
+                    {
+                      key: 'mechanism',
+                      header: '機制',
+                      className: 'u-text-sm',
+                      render: (row) => row.mechanism,
+                    },
+                    {
+                      key: 'tunable',
+                      header: '你可調',
+                      className: 'u-text-sm muted',
+                      render: (row) => row.tunable,
+                    },
+                  ]}
+                  rows={
+                    mechanisms.length
+                      ? mechanisms
+                      : [
+                          {
+                            step: '探測',
+                            mechanism: '外網／請求率／TCP／f2b／UFW',
+                            tunable: '升檔門檻',
+                          },
+                          {
+                            step: '緊急',
+                            mechanism: '永不自動',
+                            tunable: '人手 EMERGENCY',
+                          },
+                        ]
+                  }
+                  rowKey={(row) => row.step}
+                />
               ) : null}
               {automation?.lastTickNotes?.length ? (
                 <p className="muted u-text-sm u-mt-3">
@@ -1916,126 +1877,164 @@ export function ProtectionPage() {
               </div>
             )}
 
-            <div className="def-split">
-              <section className="def-panel-card">
-                <div className="def-section-head">
-                  <h3 className="def-section-head__title">
-                    活躍封禁 <Badge tone="neutral">{status?.bans.count ?? 0}</Badge>
-                  </h3>
-                </div>
-                {!status?.bans.items.length ? (
-                  <EmptyState title="未有封禁" description="封禁後顯示於此" />
-                ) : (
-                  <ul className="def-ban-list">
-                    {status.bans.items.map((b) => (
-                      <li key={`${b.source}-${b.jail}-${b.ip}`}>
-                        <code>{b.ip}</code>
-                        <span className="muted">
-                          {b.source}
-                          {b.jail ? ` · ${b.jail}` : ''}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          loading={busy}
-                          onClick={() =>
-                            void run(async () => {
-                              const r = (await api.requestRaw('/api/v1/defense/unban', {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                  ip: b.ip,
-                                  jail: b.jail,
-                                  method: 'fail2ban',
-                                }),
-                              })) as OpsResultLike;
-                              if (r.notes) r.notes = summarizeOpsNotes(r.notes);
-                              await refresh();
-                              return r;
-                            }, '已解封')
-                          }
-                        >
-                          解封
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
+            <FormHint>
+              攻擊應變：可疑列表 → 封禁／解封。完整 jail 策略、ignoreip、systemd 請用{' '}
+              <Link to="/fail2ban">fail2ban</Link>（單一真相，唔喺呢度再做第二套）。
+            </FormHint>
 
-              <section className="def-panel-card">
-                <div className="def-section-head">
-                  <h3 className="def-section-head__title">白名單</h3>
-                  <Button variant="ghost" size="sm" onClick={() => setShowWl((v) => !v)}>
-                    {showWl ? '收起' : '管理'}
+            <DataTable
+              title={`活躍封禁 (${status?.bans.count ?? 0})`}
+              description="防護中心彙總 · 解封經 defense API（同 fail2ban-client）"
+              toolbar={
+                <ActionBar>
+                  <Link
+                    to="/fail2ban"
+                    className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                  >
+                    完整 fail2ban
+                  </Link>
+                </ActionBar>
+              }
+              columns={[
+                {
+                  key: 'ip',
+                  header: 'IP',
+                  render: (b) => <code className="inline">{b.ip}</code>,
+                },
+                {
+                  key: 'src',
+                  header: '來源',
+                  className: 'muted u-text-sm',
+                  render: (b) =>
+                    `${b.source}${b.jail ? ` · ${b.jail}` : ''}`,
+                },
+              ]}
+              rows={status?.bans.items ?? []}
+              rowKey={(b) => `${b.source}-${b.jail}-${b.ip}`}
+              rowActions={(b) => (
+                <ActionBar align="end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={busy}
+                    onClick={() =>
+                      void run(async () => {
+                        const r = (await api.requestRaw('/api/v1/defense/unban', {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            ip: b.ip,
+                            jail: b.jail,
+                            method: 'fail2ban',
+                          }),
+                        })) as OpsResultLike;
+                        if (r.notes) r.notes = summarizeOpsNotes(r.notes);
+                        await refresh();
+                        return r;
+                      }, '已解封')
+                    }
+                  >
+                    解封
                   </Button>
+                </ActionBar>
+              )}
+              empty={
+                <EmptyState title="未有封禁" description="封禁後顯示於此" />
+              }
+            />
+
+            <div className="def-panel-card u-mt-4">
+              <div className="def-section-head">
+                <div>
+                  <h3 className="def-section-head__title">
+                    自動 ban 白名單{' '}
+                    <Badge tone="neutral">{ab?.whitelist?.length ?? 0}</Badge>
+                  </h3>
+                  <p className="def-section-head__desc">
+                    防護中心 auto-ban 豁免（會同步 fail2ban ignoreip.txt）。完整 ignoreip 管理在
+                    fail2ban → 白名單。
+                  </p>
                 </div>
-                <div className="def-wl">
-                  {(ab?.whitelist ?? []).map((w) => {
-                    const fam =
-                      w.includes('/') && w.includes(':')
-                        ? 'v6'
-                        : w.includes(':')
-                          ? 'v6'
-                          : 'v4';
-                    return (
-                    <span key={w} className="def-wl__chip">
-                      <Badge tone="neutral">{fam}</Badge>
-                      <code>{w}</code>
-                      <button
-                        type="button"
-                        className="def-wl__x"
-                        disabled={busy}
-                        onClick={() =>
-                          void run(async () => {
-                            await api.requestRaw('/api/v1/defense/whitelist', {
-                              method: 'POST',
-                              body: JSON.stringify({ ip: w, action: 'remove' }),
-                            });
-                            await refresh();
-                            return { ok: true, notes: [`移除 ${w}`] };
-                          }, '已更新')
-                        }
-                        aria-label={`移除 ${w}`}
-                      >
-                        ×
-                      </button>
-                    </span>
-                    );
-                  })}
-                  {!ab?.whitelist?.length ? (
-                    <span className="muted u-text-sm">未設定（建議加入你嘅 IP）</span>
-                  ) : null}
-                </div>
-                {showWl ? (
-                  <div className="def-wl-add">
-                    <input
-                      value={wlInput}
-                      onChange={(e) => setWlInput(e.target.value)}
-                      placeholder="IPv4／IPv6 或 CIDR"
-                      spellCheck={false}
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      loading={busy}
-                      disabled={!wlInput.trim()}
+                <ActionBar>
+                  <Link
+                    to="/fail2ban?tab=whitelist"
+                    className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                  >
+                    fail2ban 白名單
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowWl((v) => !v)}
+                  >
+                    {showWl ? '收起快加' : '快加一條'}
+                  </Button>
+                </ActionBar>
+              </div>
+              <div className="def-wl">
+                {(ab?.whitelist ?? []).slice(0, 12).map((w) => (
+                  <span key={w} className="def-wl__chip">
+                    <code>{w}</code>
+                    <button
+                      type="button"
+                      className="def-wl__x"
+                      disabled={busy}
                       onClick={() =>
                         void run(async () => {
                           await api.requestRaw('/api/v1/defense/whitelist', {
                             method: 'POST',
-                            body: JSON.stringify({ ip: wlInput.trim(), action: 'add' }),
+                            body: JSON.stringify({ ip: w, action: 'remove' }),
                           });
-                          setWlInput('');
                           await refresh();
-                          return { ok: true, notes: ['已加入白名單'] };
-                        }, '已加入')
+                          return { ok: true, notes: [`移除 ${w}`] };
+                        }, '已更新')
                       }
+                      aria-label={`移除 ${w}`}
                     >
-                      加入
-                    </Button>
-                  </div>
+                      ×
+                    </button>
+                  </span>
+                ))}
+                {!ab?.whitelist?.length ? (
+                  <span className="muted u-text-sm">未設定（建議加入你嘅管理 IP）</span>
                 ) : null}
-              </section>
+                {(ab?.whitelist?.length ?? 0) > 12 ? (
+                  <span className="muted u-text-sm">
+                    … 仲有 {(ab?.whitelist?.length ?? 0) - 12} 項 · 見 fail2ban 白名單
+                  </span>
+                ) : null}
+              </div>
+              {showWl ? (
+                <div className="def-wl-add">
+                  <input
+                    value={wlInput}
+                    onChange={(e) => setWlInput(e.target.value)}
+                    placeholder="IPv4／IPv6 或 CIDR"
+                    spellCheck={false}
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    disabled={!wlInput.trim()}
+                    onClick={() =>
+                      void run(async () => {
+                        await api.requestRaw('/api/v1/defense/whitelist', {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            ip: wlInput.trim(),
+                            action: 'add',
+                          }),
+                        });
+                        setWlInput('');
+                        await refresh();
+                        return { ok: true, notes: ['已加入 auto-ban 白名單'] };
+                      }, '已加入')
+                    }
+                  >
+                    加入
+                  </Button>
+                </div>
+              ) : null}
             </div>
 
             <section className="def-panel-card def-panel-card--muted">
@@ -2131,47 +2130,61 @@ export function ProtectionPage() {
                   完整 nginx／auth log 請到{' '}
                   <Link to="/logs?source=file:auth">日誌中心</Link>
                 </FormHint>
-                {!topIps.length ? (
-                  <EmptyState title="暫無 Top IP" description="有 log 後會顯示" />
-                ) : (
-                  <div className="table-wrap">
-                    <table className="data">
-                      <thead>
-                        <tr>
-                          <th>IP</th>
-                          <th>分</th>
-                          <th>hits</th>
-                          <th>429</th>
-                          <th />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {topIps.slice(0, 20).map((row) => (
-                          <tr key={row.ip}>
-                            <td>
-                              <code className="inline">{row.ip}</code>
-                            </td>
-                            <td>
-                              <Badge tone={row.score >= 40 ? 'warn' : 'info'}>{row.score}</Badge>
-                            </td>
-                            <td>{row.hits}</td>
-                            <td>{row.s429}</td>
-                            <td>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                loading={busy}
-                                onClick={() => void banOne(row.ip, `top-ip score=${row.score}`)}
-                              >
-                                封
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <DataTable
+                  columns={[
+                    {
+                      key: 'ip',
+                      header: 'IP',
+                      render: (row) => (
+                        <code className="inline">{row.ip}</code>
+                      ),
+                    },
+                    {
+                      key: 'score',
+                      header: '分',
+                      nowrap: true,
+                      render: (row) => (
+                        <Badge tone={row.score >= 40 ? 'warn' : 'info'}>
+                          {row.score}
+                        </Badge>
+                      ),
+                    },
+                    {
+                      key: 'hits',
+                      header: 'hits',
+                      nowrap: true,
+                      render: (row) => row.hits,
+                    },
+                    {
+                      key: 's429',
+                      header: '429',
+                      nowrap: true,
+                      render: (row) => row.s429,
+                    },
+                  ]}
+                  rows={topIps.slice(0, 20)}
+                  rowKey={(row) => row.ip}
+                  rowActions={(row) => (
+                    <ActionBar align="end">
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void banOne(row.ip, `top-ip score=${row.score}`)
+                        }
+                      >
+                        封
+                      </Button>
+                    </ActionBar>
+                  )}
+                  empty={
+                    <EmptyState
+                      title="暫無 Top IP"
+                      description="有 log 後會顯示"
+                    />
+                  }
+                />
               </section>
             </div>
 
@@ -2235,7 +2248,7 @@ export function ProtectionPage() {
             <div className="def-panel-card">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">GeoIP 資料庫</h3>
-                <div className="btn-row">
+                <ActionBar>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -2268,7 +2281,7 @@ export function ProtectionPage() {
                   >
                     立即更新庫
                   </Button>
-                </div>
+                </ActionBar>
               </div>
               <FormHint>
                 預設來源 sapics（國家 + ASN，每日、PDDL 免 key）。設定{' '}
@@ -2278,7 +2291,7 @@ export function ProtectionPage() {
               {geoErr ? (
                 <div className="geo-status-box geo-status-box--err">
                   <Alert variant="error">{geoErr}</Alert>
-                  <div className="btn-row u-mt-2">
+                  <ActionBar className="u-mt-2">
                     <Button
                       variant="primary"
                       size="sm"
@@ -2291,7 +2304,7 @@ export function ProtectionPage() {
                     >
                       重試
                     </Button>
-                  </div>
+                  </ActionBar>
                 </div>
               ) : null}
               {geoLoading && !geoStatus ? (
@@ -2302,36 +2315,27 @@ export function ProtectionPage() {
               ) : null}
               {geoStatus ? (
                 <>
-                  <div className="kpi-grid kpi-grid--4 u-mb-3">
-                    <div className="ops-stat">
-                      <span className="ops-stat__lab">Provider</span>
-                      <span className="ops-stat__val">{geoStatus.provider}</span>
-                    </div>
-                    <div className="ops-stat">
-                      <span className="ops-stat__lab">庫就緒</span>
-                      <span className="ops-stat__val">
-                        <Badge tone={geoStatus.ready ? 'ok' : 'warn'}>
-                          {geoStatus.ready ? '是' : '否'}
-                        </Badge>
-                      </span>
-                    </div>
-                    <div className="ops-stat">
-                      <span className="ops-stat__lab">過舊</span>
-                      <span className="ops-stat__val">
-                        <Badge tone={geoStatus.stale ? 'warn' : 'ok'}>
-                          {geoStatus.stale ? '>7 日' : 'OK'}
-                        </Badge>
-                      </span>
-                    </div>
-                    <div className="ops-stat">
-                      <span className="ops-stat__lab">上次成功</span>
-                      <span className="ops-stat__val u-text-sm">
-                        {geoStatus.meta?.lastSuccessAt
+                  <SummaryStrip
+                    items={[
+                      { label: 'Provider', value: geoStatus.provider },
+                      {
+                        label: '庫就緒',
+                        value: geoStatus.ready ? '是' : '否',
+                        tone: geoStatus.ready ? 'ok' : 'warn',
+                      },
+                      {
+                        label: '過舊',
+                        value: geoStatus.stale ? '>7 日' : 'OK',
+                        tone: geoStatus.stale ? 'warn' : 'ok',
+                      },
+                      {
+                        label: '上次成功',
+                        value: geoStatus.meta?.lastSuccessAt
                           ? relTime(geoStatus.meta.lastSuccessAt)
-                          : '—'}
-                      </span>
-                    </div>
-                  </div>
+                          : '—',
+                      },
+                    ]}
+                  />
                   <ul className="list-plain list-spaced">
                     {geoStatus.sources.map((s) => (
                       <li key={s.filename}>
@@ -2723,7 +2727,7 @@ export function ProtectionPage() {
               </FormActions>
               {lookupResult?.lookup ? (
                 <>
-                  <div className="btn-row u-mt-3 u-mb-2">
+                  <ActionBar className="u-mt-3 u-mb-2">
                     {lookupResult.lookup.country ? (
                       <Button
                         type="button"
@@ -2785,54 +2789,62 @@ export function ProtectionPage() {
                         + ASN {String(lookupResult.lookup.asn)}
                       </Button>
                     ) : null}
-                  </div>
-                  <div className="table-wrap">
-                    <table className="data">
-                      <tbody>
-                        {(
-                          [
-                            ['IP', lookupResult.lookup.ip],
-                            ['國家', lookupResult.lookup.country],
-                            [
-                              '省／州',
-                              lookupResult.lookup.regionKey ||
-                                lookupResult.lookup.regionName,
-                            ],
-                            ['城市', lookupResult.lookup.city],
-                            ['大陸', lookupResult.lookup.continent],
-                            [
-                              '座標',
-                              lookupResult.lookup.latitude != null
-                                ? `${lookupResult.lookup.latitude}, ${lookupResult.lookup.longitude}`
-                                : '—',
-                            ],
-                            ['ASN', lookupResult.lookup.asn],
-                            ['供應商', lookupResult.lookup.asName],
-                            ['來源', lookupResult.lookup.source],
-                            [
-                              '政策',
-                              lookupResult.access?.blocked ? '攔截' : '放行',
-                            ],
-                            [
-                              '命中',
-                              lookupResult.access?.matched?.join(', ') || '—',
-                            ],
-                          ] as const
-                        ).map(([k, v]) => (
-                          <tr key={k}>
-                            <th>{k}</th>
-                            <td>{String(v ?? '—')}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  </ActionBar>
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'label',
+                        header: '項目',
+                        nowrap: true,
+                        render: (row) => <strong>{row.label}</strong>,
+                      },
+                      {
+                        key: 'value',
+                        header: '值',
+                        render: (row) => row.value,
+                      },
+                    ]}
+                    rows={(
+                      [
+                        ['IP', lookupResult.lookup.ip],
+                        ['國家', lookupResult.lookup.country],
+                        [
+                          '省／州',
+                          lookupResult.lookup.regionKey ||
+                            lookupResult.lookup.regionName,
+                        ],
+                        ['城市', lookupResult.lookup.city],
+                        ['大陸', lookupResult.lookup.continent],
+                        [
+                          '座標',
+                          lookupResult.lookup.latitude != null
+                            ? `${lookupResult.lookup.latitude}, ${lookupResult.lookup.longitude}`
+                            : '—',
+                        ],
+                        ['ASN', lookupResult.lookup.asn],
+                        ['供應商', lookupResult.lookup.asName],
+                        ['來源', lookupResult.lookup.source],
+                        [
+                          '政策',
+                          lookupResult.access?.blocked ? '攔截' : '放行',
+                        ],
+                        [
+                          '命中',
+                          lookupResult.access?.matched?.join(', ') || '—',
+                        ],
+                      ] as const
+                    ).map(([label, v]) => ({
+                      label,
+                      value: String(v ?? '—'),
+                    }))}
+                    rowKey={(row) => row.label}
+                  />
                 </>
               ) : null}
             </div>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <OpsResultPanel
         title="操作結果"
@@ -2848,6 +2860,40 @@ export function ProtectionPage() {
         }
         message={msg}
         busy={busy}
+      />
+
+      <ConfirmDialog
+        open={presetConfirmId != null}
+        onClose={() => !busy && setPresetConfirmId(null)}
+        title="套用較嚴防護檔？"
+        description="可能開啟自動 ban。請確認白名單有你的 IP。"
+        confirmLabel="套用"
+        cancelLabel="取消"
+        danger
+        busy={busy}
+        onConfirm={() => {
+          const id = presetConfirmId;
+          setPresetConfirmId(null);
+          if (id) void applyPreset(id, true, false, 'ok');
+        }}
+      />
+
+      <PromptDialog
+        open={emergencyPromptOpen}
+        onClose={() => !busy && setEmergencyPromptOpen(false)}
+        title="確認緊急防護檔"
+        description="緊急檔會極度限速。請確認白名單有你的 IP，並輸入 EMERGENCY。"
+        label="確認字串"
+        placeholder="EMERGENCY"
+        expectExact="EMERGENCY"
+        confirmLabel="套用緊急檔"
+        danger
+        busy={busy}
+        onSubmit={() => {
+          setEmergencyPromptOpen(false);
+          void applyPreset('emergency', true, false, 'EMERGENCY');
+          return true;
+        }}
       />
     </FeaturePageLayout>
   );

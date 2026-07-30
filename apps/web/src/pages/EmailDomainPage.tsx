@@ -5,23 +5,24 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { emailApi, type EmailBundle, type EmailDomain } from '../features/email';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
   Card,
   CardSection,
+  DataTable,
   DescriptionList,
+  EmptyState,
   FeaturePageLayout,
   Field,
   FormLayout,
   LoadingBlock,
   Modal,
-  OpsHero,
   OpsResultPanel,
   SoftwareInstallBanner,
   SummaryStrip,
-  Tabs,
+  PageTabs,
   FormActions,
   CheckboxField,
   FormHint,
@@ -32,12 +33,17 @@ import { api } from '../shared/services/api';
 
 function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
+  const blocked = Boolean(r.blocked || r.requiresExecute || r.requiresRoot);
+  const ok =
+    typeof r.ok === 'boolean'
+      ? r.ok
+      : !blocked && r.apply_status !== 'blocked';
   return {
-    ok: Boolean(r.ok ?? true),
-    blocked: Boolean(r.blocked),
+    ...r,
+    ok,
+    blocked,
     blockMessage: typeof r.blockMessage === 'string' ? r.blockMessage : undefined,
     notes: Array.isArray(r.notes) ? r.notes.map(String) : [],
-    ...r,
   } as OpsResultLike;
 }
 
@@ -70,6 +76,11 @@ export function EmailDomainPage() {
   const [aliasDest, setAliasDest] = useState('');
   const [aliasType, setAliasType] = useState<'forward' | 'alias' | 'catchall'>('forward');
   const [aliasLog, setAliasLog] = useState<Record<string, unknown> | null>(null);
+  const [flagsLog, setFlagsLog] = useState<Record<string, unknown> | null>(null);
+  const [policyLog, setPolicyLog] = useState<Record<string, unknown> | null>(null);
+  const [policyRate, setPolicyRate] = useState('200');
+  const [policyAntispam, setPolicyAntispam] = useState(true);
+  const [flagsApplySystem, setFlagsApplySystem] = useState(false);
   const [autoreplyOn, setAutoreplyOn] = useState(false);
   const [autoreplySubject, setAutoreplySubject] = useState('自動回覆');
   const [autoreplyBody, setAutoreplyBody] = useState('已收到您的郵件，稍後回覆。');
@@ -81,6 +92,13 @@ export function EmailDomainPage() {
     const found = list.items.find((d) => d.id === id) ?? null;
     setDomain(found);
     if (!found) return null;
+    // Prefill policy form from control-plane domain flags
+    if (found.rate_limit_per_hour != null && Number(found.rate_limit_per_hour) > 0) {
+      setPolicyRate(String(found.rate_limit_per_hour));
+    }
+    if (typeof found.antispam === 'boolean') {
+      setPolicyAntispam(found.antispam);
+    }
     try {
       setBundle(await emailApi.dns(found.id));
       setMailboxes((await emailApi.listMailboxes(found.id)).items);
@@ -162,11 +180,53 @@ export function EmailDomainPage() {
       showCapability={false}
       backTo="/email"
       backLabel={t('email.backToList', { defaultValue: '返回郵件域名' })}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label:
+            applySt === 'applied'
+              ? '已套用'
+              : applySt === 'written'
+                ? '管理檔'
+                : '草稿',
+          tone: applySt === 'applied' ? 'ok' : 'warn',
+        },
+        items: [
+          {
+            label: '健康',
+            value: `${domain.health_score}/100`,
+            tone: domain.health_score >= 80 ? 'ok' : 'warn',
+          },
+          {
+            label: '套用',
+            value:
+              applySt === 'applied'
+                ? 'applied'
+                : applySt === 'written'
+                  ? 'written'
+                  : 'draft',
+            tone: applySt === 'applied' ? 'ok' : 'warn',
+          },
+          {
+            label: '域名',
+            value:
+              (domain as { suspended?: boolean; status?: string }).suspended ||
+              (domain as { status?: string }).status === 'suspended'
+                ? '已暫停（旗標）'
+                : '正常',
+            tone:
+              (domain as { suspended?: boolean; status?: string }).suspended ||
+              (domain as { status?: string }).status === 'suspended'
+                ? 'warn'
+                : 'ok',
+          },
+          { label: '郵箱', value: mailboxes.length },
+          { label: 'DNS 紀錄', value: bundle?.records.length ?? '—' },
+        ],
+      }}
+      actions={<ActionBar>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() =>
               void withBusy(async () => {
@@ -177,49 +237,13 @@ export function EmailDomainPage() {
           >
             重新整理
           </Button>
-        </div>
+        </ActionBar>
       }
     >
       <SoftwareInstallBanner feature="email" title="郵件所需軟件尚未安裝" />
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <OpsHero
-        pill={
-          applySt === 'applied'
-            ? '已套用'
-            : applySt === 'written'
-              ? '管理檔'
-              : '草稿'
-        }
-        pillTone={applySt === 'applied' ? 'ok' : 'warn'}
-        tone={domain.health_score >= 80 ? 'ok' : 'warn'}
-        stats={[
-          {
-            label: '健康',
-            value: (
-              <Badge tone={domain.health_score >= 80 ? 'ok' : 'warn'}>
-                {domain.health_score}/100
-              </Badge>
-            ),
-          },
-          {
-            label: '套用',
-            value: (
-              <Badge tone={applySt === 'applied' ? 'ok' : 'warn'}>
-                {applySt === 'applied'
-                  ? 'applied'
-                  : applySt === 'written'
-                    ? 'written'
-                    : 'draft'}
-              </Badge>
-            ),
-          },
-          { label: '郵箱', value: mailboxes.length },
-          { label: 'DNS 紀錄', value: bundle?.records.length ?? '—' },
-        ]}
-      />
-
-      <Tabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
+      <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'dns' ? (
           <Card>
             <CardSection
@@ -228,7 +252,7 @@ export function EmailDomainPage() {
             >
               {bundle ? (
                 <>
-                  <div className="btn-row u-mb-3">
+                  <ActionBar className="u-mb-3">
                     <Button
                       variant="secondary"
                       size="sm"
@@ -250,7 +274,7 @@ export function EmailDomainPage() {
                     >
                       開啟 DNS 頁
                     </Button>
-                  </div>
+                  </ActionBar>
                   <DescriptionList
                     columns={2}
                     items={[
@@ -273,45 +297,54 @@ export function EmailDomainPage() {
                       ))}
                     </ul>
                   ) : null}
-                  <div className="table-wrap u-mt-4">
-                    <table className="data">
-                      <thead>
-                        <tr>
-                          <th>類型</th>
-                          <th>名稱</th>
-                          <th>值</th>
-                          <th>說明</th>
-                          <th />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {bundle.records.map((r, i) => (
-                          <tr key={`${r.type}-${r.name}-${i}`}>
-                            <td>
-                              <Badge>{r.type}</Badge>
-                            </td>
-                            <td>
-                              <code className="inline">{r.name}</code>
-                            </td>
-                            <td className="u-break-all">
-                              <code className="inline">{r.value}</code>
-                            </td>
-                            <td className="muted u-text-sm">{r.description}</td>
-                            <td>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  void navigator.clipboard?.writeText(r.value)
-                                }
-                              >
-                                複製
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="u-mt-4">
+                    <DataTable
+                      columns={[
+                        {
+                          key: 'type',
+                          header: '類型',
+                          nowrap: true,
+                          render: (r) => <Badge>{r.type}</Badge>,
+                        },
+                        {
+                          key: 'name',
+                          header: '名稱',
+                          render: (r) => (
+                            <code className="inline">{r.name}</code>
+                          ),
+                        },
+                        {
+                          key: 'value',
+                          header: '值',
+                          className: 'u-break-all',
+                          render: (r) => (
+                            <code className="inline">{r.value}</code>
+                          ),
+                        },
+                        {
+                          key: 'description',
+                          header: '說明',
+                          className: 'muted u-text-sm',
+                          render: (r) => r.description,
+                        },
+                      ]}
+                      rows={bundle.records}
+                      rowKey={(r, i) => `${r.type}-${r.name}-${i}`}
+                      rowActions={(r) => (
+                        <ActionBar align="end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              void navigator.clipboard?.writeText(r.value)
+                            }
+                          >
+                            複製
+                          </Button>
+                        </ActionBar>
+                      )}
+                      empty={<p className="muted">尚無 DNS 紀錄</p>}
+                    />
                   </div>
                   {bundle.externalTodos.length > 0 ? (
                     <div className="u-mt-4">
@@ -365,7 +398,7 @@ export function EmailDomainPage() {
                 title={`郵箱列表（${mailboxes.length}）`}
                 description="建立後可寫入 Dovecot 密碼庫（需系統變更權限）"
               >
-                <div className="btn-row u-mb-3">
+                <ActionBar className="u-mb-3">
                   <Button
                     variant="primary"
                     size="sm"
@@ -403,7 +436,7 @@ export function EmailDomainPage() {
                   >
                     寫入 Dovecot 密碼庫
                   </Button>
-                </div>
+                </ActionBar>
                 {mailboxes.length > 0 ? (
                   <ul className="list-plain list-spaced">
                     {mailboxes.map((m) => (
@@ -497,7 +530,7 @@ export function EmailDomainPage() {
                 {aliases.length > 0 ? (
                   <ul className="list-plain list-spaced u-mt-4">
                     {aliases.map((a) => (
-                      <li key={String(a.id)} className="btn-row" style={{ justifyContent: 'space-between' }}>
+                      <li key={String(a.id)} className="" style={{ justifyContent: 'space-between' }}>
                         <span>
                           <Badge>{String(a.type)}</Badge>{' '}
                           <code className="inline">{String(a.source)}</code> →{' '}
@@ -528,14 +561,28 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
             <Card>
-              <CardSection title="自動回覆" description="寫入域名旗標；真正寄出需 MTA／Sieve 支援">
+              <CardSection
+                title="自動回覆／暫停"
+                description="控制面旗標 + dataDir 草稿；written ≠ MTA／Sieve 已上線"
+              >
+                <FormHint>
+                  預設只寫控制面 + dataDir（written）。勾「套用到系統」會裝
+                  Postfix REJECT map 同 Dovecot .dovecot.sieve（需 EXECUTE+root）。
+                </FormHint>
                 <div className="form-switches">
                   <CheckboxField
                     id="ar-on"
                     label="啟用自動回覆"
-                    description="開啟後儲存主旨與內文"
+                    description="vacation.sieve；系統套用後掛 .dovecot.sieve"
                     checked={autoreplyOn}
                     onChange={setAutoreplyOn}
+                  />
+                  <CheckboxField
+                    id="ar-sys"
+                    label="套用到系統（Postfix／Dovecot）"
+                    description="需 YSK_EXECUTE=1 + root；失敗唔會假成功"
+                    checked={flagsApplySystem}
+                    onChange={setFlagsApplySystem}
                   />
                 </div>
                 <FormLayout>
@@ -562,19 +609,25 @@ export function EmailDomainPage() {
                     loading={busy}
                     onClick={() =>
                       void withBusy(async () => {
-                        await emailApi.updateFlags(domain.id, {
+                        const r = await emailApi.updateFlags(domain.id, {
                           autoreplyEnabled: autoreplyOn,
                           autoreplySubject,
                           autoreplyBody,
+                          applySystem: flagsApplySystem,
                         });
-                        setAliasLog({
-                          ok: true,
-                          notes: ['已儲存自動回覆旗標'],
+                        setFlagsLog({
+                          ok: r.ok,
+                          apply_status: r.apply_status,
+                          notes: r.notes ?? [],
+                          written: r.written,
+                          blocked: r.blocked,
+                          blockMessage: r.blockMessage,
                         });
+                        await load();
                       })
                     }
                   >
-                    儲存自動回覆
+                    {flagsApplySystem ? '儲存並套用自動回覆' : '儲存自動回覆（written）'}
                   </Button>
                   <Button
                     variant="secondary"
@@ -582,13 +635,23 @@ export function EmailDomainPage() {
                     loading={busy}
                     onClick={() =>
                       void withBusy(async () => {
-                        await emailApi.updateFlags(domain.id, { suspended: true });
-                        setAliasLog({ ok: true, notes: ['域名已標記暫停'] });
+                        const r = await emailApi.updateFlags(domain.id, {
+                          suspended: true,
+                          applySystem: flagsApplySystem,
+                        });
+                        setFlagsLog({
+                          ok: r.ok,
+                          apply_status: r.apply_status,
+                          notes: r.notes ?? [],
+                          written: r.written,
+                          blocked: r.blocked,
+                          blockMessage: r.blockMessage,
+                        });
                         await load();
                       })
                     }
                   >
-                    暫停域名
+                    {flagsApplySystem ? '暫停並套用 REJECT' : '暫停域名（written）'}
                   </Button>
                   <Button
                     variant="secondary"
@@ -596,23 +659,38 @@ export function EmailDomainPage() {
                     loading={busy}
                     onClick={() =>
                       void withBusy(async () => {
-                        await emailApi.updateFlags(domain.id, { suspended: false });
-                        setAliasLog({ ok: true, notes: ['域名已恢復'] });
+                        const r = await emailApi.updateFlags(domain.id, {
+                          suspended: false,
+                          applySystem: flagsApplySystem,
+                        });
+                        setFlagsLog({
+                          ok: r.ok,
+                          apply_status: r.apply_status,
+                          notes: r.notes ?? [],
+                          written: r.written,
+                          blocked: r.blocked,
+                          blockMessage: r.blockMessage,
+                        });
                         await load();
                       })
                     }
                   >
-                    恢復域名
+                    {flagsApplySystem ? '恢復並更新 map' : '恢復域名（written）'}
                   </Button>
                 </FormActions>
+                <OpsResultPanel title="旗標／系統套用結果" result={asOps(flagsLog)} busy={busy} />
               </CardSection>
             </Card>
           </div>
         ) : null}
 
         {tab === 'health' ? (
+          <div className="tab-panel">
           <Card>
-            <CardSection title="健康探測" description="Live 埠／DNSBL／暖身檢查（唯讀為主）">
+            <CardSection
+              title="寄達健康（真實 DNS／埠探測）"
+              description="Live 查 MX／SPF／DKIM／DMARC／PTR／出站 25／DNSBL；結果會寫回域名健康分"
+            >
               <SummaryStrip
                 items={[
                   {
@@ -620,10 +698,28 @@ export function EmailDomainPage() {
                     value: domain.server_ip || '—',
                   },
                   {
+                    label: '健康分',
+                    value: live
+                      ? String(
+                          (live as { health?: { score?: number } }).health?.score ??
+                            domain.health_score,
+                        )
+                      : String(domain.health_score),
+                    tone:
+                      (live
+                        ? Number(
+                            (live as { health?: { score?: number } }).health?.score ??
+                              domain.health_score,
+                          )
+                        : domain.health_score) >= 80
+                        ? 'ok'
+                        : 'warn',
+                  },
+                  {
                     label: '即時檢查',
                     value: live
                       ? (live as { ok?: boolean }).ok
-                        ? '正常'
+                        ? '大致正常'
                         : '有問題'
                       : '未測',
                     tone: live
@@ -638,35 +734,39 @@ export function EmailDomainPage() {
                       ? (dnsbl as { ok?: boolean }).ok
                         ? 'Clean'
                         : 'Listed'
-                      : '未測',
-                    tone: dnsbl
-                      ? (dnsbl as { ok?: boolean }).ok
+                      : live
+                        ? (live as { dnsbl?: { ok?: boolean } }).dnsbl?.ok
+                          ? 'Clean'
+                          : 'Listed'
+                        : '未測',
+                    tone: (dnsbl ?? live)
+                      ? (
+                          (dnsbl as { ok?: boolean } | null)?.ok ??
+                          (live as { dnsbl?: { ok?: boolean } })?.dnsbl?.ok
+                        )
                         ? 'ok'
                         : 'danger'
                       : 'default',
                   },
-                  {
-                    label: '外部待辦',
-                    value: 'PTR / Port25',
-                    tone: 'warn',
-                  },
                 ]}
               />
-              <p className="muted u-text-sm u-mb-3">
-                面板外必須自行處理：供應商 PTR、出站 Port 25、Registrar DS（DNSSEC）。
-              </p>
-              <div className="lifecycle-toolbar">
+              <FormHint>
+                面板外必須自行處理：供應商 PTR、出站 Port 25、Registrar DS（DNSSEC）。此處為真實查詢，唔係假綠燈。
+              </FormHint>
+              <ActionBar className="u-mb-3">
                 <Button
                   variant="primary"
                   size="md"
                   loading={busy}
                   onClick={() =>
                     void withBusy(async () => {
-                      setLive(await emailApi.liveCheck(domain.id));
+                      const r = await emailApi.liveCheck(domain.id);
+                      setLive(r);
+                      await load();
                     })
                   }
                 >
-                  Live 檢查
+                  執行 Live 檢查
                 </Button>
                 <Button
                   variant="secondary"
@@ -678,7 +778,7 @@ export function EmailDomainPage() {
                     })
                   }
                 >
-                  DNSBL
+                  DNSBL（本 IP）
                 </Button>
                 <Button
                   variant="secondary"
@@ -713,88 +813,263 @@ export function EmailDomainPage() {
                 >
                   暖身建議
                 </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setLive(
-                        await api.requestRaw(`/api/v1/email/domains/${domain.id}/policy`, {
-                          method: 'POST',
-                          body: JSON.stringify({
-                            rateLimitPerHour: 200,
-                            antispam: true,
-                            applySystem: false,
-                          }),
-                        }),
-                      );
-                    })
-                  }
-                >
-                  寫入限速/反垃圾（written）
-                </Button>
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setLive(
-                        await api.requestRaw(`/api/v1/email/domains/${domain.id}/policy`, {
-                          method: 'POST',
-                          body: JSON.stringify({
-                            rateLimitPerHour: 200,
-                            antispam: true,
-                            applySystem: true,
-                          }),
-                        }),
-                      );
-                    })
-                  }
-                >
-                  套用限速/反垃圾到系統
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setLive(
-                        await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                          method: 'POST',
-                          body: JSON.stringify({}),
-                        }),
-                      );
-                    })
-                  }
-                >
-                  寫入 Roundcube SSO 骨架
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setLive(
-                        await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                          method: 'POST',
-                          body: JSON.stringify({ enableSystem: true }),
-                        }),
-                      );
-                    })
-                  }
-                >
-                  SSO 骨架 + 系統 symlink
-                </Button>
+              </ActionBar>
+
+              {live ? (
+                <div className="u-mb-4">
+                  <h3 className="section-block__title">探測矩陣</h3>
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'item',
+                        header: '項目',
+                        nowrap: true,
+                        render: (r) => <strong>{r.label}</strong>,
+                      },
+                      {
+                        key: 'st',
+                        header: '狀態',
+                        nowrap: true,
+                        render: (r) => (
+                          <Badge
+                            tone={
+                              r.ok === true
+                                ? 'ok'
+                                : r.ok === false
+                                  ? 'danger'
+                                  : 'warn'
+                            }
+                          >
+                            {r.ok === true
+                              ? '通過'
+                              : r.ok === false
+                                ? '失敗'
+                                : '未知'}
+                          </Badge>
+                        ),
+                      },
+                      {
+                        key: 'detail',
+                        header: '詳情',
+                        className: 'u-break-all',
+                        render: (r) => (
+                          <code className="inline u-text-sm">{r.detail}</code>
+                        ),
+                      },
+                    ]}
+                    rows={(
+                      [
+                        ['MX', live.mx],
+                        ['SPF', live.spf],
+                        ['DKIM', live.dkim],
+                        ['DMARC', live.dmarc],
+                        ['PTR', live.ptr],
+                        ['出站 Port 25', live.port25],
+                        ['DNSBL', live.dnsbl],
+                      ] as const
+                    ).map(([label, cell]) => {
+                      const c = cell as
+                        | { ok?: boolean | null; detail?: string }
+                        | undefined;
+                      return {
+                        label,
+                        ok: c?.ok ?? null,
+                        detail: String(c?.detail ?? '—'),
+                      };
+                    })}
+                    rowKey={(r) => r.label}
+                    empty={<p className="muted">尚無探測結果</p>}
+                  />
+                  {Array.isArray(
+                    (live as { health?: { messages?: string[] } }).health?.messages,
+                  ) &&
+                  ((live as { health?: { messages?: string[] } }).health
+                    ?.messages?.length ?? 0) > 0 ? (
+                    <ul className="muted list-flush u-mt-3">
+                      {(
+                        (live as { health?: { messages?: string[] } }).health
+                          ?.messages ?? []
+                      ).map((m) => (
+                        <li key={m}>{m}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : (
+                <EmptyState
+                  title="尚未執行 Live 檢查"
+                  description="按「執行 Live 檢查」對公網 DNS／埠做真實探測"
+                />
+              )}
+
+              <div className="u-mt-4">
+                <h3 className="section-block__title">郵件 SSL（Let’s Encrypt）</h3>
+                <p className="section-block__desc">
+                  真實簽發在 SSL 頁完成；此處一鍵跳到對應主機名（mail / webmail / 域名）
+                </p>
+                <ActionBar>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      navigate(
+                        `/ssl?domain=${encodeURIComponent(`mail.${domain.domain}`)}&action=le`,
+                      )
+                    }
+                  >
+                    LE · mail.{domain.domain}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      navigate(
+                        `/ssl?domain=${encodeURIComponent(webmailDomain || `webmail.${domain.domain}`)}&action=le`,
+                      )
+                    }
+                  >
+                    LE · webmail
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      navigate(
+                        `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
+                      )
+                    }
+                  >
+                    LE · {domain.domain}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/ssl')}
+                  >
+                    開啟 SSL 頁
+                  </Button>
+                </ActionBar>
               </div>
-              {live ? <OpsResultPanel title="即時檢查" result={asOps(live)} /> : null}
+
+              <div className="u-mt-4">
+                <h3 className="section-block__title">Webmail SSO 骨架</h3>
+                <ActionBar>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setLive(
+                          await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                            method: 'POST',
+                            body: JSON.stringify({}),
+                          }),
+                        );
+                      })
+                    }
+                  >
+                    寫入 Roundcube SSO 骨架
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setLive(
+                          await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                            method: 'POST',
+                            body: JSON.stringify({ enableSystem: true }),
+                          }),
+                        );
+                      })
+                    }
+                  >
+                    SSO 骨架 + 系統 symlink
+                  </Button>
+                </ActionBar>
+              </div>
+
+              <div className="u-mt-4">
+                <h3 className="section-block__title">出站限速 / 反垃圾</h3>
+                <p className="section-block__desc">
+                  真實寫入 Postfix anvil 與 Rspamd 設定（需 YSK_EXECUTE + root
+                  才會 applied）
+                </p>
+                <FormLayout columns={2}>
+                  <Field
+                    label="每小時訊息上限"
+                    htmlFor="policy-rate"
+                    flush
+                    hint="全域會取各域名最小值"
+                  >
+                    <input
+                      id="policy-rate"
+                      type="number"
+                      min={10}
+                      max={100000}
+                      value={policyRate}
+                      onChange={(e) => setPolicyRate(e.target.value)}
+                    />
+                  </Field>
+                  <CheckboxField
+                    id="policy-spam"
+                    label="啟用反垃圾標記（Rspamd multimap）"
+                    description="關則域名標記 antispam off"
+                    checked={policyAntispam}
+                    onChange={setPolicyAntispam}
+                    disabled={busy}
+                  />
+                </FormLayout>
+                <FormActions align="end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        const r = await emailApi.applyPolicy(domain.id, {
+                          rateLimitPerHour: Number(policyRate) || 200,
+                          antispam: policyAntispam,
+                          applySystem: false,
+                        });
+                        setPolicyLog(r as Record<string, unknown>);
+                        await load();
+                      })
+                    }
+                  >
+                    只寫入控制面（written）
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        const r = await emailApi.applyPolicy(domain.id, {
+                          rateLimitPerHour: Number(policyRate) || 200,
+                          antispam: policyAntispam,
+                          applySystem: true,
+                        });
+                        setPolicyLog(r as Record<string, unknown>);
+                        await load();
+                      })
+                    }
+                  >
+                    套用到系統
+                  </Button>
+                </FormActions>
+              </div>
+
               {dnsbl ? <OpsResultPanel title="黑名單（DNSBL）" result={asOps(dnsbl)} /> : null}
               {warmup ? <OpsResultPanel title="暖身" result={asOps(warmup)} /> : null}
+              {policyLog ? (
+                <OpsResultPanel title="限速／反垃圾政策" result={asOps(policyLog)} busy={busy} />
+              ) : null}
             </CardSection>
           </Card>
+          </div>
         ) : null}
 
         {tab === 'relay' ? (
@@ -1161,7 +1436,7 @@ export function EmailDomainPage() {
             </Card>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <Modal
         open={createMboxOpen}

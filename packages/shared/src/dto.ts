@@ -24,6 +24,9 @@ export interface AuthLoginResponse {
   token: string;
   user: UserDto;
   expiresAt: string;
+  /** Admin policy: must enable TOTP soon */
+  mustEnrollTotp?: boolean;
+  message?: string;
 }
 
 export interface UserDto {
@@ -156,6 +159,11 @@ export interface ProjectDto {
   deployEntry?: string;
   /** Recent deploy notes for UI summary */
   lastDeployNotes?: string[];
+  /**
+   * Extra log directories relative to homeDir (besides logs/ and log/).
+   * e.g. storage/logs, var/log
+   */
+  logExtraDirs?: string[];
 }
 
 /** Live OS user probe for a project (GET /os-user) */

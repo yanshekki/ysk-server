@@ -143,6 +143,64 @@ export async function assessProductionReadiness(input: {
     severity: 'critical',
   });
 
+  // Admin 2FA policy / enrollment (read-only open of panel store)
+  try {
+    const { openDatabase, closeDatabase } = await import('../db/database.js');
+    const { join } = await import('node:path');
+    const candidates = [
+      join(input.dataDir, 'ysk.json'),
+      join(input.dataDir, 'ysk.sqlite'),
+      join(input.dataDir, 'db.json'),
+    ];
+    const dbPath = candidates.find((p) => existsSync(p) || existsSync(p.replace(/\.sqlite$/, '.json')));
+    if (dbPath) {
+      const db = openDatabase(dbPath);
+      try {
+        const requireTotp =
+          db.snapshot.settings?.['security.require_admin_totp'] === '1' ||
+          db.snapshot.settings?.['security.require_admin_totp'] === 'true';
+        const admins = (db.snapshot.users ?? []).filter((u) =>
+          Array.isArray(u.roles) && u.roles.includes('admin' as never),
+        );
+        const with2fa = admins.filter((u) => u.totp_enabled);
+        const allOk = admins.length > 0 && with2fa.length === admins.length;
+        push({
+          id: 'admin-2fa',
+          category: 'security',
+          title: '管理員雙重驗證',
+          level: allOk
+            ? 'ready'
+            : requireTotp
+              ? with2fa.length
+                ? 'degraded'
+                : 'missing'
+              : with2fa.length
+                ? 'degraded'
+                : 'missing',
+          detail: requireTotp
+            ? `政策已開：${with2fa.length}/${admins.length} admin 已啟用 2FA`
+            : `政策未強制：${with2fa.length}/${admins.length} admin 已啟用 2FA`,
+          spec: '§3.1',
+          fixHint: '安全 → 帳戶安全 → 啟用 2FA；政策可開 requireAdminTotp',
+          fixHref: '/security?tab=account',
+          severity: requireTotp ? 'critical' : 'recommended',
+        });
+      } finally {
+        closeDatabase(db);
+      }
+    }
+  } catch {
+    push({
+      id: 'admin-2fa',
+      category: 'security',
+      title: '管理員雙重驗證',
+      level: 'unknown',
+      detail: '無法讀取用戶庫以檢查 2FA',
+      severity: 'recommended',
+      fixHref: '/security?tab=account',
+    });
+  }
+
   const bins: Array<{
     id: string;
     bin: string;

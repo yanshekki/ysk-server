@@ -6,7 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createReadStream, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AppContext } from '../app-context.js';
-import { getBearer, readBody, sendJson } from '../http/util.js';
+import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
 export async function handleLogsRoutes(
   ctx: AppContext,
@@ -216,7 +216,7 @@ export async function handleLogsRoutes(
       detail: { source: data.source, ok: r.ok, bytes: r.bytes, format: r.format },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -260,7 +260,7 @@ export async function handleLogsRoutes(
       detail: { ...data, ok: r.ok },
       ok: r.ok,
     });
-    sendJson(res, r.ok ? 200 : 422, r);
+    sendOpsResult(res, r);
     return true;
   }
 

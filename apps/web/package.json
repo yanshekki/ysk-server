@@ -10,9 +10,12 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "css:reuse": "node ./scripts/css-reuse-check.mjs"
+    "css:reuse": "node ./scripts/css-reuse-check.mjs",
+    "chrome:check": "node ./scripts/page-chrome-check.mjs",
+    "primitives:check": "node ./scripts/page-primitives-check.mjs"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^13.3.0",
     "@ysk/shared": "workspace:*",
     "i18next": "^24.2.0",
     "react": "^18.3.1",

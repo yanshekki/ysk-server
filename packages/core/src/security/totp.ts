@@ -30,14 +30,23 @@ export function buildOtpAuthUrl(opts: {
 
 /** Verify 6-digit code with ±1 step window. */
 export function verifyTotp(secret: string, code: string, nowMs = Date.now()): boolean {
+  return matchTotpStep(secret, code, nowMs) != null;
+}
+
+/** Like verifyTotp but returns the matched time-step (for anti-replay). */
+export function matchTotpStep(
+  secret: string,
+  code: string,
+  nowMs = Date.now(),
+): number | null {
   const clean = code.replace(/\s/g, '');
-  if (!/^\d{6}$/.test(clean)) return false;
+  if (!/^\d{6}$/.test(clean)) return null;
   const step = Math.floor(nowMs / 1000 / 30);
   for (const s of [step - 1, step, step + 1]) {
     const expected = generateTotpCode(secret, s);
-    if (equalDigits(clean, expected)) return true;
+    if (equalDigits(clean, expected)) return s;
   }
-  return false;
+  return null;
 }
 
 export function generateTotpCode(secret: string, counter?: number): string {

@@ -205,6 +205,56 @@ Member: `--member HOST=role:access` · fleet `--member 10.0.0.3=replica:fleet:SE
 
 Panel: 各引擎 **服務 → 叢集**（全節點探測 / 遠端安裝 / Fleet 同步）.
 
+## ssh-key (identity vault)
+
+Encrypted **outbound** SSH private keys (Linux user / panel). Distinct from SFTP **login** public keys.
+
+See [docs/security/ssh-identities.md](../security/ssh-identities.md).
+
+```bash
+ysk-server ssh-key list [--user U] [--purpose user|panel|unbound] [--json]
+ysk-server ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel] \
+  [--project ID] [--user U] [--home PATH] [--reveal] [--install] [--execute] [--json]
+ysk-server ssh-key import --name N --file PATH [--purpose panel] [--json]
+ysk-server ssh-key public --id UUID
+ysk-server ssh-key export --id UUID [--out PATH] [--json]
+ysk-server ssh-key install --id UUID [--execute] [--json]   # dry-run default
+ysk-server ssh-key test --id UUID --target user@host[:port] [--execute] [--json]
+ysk-server ssh-key rotate --id UUID [--reveal] [--json]
+ysk-server ssh-key authorize-self --id UUID [--json]
+ysk-server ssh-key uninstall --id UUID [--execute] [--json]
+ysk-server ssh-key delete --id UUID [--purge-disk] [--json]
+```
+
+| 命令 | 說明 |
+|------|------|
+| `create --reveal` | one-time 回傳 private（列表永不含 private） |
+| `install --execute` | 寫入 home 或 `dataDir/secrets/ssh/keys/`；需 `YSK_EXECUTE=1` |
+| `test --execute` | `ssh -i … user@host true` → status verified |
+| `rotate` | 舊 key retired + 新 key |
+| `authorize-self` | 公鑰寫入 binding 用戶 authorized_keys |
+| `export` | 解密 private；HTTP 層限 admin + audit |
+
+Cluster / backup 消費：`db-cluster push|probe|install-peers --identity ID`；`backup_remote.identityId`。
+
+Panel: **安全 → 身份金鑰** · 專案資源 tab SSH 小卡
+
+## ssh-2fa (SSH login TOTP ≠ panel 2FA)
+
+```bash
+ysk-server ssh-2fa list [--user U] [--project ID] [--json]
+ysk-server ssh-2fa enroll --user LINUX|--project ID [--from-panel] [--json]
+ysk-server ssh-2fa confirm --id UUID --code 123456 [--json]
+ysk-server ssh-2fa install --id UUID [--execute] [--json]
+ysk-server ssh-2fa uninstall --id UUID [--execute] [--json]
+ysk-server ssh-2fa pam [--json]
+ysk-server ssh-2fa retire --id UUID [--purge-file] [--json]
+```
+
+Independent TOTP per Linux user; writes `~/.google_authenticator`. PAM uses **nullok**. See [docs/security/2fa-panel-vs-ssh.md](../security/2fa-panel-vs-ssh.md).
+
+Panel: **安全 → SSH → 登入 2FA**
+
 ## hosting
 
 ```bash

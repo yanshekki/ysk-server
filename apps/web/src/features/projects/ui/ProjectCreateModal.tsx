@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ActionBar,
   Badge,
   Button,
   CheckboxField,
@@ -35,7 +36,12 @@ export interface ProjectCreateModalProps {
   }) => Promise<void>;
 }
 
-export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCreateModalProps) {
+export function ProjectCreateModal({
+  open,
+  onClose,
+  busy,
+  onSubmit,
+}: ProjectCreateModalProps) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
@@ -121,7 +127,6 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
   const hasDomain = Boolean(domain.trim());
 
   const filteredTemplates = useMemo(() => {
-    // Show all templates; selected runtime filters suggestion order
     return [...templates].sort((a, b) => {
       const aMatch = a.runtime === runtime ? 0 : 1;
       const bMatch = b.runtime === runtime ? 0 : 1;
@@ -139,8 +144,13 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
       description={t('projects.createHint')}
       size="lg"
       footer={
-        <>
-          <Button variant="secondary" size="md" onClick={onClose} loading={busy}>
+        <ActionBar size="md" align="end">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={onClose}
+            disabled={busy}
+          >
             {t('common.cancel')}
           </Button>
           <Button
@@ -153,11 +163,16 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
           >
             {t('projects.create')}
           </Button>
-        </>
+        </ActionBar>
       }
     >
-      <form id="project-create-form" onSubmit={(e) => void handleSubmit(e)}>
-        <FormLayout columns={2}>
+      <form
+        id="project-create-form"
+        className="project-create-form"
+        onSubmit={(e) => void handleSubmit(e)}
+      >
+        {/* ① 基本：單欄，避免 SegRadio 把兩欄撐歪 */}
+        <FormLayout>
           <Field label="專案名稱" htmlFor="pname" required flush>
             <input
               id="pname"
@@ -168,7 +183,12 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               placeholder="my-app"
             />
           </Field>
-          <Field label="執行環境" htmlFor="pruntime" hint="之後可在詳情調整部署方式" flush>
+          <Field
+            label="執行環境"
+            htmlFor="pruntime"
+            hint="之後可在詳情調整部署方式"
+            flush
+          >
             <SegRadio
               name="pruntime"
               aria-label="執行環境"
@@ -213,12 +233,11 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               />
             </Field>
           ) : null}
-          <Field
-            label="主要域名"
-            htmlFor="pdomain"
-            hint="可稍後再填"
-            flush
-          >
+        </FormLayout>
+
+        {/* ② 域名：兩欄對齊 */}
+        <FormLayout columns={2}>
+          <Field label="主要域名" htmlFor="pdomain" hint="可稍後再填" flush>
             <input
               id="pdomain"
               value={domain}
@@ -234,10 +253,13 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               placeholder="www.example.com"
             />
           </Field>
+        </FormLayout>
+
+        {/* ③ 範本 */}
+        <FormLayout>
           <Field
             label="範本"
             htmlFor="ptpl"
-            fullWidth
             flush
             hint="選範本會自動帶入對應執行環境"
           >
@@ -263,7 +285,9 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
               {filteredTemplates.map((tpl) => (
                 <option key={tpl.id} value={tpl.id}>
                   {tpl.name}
-                  {tpl.runtime === runtime ? '' : `（${formatRuntimeName(tpl.runtime)}）`}
+                  {tpl.runtime === runtime
+                    ? ''
+                    : `（${formatRuntimeName(tpl.runtime)}）`}
                 </option>
               ))}
             </select>
@@ -271,64 +295,80 @@ export function ProjectCreateModal({ open, onClose, busy, onSubmit }: ProjectCre
         </FormLayout>
 
         {selectedTpl ? (
-          <div className="u-mt-3" style={{ padding: '0.75rem 1rem', background: 'var(--bg-subtle, #f6f8fa)', borderRadius: 8 }}>
-            <div className="btn-row u-gap-2 u-mb-2">
+          <div className="project-create-form__tpl">
+            <ActionBar size="sm" className="u-mb-2">
               <strong>{selectedTpl.name}</strong>
-              <Badge tone="info">{formatRuntimeName(selectedTpl.runtime)}</Badge>
-            </div>
+              <Badge tone="info">
+                {formatRuntimeName(selectedTpl.runtime)}
+              </Badge>
+            </ActionBar>
             <p className="muted u-text-sm u-mb-0">{selectedTpl.description}</p>
             <p className="muted u-text-sm u-mt-2 u-mb-0">
-              範本只寫入專案目錄骨架；需再「部署」才會 build／啟動。安裝 toolchain 請到執行環境頁。
+              範本只寫入專案目錄骨架；需再「部署」才會 build／啟動。
             </p>
           </div>
         ) : (
           <FormHint>
-            目前執行環境：<strong>{formatRuntimeName(runtime)}</strong>
+            目前執行環境：
+            <strong>{formatRuntimeName(runtime)}</strong>
             。可選範本加速起步，或不選直接空白專案。
           </FormHint>
         )}
 
-        {hasDomain ? (
-          <div className="u-mt-4">
-            <FormHint>選填：與域名一併建立草稿資源</FormHint>
-            <div className="form-switches">
-              <CheckboxField
-                id="pc-dns"
-                label="同時建立 DNS zone"
-                description="只寫管理檔（draft），唔等於權威 DNS 已上線"
-                checked={createDns}
-                onChange={setCreateDns}
-              />
-              <CheckboxField
-                id="pc-mail"
-                label="同時登記郵件域名"
-                description="之後可到郵件頁完成郵箱與套用"
-                checked={createMail}
-                onChange={setCreateMail}
-              />
-            </div>
-            {createDns || createMail ? (
-              <FormLayout columns={2}>
-                <Field label="伺服器 IPv4（DNS／郵件範本）" htmlFor="pc-ip" flush>
-                  <input
-                    id="pc-ip"
-                    value={serverIp}
-                    onChange={(e) => setServerIp(e.target.value)}
-                    placeholder="此主機公網 IPv4"
-                  />
-                </Field>
-                <Field label="伺服器 IPv6（可選）" htmlFor="pc-ip6" flush>
-                  <input
-                    id="pc-ip6"
-                    value={serverIpv6}
-                    onChange={(e) => setServerIpv6(e.target.value)}
-                    placeholder="公網 IPv6（可留空）"
-                  />
-                </Field>
-              </FormLayout>
-            ) : null}
+        {/* ④ 草稿資源 — 永遠顯示（唔再因未填域名而消失） */}
+        <div className="project-create-form__extras">
+          <p className="project-create-form__extras-title">
+            與域名一併建立草稿資源
+          </p>
+          {!hasDomain ? (
+            <FormHint>
+              請先填「主要域名」，以下選項才會一併建立草稿。
+            </FormHint>
+          ) : null}
+          <div className="form-switches">
+            <CheckboxField
+              id="pc-dns"
+              label="同時建立 DNS zone"
+              description="只寫管理檔（draft），唔等於權威 DNS 已上線"
+              checked={createDns && hasDomain}
+              onChange={(v) => setCreateDns(v)}
+              disabled={!hasDomain || busy}
+            />
+            <CheckboxField
+              id="pc-mail"
+              label="同時登記郵件域名"
+              description="之後可到郵件頁完成郵箱與套用"
+              checked={createMail && hasDomain}
+              onChange={(v) => setCreateMail(v)}
+              disabled={!hasDomain || busy}
+            />
           </div>
-        ) : null}
+          {hasDomain && (createDns || createMail) ? (
+            <FormLayout columns={2}>
+              <Field
+                label="伺服器 IPv4"
+                htmlFor="pc-ip"
+                flush
+                hint="DNS／郵件範本用"
+              >
+                <input
+                  id="pc-ip"
+                  value={serverIp}
+                  onChange={(e) => setServerIp(e.target.value)}
+                  placeholder="此主機公網 IPv4"
+                />
+              </Field>
+              <Field label="伺服器 IPv6（可選）" htmlFor="pc-ip6" flush>
+                <input
+                  id="pc-ip6"
+                  value={serverIpv6}
+                  onChange={(e) => setServerIpv6(e.target.value)}
+                  placeholder="公網 IPv6（可留空）"
+                />
+              </Field>
+            </FormLayout>
+          ) : null}
+        </div>
       </form>
     </Modal>
   );

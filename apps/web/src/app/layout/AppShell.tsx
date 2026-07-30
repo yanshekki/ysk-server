@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../shared/hooks/useAuth';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { api } from '../../shared/services/api';
+import { buttonClassName } from '../../shared/components/ui';
 
 /** All nav paths — used so /ftp does not stay active on /ftp/service */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
@@ -145,7 +146,7 @@ export function AppShell() {
         <header className="shell__top">
           <button
             type="button"
-            className="btn btn--secondary btn--sm shell__menu-btn"
+            className={`${buttonClassName({ variant: 'secondary', size: 'sm' })} shell__menu-btn`}
             onClick={() => setOpen(true)}
             aria-label="Menu"
           >
@@ -179,7 +180,7 @@ export function AppShell() {
                     <li key={`${h.kind}-${h.href}-${i}`}>
                       <button
                         type="button"
-                        className="btn btn--ghost btn--sm"
+                        className={buttonClassName({ variant: 'ghost', size: 'sm' })}
                         style={{ width: '100%', justifyContent: 'flex-start' }}
                         onClick={() => {
                           setSearchHits([]);
@@ -201,7 +202,7 @@ export function AppShell() {
           </div>
           <button
             type="button"
-            className="btn btn--ghost btn--sm"
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
             onClick={cycleLang}
             title="切換語言"
             aria-label={`語言：${langDisplayName(i18n.language)}`}
@@ -214,7 +215,7 @@ export function AppShell() {
               <span className="badge badge--beside">{roleLabel}</span>
             ) : null}
           </span>
-          <button type="button" className="btn btn--secondary btn--sm" onClick={() => void onLogout()}>
+          <button type="button" className={buttonClassName({ variant: 'secondary', size: 'sm' })} onClick={() => void onLogout()}>
             {t('nav.logout')}
           </button>
         </header>

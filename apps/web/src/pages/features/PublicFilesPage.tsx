@@ -14,10 +14,11 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-  OpsHero,
+
   OpsResultPanel,
   PresetChips,
-} from '../../shared/components/ui';
+
+  buttonClassName,} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
@@ -35,10 +36,26 @@ export function PublicFilesPage() {
     <FeaturePageLayout
       title={t('nav.publicFiles', { defaultValue: '公用檔案' })}
       showCapability={false}
-      actions={
-        <Link to="/files" className="btn btn--ghost btn--md">
-          檔案管理
-        </Link>
+      status={{
+        pill: {
+          label: serverName || '未設定',
+          tone: serverName ? 'ok' : 'warn',
+        },
+        items: [
+          { label: 'server_name', value: serverName || '—' },
+          { label: '配額', value: `${quotaMb || '—'} MiB` },
+          { label: 'Reload', value: '套用時' },
+          { label: '路徑', value: 'dataDir/files' },
+        ],
+      }}
+      actions={<>
+          <Link to="/files" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            檔案管理
+          </Link>
+          <Link to="/nginx" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+            Nginx
+          </Link>
+        </>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
@@ -50,23 +67,6 @@ export function PublicFilesPage() {
           </Button>
         </Alert>
       ) : null}
-
-      <OpsHero
-        pill={serverName || '未設定'}
-        pillTone={serverName ? 'ok' : 'warn'}
-        tone="ok"
-        stats={[
-          { label: 'server_name', value: <span className="ops-stat__val--sm">{serverName || '—'}</span> },
-          { label: '配額', value: `${quotaMb || '—'} MiB` },
-          { label: 'Reload', value: '套用時' },
-          { label: '路徑', value: 'dataDir/files' },
-        ]}
-        cta={
-          <Link to="/nginx" className="btn btn--secondary btn--md">
-            Nginx
-          </Link>
-        }
-      />
 
       <Card>
         <CardSection title="概覽" description="即將套用的設定（唯讀摘要）">

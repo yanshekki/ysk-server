@@ -89,11 +89,11 @@ export async function writeAndMaybeApplyCfOnlyUfw(input: {
     '請確認 /etc/default/ufw 內 IPV6=yes',
   ];
   if (!input.apply) {
+    // Plan / written only — not blocked (operator chose not to apply)
     return {
       ok: true,
       written: [scriptPath],
-      notes: [...notes, '未套用到系統（apply=false 或無權限）'],
-      blocked: true,
+      notes: [...notes, '狀態：written（apply=false；未套用到系統）'],
     };
   }
   if (!input.host.executeEnabled()) {

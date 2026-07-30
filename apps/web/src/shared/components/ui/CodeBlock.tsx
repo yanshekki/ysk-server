@@ -91,14 +91,19 @@ export function LogViewer({
   linkIps = true,
   maxHeight,
 }: LogViewerProps) {
-  if (!text) {
-    return <p className="muted">{emptyLabel}</p>;
-  }
-  const lines = text.split('\n');
   const style =
     maxHeight != null
       ? { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight }
       : undefined;
+
+  if (!text) {
+    return (
+      <div className="log-viewer log-viewer--empty" style={style} role="status">
+        <p className="log-viewer__empty-msg">{emptyLabel}</p>
+      </div>
+    );
+  }
+  const lines = text.split('\n');
 
   if (!highlight && !linkIps) {
     return (

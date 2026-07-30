@@ -26,51 +26,87 @@ import type {
   DbClusterStatus,
 } from './types.js';
 
-function sshBase(m: DbClusterMember): string[] {
+function sshBase(
+  m: DbClusterMember,
+  identityPath?: string,
+): string[] {
   const user = m.ssh?.username || 'root';
   const port = m.ssh?.port || 22;
-  return [
-    'ssh',
-    '-o',
-    'StrictHostKeyChecking=no',
-    '-o',
-    'BatchMode=yes',
-    '-o',
-    'ConnectTimeout=8',
-    '-p',
-    String(port),
-    `${user}@${m.host}`,
-  ];
+  const base = ['ssh'];
+  if (identityPath) {
+    base.push(
+      '-i',
+      identityPath,
+      '-o',
+      'IdentitiesOnly=yes',
+      '-o',
+      'BatchMode=yes',
+      '-o',
+      'StrictHostKeyChecking=accept-new',
+      '-o',
+      'ConnectTimeout=8',
+    );
+  } else {
+    base.push(
+      '-o',
+      'StrictHostKeyChecking=no',
+      '-o',
+      'BatchMode=yes',
+      '-o',
+      'ConnectTimeout=8',
+    );
+  }
+  base.push('-p', String(port), `${user}@${m.host}`);
+  return base;
 }
 
 async function sshRun(
   host: HostExecutor,
   m: DbClusterMember,
   remoteArgv: string[],
+  identityPath?: string,
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
-  const argv = [...sshBase(m), ...remoteArgv];
+  const argv = [...sshBase(m, identityPath), ...remoteArgv];
   const r = await host.runCommand(argv, { timeoutMs: 25_000 });
   return { exitCode: r.exitCode, stdout: r.stdout || '', stderr: r.stderr || '' };
+}
+
+async function resolveMemberIdentityPath(
+  dataDir: string | undefined,
+  m: DbClusterMember,
+  fallbackIdentityId?: string,
+): Promise<string | undefined> {
+  const id = m.ssh?.identityId || fallbackIdentityId;
+  if (!id || !dataDir) return undefined;
+  try {
+    const { resolveIdentityKeyPath } = await import('../../security/ssh-identity/ops.js');
+    const r = resolveIdentityKeyPath(dataDir, id);
+    return r.ok ? r.path : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 async function probeMemberSsh(
   host: HostExecutor,
   cluster: DbCluster,
   m: DbClusterMember,
+  identityPath?: string,
 ): Promise<DbClusterMemberProbe> {
   const at = new Date().toISOString();
   const role = (m.role || '').toLowerCase();
   const kind = cluster.kind;
+  const run = (argv: string[]) => sshRun(host, m, argv, identityPath);
 
   if (kind === 'mariadb-galera') {
-    const r = await sshRun(host, m, [
+    const r = await run([
       'mysql',
       '-N',
       '-e',
       "SHOW STATUS LIKE 'wsrep%';",
     ]);
     if (r.exitCode !== 0) {
-      const r2 = await sshRun(host, m, [
+      const r2 = await run([
         'mariadb',
         '-N',
         '-e',
@@ -95,8 +131,8 @@ async function probeMemberSsh(
 
   if (kind === 'mysql-replica') {
     if (role === 'replica' || role === 'slave') {
-      const r = await sshRun(host, m, ['mysql', '-e', 'SHOW REPLICA STATUS\\G']);
-      const out = r.exitCode === 0 ? r : await sshRun(host, m, ['mysql', '-e', 'SHOW SLAVE STATUS\\G']);
+      const r = await run(['mysql', '-e', 'SHOW REPLICA STATUS\\G']);
+      const out = r.exitCode === 0 ? r : await run(['mysql', '-e', 'SHOW SLAVE STATUS\\G']);
       if (out.exitCode !== 0) {
         return {
           at,
@@ -109,7 +145,7 @@ async function probeMemberSsh(
       const ev = evaluateMysqlReplicaLocal('replica', facts);
       return { at, ok: ev.ok, facts, notes: ev.notes };
     }
-    const r = await sshRun(host, m, ['mysql', '-e', 'SHOW MASTER STATUS']);
+    const r = await run(['mysql', '-e', 'SHOW MASTER STATUS']);
     if (r.exitCode !== 0) {
       return {
         at,
@@ -124,7 +160,7 @@ async function probeMemberSsh(
   }
 
   if (kind === 'postgres-replica') {
-    const r = await sshRun(host, m, [
+    const r = await run([
       'psql',
       '-tAc',
       'SELECT pg_is_in_recovery();',
@@ -152,7 +188,7 @@ async function probeMemberSsh(
   }
 
   // redis
-  const r = await sshRun(host, m, ['redis-cli', 'INFO', 'replication']);
+  const r = await run(['redis-cli', 'INFO', 'replication']);
   if (r.exitCode !== 0) {
     return {
       at,
@@ -230,6 +266,9 @@ export async function probeDbClusterFull(input: {
   clusterId: string;
   /** skip SSH peers */
   localOnly?: boolean;
+  dataDir?: string;
+  /** default vault identity for all ssh peers */
+  identityId?: string;
 }): Promise<ClusterProbeResult & { peersProbed: number }> {
   const localResult = await probeDbCluster(input);
   let cluster = localResult.cluster;
@@ -260,10 +299,17 @@ export async function probeDbClusterFull(input: {
       continue;
     }
     // ssh
-    const probe = await probeMemberSsh(input.host, cluster, m);
+    const idPath = await resolveMemberIdentityPath(
+      input.dataDir,
+      m,
+      input.identityId,
+    );
+    const probe = await probeMemberSsh(input.host, cluster, m, idPath);
     members[i] = { ...m, lastProbe: probe };
     peersProbed += 1;
-    notes.push(`${m.host}: ${probe.ok ? 'OK' : 'FAIL'} — ${probe.notes[0] ?? ''}`);
+    notes.push(
+      `${m.host}: ${probe.ok ? 'OK' : 'FAIL'} — ${probe.notes[0] ?? ''}${idPath ? ' [identity]' : ''}`,
+    );
   }
 
   const agg = aggregateStatus(cluster.kind, members, localResult.localOk);
@@ -331,6 +377,7 @@ export async function installDbClusterOnPeers(input: {
   execute?: boolean;
   /** also restart unit after install */
   restart?: boolean;
+  identityId?: string;
 }): Promise<RemoteInstallResult> {
   const cluster = getDbCluster(input.db, input.clusterId);
   const want = input.execute === true;
@@ -425,22 +472,41 @@ export async function installDbClusterOnPeers(input: {
     const port = String(m.ssh?.port || 22);
     const dest = remoteConfDest(cluster, m);
     const unit = unitFor(cluster, m);
-
-    await sshRun(input.host, m, ['mkdir', '-p', remoteDir]);
-    const scp = await input.host.runCommand(
-      [
-        'scp',
-        '-o',
-        'StrictHostKeyChecking=no',
-        '-o',
-        'BatchMode=yes',
-        '-P',
-        port,
-        localPath,
-        `${user}@${m.host}:${remoteDir}/${flat}`,
-      ],
-      { timeoutMs: 60_000 },
+    const idPath = await resolveMemberIdentityPath(
+      input.dataDir,
+      m,
+      input.identityId,
     );
+
+    await sshRun(input.host, m, ['mkdir', '-p', remoteDir], idPath);
+    const scpArgv = idPath
+      ? [
+          'scp',
+          '-i',
+          idPath,
+          '-o',
+          'IdentitiesOnly=yes',
+          '-o',
+          'BatchMode=yes',
+          '-o',
+          'StrictHostKeyChecking=accept-new',
+          '-P',
+          port,
+          localPath,
+          `${user}@${m.host}:${remoteDir}/${flat}`,
+        ]
+      : [
+          'scp',
+          '-o',
+          'StrictHostKeyChecking=no',
+          '-o',
+          'BatchMode=yes',
+          '-P',
+          port,
+          localPath,
+          `${user}@${m.host}:${remoteDir}/${flat}`,
+        ];
+    const scp = await input.host.runCommand(scpArgv, { timeoutMs: 60_000 });
     if (scp.exitCode !== 0) {
       anyFail = true;
       installed.push({
@@ -453,14 +519,13 @@ export async function installDbClusterOnPeers(input: {
 
     // ensure dest dir + install
     const destDir = dest.includes('/') ? dest.replace(/\/[^/]+$/, '') : '/tmp';
-    await sshRun(input.host, m, ['mkdir', '-p', destDir]);
-    const inst = await sshRun(input.host, m, [
-      'install',
-      '-m',
-      '644',
-      `${remoteDir}/${flat}`,
-      dest,
-    ]);
+    await sshRun(input.host, m, ['mkdir', '-p', destDir], idPath);
+    const inst = await sshRun(
+      input.host,
+      m,
+      ['install', '-m', '644', `${remoteDir}/${flat}`, dest],
+      idPath,
+    );
     if (inst.exitCode !== 0) {
       anyFail = true;
       installed.push({
@@ -472,7 +537,7 @@ export async function installDbClusterOnPeers(input: {
     }
 
     if (restart) {
-      const rs = await sshRun(input.host, m, ['systemctl', 'restart', unit]);
+      const rs = await sshRun(input.host, m, ['systemctl', 'restart', unit], idPath);
       if (rs.exitCode !== 0) {
         anyFail = true;
         installed.push({

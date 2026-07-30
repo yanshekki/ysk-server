@@ -115,9 +115,9 @@
     {
       "name": "db-cluster push",
       "risk": "execute-host",
-      "summary": "Default dry-run scp plan; --execute scp conf/scripts to ssh peers",
-      "args": ["--id", "--member", "--execute"],
-      "example": "ysk-server db-cluster push --id UUID --json",
+      "summary": "Default dry-run scp plan; --execute scp to ssh peers; optional --identity vault id",
+      "args": ["--id", "--member", "--identity", "--execute"],
+      "example": "ysk-server db-cluster push --id UUID --identity SSH_ID --json",
       "exitCodes": {
         "0": "ok or dry-run",
         "3": "blocked without YSK_EXECUTE when --execute"
@@ -130,6 +130,45 @@
       "args": ["--id", "--op", "--execute", "--edge-execute", "--member"],
       "example": "ysk-server db-cluster fleet --id UUID --json"
     },
+    {
+      "name": "ssh-key list",
+      "risk": "read",
+      "summary": "List SSH identity vault entries (no private keys)",
+      "example": "ysk-server ssh-key list --json"
+    },
+    {
+      "name": "ssh-key create",
+      "risk": "write",
+      "summary": "Generate encrypted SSH identity (ed25519 default)",
+      "args": ["--name", "--purpose", "--algo", "--reveal", "--install", "--execute"],
+      "example": "ysk-server ssh-key create --name peer1 --purpose panel --reveal --json"
+    },
+    {
+      "name": "ssh-key install",
+      "risk": "execute-host",
+      "summary": "Install identity private key to disk (dry-run default)",
+      "args": ["--id", "--execute"],
+      "example": "ysk-server ssh-key install --id UUID --json",
+      "exitCodes": {
+        "0": "ok or dry-run",
+        "3": "blocked without YSK_EXECUTE when --execute"
+      }
+    },
+    {
+      "name": "ssh-key test",
+      "risk": "execute-host",
+      "summary": "ssh -i identity to target (dry-run default)",
+      "args": ["--id", "--target", "--execute"],
+      "example": "ysk-server ssh-key test --id UUID --target root@10.0.0.2 --json"
+    },
+    {
+      "name": "ssh-key rotate",
+      "risk": "write",
+      "summary": "Retire identity and generate replacement",
+      "args": ["--id", "--reveal"],
+      "example": "ysk-server ssh-key rotate --id UUID --reveal --json"
+    },
+
     {
       "name": "ssl list",
       "risk": "read",

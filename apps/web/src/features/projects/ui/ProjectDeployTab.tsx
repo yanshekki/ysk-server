@@ -17,7 +17,8 @@ import {
   FormLayout,
   PresetChips,
   SegRadio,
-} from '../../../shared/components/ui';
+
+  buttonClassName,} from '../../../shared/components/ui';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
 import {
   defaultRuntimeInstallVersion,
@@ -333,7 +334,7 @@ export function ProjectDeployTab({
                 僅部署
               </Button>
               {rtPath ? (
-                <Link to={rtPath} className="btn btn--ghost btn--md">
+                <Link to={rtPath} className={buttonClassName({ variant: 'ghost', size: 'md' })}>
                   開啟 {runtimeLabel} 執行環境
                 </Link>
               ) : null}
@@ -539,7 +540,7 @@ export function ProjectDeployTab({
                 </Button>
               ) : null}
               {rtPath ? (
-                <Link to={rtPath} className="btn btn--ghost btn--md">
+                <Link to={rtPath} className={buttonClassName({ variant: 'ghost', size: 'md' })}>
                   {runtimeLabel} 環境
                 </Link>
               ) : null}
@@ -702,7 +703,7 @@ export function ProjectDeployTab({
                   runtime?: string;
                 } | null;
                 return (
-                  <li key={h.id} className="btn-row u-justify-between u-flex-wrap">
+                  <li key={h.id} className="u-justify-between u-flex-wrap">
                     <span>
                       <Badge tone={h.ok ? 'ok' : 'danger'}>{h.ok ? '成功' : '失敗'}</Badge>{' '}
                       <code className="inline u-text-sm">{h.action.replace(/^project\./, '')}</code>

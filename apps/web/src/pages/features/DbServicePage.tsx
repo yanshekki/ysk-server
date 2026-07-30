@@ -6,7 +6,7 @@
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -22,7 +22,7 @@ import {
   OpsResultPanel,
   PresetChips,
   SegRadio,
-  SummaryStrip,
+
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { dbServiceApi, type DbServiceEngine } from '../../features/db-service';
@@ -94,41 +94,12 @@ export function DbServicePage({ engine }: { engine: DbServiceEngine }) {
   return (
     <FeaturePageLayout
       title={meta.title}
-      actions={
-        <div className="btn-row">
-          <Link to={meta.dataPath}>
-            <Button variant="secondary" size="md">
-              {meta.dataLabel}
-            </Button>
-          </Link>
-          <Button
-            variant="secondary"
-            size="md"
-            disabled={busy}
-            onClick={() => {
-              setError(null);
-              setMsg(null);
-              void refresh();
-            }}
-          >
-            重新整理
-          </Button>
-        </div>
-      }
-    >
-      {loadError ? <Alert variant="error">{loadError}</Alert> : null}
-      {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
-          </Button>
-        </Alert>
-      ) : null}
-
-      <SummaryStrip
-        items={[
+      status={{
+        pill: {
+          label: running ? '運行中' : String(status?.active ?? '—'),
+          tone: running ? 'ok' : 'warn',
+        },
+        items: [
           {
             label: '狀態',
             value: running ? '運行中' : String(status?.active ?? '—'),
@@ -149,7 +120,10 @@ export function DbServicePage({ engine }: { engine: DbServiceEngine }) {
                 {
                   label: '資料庫數量',
                   value: String(
-                    status?.configuredDatabases ?? status?.databases ?? settings.databases ?? 16,
+                    status?.configuredDatabases ??
+                      status?.databases ??
+                      settings.databases ??
+                      16,
                   ),
                 },
               ]
@@ -158,8 +132,39 @@ export function DbServicePage({ engine }: { engine: DbServiceEngine }) {
             label: '埠',
             value: String(settings.port ?? '—'),
           },
-        ]}
-      />
+        ],
+      }}
+      actions={<ActionBar>
+          <Link to={meta.dataPath}>
+            <Button variant="secondary" size="sm">
+              {meta.dataLabel}
+            </Button>
+          </Link>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              setError(null);
+              setMsg(null);
+              void refresh();
+            }}
+          >
+            重新整理
+          </Button>
+        </ActionBar>
+      }
+    >
+      {loadError ? <Alert variant="error">{loadError}</Alert> : null}
+      {error ? <Alert variant="error">{error}</Alert> : null}
+      {msg ? (
+        <Alert variant="ok">
+          {msg}{' '}
+          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+            關閉
+          </Button>
+        </Alert>
+      ) : null}
 
       {status?.blockMessage ? (
         <Alert variant="info">{String(status.blockMessage)}</Alert>

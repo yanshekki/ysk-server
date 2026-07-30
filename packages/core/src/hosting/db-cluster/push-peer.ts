@@ -286,6 +286,8 @@ export async function pushDbClusterToPeers(input: {
   memberId?: string;
   /** default false */
   execute?: boolean;
+  /** vault identity for all peers (override member.ssh.identityId) */
+  identityId?: string;
 }): Promise<{
   ok: boolean;
   dryRun: boolean;
@@ -295,6 +297,7 @@ export async function pushDbClusterToPeers(input: {
   targets: PeerPushTarget[];
   notes: string[];
   requiresExecute: boolean;
+  identityUsed?: string;
 }> {
   const plan = planDbClusterPeerPush(input);
   const want = input.execute === true;
@@ -340,15 +343,37 @@ export async function pushDbClusterToPeers(input: {
   const notes: string[] = [];
   let anyFail = false;
 
+  // Resolve per-target identity from member or global flag
+  const { resolveIdentityKeyPath, buildIdentityFileOpts } = await import(
+    '../../security/ssh-identity/ops.js'
+  );
+  const memberByHost = new Map(
+    plan.cluster.members.map((m) => [m.host, m] as const),
+  );
+  let identityUsed: string | undefined;
+
   for (const t of plan.targets) {
+    const mem = memberByHost.get(t.host);
+    const idId = mem?.ssh?.identityId || input.identityId;
+    let idOpts: string[] = [];
+    if (idId) {
+      const key = resolveIdentityKeyPath(input.dataDir, idId);
+      if (key.ok && key.path) {
+        idOpts = buildIdentityFileOpts(key.path);
+        identityUsed = idId;
+      } else {
+        notes.push(`${t.host}: identity ${idId} 不可用 — 改用預設 key`);
+      }
+    }
+
     // mkdir remote
     const mkdir = await input.host.runCommand(
       [
         'ssh',
-        '-o',
-        'StrictHostKeyChecking=no',
-        '-o',
-        'BatchMode=yes',
+        ...idOpts,
+        ...(idOpts.length
+          ? []
+          : ['-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=yes']),
         '-p',
         String(t.port),
         `${t.username}@${t.host}`,
@@ -378,10 +403,10 @@ export async function pushDbClusterToPeers(input: {
       const r = await input.host.runCommand(
         [
           'scp',
-          '-o',
-          'StrictHostKeyChecking=no',
-          '-o',
-          'BatchMode=yes',
+          ...idOpts,
+          ...(idOpts.length
+            ? []
+            : ['-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=yes']),
           '-P',
           String(t.port),
           local,
@@ -426,6 +451,7 @@ export async function pushDbClusterToPeers(input: {
     cluster,
     targets: plan.targets,
     notes,
+    identityUsed,
     requiresExecute: false,
   };
 }

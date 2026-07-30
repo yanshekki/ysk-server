@@ -65,6 +65,7 @@ export class ProjectRepository {
         | 'home_dir'
         | 'linux_user'
         | 'linux_group'
+        | 'log_extra_dirs'
       >
     >,
   ): void {
@@ -86,6 +87,7 @@ export class ProjectRepository {
     if (patch.home_dir !== undefined) p.home_dir = patch.home_dir;
     if (patch.linux_user !== undefined) p.linux_user = patch.linux_user;
     if (patch.linux_group !== undefined) p.linux_group = patch.linux_group;
+    if ('log_extra_dirs' in patch) p.log_extra_dirs = patch.log_extra_dirs;
     p.updated_at = new Date().toISOString();
     this.db.persist();
   }

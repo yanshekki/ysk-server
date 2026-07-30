@@ -17,7 +17,6 @@ import {
   collectInventory,
   adviseInventory,
   applyNodeHosting,
-  collectMetrics,
   executeToolCall,
   evaluateProtection,
   getPlaybook,
@@ -46,7 +45,6 @@ import {
   startPlaybookRun,
   syncNginxConfigs,
   buildRcaReport,
-  planSelfUpdate,
   provisionMysqlDatabase,
   listBackups,
   backupAllProjects,
@@ -56,6 +54,7 @@ import {
   createProjectFtpAccount,
   listProjectLogs,
   tailProjectLog,
+  searchProjectLogs,
   lookupOsvVulns,
   uploadCertificate,
   listUploadedCertFiles,
@@ -82,11 +81,21 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { applyProtection, type AppContext } from './app-context.js';
 import { VERSION } from './version.js';
-import { getBearer, parseUrl, readBody, sendError, sendJson } from './http/util.js';
+import {
+  getBearer,
+  parseUrl,
+  readBody,
+  sendError,
+  sendJson,
+  sendOpsResult,
+  statusFromOpsResult,
+} from './http/util.js';
 import { handleFilesRoutes } from './controllers/files-controller.js';
 import { handleSystemRoutes } from './controllers/system-controller.js';
 import { handleResourcesRoutes } from './controllers/resources-controller.js';
 import { handleLogsRoutes } from './controllers/logs-controller.js';
+import { handleMetricsRoutes } from './controllers/metrics-controller.js';
+import { handleNetworkRoutes } from './controllers/network-controller.js';
 import { resolveWebRoot, tryServeStatic } from './http/static.js';
 
 export function createHttpServer(ctx: AppContext): Server {
@@ -113,6 +122,8 @@ export function createHttpServer(ctx: AppContext): Server {
 
       if (await handleResourcesRoutes(ctx, req, res, url, method)) return;
       if (await handleLogsRoutes(ctx, req, res, url, method)) return;
+      if (await handleMetricsRoutes(ctx, req, res, url, method)) return;
+      if (await handleNetworkRoutes(ctx, req, res, url, method)) return;
       if (await handleSystemRoutes(ctx, req, res, url, method)) return;
 
       if (method === 'GET' && (url.pathname === '/health' || url.pathname === '/api/v1/health')) {
@@ -234,25 +245,58 @@ export function createHttpServer(ctx: AppContext): Server {
           username?: string;
           password?: string;
           totp?: string;
+          recoveryCode?: string;
+          deviceToken?: string;
+          rememberDevice?: boolean;
         };
+        const ip =
+          (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
+          req.socket.remoteAddress ||
+          'local';
         try {
-          const result = ctx.auth.login({
-            username: data.username ?? '',
-            password: data.password ?? '',
-            totp: data.totp,
-          });
+          const result = ctx.auth.login(
+            {
+              username: data.username ?? '',
+              password: data.password ?? '',
+              totp: data.totp,
+              recoveryCode: data.recoveryCode,
+              deviceToken: data.deviceToken,
+              rememberDevice: data.rememberDevice === true,
+            },
+            {
+              ip,
+              userAgent: String(req.headers['user-agent'] ?? '').slice(0, 200),
+            },
+          );
           return sendJson(res, 200, result);
         } catch (e) {
-          if (e instanceof YskError && e.details && (e.details as { needsTotp?: boolean }).needsTotp) {
-            return sendJson(res, 401, {
-              ok: false,
-              code: e.code,
-              message: e.message,
-              needsTotp: true,
-            });
+          if (e instanceof YskError) {
+            const d = (e.details ?? {}) as {
+              needsTotp?: boolean;
+              locked?: boolean;
+              retryAfterSec?: number;
+            };
+            if (d.needsTotp || d.locked || e.httpStatus === 429) {
+              return sendJson(res, e.httpStatus || 401, {
+                ok: false,
+                code: e.code,
+                message: e.message,
+                needsTotp: d.needsTotp,
+                locked: d.locked,
+                retryAfterSec: d.retryAfterSec,
+              });
+            }
           }
           throw e;
         }
+      }
+
+      if (method === 'POST' && url.pathname === '/api/v1/auth/totp/step-up') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { code?: string };
+        const r = ctx.auth.verifyStepUp(user.id, data.code ?? '');
+        return sendJson(res, 200, r);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/auth/logout') {
@@ -262,7 +306,92 @@ export function createHttpServer(ctx: AppContext): Server {
 
       if (method === 'GET' && url.pathname === '/api/v1/auth/me') {
         const user = ctx.auth.authenticate(getBearer(req));
-        return sendJson(res, 200, { user });
+        return sendJson(res, 200, {
+          user,
+          requireAdminTotp: ctx.auth.isAdminTotpRequired(),
+          mustEnrollTotp:
+            ctx.auth.isAdminTotpRequired() &&
+            user.roles.includes('admin') &&
+            !user.totpEnabled,
+        });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/auth/sessions') {
+        const token = getBearer(req);
+        const user = ctx.auth.authenticate(token);
+        return sendJson(res, 200, {
+          ok: true,
+          items: ctx.auth.listSessions(user.id, token),
+          idleMs: 4 * 60 * 60 * 1000,
+          absoluteMs: 24 * 60 * 60 * 1000,
+        });
+      }
+      if (method === 'DELETE' && url.pathname === '/api/v1/auth/sessions') {
+        const token = getBearer(req);
+        const user = ctx.auth.authenticate(token);
+        const n = ctx.auth.revokeOtherSessions(user.id, token ?? '');
+        return sendJson(res, 200, { ok: true, revoked: n });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/sessions\/[^/]+$/)) {
+        const token = getBearer(req);
+        const user = ctx.auth.authenticate(token);
+        const id = url.pathname.split('/')[5] ?? '';
+        const ok = ctx.auth.revokeSession(user.id, id);
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/settings/security') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: '需要管理員' });
+        }
+        return sendJson(res, 200, {
+          ok: true,
+          requireAdminTotp: ctx.auth.isAdminTotpRequired(),
+          requireAdminTotpStrict:
+            ctx.db.snapshot.settings['security.require_admin_totp_strict'] === '1',
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/settings/security') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: '需要管理員' });
+        }
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          requireAdminTotp?: boolean;
+          requireAdminTotpStrict?: boolean;
+          totp?: string;
+        };
+        try {
+          if (data.requireAdminTotp === true || data.requireAdminTotpStrict === true) {
+            ctx.auth.requireStepUp(user.id, data.totp);
+          }
+        } catch (e) {
+          if (e instanceof YskError) {
+            return sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true,
+            });
+          }
+          throw e;
+        }
+        if (data.requireAdminTotp !== undefined) {
+          ctx.auth.setAdminTotpRequired(Boolean(data.requireAdminTotp), user.username);
+        }
+        if (data.requireAdminTotpStrict !== undefined) {
+          ctx.db.snapshot.settings['security.require_admin_totp_strict'] =
+            data.requireAdminTotpStrict ? '1' : '0';
+          ctx.db.persist();
+        }
+        return sendJson(res, 200, {
+          ok: true,
+          requireAdminTotp: ctx.auth.isAdminTotpRequired(),
+          requireAdminTotpStrict:
+            ctx.db.snapshot.settings['security.require_admin_totp_strict'] === '1',
+        });
       }
 
       // —— Users & packages (admin) ——
@@ -314,6 +443,21 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         if (!user.roles.includes('admin')) {
           return sendJson(res, 403, { ok: false, message: '需要管理員權限' });
+        }
+        const raw = await readBody(req).catch(() => '{}');
+        const data = JSON.parse(raw || '{}') as { totp?: string };
+        try {
+          ctx.auth.requireStepUp(user.id, data.totp);
+        } catch (e) {
+          if (e instanceof YskError) {
+            return sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true,
+            });
+          }
+          throw e;
         }
         const id = url.pathname.split('/')[4];
         const ok = ctx.usersAdmin.deleteUser(id, user.username);
@@ -430,13 +574,18 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/db/adminer/apply') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { domain?: string; download?: boolean };
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          download?: boolean;
+          applySystem?: boolean;
+        };
         const { applyAdminer } = await import('@ysk/core');
         const r = await applyAdminer({
           dataDir: ctx.dataDir,
           host: ctx.host,
           domain: data.domain,
           download: data.download !== false,
+          applySystem: data.applySystem === true,
         });
         ctx.audit.append({
           actor: user.username,
@@ -444,7 +593,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
 
       // system/export|exports|managed-nginx|rebuild → handleSystemRoutes (system-controller)
@@ -465,7 +614,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
         ctx.auth.authenticate(getBearer(req));
@@ -525,7 +674,7 @@ export function createHttpServer(ctx: AppContext): Server {
           },
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 201 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/sftp\/keys\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -539,7 +688,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 404, r);
+        return sendOpsResult(res, r, { notFound: true });
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/sftp/sshd-snippet') {
@@ -580,13 +729,586 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, r.ok || r.written.length ? 200 : 422, r);
       }
 
+      // —— SSH identity vault (outbound private keys; distinct from sftp authorized_keys) ——
+      if (method === 'GET' && url.pathname === '/api/v1/ssh/identities') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listSshIdentities } = await import('@ysk/core');
+        const purposeRaw = url.searchParams.get('purpose') ?? undefined;
+        const purpose =
+          purposeRaw === 'user_outbound' ||
+          purposeRaw === 'panel_outbound' ||
+          purposeRaw === 'unbound'
+            ? purposeRaw
+            : undefined;
+        return sendJson(res, 200, {
+          ok: true,
+          items: listSshIdentities(ctx.dataDir, {
+            projectId: url.searchParams.get('projectId') ?? undefined,
+            linuxUser: url.searchParams.get('linuxUser') ?? undefined,
+            purpose,
+          }),
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/ssh/identities') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          comment?: string;
+          algorithm?: 'ed25519' | 'rsa-4096';
+          purpose?: 'user_outbound' | 'panel_outbound' | 'unbound';
+          binding?: { projectId?: string; linuxUser?: string; homeDir?: string };
+          revealPrivate?: boolean;
+          install?: boolean;
+        };
+        const { createSshIdentity, installSshIdentity } = await import('@ysk/core');
+        const r = createSshIdentity(
+          ctx.dataDir,
+          {
+            name: data.name ?? '',
+            comment: data.comment,
+            algorithm: data.algorithm,
+            purpose: data.purpose,
+            binding: data.binding,
+            createdBy: user.username,
+            revealPrivate: data.revealPrivate === true,
+          },
+          ctx.db,
+        );
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.create',
+          resource: r.identity?.id,
+          detail: {
+            name: data.name,
+            purpose: data.purpose,
+            fingerprint: r.identity?.fingerprintSha256,
+            ok: r.ok,
+          },
+          ok: r.ok,
+        });
+        if (r.ok && data.install && r.identity) {
+          const inst = await installSshIdentity({
+            dataDir: ctx.dataDir,
+            id: r.identity.id,
+            apply: true,
+            host: ctx.host,
+            executeEnabled: ctx.host.executeEnabled(),
+          });
+          return sendJson(res, r.ok ? 201 : 422, { ...r, install: inst });
+        }
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/ssh/identities/import') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          privateKey?: string;
+          comment?: string;
+          purpose?: 'user_outbound' | 'panel_outbound' | 'unbound';
+          binding?: { projectId?: string; linuxUser?: string; homeDir?: string };
+        };
+        const { importSshIdentity } = await import('@ysk/core');
+        const r = importSshIdentity(
+          ctx.dataDir,
+          {
+            name: data.name ?? '',
+            privateKey: data.privateKey ?? '',
+            comment: data.comment,
+            purpose: data.purpose,
+            binding: data.binding,
+            createdBy: user.username,
+          },
+          ctx.db,
+        );
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.import',
+          resource: r.identity?.id,
+          detail: {
+            name: data.name,
+            fingerprint: r.identity?.fingerprintSha256,
+            ok: r.ok,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/public$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getSshIdentity } = await import('@ysk/core');
+        const identity = getSshIdentity(ctx.dataDir, id);
+        if (!identity) return sendJson(res, 404, { ok: false, message: '找不到 identity' });
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.statusCode = 200;
+        res.end(identity.publicKey.endsWith('\n') ? identity.publicKey : identity.publicKey + '\n');
+        return;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/export$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles?.includes('admin')) {
+          return sendJson(res, 403, {
+            ok: false,
+            code: 'YSK_FORBIDDEN',
+            message: 'export 僅限 admin',
+          });
+        }
+        const rawBody = await readBody(req).catch(() => '{}');
+        const expData = JSON.parse(rawBody || '{}') as { totp?: string };
+        try {
+          ctx.auth.requireStepUp(user.id, expData.totp);
+        } catch (e) {
+          if (e instanceof YskError) {
+            return sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true,
+            });
+          }
+          throw e;
+        }
+        const id = url.pathname.split('/')[5];
+        const { exportSshIdentityPrivate } = await import('@ysk/core');
+        const r = exportSshIdentityPrivate(ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.export',
+          resource: id,
+          detail: { fingerprint: r.fingerprintSha256, ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r, { notFound: true });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/install$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean };
+        const { installSshIdentity } = await import('@ysk/core');
+        const r = await installSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled(),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.install',
+          resource: id,
+          detail: {
+            apply: data.apply === true,
+            applied: r.applied,
+            path: r.plannedPath,
+            ok: r.ok,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/uninstall$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean; purgeFiles?: boolean };
+        const { uninstallSshIdentity } = await import('@ysk/core');
+        const r = await uninstallSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          purgeFiles: data.purgeFiles !== false,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.uninstall',
+          resource: id,
+          detail: { apply: data.apply === true, ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r, { notFound: true });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/test$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { target?: string; apply?: boolean };
+        const { testSshIdentity } = await import('@ysk/core');
+        const r = await testSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          target: data.target ?? '',
+          apply: data.apply === true,
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled(),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.test',
+          resource: id,
+          detail: {
+            target: data.target,
+            apply: data.apply === true,
+            ok: r.ok,
+            dryRun: r.dryRun,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/rotate$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { revealPrivate?: boolean };
+        const { rotateSshIdentity } = await import('@ysk/core');
+        const r = rotateSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          revealPrivate: data.revealPrivate === true,
+          db: ctx.db,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.rotate',
+          resource: id,
+          detail: {
+            newId: r.newIdentity?.id,
+            fingerprint: r.newIdentity?.fingerprintSha256,
+            ok: r.ok,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/authorize-self$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { authorizeSelfSshIdentity } = await import('@ysk/core');
+        const r = await authorizeSelfSshIdentity({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          id,
+          host: ctx.host,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.authorize_self',
+          resource: id,
+          detail: { keyId: r.keyId, ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getSshIdentity } = await import('@ysk/core');
+        const identity = getSshIdentity(ctx.dataDir, id);
+        if (!identity) return sendJson(res, 404, { ok: false, message: '找不到 identity' });
+        return sendJson(res, 200, { ok: true, identity });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const purgeDisk = url.searchParams.get('purgeDisk') === '1';
+        const { deleteSshIdentity, uninstallSshIdentity } = await import('@ysk/core');
+        if (purgeDisk) {
+          await uninstallSshIdentity({
+            dataDir: ctx.dataDir,
+            id,
+            apply: true,
+            purgeFiles: true,
+          });
+        }
+        const r = deleteSshIdentity(ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.delete',
+          resource: id,
+          detail: { purgeDisk, ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r, { notFound: true });
+      }
+
+      // —— SSH login 2FA (TOTP/PAM; independent of panel operator 2FA) ——
+      if (method === 'GET' && url.pathname === '/api/v1/ssh/2fa') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listSsh2fa, probeSsh2faHost } = await import('@ysk/core');
+        const items = listSsh2fa(ctx.dataDir, {
+          projectId: url.searchParams.get('projectId') ?? undefined,
+          linuxUser: url.searchParams.get('linuxUser') ?? undefined,
+        });
+        const hostProbe = await probeSsh2faHost(ctx.host).catch(() => ({
+          notes: ['host probe skipped'],
+        }));
+        return sendJson(res, 200, { ok: true, items, host: hostProbe });
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/ssh/2fa/pam-snippet') {
+        ctx.auth.authenticate(getBearer(req));
+        const { buildPamSshSnippet, buildSshdTotpHints, listSsh2fa, planSsh2faStrictSnippet } =
+          await import('@ysk/core');
+        const written = listSsh2fa(ctx.dataDir)
+          .filter((i) => i.status === 'file_written')
+          .map((i) => i.linuxUser);
+        const strict = planSsh2faStrictSnippet({
+          linuxUsers: written,
+          recoveryUsers: (url.searchParams.get('recovery') ?? '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean),
+        });
+        return sendJson(res, 200, {
+          ok: true,
+          pamSnippet: buildPamSshSnippet(),
+          sshdHints: buildSshdTotpHints(),
+          strictSnippet: strict.snippet,
+          strictUsers: strict.users,
+          strictNotes: strict.notes,
+          notes: [
+            'nullok：無 .google_authenticator 的用戶仍可用 key 登入',
+            '寫入 home 檔 ≠ PAM 已生效',
+            'strict Match 僅針對已寫檔用戶（password off）',
+            '與 panel operator 2FA 分開',
+          ],
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/ssh/2fa/strict-apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles?.includes('admin')) {
+          return sendJson(res, 403, { ok: false, message: '需要 admin' });
+        }
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          apply?: boolean;
+          recoveryUsers?: string[];
+          totp?: string;
+        };
+        try {
+          if (data.apply) ctx.auth.requireStepUp(user.id, data.totp);
+        } catch (e) {
+          if (e instanceof YskError) {
+            return sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true,
+            });
+          }
+          throw e;
+        }
+        const { listSsh2fa, applySshdStrictSnippet } = await import('@ysk/core');
+        const written = listSsh2fa(ctx.dataDir)
+          .filter((i) => i.status === 'file_written')
+          .map((i) => i.linuxUser);
+        const r = await applySshdStrictSnippet({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          linuxUsers: written,
+          recoveryUsers: data.recoveryUsers ?? ['root'],
+          apply: data.apply === true,
+          executeEnabled: ctx.host.executeEnabled(),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.strict_apply',
+          detail: { apply: data.apply === true, ok: r.ok, users: written },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/ssh/2fa') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          projectId?: string;
+          linuxUser?: string;
+          homeDir?: string;
+          /** advanced: copy panel operator secret */
+          fromPanel?: boolean;
+        };
+        const { enrollSsh2fa } = await import('@ysk/core');
+        let secret: string | undefined;
+        let fromPanel = false;
+        if (data.fromPanel === true) {
+          if (!user.roles?.includes('admin')) {
+            return sendJson(res, 403, {
+              ok: false,
+              code: 'YSK_FORBIDDEN',
+              message: 'fromPanel 僅限 admin',
+            });
+          }
+          const me = ctx.db.snapshot.users.find((u) => u.id === user.id);
+          if (!me?.totp_secret) {
+            return sendJson(res, 422, {
+              ok: false,
+              notes: ['panel 尚未設定 2FA 或無 secret — 請先在「帳戶安全」啟用 TOTP'],
+            });
+          }
+          try {
+            ctx.auth.requireStepUp(user.id); // need recent step-up or fail
+          } catch {
+            return sendJson(res, 403, {
+              ok: false,
+              needsStepUp: true,
+              notes: ['fromPanel 需要先 step-up：POST /api/v1/auth/totp/step-up'],
+            });
+          }
+          const { decryptTotpSecret } = await import('@ysk/core');
+          secret = decryptTotpSecret(ctx.dataDir, user.id, me.totp_secret);
+          fromPanel = true;
+        }
+        const r = enrollSsh2fa(
+          ctx.dataDir,
+          {
+            projectId: data.projectId,
+            linuxUser: data.linuxUser,
+            homeDir: data.homeDir,
+            createdBy: user.username,
+            secret,
+            fromPanel,
+          },
+          ctx.db,
+        );
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.enroll',
+          resource: r.record?.id,
+          detail: {
+            linuxUser: r.record?.linuxUser,
+            fromPanel,
+            ok: r.ok,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/confirm$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { code?: string };
+        const { confirmSsh2fa } = await import('@ysk/core');
+        const r = confirmSsh2fa(ctx.dataDir, id, data.code ?? '');
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.confirm',
+          resource: id,
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/install$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean };
+        const { installSsh2faFile } = await import('@ysk/core');
+        const r = await installSsh2faFile({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled(),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.install',
+          resource: id,
+          detail: { apply: data.apply === true, applied: r.applied, ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/uninstall$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean };
+        const { uninstallSsh2faFile } = await import('@ysk/core');
+        const r = await uninstallSsh2faFile({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          retire: true,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.uninstall',
+          resource: id,
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r, { notFound: true });
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/reveal$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles?.includes('admin')) {
+          return sendJson(res, 403, { ok: false, code: 'YSK_FORBIDDEN', message: '僅 admin' });
+        }
+        const id = url.pathname.split('/')[5];
+        const { revealSsh2faSecret } = await import('@ysk/core');
+        const r = revealSsh2faSecret(ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.reveal',
+          resource: id,
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r, { notFound: true });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { retireSsh2fa, uninstallSsh2faFile } = await import('@ysk/core');
+        if (url.searchParams.get('purgeFile') === '1') {
+          await uninstallSsh2faFile({ dataDir: ctx.dataDir, id, apply: true, retire: true });
+        } else {
+          retireSsh2fa(ctx.dataDir, id);
+        }
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.retire',
+          resource: id,
+          detail: {},
+          ok: true,
+        });
+        return sendJson(res, 200, { ok: true });
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/auth/totp') {
         const user = ctx.auth.authenticate(getBearer(req));
         return sendJson(res, 200, ctx.auth.totpStatus(user.id));
       }
       if (method === 'POST' && url.pathname === '/api/v1/auth/totp/begin') {
         const user = ctx.auth.authenticate(getBearer(req));
-        return sendJson(res, 200, ctx.auth.beginTotp(user.id));
+        const raw = await readBody(req).catch(() => '{}');
+        const data = JSON.parse(raw || '{}') as { password?: string; totp?: string };
+        try {
+          return sendJson(
+            res,
+            200,
+            ctx.auth.beginTotp(user.id, {
+              password: data.password,
+              totp: data.totp,
+            }),
+          );
+        } catch (e) {
+          if (e instanceof YskError) {
+            return sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsReauth: true,
+            });
+          }
+          throw e;
+        }
       }
       if (method === 'POST' && url.pathname === '/api/v1/auth/totp/confirm') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -610,16 +1332,182 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/auth/api-keys') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { name?: string };
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          totp?: string;
+          scope?: 'full' | 'read';
+        };
+        try {
+          ctx.auth.requireStepUp(user.id, data.totp);
+        } catch (e) {
+          if (e instanceof YskError) {
+            return sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true,
+            });
+          }
+          throw e;
+        }
         const { createApiKey } = await import('@ysk/core');
-        const created = createApiKey(ctx.db, { name: data.name ?? 'api-key', userId: user.id });
+        const created = createApiKey(ctx.db, {
+          name: data.name ?? 'api-key',
+          userId: user.id,
+          scope: data.scope === 'read' ? 'read' : 'full',
+        });
         ctx.audit.append({
           actor: user.username,
           action: 'auth.api_key.create',
-          detail: { id: created.key.id, name: created.key.name },
+          detail: {
+            id: created.key.id,
+            name: created.key.name,
+            scope: created.key.scope,
+          },
           ok: true,
         });
         return sendJson(res, 201, created);
+      }
+
+      // —— WebAuthn passkeys ——
+      if (method === 'GET' && url.pathname === '/api/v1/auth/webauthn/credentials') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { listWebAuthnCredentials } = await import('@ysk/core');
+        return sendJson(res, 200, {
+          ok: true,
+          items: listWebAuthnCredentials(ctx.db, user.id),
+        });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/webauthn/register/begin') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const origin = String(req.headers.origin ?? '');
+        const { beginWebAuthnRegistration } = await import('@ysk/core');
+        const options = await beginWebAuthnRegistration({
+          db: ctx.db,
+          userId: user.id,
+          username: user.username,
+          origin,
+        });
+        return sendJson(res, 200, { ok: true, options });
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/webauthn/register/finish') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          response?: unknown;
+          name?: string;
+        };
+        const { finishWebAuthnRegistration } = await import('@ysk/core');
+        const r = await finishWebAuthnRegistration({
+          db: ctx.db,
+          userId: user.id,
+          response: data.response as never,
+          origin: String(req.headers.origin ?? ''),
+          name: data.name,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'auth.webauthn.register',
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/webauthn/authenticate/begin') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { beginWebAuthnAuthentication } = await import('@ysk/core');
+        const r = await beginWebAuthnAuthentication({
+          db: ctx.db,
+          userId: user.id,
+          origin: String(req.headers.origin ?? ''),
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/webauthn/authenticate/finish') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { response?: unknown };
+        const { finishWebAuthnAuthentication, markTotpStepUp } = await import('@ysk/core');
+        const r = await finishWebAuthnAuthentication({
+          db: ctx.db,
+          userId: user.id,
+          response: data.response as never,
+          origin: String(req.headers.origin ?? ''),
+        });
+        if (r.ok) markTotpStepUp(user.id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'auth.webauthn.authenticate',
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/webauthn\/credentials\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[6];
+        const { deleteWebAuthnCredential } = await import('@ysk/core');
+        const ok = deleteWebAuthnCredential(ctx.db, user.id, id);
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+
+      // —— Remember device ——
+      if (method === 'GET' && url.pathname === '/api/v1/auth/devices') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { listRememberDevices } = await import('@ysk/core');
+        return sendJson(res, 200, {
+          ok: true,
+          items: listRememberDevices(ctx.db, user.id),
+        });
+      }
+      if (method === 'DELETE' && url.pathname === '/api/v1/auth/devices') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { revokeAllRememberDevices } = await import('@ysk/core');
+        const n = revokeAllRememberDevices(ctx.db, user.id);
+        return sendJson(res, 200, { ok: true, revoked: n });
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/devices\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { revokeRememberDevice } = await import('@ysk/core');
+        const ok = revokeRememberDevice(ctx.db, user.id, id);
+        return sendJson(res, ok ? 200 : 404, { ok });
+      }
+
+      // —— 2FA backup + fail2ban snippets ——
+      if (method === 'POST' && url.pathname === '/api/v1/auth/totp/backup') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req).catch(() => '{}');
+        const data = JSON.parse(raw || '{}') as { totp?: string };
+        try {
+          ctx.auth.requireStepUp(user.id, data.totp);
+        } catch (e) {
+          if (e instanceof YskError) {
+            return sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true,
+            });
+          }
+          throw e;
+        }
+        const row = ctx.db.snapshot.users.find((u) => u.id === user.id);
+        if (!row) return sendJson(res, 404, { ok: false });
+        const { exportTotpBackup } = await import('@ysk/core');
+        const r = exportTotpBackup({ dataDir: ctx.dataDir, user: row });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'auth.totp.backup_export',
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/security/fail2ban-snippets') {
+        ctx.auth.authenticate(getBearer(req));
+        const { writeFail2banSnippets } = await import('@ysk/core');
+        return sendJson(res, 200, writeFail2banSnippets(ctx.dataDir));
       }
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/api-keys\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -721,7 +1609,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 201 : 422, r);
+        return sendOpsResult(res, r);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/projects') {
@@ -903,7 +1791,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const result = await ctx.projects.provisionOsIsolation(id, user.username);
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user$/)) {
@@ -947,7 +1835,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const result = await ctx.projectOps.chownOsHome(id, user.username);
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (
@@ -961,14 +1849,14 @@ export function createHttpServer(ctx: AppContext): Server {
         const result = await ctx.projects.migrateOsIsolation(id, user.username, {
           removePreviousHome: data.removePreviousHome !== false,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/stop$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const result = await ctx.projectOps.stopNode(id, user.username);
-        return sendJson(res, 200, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/health$/)) {
@@ -995,7 +1883,7 @@ export function createHttpServer(ctx: AppContext): Server {
           forceHttps: data.forceHttps,
           hsts: data.hsts,
         });
-        return sendJson(res, 200, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/purge-cache$/)) {
@@ -1010,7 +1898,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, {
+        return sendOpsResult(res, {
           ...r,
           projectId: id,
           notes: [
@@ -1275,7 +2163,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { ...result, config: result.config },
           ok: result.ok,
         });
-        return sendJson(res, result.ok || !data.applySystem ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
       if (method === 'GET' && url.pathname === '/api/v1/email/relay') {
         ctx.auth.authenticate(getBearer(req));
@@ -1496,7 +2384,7 @@ export function createHttpServer(ctx: AppContext): Server {
           { from: data.from ?? '', to: data.to ?? '', subject: data.subject },
           user.username,
         );
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/mailboxes$/)) {
@@ -1520,7 +2408,7 @@ export function createHttpServer(ctx: AppContext): Server {
           provisionSystem: data.provisionSystem,
           actor: user.username,
         });
-        return sendJson(res, result.ok ? 201 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/aliases$/)) {
@@ -1568,9 +2456,19 @@ export function createHttpServer(ctx: AppContext): Server {
           rateLimitPerHour?: number | null;
           antispam?: boolean;
           suspended?: boolean;
+          applySystem?: boolean;
         };
-        const domain = ctx.email.updateDomainMailFlags(id, data, user.username);
-        return sendJson(res, 200, { domain: redactEmail(domain as unknown as Record<string, unknown>) });
+        const result = await ctx.email.updateDomainMailFlags(id, data, user.username);
+        return sendOpsResult(res, {
+          ok: result.ok,
+          apply_status: result.apply_status,
+          notes: result.notes,
+          written: result.written,
+          blocked: result.blocked,
+          blockMessage: result.blockMessage,
+          commandResults: result.commandResults,
+          domain: redactEmail(result.domain as unknown as Record<string, unknown>),
+        });
       }
 
       if (
@@ -1622,7 +2520,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: data,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/email/mailboxes') {
@@ -1650,7 +2548,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { mailboxCount: result.mailboxCount, written: result.written },
           ok: result.ok,
         });
-        return sendJson(res, 200, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/dovecot-passdb/all') {
@@ -1660,9 +2558,9 @@ export function createHttpServer(ctx: AppContext): Server {
           actor: user.username,
           action: 'email.dovecot_passdb.all',
           detail: { domains: result.domains.length },
-          ok: true,
+          ok: result.ok !== false,
         });
-        return sendJson(res, 200, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/webmail/apply') {
@@ -1691,7 +2589,8 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { mode: result.mode, ok: result.ok },
           ok: result.ok,
         });
-        return sendJson(res, result.ok || result.mode === 'plan' ? 200 : 422, result);
+        // plan-only is ok:true with mode plan; refused is ok:false
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/bootstrap') {
@@ -1727,7 +2626,7 @@ export function createHttpServer(ctx: AppContext): Server {
           webmail: data.webmail,
           relay: data.relay,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes') {
@@ -1833,7 +2732,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: result,
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       // —— Runtime tuning (node/python/go/rust) ——
@@ -1922,9 +2821,9 @@ export function createHttpServer(ctx: AppContext): Server {
           actor: user.username,
           action: 'nginx.sync',
           detail: result,
-          ok: true,
+          ok: result.ok !== false,
         });
-        return sendJson(res, 200, result);
+        return sendOpsResult(res, result);
       }
 
       // —— AI tasks (Plan → Review → Execute) ——
@@ -2031,11 +2930,7 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendJson(res, 200, report);
       }
 
-      // —— Metrics / updates / fleet / hosting helpers ——
-      if (method === 'GET' && url.pathname === '/api/v1/metrics') {
-        ctx.auth.authenticate(getBearer(req));
-        return sendJson(res, 200, collectMetrics());
-      }
+      // —— Metrics handled by handleMetricsRoutes (deep + processes + SSE) ——
       if (method === 'GET' && url.pathname === '/api/v1/updates/inventory') {
         ctx.auth.authenticate(getBearer(req));
         const cached = url.searchParams.get('cached') === '1';
@@ -2045,21 +2940,27 @@ export function createHttpServer(ctx: AppContext): Server {
             cached: true,
             last,
             inventory: (last?.items as unknown[]) ?? last?.sample ?? [],
-            advice: [],
+            advice: (last?.advice as unknown[]) ?? [],
+            meta: last?.meta ?? null,
+            collectedAt: (last?.at as string) ?? null,
           });
         }
-        const inv = await collectInventory(ctx.host);
+        const { items: inv, meta } = await collectInventory(ctx.host);
         const advice = adviseInventory(inv);
         ctx.settings.setJson('last_inventory', {
           at: new Date().toISOString(),
           count: inv.length,
+          upgradable: meta.upgradableCount,
+          meta,
           sample: inv.slice(0, 40),
-          items: inv.slice(0, 80),
+          items: inv.slice(0, 120),
+          advice: advice.slice(0, 120),
         });
         return sendJson(res, 200, {
           cached: false,
           inventory: inv,
           advice,
+          meta,
           collectedAt: new Date().toISOString(),
         });
       }
@@ -2067,41 +2968,74 @@ export function createHttpServer(ctx: AppContext): Server {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { osv?: boolean; limit?: number };
-        const inv = await collectInventory(ctx.host);
+        const { items: inv, meta } = await collectInventory(ctx.host);
         let advice = adviseInventory(inv);
         if (data.osv) {
-          const limit = Math.min(data.limit ?? 5, 15);
-          for (const item of advice.slice(0, limit)) {
+          // Prefer packages that actually have upgrades, then rest
+          const ordered = [
+            ...advice.filter((a) => a.candidateVersion !== a.currentVersion),
+            ...advice.filter((a) => a.candidateVersion === a.currentVersion),
+          ];
+          const limit = Math.min(data.limit ?? 12, 20);
+          for (const item of ordered.slice(0, limit)) {
             const cves = await lookupOsvVulns(item.packageName, item.currentVersion);
             if (cves.length) {
               item.cves = cves;
-              item.summary = `${item.summary}; OSV: ${cves.slice(0, 3).join(', ')}`;
+              item.summary = `${item.summary}；OSV: ${cves.slice(0, 3).join(', ')}`;
+              if (item.risk === 'low' && cves.some((c) => /HIGH|CRITICAL/i.test(c))) {
+                item.risk = 'high';
+                item.requiresApproval = true;
+              }
             }
           }
+          advice = ordered;
         }
         ctx.settings.setJson('last_inventory', {
           at: new Date().toISOString(),
           count: inv.length,
+          upgradable: meta.upgradableCount,
+          meta,
           sample: inv.slice(0, 40),
-          items: inv.slice(0, 80),
-          advice: advice.slice(0, 40),
+          items: inv.slice(0, 120),
+          advice: advice.slice(0, 120),
         });
         ctx.audit.append({
           actor: user.username,
           action: 'update.inventory.refresh',
-          detail: { count: inv.length, osv: Boolean(data.osv) },
+          detail: {
+            count: inv.length,
+            upgradable: meta.upgradableCount,
+            osv: Boolean(data.osv),
+            notes: meta.notes,
+          },
           ok: true,
         });
         return sendJson(res, 200, {
           inventory: inv,
           advice,
+          meta,
           collectedAt: new Date().toISOString(),
         });
       }
       if (method === 'GET' && url.pathname === '/api/v1/updates/self') {
         ctx.auth.authenticate(getBearer(req));
-        const latest = process.env.YSK_LATEST_VERSION ?? VERSION;
-        return sendJson(res, 200, planSelfUpdate({ current: VERSION, latest }));
+        const { checkSelfUpdate } = await import('@ysk/core');
+        const status = await checkSelfUpdate({ currentVersion: VERSION });
+        // Flatten for panel: never pretend latest=current without a real channel check
+        return sendJson(res, status.ok ? 200 : 502, {
+          currentVersion: status.currentVersion,
+          latestVersion: status.latestVersion,
+          updateAvailable: status.updateAvailable,
+          lastCheckAt: status.lastCheckAt,
+          channel: status.channel,
+          packageName: status.packageName,
+          ok: status.ok,
+          checked: status.checked,
+          notes: status.notes,
+          steps: status.steps,
+          plan: status.plan,
+          registry: status.registry,
+        });
       }
       if (method === 'POST' && url.pathname === '/api/v1/updates/apply') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -2118,10 +3052,23 @@ export function createHttpServer(ctx: AppContext): Server {
           confirmHighRisk?: boolean;
         };
         const { applyPackageUpdate, planUpdateExecution, adviseUpdate } = await import('@ysk/core');
+        if (
+          !data.candidateVersion ||
+          !data.packageName ||
+          data.candidateVersion === data.currentVersion
+        ) {
+          return sendJson(res, 422, {
+            ok: false,
+            blocked: true,
+            applied: false,
+            blockMessage: '需要真實 candidateVersion（不可等於 current 或缺省）',
+            notes: ['已拒絕：無真實升級目標'],
+          });
+        }
         const item = adviseUpdate({
           packageName: data.packageName ?? '',
           currentVersion: data.currentVersion ?? '0',
-          candidateVersion: data.candidateVersion ?? data.currentVersion,
+          candidateVersion: data.candidateVersion,
           knownCves: data.cves,
           hasSecurityFix: Boolean(data.cves?.length),
         });
@@ -2153,7 +3100,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: result,
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : result.blocked ? 422 : 500, result);
+        return sendOpsResult(res, result);
       }
       if (method === 'GET' && url.pathname === '/api/v1/backups') {
         ctx.auth.authenticate(getBearer(req));
@@ -2202,6 +3149,7 @@ export function createHttpServer(ctx: AppContext): Server {
               const push = await pushBackupRemote({
                 host: ctx.host,
                 db: ctx.db,
+                dataDir: ctx.dataDir,
                 localArchivePath: item.archivePath,
               });
               sideResults.push({
@@ -2412,7 +3360,7 @@ export function createHttpServer(ctx: AppContext): Server {
           dataDir: ctx.dataDir,
           projectId,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/restic/restore') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -2452,7 +3400,7 @@ export function createHttpServer(ctx: AppContext): Server {
           },
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/restore') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -2486,7 +3434,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { name: data.name, mode: data.mode ?? 'full', ...r },
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'DELETE' && url.pathname === '/api/v1/backups') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -2503,7 +3451,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { name: data.name, ...r },
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'GET' && url.pathname === '/api/v1/backups/download') {
         ctx.auth.authenticate(getBearer(req));
@@ -2643,7 +3591,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 404, r);
+        return sendOpsResult(res, r, { notFound: true });
       }
 
       // FTPS apply handled by handleSystemRoutes (settings/status/apply)
@@ -2716,7 +3664,7 @@ export function createHttpServer(ctx: AppContext): Server {
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/live-check$/)) {
-        ctx.auth.authenticate(getBearer(req));
+        const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
         const d = ctx.email.get(id);
         const live = await runLiveEmailChecks({
@@ -2726,7 +3674,25 @@ export function createHttpServer(ctx: AppContext): Server {
           dkimPublicKey: d.dkim_public_key,
           dkimSelector: d.dkim_selector,
         });
-        return sendJson(res, 200, live);
+        // Persist real probe results into domain health (not marketing scores)
+        try {
+          ctx.email.updateChecks(
+            id,
+            {
+              dnsApplied: live.mx.ok && live.spf.ok && live.dkim.ok,
+              dmarcPresent: live.dmarc.ok,
+              ptrOk: live.ptr.ok,
+              port25Open: live.port25.ok,
+            },
+            user.username,
+          );
+        } catch {
+          /* non-fatal */
+        }
+        return sendJson(res, 200, {
+          ...live,
+          ok: live.health.score >= 60 && live.dnsbl.ok,
+        });
       }
       if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -2805,7 +3771,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 404, r);
+        return sendOpsResult(res, r, { notFound: true });
       }
       if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/multi') {
         ctx.auth.authenticate(getBearer(req));
@@ -2832,7 +3798,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/policy$/)) {
@@ -2845,7 +3811,7 @@ export function createHttpServer(ctx: AppContext): Server {
           applySystem?: boolean;
         };
         const domain = ctx.email.get(id);
-        ctx.email.updateDomainMailFlags(
+        await ctx.email.updateDomainMailFlags(
           id,
           {
             rateLimitPerHour: data.rateLimitPerHour,
@@ -2869,7 +3835,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso-plugin') {
@@ -2896,7 +3862,7 @@ export function createHttpServer(ctx: AppContext): Server {
             detail: r,
             ok: r.ok,
           });
-          return sendJson(res, r.ok ? 200 : 422, r);
+          return sendOpsResult(res, r);
         }
         const { writeRoundcubeSsoPlugin } = await import('@ysk/core');
         const r = writeRoundcubeSsoPlugin({
@@ -2909,7 +3875,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
 
       if (method === 'GET' && url.pathname === '/api/v1/dns/external-checklist') {
@@ -3000,7 +3966,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/web-stats$/)) {
@@ -3057,7 +4023,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { ok: r.ok, username: r.user?.username, status: r.user?.apply_status },
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 201 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/temp-users\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -3071,7 +4037,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: r,
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 404, r);
+        return sendOpsResult(res, r, { notFound: true });
       }
       if (method === 'GET' && url.pathname === '/api/v1/db/remote-hosts') {
         ctx.auth.authenticate(getBearer(req));
@@ -3280,7 +4246,12 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { ok: plan.ok, steps: plan.steps.length, dryRun: true },
           ok: plan.ok,
         });
-        return sendJson(res, plan.ok ? 200 : 422, { ok: plan.ok, cluster, plan });
+        return sendOpsResult(res, {
+          ok: plan.ok,
+          notes: plan.notes ?? [],
+          cluster,
+          plan,
+        });
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/apply$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -3313,13 +4284,13 @@ export function createHttpServer(ctx: AppContext): Server {
           },
           ok: result.ok,
         });
-        return sendJson(res, result.ok || result.dryRun ? 200 : result.blocked ? 403 : 422, result);
+        return sendOpsResult(res, result);
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/probe$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
         const raw = await readBody(req).catch(() => '{}');
-        const data = JSON.parse(raw || '{}') as { peers?: boolean };
+        const data = JSON.parse(raw || '{}') as { peers?: boolean; identityId?: string };
         const peers =
           data.peers === true || url.searchParams.get('peers') === '1';
         const { probeDbCluster, probeDbClusterFull } = await import('@ysk/core');
@@ -3328,6 +4299,8 @@ export function createHttpServer(ctx: AppContext): Server {
               db: ctx.db,
               host: ctx.host,
               clusterId: id,
+              dataDir: ctx.dataDir,
+              identityId: data.identityId || url.searchParams.get('identity') || undefined,
             })
           : await probeDbCluster({
               db: ctx.db,
@@ -3356,6 +4329,7 @@ export function createHttpServer(ctx: AppContext): Server {
           execute?: boolean;
           memberId?: string;
           restart?: boolean;
+          identityId?: string;
         };
         const { installDbClusterOnPeers } = await import('@ysk/core');
         const result = await installDbClusterOnPeers({
@@ -3366,6 +4340,7 @@ export function createHttpServer(ctx: AppContext): Server {
           memberId: data.memberId,
           execute: data.execute === true,
           restart: data.restart !== false,
+          identityId: data.identityId,
         });
         ctx.audit.append({
           actor: user.username,
@@ -3376,11 +4351,11 @@ export function createHttpServer(ctx: AppContext): Server {
             dryRun: result.dryRun,
             installed: result.installed.length,
           },
-          ok: result.ok || result.dryRun,
+          ok: result.ok,
         });
         return sendJson(
           res,
-          result.ok || result.dryRun ? 200 : result.blocked ? 403 : 422,
+          statusFromOpsResult(result),
           result,
         );
       }
@@ -3420,7 +4395,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { ok: r.ok, bytes: r.bytes, path: r.bundlePath },
           ok: r.ok,
         });
-        return sendJson(res, r.ok ? 200 : 422, r);
+        return sendOpsResult(res, r);
       }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/bundle\/download$/)) {
         ctx.auth.authenticate(getBearer(req));
@@ -3456,6 +4431,7 @@ export function createHttpServer(ctx: AppContext): Server {
         const data = JSON.parse(raw || '{}') as {
           execute?: boolean;
           memberId?: string;
+          identityId?: string;
         };
         const { pushDbClusterToPeers } = await import('@ysk/core');
         const result = await pushDbClusterToPeers({
@@ -3465,6 +4441,7 @@ export function createHttpServer(ctx: AppContext): Server {
           clusterId: id,
           memberId: data.memberId,
           execute: data.execute === true,
+          identityId: data.identityId,
         });
         ctx.audit.append({
           actor: user.username,
@@ -3477,13 +4454,9 @@ export function createHttpServer(ctx: AppContext): Server {
             blocked: result.blocked,
             targets: result.targets.length,
           },
-          ok: result.ok || result.dryRun,
+          ok: result.ok,
         });
-        return sendJson(
-          res,
-          result.ok || result.dryRun ? 200 : result.blocked ? 403 : 422,
-          result,
-        );
+        return sendOpsResult(res, result);
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/fleet$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -3518,9 +4491,9 @@ export function createHttpServer(ctx: AppContext): Server {
             queued: result.queued.length,
             op: data.op ?? 'apply',
           },
-          ok: result.ok || result.dryRun,
+          ok: result.ok,
         });
-        return sendJson(res, result.ok || result.dryRun ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/email/dnsbl/check') {
@@ -3690,7 +4663,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { zonePath: result.zonePath, serial: result.serial, ok: result.ok },
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/dns/zone-files') {
         ctx.auth.authenticate(getBearer(req));
@@ -3758,7 +4731,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { mode: result.mode, ok: result.ok, zonePath: result.zonePath },
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/cloudflare/apply') {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -3792,7 +4765,7 @@ export function createHttpServer(ctx: AppContext): Server {
           },
           ok: result.ok,
         });
-        return sendJson(res, result.ok || result.dryRun ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/dns/zones') {
         ctx.auth.authenticate(getBearer(req));
@@ -3830,7 +4803,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { ok: result.ok, nginxPath: result.nginxPath, publicRoot: result.publicRoot },
           ok: result.ok,
         });
-        return sendJson(res, 200, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/hosting/db/redis-provision') {
@@ -3860,7 +4833,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: result,
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname === '/api/v1/hosting/db/postgres-provision') {
@@ -3890,7 +4863,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { ...result, password: undefined },
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/wordpress-download$/)) {
@@ -3930,7 +4903,7 @@ export function createHttpServer(ctx: AppContext): Server {
             detail: { ...result, dbPassword: undefined },
             ok: result.ok,
           });
-          return sendJson(res, result.ok ? 200 : 422, result);
+          return sendOpsResult(res, result);
         }
         const result = await downloadWordpressCore({
           host: ctx.host,
@@ -3944,7 +4917,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: result,
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       // MySQL real provision (refuse unless EXECUTE; never fake success)
@@ -3972,7 +4945,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: { ...result, password: undefined },
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       // Project live status from system truth
@@ -4025,16 +4998,79 @@ export function createHttpServer(ctx: AppContext): Server {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const proj = ctx.projects.get(id);
-        const files = listProjectLogs(proj.homeDir);
+        const extraDirs = proj.logExtraDirs ?? [];
+        const nameFilter = url.searchParams.get('name') || undefined;
+        const grep = url.searchParams.get('grep') || undefined;
+        const files = listProjectLogs(proj.homeDir, {
+          extraDirs,
+          nameFilter,
+        });
+        const { listProjectRelatedLogSources } = await import('@ysk/core');
+        const related = listProjectRelatedLogSources({
+          projectId: proj.id,
+          linuxUser: proj.linuxUser,
+          runtime: proj.runtime,
+          dataDir: ctx.dataDir,
+          phpVersion: proj.runtimeVersion,
+        });
         const file = url.searchParams.get('file');
         if (file) {
           const lines = Number(url.searchParams.get('lines') ?? 200);
           return sendJson(res, 200, {
             files,
-            tail: tailProjectLog(proj.homeDir, file, Number.isFinite(lines) ? lines : 200),
+            extraDirs,
+            related,
+            tail: tailProjectLog(
+              proj.homeDir,
+              file,
+              Number.isFinite(lines) ? lines : 200,
+              2 * 1024 * 1024,
+              { extraDirs, grep },
+            ),
           });
         }
-        return sendJson(res, 200, { files });
+        if (grep) {
+          const result = searchProjectLogs(proj.homeDir, {
+            extraDirs,
+            nameFilter,
+            grep,
+          });
+          return sendJson(res, 200, {
+            files: result.files,
+            hits: result.hits,
+            notes: result.notes,
+            extraDirs,
+            related,
+          });
+        }
+        return sendJson(res, 200, { files, extraDirs, related });
+      }
+
+      /** PATCH extra log directories for a project */
+      if (
+        method === 'PUT' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/log-dirs$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        let data: { dirs?: unknown } = {};
+        try {
+          data = raw ? (JSON.parse(raw) as { dirs?: unknown }) : {};
+        } catch {
+          return sendJson(res, 400, { ok: false, message: 'JSON 無效' });
+        }
+        const result = ctx.projects.setLogExtraDirs(
+          id,
+          (data.dirs as string[]) ?? [],
+          user.username,
+        );
+        return sendJson(res, 200, {
+          ok: true,
+          project: result.project,
+          extraDirs: result.project.logExtraDirs ?? [],
+          notes: result.notes,
+        });
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/ftp$/)) {
@@ -4083,7 +5119,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: result,
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 201 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/resources$/)) {
@@ -4373,7 +5409,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: result,
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cron\/[^/]+\/run$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
@@ -4386,7 +5422,7 @@ export function createHttpServer(ctx: AppContext): Server {
           detail: result,
           ok: result.ok,
         });
-        return sendJson(res, result.ok ? 200 : 422, result);
+        return sendOpsResult(res, result);
       }
 
       // Static Web UI (SPA) — after all API routes

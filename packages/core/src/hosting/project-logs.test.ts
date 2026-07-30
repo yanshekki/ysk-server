@@ -14,6 +14,8 @@ import {
   tailProjectLog,
   resolveProjectLogPath,
   listProjectRelatedLogSources,
+  searchProjectLogs,
+  normalizeExtraLogDirs,
 } from './project-logs.js';
 
 describe('project logs', () => {
@@ -67,6 +69,43 @@ describe('project logs', () => {
           expect(evil.ok).toBe(false);
         }
       }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('lists extra dirs and searches content', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-logs-extra-'));
+    try {
+      mkdirSync(join(dir, 'logs'), { recursive: true });
+      mkdirSync(join(dir, 'storage', 'logs'), { recursive: true });
+      writeFileSync(join(dir, 'logs', 'app.out.log'), 'ok\n', 'utf8');
+      writeFileSync(
+        join(dir, 'storage', 'logs', 'laravel.log'),
+        'INFO hello\nERROR boom\nWARN x\n',
+        'utf8',
+      );
+      const files = listProjectLogs(dir, { extraDirs: ['storage/logs'] });
+      expect(files.some((f) => f.name === '~storage/logs/laravel.log')).toBe(
+        true,
+      );
+      const nameF = listProjectLogs(dir, {
+        extraDirs: ['storage/logs'],
+        nameFilter: 'laravel',
+      });
+      expect(nameF).toHaveLength(1);
+      const hit = searchProjectLogs(dir, {
+        extraDirs: ['storage/logs'],
+        grep: 'ERROR',
+      });
+      expect(hit.hits.some((h) => h.file.includes('laravel'))).toBe(true);
+      const tail = tailProjectLog(dir, '~storage/logs/laravel.log', 50, undefined, {
+        extraDirs: ['storage/logs'],
+        grep: 'ERROR',
+      });
+      expect(tail.lines.some((l) => l.includes('ERROR'))).toBe(true);
+      const bad = normalizeExtraLogDirs(['../etc', 'storage/logs', 'logs']);
+      expect(bad.dirs).toEqual(['storage/logs']);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

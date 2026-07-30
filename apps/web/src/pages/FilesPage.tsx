@@ -4,22 +4,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
   Card,
   CardSection,
   ConfirmDialog,
+  DataTable,
   EmptyState,
   FeaturePageLayout,
   Field,
   FormHint,
   FormLayout,
   Modal,
-  OpsHero,
+  OpsResultPanel,
+  PresetChips,
   SegRadio,
-  Tabs,
+  PageTabs,
+  FormActions,
+  buttonClassName,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
@@ -107,6 +111,13 @@ export function FilesPage() {
   >([]);
   const [webdavToken, setWebdavToken] = useState<string | null>(null);
   const [webdavEnabled, setWebdavEnabled] = useState(false);
+  const [chmodOpen, setChmodOpen] = useState(false);
+  const [chmodMode, setChmodMode] = useState('644');
+  const [zipOpen, setZipOpen] = useState(false);
+  const [zipName, setZipName] = useState('');
+  const [opsNote, setOpsNote] = useState<{ ok: boolean; notes: string[] } | null>(
+    null,
+  );
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -272,34 +283,12 @@ export function FilesPage() {
   return (
     <FeaturePageLayout
       title={t('nav.files', { defaultValue: '檔案' })}
-      actions={
-        <div className="btn-row">
-          <Link to="/files/public">
-            <Button variant="secondary" size="md">
-              公用站設定
-            </Button>
-          </Link>
-          <Button variant="secondary" size="md" loading={busy} onClick={() => void refresh()}>
-            重新整理
-          </Button>
-        </div>
-      }
-    >
-      {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            關閉
-          </Button>
-        </Alert>
-      ) : null}
-
-      <OpsHero
-        pill={`${items.filter((i) => i.type === 'file').length} 檔`}
-        pillTone="ok"
-        tone="ok"
-        stats={[
+      status={{
+        pill: {
+          label: `${items.filter((i) => i.type === 'file').length} 檔`,
+          tone: 'ok',
+        },
+        items: [
           {
             label: '檔案',
             value: String(
@@ -314,22 +303,48 @@ export function FilesPage() {
           },
           { label: '用量', value: formatBytes(usage?.bytes ?? 0) },
           { label: '已選', value: String(selected.size) },
-        ]}
-        rail={
-          <>
-            <li>
-              <span className="ops-rail__k">回收桶</span>
-              <span className="ops-rail__text">{trash.length}</span>
-            </li>
-            <li>
-              <span className="ops-rail__k">分享</span>
-              <span className="ops-rail__text">{shares.length}</span>
-            </li>
-          </>
-        }
-      />
+          { label: '回收桶', value: trash.length },
+          { label: '分享', value: shares.length },
+        ],
+      }}
+      actions={<ActionBar>
+          <Link to="/files/public" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+            公用站設定
+          </Link>
+          <Button variant="secondary" size="sm" loading={busy} onClick={() => void refresh()}>
+            重新整理
+          </Button>
+        </ActionBar>
+      }
+    >
+      {error ? <Alert variant="error">{error}</Alert> : null}
+      {msg ? (
+        <Alert variant="ok">
+          {msg}{' '}
+          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+            關閉
+          </Button>
+        </Alert>
+      ) : null}
+      {opsNote ? (
+        <div className="stack">
+          <OpsResultPanel
+            title="檔案操作結果"
+            result={{
+              ok: opsNote.ok,
+              notes: opsNote.notes,
+            }}
+            busy={busy}
+          />
+          <ActionBar size="sm">
+            <Button variant="ghost" size="sm" onClick={() => setOpsNote(null)}>
+              關閉結果
+            </Button>
+          </ActionBar>
+        </div>
+      ) : null}
 
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'browse', label: '瀏覽' },
           { id: 'trash', label: '回收桶', badge: trash.length || undefined },
@@ -398,8 +413,8 @@ export function FilesPage() {
                       <>
               {/* Toolbar */}
               <div className="fm-toolbar">
-                <div className="btn-row">
-                  <label className="btn btn--primary btn--md fm-upload-btn">
+                <ActionBar>
+                  <label className={`${buttonClassName({ variant: 'primary', size: 'md' })} fm-upload-btn`}>
                     上傳
                     <input
                       type="file"
@@ -453,23 +468,10 @@ export function FilesPage() {
                       <Button
                         variant="secondary"
                         size="md"
-                        loading={busy}
+                        disabled={busy}
                         onClick={() => {
-                          const mode = window.prompt('chmod 八進位（如 644 或 755）', '644');
-                          if (!mode) return;
-                          void (async () => {
-                            setBusy(true);
-                            try {
-                              for (const p of selected) {
-                                await filesApi.chmod(root, p, mode);
-                              }
-                              await refresh();
-                            } catch (e) {
-                              setError(e instanceof Error ? e.message : 'chmod 失敗');
-                            } finally {
-                              setBusy(false);
-                            }
-                          })();
+                          setChmodMode('644');
+                          setChmodOpen(true);
                         }}
                       >
                         chmod
@@ -477,26 +479,10 @@ export function FilesPage() {
                       <Button
                         variant="secondary"
                         size="md"
-                        loading={busy}
+                        disabled={busy}
                         onClick={() => {
-                          const dest =
-                            window.prompt(
-                              '壓縮目標檔名（.zip）',
-                              `archive-${Date.now()}.zip`,
-                            ) || '';
-                          if (!dest.endsWith('.zip')) return;
-                          const destPath = path === '.' ? dest : `${path}/${dest}`;
-                          void (async () => {
-                            setBusy(true);
-                            try {
-                              await filesApi.zip(root, [...selected], destPath);
-                              await refresh();
-                            } catch (e) {
-                              setError(e instanceof Error ? e.message : 'zip 失敗');
-                            } finally {
-                              setBusy(false);
-                            }
-                          })();
+                          setZipName(`archive-${Date.now()}.zip`);
+                          setZipOpen(true);
                         }}
                       >
                         壓縮 zip
@@ -511,8 +497,18 @@ export function FilesPage() {
                             const zipPath = selectedEntries[0]!.path;
                             void (async () => {
                               setBusy(true);
+                              setOpsNote(null);
                               try {
-                                await filesApi.unzip(root, zipPath, path === '.' ? '.' : path);
+                                const r = await filesApi.unzip(
+                                  root,
+                                  zipPath,
+                                  path === '.' ? '.' : path,
+                                );
+                                setOpsNote({
+                                  ok: true,
+                                  notes: r.notes ?? [`已解壓 ${zipPath}`],
+                                });
+                                setMsg(`已解壓 ${zipPath}`);
                                 await refresh();
                               } catch (e) {
                                 setError(e instanceof Error ? e.message : 'unzip 失敗');
@@ -534,8 +530,8 @@ export function FilesPage() {
                       </Button>
                     </>
                   ) : null}
-                </div>
-                <div className="btn-row">
+                </ActionBar>
+                <ActionBar>
                   <input
                     className="fm-search"
                     placeholder="搜尋檔名…"
@@ -575,11 +571,11 @@ export function FilesPage() {
                   >
                     圖示
                   </Button>
-                </div>
+                </ActionBar>
               </div>
 
               {/* Breadcrumb */}
-              <nav className="fm-breadcrumb btn-row" aria-label="路徑">
+              <nav className="fm-breadcrumb action-bar" aria-label="路徑">
                 <Button variant="ghost" size="sm" onClick={() => setPath('.')}>
                   {root === 'public' ? '公用' : '專案'}
                 </Button>
@@ -613,123 +609,152 @@ export function FilesPage() {
                     description="拖放檔案到此處上傳，或按「上傳」"
                   />
                 ) : view === 'list' ? (
-                  <div className="table-wrap">
-                    <table className="data">
-                      <thead>
-                        <tr>
-                          <th style={{ width: 40 }}>
-                            <input
-                              type="checkbox"
-                              checked={selected.size === items.length && items.length > 0}
-                              onChange={selectAll}
-                              aria-label="全選"
-                            />
-                          </th>
-                          <th>名稱</th>
-                          <th>大小</th>
-                          <th>修改</th>
-                          <th>操作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {items.map((e) => (
-                          <tr key={e.path} className={selected.has(e.path) ? 'is-selected' : ''}>
-                            <td>
-                              <input
-                                type="checkbox"
-                                checked={selected.has(e.path)}
-                                onChange={() => toggleSelect(e.path)}
-                              />
-                            </td>
-                            <td>
-                              <button type="button" className="fm-name-btn" onClick={() => void openEntry(e)}>
-                                <span aria-hidden>{iconFor(e)}</span> {e.name}
-                                {e.favorite ? ' ★' : ''}
-                              </button>
-                            </td>
-                            <td>{e.type === 'dir' ? '—' : formatBytes(e.size)}</td>
-                            <td className="muted u-nowrap">
-                              {e.mtime.slice(0, 19).replace('T', ' ')}
-                            </td>
-                            <td>
-                              <div className="btn-row">
-                                {e.type === 'file' ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => void doDownload(e.path)}
-                                  >
-                                    下載
-                                  </Button>
-                                ) : null}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setRenameTarget(e);
-                                    setRenameTo(e.name);
-                                  }}
-                                >
-                                  重新命名
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    void run(async () => {
-                                      await filesApi.toggleFavorite(root, e.path);
-                                    })
-                                  }
-                                >
-                                  {e.favorite ? '取消收藏' : '收藏'}
-                                </Button>
-                                {e.type === 'file' ? (
-                                  <>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSharePath(e.path);
-                                        setSharePass('');
-                                        setShareResult(null);
-                                      }}
-                                    >
-                                      分享
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      loading={busy}
-                                      onClick={() => {
-                                        setBusy(true);
-                                        void filesApi
-                                          .listVersions(root, e.path)
-                                          .then((r) => {
-                                            setVersionsPath(e.path);
-                                            setVersions(r.items ?? []);
-                                          })
-                                          .catch((err: Error) => setError(err.message))
-                                          .finally(() => setBusy(false));
-                                      }}
-                                    >
-                                      版本
-                                    </Button>
-                                  </>
-                                ) : null}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setDelPaths([e.path])}
-                                >
-                                  刪除
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'select',
+                        header: '',
+                        className: 'u-nowrap',
+                        nowrap: true,
+                        render: (e) => (
+                          <input
+                            type="checkbox"
+                            checked={selected.has(e.path)}
+                            onChange={() => toggleSelect(e.path)}
+                            aria-label={`選擇 ${e.name}`}
+                          />
+                        ),
+                      },
+                      {
+                        key: 'name',
+                        header: '名稱',
+                        render: (e) => (
+                          <button
+                            type="button"
+                            className="fm-name-btn"
+                            onClick={() => void openEntry(e)}
+                          >
+                            <span aria-hidden>{iconFor(e)}</span> {e.name}
+                            {e.favorite ? ' ★' : ''}
+                          </button>
+                        ),
+                      },
+                      {
+                        key: 'size',
+                        header: '大小',
+                        nowrap: true,
+                        render: (e) =>
+                          e.type === 'dir' ? '—' : formatBytes(e.size),
+                      },
+                      {
+                        key: 'mtime',
+                        header: '修改',
+                        className: 'muted',
+                        nowrap: true,
+                        render: (e) =>
+                          e.mtime.slice(0, 19).replace('T', ' '),
+                      },
+                    ]}
+                    rows={items}
+                    rowKey={(e) => e.path}
+                    rowActions={(e) => (
+                      <ActionBar align="end">
+                        {e.type === 'file' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => void doDownload(e.path)}
+                          >
+                            下載
+                          </Button>
+                        ) : null}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setRenameTarget(e);
+                            setRenameTo(e.name);
+                          }}
+                        >
+                          重新命名
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            void run(async () => {
+                              await filesApi.toggleFavorite(root, e.path);
+                            })
+                          }
+                        >
+                          {e.favorite ? '取消收藏' : '收藏'}
+                        </Button>
+                        {e.type === 'file' ? (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSharePath(e.path);
+                                setSharePass('');
+                                setShareResult(null);
+                              }}
+                            >
+                              分享
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => {
+                                setBusy(true);
+                                void filesApi
+                                  .listVersions(root, e.path)
+                                  .then((r) => {
+                                    setVersionsPath(e.path);
+                                    setVersions(r.items ?? []);
+                                  })
+                                  .catch((err: Error) => setError(err.message))
+                                  .finally(() => setBusy(false));
+                              }}
+                            >
+                              版本
+                            </Button>
+                          </>
+                        ) : null}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDelPaths([e.path])}
+                        >
+                          刪除
+                        </Button>
+                      </ActionBar>
+                    )}
+                    empty={
+                      <EmptyState
+                        title={
+                          side === 'favorites' ? '尚未有收藏' : '此資料夾是空的'
+                        }
+                        description="拖放檔案到此處上傳，或按「上傳」"
+                      />
+                    }
+                    toolbar={
+                      <ActionBar>
+                        <label className="u-nowrap u-text-sm">
+                          <input
+                            type="checkbox"
+                            checked={
+                              selected.size === items.length && items.length > 0
+                            }
+                            onChange={selectAll}
+                            aria-label="全選"
+                          />{' '}
+                          全選
+                        </label>
+                      </ActionBar>
+                    }
+                  />
                 ) : (
                   <div className="fm-grid">
                     {items.map((e) => (
@@ -767,79 +792,81 @@ export function FilesPage() {
                 title={`回收桶 (${trash.length})`}
                 description="刪除的檔案可還原或永久清除"
               >
-                <div className="btn-row u-mb-3">
-                  <Button
-                    variant="danger"
-                    size="md"
-                    loading={busy}
-                    onClick={() =>
-                      void run(async () => {
-                        await filesApi.purgeTrash(root);
-                      }, '已清空回收桶')
-                    }
-                  >
-                    清空回收桶
-                  </Button>
-                </div>
-                {trash.length === 0 ? (
-                  <EmptyState title="回收桶是空的" />
-                ) : (
-                  <div className="table-wrap">
-                    <table className="data">
-                      <thead>
-                        <tr>
-                          <th>名稱</th>
-                          <th>原路徑</th>
-                          <th>刪除時間</th>
-                          <th>操作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {trash.map((t) => (
-                          <tr key={t.trashId}>
-                            <td>
-                              {iconFor(t)} {t.name}
-                            </td>
-                            <td>
-                              <code className="inline">{t.originalPath}</code>
-                            </td>
-                            <td className="muted u-nowrap">
-                              {t.deletedAt.slice(0, 19).replace('T', ' ')}
-                            </td>
-                            <td>
-                              <div className="btn-row">
-                                <Button
-                                  variant="primary"
-                                  size="sm"
-                                  loading={busy}
-                                  onClick={() =>
-                                    void run(async () => {
-                                      await filesApi.restoreTrash(root, t.trashId);
-                                    }, '已還原')
-                                  }
-                                >
-                                  還原
-                                </Button>
-                                <Button
-                                  variant="danger"
-                                  size="sm"
-                                  loading={busy}
-                                  onClick={() =>
-                                    void run(async () => {
-                                      await filesApi.purgeTrash(root, t.trashId);
-                                    }, '已永久刪除')
-                                  }
-                                >
-                                  永久刪除
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <DataTable
+                  toolbar={
+                    <ActionBar>
+                      <Button
+                        variant="danger"
+                        size="md"
+                        loading={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            await filesApi.purgeTrash(root);
+                          }, '已清空回收桶')
+                        }
+                      >
+                        清空回收桶
+                      </Button>
+                    </ActionBar>
+                  }
+                  columns={[
+                    {
+                      key: 'name',
+                      header: '名稱',
+                      render: (t) => (
+                        <>
+                          {iconFor(t)} {t.name}
+                        </>
+                      ),
+                    },
+                    {
+                      key: 'path',
+                      header: '原路徑',
+                      render: (t) => (
+                        <code className="inline">{t.originalPath}</code>
+                      ),
+                    },
+                    {
+                      key: 'deleted',
+                      header: '刪除時間',
+                      className: 'muted',
+                      nowrap: true,
+                      render: (t) =>
+                        t.deletedAt.slice(0, 19).replace('T', ' '),
+                    },
+                  ]}
+                  rows={trash}
+                  rowKey={(t) => t.trashId}
+                  rowActions={(t) => (
+                    <ActionBar align="end">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            await filesApi.restoreTrash(root, t.trashId);
+                          }, '已還原')
+                        }
+                      >
+                        還原
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            await filesApi.purgeTrash(root, t.trashId);
+                          }, '已永久刪除')
+                        }
+                      >
+                        永久刪除
+                      </Button>
+                    </ActionBar>
+                  )}
+                  empty={<EmptyState title="回收桶是空的" />}
+                />
               </CardSection>
             </Card>
           </div>
@@ -849,51 +876,56 @@ export function FilesPage() {
           <div className="tab-panel">
             <Card>
               <CardSection title={`公開分享連結 (${shares.length})`}>
-                {shares.length === 0 ? (
-                  <EmptyState title="尚未建立分享" description="在檔案列按「分享」" />
-                ) : (
-                  <div className="table-wrap">
-                    <table className="data">
-                      <thead>
-                        <tr>
-                          <th>路徑</th>
-                          <th>連結</th>
-                          <th>下載次數</th>
-                          <th>操作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {shares.map((s) => (
-                          <tr key={s.id}>
-                            <td>
-                              <code className="inline">{s.path}</code>
-                            </td>
-                            <td>
-                              <code className="inline u-break-all">
-                                {s.url ?? `/api/v1/public/files/${s.token}`}
-                              </code>
-                            </td>
-                            <td>{s.downloadCount}</td>
-                            <td>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                loading={busy}
-                                onClick={() =>
-                                  void run(async () => {
-                                    await filesApi.deleteShare(root, s.id);
-                                  }, '已取消分享')
-                                }
-                              >
-                                取消
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <DataTable
+                  columns={[
+                    {
+                      key: 'path',
+                      header: '路徑',
+                      render: (s) => (
+                        <code className="inline">{s.path}</code>
+                      ),
+                    },
+                    {
+                      key: 'url',
+                      header: '連結',
+                      render: (s) => (
+                        <code className="inline u-break-all">
+                          {s.url ?? `/api/v1/public/files/${s.token}`}
+                        </code>
+                      ),
+                    },
+                    {
+                      key: 'downloads',
+                      header: '下載次數',
+                      nowrap: true,
+                      render: (s) => s.downloadCount,
+                    },
+                  ]}
+                  rows={shares}
+                  rowKey={(s) => s.id}
+                  rowActions={(s) => (
+                    <ActionBar align="end">
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            await filesApi.deleteShare(root, s.id);
+                          }, '已取消分享')
+                        }
+                      >
+                        取消
+                      </Button>
+                    </ActionBar>
+                  )}
+                  empty={
+                    <EmptyState
+                      title="尚未建立分享"
+                      description="在檔案列按「分享」"
+                    />
+                  }
+                />
               </CardSection>
             </Card>
           </div>
@@ -906,7 +938,7 @@ export function FilesPage() {
           title="WebDAV"
           description="Basic 用戶 ysk · 掛載 /webdav → 公用檔案根；token 只顯示一次"
         >
-          <div className="btn-row">
+          <ActionBar>
             <Button
               variant="primary"
               size="sm"
@@ -959,7 +991,7 @@ export function FilesPage() {
             >
               停用
             </Button>
-          </div>
+          </ActionBar>
           {webdavToken ? (
             <p className="u-mt-2">
               <code className="inline u-break-all">{webdavToken}</code>
@@ -973,7 +1005,7 @@ export function FilesPage() {
       </Card>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       {/* Mkdir */}
       <Modal
@@ -1095,7 +1127,7 @@ export function FilesPage() {
         ) : (
           <ul className="list-plain list-spaced">
             {versions.map((v) => (
-              <li key={v.id} className="btn-row">
+              <li key={v.id} className="">
                 <span className="muted u-text-sm">
                   {new Date(v.createdAt).toLocaleString()} · {formatBytes(v.bytes)}
                 </span>
@@ -1283,6 +1315,162 @@ export function FilesPage() {
             <code className="inline u-break-all">{shareResult}</code>
           </Alert>
         ) : null}
+      </Modal>
+
+      {/* chmod */}
+      <Modal
+        open={chmodOpen}
+        onClose={() => !busy && setChmodOpen(false)}
+        title="修改權限（chmod）"
+        size="sm"
+        footer={
+          <FormActions align="end">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={() => setChmodOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                void (async () => {
+                  setBusy(true);
+                  setError(null);
+                  setOpsNote(null);
+                  try {
+                    for (const p of selected) {
+                      await filesApi.chmod(root, p, chmodMode.trim());
+                    }
+                    setOpsNote({
+                      ok: true,
+                      notes: [
+                        `已 chmod ${chmodMode.trim()} → ${selected.size} 個項目`,
+                      ],
+                    });
+                    setMsg(`已 chmod ${chmodMode.trim()}`);
+                    setChmodOpen(false);
+                    await refresh();
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'chmod 失敗');
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              套用
+            </Button>
+          </FormActions>
+        }
+      >
+        <FormHint>
+          將套用到已選 {selected.size} 個項目（八進位，如 644 / 755）
+        </FormHint>
+        <div className="u-mb-3">
+          <PresetChips
+            options={[
+              { value: '644', label: '644 檔' },
+              { value: '755', label: '755 可執行' },
+              { value: '600', label: '600 私密' },
+              { value: '700', label: '700 目錄私密' },
+              { value: '775', label: '775 群組寫' },
+            ]}
+            value={chmodMode}
+            onChange={setChmodMode}
+            allowCustom
+            customPlaceholder="自訂 0644…"
+            disabled={busy}
+          />
+        </div>
+        <FormLayout>
+          <Field label="模式" htmlFor="fm-chmod-mode" required flush>
+            <input
+              id="fm-chmod-mode"
+              value={chmodMode}
+              onChange={(e) => setChmodMode(e.target.value)}
+              placeholder="644"
+              pattern="[0-7]{3,4}"
+            />
+          </Field>
+        </FormLayout>
+      </Modal>
+
+      {/* zip */}
+      <Modal
+        open={zipOpen}
+        onClose={() => !busy && setZipOpen(false)}
+        title="壓縮為 zip"
+        size="sm"
+        footer={
+          <FormActions align="end">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={() => setZipOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={busy}
+              disabled={!zipName.trim().toLowerCase().endsWith('.zip')}
+              onClick={() => {
+                const dest = zipName.trim();
+                if (!dest.toLowerCase().endsWith('.zip')) return;
+                const destPath = path === '.' ? dest : `${path}/${dest}`;
+                void (async () => {
+                  setBusy(true);
+                  setError(null);
+                  setOpsNote(null);
+                  try {
+                    const r = await filesApi.zip(root, [...selected], destPath);
+                    setOpsNote({
+                      ok: true,
+                      notes: r.notes ?? [`已建立 ${destPath}`],
+                    });
+                    setMsg(`已壓縮 → ${destPath}`);
+                    setZipOpen(false);
+                    setSelected(new Set());
+                    await refresh();
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'zip 失敗');
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              壓縮
+            </Button>
+          </FormActions>
+        }
+      >
+        <FormHint>
+          將壓縮已選 {selected.size} 個項目到目前資料夾（需系統有 zip 指令）
+        </FormHint>
+        <FormLayout>
+          <Field
+            label="目標檔名"
+            htmlFor="fm-zip-name"
+            required
+            flush
+            hint={`路徑：${path === '.' ? '' : path + '/'}${zipName || '….zip'}`}
+          >
+            <input
+              id="fm-zip-name"
+              value={zipName}
+              onChange={(e) => setZipName(e.target.value)}
+              placeholder="archive.zip"
+            />
+          </Field>
+        </FormLayout>
       </Modal>
 
       {/* Delete confirm */}

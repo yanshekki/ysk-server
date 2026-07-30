@@ -340,8 +340,9 @@ export function defaultProcessCommands(
     // FastAPI/ASGI: "main:app" → uvicorn
     // Plain script: app.py / main.py
     const entry = opts.entry ?? 'main:app';
+    // Honest: if requirements.txt exists it must install; missing file is skip
     const pyBuild =
-      'python3 -m venv venv && ./venv/bin/pip install -U pip && (./venv/bin/pip install -r requirements.txt || true)';
+      'python3 -m venv venv && ./venv/bin/pip install -U pip && if [ -f requirements.txt ]; then ./venv/bin/pip install -r requirements.txt; else echo "no requirements.txt — skip deps"; fi';
     const isWsgi =
       /\.wsgi:application$/.test(entry) ||
       entry.endsWith('.wsgi:app') ||

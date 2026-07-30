@@ -1,10 +1,8 @@
 export { ProjectStatusBadge } from './ProjectStatusBadge';
-export { ProjectSummaryStrip } from './ProjectSummaryStrip';
 export { ProjectList } from './ProjectList';
 export { ProjectListItem } from './ProjectListItem';
 export { ProjectCreateModal } from './ProjectCreateModal';
 export { ProjectDetailHeader } from './ProjectDetailHeader';
-export { ProjectStatusRail } from './ProjectStatusRail';
 export { ProjectOverviewTab } from './ProjectOverviewTab';
 export { ProjectDeployTab } from './ProjectDeployTab';
 export { ProjectNetworkTab } from './ProjectNetworkTab';

@@ -1,8 +1,21 @@
 /**
- * Sample honesty audit of apply_status / last ops across control plane.
+ * Honesty audit of apply_status / last ops across control plane.
+ * Surfaces written ≠ applied, blocked, and dishonest ok+blocked last_apply blobs.
  */
 
+import {
+  assertHonestOps,
+  type OpsResultDto,
+  type OpsResultInput,
+} from '@ysk/shared';
 import type { YskDatabase } from '../db/database.js';
+
+/** @deprecated import assertHonestOps from @ysk/shared */
+export function normalizeOpsHonesty<T extends OpsResultInput>(result: T): T & OpsResultDto {
+  return assertHonestOps(result);
+}
+
+export type { OpsResultDto };
 
 export type ApplyAuditFinding = {
   kind: string;
@@ -14,36 +27,92 @@ export type ApplyAuditFinding = {
   href?: string;
 };
 
-export function auditApplyStatuses(db: YskDatabase): {
+export type ApplyAuditResult = {
   findings: ApplyAuditFinding[];
   summary: { ok: number; warn: number; bad: number; total: number };
+};
+
+function classifyStatus(st: string): {
+  severity: ApplyAuditFinding['severity'];
+  issue?: string;
 } {
+  const s = (st || 'unknown').toLowerCase();
+  if (s === 'blocked' || s === 'failed' || s === 'error') {
+    return { severity: 'bad', issue: `apply_status=${st}` };
+  }
+  if (s === 'written' || s === 'draft' || s === 'planned' || s === 'partial') {
+    return { severity: 'warn', issue: `尚未 applied（${st}）` };
+  }
+  if (
+    s === 'applied' ||
+    s === 'active' ||
+    s === 'running' ||
+    s === 'ok' ||
+    s === 'enabled'
+  ) {
+    return { severity: 'ok' };
+  }
+  if (s === 'unknown' || !s) {
+    return { severity: 'warn', issue: '無 apply_status' };
+  }
+  return { severity: 'warn', issue: `狀態 ${st}` };
+}
+
+/** Detect dishonest last_apply payloads stored on resources */
+function auditLastApply(
+  kind: string,
+  id: string,
+  name: string,
+  last: unknown,
+  href: string,
+): ApplyAuditFinding | null {
+  if (!last || typeof last !== 'object') return null;
+  const o = last as Record<string, unknown>;
+  const ok = o.ok === true;
+  const blocked = Boolean(o.blocked || o.requiresExecute || o.requiresRoot);
+  if (ok && blocked) {
+    return {
+      kind,
+      id,
+      name,
+      apply_status: String(o.apply_status ?? 'unknown'),
+      issue: 'last_apply 同時 ok=true 與 blocked（不誠實）',
+      severity: 'bad',
+      href,
+    };
+  }
+  if (String(o.apply_status) === 'applied' && blocked) {
+    return {
+      kind,
+      id,
+      name,
+      apply_status: 'applied',
+      issue: 'last_apply applied 但 blocked',
+      severity: 'bad',
+      href,
+    };
+  }
+  return null;
+}
+
+export function auditApplyStatuses(db: YskDatabase): ApplyAuditResult {
   const findings: ApplyAuditFinding[] = [];
 
   const addRes = (
     kind: string,
-    rows: Array<Record<string, unknown>>,
+    rows: Array<Record<string, unknown>> | undefined,
     nameKey: string,
     hrefPrefix: string,
   ) => {
-    for (const r of rows) {
+    for (const r of rows ?? []) {
       const id = String(r.id ?? '');
       const name = String(r[nameKey] ?? id);
       const st = String(r.apply_status ?? r.status ?? 'unknown');
-      let severity: ApplyAuditFinding['severity'] = 'ok';
-      let issue: string | undefined;
-      if (st === 'blocked' || st === 'failed' || st === 'error') {
-        severity = 'bad';
-        issue = `apply_status=${st}`;
-      } else if (st === 'written' || st === 'draft' || st === 'planned') {
-        severity = 'warn';
-        issue = `尚未 applied（${st}）`;
-      } else if (st === 'applied' || st === 'active' || st === 'running' || st === 'ok') {
-        severity = 'ok';
-      } else if (st === 'unknown' || !st) {
-        severity = 'warn';
-        issue = '無 apply_status';
-      }
+      const { severity, issue } = classifyStatus(st);
+      const href =
+        hrefPrefix.includes(':id')
+          ? hrefPrefix.replace(':id', encodeURIComponent(id))
+          : hrefPrefix;
       findings.push({
         kind,
         id,
@@ -51,8 +120,10 @@ export function auditApplyStatuses(db: YskDatabase): {
         apply_status: st,
         issue,
         severity,
-        href: hrefPrefix,
+        href,
       });
+      const dishonest = auditLastApply(kind, id, name, r.last_apply, href);
+      if (dishonest) findings.push(dishonest);
     }
   };
 
@@ -60,6 +131,10 @@ export function auditApplyStatuses(db: YskDatabase): {
   addRes('ftp', db.snapshot.ftp_accounts ?? [], 'username', '/ftp');
   addRes('nginx_site', db.snapshot.nginx_sites ?? [], 'serverName', '/nginx');
   addRes('certificate', db.snapshot.certificates ?? [], 'domain', '/ssl');
+  addRes('mysql_db', db.snapshot.mysql_databases ?? [], 'name', '/databases/mysql');
+  addRes('postgres_db', db.snapshot.postgres_databases ?? [], 'name', '/databases/postgres');
+  addRes('redis', db.snapshot.redis_instances ?? [], 'name', '/databases/redis');
+  addRes('cron', db.snapshot.cron_jobs ?? [], 'name', '/cron');
 
   for (const p of db.snapshot.projects) {
     const st = p.status ?? 'unknown';
@@ -88,21 +163,32 @@ export function auditApplyStatuses(db: YskDatabase): {
 
   for (const e of db.snapshot.email_domains ?? []) {
     const st = String(e.apply_status ?? e.status ?? 'unknown');
+    const { severity, issue } = classifyStatus(st);
     findings.push({
       kind: 'email_domain',
       id: String(e.id ?? ''),
       name: String(e.domain ?? ''),
       apply_status: st,
-      issue: st === 'suspended' ? 'suspended' : st === 'draft' ? 'draft' : undefined,
-      severity: st === 'failed' ? 'bad' : st === 'draft' || st === 'suspended' ? 'warn' : 'ok',
+      issue:
+        st === 'suspended'
+          ? 'suspended'
+          : issue,
+      severity: st === 'suspended' ? 'warn' : severity,
       href: `/email/domains/${e.id}`,
     });
+    const dishonest = auditLastApply(
+      'email_domain',
+      String(e.id ?? ''),
+      String(e.domain ?? ''),
+      e.last_apply,
+      `/email/domains/${e.id}`,
+    );
+    if (dishonest) findings.push(dishonest);
   }
 
   const summary = { ok: 0, warn: 0, bad: 0, total: findings.length };
   for (const f of findings) summary[f.severity]++;
 
-  // Surface bad/warn first
   findings.sort((a, b) => {
     const r = { bad: 0, warn: 1, ok: 2 };
     return r[a.severity] - r[b.severity];

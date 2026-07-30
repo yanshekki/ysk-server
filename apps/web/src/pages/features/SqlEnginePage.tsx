@@ -4,7 +4,9 @@
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
+import { 
+  DataTable,
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -17,17 +19,16 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
-  OpsHero,
   OpsResultPanel,
-  Tabs,
+  PageTabs,
   FormActions,
   FormHint,
   CheckboxField,
   SegRadio,
-} from '../../shared/components/ui';
+
+  buttonClassName,} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
-import { ResourceTable } from '../../shared/components/resource/ResourceTable';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { dbEngineApi, type DbEngineKind, type DbEngineStatus } from '../../features/db-engine';
@@ -78,6 +79,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const [remoteUser, setRemoteUser] = useState('');
   const [remotePass, setRemotePass] = useState('');
   const [lastTempPassword, setLastTempPassword] = useState<string | null>(null);
+  const [adminerOpen, setAdminerOpen] = useState(false);
+  const [adminerDomain, setAdminerDomain] = useState(`adminer.${engine}.local`);
+  const [adminerDownload, setAdminerDownload] = useState(true);
+  const [importConfirm, setImportConfirm] = useState<{
+    dbName: string;
+    dumpName: string;
+  } | null>(null);
 
   const busy = dbs.busy || users.busy || actBusy;
   const error = dbs.error || users.error || actError;
@@ -191,16 +199,45 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     <FeaturePageLayout
       title={title}
       showCapability={false}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label: st.text,
+          tone: st.tone === 'neutral' ? 'warn' : st.tone,
+        },
+        items: [
+          {
+            label: '狀態',
+            value: st.text,
+            tone: st.tone === 'neutral' ? 'neutral' : st.tone,
+          },
+          {
+            label: 'EXECUTE',
+            value: svc?.executeEnabled ? '開' : '關',
+            tone: svc?.executeEnabled ? 'ok' : 'warn',
+          },
+          { label: '資料庫', value: dbs.items.length },
+          { label: '用戶', value: users.items.length },
+          {
+            label: 'Root',
+            value: svc?.isRoot ? '是' : '否',
+            tone: svc?.isRoot ? 'ok' : 'warn',
+          },
+          {
+            label: '客戶端',
+            value: svc?.clientInstalled ? '有' : '無',
+            tone: svc?.clientInstalled ? 'ok' : 'danger',
+          },
+        ],
+      }}
+      actions={<ActionBar>
           <Link to={servicePath}>
-            <Button variant="secondary" size="md">
+            <Button variant="secondary" size="sm">
               服務設定
             </Button>
           </Link>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             disabled={busy}
             onClick={() => {
               setError(null);
@@ -214,7 +251,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </Button>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             disabled={busy || !dbs.items[0]}
             onClick={() => {
               const name = String(dbs.items[0]?.name ?? '');
@@ -238,7 +275,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </Button>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             disabled={busy || !dbs.items[0]}
             onClick={() => {
               const name = String(dbs.items[0]?.name ?? '');
@@ -251,20 +288,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     setError('尚無 dump 檔可 import');
                     return;
                   }
-                  if (!confirm(`將 ${first.name} 匯入 ${name}？`)) return;
-                  setMsg(null);
-                  setError(null);
-                  return systemApi
-                    .dbImport({
-                      engine: engine === 'mariadb' ? 'mariadb' : 'mysql',
-                      dbName: name,
-                      name: first.name,
-                    })
-                    .then((r) => {
-                      const notes = (r as { notes?: string[]; ok?: boolean }).notes;
-                      if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? '已 import');
-                      else setError(notes?.[0] ?? 'import 失敗');
-                    });
+                  setImportConfirm({ dbName: name, dumpName: first.name });
                 })
                 .catch((e: Error) => setError(e.message));
             }}
@@ -273,7 +297,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </Button>
           <Button
             variant="ghost"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => {
               void api
@@ -294,95 +318,31 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </Button>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             loading={busy}
             onClick={() => {
-              void run(async () => {
-                const r = await api.requestRaw<{
-                  ok: boolean;
-                  notes?: string[];
-                  blocked?: boolean;
-                  blockMessage?: string;
-                  urlHint?: string;
-                }>('/api/v1/db/adminer/apply', {
-                  method: 'POST',
-                  body: JSON.stringify({
-                    domain: `adminer.${engine}.local`,
-                    download: true,
-                  }),
-                });
-                return {
-                  ok: r.ok,
-                  blocked: r.blocked,
-                  blockMessage: r.blockMessage,
-                  notes: [
-                    ...(r.notes ?? []),
-                    r.urlHint ? `入口提示: ${r.urlHint}` : '',
-                  ].filter(Boolean),
-                } as OpsResultLike;
-              }, 'Adminer 套用完成');
+              setAdminerDomain(`adminer.${engine}.local`);
+              setAdminerDownload(true);
+              setAdminerOpen(true);
             }}
           >
             Adminer 入口
           </Button>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             disabled={busy || !installed}
             title={!installed ? `請先安裝 ${title}` : undefined}
             onClick={() => setCreateOpen(true)}
           >
             建立資料庫
           </Button>
-        </div>
+        </ActionBar>
       }
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {dbs.msg || users.msg ? <Alert variant="ok">{dbs.msg ?? users.msg}</Alert> : null}
-
-      <OpsHero
-        pill={st.text}
-        pillTone={st.tone === 'neutral' ? 'warn' : st.tone}
-        tone={running ? 'ok' : 'warn'}
-        cta={
-          <Link to={servicePath} className="btn btn--secondary btn--md">
-            服務設定
-          </Link>
-        }
-        stats={[
-          {
-            label: '狀態',
-            value: <Badge tone={st.tone === 'neutral' ? 'neutral' : st.tone}>{st.text}</Badge>,
-          },
-          {
-            label: 'EXECUTE',
-            value: (
-              <Badge tone={svc?.executeEnabled ? 'ok' : 'warn'}>
-                {svc?.executeEnabled ? '開' : '關'}
-              </Badge>
-            ),
-          },
-          { label: '資料庫', value: dbs.items.length },
-          { label: '用戶', value: users.items.length },
-        ]}
-        rail={
-          <>
-            <li>
-              <span className="ops-rail__k">Root</span>
-              <Badge tone={svc?.isRoot ? 'ok' : 'warn'}>
-                {svc?.isRoot ? '是' : '否'}
-              </Badge>
-            </li>
-            <li>
-              <span className="ops-rail__k">客戶端</span>
-              <Badge tone={svc?.clientInstalled ? 'ok' : 'danger'}>
-                {svc?.clientInstalled ? '有' : '無'}
-              </Badge>
-            </li>
-          </>
-        }
-      />
 
       <Card>
         <CardSection title="服務概覽" description="唯讀狀態">
@@ -446,7 +406,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         </Alert>
       ) : null}
 
-      <Tabs
+      <PageTabs
         tabs={[
           { id: 'databases', label: `資料庫 (${dbs.items.length})` },
           { id: 'users', label: `用戶 (${users.items.length})` },
@@ -459,7 +419,8 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         {tab === 'databases' ? (
           <Card>
             <CardSection title="資料庫列表">
-              <ResourceTable
+              <DataTable
+                  rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
                 columns={[
                   {
                     key: 'name',
@@ -491,10 +452,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   />
                 }
                 rowActions={(r) => (
-                  <div className="btn-row">
+                  <ActionBar>
                     <button
                       type="button"
-                      className="btn btn--secondary btn--sm"
+                      className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                       disabled={busy}
                       onClick={() => void dbs.apply(r.id, true)}
                     >
@@ -502,13 +463,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     </button>
                     <button
                       type="button"
-                      className="btn btn--danger btn--sm"
+                      className={buttonClassName({ variant: 'danger', size: 'sm' })}
                       disabled={busy}
                       onClick={() => setDelDb(r.id)}
                     >
                       刪除
                     </button>
-                  </div>
+                  </ActionBar>
                 )}
               />
             </CardSection>
@@ -521,14 +482,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               <div className="form-actions">
                 <button
                   type="button"
-                  className="btn btn--secondary btn--sm"
+                  className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                   disabled={!installed}
                   onClick={() => setUserOpen(true)}
                 >
                   + 建立用戶
                 </button>
               </div>
-              <ResourceTable
+              <DataTable
+                  rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
                 columns={[
                   {
                     key: 'username',
@@ -558,7 +520,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 rowActions={(r: ResourceRow) => (
                   <button
                     type="button"
-                    className="btn btn--danger btn--sm"
+                    className={buttonClassName({ variant: 'danger', size: 'sm' })}
                     disabled={busy}
                     onClick={() => setDelUser(r.id)}
                   >
@@ -650,7 +612,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </FormActions>
               <ul className="list-plain list-spaced u-mt-3">
                 {tempUsers.map((u) => (
-                  <li key={String(u.id)} className="btn-row">
+                  <li key={String(u.id)} className="">
                     <span>
                       <strong>{String(u.username)}</strong> @ {String(u.database)} ·{' '}
                       <Badge>{String(u.apply_status)}</Badge> · 到期{' '}
@@ -754,7 +716,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </FormActions>
               <ul className="list-plain list-spaced u-mt-4">
                 {remoteHosts.map((h) => (
-                  <li key={String(h.id)} className="btn-row u-justify-between">
+                  <li key={String(h.id)} className="u-justify-between">
                     <span>
                       <strong>{String(h.label)}</strong> · {String(h.host)}:
                       {String(h.port)} · {String(h.username ?? '—')}
@@ -781,7 +743,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </Card>
           </div>
         ) : null}
-      </Tabs>
+      </PageTabs>
 
       <Modal
         open={createOpen}
@@ -790,10 +752,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         description="建立控制面登記後，請按「套用」寫入伺服器"
         footer={
           <>
-            <button type="button" className="btn btn--secondary" onClick={() => setCreateOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setCreateOpen(false)}>
               取消
             </button>
-            <button type="submit" form="sql-create" className="btn btn--primary" disabled={busy}>
+            <button type="submit" form="sql-create" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
               建立
             </button>
           </>
@@ -875,10 +837,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         description="建立後請套用"
         footer={
           <>
-            <button type="button" className="btn btn--secondary" onClick={() => setUserOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setUserOpen(false)}>
               取消
             </button>
-            <button type="submit" form="sql-user" className="btn btn--primary" disabled={busy}>
+            <button type="submit" form="sql-user" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
               建立
             </button>
           </>
@@ -929,6 +891,39 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       </Modal>
 
       <ConfirmDialog
+        open={importConfirm != null}
+        onClose={() => setImportConfirm(null)}
+        onConfirm={() => {
+          const c = importConfirm;
+          setImportConfirm(null);
+          if (!c) return;
+          setMsg(null);
+          setError(null);
+          void systemApi
+            .dbImport({
+              engine: engine === 'mariadb' ? 'mariadb' : 'mysql',
+              dbName: c.dbName,
+              name: c.dumpName,
+            })
+            .then((r) => {
+              const notes = (r as { notes?: string[]; ok?: boolean }).notes;
+              if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? '已 import');
+              else setError(notes?.[0] ?? 'import 失敗');
+            })
+            .catch((e: Error) => setError(e.message));
+        }}
+        title="匯入 dump？"
+        description={
+          importConfirm
+            ? `將 ${importConfirm.dumpName} 匯入 ${importConfirm.dbName}`
+            : ''
+        }
+        confirmLabel="匯入"
+        cancelLabel="取消"
+        danger
+      />
+
+      <ConfirmDialog
         open={Boolean(delDb)}
         onClose={() => setDelDb(null)}
         onConfirm={() => {
@@ -954,6 +949,134 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         danger
         busy={busy}
       />
+
+      <Modal
+        open={adminerOpen}
+        onClose={() => !busy && setAdminerOpen(false)}
+        title="Adminer 資料庫瀏覽器"
+        description="下載輕量 Adminer + 寫入 Nginx 管理 conf；套用到系統才會 nginx -t + reload"
+        size="md"
+        footer={
+          <FormActions align="end">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={() => setAdminerOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                void run(async () => {
+                  const r = await api.requestRaw<{
+                    ok: boolean;
+                    notes?: string[];
+                    blocked?: boolean;
+                    blockMessage?: string;
+                    urlHint?: string;
+                    apply_status?: string;
+                  }>('/api/v1/db/adminer/apply', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      domain: adminerDomain.trim() || `adminer.${engine}.local`,
+                      download: adminerDownload,
+                      applySystem: false,
+                    }),
+                  });
+                  setAdminerOpen(false);
+                  return {
+                    ok: r.ok,
+                    blocked: r.blocked,
+                    blockMessage: r.blockMessage,
+                    notes: [
+                      ...(r.notes ?? []),
+                      r.apply_status ? `apply_status=${r.apply_status}` : '',
+                      r.urlHint ? `入口: ${r.urlHint}` : '',
+                    ].filter(Boolean),
+                  } as OpsResultLike;
+                }, 'Adminer 已寫入管理檔');
+              }}
+            >
+              只寫入（written）
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={busy}
+              onClick={() => {
+                void run(async () => {
+                  const r = await api.requestRaw<{
+                    ok: boolean;
+                    notes?: string[];
+                    blocked?: boolean;
+                    blockMessage?: string;
+                    urlHint?: string;
+                    apply_status?: string;
+                  }>('/api/v1/db/adminer/apply', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      domain: adminerDomain.trim() || `adminer.${engine}.local`,
+                      download: adminerDownload,
+                      applySystem: true,
+                    }),
+                  });
+                  setAdminerOpen(false);
+                  return {
+                    ok: r.ok,
+                    blocked: r.blocked,
+                    blockMessage: r.blockMessage,
+                    notes: [
+                      ...(r.notes ?? []),
+                      r.apply_status ? `apply_status=${r.apply_status}` : '',
+                      r.urlHint ? `入口: ${r.urlHint}` : '',
+                    ].filter(Boolean),
+                  } as OpsResultLike;
+                }, 'Adminer 套用完成');
+              }}
+            >
+              套用到系統
+            </Button>
+          </FormActions>
+        }
+      >
+        <FormHint>
+          公開 Adminer 有風險 — 請先限制來源 IP 或加 HTTP 認證。需 PHP-FPM socket（預設
+          php8.2）。
+        </FormHint>
+        <FormLayout columns={1}>
+          <Field
+            label="虛擬主機名"
+            htmlFor="adminer-domain"
+            required
+            flush
+            hint="DNS A 指到此主機後才能從外網開"
+          >
+            <input
+              id="adminer-domain"
+              value={adminerDomain}
+              onChange={(e) => setAdminerDomain(e.target.value)}
+              placeholder={`adminer.${engine}.local`}
+              spellCheck={false}
+            />
+          </Field>
+          <CheckboxField
+            id="adminer-dl"
+            label="下載 Adminer PHP（需 YSK_EXECUTE + 外網）"
+            description="關閉則僅用已下載檔案"
+            checked={adminerDownload}
+            onChange={setAdminerDownload}
+            disabled={busy}
+          />
+          <FormHint>
+            「只寫入」= 管理檔 written；「套用到系統」= 複製 conf + nginx -t +
+            reload（需 root，否則 blocked）
+          </FormHint>
+        </FormLayout>
+      </Modal>
     </FeaturePageLayout>
   );
 }

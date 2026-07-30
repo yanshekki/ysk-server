@@ -7,6 +7,7 @@ import {
   Card,
   CardSection,
   CheckboxField,
+  ConfirmDialog,
   Field,
   FormActions,
   FormHint,
@@ -15,6 +16,7 @@ import {
   SegRadio,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
+import { ProjectSshCard } from './ProjectSshCard';
 
 export interface ProjectResourcesTabProps {
   busy?: boolean;
@@ -57,6 +59,7 @@ export function ProjectResourcesTab({
   const [shell, setShell] = useState(project.shell || '/usr/sbin/nologin');
   const [locked, setLocked] = useState(Boolean(project.accountLocked));
   const [localBusy, setLocalBusy] = useState(false);
+  const [migrateConfirm, setMigrateConfirm] = useState(false);
   const [live, setLive] = useState<{
     userExists?: boolean;
     uid?: number;
@@ -67,7 +70,6 @@ export function ProjectResourcesTab({
     homeExists?: boolean;
     notes?: string[];
   } | null>(null);
-
   const anyBusy = Boolean(busy || localBusy);
 
   useEffect(() => {
@@ -159,6 +161,8 @@ export function ProjectResourcesTab({
 
   return (
     <div className="tab-panel">
+      <ProjectSshCard project={project} onMessage={onOpsMessage} />
+
       <Card>
         <CardSection
           title="系統用戶隔離"
@@ -234,7 +238,7 @@ export function ProjectResourcesTab({
               />
             </Field>
             <Field label="狀態" htmlFor="st" flush>
-              <div id="st" className="btn-row u-gap-2">
+              <div id="st" className="action-bar u-gap-2">
                 <Badge tone={project.osProvisioned && live?.userExists ? 'ok' : 'warn'}>
                   {project.osProvisioned && live?.userExists ? '隔離中' : '待隔離'}
                 </Badge>
@@ -265,27 +269,7 @@ export function ProjectResourcesTab({
                 variant="secondary"
                 size="md"
                 loading={anyBusy}
-                onClick={() => {
-                  if (
-                    !window.confirm(
-                      '將遷移到 /home/ysk-server-{id} 並建立／修復系統用戶。需 root。繼續？',
-                    )
-                  ) {
-                    return;
-                  }
-                  setLocalBusy(true);
-                  void projectsApi
-                    .migrateOsIsolation(project.id, { removePreviousHome: true })
-                    .then((r) => {
-                      onOpsMessage?.(
-                        (r.notes ?? []).join('；') ||
-                          (r.ok ? '遷移完成' : '遷移未完成'),
-                      );
-                      return onProjectRefresh?.();
-                    })
-                    .catch((e: Error) => onOpsMessage?.(e.message))
-                    .finally(() => setLocalBusy(false));
-                }}
+                onClick={() => setMigrateConfirm(true)}
               >
                 遷移到 /home/ysk-server-…
               </Button>
@@ -446,6 +430,32 @@ export function ProjectResourcesTab({
           </FormActions>
         </CardSection>
       </Card>
+
+      <ConfirmDialog
+        open={migrateConfirm}
+        onClose={() => !localBusy && setMigrateConfirm(false)}
+        onConfirm={() => {
+          setMigrateConfirm(false);
+          setLocalBusy(true);
+          void projectsApi
+            .migrateOsIsolation(project.id, { removePreviousHome: true })
+            .then((r) => {
+              onOpsMessage?.(
+                (r.notes ?? []).join('；') ||
+                  (r.ok ? '遷移完成' : '遷移未完成'),
+              );
+              return onProjectRefresh?.();
+            })
+            .catch((e: Error) => onOpsMessage?.(e.message))
+            .finally(() => setLocalBusy(false));
+        }}
+        title="遷移系統用戶 home？"
+        description="將遷移到 /home/ysk-server-{id} 並建立／修復系統用戶。需 root。"
+        confirmLabel="遷移"
+        cancelLabel="取消"
+        danger
+        busy={localBusy}
+      />
     </div>
   );
 }

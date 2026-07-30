@@ -1,7 +1,7 @@
 /**
- * Production readiness — professional ops console (honest gate).
+ * Production readiness — tabbed ops console (honest gate).
  */
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
@@ -10,13 +10,18 @@ import {
   Button,
   FeaturePageLayout,
   LoadingBlock,
-} from '../../shared/components/ui';
+  PageTabs,
+
+  buttonClassName,} from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import type {
   ProductionReadinessDto,
   ReadinessItemDto,
   ReadinessLevel,
 } from '../../features/system/api';
+import { usePageTab } from '../../shared/hooks/usePageTab';
+
+const RDY_TABS = ['priority', 'checklist', 'summary'] as const;
 
 const CAT_LABEL: Record<string, string> = {
   core: '控制面',
@@ -50,25 +55,6 @@ function severityLabel(s?: string): string | null {
   if (s === 'recommended') return '建議';
   if (s === 'optional') return '可選';
   return null;
-}
-
-function modeLabel(mode: string): string {
-  if (mode === 'production_capable') return '可生產';
-  if (mode === 'degraded') return '降級';
-  return mode;
-}
-
-function relTime(iso: string): string {
-  try {
-    const t = new Date(iso).getTime();
-    const sec = Math.max(0, Math.round((Date.now() - t) / 1000));
-    if (sec < 10) return '剛剛';
-    if (sec < 60) return `${sec} 秒前`;
-    if (sec < 3600) return `${Math.floor(sec / 60)} 分鐘前`;
-    return new Date(iso).toLocaleString('zh-TW');
-  } catch {
-    return iso;
-  }
 }
 
 function ItemRow({
@@ -132,6 +118,7 @@ export function ReadinessPage() {
   const [filter, setFilter] = useState<LevelFilter>('all');
   const [catFilter, setCatFilter] = useState<string>('all');
   const [q, setQ] = useState('');
+  const [tab, setTab] = usePageTab(RDY_TABS, 'priority');
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -242,14 +229,69 @@ export function ReadinessPage() {
     <FeaturePageLayout
       title={t('nav.readiness', { defaultValue: '就緒探測' })}
       showCapability={false}
-      actions={
-        <>
-          <Button variant="secondary" size="md" loading={busy} onClick={() => void load()}>
+      status={
+        report
+          ? {
+              pill: {
+                label: report.productionReady
+                  ? `門檻通過 · ${scorePct}%`
+                  : `尚未達標 · ${scorePct}%`,
+                tone: heroTone,
+              },
+              items: [
+                {
+                  label: 'EXECUTE',
+                  value: report.executeEnabled ? '已開' : '未開',
+                  tone: report.executeEnabled ? 'ok' : 'warn',
+                },
+                {
+                  label: 'Root',
+                  value: report.isRoot ? '是' : '否',
+                  tone: report.isRoot ? 'ok' : 'warn',
+                },
+                { label: '就緒', value: score?.ready ?? 0, tone: 'ok' },
+                {
+                  label: '降級',
+                  value: score?.degraded ?? 0,
+                  tone: (score?.degraded ?? 0) > 0 ? 'warn' : 'neutral',
+                },
+                {
+                  label: '缺少',
+                  value: score?.missing ?? 0,
+                  tone: (score?.missing ?? 0) > 0 ? 'danger' : 'neutral',
+                },
+                {
+                  label: '阻擋',
+                  value: blockers.length,
+                  tone: blockers.length ? 'danger' : 'ok',
+                },
+              ],
+            }
+          : undefined
+      }
+      actions={<>
+          <Button variant="secondary" size="sm" loading={busy} onClick={() => void load()}>
             {busy ? '探測中…' : '重新探測'}
           </Button>
-          <Button variant="ghost" size="md" disabled={!report} onClick={() => downloadReport()}>
+          <Button variant="ghost" size="sm" disabled={!report} onClick={() => downloadReport()}>
             匯出報告
           </Button>
+          {firstFix ? (
+            <Link to={firstFix.fixHref!} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
+              處理首個阻擋
+            </Link>
+          ) : report && !report.productionReady ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setFilter('degraded');
+                setTab('checklist');
+              }}
+            >
+              檢視建議項
+            </Button>
+          ) : null}
         </>
       }
     >
@@ -258,384 +300,279 @@ export function ReadinessPage() {
 
       {report ? (
         <div className="rdy">
-          {/* —— Hero —— */}
-          <section
-            className={`rdy-hero rdy-hero--${heroTone}`}
-            aria-label="就緒總覽"
+          <PageTabs
+            tabs={[
+              {
+                id: 'priority',
+                label: '優先修復',
+                badge: blockers.length || undefined,
+              },
+              {
+                id: 'checklist',
+                label: '完整清單',
+                badge: report.items.length || undefined,
+              },
+              { id: 'summary', label: '摘要與快捷' },
+            ]}
+            active={tab}
+            onChange={setTab}
+            variant="scroll"
           >
-            <div className="rdy-hero__main">
-              <div className="rdy-hero__gauge" aria-hidden>
-                <div
-                  className="rdy-hero__ring"
-                  style={{ ['--rdy-score' as string]: String(scorePct) } as CSSProperties}
+            {tab === 'priority' ? (
+              <div className="tab-panel">
+                <section
+                  className="rdy-panel rdy-panel--primary"
+                  aria-labelledby="rdy-next-title"
                 >
-                  <div className="rdy-hero__ring-inner">
-                    <span className="rdy-hero__score">{scorePct}</span>
-                    <span className="rdy-hero__score-unit">%</span>
-                  </div>
-                </div>
-              </div>
+                  <header className="rdy-panel__head">
+                    <div>
+                      <h2 id="rdy-next-title" className="rdy-panel__title">
+                        優先修復
+                      </h2>
+                      <p className="rdy-panel__sub">
+                        按建議順序處理；修好阻擋後再重新探測
+                      </p>
+                    </div>
+                    {blockers.length > 0 ? (
+                      <Badge tone="danger">{blockers.length} 項</Badge>
+                    ) : (
+                      <Badge tone="ok">無硬阻擋</Badge>
+                    )}
+                  </header>
 
-              <div className="rdy-hero__copy">
-                <div className="rdy-hero__eyebrow">Production readiness</div>
-                <h2 className="rdy-hero__title">
-                  <span className={`rdy-hero__pill rdy-hero__pill--${heroTone}`}>
-                    {report.productionReady ? '門檻通過' : '尚未達標'}
-                  </span>
-                  {report.productionReady
-                    ? '此主機已具備生產套用能力'
-                    : '請先處理下方優先阻擋項'}
-                </h2>
-                <p className="rdy-hero__hint">
-                  門檻 = root + <code>YSK_EXECUTE</code> + nginx／node 在 PATH + dataDir。
-                  就緒 ≠ 已對外；需套用後才上線。
-                </p>
-                <div className="rdy-hero__meta">
-                  <span>
-                    模式 <strong>{modeLabel(report.mode)}</strong>
-                  </span>
-                  <span className="rdy-hero__dot" />
-                  <span>
-                    {score?.ready ?? 0}/{score?.total ?? 0} 項就緒
-                  </span>
-                  <span className="rdy-hero__dot" />
-                  <span>探測 {relTime(report.generatedAt)}</span>
-                </div>
-                <div className="rdy-hero__cta">
-                  {firstFix ? (
-                    <Link to={firstFix.fixHref!} className="btn btn--primary btn--md">
-                      處理首個阻擋：{firstFix.title}
-                    </Link>
+                  {blockers.length === 0 ? (
+                    <div className="rdy-empty rdy-empty--ok">
+                      <strong>沒有硬阻擋項</strong>
+                      <p>
+                        生產門檻
+                        {report.productionReady ? '已通過' : '仍可能因權限未達標'}。
+                        可檢視「降級」建議項（郵件、DNS、可選 runtime）。
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setFilter('degraded');
+                          setTab('checklist');
+                        }}
+                      >
+                        查看降級項
+                      </Button>
+                    </div>
                   ) : (
-                    <Button variant="primary" size="md" onClick={() => setFilter('degraded')}>
-                      檢視建議項
-                    </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    onClick={() => {
-                      setFilter('all');
-                      document.getElementById('rdy-checklist')?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                      });
-                    }}
-                  >
-                    完整清單
-                  </Button>
-                  <Link to="/system" className="btn btn--ghost btn--md">
-                    主機設定
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <ul className="rdy-rail" aria-label="關鍵能力">
-              <li>
-                <span className="rdy-rail__k">EXECUTE</span>
-                <Badge tone={report.executeEnabled ? 'ok' : 'warn'}>
-                  {report.executeEnabled ? '已開' : '未開'}
-                </Badge>
-              </li>
-              <li>
-                <span className="rdy-rail__k">Root</span>
-                <Badge tone={report.isRoot ? 'ok' : 'warn'}>
-                  {report.isRoot ? '是' : '否'}
-                </Badge>
-              </li>
-              <li>
-                <span className="rdy-rail__k">就緒</span>
-                <Badge tone="ok">{score?.ready ?? 0}</Badge>
-              </li>
-              <li>
-                <span className="rdy-rail__k">降級</span>
-                <Badge tone={(score?.degraded ?? 0) > 0 ? 'warn' : 'neutral'}>
-                  {score?.degraded ?? 0}
-                </Badge>
-              </li>
-              <li>
-                <span className="rdy-rail__k">缺少</span>
-                <Badge tone={(score?.missing ?? 0) > 0 ? 'danger' : 'neutral'}>
-                  {score?.missing ?? 0}
-                </Badge>
-              </li>
-              <li>
-                <span className="rdy-rail__k">阻擋</span>
-                <Badge tone={blockers.length ? 'danger' : 'ok'}>{blockers.length}</Badge>
-              </li>
-            </ul>
-
-            <div className="rdy-bars" aria-hidden>
-              <div className="rdy-bars__track">
-                <div
-                  className="rdy-bars__seg rdy-bars__seg--ok"
-                  style={{ flex: score?.ready || 0.001 }}
-                  title={`就緒 ${score?.ready}`}
-                />
-                <div
-                  className="rdy-bars__seg rdy-bars__seg--warn"
-                  style={{ flex: score?.degraded || 0.001 }}
-                  title={`降級 ${score?.degraded}`}
-                />
-                <div
-                  className="rdy-bars__seg rdy-bars__seg--danger"
-                  style={{ flex: score?.missing || 0.001 }}
-                  title={`缺少 ${score?.missing}`}
-                />
-              </div>
-              <div className="rdy-bars__legend">
-                <span>
-                  <i className="rdy-bars__dot rdy-bars__dot--ok" /> 就緒 {score?.ready}
-                </span>
-                <span>
-                  <i className="rdy-bars__dot rdy-bars__dot--warn" /> 降級 {score?.degraded}
-                </span>
-                <span>
-                  <i className="rdy-bars__dot rdy-bars__dot--danger" /> 缺少 {score?.missing}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* —— Layout: next steps + summary —— */}
-          <div className="rdy-grid">
-            <section className="rdy-panel rdy-panel--primary" aria-labelledby="rdy-next-title">
-              <header className="rdy-panel__head">
-                <div>
-                  <h2 id="rdy-next-title" className="rdy-panel__title">
-                    優先修復
-                  </h2>
-                  <p className="rdy-panel__sub">
-                    按建議順序處理；修好阻擋後再重新探測
-                  </p>
-                </div>
-                {blockers.length > 0 ? (
-                  <Badge tone="danger">{blockers.length} 項</Badge>
-                ) : (
-                  <Badge tone="ok">無硬阻擋</Badge>
-                )}
-              </header>
-
-              {blockers.length === 0 ? (
-                <div className="rdy-empty rdy-empty--ok">
-                  <strong>沒有硬阻擋項</strong>
-                  <p>
-                    生產門檻
-                    {report.productionReady ? '已通過' : '仍可能因權限未達標'}。
-                    可檢視「降級」建議項（郵件、DNS、可選 runtime）。
-                  </p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setFilter('degraded')}
-                  >
-                    查看降級項
-                  </Button>
-                </div>
-              ) : (
-                <div className="rdy-item-list">
-                  {blockers.map((item, i) => (
-                    <ItemRow key={item.id} item={item} index={i} emphasize />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <aside className="rdy-side">
-              <section className="rdy-panel">
-                <header className="rdy-panel__head">
-                  <h2 className="rdy-panel__title">摘要</h2>
-                </header>
-                <ul className="rdy-summary">
-                  {report.summary.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              </section>
-
-              <section className="rdy-panel">
-                <header className="rdy-panel__head">
-                  <h2 className="rdy-panel__title">快捷入口</h2>
-                </header>
-                <nav className="rdy-shortcuts" aria-label="運維捷徑">
-                  <Link to="/system" className="rdy-shortcut">
-                    <span className="rdy-shortcut__t">主機設定</span>
-                    <span className="rdy-shortcut__d">hostname · 電源 · NTP</span>
-                  </Link>
-                  <Link to="/system/unit" className="rdy-shortcut">
-                    <span className="rdy-shortcut__t">控制面 unit</span>
-                    <span className="rdy-shortcut__d">systemd 安裝／啟用</span>
-                  </Link>
-                  <Link to="/services" className="rdy-shortcut">
-                    <span className="rdy-shortcut__t">服務矩陣</span>
-                    <span className="rdy-shortcut__d">nginx · DB · 生命週期</span>
-                  </Link>
-                  <Link to="/metrics" className="rdy-shortcut">
-                    <span className="rdy-shortcut__t">主機指標</span>
-                    <span className="rdy-shortcut__d">負載 · 記憶體 · 告警</span>
-                  </Link>
-                  <Link to="/firewall" className="rdy-shortcut">
-                    <span className="rdy-shortcut__t">防火牆</span>
-                    <span className="rdy-shortcut__d">UFW 規則</span>
-                  </Link>
-                  <Link to="/fail2ban" className="rdy-shortcut">
-                    <span className="rdy-shortcut__t">Fail2ban</span>
-                    <span className="rdy-shortcut__d">jail · ban</span>
-                  </Link>
-                </nav>
-              </section>
-
-              <p className="rdy-footnote">
-                政策：郵件 PTR／Port 25／域名商 DNS 永不自動宣稱完成。
-                HTTP 503 = 未達標但仍有完整報告（非假成功）。
-              </p>
-            </aside>
-          </div>
-
-          {/* —— Full checklist —— */}
-          <section className="rdy-panel rdy-panel--checklist" id="rdy-checklist">
-            <header className="rdy-panel__head rdy-panel__head--stack">
-              <div className="rdy-panel__head-row">
-                <div>
-                  <h2 className="rdy-panel__title">完整檢查清單</h2>
-                  <p className="rdy-panel__sub">
-                    顯示 {filtered.length} / {report.items.length} 項
-                    {catFilter !== 'all' ? ` · ${CAT_LABEL[catFilter] ?? catFilter}` : ''}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rdy-toolbar">
-                <div className="rdy-chips" role="tablist" aria-label="狀態篩選">
-                  {(
-                    [
-                      ['all', `全部`, report.items.length],
-                      ['blockers', `阻擋`, blockers.length],
-                      ['missing', `缺少`, score?.missing ?? 0],
-                      ['degraded', `降級`, score?.degraded ?? 0],
-                      ['ready', `就緒`, score?.ready ?? 0],
-                    ] as const
-                  ).map(([id, label, n]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      role="tab"
-                      aria-selected={filter === id}
-                      className={`rdy-chip${filter === id ? ' rdy-chip--active' : ''}${
-                        id === 'missing' || id === 'blockers'
-                          ? ' rdy-chip--danger'
-                          : id === 'degraded'
-                            ? ' rdy-chip--warn'
-                            : id === 'ready'
-                              ? ' rdy-chip--ok'
-                              : ''
-                      }`}
-                      onClick={() => setFilter(id)}
-                    >
-                      {label}
-                      <span className="rdy-chip__n">{n}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="rdy-toolbar__filters">
-                  <label className="rdy-field">
-                    <span className="rdy-field__lab">類別</span>
-                    <select
-                      value={catFilter}
-                      onChange={(e) => setCatFilter(e.target.value)}
-                    >
-                      <option value="all">全部類別</option>
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {CAT_LABEL[c] ?? c}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="rdy-field rdy-field--grow">
-                    <span className="rdy-field__lab">搜尋</span>
-                    <input
-                      value={q}
-                      onChange={(e) => setQ(e.target.value)}
-                      placeholder="標題、說明、id、修復提示…"
-                      autoComplete="off"
-                    />
-                  </label>
-                </div>
-
-                {categories.length > 1 ? (
-                  <div className="rdy-cat-pills" aria-label="快速類別">
-                    <button
-                      type="button"
-                      className={`rdy-pill${catFilter === 'all' ? ' rdy-pill--active' : ''}`}
-                      onClick={() => setCatFilter('all')}
-                    >
-                      全部
-                    </button>
-                    {categories.map((c) => {
-                      const count = report.items.filter((i) => i.category === c).length;
-                      const bad = report.items.filter(
-                        (i) =>
-                          i.category === c &&
-                          (i.level === 'missing' || i.level === 'degraded'),
-                      ).length;
-                      return (
-                        <button
-                          key={c}
-                          type="button"
-                          className={`rdy-pill${catFilter === c ? ' rdy-pill--active' : ''}${
-                            bad > 0 ? ' rdy-pill--issue' : ''
-                          }`}
-                          onClick={() => setCatFilter(c)}
-                        >
-                          {CAT_LABEL[c] ?? c}
-                          <span className="rdy-pill__n">{count}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            </header>
-
-            {grouped.length === 0 ? (
-              <div className="rdy-empty">
-                <strong>沒有符合的項目</strong>
-                <p>試下清搜尋或改篩選條件。</p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setFilter('all');
-                    setCatFilter('all');
-                    setQ('');
-                  }}
-                >
-                  重設篩選
-                </Button>
-              </div>
-            ) : (
-              <div className="rdy-groups">
-                {grouped.map(({ cat, items }) => (
-                  <div key={cat} className="rdy-group">
-                    <div className="rdy-group__head">
-                      <h3 className="rdy-group__title">
-                        {CAT_LABEL[cat] ?? cat}
-                      </h3>
-                      <span className="rdy-group__count">{items.length}</span>
-                    </div>
                     <div className="rdy-item-list">
-                      {items.map((item) => (
-                        <ItemRow key={item.id} item={item} />
+                      {blockers.map((item, i) => (
+                        <ItemRow key={item.id} item={item} index={i} emphasize />
                       ))}
                     </div>
-                  </div>
-                ))}
+                  )}
+                </section>
               </div>
-            )}
-          </section>
+            ) : null}
+
+            {tab === 'checklist' ? (
+              <div className="tab-panel">
+                <section className="rdy-panel rdy-panel--checklist" id="rdy-checklist">
+                  <header className="rdy-panel__head rdy-panel__head--stack">
+                    <div className="rdy-panel__head-row">
+                      <div>
+                        <h2 className="rdy-panel__title">完整檢查清單</h2>
+                        <p className="rdy-panel__sub">
+                          顯示 {filtered.length} / {report.items.length} 項
+                          {catFilter !== 'all'
+                            ? ` · ${CAT_LABEL[catFilter] ?? catFilter}`
+                            : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rdy-toolbar">
+                      <div className="rdy-chips" role="tablist" aria-label="狀態篩選">
+                        {(
+                          [
+                            ['all', `全部`, report.items.length],
+                            ['blockers', `阻擋`, blockers.length],
+                            ['missing', `缺少`, score?.missing ?? 0],
+                            ['degraded', `降級`, score?.degraded ?? 0],
+                            ['ready', `就緒`, score?.ready ?? 0],
+                          ] as const
+                        ).map(([id, label, n]) => (
+                          <button
+                            key={id}
+                            type="button"
+                            role="tab"
+                            aria-selected={filter === id}
+                            className={`rdy-chip${filter === id ? ' rdy-chip--active' : ''}${
+                              id === 'missing' || id === 'blockers'
+                                ? ' rdy-chip--danger'
+                                : id === 'degraded'
+                                  ? ' rdy-chip--warn'
+                                  : id === 'ready'
+                                    ? ' rdy-chip--ok'
+                                    : ''
+                            }`}
+                            onClick={() => setFilter(id)}
+                          >
+                            {label}
+                            <span className="rdy-chip__n">{n}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="rdy-toolbar__filters">
+                        <label className="rdy-field">
+                          <span className="rdy-field__lab">類別</span>
+                          <select
+                            value={catFilter}
+                            onChange={(e) => setCatFilter(e.target.value)}
+                          >
+                            <option value="all">全部類別</option>
+                            {categories.map((c) => (
+                              <option key={c} value={c}>
+                                {CAT_LABEL[c] ?? c}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="rdy-field rdy-field--grow">
+                          <span className="rdy-field__lab">搜尋</span>
+                          <input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder="標題、說明、id、修復提示…"
+                            autoComplete="off"
+                          />
+                        </label>
+                      </div>
+
+                      {categories.length > 1 ? (
+                        <div className="rdy-cat-pills" aria-label="快速類別">
+                          <button
+                            type="button"
+                            className={`rdy-pill${catFilter === 'all' ? ' rdy-pill--active' : ''}`}
+                            onClick={() => setCatFilter('all')}
+                          >
+                            全部
+                          </button>
+                          {categories.map((c) => {
+                            const count = report.items.filter(
+                              (i) => i.category === c,
+                            ).length;
+                            const bad = report.items.filter(
+                              (i) =>
+                                i.category === c &&
+                                (i.level === 'missing' || i.level === 'degraded'),
+                            ).length;
+                            return (
+                              <button
+                                key={c}
+                                type="button"
+                                className={`rdy-pill${catFilter === c ? ' rdy-pill--active' : ''}${
+                                  bad > 0 ? ' rdy-pill--issue' : ''
+                                }`}
+                                onClick={() => setCatFilter(c)}
+                              >
+                                {CAT_LABEL[c] ?? c}
+                                <span className="rdy-pill__n">{count}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
+                  </header>
+
+                  {grouped.length === 0 ? (
+                    <div className="rdy-empty">
+                      <strong>沒有符合的項目</strong>
+                      <p>試下清搜尋或改篩選條件。</p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setFilter('all');
+                          setCatFilter('all');
+                          setQ('');
+                        }}
+                      >
+                        重設篩選
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="rdy-groups">
+                      {grouped.map(({ cat, items }) => (
+                        <div key={cat} className="rdy-group">
+                          <div className="rdy-group__head">
+                            <h3 className="rdy-group__title">
+                              {CAT_LABEL[cat] ?? cat}
+                            </h3>
+                            <span className="rdy-group__count">{items.length}</span>
+                          </div>
+                          <div className="rdy-item-list">
+                            {items.map((item) => (
+                              <ItemRow key={item.id} item={item} />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </div>
+            ) : null}
+
+            {tab === 'summary' ? (
+              <div className="tab-panel stack">
+                <section className="rdy-panel">
+                  <header className="rdy-panel__head">
+                    <h2 className="rdy-panel__title">摘要</h2>
+                  </header>
+                  <ul className="rdy-summary">
+                    {report.summary.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section className="rdy-panel">
+                  <header className="rdy-panel__head">
+                    <h2 className="rdy-panel__title">快捷入口</h2>
+                  </header>
+                  <nav className="rdy-shortcuts" aria-label="運維捷徑">
+                    <Link to="/system" className="rdy-shortcut">
+                      <span className="rdy-shortcut__t">主機設定</span>
+                      <span className="rdy-shortcut__d">hostname · 電源 · NTP</span>
+                    </Link>
+                    <Link to="/system/unit" className="rdy-shortcut">
+                      <span className="rdy-shortcut__t">控制面 unit</span>
+                      <span className="rdy-shortcut__d">systemd 安裝／啟用</span>
+                    </Link>
+                    <Link to="/services" className="rdy-shortcut">
+                      <span className="rdy-shortcut__t">服務矩陣</span>
+                      <span className="rdy-shortcut__d">nginx · DB · 生命週期</span>
+                    </Link>
+                    <Link to="/metrics" className="rdy-shortcut">
+                      <span className="rdy-shortcut__t">主機指標</span>
+                      <span className="rdy-shortcut__d">負載 · 記憶體 · 告警</span>
+                    </Link>
+                    <Link to="/firewall" className="rdy-shortcut">
+                      <span className="rdy-shortcut__t">防火牆</span>
+                      <span className="rdy-shortcut__d">UFW 規則</span>
+                    </Link>
+                    <Link to="/fail2ban" className="rdy-shortcut">
+                      <span className="rdy-shortcut__t">Fail2ban</span>
+                      <span className="rdy-shortcut__d">jail · ban</span>
+                    </Link>
+                  </nav>
+                </section>
+
+                <p className="rdy-footnote">
+                  政策：郵件 PTR／Port 25／域名商 DNS 永不自動宣稱完成。
+                  HTTP 503 = 未達標但仍有完整報告（非假成功）。
+                </p>
+              </div>
+            ) : null}
+          </PageTabs>
         </div>
       ) : null}
 

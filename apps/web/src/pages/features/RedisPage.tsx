@@ -4,7 +4,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
+import { ActionBar,
   Alert,
   Badge,
   Button,
@@ -18,7 +18,7 @@ import {
   OpsResultPanel,
   PresetChips,
   SplitPanel,
-  OpsHero,
+
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
@@ -258,16 +258,32 @@ export function RedisPage() {
   return (
     <FeaturePageLayout
       title={t('nav.redis', { defaultValue: 'Redis' })}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label: online ? '已連線' : '未連線',
+          tone: online ? 'ok' : 'warn',
+        },
+        items: summaryItems.length
+          ? summaryItems.slice(0, 4).map((s) => ({
+              label: s.label,
+              value: s.value,
+            }))
+          : [
+              { label: '狀態', value: online ? 'online' : 'offline' },
+              { label: 'DB', value: db },
+              { label: '鍵', value: keys.length },
+              { label: '選中', value: selectedKey ? '1' : '0' },
+            ],
+      }}
+      actions={<ActionBar>
           <Link to="/databases/redis/service">
-            <Button variant="secondary" size="md">
+            <Button variant="secondary" size="sm">
               服務設定
             </Button>
           </Link>
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             disabled={busy || loadingKeys}
             onClick={() => {
               setError(null);
@@ -279,11 +295,11 @@ export function RedisPage() {
             重新整理
           </Button>
           {online ? (
-            <Button variant="primary" size="md" onClick={() => setSetOpen(true)}>
+            <Button variant="primary" size="sm" onClick={() => setSetOpen(true)}>
               新增鍵
             </Button>
           ) : null}
-        </div>
+        </ActionBar>
       }
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -296,30 +312,6 @@ export function RedisPage() {
           </Button>
         </Alert>
       ) : null}
-
-      <OpsHero
-        pill={online ? '已連線' : '未連線'}
-        pillTone={online ? 'ok' : 'warn'}
-        tone={online ? 'ok' : 'warn'}
-        cta={
-          <Link to="/databases/redis/service" className="btn btn--secondary btn--md">
-            服務設定
-          </Link>
-        }
-        stats={
-          summaryItems.length
-            ? summaryItems.slice(0, 4).map((s) => ({
-                label: s.label,
-                value: s.value,
-              }))
-            : [
-                { label: '狀態', value: online ? 'online' : 'offline' },
-                { label: 'DB', value: db },
-                { label: '鍵', value: keys.length },
-                { label: '選中', value: selectedKey ? '1' : '0' },
-              ]
-        }
-      />
 
       {!online ? (
         <EmptyState
@@ -471,10 +463,10 @@ export function RedisPage() {
                 <div className="redis-detail-body">
                   <div className="redis-detail-meta">
                     <div className="redis-detail-key">{selected.key}</div>
-                    <div className="btn-row">
+                    <ActionBar>
                       <Badge tone={typeTone(selected.type)}>{typeLabel(selected.type)}</Badge>
                       <span className="muted u-text-sm">過期：{formatTtl(selected.ttl)}</span>
-                    </div>
+                    </ActionBar>
                   </div>
                   <div className="redis-detail-value">
                     <pre>{formatValue(selected)}</pre>

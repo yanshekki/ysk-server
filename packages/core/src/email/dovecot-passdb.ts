@@ -119,7 +119,7 @@ export function writeDovecotPassdb(input: {
 export function writeAllDovecotPassdbs(input: {
   dataDir: string;
   db: YskDatabase;
-}): { domains: DovecotPassdbResult[]; notes: string[] } {
+}): { ok: boolean; domains: DovecotPassdbResult[]; notes: string[] } {
   const domains = new Set<string>();
   for (const m of input.db.snapshot.mailboxes) {
     if (m.domain) domains.add(String(m.domain).toLowerCase());
@@ -132,7 +132,9 @@ export function writeAllDovecotPassdbs(input: {
   for (const domain of domains) {
     results.push(writeDovecotPassdb({ dataDir: input.dataDir, db: input.db, domain }));
   }
+  const ok = results.every((r) => r.ok !== false);
   return {
+    ok,
     domains: results,
     notes: [`Wrote passdb for ${results.length} domain(s)`],
   };

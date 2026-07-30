@@ -33,10 +33,10 @@ Ship order:
 | B3 | Suspend / unsuspend project | stop + 503 vhost | **done** |
 | B4 | Domain aliases | multi-server_name | **done** |
 | B5 | Subdomains as first-class or alias helper | via aliases | **done** (alias) |
-| B7–B8 | Rename domain / custom docroot | domain via network tab; docroot later | partial |
+| B7–B8 | Rename domain / custom docroot | domain + first-class docroot PresetChips + bind IP | **done** |
 | B11 | Force HTTPS + HSTS toggles | network tab + publish | **done** |
 | B18 | Create jailed FTP from project | preset path + project linuxUser guest | **done** |
-| B20 | Access/error log viewer polish | logs tab exists | partial |
+| B20 | Access/error log viewer polish | logs tab + grep + extra dirs | **done** |
 | B22 | Per-site PHP version when runtime=php | deploy/FPM version | **done** |
 | B26 | Apply mem/cpu/disk quotas honestly | soft + panel limits + setquota try | **done** (hard FS-dependent) |
 | B27 | Create modal: also create DNS zone / mail domain | checkboxes | **done** |
@@ -45,7 +45,7 @@ Ship order:
 | ID | Work | Notes | Status |
 |----|------|-------|--------|
 | C3 | Zone templates (minimal/web/mail/full) | seed records | **done** |
-| C4 | SOA/TTL/NS edit | SOA fixed in zone file; TTL per-record | partial |
+| C4 | SOA/TTL/NS edit | create + selected-zone SOA form; TTL per-record | **done** |
 | C5 | Real apply: write + named-check + reload **or** honest `written` | no fake applied | **done** |
 | C8 | External DNS record checklist share with email | GET /dns/external-checklist | **done** |
 | C9 | Validate zone (named-checkzone) | Better | **done** |
@@ -56,18 +56,18 @@ Ship order:
 | F3 | Alias + forward full CRUD | virtual_alias map | **done** |
 | F4 | Catch-all | type=catchall | **done** |
 | F5 | Autoreply | domain flags (MTA sieve later) | **done** (flags) |
-| F6–F7 | DKIM/SPF/DMARC complete panel | existing DNS tab | partial |
-| F10 | Antispam per domain toggle | flag field | partial |
-| F13 | Outbound rate limits | flag field | partial |
+| F6–F7 | DKIM/SPF/DMARC complete panel | DNS tab + live 探測矩陣 | **done** |
+| F10 | Antispam per domain toggle | flag + Rspamd multimap apply | **done** (written/applied honesty) |
+| F13 | Outbound rate limits | flag + Postfix anvil / policy maps | **done** (written/applied honesty) |
 | F17 | Autodiscover/autoconfig endpoints | public XML + domain panel | **done** |
 | F18 | Mail queue list + flush | postqueue UI list + flush | **done** |
-| F20–F22 | Bootstrap honesty · mail SSL · suspend | suspend flags | partial |
+| F20–F22 | Bootstrap honesty · mail SSL · suspend | bootstrap + LE deep-link + suspend flags | **done** |
 
 ### 1.4 SSL
 | ID | Work | Notes | Status |
 |----|------|-------|--------|
 | D5 | Show auto-renew job status | bindings.renewJobs | **done** (API) |
-| D7 | Mail domain SSL integration | LE deep-link | partial |
+| D7 | Mail domain SSL integration | LE deep-link mail/webmail/domain | **done** |
 | D8 | Binding overview (cert → projects/mail) | GET /ssl/bindings | **done** |
 | D9 | Expiry warnings on dashboard | KPI + alert + notifications | **done** |
 
@@ -101,15 +101,15 @@ Ship order:
 
 | Area | Work |
 |------|------|
-| Global | Enforce written/applied/blocked on every apply path |
-| Files | chmod · zip/unzip · search harden (G3/G4/G12) |
-| DB | Full dump/import · Adminer or embedded browser entry (I4/I5) |
-| Email | Deliverability health UX · external todos (F19) |
-| Dashboard | Notification center (A3) · security strip (A5) |
+| Global | Enforce written/applied/blocked on every apply path | **done** (audit 擴充 + normalizeOpsHonesty + HTTP 403) |
+| Files | chmod · zip/unzip · search harden (G3/G4/G12) | **done** (real zip/unzip/chmod + Modal UI) |
+| DB | Full dump/import · Adminer or embedded browser entry (I4/I5) | **done** (Adminer Modal written/applied) |
+| Email | Deliverability health UX · external todos (F19) | **done** (live 探測矩陣 + persist health) |
+| Dashboard | Notification center (A3) · security strip (A5) | **done** (概覽安全條 + apply audit 通知) |
 | Sites | Cache purge · HTTP auth · site redirect (B15–B17) | **done** (network tab + runtime-aware publish) |
 | Nginx | Template gallery · purge (E4/E5) |
-| Fail2ban | Ban list UX · whitelist (N3/N4) |
-| Metrics | Per-project usage strip (P3) |
+| Fail2ban | Ban list UX · whitelist (N3/N4) | **done** (白名單分頁 + DataTable + apply_status) |
+| Metrics | Per-project usage strip (P3) | **done** (GET /metrics/projects real du) |
 | System | Hostname/timezone panel (T1) |
 
 ---
@@ -152,16 +152,16 @@ Ship order:
 
 ---
 
-## Progress snapshot (2026-07-28 收斂)
+## Progress snapshot (2026-07-29 收斂)
 
 Honest admin view — not marketing. **production** needs root + `YSK_EXECUTE=1`.
 
 | Domain | Est. | Notes |
 |--------|------|-------|
 | Projects | **100% in-scope** | docroot／bind IP／suspend／aliases／HTTP auth／redirect／cache purge |
-| DNS | **100% in-scope** | zone apply 誠實；DNSSEC **素材**；cluster／自動簽署 = out |
+| DNS | **100% in-scope** | zone apply 誠實；DNSSEC 金鑰 + 可選 signzone；DS 人手上 registrar |
 | SSL | **100% in-scope** | LE／上傳／bindings／到期通知；wildcard 可選 |
-| Email | **100% in-scope\*** | domain／mailbox／queue／autoconfig／deliverability checklist |
+| Email | **100% in-scope*** | suspend/autoreply 可 applySystem（Postfix REJECT + sieve） |
 | Files / FTP / SFTP | **100% in-scope** | chmod／zip／keys |
 | DB | **100% in-scope** | provision 誠實 refuse／execute |
 | Cron / Backup | **100% in-scope** | 排程 install 仍係 ops 步驟 |
@@ -170,15 +170,14 @@ Honest admin view — not marketing. **production** needs root + `YSK_EXECUTE=1`
 | **Log Center** | **100% in-scope** | journal／檔案 allowlist／書籤／SSE／vacuum |
 | Services / Metrics / Notifications | **100% in-scope** | Dashboard 通知中心 |
 | Security (2FA / API keys / approvals) | **100% in-scope** | |
-| System host settings | **100% in-scope** | overview／identity／NTP／network+disks 唯讀／電源 reboot·poweroff·cancel（typed confirm）／IPs |
-| AI / Agents | **100%†** | playbook／probe；vendor 全自動 fleet install out |
+| System host settings | **100% in-scope** | overview／identity／NTP／電源／IPs |
+| Updates | **100% in-scope** | apt 真 candidate；self-update = npm 或 git（YSK_SOURCE_ROOT） |
+| AI / Agents | **100%†** | 真 binary ExecStart；無 CLI 唔假 enable |
 | Users/Packages multi-tenant | **out / P2 platform** | 唔計 Admin 100% |
-| **Overall Admin plane** | **100%** | `docs/deploy/admin-plane-100.md` · `docs/product-remaining-plan.md` |
-| **@ysk/core tests** | **253/253 pass** | 中文化訊息與測試 regex 已對齊 |
-| **Line coverage ≥90%** | **未達（工程債）** | 唔阻擋功能 100%；持續補測 |
-
-\* 國際 inbox 永遠外部（PTR／Port25）。  
-† AI 能力隨模型成長，唔再列功能欠債。
+| **Overall Admin plane** | **100%** | 誠實 written/applied/blocked |
+| **真做合約** | **done** | 禁止 ok+blocked；dryRun 唔抬 ok |
+| **@ysk/core tests** | **365+ pass** | 持續綠 |
+| **Line coverage ≥90%** | **未達（工程債）** | 唔阻擋功能 100% |
 
 ### Explicit out of scope (unchanged)
 

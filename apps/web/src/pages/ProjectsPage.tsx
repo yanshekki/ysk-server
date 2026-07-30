@@ -7,15 +7,15 @@ import { useTranslation } from 'react-i18next';
 import {
   ProjectCreateModal,
   ProjectList,
-  ProjectSummaryStrip,
   useProjects,
 } from '../features/projects';
+import { summarizeProjects } from '../features/projects/model/status';
 import {
+  ActionBar,
   Alert,
-  Badge,
   Button,
   FeaturePageLayout,
-  OpsHero,
+  ListPanel,
   SegRadio,
 } from '../shared/components/ui';
 
@@ -43,23 +43,43 @@ export function ProjectsPage() {
     });
   }, [items, query, runtimeFilter]);
 
+  const stats = useMemo(() => summarizeProjects(items), [items]);
+
   return (
     <FeaturePageLayout
       title={t('nav.projects', { defaultValue: '專案' })}
-      actions={
-        <div className="btn-row">
+      status={{
+        pill: {
+          label: stats.total ? `${stats.total} 專案` : '尚無專案',
+          tone: stats.total ? 'ok' : 'warn',
+        },
+        items: [
+          { label: t('projects.statTotal'), value: stats.total },
+          { label: t('projects.statRunning'), value: stats.running, tone: 'ok' },
+          { label: t('projects.statDegraded'), value: stats.degraded, tone: 'warn' },
+          {
+            label: t('projects.statPendingOs'),
+            value: stats.pendingOs,
+            tone: stats.pendingOs > 0 ? 'warn' : undefined,
+          },
+          {
+            label: t('projects.statUnhealthy'),
+            value: stats.unhealthy,
+            tone: 'danger',
+          },
+          { label: t('projects.statStopped'), value: stats.stopped },
+        ],
+      }}
+      actions={<ActionBar>
           <Button
-            variant="secondary"
-            size="md"
+            variant="ghost"
+            size="sm"
             loading={busy}
             onClick={() => void refresh().catch((e: Error) => setError(e.message))}
           >
             {t('common.refresh')}
           </Button>
-          <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
-            + {t('projects.create')}
-          </Button>
-        </div>
+        </ActionBar>
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
@@ -72,95 +92,59 @@ export function ProjectsPage() {
         </Alert>
       ) : null}
 
-      <OpsHero
-        pill={`${items.length}`}
-        pillTone={items.length ? 'ok' : 'warn'}
-        tone={items.length ? 'ok' : 'warn'}
-        meta={
-          <>
-            <span>
-              {filtered.length}/{items.length}
-            </span>
-            {runtimeFilter !== 'all' ? (
-              <>
-                <span className="ops-hero__dot" />
-                <span>{runtimeFilter}</span>
-              </>
-            ) : null}
-          </>
-        }
-        cta={
-          <>
-            <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
-              + 建立專案
+      <ListPanel
+        title={t('nav.projects', { defaultValue: '專案' })}
+        description={t('projects.searchPlaceholder')}
+        toolbar={
+          <ActionBar>
+            <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+              + {t('projects.create')}
             </Button>
-            <Link to="/nginx" className="btn btn--secondary btn--md">
-              Nginx
-            </Link>
-            <Link to="/ssl" className="btn btn--ghost btn--md">
-              SSL
-            </Link>
-            <Link to="/system/readiness" className="btn btn--ghost btn--md">
-              就緒
-            </Link>
-          </>
+          </ActionBar>
         }
-        stats={[
-          { label: '專案', value: items.length },
-          {
-            label: 'Node',
-            value: items.filter((p) => p.runtime === 'node').length,
-          },
-          {
-            label: 'PHP',
-            value: items.filter((p) => p.runtime === 'php').length,
-          },
-          {
-            label: '其他',
-            value: items.filter(
-              (p) => !['node', 'php'].includes(p.runtime),
-            ).length,
-          },
-        ]}
-      />
-
-      <ProjectSummaryStrip items={items} />
-
-      <div className="page-toolbar">
-        <div className="page-toolbar__search">
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('projects.searchPlaceholder')}
-            aria-label={t('projects.searchPlaceholder')}
-          />
-        </div>
-        <SegRadio
-          name="proj-rt-filter"
-          aria-label={t('projects.runtime')}
-          size="sm"
-          value={runtimeFilter}
-          onChange={(v) => setRuntimeFilter(v as typeof runtimeFilter)}
-          options={[
-            { value: 'all', label: t('projects.filterAll') },
-            { value: 'node', label: 'Node' },
-            { value: 'php', label: 'PHP' },
-            { value: 'python', label: 'Python' },
-            { value: 'go', label: 'Go' },
-            { value: 'rust', label: 'Rust' },
-            { value: 'static', label: '靜態' },
-          ]}
-        />
-      </div>
-
-      <ProjectList
-        items={filtered}
+        filters={
+          <div className="page-toolbar" style={{ margin: 0, border: 'none', padding: 0 }}>
+            <div className="page-toolbar__search">
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('projects.searchPlaceholder')}
+                aria-label={t('projects.searchPlaceholder')}
+              />
+            </div>
+            <SegRadio
+              name="proj-rt-filter"
+              aria-label={t('projects.runtime')}
+              size="sm"
+              value={runtimeFilter}
+              onChange={(v) => setRuntimeFilter(v as typeof runtimeFilter)}
+              options={[
+                { value: 'all', label: t('projects.filterAll') },
+                { value: 'node', label: 'Node' },
+                { value: 'php', label: 'PHP' },
+                { value: 'python', label: 'Python' },
+                { value: 'go', label: 'Go' },
+                { value: 'rust', label: 'Rust' },
+                { value: 'static', label: '靜態' },
+              ]}
+            />
+          </div>
+        }
+        empty={filtered.length === 0}
         emptyTitle={items.length === 0 ? t('projects.empty') : t('projects.emptyFilter')}
         emptyDescription={
           items.length === 0 ? t('projects.emptyHint') : t('projects.emptyFilterHint')
         }
-      />
+      >
+        <ProjectList
+          items={filtered}
+          emptyTitle={items.length === 0 ? t('projects.empty') : t('projects.emptyFilter')}
+          emptyDescription={
+            items.length === 0 ? t('projects.emptyHint') : t('projects.emptyFilterHint')
+          }
+        />
+      </ListPanel>
 
       <ProjectCreateModal
         open={createOpen}

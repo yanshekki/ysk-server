@@ -300,7 +300,7 @@ export async function installPowerDnsPackages(input: {
       'export DEBIAN_FRONTEND=noninteractive',
       'apt-get update',
       `apt-get install -y ${packages.join(' ')}`,
-      'systemctl enable --now pdns || true',
+      'systemctl enable --now pdns',
       'echo "PowerDNS installed — use ysk-server hosting powerdns-load --load"',
       '',
     ].join('\n'),
