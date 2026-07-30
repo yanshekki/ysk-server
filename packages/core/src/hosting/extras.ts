@@ -72,8 +72,8 @@ export interface DnsRecordPlan {
   template: DnsZoneTemplate;
 }
 
-/** Zone seed templates (Hestia/DA-style defaults). */
-export type DnsZoneTemplate = 'minimal' | 'web' | 'mail' | 'full';
+/** Zone seed templates (Hestia/DA-style defaults + CDN multi-A ready). */
+export type DnsZoneTemplate = 'minimal' | 'web' | 'mail' | 'full' | 'cdn';
 
 export const DNS_ZONE_TEMPLATES: Array<{
   id: DnsZoneTemplate;
@@ -84,11 +84,24 @@ export const DNS_ZONE_TEMPLATES: Array<{
   { id: 'web', label: '網站', description: 'apex + www' },
   { id: 'mail', label: '郵件', description: 'apex + mail + MX + SPF' },
   { id: 'full', label: '完整', description: 'web + mail + ftp + SPF' },
+  {
+    id: 'cdn',
+    label: 'CDN',
+    description: 'apex + www（多 edge 預留）+ cdn 主機名佔位',
+  },
 ];
 
 export function normalizeDnsZoneTemplate(raw?: string | null): DnsZoneTemplate {
   const t = (raw ?? 'full').toLowerCase();
-  if (t === 'minimal' || t === 'web' || t === 'mail' || t === 'full') return t;
+  if (
+    t === 'minimal' ||
+    t === 'web' ||
+    t === 'mail' ||
+    t === 'full' ||
+    t === 'cdn'
+  ) {
+    return t;
+  }
   return 'full';
 }
 
@@ -115,9 +128,20 @@ export function planDnsZone(opts: {
   records.push({ type: 'A', name: '@', value: ip, ttl });
   if (ip6) records.push({ type: 'AAAA', name: '@', value: ip6, ttl });
 
-  if (template === 'web' || template === 'full') {
+  if (template === 'web' || template === 'full' || template === 'cdn') {
     records.push({ type: 'A', name: 'www', value: ip, ttl });
     if (ip6) records.push({ type: 'AAAA', name: 'www', value: ip6, ttl });
+  }
+  if (template === 'cdn') {
+    // Edge hostname placeholder — multi-A will be managed by CDN planner later
+    records.push({ type: 'A', name: 'cdn', value: ip, ttl });
+    if (ip6) records.push({ type: 'AAAA', name: 'cdn', value: ip6, ttl });
+    records.push({
+      type: 'TXT',
+      name: '_ysk-cdn',
+      value: 'ysk-cdn-ready v1',
+      ttl,
+    });
   }
   if (template === 'mail' || template === 'full') {
     records.push({ type: 'A', name: 'mail', value: ip, ttl });
@@ -145,6 +169,12 @@ export function planDnsZone(opts: {
       'Managed zone file is not live until nameserver loads it',
       'External DNS: copy these records to your provider',
       ...(ip6 ? ['IPv6 AAAA records included for dual-stack'] : []),
+      ...(template === 'cdn'
+        ? [
+            'CDN template: multi-edge IPs should be added as additional A/AAAA on @ / www / cdn',
+            'Use CDN module later for health-based multi-A (managedBy=cdn)',
+          ]
+        : []),
     ],
   };
 }

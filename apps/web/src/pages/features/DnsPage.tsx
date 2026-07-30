@@ -24,17 +24,19 @@ import {
   buttonClassName,} from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec'] as const;
+const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec', 'tools'] as const;
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
+import { authStore } from '../../shared/stores/auth-store';
 
 const ZONE_TEMPLATES = [
   { id: 'minimal', label: '最小 — 僅 apex A' },
   { id: 'web', label: '網站 — apex + www' },
   { id: 'mail', label: '郵件 — apex + mail + MX + SPF' },
   { id: 'full', label: '完整 — web + mail + ftp + SPF' },
+  { id: 'cdn', label: 'CDN — apex + www + cdn（多 edge 預留）' },
 ] as const;
 
 export function DnsPage() {
@@ -65,7 +67,17 @@ export function DnsPage() {
   const [dnssecDs, setDnssecDs] = useState<string | null>(null);
   const [peerHost, setPeerHost] = useState('');
   const [peerUser, setPeerUser] = useState('ysk');
+  const [peerLabel, setPeerLabel] = useState('');
   const [peers, setPeers] = useState<Array<Record<string, unknown>>>([]);
+  const [clusterBusy, setClusterBusy] = useState(false);
+  const [clusterMsg, setClusterMsg] = useState<string | null>(null);
+  const [clusterNotes, setClusterNotes] = useState<string[]>([]);
+  const [clusterApplyStatus, setClusterApplyStatus] = useState<string | null>(
+    null,
+  );
+  const [clusterPeerResults, setClusterPeerResults] = useState<
+    Array<Record<string, unknown>>
+  >([]);
   const [soaNs, setSoaNs] = useState('');
   const [soaTtl, setSoaTtl] = useState('300');
   /** Edit SOA for selected zone (persist + re-write zone file) */
@@ -73,6 +85,18 @@ export function DnsPage() {
   const [editSoaTtl, setEditSoaTtl] = useState('300');
   const [soaBusy, setSoaBusy] = useState(false);
   const [soaMsg, setSoaMsg] = useState<string | null>(null);
+  /** Tools tab: dig/lookup */
+  const [lookupName, setLookupName] = useState('');
+  const [lookupType, setLookupType] = useState('A');
+  const [lookupBusy, setLookupBusy] = useState(false);
+  const [lookupResult, setLookupResult] = useState<{
+    ok: boolean;
+    answers: string[];
+    notes: string[];
+    method?: string;
+    latencyMs?: number;
+  } | null>(null);
+  const [validateMsg, setValidateMsg] = useState<string | null>(null);
 
   // Keep selected zone row in sync after apply/refresh
   const selectedLive = useMemo(() => {
@@ -147,18 +171,58 @@ export function DnsPage() {
     setPeers(r.items ?? []);
   }
 
+  async function runClusterOp(
+    path: string,
+    body: Record<string, unknown> = {},
+  ) {
+    setClusterBusy(true);
+    setClusterMsg(null);
+    setClusterNotes([]);
+    setClusterPeerResults([]);
+    setClusterApplyStatus(null);
+    try {
+      // Use raw fetch so HTTP 422 partial still returns peers[] (api.request throws).
+      const bearer = authStore.getToken();
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+        },
+        body: JSON.stringify(body),
+      });
+      const r = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        apply_status?: string;
+        notes?: string[];
+        peers?: Array<Record<string, unknown>>;
+        blocked?: boolean;
+        message?: string;
+      };
+      setClusterApplyStatus(r.apply_status ?? null);
+      setClusterNotes(r.notes ?? []);
+      setClusterPeerResults(r.peers ?? []);
+      if (r.blocked || r.apply_status === 'blocked') {
+        setClusterMsg('已封鎖（需系統變更權限）');
+      } else if (r.ok) {
+        setClusterMsg(`完成（${r.apply_status ?? 'ok'}）`);
+      } else {
+        setClusterMsg(
+          `未全部成功（${r.apply_status ?? res.status}）— 見下方明細`,
+        );
+      }
+      await refreshPeers();
+    } catch (e) {
+      setClusterMsg(e instanceof Error ? e.message : '叢集操作失敗');
+    } finally {
+      setClusterBusy(false);
+    }
+  }
+
   async function onSaveRec(e: FormEvent) {
     e.preventDefault();
     if (!selectedZone) return;
     const val = rvalue.trim();
-    if (rtype === 'A' && !/^(\d{1,3}\.){3}\d{1,3}$/.test(val)) {
-      alert('A 記錄值必須是 IPv4（請填伺服器公網 IPv4）');
-      return;
-    }
-    if (rtype === 'AAAA' && !(val.includes(':') && val.length >= 2 && val.length < 46)) {
-      alert('AAAA 記錄值必須是 IPv6（請填伺服器公網 IPv6）');
-      return;
-    }
     const body = {
       zoneId: selectedZone.id,
       type: rtype,
@@ -166,6 +230,43 @@ export function DnsPage() {
       value: val,
       ttl: Number(rttl) || 300,
     };
+    // Server-side validation (honest); also check set conflicts with existing
+    try {
+      const existing = records.items.map((r) => ({
+        type: String(r.type ?? ''),
+        name: String(r.name ?? '@'),
+        value: String(r.value ?? ''),
+        ttl: Number(r.ttl) || 300,
+      }));
+      const withoutEdit = editRec
+        ? existing.filter((r, i) => records.items[i]?.id !== editRec.id)
+        : existing;
+      const check = await api.requestRaw<{
+        ok: boolean;
+        issues?: Array<{ level: string; message: string }>;
+        notes?: string[];
+      }>('/api/v1/dns/validate', {
+        method: 'POST',
+        body: JSON.stringify({
+          records: [...withoutEdit, body],
+        }),
+      });
+      if (!check.ok) {
+        const msg =
+          check.issues
+            ?.filter((i) => i.level === 'error')
+            .map((i) => i.message)
+            .join('；') ||
+          check.notes?.join('；') ||
+          '記錄驗證失敗';
+        setValidateMsg(msg);
+        return;
+      }
+      setValidateMsg(null);
+    } catch (err) {
+      setValidateMsg(err instanceof Error ? err.message : '驗證請求失敗');
+      return;
+    }
     if (editRec) await records.update(editRec.id, body);
     else await records.create(body);
     setRecOpen(false);
@@ -173,7 +274,43 @@ export function DnsPage() {
     setRvalue('');
   }
 
+  async function onLookup(e: FormEvent) {
+    e.preventDefault();
+    setLookupBusy(true);
+    setLookupResult(null);
+    try {
+      const r = await api.requestRaw<{
+        ok: boolean;
+        answers: string[];
+        notes: string[];
+        method?: string;
+        latencyMs?: number;
+      }>('/api/v1/dns/lookup', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: lookupName.trim(),
+          type: lookupType,
+        }),
+      });
+      setLookupResult(r);
+    } catch (err) {
+      setLookupResult({
+        ok: false,
+        answers: [],
+        notes: [err instanceof Error ? err.message : '查詢失敗'],
+      });
+    } finally {
+      setLookupBusy(false);
+    }
+  }
+
   const [tab, setTab] = usePageTab(DNS_TABS, 'zones');
+
+  // Load cluster peers when opening 叢集 tab
+  useEffect(() => {
+    if (tab === 'cluster') void refreshPeers().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh on tab only
+  }, [tab]);
 
   return (
     <FeaturePageLayout
@@ -241,6 +378,18 @@ export function DnsPage() {
           ) : null}
         </Alert>
       ) : null}
+      {validateMsg ? (
+        <Alert variant="error">
+          {validateMsg}{' '}
+          <button
+            type="button"
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+            onClick={() => setValidateMsg(null)}
+          >
+            關閉
+          </button>
+        </Alert>
+      ) : null}
       <PageTabs
         tabs={[
           { id: 'zones', label: '區域', badge: zones.items.length || undefined },
@@ -251,6 +400,7 @@ export function DnsPage() {
           },
           { id: 'cluster', label: '叢集', badge: peers.length || undefined },
           { id: 'dnssec', label: 'DNSSEC' },
+          { id: 'tools', label: '工具' },
         ]}
         active={tab}
         onChange={(id) => {
@@ -582,7 +732,7 @@ export function DnsPage() {
             <Card>
               <CardSection
                 title="DNS 叢集"
-                description="以 SCP 推送區域檔到 peer；寫入 peer ≠ named 已 reload"
+                description="SCP 推送 zone 檔後可 remote reload（rndc / named / bind9 / pdns）。written ≠ applied。"
               >
                 <FormLayout columns={2}>
                   <Field
@@ -590,77 +740,302 @@ export function DnsPage() {
                     htmlFor="peer-h"
                     flush
                     required
-                    hint="次要 NS 主機名稱或 IP"
+                    hint="次要 NS 主機名稱或 IP（需 SSH 金鑰登入）"
                   >
                     <input
                       id="peer-h"
                       value={peerHost}
                       onChange={(e) => setPeerHost(e.target.value)}
                       placeholder="ns2.example.com"
+                      spellCheck={false}
                     />
                   </Field>
-                  <Field label="SSH 用戶" htmlFor="peer-u" flush hint="需有目標路徑寫入權限">
+                  <Field
+                    label="SSH 用戶"
+                    htmlFor="peer-u"
+                    flush
+                    hint="需有目標路徑寫入與 reload 權限"
+                  >
                     <input
                       id="peer-u"
                       value={peerUser}
                       onChange={(e) => setPeerUser(e.target.value)}
-                      placeholder="ysk"
+                      placeholder="root"
+                    />
+                  </Field>
+                  <Field
+                    label="標籤（可選）"
+                    htmlFor="peer-label"
+                    flush
+                    hint="例如 ns2 / hkg-edge-dns"
+                  >
+                    <input
+                      id="peer-label"
+                      value={peerLabel}
+                      onChange={(e) => setPeerLabel(e.target.value)}
+                      placeholder="ns2"
                     />
                   </Field>
                 </FormLayout>
                 <FormActions>
-                  <Button variant="secondary" size="sm" onClick={() => void refreshPeers()}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void refreshPeers()}
+                    disabled={clusterBusy}
+                  >
                     重新整理
                   </Button>
                   <Button
                     variant="primary"
                     size="sm"
+                    loading={clusterBusy}
+                    disabled={!peerHost.trim()}
                     onClick={() =>
                       void api
                         .requestRaw('/api/v1/dns/cluster/peers', {
                           method: 'POST',
                           body: JSON.stringify({
-                            host: peerHost,
-                            username: peerUser,
+                            host: peerHost.trim(),
+                            username: peerUser.trim() || 'root',
                             path: '/var/lib/ysk/dns/zones',
+                            label: peerLabel.trim() || undefined,
                           }),
                         })
-                        .then(() => refreshPeers())
-                        .catch((e: Error) => zones.setMsg?.(e.message))
+                        .then(() => {
+                          setPeerHost('');
+                          setPeerLabel('');
+                          return refreshPeers();
+                        })
+                        .catch((e: Error) => setClusterMsg(e.message))
                     }
                   >
                     新增 peer
                   </Button>
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     size="sm"
+                    loading={clusterBusy}
+                    disabled={!peers.length}
                     onClick={() =>
-                      void api
-                        .requestRaw('/api/v1/dns/cluster/push', {
-                          method: 'POST',
-                          body: '{}',
-                        })
-                        .then((r) => {
-                          const notes = (r as { notes?: string[] }).notes;
-                          setDnssecMsg(notes?.join('；') ?? '已推送');
-                        })
-                        .catch((e: Error) => setDnssecMsg(e.message))
+                      void runClusterOp('/api/v1/dns/cluster/push', {
+                        reload: true,
+                      })
                     }
                   >
-                    推送到 peers
+                    推送 + reload
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={clusterBusy}
+                    disabled={!peers.length}
+                    onClick={() =>
+                      void runClusterOp('/api/v1/dns/cluster/push', {
+                        reload: false,
+                      })
+                    }
+                  >
+                    僅推送（不 reload）
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={clusterBusy}
+                    disabled={!peers.length}
+                    onClick={() =>
+                      void runClusterOp('/api/v1/dns/cluster/reload', {})
+                    }
+                  >
+                    僅 remote reload
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={clusterBusy}
+                    disabled={!peers.length}
+                    onClick={() =>
+                      void runClusterOp('/api/v1/dns/cluster/probe', {})
+                    }
+                  >
+                    探活 peers
                   </Button>
                 </FormActions>
-                {peers.length === 0 ? (
-                  <p className="muted u-text-sm u-mt-2">尚未登記任何 peer</p>
-                ) : (
-                  <ul className="list-plain list-spaced u-mt-2">
-                    {peers.map((p) => (
-                      <li key={String(p.id)}>
-                        <code className="inline">
-                          {String(p.username)}@{String(p.host)}:{String(p.path)}
-                        </code>
+                <FormHint>
+                  預設「推送 + reload」：scp 成功後以 SSH 執行 rndc reload 或
+                  systemctl reload named|bind9|pdns。需本機已開啟系統變更權限，且
+                  control → peer 可用 BatchMode SSH。
+                </FormHint>
+              </CardSection>
+            </Card>
+
+            {clusterMsg ? (
+              <Alert
+                variant={
+                  /封鎖|失敗|未全部|partial|failed/i.test(clusterMsg)
+                    ? 'error'
+                    : 'ok'
+                }
+              >
+                {clusterMsg}
+                {clusterApplyStatus ? (
+                  <p className="u-mt-1 muted u-text-sm">
+                    apply_status：<code className="inline">{clusterApplyStatus}</code>
+                  </p>
+                ) : null}
+                {clusterNotes.length ? (
+                  <ul className="list-plain u-mt-2">
+                    {clusterNotes.map((n) => (
+                      <li key={n} className="muted u-text-sm">
+                        {n}
                       </li>
                     ))}
+                  </ul>
+                ) : null}
+              </Alert>
+            ) : null}
+
+            {clusterPeerResults.length > 0 ? (
+              <Card>
+                <CardSection title="本次操作（每 peer）">
+                  <ul className="list-plain list-spaced">
+                    {clusterPeerResults.map((pr) => (
+                      <li key={String(pr.peerId)}>
+                        <strong>
+                          {String(pr.label || pr.host)} ·{' '}
+                          <code className="inline">
+                            {String(pr.apply_status ?? '—')}
+                          </code>
+                        </strong>
+                        {pr.reloaded === true ? (
+                          <span className="muted u-text-sm">
+                            {' '}
+                            reload={String(pr.reloadMethod ?? 'ok')}
+                          </span>
+                        ) : null}
+                        {Array.isArray(pr.notes) ? (
+                          <ul className="list-plain u-mt-1">
+                            {(pr.notes as string[]).map((n) => (
+                              <li key={n} className="muted u-text-sm">
+                                {n}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </CardSection>
+              </Card>
+            ) : null}
+
+            <Card>
+              <CardSection
+                title={`已登記 peers（${peers.length}）`}
+                description="lastProbe 於「探活」或推送後更新"
+              >
+                {peers.length === 0 ? (
+                  <EmptyState title="尚未登記任何 peer" />
+                ) : (
+                  <ul className="list-plain list-spaced">
+                    {peers.map((p) => {
+                      const lp = p.lastProbe as
+                        | {
+                            ok?: boolean;
+                            service?: string;
+                            zoneDirOk?: boolean;
+                            at?: string;
+                            notes?: string[];
+                          }
+                        | undefined;
+                      return (
+                        <li key={String(p.id)} className="u-flex u-flex-col gap-1">
+                          <div>
+                            <code className="inline">
+                              {p.label ? `${String(p.label)} · ` : ''}
+                              {String(p.username)}@{String(p.host)}:
+                              {String(p.path)}
+                            </code>
+                          </div>
+                          {lp ? (
+                            <p className="muted u-text-sm">
+                              探活：{lp.ok ? 'healthy' : 'unhealthy'}
+                              {lp.service ? ` · ${lp.service}` : ''}
+                              {lp.zoneDirOk === false
+                                ? ' · zone 目錄缺失'
+                                : ''}
+                              {lp.at
+                                ? ` · ${new Date(lp.at).toLocaleString()}`
+                                : ''}
+                            </p>
+                          ) : (
+                            <p className="muted u-text-sm">尚未探活</p>
+                          )}
+                          <FormActions>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              loading={clusterBusy}
+                              onClick={() =>
+                                void runClusterOp(
+                                  '/api/v1/dns/cluster/push',
+                                  {
+                                    peerId: String(p.id),
+                                    reload: true,
+                                  },
+                                )
+                              }
+                            >
+                              推送+reload
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              loading={clusterBusy}
+                              onClick={() =>
+                                void runClusterOp(
+                                  '/api/v1/dns/cluster/reload',
+                                  { peerId: String(p.id) },
+                                )
+                              }
+                            >
+                              reload
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              loading={clusterBusy}
+                              onClick={() =>
+                                void runClusterOp(
+                                  '/api/v1/dns/cluster/probe',
+                                  { peerId: String(p.id) },
+                                )
+                              }
+                            >
+                              探活
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={clusterBusy}
+                              onClick={() =>
+                                void api
+                                  .requestRaw(
+                                    `/api/v1/dns/cluster/peers/${encodeURIComponent(String(p.id))}`,
+                                    { method: 'DELETE' },
+                                  )
+                                  .then(() => refreshPeers())
+                                  .catch((e: Error) =>
+                                    setClusterMsg(e.message),
+                                  )
+                              }
+                            >
+                              刪除
+                            </Button>
+                          </FormActions>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </CardSection>
@@ -705,6 +1080,141 @@ export function DnsPage() {
                     }
                   />
                 )}
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+
+        {tab === 'tools' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title="DNS 查詢（dig）"
+                description="對公網解析器查詢；用於驗證 multi-A / CDN 是否生效。唔假造答案。"
+              >
+                <form onSubmit={(e) => void onLookup(e)}>
+                  <FormLayout columns={2}>
+                    <Field
+                      label="名稱"
+                      htmlFor="lookup-name"
+                      flush
+                      required
+                      hint="例如 example.com 或 www.example.com"
+                    >
+                      <input
+                        id="lookup-name"
+                        value={lookupName}
+                        onChange={(e) => setLookupName(e.target.value)}
+                        placeholder={
+                          selectedLive
+                            ? String(selectedLive.zone ?? 'example.com')
+                            : 'example.com'
+                        }
+                        spellCheck={false}
+                        required
+                      />
+                    </Field>
+                    <Field label="類型" htmlFor="lookup-type" flush>
+                      <SegRadio
+                        name="lookup-type"
+                        aria-label="查詢類型"
+                        value={lookupType}
+                        onChange={setLookupType}
+                        options={['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS'].map(
+                          (t) => ({ value: t, label: t }),
+                        )}
+                      />
+                    </Field>
+                  </FormLayout>
+                  <FormActions>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="md"
+                      loading={lookupBusy}
+                    >
+                      查詢
+                    </Button>
+                    {selectedLive ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => {
+                          setLookupName(String(selectedLive.zone ?? ''));
+                          setLookupType('A');
+                        }}
+                      >
+                        填入目前區域
+                      </Button>
+                    ) : null}
+                  </FormActions>
+                </form>
+                <FormHint>
+                  優先使用主機上的 dig；若無 dig 則 fallback 至 node dns。結果反映查詢當下解析器所見，唔等於 panel 內記錄。
+                </FormHint>
+              </CardSection>
+            </Card>
+            {lookupResult ? (
+              <Card>
+                <CardSection
+                  title={
+                    lookupResult.ok
+                      ? `查詢結果（${lookupResult.answers.length} 筆）`
+                      : '查詢無答案／失敗'
+                  }
+                  description={
+                    [
+                      lookupResult.method
+                        ? `方法：${lookupResult.method}`
+                        : null,
+                      lookupResult.latencyMs != null
+                        ? `${lookupResult.latencyMs} ms`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ') || undefined
+                  }
+                >
+                  {lookupResult.answers.length ? (
+                    <ul className="notes-list">
+                      {lookupResult.answers.map((a) => (
+                        <li key={a}>
+                          <code className="inline">{a}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <EmptyState title="沒有答案" description="NXDOMAIN、空 RRset 或解析失敗" />
+                  )}
+                  {lookupResult.notes.length ? (
+                    <ul className="list-plain u-mt-2">
+                      {lookupResult.notes.map((n) => (
+                        <li key={n} className="muted u-text-sm">
+                          {n}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <Alert
+                    variant={lookupResult.ok ? 'ok' : 'error'}
+                    className="u-mt-2"
+                  >
+                    {lookupResult.ok
+                      ? '以上為即時查詢結果。CDN multi-A 應看到多個 IP；健康摘除後應減少。'
+                      : '查詢失敗或無答案。請確認名稱、類型與上游解析器。'}
+                  </Alert>
+                </CardSection>
+              </Card>
+            ) : null}
+            <Card>
+              <CardSection
+                title="記錄驗證"
+                description="新增／編輯記錄時會自動呼叫 /api/v1/dns/validate（CNAME 衝突、A/AAAA 格式等）。"
+              >
+                <FormHint>
+                  儲存前若有 error 級問題會擋下；warn（例如 apex CNAME）只提示。CDN 模組日後會用同一驗證器保護 managedBy=cdn 的 RRset。
+                </FormHint>
               </CardSection>
             </Card>
           </div>

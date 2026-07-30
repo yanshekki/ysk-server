@@ -3916,6 +3916,7 @@ export function createHttpServer(ctx: AppContext): Server {
           path?: string;
           label?: string;
           id?: string;
+          sshIdentityId?: string;
         };
         const { upsertDnsClusterPeer } = await import('@ysk/core');
         const peer = upsertDnsClusterPeer(ctx.db, {
@@ -3925,6 +3926,7 @@ export function createHttpServer(ctx: AppContext): Server {
           port: data.port,
           path: data.path,
           label: data.label,
+          sshIdentityId: data.sshIdentityId,
         });
         ctx.audit.append({
           actor: user.username,
@@ -3952,9 +3954,40 @@ export function createHttpServer(ctx: AppContext): Server {
       if (method === 'POST' && url.pathname === '/api/v1/dns/cluster/push') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { peerId?: string };
+        const data = JSON.parse(raw || '{}') as {
+          peerId?: string;
+          /** default true: remote reload after scp */
+          reload?: boolean;
+          probeAfter?: boolean;
+        };
         const { pushDnsZonesToCluster } = await import('@ysk/core');
         const r = await pushDnsZonesToCluster({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          peerId: data.peerId,
+          reload: data.reload,
+          probeAfter: data.probeAfter,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.cluster.push',
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            peerCount: r.peers?.length,
+            notes: r.notes?.slice(0, 8),
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/dns/cluster/reload') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { peerId?: string };
+        const { reloadDnsClusterPeers } = await import('@ysk/core');
+        const r = await reloadDnsClusterPeers({
           db: ctx.db,
           host: ctx.host,
           dataDir: ctx.dataDir,
@@ -3962,11 +3995,73 @@ export function createHttpServer(ctx: AppContext): Server {
         });
         ctx.audit.append({
           actor: user.username,
-          action: 'dns.cluster.push',
-          detail: r,
+          action: 'dns.cluster.reload',
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            peerCount: r.peers?.length,
+          },
           ok: r.ok,
         });
         return sendOpsResult(res, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/dns/cluster/probe') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { peerId?: string };
+        const { probeDnsClusterPeers } = await import('@ysk/core');
+        const r = await probeDnsClusterPeers({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          peerId: data.peerId,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.cluster.probe',
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            peerCount: r.peers?.length,
+          },
+          ok: r.ok,
+        });
+        return sendOpsResult(res, r);
+      }
+
+      // DNS tools: dig/lookup + record validation (DNS deep PR-D1)
+      if (method === 'POST' && url.pathname === '/api/v1/dns/lookup') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          type?: 'A' | 'AAAA' | 'MX' | 'TXT' | 'CNAME' | 'NS';
+        };
+        const { lookupDns } = await import('@ysk/core');
+        const r = await lookupDns({
+          host: ctx.host,
+          name: data.name ?? '',
+          type: data.type ?? 'A',
+        });
+        return sendJson(res, r.ok ? 200 : 422, r);
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/dns/validate') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          records?: Array<{ type: string; name: string; value: string; ttl?: number }>;
+        };
+        const { validateDnsRecordSet, hasDnsErrors } = await import('@ysk/core');
+        const issues = validateDnsRecordSet(data.records ?? []);
+        return sendJson(res, 200, {
+          ok: !hasDnsErrors(issues),
+          issues,
+          notes: hasDnsErrors(issues)
+            ? ['存在錯誤級問題，請修正後再 apply']
+            : issues.length
+              ? ['僅警告，可繼續']
+              : ['驗證通過'],
+        });
       }
 
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/web-stats$/)) {

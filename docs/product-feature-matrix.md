@@ -90,14 +90,37 @@
 |----|---------|---|---|-----|-----|
 | C1 | Zone list CRUD | 兩 | 兩 | ✓ | P0 |
 | C2 | Record CRUD (A/AAAA/CNAME/MX/TXT/NS/SRV/CAA) | 兩 | 兩 | ✓ | P0 |
-| C3 | Zone templates (www/mail/ftp defaults) | H | D | ✗ | P0 |
+| C3 | Zone templates (www/mail/ftp/**cdn**) | H | D | ✓ | P0 |
 | C4 | SOA / TTL / NS edit | 兩 | 兩 | △ | P0 |
 | C5 | Write zone + **real named reload status** | H | D | △ | P0 |
-| C6 | DNSSEC keys / sign | H | D | ✗ | P1 |
-| C7 | DNS cluster / multi-server sync | H | D | ✗ | P2 |
+| C6 | DNSSEC keys / sign | H | D | △ | P1 |
+| C7 | DNS cluster push + **remote reload** + peer probe | H | D | ✓ | P2 |
 | C8 | External-DNS “records to add” list | H | D | △ | P0 |
-| C9 | Zone validation (checkzone-class) | — | D | ✗ | Better |
+| C9 | Record set validation (CNAME conflict / A format) | — | D | ✓ | Better |
+| C9b | Zone validation (named-checkzone) | — | D | △ | Better |
 | C10 | Zone → SSL LE preset deep-link | — | — | ✓ | Better |
+| C11 | dig / DNS lookup tool (UI + API) | — | D | ✓ | P1 |
+| C12 | CDN-managed RRset (`managedBy=cdn`) | — | — | ✗ | P1 |
+
+> DNS + multi-node CDN 產品設計：[`docs/product/dns-cdn-design.md`](./product/dns-cdn-design.md)
+
+---
+
+## C′ — CDN `/cdn`（自建邊緣 · 多 ysk-server + Nginx）
+
+| ID | Feature | H | D | YSK | Pri |
+|----|---------|---|---|-----|-----|
+| CDN1 | Node registry (roles control/origin/edge/dns) | — | — | ✗ | P0 |
+| CDN2 | Node health probe + drain | — | — | ✗ | P0 |
+| CDN3 | Site policy (domains, origin, edges, cache) | — | — | ✗ | P0 |
+| CDN4 | Nginx edge renderer (proxy_cache + bypass) | — | — | ✗ | P0 |
+| CDN5 | Fan-out apply (fleet/SSH) + partial honesty | — | — | ✗ | P0 |
+| CDN6 | Multi-A / failover DNS sync | — | — | ✗ | P0 |
+| CDN7 | Cache purge all edges | H | D | ✗ | P1 |
+| CDN8 | Weighted / geo DNS | — | — | ✗ | P2 |
+| CDN9 | SSL distribute / LE on edge | — | — | ✗ | P1 |
+| CDN10 | Hit-rate / status dashboard | — | — | ✗ | P1 |
+| CDN11 | Project one-click enable CDN | — | — | ✗ | P1 |
 
 ---
 

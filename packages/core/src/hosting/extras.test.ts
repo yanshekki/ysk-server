@@ -33,6 +33,12 @@ describe('phase3 hosting extras', () => {
     expect(web.records.some((r) => r.name === 'www')).toBe(true);
     expect(web.records.some((r) => r.type === 'MX')).toBe(false);
 
+    const cdn = planDnsZone({ zone: 'example.com', serverIp: '1.2.3.4', template: 'cdn' });
+    expect(cdn.records.some((r) => r.name === 'www')).toBe(true);
+    expect(cdn.records.some((r) => r.name === 'cdn')).toBe(true);
+    expect(cdn.records.some((r) => r.name === '_ysk-cdn')).toBe(true);
+    expect(cdn.providerHints.some((h) => /CDN|multi-edge/i.test(h))).toBe(true);
+
     const fw = planFirewall({ allowSmtp: true, extraTcpPorts: [2222] });
     expect(fw.rules.some((r) => r.includes('25/tcp'))).toBe(true);
     expect(fw.fail2banJails).toContain('sshd');

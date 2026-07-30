@@ -3,3 +3,4 @@ export * from './dto.js';
 export * from './errors.js';
 export * from './ops.js';
 export * from './migrate.js';
+export * from './cdn.js';

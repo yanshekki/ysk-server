@@ -78,6 +78,14 @@ Base URL: `http://127.0.0.1:9287`
 | POST | `/api/v1/hosting/dns/plan` | Bearer | DNS zone plan |
 | POST | `/api/v1/hosting/dns/cloudflare/apply` | Bearer | Cloudflare DNS apply |
 | GET | `/api/v1/hosting/dns/zones` | Bearer | Stored zone apply results |
+| GET | `/api/v1/dns/cluster/peers` | Bearer | DNS secondary peers |
+| POST | `/api/v1/dns/cluster/peers` | Bearer | Upsert peer |
+| DELETE | `/api/v1/dns/cluster/peers/:id` | Bearer | Delete peer |
+| POST | `/api/v1/dns/cluster/push` | Bearer | scp zones (+ optional remote reload) |
+| POST | `/api/v1/dns/cluster/reload` | Bearer | SSH remote nameserver reload |
+| POST | `/api/v1/dns/cluster/probe` | Bearer | SSH peer health (named/bind9/pdns) |
+| POST | `/api/v1/dns/lookup` | Bearer | dig / node-dns lookup |
+| POST | `/api/v1/dns/validate` | Bearer | Record-set validation |
 | POST | `/api/v1/hosting/firewall/plan` | Bearer | Firewall plan |
 | GET | `/api/v1/hosting/files/plan` | Bearer | Public file server plan |
 | GET | `/api/v1/backups` | Bearer | List backup archives |
