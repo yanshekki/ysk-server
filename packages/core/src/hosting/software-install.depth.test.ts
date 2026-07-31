@@ -309,14 +309,115 @@ describe('software-install depth', () => {
   });
 
   it('spec with empty aptPackages fails honestly', async () => {
-    // runtime already covered; git has packages. node has empty apt + runtime.
-    // software without installer and empty apt is rare — use node without dataDir already tested.
-    // force via id that has aptPackages empty only for runtimes with dataDir handled.
-    // Cover no-packages by installing unknown runtime-less: none — skip if not available.
-    // Instead re-install already covered path and assert notes.
     const host = mockHost({ executeEnabled: true, isRoot: true, bins: [] });
-    // php without dataDir hits runtime missing dataDir, not empty apt
+    // php without dataDir hits runtime missing dataDir
     const r = await installSoftware({ host, id: 'php' });
+    expect(r.ok).toBe(false);
+  });
+
+  it('certbot multi-package apt fallback path', async () => {
+    const spec = getSoftware('certbot')!;
+    expect(spec.aptPackages.length).toBeGreaterThan(1);
+    let installs = 0;
+    const host: HostExecutor = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: (p) => p.includes('systemctl'),
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => {
+        const s = argv.join(' ');
+        if (s.includes('command -v')) {
+          if (installs >= 2) {
+            return {
+              stdout: '/usr/bin/certbot\n',
+              stderr: '',
+              exitCode: 0,
+              argv,
+              dryRun: false,
+            };
+          }
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('apt-get update')) {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('apt-get install')) {
+          installs += 1;
+          // first (bulk) fails; subsequent (single) succeeds
+          if (installs === 1) {
+            return {
+              stdout: '',
+              stderr: 'bulk fail',
+              exitCode: 1,
+              argv,
+              dryRun: false,
+            };
+          }
+          return { stdout: 'ok', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (argv[0] === 'systemctl') {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const r = await installSoftware({ host, id: 'certbot' });
+    expect(r.executed).toBe(true);
+    expect(installs).toBeGreaterThanOrEqual(2);
+    expect(r.steps.some((s) => /certbot|install|pkg|套件/i.test(s.name) || s.status === 'ok')).toBe(
+      true,
+    );
+  });
+
+  it('opendkim multi-package all singles fail', async () => {
+    const host: HostExecutor = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => {
+        const s = argv.join(' ');
+        if (s.includes('command -v')) {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('apt-get')) {
+          return {
+            stdout: '',
+            stderr: 'fail',
+            exitCode: 1,
+            argv,
+            dryRun: false,
+          };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const r = await installSoftware({ host, id: 'opendkim' });
+    expect(r.executed).toBe(true);
     expect(r.ok).toBe(false);
   });
 

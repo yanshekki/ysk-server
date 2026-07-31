@@ -5,6 +5,8 @@ import {
   writeFileSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
+  existsSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -46,6 +48,128 @@ function preflightStdout(): string {
   ].join('\n');
 }
 
+/** Prefer packed manifest fingerprint (package may rewrite ysk.json after hashing). */
+function findExpectedSha(dataDir: string): string | undefined {
+  try {
+    const root = join(dataDir, 'migrate');
+    if (!existsSync(root)) return undefined;
+    for (const id of readdirSync(root)) {
+      const mf = join(root, id, 'manifest.json');
+      if (!existsSync(mf)) continue;
+      const m = JSON.parse(readFileSync(mf, 'utf8')) as {
+        fingerprints?: Record<string, string>;
+      };
+      const fp = m.fingerprints?.['dataDir/ysk.json'];
+      if (fp) return fp;
+    }
+  } catch {
+    /* */
+  }
+  return undefined;
+}
+
+function fullMigrateHost(
+  dataDir: string,
+  opts: {
+    failRsync?: boolean;
+    failPost?: boolean;
+    remotePostOk?: boolean;
+  } = {},
+): HostExecutor {
+  return {
+    pathExists: () => true,
+    isRoot: () => true,
+    executeEnabled: () => true,
+    readFile: async () => '',
+    listDir: async () => [],
+    writeFile: async () => {},
+    deletePath: async () => {},
+    mkdirp: async () => {},
+    sysInfo: async () => ({}),
+    serviceStatus: async () => empty(),
+    runCommand: async (argv) => {
+      const joined = argv.join(' ');
+      if (argv[0] === 'bash') {
+        if (joined.includes('command -v')) {
+          return { ...empty(), stdout: 'ok\n', argv };
+        }
+        if (joined.includes('du -sb')) {
+          return { ...empty(), stdout: '1048576\n', argv };
+        }
+        // bash -c rsync wrapper only (not ssh remote scripts that mention rsync)
+        if (joined.includes('rsync') && !joined.includes('HAS_RSYNC')) {
+          if (opts.failRsync) {
+            return { ...empty(), exitCode: 1, stderr: 'rsync fail', argv };
+          }
+          return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
+        }
+        return { ...empty(), stdout: 'ok\n', argv };
+      }
+      // real rsync binary only — do not match ssh remote scripts containing "rsync"
+      if (argv[0] === 'rsync') {
+        if (opts.failRsync) {
+          return { ...empty(), exitCode: 1, stderr: 'rsync fail', argv };
+        }
+        return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
+      }
+      if (argv[0] === 'ssh') {
+        if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
+          const expected =
+            findExpectedSha(dataDir) ??
+            createHash('sha256')
+              .update(readFileSync(join(dataDir, 'ysk.json')))
+              .digest('hex');
+          return {
+            ...empty(),
+            exitCode: 0,
+            stdout: `${expected}\nYSK_SHA_DONE\n`,
+            argv,
+          };
+        }
+        if (
+          joined.includes('migrate post') ||
+          (joined.includes('YSK_EXECUTE') && joined.includes('ysk-server'))
+        ) {
+          if (opts.failPost) {
+            return {
+              ...empty(),
+              exitCode: 1,
+              stdout: 'ssh failed hard without marker\n',
+              argv,
+            };
+          }
+          return {
+            ...empty(),
+            exitCode: 0,
+            stdout:
+              opts.remotePostOk === false
+                ? '{"ok":false}\nYSK_REMOTE_POST_DONE\n'
+                : '{"ok":true,"apply_status":"applied"}\nYSK_REMOTE_POST_DONE\n',
+            argv,
+          };
+        }
+        return {
+          ...empty(),
+          exitCode: 0,
+          stdout: [
+            preflightStdout(),
+            'YSK_APT_OK',
+            'YSK_APT_NONE',
+            'YSK_MKDIR_OK',
+            'YSK_HAS_RSYNC',
+            'YSK_BOOTSTRAP_OK',
+            'YSK_CLI_OK',
+            'YSK_NODE_OK',
+            'YSK_YSK_OK',
+          ].join('\n'),
+          argv,
+        };
+      }
+      return { ...empty(), exitCode: 0, stdout: preflightStdout(), argv };
+    },
+  };
+}
+
 function migrateHost(opts: {
   execute?: boolean;
   root?: boolean;
@@ -70,7 +194,7 @@ function migrateHost(opts: {
       const script = typeof argv[2] === 'string' ? argv[2] : '';
       const joined = argv.join(' ');
 
-      if (argv[0] === 'bash' && script.includes('command -v')) {
+      if (argv[0] === 'bash' && (script.includes('command -v') || joined.includes('command -v'))) {
         return { ...empty(), stdout: 'ok\n', argv };
       }
       if (script.includes('du -sb') || joined.includes('du -sb')) {
@@ -86,7 +210,6 @@ function migrateHost(opts: {
         };
       }
 
-      // temp key install path often uses ssh-copy-id / ssh with password
       if (opts.tempKeyOut && (joined.includes('ssh') || joined.includes('ssh-keygen'))) {
         return { ...empty(), exitCode: 1, stderr: opts.tempKeyOut, argv };
       }
@@ -95,7 +218,10 @@ function migrateHost(opts: {
         return { ...empty(), exitCode: 1, stderr: 'rsync fail', argv };
       }
 
-      if (opts.failPost && joined.includes('YSK_REMOTE_POST') || (opts.failPost && joined.includes('migrate post'))) {
+      if (
+        (opts.failPost && joined.includes('YSK_REMOTE_POST')) ||
+        (opts.failPost && joined.includes('migrate post'))
+      ) {
         return {
           ...empty(),
           exitCode: 1,
@@ -104,8 +230,11 @@ function migrateHost(opts: {
         };
       }
 
-      // remote post success
-      if (joined.includes('migrate post') || script.includes('migrate post') || joined.includes('YSK_REMOTE_POST')) {
+      if (
+        joined.includes('migrate post') ||
+        script.includes('migrate post') ||
+        joined.includes('YSK_REMOTE_POST')
+      ) {
         return {
           ...empty(),
           exitCode: 0,
@@ -114,23 +243,19 @@ function migrateHost(opts: {
         };
       }
 
-      // sha for transfer verify
-      if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
-        // return a placeholder; caller may not match — transfer may fail verify
-        return {
-          ...empty(),
-          exitCode: 0,
-          stdout: `${'0'.repeat(64)}\nYSK_SHA_DONE\n`,
-          argv,
-        };
-      }
-
       if (argv[0] === 'rsync' || joined.includes('rsync')) {
         return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
       }
 
-      if (argv[0] === 'ssh' || joined.includes('ssh')) {
-        // bootstrap apt markers + preflight
+      if (argv[0] === 'ssh') {
+        if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
+          return {
+            ...empty(),
+            exitCode: 0,
+            stdout: `${'0'.repeat(64)}\nYSK_SHA_DONE\n`,
+            argv,
+          };
+        }
         const out =
           opts.remoteOut ??
           [
@@ -219,80 +344,8 @@ describe('orchestrator depth', () => {
   });
 
   it('full path with remotePost=false after package+transfer', async () => {
-    // Host that answers verify with real local sha + all preflight bins
-    const host: HostExecutor = {
-      pathExists: () => true,
-      isRoot: () => true,
-      executeEnabled: () => true,
-      readFile: async () => '',
-      listDir: async () => [],
-      writeFile: async () => {},
-      deletePath: async () => {},
-      mkdirp: async () => {},
-      sysInfo: async () => ({}),
-      serviceStatus: async () => empty(),
-      runCommand: async (argv) => {
-        const joined = argv.join(' ');
-        const script = typeof argv[2] === 'string' ? argv[2] : '';
-
-        if (argv[0] === 'bash') {
-          if (script.includes('command -v') || joined.includes('command -v')) {
-            return { ...empty(), stdout: 'ok\n', argv };
-          }
-          if (script.includes('du -sb') || joined.includes('du -sb')) {
-            return { ...empty(), stdout: '1048576\n', argv };
-          }
-          // rsync via bash -c (sshpass path) or other
-          if (joined.includes('rsync')) {
-            return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
-          }
-          return { ...empty(), exitCode: 0, stdout: 'ok\n', argv };
-        }
-
-        if (argv[0] === 'rsync' || joined.includes('rsync')) {
-          return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
-        }
-
-        if (argv[0] === 'ssh') {
-          // verify ysk.json sha (must precede generic preflight response)
-          if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
-            const body = readFileSync(join(dir, 'ysk.json'));
-            const sha = createHash('sha256').update(body).digest('hex');
-            return {
-              ...empty(),
-              exitCode: 0,
-              stdout: `${sha}\nYSK_SHA_DONE\n`,
-              argv,
-            };
-          }
-          return {
-            ...empty(),
-            exitCode: 0,
-            stdout: [
-              preflightStdout(),
-              'YSK_APT_OK',
-              'YSK_MKDIR_OK',
-              'YSK_HAS_RSYNC',
-              'YSK_BOOTSTRAP_OK',
-              'YSK_CLI_OK',
-              'YSK_NODE_OK',
-              'YSK_YSK_OK',
-            ].join('\n'),
-            argv,
-          };
-        }
-
-        return {
-          ...empty(),
-          exitCode: 0,
-          stdout: preflightStdout(),
-          argv,
-        };
-      },
-    };
-
     const r = await runSourceMigrateHost({
-      host,
+      host: fullMigrateHost(dir),
       db,
       dataDir: dir,
       target: 'root@10.20.30.42',
@@ -519,42 +572,8 @@ describe('orchestrator depth', () => {
   });
 
   it('transfer fails after package when rsync dies', async () => {
-    const host: HostExecutor = {
-      pathExists: () => true,
-      isRoot: () => true,
-      executeEnabled: () => true,
-      readFile: async () => '',
-      listDir: async () => [],
-      writeFile: async () => {},
-      deletePath: async () => {},
-      mkdirp: async () => {},
-      sysInfo: async () => ({}),
-      serviceStatus: async () => empty(),
-      runCommand: async (argv) => {
-        const joined = argv.join(' ');
-        const script = typeof argv[2] === 'string' ? argv[2] : '';
-        if (argv[0] === 'bash' && (script.includes('command -v') || joined.includes('command -v'))) {
-          return { ...empty(), stdout: 'ok\n', argv };
-        }
-        if (script.includes('du -sb') || joined.includes('du -sb')) {
-          return { ...empty(), stdout: '2048\n', argv };
-        }
-        if (argv[0] === 'rsync' || joined.includes('rsync')) {
-          return { ...empty(), exitCode: 1, stderr: 'rsync blocked later', argv };
-        }
-        if (argv[0] === 'ssh') {
-          return {
-            ...empty(),
-            exitCode: 0,
-            stdout: [preflightStdout(), 'YSK_APT_OK', 'YSK_HAS_RSYNC', 'YSK_MKDIR_OK'].join('\n'),
-            argv,
-          };
-        }
-        return { ...empty(), exitCode: 0, stdout: preflightStdout(), argv };
-      },
-    };
     const r = await runSourceMigrateHost({
-      host,
+      host: fullMigrateHost(dir, { failRsync: true }),
       db,
       dataDir: dir,
       target: 'root@10.20.30.55',
@@ -570,79 +589,8 @@ describe('orchestrator depth', () => {
   });
 
   it('remotePost true after successful transferBootstrap', async () => {
-    const host: HostExecutor = {
-      pathExists: () => true,
-      isRoot: () => true,
-      executeEnabled: () => true,
-      readFile: async () => '',
-      listDir: async () => [],
-      writeFile: async () => {},
-      deletePath: async () => {},
-      mkdirp: async () => {},
-      sysInfo: async () => ({}),
-      serviceStatus: async () => empty(),
-      runCommand: async (argv) => {
-        const joined = argv.join(' ');
-        const script = typeof argv[2] === 'string' ? argv[2] : '';
-        if (argv[0] === 'bash') {
-          if (script.includes('command -v') || joined.includes('command -v')) {
-            return { ...empty(), stdout: 'ok\n', argv };
-          }
-          if (script.includes('du -sb') || joined.includes('du -sb')) {
-            return { ...empty(), stdout: '4096\n', argv };
-          }
-          if (joined.includes('rsync')) {
-            return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
-          }
-          return { ...empty(), exitCode: 0, stdout: 'ok\n', argv };
-        }
-        if (argv[0] === 'rsync') {
-          return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
-        }
-        if (argv[0] === 'ssh') {
-          if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
-            const sha = createHash('sha256')
-              .update(readFileSync(join(dir, 'ysk.json')))
-              .digest('hex');
-            return {
-              ...empty(),
-              exitCode: 0,
-              stdout: `${sha}\nYSK_SHA_DONE\n`,
-              argv,
-            };
-          }
-          if (
-            joined.includes('migrate post') ||
-            joined.includes('YSK_REMOTE_POST') ||
-            joined.includes('ysk-server')
-          ) {
-            return {
-              ...empty(),
-              exitCode: 0,
-              stdout: '{"ok":true,"apply_status":"applied"}\nYSK_REMOTE_POST_DONE\n',
-              argv,
-            };
-          }
-          return {
-            ...empty(),
-            exitCode: 0,
-            stdout: [
-              preflightStdout(),
-              'YSK_APT_OK',
-              'YSK_MKDIR_OK',
-              'YSK_HAS_RSYNC',
-              'YSK_BOOTSTRAP_OK',
-              'YSK_CLI_OK',
-              'YSK_NODE_OK',
-            ].join('\n'),
-            argv,
-          };
-        }
-        return { ...empty(), exitCode: 0, stdout: preflightStdout(), argv };
-      },
-    };
     const r = await runSourceMigrateHost({
-      host,
+      host: fullMigrateHost(dir),
       db,
       dataDir: dir,
       target: 'root@10.20.30.56',
