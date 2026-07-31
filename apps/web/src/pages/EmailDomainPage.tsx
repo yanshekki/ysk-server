@@ -33,7 +33,7 @@ import {
 import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
 
-function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
+export function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
   const blocked = Boolean(r.blocked || r.requiresExecute || r.requiresRoot);
   const ok =

@@ -474,7 +474,7 @@ export function MetricsPage() {
               {
                 id: 'projects',
                 label: t('metrics.tabs.projectUsage'),
-                badge: projectUsage?.items.length || undefined,
+                badge: projectUsage?.items?.length || undefined,
               },
               {
                 id: 'alerts',
@@ -663,7 +663,7 @@ export function MetricsPage() {
                   <div className="met-ok-strip">{t('metrics.noThresholdAlerts')}</div>
                 )}
 
-                {projectUsage && projectUsage.items.length > 0 ? (
+                {projectUsage && (projectUsage.items?.length ?? 0) > 0 ? (
                   <section className="met-card u-mt-4">
                     <header className="met-card__head">
                       <h3 className="met-card__title">{t('metrics.projectDisk')}</h3>
@@ -672,7 +672,7 @@ export function MetricsPage() {
                       </Badge>
                     </header>
                     <ul className="met-project-strip">
-                      {projectUsage.items.slice(0, 5).map((p) => {
+                      {(projectUsage.items ?? []).slice(0, 5).map((p) => {
                         const pct =
                           p.usedRatio != null
                             ? Math.round(p.usedRatio * 100)

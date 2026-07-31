@@ -595,7 +595,7 @@ export function CdnPage() {
 
   const online = nodes.filter((n) => n.status === 'online').length;
   const edgeNodes = nodes.filter(
-    (n) => n.roles.includes('edge') || n.roles.includes('origin'),
+    (n) => (n.roles ?? []).includes('edge') || (n.roles ?? []).includes('origin'),
   );
 
   return (
@@ -921,7 +921,7 @@ export function CdnPage() {
                   header: t('cdn.colDomain'),
                   render: (s) => (
                     <code className="inline u-text-sm">
-                      {s.domains.join(', ')}
+                      {(s.domains ?? []).join(', ')}
                     </code>
                   ),
                 },
@@ -935,9 +935,11 @@ export function CdnPage() {
                   header: 'Origin',
                   render: (s) => (
                     <span className="u-text-sm muted">
-                      {s.origin.kind === 'url'
+                      {s.origin?.kind === 'url'
                         ? s.origin.url
-                        : `project:${s.origin.projectId}`}
+                        : s.origin?.projectId
+                          ? `project:${s.origin.projectId}`
+                          : '—'}
                     </span>
                   ),
                 },

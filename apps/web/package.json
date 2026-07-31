@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "mkdir -p coverage/.tmp && vitest run --coverage",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "css:reuse": "node ./scripts/css-reuse-check.mjs",
     "chrome:check": "node ./scripts/page-chrome-check.mjs",

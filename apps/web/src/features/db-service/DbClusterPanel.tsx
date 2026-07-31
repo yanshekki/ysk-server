@@ -385,7 +385,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 key: 'members',
                 header: t('db.cluster.nodes'),
                 className: 'muted',
-                render: (c) => c.members.map((m) => m.host).join(', '),
+                render: (c) => (c.members ?? []).map((m) => m.host).join(', '),
               },
             ]}
             rows={items}

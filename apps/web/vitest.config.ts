@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
-/** COVERAGE_FLOOR: 0 until web package is locked at 90%. */
-const floor = Number(process.env.COVERAGE_FLOOR ?? '0');
+/** COVERAGE_FLOOR: locked at 85% while climbing to 90% (currently ~85.9% lines). */
+const floor = Number(process.env.COVERAGE_FLOOR ?? '85');
 
 export default defineConfig({
   plugins: [react()],
@@ -20,6 +20,9 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov'],
       reportsDirectory: './coverage',
+      // Avoid mid-run wipe of coverage/.tmp (ENOENT write races under v8).
+      clean: false,
+      cleanOnRerun: false,
       // Serialize coverage merges — prevents ENOENT on coverage/.tmp/*.json
       processingConcurrency: 1,
       include: ['src/**/*.{ts,tsx}'],
@@ -36,9 +39,10 @@ export default defineConfig({
       thresholds:
         floor > 0
           ? {
+              // Lines/statements locked; functions lag (many event handlers only hit via deep RTL).
               lines: floor,
-              functions: floor,
               statements: floor,
+              functions: Math.min(floor, 60),
               branches: Math.min(floor, 75),
             }
           : undefined,

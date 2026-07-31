@@ -230,7 +230,7 @@ function presetWhen(t: (key: string) => string, id: string): string {
   return v === k ? id : v;
 }
 
-function summarizeOpsNotes(
+export function summarizeOpsNotes(
   notes: string[] | undefined,
   t: (key: string) => string,
 ): string[] {
@@ -253,7 +253,7 @@ function summarizeOpsNotes(
   });
 }
 
-function toneToBadge(t?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
+export function toneToBadge(t?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (t === 'ok') return 'ok';
   if (t === 'warn') return 'warn';
   if (t === 'danger') return 'danger';
@@ -261,7 +261,7 @@ function toneToBadge(t?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' 
   return 'neutral';
 }
 
-function relTime(
+export function relTime(
   iso: string | undefined,
   t: (key: string, o?: Record<string, unknown>) => string,
 ): string {
@@ -751,7 +751,7 @@ export function ProtectionPage() {
           {
             id: 'geo',
             label: t('protection.tabs.geo'),
-            badge: geoStatus?.policy.enabled
+            badge: geoStatus?.policy?.enabled
               ? 'ON'
               : geoStatus?.ready
                 ? undefined
@@ -2401,7 +2401,7 @@ export function ProtectionPage() {
                     ]}
                   />
                   <ul className="list-plain list-spaced">
-                    {geoStatus.sources.map((s) => (
+                    {(geoStatus.sources ?? []).map((s) => (
                       <li key={s.filename}>
                         <code className="inline">{s.filename}</code>{' '}
                         <Badge tone={s.present ? 'ok' : 'warn'}>

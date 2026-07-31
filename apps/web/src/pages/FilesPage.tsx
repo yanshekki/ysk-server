@@ -846,7 +846,7 @@ export function FilesPage() {
                       className: 'muted',
                       nowrap: true,
                       render: (t) =>
-                        t.deletedAt.slice(0, 19).replace('T', ' '),
+                        (t.deletedAt ?? '').slice(0, 19).replace('T', ' ') || '—',
                     },
                   ]}
                   rows={trash}

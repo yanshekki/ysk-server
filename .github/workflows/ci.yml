@@ -65,9 +65,11 @@ jobs:
       - name: Server coverage (≥90% lines locked)
         run: pnpm --filter @ysk/server test:coverage
 
-      - name: Coverage report (web floor=0 while climbing)
+      - name: Web coverage (≥85% lines locked; climbing to 90%)
+        run: pnpm --filter @ysk/web test:coverage
+
+      - name: Coverage aggregate + export report
         run: |
-          COVERAGE_FLOOR=0 pnpm --filter @ysk/web test:coverage || true
           node ./scripts/coverage-aggregate.mjs
           node ./scripts/test-export-coverage.mjs
         continue-on-error: true

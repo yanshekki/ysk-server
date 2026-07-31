@@ -64,7 +64,7 @@ const KEY_TO_FEATURE: Record<string, string> = {
   email: 'email',
 };
 
-function badgeForKey(
+export function badgeForKey(
   key: string,
   software: SoftwareStatus[],
   opts: { executeEnabled?: boolean; productionReady?: boolean },

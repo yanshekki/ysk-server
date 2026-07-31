@@ -43,7 +43,7 @@ type SessionRow = {
 };
 
 /** Friendly browser/OS from User-Agent (best-effort). */
-function parseUserAgent(ua?: string): { browser: string; os: string; icon: string } {
+export function parseUserAgent(ua?: string): { browser: string; os: string; icon: string } {
   const s = ua || '';
   let browser = 'Unknown';
   let icon = '💻';
@@ -74,7 +74,7 @@ function parseUserAgent(ua?: string): { browser: string; os: string; icon: strin
   return { browser, os, icon };
 }
 
-function relativeTime(
+export function relativeTime(
   iso: string | undefined,
   t: (k: string, o?: Record<string, unknown>) => string,
 ): string {

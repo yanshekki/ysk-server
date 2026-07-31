@@ -33,7 +33,7 @@ import {
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
 
-function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
+export function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (status === 'running' || status === 'connected') return 'ok';
   if (status === 'not_installed' || status === 'registered' || status === 'stale') return 'warn';
   if (status === 'failed' || status === 'error' || status === 'disconnected') return 'danger';
@@ -41,7 +41,7 @@ function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'in
   return 'info';
 }
 
-function statusLabel(status: string | undefined, tr: (k: string) => string): string {
+export function statusLabel(status: string | undefined, tr: (k: string) => string): string {
   if (status === 'running') return tr('agents.status.running');
   if (status === 'connected') return tr('agents.status.connected');
   if (status === 'registered') return tr('agents.status.registered');
@@ -53,14 +53,14 @@ function statusLabel(status: string | undefined, tr: (k: string) => string): str
   return status ?? tr('agents.status.fallback');
 }
 
-function cmdStatusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
+export function cmdStatusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (s === 'done') return 'ok';
   if (s === 'queued' || s === 'acked') return 'warn';
   if (s === 'error') return 'danger';
   return 'neutral';
 }
 
-function prettyJson(p: unknown, max = 12_000): string {
+export function prettyJson(p: unknown, max = 12_000): string {
   try {
     const s = JSON.stringify(p, null, 2);
     return s.length > max ? `${s.slice(0, max)}\n…` : s;
@@ -70,7 +70,7 @@ function prettyJson(p: unknown, max = 12_000): string {
 }
 
 /** Human summary of queued payload */
-function summarizePayload(p: unknown): string {
+export function summarizePayload(p: unknown): string {
   if (p == null) return '—';
   if (typeof p !== 'object') return String(p);
   const o = p as Record<string, unknown>;
@@ -104,19 +104,19 @@ type CliAckShape = {
   note?: string;
 };
 
-function asCliAck(result: unknown): CliAckShape | null {
+export function asCliAck(result: unknown): CliAckShape | null {
   if (result == null || typeof result !== 'object') return null;
   return result as CliAckShape;
 }
 
 /** Nested CLI JSON stdout when edge wraps spawnSync output */
-function unwrapCliBody(ack: CliAckShape | null): unknown {
+export function unwrapCliBody(ack: CliAckShape | null): unknown {
   if (!ack) return null;
   if (ack.result !== undefined) return ack.result;
   return ack;
 }
 
-function exitCodeOf(cmd: FleetCommand): number | null {
+export function exitCodeOf(cmd: FleetCommand): number | null {
   const ack = asCliAck(cmd.result);
   if (ack && typeof ack.exitCode === 'number') return ack.exitCode;
   if (cmd.status === 'error') return 1;
@@ -124,14 +124,14 @@ function exitCodeOf(cmd: FleetCommand): number | null {
   return null;
 }
 
-function exitTone(code: number | null): 'ok' | 'warn' | 'danger' | 'neutral' {
+export function exitTone(code: number | null): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (code === null) return 'neutral';
   if (code === 0) return 'ok';
   if (code === 2 || code === 3 || code === 4) return 'warn';
   return 'danger';
 }
 
-function exitHint(code: number | null): string {
+export function exitHint(code: number | null): string {
   if (code === null) return '';
   const map: Record<number, string> = {
     0: 'ok',
