@@ -47,6 +47,10 @@ function routes(): FetchRoute[] {
   return [
     softwareReadyRoute(),
     {
+      match: /\/api\/v1\/scheduler/,
+      body: { jobs: [], items: [] },
+    },
+    {
       match: (url) => url.startsWith('/api/v1/readiness') || url.includes('/readiness'),
       body: {
         productionReady: false,
@@ -793,6 +797,7 @@ function routes(): FetchRoute[] {
     {
       match: /\/api\/v1\/updates/,
       body: {
+        jobs: [],
         ok: true,
         items: [],
         inventory: [

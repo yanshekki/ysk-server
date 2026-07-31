@@ -911,7 +911,7 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/scheduler/,
-    body: { jobs: [] },
+    body: { jobs: [], items: [] },
   },
   {
     match: /\/api\/v1\/projects/,

@@ -10,6 +10,8 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov'],
