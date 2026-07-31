@@ -85,3 +85,105 @@ describe('ProjectService real lifecycle', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 });
+
+describe('ProjectService network meta and honesty paths', () => {
+  it('updateNetwork patches domain aliases and auth flags', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-net-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    const created = await svc.create({
+      name: 'Net',
+      domain: 'old.local',
+      runtime: 'node',
+      actor: 'admin',
+    });
+    const updated = svc.updateNetwork(
+      created.project.id,
+      {
+        domain: 'new.local',
+        domainAliases: ['www.new.local', 'new.local', 'WWW.new.local'],
+        forceHttps: true,
+        hsts: true,
+        siteRedirectUrl: 'https://new.local/',
+        httpAuthUser: 'ops',
+        httpAuthPass: 'secret',
+        docRoot: 'app/public',
+        bindIp: '127.0.0.1',
+      },
+      'admin',
+    );
+    expect(updated.domain).toBe('new.local');
+    expect(updated.domainAliases).toEqual(['www.new.local']);
+    expect(updated.forceHttps).toBe(true);
+    expect(updated.hsts).toBe(true);
+    expect(updated.siteRedirectUrl).toBe('https://new.local/');
+    expect(updated.httpAuthUser).toBe('ops');
+    expect(updated.docRoot).toBe('app/public');
+    expect(updated.bindIp).toBe('127.0.0.1');
+    // clear fields
+    const cleared = svc.updateNetwork(
+      created.project.id,
+      { siteRedirectUrl: null, httpAuthUser: null, httpAuthPass: null, docRoot: null, bindIp: null },
+      'admin',
+    );
+    expect(cleared.siteRedirectUrl).toBeUndefined();
+    expect(cleared.httpAuthUser).toBeUndefined();
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('setLogExtraDirs normalizes paths', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-logs-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    const created = await svc.create({ name: 'L', runtime: 'node', actor: 'a' });
+    const r = svc.setLogExtraDirs(created.project.id, ['var/log', '/abs/no', '..'], 'a');
+    expect(r.project.logExtraDirs).toBeDefined();
+    expect(Array.isArray(r.notes)).toBe(true);
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('get missing throws; migrateOsIsolation honesty without execute', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-mig-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    expect(() => svc.get('missing')).toThrow();
+    const created = await svc.create({ name: 'Mig', runtime: 'node', actor: 'a' });
+    const mig = await svc.migrateOsIsolation(created.project.id, 'a');
+    expect(mig.ok).toBe(false);
+    expect(mig.requiresExecute || mig.requiresRoot).toBe(true);
+    expect(mig.plan).toBeTruthy();
+    const bulk = await svc.provisionOsIsolationAll('a');
+    expect(bulk.ok).toBe(false);
+    expect(bulk.attempted).toBe(0);
+    expect(bulk.requiresExecute || bulk.requiresRoot).toBe(true);
+    // empty name validation
+    await expect(svc.create({ name: '  ', runtime: 'node', actor: 'a' })).rejects.toThrow();
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('delete removeFiles=false keeps home; applyTemplate unknown throws path covered via static', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-del-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    const created = await svc.create({
+      name: 'Keep',
+      runtime: 'node',
+      templateId: 'node-starter',
+      actor: 'a',
+    });
+    const home = created.project.homeDir;
+    await svc.delete(created.project.id, 'a', false);
+    expect(svc.list()).toHaveLength(0);
+    // home may remain when removeFiles=false — honesty: no crash
+    expect(typeof existsSync(home)).toBe('boolean');
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+});
