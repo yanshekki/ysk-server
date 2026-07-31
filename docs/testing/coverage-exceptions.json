@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "policy": "types-only | re-export | generated | platform-entry | cli-thin-delegate",
+  "exceptions": [
+    {
+      "path": "packages/shared/src/ai.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/cdn.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/databases.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/dto.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/email-domain.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/files.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/fleet.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/ftp.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/metrics.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/network.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/software.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/ssl.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/system.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/updates.ts",
+      "reason": "types-only",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/browser.ts",
+      "reason": "re-export",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/index.ts",
+      "reason": "re-export",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/shared/src/i18n/index.ts",
+      "reason": "re-export",
+      "owner": "shared",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "apps/web/src/main.tsx",
+      "reason": "platform-entry",
+      "owner": "web",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "apps/server/src/index.ts",
+      "reason": "platform-entry",
+      "owner": "server",
+      "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/core/src/index.ts",
+      "reason": "re-export",
+      "owner": "core",
+      "reviewed": "2026-07-31"
+    }
+  ]
+}

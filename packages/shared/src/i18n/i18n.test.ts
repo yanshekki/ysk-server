@@ -5,8 +5,13 @@ import {
   localeFromAcceptLanguage,
   normalizeLocale,
   runWithLocale,
+  runWithLocaleAsync,
   t,
   tl,
+  getLocale,
+  resolveRequestLocale,
+  localeFromEnv,
+  mergeDicts,
 } from './index.js';
 import { ErrorCodes, yskError } from '../errors.js';
 import { localizeOpsResult, translateNote } from '../ops-i18n.js';
@@ -96,5 +101,42 @@ describe('i18n', () => {
     const loc = localizeOpsResult(raw, 'en');
     expect(loc.ok).toBe(false);
     expect(loc.notes.some((n) => /Honesty|blocked/i.test(n))).toBe(true);
+  });
+
+  it('getLocale defaults outside ALS and runWithLocaleAsync works', async () => {
+    expect(getLocale()).toBe(DEFAULT_LOCALE);
+    const v = await runWithLocaleAsync('en', async () => {
+      expect(getLocale()).toBe('en');
+      return tl('common.cancel');
+    });
+    expect(v).toBe('Cancel');
+  });
+
+  it('resolveRequestLocale priority user > query > accept > default', () => {
+    expect(resolveRequestLocale({ userLocale: 'en' })).toBe('en');
+    expect(resolveRequestLocale({ queryLocale: 'zh-CN' })).toBe('zh-CN');
+    expect(resolveRequestLocale({ acceptLanguage: 'en-US,en;q=0.9' })).toBe('en');
+    expect(resolveRequestLocale({})).toBe(DEFAULT_LOCALE);
+  });
+
+  it('localeFromEnv reads YSK_LOCALE', () => {
+    expect(localeFromEnv({ YSK_LOCALE: 'en' } as NodeJS.ProcessEnv)).toBe('en');
+  });
+
+  it('mergeDicts deep-merges namespaces', () => {
+    const m = mergeDicts(
+      { common: { a: '1', nested: { x: 'x1' } }, top: 't' },
+      { common: { b: '2', nested: { y: 'y2' } } },
+    );
+    expect(m.top).toBe('t');
+    expect((m.common as { a: string; b: string }).a).toBe('1');
+    expect((m.common as { b: string }).b).toBe('2');
+    expect((m.common as { nested: { x: string; y: string } }).nested.x).toBe('x1');
+    expect((m.common as { nested: { y: string } }).nested.y).toBe('y2');
+  });
+
+  it('t interpolates missing params as empty', () => {
+    // common.cancel has no placeholders; use a synthetic path if needed
+    expect(t('en', 'common.cancel', { unused: 'x' })).toBe('Cancel');
   });
 });

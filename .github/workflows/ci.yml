@@ -56,9 +56,17 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      - name: Shared coverage (≥90% locked)
+        run: pnpm --filter @ysk/shared test:coverage
+
+      - name: Coverage report (core/server/web floor=0 while climbing)
+        run: |
+          COVERAGE_FLOOR=0 pnpm --filter @ysk/core test:coverage
+          COVERAGE_FLOOR=0 pnpm --filter @ysk/server test:coverage
+          COVERAGE_FLOOR=0 pnpm --filter @ysk/web test:coverage || true
+          node ./scripts/coverage-aggregate.mjs
+          node ./scripts/test-export-coverage.mjs
+        continue-on-error: true
+
       - name: Real-ops e2e (degraded, non-root)
         run: pnpm e2e:real-ops
-
-      - name: Core coverage summary
-        run: pnpm --filter @ysk/core test:coverage
-        continue-on-error: true

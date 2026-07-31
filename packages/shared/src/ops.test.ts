@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertHonestOps, isApplyStatus } from './ops.js';
+import { assertHonestOps, isApplyStatus, normalizeOpsHonesty } from './ops.js';
 
 describe('assertHonestOps', () => {
   it('flips ok when blocked', () => {
@@ -11,9 +11,7 @@ describe('assertHonestOps', () => {
     });
     expect(r.ok).toBe(false);
     expect(r.apply_status).toBe('blocked');
-    expect(r.notes.some((n) => n.includes('ops.honesty') || n.includes('誠實校正'))).toBe(
-      true,
-    );
+    expect(r.notes.some((n) => n.includes('ops.honesty'))).toBe(true);
   });
 
   it('keeps honest applied', () => {
@@ -44,7 +42,7 @@ describe('assertHonestOps', () => {
       ok: true,
       requiresExecute: true,
       apply_status: 'written',
-      notes: ['管理檔已寫'],
+      notes: ['control-plane file written'],
     });
     expect(r.ok).toBe(true);
     expect(r.apply_status).toBe('written');
@@ -59,12 +57,73 @@ describe('assertHonestOps', () => {
     });
     expect(r.ok).toBe(false);
   });
+
+  it('defaults ok from blocked when ok omitted', () => {
+    const open = assertHonestOps({ notes: ['n'] });
+    expect(open.ok).toBe(true);
+    const blocked = assertHonestOps({ blocked: true, notes: [] });
+    expect(blocked.ok).toBe(false);
+  });
+
+  it('demotes applied + ok:false to failed (not hard-blocked)', () => {
+    const r = assertHonestOps({
+      ok: false,
+      apply_status: 'applied',
+      notes: [],
+    });
+    expect(r.apply_status).toBe('failed');
+    expect(r.notes.some((n) => n.includes('ops.honesty'))).toBe(true);
+  });
+
+  it('demotes applied + blocked with blockedNotApplied key path', () => {
+    const r = assertHonestOps({
+      ok: false,
+      blocked: true,
+      apply_status: 'applied',
+      notes: [],
+    });
+    expect(r.apply_status).toBe('blocked');
+    expect(r.ok).toBe(false);
+  });
+
+  it('does not duplicate honesty notes when already present', () => {
+    const r = assertHonestOps({
+      ok: true,
+      blocked: true,
+      apply_status: 'applied',
+      notes: ['ops.honesty.blockedNotOk'],
+    });
+    expect(r.notes.filter((n) => n === 'ops.honesty.blockedNotOk').length).toBe(1);
+  });
+
+  it('normalizeOpsHonesty alias works', () => {
+    expect(normalizeOpsHonesty).toBe(assertHonestOps);
+  });
+
+  it('copies written array', () => {
+    const written = ['/a'];
+    const r = assertHonestOps({ ok: true, notes: [], written });
+    expect(r.written).toEqual(['/a']);
+    expect(r.written).not.toBe(written);
+  });
 });
 
 describe('isApplyStatus', () => {
-  it('accepts known statuses', () => {
-    expect(isApplyStatus('written')).toBe(true);
-    expect(isApplyStatus('applied')).toBe(true);
+  it('accepts all known statuses', () => {
+    for (const s of [
+      'draft',
+      'written',
+      'planned',
+      'pending_execute',
+      'applied',
+      'blocked',
+      'failed',
+      'partial',
+    ] as const) {
+      expect(isApplyStatus(s)).toBe(true);
+    }
     expect(isApplyStatus('nope')).toBe(false);
+    expect(isApplyStatus(1)).toBe(false);
+    expect(isApplyStatus(null)).toBe(false);
   });
 });

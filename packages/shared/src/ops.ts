@@ -68,7 +68,9 @@ export function assertHonestOps<T extends OpsResultInput>(result: T): T & OpsRes
   if (hardBlocked && ok) {
     ok = false;
     // Stable i18n keys — localize at sendOpsResult / localizeOpsResult
-    nextNotes.push('ops.honesty.blockedNotOk');
+    if (!nextNotes.some((n) => n.includes('ops.honesty.blockedNotOk') || n.includes('誠實校正'))) {
+      nextNotes.push('ops.honesty.blockedNotOk');
+    }
     if (apply_status === 'applied' || !apply_status) apply_status = 'blocked';
   }
 
