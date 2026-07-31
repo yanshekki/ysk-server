@@ -27,10 +27,11 @@ export async function startTestServer(opts?: {
 }): Promise<TestServer> {
   const adminPassword = opts?.adminPassword ?? 'TestPass-Strong-99!';
   const dataDir = mkdtempSync(join(tmpdir(), 'ysk-srv-test-'));
+  // setup rejects port 0; ephemeral bind happens in listen() below
   const setup = runSetup({
     dataDir,
     nonInteractive: true,
-    listenPort: opts?.port ?? 0,
+    listenPort: opts?.port && opts.port > 0 ? opts.port : 19287,
     locale: 'en',
     adminUsername: 'admin',
     adminPassword,
@@ -50,10 +51,18 @@ export async function startTestServer(opts?: {
     adminPassword,
   });
   const server = createHttpServer(ctx);
-  const port = await listen(server, 0, '127.0.0.1');
+  await listen(server, '127.0.0.1', 0);
+  const address = server.address();
+  const port = typeof address === 'object' && address ? address.port : 0;
+  if (!port) {
+    server.close();
+    closeAppContext(ctx);
+    rmSync(dataDir, { recursive: true, force: true });
+    throw new Error('failed to bind ephemeral port');
+  }
   const baseUrl = `http://127.0.0.1:${port}`;
 
-  const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+  const loginRes = await fetch(`${baseUrl}/api/v1/auth/login`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'accept-language': 'en' },
     body: JSON.stringify({ username: 'admin', password: adminPassword }),
