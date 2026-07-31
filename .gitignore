@@ -25,8 +25,8 @@ Thumbs.db
 !.vscode/settings.json.example
 
 # Local runtime / panel data (never commit)
-# Production-style data dir
-data/
+# Only the host dataDir at repo root — not source trees named data/
+/data/
 .ysk/
 # Dev / integration test data dirs (any package depth)
 .ysk-test/

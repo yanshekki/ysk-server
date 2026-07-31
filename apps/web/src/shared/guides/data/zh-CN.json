@@ -1,0 +1,2046 @@
+{
+  "dashboard": {
+    "id": "dashboard",
+    "title": "仪表板",
+    "summary": "一眼掌握主机健康、待办与常用入口，作为每日巡检的起点。",
+    "audience": "所有操作员",
+    "chips": [
+      "总览",
+      "健康",
+      "捷径"
+    ],
+    "features": [
+      {
+        "name": "健康摘要",
+        "purpose": "汇总服务、磁盘、防护模式等关键状态。"
+      },
+      {
+        "name": "快捷入口",
+        "purpose": "跳到常用功能页，减少在菜单中搜索。"
+      },
+      {
+        "name": "通知与待办",
+        "purpose": "显示需要关注的项目（如更新、配额）。"
+      }
+    ],
+    "useCases": [
+      "每日巡检主机是否正常",
+      "出问题时先看总览再深入子系统"
+    ],
+    "workflow": [
+      "打开仪表板",
+      "处理标红／警告项目",
+      "进入对应功能页深究"
+    ],
+    "caveats": [
+      "仪表板是汇总视图，细节与应用结果以各功能页为准"
+    ],
+    "related": [
+      {
+        "label": "服务",
+        "to": "/services"
+      },
+      {
+        "label": "更新",
+        "to": "/updates"
+      },
+      {
+        "label": "防护中心",
+        "to": "/protection"
+      }
+    ]
+  },
+  "projects": {
+    "id": "projects",
+    "title": "网站项目",
+    "summary": "以项目为单位管理网站根目录、运行环境、域名与部署生命周期。",
+    "audience": "托管多个站点的站长",
+    "chips": [
+      "托管",
+      "部署",
+      "隔离"
+    ],
+    "features": [
+      {
+        "name": "项目列表",
+        "purpose": "创建、搜索、进入各站点详情。"
+      },
+      {
+        "name": "系统用户隔离",
+        "purpose": "每个项目可对应独立 Linux 用户与家目录。"
+      },
+      {
+        "name": "模板创建",
+        "purpose": "用预设模板快速开站。"
+      }
+    ],
+    "useCases": [
+      "一台机器托管多个站点",
+      "用独立系统用户加强隔离"
+    ],
+    "workflow": [
+      "创建项目",
+      "部署或使用模板",
+      "按需发布 Nginx／SSL",
+      "检查健康与日志"
+    ],
+    "caveats": [
+      "删除项目会影响文件与服务，请先备份",
+      "published ≠ 公网一定可解析，需 DNS 正确"
+    ],
+    "related": [
+      {
+        "label": "文件",
+        "to": "/files"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ]
+  },
+  "projectDetail": {
+    "id": "projectDetail",
+    "title": "项目详情",
+    "summary": "单一站点的控制中心：部署、环境变量、健康检查、备份与网络端点。",
+    "audience": "站点操作员",
+    "chips": [
+      "部署",
+      "环境",
+      "健康"
+    ],
+    "features": [
+      {
+        "name": "部署",
+        "purpose": "启动或更新该站点的运行环境。"
+      },
+      {
+        "name": "环境变量",
+        "purpose": "安全编辑项目环境变量。"
+      },
+      {
+        "name": "健康与日志",
+        "purpose": "探测就绪状态并打开相关日志。"
+      }
+    ],
+    "useCases": [
+      "为单个站点发布代码变更",
+      "轮换密钥而不影响其他项目"
+    ],
+    "workflow": [
+      "打开项目详情",
+      "部署或设置环境变量",
+      "按需发布网络／SSL",
+      "确认健康检查"
+    ],
+    "caveats": [
+      "仍受应用／EXECUTE 规则约束——blocked 表示主机未真正变更",
+      "错误的环境变量可能导致站点不可用，请谨慎修改"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "日志",
+        "to": "/logs"
+      }
+    ]
+  },
+  "email": {
+    "id": "email",
+    "title": "邮件",
+    "summary": "管理邮件域名、邮箱与投递设置，并提供 DNS 建议记录。",
+    "audience": "需要自建或管理企业邮箱的站长",
+    "chips": [
+      "MX",
+      "SPF",
+      "DKIM"
+    ],
+    "features": [
+      {
+        "name": "邮件域名",
+        "purpose": "新增要收发信的域名。"
+      },
+      {
+        "name": "DNS 建议",
+        "purpose": "列出应发布的 MX／SPF／DKIM／DMARC 等记录。"
+      },
+      {
+        "name": "健康与声誉",
+        "purpose": "辅助检查投递就绪度（部分项属外部责任）。"
+      }
+    ],
+    "useCases": [
+      "上线新邮件域名",
+      "DNS 变更后排查 soft-fail／拒收"
+    ],
+    "workflow": [
+      "添加邮件域名",
+      "按清单发布 DNS",
+      "创建邮箱",
+      "发测试信并查看健康"
+    ],
+    "caveats": [
+      "PTR、部分端口（如 25）与 IP 声誉常需主机商／IP 拥有者处理",
+      "面板无法代替外部 DNS 供应商或封锁列表解封"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ]
+  },
+  "emailDomain": {
+    "id": "emailDomain",
+    "title": "邮件域名详情",
+    "summary": "单一邮件域名下的信箱、别名、DKIM、转送与健康检查。",
+    "audience": "邮件管理员",
+    "chips": [
+      "信箱",
+      "DKIM",
+      "健康"
+    ],
+    "features": [
+      {
+        "name": "信箱管理",
+        "purpose": "创建信箱、配额与密码。"
+      },
+      {
+        "name": "DNS／DKIM",
+        "purpose": "显示应公布的密钥与记录。"
+      },
+      {
+        "name": "进阶政策",
+        "purpose": "转送、限速、反垃圾等（依实作）。"
+      }
+    ],
+    "useCases": [
+      "为员工开信箱",
+      "轮替 DKIM 或检查未通过的 DNS"
+    ],
+    "workflow": [
+      "创建信箱",
+      "确认 DNS 绿灯",
+      "用客户端测试收发"
+    ],
+    "caveats": [
+      "DNS 生效受 TTL 影响",
+      "Webmail SSO 若启用需另设密码与外掛"
+    ],
+    "related": [
+      {
+        "label": "邮件总览",
+        "to": "/email"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "files": {
+    "id": "files",
+    "title": "文件",
+    "summary": "在授权路径内浏览、上传、下载与管理服务器文件。",
+    "audience": "需要直接操作站点文件的站长",
+    "chips": [
+      "浏览",
+      "上传",
+      "沙箱"
+    ],
+    "features": [
+      {
+        "name": "目录浏览",
+        "purpose": "仅在允许的根路径下导航。"
+      },
+      {
+        "name": "上传／下载",
+        "purpose": "传输站点资源或备份归档。"
+      },
+      {
+        "name": "项目根捷径",
+        "purpose": "从项目跳入对应家目录。"
+      }
+    ],
+    "useCases": [
+      "无需 SSH 修复静态资源",
+      "从主机拉取备份归档"
+    ],
+    "workflow": [
+      "打开文件",
+      "选择允许的根或项目家目录",
+      "上传、编辑或下载",
+      "确认站点仍正常"
+    ],
+    "caveats": [
+      "仅限允许清单路径，无法任意读取全盘",
+      "误删可能导致站点失效，重要文件请先备份"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "备份",
+        "to": "/backups"
+      }
+    ]
+  },
+  "publicFiles": {
+    "id": "publicFiles",
+    "title": "公开文件",
+    "summary": "对外提供受控的公开文件下载区（例如释出包、静态素材）。",
+    "audience": "需要公开下载连结的站长",
+    "chips": [
+      "公开",
+      "下载"
+    ],
+    "features": [
+      {
+        "name": "公开区管理",
+        "purpose": "管理可被 HTTP 存取的文件集合。"
+      },
+      {
+        "name": "配额",
+        "purpose": "限制公开区用量。"
+      }
+    ],
+    "useCases": [
+      "发佈客户下载档",
+      "分享不含敏感资料的资源"
+    ],
+    "workflow": [
+      "确认公开前缀与配额",
+      "上传文件",
+      "用公开 URL 验证"
+    ],
+    "caveats": [
+      "公开区勿放私密密钥或客户个资"
+    ],
+    "related": [
+      {
+        "label": "文件",
+        "to": "/files"
+      }
+    ]
+  },
+  "ftp": {
+    "id": "ftp",
+    "title": "FTP 账户",
+    "summary": "为用户创建 FTP／SFTP 登入账户与家目录绑定。",
+    "audience": "需给外包或客户上传权限的站长",
+    "chips": [
+      "账户",
+      "上传"
+    ],
+    "features": [
+      {
+        "name": "账户 CRUD",
+        "purpose": "创建、停用、删除 FTP 用户。"
+      },
+      {
+        "name": "家目录",
+        "purpose": "限制账户只能存取指定路径。"
+      }
+    ],
+    "useCases": [
+      "给设计师上传静态档",
+      "臨时外包账号"
+    ],
+    "workflow": [
+      "先确认 FTPS 服务已安装启动",
+      "创建账户並指定家目录",
+      "用客户端测试登入"
+    ],
+    "caveats": [
+      "明文 FTP 不安全，建议 FTPS／SFTP",
+      "账户生效取决于服务应用结果"
+    ],
+    "related": [
+      {
+        "label": "FTPS 服务",
+        "to": "/ftp/service"
+      },
+      {
+        "label": "文件",
+        "to": "/files"
+      }
+    ]
+  },
+  "ftpService": {
+    "id": "ftpService",
+    "title": "FTPS 服务",
+    "summary": "安装与调整 vsftpd 等 FTPS 服务生命周期与被动模式端口。",
+    "audience": "服务器管理员",
+    "chips": [
+      "vsftpd",
+      "TLS"
+    ],
+    "features": [
+      {
+        "name": "安装与启动",
+        "purpose": "一键安装横幅完成软件部署。"
+      },
+      {
+        "name": "TLS／被动端口",
+        "purpose": "设置安全傳输与防火墙所需端口段。"
+      }
+    ],
+    "useCases": [
+      "新主机启用安全文件傳输"
+    ],
+    "workflow": [
+      "一键安装",
+      "调整 SSL 与 PASV 端口",
+      "放行防火墙",
+      "创建 FTP 账户"
+    ],
+    "caveats": [
+      "需系统变更权限",
+      "防火墙未放行 PASV 会导致列表成功但傳输失败"
+    ],
+    "related": [
+      {
+        "label": "FTP 账户",
+        "to": "/ftp"
+      },
+      {
+        "label": "防护中心",
+        "to": "/protection"
+      }
+    ]
+  },
+  "mysql": {
+    "id": "mysql",
+    "title": "MySQL 数据库",
+    "summary": "管理本机 MySQL 的数据库、用户与连接设置，並以诚实状态反映是否已真正写入系统。",
+    "audience": "需要为网站／应用提供数据库的站长与开发者",
+    "chips": [
+      "MySQL",
+      "资料",
+      "权限"
+    ],
+    "features": [
+      {
+        "name": "数据库 CRUD",
+        "purpose": "创建、列出、删除 MySQL 数据库（schema）。",
+        "how": "在列表新增后，需「应用到系统」才会在服务器生效。"
+      },
+      {
+        "name": "用户与授权",
+        "purpose": "创建数据库账号並绑定存取权限。"
+      },
+      {
+        "name": "应用与状态",
+        "purpose": "区分草稿、已写入、已应用、被封锁，避免假成功。"
+      }
+    ],
+    "useCases": [
+      "为新网站项目配置独立的 MySQL 数据库与账号",
+      "轮替应用密码或回收已下线站点的数据库资源"
+    ],
+    "workflow": [
+      "确认服务页已安装並启动数据库引擎",
+      "创建数据库与用户，绑定权限",
+      "按「应用到系统」並检查回傳状态",
+      "将连接字符串设置到项目环境变量"
+    ],
+    "caveats": [
+      "面板显示成功 ≠ 应用一定连得上：请核对 host、端口、防火墙与账号权限",
+      "删除数据库为高风险操作，应用前请确认无生产依赖"
+    ],
+    "related": [
+      {
+        "label": "MySQL 服务",
+        "to": "/databases/mysql/service"
+      },
+      {
+        "label": "项目",
+        "to": "/projects"
+      }
+    ]
+  },
+  "mysqlService": {
+    "id": "mysqlService",
+    "title": "MySQL 服务",
+    "summary": "安装、启动、停止与调整 MySQL 服务本身（非数据库内容），是资料页的前置条件。",
+    "audience": "负责服务器基础服务的管理员",
+    "chips": [
+      "MySQL",
+      "服务",
+      "生命周期"
+    ],
+    "features": [
+      {
+        "name": "一键安装",
+        "purpose": "在主机安装 MySQL 软件包（需系统变更权限）。",
+        "how": "使用页面上方横幅的「一键安装」，勿重複在其他位置安装。"
+      },
+      {
+        "name": "启动／停止／重载",
+        "purpose": "控制 systemd 单元状态並回报真实结果。"
+      },
+      {
+        "name": "连接探测",
+        "purpose": "检查端口是否可连、服务是否就绪。"
+      }
+    ],
+    "useCases": [
+      "新主机首次部署 MySQL",
+      "维护窗口重启数据库服务並确认恢复"
+    ],
+    "workflow": [
+      "开启系统变更权限（EXECUTE）",
+      "一键安装並等待结果面板",
+      "启动服务並确认 active",
+      "到资料页创建庫与用户"
+    ],
+    "caveats": [
+      "未开 EXECUTE 时只能写入计划／脚本，无法真正 apt／systemctl",
+      "root 与非 root 能力不同，部分操作会诚实标记 blocked"
+    ],
+    "related": [
+      {
+        "label": "MySQL 资料",
+        "to": "/databases/mysql"
+      },
+      {
+        "label": "服务总览",
+        "to": "/services"
+      }
+    ]
+  },
+  "mariadb": {
+    "id": "mariadb",
+    "title": "MariaDB 数据库",
+    "summary": "管理本机 MariaDB 的数据库、用户与连接设置，並以诚实状态反映是否已真正写入系统。",
+    "audience": "需要为网站／应用提供数据库的站长与开发者",
+    "chips": [
+      "MariaDB",
+      "资料",
+      "权限"
+    ],
+    "features": [
+      {
+        "name": "数据库 CRUD",
+        "purpose": "创建、列出、删除 MariaDB 数据库（schema）。",
+        "how": "在列表新增后，需「应用到系统」才会在服务器生效。"
+      },
+      {
+        "name": "用户与授权",
+        "purpose": "创建数据库账号並绑定存取权限。"
+      },
+      {
+        "name": "应用与状态",
+        "purpose": "区分草稿、已写入、已应用、被封锁，避免假成功。"
+      }
+    ],
+    "useCases": [
+      "为新网站项目配置独立的 MariaDB 数据库与账号",
+      "轮替应用密码或回收已下线站点的数据库资源"
+    ],
+    "workflow": [
+      "确认服务页已安装並启动数据库引擎",
+      "创建数据库与用户，绑定权限",
+      "按「应用到系统」並检查回傳状态",
+      "将连接字符串设置到项目环境变量"
+    ],
+    "caveats": [
+      "面板显示成功 ≠ 应用一定连得上：请核对 host、端口、防火墙与账号权限",
+      "删除数据库为高风险操作，应用前请确认无生产依赖"
+    ],
+    "related": [
+      {
+        "label": "MariaDB 服务",
+        "to": "/databases/mariadb/service"
+      },
+      {
+        "label": "项目",
+        "to": "/projects"
+      }
+    ]
+  },
+  "mariadbService": {
+    "id": "mariadbService",
+    "title": "MariaDB 服务",
+    "summary": "安装、启动、停止与调整 MariaDB 服务本身（非数据库内容），是资料页的前置条件。",
+    "audience": "负责服务器基础服务的管理员",
+    "chips": [
+      "MariaDB",
+      "服务",
+      "生命周期"
+    ],
+    "features": [
+      {
+        "name": "一键安装",
+        "purpose": "在主机安装 MariaDB 软件包（需系统变更权限）。",
+        "how": "使用页面上方横幅的「一键安装」，勿重複在其他位置安装。"
+      },
+      {
+        "name": "启动／停止／重载",
+        "purpose": "控制 systemd 单元状态並回报真实结果。"
+      },
+      {
+        "name": "连接探测",
+        "purpose": "检查端口是否可连、服务是否就绪。"
+      }
+    ],
+    "useCases": [
+      "新主机首次部署 MariaDB",
+      "维护窗口重启数据库服务並确认恢复"
+    ],
+    "workflow": [
+      "开启系统变更权限（EXECUTE）",
+      "一键安装並等待结果面板",
+      "启动服务並确认 active",
+      "到资料页创建庫与用户"
+    ],
+    "caveats": [
+      "未开 EXECUTE 时只能写入计划／脚本，无法真正 apt／systemctl",
+      "root 与非 root 能力不同，部分操作会诚实标记 blocked"
+    ],
+    "related": [
+      {
+        "label": "MariaDB 资料",
+        "to": "/databases/mariadb"
+      },
+      {
+        "label": "服务总览",
+        "to": "/services"
+      }
+    ]
+  },
+  "postgres": {
+    "id": "postgres",
+    "title": "PostgreSQL 数据库",
+    "summary": "管理本机 PostgreSQL 的数据库、用户与连接设置，並以诚实状态反映是否已真正写入系统。",
+    "audience": "需要为网站／应用提供数据库的站长与开发者",
+    "chips": [
+      "PostgreSQL",
+      "资料",
+      "权限"
+    ],
+    "features": [
+      {
+        "name": "数据库 CRUD",
+        "purpose": "创建、列出、删除 PostgreSQL 数据库（schema）。",
+        "how": "在列表新增后，需「应用到系统」才会在服务器生效。"
+      },
+      {
+        "name": "用户与授权",
+        "purpose": "创建数据库账号並绑定存取权限。"
+      },
+      {
+        "name": "应用与状态",
+        "purpose": "区分草稿、已写入、已应用、被封锁，避免假成功。"
+      }
+    ],
+    "useCases": [
+      "为新网站项目配置独立的 PostgreSQL 数据库与账号",
+      "轮替应用密码或回收已下线站点的数据库资源"
+    ],
+    "workflow": [
+      "确认服务页已安装並启动数据库引擎",
+      "创建数据库与用户，绑定权限",
+      "按「应用到系统」並检查回傳状态",
+      "将连接字符串设置到项目环境变量"
+    ],
+    "caveats": [
+      "面板显示成功 ≠ 应用一定连得上：请核对 host、端口、防火墙与账号权限",
+      "删除数据库为高风险操作，应用前请确认无生产依赖"
+    ],
+    "related": [
+      {
+        "label": "PostgreSQL 服务",
+        "to": "/databases/postgres/service"
+      },
+      {
+        "label": "项目",
+        "to": "/projects"
+      }
+    ]
+  },
+  "postgresService": {
+    "id": "postgresService",
+    "title": "PostgreSQL 服务",
+    "summary": "安装、启动、停止与调整 PostgreSQL 服务本身（非数据库内容），是资料页的前置条件。",
+    "audience": "负责服务器基础服务的管理员",
+    "chips": [
+      "PostgreSQL",
+      "服务",
+      "生命周期"
+    ],
+    "features": [
+      {
+        "name": "一键安装",
+        "purpose": "在主机安装 PostgreSQL 软件包（需系统变更权限）。",
+        "how": "使用页面上方横幅的「一键安装」，勿重複在其他位置安装。"
+      },
+      {
+        "name": "启动／停止／重载",
+        "purpose": "控制 systemd 单元状态並回报真实结果。"
+      },
+      {
+        "name": "连接探测",
+        "purpose": "检查端口是否可连、服务是否就绪。"
+      }
+    ],
+    "useCases": [
+      "新主机首次部署 PostgreSQL",
+      "维护窗口重启数据库服务並确认恢复"
+    ],
+    "workflow": [
+      "开启系统变更权限（EXECUTE）",
+      "一键安装並等待结果面板",
+      "启动服务並确认 active",
+      "到资料页创建庫与用户"
+    ],
+    "caveats": [
+      "未开 EXECUTE 时只能写入计划／脚本，无法真正 apt／systemctl",
+      "root 与非 root 能力不同，部分操作会诚实标记 blocked"
+    ],
+    "related": [
+      {
+        "label": "PostgreSQL 资料",
+        "to": "/databases/postgres"
+      },
+      {
+        "label": "服务总览",
+        "to": "/services"
+      }
+    ]
+  },
+  "redis": {
+    "id": "redis",
+    "title": "Redis",
+    "summary": "浏览与管理 Redis 鍵值、数据库编号，並应用连接相关设置。",
+    "audience": "使用快取／队列的开发者",
+    "chips": [
+      "快取",
+      "鍵值"
+    ],
+    "features": [
+      {
+        "name": "鍵浏览",
+        "purpose": "查看各 DB 的鍵与内容（受权限与大小限制）。"
+      },
+      {
+        "name": "实例设置",
+        "purpose": "管理 Redis 连接目标。"
+      }
+    ],
+    "useCases": [
+      "检查 session 快取",
+      "清掉错误队列鍵"
+    ],
+    "workflow": [
+      "确认 Redis 服务已启动",
+      "连接后浏览 DB",
+      "谨慎删除鍵"
+    ],
+    "caveats": [
+      "生产环境删鍵需极谨慎",
+      "大型 key 可能截断显示"
+    ],
+    "related": [
+      {
+        "label": "Redis 服务",
+        "to": "/databases/redis/service"
+      }
+    ]
+  },
+  "redisService": {
+    "id": "redisService",
+    "title": "Redis 服务",
+    "summary": "安装、启动、停止与调整 Redis 服务本身（非数据库内容），是资料页的前置条件。",
+    "audience": "负责服务器基础服务的管理员",
+    "chips": [
+      "Redis",
+      "服务",
+      "生命周期"
+    ],
+    "features": [
+      {
+        "name": "一键安装",
+        "purpose": "在主机安装 Redis 软件包（需系统变更权限）。",
+        "how": "使用页面上方横幅的「一键安装」，勿重複在其他位置安装。"
+      },
+      {
+        "name": "启动／停止／重载",
+        "purpose": "控制 systemd 单元状态並回报真实结果。"
+      },
+      {
+        "name": "连接探测",
+        "purpose": "检查端口是否可连、服务是否就绪。"
+      }
+    ],
+    "useCases": [
+      "新主机首次部署 Redis",
+      "维护窗口重启数据库服务並确认恢复"
+    ],
+    "workflow": [
+      "开启系统变更权限（EXECUTE）",
+      "一键安装並等待结果面板",
+      "启动服务並确认 active",
+      "到资料页创建庫与用户"
+    ],
+    "caveats": [
+      "未开 EXECUTE 时只能写入计划／脚本，无法真正 apt／systemctl",
+      "root 与非 root 能力不同，部分操作会诚实标记 blocked"
+    ],
+    "related": [
+      {
+        "label": "Redis 资料",
+        "to": "/databases/redis"
+      },
+      {
+        "label": "服务总览",
+        "to": "/services"
+      }
+    ]
+  },
+  "dns": {
+    "id": "dns",
+    "title": "DNS",
+    "summary": "管理权威 DNS 区域与记录、集群同步、DNSSEC 与查询工具。",
+    "audience": "需要掌控域名解析的操作员",
+    "chips": [
+      "区域",
+      "DNSSEC",
+      "集群"
+    ],
+    "features": [
+      {
+        "name": "区域与记录",
+        "purpose": "主机权威数据或计划中的记录。"
+      },
+      {
+        "name": "同步／DNSSEC",
+        "purpose": "集群对等与签名（若启用）。"
+      },
+      {
+        "name": "查询工具",
+        "purpose": "在面板内做 dig 类检查。"
+      }
+    ],
+    "useCases": [
+      "为新站点或邮件发布 A／MX",
+      "确认边缘与源站解析符合预期"
+    ],
+    "workflow": [
+      "创建或选择区域",
+      "编辑记录",
+      "应用／同步",
+      "查询验证"
+    ],
+    "caveats": [
+      "TTL 与外部缓存会延迟公网所见结果",
+      "错误的 apex／NS 可能导致整个域名不可用"
+    ],
+    "related": [
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      },
+      {
+        "label": "邮件",
+        "to": "/email"
+      }
+    ]
+  },
+  "cdn": {
+    "id": "cdn",
+    "title": "CDN（自建边缘）",
+    "summary": "用多台 YSK 节点组成边缘加速：登记 edge、定义回源与缓存、下发 Nginx、DNS multi-A／failover，并可分发 TLS。",
+    "audience": "运行自建边缘集群的操作员",
+    "chips": [
+      "Edge",
+      "回源",
+      "故障转移"
+    ],
+    "features": [
+      {
+        "name": "边缘登记",
+        "purpose": "跟踪边缘节点与健康状态。"
+      },
+      {
+        "name": "站点下发",
+        "purpose": "向边缘推送 Nginx／缓存策略。"
+      },
+      {
+        "name": "DNS 辅助",
+        "purpose": "边缘 IP 的 multi-A／failover 模式。"
+      }
+    ],
+    "useCases": [
+      "用多台 VPS 边缘加速公网站点",
+      "某边缘不健康时故障转移"
+    ],
+    "workflow": [
+      "登记边缘",
+      "定义回源与站点",
+      "下发配置",
+      "发布 DNS 并验证"
+    ],
+    "caveats": [
+      "排队中的边缘任务 ≠ 每个节点已应用——请阅读诚实状态",
+      "仅分发证书不能保证浏览器完整信任链"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ]
+  },
+  "ssl": {
+    "id": "ssl",
+    "title": "SSL 证书",
+    "summary": "申请、上传并绑定 TLS 证书，供网站、邮件或面板主机名使用。",
+    "audience": "需要终止 HTTPS 的操作员",
+    "chips": [
+      "TLS",
+      "Let's Encrypt",
+      "上传"
+    ],
+    "features": [
+      {
+        "name": "签发／上传",
+        "purpose": "ACME 签发或粘贴 PEM。"
+      },
+      {
+        "name": "绑定",
+        "purpose": "将证书挂到站点或服务主机名。"
+      }
+    ],
+    "useCases": [
+      "为新域名启用 HTTPS",
+      "替换即将过期的证书"
+    ],
+    "workflow": [
+      "添加或选择主机名",
+      "签发或上传",
+      "绑定到 Nginx／服务",
+      "用浏览器或 curl 验证"
+    ],
+    "caveats": [
+      "ACME 通常需要正确 DNS 与 80 端口可达",
+      "磁盘上有证书 ≠ 浏览器信任完整链——请端到端验证"
+    ],
+    "related": [
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "nginx": {
+    "id": "nginx",
+    "title": "Nginx",
+    "summary": "查看与同步面板管理的 Nginx 虚拟主机配置，并用 nginx -t／reload 验证。",
+    "audience": "站点与反向代理操作员",
+    "chips": [
+      "vhost",
+      "reload",
+      "ssl"
+    ],
+    "features": [
+      {
+        "name": "托管配置",
+        "purpose": "面板拥有并可重写的配置。"
+      },
+      {
+        "name": "校验／重载",
+        "purpose": "在允许 EXECUTE 时执行 nginx -t 再 reload。"
+      }
+    ],
+    "useCases": [
+      "部署后发布新站点",
+      "根据诚实失败说明修复错误配置"
+    ],
+    "workflow": [
+      "查看站点配置",
+      "写入／应用",
+      "运行 nginx -t",
+      "通过后 reload"
+    ],
+    "caveats": [
+      "nginx -t 失败时不会 reload——请先修正",
+      "无 EXECUTE 时可能仅写入计划"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      },
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      }
+    ]
+  },
+  "node": {
+    "id": "node",
+    "title": "Node.js",
+    "summary": "管理主机上的 Node.js 执行环境版本、工具链与与项目部署相关的执行能力。",
+    "audience": "部署对应语言应用的开发者／站长",
+    "chips": [
+      "Node.js",
+      "执行环境"
+    ],
+    "features": [
+      {
+        "name": "环境探测",
+        "purpose": "检测已安装的 Node.js 与常用 CLI 是否可用。"
+      },
+      {
+        "name": "安装／升级辅助",
+        "purpose": "在权限允许时安装或切换执行环境。"
+      },
+      {
+        "name": "与项目銜接",
+        "purpose": "项目部署时会使用此页确认过的执行环境。"
+      }
+    ],
+    "useCases": [
+      "为 Node／PHP 等站点准備正确版本的 Node.js",
+      "新主机初始化执行环境后再创建项目"
+    ],
+    "workflow": [
+      "探测目前环境状态",
+      "依需求安装或切换版本",
+      "到项目页创建站点並部署"
+    ],
+    "caveats": [
+      "全域执行环境变更可能影响所有使用该 runtime 的项目",
+      "实际 process 状态仍以项目详情与服务页为准"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "服务",
+        "to": "/services"
+      }
+    ]
+  },
+  "php": {
+    "id": "php",
+    "title": "PHP",
+    "summary": "管理主机上的 PHP 执行环境版本、工具链与与项目部署相关的执行能力。",
+    "audience": "部署对应语言应用的开发者／站长",
+    "chips": [
+      "PHP",
+      "执行环境"
+    ],
+    "features": [
+      {
+        "name": "环境探测",
+        "purpose": "检测已安装的 PHP 与常用 CLI 是否可用。"
+      },
+      {
+        "name": "安装／升级辅助",
+        "purpose": "在权限允许时安装或切换执行环境。"
+      },
+      {
+        "name": "与项目銜接",
+        "purpose": "项目部署时会使用此页确认过的执行环境。"
+      }
+    ],
+    "useCases": [
+      "为 Node／PHP 等站点准備正确版本的 PHP",
+      "新主机初始化执行环境后再创建项目"
+    ],
+    "workflow": [
+      "探测目前环境状态",
+      "依需求安装或切换版本",
+      "到项目页创建站点並部署"
+    ],
+    "caveats": [
+      "全域执行环境变更可能影响所有使用该 runtime 的项目",
+      "实际 process 状态仍以项目详情与服务页为准"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "服务",
+        "to": "/services"
+      }
+    ]
+  },
+  "python": {
+    "id": "python",
+    "title": "Python",
+    "summary": "管理主机上的 Python 执行环境版本、工具链与与项目部署相关的执行能力。",
+    "audience": "部署对应语言应用的开发者／站长",
+    "chips": [
+      "Python",
+      "执行环境"
+    ],
+    "features": [
+      {
+        "name": "环境探测",
+        "purpose": "检测已安装的 Python 与常用 CLI 是否可用。"
+      },
+      {
+        "name": "安装／升级辅助",
+        "purpose": "在权限允许时安装或切换执行环境。"
+      },
+      {
+        "name": "与项目銜接",
+        "purpose": "项目部署时会使用此页确认过的执行环境。"
+      }
+    ],
+    "useCases": [
+      "为 Node／PHP 等站点准備正确版本的 Python",
+      "新主机初始化执行环境后再创建项目"
+    ],
+    "workflow": [
+      "探测目前环境状态",
+      "依需求安装或切换版本",
+      "到项目页创建站点並部署"
+    ],
+    "caveats": [
+      "全域执行环境变更可能影响所有使用该 runtime 的项目",
+      "实际 process 状态仍以项目详情与服务页为准"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "服务",
+        "to": "/services"
+      }
+    ]
+  },
+  "go": {
+    "id": "go",
+    "title": "Go",
+    "summary": "管理主机上的 Go 执行环境版本、工具链与与项目部署相关的执行能力。",
+    "audience": "部署对应语言应用的开发者／站长",
+    "chips": [
+      "Go",
+      "执行环境"
+    ],
+    "features": [
+      {
+        "name": "环境探测",
+        "purpose": "检测已安装的 Go 与常用 CLI 是否可用。"
+      },
+      {
+        "name": "安装／升级辅助",
+        "purpose": "在权限允许时安装或切换执行环境。"
+      },
+      {
+        "name": "与项目銜接",
+        "purpose": "项目部署时会使用此页确认过的执行环境。"
+      }
+    ],
+    "useCases": [
+      "为 Node／PHP 等站点准備正确版本的 Go",
+      "新主机初始化执行环境后再创建项目"
+    ],
+    "workflow": [
+      "探测目前环境状态",
+      "依需求安装或切换版本",
+      "到项目页创建站点並部署"
+    ],
+    "caveats": [
+      "全域执行环境变更可能影响所有使用该 runtime 的项目",
+      "实际 process 状态仍以项目详情与服务页为准"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "服务",
+        "to": "/services"
+      }
+    ]
+  },
+  "rust": {
+    "id": "rust",
+    "title": "Rust",
+    "summary": "管理主机上的 Rust 执行环境版本、工具链与与项目部署相关的执行能力。",
+    "audience": "部署对应语言应用的开发者／站长",
+    "chips": [
+      "Rust",
+      "执行环境"
+    ],
+    "features": [
+      {
+        "name": "环境探测",
+        "purpose": "检测已安装的 Rust 与常用 CLI 是否可用。"
+      },
+      {
+        "name": "安装／升级辅助",
+        "purpose": "在权限允许时安装或切换执行环境。"
+      },
+      {
+        "name": "与项目銜接",
+        "purpose": "项目部署时会使用此页确认过的执行环境。"
+      }
+    ],
+    "useCases": [
+      "为 Node／PHP 等站点准備正确版本的 Rust",
+      "新主机初始化执行环境后再创建项目"
+    ],
+    "workflow": [
+      "探测目前环境状态",
+      "依需求安装或切换版本",
+      "到项目页创建站点並部署"
+    ],
+    "caveats": [
+      "全域执行环境变更可能影响所有使用该 runtime 的项目",
+      "实际 process 状态仍以项目详情与服务页为准"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "服务",
+        "to": "/services"
+      }
+    ]
+  },
+  "protection": {
+    "id": "protection",
+    "title": "防护中心",
+    "summary": "统一主机防火墙、Fail2ban、自动化封锁与防护策略的指挥面。",
+    "audience": "负责主机安全的管理员",
+    "chips": [
+      "防火墙",
+      "Fail2ban",
+      "策略"
+    ],
+    "features": [
+      {
+        "name": "防护模式",
+        "purpose": "调整整体防御强度与自动化策略。"
+      },
+      {
+        "name": "封锁与白名单",
+        "purpose": "查看／解除 ban，维护信任 IP。"
+      },
+      {
+        "name": "底层工具",
+        "purpose": "进入本中心下的 UFW／Fail2ban 工具页（非侧栏一级入口）。"
+      }
+    ],
+    "useCases": [
+      "应对暴力破解或扫描流量",
+      "在面板内收紧入站策略"
+    ],
+    "workflow": [
+      "打开防护中心",
+      "查看模式与最近封锁",
+      "调整白名单／ban",
+      "应用并确认诚实状态"
+    ],
+    "caveats": [
+      "规则过严可能锁住自己，请保留带外救援通道",
+      "应用到主机需要 EXECUTE；否则仅生成计划"
+    ],
+    "related": [
+      {
+        "label": "防火墙（UFW）",
+        "to": "/protection/firewall"
+      },
+      {
+        "label": "Fail2ban",
+        "to": "/protection/fail2ban"
+      },
+      {
+        "label": "账号安全",
+        "to": "/security"
+      }
+    ]
+  },
+  "firewall": {
+    "id": "firewall",
+    "title": "防火墙（UFW）",
+    "summary": "防护中心的底层：UFW 规则与进出站策略。",
+    "audience": "变更主机包过滤的管理员",
+    "chips": [
+      "UFW",
+      "规则",
+      "策略"
+    ],
+    "features": [
+      {
+        "name": "规则",
+        "purpose": "按端口与来源允许／拒绝。"
+      },
+      {
+        "name": "应用",
+        "purpose": "在允许 EXECUTE 时推送策略。"
+      }
+    ],
+    "useCases": [
+      "仅允许已知网段访问 443",
+      "关闭误开的宽端口"
+    ],
+    "workflow": [
+      "查看当前规则",
+      "编辑草稿",
+      "应用",
+      "尽可能从外部验证"
+    ],
+    "caveats": [
+      "错误的拒绝规则可能锁住 SSH——请保留控制台访问",
+      "挂在防护中心下，不是第二套产品入口"
+    ],
+    "related": [
+      {
+        "label": "防护中心",
+        "to": "/protection"
+      },
+      {
+        "label": "Fail2ban",
+        "to": "/protection/fail2ban"
+      }
+    ]
+  },
+  "fail2ban": {
+    "id": "fail2ban",
+    "title": "Fail2ban",
+    "summary": "防护中心的底层：按日志模式自动封锁恶意来源。",
+    "audience": "加固认证与扫描噪声的管理员",
+    "chips": [
+      "Jails",
+      "封锁",
+      "日志"
+    ],
+    "features": [
+      {
+        "name": "Jails",
+        "purpose": "哪些服务驱动 ban。"
+      },
+      {
+        "name": "封锁列表",
+        "purpose": "活动 ban 与手动解封。"
+      }
+    ],
+    "useCases": [
+      "遏制 SSH 暴力破解",
+      "解封误杀 IP"
+    ],
+    "workflow": [
+      "检查服务状态",
+      "查看 jails 与 bans",
+      "调整并应用",
+      "在防护中心确认 ban 出现"
+    ],
+    "caveats": [
+      "实机 ban 需要单元已安装并运行",
+      "无 EXECUTE 时仍遵循诚实应用状态"
+    ],
+    "related": [
+      {
+        "label": "防护中心",
+        "to": "/protection"
+      },
+      {
+        "label": "防火墙",
+        "to": "/protection/firewall"
+      }
+    ]
+  },
+  "security": {
+    "id": "security",
+    "title": "账号安全",
+    "summary": "面板登录安全：密码、双因素、通行密钥与会话。",
+    "audience": "所有面板用户",
+    "chips": [
+      "2FA",
+      "会话",
+      "通行密钥"
+    ],
+    "features": [
+      {
+        "name": "密码",
+        "purpose": "修改面板登录密码。"
+      },
+      {
+        "name": "双因素／WebAuthn",
+        "purpose": "加强登录验证。"
+      },
+      {
+        "name": "会话",
+        "purpose": "查看或终止登录会话。"
+      }
+    ],
+    "useCases": [
+      "为管理员启用 2FA",
+      "踢掉被盗用或共享的会话"
+    ],
+    "workflow": [
+      "打开账号安全",
+      "设置密码相关操作",
+      "登记 2FA 并保存恢复码",
+      "检查会话列表"
+    ],
+    "caveats": [
+      "丢失 2FA 设备可能需要带外救援，请妥善备份恢复码"
+    ],
+    "related": [
+      {
+        "label": "用户",
+        "to": "/users"
+      },
+      {
+        "label": "防护中心",
+        "to": "/protection"
+      }
+    ]
+  },
+  "users": {
+    "id": "users",
+    "title": "用户与方案",
+    "summary": "管理面板用户、角色与资源方案配额。",
+    "audience": "管理操作员账号的管理员",
+    "chips": [
+      "RBAC",
+      "配额",
+      "方案"
+    ],
+    "features": [
+      {
+        "name": "用户",
+        "purpose": "创建账号并分配角色。"
+      },
+      {
+        "name": "方案",
+        "purpose": "租户资源包／配额。"
+      }
+    ],
+    "useCases": [
+      "接入新操作员",
+      "按方案限制磁盘或站点数量"
+    ],
+    "workflow": [
+      "创建用户",
+      "分配角色与方案",
+      "确认可登录",
+      "按需调整配额"
+    ],
+    "caveats": [
+      "请勿删除最后一个管理员",
+      "停用后新会话立即生效"
+    ],
+    "related": [
+      {
+        "label": "账号安全",
+        "to": "/security"
+      },
+      {
+        "label": "项目",
+        "to": "/projects"
+      }
+    ]
+  },
+  "services": {
+    "id": "services",
+    "title": "服务",
+    "summary": "总览主机上关键 systemd 服务，并执行启动／停止等操作。",
+    "audience": "系统管理员",
+    "chips": [
+      "systemd",
+      "状态",
+      "控制"
+    ],
+    "features": [
+      {
+        "name": "服务矩阵",
+        "purpose": "一次查看多个服务的 active 状态。"
+      },
+      {
+        "name": "操作",
+        "purpose": "对单个服务执行 start／stop／restart。"
+      }
+    ],
+    "useCases": [
+      "查看哪些栈组件已宕",
+      "维护窗口重启卡住的单元"
+    ],
+    "workflow": [
+      "打开服务",
+      "找到单元",
+      "执行操作",
+      "阅读诚实结果面板"
+    ],
+    "caveats": [
+      "重启数据库等服务会中断连接"
+    ],
+    "related": [
+      {
+        "label": "仪表板",
+        "to": "/"
+      },
+      {
+        "label": "日志",
+        "to": "/logs"
+      }
+    ]
+  },
+  "metrics": {
+    "id": "metrics",
+    "title": "监控",
+    "summary": "检视 CPU、内存、磁盘与项目用量等营运指标。",
+    "audience": "营运与容量规划人员",
+    "chips": [
+      "资源",
+      "趋势"
+    ],
+    "features": [
+      {
+        "name": "主机指标",
+        "purpose": "即时或近期资源使用。"
+      },
+      {
+        "name": "项目用量",
+        "purpose": "各站磁盘等用量摘要。"
+      }
+    ],
+    "useCases": [
+      "判断是否该升级规格",
+      "找出吃满磁盘的项目"
+    ],
+    "workflow": [
+      "查看总览",
+      "钻入异常指标",
+      "到对应项目或服务处理"
+    ],
+    "caveats": [
+      "取样间隔与精度依实作而定，非完整 APM"
+    ],
+    "related": [
+      {
+        "label": "仪表板",
+        "to": "/"
+      }
+    ]
+  },
+  "network": {
+    "id": "network",
+    "title": "网络",
+    "summary": "检视网卡、路由、DNS 解析器与进阶网络资讯。",
+    "audience": "网络管理员",
+    "chips": [
+      "接口",
+      "路由"
+    ],
+    "features": [
+      {
+        "name": "接口与位址",
+        "purpose": "查看 IPv4／IPv6 绑定。"
+      },
+      {
+        "name": "路由",
+        "purpose": "检查默认闸道与路由表。"
+      },
+      {
+        "name": "解析器",
+        "purpose": "主机如何解析域名。"
+      }
+    ],
+    "useCases": [
+      "主机上线后确认公网 IP",
+      "排查路由错误"
+    ],
+    "workflow": [
+      "确认接口 UP",
+      "检查默认路由",
+      "用 ping／dig 验证"
+    ],
+    "caveats": [
+      "部分变更需系统权限且可能中断连接"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "logs": {
+    "id": "logs",
+    "title": "日志中心",
+    "summary": "在安全边界内查看 journal 与允许清单中的日志源。",
+    "audience": "调试主机与应用问题的操作员",
+    "chips": [
+      "journal",
+      "允许清单",
+      "Tail"
+    ],
+    "features": [
+      {
+        "name": "日志源",
+        "purpose": "仅批准的路径／单元。"
+      },
+      {
+        "name": "查看器",
+        "purpose": "无需 shell 作业即可 tail 与高亮。"
+      }
+    ],
+    "useCases": [
+      "排查失败的部署",
+      "检查认证或邮件失败"
+    ],
+    "workflow": [
+      "选择日志源",
+      "设置时间范围（若有）",
+      "阅读并与功能页对照"
+    ],
+    "caveats": [
+      "不是完整 SIEM——范围刻意限制在允许清单"
+    ],
+    "related": [
+      {
+        "label": "服务",
+        "to": "/services"
+      },
+      {
+        "label": "防护中心",
+        "to": "/protection"
+      }
+    ]
+  },
+  "cron": {
+    "id": "cron",
+    "title": "排程",
+    "summary": "管理系统或项目相关的定时任务。",
+    "audience": "需要自动化任务的站长",
+    "chips": [
+      "排程",
+      "自动化"
+    ],
+    "features": [
+      {
+        "name": "工作列表",
+        "purpose": "查看启用中的 cron。"
+      },
+      {
+        "name": "创建／编辑",
+        "purpose": "设置时间表达式与命令。"
+      }
+    ],
+    "useCases": [
+      "每日备份",
+      "定期清理暂存"
+    ],
+    "workflow": [
+      "设计排程",
+      "创建工作",
+      "观察下一次执行与日志"
+    ],
+    "caveats": [
+      "错误命令会反覆失败，请先手动验证命令"
+    ],
+    "related": [
+      {
+        "label": "备份",
+        "to": "/backups"
+      }
+    ]
+  },
+  "backups": {
+    "id": "backups",
+    "title": "备份",
+    "summary": "排程与执行项目／数据备份，并管理备份产物。",
+    "audience": "负责恢复能力的操作员",
+    "chips": [
+      "排程",
+      "restic",
+      "恢复"
+    ],
+    "features": [
+      {
+        "name": "任务",
+        "purpose": "定义备份内容与时间。"
+      },
+      {
+        "name": "产物",
+        "purpose": "列出并下载备份成品。"
+      }
+    ],
+    "useCases": [
+      "每晚项目快照",
+      "高风险迁移前拉取备份"
+    ],
+    "workflow": [
+      "配置备份设置",
+      "执行或等待排程",
+      "确认产物存在",
+      "按策略测试恢复"
+    ],
+    "caveats": [
+      "列表中有任务 ≠ 已验证可恢复——请定期演练",
+      "远程／restic 需要凭据，实机应用常需 EXECUTE"
+    ],
+    "related": [
+      {
+        "label": "项目",
+        "to": "/projects"
+      },
+      {
+        "label": "文件",
+        "to": "/files"
+      }
+    ]
+  },
+  "migrate": {
+    "id": "migrate",
+    "title": "整机迁移",
+    "summary": "将本机 YSK 环境盘点后，透过 SSH 迁移到新主机（公网 IP 变更场景）。",
+    "audience": "换机、升级硬体的管理员",
+    "chips": [
+      "迁移",
+      "SSH"
+    ],
+    "features": [
+      {
+        "name": "盘点",
+        "purpose": "扫描本机已管理的资源与软件。"
+      },
+      {
+        "name": "预检与执行",
+        "purpose": "连接目标机、傳输与还原。"
+      },
+      {
+        "name": "验证",
+        "purpose": "迁移后检查关键服务。"
+      }
+    ],
+    "useCases": [
+      "VPS 到期搬迁",
+      "升配到更大主机"
+    ],
+    "workflow": [
+      "盘点來源",
+      "填寫目标 SSH 並预检",
+      "执行迁移",
+      "切 DNS 並验证"
+    ],
+    "caveats": [
+      "需目标机 root 与 EXECUTE 能力",
+      "TTL 未降时切 DNS 可能双寫或短暂异常"
+    ],
+    "related": [
+      {
+        "label": "备份",
+        "to": "/backups"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "updates": {
+    "id": "updates",
+    "title": "更新",
+    "summary": "系统软件包建议与面板自更新状态——如实反映能否应用。",
+    "audience": "维护主机与面板版本的管理员",
+    "chips": [
+      "apt",
+      "自更新",
+      "OSV"
+    ],
+    "features": [
+      {
+        "name": "清单",
+        "purpose": "已安装与可能可升级项。"
+      },
+      {
+        "name": "应用路径",
+        "purpose": "仅在有 EXECUTE（常需 root）时实机更新。"
+      }
+    ],
+    "useCases": [
+      "已知 CVE 前打补丁",
+      "检查面板构建是否最新"
+    ],
+    "workflow": [
+      "刷新清单",
+      "查看建议",
+      "在维护窗口应用",
+      "复查服务"
+    ],
+    "caveats": [
+      "无 EXECUTE 时结果保持 planned／blocked",
+      "软件包升级可能重启服务"
+    ],
+    "related": [
+      {
+        "label": "服务",
+        "to": "/services"
+      },
+      {
+        "label": "仪表板",
+        "to": "/"
+      }
+    ]
+  },
+  "systemd": {
+    "id": "systemd",
+    "title": "systemd 单元",
+    "summary": "检视与操作个别 systemd unit 的细节。",
+    "audience": "进阶系统管理员",
+    "chips": [
+      "unit"
+    ],
+    "features": [
+      {
+        "name": "单元状态",
+        "purpose": "active、enabled 等。"
+      },
+      {
+        "name": "操作",
+        "purpose": "start／stop／restart／enable。"
+      }
+    ],
+    "useCases": [
+      "微调自订 unit"
+    ],
+    "workflow": [
+      "搜索 unit",
+      "查看状态",
+      "谨慎操作"
+    ],
+    "caveats": [
+      "错误操作可能使关键服务下线"
+    ],
+    "related": [
+      {
+        "label": "服务",
+        "to": "/services"
+      }
+    ]
+  },
+  "readiness": {
+    "id": "readiness",
+    "title": "就绪检查",
+    "summary": "对照产品就绪清单，检查生产环境是否具備必要元件与设置。",
+    "audience": "上线前检查的管理员",
+    "chips": [
+      "检查清单"
+    ],
+    "features": [
+      {
+        "name": "项目扫描",
+        "purpose": "二进制、服务、设置是否齐全。"
+      },
+      {
+        "name": "修复导向",
+        "purpose": "连到对应功能页補齐。"
+      }
+    ],
+    "useCases": [
+      "正式开站前验收",
+      "迁移后复核"
+    ],
+    "workflow": [
+      "执行检查",
+      "处理未通过项",
+      "重跑至可接受"
+    ],
+    "caveats": [
+      "就绪 ≠ 业务压测通过"
+    ],
+    "related": [
+      {
+        "label": "仪表板",
+        "to": "/"
+      }
+    ]
+  },
+  "systemIndex": {
+    "id": "systemIndex",
+    "title": "系统工具",
+    "summary": "系统層杂项工具与主机资讯入口。",
+    "audience": "系统管理员",
+    "chips": [
+      "主机"
+    ],
+    "features": [
+      {
+        "name": "主机资讯",
+        "purpose": "主机名、时区等。"
+      },
+      {
+        "name": "工具入口",
+        "purpose": "连到单元、就绪、迁移等。"
+      }
+    ],
+    "useCases": [
+      "快速找到系统層功能"
+    ],
+    "workflow": [
+      "查看主机资讯",
+      "进入需要的子工具"
+    ],
+    "caveats": [
+      "变更主机名／时区可能影响证书与日志时间"
+    ],
+    "related": [
+      {
+        "label": "网络",
+        "to": "/network"
+      },
+      {
+        "label": "更新",
+        "to": "/updates"
+      }
+    ]
+  },
+  "ai": {
+    "id": "ai",
+    "title": "AI 任务",
+    "summary": "在面板内发起受控的 AI 辅助任务（需配置提供者）。",
+    "audience": "希望用 AI 辅助运维的操作员",
+    "chips": [
+      "AI"
+    ],
+    "features": [
+      {
+        "name": "任务",
+        "purpose": "送出提示並查看结果。"
+      },
+      {
+        "name": "设置",
+        "purpose": "绑定模型提供者与密钥（若适用）。"
+      }
+    ],
+    "useCases": [
+      "草拟设置说明",
+      "协助解读错误日志"
+    ],
+    "workflow": [
+      "确认 AI 已设置",
+      "创建任务",
+      "审核后再应用到系统"
+    ],
+    "caveats": [
+      "AI 输出需人工审核，不可直接当生产指令",
+      "可能产生 API 费用"
+    ],
+    "related": [
+      {
+        "label": "Agents",
+        "to": "/agents"
+      }
+    ]
+  },
+  "agents": {
+    "id": "agents",
+    "title": "Agents",
+    "summary": "管理可执行的运维代理与 playbook 式自动化（受监督）。",
+    "audience": "进阶运维",
+    "chips": [
+      "自动化"
+    ],
+    "features": [
+      {
+        "name": "代理列表",
+        "purpose": "查看可用 agent。"
+      },
+      {
+        "name": "执行",
+        "purpose": "在授权范围内跑默认流程。"
+      }
+    ],
+    "useCases": [
+      "重複性检查自动化"
+    ],
+    "workflow": [
+      "选 playbook",
+      "确认范围",
+      "执行並审结果"
+    ],
+    "caveats": [
+      "代理不得绕过 EXECUTE／权限模型"
+    ],
+    "related": [
+      {
+        "label": "AI 任务",
+        "to": "/ai"
+      }
+    ]
+  },
+  "servicesConsole": {
+    "id": "servicesConsole",
+    "title": "服务主控台",
+    "summary": "针对单一服务类型的操作与状态主控接口。",
+    "audience": "系统管理员",
+    "chips": [
+      "服务"
+    ],
+    "features": [
+      {
+        "name": "状态",
+        "purpose": "即时 active／安装状态。"
+      },
+      {
+        "name": "操作",
+        "purpose": "安装、启动、重载等。"
+      }
+    ],
+    "useCases": [
+      "统一操作多种后端服务"
+    ],
+    "workflow": [
+      "选服务",
+      "查看状态",
+      "执行操作並读结果"
+    ],
+    "caveats": [
+      "高风险操作前请确认影响范围"
+    ],
+    "related": [
+      {
+        "label": "服务总览",
+        "to": "/services"
+      }
+    ]
+  }
+}

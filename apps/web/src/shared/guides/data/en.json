@@ -1,0 +1,2046 @@
+{
+  "dashboard": {
+    "id": "dashboard",
+    "title": "Dashboard",
+    "summary": "At-a-glance host health, open tasks, and shortcuts—the usual place to start daily checks.",
+    "audience": "All operators",
+    "chips": [
+      "Overview",
+      "Health",
+      "Shortcuts"
+    ],
+    "features": [
+      {
+        "name": "Health summary",
+        "purpose": "Key status for services, disk, protection mode, and more."
+      },
+      {
+        "name": "Quick links",
+        "purpose": "Jump to common pages without hunting the menu."
+      },
+      {
+        "name": "Alerts and tasks",
+        "purpose": "Items that need attention (updates, quotas, and similar)."
+      }
+    ],
+    "useCases": [
+      "Daily host health check",
+      "When something looks wrong, start here then drill into a subsystem"
+    ],
+    "workflow": [
+      "Open the dashboard",
+      "Clear red / warning items",
+      "Open the related feature page for details"
+    ],
+    "caveats": [
+      "This is a summary view only—details and apply results are authoritative on each feature page"
+    ],
+    "related": [
+      {
+        "label": "Services",
+        "to": "/services"
+      },
+      {
+        "label": "Updates",
+        "to": "/updates"
+      },
+      {
+        "label": "Protection",
+        "to": "/protection"
+      }
+    ]
+  },
+  "projects": {
+    "id": "projects",
+    "title": "Website projects",
+    "summary": "Manage document roots, runtimes, domains, and deploy lifecycle per site.",
+    "audience": "Operators hosting multiple sites",
+    "chips": [
+      "Hosting",
+      "Deploy",
+      "Isolation"
+    ],
+    "features": [
+      {
+        "name": "Project list",
+        "purpose": "Create, search, and open each site."
+      },
+      {
+        "name": "OS user isolation",
+        "purpose": "Optional dedicated Linux user and home per project."
+      },
+      {
+        "name": "Templates",
+        "purpose": "Scaffold a new site from a preset template."
+      }
+    ],
+    "useCases": [
+      "Host several sites on one machine",
+      "Separate system users for stronger isolation"
+    ],
+    "workflow": [
+      "Create a project",
+      "Deploy or use a template",
+      "Publish Nginx / SSL as needed",
+      "Check health and logs"
+    ],
+    "caveats": [
+      "Deleting a project affects files and services—back up first",
+      "published ≠ publicly resolvable; DNS must be correct"
+    ],
+    "related": [
+      {
+        "label": "Files",
+        "to": "/files"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ]
+  },
+  "projectDetail": {
+    "id": "projectDetail",
+    "title": "Project detail",
+    "summary": "Control center for one site: deploy, env, health, backups, and network endpoints.",
+    "audience": "Site operators",
+    "chips": [
+      "Deploy",
+      "Env",
+      "Health"
+    ],
+    "features": [
+      {
+        "name": "Deploy",
+        "purpose": "Start or update the runtime for this site."
+      },
+      {
+        "name": "Environment",
+        "purpose": "Edit project env vars safely."
+      },
+      {
+        "name": "Health and logs",
+        "purpose": "Probe readiness and open related logs."
+      }
+    ],
+    "useCases": [
+      "Ship a code change for one site",
+      "Rotate secrets without touching other projects"
+    ],
+    "workflow": [
+      "Open project detail",
+      "Deploy or set env",
+      "Publish network / SSL if needed",
+      "Confirm health"
+    ],
+    "caveats": [
+      "Apply / execute rules still apply—blocked means the host was not changed",
+      "Wrong env values can take the site down; change carefully"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Logs",
+        "to": "/logs"
+      }
+    ]
+  },
+  "email": {
+    "id": "email",
+    "title": "Mail",
+    "summary": "Mail domains, mailboxes, and delivery settings, with DNS checklist guidance.",
+    "audience": "Operators running self-hosted or business mail",
+    "chips": [
+      "MX",
+      "SPF",
+      "DKIM"
+    ],
+    "features": [
+      {
+        "name": "Mail domains",
+        "purpose": "Domains that send and receive mail."
+      },
+      {
+        "name": "DNS suggestions",
+        "purpose": "MX / SPF / DKIM / DMARC records to publish."
+      },
+      {
+        "name": "Health and reputation",
+        "purpose": "Delivery readiness checks (some items are external)."
+      }
+    ],
+    "useCases": [
+      "Stand up a new mail domain",
+      "Debug soft-fail / reject after DNS changes"
+    ],
+    "workflow": [
+      "Add a mail domain",
+      "Publish DNS from the checklist",
+      "Create mailboxes",
+      "Send a test and review health"
+    ],
+    "caveats": [
+      "PTR, port 25, and IP reputation often need the host or IP owner",
+      "The panel cannot replace an external DNS provider or delist you from blocklists"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ]
+  },
+  "emailDomain": {
+    "id": "emailDomain",
+    "title": "Mail domain detail",
+    "summary": "Mailboxes, aliases, DKIM, forwarding, and health for a single mail domain.",
+    "audience": "Mail administrators",
+    "chips": [
+      "Mailbox",
+      "DKIM",
+      "Health"
+    ],
+    "features": [
+      {
+        "name": "Mailbox management",
+        "purpose": "Create mailboxes, quotas, and passwords."
+      },
+      {
+        "name": "DNS / DKIM",
+        "purpose": "Show keys and records that must be published."
+      },
+      {
+        "name": "Advanced policies",
+        "purpose": "Forwarding, rate limits, anti-spam, and similar (as implemented)."
+      }
+    ],
+    "useCases": [
+      "Create staff mailboxes",
+      "Rotate DKIM or fix failing DNS checks"
+    ],
+    "workflow": [
+      "Create mailboxes",
+      "Confirm DNS checks are green",
+      "Test send/receive with a client"
+    ],
+    "caveats": [
+      "DNS propagation depends on TTL",
+      "If webmail SSO is enabled, set passwords and plugins separately"
+    ],
+    "related": [
+      {
+        "label": "Mail overview",
+        "to": "/email"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "files": {
+    "id": "files",
+    "title": "Files",
+    "summary": "Browse, upload, download, and manage files inside authorized paths.",
+    "audience": "Operators who edit site files directly",
+    "chips": [
+      "Browse",
+      "Upload",
+      "Sandbox"
+    ],
+    "features": [
+      {
+        "name": "Directory browser",
+        "purpose": "Navigate under allowlisted roots only."
+      },
+      {
+        "name": "Upload / download",
+        "purpose": "Move site assets or backup archives."
+      },
+      {
+        "name": "Project shortcuts",
+        "purpose": "Jump from a project into its home directory."
+      }
+    ],
+    "useCases": [
+      "Fix a static asset without SSH",
+      "Pull a backup archive from the host"
+    ],
+    "workflow": [
+      "Open Files",
+      "Pick an allowed root or project home",
+      "Upload, edit, or download",
+      "Confirm the site still works"
+    ],
+    "caveats": [
+      "Only allowlisted paths—no arbitrary full-disk access",
+      "Deletes can take a site down; back up important files first"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Backups",
+        "to": "/backups"
+      }
+    ]
+  },
+  "publicFiles": {
+    "id": "publicFiles",
+    "title": "Public files",
+    "summary": "Controlled public download area (for example release packages or static assets).",
+    "audience": "Operators who need public download links",
+    "chips": [
+      "Public",
+      "Download"
+    ],
+    "features": [
+      {
+        "name": "Public area management",
+        "purpose": "Manage files reachable over HTTP."
+      },
+      {
+        "name": "Quota",
+        "purpose": "Cap usage of the public area."
+      }
+    ],
+    "useCases": [
+      "Publish customer download packages",
+      "Share non-sensitive assets"
+    ],
+    "workflow": [
+      "Confirm public prefix and quota",
+      "Upload files",
+      "Verify with the public URL"
+    ],
+    "caveats": [
+      "Never put private keys or customer personal data in the public area"
+    ],
+    "related": [
+      {
+        "label": "Files",
+        "to": "/files"
+      }
+    ]
+  },
+  "ftp": {
+    "id": "ftp",
+    "title": "FTP accounts",
+    "summary": "Create FTP / SFTP login accounts bound to home directories.",
+    "audience": "Operators granting upload access to contractors or clients",
+    "chips": [
+      "Accounts",
+      "Upload"
+    ],
+    "features": [
+      {
+        "name": "Account CRUD",
+        "purpose": "Create, disable, and delete FTP users."
+      },
+      {
+        "name": "Home directory",
+        "purpose": "Confine each account to a specified path."
+      }
+    ],
+    "useCases": [
+      "Let designers upload static files",
+      "Temporary contractor accounts"
+    ],
+    "workflow": [
+      "Confirm the FTPS service is installed and running",
+      "Create an account and set the home directory",
+      "Test login with a client"
+    ],
+    "caveats": [
+      "Plain FTP is insecure; prefer FTPS / SFTP",
+      "Accounts take effect only after a successful service apply"
+    ],
+    "related": [
+      {
+        "label": "FTPS service",
+        "to": "/ftp/service"
+      },
+      {
+        "label": "Files",
+        "to": "/files"
+      }
+    ]
+  },
+  "ftpService": {
+    "id": "ftpService",
+    "title": "FTPS service",
+    "summary": "Install and tune FTPS (for example vsftpd): lifecycle and passive-mode ports.",
+    "audience": "Server administrators",
+    "chips": [
+      "vsftpd",
+      "TLS"
+    ],
+    "features": [
+      {
+        "name": "Install and start",
+        "purpose": "One-click install banner for software deployment."
+      },
+      {
+        "name": "TLS / passive ports",
+        "purpose": "Configure secure transfer and the PASV port range firewall needs."
+      }
+    ],
+    "useCases": [
+      "Enable secure file transfer on a new host"
+    ],
+    "workflow": [
+      "One-click install",
+      "Adjust SSL and PASV ports",
+      "Open the firewall",
+      "Create FTP accounts"
+    ],
+    "caveats": [
+      "Requires system-change permission",
+      "If PASV ports are blocked, listing may work while transfers fail"
+    ],
+    "related": [
+      {
+        "label": "FTP accounts",
+        "to": "/ftp"
+      },
+      {
+        "label": "Protection center",
+        "to": "/protection"
+      }
+    ]
+  },
+  "mysql": {
+    "id": "mysql",
+    "title": "MySQL databases",
+    "summary": "Manage local MySQL databases, users, and connection settings with honest status on what was truly written to the system.",
+    "audience": "Operators and developers who need databases for sites and apps",
+    "chips": [
+      "MySQL",
+      "Data",
+      "Permissions"
+    ],
+    "features": [
+      {
+        "name": "Database CRUD",
+        "purpose": "Create, list, and delete MySQL databases (schema).",
+        "how": "After adding in the list, use Apply to system for the server to take effect."
+      },
+      {
+        "name": "Users and grants",
+        "purpose": "Create database accounts and bind access rights."
+      },
+      {
+        "name": "Apply and status",
+        "purpose": "Distinguish draft, written, applied, and blocked—avoids false success."
+      }
+    ],
+    "useCases": [
+      "Provision an isolated MySQL database and account for a new website project",
+      "Rotate app passwords or reclaim databases for decommissioned sites"
+    ],
+    "workflow": [
+      "Confirm the service page has installed and started the database engine",
+      "Create database and user; bind permissions",
+      "Click Apply to system and check returned status",
+      "Put the connection string in the project environment variables"
+    ],
+    "caveats": [
+      "Panel success ≠ the app can connect—verify host, port, firewall, and account grants",
+      "Deleting a database is high risk; confirm no production dependency before apply"
+    ],
+    "related": [
+      {
+        "label": "MySQL service",
+        "to": "/databases/mysql/service"
+      },
+      {
+        "label": "Projects",
+        "to": "/projects"
+      }
+    ]
+  },
+  "mysqlService": {
+    "id": "mysqlService",
+    "title": "MySQL service",
+    "summary": "Install, start, stop, and tune the MySQL service itself (not database contents)—prerequisite for the data page.",
+    "audience": "Administrators of base server services",
+    "chips": [
+      "MySQL",
+      "Service",
+      "Lifecycle"
+    ],
+    "features": [
+      {
+        "name": "One-click install",
+        "purpose": "Install MySQL packages on the host (needs system-change permission).",
+        "how": "Use One-click install on the page banner; do not install the same stack elsewhere."
+      },
+      {
+        "name": "Start / stop / reload",
+        "purpose": "Control the systemd unit and report real outcomes."
+      },
+      {
+        "name": "Connection probe",
+        "purpose": "Check whether the port is reachable and the service is ready."
+      }
+    ],
+    "useCases": [
+      "First-time MySQL on a new host",
+      "Restart the database service in a maintenance window and confirm recovery"
+    ],
+    "workflow": [
+      "Enable system-change permission (EXECUTE)",
+      "One-click install and wait for the result panel",
+      "Start the service and confirm active",
+      "Create databases and users on the data page"
+    ],
+    "caveats": [
+      "Without EXECUTE, only plans/scripts are written—no real apt / systemctl",
+      "root and non-root capabilities differ; some actions are honestly marked blocked"
+    ],
+    "related": [
+      {
+        "label": "MySQL data",
+        "to": "/databases/mysql"
+      },
+      {
+        "label": "Services overview",
+        "to": "/services"
+      }
+    ]
+  },
+  "mariadb": {
+    "id": "mariadb",
+    "title": "MariaDB databases",
+    "summary": "Manage local MariaDB databases, users, and connection settings with honest status on what was truly written to the system.",
+    "audience": "Operators and developers who need databases for sites and apps",
+    "chips": [
+      "MariaDB",
+      "Data",
+      "Permissions"
+    ],
+    "features": [
+      {
+        "name": "Database CRUD",
+        "purpose": "Create, list, and delete MariaDB databases (schema).",
+        "how": "After adding in the list, use Apply to system for the server to take effect."
+      },
+      {
+        "name": "Users and grants",
+        "purpose": "Create database accounts and bind access rights."
+      },
+      {
+        "name": "Apply and status",
+        "purpose": "Distinguish draft, written, applied, and blocked—avoids false success."
+      }
+    ],
+    "useCases": [
+      "Provision an isolated MariaDB database and account for a new website project",
+      "Rotate app passwords or reclaim databases for decommissioned sites"
+    ],
+    "workflow": [
+      "Confirm the service page has installed and started the database engine",
+      "Create database and user; bind permissions",
+      "Click Apply to system and check returned status",
+      "Put the connection string in the project environment variables"
+    ],
+    "caveats": [
+      "Panel success ≠ the app can connect—verify host, port, firewall, and account grants",
+      "Deleting a database is high risk; confirm no production dependency before apply"
+    ],
+    "related": [
+      {
+        "label": "MariaDB service",
+        "to": "/databases/mariadb/service"
+      },
+      {
+        "label": "Projects",
+        "to": "/projects"
+      }
+    ]
+  },
+  "mariadbService": {
+    "id": "mariadbService",
+    "title": "MariaDB service",
+    "summary": "Install, start, stop, and tune the MariaDB service itself (not database contents)—prerequisite for the data page.",
+    "audience": "Administrators of base server services",
+    "chips": [
+      "MariaDB",
+      "Service",
+      "Lifecycle"
+    ],
+    "features": [
+      {
+        "name": "One-click install",
+        "purpose": "Install MariaDB packages on the host (needs system-change permission).",
+        "how": "Use One-click install on the page banner; do not install the same stack elsewhere."
+      },
+      {
+        "name": "Start / stop / reload",
+        "purpose": "Control the systemd unit and report real outcomes."
+      },
+      {
+        "name": "Connection probe",
+        "purpose": "Check whether the port is reachable and the service is ready."
+      }
+    ],
+    "useCases": [
+      "First-time MariaDB on a new host",
+      "Restart the database service in a maintenance window and confirm recovery"
+    ],
+    "workflow": [
+      "Enable system-change permission (EXECUTE)",
+      "One-click install and wait for the result panel",
+      "Start the service and confirm active",
+      "Create databases and users on the data page"
+    ],
+    "caveats": [
+      "Without EXECUTE, only plans/scripts are written—no real apt / systemctl",
+      "root and non-root capabilities differ; some actions are honestly marked blocked"
+    ],
+    "related": [
+      {
+        "label": "MariaDB data",
+        "to": "/databases/mariadb"
+      },
+      {
+        "label": "Services overview",
+        "to": "/services"
+      }
+    ]
+  },
+  "postgres": {
+    "id": "postgres",
+    "title": "PostgreSQL databases",
+    "summary": "Manage local PostgreSQL databases, users, and connection settings with honest status on what was truly written to the system.",
+    "audience": "Operators and developers who need databases for sites and apps",
+    "chips": [
+      "PostgreSQL",
+      "Data",
+      "Permissions"
+    ],
+    "features": [
+      {
+        "name": "Database CRUD",
+        "purpose": "Create, list, and delete PostgreSQL databases (schema).",
+        "how": "After adding in the list, use Apply to system for the server to take effect."
+      },
+      {
+        "name": "Users and grants",
+        "purpose": "Create database accounts and bind access rights."
+      },
+      {
+        "name": "Apply and status",
+        "purpose": "Distinguish draft, written, applied, and blocked—avoids false success."
+      }
+    ],
+    "useCases": [
+      "Provision an isolated PostgreSQL database and account for a new website project",
+      "Rotate app passwords or reclaim databases for decommissioned sites"
+    ],
+    "workflow": [
+      "Confirm the service page has installed and started the database engine",
+      "Create database and user; bind permissions",
+      "Click Apply to system and check returned status",
+      "Put the connection string in the project environment variables"
+    ],
+    "caveats": [
+      "Panel success ≠ the app can connect—verify host, port, firewall, and account grants",
+      "Deleting a database is high risk; confirm no production dependency before apply"
+    ],
+    "related": [
+      {
+        "label": "PostgreSQL service",
+        "to": "/databases/postgres/service"
+      },
+      {
+        "label": "Projects",
+        "to": "/projects"
+      }
+    ]
+  },
+  "postgresService": {
+    "id": "postgresService",
+    "title": "PostgreSQL service",
+    "summary": "Install, start, stop, and tune the PostgreSQL service itself (not database contents)—prerequisite for the data page.",
+    "audience": "Administrators of base server services",
+    "chips": [
+      "PostgreSQL",
+      "Service",
+      "Lifecycle"
+    ],
+    "features": [
+      {
+        "name": "One-click install",
+        "purpose": "Install PostgreSQL packages on the host (needs system-change permission).",
+        "how": "Use One-click install on the page banner; do not install the same stack elsewhere."
+      },
+      {
+        "name": "Start / stop / reload",
+        "purpose": "Control the systemd unit and report real outcomes."
+      },
+      {
+        "name": "Connection probe",
+        "purpose": "Check whether the port is reachable and the service is ready."
+      }
+    ],
+    "useCases": [
+      "First-time PostgreSQL on a new host",
+      "Restart the database service in a maintenance window and confirm recovery"
+    ],
+    "workflow": [
+      "Enable system-change permission (EXECUTE)",
+      "One-click install and wait for the result panel",
+      "Start the service and confirm active",
+      "Create databases and users on the data page"
+    ],
+    "caveats": [
+      "Without EXECUTE, only plans/scripts are written—no real apt / systemctl",
+      "root and non-root capabilities differ; some actions are honestly marked blocked"
+    ],
+    "related": [
+      {
+        "label": "PostgreSQL data",
+        "to": "/databases/postgres"
+      },
+      {
+        "label": "Services overview",
+        "to": "/services"
+      }
+    ]
+  },
+  "redis": {
+    "id": "redis",
+    "title": "Redis",
+    "summary": "Browse and manage Redis keys and DB indexes; apply connection-related settings.",
+    "audience": "Developers using cache or queues",
+    "chips": [
+      "Cache",
+      "Key-value"
+    ],
+    "features": [
+      {
+        "name": "Key browser",
+        "purpose": "Inspect keys and values per DB (subject to permission and size limits)."
+      },
+      {
+        "name": "Instance settings",
+        "purpose": "Manage the Redis connection target."
+      }
+    ],
+    "useCases": [
+      "Inspect session cache",
+      "Clear bad queue keys"
+    ],
+    "workflow": [
+      "Confirm Redis service is running",
+      "Connect and browse DBs",
+      "Delete keys carefully"
+    ],
+    "caveats": [
+      "Deleting keys in production requires extreme care",
+      "Large keys may be truncated in the UI"
+    ],
+    "related": [
+      {
+        "label": "Redis service",
+        "to": "/databases/redis/service"
+      }
+    ]
+  },
+  "redisService": {
+    "id": "redisService",
+    "title": "Redis service",
+    "summary": "Install, start, stop, and tune the Redis service itself (not data contents)—prerequisite for the data page.",
+    "audience": "Administrators of base server services",
+    "chips": [
+      "Redis",
+      "Service",
+      "Lifecycle"
+    ],
+    "features": [
+      {
+        "name": "One-click install",
+        "purpose": "Install Redis packages on the host (needs system-change permission).",
+        "how": "Use One-click install on the page banner; do not install the same stack elsewhere."
+      },
+      {
+        "name": "Start / stop / reload",
+        "purpose": "Control the systemd unit and report real outcomes."
+      },
+      {
+        "name": "Connection probe",
+        "purpose": "Check whether the port is reachable and the service is ready."
+      }
+    ],
+    "useCases": [
+      "First-time Redis on a new host",
+      "Restart the service in a maintenance window and confirm recovery"
+    ],
+    "workflow": [
+      "Enable system-change permission (EXECUTE)",
+      "One-click install and wait for the result panel",
+      "Start the service and confirm active",
+      "Use the data page for keys and connection settings"
+    ],
+    "caveats": [
+      "Without EXECUTE, only plans/scripts are written—no real apt / systemctl",
+      "root and non-root capabilities differ; some actions are honestly marked blocked"
+    ],
+    "related": [
+      {
+        "label": "Redis data",
+        "to": "/databases/redis"
+      },
+      {
+        "label": "Services overview",
+        "to": "/services"
+      }
+    ]
+  },
+  "dns": {
+    "id": "dns",
+    "title": "DNS",
+    "summary": "Authoritative zones and records, cluster sync, DNSSEC, and query tools.",
+    "audience": "Operators who own resolution for their domains",
+    "chips": [
+      "Zones",
+      "DNSSEC",
+      "Cluster"
+    ],
+    "features": [
+      {
+        "name": "Zones and records",
+        "purpose": "Authoritative data the host serves or plans."
+      },
+      {
+        "name": "Sync / DNSSEC",
+        "purpose": "Cluster peers and signing when enabled."
+      },
+      {
+        "name": "Query tools",
+        "purpose": "Quick dig-style checks from the panel."
+      }
+    ],
+    "useCases": [
+      "Publish A / MX for a new site or mail domain",
+      "Check whether edges and origin resolve as intended"
+    ],
+    "workflow": [
+      "Create or select a zone",
+      "Edit records",
+      "Apply / sync",
+      "Query to verify"
+    ],
+    "caveats": [
+      "TTL and external caches delay what the public sees",
+      "Wrong apex / NS settings can take the whole domain offline"
+    ],
+    "related": [
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      },
+      {
+        "label": "Mail",
+        "to": "/email"
+      }
+    ]
+  },
+  "cdn": {
+    "id": "cdn",
+    "title": "CDN (self-hosted edge)",
+    "summary": "Multi-node edge acceleration with YSK: register edges, origin/cache, push Nginx, DNS multi-A / failover, optional TLS distribute.",
+    "audience": "Operators running their own edge fleet",
+    "chips": [
+      "Edge",
+      "Origin",
+      "Failover"
+    ],
+    "features": [
+      {
+        "name": "Edge registry",
+        "purpose": "Track edge nodes and health."
+      },
+      {
+        "name": "Site push",
+        "purpose": "Push Nginx / cache policy to edges."
+      },
+      {
+        "name": "DNS helpers",
+        "purpose": "Multi-A / failover patterns for edge IPs."
+      }
+    ],
+    "useCases": [
+      "Accelerate a public site from several VPS edges",
+      "Fail over when one edge is unhealthy"
+    ],
+    "workflow": [
+      "Register edges",
+      "Define origin and site",
+      "Push conf",
+      "Publish DNS and verify"
+    ],
+    "caveats": [
+      "Queued edge jobs ≠ applied on every node—read honest status",
+      "TLS distribute does not guarantee full browser trust chain alone"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ]
+  },
+  "ssl": {
+    "id": "ssl",
+    "title": "SSL certificates",
+    "summary": "Request, upload, and attach TLS certs for sites, mail, or panel hostnames.",
+    "audience": "Operators terminating HTTPS",
+    "chips": [
+      "TLS",
+      "Let's Encrypt",
+      "Upload"
+    ],
+    "features": [
+      {
+        "name": "Issue / upload",
+        "purpose": "ACME issue or paste PEM files."
+      },
+      {
+        "name": "Attach",
+        "purpose": "Bind a cert to a site or service hostname."
+      }
+    ],
+    "useCases": [
+      "Enable HTTPS for a new domain",
+      "Replace an expiring certificate"
+    ],
+    "workflow": [
+      "Add or select the hostname",
+      "Issue or upload",
+      "Attach to Nginx / service",
+      "Verify in the browser or with curl"
+    ],
+    "caveats": [
+      "ACME needs correct DNS and usually port 80 reachability",
+      "Cert on disk ≠ browsers trust the full chain—verify end-to-end"
+    ],
+    "related": [
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "nginx": {
+    "id": "nginx",
+    "title": "Nginx",
+    "summary": "Panel-managed vhost configs; validate with nginx -t and reload.",
+    "audience": "Site and reverse-proxy operators",
+    "chips": [
+      "vhost",
+      "reload",
+      "ssl"
+    ],
+    "features": [
+      {
+        "name": "Managed conf",
+        "purpose": "Configs the panel owns and can rewrite."
+      },
+      {
+        "name": "Validate / reload",
+        "purpose": "nginx -t then reload when EXECUTE allows."
+      }
+    ],
+    "useCases": [
+      "Publish a new site after deploy",
+      "Recover from a bad conf with honest failure notes"
+    ],
+    "workflow": [
+      "Review conf for the site",
+      "Apply / write",
+      "Run nginx -t",
+      "Reload if checks pass"
+    ],
+    "caveats": [
+      "Failed nginx -t never reloads—fix and fix first",
+      "Without EXECUTE, conf may only be written as a plan"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      },
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      }
+    ]
+  },
+  "node": {
+    "id": "node",
+    "title": "Node.js",
+    "summary": "Manage Node.js runtime versions, toolchain, and capabilities used by project deploys on this host.",
+    "audience": "Developers and operators deploying apps in this language",
+    "chips": [
+      "Node.js",
+      "Runtime"
+    ],
+    "features": [
+      {
+        "name": "Environment probe",
+        "purpose": "Detect installed Node.js and whether common CLIs are available."
+      },
+      {
+        "name": "Install / upgrade helpers",
+        "purpose": "Install or switch runtimes when permission allows."
+      },
+      {
+        "name": "Project integration",
+        "purpose": "Project deploys use the runtime confirmed on this page."
+      }
+    ],
+    "useCases": [
+      "Prepare the correct Node.js version for matching sites",
+      "Initialize the runtime on a new host before creating projects"
+    ],
+    "workflow": [
+      "Probe current environment status",
+      "Install or switch versions as needed",
+      "Create the site on the projects page and deploy"
+    ],
+    "caveats": [
+      "Global runtime changes can affect every project using that runtime",
+      "Actual process state is authoritative on project detail and services pages"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Services",
+        "to": "/services"
+      }
+    ]
+  },
+  "php": {
+    "id": "php",
+    "title": "PHP",
+    "summary": "Manage PHP runtime versions, toolchain, and capabilities used by project deploys on this host.",
+    "audience": "Developers and operators deploying apps in this language",
+    "chips": [
+      "PHP",
+      "Runtime"
+    ],
+    "features": [
+      {
+        "name": "Environment probe",
+        "purpose": "Detect installed PHP and whether common CLIs are available."
+      },
+      {
+        "name": "Install / upgrade helpers",
+        "purpose": "Install or switch runtimes when permission allows."
+      },
+      {
+        "name": "Project integration",
+        "purpose": "Project deploys use the runtime confirmed on this page."
+      }
+    ],
+    "useCases": [
+      "Prepare the correct PHP version for matching sites",
+      "Initialize the runtime on a new host before creating projects"
+    ],
+    "workflow": [
+      "Probe current environment status",
+      "Install or switch versions as needed",
+      "Create the site on the projects page and deploy"
+    ],
+    "caveats": [
+      "Global runtime changes can affect every project using that runtime",
+      "Actual process state is authoritative on project detail and services pages"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Services",
+        "to": "/services"
+      }
+    ]
+  },
+  "python": {
+    "id": "python",
+    "title": "Python",
+    "summary": "Manage Python runtime versions, toolchain, and capabilities used by project deploys on this host.",
+    "audience": "Developers and operators deploying apps in this language",
+    "chips": [
+      "Python",
+      "Runtime"
+    ],
+    "features": [
+      {
+        "name": "Environment probe",
+        "purpose": "Detect installed Python and whether common CLIs are available."
+      },
+      {
+        "name": "Install / upgrade helpers",
+        "purpose": "Install or switch runtimes when permission allows."
+      },
+      {
+        "name": "Project integration",
+        "purpose": "Project deploys use the runtime confirmed on this page."
+      }
+    ],
+    "useCases": [
+      "Prepare the correct Python version for matching sites",
+      "Initialize the runtime on a new host before creating projects"
+    ],
+    "workflow": [
+      "Probe current environment status",
+      "Install or switch versions as needed",
+      "Create the site on the projects page and deploy"
+    ],
+    "caveats": [
+      "Global runtime changes can affect every project using that runtime",
+      "Actual process state is authoritative on project detail and services pages"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Services",
+        "to": "/services"
+      }
+    ]
+  },
+  "go": {
+    "id": "go",
+    "title": "Go",
+    "summary": "Manage Go runtime versions, toolchain, and capabilities used by project deploys on this host.",
+    "audience": "Developers and operators deploying apps in this language",
+    "chips": [
+      "Go",
+      "Runtime"
+    ],
+    "features": [
+      {
+        "name": "Environment probe",
+        "purpose": "Detect installed Go and whether common CLIs are available."
+      },
+      {
+        "name": "Install / upgrade helpers",
+        "purpose": "Install or switch runtimes when permission allows."
+      },
+      {
+        "name": "Project integration",
+        "purpose": "Project deploys use the runtime confirmed on this page."
+      }
+    ],
+    "useCases": [
+      "Prepare the correct Go version for matching sites",
+      "Initialize the runtime on a new host before creating projects"
+    ],
+    "workflow": [
+      "Probe current environment status",
+      "Install or switch versions as needed",
+      "Create the site on the projects page and deploy"
+    ],
+    "caveats": [
+      "Global runtime changes can affect every project using that runtime",
+      "Actual process state is authoritative on project detail and services pages"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Services",
+        "to": "/services"
+      }
+    ]
+  },
+  "rust": {
+    "id": "rust",
+    "title": "Rust",
+    "summary": "Manage Rust runtime versions, toolchain, and capabilities used by project deploys on this host.",
+    "audience": "Developers and operators deploying apps in this language",
+    "chips": [
+      "Rust",
+      "Runtime"
+    ],
+    "features": [
+      {
+        "name": "Environment probe",
+        "purpose": "Detect installed Rust and whether common CLIs are available."
+      },
+      {
+        "name": "Install / upgrade helpers",
+        "purpose": "Install or switch runtimes when permission allows."
+      },
+      {
+        "name": "Project integration",
+        "purpose": "Project deploys use the runtime confirmed on this page."
+      }
+    ],
+    "useCases": [
+      "Prepare the correct Rust version for matching sites",
+      "Initialize the runtime on a new host before creating projects"
+    ],
+    "workflow": [
+      "Probe current environment status",
+      "Install or switch versions as needed",
+      "Create the site on the projects page and deploy"
+    ],
+    "caveats": [
+      "Global runtime changes can affect every project using that runtime",
+      "Actual process state is authoritative on project detail and services pages"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Services",
+        "to": "/services"
+      }
+    ]
+  },
+  "protection": {
+    "id": "protection",
+    "title": "Protection center",
+    "summary": "Single place for host firewall, Fail2ban, automated bans, and defense policy.",
+    "audience": "Admins responsible for host security",
+    "chips": [
+      "Firewall",
+      "Fail2ban",
+      "Policy"
+    ],
+    "features": [
+      {
+        "name": "Protection mode",
+        "purpose": "Overall defense strength and automation policy."
+      },
+      {
+        "name": "Blocks and allowlist",
+        "purpose": "Review bans, unban, and keep trusted IPs."
+      },
+      {
+        "name": "Lower stack",
+        "purpose": "UFW and Fail2ban tools nested under this center (not top-level nav)."
+      }
+    ],
+    "useCases": [
+      "Respond to brute-force or scan traffic",
+      "Harden inbound policy without leaving the panel"
+    ],
+    "workflow": [
+      "Open Protection",
+      "Review mode and recent blocks",
+      "Adjust allowlist / bans",
+      "Apply and confirm honest status"
+    ],
+    "caveats": [
+      "Rules that are too strict can lock you out—keep an out-of-band recovery path",
+      "Apply needs EXECUTE; otherwise only a plan is written"
+    ],
+    "related": [
+      {
+        "label": "Firewall (UFW)",
+        "to": "/protection/firewall"
+      },
+      {
+        "label": "Fail2ban",
+        "to": "/protection/fail2ban"
+      },
+      {
+        "label": "Security",
+        "to": "/security"
+      }
+    ]
+  },
+  "firewall": {
+    "id": "firewall",
+    "title": "Firewall (UFW)",
+    "summary": "Lower layer of Protection: UFW rules and inbound/outbound policy.",
+    "audience": "Admins changing host packet filter",
+    "chips": [
+      "UFW",
+      "Rules",
+      "Policy"
+    ],
+    "features": [
+      {
+        "name": "Rules",
+        "purpose": "Allow / deny by port and source."
+      },
+      {
+        "name": "Apply",
+        "purpose": "Push policy when EXECUTE allows."
+      }
+    ],
+    "useCases": [
+      "Open 443 only from known networks",
+      "Close accidental wide-open ports"
+    ],
+    "workflow": [
+      "Review current rules",
+      "Edit draft",
+      "Apply",
+      "Verify from outside if possible"
+    ],
+    "caveats": [
+      "A bad deny rule can lock out SSH—keep console access",
+      "Nested under Protection; not a second product IA entry"
+    ],
+    "related": [
+      {
+        "label": "Protection",
+        "to": "/protection"
+      },
+      {
+        "label": "Fail2ban",
+        "to": "/protection/fail2ban"
+      }
+    ]
+  },
+  "fail2ban": {
+    "id": "fail2ban",
+    "title": "Fail2ban",
+    "summary": "Lower layer of Protection: ban hostile sources from log patterns.",
+    "audience": "Admins hardening auth and scan noise",
+    "chips": [
+      "Jails",
+      "Bans",
+      "Logs"
+    ],
+    "features": [
+      {
+        "name": "Jails",
+        "purpose": "Which services feed bans."
+      },
+      {
+        "name": "Ban list",
+        "purpose": "Active bans and manual unban."
+      }
+    ],
+    "useCases": [
+      "Cut SSH brute force",
+      "Unban a false positive"
+    ],
+    "workflow": [
+      "Check service status",
+      "Review jails and bans",
+      "Adjust and apply",
+      "Confirm bans appear in Protection"
+    ],
+    "caveats": [
+      "Needs the unit installed and running for live bans",
+      "Apply honesty still applies without EXECUTE"
+    ],
+    "related": [
+      {
+        "label": "Protection",
+        "to": "/protection"
+      },
+      {
+        "label": "Firewall",
+        "to": "/protection/firewall"
+      }
+    ]
+  },
+  "security": {
+    "id": "security",
+    "title": "Account security",
+    "summary": "Panel login security: password, two-factor, passkeys, and sessions.",
+    "audience": "All panel users",
+    "chips": [
+      "2FA",
+      "Sessions",
+      "Passkeys"
+    ],
+    "features": [
+      {
+        "name": "Password",
+        "purpose": "Change the panel login password."
+      },
+      {
+        "name": "Two-factor / WebAuthn",
+        "purpose": "Stronger login verification."
+      },
+      {
+        "name": "Sessions",
+        "purpose": "List or revoke signed-in sessions."
+      }
+    ],
+    "useCases": [
+      "Enable 2FA for admin accounts",
+      "Kick a stolen or shared session"
+    ],
+    "workflow": [
+      "Open Account security",
+      "Set password policy actions",
+      "Enroll 2FA and store recovery codes",
+      "Review sessions"
+    ],
+    "caveats": [
+      "Losing a 2FA device may need out-of-band recovery—back up recovery codes"
+    ],
+    "related": [
+      {
+        "label": "Users",
+        "to": "/users"
+      },
+      {
+        "label": "Protection",
+        "to": "/protection"
+      }
+    ]
+  },
+  "users": {
+    "id": "users",
+    "title": "Users and plans",
+    "summary": "Panel users, roles, and resource plan quotas.",
+    "audience": "Admins who manage operator accounts",
+    "chips": [
+      "RBAC",
+      "Quota",
+      "Plans"
+    ],
+    "features": [
+      {
+        "name": "Users",
+        "purpose": "Create accounts and assign roles."
+      },
+      {
+        "name": "Plans",
+        "purpose": "Resource packages / quotas for tenants."
+      }
+    ],
+    "useCases": [
+      "Onboard a new operator",
+      "Cap disk or sites per plan"
+    ],
+    "workflow": [
+      "Create user",
+      "Assign role and plan",
+      "Confirm login works",
+      "Adjust quotas as needed"
+    ],
+    "caveats": [
+      "Do not remove the last admin",
+      "Suspension is immediate for new sessions"
+    ],
+    "related": [
+      {
+        "label": "Security",
+        "to": "/security"
+      },
+      {
+        "label": "Projects",
+        "to": "/projects"
+      }
+    ]
+  },
+  "services": {
+    "id": "services",
+    "title": "Services",
+    "summary": "Overview of key systemd units; start, stop, and related actions.",
+    "audience": "System administrators",
+    "chips": [
+      "systemd",
+      "Status",
+      "Control"
+    ],
+    "features": [
+      {
+        "name": "Service matrix",
+        "purpose": "Active status for many units at once."
+      },
+      {
+        "name": "Actions",
+        "purpose": "start / stop / restart a single service."
+      }
+    ],
+    "useCases": [
+      "See which stack components are down",
+      "Restart a stuck unit during maintenance"
+    ],
+    "workflow": [
+      "Open Services",
+      "Find the unit",
+      "Run an action",
+      "Read the honest result panel"
+    ],
+    "caveats": [
+      "Restarting databases and similar services drops connections"
+    ],
+    "related": [
+      {
+        "label": "Dashboard",
+        "to": "/"
+      },
+      {
+        "label": "Logs",
+        "to": "/logs"
+      }
+    ]
+  },
+  "metrics": {
+    "id": "metrics",
+    "title": "Metrics",
+    "summary": "Operational metrics for CPU, memory, disk, and project usage.",
+    "audience": "Operations and capacity planning",
+    "chips": [
+      "Resources",
+      "Trends"
+    ],
+    "features": [
+      {
+        "name": "Host metrics",
+        "purpose": "Live or recent resource usage."
+      },
+      {
+        "name": "Project usage",
+        "purpose": "Per-site disk and related usage summaries."
+      }
+    ],
+    "useCases": [
+      "Decide whether to scale up",
+      "Find projects filling the disk"
+    ],
+    "workflow": [
+      "Review the overview",
+      "Drill into abnormal metrics",
+      "Handle on the matching project or service"
+    ],
+    "caveats": [
+      "Sample interval and precision depend on implementation—not a full APM"
+    ],
+    "related": [
+      {
+        "label": "Dashboard",
+        "to": "/"
+      }
+    ]
+  },
+  "network": {
+    "id": "network",
+    "title": "Network",
+    "summary": "Inspect interfaces, routes, DNS resolvers, and advanced network details.",
+    "audience": "Network administrators",
+    "chips": [
+      "Interfaces",
+      "Routes"
+    ],
+    "features": [
+      {
+        "name": "Interfaces and addresses",
+        "purpose": "View IPv4 / IPv6 bindings."
+      },
+      {
+        "name": "Routes",
+        "purpose": "Check default gateway and routing table."
+      },
+      {
+        "name": "Resolvers",
+        "purpose": "How this host resolves domains."
+      }
+    ],
+    "useCases": [
+      "Confirm public IP after a host goes live",
+      "Troubleshoot bad routes"
+    ],
+    "workflow": [
+      "Confirm interfaces are UP",
+      "Check the default route",
+      "Verify with ping / dig"
+    ],
+    "caveats": [
+      "Some changes need system permission and can interrupt connectivity"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "logs": {
+    "id": "logs",
+    "title": "Log center",
+    "summary": "journal and allowlisted log sources inside a safe boundary.",
+    "audience": "Operators debugging host and app issues",
+    "chips": [
+      "journal",
+      "Allowlist",
+      "Tail"
+    ],
+    "features": [
+      {
+        "name": "Sources",
+        "purpose": "Only approved log paths / units."
+      },
+      {
+        "name": "Viewer",
+        "purpose": "Tail and highlight without shell homework."
+      }
+    ],
+    "useCases": [
+      "Debug a failed deploy",
+      "Inspect auth or mail failures"
+    ],
+    "workflow": [
+      "Pick a source",
+      "Set time range if available",
+      "Read and correlate with a feature page"
+    ],
+    "caveats": [
+      "Not a full SIEM—scope is allowlisted on purpose"
+    ],
+    "related": [
+      {
+        "label": "Services",
+        "to": "/services"
+      },
+      {
+        "label": "Protection",
+        "to": "/protection"
+      }
+    ]
+  },
+  "cron": {
+    "id": "cron",
+    "title": "Cron",
+    "summary": "Manage scheduled tasks for the system or related projects.",
+    "audience": "Operators who need automated jobs",
+    "chips": [
+      "Schedule",
+      "Automation"
+    ],
+    "features": [
+      {
+        "name": "Job list",
+        "purpose": "View active cron entries."
+      },
+      {
+        "name": "Create / edit",
+        "purpose": "Set the schedule expression and command."
+      }
+    ],
+    "useCases": [
+      "Daily backups",
+      "Periodic temp cleanup"
+    ],
+    "workflow": [
+      "Design the schedule",
+      "Create the job",
+      "Watch the next run and logs"
+    ],
+    "caveats": [
+      "Bad commands fail repeatedly—validate the command manually first"
+    ],
+    "related": [
+      {
+        "label": "Backups",
+        "to": "/backups"
+      }
+    ]
+  },
+  "backups": {
+    "id": "backups",
+    "title": "Backups",
+    "summary": "Schedule and run project/data backups; manage backup artifacts.",
+    "audience": "Operators responsible for recovery",
+    "chips": [
+      "Schedule",
+      "restic",
+      "Restore"
+    ],
+    "features": [
+      {
+        "name": "Jobs",
+        "purpose": "Define what is backed up and when."
+      },
+      {
+        "name": "Artifacts",
+        "purpose": "List and download backup products."
+      }
+    ],
+    "useCases": [
+      "Nightly project snapshot",
+      "Pull a backup before a risky migrate"
+    ],
+    "workflow": [
+      "Configure backup settings",
+      "Run or wait for schedule",
+      "Verify artifact exists",
+      "Test restore when policy requires"
+    ],
+    "caveats": [
+      "A listed job ≠ a verified restore—test recovery regularly",
+      "Remote / restic needs credentials and EXECUTE for live apply"
+    ],
+    "related": [
+      {
+        "label": "Projects",
+        "to": "/projects"
+      },
+      {
+        "label": "Files",
+        "to": "/files"
+      }
+    ]
+  },
+  "migrate": {
+    "id": "migrate",
+    "title": "Full-host migrate",
+    "summary": "Inventory this host’s YSK environment, then migrate over SSH to a new host (for example public IP change).",
+    "audience": "Administrators replacing hardware or upgrading hosts",
+    "chips": [
+      "Migrate",
+      "SSH"
+    ],
+    "features": [
+      {
+        "name": "Inventory",
+        "purpose": "Scan managed resources and software on this host."
+      },
+      {
+        "name": "Precheck and run",
+        "purpose": "Connect to the target, transfer, and restore."
+      },
+      {
+        "name": "Verify",
+        "purpose": "Check critical services after migration."
+      }
+    ],
+    "useCases": [
+      "Move off an expiring VPS",
+      "Upgrade to a larger host"
+    ],
+    "workflow": [
+      "Inventory the source",
+      "Enter target SSH and precheck",
+      "Run the migration",
+      "Cut DNS and verify"
+    ],
+    "caveats": [
+      "Needs root and EXECUTE capability on the target",
+      "Cutting DNS without lowering TTL can dual-write or cause brief anomalies"
+    ],
+    "related": [
+      {
+        "label": "Backups",
+        "to": "/backups"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ]
+  },
+  "updates": {
+    "id": "updates",
+    "title": "Updates",
+    "summary": "OS package advice and panel self-update status—honest about what can apply.",
+    "audience": "Admins maintaining host and panel versions",
+    "chips": [
+      "apt",
+      "Self-update",
+      "OSV"
+    ],
+    "features": [
+      {
+        "name": "Inventory",
+        "purpose": "What is installed and what looks upgradeable."
+      },
+      {
+        "name": "Apply path",
+        "purpose": "Live update only with EXECUTE (and often root)."
+      }
+    ],
+    "useCases": [
+      "Patch before a known CVE",
+      "Check whether the panel build is current"
+    ],
+    "workflow": [
+      "Refresh inventory",
+      "Review recommendations",
+      "Apply when maintenance allows",
+      "Re-check services"
+    ],
+    "caveats": [
+      "Without EXECUTE, results stay planned / blocked",
+      "Package upgrades can restart services"
+    ],
+    "related": [
+      {
+        "label": "Services",
+        "to": "/services"
+      },
+      {
+        "label": "Dashboard",
+        "to": "/"
+      }
+    ]
+  },
+  "systemd": {
+    "id": "systemd",
+    "title": "systemd units",
+    "summary": "Inspect and operate individual systemd unit details.",
+    "audience": "Advanced system administrators",
+    "chips": [
+      "unit"
+    ],
+    "features": [
+      {
+        "name": "Unit status",
+        "purpose": "active, enabled, and related state."
+      },
+      {
+        "name": "Actions",
+        "purpose": "start / stop / restart / enable."
+      }
+    ],
+    "useCases": [
+      "Fine-tune custom units"
+    ],
+    "workflow": [
+      "Search for a unit",
+      "Review status",
+      "Act carefully"
+    ],
+    "caveats": [
+      "Mistakes can take critical services offline"
+    ],
+    "related": [
+      {
+        "label": "Services",
+        "to": "/services"
+      }
+    ]
+  },
+  "readiness": {
+    "id": "readiness",
+    "title": "Readiness",
+    "summary": "Check production against the product readiness list for required components and settings.",
+    "audience": "Administrators validating before go-live",
+    "chips": [
+      "Checklist"
+    ],
+    "features": [
+      {
+        "name": "Item scan",
+        "purpose": "Binaries, services, and settings completeness."
+      },
+      {
+        "name": "Fix guidance",
+        "purpose": "Links to the matching feature page to complete gaps."
+      }
+    ],
+    "useCases": [
+      "Pre-production acceptance",
+      "Re-check after migration"
+    ],
+    "workflow": [
+      "Run the check",
+      "Resolve failing items",
+      "Re-run until acceptable"
+    ],
+    "caveats": [
+      "Ready ≠ passed business load testing"
+    ],
+    "related": [
+      {
+        "label": "Dashboard",
+        "to": "/"
+      }
+    ]
+  },
+  "systemIndex": {
+    "id": "systemIndex",
+    "title": "System tools",
+    "summary": "Entry point for system-level utilities and host information.",
+    "audience": "System administrators",
+    "chips": [
+      "Host"
+    ],
+    "features": [
+      {
+        "name": "Host info",
+        "purpose": "Hostname, timezone, and related facts."
+      },
+      {
+        "name": "Tool links",
+        "purpose": "Jump to units, readiness, migrate, and more."
+      }
+    ],
+    "useCases": [
+      "Find system-level features quickly"
+    ],
+    "workflow": [
+      "Review host info",
+      "Open the needed sub-tool"
+    ],
+    "caveats": [
+      "Changing hostname / timezone can affect certificates and log timestamps"
+    ],
+    "related": [
+      {
+        "label": "Network",
+        "to": "/network"
+      },
+      {
+        "label": "Updates",
+        "to": "/updates"
+      }
+    ]
+  },
+  "ai": {
+    "id": "ai",
+    "title": "AI tasks",
+    "summary": "Run controlled AI-assisted tasks inside the panel (provider configuration required).",
+    "audience": "Operators who want AI help for ops work",
+    "chips": [
+      "AI"
+    ],
+    "features": [
+      {
+        "name": "Tasks",
+        "purpose": "Submit prompts and review results."
+      },
+      {
+        "name": "Settings",
+        "purpose": "Bind model provider and keys when applicable."
+      }
+    ],
+    "useCases": [
+      "Draft configuration notes",
+      "Help interpret error logs"
+    ],
+    "workflow": [
+      "Confirm AI is configured",
+      "Create a task",
+      "Human-review before applying to the system"
+    ],
+    "caveats": [
+      "AI output needs human review—never treat it as production commands as-is",
+      "May incur API cost"
+    ],
+    "related": [
+      {
+        "label": "Agents",
+        "to": "/agents"
+      }
+    ]
+  },
+  "agents": {
+    "id": "agents",
+    "title": "Agents",
+    "summary": "Manage supervised ops agents and playbook-style automation.",
+    "audience": "Advanced operations",
+    "chips": [
+      "Automation"
+    ],
+    "features": [
+      {
+        "name": "Agent list",
+        "purpose": "View available agents."
+      },
+      {
+        "name": "Run",
+        "purpose": "Execute predefined flows within authorized scope."
+      }
+    ],
+    "useCases": [
+      "Automate repetitive checks"
+    ],
+    "workflow": [
+      "Pick a playbook",
+      "Confirm scope",
+      "Run and review results"
+    ],
+    "caveats": [
+      "Agents must not bypass the EXECUTE / permission model"
+    ],
+    "related": [
+      {
+        "label": "AI tasks",
+        "to": "/ai"
+      }
+    ]
+  },
+  "servicesConsole": {
+    "id": "servicesConsole",
+    "title": "Service console",
+    "summary": "Operations and status console for a single service type.",
+    "audience": "System administrators",
+    "chips": [
+      "Service"
+    ],
+    "features": [
+      {
+        "name": "Status",
+        "purpose": "Live active / install state."
+      },
+      {
+        "name": "Actions",
+        "purpose": "Install, start, reload, and similar."
+      }
+    ],
+    "useCases": [
+      "Operate multiple backend services from one place"
+    ],
+    "workflow": [
+      "Select a service",
+      "Review status",
+      "Run actions and read results"
+    ],
+    "caveats": [
+      "Confirm blast radius before high-risk actions"
+    ],
+    "related": [
+      {
+        "label": "Services overview",
+        "to": "/services"
+      }
+    ]
+  }
+}
