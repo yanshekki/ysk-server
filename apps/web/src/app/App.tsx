@@ -9,7 +9,7 @@ import { ErrorBoundary } from '../shared/components/ErrorBoundary';
 /** Lightweight fallback while route chunks load */
 function RouteFallback() {
   return (
-    <div className="u-pad-panel muted u-text-sm" style={{ padding: '2rem' }}>
+    <div className="u-pad-panel muted u-text-sm">
       Loading…
     </div>
   );

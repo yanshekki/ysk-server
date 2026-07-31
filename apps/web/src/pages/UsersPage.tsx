@@ -1066,11 +1066,11 @@ export function UsersPage() {
               onChange={(e) => setPkgBw(e.target.value)}
             />
           </Field>
-          <label className="u-text-sm" style={{ display: 'flex', gap: '0.5rem' }}>
+          <label className="u-text-sm u-flex u-items-center u-gap-2">
             <input type="checkbox" checked={pkgFtp} onChange={(e) => setPkgFtp(e.target.checked)} />
             {t('users.ftp')}
           </label>
-          <label className="u-text-sm" style={{ display: 'flex', gap: '0.5rem' }}>
+          <label className="u-text-sm u-flex u-items-center u-gap-2">
             <input type="checkbox" checked={pkgSsh} onChange={(e) => setPkgSsh(e.target.checked)} />
             {t('users.ssh')}
           </label>
