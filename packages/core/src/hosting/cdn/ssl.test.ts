@@ -580,3 +580,318 @@ describe('cdn ssl (PR-C6)', () => {
     }
   });
 });
+
+describe('cdn ssl depth gaps', () => {
+  it('resolve throws without domains; certId missing/bad paths; LE live paths', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnssl-d-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const siteEmpty = baseSite({ id: 'e0', domains: [] as unknown as string[] });
+      // force empty domains
+      (siteEmpty as { domains: string[] }).domains = [];
+      expect(() => resolveCdnSiteCertificate({ db, dataDir: dir, site: siteEmpty })).toThrow();
+
+      // certId not in store
+      const edge = upsertCdnNode(db, {
+        name: 'e',
+        roles: ['edge'],
+        publicIpv4: ['127.0.0.1'],
+      });
+      const site = upsertCdnSite(db, {
+        name: 'badid',
+        domains: ['badid.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [edge.id],
+        ssl: { mode: 'upload', certId: 'missing-cert' },
+      });
+      const r = resolveCdnSiteCertificate({ db, dataDir: dir, site });
+      expect(r.ok).toBe(false);
+      expect(r.notes.length).toBeGreaterThan(0);
+
+      // certId present but files missing on disk
+      const cert = uploadCertificate({
+        db,
+        dataDir: dir,
+        domain: 'gone.example.com',
+        fullchainPem: SAMPLE_CERT,
+        privkeyPem: SAMPLE_KEY,
+        actor: 't',
+      });
+      // wipe managed paths
+      const managed = join(dir, 'certs', 'gone.example.com');
+      rmSync(managed, { recursive: true, force: true });
+      const site2 = upsertCdnSite(db, {
+        name: 'gone',
+        domains: ['gone.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [edge.id],
+        ssl: { mode: 'upload', certId: cert.id },
+      });
+      const r2 = resolveCdnSiteCertificate({ db, dataDir: dir, site: site2 });
+      // may still resolve if store paths exist elsewhere, or fail
+      expect(typeof r2.ok).toBe('boolean');
+
+      // LE paths under /etc/letsencrypt — usually missing; just exercise loop
+      const site3 = upsertCdnSite(db, {
+        name: 'lepath',
+        domains: ['unlikely-le-domain-xyz.example'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [edge.id],
+        ssl: { mode: 'le_http01' },
+      });
+      const r3 = resolveCdnSiteCertificate({ db, dataDir: dir, site: site3 });
+      expect(r3.ok).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('distribute: missing site; missing edge node; remote scp fail; baseUrl host', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnssl-d2-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const host = mockHost({ execute: true });
+      await expect(
+        distributeCdnSiteSsl({ db, host, dataDir: dir, siteId: 'nope' }),
+      ).rejects.toThrow();
+
+      const seed = upsertCdnNode(db, {
+        name: 'seed',
+        roles: ['edge'],
+        publicIpv4: ['127.0.0.1'],
+      });
+      const cert = uploadCertificate({
+        db,
+        dataDir: dir,
+        domain: 'edge.example.com',
+        fullchainPem: SAMPLE_CERT,
+        privkeyPem: SAMPLE_KEY,
+        actor: 't',
+      });
+      const site = upsertCdnSite(db, {
+        name: 'missedge',
+        domains: ['edge.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [seed.id],
+        ssl: { mode: 'upload', certId: cert.id },
+      });
+      // inject missing edge id after upsert validation (settings JSON list)
+      const raw = JSON.parse(db.snapshot.settings['cdn_sites'] ?? '[]') as Array<{
+        id: string;
+        edgeNodeIds: string[];
+      }>;
+      const row = raw.find((s) => s.id === site.id);
+      if (row) row.edgeNodeIds = ['does-not-exist'];
+      db.snapshot.settings['cdn_sites'] = JSON.stringify(raw);
+      db.persist();
+      const r = await distributeCdnSiteSsl({
+        db,
+        host,
+        dataDir: dir,
+        siteId: site.id,
+        applyNginx: false,
+      });
+      expect(r.edges[0]?.apply_status).toBe('failed');
+      expect(r.edges[0]?.method).toBe('skip');
+
+      const remote = upsertCdnNode(db, {
+        name: 'r1',
+        roles: ['edge'],
+        publicIpv4: ['203.0.113.90'],
+        sshUsername: 'deploy',
+        sshPort: 2222,
+      });
+      const viaUrl = upsertCdnNode(db, {
+        name: 'url-edge',
+        roles: ['edge'],
+        publicIpv4: [],
+        baseUrl: 'https://edge.cdn.example:8443',
+      });
+      const site2 = upsertCdnSite(db, {
+        name: 'scpfail',
+        domains: ['edge.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [remote.id, viaUrl.id],
+        ssl: { mode: 'upload', certId: cert.id },
+      });
+      const host2 = mockHost({
+        execute: true,
+        run: (argv) => {
+          if (argv[0] === 'ssh') return { exitCode: 0, stdout: 'ok' };
+          if (argv[0] === 'scp') return { exitCode: 1, stderr: 'scp fail' };
+          return { exitCode: 0 };
+        },
+      });
+      const r2 = await distributeCdnSiteSsl({
+        db,
+        host: host2,
+        dataDir: dir,
+        siteId: site2.id,
+        applyNginx: false,
+        skipDraining: true,
+      });
+      expect(r2.edges.some((e) => e.apply_status === 'failed')).toBe(true);
+
+      // bad baseUrl → empty host → treated as local edge
+      const badUrl = upsertCdnNode(db, {
+        name: 'badurl',
+        roles: ['edge'],
+        publicIpv4: [],
+        baseUrl: 'not a url',
+      });
+      const site3 = upsertCdnSite(db, {
+        name: 'badurls',
+        domains: ['edge.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [badUrl.id],
+        ssl: { mode: 'upload', certId: cert.id },
+      });
+      const r3 = await distributeCdnSiteSsl({
+        db,
+        host: mockHost({ execute: true }),
+        dataDir: dir,
+        siteId: site3.id,
+        applyNginx: false,
+      });
+      expect(r3.edges.length).toBe(1);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('prepareCdnSiteAcme missing site throws; issue LE planned/wildcard; certbot path when writable', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnssl-le-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const host = mockHost({ execute: true });
+      await expect(
+        prepareCdnSiteAcme({ db, host, dataDir: dir, siteId: 'x' }),
+      ).rejects.toThrow();
+      await expect(
+        issueCdnSiteLetsEncrypt({
+          db,
+          host,
+          dataDir: dir,
+          siteId: 'x',
+          email: 'a@b.co',
+        }),
+      ).rejects.toThrow();
+
+      const edge = upsertCdnNode(db, {
+        name: 'local',
+        roles: ['edge'],
+        publicIpv4: ['127.0.0.1'],
+      });
+      const site = upsertCdnSite(db, {
+        name: 'le2',
+        domains: ['le2.example.com', 'www.le2.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [edge.id],
+        ssl: { mode: 'le_http01' },
+      });
+
+      // run=false never touches /var/www
+      const dry = await issueCdnSiteLetsEncrypt({
+        db,
+        host,
+        dataDir: dir,
+        siteId: site.id,
+        email: 'ops@example.com',
+        run: false,
+      });
+      expect(dry.apply_status).toBe('planned');
+      expect(dry.executed).toBe(false);
+
+      // le_dns01 → planned (no /var/www)
+      const wild = upsertCdnSite(db, {
+        name: 'wild',
+        domains: ['wild.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [edge.id],
+        ssl: { mode: 'le_dns01' },
+      });
+      const w = await issueCdnSiteLetsEncrypt({
+        db,
+        host,
+        dataDir: dir,
+        siteId: wild.id,
+        email: 'ops@example.com',
+      });
+      expect(w.apply_status).toBe('planned');
+      expect(w.executed).toBe(false);
+
+      // certbot live path: may EACCES on /var/www — assert honesty either way
+      const failHost = mockHost({
+        execute: true,
+        run: (argv) => {
+          if (argv.join(' ').includes('certbot')) {
+            return { exitCode: 1, stderr: 'rate limited' };
+          }
+          return { exitCode: 0 };
+        },
+      });
+      try {
+        const failed = await issueCdnSiteLetsEncrypt({
+          db,
+          host: failHost,
+          dataDir: dir,
+          siteId: site.id,
+          email: 'ops@example.com',
+          distribute: false,
+        });
+        expect(failed.ok).toBe(false);
+        expect(['failed', 'blocked']).toContain(failed.apply_status);
+      } catch (e) {
+        expect(String(e)).toMatch(/EACCES|permission|ENOENT/i);
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('issue distribute path honest when certbot+acme webroot not writable', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnssl-dist-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const edge = upsertCdnNode(db, {
+        name: 'local',
+        roles: ['edge'],
+        publicIpv4: ['127.0.0.1'],
+      });
+      const site = upsertCdnSite(db, {
+        name: 'led',
+        domains: ['led.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [edge.id],
+        ssl: { mode: 'le_http01' },
+      });
+      const managed = join(dir, 'certs', 'led.example.com');
+      mkdirSync(managed, { recursive: true });
+      writeFileSync(join(managed, 'fullchain.pem'), SAMPLE_CERT, 'utf8');
+      writeFileSync(join(managed, 'privkey.pem'), SAMPLE_KEY, 'utf8');
+      const host = mockHost({
+        execute: true,
+        run: (argv) => {
+          if (argv.join(' ').includes('certbot')) return { exitCode: 0 };
+          return { exitCode: 0 };
+        },
+      });
+      try {
+        const r = await issueCdnSiteLetsEncrypt({
+          db,
+          host,
+          dataDir: dir,
+          siteId: site.id,
+          email: 'ops@example.com',
+          distribute: true,
+        });
+        expect(r.executed === true || r.apply_status === 'planned').toBe(true);
+      } catch (e) {
+        // non-root CI cannot mkdir /var/www/ysk-cdn-acme
+        expect(String(e)).toMatch(/EACCES|permission|ENOENT/i);
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

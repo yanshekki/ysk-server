@@ -179,7 +179,10 @@ export function recordProjectDailyStats(
   let series: DailyStatPoint[] = [];
   try {
     if (existsSync(path)) {
-      series = JSON.parse(readFileSync(path, 'utf8')) as DailyStatPoint[];
+      const raw = JSON.parse(readFileSync(path, 'utf8')) as
+        | DailyStatPoint[]
+        | { series?: DailyStatPoint[] };
+      series = Array.isArray(raw) ? raw : (raw.series ?? []);
     }
   } catch {
     series = [];
