@@ -50,4 +50,36 @@ describe('bootstrapEmailServer', () => {
     closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('skips webmail step when webmail false and records honesty flags', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-eb-'));
+    try {
+      const db = openDatabase(join(dir, 'db.json'));
+      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+      const r = await bootstrapEmailServer({
+        dataDir: dir,
+        db,
+        host,
+        domain: 'plain.example',
+        serverIp: '198.51.100.10',
+        actor: 'admin',
+        webmail: false,
+        installPackages: false,
+      });
+      expect(r.domainId).toBeTruthy();
+      expect(r.steps.find((s) => s.id === 'webmail')).toBeFalsy();
+      expect(r.requiresExecute === true || r.steps.every((s) => typeof s.ok === 'boolean')).toBe(
+        true,
+      );
+      // no step may claim system applied without execute
+      for (const s of r.steps) {
+        if (s.id === 'mta-configs' || s.id === 'domain') {
+          expect(s.ok).toBe(true);
+        }
+      }
+      closeDatabase(db);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

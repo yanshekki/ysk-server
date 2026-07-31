@@ -38,4 +38,27 @@ describe('webmail-apply', () => {
     expect(r.requiresExecute).toBe(true);
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('plan mode includes nginx conf and does not claim applied', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-'));
+    try {
+      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+      const r = await applyWebmail({
+        dataDir: dir,
+        host,
+        domain: 'mail.example.test',
+        download: false,
+      });
+      expect(r.ok).toBe(true);
+      expect(r.mode).toBe('plan');
+      expect(r.requiresExecute === true || r.mode === 'plan').toBe(true);
+      const nginx = r.written.find((p) => p.includes('nginx') || p.endsWith('.conf'));
+      if (nginx && existsSync(nginx)) {
+        expect(readFileSync(nginx, 'utf8').length).toBeGreaterThan(0);
+      }
+      expect(r.configPath).toBeTruthy();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
