@@ -78,7 +78,7 @@ const CLI_COMMANDS = [
  * Map structured result → CLI exit code.
  * Contract: 0 ok · 1 error · 2 validation · 3 blocked · 4 not_found · 5 host_error
  */
-function exitFromResult(r: {
+export function exitFromResult(r: {
   ok?: boolean;
   blocked?: boolean;
   code?: string;
@@ -127,7 +127,7 @@ function exitFromResult(r: {
 }
 
 /** Map thrown YskError → exit code */
-function exitFromError(err: unknown): number {
+export function exitFromError(err: unknown): number {
   if (err instanceof YskError) {
     if (err.code === ErrorCodes.VALIDATION || err.code === ErrorCodes.CONFIG_INVALID) return 2;
     if (err.code === ErrorCodes.NOT_FOUND) return 4;
@@ -145,7 +145,7 @@ function exitFromError(err: unknown): number {
   return 1;
 }
 
-function printCliError(err: unknown, json: boolean): number {
+export function printCliError(err: unknown, json: boolean): number {
   if (err instanceof YskError) {
     if (json) {
       printJson({

@@ -214,4 +214,37 @@ describe('projects routes (HTTP)', () => {
       expect(p.runtime).toBe('static');
     }
   });
+
+  it('lists isolation report and templates', async () => {
+    ts = await startTestServer();
+    const iso = await apiJson(ts, 'GET', '/api/v1/projects/isolation');
+    expect(iso.status).toBe(200);
+
+    const tpl = await apiJson(ts, 'GET', '/api/v1/templates');
+    expect(tpl.status).toBe(200);
+    expect(Array.isArray((tpl.body as { items?: unknown[] }).items)).toBe(true);
+  });
+
+  it('creates project with dns zone + mail domain extras', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'ExtrasProj',
+      domain: 'extras-proj.test',
+      runtime: 'node',
+      createDnsZone: true,
+      createMailDomain: true,
+      serverIp: '203.0.113.77',
+      serverIpv6: '2001:db8::77',
+    });
+    expect(res.status).toBe(201);
+    const body = res.body as {
+      project?: { id?: string };
+      extras?: { dnsZoneId?: string; emailDomainId?: string; notes?: string[] };
+    };
+    expect(body.project?.id).toBeTruthy();
+    // extras may be present when helpers succeed
+    if (body.extras) {
+      expect(Array.isArray(body.extras.notes)).toBe(true);
+    }
+  });
 });

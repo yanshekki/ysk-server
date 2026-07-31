@@ -135,4 +135,55 @@ describe('updates routes (HTTP)', () => {
     expect(body.blocked).toBe(true);
     expect(body.applied).not.toBe(true);
   });
+
+  it('inventory live + cached + refresh with osv', async () => {
+    ts = await startTestServer();
+    // seed cache
+    ts.ctx.settings.setJson('last_inventory', {
+      at: new Date().toISOString(),
+      count: 2,
+      upgradable: 1,
+      meta: { upgradableCount: 1 },
+      sample: [{ name: 'curl', version: '1.0' }],
+      items: [
+        { name: 'curl', version: '1.0', packageName: 'curl', upgradable: true },
+        { name: 'bash', version: '5.0', packageName: 'bash', upgradable: false },
+      ],
+      advice: [
+        {
+          packageName: 'curl',
+          risk: 'medium',
+          candidateVersion: '1.1',
+          currentVersion: '1.0',
+          needsApproval: true,
+        },
+      ],
+    });
+
+    const cached = await apiJson(
+      ts,
+      'GET',
+      '/api/v1/updates/inventory?cached=1&risk=medium&upgradable=1',
+    );
+    expect(cached.status).toBe(200);
+    expect((cached.body as { cached?: boolean }).cached).toBe(true);
+    expect(Array.isArray((cached.body as { inventory?: unknown[] }).inventory)).toBe(true);
+
+    const live = await apiJson(ts, 'GET', '/api/v1/updates/inventory');
+    expect(live.status).toBeLessThan(500);
+    expect(live.status).toBeGreaterThanOrEqual(200);
+
+    const refresh = await apiJson(ts, 'POST', '/api/v1/updates/inventory/refresh', {
+      osv: true,
+      limit: 3,
+    });
+    expect(refresh.status).toBe(200);
+    expect(Array.isArray((refresh.body as { inventory?: unknown[] }).inventory)).toBe(true);
+    expect(Array.isArray((refresh.body as { advice?: unknown[] }).advice)).toBe(true);
+
+    const refreshPlain = await apiJson(ts, 'POST', '/api/v1/updates/inventory/refresh', {
+      osv: false,
+    });
+    expect(refreshPlain.status).toBe(200);
+  }, 120_000);
 });

@@ -168,4 +168,47 @@ describe('cdn routes (HTTP)', () => {
     const detail = await apiJson(ts, 'GET', `/api/v1/cdn/nodes/${id}`);
     expect(detail.status).toBeLessThan(500);
   });
+
+  it('upserts node with full optional fields + site domains string form', async () => {
+    ts = await startTestServer();
+    const node = await apiJson(ts, 'POST', '/api/v1/cdn/nodes', {
+      name: 'edge-full-opts',
+      baseUrl: 'https://edge-full.example.com',
+      fleetAgentId: 'fleet-sess-1',
+      sshHost: '127.0.0.1',
+      sshPort: '22',
+      sshUsername: 'root',
+      sshIdentityId: 'id-1',
+      remoteNginxConfDir: '/etc/nginx/conf.d',
+      roles: ['edge'],
+      region: 'lab',
+      publicIpv4: '203.0.113.10, 203.0.113.11',
+      publicIpv6: '2001:db8::1 2001:db8::2',
+      healthUrl: 'https://edge-full.example.com/health',
+      weight: '10',
+    });
+    expect(node.status).toBe(200);
+    const nodeId = (node.body as { node?: { id?: string } }).node?.id;
+    expect(nodeId).toBeTruthy();
+
+    const site = await apiJson(ts, 'POST', '/api/v1/cdn/sites', {
+      name: 'site-str-domains',
+      domains: 'a.cdn-cov.test,b.cdn-cov.test',
+      edgeNodeIds: nodeId,
+      origin: { kind: 'url', url: 'http://127.0.0.1:8080', sni: 'origin.test' },
+      mode: 'cdn',
+      originShieldNodeId: nodeId,
+      dns: { provider: 'manual' },
+      cache: { ttl: 60 },
+    });
+    expect(site.status).toBeLessThan(500);
+
+    const probeAll = await apiJson(ts, 'POST', '/api/v1/cdn/nodes/probe-all', {});
+    expect(probeAll.status).toBeLessThan(500);
+
+    const list = await apiJson(ts, 'GET', '/api/v1/cdn/nodes?q=edge-full');
+    expect(list.status).toBe(200);
+    const sites = await apiJson(ts, 'GET', '/api/v1/cdn/sites?q=site-str');
+    expect(sites.status).toBe(200);
+  });
 });

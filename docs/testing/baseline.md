@@ -8,7 +8,7 @@ Measured at start of the monorepo 90% program (before mass test fill).
 |---------|----------------|-------|
 | `@ysk/shared` | **95% lines / 91% funcs** (runtime; types-only excluded) | Phase 1 — **locked 90%** |
 | `@ysk/core` | **90.0% lines / 97.3% funcs** (locked) | Phase 2 — **locked 90%** |
-| `@ysk/server` | **~16% lines / ~45% funcs** (HTTP harness + route batch started) | Phase 3 |
+| `@ysk/server` | **90.0% lines / ~72% funcs** (lines locked; funcs 70 floor) | Phase 3 — **lines locked 90%** |
 | `@ysk/web` | **~7.5% lines / ~32% funcs** (RTL + page smokes started) | Phase 4 |
 
 Regenerate:

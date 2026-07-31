@@ -90,4 +90,30 @@ describe('settings routes (HTTP)', () => {
     expect((res.body as { ok?: boolean; requireAdminTotp?: boolean }).ok).toBe(true);
     expect((res.body as { requireAdminTotp?: boolean }).requireAdminTotp).toBe(false);
   });
+
+  it('requireAdminTotp true without step-up is honest fail; strict flag saves', async () => {
+    ts = await startTestServer();
+    const enable = await apiJson(ts, 'POST', '/api/v1/settings/security', {
+      requireAdminTotp: true,
+      totp: '000000',
+    });
+    // without enrolled totp: may 200 (no step-up needed) or 403 needsStepUp
+    expect(enable.status).toBeLessThan(500);
+
+    const strict = await apiJson(ts, 'POST', '/api/v1/settings/security', {
+      requireAdminTotpStrict: true,
+    });
+    expect(strict.status).toBe(200);
+    expect((strict.body as { requireAdminTotpStrict?: boolean }).requireAdminTotpStrict).toBe(
+      true,
+    );
+
+    const strictOff = await apiJson(ts, 'POST', '/api/v1/settings/security', {
+      requireAdminTotpStrict: false,
+    });
+    expect(strictOff.status).toBe(200);
+    expect((strictOff.body as { requireAdminTotpStrict?: boolean }).requireAdminTotpStrict).toBe(
+      false,
+    );
+  });
 });

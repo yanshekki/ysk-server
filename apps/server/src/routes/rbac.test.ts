@@ -63,4 +63,68 @@ describe('rbac routes (HTTP)', () => {
     expect(body.ok).toBe(true);
     expect(Array.isArray(body.items)).toBe(true);
   });
+
+  it('admin can PUT role policy and restore one role', async () => {
+    ts = await startTestServer();
+    const put = await apiJson(ts, 'PUT', '/api/v1/rbac/policies/operator', {
+      maxLevel: 'read',
+      capabilities: ['projects.read', 'host.read'],
+    });
+    expect(put.status).toBe(200);
+    expect((put.body as { ok?: boolean }).ok).toBe(true);
+    expect((put.body as { item?: unknown }).item).toBeTruthy();
+
+    const restore = await apiJson(ts, 'POST', '/api/v1/rbac/policies/operator/restore', {});
+    expect(restore.status).toBe(200);
+    expect((restore.body as { ok?: boolean }).ok).toBe(true);
+  });
+
+  it('admin can patch and restore user capability overrides', async () => {
+    ts = await startTestServer();
+    const users = await apiJson(ts, 'GET', '/api/v1/users');
+    const items =
+      (users.body as { items?: Array<{ id?: string; username?: string }> }).items ?? [];
+    const admin = items.find((u) => u.username === 'admin') ?? items[0];
+    expect(admin?.id).toBeTruthy();
+
+    const patch = await apiJson(ts, 'PATCH', `/api/v1/rbac/users/${admin!.id}`, {
+      capabilityGrants: ['audit.read'],
+      capabilityRevokes: [],
+    });
+    expect(patch.status).toBe(200);
+    const pBody = patch.body as {
+      ok?: boolean;
+      user?: { capabilities?: string[]; capabilityGrants?: string[] };
+    };
+    expect(pBody.ok).toBe(true);
+    expect(pBody.user?.id || pBody.user).toBeTruthy();
+
+    const restore = await apiJson(
+      ts,
+      'POST',
+      `/api/v1/rbac/users/${admin!.id}/restore`,
+      {},
+    );
+    expect(restore.status).toBe(200);
+    expect((restore.body as { ok?: boolean }).ok).toBe(true);
+
+    // also users path restore if wired through rbac handler
+    const restore2 = await apiJson(
+      ts,
+      'POST',
+      `/api/v1/users/${admin!.id}/capabilities/restore`,
+      {},
+    );
+    // may 404 if only rbac path handles it
+    expect(restore2.status).toBeLessThan(500);
+  });
+
+  it('PUT invalid role returns structured error not 500', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'PUT', '/api/v1/rbac/policies/not-a-role', {
+      maxLevel: 'read',
+    });
+    expect(res.status).toBeLessThan(500);
+    expect(res.status).toBeGreaterThanOrEqual(200);
+  });
 });

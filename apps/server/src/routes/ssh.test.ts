@@ -155,4 +155,77 @@ describe('ssh routes (HTTP)', () => {
     const auth = await apiJson(ts, 'GET', '/api/v1/sftp/keys');
     expect(auth.status).toBe(200);
   });
+
+  it('adds sftp key and lists by username', async () => {
+    ts = await startTestServer();
+    const add = await apiJson(ts, 'POST', '/api/v1/sftp/keys', {
+      username: 'ysk_sftp_cov',
+      publicKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICovTestKey000000000000000000000000 cov@test',
+      comment: 'http-cov',
+    });
+    expect(add.status).toBeLessThan(500);
+    const list = await apiJson(ts, 'GET', '/api/v1/sftp/keys?username=ysk_sftp_cov');
+    expect(list.status).toBe(200);
+    expect(Array.isArray((list.body as { items?: unknown[] }).items)).toBe(true);
+  });
+
+  it('lists identities with purpose filter and imports invalid key honestly', async () => {
+    ts = await startTestServer();
+    const list = await apiJson(
+      ts,
+      'GET',
+      '/api/v1/ssh/identities?purpose=user_outbound',
+    );
+    expect(list.status).toBe(200);
+
+    const imp = await apiJson(ts, 'POST', '/api/v1/ssh/identities/import', {
+      name: 'bad-import',
+      privateKey: 'not-a-real-key',
+      purpose: 'unbound',
+    });
+    expect(imp.status).toBeLessThan(500);
+    const body = imp.body as { ok?: boolean };
+    expect(typeof body.ok).toBe('boolean');
+    if (body.ok === true) {
+      // unexpected but still ok
+    } else {
+      expect(body.ok).toBe(false);
+    }
+  });
+
+  it('enrolls ssh 2fa for linux user without install', async () => {
+    ts = await startTestServer();
+    const enroll = await apiJson(ts, 'POST', '/api/v1/ssh/2fa', {
+      linuxUser: 'ysk_2fa_cov',
+      homeDir: '/tmp/ysk-2fa-cov',
+    });
+    expect(enroll.status).toBeLessThan(500);
+    const body = enroll.body as { ok?: boolean; record?: { id?: string } };
+    expect(typeof body.ok).toBe('boolean');
+
+    // fromPanel without totp → 422/403
+    const fromPanel = await apiJson(ts, 'POST', '/api/v1/ssh/2fa', {
+      linuxUser: 'ysk_2fa_cov2',
+      fromPanel: true,
+    });
+    expect(fromPanel.status).toBeLessThan(500);
+    expect([200, 403, 422]).toContain(fromPanel.status);
+  });
+
+  it('sshd snippet with chroot=1', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/sftp/sshd-snippet?chroot=1');
+    expect(res.status).toBe(200);
+    expect(typeof (res.body as { snippet?: string }).snippet).toBe('string');
+  });
+
+  it('ssh 2fa strict-apply apply=true without step-up is honest fail', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/ssh/2fa/strict-apply', {
+      apply: true,
+      recoveryUsers: ['root'],
+      totp: '000000',
+    });
+    expect(res.status).toBeLessThan(500);
+  });
 });

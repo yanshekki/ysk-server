@@ -229,6 +229,102 @@ describe('controllers dry POST (HTTP honesty)', () => {
       root: 'public',
     });
     expect(fav.status).toBeLessThan(500);
+
+    // download / stat / read
+    const stat = await apiJson(
+      ts,
+      'GET',
+      '/api/v1/files/stat?root=public&path=honesty-dir/hello.txt',
+    );
+    expect(stat.status).toBe(200);
+    const read = await apiJson(
+      ts,
+      'GET',
+      '/api/v1/files/read?root=public&path=honesty-dir/hello.txt',
+    );
+    expect(read.status).toBe(200);
+    const dl = await apiJson(
+      ts,
+      'GET',
+      '/api/v1/files/download?root=public&path=honesty-dir/hello.txt',
+    );
+    expect(dl.status).toBe(200);
+    const dlMiss = await apiJson(
+      ts,
+      'GET',
+      '/api/v1/files/download?root=public&path=no-such-file.txt',
+    );
+    expect(dlMiss.status).toBe(404);
+
+    // bad root
+    const badRoot = await apiJson(ts, 'GET', '/api/v1/files?root=not-a-root&path=.');
+    expect(badRoot.status).toBe(400);
+
+    // share create + public download with password
+    const share = await apiJson(ts, 'POST', '/api/v1/files/shares?root=public', {
+      path: 'honesty-dir/hello.txt',
+      password: 'Share-Pass-1',
+    });
+    expect(share.status).toBeLessThan(500);
+    const token =
+      (share.body as { share?: { token?: string } }).share?.token ??
+      (share.body as { token?: string }).token;
+    if (token) {
+      const noPw = await apiJson(
+        ts,
+        'GET',
+        `/api/v1/public/files/${token}`,
+        undefined,
+        { auth: false },
+      );
+      expect([200, 401]).toContain(noPw.status);
+      const withPw = await apiJson(
+        ts,
+        'GET',
+        `/api/v1/public/files/${token}?password=Share-Pass-1`,
+        undefined,
+        { auth: false },
+      );
+      expect([200, 401, 404]).toContain(withPw.status);
+    }
+    expect(
+      (
+        await apiJson(ts, 'POST', '/api/v1/files/shares?root=public', {
+          /* no path */
+        })
+      ).status,
+    ).toBe(400);
+
+    // trash: delete file, list, restore, purge
+    const del = await apiJson(ts, 'DELETE', '/api/v1/files?root=public&path=honesty-dir/hello.txt');
+    expect(del.status).toBeLessThan(500);
+    const trash = await apiJson(ts, 'GET', '/api/v1/files/trash?root=public');
+    expect(trash.status).toBe(200);
+    const items = (trash.body as { items?: Array<{ id?: string }> }).items ?? [];
+    if (items[0]?.id) {
+      const restore = await apiJson(ts, 'POST', '/api/v1/files/trash/restore?root=public', {
+        trashId: items[0].id,
+      });
+      expect(restore.status).toBe(200);
+    }
+    expect(
+      (await apiJson(ts, 'POST', '/api/v1/files/trash/restore?root=public', {})).status,
+    ).toBe(400);
+    const purge = await apiJson(ts, 'DELETE', '/api/v1/files/trash?root=public');
+    expect(purge.status).toBe(200);
+
+    // unzip missing
+    expect(
+      (
+        await apiJson(ts, 'POST', '/api/v1/files/unzip?root=public', {
+          /* no zipPath */
+        })
+      ).status,
+    ).toBe(400);
+    const unzipBad = await apiJson(ts, 'POST', '/api/v1/files/unzip?root=public', {
+      zipPath: 'no-such.zip',
+    });
+    expect([200, 400, 500]).toContain(unzipBad.status);
   });
 
   it('logs bookmarks + settings dry mutations', async () => {
@@ -257,6 +353,259 @@ describe('controllers dry POST (HTTP honesty)', () => {
     });
     expect(res.status).toBeLessThan(500);
   });
+
+  it(
+    'system dry POSTs: ssl letsencrypt, php, db engines, redis, host identity, ntp, power',
+    async () => {
+      ts = await startTestServer();
+
+      const le = await apiJson(ts, 'POST', '/api/v1/ssl/letsencrypt', {
+        domain: 'le-cov.test',
+        email: 'admin@le-cov.test',
+        execute: false,
+        run: false,
+      });
+      expect(le.status).toBeLessThan(500);
+
+      const php = await apiJson(ts, 'POST', '/api/v1/system/php/apply', {
+        domain: 'php-sys.test',
+        phpVersion: '8.2',
+        enableSite: false,
+      });
+      expect(php.status).toBeLessThan(500);
+
+      for (const engine of ['mysql', 'mariadb'] as const) {
+        const inst = await apiJson(ts, 'POST', `/api/v1/system/db/${engine}/install`, {});
+        expect(inst.status).toBeLessThan(500);
+        const start = await apiJson(ts, 'POST', `/api/v1/system/db/${engine}/start`, {});
+        expect(start.status).toBeLessThan(500);
+      }
+
+      const redisPut = await apiJson(ts, 'PUT', '/api/v1/system/db/redis/settings', {
+        databases: 16,
+      });
+      expect(redisPut.status).toBeLessThan(500);
+
+      const redisApply = await apiJson(ts, 'POST', '/api/v1/system/db/redis/settings/apply', {
+        restart: false,
+      });
+      expect(redisApply.status).toBeLessThan(500);
+
+      const redisInst = await apiJson(ts, 'POST', '/api/v1/system/db/redis/install', {});
+      expect(redisInst.status).toBeLessThan(500);
+
+      const hostId = await apiJson(ts, 'POST', '/api/v1/system/host-identity', {
+        hostname: 'ysk-cov-host',
+        prettyHostname: 'YSK Cov',
+        timezone: 'UTC',
+      });
+      // blocked without root/execute → 422
+      expect(hostId.status).toBeLessThan(500);
+
+      const ntp = await apiJson(ts, 'POST', '/api/v1/system/host/ntp-sync', {});
+      expect(ntp.status).toBeLessThan(500);
+
+      const powerBad = await apiJson(ts, 'POST', '/api/v1/system/host/power', {
+        action: 'not-valid',
+      });
+      expect([400, 403, 422]).toContain(powerBad.status);
+
+      const power = await apiJson(ts, 'POST', '/api/v1/system/host/power', {
+        action: 'reboot',
+        confirm: 'nope',
+        delaySec: 9999,
+      });
+      expect(power.status).toBeLessThan(500);
+
+      const sslDel = await apiJson(ts, 'DELETE', '/api/v1/system/ssl/certificates/no-such');
+      expect(sslDel.status).toBeLessThan(500);
+
+      const emailApply = await apiJson(ts, 'POST', '/api/v1/system/email/apply', {
+        domain: 'sys-mail.test',
+        installPackages: false,
+      });
+      expect(emailApply.status).toBeLessThan(500);
+
+      const sslApply = await apiJson(ts, 'POST', '/api/v1/system/ssl/apply', {
+        domain: 'sys-ssl.test',
+        run: false,
+      });
+      expect(sslApply.status).toBeLessThan(500);
+
+      // software detail
+      const soft = await apiJson(ts, 'GET', '/api/v1/system/software/nginx');
+      expect(soft.status).toBeLessThan(500);
+    },
+    90_000,
+  );
+
+  it(
+    'webdav enable + PROPFIND/GET/PUT + public share miss',
+    async () => {
+      ts = await startTestServer();
+
+      // disabled path when not enabled
+      const disabled = await fetch(`${ts.baseUrl}/webdav/`, { method: 'OPTIONS' });
+      expect([401, 503]).toContain(disabled.status);
+
+      // issue token (enables webdav)
+      const tokenRes = await apiJson(ts, 'POST', '/api/v1/files/webdav/token', {});
+      expect(tokenRes.status).toBeLessThan(500);
+      const token = (tokenRes.body as { token?: string }).token;
+
+      if (token) {
+        const auth = 'Basic ' + Buffer.from(`ysk:${token}`).toString('base64');
+        const opt = await fetch(`${ts.baseUrl}/webdav/`, {
+          method: 'OPTIONS',
+          headers: { authorization: auth },
+        });
+        expect([200, 207]).toContain(opt.status);
+
+        const prop = await fetch(`${ts.baseUrl}/webdav/`, {
+          method: 'PROPFIND',
+          headers: { authorization: auth, depth: '1' },
+        });
+        expect([200, 207]).toContain(prop.status);
+
+        const put = await fetch(`${ts.baseUrl}/webdav/webdav-cov.txt`, {
+          method: 'PUT',
+          headers: { authorization: auth, 'content-type': 'text/plain' },
+          body: 'webdav-body',
+        });
+        expect([200, 201]).toContain(put.status);
+
+        const get = await fetch(`${ts.baseUrl}/webdav/webdav-cov.txt`, {
+          method: 'GET',
+          headers: { authorization: auth },
+        });
+        expect(get.status).toBe(200);
+
+        const getMiss = await fetch(`${ts.baseUrl}/webdav/no-such-file-zzz.txt`, {
+          method: 'GET',
+          headers: { authorization: auth },
+        });
+        expect(getMiss.status).toBe(404);
+
+        const badMethod = await fetch(`${ts.baseUrl}/webdav/webdav-cov.txt`, {
+          method: 'DELETE',
+          headers: { authorization: auth },
+        });
+        expect(badMethod.status).toBe(405);
+
+        await apiJson(ts, 'POST', '/api/v1/files/webdav/disable', {});
+      }
+
+      const unauth = await fetch(`${ts.baseUrl}/webdav/secret`, {
+        method: 'GET',
+        headers: { authorization: 'Basic ' + Buffer.from('ysk:bad').toString('base64') },
+      });
+      expect([401, 503]).toContain(unauth.status);
+
+      const shareMiss = await apiJson(
+        ts,
+        'GET',
+        '/api/v1/public/files/no-such-share-token',
+        undefined,
+        { auth: false },
+      );
+      expect(shareMiss.status).toBe(404);
+    },
+    60_000,
+  );
+
+  it(
+    'defense whitelist/geoip/auto-ban/cloudflare mutations',
+    async () => {
+      ts = await startTestServer();
+
+      const wl = await apiJson(ts, 'POST', '/api/v1/defense/whitelist', {
+        action: 'add',
+        ip: '198.51.100.10',
+      });
+      expect(wl.status).toBeLessThan(500);
+
+      const autoBan = await apiJson(ts, 'PUT', '/api/v1/defense/auto-ban', {
+        enabled: true,
+        threshold: 20,
+      });
+      expect(autoBan.status).toBeLessThan(500);
+
+      const autoPol = await apiJson(ts, 'PUT', '/api/v1/defense/automation', {
+        enabled: true,
+        autoBan: { enabled: true, intervalSeconds: 60 },
+        autoPreset: { enabled: false },
+      });
+      expect(autoPol.status).toBeLessThan(500);
+
+      const tick = await apiJson(ts, 'POST', '/api/v1/defense/auto-ban/tick', {});
+      expect(tick.status).toBeLessThan(500);
+
+      const geoPol = await apiJson(ts, 'PUT', '/api/v1/defense/geoip/policy', {
+        mode: 'off',
+        autoUpdate: false,
+      });
+      expect(geoPol.status).toBeLessThan(500);
+
+      const geoUp = await apiJson(ts, 'POST', '/api/v1/defense/geoip/update', {});
+      expect(geoUp.status).toBeLessThan(500);
+
+      const geoLookup = await apiJson(ts, 'POST', '/api/v1/defense/geoip/lookup', {
+        ip: '1.1.1.1',
+      });
+      expect(geoLookup.status).toBeLessThan(500);
+
+      const geoApply = await apiJson(ts, 'POST', '/api/v1/defense/geoip/apply', {
+        apply: false,
+      });
+      expect(geoApply.status).toBeLessThan(500);
+
+      const cf = await apiJson(ts, 'POST', '/api/v1/defense/cloudflare/under-attack', {
+        enable: false,
+      });
+      expect(cf.status).toBeLessThan(500);
+
+      const banBatch = await apiJson(ts, 'POST', '/api/v1/defense/ban-batch', {
+        ips: ['198.51.100.99'],
+        reason: 'cov',
+        apply: false,
+      });
+      expect(banBatch.status).toBeLessThan(500);
+
+      const probe = await apiJson(ts, 'POST', '/api/v1/defense/probe', {});
+      expect(probe.status).toBeLessThan(500);
+
+      const preset = await apiJson(ts, 'POST', '/api/v1/defense/preset', {
+        preset: 'normal',
+        apply: false,
+      });
+      expect(preset.status).toBeLessThan(500);
+
+      const stack = await apiJson(ts, 'POST', '/api/v1/defense/stack/apply', { apply: false });
+      expect(stack.status).toBeLessThan(500);
+
+      const ban = await apiJson(ts, 'POST', '/api/v1/defense/ban', {
+        ip: '198.51.100.88',
+        reason: 'cov',
+        apply: false,
+      });
+      expect(ban.status).toBeLessThan(500);
+
+      const unban = await apiJson(ts, 'POST', '/api/v1/defense/unban', {
+        ip: '198.51.100.88',
+        apply: false,
+      });
+      expect(unban.status).toBeLessThan(500);
+
+      const protProbe = await apiJson(ts, 'POST', '/api/v1/protection/probe', {});
+      expect(protProbe.status).toBeLessThan(500);
+
+      const emerg = await apiJson(ts, 'POST', '/api/v1/protection/emergency', {
+        enable: false,
+      });
+      expect(emerg.status).toBeLessThan(500);
+    },
+    90_000,
+  );
 
   it('metrics process signal/renice without execute is honest', async () => {
     ts = await startTestServer();

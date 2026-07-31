@@ -281,4 +281,82 @@ describe('app-context helpers', () => {
     expect(ctx.host.executeEnabled()).toBe(false);
     expect(ctx.configPath === undefined || typeof ctx.configPath === 'string').toBe(true);
   });
+
+  it(
+    'scheduler inventory + probe + temp-db + geoip ticks on start',
+    async () => {
+      delete process.env.YSK_DISABLE_SCHEDULER;
+      process.env.YSK_PROBE_ON_START = '1';
+      process.env.YSK_INVENTORY_ON_START = '1';
+      process.env.YSK_BACKUP_ON_START = '1';
+      process.env.YSK_DNSBL_ON_START = '1';
+      process.env.YSK_BACKUP_INTERVAL_MS = '5000';
+      process.env.YSK_DNSBL_INTERVAL_MS = '10000';
+      process.env.YSK_TEMP_DB_EXPIRE_MS = '5000';
+      process.env.YSK_AUTO_BAN_INTERVAL_MS = '15000';
+      process.env.YSK_GEOIP_UPDATE_MS = '3600000';
+      process.env.YSK_TEMP_DB_AUTO_DROP = '0';
+
+      try {
+        ctx = createAppContext({
+          version: VERSION,
+          dataDir,
+          adminPassword: 'TestPass-Strong-99!',
+          executeEnabled: false,
+        });
+        // seed domain for dnsbl tick
+        ctx.db.snapshot.email_domains = [
+          {
+            id: 'dom-sched-2',
+            domain: 'sched-dnsbl.local',
+            server_ip: '198.51.100.20',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as never,
+        ];
+        ctx.db.snapshot.settings = ctx.db.snapshot.settings ?? {};
+        ctx.db.snapshot.settings.defense_automation = JSON.stringify({
+          enabled: true,
+          autoBan: { enabled: true, intervalSeconds: 30 },
+          autoPreset: { enabled: true },
+        });
+        // ip access policy autoUpdate default
+        ctx.db.persist();
+
+        await new Promise((r) => setTimeout(r, 2500));
+
+        // force more ticks via runAutoProtection
+        for (let i = 0; i < 3; i++) ctx.requestHits.push(Date.now() - i * 1000);
+        await ctx.runAutoProtection();
+
+        // protection auto when force offline
+        const offline = evaluateProtection({
+          networkReachable: false,
+          forceOffline: true,
+        });
+        applyProtection(ctx, offline);
+        await ctx.runAutoProtection();
+
+        expect(ctx.scheduler).toBeDefined();
+        ctx.stopScheduler();
+      } finally {
+        for (const k of [
+          'YSK_PROBE_ON_START',
+          'YSK_INVENTORY_ON_START',
+          'YSK_BACKUP_ON_START',
+          'YSK_DNSBL_ON_START',
+          'YSK_BACKUP_INTERVAL_MS',
+          'YSK_DNSBL_INTERVAL_MS',
+          'YSK_TEMP_DB_EXPIRE_MS',
+          'YSK_AUTO_BAN_INTERVAL_MS',
+          'YSK_GEOIP_UPDATE_MS',
+          'YSK_TEMP_DB_AUTO_DROP',
+        ]) {
+          delete process.env[k];
+        }
+        process.env.YSK_DISABLE_SCHEDULER = '1';
+      }
+    },
+    45_000,
+  );
 });

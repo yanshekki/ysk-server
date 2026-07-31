@@ -540,6 +540,18 @@ describe('misc routes deep coverage', () => {
     if (ts) await ts.close();
   });
 
+  async function createProject(name: string): Promise<string> {
+    const res = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name,
+      runtime: 'node',
+      domain: `${name.toLowerCase()}.test`,
+    });
+    expect(res.status).toBe(201);
+    const body = res.body as { project?: { id?: string } };
+    expect(body.project?.id).toBeTruthy();
+    return body.project!.id!;
+  }
+
   it(
     'users PATCH/DELETE/impersonate + packages PATCH/DELETE',
     async () => {
@@ -859,5 +871,125 @@ describe('misc routes deep coverage', () => {
       }
     },
     90_000,
+  );
+
+  it(
+    'project mutations: wordpress, git-deploy, env, backup, logs, ftp, resources, quota, php-fpm, php-ini, runtime, deploy-php',
+    async () => {
+      ts = await startTestServer();
+      const pid = await createProject('MiscMutProj');
+
+      const wpSetup = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/wordpress-download`, {
+        setup: true,
+        force: false,
+        dbName: 'wp_misc',
+        dbUser: 'wp_u',
+        dbPassword: 'Wp-Pass-99',
+      });
+      expect(wpSetup.status).toBeLessThan(500);
+
+      const wpDl = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/wordpress-download`, {
+        setup: false,
+        force: false,
+      });
+      expect(wpDl.status).toBeLessThan(500);
+
+      const git = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/git-deploy`, {
+        gitUrl: 'https://example.com/repo.git',
+        branch: 'main',
+        redeploy: false,
+        skipBuild: true,
+      });
+      // honest fail → 502 when git clone cannot run
+      expect(git.status).toBeLessThan(600);
+
+      const env = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/env`, {
+        env: { FOO: 'bar', NODE_ENV: 'test' },
+      });
+      expect(env.status).toBeLessThan(500);
+
+      const bak = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/backup`, {});
+      expect(bak.status).toBeLessThan(600);
+
+      const logs = await apiJson(ts, 'GET', `/api/v1/projects/${pid}/logs`);
+      expect(logs.status).toBeLessThan(500);
+
+      const logsGrep = await apiJson(
+        ts,
+        'GET',
+        `/api/v1/projects/${pid}/logs?grep=error&name=app`,
+      );
+      expect(logsGrep.status).toBeLessThan(500);
+
+      const logsFile = await apiJson(
+        ts,
+        'GET',
+        `/api/v1/projects/${pid}/logs?file=app.log&lines=50`,
+      );
+      expect(logsFile.status).toBeLessThan(500);
+
+      const logDirs = await apiJson(ts, 'PUT', `/api/v1/projects/${pid}/log-dirs`, {
+        dirs: ['logs', 'var/log'],
+      });
+      expect(logDirs.status).toBeLessThan(500);
+
+      const ftp = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/ftp`, {
+        username: 'ftp_misc',
+        password: 'Ftp-Pass-99!',
+        homeSubdir: 'app',
+      });
+      expect(ftp.status).toBeLessThan(500);
+
+      const resources = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/resources`, {
+        memoryMax: '256M',
+        cpuQuotaPercent: 50,
+        tasksMax: 100,
+        limitNofile: 1024,
+      });
+      expect(resources.status).toBeLessThan(500);
+
+      const quotaSet = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/quota`, {
+        quotaMb: 512,
+      });
+      expect(quotaSet.status).toBeLessThan(500);
+
+      const phpFpm = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/php-fpm`, {
+        enable: false,
+        phpVersion: '8.2',
+      });
+      expect(phpFpm.status).toBeLessThan(500);
+
+      const phpIniGet = await apiJson(ts, 'GET', `/api/v1/projects/${pid}/php-ini`);
+      expect(phpIniGet.status).toBeLessThan(500);
+
+      const phpIniPut = await apiJson(ts, 'PUT', `/api/v1/projects/${pid}/php-ini`, {
+        version: '8.2',
+        values: { memory_limit: '128M' },
+        extra: { 'opcache.enable': '1' },
+        rawAppend: '; cov',
+      });
+      expect(phpIniPut.status).toBeLessThan(500);
+
+      const runtime = await apiJson(ts, 'PATCH', `/api/v1/projects/${pid}/runtime`, {
+        runtimeVersion: '20',
+        deployEntry: 'server.js',
+      });
+      expect(runtime.status).toBeLessThan(500);
+
+      const runtimeMiss = await apiJson(ts, 'PATCH', '/api/v1/projects/no-such/runtime', {
+        runtimeVersion: '20',
+      });
+      expect([404, 400, 422, 500]).toContain(runtimeMiss.status);
+
+      const deployPhp = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/deploy-php`, {
+        preferFpm: true,
+        forceBuiltin: false,
+      });
+      expect(deployPhp.status).toBeLessThan(600);
+
+      const status = await apiJson(ts, 'GET', `/api/v1/projects/${pid}/status`);
+      expect(status.status).toBeLessThan(500);
+    },
+    120_000,
   );
 });

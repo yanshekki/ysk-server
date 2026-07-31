@@ -69,4 +69,83 @@ describe('public routes (HTTP)', () => {
     );
     expect(res.status).toBeGreaterThanOrEqual(401);
   });
+
+  it('mail autoconfig / autodiscover require domain and return xml', async () => {
+    ts = await startTestServer();
+    const bad = await fetch(`${ts.baseUrl}/mail/config-v1.1.xml`);
+    expect(bad.status).toBe(400);
+
+    const mozilla = await fetch(
+      `${ts.baseUrl}/mail/config-v1.1.xml?domain=public-cov.test`,
+    );
+    expect(mozilla.status).toBe(200);
+    const mozillaText = await mozilla.text();
+    expect(mozillaText).toMatch(/xml|clientConfig|imap|SMTP|email/i);
+
+    const wellKnown = await fetch(
+      `${ts.baseUrl}/.well-known/autoconfig/mail/config-v1.1.xml?email=u@public-cov.test`,
+    );
+    expect(wellKnown.status).toBe(200);
+
+    const outlook = await fetch(
+      `${ts.baseUrl}/autodiscover/autodiscover.xml?email=user@public-cov.test`,
+    );
+    expect(outlook.status).toBe(200);
+    const outlookText = await outlook.text();
+    expect(outlookText.length).toBeGreaterThan(20);
+  });
+
+  it('authenticated project health for missing project is not 401', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/projects/no-such-project-zzz/health');
+    expect(res.status).toBeLessThan(500);
+    // not found / fail closed — 404 or 503 typical
+    expect([200, 404, 503, 422]).toContain(res.status);
+  });
+
+  it('email domain autodiscover json for known domain', async () => {
+    ts = await startTestServer();
+    const create = await apiJson(ts, 'POST', '/api/v1/email/domains', {
+      domain: 'auto-public.test',
+      serverIp: '203.0.113.40',
+    });
+    expect(create.status).toBeLessThan(500);
+    const body = create.body as { domain?: { id?: string; domain?: string }; id?: string };
+    const id = body.domain?.id ?? body.id;
+    if (!id) {
+      // create path may differ — try list
+      const list = await apiJson(ts, 'GET', '/api/v1/email/domains');
+      const items =
+        (list.body as { items?: Array<{ id?: string; domain?: string }> }).items ?? [];
+      const found = items.find((d) => d.domain === 'auto-public.test');
+      if (!found?.id) return;
+      const ad = await apiJson(ts, 'GET', `/api/v1/email/domains/${found.id}/autodiscover`);
+      expect(ad.status).toBeLessThan(500);
+      return;
+    }
+    const ad = await apiJson(ts, 'GET', `/api/v1/email/domains/${id}/autodiscover`);
+    expect(ad.status).toBe(200);
+    const adBody = ad.body as {
+      domain?: string;
+      mozillaXml?: string;
+      outlookXml?: string;
+    };
+    expect(adBody.domain).toBe('auto-public.test');
+    expect(adBody.mozillaXml || adBody.outlookXml).toBeTruthy();
+  });
+
+  it('cdn site health-loop is honest ops (missing site)', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/cdn/sites/no-site/health-loop', {
+      applyZone: false,
+    });
+    expect(res.status).toBeLessThan(500);
+  });
+
+  it('readiness with auth still returns productionReady boolean', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/readiness');
+    expect([200, 503]).toContain(res.status);
+    expect(typeof (res.body as { productionReady?: boolean }).productionReady).toBe('boolean');
+  });
 });

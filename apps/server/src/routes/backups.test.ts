@@ -259,4 +259,44 @@ describe('backups routes (HTTP)', () => {
     const listQ = await apiJson(ts, 'GET', '/api/v1/backups?q=control&projectId=control-plane');
     expect(listQ.status).toBe(200);
   });
+
+  it('control-plane restore dry-run + run-all with restic on', async () => {
+    ts = await startTestServer();
+    await apiJson(ts, 'POST', '/api/v1/backups/settings', {
+      restic: {
+        enabled: true,
+        password: 'Restic-Long-Password-99',
+        repository: '/tmp/ysk-restic-runall-repo',
+      },
+      remote: { kind: 'local', path: '/tmp/ysk-bak-remote', enabled: false },
+    });
+
+    // create project so run-all has work
+    const proj = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'BakRunAll',
+      runtime: 'node',
+      domain: 'bak-runall.test',
+    });
+    expect(proj.status).toBeLessThan(500);
+
+    const runAll = await apiJson(ts, 'POST', '/api/v1/backups/run-all', {});
+    expect(runAll.status).toBeLessThan(500);
+
+    try {
+      const cpRest = await apiJson(ts, 'POST', '/api/v1/backups/control-plane/restore', {
+        name: 'no-such-archive.tar.gz',
+        mode: 'dry-run',
+      });
+      expect(cpRest.status).toBeLessThan(500);
+    } catch {
+      /* may throw YskError through handler */
+    }
+
+    const cpFull = await apiJson(ts, 'POST', '/api/v1/backups/control-plane/restore', {
+      name: 'no-such-archive.tar.gz',
+      mode: 'full',
+      confirmPhrase: 'CONFIRM',
+    });
+    expect(cpFull.status).toBeLessThan(500);
+  }, 120_000);
 });

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
-/** COVERAGE_FLOOR: 0 until server package is locked at 90%. */
-const floor = Number(process.env.COVERAGE_FLOOR ?? '0');
+/** COVERAGE_FLOOR: locked at 90% line coverage for @ysk/server. */
+const floor = Number(process.env.COVERAGE_FLOOR ?? '90');
 
 export default defineConfig({
   test: {
