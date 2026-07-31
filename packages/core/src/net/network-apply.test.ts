@@ -387,3 +387,506 @@ describe('networkSetDns / networkTestDns', () => {
     expect(bad.ok).toBe(false);
   });
 });
+
+describe('network failure and persistent branches', () => {
+  it('networkAddAddr persistent nm modify fail and up-fail live fallback', async () => {
+    const modFail = await networkAddAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          if (argv.includes('modify')) return { exitCode: 1, stderr: 'mod fail' };
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.20/24',
+      persistent: true,
+    });
+    expect(modFail.ok).toBe(false);
+
+    let liveTried = false;
+    const upFailLiveOk = await networkAddAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          if (argv.includes('modify')) return {};
+          if (argv.includes('up') && argv[0] === 'nmcli') return { exitCode: 1, stderr: 'up fail' };
+          if (argv[0] === 'ip' && argv.includes('add')) {
+            liveTried = true;
+            return {};
+          }
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.21/24',
+      persistent: true,
+    });
+    expect(liveTried).toBe(true);
+    expect(upFailLiveOk.ok).toBe(true);
+    expect(upFailLiveOk.ephemeral).toBe(true);
+
+    const upFailLiveFail = await networkAddAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          if (argv.includes('modify')) return {};
+          if (argv[0] === 'nmcli' && argv.includes('up')) return { exitCode: 1 };
+          if (argv[0] === 'ip') return { exitCode: 1, stderr: 'ip fail' };
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.22/24',
+      persistent: true,
+    });
+    expect(upFailLiveFail.ok).toBe(false);
+  });
+
+  it('networkAddAddr ephemeral fail and ipv6 persistent prop', async () => {
+    const fail = await networkAddAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async () => ({ exitCode: 1, stderr: 'busy' }),
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.30/24',
+    });
+    expect(fail.ok).toBe(false);
+
+    const v6 = await networkAddAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '2001:db8::1/64',
+      persistent: true,
+    });
+    expect(v6.ok).toBe(true);
+  });
+
+  it('networkDelAddr persistent nm paths and del fail', async () => {
+    const ok = await networkDelAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.5/24',
+      persistent: true,
+    });
+    expect(ok.ok).toBe(true);
+
+    const modFail = await networkDelAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          if (argv.includes('modify')) return { exitCode: 1, stderr: 'no' };
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.5/24',
+      persistent: true,
+    });
+    expect(modFail.ok).toBe(true); // ip del still ok
+
+    const noNm = await networkDelAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli') return { exitCode: 1 };
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.5/24',
+      persistent: true,
+    });
+    expect(noNm.ok).toBe(true);
+
+    const delFail = await networkDelAddr({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'ip') return { exitCode: 1, stderr: 'not found' };
+          return {};
+        },
+      }),
+      ifname: 'eth0',
+      cidr: '10.0.0.5/24',
+    });
+    expect(delFail.ok).toBe(false);
+
+    expect(
+      (
+        await networkDelAddr({
+          host: mockHost({ executeEnabled: true, isRoot: true }),
+          ifname: 'bad;iface',
+          cidr: '10.0.0.1/32',
+        })
+      ).ok,
+    ).toBe(false);
+  });
+
+  it('networkSetLink failure paths', async () => {
+    const host = mockHost({
+      executeEnabled: true,
+      isRoot: true,
+      run: async () => ({ exitCode: 1, stderr: 'link err' }),
+    });
+    expect(
+      (await networkSetLink({ host, ifname: 'eth0', action: 'down', confirmName: 'eth0' })).ok,
+    ).toBe(false);
+    expect((await networkSetLink({ host, ifname: 'eth0', action: 'up' })).ok).toBe(false);
+    expect((await networkSetLink({ host, ifname: 'eth0', mtu: 9000 })).ok).toBe(false);
+    expect(
+      (
+        await networkSetLink({
+          host: mockHost({ executeEnabled: true, isRoot: true }),
+          ifname: 'bad name',
+          action: 'up',
+        })
+      ).ok,
+    ).toBe(false);
+  });
+
+  it('networkAddRoute persistent static and failures', async () => {
+    const staticR = await networkAddRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      dst: '10.99.0.0/16',
+      gateway: '10.0.0.1',
+      persistent: true,
+    });
+    expect(staticR.ok).toBe(true);
+
+    const bareIp = await networkAddRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      dst: '10.88.0.1',
+      persistent: true,
+    });
+    expect(bareIp.ok).toBe(true);
+
+    const noGwDef = await networkAddRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      dst: 'default',
+      confirmDefault: true,
+      persistent: true,
+    });
+    expect(noGwDef.ok).toBe(false);
+
+    const noNm = await networkAddRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async () => ({ exitCode: 1 }),
+      }),
+      dst: '10.1.0.0/16',
+      persistent: true,
+    });
+    expect(noNm.blocked).toBe(true);
+
+    const modFail = await networkAddRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          if (argv.includes('modify')) return { exitCode: 1, stderr: 'x' };
+          return {};
+        },
+      }),
+      dst: 'default',
+      gateway: '10.0.0.1',
+      confirmDefault: true,
+      persistent: true,
+    });
+    expect(modFail.ok).toBe(false);
+
+    const upFail = await networkAddRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          if (argv.includes('up')) return { exitCode: 1, stderr: 'up' };
+          return {};
+        },
+      }),
+      dst: '10.2.0.0/16',
+      gateway: '10.0.0.1',
+      persistent: true,
+    });
+    expect(upFail.ok).toBe(false);
+
+    const ephFail = await networkAddRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async () => ({ exitCode: 1, stderr: 'exists' }),
+      }),
+      dst: '10.3.0.0/16',
+      gateway: '10.0.0.1',
+    });
+    expect(ephFail.ok).toBe(false);
+
+    expect(
+      (
+        await networkAddRoute({
+          host: mockHost({ executeEnabled: true, isRoot: true }),
+          dst: '10.0.0.0/8',
+          dev: 'bad name',
+        })
+      ).ok,
+    ).toBe(false);
+  });
+
+  it('networkDelRoute persistent default/static and del fail', async () => {
+    const delDef = await networkDelRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      dst: 'default',
+      confirmDefault: true,
+      persistent: true,
+    });
+    expect(delDef.ok).toBe(true);
+
+    const delStatic = await networkDelRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      dst: '10.40.0.1',
+      gateway: '10.0.0.1',
+      persistent: true,
+    });
+    expect(delStatic.ok).toBe(true);
+
+    const modFail = await networkDelRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          if (argv.includes('modify')) return { exitCode: 1, stderr: 'm' };
+          return {};
+        },
+      }),
+      dst: 'default',
+      confirmDefault: true,
+      persistent: true,
+    });
+    expect(modFail.ok).toBe(true);
+
+    const noNm = await networkDelRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli') return { exitCode: 1 };
+          return {};
+        },
+      }),
+      dst: '10.50.0.0/16',
+      persistent: true,
+    });
+    expect(noNm.ok).toBe(true);
+
+    const ipFail = await networkDelRoute({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'ip') return { exitCode: 1, stderr: 'no route' };
+          return {};
+        },
+      }),
+      dst: '10.60.0.0/16',
+    });
+    expect(ipFail.ok).toBe(false);
+
+    expect(
+      (
+        await networkDelRoute({
+          host: mockHost({ executeEnabled: true, isRoot: true }),
+          dst: '10.0.0.0/8',
+          dev: 'bad name',
+        })
+      ).ok,
+    ).toBe(false);
+  });
+
+  it('networkSetDns connection resolution and failures', async () => {
+    const byDevice = await networkSetDns({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active')) return nmActive();
+          return {};
+        },
+      }),
+      nameservers: ['1.1.1.1'],
+      device: 'eth0',
+    });
+    expect(byDevice.ok).toBe(true);
+
+    const named = await networkSetDns({
+      host: mockHost({ executeEnabled: true, isRoot: true }),
+      connection: 'Wired connection 1',
+      nameservers: ['8.8.8.8'],
+    });
+    expect(named.ok).toBe(true);
+
+    const noNm = await networkSetDns({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async () => ({ exitCode: 1 }),
+      }),
+      nameservers: ['1.1.1.1'],
+    });
+    expect(noNm.blocked).toBe(true);
+
+    const emptyConn = await networkSetDns({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv[0] === 'nmcli' && argv.includes('--active'))
+            return { exitCode: 0, stdout: 'lo:lo:loopback\n' };
+          return {};
+        },
+      }),
+      nameservers: ['1.1.1.1'],
+    });
+    expect(emptyConn.ok).toBe(false);
+
+    const dhcpFail = await networkSetDns({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv.includes('modify')) return { exitCode: 1, stderr: 'mod' };
+          return {};
+        },
+      }),
+      connection: 'c1',
+      mode: 'dhcp',
+    });
+    expect(dhcpFail.ok).toBe(false);
+
+    const staticModFail = await networkSetDns({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv.includes('modify')) return { exitCode: 1, stderr: 'mod' };
+          return {};
+        },
+      }),
+      connection: 'c1',
+      nameservers: ['1.1.1.1'],
+    });
+    expect(staticModFail.ok).toBe(false);
+
+    const upFail = await networkSetDns({
+      host: mockHost({
+        executeEnabled: true,
+        isRoot: true,
+        run: async (argv) => {
+          if (argv.includes('up')) return { exitCode: 1, stderr: 'up' };
+          return {};
+        },
+      }),
+      connection: 'c1',
+      nameservers: ['1.1.1.1'],
+    });
+    expect(upFail.ok).toBe(false);
+
+    const badSlash = await networkSetDns({
+      host: mockHost({ executeEnabled: true, isRoot: true }),
+      connection: 'c1',
+      nameservers: ['1.1.1.1/32'],
+    });
+    expect(badSlash.ok).toBe(false);
+
+    const tooMany = await networkSetDns({
+      host: mockHost({ executeEnabled: true, isRoot: true }),
+      connection: 'c1',
+      nameservers: Array.from({ length: 9 }, (_, i) => `1.1.1.${i + 1}`),
+    });
+    expect(tooMany.ok).toBe(false);
+  });
+
+  it('networkTestDns invalid name and empty answers', async () => {
+    expect(
+      (
+        await networkTestDns({
+          host: mockHost({ executeEnabled: false }),
+          name: '',
+        })
+      ).ok,
+    ).toBe(false);
+
+    const empty = await networkTestDns({
+      host: mockHost({
+        executeEnabled: false,
+        run: async () => ({ exitCode: 0, stdout: '\n' }),
+      }),
+      name: 'empty.test',
+    });
+    expect(empty.ok).toBe(false);
+  });
+});

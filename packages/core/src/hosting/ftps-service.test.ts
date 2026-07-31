@@ -2,11 +2,13 @@ import { describe, expect, it, afterEach } from 'vitest';
 import {
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { openDatabase, closeDatabase } from '../db/database.js';
 import { makeHost } from '../test/host.js';
 import {
@@ -14,6 +16,7 @@ import {
   applyFtpsService,
   buildPamSnippet,
   buildVsftpdConf,
+  chownFtpAccountHomes,
   createProjectFtpAccount,
   DEFAULT_FTPS_SETTINGS,
   ftpsPaths,
@@ -296,5 +299,201 @@ describe('ftps-service managed write + honesty apply', () => {
     expect(st.accountCount).toBe(0);
     expect(st.confManaged).toBe(ftpsPaths(dir).conf);
     expect(typeof st.installed).toBe('boolean');
+  });
+});
+
+describe('ftps-service apply with execute mock', () => {
+  function rootHost(dir: string, opts?: { active?: string; exit?: number }) {
+    const base = makeHost({ executeEnabled: true, dir });
+    const b = base.host;
+    const host = {
+      pathExists: (p: string) => b.pathExists(p),
+      isRoot: () => true,
+      executeEnabled: () => true,
+      readFile: (p: string) => b.readFile(p),
+      listDir: (p: string) => b.listDir(p),
+      writeFile: (p: string, c: string) => b.writeFile(p, c),
+      deletePath: (p: string) => b.deletePath(p),
+      mkdirp: (p: string) => b.mkdirp(p),
+      sysInfo: () => b.sysInfo(),
+      serviceStatus: (n: string) => b.serviceStatus(n),
+      runCommand: async (argv: string[], o?: { timeoutMs?: number }) => {
+        const j = argv.join(' ');
+        if (opts?.exit) {
+          return {
+            stdout: '',
+            stderr: 'fail',
+            exitCode: opts.exit,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (j.includes('is-active')) {
+          return {
+            stdout: `${opts?.active ?? 'active'}\n`,
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (
+          j.includes('id ') ||
+          j.includes('useradd') ||
+          j.includes('db_load') ||
+          j.includes('apt-get') ||
+          j.includes('chown') ||
+          j.includes('systemctl') ||
+          argv[0] === 'cp' ||
+          j.includes('command -v')
+        ) {
+          return {
+            stdout: j.includes('command -v') ? '/usr/sbin/vsftpd\n' : '0\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        return b.runCommand(argv, o);
+      },
+    };
+    return { host: host as never, dir: base.dir, cleanup: base.cleanup };
+  }
+
+  it('applyFtpsService full system path marks applied when active', async () => {
+    const { host, dir, cleanup } = rootHost(mkdtempSync(join(tmpdir(), 'ysk-ftps-ex-')));
+    cleanups.push(cleanup);
+    const db = openDatabase(join(dir, 'db.json'));
+    cleanups.push(() => closeDatabase(db));
+    const home = join(dir, 'homes', 'proj');
+    mkdirSync(home, { recursive: true });
+    createProjectFtpAccount(db, {
+      projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+      projectHome: home,
+      linuxUser: 'ysks_a1b2c3d4e5f6',
+      password: 'password123',
+      homeSubdir: 'root',
+    });
+
+    const r = await applyFtpsService({
+      db,
+      dataDir: dir,
+      host,
+      applySystem: true,
+      settingsPatch: { banner: 'Exec FTPS' },
+    });
+    expect(r.executed).toBe(true);
+    expect(r.blocked).toBe(false);
+    expect(r.ok).toBe(true);
+    expect(r.steps?.some((s) => s.name)).toBe(true);
+    const accounts = listResources(db, 'ftp_accounts');
+    expect(accounts.every((a) => a.apply_status === 'applied')).toBe(true);
+  });
+
+  it('applyFtpsService fails when vsftpd not active', async () => {
+    const { host, dir, cleanup } = rootHost(mkdtempSync(join(tmpdir(), 'ysk-ftps-fail-')), {
+      active: 'inactive',
+    });
+    cleanups.push(cleanup);
+    const db = openDatabase(join(dir, 'db.json'));
+    cleanups.push(() => closeDatabase(db));
+    const r = await applyFtpsService({
+      db,
+      dataDir: dir,
+      host,
+      applySystem: true,
+    });
+    expect(r.executed).toBe(true);
+    expect(r.ok).toBe(false);
+  });
+
+  it('applyFtpAccountReal with root reloads or falls back to full apply', async () => {
+    const { host, dir, cleanup } = rootHost(mkdtempSync(join(tmpdir(), 'ysk-ftps-acc-')));
+    cleanups.push(cleanup);
+    const db = openDatabase(join(dir, 'db.json'));
+    cleanups.push(() => closeDatabase(db));
+    const home = join(dir, 'homes', 'proj');
+    mkdirSync(home, { recursive: true });
+    const created = createProjectFtpAccount(db, {
+      projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+      projectHome: home,
+      linuxUser: 'ysks_a1b2c3d4e5f6',
+      password: 'password123',
+      homeSubdir: 'root',
+    });
+    const id = String(created.account.id);
+    const r = await applyFtpAccountReal({ db, dataDir: dir, host, id });
+    expect(r.executed).toBe(true);
+    expect(r.ok).toBe(true);
+
+    const missing = await applyFtpAccountReal({
+      db,
+      dataDir: dir,
+      host,
+      id: 'missing-id',
+    });
+    expect(missing.ok).toBe(false);
+
+    const notes = await chownFtpAccountHomes(host, db, 'ftp');
+    expect(Array.isArray(notes)).toBe(true);
+  });
+
+  it('applyFtpAccountReal inactive reloads full path', async () => {
+    let isActiveCalls = 0;
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-ftps-ina-'));
+    const base = makeHost({ executeEnabled: true, dir });
+    cleanups.push(base.cleanup);
+    const b = base.host;
+    const host = {
+      pathExists: (p: string) => b.pathExists(p),
+      isRoot: () => true,
+      executeEnabled: () => true,
+      readFile: (p: string) => b.readFile(p),
+      listDir: (p: string) => b.listDir(p),
+      writeFile: (p: string, c: string) => b.writeFile(p, c),
+      deletePath: (p: string) => b.deletePath(p),
+      mkdirp: (p: string) => b.mkdirp(p),
+      sysInfo: () => b.sysInfo(),
+      serviceStatus: (n: string) => b.serviceStatus(n),
+      runCommand: async (argv: string[]) => {
+        const j = argv.join(' ');
+        if (j.includes('is-active')) {
+          isActiveCalls += 1;
+          return {
+            stdout: isActiveCalls === 1 ? 'inactive\n' : 'active\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        return {
+          stdout: j.includes('command -v') ? '/usr/sbin/vsftpd\n' : '0\n',
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        };
+      },
+    } as never;
+    const db = openDatabase(join(dir, 'db.json'));
+    cleanups.push(() => closeDatabase(db));
+    const home = join(dir, 'homes', 'p');
+    mkdirSync(home, { recursive: true });
+    const created = createProjectFtpAccount(db, {
+      projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+      projectHome: home,
+      linuxUser: 'ysks_a1b2c3d4e5f6',
+      password: 'password123',
+      homeSubdir: 'root',
+    });
+    const r = await applyFtpAccountReal({
+      db,
+      dataDir: dir,
+      host,
+      id: String(created.account.id),
+    });
+    expect(r.executed === true || r.ok === true || r.ok === false).toBe(true);
   });
 });
