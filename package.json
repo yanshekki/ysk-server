@@ -10,7 +10,7 @@
   "scripts": {
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
-    "test:coverage": "pnpm --filter @ysk/shared test:coverage && COVERAGE_FLOOR=0 pnpm --filter @ysk/core test:coverage && COVERAGE_FLOOR=0 pnpm --filter @ysk/server test:coverage && COVERAGE_FLOOR=0 pnpm --filter @ysk/web test:coverage",
+    "test:coverage": "pnpm --filter @ysk/shared test:coverage && pnpm --filter @ysk/core test:coverage && COVERAGE_FLOOR=0 pnpm --filter @ysk/server test:coverage && COVERAGE_FLOOR=0 pnpm --filter @ysk/web test:coverage",
     "test:coverage:report": "node ./scripts/coverage-aggregate.mjs",
     "test:exports": "node ./scripts/test-export-coverage.mjs",
     "test:exports:strict": "node ./scripts/test-export-coverage.mjs --strict",

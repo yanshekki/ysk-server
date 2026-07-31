@@ -59,9 +59,11 @@ jobs:
       - name: Shared coverage (≥90% locked)
         run: pnpm --filter @ysk/shared test:coverage
 
-      - name: Coverage report (core/server/web floor=0 while climbing)
+      - name: Core coverage (≥90% locked)
+        run: pnpm --filter @ysk/core test:coverage
+
+      - name: Coverage report (server/web floor=0 while climbing)
         run: |
-          COVERAGE_FLOOR=0 pnpm --filter @ysk/core test:coverage
           COVERAGE_FLOOR=0 pnpm --filter @ysk/server test:coverage
           COVERAGE_FLOOR=0 pnpm --filter @ysk/web test:coverage || true
           node ./scripts/coverage-aggregate.mjs
