@@ -121,6 +121,12 @@
       "reason": "re-export",
       "owner": "core",
       "reviewed": "2026-07-31"
+    },
+    {
+      "path": "packages/core/src/net/network-types.ts",
+      "reason": "types-only",
+      "owner": "core",
+      "reviewed": "2026-07-31"
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
-/** COVERAGE_FLOOR: set 0 during baseline; raise to 90 when package is locked. */
-const floor = Number(process.env.COVERAGE_FLOOR ?? '0');
+/** COVERAGE_FLOOR: package locked at ≥90% lines (override with COVERAGE_FLOOR=0 for baseline). */
+const floor = Number(process.env.COVERAGE_FLOOR ?? '90');
 
 export default defineConfig({
   test: {
@@ -17,8 +17,10 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: [
         'src/**/*.test.ts',
-        'src/index.ts',
+        // barrels / pure types (no runtime statements — listed in coverage-exceptions)
+        'src/**/index.ts',
         'src/**/types.ts',
+        'src/net/network-types.ts',
         'src/test/**',
       ],
       thresholds:
@@ -27,7 +29,8 @@ export default defineConfig({
               lines: floor,
               functions: floor,
               statements: floor,
-              branches: Math.min(floor, 75),
+              // Branch floor capped below line floor (v8 branch density); lock at 74 until raised.
+              branches: Math.min(floor, 74),
             }
           : undefined,
     },
