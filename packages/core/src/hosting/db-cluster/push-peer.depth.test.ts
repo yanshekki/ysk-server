@@ -379,62 +379,46 @@ describe('push-peer depth', () => {
     }
   });
 
-  it.skip('list empty notes when artifacts rematerialize to zero files impossible — force walk empty', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'ysk-pp-walk-'));
+  it('readDbClusterBundleFile catch on unreadable path returns null', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pp-read-'));
     try {
-      const db = new JsonStore(join(dir, 'db.json'));
-      const c = createDbCluster(db, {
-        name: 'walk',
-        engine: 'mysql',
-        kind: 'mysql-replica',
-        members: [
-          { host: '10.3.6.1', role: 'primary', access: 'local' },
-          { host: '10.3.6.2', role: 'replica', access: 'ssh' },
-        ],
-      });
-      // materialize then empty conf/scripts while keeping artifactDir present
-      planAndMaterializeDbCluster({ db, dataDir: dir, clusterId: c.id });
-      const listed = listDbClusterArtifacts({ db, dataDir: dir, clusterId: c.id });
-      expect(listed.ok).toBe(true);
-      expect(listed.notes[0]).toBeTruthy();
-      // bundle when files exist covers success; tar failure simulated by non-writable?
-      // missing local file during scp:
-      const art = listed.artifactDir;
-      // plan then delete a planned file mid-push by emptying files list on target via
-      // push with member that references deleted path — inject by deleting after plan
-      const log: string[] = [];
-      // delete one file that plan includes so scp loop hits !existsSync(local)
-      const plan = planDbClusterPeerPush({ db, dataDir: dir, clusterId: c.id });
-      for (const t of plan.targets) {
-        for (const rel of t.files) {
-          const p = join(art, rel);
-          if (existsSync(p)) rmSync(p, { force: true });
-        }
-      }
-      // recreate empty placeholder for mkdir success but files gone
-      const r = await pushDbClusterToPeers({
-        db,
-        dataDir: dir,
-        host: mockHost({ execute: true, log }),
-        clusterId: c.id,
-        execute: true,
-      });
-      // rematerialize on list inside push may recreate files — if so ok true is fine
-      expect(r.executed).toBe(true);
-      expect(typeof r.ok).toBe('boolean');
+      const clusters = join(dir, 'clusters', 'x');
+      mkdirSync(clusters, { recursive: true });
+      expect(readDbClusterBundleFile(clusters)).toBeNull();
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it('readDbClusterBundleFile catch on unreadable path returns null', () => {
-    // path traversal / missing already covered; include path with clusters that is a dir
-    const dir = mkdtempSync(join(tmpdir(), 'ysk-pp-read-'));
+  it('mysql ssh-primary and redis master role file selection', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pp-roles-'));
     try {
-      const clusters = join(dir, 'clusters', 'x');
-      mkdirSync(clusters, { recursive: true });
-      // reading a directory throws → catch → null
-      expect(readDbClusterBundleFile(clusters)).toBeNull();
+      const db = new JsonStore(join(dir, 'db.json'));
+      const my = createDbCluster(db, {
+        name: 'my2',
+        engine: 'mysql',
+        kind: 'mysql-replica',
+        members: [
+          { host: '10.3.7.1', role: 'primary', access: 'ssh' },
+          { host: '10.3.7.2', role: 'replica', access: 'local' },
+        ],
+      });
+      planAndMaterializeDbCluster({ db, dataDir: dir, clusterId: my.id });
+      const p1 = planDbClusterPeerPush({ db, dataDir: dir, clusterId: my.id });
+      expect(p1.targets.some((t) => t.host === '10.3.7.1')).toBe(true);
+
+      const rd = createDbCluster(db, {
+        name: 'rd2',
+        engine: 'redis',
+        kind: 'redis-replica',
+        members: [
+          { host: '10.3.8.1', role: 'master', access: 'ssh' },
+          { host: '10.3.8.2', role: 'replica', access: 'local' },
+        ],
+      });
+      planAndMaterializeDbCluster({ db, dataDir: dir, clusterId: rd.id });
+      const p2 = planDbClusterPeerPush({ db, dataDir: dir, clusterId: rd.id });
+      expect(p2.targets.some((t) => t.host === '10.3.8.1')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
