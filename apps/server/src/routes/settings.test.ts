@@ -1,0 +1,93 @@
+import { describe, expect, it, afterEach } from 'vitest';
+import { startTestServer, apiJson, type TestServer } from '../test/harness.js';
+
+describe('settings routes (HTTP)', () => {
+  let ts: TestServer;
+
+  afterEach(async () => {
+    if (ts) await ts.close();
+  });
+
+  it('rejects unauthenticated llm and security reads', async () => {
+    ts = await startTestServer();
+    const llm = await apiJson(ts, 'GET', '/api/v1/settings/llm', undefined, { auth: false });
+    expect(llm.status).toBeGreaterThanOrEqual(401);
+
+    const sec = await apiJson(ts, 'GET', '/api/v1/settings/security', undefined, {
+      auth: false,
+    });
+    expect(sec.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it('gets llm settings when authenticated', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/settings/llm');
+    expect(res.status).toBe(200);
+    const body = res.body as { llm?: unknown; transport?: string };
+    expect(body.llm).toBeDefined();
+    expect(typeof body.transport).toBe('string');
+  });
+
+  it('gets security settings when authenticated (admin)', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/settings/security');
+    expect(res.status).toBe(200);
+    const body = res.body as {
+      ok?: boolean;
+      requireAdminTotp?: boolean;
+      requireAdminTotpStrict?: boolean;
+    };
+    expect(body.ok).toBe(true);
+    expect(typeof body.requireAdminTotp).toBe('boolean');
+  });
+
+  it('updates llm settings when authenticated', async () => {
+    ts = await startTestServer();
+    const put = await apiJson(ts, 'POST', '/api/v1/settings/llm', {
+      baseUrl: '',
+      model: 'test-model',
+    });
+    expect(put.status).toBe(200);
+    expect((put.body as { ok?: boolean }).ok).toBe(true);
+
+    const get = await apiJson(ts, 'GET', '/api/v1/settings/llm');
+    expect(get.status).toBe(200);
+    const llm = (get.body as { llm?: { model?: string } }).llm;
+    expect(llm?.model).toBe('test-model');
+  });
+
+  it('rejects unauthenticated llm mutation', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(
+      ts,
+      'POST',
+      '/api/v1/settings/llm',
+      { model: 'x' },
+      { auth: false },
+    );
+    expect(res.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it('rejects unauthenticated security mutation', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(
+      ts,
+      'POST',
+      '/api/v1/settings/security',
+      { requireAdminTotp: false },
+      { auth: false },
+    );
+    expect(res.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it('can set requireAdminTotp false without step-up (no TOTP enrolled)', async () => {
+    ts = await startTestServer();
+    // Step-up only gates when the actor has totp_enabled; fresh setup admin has none.
+    const res = await apiJson(ts, 'POST', '/api/v1/settings/security', {
+      requireAdminTotp: false,
+    });
+    expect(res.status).toBe(200);
+    expect((res.body as { ok?: boolean; requireAdminTotp?: boolean }).ok).toBe(true);
+    expect((res.body as { requireAdminTotp?: boolean }).requireAdminTotp).toBe(false);
+  });
+});
