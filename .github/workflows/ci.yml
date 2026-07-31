@@ -46,11 +46,12 @@ jobs:
       - name: Docs bilingual parity
         run: pnpm docs:bilingual
 
-      - name: Typecheck
-        run: pnpm typecheck
-
+      # Workspace packages export types from dist/ — build before typecheck
       - name: Build
         run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Unit tests
         run: pnpm test
