@@ -12,12 +12,16 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     testTimeout: 20_000,
     hookTimeout: 20_000,
-    // Sequential files avoid flaky v8 coverage .tmp cleanup races under happy-dom.
+    // Sequential files + single worker avoid flaky v8 coverage .tmp cleanup races.
     fileParallelism: false,
+    pool: 'forks',
+    maxWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov'],
       reportsDirectory: './coverage',
+      // Serialize coverage merges — prevents ENOENT on coverage/.tmp/*.json
+      processingConcurrency: 1,
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.{test,spec}.{ts,tsx}',
