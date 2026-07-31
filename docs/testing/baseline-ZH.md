@@ -6,10 +6,10 @@
 
 | Package | Lines（約） | 備註 |
 |---------|-------------|------|
-| `@ysk/shared` | **95% lines / 91% funcs**（runtime；types-only 已排除） | Phase 1 — **已鎖 90%** |
-| `@ysk/core` | **90.0% lines / 97.3% funcs**（已鎖） | Phase 2 — **已鎖 90%** |
-| `@ysk/server` | **90.0% lines / 約 72% funcs**（lines 已鎖；funcs floor 70） | Phase 3 — **lines 已鎖 90%** |
-| `@ysk/web` | **約 7.5% lines / 32% funcs**（RTL + page smoke） | Phase 4 |
+| `@ysk/shared` | **95.0% lines / 91.1% funcs** | Phase 1 — **已鎖 90%** |
+| `@ysk/core` | **90.1% lines / 97.3% funcs** | Phase 2 — **已鎖 90%** |
+| `@ysk/server` | **90.0% lines / 71.8% funcs**（funcs floor 70 直至 CLI 拆分） | Phase 3 — **lines 已鎖 90%** |
+| `@ysk/web` | **90.4% lines / 73.2% funcs**（funcs floor 70） | Phase 4 — **lines 已鎖 90%** |
 
 重新量度：
 
