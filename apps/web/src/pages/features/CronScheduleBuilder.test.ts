@@ -89,4 +89,12 @@ describe('CronScheduleBuilder pure helpers', () => {
       }),
     ).toMatch(/^\d+ \d+ \* \* \*$/);
   });
+
+  it('buildCronExpr/humanizeSchedule default branches for unknown mode', () => {
+    const base = defaultScheduleState();
+    const weird = { ...base, mode: 'nope' as never };
+    expect(buildCronExpr(weird)).toBe('0 3 * * *');
+    const t = (k: string) => k;
+    expect(humanizeSchedule(weird, t)).toBe('—');
+  });
 });

@@ -65,7 +65,7 @@ jobs:
       - name: Server coverage (≥90% lines locked)
         run: pnpm --filter @ysk/server test:coverage
 
-      - name: Web coverage (≥89% lines locked; climbing to 90%)
+      - name: Web coverage (≥90% lines locked)
         run: pnpm --filter @ysk/web test:coverage
 
       - name: Coverage aggregate + export report
