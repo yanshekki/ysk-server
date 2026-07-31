@@ -1,54 +1,36 @@
-# Email deliverability ops pack (C3)
+# Email deliverability
 
 > Language: English | [中文](./deliverability-ZH.md)
 
-**Honesty first:** YSK **never** guarantees Gmail/Outlook inbox placement. PTR and Port 25 are **VPS-provider** responsibilities; MX/SPF/DKIM/DMARC must be published at the **DNS provider**.
+## Purpose
 
-## What the pack does
-
-Unified report combining:
-
-| Check | Owner |
-|-------|--------|
-| MX / SPF / DKIM / DMARC live DNS | DNS provider |
-| PTR reverse DNS | VPS / cloud console |
-| Outbound Port 25 probe | VPS network |
-| DNSBL (Spamhaus / SpamCop / Barracuda) | Operator reputation |
-| SMTP relay config (if Port 25 blocked) | Operator + panel |
-| Warm-up phases | Operator process |
-
-## API
-
-```http
-GET /api/v1/email/domains/:id/deliverability
-GET /api/v1/email/deliverability/overview
-```
-
-Response always includes:
-
-- `deliveryGuaranteed: false`
-- `honesty: string[]`
-- `items[]` with `owner` ∈ `panel | dns_provider | vps_provider | operator`
-- `warmup` plan
-- `panelReady` — panel-checkable DNS+DNSBL only (not “global delivery OK”)
+Live and stored checks for mail domains: MX, SPF, DKIM, DMARC, PTR, outbound Port 25, DNSBL, optional relay and warm-up guidance.
 
 ## CLI
 
 ```bash
-ysk-server hosting email-deliverability --domain example.com
-# exit 0 if panelReady; 1 if gaps on checkable items
+ysk-server email deliverability --domain example.com --json
+ysk-server email bootstrap --domain example.com --ip A.B.C.D --json
+ysk-server hosting email-deliverability --domain example.com --json
 ```
 
-## Panel
+## Report items
 
-Email domain → **Deliverability** tab → **Run deliverability pack**.
+| Item | Meaning |
+|------|---------|
+| MX / SPF / DKIM / DMARC | DNS publication checks |
+| PTR | Reverse DNS vs mail hostname |
+| Port 25 | Outbound TCP 25 probe |
+| DNSBL | Multi-list reputation |
+| Relay | Configured when Port 25 blocked |
+| Warm-up | Phased sending guidance |
 
-Also linked from Health tab.
+## Honesty
+
+- Panel **never** guarantees Gmail/Outlook inbox placement.  
+- PTR and Port 25 are owned by the VPS/network provider.  
+- Authoritative DNS must be published externally.
 
 ## Related
 
-- Live checks: `POST …/live-check`
-- DNSBL: `POST /api/v1/email/dnsbl/check`
-- Warmup: `POST /api/v1/email/warmup`
-- Relay: `GET/POST /api/v1/email/relay`
-- External setup: [external-setup.md](./external-setup.md)
+[external-setup.md](./external-setup.md) · [../features/email.md](../features/email.md)

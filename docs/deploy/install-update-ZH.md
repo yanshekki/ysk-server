@@ -2,48 +2,12 @@
 
 > 語言：中文 | [English](./install-update.md)
 
-> 本頁為對應英文運維文件的香港書面語版；命令與路徑保持原文以便複製。
-
-## One-click install
+安裝 monorepo 或套件；使用 `ysk-server setup` 與 `ysk-server update`。
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash
+pnpm install && pnpm build
+ysk-server setup --data-dir /var/lib/ysk --json
+ysk-server update --check --json
 ```
 
-`install.sh` will:
-
-1. Detect OS (Ubuntu 22.04/24.04 preferred)
-2. Install system deps (`curl`, `git`, `build-essential`, …)
-3. Install Node.js LTS (NodeSource) if missing
-4. Install `ysk-server` (npm global or `--from-source`)
-5. Optionally run `ysk-server setup`
-6. Print next steps
-
-### Flags
-
-| Flag | Meaning |
-|------|---------|
-| `--non-interactive` | No prompts |
-| `--skip-setup` | Install only |
-| `--upgrade` | Upgrade mode |
-| `--from-source` | Build current checkout |
-
-Safety: `set -euo pipefail`.
-
-## Setup
-
-```bash
-ysk-server setup --non-interactive
-ysk-server serve
-```
-
-## Self-update
-
-```bash
-ysk-server update --check
-ysk-server update
-# or
-./install.sh --upgrade
-```
-
-Self-update plan steps: check → download → verify checksum → backup → replace → migrate → health-verify → audit; rollback path included.
+見 [../getting-started/install-ZH.md](../getting-started/install-ZH.md)。

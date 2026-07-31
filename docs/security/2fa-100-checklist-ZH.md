@@ -4,10 +4,19 @@
 
 ## 清單
 
-- [ ] 管理員已開 TOTP  
-- [ ] 已保存復原碼（離線）  
-- [ ] （可選）`require_admin_totp` / strict  
-- [ ] （可選）關鍵 Linux 用戶 `ssh-2fa enroll`  
-- [ ] 破門流程已演練（主控台）  
+- [ ] 管理員已開啟面板 TOTP
+- [ ] 復原碼已離線保存
+- [ ] 已覆核可選 `require_admin_totp`／strict
+- [ ] 關鍵 Linux 用戶已用 `ssh-2fa` 登記（如需要）
+- [ ] 已在主控台演練破門路徑
 
-CLI：`security status` · `ssh-2fa list`。
+## CLI
+
+```bash
+ysk-server security status --json
+ysk-server ssh-2fa list --json
+```
+
+## 相關
+
+[2fa-ZH.md](./2fa-ZH.md) · [2fa-break-glass-ZH.md](./2fa-break-glass-ZH.md)

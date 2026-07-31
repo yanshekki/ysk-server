@@ -86,6 +86,14 @@
 
 ## Conventions
 
+## Bilingual quality
+
+- English files are English; Chinese files (`*-ZH.md`) are written Chinese.
+- Structure must match: same headings, tables, and code blocks.
+- Check: `node scripts/docs-bilingual-check.mjs`
+
+
+
 - Every formal doc has a **`-ZH.md`** sibling (Chinese).
 - Prefer **CLI + `--json`** for AI agents.
 - Host mutations default **dry-run** until `--execute` and `YSK_EXECUTE=1` (often root).

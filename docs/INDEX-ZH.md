@@ -86,6 +86,14 @@
 
 ## 慣例
 
+## 雙語品質
+
+- 英文檔為英文；中文檔（`*-ZH.md`）為書面中文。
+- 結構必須對等：相同標題層級、表格與代碼塊數量。
+- 檢查：`node scripts/docs-bilingual-check.mjs`
+
+
+
 - 正式文件均有 **`-ZH.md`** 中文版本。  
 - AI 優先用 **CLI + `--json`**。  
 - 主機變更預設 **dry-run**，直至 `--execute` 且 `YSK_EXECUTE=1`（通常需 root）。  

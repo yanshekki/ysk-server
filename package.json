@@ -29,7 +29,8 @@
     "e2e:hosting-root": "bash scripts/e2e-hosting-root.sh",
     "prepare-release": "bash scripts/prepare-release.sh",
     "pack:server": "pnpm --filter @ysk/server pack",
-    "i18n:check-glossary": "node ./scripts/i18n-hk-glossary-lint.mjs"
+    "i18n:check-glossary": "node ./scripts/i18n-hk-glossary-lint.mjs",
+    "docs:bilingual": "node ./scripts/docs-bilingual-check.mjs"
   },
   "engines": {
     "node": ">=20"

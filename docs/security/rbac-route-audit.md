@@ -1,45 +1,34 @@
-# RBAC mutating route audit (B1)
+# RBAC route audit
 
 > Language: English | [中文](./rbac-route-audit-ZH.md)
 
-**Date:** 2026-07-31  
-**Mechanism:** `enforceMutatingRouteCaps` in HTTP pipeline + `MUTATING_ROUTE_CAP_RULES` in `@ysk/shared`.
+## Purpose
 
-## Policy
+Mutating `/api/v1/*` routes map to capabilities. Unmatched routes fail closed.
 
-| Mode | Behaviour |
-|------|-----------|
-| Listed rule | First match wins → `requireCap` |
-| Unlisted mutating `/api/v1/*` | **Fail-closed** → `settings.system` (B1) |
-| Public / self-service | Skipped (login, logout, totp, sessions, webauthn, agent register, SSO consume) |
+## Public / skipped prefixes
 
-## Verify
+Login, logout, selected self-service auth, and limited agent poller paths may skip cap checks but still authenticate in handlers.
+
+## CLI
 
 ```bash
+ysk-server rbac list --json
+ysk-server rbac show --role operator --json
 ysk-server rbac audit --json
-pnpm --filter @ysk/shared test -- src/route-capabilities.test.ts
 ```
 
-## Critical mappings (sample)
+## Sample matrix
 
-| Method | Path | Cap |
-|--------|------|-----|
-| POST | `/users` | `users.manage` |
-| POST | `/users/:id/impersonate` | `users.impersonate` |
-| DELETE | `/projects/:id` | `projects.delete` |
-| POST | `/projects/:id/publish-nginx` | `publish.apply` |
-| POST | `/backups/restore` | `backups.restore` |
-| POST | `/defense/*` | `firewall.edit` |
-| POST | `/tools/execute` | `services.control` |
-| POST | `/db/*` | `db.write` |
-| POST | `/future-unknown` | `settings.system` (fallback) |
+| Method | Path pattern | Cap (example) |
+|--------|--------------|---------------|
+| POST/PATCH/DELETE | `/api/v1/users` | `users.manage` |
+| POST | `/api/v1/users/:id/impersonate` | `users.impersonate` |
+| DELETE | `/api/v1/projects/:id` | project delete cap |
+| POST | `/api/v1/tools/execute` | tools execute cap |
 
-## SPA path guards
+Exact rules live in `@ysk/shared` `route-capabilities` and server `rbac-guard`.
 
-`PATH_CAP_GUARDS` / `FEATURE_NAV_CAPS` cover users, backups, updates, protection, agents, cdn, migrate, etc.
+## Related
 
-## Residual risk
-
-- Handlers that only check `roles.includes('admin')` should migrate to `requireCap` (host power done in B1).
-- Tool-executor still has finer allowlist beyond route cap.
-- New mutating routes should add a **specific** rule above the fail-closed fallback.
+[../features/users-rbac.md](../features/users-rbac.md) · [overview.md](./overview.md)

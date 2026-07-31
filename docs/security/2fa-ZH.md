@@ -2,7 +2,7 @@
 
 > 語言：中文 | [English](./2fa.md)
 
-**面板 TOTP** — 於帳號安全登記；可選強制管理員旗標。  
-**SSH TOTP** — 每 Linux 用戶經 `ssh-2fa`（PAM）；與面板密鑰不同。
+**面板 TOTP** — enroll under 安全; optional require-admin flags.  
+**SSH TOTP** — per Linux user via `ssh-2fa` (PAM); not the same secret as panel.
 
-緊急：以實體／主控台存取謹慎關閉旗標。
+緊急破門: see archived security docs or 停用 flags carefully with physical/console access.
