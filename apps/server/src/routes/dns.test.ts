@@ -54,7 +54,6 @@ describe('dns routes (HTTP)', () => {
       notes?: string[];
     };
     expect(typeof body.ok).toBe('boolean');
-    // Empty peer set must not claim host apply success
     if (body.apply_status === 'applied') {
       expect(body.ok).toBe(true);
     }
@@ -76,5 +75,70 @@ describe('dns routes (HTTP)', () => {
       { auth: false },
     );
     expect(res.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it('GET external-checklist when authenticated', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/dns/external-checklist');
+    expect(res.status).toBeLessThan(500);
+    expect(res.status).toBeGreaterThanOrEqual(200);
+  });
+
+  it('upserts cluster peer (panel record)', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/dns/cluster/peers', {
+      host: 'dns-peer.example.com',
+      username: 'ysk',
+      port: 22,
+      label: 'test-peer',
+    });
+    expect(res.status).toBe(200);
+    const body = res.body as { peer?: { id?: string; host?: string } };
+    expect(body.peer?.host).toBe('dns-peer.example.com');
+    expect(body.peer?.id).toBeTruthy();
+  });
+
+  it('cluster reload / probe without peers are honest ops', async () => {
+    ts = await startTestServer();
+    for (const path of ['/api/v1/dns/cluster/reload', '/api/v1/dns/cluster/probe']) {
+      const res = await apiJson(ts, 'POST', path, {});
+      expect(res.status).toBeLessThan(500);
+      const body = res.body as {
+        ok?: boolean;
+        apply_status?: string;
+        blocked?: boolean;
+        notes?: string[];
+      };
+      expect(typeof body.ok).toBe('boolean');
+      expect(body.apply_status).not.toBe('applied');
+      expectHonestOps({
+        ok: body.ok ?? false,
+        apply_status: body.apply_status,
+        blocked: body.blocked,
+        notes: body.notes,
+      });
+    }
+  });
+
+  it('dns lookup is honest ops', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/dns/lookup', {
+      name: 'localhost',
+      type: 'A',
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      notes: body.notes,
+    });
   });
 });

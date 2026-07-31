@@ -54,7 +54,6 @@ describe('ssh routes (HTTP)', () => {
       apply_status?: string;
     };
     expect(typeof body.ok).toBe('boolean');
-    // Without installSystem, must not claim system sshd reload applied
     if (body.apply_status === 'applied') {
       expect(body.ok).toBe(true);
     }
@@ -76,5 +75,84 @@ describe('ssh routes (HTTP)', () => {
       { auth: false },
     );
     expect(res.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it('GET sftp keys / ssh 2fa / pam-snippet / fail2ban snippets', async () => {
+    ts = await startTestServer();
+    for (const path of [
+      '/api/v1/sftp/keys',
+      '/api/v1/ssh/2fa',
+      '/api/v1/ssh/2fa/pam-snippet',
+      '/api/v1/security/fail2ban-snippets',
+    ]) {
+      const res = await apiJson(ts, 'GET', path);
+      expect(res.status).toBeLessThan(500);
+      expect(res.status).toBeGreaterThanOrEqual(200);
+    }
+  });
+
+  it('creates ssh identity without install is honest ops', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/ssh/identities', {
+      name: 'http-test-id',
+      algorithm: 'ed25519',
+      purpose: 'user_outbound',
+      install: false,
+      revealPrivate: false,
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      notes?: string[];
+      identity?: { id?: string };
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      notes: body.notes,
+    });
+    if (body.ok && body.identity?.id) {
+      const detail = await apiJson(ts, 'GET', `/api/v1/ssh/identities/${body.identity.id}`);
+      // detail route may or may not exist — honesty: not 500
+      expect(detail.status).toBeLessThan(500);
+    }
+  });
+
+  it('ssh 2fa strict-apply without apply is honest plan', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/ssh/2fa/strict-apply', {
+      apply: false,
+      recoveryUsers: ['root'],
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      requiresExecute?: boolean;
+      notes?: string[];
+    };
+    if (typeof body.ok === 'boolean') {
+      expect(body.apply_status).not.toBe('applied');
+      expectHonestOps({
+        ok: body.ok,
+        blocked: body.blocked,
+        apply_status: body.apply_status,
+        requiresExecute: body.requiresExecute,
+        notes: body.notes,
+      });
+    }
+  });
+
+  it('sftp keys list is authenticated only', async () => {
+    ts = await startTestServer();
+    const unauth = await apiJson(ts, 'GET', '/api/v1/sftp/keys', undefined, { auth: false });
+    expect(unauth.status).toBeGreaterThanOrEqual(401);
+    const auth = await apiJson(ts, 'GET', '/api/v1/sftp/keys');
+    expect(auth.status).toBe(200);
   });
 });

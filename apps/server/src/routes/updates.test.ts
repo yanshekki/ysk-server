@@ -76,4 +76,63 @@ describe('updates routes (HTTP)', () => {
     );
     expect(res.status).toBeGreaterThanOrEqual(401);
   });
+
+  it('GET updates/self is honest about channel check', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/updates/self');
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      currentVersion?: string;
+      ok?: boolean;
+      notes?: string[];
+      checked?: boolean;
+      updateAvailable?: boolean;
+    };
+    expect(body.currentVersion).toBeTruthy();
+    // Must not invent a silent success without notes/ok field
+    expect(typeof body.ok === 'boolean' || Array.isArray(body.notes)).toBe(true);
+  });
+
+  it('apply with candidate but no EXECUTE is honest (not applied)', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/updates/apply', {
+      packageName: 'curl',
+      currentVersion: '1.0.0',
+      candidateVersion: '1.0.1',
+      risk: 'low',
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      applied?: boolean;
+      apply_status?: string;
+      requiresExecute?: boolean;
+      notes?: string[];
+    };
+    expect(body.applied).not.toBe(true);
+    expect(body.apply_status).not.toBe('applied');
+    expect(typeof body.ok).toBe('boolean');
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      requiresExecute: body.requiresExecute,
+      notes: body.notes,
+    });
+  });
+
+  it('same current/candidate is blocked honestly', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/updates/apply', {
+      packageName: 'demo-pkg',
+      currentVersion: '2.0.0',
+      candidateVersion: '2.0.0',
+    });
+    expect(res.status).toBe(422);
+    const body = res.body as { ok?: boolean; blocked?: boolean; applied?: boolean };
+    expect(body.ok).toBe(false);
+    expect(body.blocked).toBe(true);
+    expect(body.applied).not.toBe(true);
+  });
 });

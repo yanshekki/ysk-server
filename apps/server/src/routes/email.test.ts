@@ -38,8 +38,10 @@ describe('email routes (HTTP)', () => {
     });
     expect(created.status).toBe(201);
     const body = created.body as { domain?: string; id?: string };
-    expect(body.domain === 'mail-http-test.local' || (body as { domain?: { domain?: string } }).domain)
-      .toBeTruthy();
+    expect(
+      body.domain === 'mail-http-test.local' ||
+        (body as { domain?: { domain?: string } }).domain,
+    ).toBeTruthy();
 
     const list = await apiJson(ts, 'GET', '/api/v1/email/domains');
     expect(list.status).toBe(200);
@@ -70,5 +72,138 @@ describe('email routes (HTTP)', () => {
       { auth: false },
     );
     expect(res.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it('GET relay / queue / mailboxes / sieve / dnsbl last / deliverability overview', async () => {
+    ts = await startTestServer();
+    for (const path of [
+      '/api/v1/email/relay',
+      '/api/v1/email/queue',
+      '/api/v1/email/mailboxes',
+      '/api/v1/email/sieve',
+      '/api/v1/email/dnsbl/last',
+      '/api/v1/email/deliverability/overview',
+    ]) {
+      const res = await apiJson(ts, 'GET', path);
+      expect(res.status).toBeLessThan(500);
+      expect(res.status).toBeGreaterThanOrEqual(200);
+    }
+  });
+
+  it('webmail apply plan-only (no systemInstall) is honest ops', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/email/webmail/apply', {
+      domain: 'webmail.test.local',
+      download: false,
+      systemInstall: false,
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      requiresExecute?: boolean;
+      notes?: string[];
+      mode?: string;
+    };
+    expect(typeof body.ok).toBe('boolean');
+    if (body.apply_status === 'applied') expect(body.ok).toBe(true);
+    expect(body.ok === true && body.blocked === true).toBe(false);
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      requiresExecute: body.requiresExecute,
+      notes: body.notes,
+    });
+  });
+
+  it('dovecot-passdb all without host install is honest ops', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/email/dovecot-passdb/all', {});
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      notes: body.notes,
+    });
+  });
+
+  it('bootstrap email without installPackages is honest (not fake applied)', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/email/bootstrap', {
+      domain: 'bootstrap-test.local',
+      serverIp: '203.0.113.20',
+      installPackages: false,
+      webmail: false,
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      requiresExecute?: boolean;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expect(body.apply_status).not.toBe('applied');
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      requiresExecute: body.requiresExecute,
+      notes: body.notes,
+    });
+  });
+
+  it('queue flush without EXECUTE is honest ops', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/email/queue/flush', { all: true });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      requiresExecute?: boolean;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expect(body.ok === true && body.blocked === true).toBe(false);
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      requiresExecute: body.requiresExecute,
+      notes: body.notes,
+    });
+  });
+
+  it('warmup plan POST is honest', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/email/warmup', {
+      domain: 'warmup.local',
+      dailyLimit: 50,
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as { ok?: boolean; notes?: string[]; plan?: unknown };
+    expect(typeof body.ok === 'boolean' || body.plan || body.notes).toBeTruthy();
+  });
+
+  it('dnsbl check is honest ops shape', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/email/dnsbl/check', {
+      ip: '203.0.113.99',
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as { ok?: boolean; listedOn?: unknown; notes?: string[] };
+    expect(typeof body.ok).toBe('boolean');
   });
 });

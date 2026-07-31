@@ -74,7 +74,6 @@ describe('projects routes (HTTP)', () => {
   it('provision-all without EXECUTE is honest (not fake success)', async () => {
     ts = await startTestServer();
     const res = await apiJson(ts, 'POST', '/api/v1/projects/isolation/provision-all', {});
-    // 422 when nothing attempted + not ok; still must not claim applied host success
     expect(res.status).toBeLessThan(500);
     const body = res.body as {
       ok?: boolean;
@@ -90,5 +89,129 @@ describe('projects routes (HTTP)', () => {
       requiresExecute: body.requiresExecute,
       notes: ['provision-all blocked without execute/root'],
     });
+  });
+
+  it('deploy without EXECUTE is honest (requiresExecute, not fake applied)', async () => {
+    ts = await startTestServer();
+    const created = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'deploy-honesty',
+      domain: 'deploy-honesty.local',
+      runtime: 'static',
+    });
+    expect(created.status).toBe(201);
+    const id = (created.body as { project?: { id?: string } }).project?.id;
+    expect(id).toBeTruthy();
+
+    const deploy = await apiJson(ts, 'POST', `/api/v1/projects/${id}/deploy`, {
+      reload: false,
+    });
+    expect(deploy.status).toBeLessThan(500);
+    const body = deploy.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      requiresExecute?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    // Without EXECUTE, must not claim live host applied
+    expect(body.apply_status).not.toBe('applied');
+    expect(body.ok === true && body.blocked === true).toBe(false);
+    if (body.requiresExecute != null) {
+      expect(body.requiresExecute).toBe(true);
+    }
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      requiresExecute: body.requiresExecute,
+      apply_status: body.apply_status,
+      notes: body.notes,
+    });
+  });
+
+  it('os-provision without EXECUTE is honest ops', async () => {
+    ts = await startTestServer();
+    const created = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'os-prov-test',
+      domain: 'os-prov.local',
+      runtime: 'node',
+    });
+    const id = (created.body as { project?: { id?: string } }).project?.id!;
+    const res = await apiJson(ts, 'POST', `/api/v1/projects/${id}/os-provision`, {});
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      requiresExecute?: boolean;
+      requiresRoot?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expect(body.apply_status).not.toBe('applied');
+    expect(
+      body.blocked === true ||
+        body.requiresExecute === true ||
+        body.requiresRoot === true ||
+        body.ok === false,
+    ).toBe(true);
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      requiresExecute: body.requiresExecute,
+      apply_status: body.apply_status,
+      notes: body.notes,
+    });
+  });
+
+  it('wizard create plan is honest ops', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/wizard/create', {
+      projectName: 'wizard-http',
+      domain: 'wizard-http.local',
+      runtime: 'static',
+      createDns: false,
+      createMail: false,
+      createDb: false,
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      notes: body.notes,
+    });
+  });
+
+  it('backfill-owners is control-plane only', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/projects/isolation/backfill-owners', {});
+    expect(res.status).toBeLessThan(500);
+    if (res.status === 200) {
+      expect((res.body as { ok?: boolean }).ok).toBe(true);
+    }
+  });
+
+  it('project list supports runtime filter', async () => {
+    ts = await startTestServer();
+    await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'filter-static',
+      domain: 'filter-static.local',
+      runtime: 'static',
+    });
+    const res = await apiJson(ts, 'GET', '/api/v1/projects?runtime=static');
+    expect(res.status).toBe(200);
+    const items = (res.body as { items: Array<{ runtime?: string }> }).items;
+    expect(Array.isArray(items)).toBe(true);
+    for (const p of items) {
+      expect(p.runtime).toBe('static');
+    }
   });
 });

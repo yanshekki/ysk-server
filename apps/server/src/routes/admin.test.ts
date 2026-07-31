@@ -79,4 +79,48 @@ describe('admin routes (HTTP)', () => {
     );
     expect(res.status).toBeGreaterThanOrEqual(401);
   });
+
+  it('creates a user when authenticated (admin)', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/users', {
+      username: 'op-http-test',
+      password: 'TestPass-Strong-88!',
+      roles: ['operator'],
+    });
+    expect(res.status).toBe(201);
+    const body = res.body as { user?: { id?: string; username?: string } };
+    expect(body.user?.username).toBe('op-http-test');
+    expect(body.user?.id).toBeTruthy();
+
+    const list = await apiJson(ts, 'GET', '/api/v1/users?q=op-http');
+    expect(list.status).toBe(200);
+    const items = (list.body as { items: Array<{ username: string }> }).items;
+    expect(items.some((u) => u.username === 'op-http-test')).toBe(true);
+  });
+
+  it('users list supports role filter facets', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/users?role=admin&status=active');
+    expect(res.status).toBe(200);
+    const body = res.body as { items?: Array<{ roles?: string[] }>; meta?: unknown };
+    expect(Array.isArray(body.items)).toBe(true);
+    expect(body.meta).toBeTruthy();
+    for (const u of body.items ?? []) {
+      expect(u.roles?.includes('admin')).toBe(true);
+    }
+  });
+
+  it('package detail GET after create', async () => {
+    ts = await startTestServer();
+    const created = await apiJson(ts, 'POST', '/api/v1/packages', {
+      name: 'pkg-detail-test',
+      maxProjects: 1,
+    });
+    expect(created.status).toBe(201);
+    const id = (created.body as { package?: { id?: string } }).package?.id;
+    expect(id).toBeTruthy();
+    const detail = await apiJson(ts, 'GET', `/api/v1/packages/${id}`);
+    // Some builds may only expose list; honesty: not 500
+    expect(detail.status).toBeLessThan(500);
+  });
 });

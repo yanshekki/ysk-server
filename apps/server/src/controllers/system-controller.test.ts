@@ -79,7 +79,6 @@ describe('health / system / protection (HTTP)', () => {
       apply_status?: string;
       notes?: string[];
     };
-    // Without YSK_EXECUTE + root, must not report live apply success
     expect(body.ok === true && body.blocked === true).toBe(false);
     expect(body.apply_status).not.toBe('applied');
     if (body.ok === false || body.blocked === true) {
@@ -91,5 +90,59 @@ describe('health / system / protection (HTTP)', () => {
       ).toBe(true);
     }
     expectHonestOps(body);
+  });
+
+  it('fail2ban apply without EXECUTE is honest', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/system/fail2ban/apply', {
+      apply: true,
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      requiresExecute?: boolean;
+      notes?: string[];
+    };
+    expect(typeof body.ok).toBe('boolean');
+    expect(body.apply_status).not.toBe('applied');
+    expectHonestOps({
+      ok: body.ok ?? false,
+      blocked: body.blocked,
+      apply_status: body.apply_status,
+      requiresExecute: body.requiresExecute,
+      notes: body.notes,
+    });
+  });
+
+  it('firewall allow-port / enable without EXECUTE are honest', async () => {
+    ts = await startTestServer();
+    for (const [path, body] of [
+      ['/api/v1/system/firewall/allow-port', { port: 8080, proto: 'tcp' }],
+      ['/api/v1/system/firewall/enable', {}],
+      ['/api/v1/system/firewall/deny', { ip: '203.0.113.200' }],
+    ] as const) {
+      const res = await apiJson(ts, 'POST', path, body);
+      expect(res.status).toBeLessThan(500);
+      const r = res.body as {
+        ok?: boolean;
+        blocked?: boolean;
+        apply_status?: string;
+        requiresExecute?: boolean;
+      };
+      if (typeof r.ok === 'boolean') {
+        expect(r.apply_status).not.toBe('applied');
+        expect(r.ok === true && r.blocked === true).toBe(false);
+      }
+    }
+  });
+
+  it('host-identity POST dry update is control-plane', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/system/host-identity', {
+      displayName: 'test-host-identity',
+    });
+    expect(res.status).toBeLessThan(500);
   });
 });
