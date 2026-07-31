@@ -2009,8 +2009,61 @@ const commonRoutes = (): FetchRoute[] => [
     },
   },
   {
+    match: (url) => url.startsWith('/api/v1/system/migrate/inventory'),
+    body: {
+      ok: true,
+      summary: ['projects:1', 'dbs:0'],
+      manifest: {
+        hostname: 'src',
+        projects: 1,
+        mysql_databases: 1,
+        postgres_databases: 0,
+        mail_domains: 0,
+        bytes: 1e9,
+      },
+      notes: ['inventory ok'],
+      executeEnabled: false,
+      isRoot: false,
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/system/migrate/jobs'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          ok: true,
+          job: {
+            id: 'mj1',
+            status: 'planned',
+            target: '10.0.0.9',
+            createdAt: new Date().toISOString(),
+          },
+          summary: ['planned'],
+          phases: { pack: { ok: true, notes: ['ok'] } },
+        };
+      }
+      return {
+        ok: true,
+        jobs: [
+          {
+            id: 'mj1',
+            status: 'planned',
+            target: '10.0.0.9',
+            createdAt: new Date().toISOString(),
+            manifest: { projects: 1 },
+          },
+        ],
+      };
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/system/migrate'),
+    body: HONESTY_WRITTEN_BLOCKED,
+  },
+  {
     match: /\/api\/v1\/migrate/,
-    body: { ok: true, items: [], steps: [] },
+    body: { ok: true, items: [], steps: [], jobs: [] },
   },
   {
     match: /\/api\/v1\/search/,
