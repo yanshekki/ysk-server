@@ -151,36 +151,41 @@ const emailBundle = {
 
 const networkSnap = {
   ok: true,
+  at: new Date().toISOString(),
   notes: [],
-  backend: { hasIp: true, hasNmcli: false, hasResolvectl: false },
+  backend: {
+    hasIp: true,
+    networkManager: 'inactive',
+    networkd: 'inactive',
+    canPersist: false,
+  },
   interfaces: [
     {
       name: 'eth0',
-      up: true,
+      ifindex: 2,
       operstate: 'UP',
       flags: ['UP', 'BROADCAST'],
       mac: 'aa:bb:cc:dd:ee:ff',
-      addrs: ['10.0.0.5/24'],
-      addresses: [{ address: '10.0.0.5', prefix: 24, family: 'inet' }],
-      rxBytes: 1000,
-      txBytes: 2000,
+      mtu: 1500,
+      isLoopback: false,
+      isDefaultEgress: true,
+      addrs: [{ family: 'inet' as const, local: '10.0.0.5', prefixlen: 24 }],
+      stats: { rxBytes: 1000, txBytes: 2000, rxPackets: 10, txPackets: 10 },
     },
   ],
-  routes: [
-    {
-      destination: 'default',
-      gateway: '10.0.0.1',
-      device: 'eth0',
-      dest: 'default',
-      iface: 'eth0',
-    },
-  ],
-  caps: { canMutate: false, executeEnabled: false, isRoot: false },
+  routes: [{ dst: 'default', gateway: '10.0.0.1', dev: 'eth0', protocol: 'static' }],
+  caps: { canMutate: true, executeEnabled: false, isRoot: false },
+  defaultGateway: '10.0.0.1',
+  defaultDev: 'eth0',
   dns: {
     nameservers: ['1.1.1.1'],
-    uplinkServers: [],
-    search: [],
+    uplinkServers: ['1.1.1.1'],
+    search: ['example.com'],
+    source: 'static',
+    notes: [],
     ignoreAutoDns: true,
+    canApply: true,
+    mode: 'static' as const,
   },
 };
 
@@ -597,15 +602,19 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/logs\//,
-    handler: (url) => {
+    handler: (url, init) => {
+      const method = (init?.method ?? 'GET').toUpperCase();
+      if (method !== 'GET') {
+        return { ...HONESTY_WRITTEN_BLOCKED, text: 'line1\nline2', lines: ['line1', 'line2'] };
+      }
       if (url.includes('/projects')) {
         return {
           items: [
             {
               projectId: 'p1',
               name: 'Demo',
-              files: [{ name: 'app.log', bytes: 100, previewable: true }],
-              related: [],
+              files: [{ name: 'app.log', bytes: 100, previewable: true, path: '/var/log/demo/app.log' }],
+              related: [{ id: 'journal:ysk-project-p1.service', label: 'unit' }],
             },
           ],
         };
@@ -614,11 +623,19 @@ const commonRoutes = (): FetchRoute[] => [
         return {
           items: [
             {
-              id: 'j1',
+              id: 'journal:nginx.service',
               kind: 'journal',
               label: 'nginx',
               unit: 'nginx.service',
-              group: 'journal',
+              group: 'web',
+              available: true,
+            },
+            {
+              id: 'file:nginx-access',
+              kind: 'file',
+              label: 'nginx access',
+              path: '/var/log/nginx/access.log',
+              group: 'web',
               available: true,
             },
           ],
@@ -632,19 +649,50 @@ const commonRoutes = (): FetchRoute[] => [
           ],
         };
       }
+      if (url.includes('/overview')) {
+        return {
+          ok: true,
+          journalDiskMb: 120,
+          followIntervalSec: 3,
+          journalWarnMb: 1024,
+          vacuumDefaultDays: 14,
+          maxLines: 300,
+          sources: 2,
+          units: 2,
+          projects: 1,
+        };
+      }
+      if (url.includes('/settings')) {
+        return {
+          vacuumDefaultDays: 14,
+          maxLines: 300,
+          journalWarnMb: 1024,
+          followIntervalSec: 3,
+          bookmarks: [{ id: 'b1', name: 'nginx errors', source: 'journal:nginx.service', grep: 'error' }],
+        };
+      }
+      if (url.includes('/query') || url.includes('/tail') || url.includes('/read')) {
+        return {
+          ok: true,
+          text: 'access ok\nerror denied\n',
+          lines: ['access ok', 'error denied'],
+          truncated: false,
+          notes: [],
+        };
+      }
       return {
         ok: true,
         items: [],
         sources: [],
         units: [],
         quickUnits: [],
-        journalDiskMb: 0,
+        journalDiskMb: 120,
         followIntervalSec: 3,
         journalWarnMb: 1024,
         vacuumDefaultDays: 14,
         maxLines: 300,
-        text: '',
-        lines: [],
+        text: 'sample log line',
+        lines: ['sample log line'],
         settings: {},
       };
     },
@@ -653,27 +701,155 @@ const commonRoutes = (): FetchRoute[] => [
     match: (url) => url.startsWith('/api/v1/metrics/projects'),
     body: {
       ok: true,
-      items: [],
-      totalMb: 0,
-      usedMb: 0,
+      items: [
+        {
+          projectId: 'p1',
+          name: 'Demo',
+          usedMb: 120,
+          quotaMb: 1024,
+          path: '/home/demo',
+        },
+      ],
+      totalMb: 1024,
+      usedMb: 120,
       at: new Date().toISOString(),
     },
   },
   {
     match: (url) => url.startsWith('/api/v1/metrics/processes'),
-    body: { ok: true, items: [], notes: [], processes: [] },
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          ok: true,
+          pid: 42,
+          signal: 'TERM',
+          stillAlive: true,
+        };
+      }
+      if (url.includes('/detail') || /\/processes\/\d+/.test(url)) {
+        return {
+          ok: true,
+          pid: 42,
+          user: 'root',
+          cmd: 'nginx: master',
+          cpu: 0.5,
+          mem: 1.2,
+          nice: 0,
+          state: 'S',
+          threads: 2,
+          start: new Date().toISOString(),
+          cwd: '/',
+          exe: '/usr/sbin/nginx',
+        };
+      }
+      return {
+        ok: true,
+        at: new Date().toISOString(),
+        sort: 'cpu',
+        limit: 40,
+        rows: [
+          {
+            pid: '42',
+            user: 'root',
+            cpu: 1.5,
+            mem: 2.1,
+            command: 'nginx: master process',
+            state: 'S',
+            etime: '01:00',
+            resKiB: 20000,
+            virtKiB: 100000,
+          },
+          {
+            pid: '99',
+            user: 'demo',
+            cpu: 5.0,
+            mem: 3.0,
+            command: 'node server.js',
+            state: 'R',
+            etime: '00:30',
+            resKiB: 40000,
+            virtKiB: 200000,
+          },
+        ],
+        notes: [],
+        topHeader: {
+          ok: true,
+          at: new Date().toISOString(),
+          uptimeSec: 3600,
+          loadavg: [0.2, 0.3, 0.4],
+          tasks: { total: 100, running: 2, sleeping: 98, stopped: 0, zombie: 0 },
+          cpu: {
+            us: 5,
+            sy: 3,
+            ni: 0,
+            id: 88,
+            wa: 2,
+            hi: 0,
+            si: 0,
+            st: 0,
+            busyPct: 12,
+          },
+          cpus: [
+            {
+              us: 5,
+              sy: 2,
+              ni: 0,
+              id: 93,
+              wa: 0,
+              hi: 0,
+              si: 0,
+              st: 0,
+              busyPct: 7,
+            },
+          ],
+          memory: {
+            totalKiB: 2e6,
+            freeKiB: 1e6,
+            usedKiB: 5e5,
+            buffCacheKiB: 5e5,
+            availableKiB: 1.5e6,
+          },
+          swap: { totalKiB: 1e6, freeKiB: 9e5, usedKiB: 1e5 },
+          notes: [],
+        },
+      };
+    },
   },
   {
     match: (url) => url.startsWith('/api/v1/metrics'),
     body: {
-      ok: true,
-      cpu: { percent: 1 },
-      memory: { usedMb: 100, totalMb: 1024, percent: 10 },
-      disk: { usedGb: 1, totalGb: 50, percent: 2 },
-      load: [0.1, 0.1, 0.1],
-      alerts: [],
-      processes: [],
-      disks: [],
+      at: new Date().toISOString(),
+      loadavg: [0.2, 0.3, 0.4],
+      cpuCount: 4,
+      memory: {
+        total: 2e9,
+        free: 1e9,
+        usedRatio: 0.25,
+        available: 1.5e9,
+      },
+      uptimeSec: 3600,
+      disk: { path: '/', free: 9e10, total: 1e11, usedRatio: 0.1 },
+      diskMounts: [
+        {
+          filesystem: '/dev/sda1',
+          size: 1e11,
+          used: 1e10,
+          avail: 9e10,
+          usedRatio: 0.1,
+          mount: '/',
+        },
+        {
+          filesystem: '/dev/sda2',
+          size: 5e10,
+          used: 5e9,
+          avail: 4.5e10,
+          usedRatio: 0.1,
+          mount: '/var',
+        },
+      ],
+      alerts: ['disk_high'],
+      notes: [],
     },
   },
   {
@@ -865,7 +1041,33 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/dns/,
-    body: emptyList,
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          ok: true,
+          dsRecord: 'example.com. IN DS 12345 13 2 ABCD',
+          publicKey: 'key',
+          files: ['/var/lib/bind/example.com.zone'],
+          answers: ['203.0.113.10'],
+          notes: ['written ≠ applied'],
+          peers: [{ host: 'peer.example.com', ok: false }],
+        };
+      }
+      if (url.includes('/cluster/peers')) {
+        return {
+          items: [
+            {
+              id: 'peer-1',
+              host: 'peer.example.com',
+              user: 'ysk',
+              label: 'peer',
+            },
+          ],
+        };
+      }
+      return emptyList;
+    },
   },
   {
     match: (url) => url.includes('/api/v1/cdn/dashboard') || url.includes('/cdn/dashboard'),
@@ -880,18 +1082,87 @@ const commonRoutes = (): FetchRoute[] => [
         byRegion: { local: 1 },
       },
       sites: {
-        total: 0,
-        byApplyStatus: {},
-        rows: [],
+        total: 1,
+        byApplyStatus: { planned: 1 },
+        rows: [{ id: 'site-1', name: 'Demo site', apply_status: 'planned' }],
       },
-      cache: [],
-      overallHitRatePct: 0,
+      cache: [
+        {
+          siteId: 'site-1',
+          siteName: 'Demo site',
+          hitRatePct: 80,
+          hits: 100,
+          misses: 20,
+          method: 'stub',
+          notes: [],
+        },
+      ],
+      overallHitRatePct: 80,
       notes: [],
     },
   },
   {
+    match: (url, init) => {
+      const m = (init?.method ?? 'GET').toUpperCase();
+      return url.startsWith('/api/v1/cdn/nodes') && m === 'GET' && !url.includes('/probe');
+    },
+    body: {
+      items: [
+        {
+          id: 'n1',
+          name: 'edge-1',
+          roles: ['edge'],
+          region: 'local',
+          publicIpv4: ['203.0.113.10'],
+          publicIpv6: [],
+          weight: 100,
+          status: 'online',
+          healthUrl: 'http://203.0.113.10/health',
+          baseUrl: 'http://203.0.113.10',
+          lastHeartbeatAt: new Date().toISOString(),
+          lastHealth: { ok: true, latencyMs: 12, at: new Date().toISOString() },
+        },
+      ],
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+    },
+  },
+  {
+    match: (url, init) => {
+      const m = (init?.method ?? 'GET').toUpperCase();
+      return url.startsWith('/api/v1/cdn/sites') && m === 'GET';
+    },
+    body: {
+      items: [
+        {
+          id: 'site-1',
+          name: 'Demo site',
+          domains: ['cdn.example.com'],
+          mode: 'origin_pull',
+          origin: { kind: 'url', url: 'https://origin.example.com' },
+          edgeNodeIds: ['n1'],
+          dns: { strategy: 'multi_a', ttlHealthy: 60, ttlUnhealthy: 30, minHealthyEdges: 1 },
+          cache: { enabled: true, zoneSize: '10m', maxAge: '10m' },
+          ssl: { mode: 'off' },
+          apply_status: 'planned',
+          edge_status: { n1: 'planned' },
+        },
+      ],
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+    },
+  },
+  {
     match: /\/api\/v1\/cdn/,
-    body: emptyList,
+    handler: (_url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          ok: true,
+          contentHash: 'abc',
+          conf: '# nginx conf',
+        };
+      }
+      return emptyList;
+    },
   },
   {
     match: (url) => /\/api\/v1\/email\/domains\/[^/]+\/dns/.test(url),
@@ -918,20 +1189,175 @@ const commonRoutes = (): FetchRoute[] => [
     body: emptyList,
   },
   {
+    match: (url) => url.startsWith('/api/v1/backups/settings'),
+    handler: (_url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') return HONESTY_WRITTEN_BLOCKED;
+      return {
+        remote: {
+          enabled: true,
+          kind: 'sftp',
+          host: 'backup.example.com',
+          port: 22,
+          username: 'ysk',
+          path: '/backups/ysk',
+          password: '***',
+        },
+        exclusions: ['node_modules', '.git'],
+        restic: {
+          enabled: true,
+          repoPath: '/var/backups/restic',
+          password: '***',
+        },
+      };
+    },
+  },
+  {
     match: /\/api\/v1\/backups/,
-    body: emptyList,
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return { ...HONESTY_WRITTEN_BLOCKED, snapshots: [] };
+      }
+      if (url.includes('restic') && url.includes('snapshot')) {
+        return {
+          items: [
+            {
+              id: 'snap-1',
+              time: new Date().toISOString(),
+              hostname: 'ysk',
+              paths: ['/home/demo'],
+              short_id: 'abc123',
+            },
+          ],
+        };
+      }
+      return {
+        items: [
+          {
+            projectId: 'p1',
+            name: 'Demo',
+            path: '/var/backups/p1-2026.tgz',
+            bytes: 1_024_000,
+            mtime: new Date().toISOString(),
+            kind: 'full',
+          },
+        ],
+        lastRun: {
+          at: new Date().toISOString(),
+          ok: true,
+          notes: ['completed'],
+        },
+      };
+    },
   },
   {
     match: /\/api\/v1\/users/,
-    body: emptyList,
+    body: {
+      items: [
+        {
+          id: 'u1',
+          username: 'admin',
+          roles: ['admin'],
+          packageId: 'pkg1',
+          suspended: false,
+          locale: 'en',
+        },
+      ],
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+    },
   },
   {
     match: /\/api\/v1\/packages/,
-    body: emptyList,
+    body: {
+      items: [
+        {
+          id: 'pkg1',
+          name: 'default',
+          maxProjects: 10,
+          maxMailboxes: 10,
+          maxDatabases: 5,
+          diskMb: 10240,
+          bandwidthMb: 0,
+          ftp: true,
+          ssh: true,
+          notes: '',
+        },
+      ],
+    },
   },
   {
     match: /\/api\/v1\/resources\//,
-    body: emptyList,
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          item: {
+            id: 'z1',
+            zone: 'example.com',
+            name: '@',
+            type: 'A',
+            value: '203.0.113.10',
+            ttl: 300,
+            nsName: 'ns1.example.com',
+            apply_status: 'planned',
+          },
+          ok: true,
+        };
+      }
+      if (url.includes('dns/zones')) {
+        return {
+          items: [
+            {
+              id: 'z1',
+              zone: 'example.com',
+              serverIp: '203.0.113.10',
+              nsName: 'ns1.example.com',
+              ttl: 300,
+              apply_status: 'planned',
+              backend: 'bind',
+            },
+          ],
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+        };
+      }
+      if (url.includes('dns/records')) {
+        return {
+          items: [
+            {
+              id: 'r1',
+              zoneId: 'z1',
+              type: 'A',
+              name: '@',
+              value: '203.0.113.10',
+              ttl: 300,
+            },
+            {
+              id: 'r2',
+              zoneId: 'z1',
+              type: 'MX',
+              name: '@',
+              value: '10 mail.example.com.',
+              ttl: 300,
+            },
+          ],
+          meta: { total: 2, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+        };
+      }
+      if (url.includes('mysql/databases') || url.includes('mysql/users')) {
+        return {
+          items: [
+            {
+              id: 'db1',
+              name: 'app_db',
+              engine: 'mysql',
+              username: 'app',
+              host: 'localhost',
+            },
+          ],
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+        };
+      }
+      return emptyList;
+    },
   },
   {
     match: /\/api\/v1\/ai\//,
@@ -953,11 +1379,81 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/fleet\//,
-    body: emptyList,
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          ok: true,
+          id: 'cmd-1',
+          agent_id: 'ag-1',
+          status: 'queued',
+        };
+      }
+      if (url.includes('/commands')) {
+        return {
+          items: [
+            {
+              id: 'cmd-1',
+              agent_id: 'ag-1',
+              status: 'done',
+              payload: { type: 'ping' },
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        };
+      }
+      return {
+        items: [
+          {
+            id: 'sess-1',
+            agent_id: 'ag-1',
+            status: 'connected',
+            group: 'edge',
+            last_seen_at: new Date().toISOString(),
+            meta: { hostname: 'edge-1' },
+          },
+        ],
+      };
+    },
   },
   {
     match: /\/api\/v1\/agents\//,
-    body: emptyList,
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          ok: false,
+          requiresExecute: true,
+          notes: ['Host execute is off'],
+          kind: 'openclaw',
+          status: 'missing',
+        };
+      }
+      return {
+        items: [
+          {
+            kind: 'openclaw',
+            name: 'OpenClaw',
+            status: 'missing',
+            unitName: 'openclaw.service',
+            unitActive: 'inactive',
+            pathExists: false,
+            installPath: '/opt/openclaw',
+            probedAt: new Date().toISOString(),
+          },
+        ],
+        runtime: {
+          kind: 'openclaw',
+          name: 'OpenClaw',
+          status: 'missing',
+          unitName: 'openclaw.service',
+          unitActive: 'inactive',
+          pathExists: false,
+          installPath: '/opt/openclaw',
+          probedAt: new Date().toISOString(),
+        },
+      };
+    },
   },
   {
     match: (url) => url.startsWith('/api/v1/updates/inventory'),
@@ -1031,11 +1527,55 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/system\/services/,
-    body: emptyList,
+    body: {
+      items: [
+        {
+          unit: 'nginx.service',
+          active: 'inactive',
+          enabled: 'disabled',
+          description: 'nginx',
+        },
+      ],
+      groups: [],
+      matrix: [],
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/system/systemd/status'),
+    body: {
+      unit: 'ysk-server',
+      unitPathHint: '/etc/systemd/system/ysk-server.service',
+      active: 'inactive',
+      enabled: 'disabled',
+      executeEnabled: false,
+      isRoot: false,
+      canInstall: false,
+      systemUnitExists: false,
+      managedUnitPath: '/var/lib/ysk/systemd/ysk-server.service',
+      managedUnitExists: false,
+      show: {
+        mainPid: null,
+        activeEnterTimestamp: null,
+        fragmentPath: null,
+        description: 'YSK Server',
+      },
+    },
+  },
+  {
+    match: (url, init) =>
+      url.startsWith('/api/v1/system/systemd/') && (init?.method ?? 'GET').toUpperCase() !== 'GET',
+    body: HONESTY_WRITTEN_BLOCKED,
   },
   {
     match: /\/api\/v1\/system\/systemd/,
-    body: emptyList,
+    body: {
+      unit: 'ysk-server',
+      unitPathHint: '/etc/systemd/system/ysk-server.service',
+      active: 'inactive',
+      enabled: 'disabled',
+      executeEnabled: false,
+      isRoot: false,
+    },
   },
   {
     match: /\/api\/v1\/dashboard\//,

@@ -12,6 +12,8 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     testTimeout: 20_000,
     hookTimeout: 20_000,
+    // Sequential files avoid flaky v8 coverage .tmp cleanup races under happy-dom.
+    fileParallelism: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov'],
