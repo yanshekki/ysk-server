@@ -3,6 +3,8 @@
  * Pure structured tips; no fake "warmed" state without operator action.
  */
 
+import { tl } from '@ysk/shared';
+
 export interface WarmupPhase {
   dayFrom: number;
   dayTo: number;
@@ -33,9 +35,9 @@ export function planEmailWarmup(input: {
       dayTo: 3,
       maxMessagesPerDay: 20,
       guidance: [
-        'Send only transactional / known-good recipients',
-        'Monitor bounces; keep complaint rate near zero',
-        'Ensure SPF/DKIM/DMARC/PTR are live before volume',
+        tl('email.warmup.p1g1'),
+        tl('email.warmup.p1g2'),
+        tl('email.warmup.p1g3'),
       ],
     },
     {
@@ -43,43 +45,35 @@ export function planEmailWarmup(input: {
       dayTo: 7,
       maxMessagesPerDay: 50,
       guidance: [
-        'Expand slowly to engaged contacts only',
-        'Check DNSBL daily; pause if listed',
-        'Prefer 587 submission over bulk on port 25 if restricted',
+        tl('email.warmup.p2g1'),
+        tl('email.warmup.p2g2'),
+        tl('email.warmup.p2g3'),
       ],
     },
     {
       dayFrom: 8,
       dayTo: 14,
       maxMessagesPerDay: 150,
-      guidance: [
-        'Double volume only if metrics stay clean',
-        'Segment lists; remove hard bounces immediately',
-      ],
+      guidance: [tl('email.warmup.p3g1'), tl('email.warmup.p3g2')],
     },
     {
       dayFrom: 15,
       dayTo: 30,
       maxMessagesPerDay: 500,
-      guidance: [
-        'Approach normal volume if no blocks',
-        'Keep DMARC rua monitored',
-      ],
+      guidance: [tl('email.warmup.p4g1'), tl('email.warmup.p4g2')],
     },
   ];
   const checklist = [
-    'PTR matches HELO/EHLO (mail hostname)',
-    'SPF + DKIM + DMARC published and aligned',
-    'DNSBL clean on Spamhaus / SpamCop / Barracuda',
-    'Outbound port 25 open or relay configured',
-    'No purchased “bulk email” IP ranges',
-    'Domain age / history considered (new domains = slower ramp)',
+    tl('email.warmup.c1'),
+    tl('email.warmup.c2'),
+    tl('email.warmup.c3'),
+    tl('email.warmup.c4'),
+    tl('email.warmup.c5'),
+    tl('email.warmup.c6'),
   ];
   const notes = [
-    input.isNewIp !== false
-      ? 'Treat this IP as new — start at phase day 1–3 limits'
-      : 'Existing IP still benefits from gradual ramp after config changes',
-    'Warm-up is operator process; YSK tracks tips + DNSBL, not marketing ESP volume',
+    input.isNewIp !== false ? tl('email.warmup.noteNewIp') : tl('email.warmup.noteOldIp'),
+    tl('email.warmup.noteProcess'),
   ];
   return { domain, serverIp: input.serverIp, phases, checklist, notes };
 }

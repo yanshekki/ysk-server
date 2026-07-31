@@ -40,6 +40,11 @@ const CLI_COMMANDS = [
   'tools',
   'ask',
   'projects',
+  'users',
+  'packages',
+  'rbac',
+  'audit',
+  'security',
   'backup',
   'templates',
   'hosting',
@@ -54,8 +59,14 @@ const CLI_COMMANDS = [
   'services',
   'defense',
   'protection',
+  'cdn',
   'agents',
   'agent',
+  'store',
+  'files',
+  'cron',
+  'email',
+  'health',
   'readiness',
   'doctor',
   'migrate',
@@ -170,65 +181,11 @@ function openCliContext(args: string[]) {
 }
 
 function printHelp(): void {
-  const text = `
-${PRODUCT_NAME} (${CLI_NAME}) v${VERSION}
-
-Control plane CLI — prefer --json for AI agents.
-Docs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json
-
-Usage:
-  ${CLI_NAME} <command> [options]
-
-Commands:
-  setup                 Init dataDir + admin
-  update                Self-update check/apply
-  serve                 HTTP API + Web UI
-  system unit-install   Install ysk-server.service [--enable]
-  tools                 List tools; tools run --tool <name> [--dry-run]
-  ask                   NL → AI plan [--execute]
-  projects              list|get|create|deploy|stop|health|backup|template
-  backup all            Backup all project homes
-  templates             App templates
-  hosting               nginx|dns|db|firewall helpers
-  dns                   zone|zones (AI alias → hosting dns-*)
-  logs                  sources|query|journal|overview
-  host                  overview|metrics (read-only)
-  nginx                 status|list|test|sync
-  ssl                   list|get (certificates)
-  db-cluster            list|get|create|plan (HA plan-first)
-  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)
-  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)
-  services              Host service matrix (systemctl probe)
-  defense | protection  status|ban|unban|whitelist
-  agents                List/probe agent runtimes (experimental)
-  agent run             Outbound fleet poller (experimental)
-  readiness | doctor    Production readiness (honest)
-  migrate               inventory|host|post|status|resume (full host migrate)
-  version | help
-
-Global:
-  --json                JSON stdout (AI)
-  --data-dir PATH
-  --config PATH
-  --help | --version
-
-Exit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error
-
-Safety:
-  Dangerous ops default to dry-run (plan only).
-  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.
-
-Examples:
-  ${CLI_NAME} readiness --json
-  ${CLI_NAME} host --json
-  ${CLI_NAME} nginx status --json
-  ${CLI_NAME} ssl list --json
-  ${CLI_NAME} projects get --id UUID --json
-  ${CLI_NAME} defense ban --ip 1.2.3.4 --json          # dry-run plan
-  ${CLI_NAME} projects list --json
-  ${CLI_NAME} logs query --source journal: --lines 100 --json
-  ${CLI_NAME} tools --json
-`.trim();
+  const text = tl('cli.help.main', {
+    product: PRODUCT_NAME,
+    cli: CLI_NAME,
+    version: VERSION,
+  });
   process.stdout.write(`${text}\n`);
 }
 
@@ -328,10 +285,16 @@ async function mainInner(
       dataDir: getOpt(args, '--data-dir'),
       listenHost: getOpt(args, '--host'),
       listenPort: getOpt(args, '--port') ? Number(getOpt(args, '--port')) : undefined,
+      adminUsername: getOpt(args, '--admin-user') ?? getOpt(args, '--username'),
+      adminPassword: getOpt(args, '--admin-password') ?? getOpt(args, '--password'),
       locale: getOpt(args, '--locale'),
       nonInteractive: hasFlag(args, '--non-interactive'),
       dryRun: hasFlag(args, '--dry-run'),
-      force: hasFlag(args, '--force') });
+      force: hasFlag(args, '--force'),
+      allowInsecureDefaults:
+        hasFlag(args, '--allow-insecure-defaults') ||
+        process.env.YSK_ALLOW_INSECURE_DEFAULTS === '1',
+    });
     if (json || hasFlag(args, '--dry-run')) {
       printJson(result);
     } else if (result.ok) {
@@ -361,7 +324,7 @@ async function mainInner(
     if (sub === 'run') {
       const tool = getOpt(args, '--tool');
       if (!tool) {
-        process.stderr.write('Usage: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n');
+        process.stderr.write(`${tl('cli.usage.tools.run.--tool.name.--arg.cd327c')}\n`);
         return 1;
       }
       const argPairs = args
@@ -410,8 +373,1080 @@ async function mainInner(
     return 0;
   }
 
+  if (command === 'email') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'help' || sub === '--help') {
+        process.stderr.write(`${tl('cli.usage.email.sub.--data-dir.path.--json.73dad0')}\n`);
+        return 2;
+      }
+
+      const resolveDomain = () => {
+        const idOpt = getOpt(args, '--id');
+        const domainName = (getOpt(args, '--domain') ?? '').trim().toLowerCase();
+        if (idOpt) return ctx.email.list().find((d) => d.id === idOpt);
+        if (domainName) return ctx.email.list().find((d) => d.domain === domainName);
+        return undefined;
+      };
+
+      if (sub === 'domains') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        if (act === 'list') {
+          let items = ctx.email.list().map((d) => ({
+            ...d,
+            dkim_private_key: '***redacted***',
+          }));
+          const q = (getOpt(args, '--q') ?? '').trim().toLowerCase();
+          if (q) {
+            items = items.filter(
+              (d) =>
+                d.domain.includes(q) ||
+                d.id.includes(q) ||
+                (d.mail_hostname ?? '').includes(q),
+            );
+          }
+          printJson({ ok: true, items, meta: { total: items.length } });
+          return 0;
+        }
+        if (act === 'create') {
+          const domain = (getOpt(args, '--domain') ?? '').trim().toLowerCase();
+          const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
+          if (!domain || !serverIp) {
+            process.stderr.write(`${tl('cli.usage.email.domains.create.--domain.example.bd4036')}\n`);
+            return 2;
+          }
+          const created = ctx.email.create({
+            domain,
+            serverIp,
+            serverIpv6: getOpt(args, '--ipv6'),
+            mailHostname: getOpt(args, '--mail-host'),
+            actor: 'cli',
+          });
+          printJson({ ok: true, ...created });
+          return 0;
+        }
+        if (act === 'get') {
+          const row = resolveDomain();
+          if (!row) {
+            printJson({ ok: false, code: ErrorCodes.NOT_FOUND });
+            return 4;
+          }
+          printJson({
+            ok: true,
+            domain: { ...row, dkim_private_key: '***redacted***' },
+            dns: ctx.email.getDnsBundle(row.id),
+          });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.email.domains.list.create.get.b94a62')}\n`);
+        return 2;
+      }
+
+      if (sub === 'mailboxes' || sub === 'mailbox') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        if (act === 'list') {
+          const row = resolveDomain();
+          const items = ctx.email.listMailboxes(row?.id);
+          const q = (getOpt(args, '--q') ?? '').trim().toLowerCase();
+          const filtered = q
+            ? items.filter((m) =>
+                JSON.stringify(m).toLowerCase().includes(q),
+              )
+            : items;
+          printJson({ ok: true, items: filtered, meta: { total: filtered.length } });
+          return 0;
+        }
+        if (act === 'create') {
+          const domainName = (getOpt(args, '--domain') ?? '').trim().toLowerCase();
+          const localPart = getOpt(args, '--local') ?? getOpt(args, '--user');
+          if (!domainName || !localPart) {
+            process.stderr.write(`${tl('cli.usage.email.mailboxes.create.--domain.example.7227f3')}\n`);
+            return 2;
+          }
+          let domainId = ctx.email.list().find((d) => d.domain === domainName)?.id;
+          if (!domainId) {
+            const serverIp = getOpt(args, '--ip');
+            if (!serverIp) {
+              process.stderr.write(`${tl('cli.msg.domain.missing.pass.5be09b')}\n`);
+              return 2;
+            }
+            domainId = ctx.email.create({
+              domain: domainName,
+              serverIp,
+              actor: 'cli',
+            }).domain.id;
+          }
+          const result = await ctx.email.createMailbox(domainId, {
+            localPart,
+            password: getOpt(args, '--password'),
+            provisionSystem: hasFlag(args, '--system'),
+            actor: 'cli',
+          });
+          printJson(result);
+          return exitFromResult(result);
+        }
+        process.stderr.write(`${tl('cli.usage.email.mailboxes.list.create.42b26c')}\n`);
+        return 2;
+      }
+
+      if (sub === 'deliverability' || sub === 'deliverability-overview') {
+        if (sub === 'deliverability-overview' || hasFlag(args, '--overview')) {
+          const { buildDeliverabilityReport } = await import('@ysk/core');
+          const domains = ctx.email.list();
+          const items = [];
+          for (const d of domains.slice(0, 20)) {
+            const report = await buildDeliverabilityReport({
+              domain: d.domain,
+              serverIp: d.server_ip,
+              serverIpv6: d.server_ipv6,
+              mailHostname: d.mail_hostname,
+              dkimPublicKey: d.dkim_public_key ?? '',
+              dataDir: ctx.dataDir,
+            });
+            items.push({
+              domainId: d.id,
+              domain: d.domain,
+              score: report.score,
+              panelReady: report.panelReady,
+              deliveryGuaranteed: false as const,
+            });
+          }
+          printJson({ ok: true, items });
+          return 0;
+        }
+        const row = resolveDomain();
+        if (!row) {
+          process.stderr.write(`${tl('cli.usage.email.deliverability.--domain.example.com.b0dff0')}\n`);
+          return 2;
+        }
+        const { buildDeliverabilityReport } = await import('@ysk/core');
+        const report = await buildDeliverabilityReport({
+          domain: row.domain,
+          serverIp: row.server_ip,
+          serverIpv6: row.server_ipv6,
+          mailHostname: row.mail_hostname,
+          dkimPublicKey: row.dkim_public_key ?? '',
+          dataDir: ctx.dataDir,
+        });
+        printJson({ ok: true, report });
+        return report.panelReady ? 0 : 1;
+      }
+
+      if (sub === 'bootstrap') {
+        const { bootstrapEmailServer } = await import('@ysk/core');
+        const domain = getOpt(args, '--domain');
+        const serverIp = getOpt(args, '--ip');
+        if (!domain || !serverIp) {
+          process.stderr.write(`${tl('cli.usage.email.bootstrap.--domain.example.com.affc8d')}\n`);
+          return 2;
+        }
+        const result = await bootstrapEmailServer({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          host: ctx.host,
+          domain,
+          serverIp,
+          actor: 'cli',
+          audit: ctx.audit,
+          installPackages: hasFlag(args, '--install') || wantsHostExecute(args),
+          adminLocalPart: getOpt(args, '--admin') ?? 'postmaster',
+          adminPassword: getOpt(args, '--password'),
+          webmail: !hasFlag(args, '--no-webmail'),
+        });
+        printJson(result);
+        return exitFromResult(result);
+      }
+
+      if (sub === 'dns') {
+        const row = resolveDomain();
+        if (!row) {
+          process.stderr.write(`${tl('cli.usage.email.dns.--domain.example.com.26b806')}\n`);
+          return 2;
+        }
+        printJson({ ok: true, ...ctx.email.getDnsBundle(row.id) });
+        return 0;
+      }
+
+      process.stderr.write(`${tl('cli.err.unknown.email.sub.sub.e37257', { sub })}\n`);
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'cron') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'help' || sub === '--help') {
+        process.stderr.write(`${tl('cli.usage.cron.sub.--data-dir.path.--json.0349e6')}\n`);
+        return 2;
+      }
+      if (sub === 'list') {
+        const projectId = getOpt(args, '--project-id') ?? getOpt(args, '--project');
+        let items = ctx.cron.list(projectId);
+        const q = (getOpt(args, '--q') ?? '').trim().toLowerCase();
+        if (q) {
+          items = items.filter(
+            (j) =>
+              j.id.toLowerCase().includes(q) ||
+              j.command.toLowerCase().includes(q) ||
+              j.schedule.toLowerCase().includes(q) ||
+              (j.user ?? '').toLowerCase().includes(q),
+          );
+        }
+        printJson({ ok: true, items, meta: { total: items.length } });
+        return 0;
+      }
+      if (sub === 'create') {
+        const schedule = getOpt(args, '--schedule') ?? getOpt(args, '--cron');
+        const commandLine = getOpt(args, '--command') ?? getOpt(args, '--cmd');
+        if (!schedule || !commandLine) {
+          process.stderr.write(`${tl('cli.usage.cron.create.--schedule.0.3.9a8328')}\n`);
+          return 2;
+        }
+        const job = ctx.cron.create({
+          projectId: getOpt(args, '--project-id') ?? getOpt(args, '--project'),
+          user: getOpt(args, '--user') ?? 'ysk',
+          schedule,
+          command: commandLine,
+          actor: 'cli',
+        });
+        printJson({ ok: true, job });
+        return 0;
+      }
+      if (sub === 'delete' || sub === 'rm') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`${tl('cli.usage.cron.delete.--id.job.id.f6aafe')}\n`);
+          return 2;
+        }
+        const ok = ctx.cron.delete(id);
+        printJson({ ok });
+        return ok ? 0 : 4;
+      }
+      if (sub === 'enable' || sub === 'disable') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`${tl('cli.usage.cron.sub.--id.job.id.99cfdf', { sub })}\n`);
+          return 2;
+        }
+        const job = ctx.cron.setEnabled(id, sub === 'enable');
+        if (!job) {
+          printJson({ ok: false, code: ErrorCodes.NOT_FOUND });
+          return 4;
+        }
+        printJson({ ok: true, job });
+        return 0;
+      }
+      if (sub === 'run' || sub === 'run-now') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`${tl('cli.usage.cron.run.--id.job.id.a0a97f')}\n`);
+          return 2;
+        }
+        const r = await ctx.cron.runNow(id, 'cli');
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'install') {
+        const r = await ctx.cron.installCrontab('cli');
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'status') {
+        const status = await ctx.cron.probeInstallStatus();
+        const jobs = ctx.cron.list();
+        printJson({
+          ok: true,
+          ...status,
+          jobCount: jobs.length,
+          enabledCount: jobs.filter((j) => j.enabled).length,
+        });
+        return 0;
+      }
+      process.stderr.write(`${tl('cli.err.unknown.cron.sub.sub.e1a9ed', { sub })}\n`);
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'files') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const {
+      FileManager,
+      publicFilesRoot,
+      listFileShares,
+      listFavorites,
+      chownProjectPath,
+      getWebDavSettings,
+      issueWebDavToken,
+      setWebDavSettings,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'help' || sub === '--help') {
+        process.stderr.write(`${tl('cli.usage.files.sub.--root.public.project.42ebd4')}\n`);
+        return 2;
+      }
+
+      const rootParam = getOpt(args, '--root') ?? 'public';
+      let root: string;
+      let rootKey: string;
+      let owner:
+        | { linuxUser: string; linuxGroup: string; homeDir: string }
+        | undefined;
+      if (rootParam === 'public' || !rootParam) {
+        root = publicFilesRoot(ctx.dataDir);
+        rootKey = 'public';
+      } else if (rootParam.startsWith('project:')) {
+        const projectId = rootParam.slice('project:'.length);
+        const proj = ctx.projects.get(projectId);
+        root = proj.homeDir;
+        rootKey = rootParam;
+        owner = {
+          linuxUser: proj.linuxUser,
+          linuxGroup: proj.linuxGroup || proj.linuxUser,
+          homeDir: proj.homeDir,
+        };
+      } else {
+        process.stderr.write(`${tl('cli.msg.--root.must.be.a84834')}\n`);
+        return 2;
+      }
+      const fm = new FileManager(root);
+
+      const maybeChown = async (relPaths: string[]) => {
+        if (!owner?.linuxUser) return { chowned: false, notes: [] as string[] };
+        const notes: string[] = [];
+        let any = false;
+        for (const rel of relPaths) {
+          if (!rel || rel === '.' || rel === '/') continue;
+          const abs = join(owner.homeDir, rel.replace(/^\/+/, ''));
+          const r = await chownProjectPath(ctx.host, owner, abs);
+          notes.push(...r.notes);
+          if (r.ok) any = true;
+        }
+        return { chowned: any, notes };
+      };
+
+      if (sub === 'list' || sub === 'ls') {
+        const path = getOpt(args, '--path') ?? '.';
+        const items = fm.list(path, {
+          q: getOpt(args, '--q'),
+          sort: (getOpt(args, '--sort') as 'name' | 'size' | 'mtime') || 'name',
+          order: (getOpt(args, '--order') as 'asc' | 'desc') || 'asc',
+        });
+        printJson({
+          ok: true,
+          root: rootKey,
+          path,
+          items,
+          usage: fm.usage(),
+          meta: { total: items.length },
+        });
+        return 0;
+      }
+
+      if (sub === 'stat') {
+        const path = getOpt(args, '--path');
+        if (!path) {
+          process.stderr.write(`${tl('cli.usage.files.stat.--path.rel.17c8f2')}\n`);
+          return 2;
+        }
+        printJson({ ok: true, root: rootKey, ...fm.stat(path) });
+        return 0;
+      }
+
+      if (sub === 'read') {
+        const path = getOpt(args, '--path');
+        if (!path) {
+          process.stderr.write(`${tl('cli.usage.files.read.--path.rel.e35f8d')}\n`);
+          return 2;
+        }
+        printJson({ ok: true, root: rootKey, ...fm.readText(path) });
+        return 0;
+      }
+
+      if (sub === 'write') {
+        const path = getOpt(args, '--path');
+        if (!path) {
+          process.stderr.write(`${tl('cli.usage.files.write.--path.rel.--content.0addb1')}\n`);
+          return 2;
+        }
+        let content = getOpt(args, '--content');
+        const localFile = getOpt(args, '--file');
+        if (localFile) {
+          const { readFileSync } = await import('node:fs');
+          content = readFileSync(localFile, 'utf8');
+        }
+        if (content == null) {
+          process.stderr.write(`${tl('cli.msg.need.--content.or.4d7001')}\n`);
+          return 2;
+        }
+        const result = fm.writeText(path, content);
+        const own = await maybeChown([path]);
+        printJson({ ok: true, root: rootKey, ...result, ...own });
+        return 0;
+      }
+
+      if (sub === 'mkdir') {
+        const path = getOpt(args, '--path');
+        if (!path) {
+          process.stderr.write(`${tl('cli.usage.files.mkdir.--path.rel.ae0438')}\n`);
+          return 2;
+        }
+        const result = fm.mkdir(path);
+        const own = await maybeChown([path]);
+        printJson({ ok: true, root: rootKey, ...result, ...own });
+        return 0;
+      }
+
+      if (sub === 'rm' || sub === 'delete') {
+        const path = getOpt(args, '--path');
+        if (!path) {
+          process.stderr.write(`${tl('cli.usage.files.rm.--path.rel.--permanent.fe2051')}\n`);
+          return 2;
+        }
+        const result = hasFlag(args, '--permanent')
+          ? fm.removePermanent(path)
+          : fm.remove(path);
+        printJson({ ok: true, root: rootKey, ...result });
+        return result.deleted ? 0 : 4;
+      }
+
+      if (sub === 'rename') {
+        const from = getOpt(args, '--from') ?? getOpt(args, '--src');
+        const to = getOpt(args, '--to') ?? getOpt(args, '--dst');
+        if (!from || !to) {
+          process.stderr.write(`${tl('cli.usage.files.rename.--from.rel.--to.35a260')}\n`);
+          return 2;
+        }
+        const result = fm.rename(from, to);
+        const own = await maybeChown([to]);
+        printJson({ ok: true, root: rootKey, ...result, ...own });
+        return 0;
+      }
+
+      if (sub === 'copy' || sub === 'cp') {
+        const from = getOpt(args, '--from') ?? getOpt(args, '--src');
+        const to = getOpt(args, '--to') ?? getOpt(args, '--dst');
+        if (!from || !to) {
+          process.stderr.write(`${tl('cli.usage.files.copy.--from.rel.--to.5337f4')}\n`);
+          return 2;
+        }
+        const result = fm.copy(from, to);
+        const own = await maybeChown([to]);
+        printJson({ ok: true, root: rootKey, ...result, ...own });
+        return 0;
+      }
+
+      if (sub === 'move' || sub === 'mv') {
+        const from = getOpt(args, '--from') ?? getOpt(args, '--src');
+        const to = getOpt(args, '--to') ?? getOpt(args, '--dst');
+        if (!from || !to) {
+          process.stderr.write(`${tl('cli.usage.files.move.--from.rel.--to.75cf5d')}\n`);
+          return 2;
+        }
+        const result = fm.move(from, to);
+        const own = await maybeChown([to]);
+        printJson({ ok: true, root: rootKey, ...result, ...own });
+        return 0;
+      }
+
+      if (sub === 'chmod') {
+        const path = getOpt(args, '--path');
+        const mode = getOpt(args, '--mode');
+        if (!path || !mode) {
+          process.stderr.write(`${tl('cli.usage.files.chmod.--path.rel.--mode.39f983')}\n`);
+          return 2;
+        }
+        const result = fm.chmod(path, mode);
+        printJson({ ok: true, root: rootKey, ...result });
+        return 0;
+      }
+
+      if (sub === 'trash') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        if (act === 'list') {
+          printJson({ ok: true, root: rootKey, items: fm.listTrash() });
+          return 0;
+        }
+        if (act === 'restore') {
+          const id = getOpt(args, '--id');
+          if (!id) {
+            process.stderr.write(`${tl('cli.usage.files.trash.restore.--id.trash.c89ce9')}\n`);
+            return 2;
+          }
+          printJson({ ok: true, root: rootKey, ...fm.restoreTrash(id) });
+          return 0;
+        }
+        if (act === 'purge') {
+          const id = getOpt(args, '--id');
+          const purged = fm.purgeTrash(id ?? undefined);
+          printJson({ root: rootKey, ...purged });
+          return purged.ok ? 0 : 1;
+        }
+        process.stderr.write(`${tl('cli.usage.files.trash.list.restore.purge.ef063d')}\n`);
+        return 2;
+      }
+
+      if (sub === 'shares') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        if (act === 'list') {
+          printJson({ ok: true, root: rootKey, items: listFileShares(ctx.db, rootKey) });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.files.shares.list.ac342c')}\n`);
+        return 2;
+      }
+
+      if (sub === 'favorites' || sub === 'fav') {
+        printJson({ ok: true, root: rootKey, items: listFavorites(ctx.db, rootKey) });
+        return 0;
+      }
+
+      if (sub === 'upload') {
+        const dir = (getOpt(args, '--dir') ?? '.').replace(/\/$/, '') || '.';
+        const files: string[] = [];
+        for (let i = 0; i < args.length; i++) {
+          if ((args[i] === '--file' || args[i] === '-f') && args[i + 1] && !args[i + 1].startsWith('-')) {
+            files.push(args[i + 1]!);
+          }
+        }
+        if (!files.length) {
+          process.stderr.write(`${tl('cli.usage.files.upload.--dir.rel.--file.f8c3bf')}\n`);
+          return 2;
+        }
+        const { readFileSync } = await import('node:fs');
+        const { basename } = await import('node:path');
+        const written: Array<{ path: string; bytes: number }> = [];
+        for (const local of files.slice(0, 50)) {
+          const name = basename(local);
+          const rel = dir === '.' ? name : `${dir}/${name}`;
+          const buf = readFileSync(local);
+          const r = fm.writeBase64(rel, buf.toString('base64'));
+          written.push(r);
+          await maybeChown([rel]);
+        }
+        printJson({
+          ok: true,
+          root: rootKey,
+          dir,
+          count: written.length,
+          items: written,
+        });
+        return 0;
+      }
+
+      if (sub === 'webdav') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'status';
+        if (act === 'status') {
+          const s = getWebDavSettings(ctx.db);
+          printJson({
+            ok: true,
+            enabled: s.enabled,
+            mountPath: s.mountPath,
+            tokenId: s.tokenId ?? null,
+            hasToken: Boolean(s.tokenHash),
+            notes: [
+              s.enabled
+                ? 'WebDAV enabled — use Basic ysk:<token> on /webdav'
+                : 'WebDAV disabled',
+            ],
+          });
+          return 0;
+        }
+        if (act === 'token' || act === 'issue') {
+          const r = issueWebDavToken(ctx.db);
+          printJson({
+            ok: true,
+            token: r.token,
+            tokenId: r.settings.tokenId,
+            enabled: r.settings.enabled,
+            notes: [
+              ...r.notes,
+              'Token shown once — store securely; password field = token',
+            ],
+          });
+          return 0;
+        }
+        if (act === 'disable') {
+          setWebDavSettings(ctx.db, { enabled: false });
+          printJson({ ok: true, enabled: false, notes: ['WebDAV disabled'] });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.files.webdav.status.token.disable.f8e94b')}\n`);
+        return 2;
+      }
+
+      process.stderr.write(`${tl('cli.err.unknown.files.sub.sub.07ad7e', { sub })}\n`);
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'store') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'status';
+    if (sub === 'help' || sub === '--help') {
+      process.stderr.write(`${tl('cli.usage.store.sub.--data-dir.path.--json.d580e4')}\n`);
+      return 2;
+    }
+    const {
+      exportStoreDocument,
+      importStoreDocument,
+      storeStatus,
+      openDocumentStoreSync,
+      resolveStoreBackend,
+    } = await import('@ysk/core');
+    const ctx = openCliContext(args);
+    try {
+      if (sub === 'status') {
+        const resolved = resolveStoreBackend({
+          path: join(ctx.dataDir, 'ysk.json'),
+          kind: (getOpt(args, '--kind') as 'json' | 'sqlite' | 'postgres' | undefined) ?? undefined,
+        });
+        printJson({
+          ...storeStatus(ctx.db, join(ctx.dataDir, 'ysk.json')),
+          resolved,
+          dataDir: ctx.dataDir,
+        });
+        return 0;
+      }
+      if (sub === 'export') {
+        const out = getOpt(args, '--out') ?? join(ctx.dataDir, 'exports', `store-${Date.now()}.json`);
+        const r = exportStoreDocument(ctx.db, out);
+        printJson(r);
+        return 0;
+      }
+      if (sub === 'import') {
+        const inp = getOpt(args, '--in') ?? getOpt(args, '--file');
+        if (!inp) {
+          process.stderr.write(`${tl('cli.usage.store.import.--in.file.json.5b6fdd')}\n`);
+          return 2;
+        }
+        const r = importStoreDocument(ctx.db, inp);
+        printJson(r);
+        return 0;
+      }
+      if (sub === 'migrate') {
+        const to = (getOpt(args, '--to') ?? '').toLowerCase();
+        if (to !== 'json' && to !== 'sqlite') {
+          process.stderr.write(`${tl('cli.usage.store.migrate.--to.json.sqlite.1c52a3')}\n`);
+          return 2;
+        }
+        const out =
+          getOpt(args, '--out') ??
+          join(ctx.dataDir, to === 'sqlite' ? 'ysk.sqlite' : 'ysk.migrated.json');
+        // Export then open target and import
+        const tmp = join(ctx.dataDir, `.migrate-${process.pid}.json`);
+        exportStoreDocument(ctx.db, tmp);
+        const target = openDocumentStoreSync({
+          kind: to as 'json' | 'sqlite',
+          path: out,
+        });
+        importStoreDocument(target, tmp);
+        target.close();
+        printJson({
+          ok: true,
+          to,
+          out,
+          notes: [
+            `migrated document → ${out}`,
+            to === 'sqlite'
+              ? 'Start with YSK_STORE=sqlite or -- path ending .sqlite'
+              : 'JSON atomic file store',
+          ],
+        });
+        return 0;
+      }
+      process.stderr.write(`${tl('cli.err.unknown.store.sub.sub.b7a083', { sub })}\n`);
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'cdn') {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const ctx = openCliContext(args);
+    try {
+      const {
+        listCdnNodes,
+        upsertCdnNode,
+        deleteCdnNode,
+        setCdnNodeDrain,
+        probeAllCdnNodes,
+        probeCdnNode,
+        listCdnSites,
+        upsertCdnSite,
+        deleteCdnSite,
+        getCdnSite,
+        applyCdnSiteEdgeRender,
+        fanOutCdnSite,
+        purgeCdnSite,
+        collectCdnDashboard,
+        runAllCdnSitesHealthLoop,
+        enableCdnFromProject,
+        syncCdnSiteDns,
+      } = await import('@ysk/core');
+
+      if (sub === 'help' || sub === '--help') {
+        process.stderr.write(`${tl('cli.usage.cdn.sub.--data-dir.path.--json.092842')}\n`);
+        return 2;
+      }
+
+      if (sub === 'nodes') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        if (act === 'list') {
+          const items = listCdnNodes(ctx.db);
+          printJson({ ok: true, items, meta: { total: items.length } });
+          return 0;
+        }
+        if (act === 'upsert' || act === 'create') {
+          const name = getOpt(args, '--name');
+          if (!name) {
+            process.stderr.write(`${tl('cli.usage.cdn.nodes.upsert.--name.name.8f6f39')}\n`);
+            return 2;
+          }
+          const node = upsertCdnNode(ctx.db, {
+            id: getOpt(args, '--id'),
+            name,
+            baseUrl: getOpt(args, '--base-url'),
+            fleetAgentId: getOpt(args, '--fleet-agent-id'),
+            sshHost: getOpt(args, '--ssh-host'),
+            sshPort: getOpt(args, '--ssh-port')
+              ? Number(getOpt(args, '--ssh-port'))
+              : undefined,
+            sshUsername: getOpt(args, '--ssh-user'),
+            sshIdentityId: getOpt(args, '--ssh-identity'),
+            region: getOpt(args, '--region'),
+            publicIpv4: getOpt(args, '--ipv4')
+              ? String(getOpt(args, '--ipv4')).split(/[\s,]+/).filter(Boolean)
+              : undefined,
+            healthUrl: getOpt(args, '--health-url'),
+          });
+          printJson({ ok: true, node });
+          return 0;
+        }
+        if (act === 'delete') {
+          const id = getOpt(args, '--id');
+          if (!id) {
+            process.stderr.write(`${tl('cli.usage.cdn.nodes.delete.--id.node.0c6a1e')}\n`);
+            return 2;
+          }
+          const ok = deleteCdnNode(ctx.db, id);
+          printJson({ ok });
+          return ok ? 0 : 4;
+        }
+        if (act === 'probe') {
+          const id = getOpt(args, '--id');
+          if (id) {
+            const r = await probeCdnNode(ctx.db, id);
+            printJson(r);
+            return exitFromResult(r);
+          }
+          const r = await probeAllCdnNodes(ctx.db);
+          printJson(r);
+          return exitFromResult(r);
+        }
+        if (act === 'drain') {
+          const id = getOpt(args, '--id');
+          if (!id) {
+            process.stderr.write(`${tl('cli.usage.cdn.nodes.drain.--id.node.a8aa81')}\n`);
+            return 2;
+          }
+          const node = setCdnNodeDrain(ctx.db, id, !hasFlag(args, '--off'));
+          printJson({ ok: true, node });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.cdn.nodes.list.upsert.delete.52549e')}\n`);
+        return 2;
+      }
+
+      if (sub === 'sites') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        if (act === 'list') {
+          const items = listCdnSites(ctx.db);
+          printJson({ ok: true, items, meta: { total: items.length } });
+          return 0;
+        }
+        if (act === 'get') {
+          const id = getOpt(args, '--id') ?? getOpt(args, '--site-id');
+          if (!id) {
+            process.stderr.write(`${tl('cli.usage.cdn.sites.get.--id.site.3c3c35')}\n`);
+            return 2;
+          }
+          const site = getCdnSite(ctx.db, id);
+          if (!site) {
+            printJson({ ok: false, code: ErrorCodes.NOT_FOUND });
+            return 4;
+          }
+          printJson({ ok: true, site });
+          return 0;
+        }
+        if (act === 'upsert' || act === 'create') {
+          const name = getOpt(args, '--name');
+          const domains = getOpt(args, '--domains') ?? getOpt(args, '--domain');
+          if (!name || !domains) {
+            process.stderr.write(`${tl('cli.usage.cdn.sites.upsert.--name.n.6ebb75')}\n`);
+            return 2;
+          }
+          const edgeIds = args
+            .map((a, i) => (a === '--edge-id' || a === '--edge' ? args[i + 1] : null))
+            .filter((x): x is string => Boolean(x && !x.startsWith('-')));
+          const originProject = getOpt(args, '--origin-project');
+          const originUrl = getOpt(args, '--origin-url');
+          const site = upsertCdnSite(ctx.db, {
+            id: getOpt(args, '--id'),
+            name,
+            domains: domains.split(/[\s,]+/).filter(Boolean),
+            edgeNodeIds: edgeIds.length ? edgeIds : undefined,
+            origin: originProject
+              ? { kind: 'project', projectId: originProject }
+              : originUrl
+                ? { kind: 'url', url: originUrl }
+                : undefined,
+            mode: getOpt(args, '--mode') as import('@ysk/shared').CdnSiteMode | undefined,
+          });
+          printJson({ ok: true, site });
+          return 0;
+        }
+        if (act === 'delete') {
+          const id = getOpt(args, '--id') ?? getOpt(args, '--site-id');
+          if (!id) {
+            process.stderr.write(`${tl('cli.usage.cdn.sites.delete.--id.site.51ef8f')}\n`);
+            return 2;
+          }
+          const ok = deleteCdnSite(ctx.db, id);
+          printJson({ ok });
+          return ok ? 0 : 4;
+        }
+        process.stderr.write(`${tl('cli.usage.cdn.sites.list.get.upsert.609da6')}\n`);
+        return 2;
+      }
+
+      if (sub === 'render') {
+        const siteId = getOpt(args, '--site-id') ?? getOpt(args, '--id');
+        if (!siteId) {
+          process.stderr.write(`${tl('cli.usage.cdn.render.--site-id.id.--dry-run.2149eb')}\n`);
+          return 2;
+        }
+        const r = await applyCdnSiteEdgeRender({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          siteId,
+          host: ctx.host,
+          dryRun: hasFlag(args, '--dry-run'),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'apply' || sub === 'fan-out' || sub === 'fanout') {
+        const siteId = getOpt(args, '--site-id') ?? getOpt(args, '--id');
+        if (!siteId) {
+          process.stderr.write(`${tl('cli.usage.cdn.apply.--site-id.id.--edge-id.a527b3')}\n`);
+          return 2;
+        }
+        const r = await fanOutCdnSite({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId,
+          edgeNodeId: getOpt(args, '--edge-id') ?? getOpt(args, '--edge'),
+          enqueue: (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'purge') {
+        const siteId = getOpt(args, '--site-id') ?? getOpt(args, '--id');
+        if (!siteId) {
+          process.stderr.write(`${tl('cli.usage.cdn.purge.--site-id.id.--edge-id.bc08ec')}\n`);
+          return 2;
+        }
+        const r = await purgeCdnSite({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId,
+          edgeNodeId: getOpt(args, '--edge-id') ?? getOpt(args, '--edge'),
+          enqueue: (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'dns-sync') {
+        const siteId = getOpt(args, '--site-id') ?? getOpt(args, '--id');
+        if (!siteId) {
+          process.stderr.write(`${tl('cli.usage.cdn.dns-sync.--site-id.id.--apply-zone.343068')}\n`);
+          return 2;
+        }
+        const r = await syncCdnSiteDns({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          siteId,
+          applyZone: hasFlag(args, '--apply-zone'),
+          probeFirst: !hasFlag(args, '--no-probe'),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'probe') {
+        const r = await probeAllCdnNodes(ctx.db);
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'dashboard') {
+        const dash = await collectCdnDashboard({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+        });
+        printJson({ ok: true, ...dash });
+        return 0;
+      }
+
+      if (sub === 'health-loop') {
+        const r = await runAllCdnSitesHealthLoop({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          applyZone: hasFlag(args, '--apply-zone'),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'from-project') {
+        const projectId = getOpt(args, '--project-id') ?? getOpt(args, '--id');
+        if (!projectId) {
+          process.stderr.write(`${tl('cli.usage.cdn.from-project.--project-id.id.--edge-id.a96f42')}\n`);
+          return 2;
+        }
+        const proj = ctx.projects.get(projectId);
+        const edgeIds = args
+          .map((a, i) => (a === '--edge-id' || a === '--edge' ? args[i + 1] : null))
+          .filter((x): x is string => Boolean(x && !x.startsWith('-')));
+        const r = enableCdnFromProject({
+          db: ctx.db,
+          project: proj,
+          edgeNodeIds: edgeIds.length ? edgeIds : undefined,
+          name: getOpt(args, '--name'),
+        });
+        printJson(r);
+        return r.ok ? 0 : 1;
+      }
+
+      process.stderr.write(`${tl('cli.err.unknown.cdn.subcommand.sub.76664f', { sub })}\n`);
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
   if (command === 'agents') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0];
+    // Fleet registry (panel parity)
+    if (sub === 'fleet' || sub === 'list' || sub === 'register' || sub === 'commands') {
+      const ctx = openCliContext(args);
+      try {
+        if (sub === 'fleet' || sub === 'list') {
+          const act =
+            sub === 'list'
+              ? 'list'
+              : (args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list');
+          if (act === 'list' || sub === 'list') {
+            const group = getOpt(args, '--group');
+            const items = ctx.fleet.list(group);
+            printJson({
+              ok: true,
+              items,
+              notes: [
+                'status registered = panel-only (not live); connected = heartbeat seen',
+                'stale when last_seen > 60s (connected) or > 5m (registered)',
+              ],
+            });
+            return 0;
+          }
+          if (act === 'register') {
+            const agentId = getOpt(args, '--id') ?? getOpt(args, '--agent-id');
+            if (!agentId) {
+              process.stderr.write(`${tl('cli.usage.agents.fleet.register.--id.agent.209b2d')}\n`);
+              return 2;
+            }
+            const row = ctx.fleet.register(
+              agentId,
+              getOpt(args, '--group'),
+              hasFlag(args, '--edge') ? { source: 'edge' } : { source: 'cli' },
+            );
+            printJson({
+              ok: true,
+              agent: row,
+              notes: [
+                row.status === 'registered'
+                  ? 'panel/cli register only — not live until heartbeat'
+                  : 'edge-style register (connected)',
+              ],
+            });
+            return 0;
+          }
+          if (act === 'commands') {
+            const sessionId = getOpt(args, '--session') ?? getOpt(args, '--id');
+            if (!sessionId) {
+              process.stderr.write(`${tl('cli.usage.agents.fleet.commands.--session.session.f8067c')}\n`);
+              return 2;
+            }
+            const items = ctx.fleet.listCommands(sessionId);
+            printJson({
+              ok: true,
+              items,
+              notes: ['queued ≠ done — agent must pull + ack'],
+            });
+            return 0;
+          }
+          if (act === 'remove' || act === 'delete') {
+            const sessionId = getOpt(args, '--session') ?? getOpt(args, '--id');
+            if (!sessionId) {
+              process.stderr.write(`${tl('cli.usage.agents.fleet.remove.--session.session.1827fe')}\n`);
+              return 2;
+            }
+            const r = ctx.fleet.remove(sessionId);
+            printJson(r);
+            return 0;
+          }
+        }
+        if (sub === 'register') {
+          const agentId = getOpt(args, '--id') ?? getOpt(args, '--agent-id');
+          if (!agentId) {
+            process.stderr.write(`${tl('cli.usage.agents.register.--id.agent.id.3c4477')}\n`);
+            return 2;
+          }
+          const row = ctx.fleet.register(agentId, getOpt(args, '--group'), { source: 'cli' });
+          printJson({ ok: true, agent: row });
+          return 0;
+        }
+        if (sub === 'commands') {
+          const sessionId = getOpt(args, '--session') ?? getOpt(args, '--id');
+          if (!sessionId) {
+            process.stderr.write(`${tl('cli.usage.agents.commands.--session.session.id.e620d2')}\n`);
+            return 2;
+          }
+          printJson({ ok: true, items: ctx.fleet.listCommands(sessionId) });
+          return 0;
+        }
+      } finally {
+        closeAppContext(ctx);
+      }
+    }
     if (sub === 'probe' || hasFlag(args, '--probe')) {
       const configPath = getOpt(args, '--config');
       const dataDir = getOpt(args, '--data-dir');
@@ -432,18 +1467,22 @@ async function mainInner(
         closeAppContext(ctx);
       }
     }
-    const data = listAgentRuntimes();
-    if (json) printJson({ ok: true, code: 'YSK_AGENTS', message: tl('notes.auto.n0076'), data });
-    else {
-      for (const a of data) process.stdout.write(`${a.kind}\t${a.name}\t${a.status}\n`);
+    if (sub === 'runtimes' || !sub) {
+      const data = listAgentRuntimes();
+      if (json) printJson({ ok: true, code: 'YSK_AGENTS', message: tl('notes.auto.n0076'), data });
+      else {
+        for (const a of data) process.stdout.write(`${a.kind}\t${a.name}\t${a.status}\n`);
+      }
+      return 0;
     }
-    return 0;
+    process.stderr.write(`${tl('cli.usage.agents.runtimes.probe.fleet.list.261fa4')}\n`);
+    return 2;
   }
 
   if (command === 'agent') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'run';
     if (sub !== 'run') {
-      process.stderr.write('Usage: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n');
+      process.stderr.write(`${tl('cli.usage.agent.run.--control-plane.url.--id.cfefbe')}\n`);
       return 2;
     }
     const controlPlane = getOpt(args, '--control-plane') ?? 'http://127.0.0.1:9287';
@@ -587,7 +1626,7 @@ async function mainInner(
   if (command === 'ask') {
     const prompt = args.filter((a) => !a.startsWith('-')).slice(1).join(' ');
     if (!prompt) {
-      process.stderr.write('Usage: ysk-server ask "check system info"\n');
+      process.stderr.write(`${tl('cli.usage.ask.check.system.info.b0c781')}\n`);
       return 2;
     }
     const configPath = getOpt(args, '--config');
@@ -616,11 +1655,7 @@ async function mainInner(
   }
 
   if (command === 'backup') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'all';
-    if (sub !== 'all') {
-      process.stderr.write('Usage: ysk-server backup all [--data-dir <path>] [--config <path>]\n');
-      return 2;
-    }
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
     const configPath = getOpt(args, '--config');
     const dataDir = getOpt(args, '--data-dir');
     let config = configPath ? loadConfigFile(configPath) : undefined;
@@ -628,41 +1663,750 @@ async function mainInner(
       config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
     }
     const { createAppContext, closeAppContext } = await import('./app-context.js');
-    const { backupAllProjects, getBackupExclusions } = await import('@ysk/core');
+    const {
+      backupAllProjects,
+      backupControlPlane,
+      restoreControlPlaneBackup,
+      restoreProjectBackup,
+      deleteProjectBackup,
+      listBackups,
+      filterBackupList,
+      getBackupExclusions,
+      getBackupRemotePublic,
+      getResticSettingsPublic,
+      getResticSettings,
+      setBackupRemote,
+      setBackupExclusions,
+      setResticSettings,
+      resticBackupProject,
+      listResticSnapshots,
+      resticRestoreProject,
+      pushBackupRemote,
+      localizeLastBackupRun,
+      CONTROL_PLANE_BACKUP_ID,
+    } = await import('@ysk/core');
     const ctx = createAppContext({
       version: VERSION,
       config,
       configPath,
       dataDir: dataDir ?? config?.dataDir,
-      executeEnabled: process.env.YSK_EXECUTE === '1' });
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
     try {
-      const projects = ctx.db.snapshot.projects.map((p) => ({
-        id: p.id,
-        home_dir: p.home_dir,
-        name: p.name }));
-      const excludes = getBackupExclusions(ctx.db);
-      const r = await backupAllProjects({
-        host: ctx.host,
-        dataDir: ctx.dataDir,
-        projects,
-        excludes: excludes.length ? excludes : ['node_modules', '.git', 'vendor', '.cache'] });
-      for (const item of r.results) {
-        if (item.ok && item.archivePath && !item.skipped) {
-          const p = ctx.db.snapshot.projects.find((x) => x.id === item.projectId);
-          if (p) {
-            p.last_backup_path = item.archivePath;
-            p.last_backup_at = new Date().toISOString();
-            p.updated_at = new Date().toISOString();
+      if (sub === 'help' || sub === '--help') {
+        process.stderr.write(`${tl('cli.usage.backup.sub.--data-dir.path.--json.777243')}\n`);
+        return 2;
+      }
+
+      if (sub === 'list') {
+        const items = filterBackupList(listBackups(ctx.dataDir), {
+          projectId: getOpt(args, '--project-id') ?? getOpt(args, '--id'),
+          q: getOpt(args, '--q'),
+        });
+        printJson({
+          ok: true,
+          items,
+          meta: { total: items.length },
+        });
+        return 0;
+      }
+
+      if (sub === 'status') {
+        const rawLast = ctx.settings.getJson<Record<string, unknown>>('last_backup_run');
+        const items = listBackups(ctx.dataDir);
+        const schedule = await ctx.cron.probeInstallStatus();
+        const jobs = ctx.cron
+          .list()
+          .filter((j) => j.command.includes('ysk-backup-all') || j.command.includes('backup all'));
+        printJson({
+          ok: true,
+          dataDir: ctx.dataDir,
+          archiveCount: items.length,
+          controlPlaneCount: items.filter((x) => x.projectId === CONTROL_PLANE_BACKUP_ID).length,
+          lastRun: localizeLastBackupRun(rawLast ?? null),
+          lastControlPlane: ctx.settings.getJson('last_control_plane_backup'),
+          scheduleJobs: jobs,
+          schedule,
+        });
+        return 0;
+      }
+
+      if (sub === 'settings') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'get';
+        if (act === 'get' || act === 'show' || act === 'list') {
+          printJson({
+            ok: true,
+            remote: getBackupRemotePublic(ctx.db),
+            exclusions: getBackupExclusions(ctx.db),
+            restic: getResticSettingsPublic(ctx.db),
+          });
+          return 0;
+        }
+        if (act === 'set' || act === 'update') {
+          const fromJson = getOpt(args, '--from-json') ?? getOpt(args, '--file');
+          if (fromJson) {
+            const { readFileSync } = await import('node:fs');
+            const patch = JSON.parse(readFileSync(fromJson, 'utf8')) as {
+              remote?: Record<string, unknown>;
+              exclusions?: string[];
+              restic?: Record<string, unknown>;
+            };
+            if (patch.remote) setBackupRemote(ctx.db, patch.remote as never);
+            if (patch.exclusions) setBackupExclusions(ctx.db, patch.exclusions);
+            if (patch.restic) setResticSettings(ctx.db, patch.restic as never);
+          } else {
+            // remote flags
+            const kind = getOpt(args, '--remote-kind') as 'local' | 'sftp' | 's3' | undefined;
+            const remotePatch: Record<string, unknown> = {};
+            if (kind) remotePatch.kind = kind;
+            if (hasFlag(args, '--remote-enable')) remotePatch.enabled = true;
+            if (hasFlag(args, '--remote-disable')) remotePatch.enabled = false;
+            if (getOpt(args, '--remote-path')) remotePatch.path = getOpt(args, '--remote-path');
+            if (getOpt(args, '--remote-host')) remotePatch.host = getOpt(args, '--remote-host');
+            if (getOpt(args, '--remote-user')) remotePatch.username = getOpt(args, '--remote-user');
+            if (getOpt(args, '--remote-password'))
+              remotePatch.password = getOpt(args, '--remote-password');
+            if (getOpt(args, '--remote-port'))
+              remotePatch.port = Number(getOpt(args, '--remote-port'));
+            if (getOpt(args, '--s3-bucket')) remotePatch.s3Bucket = getOpt(args, '--s3-bucket');
+            if (getOpt(args, '--s3-region')) remotePatch.s3Region = getOpt(args, '--s3-region');
+            if (Object.keys(remotePatch).length) setBackupRemote(ctx.db, remotePatch as never);
+
+            const excl =
+              getOpt(args, '--exclude') ?? getOpt(args, '--exclusions') ?? getOpt(args, '--exclude-list');
+            if (excl) {
+              setBackupExclusions(
+                ctx.db,
+                excl.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean),
+              );
+            }
+            const exclFile = getOpt(args, '--exclusions-file');
+            if (exclFile) {
+              const { readFileSync } = await import('node:fs');
+              setBackupExclusions(
+                ctx.db,
+                readFileSync(exclFile, 'utf8')
+                  .split('\n')
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              );
+            }
+
+            const resticPatch: Record<string, unknown> = {};
+            if (hasFlag(args, '--restic-enable')) resticPatch.enabled = true;
+            if (hasFlag(args, '--restic-disable')) resticPatch.enabled = false;
+            if (getOpt(args, '--restic-password'))
+              resticPatch.password = getOpt(args, '--restic-password');
+            if (getOpt(args, '--restic-repo')) resticPatch.repoPath = getOpt(args, '--restic-repo');
+            if (getOpt(args, '--restic-s3')) resticPatch.s3Repo = getOpt(args, '--restic-s3');
+            if (Object.keys(resticPatch).length) setResticSettings(ctx.db, resticPatch as never);
+          }
+          printJson({
+            ok: true,
+            remote: getBackupRemotePublic(ctx.db),
+            exclusions: getBackupExclusions(ctx.db),
+            restic: getResticSettingsPublic(ctx.db),
+            notes: ['settings saved (secrets masked in response)'],
+          });
+          return 0;
+        }
+        // default: get (back-compat: `backup settings` alone)
+        printJson({
+          ok: true,
+          remote: getBackupRemotePublic(ctx.db),
+          exclusions: getBackupExclusions(ctx.db),
+          restic: getResticSettingsPublic(ctx.db),
+        });
+        return 0;
+      }
+
+      if (sub === 'control-plane' || sub === 'cp') {
+        ctx.db.persist();
+        const r = await backupControlPlane({ host: ctx.host, dataDir: ctx.dataDir });
+        ctx.settings.setJson('last_control_plane_backup', {
+          at: new Date().toISOString(),
+          ok: r.ok,
+          archivePath: r.archivePath,
+          bytes: r.bytes,
+          notes: r.notes,
+          via: 'cli',
+        });
+        printJson(r);
+        return r.ok ? 0 : 1;
+      }
+
+      if (sub === 'control-plane-restore' || sub === 'cp-restore') {
+        const name = getOpt(args, '--name');
+        if (!name) {
+          process.stderr.write(`${tl('cli.usage.backup.control-plane-restore.--name.archive.--mode.316a76')}\n`);
+          return 2;
+        }
+        const mode = (getOpt(args, '--mode') as 'dry-run' | 'full' | undefined) ?? 'dry-run';
+        const r = await restoreControlPlaneBackup({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          archiveName: name,
+          mode,
+          confirmPhrase: getOpt(args, '--confirm'),
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'restore') {
+        const projectId = getOpt(args, '--project-id') ?? getOpt(args, '--id');
+        const name = getOpt(args, '--name');
+        const mode = (getOpt(args, '--mode') as 'full' | 'web' | 'dry-run' | undefined) ?? 'full';
+        if (!projectId || !name) {
+          process.stderr.write(`${tl('cli.usage.backup.restore.--project-id.id.--name.bc7041')}\n`);
+          return 2;
+        }
+        if (projectId === CONTROL_PLANE_BACKUP_ID) {
+          process.stderr.write(`${tl('cli.msg.use.ysk-server.backup.ca67f4')}\n`);
+          return 2;
+        }
+        const project = ctx.db.snapshot.projects.find((p) => p.id === projectId);
+        if (!project) {
+          printJson({ ok: false, code: ErrorCodes.NOT_FOUND, notes: [tl('notes.auto.n0028')] });
+          return 4;
+        }
+        const r = await restoreProjectBackup({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          projectId,
+          archiveName: name,
+          homeDir: project.home_dir,
+          linuxUser: project.linux_user,
+          linuxGroup: project.linux_group || project.linux_user,
+          mode,
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+
+      if (sub === 'delete') {
+        const projectId = getOpt(args, '--project-id') ?? getOpt(args, '--id');
+        const name = getOpt(args, '--name');
+        if (!projectId || !name) {
+          process.stderr.write(`${tl('cli.usage.backup.delete.--project-id.id.--name.d66c29')}\n`);
+          return 2;
+        }
+        const r = deleteProjectBackup(ctx.dataDir, projectId, name);
+        printJson(r);
+        return r.ok ? 0 : 1;
+      }
+
+      if (sub === 'schedule') {
+        const cronExpr = getOpt(args, '--cron') ?? getOpt(args, '--schedule') ?? '0 3 * * *';
+        const job = ctx.cron.ensureBackupSchedule(cronExpr);
+        let install: Awaited<ReturnType<typeof ctx.cron.installCrontab>> | undefined;
+        if (hasFlag(args, '--install') || wantsHostExecute(args)) {
+          install = await ctx.cron.installCrontab('cli');
+        }
+        const probe = await ctx.cron.probeInstallStatus();
+        const overallOk = install ? install.ok : true;
+        printJson({
+          ok: overallOk,
+          job,
+          install: install ?? null,
+          schedule: probe,
+          notes: [
+            `schedule=${job.schedule}`,
+            `command=${job.command}`,
+            install
+              ? install.ok
+                ? 'host crontab installed'
+                : install.notes.join('; ')
+              : 'managed crontab written; pass --install + YSK_EXECUTE=1 to load host crontab',
+          ],
+        });
+        return overallOk ? 0 : exitFromResult(install ?? { ok: false });
+      }
+
+      if (sub === 'restic') {
+        const resticSub = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        if (resticSub === 'list') {
+          const r = await listResticSnapshots({
+            host: ctx.host,
+            db: ctx.db,
+            dataDir: ctx.dataDir,
+            projectId: getOpt(args, '--project-id') ?? getOpt(args, '--id'),
+          });
+          printJson(r);
+          return exitFromResult(r);
+        }
+        if (resticSub === 'run') {
+          const rs = getResticSettings(ctx.db);
+          if (!rs.enabled || !rs.password?.trim()) {
+            printJson({
+              ok: false,
+              notes: [
+                !rs.enabled ? 'restic disabled in settings' : 'restic password not set',
+              ],
+            });
+            return 2;
+          }
+          const projects = ctx.db.snapshot.projects.slice(0, 40);
+          const results = [];
+          for (const p of projects) {
+            results.push({
+              projectId: p.id,
+              ...(await resticBackupProject({
+                host: ctx.host,
+                dataDir: ctx.dataDir,
+                db: ctx.db,
+                projectId: p.id,
+                homeDir: p.home_dir,
+              })),
+            });
+          }
+          const attempted = results.filter((row) => !row.skipped);
+          const ok = attempted.length === 0 ? true : attempted.every((row) => row.ok);
+          printJson({ ok, results });
+          return ok ? 0 : 1;
+        }
+        if (resticSub === 'restore') {
+          const projectId = getOpt(args, '--project-id') ?? getOpt(args, '--id');
+          const snapshotId = getOpt(args, '--snapshot') ?? getOpt(args, '--snapshot-id');
+          if (!projectId || !snapshotId) {
+            process.stderr.write(`${tl('cli.usage.backup.restic.restore.--project-id.id.a8f133')}\n`);
+            return 2;
+          }
+          const p = ctx.db.snapshot.projects.find((x) => x.id === projectId);
+          if (!p) {
+            printJson({ ok: false, code: ErrorCodes.NOT_FOUND });
+            return 4;
+          }
+          const r = await resticRestoreProject({
+            host: ctx.host,
+            db: ctx.db,
+            dataDir: ctx.dataDir,
+            projectId: p.id,
+            homeDir: p.home_dir,
+            snapshotId,
+            targetDir: getOpt(args, '--target'),
+            overwriteHome: hasFlag(args, '--overwrite-home'),
+            confirmPhrase: getOpt(args, '--confirm'),
+            dryRun: hasFlag(args, '--dry-run') || !hasFlag(args, '--overwrite-home'),
+          });
+          printJson(r);
+          return exitFromResult(r);
+        }
+        process.stderr.write(`${tl('cli.usage.backup.restic.list.run.restore.10402b')}\n`);
+        return 2;
+      }
+
+      if (sub === 'all') {
+        const projects = ctx.db.snapshot.projects.map((p) => ({
+          id: p.id,
+          home_dir: p.home_dir,
+          name: p.name,
+        }));
+        const excludes = getBackupExclusions(ctx.db);
+        const r = await backupAllProjects({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          projects,
+          excludes: excludes.length ? excludes : ['node_modules', '.git', 'vendor', '.cache'],
+        });
+        const sideResults: Array<{
+          projectId: string;
+          kind: 'remote' | 'restic';
+          ok: boolean;
+          skipped?: boolean;
+          notes: string[];
+        }> = [];
+        let sideOk = true;
+        const resticOn = getResticSettings(ctx.db).enabled;
+        for (const item of r.results) {
+          if (item.ok && item.archivePath && !item.skipped) {
+            const p = ctx.db.snapshot.projects.find((x) => x.id === item.projectId);
+            if (p) {
+              p.last_backup_path = item.archivePath;
+              p.last_backup_at = new Date().toISOString();
+              p.updated_at = new Date().toISOString();
+            }
+            try {
+              const push = await pushBackupRemote({
+                host: ctx.host,
+                db: ctx.db,
+                dataDir: ctx.dataDir,
+                localArchivePath: item.archivePath,
+              });
+              sideResults.push({
+                projectId: item.projectId,
+                kind: 'remote',
+                ok: push.ok,
+                skipped: push.skipped,
+                notes: push.notes,
+              });
+              if (!push.skipped && !push.ok) sideOk = false;
+            } catch (e) {
+              sideOk = false;
+              sideResults.push({
+                projectId: item.projectId,
+                kind: 'remote',
+                ok: false,
+                notes: [e instanceof Error ? e.message : String(e)],
+              });
+            }
+            if (resticOn && p) {
+              try {
+                const rs = await resticBackupProject({
+                  host: ctx.host,
+                  dataDir: ctx.dataDir,
+                  db: ctx.db,
+                  projectId: p.id,
+                  homeDir: p.home_dir,
+                });
+                sideResults.push({
+                  projectId: item.projectId,
+                  kind: 'restic',
+                  ok: rs.ok,
+                  skipped: rs.skipped,
+                  notes: rs.notes,
+                });
+                if (!rs.skipped && !rs.ok) sideOk = false;
+              } catch (e) {
+                sideOk = false;
+                sideResults.push({
+                  projectId: item.projectId,
+                  kind: 'restic',
+                  ok: false,
+                  notes: [e instanceof Error ? e.message : String(e)],
+                });
+              }
+            }
           }
         }
+        ctx.db.persist();
+        const overallOk = r.ok && sideOk;
+        const payload = {
+          at: new Date().toISOString(),
+          ...r,
+          ok: overallOk,
+          tarOk: r.ok,
+          sideOk,
+          sideResults,
+          via: 'cli',
+        };
+        ctx.settings.setJson('last_backup_run', payload);
+        printJson(payload);
+        return overallOk ? 0 : 1;
       }
-      ctx.db.persist();
-      ctx.settings.setJson('last_backup_run', {
-        at: new Date().toISOString(),
-        ...r,
-        via: 'cli' });
-      printJson({ ...r, ok: r.ok });
-      return r.ok ? 0 : 1;
+
+      process.stderr.write(`${tl('cli.err.unknown.backup.subcommand.sub.4092ad', { sub })}\n`);
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  /** Panel parity: users / packages / rbac / audit / security */
+  if (
+    command === 'users' ||
+    command === 'packages' ||
+    command === 'rbac' ||
+    command === 'audit' ||
+    command === 'security'
+  ) {
+    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const configPath = getOpt(args, '--config');
+    const dataDir = getOpt(args, '--data-dir');
+    let config = configPath ? loadConfigFile(configPath) : undefined;
+    if (dataDir) {
+      config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
+    }
+    const { createAppContext, closeAppContext } = await import('./app-context.js');
+    const { applyListQuery } = await import('@ysk/core');
+    const { parseListQuery } = await import('@ysk/shared');
+    const ctx = createAppContext({
+      version: VERSION,
+      config,
+      configPath,
+      dataDir: dataDir ?? config?.dataDir,
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
+    try {
+      if (command === 'users') {
+        if (sub === 'list') {
+          const all = ctx.usersAdmin.listUsers();
+          const q = getOpt(args, '--q') ?? '';
+          const role = getOpt(args, '--role');
+          const url = new URL('http://local/');
+          if (q) url.searchParams.set('q', q);
+          if (role) url.searchParams.set('role', role);
+          const query = parseListQuery(url, {
+            enums: { role: ['admin', 'operator', 'viewer', 'agent'] },
+          });
+          const { items, meta } = applyListQuery(all, query, {
+            text: (u) => [u.username, u.roles.join(' '), u.packageId ?? ''],
+            predicates: {
+              role: (u, v) => u.roles.includes(v as never),
+            },
+          });
+          printJson({ ok: true, items, meta });
+          return 0;
+        }
+        if (sub === 'create') {
+          const username = getOpt(args, '--username') ?? getOpt(args, '--user');
+          const password = getOpt(args, '--password');
+          if (!username || !password) {
+            process.stderr.write(`${tl('cli.usage.users.create.--username.u.--password.7145c7')}\n`);
+            return 2;
+          }
+          const role = (getOpt(args, '--role') ?? 'operator') as
+            | 'admin'
+            | 'operator'
+            | 'viewer';
+          const created = ctx.usersAdmin.createUser({
+            username,
+            password,
+            roles: [role],
+            packageId: getOpt(args, '--package-id') ?? undefined,
+            actor: 'cli',
+          });
+          printJson({ ok: true, user: created });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.users.list.--q.text.--role.544685')}\n`);
+        return 2;
+      }
+      if (command === 'packages') {
+        if (sub === 'list') {
+          const all = ctx.usersAdmin.listPackages();
+          const q = getOpt(args, '--q') ?? '';
+          const url = new URL('http://local/');
+          if (q) url.searchParams.set('q', q);
+          const query = parseListQuery(url);
+          const { items, meta } = applyListQuery(all, query, {
+            text: (p) => [p.name, p.notes ?? '', p.id],
+          });
+          printJson({ ok: true, items, meta });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.packages.list.--q.text.b8e16b')}\n`);
+        return 2;
+      }
+      if (command === 'rbac') {
+        if (sub === 'list' || sub === 'policies') {
+          printJson({ ok: true, items: ctx.rbac.listPolicies() });
+          return 0;
+        }
+        if (sub === 'show') {
+          const role = (getOpt(args, '--role') ?? 'operator') as
+            | 'admin'
+            | 'operator'
+            | 'viewer'
+            | 'agent';
+          printJson({
+            ok: true,
+            role,
+            policy: ctx.rbac.getEffectivePolicy(role),
+          });
+          return 0;
+        }
+        if (sub === 'audit' || sub === 'routes') {
+          const { matchMutatingRouteCap, MUTATING_ROUTE_CAP_RULES } = await import(
+            '@ysk/shared'
+          );
+          const samples: Array<{ method: string; path: string; cap: string | null }> = [
+            ['POST', '/api/v1/users'],
+            ['POST', '/api/v1/users/x/impersonate'],
+            ['DELETE', '/api/v1/projects/x'],
+            ['POST', '/api/v1/projects/x/publish-nginx'],
+            ['POST', '/api/v1/backups/restore'],
+            ['POST', '/api/v1/defense/ban'],
+            ['POST', '/api/v1/tools/execute'],
+            ['POST', '/api/v1/db/clusters'],
+            ['POST', '/api/v1/network/apply'],
+            ['POST', '/api/v1/future-unknown/op'],
+          ].map(([method, path]) => ({
+            method,
+            path,
+            cap: matchMutatingRouteCap(method, path),
+          }));
+          printJson({
+            ok: true,
+            ruleCount: MUTATING_ROUTE_CAP_RULES.length,
+            failClosedFallback: true,
+            samples,
+            note: 'Central enforceMutatingRouteCaps on all mutating /api/v1; public auth/agent prefixes skipped',
+          });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.rbac.list.policies.330ade')}\n`);
+        return 2;
+      }
+      if (command === 'audit') {
+        const limit = Math.min(500, Number(getOpt(args, '--limit') ?? 100) || 100);
+        const all = ctx.audit.listRecent(limit) as unknown as Array<Record<string, unknown>>;
+        const q = getOpt(args, '--q') ?? '';
+        const url = new URL('http://local/');
+        if (q) url.searchParams.set('q', q);
+        const query = parseListQuery(url);
+        const { items, meta } = applyListQuery(all, query, {
+          text: (e: Record<string, unknown>) => [
+            String(e.actor ?? ''),
+            String(e.action ?? ''),
+            String(e.resource ?? ''),
+          ],
+        });
+        printJson({ ok: true, items, meta });
+        return 0;
+      }
+      if (command === 'security') {
+        const resolveUserId = (): { id: string; username: string } | null => {
+          const want =
+            getOpt(args, '--user') ?? getOpt(args, '--username') ?? getOpt(args, '--user-id');
+          const all = ctx.usersAdmin.listUsers();
+          if (want) {
+            const byId = all.find((u) => u.id === want);
+            if (byId) return { id: byId.id, username: byId.username };
+            const byName = all.find((u) => u.username === want);
+            if (byName) return { id: byName.id, username: byName.username };
+            return null;
+          }
+          const admin = all.find((u) => u.roles.includes('admin')) ?? all[0];
+          return admin ? { id: admin.id, username: admin.username } : null;
+        };
+
+        // security | security status | security list (back-compat default sub)
+        if (sub === 'list' || sub === 'status' || sub === 'help') {
+          if (sub === 'help') {
+            process.stderr.write(`${tl('cli.security.help')}\n`);
+            return 2;
+          }
+          const users = ctx.usersAdmin.listUsers();
+          const admins = users.filter((u) => u.roles.includes('admin'));
+          const storeAdmins = ctx.db.snapshot.users.filter((u) =>
+            u.roles.includes('admin'),
+          );
+          const requireTotp =
+            ctx.db.snapshot.settings?.['security.require_admin_totp'] === '1';
+          const strict =
+            ctx.db.snapshot.settings?.['security.require_admin_totp_strict'] === '1';
+          printJson({
+            ok: true,
+            requireAdminTotp: requireTotp,
+            requireAdminTotpStrict: strict,
+            adminCount: admins.length,
+            adminsWith2fa: admins.filter((u) => u.totpEnabled).length,
+            mustChangePassword: storeAdmins.filter((u) => u.must_change_password).length,
+            listenPublic: ctx.db.snapshot.settings?.['security.listen_public'] === '1',
+            bootstrapInsecure:
+              ctx.db.snapshot.settings?.['security.bootstrap_insecure'] === '1',
+          });
+          return 0;
+        }
+
+        if (sub === 'sessions') {
+          const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+          const target = resolveUserId();
+          if (!target) {
+            process.stderr.write(`${tl('cli.security.noUser')}\n`);
+            return 4;
+          }
+          if (action === 'list') {
+            const items = ctx.auth.listSessions(target.id);
+            printJson({ ok: true, userId: target.id, username: target.username, items });
+            return 0;
+          }
+          if (action === 'revoke') {
+            const id = getOpt(args, '--id') ?? getOpt(args, '--session');
+            if (!id) {
+              process.stderr.write(`${tl('cli.security.sessionRevokeUsage')}\n`);
+              return 2;
+            }
+            const ok = ctx.auth.revokeSession(target.id, id);
+            printJson({ ok, userId: target.id, username: target.username, sessionId: id });
+            return ok ? 0 : 4;
+          }
+          if (action === 'revoke-others' || action === 'revoke-all') {
+            // CLI has no live Bearer — optional --keep-token; empty keeps none (full wipe for user)
+            const keep = getOpt(args, '--keep-token') ?? '';
+            const n = ctx.auth.revokeOtherSessions(target.id, keep);
+            printJson({
+              ok: true,
+              userId: target.id,
+              username: target.username,
+              revoked: n,
+              keptToken: keep ? true : false,
+            });
+            return 0;
+          }
+          process.stderr.write(`${tl('cli.security.sessionsHelp')}\n`);
+          return 2;
+        }
+
+        if (sub === 'api-keys' || sub === 'api-key' || sub === 'apikeys') {
+          const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+          const { listApiKeys, createApiKey, deleteApiKey } = await import('@ysk/core');
+          if (action === 'list') {
+            const items = listApiKeys(ctx.db);
+            printJson({ ok: true, items });
+            return 0;
+          }
+          if (action === 'create') {
+            const name = getOpt(args, '--name') ?? 'cli-key';
+            const scopeRaw = getOpt(args, '--scope') ?? 'full';
+            const scope = scopeRaw === 'read' ? 'read' : 'full';
+            const target = resolveUserId();
+            if (!target) {
+              process.stderr.write(`${tl('cli.security.noUser')}\n`);
+              return 4;
+            }
+            const created = createApiKey(ctx.db, {
+              name,
+              userId: target.id,
+              scope,
+            });
+            ctx.audit.append({
+              actor: 'cli',
+              action: 'auth.api_key.create',
+              detail: {
+                id: created.key.id,
+                name: created.key.name,
+                scope: created.key.scope,
+                userId: target.id,
+              },
+              ok: true,
+            });
+            printJson({
+              ok: true,
+              key: created.key,
+              token: created.token,
+              note: tl('cli.security.tokenOnce'),
+            });
+            return 0;
+          }
+          if (action === 'delete' || action === 'revoke') {
+            const id = getOpt(args, '--id');
+            if (!id) {
+              process.stderr.write(`${tl('cli.security.apiKeyDeleteUsage')}\n`);
+              return 2;
+            }
+            const ok = deleteApiKey(ctx.db, id);
+            if (ok) {
+              ctx.audit.append({
+                actor: 'cli',
+                action: 'auth.api_key.delete',
+                resource: id,
+                detail: { ok },
+                ok: true,
+              });
+            }
+            printJson({ ok, id });
+            return ok ? 0 : 4;
+          }
+          process.stderr.write(`${tl('cli.security.apiKeysHelp')}\n`);
+          return 2;
+        }
+
+        process.stderr.write(`${tl('cli.security.help')}\n`);
+        return 2;
+      }
+      return 2;
     } finally {
       closeAppContext(ctx);
     }
@@ -688,12 +2432,59 @@ async function mainInner(
         printJson({ ok: true, items: ctx.projects.list() });
         return 0;
       }
+      if (sub === 'isolation') {
+        const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const { listIsolationReport, backfillProjectOwners } = await import('@ysk/core');
+        if (action === 'list' || action === 'status') {
+          const snaps = ctx.projects.list().map((p) => ({
+            id: p.id,
+            name: p.name,
+            linuxUser: p.linuxUser,
+            homeDir: p.homeDir,
+            osProvisioned: Boolean(p.osProvisioned),
+            ownerUserId: p.ownerUserId,
+          }));
+          printJson({ ok: true, ...listIsolationReport(snaps) });
+          return 0;
+        }
+        if (action === 'provision') {
+          const id = getOpt(args, '--id');
+          if (!id) {
+            process.stderr.write(`${tl('cli.usage.projects.isolation.provision.--id.projectid.5aff44')}\n`);
+            return 2;
+          }
+          const r = await ctx.projects.provisionOsIsolation(id, 'cli');
+          printJson(r);
+          return r.ok ? 0 : 3;
+        }
+        if (action === 'provision-all') {
+          const limit = getOpt(args, '--limit')
+            ? Number(getOpt(args, '--limit'))
+            : undefined;
+          const r = await ctx.projects.provisionOsIsolationAll('cli', { limit });
+          printJson(r);
+          return r.ok ? 0 : r.attempted ? 1 : 3;
+        }
+        if (action === 'backfill-owners') {
+          const owner =
+            getOpt(args, '--owner-user-id') ??
+            getOpt(args, '--user-id') ??
+            ctx.db.snapshot.users.find((u) => u.roles.includes('admin'))?.id;
+          if (!owner) {
+            process.stderr.write(`${tl('cli.usage.projects.isolation.backfill-owners.--owner-user-id.id.8691da')}\n`);
+            return 2;
+          }
+          const r = backfillProjectOwners(ctx.db, owner, { onlyUnowned: true });
+          printJson({ ok: true, ...r });
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.projects.isolation.list.provision.provision-all.8e9da3')}\n`);
+        return 2;
+      }
       if (sub === 'get' || sub === 'show' || sub === 'info') {
         const id = getOpt(args, '--id') ?? getOpt(args, '--name');
         if (!id) {
-          process.stderr.write(
-            'Usage: ysk-server projects get --id <projectId|name> [--json]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.projects.get.--id.projectid.name.b0d532')}\n`);
           return 2;
         }
         // Prefer UUID id; fall back to name match for agents
@@ -722,9 +2513,7 @@ async function mainInner(
       if (sub === 'create') {
         const name = getOpt(args, '--name');
         if (!name) {
-          process.stderr.write(
-            'Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.projects.create.--name.name.--domain.66e857')}\n`);
           return 2;
         }
         const runtimeRaw = getOpt(args, '--runtime') ?? 'node';
@@ -751,32 +2540,64 @@ async function mainInner(
       if (sub === 'deploy') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write('Usage: ysk-server projects deploy --id <projectId>\n');
+          process.stderr.write(`${tl('cli.usage.projects.deploy.--id.projectid.--entry.339111')}\n`);
           return 2;
         }
         const proj = ctx.projects.get(id);
+        const entry = getOpt(args, '--entry');
+        const portRaw = getOpt(args, '--port');
+        const port = portRaw ? Number(portRaw) : undefined;
         const result =
           proj.runtime === 'php'
             ? await ctx.projectOps.deployPhp(id, {
                 actor: 'cli',
                 preferFpm: hasFlag(args, '--fpm'),
-                forceBuiltin: hasFlag(args, '--builtin') })
+                forceBuiltin: hasFlag(args, '--builtin'),
+                port: Number.isFinite(port) ? port : undefined,
+              })
             : proj.runtime === 'static'
               ? await ctx.projectOps.deployStatic(id, {
                   actor: 'cli',
-                  reload: hasFlag(args, '--reload') })
+                  reload: hasFlag(args, '--reload'),
+                })
               : proj.runtime === 'python' ||
                   proj.runtime === 'go' ||
                   proj.runtime === 'rust'
-                ? await ctx.projectOps.deployProcess(id, { actor: 'cli' })
-                : await ctx.projectOps.deployNode(id, { actor: 'cli' });
+                ? await ctx.projectOps.deployProcess(id, {
+                    actor: 'cli',
+                    entry,
+                    port: Number.isFinite(port) ? port : undefined,
+                  })
+                : await ctx.projectOps.deployNode(id, {
+                    actor: 'cli',
+                    entry,
+                    port: Number.isFinite(port) ? port : undefined,
+                  });
+        printJson(result);
+        return exitFromResult(result);
+      }
+      if (sub === 'git-deploy' || sub === 'git') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`${tl('cli.usage.projects.git-deploy.--id.id.--git-url.a513f5')}\n`);
+          return 2;
+        }
+        const result = await ctx.projectOps.gitDeploy(id, {
+          actor: 'cli',
+          gitUrl: getOpt(args, '--git-url') ?? getOpt(args, '--url'),
+          branch: getOpt(args, '--branch'),
+          redeploy: !hasFlag(args, '--no-redeploy'),
+          depth: getOpt(args, '--depth') ? Number(getOpt(args, '--depth')) : undefined,
+          entry: getOpt(args, '--entry'),
+          skipBuild: hasFlag(args, '--skip-build'),
+        });
         printJson(result);
         return exitFromResult(result);
       }
       if (sub === 'stop') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write('Usage: ysk-server projects stop --id <projectId>\n');
+          process.stderr.write(`${tl('cli.usage.projects.stop.--id.projectid.b15409')}\n`);
           return 2;
         }
         const result = await ctx.projectOps.stopNode(id, 'cli');
@@ -786,7 +2607,7 @@ async function mainInner(
       if (sub === 'backup') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write('Usage: ysk-server projects backup --id <projectId>\n');
+          process.stderr.write(`${tl('cli.usage.projects.backup.--id.projectid.e62846')}\n`);
           return 2;
         }
         const result = await ctx.projectOps.backup(id, 'cli');
@@ -797,9 +2618,7 @@ async function mainInner(
         const id = getOpt(args, '--id');
         const templateId = getOpt(args, '--template');
         if (!id || !templateId) {
-          process.stderr.write(
-            'Usage: ysk-server projects template --id <projectId> --template <id> [--force]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.projects.template.--id.projectid.--template.591ce4')}\n`);
           return 2;
         }
         printJson(ctx.projects.applyTemplate(id, templateId, 'cli', hasFlag(args, '--force')));
@@ -808,16 +2627,14 @@ async function mainInner(
       if (sub === 'health') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write('Usage: ysk-server projects health --id <projectId>\n');
+          process.stderr.write(`${tl('cli.usage.projects.health.--id.projectid.e816ec')}\n`);
           return 2;
         }
         const result = await ctx.projectOps.health(id);
         printJson(result);
         return exitFromResult(result);
       }
-      process.stderr.write(
-        'Usage: ysk-server projects list|get|create|deploy|stop|backup|template|health [options]\n',
-      );
+      process.stderr.write(`${tl('cli.usage.projects.list.get.create.deploy.253b48')}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -891,32 +2708,62 @@ async function mainInner(
         return exitFromResult(result);
       }
       if (sub === 'postgres-provision') {
+        const password = getOpt(args, '--password');
+        if (!password || password.length < 8) {
+          process.stderr.write(`${tl('cli.usage.hosting.postgres-provision.--db.name.--user.2c8889')}\n`);
+          return 2;
+        }
+        const execute = wantsHostExecute(args);
         const result = await provisionPostgresDatabase({
           dbName: getOpt(args, '--db') ?? 'app',
           username: getOpt(args, '--user') ?? 'appuser',
-          password: getOpt(args, '--password') ?? '',
+          password,
           hostExec: ctx.host,
-          execute: wantsHostExecute(args) });
-        printJson(result);
-        return exitFromResult(result);
+          execute,
+        });
+        printJson({
+          ...result,
+          dryRun: !execute,
+          notes: [
+            ...(result.notes ?? []),
+            execute
+              ? 'execute requested — check ok/executed fields (fail-closed if no root)'
+              : 'plan/dry-run only — no host mutation without --execute',
+          ],
+        });
+        return exitFromResult({ ...result, dryRun: !execute });
       }
       if (sub === 'mysql-provision') {
+        const password = getOpt(args, '--password');
+        if (!password || password.length < 8) {
+          process.stderr.write(`${tl('cli.usage.hosting.mysql-provision.--db.name.--user.fc25aa')}\n`);
+          return 2;
+        }
+        const execute = wantsHostExecute(args);
         const result = await provisionMysqlDatabase({
           dbName: getOpt(args, '--db') ?? 'app',
           username: getOpt(args, '--user') ?? 'appuser',
-          password: getOpt(args, '--password') ?? '',
+          password,
           hostExec: ctx.host,
-          execute: wantsHostExecute(args) });
-        printJson(result);
-        return exitFromResult(result);
+          execute,
+        });
+        printJson({
+          ...result,
+          dryRun: !execute,
+          notes: [
+            ...(result.notes ?? []),
+            execute
+              ? 'execute requested — check ok/executed fields (fail-closed if no root)'
+              : 'plan/dry-run only — no host mutation without --execute',
+          ],
+        });
+        return exitFromResult({ ...result, dryRun: !execute });
       }
       if (sub === 'dns-zone') {
         const zone = getOpt(args, '--zone');
         const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
         if (!zone || !serverIp) {
-          process.stderr.write(
-            'Usage: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.dns-zone.--zone.example.com.bdaa0d')}\n`);
           return 2;
         }
         const result = await writeManagedDnsZone({
@@ -952,9 +2799,7 @@ async function mainInner(
         const zone = getOpt(args, '--zone');
         const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
         if (!zone || !serverIp) {
-          process.stderr.write(
-            'Usage: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.powerdns-load.--zone.example.com.dba49c')}\n`);
           return 2;
         }
         const result = await applyPowerDnsZone({
@@ -970,9 +2815,7 @@ async function mainInner(
       if (sub === 'email-apply') {
         const domain = getOpt(args, '--domain');
         if (!domain) {
-          process.stderr.write(
-            'Usage: ysk-server hosting email-apply --domain example.com [--install|--execute]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.email-apply.--domain.example.com.37d350')}\n`);
           return 2;
         }
         const result = await applyEmailStack({
@@ -987,18 +2830,14 @@ async function mainInner(
         const domainName = getOpt(args, '--domain');
         const localPart = getOpt(args, '--local') ?? getOpt(args, '--user');
         if (!domainName || !localPart) {
-          process.stderr.write(
-            'Usage: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.email-mailbox.--domain.x.--local.3d9be3')}\n`);
           return 2;
         }
         let domainId = ctx.email.list().find((d) => d.domain === domainName)?.id;
         if (!domainId) {
           const serverIp = getOpt(args, '--ip');
           if (!serverIp) {
-            process.stderr.write(
-              'New domain requires --ip A.B.C.D (no placeholder defaults)\n',
-            );
+            process.stderr.write(`${tl('cli.msg.new.domain.requires.986b78')}\n`);
             return 2;
           }
           const created = ctx.email.create({
@@ -1019,9 +2858,7 @@ async function mainInner(
         const { applyFtps } = await import('@ysk/core');
         const domain = getOpt(args, '--domain');
         if (!domain) {
-          process.stderr.write(
-            'Usage: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.ftps-apply.--domain.files.example.284a7c')}\n`);
           return 2;
         }
         const result = await applyFtps({
@@ -1080,9 +2917,7 @@ async function mainInner(
         const { applyWebmail } = await import('@ysk/core');
         const domain = getOpt(args, '--domain');
         if (!domain) {
-          process.stderr.write(
-            'Usage: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.webmail-apply.--domain.webmail.example.2ad5b5')}\n`);
           return 2;
         }
         const result = await applyWebmail({
@@ -1100,9 +2935,7 @@ async function mainInner(
         const { applyPublicFileServer } = await import('@ysk/core');
         const domain = getOpt(args, '--domain');
         if (!domain) {
-          process.stderr.write(
-            'Usage: ysk-server hosting public-files --domain files.example.com [--reload]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.public-files.--domain.files.example.0e9013')}\n`);
           return 2;
         }
         const result = await applyPublicFileServer({
@@ -1116,14 +2949,34 @@ async function mainInner(
         printJson(result);
         return exitFromResult(result);
       }
+      if (sub === 'email-deliverability' || sub === 'deliverability') {
+        const domainName = (getOpt(args, '--domain') ?? '').trim().toLowerCase();
+        const idOpt = getOpt(args, '--id');
+        const row = idOpt
+          ? ctx.email.list().find((d) => d.id === idOpt)
+          : ctx.email.list().find((d) => d.domain === domainName);
+        if (!row) {
+          process.stderr.write(`${tl('cli.usage.hosting.email-deliverability.--domain.example.com.8774a4')}\n`);
+          return 2;
+        }
+        const { buildDeliverabilityReport } = await import('@ysk/core');
+        const report = await buildDeliverabilityReport({
+          domain: row.domain,
+          serverIp: row.server_ip,
+          serverIpv6: row.server_ipv6,
+          mailHostname: row.mail_hostname,
+          dkimPublicKey: row.dkim_public_key ?? '',
+          dataDir: ctx.dataDir,
+        });
+        printJson({ ok: true, report });
+        return report.panelReady ? 0 : 1;
+      }
       if (sub === 'email-bootstrap') {
         const { bootstrapEmailServer } = await import('@ysk/core');
         const domain = getOpt(args, '--domain');
         const serverIp = getOpt(args, '--ip');
         if (!domain || !serverIp) {
-          process.stderr.write(
-            'Usage: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n',
-          );
+          process.stderr.write(`${tl('cli.usage.hosting.email-bootstrap.--domain.example.com.796da5')}\n`);
           return 2;
         }
         const result = await bootstrapEmailServer({
@@ -1161,27 +3014,7 @@ async function mainInner(
           dryRun: !wantsHostExecute(args),
           ok: wantsHostExecute(args) ? result.ok : true });
       }
-      process.stderr.write(
-        [
-          'Usage: ysk-server hosting <sub>',
-          '  Dangerous ops default dry-run; add --execute (+ YSK_EXECUTE=1) to apply',
-          '  nginx | nginx-sync [--execute]',
-          '  redis-provision | postgres-provision | mysql-provision [--execute]',
-          '  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]',
-          '  dns-zones | powerdns-status | powerdns-install [--install|--execute]',
-          '  powerdns-load --zone X --ip A.B.C.D [--load|--execute]',
-          '  email-apply --domain X [--install|--execute]',
-          '  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]',
-          '  ftps-apply --domain X [--install|--execute]',
-          '  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]',
-          '  dovecot-passdb --domain X | --all',
-          '  webmail-apply --domain webmail.example.com [--download]',
-          '  public-files --domain files.example.com [--reload]',
-          '  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]',
-          '  firewall-apply [--smtp] [--execute]',
-          '',
-        ].join('\n'),
-      );
+      process.stderr.write(`${tl('cli.usage.hostingHelp')}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -1202,9 +3035,7 @@ async function mainInner(
         const zone = getOpt(args, '--zone');
         const serverIp = getOpt(args, '--ip') ?? getOpt(args, '--server-ip');
         if (!zone || !serverIp) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.dns.zone.--zone.ad30fa', { CLI_NAME })}\n`);
           return 2;
         }
         const result = await writeManagedDnsZone({
@@ -1220,9 +3051,7 @@ async function mainInner(
         printJson(result);
         return exitFromResult(result);
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.dns.zones.zone.5b8bda', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -1265,7 +3094,7 @@ async function mainInner(
       if (sub === 'get' || sub === 'show') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} db-cluster get --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.get.--id.00f803', { CLI_NAME })}\n`);
           return 2;
         }
         printJson({ ok: true, cluster: getDbCluster(ctx.db, id) });
@@ -1276,9 +3105,7 @@ async function mainInner(
         const engineRaw = getOpt(args, '--engine') ?? 'mariadb';
         const kindRaw = getOpt(args, '--kind') ?? 'mariadb-galera';
         if (!name) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.create.--name.e3b733', { CLI_NAME })}\n`);
           return 2;
         }
         const memberArgs: string[] = [];
@@ -1288,7 +3115,7 @@ async function mainInner(
           }
         }
         if (memberArgs.length < 1) {
-          process.stderr.write('Need at least one --member HOST[=role][:access]\n');
+          process.stderr.write(`${tl('cli.msg.need.at.least.7d311a')}\n`);
           return 2;
         }
         const members = memberArgs.map((spec, idx) => {
@@ -1340,7 +3167,7 @@ async function mainInner(
       if (sub === 'plan') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} db-cluster plan --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.plan.--id.483f52', { CLI_NAME })}\n`);
           return 2;
         }
         const { cluster, plan } = planAndMaterializeDbCluster({
@@ -1354,9 +3181,7 @@ async function mainInner(
       if (sub === 'apply') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.apply.--id.4cddb8', { CLI_NAME })}\n`);
           return 2;
         }
         const result = await applyDbClusterLocal({
@@ -1372,9 +3197,7 @@ async function mainInner(
       if (sub === 'probe') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster probe --id UUID [--peers] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.probe.--id.22870c', { CLI_NAME })}\n`);
           return 2;
         }
         const result = hasFlag(args, '--peers')
@@ -1394,9 +3217,7 @@ async function mainInner(
       if (sub === 'install-peers' || sub === 'remote-install') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.install-peers.--id.600b02', { CLI_NAME })}\n`);
           return 2;
         }
         const result = await installDbClusterOnPeers({
@@ -1441,9 +3262,7 @@ async function mainInner(
           const { readFileSync } = await import('node:fs');
           raw = readFileSync(file, 'utf8');
         } else {
-          process.stderr.write(
-            'import-sync prefers fleet clusterSync payload; or --file snapshot.json\n',
-          );
+          process.stderr.write(`${tl('cli.msg.import-sync.prefers.fleet.4d7590')}\n`);
           return 2;
         }
         const data = JSON.parse(raw) as { cluster?: import('@ysk/core').DbCluster };
@@ -1461,7 +3280,7 @@ async function mainInner(
       if (sub === 'artifacts' || sub === 'files') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} db-cluster artifacts --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.artifacts.--id.6b33c4', { CLI_NAME })}\n`);
           return 2;
         }
         const r = listDbClusterArtifacts({
@@ -1478,7 +3297,7 @@ async function mainInner(
       if (sub === 'bundle') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} db-cluster bundle --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.bundle.--id.94ed27', { CLI_NAME })}\n`);
           return 2;
         }
         const r = bundleDbClusterArtifacts({
@@ -1491,9 +3310,7 @@ async function mainInner(
       if (sub === 'push') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.push.--id.697080', { CLI_NAME })}\n`);
           return 2;
         }
         const result = await pushDbClusterToPeers({
@@ -1510,9 +3327,7 @@ async function mainInner(
       if (sub === 'fleet') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.fleet.--id.239462', { CLI_NAME })}\n`);
           return 2;
         }
         const opRaw = getOpt(args, '--op') ?? 'apply';
@@ -1539,7 +3354,7 @@ async function mainInner(
       if (sub === 'delete' || sub === 'rm') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} db-cluster delete --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.delete.--id.3de0e4', { CLI_NAME })}\n`);
           return 2;
         }
         const ok = deleteDbCluster(ctx.db, id);
@@ -1550,9 +3365,7 @@ async function mainInner(
             : ['not found'] });
         return ok ? 0 : 4;
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.list.get.3b9cfa', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -1598,7 +3411,7 @@ async function mainInner(
       if (sub === 'get' || sub === 'show') {
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} ssh-key get --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.get.--id.292716', { CLI_NAME })}\n`);
           return 2;
         }
         const identity = getSshIdentity(ctx.dataDir, id);
@@ -1612,9 +3425,7 @@ async function mainInner(
       if (sub === 'create') {
         const name = getOpt(args, '--name');
         if (!name) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.create.--name.8b1d79', { CLI_NAME })}\n`);
           return 2;
         }
         const algoRaw = getOpt(args, '--algo') ?? 'ed25519';
@@ -1658,9 +3469,7 @@ async function mainInner(
         const name = getOpt(args, '--name');
         const file = getOpt(args, '--file');
         if (!name || !file) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.import.--name.6eb800', { CLI_NAME })}\n`);
           return 2;
         }
         const { readFileSync } = await import('node:fs');
@@ -1700,7 +3509,7 @@ async function mainInner(
       if (sub === 'public') {
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} ssh-key public --id UUID\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.public.--id.525d7d', { CLI_NAME })}\n`);
           return 2;
         }
         const identity = getSshIdentity(ctx.dataDir, id);
@@ -1716,7 +3525,7 @@ async function mainInner(
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         const out = getOpt(args, '--out');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} ssh-key export --id UUID [--out PATH] [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.export.--id.0a6d81', { CLI_NAME })}\n`);
           return 2;
         }
         const r = exportSshIdentityPrivate(ctx.dataDir, id);
@@ -1754,9 +3563,7 @@ async function mainInner(
       if (sub === 'install') {
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-key install --id UUID [--execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.install.--id.b99c56', { CLI_NAME })}\n`);
           return 2;
         }
         const r = await installSshIdentity({
@@ -1772,9 +3579,7 @@ async function mainInner(
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         const target = getOpt(args, '--target');
         if (!id || !target) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.test.--id.e1aed3', { CLI_NAME })}\n`);
           return 2;
         }
         const { testSshIdentity } = await import('@ysk/core');
@@ -1791,9 +3596,7 @@ async function mainInner(
       if (sub === 'rotate') {
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-key rotate --id UUID [--reveal] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.rotate.--id.9c3224', { CLI_NAME })}\n`);
           return 2;
         }
         const { rotateSshIdentity } = await import('@ysk/core');
@@ -1808,9 +3611,7 @@ async function mainInner(
       if (sub === 'authorize-self' || sub === 'authorize') {
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-key authorize-self --id UUID [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.authorize-self.--id.b7ea2e', { CLI_NAME })}\n`);
           return 2;
         }
         const { authorizeSelfSshIdentity } = await import('@ysk/core');
@@ -1825,9 +3626,7 @@ async function mainInner(
       if (sub === 'uninstall') {
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-key uninstall --id UUID [--execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.uninstall.--id.afcba0', { CLI_NAME })}\n`);
           return 2;
         }
         const r = await uninstallSshIdentity({
@@ -1841,7 +3640,7 @@ async function mainInner(
       if (sub === 'delete' || sub === 'rm') {
         const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} ssh-key delete --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.delete.--id.a6e2f2', { CLI_NAME })}\n`);
           return 2;
         }
         if (hasFlag(args, '--purge-disk') || hasFlag(args, '--purge')) {
@@ -1855,9 +3654,7 @@ async function mainInner(
         printJson(r);
         return r.ok ? 0 : 4;
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.list.get.2c92c6', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -1894,9 +3691,7 @@ async function mainInner(
         const user = getOpt(args, '--user');
         const project = getOpt(args, '--project');
         if (!user && !project) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-2fa.enroll.--user.081432', { CLI_NAME })}\n`);
           return 2;
         }
         let secret: string | undefined;
@@ -1934,9 +3729,7 @@ async function mainInner(
         const id = getOpt(args, '--id');
         const code = getOpt(args, '--code');
         if (!id || !code) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-2fa confirm --id UUID --code 123456 [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-2fa.confirm.--id.9ee8a2', { CLI_NAME })}\n`);
           return 2;
         }
         const r = confirmSsh2fa(ctx.dataDir, id, code);
@@ -1946,9 +3739,7 @@ async function mainInner(
       if (sub === 'install') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-2fa install --id UUID [--execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-2fa.install.--id.dace06', { CLI_NAME })}\n`);
           return 2;
         }
         const r = await installSsh2faFile({
@@ -1963,9 +3754,7 @@ async function mainInner(
       if (sub === 'uninstall') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssh-2fa uninstall --id UUID [--execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-2fa.uninstall.--id.0bb464', { CLI_NAME })}\n`);
           return 2;
         }
         const r = await uninstallSsh2faFile({
@@ -1990,7 +3779,7 @@ async function mainInner(
       if (sub === 'reveal') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} ssh-2fa reveal --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-2fa.reveal.--id.a6c27f', { CLI_NAME })}\n`);
           return 2;
         }
         printJson(revealSsh2faSecret(ctx.dataDir, id));
@@ -1999,7 +3788,7 @@ async function mainInner(
       if (sub === 'retire' || sub === 'delete' || sub === 'rm') {
         const id = getOpt(args, '--id');
         if (!id) {
-          process.stderr.write(`Usage: ${CLI_NAME} ssh-2fa retire --id UUID [--json]\n`);
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-2fa.retire.--id.6e1fa3', { CLI_NAME })}\n`);
           return 2;
         }
         if (hasFlag(args, '--purge-file')) {
@@ -2012,9 +3801,7 @@ async function mainInner(
         printJson(retireSsh2fa(ctx.dataDir, id));
         return 0;
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.ssh-2fa.list.enroll.802ed0', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2126,9 +3913,7 @@ async function mainInner(
           probedAt: matrix.probedAt });
         return 0;
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} nginx status|list|test|sync [--execute] [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.nginx.status.list.d67a16', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2159,9 +3944,7 @@ async function mainInner(
           .trim()
           .toLowerCase();
         if (!domain) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} ssl get --domain example.com [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.ssl.get.--domain.91c444', { CLI_NAME })}\n`);
           return 2;
         }
         const cert =
@@ -2177,7 +3960,7 @@ async function mainInner(
         printJson({ ok: true, certificate: cert });
         return 0;
       }
-      process.stderr.write(`Usage: ${CLI_NAME} ssl list|get --domain X [--json]\n`);
+      process.stderr.write(`${tl('cli.usage.cli.name.ssl.list.get.79c232', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2195,20 +3978,33 @@ async function mainInner(
         printJson({ ok: true, ...overview });
         return 0;
       }
-      if (sub === 'metrics' || sub === 'load') {
+      if (sub === 'metrics' || sub === 'load' || sub === 'network') {
         const path = getOpt(args, '--path') ?? '/';
         const metrics = collectMetrics(path);
+        const overview = await collectHostOverview(ctx.host);
         printJson({
           ok: true,
           ...metrics,
+          host: {
+            identity: overview.identity,
+            runtime: overview.runtime,
+            disks: overview.disks,
+            network: overview.network,
+            time: overview.time,
+          },
           caps: {
             executeEnabled: ctx.host.executeEnabled(),
-            isRoot: ctx.host.isRoot() } });
-        return metrics.alerts.length ? 1 : 0;
+            isRoot: ctx.host.isRoot(),
+          },
+          notes: [
+            sub === 'network'
+              ? 'network interfaces under host.network'
+              : 'CPU/load/mem via collectMetrics; disks+net via host overview',
+          ],
+        });
+        return metrics.alerts?.length ? 1 : 0;
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} host overview|metrics [--path /] [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.host.overview.metrics.93c828', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2271,15 +4067,7 @@ async function mainInner(
             ? `journal:${getOpt(args, '--unit')}`
             : undefined);
         if (!source) {
-          process.stderr.write(
-            [
-              `Usage: ${CLI_NAME} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]`,
-              '  source examples: journal:  journal:nginx.service  file:syslog  project:<uuid>',
-              `  ${CLI_NAME} logs sources --json`,
-              `  ${CLI_NAME} logs journal [--unit nginx.service] --json`,
-              '',
-            ].join('\n'),
-          );
+          process.stderr.write(`${tl('cli.usage.logsQuery', { CLI_NAME })}\n`);
           return 2;
         }
         const linesRaw = getOpt(args, '--lines');
@@ -2295,9 +4083,7 @@ async function mainInner(
         printJson(r);
         return exitFromResult(r);
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} logs sources|overview|units|journal|query [--source id] [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.logs.sources.overview.79058c', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2317,9 +4103,7 @@ async function mainInner(
       if (sub === 'start' || sub === 'stop' || sub === 'restart' || sub === 'reload') {
         const unit = getOpt(args, '--unit') ?? getOpt(args, '--id');
         if (!unit) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} services ${sub} --unit <systemd-unit> [--execute] [--json]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.services.sub.--unit.4fe3fa', { CLI_NAME, sub })}\n`);
           return 2;
         }
         if (!wantsHostExecute(args)) {
@@ -2338,9 +4122,7 @@ async function mainInner(
         printJson(r);
         return exitFromResult(r);
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n`,
-      );
+      process.stderr.write(`${tl('cli.usage.cli.name.services.matrix.start.4f3a35', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2377,12 +4159,59 @@ async function mainInner(
             : null });
         return 0;
       }
+      if (sub === 'bans' || sub === 'list-bans') {
+        const { listDefenseBans, applyListQuery } = await import('@ysk/core');
+        const { parseListQuery } = await import('@ysk/shared');
+        const r = await listDefenseBans({ host: ctx.host, db: ctx.db });
+        const q = getOpt(args, '--q') ?? '';
+        const url = new URL('http://local/');
+        if (q) url.searchParams.set('q', q);
+        const source = getOpt(args, '--source');
+        if (source) url.searchParams.set('source', source);
+        const query = parseListQuery(url, {
+          enums: { source: ['fail2ban', 'panel', 'ufw', 'auto'] },
+        });
+        const { items, meta } = applyListQuery(r.items, query, {
+          text: (b) => [b.ip, b.source, b.jail ?? '', b.reason ?? ''],
+          predicates: { source: (b, v) => b.source === v },
+        });
+        printJson({ ok: true, items, meta, notes: r.notes });
+        return 0;
+      }
+      if (sub === 'suspects') {
+        const { listSuspectIps, applyListQuery } = await import('@ysk/core');
+        const { parseListQuery } = await import('@ysk/shared');
+        const r = await listSuspectIps({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+        });
+        const q = getOpt(args, '--q') ?? '';
+        const url = new URL('http://local/');
+        if (q) url.searchParams.set('q', q);
+        const query = parseListQuery(url);
+        const { items, meta } = applyListQuery(r.items, query, {
+          text: (s) => [s.ip, String(s.hits ?? ''), String(s.score ?? '')],
+        });
+        printJson({ ok: true, items, meta, notes: r.notes });
+        return 0;
+      }
+      if (sub === 'stack-apply' || sub === 'apply-stack') {
+        const { applyDefenseStack } = await import('@ysk/core');
+        const r = await applyDefenseStack({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          execute: wantsHostExecute(args),
+          actor: 'cli',
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
       if (sub === 'ban') {
         const ip = getOpt(args, '--ip');
         if (!ip) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.defense.ban.--ip.cc22de', { CLI_NAME })}\n`);
           return 2;
         }
         const methodRaw = getOpt(args, '--method') ?? 'fail2ban';
@@ -2404,9 +4233,7 @@ async function mainInner(
       if (sub === 'unban') {
         const ip = getOpt(args, '--ip');
         if (!ip) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.defense.unban.--ip.46aa23', { CLI_NAME })}\n`);
           return 2;
         }
         const methodRaw = getOpt(args, '--method') ?? 'fail2ban';
@@ -2432,9 +4259,7 @@ async function mainInner(
           return 0;
         }
         if (!ip) {
-          process.stderr.write(
-            `Usage: ${CLI_NAME} defense whitelist --action list|add|remove [--ip IP]\n`,
-          );
+          process.stderr.write(`${tl('cli.usage.cli.name.defense.whitelist.--action.c1cbdf', { CLI_NAME })}\n`);
           return 2;
         }
         let whitelist = [...(policy.whitelist ?? [])];
@@ -2444,16 +4269,70 @@ async function mainInner(
           if (!whitelist.includes(ip)) whitelist.unshift(ip);
           whitelist = whitelist.slice(0, 200);
         } else {
-          process.stderr.write('action must be list|add|remove\n');
+          process.stderr.write(`${tl('cli.msg.action.must.be.ba14c1')}\n`);
           return 2;
         }
         const next = updateAutoBanPolicy(ctx.db, { whitelist });
         printJson({ ok: true, whitelist: next.whitelist });
         return 0;
       }
-      process.stderr.write(
-        `Usage: ${CLI_NAME} defense status|ban|unban|whitelist [--json]\n`,
-      );
+      if (sub === 'fail2ban' || sub === 'f2b') {
+        const { getFail2banDeepStatus } = await import('@ysk/core');
+        const r = await getFail2banDeepStatus({ host: ctx.host, dataDir: ctx.dataDir });
+        printJson({ ok: true, ...r });
+        return 0;
+      }
+      if (sub === 'firewall' || sub === 'ufw') {
+        const fw = await probeFirewallDeep(ctx.host);
+        printJson({
+          ok: true,
+          active: fw.active,
+          activeLabel: fw.activeLabel,
+          allowCount: fw.allowCount,
+          denyCount: fw.denyCount,
+          denyFromIps: fw.denyFromIps,
+          notes: fw.notes ?? [],
+        });
+        return 0;
+      }
+      if (sub === 'timeline') {
+        const { listDefenseTimeline } = await import('@ysk/core');
+        const hours = Number(getOpt(args, '--hours') ?? 24);
+        let items = listDefenseTimeline(ctx.db, Number.isFinite(hours) ? hours : 24);
+        const q = (getOpt(args, '--q') ?? '').trim().toLowerCase();
+        if (q) {
+          items = items.filter(
+            (e) =>
+              e.kind.toLowerCase().includes(q) ||
+              e.title.toLowerCase().includes(q) ||
+              (e.detail ?? '').toLowerCase().includes(q),
+          );
+        }
+        const limit = Number(getOpt(args, '--limit') ?? 50);
+        if (Number.isFinite(limit) && limit > 0) items = items.slice(0, limit);
+        printJson({ ok: true, items, meta: { total: items.length } });
+        return 0;
+      }
+      if (sub === 'presets') {
+        const { listDefensePresets, getDefenseStatus } = await import('@ysk/core');
+        const status = await getDefenseStatus({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+        });
+        printJson({
+          ok: true,
+          activePreset: status.activePreset,
+          items: listDefensePresets().map((p) => ({
+            id: p.id,
+            label: p.label,
+            short: p.short,
+            bullets: p.bullets,
+          })),
+        });
+        return 0;
+      }
+      process.stderr.write(`${tl('cli.usage.cli.name.defense.status.bans.a8d96b', { CLI_NAME })}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2510,9 +4389,7 @@ async function mainInner(
       if (sub === 'post') {
         const jobId = getOpt(args, '--job');
         if (!jobId) {
-          process.stderr.write(
-            'Usage: ysk-server migrate post --job <id> --data-dir PATH --execute\n',
-          );
+          process.stderr.write(`${tl('cli.usage.migrate.post.--job.id.--data-dir.6a73cd')}\n`);
           return 2;
         }
         if (!wantsHostExecute(args)) {
@@ -2535,9 +4412,7 @@ async function mainInner(
           (sub === 'resume' ? undefined : undefined);
         const jobId = getOpt(args, '--job');
         if (sub === 'host' && !target && !jobId) {
-          process.stderr.write(
-            'Usage: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n',
-          );
+          process.stderr.write(`${tl('cli.usage.migrate.host.--target.root.new.3e94a2')}\n`);
           return 2;
         }
         if (!wantsHostExecute(args) && !hasFlag(args, '--dry-run')) {
@@ -2616,15 +4491,7 @@ async function mainInner(
         printJson(r);
         return r.ok ? 0 : r.blocked ? 3 : 1;
       }
-      process.stderr.write(
-        `Usage:
-  ysk-server migrate inventory [--data-dir PATH] --json
-  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]
-  ysk-server migrate post --job ID --data-dir PATH --execute   # on target
-  ysk-server migrate status [--job ID]
-  ysk-server migrate resume --job ID --execute
-`,
-      );
+      process.stderr.write(`${tl('cli.usage.x.972912')}\n`);
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -2662,7 +4529,7 @@ async function mainInner(
         closeAppContext(ctx);
       }
     }
-    process.stderr.write('Usage: ysk-server system unit-install [--enable] [--data-dir PATH]\n');
+    process.stderr.write(`${tl('cli.usage.system.unit-install.--enable.--data-dir.path.33daa1')}\n`);
     return 1;
   }
 
@@ -2688,6 +4555,7 @@ async function mainInner(
     const server = createHttpServer(ctx);
     const addr = await listen(server, host, port);
     const msg = `${PRODUCT_NAME} listening on http://${addr.host}:${addr.port}`;
+    const publicBind = host === '0.0.0.0' || host === '::' || host === '[::]';
     if (json) {
       printJson({
         ok: true,
@@ -2699,9 +4567,19 @@ async function mainInner(
           adminUsername: config?.adminUsername ?? 'admin',
           locale: config?.locale ?? 'zh-TW',
           webUi: Boolean(webRoot),
-          webRoot } });
+          webRoot,
+          securityWarnings: publicBind
+            ? [
+                'Listening on all interfaces — firewall / reverse proxy required; prefer 127.0.0.1 for admin plane',
+              ]
+            : [],
+        },
+      });
     } else {
       process.stdout.write(`${msg}\n`);
+      if (publicBind) {
+        process.stderr.write(`${tl('cli.msg.security.control.plane.f59a63')}\n`);
+      }
       process.stdout.write(`Health: http://${addr.host}:${addr.port}/health\n`);
       process.stdout.write(
         webRoot
@@ -2732,27 +4610,117 @@ async function mainInner(
     return 0;
   }
 
+  if (command === 'health') {
+    const url = getOpt(args, '--url');
+    if (url) {
+      try {
+        const base = url.replace(/\/$/, '');
+        const target = /\/health(\?|$)/.test(base) ? base : `${base}/health`;
+        const res = await fetch(target, { signal: AbortSignal.timeout(8_000) });
+        const text = await res.text();
+        let body: unknown = text;
+        try {
+          body = JSON.parse(text);
+        } catch {
+          /* plain */
+        }
+        printJson({
+          ok: res.ok,
+          httpStatus: res.status,
+          url: target,
+          body,
+        });
+        return res.ok ? 0 : 1;
+      } catch (e) {
+        printJson({
+          ok: false,
+          url,
+          error: e instanceof Error ? e.message : String(e),
+        });
+        return 5;
+      }
+    }
+    const ctx = openCliContext(args);
+    try {
+      const executeEnabled = ctx.host.executeEnabled();
+      const isRoot = ctx.host.isRoot();
+      printJson({
+        ok: true,
+        status: ctx.protection.mode === 'normal' ? 'ok' : 'degraded',
+        product: PRODUCT_NAME,
+        version: VERSION,
+        protectionMode: ctx.protection.mode,
+        timestamp: new Date().toISOString(),
+        executeEnabled,
+        isRoot,
+        mode: executeEnabled && isRoot ? 'production_capable' : 'degraded',
+        dataDir: ctx.dataDir,
+        notes: [
+          'Local snapshot (no HTTP). Pass --url http://127.0.0.1:9287 to probe a running serve.',
+        ],
+      });
+      return 0;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
   if (command === 'readiness' || command === 'doctor') {
-    const { assessProductionReadiness } = await import('@ysk/core');
+    const { assessProductionReadiness, storeStatus } = await import('@ysk/core');
     const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
     const ctx = createAppContext({
       version: VERSION,
       dataDir,
       executeEnabled: process.env.YSK_EXECUTE === '1' });
     try {
+      const store = storeStatus(ctx.db, join(ctx.dataDir, 'ysk.json'));
+      // last_backup_run may live in SettingsRepository not only settings map
+      let lastBackup: string | undefined;
+      try {
+        const lb = ctx.settings.getJson<{ at?: string }>('last_backup_run');
+        if (lb?.at) {
+          ctx.db.snapshot.settings = ctx.db.snapshot.settings ?? {};
+          ctx.db.snapshot.settings['last_backup_run'] = JSON.stringify(lb);
+        }
+        lastBackup = lb?.at;
+      } catch {
+        /* ignore */
+      }
       const report = await assessProductionReadiness({
         dataDir: ctx.dataDir,
         host: ctx.host,
         product: PRODUCT_NAME,
-        version: VERSION });
-      printJson(report);
+        version: VERSION,
+        projects: ctx.db.snapshot.projects.map((p) => ({
+          id: p.id,
+          name: p.name,
+          linuxUser: p.linux_user,
+          homeDir: p.home_dir,
+          osProvisioned: Boolean(p.os_provisioned),
+        })),
+        db: ctx.db,
+        storeKind: store.kind,
+      });
+      printJson({
+        ...report,
+        store: {
+          kind: store.kind,
+          location: store.location,
+          users: store.users,
+          projects: store.projects,
+          lastBackupAt: lastBackup ?? null,
+        },
+        via: command,
+      });
       return report.productionReady ? 0 : 2;
     } finally {
       closeAppContext(ctx);
     }
   }
 
-  process.stderr.write(`Unknown command: ${command}\nRun \`${CLI_NAME} help\`\n`);
+  process.stderr.write(
+    `${tl('cli.unknownCommand', { command, cli: CLI_NAME })}\n`,
+  );
   return 2;
 }
 

@@ -1,5 +1,7 @@
 # 2FA / MFA 100% checklist
 
+> Language: English | [中文](./2fa-100-checklist-ZH.md)
+
 | ID | Item | Status |
 |----|------|--------|
 | P0-1 | Login rate limit | done |

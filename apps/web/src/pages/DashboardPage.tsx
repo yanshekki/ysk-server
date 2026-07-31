@@ -262,7 +262,7 @@ export function DashboardPage() {
                   : 'ok',
           },
           {
-            label: 'EXECUTE',
+            label: t('dashboard.executeLabel', { defaultValue: 'EXECUTE' }),
             value:
               executeEnabled === true ? t('common.on') : executeEnabled === false ? t('common.off') : t('common.noneSelectedShort'),
             tone: executeEnabled === true ? 'ok' : 'warn',
@@ -345,13 +345,18 @@ export function DashboardPage() {
             {readiness?.score ? (
               <Alert variant={readiness.productionReady ? 'ok' : 'info'}>
                 <strong>{t('dashboard.readinessCheck')}</strong>
-                {readiness.productionReady ? t('dashboard.prodOk') : t('dashboard.notFullyReady')} ·{' '}
+                {readiness.productionReady ? t('dashboard.prodOk') : t('dashboard.notFullyReady')}
+                {' · '}
                 {t('dashboard.modeScore', {
-                  mode: readiness.mode ?? '—',
+                  mode: t(`dashboard.mode.${readiness.mode ?? 'degraded'}`, {
+                    defaultValue:
+                      readiness.mode === 'production_capable'
+                        ? t('dashboard.mode.production_capable')
+                        : t('dashboard.mode.degraded'),
+                  }),
                   ready: readiness.score.ready,
                   total: readiness.score.total,
                 })}
-                {readiness.summary?.[1] ? ` — ${readiness.summary[1]}` : ''}
                 {' · '}
                 <Link to="/system/readiness">{t('dashboard.details')}</Link>
               </Alert>

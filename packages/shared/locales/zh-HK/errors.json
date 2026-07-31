@@ -18,7 +18,7 @@
   "YSK_RATE_LIMITED": "嘗試過多，請稍後再試",
   "YSK_TOTP_REQUIRED": "需要雙重驗證碼",
   "auth": {
-    "needCredentials": "請輸入使用者名稱與密碼",
+    "needCredentials": "請輸入用戶名與密碼",
     "rateLimited": "登入嘗試過多，請稍後再試",
     "badCredentials": "帳號或密碼不正確",
     "accountSuspended": "帳戶已暫停",

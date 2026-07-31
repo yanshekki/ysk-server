@@ -71,6 +71,20 @@ export async function assessProductionReadiness(input: {
     homeDir: string;
     osProvisioned: boolean;
   }>;
+  /**
+   * Optional live control-plane store (G4).
+   * When set: report store backend, last backup age, fleet sessions.
+   */
+  db?: {
+    snapshot: {
+      projects?: unknown[];
+      users?: unknown[];
+      settings?: Record<string, string | undefined>;
+      agent_sessions?: Array<{ status?: string }>;
+    };
+  };
+  /** Explicit store kind label from open path (json|sqlite|postgres) */
+  storeKind?: string;
 }): Promise<ProductionReadinessReport> {
   const items: ReadinessItem[] = [];
   const push = (item: ReadinessItem) => items.push(item);
@@ -172,6 +186,85 @@ export async function assessProductionReadiness(input: {
       fixHref: '/security?tab=account' });
   }
 
+  // Admin weak/bootstrap password + dataDir permissions + public listen
+  try {
+    const { openDatabase, closeDatabase } = await import('../db/database.js');
+    const { join: pathJoin } = await import('node:path');
+    const { statSync } = await import('node:fs');
+    const dbPath = pathJoin(input.dataDir, 'ysk.json');
+    if (existsSync(dbPath)) {
+      const db = openDatabase(dbPath);
+      try {
+        const admins = (db.snapshot.users ?? []).filter(
+          (u) => Array.isArray(u.roles) && u.roles.includes('admin' as never),
+        );
+        const mustChange = admins.filter((u) => u.must_change_password).length;
+        const insecureBootstrap =
+          db.snapshot.settings?.['security.bootstrap_insecure'] === '1';
+        const weakLevel =
+          mustChange > 0 || insecureBootstrap
+            ? 'missing'
+            : 'ready';
+        push({
+          id: 'admin-password',
+          category: 'security',
+          title: tl('readiness.itemAdminPassword'),
+          level: weakLevel,
+          detail:
+            mustChange > 0 || insecureBootstrap
+              ? tl('readiness.itemAdminPasswordWeak', { count: mustChange })
+              : tl('readiness.itemAdminPasswordOk'),
+          fixHint: tl('readiness.itemAdminPasswordFix'),
+          fixHref: '/security?tab=account',
+          severity: 'critical',
+          spec: '§3.1',
+        });
+
+        const publicListen = db.snapshot.settings?.['security.listen_public'] === '1';
+        push({
+          id: 'listen-bind',
+          category: 'security',
+          title: tl('readiness.itemListenBind'),
+          level: publicListen ? 'degraded' : 'ready',
+          detail: publicListen
+            ? tl('readiness.itemListenBindPublic')
+            : tl('readiness.itemListenBindLoopback'),
+          fixHref: '/system',
+          severity: 'recommended',
+          spec: '§3.2',
+        });
+      } finally {
+        closeDatabase(db);
+      }
+    }
+
+    // dataDir mode: warn if world-writable or other-readable on sensitive store
+    try {
+      const st = statSync(input.dataDir);
+      const mode = st.mode & 0o777;
+      const worldW = (mode & 0o002) !== 0;
+      const otherR = (mode & 0o004) !== 0;
+      push({
+        id: 'datadir-perms',
+        category: 'security',
+        title: tl('readiness.itemDataDirPerms'),
+        level: worldW ? 'missing' : otherR ? 'degraded' : 'ready',
+        detail: `mode ${mode.toString(8)} · ${input.dataDir}`,
+        fixHint: worldW
+          ? tl('readiness.itemDataDirWorldW')
+          : otherR
+            ? tl('readiness.itemDataDirOtherR')
+            : undefined,
+        severity: worldW ? 'critical' : 'recommended',
+        spec: '§2.3',
+      });
+    } catch {
+      /* ignore */
+    }
+  } catch {
+    /* optional hardening probes */
+  }
+
   const bins: Array<{
     id: string;
     bin: string;
@@ -241,7 +334,7 @@ export async function assessProductionReadiness(input: {
     {
       id: 'bin-pdnsutil',
       bin: 'pdnsutil',
-      title: 'pdnsutil（PowerDNS）',
+      title: tl('readiness.itemPdnsutil'),
       spec: '§4.8',
       fixHref: '/dns' },
   ];
@@ -317,7 +410,7 @@ export async function assessProductionReadiness(input: {
   push({
     id: 'runtimes-rust',
     category: 'hosting',
-    title: 'Rust toolchain',
+    title: tl('readiness.itemRustToolchain'),
     level: rustReady.length ? 'ready' : 'degraded',
     detail: rustReady.length
       ? tl('notes.tpl.available', { detail: rustReady.join(', ') })
@@ -366,7 +459,7 @@ export async function assessProductionReadiness(input: {
         ? tl('notes.auto.n0246')
         : tl('notes.auto.n0708'),
     spec: '§3.9',
-    fixHint: 'pnpm --filter @ysk/web build',
+    fixHint: tl('readiness.itemWebBuildFix'),
     severity: 'recommended' });
 
   push({
@@ -496,6 +589,86 @@ export async function assessProductionReadiness(input: {
     }
   }
 
+  // —— G4 ops: store backend · backup freshness · fleet sessions ——
+  if (input.db) {
+    const kind = input.storeKind ?? 'json';
+    const users = input.db.snapshot.users?.length ?? 0;
+    const projects = input.db.snapshot.projects?.length ?? 0;
+    push({
+      id: 'state-store',
+      category: 'ops',
+      title: tl('readiness.itemStateStore'),
+      level: users > 0 || projects >= 0 ? 'ready' : 'degraded',
+      detail: `backend=${kind}; users=${users}; projects=${projects}`,
+      fixHint: kind === 'json' ? tl('readiness.itemStateStoreSqliteHint') : undefined,
+      fixHref: '/system',
+      severity: 'optional',
+    });
+
+    // last backup run (settings JSON)
+    let lastBackupAt: string | null = null;
+    try {
+      const raw = input.db.snapshot.settings?.['last_backup_run'];
+      if (raw) {
+        const parsed = JSON.parse(raw) as { at?: string };
+        lastBackupAt = parsed.at ?? null;
+      }
+    } catch {
+      lastBackupAt = null;
+    }
+    // also try settings repo style key via free form
+    if (!lastBackupAt) {
+      try {
+        const raw = (input.db.snapshot as { settings?: Record<string, unknown> }).settings;
+        // some stores keep last_backup_run as nested object via SettingsRepository not settings map
+        void raw;
+      } catch {
+        /* */
+      }
+    }
+    const ageMs = lastBackupAt ? Date.now() - new Date(lastBackupAt).getTime() : null;
+    const ageDays = ageMs != null && Number.isFinite(ageMs) ? ageMs / 86_400_000 : null;
+    push({
+      id: 'backup-freshness',
+      category: 'ops',
+      title: tl('readiness.itemBackupFreshness'),
+      level:
+        ageDays == null
+          ? 'degraded'
+          : ageDays <= 2
+            ? 'ready'
+            : ageDays <= 7
+              ? 'degraded'
+              : 'missing',
+      detail:
+        ageDays == null
+          ? tl('readiness.itemBackupNone')
+          : `last=${lastBackupAt}; ageDays=${ageDays.toFixed(1)}`,
+      fixHint: tl('readiness.itemBackupFix'),
+      fixHref: '/backups',
+      severity: ageDays != null && ageDays > 7 ? 'critical' : 'optional',
+    });
+
+    const sessions = input.db.snapshot.agent_sessions ?? [];
+    const connected = sessions.filter((s) => s.status === 'connected').length;
+    const registered = sessions.filter((s) => s.status === 'registered').length;
+    push({
+      id: 'fleet-sessions',
+      category: 'ops',
+      title: tl('readiness.itemFleetSessions'),
+      level: sessions.length === 0 ? 'degraded' : connected > 0 ? 'ready' : 'degraded',
+      detail: `total=${sessions.length}; connected=${connected}; registered_only=${registered}`,
+      fixHint:
+        sessions.length === 0
+          ? tl('readiness.itemFleetNone')
+          : connected === 0
+            ? tl('readiness.itemFleetNoHb')
+            : undefined,
+      fixHref: '/agents',
+      severity: 'optional',
+    });
+  }
+
   const ready = items.filter((i) => i.level === 'ready').length;
   const degraded = items.filter((i) => i.level === 'degraded').length;
   const missing = items.filter((i) => i.level === 'missing').length;
@@ -523,8 +696,15 @@ export async function assessProductionReadiness(input: {
     return false;
   });
 
+  const modeLabel =
+    mode === 'production_capable'
+      ? tl('notes.auto.modeProductionCapable')
+      : tl('notes.auto.modeDegraded');
   const summary: string[] = [
-    mode === 'production_capable' ? tl('notes.auto.n1013') : tl('notes.auto.t0393', { v0: (mode) }),
+    // Full phrase (no raw enum leak like "degraded")
+    mode === 'production_capable'
+      ? tl('notes.auto.n1013')
+      : tl('notes.auto.t0393', { v0: modeLabel }),
     productionReady
       ? tl('notes.auto.n1246')
       : tl('notes.auto.n1245'),

@@ -9,7 +9,15 @@
     "4": "not_found",
     "5": "host_error"
   },
-  "globalFlags": ["--json", "--data-dir", "--config", "--help", "--version", "--execute", "--apply"],
+  "globalFlags": [
+    "--json",
+    "--data-dir",
+    "--config",
+    "--help",
+    "--version",
+    "--execute",
+    "--apply"
+  ],
   "safety": {
     "default": "dry-run for dangerous host mutations",
     "apply": "pass --execute (or --apply) AND env YSK_EXECUTE=1",
@@ -18,7 +26,9 @@
   "commands": [
     {
       "name": "readiness",
-      "aliases": ["doctor"],
+      "aliases": [
+        "doctor"
+      ],
       "risk": "read",
       "summary": "Production readiness probe (honest)",
       "example": "ysk-server readiness --json"
@@ -33,15 +43,25 @@
       "name": "projects get",
       "risk": "read",
       "summary": "Get project by id, name, or domain",
-      "args": ["--id"],
+      "args": [
+        "--id"
+      ],
       "example": "ysk-server projects get --id UUID --json",
-      "exitCodes": { "4": "not_found" }
+      "exitCodes": {
+        "4": "not_found"
+      }
     },
     {
       "name": "projects create",
       "risk": "write-panel",
       "summary": "Create project (+ optional template)",
-      "args": ["--name", "--domain", "--runtime", "--runtime-version", "--template"],
+      "args": [
+        "--name",
+        "--domain",
+        "--runtime",
+        "--runtime-version",
+        "--template"
+      ],
       "example": "ysk-server projects create --name demo --runtime node --json"
     },
     {
@@ -61,20 +81,30 @@
       "risk": "read",
       "summary": "Run nginx -t",
       "example": "ysk-server nginx test --json",
-      "exitCodes": { "5": "config test failed", "4": "nginx binary missing" }
+      "exitCodes": {
+        "5": "config test failed",
+        "4": "nginx binary missing"
+      }
     },
     {
       "name": "db-cluster list",
       "risk": "read",
       "summary": "List DB HA clusters (engine HA registry)",
-      "args": ["--engine"],
+      "args": [
+        "--engine"
+      ],
       "example": "ysk-server db-cluster list --engine mariadb --json"
     },
     {
       "name": "db-cluster create",
       "risk": "write-panel",
       "summary": "Register HA topology (draft)",
-      "args": ["--name", "--engine", "--kind", "--member"],
+      "args": [
+        "--name",
+        "--engine",
+        "--kind",
+        "--member"
+      ],
       "example": "ysk-server db-cluster create --name g1 --engine mariadb --kind mariadb-galera --member 10.0.0.1=node:local --member 10.0.0.2=node:ssh --json",
       "examples": [
         "ysk-server db-cluster create --name r1 --engine mysql --kind mysql-replica --member 10.0.0.1=primary:local --member 10.0.0.2=replica:ssh --json"
@@ -84,14 +114,20 @@
       "name": "db-cluster plan",
       "risk": "write-panel",
       "summary": "Materialize dry-run conf/scripts under dataDir/clusters",
-      "args": ["--id"],
+      "args": [
+        "--id"
+      ],
       "example": "ysk-server db-cluster plan --id UUID --json"
     },
     {
       "name": "db-cluster apply",
       "risk": "execute-host",
       "summary": "Default dry-run write; --execute installs Galera drop-in + restart/bootstrap",
-      "args": ["--id", "--execute", "--bootstrap"],
+      "args": [
+        "--id",
+        "--execute",
+        "--bootstrap"
+      ],
       "example": "ysk-server db-cluster apply --id UUID --json",
       "exitCodes": {
         "0": "ok or dry-run written",
@@ -102,21 +138,30 @@
       "name": "db-cluster probe",
       "risk": "read",
       "summary": "Probe local wsrep; update cluster status honest",
-      "args": ["--id"],
+      "args": [
+        "--id"
+      ],
       "example": "ysk-server db-cluster probe --id UUID --json"
     },
     {
       "name": "db-cluster bundle",
       "risk": "write-panel",
       "summary": "Create peer tar.gz under dataDir/clusters/.../bundle/",
-      "args": ["--id"],
+      "args": [
+        "--id"
+      ],
       "example": "ysk-server db-cluster bundle --id UUID --json"
     },
     {
       "name": "db-cluster push",
       "risk": "execute-host",
       "summary": "Default dry-run scp plan; --execute scp to ssh peers; optional --identity vault id",
-      "args": ["--id", "--member", "--identity", "--execute"],
+      "args": [
+        "--id",
+        "--member",
+        "--identity",
+        "--execute"
+      ],
       "example": "ysk-server db-cluster push --id UUID --identity SSH_ID --json",
       "exitCodes": {
         "0": "ok or dry-run",
@@ -127,7 +172,13 @@
       "name": "db-cluster fleet",
       "risk": "execute-host",
       "summary": "Queue {cli:[…]} to access=fleet members (Agents history for results)",
-      "args": ["--id", "--op", "--execute", "--edge-execute", "--member"],
+      "args": [
+        "--id",
+        "--op",
+        "--execute",
+        "--edge-execute",
+        "--member"
+      ],
       "example": "ysk-server db-cluster fleet --id UUID --json"
     },
     {
@@ -140,14 +191,24 @@
       "name": "ssh-key create",
       "risk": "write",
       "summary": "Generate encrypted SSH identity (ed25519 default)",
-      "args": ["--name", "--purpose", "--algo", "--reveal", "--install", "--execute"],
+      "args": [
+        "--name",
+        "--purpose",
+        "--algo",
+        "--reveal",
+        "--install",
+        "--execute"
+      ],
       "example": "ysk-server ssh-key create --name peer1 --purpose panel --reveal --json"
     },
     {
       "name": "ssh-key install",
       "risk": "execute-host",
       "summary": "Install identity private key to disk (dry-run default)",
-      "args": ["--id", "--execute"],
+      "args": [
+        "--id",
+        "--execute"
+      ],
       "example": "ysk-server ssh-key install --id UUID --json",
       "exitCodes": {
         "0": "ok or dry-run",
@@ -158,17 +219,23 @@
       "name": "ssh-key test",
       "risk": "execute-host",
       "summary": "ssh -i identity to target (dry-run default)",
-      "args": ["--id", "--target", "--execute"],
+      "args": [
+        "--id",
+        "--target",
+        "--execute"
+      ],
       "example": "ysk-server ssh-key test --id UUID --target root@10.0.0.2 --json"
     },
     {
       "name": "ssh-key rotate",
       "risk": "write",
       "summary": "Retire identity and generate replacement",
-      "args": ["--id", "--reveal"],
+      "args": [
+        "--id",
+        "--reveal"
+      ],
       "example": "ysk-server ssh-key rotate --id UUID --reveal --json"
     },
-
     {
       "name": "ssl list",
       "risk": "read",
@@ -179,28 +246,38 @@
       "name": "ssl get",
       "risk": "read",
       "summary": "Get certificate by domain",
-      "args": ["--domain"],
+      "args": [
+        "--domain"
+      ],
       "example": "ysk-server ssl get --domain example.com --json",
-      "exitCodes": { "4": "not_found" }
+      "exitCodes": {
+        "4": "not_found"
+      }
     },
     {
       "name": "projects deploy",
       "risk": "execute-host",
       "summary": "Deploy by runtime (needs EXECUTE for full apply)",
-      "args": ["--id"],
+      "args": [
+        "--id"
+      ],
       "example": "ysk-server projects deploy --id UUID --json"
     },
     {
       "name": "projects stop",
       "risk": "execute-host",
       "summary": "Stop project process",
-      "args": ["--id"]
+      "args": [
+        "--id"
+      ]
     },
     {
       "name": "projects health",
       "risk": "read",
       "summary": "HTTP/process health for project",
-      "args": ["--id"]
+      "args": [
+        "--id"
+      ]
     },
     {
       "name": "templates",
@@ -216,7 +293,11 @@
       "name": "tools run",
       "risk": "varies",
       "summary": "Run tool (prefer --dry-run first)",
-      "args": ["--tool", "--arg", "--dry-run"]
+      "args": [
+        "--tool",
+        "--arg",
+        "--dry-run"
+      ]
     },
     {
       "name": "ask",
@@ -231,17 +312,29 @@
     },
     {
       "name": "dns zones",
-      "aliases": ["hosting dns-zones"],
+      "aliases": [
+        "hosting dns-zones"
+      ],
       "risk": "read",
       "summary": "List managed DNS zone files under dataDir",
       "example": "ysk-server dns zones --json"
     },
     {
       "name": "dns zone",
-      "aliases": ["hosting dns-zone"],
+      "aliases": [
+        "hosting dns-zone"
+      ],
       "risk": "write-panel",
       "summary": "Write managed BIND zone (A + optional AAAA). --validate/--reload need EXECUTE",
-      "args": ["--zone", "--ip", "--ipv6", "--validate", "--reload", "--template", "--mail"],
+      "args": [
+        "--zone",
+        "--ip",
+        "--ipv6",
+        "--validate",
+        "--reload",
+        "--template",
+        "--mail"
+      ],
       "example": "ysk-server dns zone --zone example.com --ip 203.0.113.10 --ipv6 2001:db8::1 --json",
       "exitCodes": {
         "2": "missing --zone/--ip or invalid zone/IP",
@@ -258,7 +351,13 @@
       "name": "logs query",
       "risk": "read",
       "summary": "Query a log source (journal:, file:, project:)",
-      "args": ["--source", "--lines", "--grep", "--since", "--priority"],
+      "args": [
+        "--source",
+        "--lines",
+        "--grep",
+        "--since",
+        "--priority"
+      ],
       "example": "ysk-server logs query --source journal: --lines 100 --grep error --json",
       "exitCodes": {
         "2": "missing --source",
@@ -270,7 +369,13 @@
       "name": "logs journal",
       "risk": "read",
       "summary": "Tail journalctl (optional --unit)",
-      "args": ["--unit", "--lines", "--grep", "--since", "--priority"],
+      "args": [
+        "--unit",
+        "--lines",
+        "--grep",
+        "--since",
+        "--priority"
+      ],
       "example": "ysk-server logs journal --unit nginx.service --lines 50 --json"
     },
     {
@@ -281,7 +386,10 @@
     },
     {
       "name": "host",
-      "aliases": ["host overview", "host status"],
+      "aliases": [
+        "host overview",
+        "host status"
+      ],
       "risk": "read",
       "summary": "Host identity/OS/load/disks/network (read-only)",
       "example": "ysk-server host --json"
@@ -290,7 +398,9 @@
       "name": "host metrics",
       "risk": "read",
       "summary": "CPU load / memory / disk snapshot; exit 1 if alerts",
-      "args": ["--path"],
+      "args": [
+        "--path"
+      ],
       "example": "ysk-server host metrics --json"
     },
     {
@@ -301,11 +411,18 @@
     },
     {
       "name": "defense",
-      "aliases": ["protection"],
+      "aliases": [
+        "protection"
+      ],
       "risk": "varies",
       "summary": "status|ban|unban|whitelist — ban/unban default dry-run",
       "example": "ysk-server defense ban --ip 1.2.3.4 --json",
-      "args": ["--ip", "--method", "--reason", "--execute"],
+      "args": [
+        "--ip",
+        "--method",
+        "--reason",
+        "--execute"
+      ],
       "exitCodes": {
         "0": "ok or dry-run plan",
         "3": "blocked without YSK_EXECUTE when --execute"
@@ -321,7 +438,10 @@
       "name": "services start|stop|restart|reload",
       "risk": "execute-host",
       "summary": "Default dry-run; --execute + root + YSK_EXECUTE=1 to systemctl",
-      "args": ["--unit", "--execute"],
+      "args": [
+        "--unit",
+        "--execute"
+      ],
       "example": "ysk-server services restart --unit nginx --json"
     },
     {
@@ -333,7 +453,12 @@
       "name": "agent run",
       "risk": "execute-host",
       "summary": "Outbound fleet poller (experimental)",
-      "args": ["--control-plane", "--id", "--group", "--interval"]
+      "args": [
+        "--control-plane",
+        "--id",
+        "--group",
+        "--interval"
+      ]
     },
     {
       "name": "setup",
@@ -349,6 +474,381 @@
       "name": "update",
       "risk": "execute-host",
       "summary": "Self-update check/apply"
+    },
+    {
+      "name": "backup all",
+      "risk": "write-host",
+      "summary": "Tar-backup all project homes (+ remote/restic side)",
+      "example": "ysk-server backup all --data-dir /var/lib/ysk --json"
+    },
+    {
+      "name": "backup list",
+      "risk": "read",
+      "summary": "List managed backup archives",
+      "args": [
+        "--project-id",
+        "--q"
+      ],
+      "example": "ysk-server backup list --q demo --json"
+    },
+    {
+      "name": "backup status",
+      "risk": "read",
+      "summary": "Last backup run + schedule/crontab probe",
+      "example": "ysk-server backup status --json"
+    },
+    {
+      "name": "backup restore",
+      "risk": "write-host",
+      "summary": "Restore project tar archive (path-constrained)",
+      "args": [
+        "--project-id",
+        "--name",
+        "--mode"
+      ],
+      "example": "ysk-server backup restore --project-id UUID --name backup-….tar.gz --mode dry-run --json"
+    },
+    {
+      "name": "backup delete",
+      "risk": "write-panel",
+      "summary": "Delete managed backup archive",
+      "args": [
+        "--project-id",
+        "--name"
+      ],
+      "example": "ysk-server backup delete --project-id UUID --name backup-….tar.gz --json"
+    },
+    {
+      "name": "backup schedule",
+      "risk": "write-host",
+      "summary": "Ensure daily backup cron; --install loads host crontab",
+      "args": [
+        "--cron",
+        "--install"
+      ],
+      "example": "ysk-server backup schedule --cron '0 3 * * *' --install --json"
+    },
+    {
+      "name": "backup control-plane",
+      "risk": "write-panel",
+      "summary": "Snapshot ysk.json + config.json",
+      "example": "ysk-server backup control-plane --json"
+    },
+    {
+      "name": "backup control-plane-restore",
+      "risk": "write-host",
+      "summary": "Restore control-plane archive (confirm for full)",
+      "args": [
+        "--name",
+        "--mode",
+        "--confirm"
+      ],
+      "example": "ysk-server backup control-plane-restore --name cp-….tar.gz --mode dry-run --json"
+    },
+    {
+      "name": "backup settings",
+      "risk": "read",
+      "summary": "Show remote/exclusions/restic settings (public)",
+      "example": "ysk-server backup settings --json"
+    },
+    {
+      "name": "backup restic list",
+      "risk": "read",
+      "summary": "List restic snapshots",
+      "example": "ysk-server backup restic list --json"
+    },
+    {
+      "name": "backup restic run",
+      "risk": "write-host",
+      "summary": "Restic backup all projects (must be enabled + password)",
+      "example": "ysk-server backup restic run --json"
+    },
+    {
+      "name": "cdn nodes list",
+      "risk": "read",
+      "summary": "List CDN edge nodes",
+      "example": "ysk-server cdn nodes list --json"
+    },
+    {
+      "name": "cdn nodes upsert",
+      "risk": "write-panel",
+      "summary": "Create/update CDN node (fleet or SSH or IP)",
+      "example": "ysk-server cdn nodes upsert --name edge1 --fleet-agent-id SESSION --json"
+    },
+    {
+      "name": "cdn sites list",
+      "risk": "read",
+      "summary": "List CDN sites",
+      "example": "ysk-server cdn sites list --json"
+    },
+    {
+      "name": "cdn sites upsert",
+      "risk": "write-panel",
+      "summary": "Create/update CDN site",
+      "example": "ysk-server cdn sites upsert --name app --domains app.example.com --edge-id NODE --origin-url https://origin --json"
+    },
+    {
+      "name": "cdn apply",
+      "risk": "write-host",
+      "summary": "Fan-out edge conf (written/queued/applied honesty)",
+      "example": "ysk-server cdn apply --site-id UUID --json"
+    },
+    {
+      "name": "cdn purge",
+      "risk": "write-host",
+      "summary": "Purge CDN cache on edges",
+      "example": "ysk-server cdn purge --site-id UUID --json"
+    },
+    {
+      "name": "cdn dashboard",
+      "risk": "read",
+      "summary": "CDN dashboard aggregate",
+      "example": "ysk-server cdn dashboard --json"
+    },
+    {
+      "name": "agents fleet list",
+      "risk": "read",
+      "summary": "List fleet agent sessions (registered≠connected)",
+      "example": "ysk-server agents fleet list --json"
+    },
+    {
+      "name": "agents fleet register",
+      "risk": "write-panel",
+      "summary": "Register fleet agent session",
+      "example": "ysk-server agents fleet register --id edge-1 --json"
+    },
+    {
+      "name": "agents fleet commands",
+      "risk": "read",
+      "summary": "List fleet commands for session (queued≠done)",
+      "example": "ysk-server agents fleet commands --session SESSION --json"
+    },
+    {
+      "name": "store status",
+      "risk": "read",
+      "summary": "Show control-plane store backend (json|sqlite|postgres)",
+      "example": "ysk-server store status --json"
+    },
+    {
+      "name": "store export",
+      "risk": "read",
+      "summary": "Export store document snapshot to JSON",
+      "example": "ysk-server store export --out snapshot.json --json"
+    },
+    {
+      "name": "store import",
+      "risk": "write-panel",
+      "summary": "Import JSON snapshot into store",
+      "example": "ysk-server store import --in snapshot.json --json"
+    },
+    {
+      "name": "store migrate",
+      "risk": "write-panel",
+      "summary": "Copy store document to json|sqlite file",
+      "example": "ysk-server store migrate --to sqlite --out ysk.sqlite --json"
+    },
+    {
+      "name": "files list",
+      "risk": "read",
+      "summary": "List sandboxed files",
+      "args": [
+        "--root",
+        "--path",
+        "--q"
+      ],
+      "example": "ysk-server files list --path app --q index --json"
+    },
+    {
+      "name": "files read",
+      "risk": "read",
+      "summary": "Read text file in sandbox",
+      "example": "ysk-server files read --path app/index.html --json"
+    },
+    {
+      "name": "files write",
+      "risk": "write-panel",
+      "summary": "Write text file in sandbox",
+      "example": "ysk-server files write --path note.txt --content hello --json"
+    },
+    {
+      "name": "files mkdir",
+      "risk": "write-panel",
+      "summary": "Create directory in sandbox",
+      "example": "ysk-server files mkdir --path uploads --json"
+    },
+    {
+      "name": "files rm",
+      "risk": "write-panel",
+      "summary": "Trash (or --permanent delete) path",
+      "example": "ysk-server files rm --path old.txt --json"
+    },
+    {
+      "name": "files trash list",
+      "risk": "read",
+      "summary": "List trash entries",
+      "example": "ysk-server files trash list --json"
+    },
+    {
+      "name": "system unit-install",
+      "risk": "write-host",
+      "summary": "Install ysk-server systemd unit",
+      "example": "ysk-server system unit-install --enable --json"
+    },
+    {
+      "name": "users list",
+      "risk": "read",
+      "summary": "List panel users",
+      "example": "ysk-server users list --json"
+    },
+    {
+      "name": "packages list",
+      "risk": "read",
+      "summary": "List packages / quotas",
+      "example": "ysk-server packages list --json"
+    },
+    {
+      "name": "rbac list",
+      "risk": "read",
+      "summary": "List RBAC role policies",
+      "example": "ysk-server rbac list --json"
+    },
+    {
+      "name": "audit list",
+      "risk": "read",
+      "summary": "List audit events",
+      "example": "ysk-server audit list --q= --json"
+    },
+    {
+      "name": "security status",
+      "risk": "read",
+      "summary": "Security / 2FA flags",
+      "example": "ysk-server security status --json"
+    },
+    {
+      "name": "security sessions list",
+      "risk": "read",
+      "summary": "List panel login sessions for a user (default first admin)",
+      "example": "ysk-server security sessions list --user admin --json"
+    },
+    {
+      "name": "security sessions revoke",
+      "risk": "write",
+      "summary": "Revoke one session by id prefix",
+      "example": "ysk-server security sessions revoke --id abcdef012345 --user admin --json"
+    },
+    {
+      "name": "security sessions revoke-others",
+      "risk": "write",
+      "summary": "Revoke all sessions for user except optional --keep-token",
+      "example": "ysk-server security sessions revoke-others --user admin --json"
+    },
+    {
+      "name": "security api-keys list",
+      "risk": "read",
+      "summary": "List operator API keys (prefix/scope only)",
+      "example": "ysk-server security api-keys list --json"
+    },
+    {
+      "name": "security api-keys create",
+      "risk": "write",
+      "summary": "Create API key; token shown once",
+      "example": "ysk-server security api-keys create --name ci --scope read --user admin --json"
+    },
+    {
+      "name": "security api-keys delete",
+      "risk": "write",
+      "summary": "Delete API key by id",
+      "example": "ysk-server security api-keys delete --id KEY_UUID --json"
+    },
+    {
+      "name": "ssh-2fa list",
+      "risk": "read",
+      "summary": "SSH login TOTP enrollments",
+      "example": "ysk-server ssh-2fa list --json"
+    },
+    {
+      "name": "protection status",
+      "risk": "read",
+      "summary": "Alias of defense status",
+      "example": "ysk-server protection status --json"
+    },
+    {
+      "name": "doctor",
+      "risk": "read",
+      "summary": "Alias of readiness",
+      "example": "ysk-server doctor --json"
+    },
+    {
+      "name": "cron list",
+      "risk": "read",
+      "summary": "List managed cron jobs",
+      "example": "ysk-server cron list --json"
+    },
+    {
+      "name": "cron create",
+      "risk": "write-panel",
+      "summary": "Create managed cron job",
+      "example": "ysk-server cron create --schedule '0 3 * * *' --command true --json"
+    },
+    {
+      "name": "cron install",
+      "risk": "write-host",
+      "summary": "Install managed crontab to host",
+      "example": "ysk-server cron install --json"
+    },
+    {
+      "name": "cron status",
+      "risk": "read",
+      "summary": "Probe managed vs host crontab",
+      "example": "ysk-server cron status --json"
+    },
+    {
+      "name": "email domains list",
+      "risk": "read",
+      "summary": "List email domains",
+      "example": "ysk-server email domains list --json"
+    },
+    {
+      "name": "email domains create",
+      "risk": "write-panel",
+      "summary": "Create email domain + DKIM",
+      "example": "ysk-server email domains create --domain example.com --ip 1.2.3.4 --json"
+    },
+    {
+      "name": "email mailboxes create",
+      "risk": "write-panel",
+      "summary": "Create mailbox",
+      "example": "ysk-server email mailboxes create --domain example.com --local info --password P --json"
+    },
+    {
+      "name": "email deliverability",
+      "risk": "read",
+      "summary": "Deliverability pack (honest)",
+      "example": "ysk-server email deliverability --domain example.com --json"
+    },
+    {
+      "name": "defense fail2ban",
+      "risk": "read",
+      "summary": "Fail2ban deep status",
+      "example": "ysk-server defense fail2ban --json"
+    },
+    {
+      "name": "defense firewall",
+      "risk": "read",
+      "summary": "UFW deep probe",
+      "example": "ysk-server defense firewall --json"
+    },
+    {
+      "name": "defense presets",
+      "risk": "read",
+      "summary": "List defense presets + active",
+      "example": "ysk-server defense presets --json"
+    },
+    {
+      "name": "defense timeline",
+      "risk": "read",
+      "summary": "Defense event timeline",
+      "example": "ysk-server defense timeline --json"
     }
   ]
 }

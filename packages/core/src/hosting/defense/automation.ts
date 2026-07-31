@@ -16,6 +16,7 @@ import {
   saveAutoBanPolicy,
   updateAutoBanPolicy } from './auto-ban.js';
 import { applyDefensePreset } from './defense-service.js';
+import { getDefensePreset } from './presets.js';
 import {
   collectDefenseSignals,
   DEFAULT_SIGNAL_WEIGHTS,
@@ -421,14 +422,21 @@ export async function runDefenseAutomationTick(input: {
         presetChanged = true;
         preset = target;
         setHold(input.db, target);
-        notes.push(
-          tl('notes.auto.t0531', { v0: (target), v1: (r.applied ? ' (applied)' : r.blocked ? ' (written)' : '') }),
-        );
+        const appliedTag = r.applied
+          ? tl('notes.auto.appliedTag')
+          : r.blocked
+            ? tl('notes.auto.writtenTag')
+            : '';
+        notes.push(tl('notes.auto.t0531', { v0: getDefensePreset(target).label, v1: appliedTag }));
         pushTimeline(input.db, {
           at: new Date().toISOString(),
           kind: 'auto_preset',
-          title: tl('notes.auto.t0532', { v0: (target) }),
-          detail: `score=${sig.score} from=${current}` });
+          title: tl('notes.auto.t0532', { v0: getDefensePreset(target).label }),
+          detail: tl('notes.auto.tScoreFrom', {
+            score: sig.score,
+            from: getDefensePreset(current).label,
+          }),
+        });
         // Cloudflare Under Attack + optional CF-only UFW on escalate
         if (target === 'under_attack' && wantUp && automation.cloudflare.enabled) {
           if (automation.cloudflare.onAutoEscalate && automation.cloudflare.zones.length) {
@@ -516,13 +524,52 @@ export async function runDefenseAutomationTick(input: {
     automation };
 }
 
-/** Mechanism table for UI (static). */
-export const AUTOMATION_MECHANISM_ROWS = [
-  { step: tl('notes.probe'), mechanism: tl('notes.tpl.probeMech'), tunable: tl('notes.tpl.probeTunable') },
-  { step: tl('notes.auto.n1375'), mechanism: tl('notes.auto.n1354'), tunable: tl('notes.auto.n1519') },
-  { step: tl('notes.auto.n1531'), mechanism: tl('notes.auto.n1525'), tunable: tl('notes.auto.n1332') },
-  { step: tl('notes.auto.n1325'), mechanism: 'fail2ban banip', tunable: tl('notes.auto.n0906') },
-  { step: tl('notes.auto.n1046'), mechanism: 'UFW deny from', tunable: 'method=ufw/both' },
-  { step: tl('notes.auto.n1202'), mechanism: tl('notes.auto.n1044'), tunable: 'maxAutoBansPerHour' },
-  { step: tl('notes.auto.n0030'), mechanism: tl('notes.tpl.autoNever'), tunable: tl('notes.tpl.autoManualEmergency') },
-] as const;
+/**
+ * Mechanism table for UI — resolved at request time (never module-load tl freeze).
+ */
+export function getAutomationMechanismRows(): Array<{
+  step: string;
+  mechanism: string;
+  tunable: string;
+}> {
+  return [
+    {
+      step: tl('notes.probe'),
+      mechanism: tl('notes.tpl.probeMech'),
+      tunable: tl('notes.tpl.probeTunable'),
+    },
+    {
+      step: tl('notes.auto.n1375'),
+      mechanism: tl('notes.auto.n1354'),
+      tunable: tl('notes.auto.n1519'),
+    },
+    {
+      step: tl('notes.auto.n1531'),
+      mechanism: tl('notes.auto.n1525'),
+      tunable: tl('notes.auto.n1332'),
+    },
+    {
+      step: tl('notes.auto.n1325'),
+      mechanism: 'fail2ban banip',
+      tunable: tl('notes.auto.n0906'),
+    },
+    {
+      step: tl('notes.auto.n1046'),
+      mechanism: 'UFW deny from',
+      tunable: 'method=ufw/both',
+    },
+    {
+      step: tl('notes.auto.n1202'),
+      mechanism: tl('notes.auto.n1044'),
+      tunable: 'maxAutoBansPerHour',
+    },
+    {
+      step: tl('notes.auto.n0030'),
+      mechanism: tl('notes.tpl.autoNever'),
+      tunable: tl('notes.tpl.autoManualEmergency'),
+    },
+  ];
+}
+
+/** @deprecated alias — prefer getAutomationMechanismRows() at request time */
+export const AUTOMATION_MECHANISM_ROWS = getAutomationMechanismRows;

@@ -1,3 +1,7 @@
+# AI agents
+
+> Language: English | [中文](./README-ZH.md)
+
 # YSK Server — 給 AI Agent 用
 
 **原則：用 CLI 管機，唔好發明第二套工具。**

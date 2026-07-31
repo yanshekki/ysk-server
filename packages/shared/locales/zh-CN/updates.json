@@ -121,5 +121,6 @@
   "appliedPackage": "已应用软件包更新",
   "updateFailed": "更新失败",
   "updateIncomplete": "更新未完成",
-  "appliedUpdate": "已应用更新"
+  "appliedUpdate": "已应用更新",
+  "aptCandidate": "apt Candidate（候选版本）"
 }

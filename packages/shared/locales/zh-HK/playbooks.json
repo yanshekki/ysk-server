@@ -1,0 +1,50 @@
+{
+  "discover-host": {
+    "name": "主機探索",
+    "description": "唯讀主機清單"
+  },
+  "nginx-health": {
+    "name": "Nginx 健康檢查",
+    "description": "檢查 nginx 服務狀態"
+  },
+  "nginx-restart": {
+    "name": "Nginx 重啟（高風險）",
+    "description": "審批後重啟 nginx"
+  },
+  "local-llm-ops-only": {
+    "name": "僅本機 LLM 操作",
+    "description": "防護模式下緊急探索"
+  },
+  "disk-pressure": {
+    "name": "磁碟壓力檢查",
+    "description": "唯讀磁碟用量（df）"
+  },
+  "mail-stack-status": {
+    "name": "郵件堆疊狀態",
+    "description": "檢查 postfix + dovecot unit"
+  },
+  "security-units": {
+    "name": "安全 unit",
+    "description": "fail2ban + sshd 狀態（唯讀）"
+  },
+  "web-stack-status": {
+    "name": "Web 堆疊狀態",
+    "description": "nginx + php-fpm 探測"
+  },
+  "emergency-read-only": {
+    "name": "緊急唯讀掃視",
+    "description": "僅防護安全事實"
+  },
+  "backup-health": {
+    "name": "備份就緒",
+    "description": "備份就緒檢查"
+  },
+  "db-stack-status": {
+    "name": "資料庫堆疊狀態",
+    "description": "資料庫服務狀態"
+  },
+  "ssl-nginx-check": {
+    "name": "SSL + Nginx 檢查",
+    "description": "SSL 與 Nginx 檢查"
+  }
+}

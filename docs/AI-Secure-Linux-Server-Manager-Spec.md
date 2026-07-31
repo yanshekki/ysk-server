@@ -1,5 +1,7 @@
 # AI Secure Linux Server Manager — 完整需求與設計規格
 
+> Language: English | [中文摘要](./AI-Secure-Linux-Server-Manager-Spec-ZH.md)
+
 **版本**: 0.9 (Draft)  
 **日期**: 2026-07-23  
 **狀態**: 需求收集完成，準備進入專業架構開發  

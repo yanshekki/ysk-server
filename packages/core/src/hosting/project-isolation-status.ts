@@ -16,7 +16,18 @@ export interface ProjectIsolationSnapshot {
   linuxUser: string;
   homeDir: string;
   osProvisioned: boolean;
+  /** Panel owner for package quota (optional) */
+  ownerUserId?: string;
 }
+
+export type IsolationReportRow = IsolationMigrationPlan & {
+  name: string;
+  osProvisioned: boolean;
+  ownerUserId?: string;
+  missingOwner: boolean;
+  /** Ready for production isolation (canonical home + provisioned + home exists) */
+  productionReady: boolean;
+};
 
 /** List separator under request locale (avoid hard-coded CJK顿号 in EN UI). */
 function listSep(): string {
@@ -60,9 +71,15 @@ export function planIsolationMigration(p: ProjectIsolationSnapshot): IsolationMi
   if (p.osProvisioned && homeIsCanonical && !existsSync(p.homeDir)) {
     reasons.push(tl('notes.auto.n0092'));
   }
+  if (!p.ownerUserId) {
+    reasons.push('missing panel owner_user_id (package quota attribution)');
+  }
+  const homeExists = homeIsCanonical && existsSync(p.homeDir);
   return {
     projectId: p.id,
-    needsMigration: reasons.length > 0 && (!homeIsCanonical || !p.osProvisioned || !existsSync(p.homeDir)),
+    needsMigration:
+      reasons.length > 0 &&
+      (!homeIsCanonical || !p.osProvisioned || !homeExists || !p.ownerUserId),
     reasons,
     currentHome: p.homeDir,
     targetHome,
@@ -70,6 +87,47 @@ export function planIsolationMigration(p: ProjectIsolationSnapshot): IsolationMi
     preferredLinuxUser,
     legacyUserName,
     homeIsCanonical };
+}
+
+/** Build per-project isolation report for CLI / API bulk view. */
+export function listIsolationReport(
+  projects: ProjectIsolationSnapshot[],
+): {
+  items: IsolationReportRow[];
+  summary: {
+    total: number;
+    productionReady: number;
+    needsMigration: number;
+    missingOwner: number;
+    unprovisioned: number;
+  };
+} {
+  const items: IsolationReportRow[] = projects.map((p) => {
+    const plan = planIsolationMigration(p);
+    const homeExists = plan.homeIsCanonical && existsSync(p.homeDir);
+    const productionReady = Boolean(p.osProvisioned && homeExists && p.ownerUserId);
+    return {
+      ...plan,
+      name: p.name,
+      osProvisioned: p.osProvisioned,
+      ownerUserId: p.ownerUserId,
+      missingOwner: !p.ownerUserId,
+      productionReady,
+      // needsMigration already set; ensure production path ignores owner-only for OS migrate
+      needsMigration:
+        !homeExists || !p.osProvisioned || !plan.homeIsCanonical,
+    };
+  });
+  return {
+    items,
+    summary: {
+      total: items.length,
+      productionReady: items.filter((i) => i.productionReady).length,
+      needsMigration: items.filter((i) => i.needsMigration).length,
+      missingOwner: items.filter((i) => i.missingOwner).length,
+      unprovisioned: items.filter((i) => !i.osProvisioned).length,
+    },
+  };
 }
 
 /**

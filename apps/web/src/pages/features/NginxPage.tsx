@@ -13,6 +13,7 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
+  ServerListFilters,
   SoftwareInstallBanner,
   FormHint,
   CheckboxField,
@@ -26,8 +27,24 @@ import { systemApi } from '../../features/system';
 
 export function NginxPage() {
   const { t } = useTranslation();
-  const { items, error, busy, msg, setMsg, create, update, remove, apply } =
-    useResourceCrud('nginx/sites');
+  const {
+    items,
+    error,
+    busy,
+    msg,
+    setMsg,
+    create,
+    update,
+    remove,
+    apply,
+    q,
+    setQ,
+    searching,
+    listLoading,
+    total,
+    activeFilterCount,
+    clearSearch,
+  } = useResourceCrud('nginx/sites');
   const [purgeBusy, setPurgeBusy] = useState(false);
   const [purgeMsg, setPurgeMsg] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -101,7 +118,7 @@ export function NginxPage() {
         items: [
           { label: t('nginx.statSites'), value: items.length },
           {
-            label: 'Proxy',
+            label: t('nginx.kindProxy'),
             value: items.filter((r) => r.kind === 'proxy').length,
           },
           {
@@ -157,7 +174,7 @@ export function NginxPage() {
 
         <DataTable
           rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
-          title={t('nginx.listTitle', { count: items.length })}
+          title={t('nginx.listTitle', { count: total })}
           description={t('nginx.listDesc')}
           toolbar={
             <ActionBar>
@@ -172,6 +189,18 @@ export function NginxPage() {
                 {t('nginx.createSite')}
               </Button>
             </ActionBar>
+          }
+          filters={
+            <ServerListFilters
+              q={q}
+              setQ={setQ}
+              searching={searching}
+              loading={listLoading}
+              total={total}
+              shown={items.length}
+              activeFilterCount={activeFilterCount}
+              clear={clearSearch}
+            />
           }
           columns={[
             {

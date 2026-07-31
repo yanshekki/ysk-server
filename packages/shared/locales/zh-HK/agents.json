@@ -49,7 +49,7 @@
   "emptyAgents": "尚未登記 agent",
   "emptyAgentsDesc": "用列表右上角登記，或等邊緣進程自行 register",
   "historyTitle": "指令紀錄 · {{id}}",
-  "historyDesc": "queued 等節點 pull；done/error 為 ack。CLI 結果含 exit code + JSON（約 4s 自動刷新）",
+  "historyDesc": "queued 等節點 pull；done/error 為 ack。CLI 結果含 exit code + JSON（約 4s 自動重新整理）",
   "refreshHistory": "重新整理紀錄",
   "colTime": "時間",
   "finishedAt": "完成 {{at}}",
@@ -120,5 +120,11 @@
   "wroteUnitMsg": "已寫入 {{kind}} 服務設定",
   "writeFailed": "寫入失敗",
   "installedMsg": "已安裝 {{kind}}",
-  "installIncomplete": "安裝未完成"
+  "installIncomplete": "安裝未完成",
+  "badgeDryRun": "計劃模式（dry-run）",
+  "badgeBlocked": "已阻擋",
+  "labelStderr": "stderr",
+  "labelAckCli": "ack + CLI JSON",
+  "labelStdoutBody": "CLI 標準輸出內容",
+  "resultOuterHint": "外層 result 為 CLI --json 標準輸出。"
 }

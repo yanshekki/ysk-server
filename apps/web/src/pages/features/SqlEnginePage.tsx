@@ -26,6 +26,7 @@ import {
   FormHint,
   CheckboxField,
   SegRadio,
+  ServerListFilters,
   SoftwareInstallBanner,
   buttonClassName,
 } from '../../shared/components/ui';
@@ -434,6 +435,18 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             <CardSection title={t('db.dbList')}>
               <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+                filters={
+                  <ServerListFilters
+                    q={dbs.q}
+                    setQ={dbs.setQ}
+                    searching={dbs.searching}
+                    loading={dbs.listLoading}
+                    total={dbs.total}
+                    shown={dbs.items.length}
+                    activeFilterCount={dbs.activeFilterCount}
+                    clear={dbs.clearSearch}
+                  />
+                }
                 columns={[
                   {
                     key: 'name',
@@ -504,6 +517,18 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </div>
               <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+                filters={
+                  <ServerListFilters
+                    q={users.q}
+                    setQ={users.setQ}
+                    searching={users.searching}
+                    loading={users.listLoading}
+                    total={users.total}
+                    shown={users.items.length}
+                    activeFilterCount={users.activeFilterCount}
+                    clear={users.clearSearch}
+                  />
+                }
                 columns={[
                   {
                     key: 'username',

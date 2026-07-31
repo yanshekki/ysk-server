@@ -11,6 +11,7 @@ describe('email warmup', () => {
     expect(plan.phases.length).toBeGreaterThanOrEqual(3);
     expect(plan.phases[0].maxMessagesPerDay).toBeLessThan(plan.phases[2].maxMessagesPerDay);
     expect(plan.checklist.some((c) => /PTR|DNSBL|SPF/i.test(c))).toBe(true);
-    expect(plan.notes.join(' ')).toMatch(/new/i);
+    // locale-aware: en "new" · zh-HK/zh-CN 「新」
+    expect(plan.notes.join(' ')).toMatch(/new|新/i);
   });
 });

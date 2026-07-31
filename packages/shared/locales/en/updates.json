@@ -121,5 +121,6 @@
   "appliedPackage": "Package update applied",
   "updateFailed": "Update failed",
   "updateIncomplete": "Update incomplete",
-  "appliedUpdate": "Update applied"
+  "appliedUpdate": "Update applied",
+  "aptCandidate": "apt Candidate"
 }

@@ -120,5 +120,11 @@
   "wroteUnitMsg": "已写入 {{kind}} 服务设置",
   "writeFailed": "写入失败",
   "installedMsg": "已安装 {{kind}}",
-  "installIncomplete": "安装未完成"
+  "installIncomplete": "安装未完成",
+  "badgeDryRun": "计划模式（dry-run）",
+  "badgeBlocked": "已阻挡",
+  "labelStderr": "stderr",
+  "labelAckCli": "ack + CLI JSON",
+  "labelStdoutBody": "CLI 标准输出内容",
+  "resultOuterHint": "外层 result 为 CLI --json 标准输出。"
 }

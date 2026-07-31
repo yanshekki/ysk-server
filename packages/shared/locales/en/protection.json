@@ -309,6 +309,13 @@
   "banShort": "Ban",
   "vhostLimits": "Vhost rate limits",
   "eventStream": "Event stream",
+  "eventKind": {
+    "preset": "Preset",
+    "auto_preset": "Auto preset",
+    "cloudflare_ua": "Cloudflare",
+    "ban": "Ban",
+    "unban": "Unban"
+  },
   "hours48": "48 hours",
   "geoipDb": "GeoIP database",
   "refreshStatus": "Refresh status",

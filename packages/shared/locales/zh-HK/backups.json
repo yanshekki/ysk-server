@@ -36,10 +36,12 @@
   "backupFailed": "備份失敗",
   "backupDone": "備份完成",
   "backupAll": "備份所有專案",
+  "controlPlane": "備份控制平面",
+  "controlPlaneDone": "控制平面備份完成",
   "cronCmd": "指令：ysk-server backup all --data-dir …",
-  "cronHint": "記得到「Cron」頁安裝到系統 crontab 才會真正跑",
+  "cronHint": "schedule 帶 install=true 且 YSK_EXECUTE=1 時會寫入 host crontab；否則只寫 managed 檔",
   "dailyCronRegistered": "已登記每日 03:00 排程",
-  "registerDailyCron": "登記每日排程",
+  "registerDailyCron": "登記每日排程（含安裝）",
   "resticNeedConfig": "請先在「遠端／排除」啟用 restic 並設定 password",
   "resticFailed": "restic 失敗",
   "resticDone": "restic 增量完成",
@@ -124,5 +126,8 @@
   "no": "否",
   "safeDir": "安全目錄",
   "remotePushTitle": "遠端推送目標",
-  "remotePushSub": "本地 tar 成功後可推送到 SFTP、本機路徑或 S3"
+  "remotePushSub": "本地 tar 成功後可推送到 SFTP、本機路徑或 S3",
+  "accessKey": "存取金鑰",
+  "secretKey": "密鑰",
+  "overwriteConfirmHint": "輸入 OVERWRITE 確認覆寫"
 }

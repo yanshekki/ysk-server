@@ -10,11 +10,15 @@ import { JsonStore } from '../db/store.js';
 import {
   backupAllProjects,
   backupProject,
+  backupControlPlane,
+  restoreControlPlaneBackup,
   deleteProjectBackup,
+  filterBackupList,
   listBackups,
   resolveBackupDownloadPath,
   resolveManagedBackupArchive,
   restoreProjectBackup,
+  CONTROL_PLANE_BACKUP_ID,
   CronJobService,
 } from './backup-cron.js';
 import { pushBackupRemote, setBackupRemote } from './backup-remote.js';
@@ -109,6 +113,47 @@ describe('backup lifecycle 100%', () => {
     const del = deleteProjectBackup(dir, projectId, item.name);
     expect(del.ok).toBe(true);
     expect(resolveBackupDownloadPath(dir, projectId, item.name).ok).toBe(false);
+  });
+
+  it('control-plane backup → list filter → dry-run restore → refuse full without phrase', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cp-'));
+    dirs.push(dir);
+    writeFileSync(join(dir, 'ysk.json'), JSON.stringify({ version: 1, users: [] }, null, 2), 'utf8');
+    writeFileSync(join(dir, 'config.json'), JSON.stringify({ dataDir: dir }, null, 2), 'utf8');
+    const host = new LocalHostExecutor({
+      allowedWriteRoots: [dir],
+      executeEnabled: false,
+    });
+
+    const bak = await backupControlPlane({ host, dataDir: dir });
+    expect(bak.ok).toBe(true);
+    expect(bak.archivePath && existsSync(bak.archivePath)).toBe(true);
+    expect(bak.projectId).toBe(CONTROL_PLANE_BACKUP_ID);
+
+    const all = listBackups(dir);
+    expect(all.some((x) => x.projectId === CONTROL_PLANE_BACKUP_ID)).toBe(true);
+    const filtered = filterBackupList(all, { projectId: CONTROL_PLANE_BACKUP_ID });
+    expect(filtered.length).toBeGreaterThanOrEqual(1);
+    const byQ = filterBackupList(all, { q: 'cp-' });
+    expect(byQ.length).toBeGreaterThanOrEqual(1);
+
+    const name = filtered[0]!.name;
+    const dry = await restoreControlPlaneBackup({
+      host,
+      dataDir: dir,
+      archiveName: name,
+      mode: 'dry-run',
+    });
+    expect(dry.ok).toBe(true);
+
+    const refused = await restoreControlPlaneBackup({
+      host,
+      dataDir: dir,
+      archiveName: name,
+      mode: 'full',
+      confirmPhrase: 'nope',
+    });
+    expect(refused.ok).toBe(false);
   });
 
   it('backupAll + schedule command shape', async () => {

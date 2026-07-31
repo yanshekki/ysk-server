@@ -1,5 +1,7 @@
 # 整機遷移（Host full migrate）
 
+> Language: English | [中文](./host-migrate-ZH.md)
+
 將 **整台 YSK 控制面 + 專案 + 郵件 + 資料庫 + 帳戶設定** 遷到新伺服器。  
 目標：新機 **只換公網 IP**，其餘域名／帳號／路徑／專案 id 不變。
 

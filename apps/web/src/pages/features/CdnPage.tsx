@@ -21,9 +21,11 @@ import {
   Modal,
   PageGuide,
   PageTabs,
+  ServerListFilters,
   buttonClassName,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { useServerList } from '../../shared/hooks/useServerList';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import type {
@@ -99,8 +101,16 @@ function statusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
 export function CdnPage() {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'nodes');
-  const [nodes, setNodes] = useState<CdnNodeDto[]>([]);
-  const [sites, setSites] = useState<CdnSiteDto[]>([]);
+  const nodeList = useServerList<CdnNodeDto>({
+    path: '/api/v1/cdn/nodes',
+    debounceMs: 300,
+  });
+  const siteList = useServerList<CdnSiteDto>({
+    path: '/api/v1/cdn/sites',
+    debounceMs: 300,
+  });
+  const nodes = nodeList.items;
+  const sites = siteList.items;
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [notes, setNotes] = useState<string[]>([]);
@@ -148,20 +158,17 @@ export function CdnPage() {
   const [geoSubdomains, setGeoSubdomains] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const refreshNodes = nodeList.refresh;
+  const refreshSites = siteList.refresh;
   const refresh = useCallback(async () => {
-    const [n, s, z] = await Promise.all([
-      api.requestRaw<{ items: CdnNodeDto[] }>('/api/v1/cdn/nodes'),
-      api.requestRaw<{ items: CdnSiteDto[] }>('/api/v1/cdn/sites'),
-      api
-        .requestRaw<{ items: Array<{ id: string; zone?: string }> }>(
-          '/api/v1/resources/dns/zones',
-        )
-        .catch(() => ({ items: [] as Array<{ id: string; zone?: string }> })),
-    ]);
-    setNodes(n.items ?? []);
-    setSites(s.items ?? []);
+    const z = await api
+      .requestRaw<{ items: Array<{ id: string; zone?: string }> }>(
+        '/api/v1/resources/dns/zones',
+      )
+      .catch(() => ({ items: [] as Array<{ id: string; zone?: string }> }));
+    await Promise.all([refreshNodes(), refreshSites()]);
     setDnsZones(z.items ?? []);
-  }, []);
+  }, [refreshNodes, refreshSites]);
 
   const refreshDashboard = useCallback(async () => {
     const d = await api.requestRaw<CdnDashboardDto>('/api/v1/cdn/dashboard');
@@ -695,7 +702,9 @@ export function CdnPage() {
           <div className="tab-panel">
             <DataTable<CdnNodeDto>
               rowKey={(r) => r.id}
-              title={t('cdn.nodesTitle', { count: nodes.length })}
+              title={t('cdn.nodesTitle', {
+                count: nodeList.meta?.total ?? nodes.length,
+              })}
               description={t('cdn.nodesDesc')}
               toolbar={
                 <ActionBar>
@@ -712,6 +721,18 @@ export function CdnPage() {
                     {t('cdn.probeAll')}
                   </Button>
                 </ActionBar>
+              }
+              filters={
+                <ServerListFilters
+                  q={nodeList.q}
+                  setQ={nodeList.setQ}
+                  searching={nodeList.searching}
+                  loading={nodeList.loading}
+                  total={nodeList.meta?.total ?? nodes.length}
+                  shown={nodes.length}
+                  activeFilterCount={nodeList.activeFilterCount}
+                  clear={nodeList.clear}
+                />
               }
               columns={[
                 {
@@ -810,7 +831,9 @@ export function CdnPage() {
           <div className="tab-panel">
             <DataTable<CdnSiteDto>
               rowKey={(r) => r.id}
-              title={t('cdn.sitesTitle', { count: sites.length })}
+              title={t('cdn.sitesTitle', {
+                count: siteList.meta?.total ?? sites.length,
+              })}
               description={t('cdn.sitesDesc')}
               toolbar={
                 <ActionBar>
@@ -866,6 +889,18 @@ export function CdnPage() {
                     {t('cdn.healthLoopAll')}
                   </Button>
                 </ActionBar>
+              }
+              filters={
+                <ServerListFilters
+                  q={siteList.q}
+                  setQ={siteList.setQ}
+                  searching={siteList.searching}
+                  loading={siteList.loading}
+                  total={siteList.meta?.total ?? sites.length}
+                  shown={sites.length}
+                  activeFilterCount={siteList.activeFilterCount}
+                  clear={siteList.clear}
+                />
               }
               columns={[
                 {

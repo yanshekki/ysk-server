@@ -170,7 +170,15 @@ export function upsertCdnNode(db: JsonStore, input: UpsertCdnNodeInput): CdnNode
     lastHeartbeatAt: prev?.lastHeartbeatAt,
     lastHealth: prev?.lastHealth };
 
-  if (!row.publicIpv4.length && !row.publicIpv6.length && !row.healthUrl && !row.baseUrl) {
+  // Need at least one reachability handle: IP, health, baseUrl, SSH host, or fleet session
+  if (
+    !row.publicIpv4.length &&
+    !row.publicIpv6.length &&
+    !row.healthUrl &&
+    !row.baseUrl &&
+    !row.sshHost &&
+    !row.fleetAgentId
+  ) {
     throw new YskError(
       ErrorCodes.VALIDATION,
       tl('notes.auto.n1426'),

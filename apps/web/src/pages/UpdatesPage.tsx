@@ -1,7 +1,8 @@
 /**
  * Smart updates — tabbed: packages · panel self · schedule · policy.
+ * Inventory filters are server-backed (ListQuery on GET /updates/inventory).
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUpdates } from '../features/updates';
@@ -18,6 +19,7 @@ import {
   FeaturePageLayout,
   InfoCard,
   InfoCardGrid,
+  ListToolbar,
   LoadingBlock,
   PageTabs,
 } from '../shared/components/ui';
@@ -87,7 +89,36 @@ export function UpdatesPage() {
   const [tab, setTab] = usePageTab(UPD_TABS, 'packages');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
   const [q, setQ] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
   const [highRiskApply, setHighRiskApply] = useState<AdviceRow | null>(null);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedQ(q.trim()), 300);
+    return () => window.clearTimeout(t);
+  }, [q]);
+
+  const listQuery = useMemo(() => {
+    const qparams: {
+      q?: string;
+      risk?: string;
+      upgradable?: string;
+      approval?: string;
+      cached?: boolean;
+    } = { cached: true };
+    if (debouncedQ) qparams.q = debouncedQ;
+    if (riskFilter === 'upgradable') qparams.upgradable = '1';
+    else if (riskFilter === 'high') qparams.risk = 'high';
+    else if (riskFilter === 'medium') qparams.risk = 'medium';
+    else if (riskFilter === 'low') qparams.risk = 'low';
+    else if (riskFilter === 'approval') qparams.approval = '1';
+    return qparams;
+  }, [debouncedQ, riskFilter]);
+
+  // Server-backed filter: reload when listQuery changes (after first mount load from hook)
+  useEffect(() => {
+    void load(false, false, listQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when filters change
+  }, [listQuery]);
 
   const highRisk = inventory.filter(
     (i) => i.risk === 'critical' || i.risk === 'high',
@@ -108,33 +139,9 @@ export function UpdatesPage() {
     (i) => i.candidateVersion && i.candidateVersion !== i.currentVersion,
   ).length;
 
-  const filtered = useMemo(() => {
-    let list = inventory;
-    if (riskFilter === 'upgradable') {
-      list = list.filter(
-        (i) => i.candidateVersion && i.candidateVersion !== i.currentVersion,
-      );
-    } else if (riskFilter === 'high') {
-      list = list.filter((i) => i.risk === 'high' || i.risk === 'critical');
-    } else if (riskFilter === 'medium') {
-      list = list.filter((i) => i.risk === 'medium');
-    } else if (riskFilter === 'low') {
-      list = list.filter((i) => i.risk === 'low' || !i.risk);
-    } else if (riskFilter === 'approval') {
-      list = list.filter((i) => i.requiresApproval);
-    }
-    const needle = q.trim().toLowerCase();
-    if (needle) {
-      list = list.filter(
-        (i) =>
-          i.packageName.toLowerCase().includes(needle) ||
-          (i.summary ?? '').toLowerCase().includes(needle) ||
-          (i.advice ?? '').toLowerCase().includes(needle) ||
-          (i.cves ?? []).some((c) => c.toLowerCase().includes(needle)),
-      );
-    }
-    return list;
-  }, [inventory, riskFilter, q]);
+  const filtered = inventory;
+  const activeFilterCount =
+    (q.trim() ? 1 : 0) + (riskFilter !== 'all' ? 1 : 0);
 
   return (
     <FeaturePageLayout
@@ -251,62 +258,66 @@ export function UpdatesPage() {
             ) : (
               <DataTable
                 title={t('updates.inventoryTitle')}
-                description={t('updates.inventoryDesc', { shown: filtered.length, total: inventory.length, when: relTime(lastAt, t) })}
+                description={t('updates.inventoryDesc', {
+                  shown: filtered.length,
+                  total: filtered.length,
+                  when: relTime(lastAt, t),
+                })}
                 filters={
-                  <div className="upd-toolbar">
-                    <div className="upd-chips" role="tablist" aria-label={t('updates.riskFilterAria')}>
-                      {(
-                        [
-                          ['all', t('updates.all'), inventory.length],
-                          ['upgradable', t('updates.upgradable'), upgradableCount],
-                          ['high', t('updates.highRisk'), highRisk],
-                          [
-                            'medium',
-                            t('updates.mediumFilter'),
-                            inventory.filter((i) => i.risk === 'medium').length,
-                          ],
-                          [
-                            'low',
-                            t('updates.lowUnmarked'),
-                            inventory.filter((i) => !i.risk || i.risk === 'low')
-                              .length,
-                          ],
-                          ['approval', t('updates.needApproval'), needApproval],
-                        ] as const
-                      ).map(([id, label, n]) => (
-                        <button
-                          key={id}
-                          type="button"
-                          role="tab"
-                          aria-selected={riskFilter === id}
-                          className={`upd-chip${riskFilter === id ? ' upd-chip--active' : ''}${
-                            id === 'high'
-                              ? ' upd-chip--danger'
-                              : id === 'approval' || id === 'medium'
-                                ? ' upd-chip--warn'
-                                : id === 'low'
-                                  ? ' upd-chip--ok'
-                                  : ''
-                          }`}
-                          onClick={() => setRiskFilter(id)}
-                        >
-                          {label}
-                          <span className="upd-chip__n">{n}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <label className="upd-field">
-                      <span className="upd-field__lab">{t('common.search')}</span>
-                      <input
-                        id="upd-q"
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        placeholder={t('updates.searchPh')}
-                        autoComplete="off"
-                        aria-label={t('updates.searchAria')}
-                      />
-                    </label>
-                  </div>
+                  <ListToolbar
+                    search={q}
+                    onSearchChange={setQ}
+                    searchPlaceholder={t('updates.searchPh', {
+                      defaultValue: t('listToolbar.searchPlaceholder'),
+                    })}
+                    searching={busy}
+                    loading={busy}
+                    total={filtered.length}
+                    activeFilterCount={activeFilterCount}
+                    onClear={() => {
+                      setQ('');
+                      setRiskFilter('all');
+                    }}
+                    chipGroups={[
+                      {
+                        key: 'risk',
+                        ariaLabel: t('updates.riskFilterAria'),
+                        allLabel: t('updates.all'),
+                        value: riskFilter === 'all' ? '' : riskFilter,
+                        onChange: (v) =>
+                          setRiskFilter((v || 'all') as RiskFilter),
+                        chips: [
+                          {
+                            id: 'upgradable',
+                            label: t('updates.upgradable'),
+                            count: upgradableCount,
+                          },
+                          {
+                            id: 'high',
+                            label: t('updates.highRisk'),
+                            count: highRisk,
+                            tone: 'danger',
+                          },
+                          {
+                            id: 'medium',
+                            label: t('updates.mediumFilter'),
+                            tone: 'warn',
+                          },
+                          {
+                            id: 'low',
+                            label: t('updates.lowUnmarked'),
+                            tone: 'ok',
+                          },
+                          {
+                            id: 'approval',
+                            label: t('updates.needApproval'),
+                            count: needApproval,
+                            tone: 'warn',
+                          },
+                        ],
+                      },
+                    ]}
+                  />
                 }
                 columns={[
                   {
@@ -355,7 +366,7 @@ export function UpdatesPage() {
                           {hasUpgrade ? (
                             <>
                               <span className="upd-pkg__arrow">→</span>
-                              <code className="upd-pkg__cand" title="apt Candidate">
+                              <code className="upd-pkg__cand" title={t('updates.aptCandidate')}>
                                 {cand}
                               </code>
                             </>

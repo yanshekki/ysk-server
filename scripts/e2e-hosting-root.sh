@@ -86,8 +86,32 @@ MYSQL=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/hosting/db/mysql-p
   -d '{"dbName":"ysk_e2e","username":"ysk_e2e","password":"testpass99"}' || true)
 log "mysql: $MYSQL"
 
+# PHP FPM/builtin path (honest)
+PHP_CREATE=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"name":"rootphp","domain":"rootphp.local","runtime":"php","templateId":"wordpress-php"}')
+PHP_ID=$(printf '%s' "$PHP_CREATE" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d).project.id))")
+# provision OS isolation when possible
+curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PHP_ID}/os-provision" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{}' >/dev/null || true
+PHP_DEP=$(curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PHP_ID}/deploy-php" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{"forceBuiltin":true}' || true)
+log "php deploy: $PHP_DEP"
+curl -sS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PHP_ID}/stop" \
+  -H "$AUTH" -H 'Content-Type: application/json' -d '{}' >/dev/null || true
+
+# Email domain + deliverability
+EM=$(curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/email/domains" \
+  -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"domain":"root-mail.e2e.test","serverIp":"203.0.113.10"}')
+EM_ID=$(printf '%s' "$EM" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d).domain.id||''))" || true)
+if [[ -n "$EM_ID" ]]; then
+  DELIV=$(curl -sS "http://127.0.0.1:${PORT_API}/api/v1/email/domains/${EM_ID}/deliverability" -H "$AUTH" || true)
+  log "email deliverability: $DELIV"
+fi
+
 curl -fsS -X POST "http://127.0.0.1:${PORT_API}/api/v1/projects/${PID}/stop" \
   -H "$AUTH" -H 'Content-Type: application/json' -d '{}' >/dev/null || true
 
-log "PASS root hosting smoke"
+log "PASS root hosting smoke (node + php + email)"
 exit 0

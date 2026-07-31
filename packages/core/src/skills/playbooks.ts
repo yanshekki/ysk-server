@@ -145,8 +145,21 @@ export const BUILTIN_PLAYBOOKS: Playbook[] = [
   },
 ];
 
+function localizePlaybook(p: Playbook): Playbook {
+  const nameKey = `playbooks.${p.id}.name`;
+  const descKey = `playbooks.${p.id}.description`;
+  const name = tl(nameKey);
+  const description = tl(descKey);
+  return {
+    ...p,
+    name: name !== nameKey ? name : p.name,
+    description: description !== descKey ? description : p.description,
+    steps: p.steps.map((s) => ({ ...s })),
+  };
+}
+
 export function listPlaybooks(): Playbook[] {
-  return BUILTIN_PLAYBOOKS.map((p) => ({ ...p, steps: p.steps.map((s) => ({ ...s })) }));
+  return BUILTIN_PLAYBOOKS.map(localizePlaybook);
 }
 
 export function getPlaybook(id: string): Playbook {
@@ -154,7 +167,7 @@ export function getPlaybook(id: string): Playbook {
   if (!p) {
     throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0022', { v0: (id) }), { httpStatus: 404 });
   }
-  return { ...p, steps: p.steps.map((s) => ({ ...s })) };
+  return localizePlaybook(p);
 }
 
 export interface PlaybookRun {

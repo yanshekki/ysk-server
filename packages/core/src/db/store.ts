@@ -31,6 +31,11 @@ export interface StoreUser {
   capability_grants?: CapabilityId[];
   /** Per-user capability revokes */
   capability_revokes?: CapabilityId[];
+  /**
+   * Force password change on next successful login flow.
+   * Set when bootstrap used a weak/default password.
+   */
+  must_change_password?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -144,6 +149,8 @@ export interface StoreProject {
    * Always also scans logs/ and log/.
    */
   log_extra_dirs?: string[];
+  /** Panel user id that owns this project (package quota scope) */
+  owner_user_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -331,5 +338,5 @@ export class JsonStore {
   }
 }
 
-/** @deprecated alias for callers expecting openDatabase */
+/** Control-plane DB handle (JsonStore; sqlite/postgres backends subclass JsonStore). */
 export type YskDatabase = JsonStore;

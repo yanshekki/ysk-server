@@ -14,7 +14,8 @@ import {
   closeDatabase,
   writeControlPlaneSystemdUnit,
 } from '@ysk/core';
-import { CLI_NAME, PRODUCT_NAME, type StructuredResult, tl} from '@ysk/shared';
+import { CLI_NAME, PRODUCT_NAME, type StructuredResult, tl } from '@ysk/shared';
+import { assessPassword, isBootstrapDefaultPassword } from '@ysk/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
@@ -28,6 +29,11 @@ export interface SetupOptions {
   nonInteractive?: boolean;
   dryRun?: boolean;
   force?: boolean;
+  /**
+   * Allow weak/default bootstrap password (dev only).
+   * Production must pass a strong --admin-password or YSK_ADMIN_PASSWORD.
+   */
+  allowInsecureDefaults?: boolean;
 }
 
 /**
@@ -69,12 +75,12 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
       return {
         ok: true,
         code: 'YSK_SETUP_DRY_RUN',
-        message: `${PRODUCT_NAME} setup dry-run OK`,
+        message: tl('cli.setup.dryRunOk', { product: PRODUCT_NAME }),
         data: {
           configPath,
           dbPath,
           config,
-          nextSteps: ['Re-run without --dry-run to write config and initialize database'],
+          nextSteps: [tl('cli.setup.dryRunNext')],
         },
       };
     }
@@ -108,35 +114,91 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     const audit = new AuditRepository(db);
     const auth = new AuthService(users, sessions, audit, db, dataDir);
     const password = opts.adminPassword ?? process.env.YSK_ADMIN_PASSWORD ?? 'admin';
+    const policy = assessPassword(password);
+    const insecure =
+      !policy.ok || isBootstrapDefaultPassword(password);
+    const allowInsecure =
+      opts.allowInsecureDefaults === true ||
+      process.env.YSK_ALLOW_INSECURE_DEFAULTS === '1' ||
+      process.env.YSK_ALLOW_INSECURE_DEFAULTS === 'true';
+    if (insecure && !allowInsecure) {
+      closeDatabase(db);
+      return {
+        ok: false,
+        code: 'YSK_SETUP_WEAK_PASSWORD',
+        message: tl('cli.setup.weakPassword'),
+        error: {
+          code: 'YSK_SETUP_WEAK_PASSWORD',
+          message: tl('cli.setup.weakPasswordShort'),
+          details: { reasons: policy.reasons },
+        },
+      };
+    }
     // force recreate admin when --force
     if (opts.force && users.findByUsername(config.adminUsername)) {
       // leave existing password if user exists; ensureAdmin no-ops
     }
     auth.ensureAdmin(config.adminUsername, password, config.locale);
+
+    // Production hardening defaults in settings
+    if (!insecure) {
+      db.snapshot.settings['security.require_admin_totp'] =
+        db.snapshot.settings['security.require_admin_totp'] ?? '0';
+    } else {
+      // Insecure bootstrap: force change + recommend 2FA
+      db.snapshot.settings['security.bootstrap_insecure'] = '1';
+    }
+    // Prefer loopback unless operator explicitly chose otherwise
+    if (config.listenHost === '0.0.0.0' || config.listenHost === '::') {
+      db.snapshot.settings['security.listen_public'] = '1';
+    }
+    db.persist();
+
     audit.append({
       actor: 'system',
       action: 'setup.complete',
-      detail: { dataDir, configPath, dbPath, unitPath },
+      detail: {
+        dataDir,
+        configPath,
+        dbPath,
+        unitPath,
+        insecureBootstrap: insecure,
+        listenHost: config.listenHost,
+      },
       ok: true,
     });
     closeDatabase(db);
 
+    const nextSteps = [
+      tl('cli.setup.nextStart', { cli: CLI_NAME, configPath }),
+      tl('cli.setup.nextOpen', {
+        host: config.listenHost,
+        port: config.listenPort,
+        user: config.adminUsername,
+      }),
+      tl('cli.setup.nextUnit', { unitPath }),
+      tl('cli.setup.nextInstall', { cli: CLI_NAME, dataDir }),
+      tl('cli.setup.nextExecute'),
+      tl('cli.setup.nextGolive'),
+    ];
+    if (insecure) {
+      nextSteps.unshift(tl('cli.setup.secPassword'), tl('cli.setup.sec2fa'));
+    }
+    if (config.listenHost === '0.0.0.0' || config.listenHost === '::') {
+      nextSteps.unshift(tl('cli.setup.secListen'));
+    }
+
     return {
       ok: true,
       code: 'YSK_SETUP_OK',
-      message: `${PRODUCT_NAME} setup completed (database initialized)`,
+      message: insecure
+        ? tl('cli.setup.okInsecure', { product: PRODUCT_NAME })
+        : tl('cli.setup.ok', { product: PRODUCT_NAME }),
       data: {
         configPath,
         dbPath,
         config,
-        nextSteps: [
-          `Start (API + Web UI): ${CLI_NAME} serve --config ${configPath}`,
-          `Open http://${config.listenHost}:${config.listenPort}/ and login as ${config.adminUsername}`,
-          `Systemd unit template: ${unitPath}`,
-          `Install unit (root + YSK_EXECUTE): ${CLI_NAME} system unit-install --enable --data-dir ${dataDir}`,
-          'Production host mutations require YSK_EXECUTE=1 and root',
-          'See docs/deploy/production-mvp.md',
-        ],
+        nextSteps,
       },
     };
   } catch (err) {

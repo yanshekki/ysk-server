@@ -1,5 +1,7 @@
 # AI Agent Guide
 
+> Language: English | [中文](./guide-ZH.md)
+
 > **Canonical docs moved to [docs/agent/README.md](../agent/README.md)**  
 > CLI reference: [docs/cli/reference.md](../cli/reference.md) · Catalog: [docs/agent/commands.json](../agent/commands.json)
 

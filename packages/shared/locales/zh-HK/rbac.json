@@ -88,5 +88,11 @@
   "dangerPolicyDesc": "你正為呢個角色加入 destructive 或 privilege 能力，或提高 maxLevel。請確認風險後再儲存。",
   "needRbacPolicy": "需要 rbac.policy 先可以編輯角色政策。",
   "adminLockedFull": "Admin 全開（鎖定）",
-  "adminLockedHint": "Admin 系統角色永遠功能全開，唔可以削減。請改 Operator／Viewer／Agent，或對非 admin 用戶做個人加減。"
+  "adminLockedHint": "Admin 系統角色永遠功能全開，唔可以削減。請改 Operator／Viewer／Agent，或對非 admin 用戶做個人加減。",
+  "maxLevelHint": "高於此等級嘅能力組會自動鎖定，無法開啟。",
+  "capabilities": "能力清單",
+  "capabilitiesHint": "勾選此角色可用嘅功能。橙點表示與系統預設不同。",
+  "enabledCount": "已開 {{enabled}}／{{total}}",
+  "bandAboveMax": "高於最高等級",
+  "dirtyHint": "已自訂（與系統預設不同）"
 }

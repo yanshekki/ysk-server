@@ -15,6 +15,7 @@ import {
   DataTable,
   EmptyState,
   FeaturePageLayout,
+  ServerListFilters,
   Field,
   FormActions,
   FormHint,
@@ -85,7 +86,17 @@ export function Fail2banPage() {
   }, [refresh]);
 
   const running = status?.active === 'active';
-  const banned = status?.banned ?? [];
+  const [banQ, setBanQ] = useState('');
+  const bannedAll = status?.banned ?? [];
+  const banned = useMemo(() => {
+    const n = banQ.trim().toLowerCase();
+    if (!n) return bannedAll;
+    return bannedAll.filter(
+      (b) =>
+        b.ip.toLowerCase().includes(n) ||
+        b.jail.toLowerCase().includes(n),
+    );
+  }, [bannedAll, banQ]);
 
   function toggleJail(name: string) {
     setSelected((prev) =>
@@ -289,6 +300,17 @@ export function Fail2banPage() {
               <DataTable
                 title={t('fail2ban.bannedTableTitle')}
                 description={t('fail2ban.bannedTableDesc')}
+                filters={
+                  <ServerListFilters
+                    q={banQ}
+                    setQ={setBanQ}
+                    total={bannedAll.length}
+                    shown={banned.length}
+                    activeFilterCount={banQ.trim() ? 1 : 0}
+                    clear={() => setBanQ('')}
+                    searchPlaceholder="IP / jail"
+                  />
+                }
                 columns={[
                   {
                     key: 'jail',

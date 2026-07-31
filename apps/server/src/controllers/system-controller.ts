@@ -154,7 +154,39 @@ export async function handleSystemRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/defense/bans') {
     ctx.auth.authenticate(getBearer(req));
     const { listDefenseBans } = await import('@ysk/core');
-    sendJson(res, 200, await listDefenseBans({ host: ctx.host, db: ctx.db }));
+    const { listWithQuery } = await import('../http/list-response.js');
+    const r = await listDefenseBans({ host: ctx.host, db: ctx.db });
+    const { items, meta } = listWithQuery(url, r.items, {
+      text: (b) => [b.ip, b.source, b.jail ?? '', b.reason ?? ''],
+      predicates: {
+        source: (b, v) => b.source === v,
+      },
+      facetOf: {
+        source: (b) => b.source,
+      },
+    }, { enums: { source: ['fail2ban', 'panel', 'ufw', 'auto'] } });
+    sendJson(res, 200, { items, notes: r.notes, meta });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/defense/stack/apply') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { execute?: boolean };
+    const { applyDefenseStack } = await import('@ysk/core');
+    const r = await applyDefenseStack({
+      host: ctx.host,
+      db: ctx.db,
+      dataDir: ctx.dataDir,
+      execute: data.execute !== false,
+      actor: user.username,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'defense.stack_apply',
+      detail: { steps: r.steps, executed: r.executed },
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/defense/ban') {
@@ -213,17 +245,29 @@ export async function handleSystemRoutes(
     ctx.auth.authenticate(getBearer(req));
     const hours = Number(url.searchParams.get('hours') ?? '24') || 24;
     const { listDefenseTimeline } = await import('@ysk/core');
-    sendJson(res, 200, { items: listDefenseTimeline(ctx.db, hours) });
+    const { listWithQuery } = await import('../http/list-response.js');
+    const all = listDefenseTimeline(ctx.db, hours);
+    const { items, meta } = listWithQuery(url, all, {
+      text: (e) => [e.kind, e.title, e.detail ?? '', e.at],
+      predicates: {
+        kind: (e, v) => e.kind === v,
+      },
+      facetOf: {
+        kind: (e) => e.kind,
+      },
+    });
+    sendJson(res, 200, { items, meta, hours });
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/suspects') {
     ctx.auth.authenticate(getBearer(req));
     const { listSuspectIps } = await import('@ysk/core');
-    sendJson(
-      res,
-      200,
-      await listSuspectIps({ host: ctx.host, db: ctx.db, dataDir: ctx.dataDir }),
-    );
+    const { listWithQuery } = await import('../http/list-response.js');
+    const r = await listSuspectIps({ host: ctx.host, db: ctx.db, dataDir: ctx.dataDir });
+    const { items, meta } = listWithQuery(url, r.items, {
+      text: (s) => [s.ip, String(s.hits ?? ''), String(s.score ?? '')],
+    });
+    sendJson(res, 200, { items, notes: r.notes, meta });
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/defense/ban-batch') {
@@ -360,7 +404,7 @@ export async function handleSystemRoutes(
     ctx.auth.authenticate(getBearer(req));
     const {
       loadDefenseAutomation,
-      AUTOMATION_MECHANISM_ROWS,
+      getAutomationMechanismRows,
       countAutoBansLastHour,
       loadAutoBanPolicy,
     } = await import('@ysk/core');
@@ -370,7 +414,7 @@ export async function handleSystemRoutes(
       ctx.scheduler.list().find((j) => j.id === 'defense-auto-ban');
     sendJson(res, 200, {
       automation,
-      mechanisms: AUTOMATION_MECHANISM_ROWS,
+      mechanisms: getAutomationMechanismRows(),
       autoBansLastHour: countAutoBansLastHour(legacy),
       scheduler: job
         ? {
@@ -441,7 +485,7 @@ export async function handleSystemRoutes(
     const data = JSON.parse(raw || '{}') as Record<string, unknown>;
     const {
       updateDefenseAutomation,
-      AUTOMATION_MECHANISM_ROWS,
+      getAutomationMechanismRows,
       syncWhitelistToFail2banIgnore,
     } = await import('@ysk/core');
     const automation = updateDefenseAutomation(ctx.db, data as never);
@@ -462,7 +506,7 @@ export async function handleSystemRoutes(
       },
       ok: true,
     });
-    sendJson(res, 200, { automation, mechanisms: AUTOMATION_MECHANISM_ROWS });
+    sendJson(res, 200, { automation, mechanisms: getAutomationMechanismRows() });
     return true;
   }
 
@@ -1346,7 +1390,24 @@ export async function handleSystemRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/system/firewall/status') {
     ctx.auth.authenticate(getBearer(req));
     const { probeFirewallDeep } = await import('@ysk/core');
-    sendJson(res, 200, await probeFirewallDeep(ctx.host));
+    const st = (await probeFirewallDeep(ctx.host)) as Record<string, unknown>;
+    const q = (url.searchParams.get('q') ?? '').trim();
+    if (q && Array.isArray(st.numberedRules)) {
+      const { listWithQuery } = await import('../http/list-response.js');
+      const rules = st.numberedRules as Array<Record<string, unknown>>;
+      const { items, meta } = listWithQuery(url, rules, {
+        text: (r) => [
+          String(r.num ?? ''),
+          String(r.action ?? ''),
+          String(r.to ?? ''),
+          String(r.from ?? ''),
+          String(r.raw ?? ''),
+        ],
+      });
+      sendJson(res, 200, { ...st, numberedRules: items, rulesMeta: meta });
+      return true;
+    }
+    sendJson(res, 200, st);
     return true;
   }
 
@@ -1666,7 +1727,11 @@ export async function handleSystemRoutes(
 
   if (method === 'POST' && url.pathname === '/api/v1/system/host/power') {
     const user = ctx.auth.authenticate(getBearer(req));
-    if (!user.roles.includes('admin')) {
+    // Capability gate (also enforced centrally as settings.system); keep explicit for clarity
+    try {
+      const { requireCap } = await import('../http/rbac-guard.js');
+      requireCap(ctx, user, 'settings.system');
+    } catch {
       sendJson(res, 403, { ok: false, notes: [tl('notes.auto.n0563')] });
       return true;
     }
@@ -1939,7 +2004,16 @@ export async function handleSystemRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/system/managed-nginx') {
     ctx.auth.authenticate(getBearer(req));
     const { listManagedNginxDetailed } = await import('@ysk/core');
-    sendJson(res, 200, { items: listManagedNginxDetailed(ctx.dataDir) });
+    const { listWithQuery } = await import('../http/list-response.js');
+    const all = listManagedNginxDetailed(ctx.dataDir) as Array<Record<string, unknown>>;
+    const { items, meta } = listWithQuery(url, all, {
+      text: (n) => [
+        String(n.name ?? n.file ?? n.id ?? ''),
+        String(n.domain ?? n.serverName ?? ''),
+        String(n.path ?? ''),
+      ],
+    });
+    sendJson(res, 200, { items, meta });
     return true;
   }
   if (method === 'GET' && url.pathname.startsWith('/api/v1/system/managed-nginx/')) {

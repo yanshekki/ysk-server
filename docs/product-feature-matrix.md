@@ -1,5 +1,7 @@
 # YSK Product Feature Matrix
 
+> Language: English | [中文](./product-feature-matrix-ZH.md)
+
 **Status:** product contract (source of truth)  
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.

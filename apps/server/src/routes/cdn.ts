@@ -4,6 +4,7 @@ import { tl } from '@ysk/shared';
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../app-context.js';
+import { listWithQuery } from '../http/list-response.js';
 import {
   getBearer,
   readBody,
@@ -22,7 +23,24 @@ export async function handleCdnRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/cdn/nodes') {
         ctx.auth.authenticate(getBearer(req));
         const { listCdnNodes } = await import('@ysk/core');
-        sendJson(res, 200, { items: listCdnNodes(ctx.db) });
+        type Node = {
+          name?: string;
+          id?: string;
+          region?: string;
+          baseUrl?: string;
+          status?: string;
+        };
+        const all = listCdnNodes(ctx.db) as unknown as Node[];
+        const { items, meta } = listWithQuery(url, all, {
+          text: (n: Node) => [
+            String(n.name ?? ''),
+            String(n.id ?? ''),
+            String(n.region ?? ''),
+            String(n.baseUrl ?? ''),
+            String(n.status ?? ''),
+          ],
+        });
+        sendJson(res, 200, { items, meta });
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/cdn/nodes') {
@@ -95,7 +113,21 @@ export async function handleCdnRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/cdn/sites') {
         ctx.auth.authenticate(getBearer(req));
         const { listCdnSites } = await import('@ysk/core');
-        sendJson(res, 200, { items: listCdnSites(ctx.db) });
+        type Site = {
+          id?: string;
+          name?: string;
+          domains?: string[];
+          domain?: string;
+        };
+        const all = listCdnSites(ctx.db) as unknown as Site[];
+        const { items, meta } = listWithQuery(url, all, {
+          text: (s: Site) => [
+            String(s.id ?? ''),
+            String(s.name ?? ''),
+            ...(Array.isArray(s.domains) ? s.domains : [String(s.domain ?? '')]),
+          ],
+        });
+        sendJson(res, 200, { items, meta });
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/cdn/sites') {

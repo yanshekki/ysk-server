@@ -1,11 +1,14 @@
 /**
  * Dashboard feature — load health, metrics, projects, summary.
+ * Re-fetches when UI language changes so API summary strings match chrome.
  */
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { HealthResponse } from '@ysk/shared';
 import { dashboardApi } from './api';
 
 export function useDashboard() {
+  const { i18n, t } = useTranslation();
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [audit, setAudit] = useState<Array<Record<string, unknown>>>([]);
   const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
@@ -66,7 +69,7 @@ export function useDashboard() {
       try {
         const h = await soft(() => dashboardApi.health());
         if (!cancelled && h) setHealth(h);
-        else if (!cancelled && !h) setError('API unreachable');
+        else if (!cancelled && !h) setError(t('errors.http.apiUnreachable', { defaultValue: t('common.loadFailed') }));
 
         const a = await soft(() => dashboardApi.audit());
         if (!cancelled && a?.items) setAudit(a.items.slice(0, 12));
@@ -124,7 +127,9 @@ export function useDashboard() {
           });
         }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Error');
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : t('common.error', { defaultValue: 'Error' }));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -132,7 +137,8 @@ export function useDashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+    // Re-load when language changes so readiness.summary / notifications match UI locale
+  }, [i18n.language, t]);
 
   return {
     health,

@@ -34,6 +34,7 @@ import {
   createRememberDeviceToken,
   verifyRememberDeviceToken,
 } from '../security/mfa/index.js';
+import { assessPassword, isBootstrapDefaultPassword } from '../security/password-policy.js';
 
 const SCRYPT_KEYLEN = 64;
 /** Absolute max session lifetime */
@@ -86,6 +87,7 @@ export class AuthService {
     const salt = randomBytes(16).toString('hex');
     const passwordHash = hashPassword(password, salt);
     const now = new Date().toISOString();
+    const weak = !assessPassword(password).ok || isBootstrapDefaultPassword(password);
     const user = {
       id: randomBytes(8).toString('hex'),
       username,
@@ -93,6 +95,7 @@ export class AuthService {
       password_salt: salt,
       roles: ['admin'] as const,
       locale,
+      must_change_password: weak || undefined,
       created_at: now,
       updated_at: now,
     };
@@ -101,10 +104,16 @@ export class AuthService {
       actor: 'system',
       action: 'auth.ensureAdmin',
       resource: username,
-      detail: { created: true },
+      detail: { created: true, mustChangePassword: weak },
       ok: true,
     });
-    return { id: user.id, username, roles: ['admin'], locale };
+    return {
+      id: user.id,
+      username,
+      roles: ['admin'],
+      locale,
+      mustChangePassword: weak || undefined,
+    };
   }
 
   login(
@@ -289,11 +298,30 @@ export class AuthService {
       deviceToken = dev.token;
       deviceExpiresAt = dev.expiresAt;
     }
+    // Detect bootstrap/weak password still in use (known weak list + flag)
+    const passwordStillWeak =
+      Boolean(user.must_change_password) ||
+      isBootstrapDefaultPassword(req.password) ||
+      !assessPassword(req.password).ok;
+    if (passwordStillWeak && !user.must_change_password) {
+      this.users.update(user.id, { must_change_password: true });
+    }
+
     return {
       token,
-      user: toDto(user),
+      user: {
+        ...toDto(user),
+        mustChangePassword: passwordStillWeak || undefined,
+      },
       expiresAt,
       ...(deviceToken ? { deviceToken, deviceExpiresAt } : {}),
+      ...(passwordStillWeak
+        ? {
+            mustChangePassword: true as const,
+            message:
+              'Change the default/weak password before treating this host as production.',
+          }
+        : {}),
       ...(mustEnrollTotp
         ? { mustEnrollTotp: true as const, message: tl('errors.auth.mustEnrollTotp') }
         : {}),
@@ -623,6 +651,7 @@ function toDto(user: {
   roles: UserDto['roles'];
   locale: string;
   totp_enabled?: boolean;
+  must_change_password?: boolean;
   capability_grants?: UserDto['capabilityGrants'];
   capability_revokes?: UserDto['capabilityRevokes'];
 }): UserDto {
@@ -632,6 +661,7 @@ function toDto(user: {
     roles: [...user.roles],
     locale: user.locale,
     totpEnabled: Boolean(user.totp_enabled),
+    mustChangePassword: Boolean(user.must_change_password) || undefined,
     capabilityGrants: user.capability_grants?.length ? [...user.capability_grants] : undefined,
     capabilityRevokes: user.capability_revokes?.length ? [...user.capability_revokes] : undefined,
   };

@@ -121,5 +121,6 @@
   "appliedPackage": "已套用套件更新",
   "updateFailed": "更新失敗",
   "updateIncomplete": "更新未完成",
-  "appliedUpdate": "已套用更新"
+  "appliedUpdate": "已套用更新",
+  "aptCandidate": "apt Candidate（候選版本）"
 }

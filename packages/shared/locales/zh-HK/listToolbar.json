@@ -1,0 +1,12 @@
+{
+  "searchPlaceholder": "搜尋…",
+  "searchAria": "搜尋列表",
+  "clearSearch": "清除搜尋",
+  "clearAll": "清除篩選",
+  "resultCount": "{{count}} 項結果",
+  "showingOf": "顯示 {{shown}} / {{total}}",
+  "activeFilters": "已套用 {{count}} 個篩選",
+  "noResults": "無符合結果",
+  "noResultsHint": "試下其他關鍵字，或者清除篩選。",
+  "searching": "搜尋中…"
+}

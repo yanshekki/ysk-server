@@ -1,55 +1,158 @@
+import { lazy, Suspense, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import { AppShell } from './layout/AppShell';
 import { RequireAuth } from './layout/RequireAuth';
 import { RequireCapability } from './layout/RequireCapability';
 import { GuestOnly } from './layout/GuestOnly';
-import { DashboardPage } from '../pages/DashboardPage';
+import { ErrorBoundary } from '../shared/components/ErrorBoundary';
+
+/** Lightweight fallback while route chunks load */
+function RouteFallback() {
+  return (
+    <div className="u-pad-panel muted u-text-sm" style={{ padding: '2rem' }}>
+      Loading…
+    </div>
+  );
+}
+
+// Eager: login + shell-critical only
 import { LoginPage } from '../pages/LoginPage';
-import { SecurityPage } from '../pages/SecurityPage';
-import { EmailPage } from '../pages/EmailPage';
-import { EmailDomainPage } from '../pages/EmailDomainPage';
-import { ProjectsPage } from '../pages/ProjectsPage';
-import { ProjectDetailPage } from '../pages/ProjectDetailPage';
-import { UpdatesPage } from '../pages/UpdatesPage';
-import { AgentsPage } from '../pages/AgentsPage';
-import { AiPage } from '../pages/AiPage';
-import { FilesPage } from '../pages/FilesPage';
-import { SystemPage } from '../pages/SystemPage';
-import { NginxPage } from '../pages/features/NginxPage';
-import { PhpRuntimePage } from '../pages/features/PhpRuntimePage';
-import {
-  GoRuntimePage,
-  NodeRuntimePage,
-  PythonRuntimePage,
-  RustRuntimePage,
-} from '../pages/features/GenericRuntimePage';
-import { SslPage } from '../pages/features/SslPage';
-import { DnsPage } from '../pages/features/DnsPage';
-import { CdnPage } from '../pages/features/CdnPage';
-import { FtpPage } from '../pages/features/FtpPage';
-import { FtpsServicePage } from '../pages/features/FtpsServicePage';
-import { FirewallPage } from '../pages/features/FirewallPage';
-import { Fail2banPage } from '../pages/features/Fail2banPage';
-import { ProtectionPage } from '../pages/features/ProtectionPage';
-import { MysqlPage } from '../pages/features/MysqlPage';
-import { MariadbPage } from '../pages/features/MariadbPage';
-import { MysqlServicePage } from '../pages/features/MysqlServicePage';
-import { MariadbServicePage } from '../pages/features/MariadbServicePage';
-import { PostgresServicePage } from '../pages/features/PostgresServicePage';
-import { RedisServicePage } from '../pages/features/RedisServicePage';
-import { PostgresPage } from '../pages/features/PostgresPage';
-import { RedisPage } from '../pages/features/RedisPage';
-import { ServicesPage } from '../pages/features/ServicesPage';
-import { SystemdUnitPage } from '../pages/features/SystemdUnitPage';
-import { ReadinessPage } from '../pages/features/ReadinessPage';
-import { MigrateHostPage } from '../pages/features/MigrateHostPage';
-import { PublicFilesPage } from '../pages/features/PublicFilesPage';
-import { CronPage } from '../pages/features/CronPage';
-import { BackupsPage } from '../pages/features/BackupsPage';
-import { MetricsPage } from '../pages/features/MetricsPage';
-import { NetworkPage } from '../pages/features/NetworkPage';
-import { LogsPage } from '../pages/features/LogsPage';
-import { UsersPage } from '../pages/UsersPage';
+import { DashboardPage } from '../pages/DashboardPage';
+
+// Lazy: heavy feature pages — avoids one import crash blanking the whole app
+const SecurityPage = lazy(() =>
+  import('../pages/SecurityPage').then((m) => ({ default: m.SecurityPage })),
+);
+const EmailPage = lazy(() =>
+  import('../pages/EmailPage').then((m) => ({ default: m.EmailPage })),
+);
+const EmailDomainPage = lazy(() =>
+  import('../pages/EmailDomainPage').then((m) => ({ default: m.EmailDomainPage })),
+);
+const ProjectsPage = lazy(() =>
+  import('../pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })),
+);
+const ProjectDetailPage = lazy(() =>
+  import('../pages/ProjectDetailPage').then((m) => ({ default: m.ProjectDetailPage })),
+);
+const UpdatesPage = lazy(() =>
+  import('../pages/UpdatesPage').then((m) => ({ default: m.UpdatesPage })),
+);
+const AgentsPage = lazy(() =>
+  import('../pages/AgentsPage').then((m) => ({ default: m.AgentsPage })),
+);
+const AiPage = lazy(() => import('../pages/AiPage').then((m) => ({ default: m.AiPage })));
+const FilesPage = lazy(() =>
+  import('../pages/FilesPage').then((m) => ({ default: m.FilesPage })),
+);
+const SystemPage = lazy(() =>
+  import('../pages/SystemPage').then((m) => ({ default: m.SystemPage })),
+);
+const NginxPage = lazy(() =>
+  import('../pages/features/NginxPage').then((m) => ({ default: m.NginxPage })),
+);
+const PhpRuntimePage = lazy(() =>
+  import('../pages/features/PhpRuntimePage').then((m) => ({ default: m.PhpRuntimePage })),
+);
+const GoRuntimePage = lazy(() =>
+  import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.GoRuntimePage })),
+);
+const NodeRuntimePage = lazy(() =>
+  import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.NodeRuntimePage })),
+);
+const PythonRuntimePage = lazy(() =>
+  import('../pages/features/GenericRuntimePage').then((m) => ({
+    default: m.PythonRuntimePage,
+  })),
+);
+const RustRuntimePage = lazy(() =>
+  import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.RustRuntimePage })),
+);
+const SslPage = lazy(() =>
+  import('../pages/features/SslPage').then((m) => ({ default: m.SslPage })),
+);
+const DnsPage = lazy(() =>
+  import('../pages/features/DnsPage').then((m) => ({ default: m.DnsPage })),
+);
+const CdnPage = lazy(() =>
+  import('../pages/features/CdnPage').then((m) => ({ default: m.CdnPage })),
+);
+const FtpPage = lazy(() =>
+  import('../pages/features/FtpPage').then((m) => ({ default: m.FtpPage })),
+);
+const FtpsServicePage = lazy(() =>
+  import('../pages/features/FtpsServicePage').then((m) => ({ default: m.FtpsServicePage })),
+);
+const FirewallPage = lazy(() =>
+  import('../pages/features/FirewallPage').then((m) => ({ default: m.FirewallPage })),
+);
+const Fail2banPage = lazy(() =>
+  import('../pages/features/Fail2banPage').then((m) => ({ default: m.Fail2banPage })),
+);
+const ProtectionPage = lazy(() =>
+  import('../pages/features/ProtectionPage').then((m) => ({ default: m.ProtectionPage })),
+);
+const MysqlPage = lazy(() =>
+  import('../pages/features/MysqlPage').then((m) => ({ default: m.MysqlPage })),
+);
+const MariadbPage = lazy(() =>
+  import('../pages/features/MariadbPage').then((m) => ({ default: m.MariadbPage })),
+);
+const MysqlServicePage = lazy(() =>
+  import('../pages/features/MysqlServicePage').then((m) => ({ default: m.MysqlServicePage })),
+);
+const MariadbServicePage = lazy(() =>
+  import('../pages/features/MariadbServicePage').then((m) => ({
+    default: m.MariadbServicePage,
+  })),
+);
+const PostgresServicePage = lazy(() =>
+  import('../pages/features/PostgresServicePage').then((m) => ({
+    default: m.PostgresServicePage,
+  })),
+);
+const RedisServicePage = lazy(() =>
+  import('../pages/features/RedisServicePage').then((m) => ({ default: m.RedisServicePage })),
+);
+const PostgresPage = lazy(() =>
+  import('../pages/features/PostgresPage').then((m) => ({ default: m.PostgresPage })),
+);
+const RedisPage = lazy(() =>
+  import('../pages/features/RedisPage').then((m) => ({ default: m.RedisPage })),
+);
+const ServicesPage = lazy(() =>
+  import('../pages/features/ServicesPage').then((m) => ({ default: m.ServicesPage })),
+);
+const SystemdUnitPage = lazy(() =>
+  import('../pages/features/SystemdUnitPage').then((m) => ({ default: m.SystemdUnitPage })),
+);
+const ReadinessPage = lazy(() =>
+  import('../pages/features/ReadinessPage').then((m) => ({ default: m.ReadinessPage })),
+);
+const MigrateHostPage = lazy(() =>
+  import('../pages/features/MigrateHostPage').then((m) => ({ default: m.MigrateHostPage })),
+);
+const PublicFilesPage = lazy(() =>
+  import('../pages/features/PublicFilesPage').then((m) => ({ default: m.PublicFilesPage })),
+);
+const CronPage = lazy(() =>
+  import('../pages/features/CronPage').then((m) => ({ default: m.CronPage })),
+);
+const BackupsPage = lazy(() =>
+  import('../pages/features/BackupsPage').then((m) => ({ default: m.BackupsPage })),
+);
+const MetricsPage = lazy(() =>
+  import('../pages/features/MetricsPage').then((m) => ({ default: m.MetricsPage })),
+);
+const NetworkPage = lazy(() =>
+  import('../pages/features/NetworkPage').then((m) => ({ default: m.NetworkPage })),
+);
+const LogsPage = lazy(() =>
+  import('../pages/features/LogsPage').then((m) => ({ default: m.LogsPage })),
+);
+const UsersPage = lazy(() =>
+  import('../pages/UsersPage').then((m) => ({ default: m.UsersPage })),
+);
 
 /** Legacy top-level paths → protection subtree (preserve query, e.g. ?tab=whitelist). */
 function RedirectPreserveQuery({ to }: { to: string }) {
@@ -58,81 +161,388 @@ function RedirectPreserveQuery({ to }: { to: string }) {
   return <Navigate to={q ? `${to}?${q}` : to} replace />;
 }
 
+function Lazy({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<RouteFallback />}>{children}</Suspense>;
+}
+
 /**
  * Each major capability has its own route/page.
  * Defense: single nav entry `/protection`; UFW/fail2ban are nested tools.
+ * Feature pages are lazy-loaded so a single module error cannot blank login.
  */
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            <GuestOnly>
-              <LoginPage />
-            </GuestOnly>
-          }
-        />
-        <Route
-          element={
-            <RequireAuth>
-              <RequireCapability>
-                <AppShell />
-              </RequireCapability>
-            </RequireAuth>
-          }
-        >
-          <Route index element={<DashboardPage />} />
-          <Route path="ai" element={<AiPage />} />
-          <Route path="projects" element={<ProjectsPage />} />
-          <Route path="projects/:id" element={<ProjectDetailPage />} />
-          <Route path="security" element={<SecurityPage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="email" element={<EmailPage />} />
-          <Route path="email/domains/:id" element={<EmailDomainPage />} />
-          <Route path="files" element={<FilesPage />} />
-          <Route path="files/public" element={<PublicFilesPage />} />
-          <Route path="ftp" element={<FtpPage />} />
-          <Route path="ftp/service" element={<FtpsServicePage />} />
-          <Route path="dns" element={<DnsPage />} />
-          <Route path="cdn" element={<CdnPage />} />
-          <Route path="ssl" element={<SslPage />} />
-          <Route path="nginx" element={<NginxPage />} />
-          <Route path="runtimes/node" element={<NodeRuntimePage />} />
-          <Route path="runtimes/php" element={<PhpRuntimePage />} />
-          <Route path="runtimes/python" element={<PythonRuntimePage />} />
-          <Route path="runtimes/go" element={<GoRuntimePage />} />
-          <Route path="runtimes/rust" element={<RustRuntimePage />} />
-          <Route path="databases/mysql" element={<MysqlPage />} />
-          <Route path="databases/mysql/service" element={<MysqlServicePage />} />
-          <Route path="databases/mariadb" element={<MariadbPage />} />
-          <Route path="databases/mariadb/service" element={<MariadbServicePage />} />
-          <Route path="databases/postgres" element={<PostgresPage />} />
-          <Route path="databases/postgres/service" element={<PostgresServicePage />} />
-          <Route path="databases/redis" element={<RedisPage />} />
-          <Route path="databases/redis/service" element={<RedisServicePage />} />
-          <Route path="protection" element={<ProtectionPage />} />
-          <Route path="protection/firewall" element={<FirewallPage />} />
-          <Route path="protection/fail2ban" element={<Fail2banPage />} />
-          {/* Legacy peers → nested tools under 防護中心 */}
-          <Route path="firewall" element={<RedirectPreserveQuery to="/protection/firewall" />} />
-          <Route path="fail2ban" element={<RedirectPreserveQuery to="/protection/fail2ban" />} />
-          <Route path="services" element={<ServicesPage />} />
-          <Route path="metrics" element={<MetricsPage />} />
-          <Route path="network" element={<NetworkPage />} />
-          <Route path="logs" element={<LogsPage />} />
-          <Route path="cron" element={<CronPage />} />
-          <Route path="backups" element={<BackupsPage />} />
-          <Route path="system" element={<SystemPage />} />
-          <Route path="system/unit" element={<SystemdUnitPage />} />
-          <Route path="system/readiness" element={<ReadinessPage />} />
-          <Route path="system/migrate" element={<MigrateHostPage />} />
-          <Route path="updates" element={<UpdatesPage />} />
-          <Route path="agents" element={<AgentsPage />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <GuestOnly>
+                <LoginPage />
+              </GuestOnly>
+            }
+          />
+          <Route
+            element={
+              <RequireAuth>
+                <RequireCapability>
+                  <AppShell />
+                </RequireCapability>
+              </RequireAuth>
+            }
+          >
+            <Route index element={<DashboardPage />} />
+            <Route
+              path="ai"
+              element={
+                <Lazy>
+                  <AiPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="projects"
+              element={
+                <Lazy>
+                  <ProjectsPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="projects/:id"
+              element={
+                <Lazy>
+                  <ProjectDetailPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="security"
+              element={
+                <Lazy>
+                  <SecurityPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <Lazy>
+                  <UsersPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="email"
+              element={
+                <Lazy>
+                  <EmailPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="email/domains/:id"
+              element={
+                <Lazy>
+                  <EmailDomainPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="files"
+              element={
+                <Lazy>
+                  <FilesPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="files/public"
+              element={
+                <Lazy>
+                  <PublicFilesPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="ftp"
+              element={
+                <Lazy>
+                  <FtpPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="ftp/service"
+              element={
+                <Lazy>
+                  <FtpsServicePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="dns"
+              element={
+                <Lazy>
+                  <DnsPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="cdn"
+              element={
+                <Lazy>
+                  <CdnPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="ssl"
+              element={
+                <Lazy>
+                  <SslPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="nginx"
+              element={
+                <Lazy>
+                  <NginxPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/node"
+              element={
+                <Lazy>
+                  <NodeRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/php"
+              element={
+                <Lazy>
+                  <PhpRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/python"
+              element={
+                <Lazy>
+                  <PythonRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/go"
+              element={
+                <Lazy>
+                  <GoRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/rust"
+              element={
+                <Lazy>
+                  <RustRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/mysql"
+              element={
+                <Lazy>
+                  <MysqlPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/mysql/service"
+              element={
+                <Lazy>
+                  <MysqlServicePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/mariadb"
+              element={
+                <Lazy>
+                  <MariadbPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/mariadb/service"
+              element={
+                <Lazy>
+                  <MariadbServicePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/postgres"
+              element={
+                <Lazy>
+                  <PostgresPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/postgres/service"
+              element={
+                <Lazy>
+                  <PostgresServicePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/redis"
+              element={
+                <Lazy>
+                  <RedisPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="databases/redis/service"
+              element={
+                <Lazy>
+                  <RedisServicePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="protection"
+              element={
+                <Lazy>
+                  <ProtectionPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="protection/firewall"
+              element={
+                <Lazy>
+                  <FirewallPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="protection/fail2ban"
+              element={
+                <Lazy>
+                  <Fail2banPage />
+                </Lazy>
+              }
+            />
+            <Route path="firewall" element={<RedirectPreserveQuery to="/protection/firewall" />} />
+            <Route path="fail2ban" element={<RedirectPreserveQuery to="/protection/fail2ban" />} />
+            <Route
+              path="services"
+              element={
+                <Lazy>
+                  <ServicesPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="metrics"
+              element={
+                <Lazy>
+                  <MetricsPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="network"
+              element={
+                <Lazy>
+                  <NetworkPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="logs"
+              element={
+                <Lazy>
+                  <LogsPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="cron"
+              element={
+                <Lazy>
+                  <CronPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="backups"
+              element={
+                <Lazy>
+                  <BackupsPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="system"
+              element={
+                <Lazy>
+                  <SystemPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="system/unit"
+              element={
+                <Lazy>
+                  <SystemdUnitPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="system/readiness"
+              element={
+                <Lazy>
+                  <ReadinessPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="system/migrate"
+              element={
+                <Lazy>
+                  <MigrateHostPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="updates"
+              element={
+                <Lazy>
+                  <UpdatesPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="agents"
+              element={
+                <Lazy>
+                  <AgentsPage />
+                </Lazy>
+              }
+            />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

@@ -461,6 +461,193 @@ export function resolveBackupDownloadPath(
   return { ok: true, path: resolved.path };
 }
 
+/** Stable id for control-plane (store + config) archives under dataDir/backups/. */
+export const CONTROL_PLANE_BACKUP_ID = 'control-plane';
+
+/**
+ * Filter backup list by projectId and free-text q (name / path / id).
+ */
+export function filterBackupList(
+  items: BackupListItem[],
+  opts?: { projectId?: string; q?: string },
+): BackupListItem[] {
+  let out = items;
+  const pid = opts?.projectId?.trim();
+  if (pid) {
+    const safe = pid.replace(/[^a-zA-Z0-9_-]/g, '');
+    out = out.filter((x) => x.projectId === safe || x.projectId === pid);
+  }
+  const q = opts?.q?.trim().toLowerCase();
+  if (q) {
+    out = out.filter(
+      (x) =>
+        x.name.toLowerCase().includes(q) ||
+        x.projectId.toLowerCase().includes(q) ||
+        x.path.toLowerCase().includes(q),
+    );
+  }
+  return out;
+}
+
+/**
+ * Tar control-plane state: ysk.json (+ config.json if present).
+ * Stored under dataDir/backups/control-plane/ — same path rules as project backups.
+ * Does NOT include project homes (use backup all / project backup for those).
+ */
+export async function backupControlPlane(input: {
+  host: HostExecutor;
+  dataDir: string;
+}): Promise<BackupResult & { projectId: string }> {
+  const dataDir = resolve(input.dataDir);
+  const destDir = join(dataDir, 'backups', CONTROL_PLANE_BACKUP_ID);
+  mkdirSync(destDir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const archivePath = join(destDir, `cp-${stamp}.tar.gz`);
+
+  const candidates = ['ysk.json', 'config.json'];
+  const sources: string[] = [];
+  for (const name of candidates) {
+    const p = join(dataDir, name);
+    if (existsSync(p)) sources.push(name);
+  }
+  if (sources.length === 0) {
+    return {
+      ok: false,
+      projectId: CONTROL_PLANE_BACKUP_ID,
+      notes: [tl('notes.auto.n0028'), 'no ysk.json/config.json under dataDir'],
+      commandResults: [],
+    };
+  }
+
+  const tarTimeoutMs = 120_000;
+  const r = await input.host.runCommand(
+    ['tar', '-czf', archivePath, '-C', dataDir, ...sources],
+    { timeoutMs: tarTimeoutMs },
+  );
+  if (r.exitCode !== 0) {
+    return {
+      ok: false,
+      projectId: CONTROL_PLANE_BACKUP_ID,
+      notes: [tl('notes.auto.t0329', { v0: r.stderr || 'tar failed' })],
+      commandResults: [
+        { argv: ['tar', '-czf', archivePath, ...sources], exitCode: r.exitCode, stderr: r.stderr },
+      ],
+    };
+  }
+
+  let bytes = 0;
+  try {
+    bytes = statSync(archivePath).size;
+  } catch {
+    /* ignore */
+  }
+
+  // retention: keep last 20 control-plane archives
+  const files = readdirSync(destDir)
+    .filter((f) => f.endsWith('.tar.gz'))
+    .sort()
+    .reverse();
+  for (const old of files.slice(20)) {
+    try {
+      unlinkSync(join(destDir, old));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return {
+    ok: true,
+    projectId: CONTROL_PLANE_BACKUP_ID,
+    archivePath,
+    bytes,
+    notes: [
+      tl('notes.auto.t0330', { v0: archivePath }),
+      `sources=${sources.join(',')}`,
+      'control-plane only (not project homes)',
+    ],
+    commandResults: [{ argv: ['tar', '-czf', archivePath], exitCode: 0, stderr: '' }],
+  };
+}
+
+/**
+ * Restore control-plane archive into dataDir (ysk.json / config.json).
+ * Default dry-run lists contents. Real restore requires confirmPhrase === RESTORE-CONTROL-PLANE.
+ * Does not restart the API process — operator must reload/restart after restore.
+ */
+export async function restoreControlPlaneBackup(input: {
+  host: HostExecutor;
+  dataDir: string;
+  archiveName: string;
+  /** dry-run (default) | full */
+  mode?: 'dry-run' | 'full';
+  confirmPhrase?: string;
+}): Promise<BackupResult> {
+  const mode = input.mode ?? 'dry-run';
+  const resolved = resolveManagedBackupArchive(
+    input.dataDir,
+    CONTROL_PLANE_BACKUP_ID,
+    input.archiveName,
+  );
+  if (!resolved.ok) {
+    throw new YskError(ErrorCodes.VALIDATION, resolved.notes[0] ?? tl('notes.auto.n1111'), {
+      httpStatus: 400,
+    });
+  }
+  const { path: archivePath, name: safeName } = resolved;
+  if (!existsSync(archivePath)) {
+    throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.backup.fileNotFound'), { httpStatus: 404 });
+  }
+
+  if (mode === 'dry-run') {
+    const r = await input.host.runCommand(['tar', '-tzf', archivePath], { timeoutMs: 60_000 });
+    const listing = (r.stdout || '').split('\n').filter(Boolean).slice(0, 40);
+    return {
+      ok: r.exitCode === 0,
+      archivePath,
+      notes: [
+        r.exitCode === 0
+          ? tl('notes.auto.t0331', { v0: listing.length, v1: listing.length })
+          : tl('notes.auto.t0332', { v0: r.stderr }),
+        'dry-run only — pass mode=full + confirmPhrase=RESTORE-CONTROL-PLANE to write',
+        ...listing.slice(0, 12).map((l) => `  ${l}`),
+      ],
+      commandResults: [{ argv: ['tar', '-tzf', archivePath], exitCode: r.exitCode, stderr: r.stderr }],
+    };
+  }
+
+  if (input.confirmPhrase !== 'RESTORE-CONTROL-PLANE') {
+    return {
+      ok: false,
+      archivePath,
+      notes: [
+        'refused: full control-plane restore requires confirmPhrase=RESTORE-CONTROL-PLANE',
+        'restart API after a successful restore',
+      ],
+      commandResults: [],
+    };
+  }
+
+  const dataDir = resolve(input.dataDir);
+  const r = await input.host.runCommand(
+    ['tar', '-xzf', archivePath, '-C', dataDir],
+    { timeoutMs: 120_000 },
+  );
+  return {
+    ok: r.exitCode === 0,
+    archivePath,
+    notes:
+      r.exitCode === 0
+        ? [
+            tl('notes.auto.t0336', { v0: safeName }),
+            'control-plane files written under dataDir — restart ysk-server to load',
+          ]
+        : [tl('notes.auto.t0335', { v0: r.stderr })],
+    commandResults: [
+      { argv: ['tar', '-xzf', archivePath, '-C', dataDir], exitCode: r.exitCode, stderr: r.stderr },
+    ],
+  };
+}
+
 export interface CronJobRecord {
   id: string;
   project_id?: string;

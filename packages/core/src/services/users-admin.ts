@@ -27,6 +27,7 @@ export class UsersAdminService {
       roles: [...u.roles],
       locale: u.locale,
       totpEnabled: Boolean(u.totp_enabled),
+      mustChangePassword: Boolean(u.must_change_password) || undefined,
       packageId: u.package_id,
       suspended: Boolean(u.suspended) }));
   }
@@ -108,6 +109,7 @@ export class UsersAdminService {
       const salt = randomBytes(16).toString('hex');
       upd.password_salt = salt;
       upd.password_hash = hashPassword(patch.password, salt);
+      upd.must_change_password = false;
     }
     const u = this.users.update(id, upd);
     if (!u) throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0002'), { httpStatus: 404 });

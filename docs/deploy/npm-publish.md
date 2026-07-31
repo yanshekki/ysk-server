@@ -1,5 +1,7 @@
 # Publishing YSK Server (npm)
 
+> Language: English | [中文](./npm-publish-ZH.md)
+
 Monorepo packages:
 
 | Package | npm name | Role |

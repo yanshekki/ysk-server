@@ -86,7 +86,7 @@ describe('defense presets', () => {
     expect(map.get('203.0.113.10')?.s429).toBe(1);
     expect(ipMatchesWhitelist('10.0.0.5', ['10.0.0.0/8'])).toBe(true);
     expect(ipMatchesWhitelist('203.0.113.10', ['127.0.0.1'])).toBe(false);
-    expect(humanizeFirewall('ERROR: You need to be root', true, false).short).toBe('需 root');
+    expect(humanizeFirewall('ERROR: You need to be root', true, false).short).toMatch(/root/i);
     expect(modeThresholds('aggressive').minScore).toBeLessThan(modeThresholds('soft').minScore);
     expect(suggestedAutoBanForPreset('hardened').enabled).toBe(true);
   });

@@ -116,5 +116,19 @@
   "relatedOps": "相关运维",
   "relatedOpsDesc": "日志观测 vs 攻击应变分工",
   "scLogsLine": "观测 journal／文件／项目",
-  "scProtLine": "攻击应变、自动 ban（点 IP）"
+  "scProtLine": "攻击应变、自动 ban（点 IP）",
+  "journalVacuumTitle": "Journal 清理（vacuum）",
+  "journalSection": "Journal",
+  "sseLabel": "SSE",
+  "logrotateLabel": "logrotate",
+  "srcNginx": "nginx",
+  "srcSsh": "ssh",
+  "srcFail2ban": "fail2ban",
+  "srcAuthLog": "auth.log",
+  "srcNginxError": "nginx error",
+  "groupJournal": "Journal",
+  "groupVarLog": "/var/log",
+  "prioErr": "err+",
+  "prioWarn": "warn+",
+  "prioInfo": "info+"
 }

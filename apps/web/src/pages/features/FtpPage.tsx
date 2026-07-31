@@ -20,6 +20,7 @@ import {
   FeaturePageLayout,
   FormLayout,
   Modal,
+  ServerListFilters,
   SoftwareInstallBanner,
   PageTabs,
   FormHint,
@@ -237,6 +238,18 @@ export function FtpPage() {
               ) : (
                 <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+                  filters={
+                    <ServerListFilters
+                      q={crud.q}
+                      setQ={crud.setQ}
+                      searching={crud.searching}
+                      loading={crud.listLoading}
+                      total={crud.total}
+                      shown={crud.items.length}
+                      activeFilterCount={crud.activeFilterCount}
+                      clear={crud.clearSearch}
+                    />
+                  }
                   columns={[
                     {
                       key: 'user',

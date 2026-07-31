@@ -82,7 +82,7 @@ export async function handleResourcesRoutes(
       sendJson(res, 200, { items: listCertificatesView(ctx.db, ctx.dataDir) });
       return true;
     }
-    let items = listResources(ctx.db, key);
+    let items = listResources(ctx.db, key) as Array<Record<string, unknown>>;
     const zoneId = url.searchParams.get('zoneId');
     const databaseId = url.searchParams.get('databaseId');
     const engine = url.searchParams.get('engine');
@@ -91,7 +91,14 @@ export async function handleResourcesRoutes(
     if (engine) {
       items = items.filter((r) => String(r.engine ?? 'mysql') === engine);
     }
-    sendJson(res, 200, { items });
+    const { listWithQuery } = await import('../http/list-response.js');
+    const { items: filtered, meta } = listWithQuery(url, items, {
+      text: (r) =>
+        Object.values(r)
+          .filter((v) => typeof v === 'string' || typeof v === 'number')
+          .map(String),
+    });
+    sendJson(res, 200, { items: filtered, meta });
     return true;
   }
 

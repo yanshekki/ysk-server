@@ -516,12 +516,15 @@ export function BackupsPage() {
                 void run(async () => {
                   const r = (await api.requestRaw('/api/v1/backups/schedule', {
                     method: 'POST',
-                    body: JSON.stringify({ schedule: '0 3 * * *' }),
-                  })) as OpsResultLike;
+                    body: JSON.stringify({ schedule: '0 3 * * *', install: true }),
+                  })) as OpsResultLike & {
+                    install?: { ok?: boolean; notes?: string[]; requiresExecute?: boolean };
+                  };
                   return {
                     ...r,
                     notes: [
                       ...(r.notes ?? []),
+                      ...(r.install?.notes ?? []),
                       t('backups.cronCmd'),
                       t('backups.cronHint'),
                     ],
@@ -530,6 +533,29 @@ export function BackupsPage() {
               }
             >
               {t('backups.registerDailyCron')}
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={busy}
+              disabled={!canRun}
+              onClick={() =>
+                void run(async () => {
+                  try {
+                    const r = (await api.requestRaw('/api/v1/backups/control-plane', {
+                      method: 'POST',
+                      body: '{}',
+                    })) as OpsResultLike;
+                    await refresh();
+                    return r;
+                  } catch (e) {
+                    const m = e instanceof Error ? e.message : t('backups.backupFailed');
+                    return { ok: false, notes: [m], blockMessage: m };
+                  }
+                }, t('backups.controlPlaneDone', { defaultValue: 'Control-plane backup done' }))
+              }
+            >
+              {t('backups.controlPlane', { defaultValue: 'Backup control plane' })}
             </Button>
             <Button
               variant="secondary"
@@ -1003,7 +1029,7 @@ export function BackupsPage() {
                           }
                         />
                       </Field>
-                      <Field label="Access Key" htmlFor="bk-ak" flush>
+                      <Field label={t('backups.accessKey')} htmlFor="bk-ak" flush>
                         <input
                           id="bk-ak"
                           value={remote.awsAccessKeyId ?? ''}
@@ -1012,7 +1038,7 @@ export function BackupsPage() {
                           }
                         />
                       </Field>
-                      <Field label="Secret Key" htmlFor="bk-sk" flush>
+                      <Field label={t('backups.secretKey')} htmlFor="bk-sk" flush>
                         <input
                           id="bk-sk"
                           type="password"

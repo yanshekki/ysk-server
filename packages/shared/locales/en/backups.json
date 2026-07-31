@@ -36,10 +36,12 @@
   "backupFailed": "Backup failed",
   "backupDone": "Backup complete",
   "backupAll": "Backup all projects",
+  "controlPlane": "Backup control plane",
+  "controlPlaneDone": "Control-plane backup complete",
   "cronCmd": "Command: ysk-server backup all --data-dir …",
-  "cronHint": "Install into system crontab on the Cron page to actually run",
+  "cronHint": "Schedule POST with install=true loads host crontab when EXECUTE is on; otherwise only managed file",
   "dailyCronRegistered": "Registered daily 03:00 schedule",
-  "registerDailyCron": "Register daily schedule",
+  "registerDailyCron": "Register daily schedule (+ install)",
   "resticNeedConfig": "Enable restic and set password under Remote / exclude first",
   "resticFailed": "restic failed",
   "resticDone": "restic incremental complete",
@@ -124,5 +126,8 @@
   "no": "No",
   "safeDir": "Safe directory",
   "remotePushTitle": "Remote push target",
-  "remotePushSub": "After local tar succeeds, push to SFTP, local path, or S3"
+  "remotePushSub": "After local tar succeeds, push to SFTP, local path, or S3",
+  "accessKey": "Access Key",
+  "secretKey": "Secret Key",
+  "overwriteConfirmHint": "Type OVERWRITE to confirm overwrite"
 }

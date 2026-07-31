@@ -116,5 +116,19 @@
   "relatedOps": "相關運維",
   "relatedOpsDesc": "日誌觀測 vs 攻擊應變分工",
   "scLogsLine": "觀測 journal／檔案／專案",
-  "scProtLine": "攻擊應變、自動 ban（點 IP）"
+  "scProtLine": "攻擊應變、自動 ban（點 IP）",
+  "journalVacuumTitle": "Journal 清理（vacuum）",
+  "journalSection": "Journal",
+  "sseLabel": "SSE",
+  "logrotateLabel": "logrotate",
+  "srcNginx": "nginx",
+  "srcSsh": "ssh",
+  "srcFail2ban": "fail2ban",
+  "srcAuthLog": "auth.log",
+  "srcNginxError": "nginx error",
+  "groupJournal": "Journal",
+  "groupVarLog": "/var/log",
+  "prioErr": "err+",
+  "prioWarn": "warn+",
+  "prioInfo": "info+"
 }

@@ -285,7 +285,7 @@ export function ProjectDetailPage() {
             value: project.status ?? project.processStatus ?? '—',
           },
           {
-            label: 'Port',
+            label: t('common.port'),
             value: project.port != null ? String(project.port) : '—',
           },
           {

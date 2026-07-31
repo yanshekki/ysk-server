@@ -8,6 +8,7 @@ import {
   listUploadedCertFiles,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
+import { listWithQuery } from '../http/list-response.js';
 import {
   getBearer,
   readBody,
@@ -62,7 +63,17 @@ export async function handleSslRoutes(
         ctx.auth.authenticate(getBearer(req));
         const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk/core');
         dedupeCertificatesInStore(ctx.db);
-        sendJson(res, 200, { items: listCertificatesView(ctx.db, ctx.dataDir) });
+        type Cert = { domain?: string; id?: string; issuer?: string; status?: string };
+        const all = listCertificatesView(ctx.db, ctx.dataDir) as unknown as Cert[];
+        const { items, meta } = listWithQuery(url, all, {
+          text: (c: Cert) => [
+            String(c.domain ?? ''),
+            String(c.id ?? ''),
+            String(c.issuer ?? ''),
+            String(c.status ?? ''),
+          ],
+        });
+        sendJson(res, 200, { items, meta });
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/ssl/bindings') {

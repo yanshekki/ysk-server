@@ -204,27 +204,27 @@ export function scoreEmailHealth(input: {
   if (input.dnsApplied) {
     score += 40;
   } else {
-    messages.push('DNS records (MX/SPF/DKIM) not yet confirmed');
+    messages.push(tl('email.health.dnsUnconfirmed'));
   }
   // DMARC 15
   if (input.dmarcPresent) {
     score += 15;
   } else {
-    messages.push('DMARC missing — strongly recommended');
+    messages.push(tl('email.health.dmarcMissing'));
   }
   // PTR 25
   if (input.ptrOk) {
     score += 25;
   } else {
-    messages.push('PTR reverse DNS missing or incorrect — request at VPS provider');
+    messages.push(tl('email.health.ptrBad'));
   }
   // Port 25 15
   if (input.port25Open === true) {
     score += 15;
   } else if (input.port25Open === false) {
-    messages.push('Outbound Port 25 appears blocked — request unblock or use SMTP relay');
+    messages.push(tl('email.health.port25Blocked'));
   } else {
-    messages.push('Port 25 status unknown — run connectivity check');
+    messages.push(tl('email.health.port25Unknown'));
     score += 5;
   }
   // Warm-up awareness 5 (always partial credit for showing checklist)
@@ -259,10 +259,7 @@ export function planEmailStackInstall(domain: string): {
       'postconf -e "smtpd_tls_security_level = may"',
     ],
     ports: [25, 465, 587, 993, 995],
-    notes: [
-      'TLS certs via Let’s Encrypt for SMTP/IMAP',
-      'External DNS/PTR/Port25 still required for deliverability',
-    ] };
+    notes: [tl('email.stack.tlsNote'), tl('email.stack.externalNote')] };
 }
 
 /**
@@ -277,22 +274,19 @@ export function planTestSend(input: {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1054'), {
       httpStatus: 400 });
   }
-  const subject = input.subject ?? 'YSK Server mail test';
+  const subject = input.subject ?? tl('email.test.defaultSubject');
   return {
     command: `printf 'Subject: ${subject}\\n\\nYSK Server deliverability test\\n' | sendmail -f ${input.from} ${input.to}`,
-    notes: [
-      'Requires local MTA (Postfix) installed and Port 25/relay configured',
-      'Check recipient spam folder and server mail logs after send',
-    ],
+    notes: [tl('email.test.needMta'), tl('email.test.checkSpam')],
     analysisHints: [
-      'If deferred: check Port 25 block or relay credentials',
-      'If accepted but spam: improve SPF/DKIM/DMARC/PTR and warm-up',
-      'Inspect /var/log/mail.log or journalctl -u postfix',
+      tl('email.test.hintDeferred'),
+      tl('email.test.hintSpam'),
+      tl('email.test.hintLogs'),
     ] };
 }
 
 function assertDomain(domain: string): void {
-  if (!domain || !/^[a-z0-9.-]+\.[a-z]{2 }$/i.test(domain)) {
+  if (!domain || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.tpl.domainInvalid', { domain: domain }), { httpStatus: 400 });
   }
 }

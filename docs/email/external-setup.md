@@ -1,5 +1,7 @@
 # Email Server — 外部設定指引（繁體中文）
 
+> Language: English | [中文](./external-setup-ZH.md)
+
 YSK Server 可自動安裝與配置 Postfix / Dovecot / OpenDKIM 等**本機**元件，但下列事項必須由你在**域名 DNS 服務商**與 **VPS/雲端供應商**完成，否則郵件極易進垃圾箱或無法寄出。
 
 ## 為什麼需要外部設定？

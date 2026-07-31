@@ -13,6 +13,7 @@ import {
   loadSmtpRelaySettings,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
+import { listWithQuery } from '../http/list-response.js';
 import {
   getBearer,
   readBody,
@@ -78,7 +79,45 @@ export async function handleEmailRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/email/domains') {
         ctx.auth.authenticate(getBearer(req));
-        sendJson(res, 200, { items: ctx.email.list().map(redactEmail) });
+        type Dom = {
+          domain?: string;
+          id?: string;
+          server_ip?: string;
+          apply_status?: string;
+        };
+        const all = ctx.email.list().map(redactEmail) as Dom[];
+        const { items, meta } = listWithQuery(
+          url,
+          all,
+          {
+            text: (d: Dom) => [
+              String(d.domain ?? ''),
+              String(d.id ?? ''),
+              String(d.server_ip ?? ''),
+            ],
+            predicates: {
+              status: (d: Dom, v: string) => {
+                const s = String(d.apply_status ?? 'draft').toLowerCase();
+                if (v === 'draft') return s === 'draft' || s === 'written' || !s;
+                return s === v;
+              },
+            },
+            facetOf: {
+              status: (d: Dom) => String(d.apply_status ?? 'draft').toLowerCase() || 'draft',
+            },
+            sortOf: {
+              domain: (a: Dom, b: Dom) =>
+                String(a.domain ?? '').localeCompare(String(b.domain ?? '')),
+            },
+          },
+          {
+            enums: {
+              status: ['applied', 'written', 'draft', 'failed'],
+            },
+            sortFields: ['domain'],
+          },
+        );
+        sendJson(res, 200, { items, meta });
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/email/domains') {
@@ -123,7 +162,25 @@ export async function handleEmailRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/email/mailboxes') {
         ctx.auth.authenticate(getBearer(req));
-        sendJson(res, 200, { items: ctx.email.listMailboxes() });
+        const domainId = (url.searchParams.get('domainId') ?? '').trim();
+        type Mb = Record<string, unknown>;
+        let all = ctx.email.listMailboxes() as unknown as Mb[];
+        if (domainId) {
+          all = all.filter(
+            (m: Mb) =>
+              String(m.domain_id ?? m.domainId ?? '') === domainId ||
+              String(m.domain ?? '') === domainId,
+          );
+        }
+        const { items, meta } = listWithQuery(url, all, {
+          text: (m: Mb) => [
+            String(m.local_part ?? m.localPart ?? ''),
+            String(m.address ?? ''),
+            String(m.domain ?? ''),
+            String(m.id ?? ''),
+          ],
+        });
+        sendJson(res, 200, { items, meta });
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/email/dovecot-passdb/all') {
@@ -376,6 +433,74 @@ export async function handleEmailRoutes(
           isNewIp: data.isNewIp,
         });
         sendJson(res, 200, plan);
+        return true;
+      }
+      // —— Deliverability ops pack (C3) ——
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/deliverability$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const row = ctx.email.get(id);
+        const { buildDeliverabilityReport } = await import('@ysk/core');
+        const report = await buildDeliverabilityReport({
+          domain: row.domain,
+          serverIp: row.server_ip,
+          serverIpv6: row.server_ipv6,
+          mailHostname: row.mail_hostname,
+          dkimPublicKey: row.dkim_public_key ?? '',
+          dataDir: ctx.dataDir,
+          ptrOkStored: row.ptr_ok ?? undefined,
+          port25Stored: row.port25_open ?? undefined,
+          dnsApplied: row.dns_applied ?? undefined,
+          dmarcPresent: row.dmarc_present ?? undefined,
+        });
+        sendJson(res, 200, report);
+        return true;
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/email/deliverability/overview') {
+        ctx.auth.authenticate(getBearer(req));
+        const { buildDeliverabilityReport } = await import('@ysk/core');
+        const domains = ctx.email.list();
+        const items = [];
+        for (const d of domains.slice(0, 20)) {
+          try {
+            const report = await buildDeliverabilityReport({
+              domain: d.domain,
+              serverIp: d.server_ip,
+              serverIpv6: d.server_ipv6,
+              mailHostname: d.mail_hostname,
+              dkimPublicKey: d.dkim_public_key ?? '',
+              dataDir: ctx.dataDir,
+            });
+            items.push({
+              domainId: d.id,
+              domain: d.domain,
+              score: report.score,
+              panelReady: report.panelReady,
+              deliveryGuaranteed: false as const,
+              blocked: report.items.filter((i) => i.ok === false).map((i) => i.id),
+            });
+          } catch (e) {
+            items.push({
+              domainId: d.id,
+              domain: d.domain,
+              score: 0,
+              panelReady: false,
+              deliveryGuaranteed: false as const,
+              error: e instanceof Error ? e.message : String(e),
+            });
+          }
+        }
+        sendJson(res, 200, {
+          at: new Date().toISOString(),
+          items,
+          honesty: [
+            'Overview is advisory only — never guarantees inbox placement.',
+            'PTR and Port 25 remain VPS-provider responsibilities.',
+          ],
+        });
         return true;
       }
   return false;

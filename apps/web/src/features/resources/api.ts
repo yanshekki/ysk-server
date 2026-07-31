@@ -14,10 +14,21 @@ export const resourcesApi = {
     const q = query
       ? '?' +
         Object.entries(query)
+          .filter(([, v]) => v != null && String(v) !== '')
           .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
           .join('&')
       : '';
-    return api.requestRaw<{ items: ResourceRow[] }>(`${base(collection)}${q}`);
+    return api.requestRaw<{
+      items: ResourceRow[];
+      meta?: {
+        total: number;
+        page: number;
+        limit: number;
+        q: string;
+        filters: Record<string, string>;
+        order: 'asc' | 'desc';
+      };
+    }>(`${base(collection)}${q}`);
   },
   get: (collection: string, id: string) =>
     api.requestRaw<{ item: ResourceRow }>(`${base(collection)}/${id}`),

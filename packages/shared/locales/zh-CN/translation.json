@@ -124,7 +124,13 @@
     "wroteUnitMsg": "已写入 {{kind}} 服务设置",
     "writeFailed": "写入失败",
     "installedMsg": "已安装 {{kind}}",
-    "installIncomplete": "安装未完成"
+    "installIncomplete": "安装未完成",
+    "badgeDryRun": "计划模式（dry-run）",
+    "badgeBlocked": "已阻挡",
+    "labelStderr": "stderr",
+    "labelAckCli": "ack + CLI JSON",
+    "labelStdoutBody": "CLI 标准输出内容",
+    "resultOuterHint": "外层 result 为 CLI --json 标准输出。"
   },
   "ai": {
     "status": {
@@ -236,10 +242,12 @@
     "backupFailed": "备份失败",
     "backupDone": "备份完成",
     "backupAll": "备份所有项目",
+    "controlPlane": "备份控制平面",
+    "controlPlaneDone": "控制平面备份完成",
     "cronCmd": "指令：ysk-server backup all --data-dir …",
-    "cronHint": "记得到「Cron」页安装到系统 crontab 才会真正跑",
+    "cronHint": "schedule 带 install=true 且 YSK_EXECUTE=1 时写入 host crontab；否则只写 managed 文件",
     "dailyCronRegistered": "已登记每日 03:00 计划",
-    "registerDailyCron": "登记每日计划",
+    "registerDailyCron": "登记每日计划（含安装）",
     "resticNeedConfig": "请先在「远程／排除」启用 restic 并设置 password",
     "resticFailed": "restic 失败",
     "resticDone": "restic 增量完成",
@@ -324,7 +332,41 @@
     "no": "否",
     "safeDir": "安全目录",
     "remotePushTitle": "远端推送目标",
-    "remotePushSub": "本地 tar 成功后可推送到 SFTP、本机路径或 S3"
+    "remotePushSub": "本地 tar 成功后可推送到 SFTP、本机路径或 S3",
+    "accessKey": "访问密钥",
+    "secretKey": "密钥",
+    "overwriteConfirmHint": "输入 OVERWRITE 确认覆盖"
+  },
+  "catalog": {
+    "sw": {
+      "vsftpd": "vsftpd（FTPS）",
+      "db_util": "db-util（FTP 用户数据库）",
+      "nginx": "Nginx",
+      "certbot": "Certbot（Let's Encrypt）",
+      "mysql_client": "MySQL／MariaDB 客户端",
+      "mysql_server": "MySQL 服务器",
+      "mariadb_server": "MariaDB 服务器",
+      "postgresql_client": "PostgreSQL 客户端",
+      "postgresql": "PostgreSQL 服务器",
+      "redis_tools": "Redis 客户端",
+      "redis_server": "Redis 服务器",
+      "ufw": "UFW 防火墙",
+      "fail2ban": "fail2ban",
+      "postfix": "Postfix",
+      "dovecot": "Dovecot",
+      "opendkim": "OpenDKIM",
+      "pdns_server": "PowerDNS",
+      "git": "Git",
+      "node": "Node.js",
+      "php": "PHP",
+      "python": "Python 3",
+      "go": "Go",
+      "rust": "Rust（cargo）"
+    },
+    "php": {
+      "session": "会话",
+      "opcache": "OPcache"
+    }
   },
   "cdn": {
     "fromProjectOk": "已从项目创建 CDN 站点 — 请套用 edges / DNS",
@@ -440,6 +482,1188 @@
     "writeRegionDns": "写入 region 子域名 A/AAAA（如 hkg）",
     "workflowHint": "流程：写入 conf → 套用 edges → 探活+DNS → SSL。项目一键：/cdn?fromProject=项目ID",
     "healthLoopAll": "全站健康循环"
+  },
+  "cli": {
+    "unknownCommand": "未知命令：{{command}}\n执行 `{{cli}} help`",
+    "usagePrefix": "用法：",
+    "security": {
+      "help": "用法：ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
+      "sessionsHelp": "用法：ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
+      "apiKeysHelp": "用法：ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
+      "noUser": "找不到用户。请先创建管理员，或传入 --user <名称|id>",
+      "tokenOnce": "token 只显示一次 — 请妥善保存",
+      "sessionRevokeUsage": "用法：ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
+      "apiKeyDeleteUsage": "用法：ysk-server security api-keys delete --id KEY_ID"
+    },
+    "help": {
+      "blurb": "控制平面 CLI — AI agent 请优先用 --json。\n文档：docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
+      "main": "{{product}} ({{cli}}) v{{version}}\n\n控制平面 CLI — AI agent 请优先用 --json。\n文件：docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\n用法：\n  {{cli}} <command> [options]\n\n命令：\n  setup                 初始化 dataDir + 管理员\n  update                自我更新检查／套用\n  serve                 HTTP API + Web UI\n  system unit-install   安装 ysk-server.service [--enable]\n  tools                 工具列表；tools run --tool <name> [--dry-run]\n  ask                   自然语言 → AI 计划 [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             应用范本\n  hosting               nginx|dns|db|firewall 辅助\n  dns                   zone|zones（AI 别名 → hosting dns-*）\n  logs                  sources|query|journal|overview\n  host                  overview|metrics（唯读）\n  nginx                 status|list|test|sync\n  ssl                   list|get（憑证）\n  db-cluster            list|get|create|plan（HA 先计划）\n  ssh-key               list|create|import|public|export|install|delete（SSH 身分库）\n  ssh-2fa               list|enroll|confirm|install|pam|retire（SSH 登入 TOTP ≠ 面板 2FA）\n  services              主机服務矩阵（systemctl 探测）\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys（2FA · 撤销工作阶段 · API 金钥）\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register（面板 + 边缘）\n  agent run             外送 fleet 轮询（实验）\n  store                 status|export|import|migrate（json|sqlite|postgres document 后端）\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares（沙箱）\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns（面板对等）\n  health                本机模式快照或 --url http://host:port/health\n  readiness | doctor    生产就绪（诚实）\n  migrate               inventory|host|post|status|resume（整机迁移）\n  version | help\n\n全域：\n  --json                JSON 标准输出（AI）\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\n结束码：0 成功 · 1 错误 · 2 验证 · 3 阻挡 · 4 找不到 · 5 主机错误\n\n安全：\n  危险操作预设 dry-run（只出计划）。\n  传 --execute（别名 --apply）+ 环境变数 YSK_EXECUTE=1 才改主机。\n\n例子：\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run 计划\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+    },
+    "usage": {
+      "tools": {
+        "run": {
+          "--tool": {
+            "name": {
+              "--arg": {
+                "cd327c": "用法： ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              }
+            }
+          }
+        }
+      },
+      "email": {
+        "domains": {
+          "list": {
+            "create": {
+              "get": {
+                "b94a62": "用法： ysk-server email domains list|create|get …\n"
+              }
+            }
+          },
+          "create": {
+            "--domain": {
+              "example": {
+                "bd4036": "用法： ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              }
+            }
+          }
+        },
+        "mailboxes": {
+          "list": {
+            "create": {
+              "42b26c": "用法： ysk-server email mailboxes list|create …\n"
+            }
+          },
+          "create": {
+            "--domain": {
+              "example": {
+                "7227f3": "用法： ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              }
+            }
+          }
+        },
+        "dns": {
+          "--domain": {
+            "example": {
+              "com": {
+                "26b806": "用法： ysk-server email dns --domain example.com\n"
+              }
+            }
+          }
+        },
+        "sub": {
+          "--data-dir": {
+            "path": {
+              "--json": {
+                "73dad0": "用法： ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # DNS bundle for panel\nAlso: hosting email-apply|email-mailbox|email-deliverability (aliases)\n"
+              }
+            }
+          }
+        },
+        "deliverability": {
+          "--domain": {
+            "example": {
+              "com": {
+                "b0dff0": "用法： ysk-server email deliverability --domain example.com\n"
+              }
+            }
+          }
+        },
+        "bootstrap": {
+          "--domain": {
+            "example": {
+              "com": {
+                "affc8d": "用法： ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              }
+            }
+          }
+        }
+      },
+      "cron": {
+        "delete": {
+          "--id": {
+            "job": {
+              "id": {
+                "f6aafe": "用法： ysk-server cron delete --id JOB_ID\n"
+              }
+            }
+          }
+        },
+        "sub": {
+          "--id": {
+            "job": {
+              "id": {
+                "99cfdf": "用法： ysk-server cron {{sub}} --id JOB_ID\n"
+              }
+            }
+          },
+          "--data-dir": {
+            "path": {
+              "--json": {
+                "0349e6": "用法： ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # run-now (needs YSK_EXECUTE=1)\n  install                     # load managed crontab (needs EXECUTE)\n  status                      # probe managed file vs host crontab\nHonesty: install blocked without YSK_EXECUTE=1 (file still written).\n"
+              }
+            }
+          }
+        },
+        "run": {
+          "--id": {
+            "job": {
+              "id": {
+                "a0a97f": "用法： ysk-server cron run --id JOB_ID\n"
+              }
+            }
+          }
+        },
+        "create": {
+          "--schedule": {
+            "0": {
+              "3": {
+                "9a8328": "用法： ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              }
+            }
+          }
+        }
+      },
+      "files": {
+        "stat": {
+          "--path": {
+            "rel": {
+              "17c8f2": "用法： ysk-server files stat --path REL\n"
+            }
+          }
+        },
+        "read": {
+          "--path": {
+            "rel": {
+              "e35f8d": "用法： ysk-server files read --path REL\n"
+            }
+          }
+        },
+        "mkdir": {
+          "--path": {
+            "rel": {
+              "ae0438": "用法： ysk-server files mkdir --path REL\n"
+            }
+          }
+        },
+        "rm": {
+          "--path": {
+            "rel": {
+              "--permanent": {
+                "fe2051": "用法： ysk-server files rm --path REL [--permanent]\n"
+              }
+            }
+          }
+        },
+        "rename": {
+          "--from": {
+            "rel": {
+              "--to": {
+                "35a260": "用法： ysk-server files rename --from REL --to REL\n"
+              }
+            }
+          }
+        },
+        "copy": {
+          "--from": {
+            "rel": {
+              "--to": {
+                "5337f4": "用法： ysk-server files copy --from REL --to REL\n"
+              }
+            }
+          }
+        },
+        "move": {
+          "--from": {
+            "rel": {
+              "--to": {
+                "75cf5d": "用法： ysk-server files move --from REL --to REL\n"
+              }
+            }
+          }
+        },
+        "chmod": {
+          "--path": {
+            "rel": {
+              "--mode": {
+                "39f983": "用法： ysk-server files chmod --path REL --mode 644\n"
+              }
+            }
+          }
+        },
+        "trash": {
+          "restore": {
+            "--id": {
+              "trash": {
+                "c89ce9": "用法： ysk-server files trash restore --id TRASH_ID\n"
+              }
+            }
+          },
+          "list": {
+            "restore": {
+              "purge": {
+                "ef063d": "用法： ysk-server files trash list|restore|purge\n"
+              }
+            }
+          }
+        },
+        "shares": {
+          "list": {
+            "ac342c": "用法： ysk-server files shares list\n"
+          }
+        },
+        "webdav": {
+          "status": {
+            "token": {
+              "disable": {
+                "f8e94b": "用法： ysk-server files webdav status|token|disable\n"
+              }
+            }
+          }
+        },
+        "sub": {
+          "--root": {
+            "public": {
+              "project": {
+                "42ebd4": "用法： ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nSandbox: only public files root or project home (path-constrained).\n"
+              }
+            }
+          }
+        },
+        "write": {
+          "--path": {
+            "rel": {
+              "--content": {
+                "0addb1": "用法： ysk-server files write --path REL --content TEXT | --file LOCAL\n"
+              }
+            }
+          }
+        },
+        "upload": {
+          "--dir": {
+            "rel": {
+              "--file": {
+                "f8c3bf": "用法： ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
+              }
+            }
+          }
+        }
+      },
+      "store": {
+        "import": {
+          "--in": {
+            "file": {
+              "json": {
+                "5b6fdd": "用法： ysk-server store import --in FILE.json\n"
+              }
+            }
+          }
+        },
+        "sub": {
+          "--data-dir": {
+            "path": {
+              "--json": {
+                "d580e4": "用法： ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         Show backend kind + counts\n  export --out FILE.json         Dump document snapshot\n  import --in FILE.json          Overwrite snapshot from file\n  migrate --to sqlite|json [--out PATH]\n    Copy current store into another backend file\nEnv: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\nHonesty: document-blob backends (not full relational schema yet).\n"
+              }
+            }
+          }
+        },
+        "migrate": {
+          "--to": {
+            "json": {
+              "sqlite": {
+                "1c52a3": "用法： ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: export JSON then import under YSK_DATABASE_URL)\n"
+              }
+            }
+          }
+        }
+      },
+      "cdn": {
+        "nodes": {
+          "delete": {
+            "--id": {
+              "node": {
+                "0c6a1e": "用法： ysk-server cdn nodes delete --id NODE_ID\n"
+              }
+            }
+          },
+          "drain": {
+            "--id": {
+              "node": {
+                "a8aa81": "用法： ysk-server cdn nodes drain --id NODE_ID [--off]\n"
+              }
+            }
+          },
+          "list": {
+            "upsert": {
+              "delete": {
+                "52549e": "用法： ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
+              }
+            }
+          },
+          "upsert": {
+            "--name": {
+              "name": {
+                "8f6f39": "用法： ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
+              }
+            }
+          }
+        },
+        "sites": {
+          "get": {
+            "--id": {
+              "site": {
+                "3c3c35": "用法： ysk-server cdn sites get --id SITE_ID\n"
+              }
+            }
+          },
+          "delete": {
+            "--id": {
+              "site": {
+                "51ef8f": "用法： ysk-server cdn sites delete --id SITE_ID\n"
+              }
+            }
+          },
+          "list": {
+            "get": {
+              "upsert": {
+                "609da6": "用法： ysk-server cdn sites list|get|upsert|delete …\n"
+              }
+            }
+          },
+          "upsert": {
+            "--name": {
+              "n": {
+                "6ebb75": "用法： ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
+              }
+            }
+          }
+        },
+        "render": {
+          "--site-id": {
+            "id": {
+              "--dry-run": {
+                "2149eb": "用法： ysk-server cdn render --site-id ID [--dry-run]\n"
+              }
+            }
+          }
+        },
+        "apply": {
+          "--site-id": {
+            "id": {
+              "--edge-id": {
+                "a527b3": "用法： ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
+              }
+            }
+          }
+        },
+        "purge": {
+          "--site-id": {
+            "id": {
+              "--edge-id": {
+                "bc08ec": "用法： ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
+              }
+            }
+          }
+        },
+        "dns-sync": {
+          "--site-id": {
+            "id": {
+              "--apply-zone": {
+                "343068": "用法： ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
+              }
+            }
+          }
+        },
+        "sub": {
+          "--data-dir": {
+            "path": {
+              "--json": {
+                "092842": "用法： ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # fan-out (fleet queue ok without EXECUTE)\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\nHonesty: apply_status written/queued ≠ edge nginx applied until agent ack / EXECUTE reload.\n"
+              }
+            }
+          }
+        },
+        "from-project": {
+          "--project-id": {
+            "id": {
+              "--edge-id": {
+                "a96f42": "用法： ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
+              }
+            }
+          }
+        }
+      },
+      "agents": {
+        "fleet": {
+          "remove": {
+            "--session": {
+              "session": {
+                "1827fe": "用法： ysk-server agents fleet remove --session SESSION_ID\n"
+              }
+            }
+          },
+          "register": {
+            "--id": {
+              "agent": {
+                "209b2d": "用法： ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
+              }
+            }
+          },
+          "commands": {
+            "--session": {
+              "session": {
+                "f8067c": "用法： ysk-server agents fleet commands --session SESSION_ID\n"
+              }
+            }
+          }
+        },
+        "register": {
+          "--id": {
+            "agent": {
+              "id": {
+                "3c4477": "用法： ysk-server agents register --id AGENT_ID [--group g]\n"
+              }
+            }
+          }
+        },
+        "commands": {
+          "--session": {
+            "session": {
+              "id": {
+                "e620d2": "用法： ysk-server agents commands --session SESSION_ID\n"
+              }
+            }
+          }
+        },
+        "runtimes": {
+          "probe": {
+            "fleet": {
+              "list": {
+                "261fa4": "用法： ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
+              }
+            }
+          }
+        }
+      },
+      "agent": {
+        "run": {
+          "--control-plane": {
+            "url": {
+              "--id": {
+                "cfefbe": "用法： ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
+              }
+            }
+          }
+        }
+      },
+      "ask": {
+        "check": {
+          "system": {
+            "info": {
+              "b0c781": "用法： ysk-server ask \"check system info\"\n"
+            }
+          }
+        }
+      },
+      "backup": {
+        "delete": {
+          "--project-id": {
+            "id": {
+              "--name": {
+                "d66c29": "用法： ysk-server backup delete --project-id ID --name ARCHIVE\n"
+              }
+            }
+          }
+        },
+        "restic": {
+          "list": {
+            "run": {
+              "restore": {
+                "10402b": "用法： ysk-server backup restic list|run|restore …\n"
+              }
+            }
+          },
+          "restore": {
+            "--project-id": {
+              "id": {
+                "a8f133": "用法： ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
+              }
+            }
+          }
+        },
+        "sub": {
+          "--data-dir": {
+            "path": {
+              "--json": {
+                "777243": "用法： ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         Backup all project homes (+ remote/restic side when configured)\n  list [--project-id ID] [--q TEXT]\n  status                      Last run + schedule probe\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               Snapshot ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remote / exclusions / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # full patch {remote?,exclusions?,restic?}\n  restic list|run|restore     Incremental restic helpers\n"
+              }
+            }
+          }
+        },
+        "control-plane-restore": {
+          "--name": {
+            "archive": {
+              "--mode": {
+                "316a76": "用法： ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
+              }
+            }
+          }
+        },
+        "restore": {
+          "--project-id": {
+            "id": {
+              "--name": {
+                "bc7041": "用法： ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
+              }
+            }
+          }
+        }
+      },
+      "packages": {
+        "list": {
+          "--q": {
+            "text": {
+              "b8e16b": "用法： ysk-server packages list [--q text]\n"
+            }
+          }
+        }
+      },
+      "projects": {
+        "stop": {
+          "--id": {
+            "projectid": {
+              "b15409": "用法： ysk-server projects stop --id <projectId>\n"
+            }
+          }
+        },
+        "backup": {
+          "--id": {
+            "projectid": {
+              "e62846": "用法： ysk-server projects backup --id <projectId>\n"
+            }
+          }
+        },
+        "health": {
+          "--id": {
+            "projectid": {
+              "e816ec": "用法： ysk-server projects health --id <projectId>\n"
+            }
+          }
+        },
+        "isolation": {
+          "provision": {
+            "--id": {
+              "projectid": {
+                "5aff44": "用法： ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
+              }
+            }
+          },
+          "backfill-owners": {
+            "--owner-user-id": {
+              "id": {
+                "8691da": "用法： ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
+              }
+            }
+          },
+          "list": {
+            "provision": {
+              "provision-all": {
+                "8e9da3": "用法： ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
+              }
+            }
+          }
+        },
+        "get": {
+          "--id": {
+            "projectid": {
+              "name": {
+                "b0d532": "用法： ysk-server projects get --id <projectId|name> [--json]\n"
+              }
+            }
+          }
+        },
+        "create": {
+          "--name": {
+            "name": {
+              "--domain": {
+                "66e857": "用法： ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
+              }
+            }
+          }
+        },
+        "deploy": {
+          "--id": {
+            "projectid": {
+              "--entry": {
+                "339111": "用法： ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
+              }
+            }
+          }
+        },
+        "git-deploy": {
+          "--id": {
+            "id": {
+              "--git-url": {
+                "a513f5": "用法： ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              }
+            }
+          }
+        },
+        "template": {
+          "--id": {
+            "projectid": {
+              "--template": {
+                "591ce4": "用法： ysk-server projects template --id <projectId> --template <id> [--force]\n"
+              }
+            }
+          }
+        },
+        "list": {
+          "get": {
+            "create": {
+              "deploy": {
+                "253b48": "用法： ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+              }
+            }
+          }
+        }
+      },
+      "cli": {
+        "name": {
+          "db-cluster": {
+            "get": {
+              "--id": {
+                "00f803": "用法： {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
+              }
+            },
+            "plan": {
+              "--id": {
+                "483f52": "用法： {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
+              }
+            },
+            "artifacts": {
+              "--id": {
+                "6b33c4": "用法： {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
+              }
+            },
+            "bundle": {
+              "--id": {
+                "94ed27": "用法： {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
+              }
+            },
+            "delete": {
+              "--id": {
+                "3de0e4": "用法： {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
+              }
+            },
+            "create": {
+              "--name": {
+                "e3b733": "用法： {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
+              }
+            },
+            "apply": {
+              "--id": {
+                "4cddb8": "用法： {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
+              }
+            },
+            "probe": {
+              "--id": {
+                "22870c": "用法： {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
+              }
+            },
+            "install-peers": {
+              "--id": {
+                "600b02": "用法： {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
+              }
+            },
+            "push": {
+              "--id": {
+                "697080": "用法： {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
+              }
+            },
+            "fleet": {
+              "--id": {
+                "239462": "用法： {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
+              }
+            },
+            "list": {
+              "get": {
+                "3b9cfa": "用法： {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
+              }
+            }
+          },
+          "ssh-key": {
+            "get": {
+              "--id": {
+                "292716": "用法： {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
+              }
+            },
+            "public": {
+              "--id": {
+                "525d7d": "用法： {{CLI_NAME}} ssh-key public --id UUID\n"
+              }
+            },
+            "export": {
+              "--id": {
+                "0a6d81": "用法： {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
+              }
+            },
+            "delete": {
+              "--id": {
+                "a6e2f2": "用法： {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
+              }
+            },
+            "create": {
+              "--name": {
+                "8b1d79": "用法： {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
+              }
+            },
+            "import": {
+              "--name": {
+                "6eb800": "用法： {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
+              }
+            },
+            "install": {
+              "--id": {
+                "b99c56": "用法： {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
+              }
+            },
+            "test": {
+              "--id": {
+                "e1aed3": "用法： {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
+              }
+            },
+            "rotate": {
+              "--id": {
+                "9c3224": "用法： {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
+              }
+            },
+            "authorize-self": {
+              "--id": {
+                "b7ea2e": "用法： {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
+              }
+            },
+            "uninstall": {
+              "--id": {
+                "afcba0": "用法： {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
+              }
+            },
+            "list": {
+              "get": {
+                "2c92c6": "用法： {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
+              }
+            }
+          },
+          "ssh-2fa": {
+            "reveal": {
+              "--id": {
+                "a6c27f": "用法： {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
+              }
+            },
+            "retire": {
+              "--id": {
+                "6e1fa3": "用法： {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
+              }
+            },
+            "enroll": {
+              "--user": {
+                "081432": "用法： {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
+              }
+            },
+            "confirm": {
+              "--id": {
+                "9ee8a2": "用法： {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
+              }
+            },
+            "install": {
+              "--id": {
+                "dace06": "用法： {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
+              }
+            },
+            "uninstall": {
+              "--id": {
+                "0bb464": "用法： {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
+              }
+            },
+            "list": {
+              "enroll": {
+                "802ed0": "用法： {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
+              }
+            }
+          },
+          "ssl": {
+            "list": {
+              "get": {
+                "79c232": "用法： {{CLI_NAME}} ssl list|get --domain X [--json]\n"
+              }
+            },
+            "get": {
+              "--domain": {
+                "91c444": "用法： {{CLI_NAME}} ssl get --domain example.com [--json]\n"
+              }
+            }
+          },
+          "dns": {
+            "zone": {
+              "--zone": {
+                "ad30fa": "用法： {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              }
+            },
+            "zones": {
+              "zone": {
+                "5b8bda": "用法： {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
+              }
+            }
+          },
+          "nginx": {
+            "status": {
+              "list": {
+                "d67a16": "用法： {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
+              }
+            }
+          },
+          "host": {
+            "overview": {
+              "metrics": {
+                "93c828": "用法： {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
+              }
+            }
+          },
+          "logs": {
+            "sources": {
+              "overview": {
+                "79058c": "用法： {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
+              }
+            }
+          },
+          "services": {
+            "sub": {
+              "--unit": {
+                "4fe3fa": "用法： {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
+              }
+            },
+            "matrix": {
+              "start": {
+                "4f3a35": "用法： {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
+              }
+            }
+          },
+          "defense": {
+            "ban": {
+              "--ip": {
+                "cc22de": "用法： {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
+              }
+            },
+            "unban": {
+              "--ip": {
+                "46aa23": "用法： {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
+              }
+            },
+            "whitelist": {
+              "--action": {
+                "c1cbdf": "用法： {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
+              }
+            },
+            "status": {
+              "bans": {
+                "a8d96b": "用法： {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + current preset\n` +\n          `  fail2ban | firewall       # deep probes (honest)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # list + activePreset\n"
+              }
+            }
+          }
+        }
+      },
+      "system": {
+        "unit-install": {
+          "--enable": {
+            "--data-dir": {
+              "path": {
+                "33daa1": "用法： ysk-server system unit-install [--enable] [--data-dir PATH]\n"
+              }
+            }
+          }
+        }
+      },
+      "users": {
+        "create": {
+          "--username": {
+            "u": {
+              "--password": {
+                "7145c7": "用法： ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              }
+            }
+          }
+        },
+        "list": {
+          "--q": {
+            "text": {
+              "--role": {
+                "544685": "用法： ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
+              }
+            }
+          }
+        }
+      },
+      "rbac": {
+        "list": {
+          "policies": {
+            "330ade": "用法： ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # route→cap sample matrix\n"
+          }
+        }
+      },
+      "hosting": {
+        "postgres-provision": {
+          "--db": {
+            "name": {
+              "--user": {
+                "2c8889": "用法： ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (no host change). Pass --execute + YSK_EXECUTE=1 to apply.\n"
+              }
+            }
+          }
+        },
+        "mysql-provision": {
+          "--db": {
+            "name": {
+              "--user": {
+                "fc25aa": "用法： ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (no host change). Pass --execute + YSK_EXECUTE=1 to apply.\n"
+              }
+            }
+          }
+        },
+        "dns-zone": {
+          "--zone": {
+            "example": {
+              "com": {
+                "bdaa0d": "用法： ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              }
+            }
+          }
+        },
+        "powerdns-load": {
+          "--zone": {
+            "example": {
+              "com": {
+                "dba49c": "用法： ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
+              }
+            }
+          }
+        },
+        "email-apply": {
+          "--domain": {
+            "example": {
+              "com": {
+                "37d350": "用法： ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
+              }
+            }
+          }
+        },
+        "email-mailbox": {
+          "--domain": {
+            "x": {
+              "--local": {
+                "3d9be3": "用法： ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
+              }
+            }
+          }
+        },
+        "ftps-apply": {
+          "--domain": {
+            "files": {
+              "example": {
+                "284a7c": "用法： ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
+              }
+            }
+          }
+        },
+        "webmail-apply": {
+          "--domain": {
+            "webmail": {
+              "example": {
+                "2ad5b5": "用法： ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
+              }
+            }
+          }
+        },
+        "public-files": {
+          "--domain": {
+            "files": {
+              "example": {
+                "0e9013": "用法： ysk-server hosting public-files --domain files.example.com [--reload]\n"
+              }
+            }
+          }
+        },
+        "email-deliverability": {
+          "--domain": {
+            "example": {
+              "com": {
+                "8774a4": "用法： ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
+              }
+            }
+          }
+        },
+        "email-bootstrap": {
+          "--domain": {
+            "example": {
+              "com": {
+                "796da5": "用法： ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
+              }
+            }
+          }
+        }
+      },
+      "migrate": {
+        "post": {
+          "--job": {
+            "id": {
+              "--data-dir": {
+                "6a73cd": "用法： ysk-server migrate post --job <id> --data-dir PATH --execute\n"
+              }
+            }
+          }
+        },
+        "host": {
+          "--target": {
+            "root": {
+              "new": {
+                "3e94a2": "用法： ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
+              }
+            }
+          }
+        }
+      },
+      "x": {
+        "972912": "用法：\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # on target\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+      },
+      "hostingHelp": "用法：ysk-server hosting <sub>\n  危险操作默认 dry-run；加 --execute（+ YSK_EXECUTE=1）才真正应用\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # PTR/DNSBL/warmup 诚实报告\n  firewall-apply [--smtp] [--execute]\n",
+      "logsQuery": "用法：{{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  source 例：journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
+    },
+    "msg": {
+      "domain": {
+        "missing": {
+          "pass": {
+            "5be09b": "缺少域名 — 请传 --ip 以先创建域名\n"
+          }
+        }
+      },
+      "--root": {
+        "must": {
+          "be": {
+            "a84834": "--root must be public or project:<id>\n"
+          }
+        }
+      },
+      "need": {
+        "--content": {
+          "or": {
+            "4d7001": "Need --content or --file\n"
+          }
+        },
+        "at": {
+          "least": {
+            "7d311a": "Need at least one --member HOST[=role][:access]\n"
+          }
+        }
+      },
+      "action": {
+        "must": {
+          "be": {
+            "ba14c1": "action must be list|add|remove\n"
+          }
+        }
+      },
+      "use": {
+        "ysk-server": {
+          "backup": {
+            "ca67f4": "Use: ysk-server backup control-plane-restore --name ARCHIVE (not restore --project-id control-plane)\n"
+          }
+        }
+      },
+      "new": {
+        "domain": {
+          "requires": {
+            "986b78": "New domain requires --ip A.B.C.D (no placeholder defaults)\n"
+          }
+        }
+      },
+      "import-sync": {
+        "prefers": {
+          "fleet": {
+            "4d7590": "import-sync prefers fleet clusterSync payload; or --file snapshot.json\n"
+          }
+        }
+      },
+      "security": {
+        "control": {
+          "plane": {
+            "f59a63": "SECURITY: control plane bound publicly (0.0.0.0/::). Prefer 127.0.0.1 + reverse proxy / UFW.\n"
+          }
+        }
+      }
+    },
+    "err": {
+      "unknown": {
+        "email": {
+          "sub": {
+            "sub": {
+              "e37257": "未知 email 子命令： {{sub}}\n执行： ysk-server email help\n"
+            }
+          }
+        },
+        "cron": {
+          "sub": {
+            "sub": {
+              "e1a9ed": "未知 cron 子命令： {{sub}}\n执行： ysk-server cron help\n"
+            }
+          }
+        },
+        "files": {
+          "sub": {
+            "sub": {
+              "07ad7e": "未知 files 子命令： {{sub}}\n执行： ysk-server files help\n"
+            }
+          }
+        },
+        "store": {
+          "sub": {
+            "sub": {
+              "b7a083": "未知 store 子命令： {{sub}}\n执行： ysk-server store help\n"
+            }
+          }
+        },
+        "cdn": {
+          "subcommand": {
+            "sub": {
+              "76664f": "未知 cdn 子命令： {{sub}}\n执行： ysk-server cdn help\n"
+            }
+          }
+        },
+        "backup": {
+          "subcommand": {
+            "sub": {
+              "4092ad": "未知 backup 子命令： {{sub}}\n执行： ysk-server backup help\n"
+            }
+          }
+        }
+      }
+    },
+    "setup": {
+      "dryRunOk": "{{product}} setup dry-run 成功",
+      "dryRunNext": "再次执行时请去掉 --dry-run，以写入配置并初始化数据库",
+      "weakPassword": "管理员密码过弱或仍为默认。请传入强密码 --admin-password（至少 8 位，勿用 admin／常见默认），或本机开发设 YSK_ALLOW_INSECURE_DEFAULTS=1。",
+      "weakPasswordShort": "已拒绝过弱或默认管理员密码",
+      "nextStart": "启动（API + Web UI）：{{cli}} serve --config {{configPath}}",
+      "nextOpen": "打开 http://{{host}}:{{port}}/ 并以 {{user}} 登录",
+      "nextUnit": "Systemd unit 模板：{{unitPath}}",
+      "nextInstall": "安装 unit（root + YSK_EXECUTE）：{{cli}} system unit-install --enable --data-dir {{dataDir}}",
+      "nextExecute": "生产主机变更需要 YSK_EXECUTE=1 与 root",
+      "nextGolive": "上线：docs/deploy/go-live.md + ysk-server readiness --json",
+      "secPassword": "安全：请立即更改管理员密码（bootstrap 使用了弱／默认密码）",
+      "sec2fa": "安全：请在「账号安全 → 账户」启用管理员 2FA",
+      "secListen": "安全：正在监听所有接口 — 请放防火墙／反向代理之后；管理建议 127.0.0.1 + SSH tunnel",
+      "ok": "{{product}} setup 完成（数据库已初始化）",
+      "okInsecure": "{{product}} setup 完成（数据库已初始化）［不安全 bootstrap — 请改密码］"
+    }
   },
   "common": {
     "cancel": "取消",
@@ -725,6 +1949,11 @@
     "prodOk": "可作生产",
     "notFullyReady": "尚未完全就绪",
     "modeScore": "模式 {{mode}} · 分数 {{ready}}/{{total}}",
+    "mode": {
+      "degraded": "降级",
+      "production_capable": "可生产",
+      "normal": "正常"
+    },
     "details": "详情",
     "certExpiryTitle": "证书到期：",
     "certExpired": "已过期",
@@ -736,6 +1965,7 @@
     "warnCount": " · 警告 {{count}}",
     "applyAuditBadge": "套用 audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
     "executeBadge": "EXECUTE {{state}}",
+    "executeLabel": "系统变更",
     "go": "前往",
     "open": "打开",
     "noCriticalWarn": "目前无严重／警告通知",
@@ -1465,7 +2695,94 @@
     "createMailboxBtn": "建立邮箱",
     "localPartLabel": "本地部分",
     "localPartFullHint": "完整位址会是 {{local}}@{{domain}}",
-    "passwordOptionalHint8": "可选；至少 8 位才会写入杂凑"
+    "passwordOptionalHint8": "可选；至少 8 位才会写入杂凑",
+    "live": {
+      "noMx": "无 MX",
+      "mxLookupFailed": "MX 查询失败",
+      "noSpf": "无 SPF TXT",
+      "spfLookupFailed": "SPF 查询失败",
+      "noDkim": "无 DKIM TXT",
+      "dkimLookupFailed": "DKIM 查询失败",
+      "noDmarc": "无 DMARC",
+      "dmarcLookupFailed": "DMARC 查询失败",
+      "noPtr": "无 PTR",
+      "ptrLookupFailed": "PTR 查询失败",
+      "port25Open": "外发 TCP 25 似乎畅通（探测 gmail-smtp-in.l.google.com）",
+      "port25Blocked": "外发 TCP 25 探测失败 — 可能被封锁；请申请解封或改用中继",
+      "dnsblListed": "已列入：{{list}}",
+      "dnsblClean": "以下清单干净：{{list}}"
+    },
+    "deliv": {
+      "mx": "MX 记录",
+      "mxFix": "在 DNS 供应商新增 MX 指向邮件主机",
+      "spf": "SPF TXT",
+      "spfFix": "发布 v=spf1 并包含本机 IP",
+      "dkim": "DKIM TXT",
+      "dkimFix": "发布面板提供的 selector._domainkey TXT",
+      "dmarc": "DMARC TXT",
+      "dmarcFix": "发布 _dmarc 政策（可先 p=none）",
+      "ptr": "反向 DNS（PTR）",
+      "ptrFix": "在 VPS／云控制台设置 PTR 对齐邮件主机名 — 面板无法代设",
+      "port25": "外发 Port 25",
+      "port25Fix": "向主机商申请解封 Port 25，或设置 SMTP 中继（submission 587）",
+      "dnsbl": "DNSBL 声誉",
+      "dnsblFix": "于列出的服务除名；干净前勿大量发信",
+      "relay": "SMTP 中继（Port 25 被封锁时）",
+      "relayOptional": "Port 25 探测畅通 — 中继可选",
+      "relayPresent": "dataDir 已有中继设置（应用仍可能需 EXECUTE）",
+      "relayMissing": "未设置中继 — Port 25 持续封锁时必须设置",
+      "relayFix": "面板邮件 → 中继，或 ysk-server hosting email-bootstrap 加 relay",
+      "warmup": "暖机计划",
+      "warmupDetail": "{{phases}} 阶段 · 第 1 日最多 {{day1}} 封",
+      "warmupFix": "跟随阶段限额；勿用新 IP 对冷名单大量发送",
+      "honesty1": "面板从不保证全球 inbox 送达（Gmail／Outlook 过滤属外部）。",
+      "honesty2": "PTR 与 Port 25 属 VPS／网络供应商 — 非 YSK 控制平面可改。",
+      "honesty3": "MX／SPF／DKIM／DMARC 必须在权威 DNS 供应商发布。",
+      "honestyPortBlocked": "Port 25 似乎被封锁 — 大量发送前请用中继或申请解封。",
+      "honestyPortOk": "Port 25 探测成功 — 仍请监察退信与 DNSBL。"
+    },
+    "catchall": "Catch-all（全收）",
+    "webmailRoundcube": "Webmail（Roundcube）",
+    "warmup": {
+      "p1g1": "只发交易类／已知可靠收件人",
+      "p1g2": "监控退信；投诉率保持接近零",
+      "p1g3": "放量前确保 SPF／DKIM／DMARC／PTR 已生效",
+      "p2g1": "只向有互动的联系人缓慢扩张",
+      "p2g2": "每日查 DNSBL；被列入即暂停",
+      "p2g3": "若 Port 25 受限，优先用 587 submission 而非 bulk",
+      "p3g1": "指标保持干净再加倍量",
+      "p3g2": "名单分段；硬退信即移除",
+      "p4g1": "无封锁再接近正常量",
+      "p4g2": "持续监控 DMARC rua",
+      "c1": "PTR 对齐 HELO／EHLO（邮件主机名）",
+      "c2": "SPF + DKIM + DMARC 已发布并对齐",
+      "c3": "DNSBL 干净（Spamhaus／SpamCop／Barracuda）",
+      "c4": "外发 Port 25 畅通或已设中继",
+      "c5": "不使用购入的「bulk email」IP 段",
+      "c6": "考虑域名年龄／历史（新域名要更慢爬升）",
+      "noteNewIp": "视此 IP 为新 IP — 从第 1–3 日限额开始",
+      "noteOldIp": "既有 IP 在改设置后仍宜逐步爬升",
+      "noteProcess": "暖机是操作员流程；YSK 提供提示 + DNSBL，不假装营销 ESP 量"
+    },
+    "health": {
+      "dnsUnconfirmed": "DNS 记录（MX／SPF／DKIM）尚未确认",
+      "dmarcMissing": "缺少 DMARC — 强烈建议设置",
+      "ptrBad": "PTR 反向 DNS 缺失或不正确 — 请向 VPS 供应商申请",
+      "port25Blocked": "外发 Port 25 似乎被封锁 — 请申请解封或改用 SMTP 中继",
+      "port25Unknown": "Port 25 状态未知 — 请执行连通性检查"
+    },
+    "stack": {
+      "tlsNote": "SMTP／IMAP 用 Let’s Encrypt TLS 证书",
+      "externalNote": "送达率仍需外部 DNS／PTR／Port25"
+    },
+    "test": {
+      "defaultSubject": "YSK Server 邮件测试",
+      "needMta": "需要本机 MTA（Postfix）已安装，且 Port 25／中继已设置",
+      "checkSpam": "寄出后请查收件人垃圾箱与服务器邮件日志",
+      "hintDeferred": "若 deferred：查 Port 25 封锁或中继凭证",
+      "hintSpam": "若已接受但仍进垃圾：改善 SPF／DKIM／DMARC／PTR 并暖机",
+      "hintLogs": "检查 /var/log/mail.log 或 journalctl -u postfix"
+    }
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -2103,6 +3420,18 @@
       "RU-SPE": "St Petersburg"
     }
   },
+  "listToolbar": {
+    "searchPlaceholder": "搜索…",
+    "searchAria": "搜索列表",
+    "clearSearch": "清除搜索",
+    "clearAll": "清除筛选",
+    "resultCount": "{{count}} 项结果",
+    "showingOf": "显示 {{shown}} / {{total}}",
+    "activeFilters": "已应用 {{count}} 个筛选",
+    "noResults": "无匹配结果",
+    "noResultsHint": "试试其他关键词，或清除筛选。",
+    "searching": "搜索中…"
+  },
   "logViewer": {
     "banIpTitle": "到防护中心 ban {{ip}}"
   },
@@ -2117,7 +3446,8 @@
     "totpRequired": "此账户已开启 2FA，请输入 6 位验证码",
     "totpLabel": "双重验证码",
     "totpHint": "Authenticator 应用中的 6 位数字",
-    "submitting": "登录中…"
+    "submitting": "登录中…",
+    "sessionExpired": "登录已失效，请重新登录"
   },
   "logs": {
     "catSystem": "系统文件",
@@ -2237,7 +3567,21 @@
     "relatedOps": "相关运维",
     "relatedOpsDesc": "日志观测 vs 攻击应变分工",
     "scLogsLine": "观测 journal／文件／项目",
-    "scProtLine": "攻击应变、自动 ban（点 IP）"
+    "scProtLine": "攻击应变、自动 ban（点 IP）",
+    "journalVacuumTitle": "Journal 清理（vacuum）",
+    "journalSection": "Journal",
+    "sseLabel": "SSE",
+    "logrotateLabel": "logrotate",
+    "srcNginx": "nginx",
+    "srcSsh": "ssh",
+    "srcFail2ban": "fail2ban",
+    "srcAuthLog": "auth.log",
+    "srcNginxError": "nginx error",
+    "groupJournal": "Journal",
+    "groupVarLog": "/var/log",
+    "prioErr": "err+",
+    "prioWarn": "warn+",
+    "prioInfo": "info+"
   },
   "metrics": {
     "alert": {
@@ -3796,7 +5140,9 @@
       "n1010": "概览",
       "n1011": "標準庫 TcpListener（無額外 crate）；Cargo.toml",
       "n1012": "標準庫 net/http；go.mod；/ 與 /health",
-      "n1013": "模式：可生產",
+      "n1013": "模式：可生产",
+      "modeProductionCapable": "可生产",
+      "modeDegraded": "降级",
       "n1014": "模擬执行：未實際复制",
       "n1015": "模擬完成 — 未复制、未 reload（正式同步請關 dryRun）",
       "n1016": "模擬完成 — 正式同步仍需 root + YSK_EXECUTE",
@@ -5190,7 +6536,10 @@
       "t0794": "找不到接口 {{v0}}",
       "t0795": "hostname 失败: {{v0}}",
       "t0796": "pretty hostname 失败: {{v0}}",
-      "t0797": "timezone 失败: {{v0}}"
+      "t0797": "timezone 失败: {{v0}}",
+      "tScoreFrom": "分数={{score}} · 由 {{from}} 切换",
+      "appliedTag": "（已应用）",
+      "writtenTag": "（只写文件）"
     },
     "tpl": {
       "deleted": "已删除 {{name}}",
@@ -5336,6 +6685,56 @@
     "workflowTitle": "建议流程",
     "caveatsTitle": "注意与边界",
     "relatedTitle": "相关功能"
+  },
+  "playbooks": {
+    "discover-host": {
+      "name": "主机探索",
+      "description": "只读主机清单"
+    },
+    "nginx-health": {
+      "name": "Nginx 健康检查",
+      "description": "检查 nginx 服务状态"
+    },
+    "nginx-restart": {
+      "name": "Nginx 重启（高风险）",
+      "description": "审批后重启 nginx"
+    },
+    "local-llm-ops-only": {
+      "name": "仅本机 LLM 操作",
+      "description": "防护模式下紧急探索"
+    },
+    "disk-pressure": {
+      "name": "磁盘压力检查",
+      "description": "只读磁盘用量（df）"
+    },
+    "mail-stack-status": {
+      "name": "邮件堆栈状态",
+      "description": "检查 postfix + dovecot unit"
+    },
+    "security-units": {
+      "name": "安全 unit",
+      "description": "fail2ban + sshd 状态（只读）"
+    },
+    "web-stack-status": {
+      "name": "Web 堆栈状态",
+      "description": "nginx + php-fpm 探测"
+    },
+    "emergency-read-only": {
+      "name": "紧急只读扫视",
+      "description": "仅防护安全事实"
+    },
+    "backup-health": {
+      "name": "备份就绪",
+      "description": "备份就绪检查"
+    },
+    "db-stack-status": {
+      "name": "数据库堆栈状态",
+      "description": "数据库服务状态"
+    },
+    "ssl-nginx-check": {
+      "name": "SSL + Nginx 检查",
+      "description": "SSL 与 Nginx 检查"
+    }
   },
   "presetChips": {
     "customPlaceholder": "自定义…"
@@ -6131,6 +7530,13 @@
     "banShort": "封",
     "vhostLimits": "Vhost 限速",
     "eventStream": "事件流",
+    "eventKind": {
+      "preset": "防护档",
+      "auto_preset": "自动切档",
+      "cloudflare_ua": "Cloudflare",
+      "ban": "封禁",
+      "unban": "解封"
+    },
     "hours48": "48 小时",
     "geoipDb": "GeoIP 数据库",
     "refreshStatus": "刷新状态",
@@ -6272,7 +7678,13 @@
     "dangerPolicyDesc": "你正在为该角色加入 destructive 或 privilege 能力，或提高 maxLevel。请确认风险后再保存。",
     "needRbacPolicy": "需要 rbac.policy 才能编辑角色策略。",
     "adminLockedFull": "Admin 全开（锁定）",
-    "adminLockedHint": "Admin 系统角色永远功能全开，不可削减。请改 Operator/Viewer/Agent，或对非 admin 用户做个人加减。"
+    "adminLockedHint": "Admin 系统角色永远功能全开，不可削减。请改 Operator/Viewer/Agent，或对非 admin 用户做个人加减。",
+    "maxLevelHint": "高于此等级的能力组会自动锁定，无法开启。",
+    "capabilities": "能力清单",
+    "capabilitiesHint": "勾选此角色可用的功能。橙点表示与系统默认不同。",
+    "enabledCount": "已开 {{enabled}}／{{total}}",
+    "bandAboveMax": "高于最高等级",
+    "dirtyHint": "已自定义（与系统默认不同）"
   },
   "readiness": {
     "cat": {
@@ -6352,7 +7764,28 @@
     "notProbedDesc": "按「重新探测」开始只读就绪检查。",
     "runCheck": "执行就绪检查",
     "reportFormatError": "就绪报告格式错误",
-    "checkFailedHttp": "就绪检查失败（{{status}}）"
+    "checkFailedHttp": "就绪检查失败（{{status}}）",
+    "itemAdminPassword": "管理员密码强度",
+    "itemAdminPasswordWeak": "{{count}} 个管理员仍标记 must_change_password／不安全 bootstrap — 上线前请更改",
+    "itemAdminPasswordOk": "管理员账户无 bootstrap／弱密码标记",
+    "itemAdminPasswordFix": "请到账号安全或用户页更改管理员密码",
+    "itemListenBind": "控制平面监听绑定",
+    "itemListenBindPublic": "可能对外监听（0.0.0.0/::）。建议 127.0.0.1 + 反向代理／防火墙",
+    "itemListenBindLoopback": "建议 loopback 绑定（默认 127.0.0.1）",
+    "itemDataDirPerms": "dataDir 权限",
+    "itemDataDirWorldW": "请将 dataDir chmod 750（或 700），并 chown 给面板用户",
+    "itemDataDirOtherR": "建议 dataDir chmod 750，避免其他用户读取控制平面 JSON",
+    "itemRustToolchain": "Rust 工具链",
+    "itemWebBuildFix": "执行 pnpm --filter @ysk/web build",
+    "itemStateStore": "控制平面状态存储",
+    "itemStateStoreSqliteHint": "可选：YSK_STORE=sqlite 使用 WAL document store",
+    "itemBackupFreshness": "最近完整备份",
+    "itemBackupNone": "未记录 last_backup_run — 请执行 backup all 或设置排程",
+    "itemBackupFix": "ysk-server backup all · backup schedule --install",
+    "itemFleetSessions": "Fleet agent 会话",
+    "itemFleetNone": "单机可选；多边缘需 agent run + heartbeat",
+    "itemFleetNoHb": "已注册但无 heartbeat — 请启动边缘 agent",
+    "itemPdnsutil": "pdnsutil（PowerDNS）"
   },
   "redis": {
     "neverExpire": "永不过期",
@@ -7151,7 +8584,19 @@
     "downloaded": "已下载 {{name}}",
     "download": "下载",
     "syncConfirmTitle": "同步 nginx 到系统？",
-    "syncConfirmDesc": "将 managed nginx conf 同步到 /etc/nginx/conf.d 并 reload。需 root + YSK_EXECUTE。"
+    "syncConfirmDesc": "将 managed nginx conf 同步到 /etc/nginx/conf.d 并 reload。需 root + YSK_EXECUTE。",
+    "uptime": "运行时间",
+    "load1m": "负载 1 分钟",
+    "executeLabel": "EXECUTE",
+    "rootLabel": "Root",
+    "managedLabel": "托管",
+    "managedCount": "托管配置",
+    "exportsCount": "导出文件",
+    "managedNginxTitle": "托管 Nginx",
+    "exportPath": "导出路径",
+    "mode": "模式",
+    "managedConf": "托管 conf",
+    "dryRunFlag": "dry-run"
   },
   "systemd": {
     "enabled": "已启用",
@@ -7353,7 +8798,8 @@
     "appliedPackage": "已应用软件包更新",
     "updateFailed": "更新失败",
     "updateIncomplete": "更新未完成",
-    "appliedUpdate": "已应用更新"
+    "appliedUpdate": "已应用更新",
+    "aptCandidate": "apt Candidate（候选版本）"
   },
   "users": {
     "userCount": "{{count}} 用户",

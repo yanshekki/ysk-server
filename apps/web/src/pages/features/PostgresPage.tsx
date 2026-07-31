@@ -21,6 +21,7 @@ import {
   FormLayout,
   Modal,
   OpsResultPanel,
+  ServerListFilters,
   SoftwareInstallBanner,
   FormHint,
   CheckboxField,
@@ -226,6 +227,18 @@ export function PostgresPage() {
         <CardSection title={t('db.tabDatabasesSimple', { count: dbs.items.length })}>
           <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+            filters={
+              <ServerListFilters
+                q={dbs.q}
+                setQ={dbs.setQ}
+                searching={dbs.searching}
+                loading={dbs.listLoading}
+                total={dbs.total}
+                shown={dbs.items.length}
+                activeFilterCount={dbs.activeFilterCount}
+                clear={dbs.clearSearch}
+              />
+            }
             columns={[
               { key: 'name', header: t('common.database'), render: (r) => <strong>{String(r.name)}</strong> },
               {

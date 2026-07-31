@@ -81,7 +81,12 @@ export interface SoftwareSpec {
 
 /** Resolve display title under current request locale. */
 export function resolveSoftwareTitle(spec: SoftwareSpec): string {
-  return spec.titleKey ? tl(spec.titleKey) : spec.title;
+  const catalogKey = `catalog.sw.${spec.id.replace(/-/g, '_')}`;
+  const fromCatalog = tl(catalogKey);
+  // tl returns key itself when missing — prefer catalog when translated
+  if (fromCatalog && fromCatalog !== catalogKey) return fromCatalog;
+  if (spec.titleKey) return tl(spec.titleKey);
+  return spec.title;
 }
 
 /**

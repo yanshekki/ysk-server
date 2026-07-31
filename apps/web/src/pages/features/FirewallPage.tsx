@@ -24,6 +24,7 @@ import {
   SoftwareInstallBanner,
   PageTabs,
   ConfirmDialog,
+  ServerListFilters,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -72,7 +73,14 @@ export function FirewallPage() {
   const [portInput, setPortInput] = useState('8080');
   const [portProto, setPortProto] = useState<'tcp' | 'udp'>('tcp');
   const [delRuleNum, setDelRuleNum] = useState<number | null>(null);
+  const [ruleQ, setRuleQ] = useState('');
+  const [debouncedRuleQ, setDebouncedRuleQ] = useState('');
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+
+  useEffect(() => {
+    const tmr = window.setTimeout(() => setDebouncedRuleQ(ruleQ.trim()), 300);
+    return () => window.clearTimeout(tmr);
+  }, [ruleQ]);
 
   const profiles = useMemo(
     () =>
@@ -87,11 +95,22 @@ export function FirewallPage() {
   const refresh = useCallback(async () => {
     setLoadError(null);
     try {
-      setStatus(await systemApi.firewallStatus());
+      const q = debouncedRuleQ
+        ? `?q=${encodeURIComponent(debouncedRuleQ)}`
+        : '';
+      // Prefer query-aware GET when searching
+      if (q) {
+        const { api } = await import('../../shared/services/api');
+        setStatus(
+          await api.requestRaw(`/api/v1/system/firewall/status${q}`),
+        );
+      } else {
+        setStatus(await systemApi.firewallStatus());
+      }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, [t]);
+  }, [t, debouncedRuleQ]);
 
   useEffect(() => {
     void refresh();
@@ -238,6 +257,26 @@ export function FirewallPage() {
                 <span className="muted u-text-sm">ufw status numbered</span>
               </div>
               <DataTable
+                filters={
+                  <ServerListFilters
+                    q={ruleQ}
+                    setQ={setRuleQ}
+                    searching={Boolean(ruleQ && ruleQ !== debouncedRuleQ)}
+                    loading={busy}
+                    total={
+                      (status as { rulesMeta?: { total?: number } } | null)?.rulesMeta
+                        ?.total ??
+                      status?.numberedRules?.length ??
+                      0
+                    }
+                    shown={status?.numberedRules?.length ?? 0}
+                    activeFilterCount={ruleQ.trim() ? 1 : 0}
+                    clear={() => {
+                      setRuleQ('');
+                      setDebouncedRuleQ('');
+                    }}
+                  />
+                }
                 columns={[
                   {
                     key: 'num',

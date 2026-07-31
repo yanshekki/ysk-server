@@ -54,6 +54,7 @@ describe('setup + persistence', () => {
         adminUsername: 'admin',
         adminPassword: 'admin',
         force: true,
+        allowInsecureDefaults: true,
       });
       expect(result.ok).toBe(true);
       expect(existsSync(join(dir, 'ysk.json'))).toBe(true);
@@ -103,7 +104,13 @@ describe('CLI projects + templates', () => {
       return true;
     }) as typeof process.stdout.write;
     try {
-      runSetup({ dataDir: dir, nonInteractive: true, force: true, adminPassword: 'admin' });
+      runSetup({
+        dataDir: dir,
+        nonInteractive: true,
+        force: true,
+        adminPassword: 'admin',
+        allowInsecureDefaults: true,
+      });
       logs.length = 0;
       const codeTpl = await main(['node', 'ysk-server', 'templates', '--json']);
       expect(codeTpl).toBe(0);
@@ -154,7 +161,13 @@ describe('update', () => {
 describe('HTTP control plane', () => {
   it('boots health + login + project + tool fs.read', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-http-'));
-    runSetup({ dataDir: dir, nonInteractive: true, force: true, adminPassword: 'admin' });
+    runSetup({
+        dataDir: dir,
+        nonInteractive: true,
+        force: true,
+        adminPassword: 'admin',
+        allowInsecureDefaults: true,
+      });
     const ctx = createAppContext({ version: VERSION, dataDir: dir, adminPassword: 'admin' });
     const server = createHttpServer(ctx);
     await listen(server, '127.0.0.1', 0);
@@ -242,8 +255,10 @@ describe('HTTP control plane', () => {
         nonInteractive: true,
         listenPort: 19001,
         adminUsername: 'admin',
+        adminPassword: 'admin',
         locale: 'en',
         force: true,
+        allowInsecureDefaults: true,
       });
       const cfg = loadConfigFile(setup.data!.configPath);
       const ctx = createAppContext({ version: VERSION, config: cfg, dataDir: dir });

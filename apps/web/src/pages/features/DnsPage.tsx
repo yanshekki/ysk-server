@@ -21,6 +21,7 @@ import {
   FormHint,
   PresetChips,
   SegRadio,
+  ServerListFilters,
   buttonClassName,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -424,7 +425,7 @@ export function DnsPage() {
             ) : null}
             <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
-                  title={t('dns.zonesTitle', { count: zones.items.length })}
+                  title={t('dns.zonesTitle', { count: zones.total })}
                   description={t('dns.zonesDesc')}
                   toolbar={
                     <ActionBar>
@@ -432,6 +433,18 @@ export function DnsPage() {
                         {t('dns.createZone')}
                       </Button>
                     </ActionBar>
+                  }
+                  filters={
+                    <ServerListFilters
+                      q={zones.q}
+                      setQ={zones.setQ}
+                      searching={zones.searching}
+                      loading={zones.listLoading}
+                      total={zones.total}
+                      shown={zones.items.length}
+                      activeFilterCount={zones.activeFilterCount}
+                      clear={zones.clearSearch}
+                    />
                   }
                   columns={[
                     {
@@ -665,6 +678,18 @@ export function DnsPage() {
                     </div>
 
                     <DataTable
+                      filters={
+                        <ServerListFilters
+                          q={records.q}
+                          setQ={records.setQ}
+                          searching={records.searching}
+                          loading={records.listLoading}
+                          total={records.total}
+                          shown={records.items.length}
+                          activeFilterCount={records.activeFilterCount}
+                          clear={records.clearSearch}
+                        />
+                      }
                       columns={[
                         { key: 'type', header: t('dns.colType'), render: (r) => String(r.type) },
                         { key: 'name', header: t('dns.colName'), render: (r) => String(r.name) },

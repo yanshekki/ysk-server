@@ -16,7 +16,11 @@ export function useUpdates() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const load = useCallback(async (refresh = false, osv = false) => {
+  const load = useCallback(async (
+    refresh = false,
+    osv = false,
+    listQuery?: { q?: string; risk?: string; upgradable?: string; approval?: string },
+  ) => {
     setError(null);
     setBusy(true);
     try {
@@ -40,23 +44,28 @@ export function useUpdates() {
             .join(' · '),
         );
       } else {
-        const inv = await updatesApi.inventory();
+        const inv = await updatesApi.inventory(listQuery);
+        // Prefer filtered inventory rows (backend ListQuery) when present
+        const listMeta = (inv as { listMeta?: { total?: number } }).listMeta;
+        const invRows = inv.inventory ?? [];
         const merged =
-          inv.advice?.length > 0
+          inv.advice?.length > 0 && !listQuery?.q && !listQuery?.risk && !listQuery?.upgradable && !listQuery?.approval
             ? inv.advice
-            : (inv.inventory ?? []).map((i) => ({
-                packageName: i.packageName,
-                currentVersion: i.currentVersion,
-                // never invent candidateVersion = current (fake upgrade signal)
-                candidateVersion: i.candidateVersion,
-                advice: 'skip' as const,
-                risk: 'low' as const,
-                cves: [] as string[],
-                requiresApproval: false,
-                summary: '',
-              }));
-        setInventory(merged.slice(0, 120));
+            : invRows.length > 0
+              ? invRows.map((i) => ({
+                  packageName: String(i.packageName ?? (i as { name?: string }).name ?? ''),
+                  currentVersion: String(i.currentVersion ?? (i as { version?: string }).version ?? ''),
+                  candidateVersion: i.candidateVersion as string | undefined,
+                  advice: 'skip' as const,
+                  risk: (i.risk as AdviceRow['risk']) ?? 'low',
+                  cves: [] as string[],
+                  requiresApproval: Boolean((i as { needsApproval?: boolean }).needsApproval),
+                  summary: '',
+                }))
+              : (inv.advice ?? []);
+        setInventory(merged.slice(0, 200));
         setLastAt(inv.collectedAt ?? null);
+        void listMeta;
       }
       try {
         const self = await updatesApi.self();

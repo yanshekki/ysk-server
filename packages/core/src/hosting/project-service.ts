@@ -64,6 +64,8 @@ export class ProjectService {
     runtimeVersion?: string;
     env?: 'staging' | 'production';
     actor: string;
+    /** Panel user id for package quota ownership */
+    actorUserId?: string;
     /** Optional one-click template */
     templateId?: string;
     forceTemplate?: boolean;
@@ -198,6 +200,7 @@ export class ProjectService {
       os_provisioned: osProvision.ok,
       force_https: false,
       hsts: false,
+      owner_user_id: input.actorUserId,
       created_at: now,
       updated_at: now };
     this.projects.insert(row);
@@ -287,6 +290,15 @@ export class ProjectService {
     if (osProvision.ok) {
       this.projects.updateMeta(id, { home_dir: canonicalHome });
       this.projects.setOsProvisioned(id, true);
+      // Sensible default systemd limits when operator never set any
+      if (!row.memory_max || row.cpu_quota_percent == null) {
+        this.projects.updateRuntimeState(id, {
+          memory_max: row.memory_max ?? '512M',
+          cpu_quota_percent: row.cpu_quota_percent ?? 50,
+          tasks_max: row.tasks_max ?? 256,
+          limit_nofile: row.limit_nofile ?? 4096,
+        });
+      }
     } else {
       this.projects.setOsProvisioned(id, false);
     }
@@ -302,6 +314,73 @@ export class ProjectService {
       requiresExecute: false,
       requiresRoot: false,
       homeDir: osProvision.ok ? canonicalHome : previousHome };
+  }
+
+  /**
+   * Bulk provision OS isolation for projects that need it (root + EXECUTE).
+   */
+  async provisionOsIsolationAll(
+    actor: string,
+    opts?: { limit?: number; projectIds?: string[] },
+  ): Promise<{
+    ok: boolean;
+    attempted: number;
+    succeeded: number;
+    failed: number;
+    results: Array<{ id: string; name: string; ok: boolean; detail: string }>;
+    requiresExecute: boolean;
+    requiresRoot: boolean;
+  }> {
+    if (!this.host.executeEnabled() || !this.host.isRoot()) {
+      return {
+        ok: false,
+        attempted: 0,
+        succeeded: 0,
+        failed: 0,
+        results: [],
+        requiresExecute: !this.host.executeEnabled(),
+        requiresRoot: !this.host.isRoot(),
+      };
+    }
+    const { listIsolationReport } = await import('./project-isolation-status.js');
+    const snaps = this.projects.list().map((p) => ({
+      id: p.id,
+      name: p.name,
+      linuxUser: p.linux_user,
+      homeDir: p.home_dir,
+      osProvisioned: Boolean(p.os_provisioned),
+      ownerUserId: p.owner_user_id,
+    }));
+    let need = listIsolationReport(snaps).items.filter((i) => i.needsMigration);
+    if (opts?.projectIds?.length) {
+      const set = new Set(opts.projectIds);
+      need = need.filter((i) => set.has(i.projectId));
+    }
+    const limit = Math.min(50, opts?.limit ?? 20);
+    need = need.slice(0, limit);
+    const results: Array<{ id: string; name: string; ok: boolean; detail: string }> = [];
+    let succeeded = 0;
+    let failed = 0;
+    for (const row of need) {
+      const r = await this.provisionOsIsolation(row.projectId, actor);
+      if (r.ok) succeeded++;
+      else failed++;
+      results.push({
+        id: row.projectId,
+        name: row.name,
+        ok: r.ok,
+        detail: r.osProvision.detail,
+      });
+    }
+    return {
+      ok: failed === 0,
+      attempted: results.length,
+      succeeded,
+      failed,
+      results,
+      requiresExecute: false,
+      requiresRoot: false,
+    };
   }
 
   /**
@@ -667,6 +746,7 @@ function toDto(row: ProjectRow): ProjectDto {
     linuxUser: row.linux_user,
     linuxGroup: row.linux_group,
     homeDir: row.home_dir,
+    ownerUserId: row.owner_user_id,
     runtime: row.runtime,
     runtimeVersion: normalizeRuntimeVersion(row.runtime, row.runtime_version) || undefined,
     env: row.env,

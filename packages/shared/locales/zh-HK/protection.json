@@ -309,6 +309,13 @@
   "banShort": "封",
   "vhostLimits": "Vhost 限速",
   "eventStream": "事件流",
+  "eventKind": {
+    "preset": "防護檔",
+    "auto_preset": "自動切檔",
+    "cloudflare_ua": "Cloudflare",
+    "ban": "封禁",
+    "unban": "解封"
+  },
   "hours48": "48 小時",
   "geoipDb": "GeoIP 資料庫",
   "refreshStatus": "重新整理狀態",

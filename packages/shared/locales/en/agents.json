@@ -120,5 +120,11 @@
   "wroteUnitMsg": "Wrote {{kind}} unit settings",
   "writeFailed": "Write failed",
   "installedMsg": "Installed {{kind}}",
-  "installIncomplete": "Install incomplete"
+  "installIncomplete": "Install incomplete",
+  "badgeDryRun": "dry-run",
+  "badgeBlocked": "blocked",
+  "labelStderr": "stderr",
+  "labelAckCli": "ack + CLI JSON",
+  "labelStdoutBody": "CLI stdout body",
+  "resultOuterHint": "Outer result is CLI --json stdout."
 }

@@ -32,12 +32,34 @@ export function effectiveCaps(ctx: AppContext, user: UserDto): string[] {
   });
 }
 
-/** Paths that may mutate without panel session (public / consume). */
+/**
+ * Paths that skip central capability gate:
+ * - public auth (login / webauthn)
+ * - self-service auth mutations (session already authenticated in handler, or public)
+ * - agent fleet register (device bootstrap; agent token checked in handler if any)
+ * - webmail SSO consume
+ */
 const PUBLIC_MUTATING_PREFIXES = [
   '/api/v1/email/webmail/sso/consume',
   '/api/v1/auth/login',
-  '/api/v1/auth/webauthn/login',
+  '/api/v1/auth/logout',
+  '/api/v1/auth/locale',
+  '/api/v1/auth/totp',
+  '/api/v1/auth/sessions',
+  '/api/v1/auth/devices',
+  '/api/v1/auth/webauthn',
+  '/api/v1/auth/api-keys', // handler still checks; self-service keys
+  '/api/v1/agents/register',
+  '/api/v1/fleet/agents/register',
 ];
+
+/** Edge agent poller paths — no panel session (register already public). */
+function isFleetAgentPublicMutating(pathname: string): boolean {
+  return (
+    /^\/api\/v1\/fleet\/agents\/[^/]+\/heartbeat$/.test(pathname) ||
+    /^\/api\/v1\/fleet\/commands\/[^/]+\/ack$/.test(pathname)
+  );
+}
 
 /**
  * Central gate for mutating /api/v1 routes listed in MUTATING_ROUTE_CAP_RULES.
@@ -54,6 +76,9 @@ export function enforceMutatingRouteCaps(
   const m = method.toUpperCase();
   if (m !== 'POST' && m !== 'PUT' && m !== 'PATCH' && m !== 'DELETE') return;
   if (PUBLIC_MUTATING_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return;
+  }
+  if (isFleetAgentPublicMutating(pathname)) {
     return;
   }
   const cap = matchMutatingRouteCap(m, pathname);

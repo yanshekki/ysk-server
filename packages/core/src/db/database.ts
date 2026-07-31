@@ -1,21 +1,44 @@
 /**
- * Open durable control-plane database (JSON store — portable, no native deps).
+ * Open durable control-plane database.
+ *
+ * Backends (D4):
+ * - json (default): atomic ysk.json
+ * - sqlite: better-sqlite3 document blob (YSK_STORE=sqlite or path ends .sqlite)
+ * - postgres: optional pg + YSK_DATABASE_URL
+ *
+ * All backends are JsonStore (or subclass) — same snapshot API.
  */
 
-import { JsonStore, type YskDatabase } from './store.js';
+import type { YskDatabase } from './store.js';
+import {
+  openDocumentStoreSync,
+  openDocumentStore,
+  type OpenStoreOptions,
+  type StoreBackendKind,
+} from './document-store.js';
+
+export type { StoreBackendKind, OpenStoreOptions };
 
 /**
- * Open (or create) the control-plane database file.
- * Path conventionally ends with `.sqlite` or `.json`; both accepted.
+ * Open (or create) the control-plane database.
+ * Env: YSK_STORE=json|sqlite|postgres · YSK_DATABASE_URL for postgres.
  */
-export function openDatabase(dbPath: string): YskDatabase {
-  // Prefer .json for clarity when creating new; keep caller path for compatibility
-  const path = dbPath.endsWith('.sqlite') ? dbPath.replace(/\.sqlite$/, '.json') : dbPath;
-  return new JsonStore(path);
+export function openDatabase(dbPath: string, opts?: OpenStoreOptions): YskDatabase {
+  const path = opts?.path ?? dbPath;
+  return openDocumentStoreSync({ ...opts, path });
+}
+
+/** Async alias (same as sync for document backends). */
+export async function openDatabaseAsync(
+  dbPath: string,
+  opts?: OpenStoreOptions,
+): Promise<YskDatabase> {
+  const path = opts?.path ?? dbPath;
+  return openDocumentStore({ ...opts, path });
 }
 
 export function migrate(_db: YskDatabase): void {
-  // schema is implicit in JsonStore
+  // Document backends need no SQL migrations; schema.ts reserved for relational mode
 }
 
 export function closeDatabase(db: YskDatabase): void {

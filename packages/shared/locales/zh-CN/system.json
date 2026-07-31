@@ -104,5 +104,17 @@
   "downloaded": "已下载 {{name}}",
   "download": "下载",
   "syncConfirmTitle": "同步 nginx 到系统？",
-  "syncConfirmDesc": "将 managed nginx conf 同步到 /etc/nginx/conf.d 并 reload。需 root + YSK_EXECUTE。"
+  "syncConfirmDesc": "将 managed nginx conf 同步到 /etc/nginx/conf.d 并 reload。需 root + YSK_EXECUTE。",
+  "uptime": "运行时间",
+  "load1m": "负载 1 分钟",
+  "executeLabel": "EXECUTE",
+  "rootLabel": "Root",
+  "managedLabel": "托管",
+  "managedCount": "托管配置",
+  "exportsCount": "导出文件",
+  "managedNginxTitle": "托管 Nginx",
+  "exportPath": "导出路径",
+  "mode": "模式",
+  "managedConf": "托管 conf",
+  "dryRunFlag": "dry-run"
 }

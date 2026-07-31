@@ -96,8 +96,24 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     typeof versionOrOpts === 'string' ? { version: versionOrOpts } : versionOrOpts;
 
   const dataDir = opts.dataDir ?? opts.config?.dataDir ?? join(process.cwd(), '.ysk');
-  const dbPath = opts.dbPath ?? join(dataDir, 'ysk.json');
-  const db = openDatabase(dbPath);
+  // D4 backends: YSK_STORE=json|sqlite|postgres · path auto-selects .json / .sqlite
+  const storeKind = (process.env.YSK_STORE ?? process.env.YSK_DB_BACKEND ?? 'json')
+    .trim()
+    .toLowerCase();
+  const defaultDbFile =
+    storeKind === 'sqlite'
+      ? 'ysk.sqlite'
+      : storeKind === 'postgres'
+        ? 'ysk.json' // mirror; real data in YSK_DATABASE_URL
+        : 'ysk.json';
+  const dbPath = opts.dbPath ?? join(dataDir, defaultDbFile);
+  const db = openDatabase(dbPath, {
+    kind:
+      storeKind === 'sqlite' || storeKind === 'postgres' || storeKind === 'json'
+        ? (storeKind as 'json' | 'sqlite' | 'postgres')
+        : undefined,
+    url: process.env.YSK_DATABASE_URL ?? process.env.DATABASE_URL,
+  });
 
   const users = new UserRepository(db);
   const sessions = new SessionRepository(db);

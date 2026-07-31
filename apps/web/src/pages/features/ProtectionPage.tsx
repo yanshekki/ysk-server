@@ -26,12 +26,14 @@ import {
   PageTabs,
   ConfirmDialog,
   PromptDialog,
+  ServerListFilters,
   buttonClassName,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { useServerList } from '../../shared/hooks/useServerList';
 import {
   GEO_ASN_PROVIDERS,
   getGeoContinents,
@@ -271,8 +273,10 @@ function relTime(
   return new Date(iso).toLocaleString();
 }
 
+type BanRow = { ip: string; source: string; jail?: string; reason?: string };
+
 export function ProtectionPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const [tab, setTab] = usePageTab(TABS, 'command');
   const [status, setStatus] = useState<DefenseStatus | null>(null);
@@ -281,6 +285,11 @@ export function ProtectionPage() {
   const [banIp, setBanIp] = useState('');
   const [banReason, setBanReason] = useState('');
   const [banMethod, setBanMethod] = useState<'fail2ban' | 'ufw' | 'both'>('fail2ban');
+  const banList = useServerList<BanRow>({
+    path: '/api/v1/defense/bans',
+    debounceMs: 300,
+    enabled: tab === 'bans' || tab === 'command',
+  });
   const [suspects, setSuspects] = useState<SuspectIp[]>([]);
   const [suspectNotes, setSuspectNotes] = useState<string[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -469,7 +478,7 @@ export function ProtectionPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t, i18n.language]);
 
   useEffect(() => {
     void refresh();
@@ -1890,7 +1899,9 @@ export function ProtectionPage() {
             </FormHint>
 
             <DataTable
-              title={t('protection.activeBansTitle', { count: status?.bans.count ?? 0 })}
+              title={t('protection.activeBansTitle', {
+                count: banList.meta?.total ?? status?.bans.count ?? banList.items.length,
+              })}
               description={t('protection.activeBansDesc')}
               toolbar={
                 <ActionBar>
@@ -1900,7 +1911,52 @@ export function ProtectionPage() {
                   >
                     {t('protection.f2bTool')}
                   </Link>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() =>
+                      void run(async () => {
+                        const r = (await api.requestRaw('/api/v1/defense/stack/apply', {
+                          method: 'POST',
+                          body: JSON.stringify({ execute: true }),
+                        })) as OpsResultLike;
+                        if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
+                        await refresh();
+                        await banList.refresh();
+                        return r;
+                      }, t('protection.stackApplyDone', { defaultValue: 'Defense stack apply requested' }))
+                    }
+                  >
+                    {t('protection.stackApply', { defaultValue: 'Apply stack (UFW+f2b+preset)' })}
+                  </Button>
                 </ActionBar>
+              }
+              filters={
+                <ServerListFilters
+                  q={banList.q}
+                  setQ={banList.setQ}
+                  searching={banList.searching}
+                  loading={banList.loading}
+                  total={banList.meta?.total ?? banList.items.length}
+                  shown={banList.items.length}
+                  activeFilterCount={banList.activeFilterCount}
+                  clear={banList.clear}
+                  chipGroups={[
+                    {
+                      key: 'source',
+                      allLabel: t('common.all', { defaultValue: 'All' }),
+                      value: banList.filters.source ?? '',
+                      onChange: (v) => banList.setFilter('source', v),
+                      chips: [
+                        { id: 'fail2ban', label: 'fail2ban' },
+                        { id: 'panel', label: 'panel' },
+                        { id: 'ufw', label: 'ufw' },
+                        { id: 'auto', label: 'auto' },
+                      ],
+                    },
+                  ]}
+                />
               }
               columns={[
                 {
@@ -1916,7 +1972,7 @@ export function ProtectionPage() {
                     `${b.source}${b.jail ? ` · ${b.jail}` : ''}`,
                 },
               ]}
-              rows={status?.bans.items ?? []}
+              rows={banList.items.length ? banList.items : status?.bans.items ?? []}
               rowKey={(b) => `${b.source}-${b.jail}-${b.ip}`}
               rowActions={(b) => (
                 <ActionBar align="end">
@@ -2236,7 +2292,11 @@ export function ProtectionPage() {
                       <li key={`${e.at}-${i}`}>
                         <span className="def-timeline__time">{relTime(e.at, t)}</span>
                         <div>
-                          <Badge tone="info">{e.kind}</Badge>{' '}
+                          <Badge tone="info">
+                            {t(`protection.eventKind.${e.kind}`, {
+                              defaultValue: e.kind.replace(/_/g, ' '),
+                            })}
+                          </Badge>{' '}
                           <strong>{e.title}</strong>
                           {e.detail ? <p className="muted u-text-sm">{e.detail}</p> : null}
                         </div>

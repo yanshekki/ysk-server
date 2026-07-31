@@ -10,3 +10,4 @@ export * from './api-keys.js';
 export * from './ssh-identity/index.js';
 export * from './ssh-2fa/index.js';
 export * from './mfa/index.js';
+export * from './password-policy.js';

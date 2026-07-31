@@ -1,0 +1,31 @@
+{
+  "sw": {
+    "vsftpd": "vsftpd（FTPS）",
+    "db_util": "db-util（FTP 用戶資料庫）",
+    "nginx": "Nginx",
+    "certbot": "Certbot（Let's Encrypt）",
+    "mysql_client": "MySQL／MariaDB 客戶端",
+    "mysql_server": "MySQL 伺服器",
+    "mariadb_server": "MariaDB 伺服器",
+    "postgresql_client": "PostgreSQL 客戶端",
+    "postgresql": "PostgreSQL 伺服器",
+    "redis_tools": "Redis 客戶端",
+    "redis_server": "Redis 伺服器",
+    "ufw": "UFW 防火牆",
+    "fail2ban": "fail2ban",
+    "postfix": "Postfix",
+    "dovecot": "Dovecot",
+    "opendkim": "OpenDKIM",
+    "pdns_server": "PowerDNS",
+    "git": "Git",
+    "node": "Node.js",
+    "php": "PHP",
+    "python": "Python 3",
+    "go": "Go",
+    "rust": "Rust（cargo）"
+  },
+  "php": {
+    "session": "工作階段",
+    "opcache": "OPcache"
+  }
+}

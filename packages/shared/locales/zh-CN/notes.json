@@ -1127,7 +1127,9 @@
     "n1010": "概览",
     "n1011": "標準庫 TcpListener（無額外 crate）；Cargo.toml",
     "n1012": "標準庫 net/http；go.mod；/ 與 /health",
-    "n1013": "模式：可生產",
+    "n1013": "模式：可生产",
+    "modeProductionCapable": "可生产",
+    "modeDegraded": "降级",
     "n1014": "模擬执行：未實際复制",
     "n1015": "模擬完成 — 未复制、未 reload（正式同步請關 dryRun）",
     "n1016": "模擬完成 — 正式同步仍需 root + YSK_EXECUTE",
@@ -2521,7 +2523,10 @@
     "t0794": "找不到接口 {{v0}}",
     "t0795": "hostname 失败: {{v0}}",
     "t0796": "pretty hostname 失败: {{v0}}",
-    "t0797": "timezone 失败: {{v0}}"
+    "t0797": "timezone 失败: {{v0}}",
+    "tScoreFrom": "分数={{score}} · 由 {{from}} 切换",
+    "appliedTag": "（已应用）",
+    "writtenTag": "（只写文件）"
   },
   "tpl": {
     "deleted": "已删除 {{name}}",

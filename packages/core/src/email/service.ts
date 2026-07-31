@@ -220,6 +220,8 @@ export class EmailService {
     input: {
       localPart: string;
       actor: string;
+      /** Panel user for package quota ownership */
+      actorUserId?: string;
       password?: string;
       /** Attempt system useradd under vmail (needs root + EXECUTE) */
       provisionSystem?: boolean;
@@ -361,6 +363,7 @@ export class EmailService {
       maildir: maildirPath,
       system_user: systemUser,
       password_scheme: passwordScheme,
+      owner_user_id: input.actorUserId,
       created_at: new Date().toISOString() };
     this.db.snapshot.mailboxes.unshift({
       ...mailbox,

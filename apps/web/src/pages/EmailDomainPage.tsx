@@ -62,6 +62,9 @@ export function EmailDomainPage() {
   const [live, setLive] = useState<Record<string, unknown> | null>(null);
   const [dnsbl, setDnsbl] = useState<Record<string, unknown> | null>(null);
   const [warmup, setWarmup] = useState<Record<string, unknown> | null>(null);
+  const [deliverability, setDeliverability] = useState<Awaited<
+    ReturnType<typeof emailApi.deliverability>
+  > | null>(null);
   const [relayHost, setRelayHost] = useState('smtp.example.com');
   const [relayUser, setRelayUser] = useState('');
   const [relayPass, setRelayPass] = useState('');
@@ -173,6 +176,10 @@ export function EmailDomainPage() {
     { id: 'mailbox', label: t('email.tabMailbox') },
     { id: 'aliases', label: t('email.tabAliases') },
     { id: 'health', label: t('email.tabHealth') },
+    {
+      id: 'deliverability',
+      label: t('email.tabDeliverability', { defaultValue: 'Deliverability' }),
+    },
     { id: 'relay', label: t('email.tabRelay') },
     { id: 'sieve', label: t('email.tabSieve') },
     { id: 'advanced', label: t('email.tabAdvanced') },
@@ -480,7 +487,7 @@ export function EmailDomainPage() {
                       options={[
                         { value: 'forward', label: t('email.typeForward') },
                         { value: 'alias', label: t('email.typeAlias') },
-                        { value: 'catchall', label: 'Catch-all' },
+                        { value: 'catchall', label: t('email.catchall') },
                       ]}
                     />
                   </Field>
@@ -762,6 +769,21 @@ export function EmailDomainPage() {
               <ActionBar className="u-mb-3">
                 <Button
                   variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void withBusy(async () => {
+                      setDeliverability(await emailApi.deliverability(domain.id));
+                      setTab('deliverability');
+                    })
+                  }
+                >
+                  {t('email.runDeliverabilityPack', {
+                    defaultValue: 'Run deliverability pack',
+                  })}
+                </Button>
+                <Button
+                  variant="secondary"
                   size="md"
                   loading={busy}
                   onClick={() =>
@@ -1074,6 +1096,162 @@ export function EmailDomainPage() {
               ) : null}
             </CardSection>
           </Card>
+          </div>
+        ) : null}
+
+        {tab === 'deliverability' ? (
+          <div className="tab-panel">
+            <Card>
+              <CardSection
+                title={t('email.deliverabilityTitle', {
+                  defaultValue: 'Deliverability pack',
+                })}
+                description={t('email.deliverabilityDesc', {
+                  defaultValue:
+                    'Unified PTR / DNS / DNSBL / Port 25 / relay / warm-up checklist. Never claims global inbox delivery.',
+                })}
+              >
+                <Alert variant="info">
+                  {t('email.deliverabilityHonesty', {
+                    defaultValue:
+                      'YSK cannot set PTR or unlock Port 25 at the VPS provider. Gmail/Outlook placement is external.',
+                  })}
+                </Alert>
+                <ActionBar className="u-mb-3">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void withBusy(async () => {
+                        setDeliverability(await emailApi.deliverability(domain.id));
+                      })
+                    }
+                  >
+                    {t('email.runDeliverabilityPack', {
+                      defaultValue: 'Run deliverability pack',
+                    })}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => setTab('relay')}
+                  >
+                    {t('email.tabRelay')}
+                  </Button>
+                </ActionBar>
+                {deliverability ? (
+                  <>
+                    <SummaryStrip
+                      items={[
+                        {
+                          label: t('email.healthScore'),
+                          value: String(deliverability.score),
+                          tone: deliverability.score >= 80 ? 'ok' : 'warn',
+                        },
+                        {
+                          label: t('email.panelReady', { defaultValue: 'Panel-checkable' }),
+                          value: deliverability.panelReady
+                            ? t('common.ready', { defaultValue: 'Ready' })
+                            : t('common.degraded', { defaultValue: 'Gaps' }),
+                          tone: deliverability.panelReady ? 'ok' : 'warn',
+                        },
+                        {
+                          label: t('email.guaranteed', { defaultValue: 'Inbox guarantee' }),
+                          value: t('common.no'),
+                          tone: 'default',
+                        },
+                      ]}
+                    />
+                    <ul className="list-plain u-mt-3">
+                      {deliverability.honesty.map((h) => (
+                        <li key={h} className="muted u-text-sm">
+                          {h}
+                        </li>
+                      ))}
+                    </ul>
+                    <DataTable
+                      title={t('email.checklist', { defaultValue: 'Checklist' })}
+                      columns={[
+                        {
+                          key: 'title',
+                          header: t('common.name'),
+                          render: (i) => <strong>{i.title}</strong>,
+                        },
+                        {
+                          key: 'ok',
+                          header: t('common.status'),
+                          render: (i) => (
+                            <Badge
+                              tone={
+                                i.ok === true
+                                  ? 'ok'
+                                  : i.level === 'external'
+                                    ? 'warn'
+                                    : i.ok === false
+                                      ? 'danger'
+                                      : 'neutral'
+                              }
+                            >
+                              {i.ok === true
+                                ? 'OK'
+                                : i.level === 'external'
+                                  ? 'External'
+                                  : i.ok === false
+                                    ? 'Fail'
+                                    : '—'}
+                            </Badge>
+                          ),
+                        },
+                        {
+                          key: 'owner',
+                          header: t('email.owner', { defaultValue: 'Owner' }),
+                          className: 'muted u-text-sm',
+                          render: (i) => i.owner,
+                        },
+                        {
+                          key: 'detail',
+                          header: t('common.notes'),
+                          className: 'u-text-sm',
+                          render: (i) => (
+                            <span>
+                              {i.detail}
+                              {i.fixHint ? (
+                                <span className="muted"> · {i.fixHint}</span>
+                              ) : null}
+                            </span>
+                          ),
+                        },
+                      ]}
+                      rows={deliverability.items}
+                      rowKey={(i) => i.id}
+                    />
+                    {deliverability.externalTodos?.length ? (
+                      <div className="u-mt-4">
+                        <h4>{t('email.externalTodosHeading')}</h4>
+                        <ul className="u-text-sm">
+                          {deliverability.externalTodos.map((todo) => (
+                            <li key={todo.id}>
+                              <strong>{todo.title ?? todo.id}</strong>
+                              {todo.description ? ` — ${todo.description}` : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <EmptyState
+                    title={t('email.deliverabilityEmpty', {
+                      defaultValue: 'No pack run yet',
+                    })}
+                    description={t('email.deliverabilityEmptyDesc', {
+                      defaultValue: 'Click Run deliverability pack to probe DNS, PTR, Port 25, DNSBL.',
+                    })}
+                  />
+                )}
+              </CardSection>
+            </Card>
           </div>
         ) : null}
 
@@ -1394,7 +1572,7 @@ export function EmailDomainPage() {
             </Card>
             <Card>
               <CardSection
-                title="Webmail（Roundcube）"
+                title={t('email.webmailRoundcube')}
                 description={t('email.webmailInstallDesc')}
               >
                 <FormLayout columns={2}>

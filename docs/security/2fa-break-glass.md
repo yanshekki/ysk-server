@@ -1,5 +1,7 @@
 # 2FA break-glass（Panel / SSH）
 
+> Language: English | [中文](./2fa-break-glass-ZH.md)
+
 ## Panel 操作員丟了 Authenticator
 
 1. 用 **recovery codes**（啟用 2FA 時一次顯示、只存 hash）登入：登入表單填 `recoveryCode`。

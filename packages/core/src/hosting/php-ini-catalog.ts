@@ -99,7 +99,7 @@ export const PHP_INI_GROUPS: PhpIniGroup[] = [
     ] },
   {
     id: 'session',
-    title: 'Session',
+    title: tl('catalog.php.session'),
     description: tl('notes.auto.n0722'),
     fields: [
       {
@@ -182,7 +182,7 @@ export const PHP_INI_GROUPS: PhpIniGroup[] = [
     ] },
   {
     id: 'opcache',
-    title: 'OPcache',
+    title: tl('catalog.php.opcache'),
     description: tl('notes.auto.n0536'),
     fields: [
       {

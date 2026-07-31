@@ -4,7 +4,7 @@
 
 import { resolveMx, resolveTxt, reverse } from 'node:dns/promises';
 import { createConnection } from 'node:net';
-import type { EmailHealthReport } from '@ysk/shared';
+import { tl, type EmailHealthReport } from '@ysk/shared';
 import { scoreEmailHealth } from './dns-records.js';
 import { checkIpDnsbl, type DnsblReport } from './dnsbl.js';
 
@@ -53,9 +53,9 @@ export async function runLiveEmailChecks(input: {
   try {
     const mx = await resolveMx(input.domain);
     mxOk = mx.length > 0;
-    mxDetail = mx.map((m) => `${m.priority} ${m.exchange}`).join(', ') || 'no MX';
+    mxDetail = mx.map((m) => `${m.priority} ${m.exchange}`).join(', ') || tl('email.live.noMx');
   } catch (e) {
-    mxDetail = e instanceof Error ? e.message : 'MX lookup failed';
+    mxDetail = e instanceof Error ? e.message : tl('email.live.mxLookupFailed');
   }
 
   let spfOk = false;
@@ -65,9 +65,9 @@ export async function runLiveEmailChecks(input: {
     const flat = txts.map((t) => t.join(''));
     const spf = flat.find((t) => t.startsWith('v=spf1'));
     spfOk = Boolean(spf);
-    spfDetail = spf ?? 'no SPF TXT';
+    spfDetail = spf ?? tl('email.live.noSpf');
   } catch (e) {
-    spfDetail = e instanceof Error ? e.message : 'SPF lookup failed';
+    spfDetail = e instanceof Error ? e.message : tl('email.live.spfLookupFailed');
   }
 
   let dkimOk = false;
@@ -78,9 +78,9 @@ export async function runLiveEmailChecks(input: {
     const flat = txts.map((t) => t.join(''));
     const dkim = flat.find((t) => /v=DKIM1/i.test(t));
     dkimOk = Boolean(dkim);
-    dkimDetail = dkim ? dkim.slice(0, 80) + '…' : 'no DKIM TXT';
+    dkimDetail = dkim ? dkim.slice(0, 80) + '…' : tl('email.live.noDkim');
   } catch (e) {
-    dkimDetail = e instanceof Error ? e.message : 'DKIM lookup failed';
+    dkimDetail = e instanceof Error ? e.message : tl('email.live.dkimLookupFailed');
   }
 
   let dmarcOk = false;
@@ -90,38 +90,38 @@ export async function runLiveEmailChecks(input: {
     const flat = txts.map((t) => t.join(''));
     const dmarc = flat.find((t) => /v=DMARC1/i.test(t));
     dmarcOk = Boolean(dmarc);
-    dmarcDetail = dmarc ?? 'no DMARC';
+    dmarcDetail = dmarc ?? tl('email.live.noDmarc');
   } catch (e) {
-    dmarcDetail = e instanceof Error ? e.message : 'DMARC lookup failed';
+    dmarcDetail = e instanceof Error ? e.message : tl('email.live.dmarcLookupFailed');
   }
 
   let ptrOk = false;
   let ptrDetail = '';
   try {
     const names = await reverse(input.serverIp);
-    ptrDetail = names.join(', ') || 'no PTR';
+    ptrDetail = names.join(', ') || tl('email.live.noPtr');
     ptrOk = names.some(
       (n) =>
         n.replace(/\.$/, '').toLowerCase() === input.mailHostname.toLowerCase() ||
         n.toLowerCase().includes(input.domain.toLowerCase()),
     );
   } catch (e) {
-    ptrDetail = e instanceof Error ? e.message : 'PTR lookup failed';
+    ptrDetail = e instanceof Error ? e.message : tl('email.live.ptrLookupFailed');
   }
 
   // Port 25: try connecting to a public SMTP (gmail) — may be blocked by cloud
   const port25Open = await probeTcp('gmail-smtp-in.l.google.com', 25, 4000);
   const port25Detail = port25Open
-    ? 'Outbound TCP 25 appears open (probe to gmail-smtp-in.l.google.com)'
-    : 'Outbound TCP 25 probe failed — may be blocked; request unblock or use relay';
+    ? tl('email.live.port25Open')
+    : tl('email.live.port25Blocked');
 
   // Multi-list DNSBL (Spamhaus / SpamCop / Barracuda)
   const dnsblReport = await checkIpDnsbl(input.serverIp);
   const dnsblOk = dnsblReport.ok;
   const dnsblDetail =
     dnsblReport.listedOn.length > 0
-      ? `LISTED: ${dnsblReport.listedOn.join(', ')}`
-      : `clean on ${dnsblReport.cleanOn.join(', ')}`;
+      ? tl('email.live.dnsblListed', { list: dnsblReport.listedOn.join(', ') })
+      : tl('email.live.dnsblClean', { list: dnsblReport.cleanOn.join(', ') });
 
   const health = scoreEmailHealth({
     domain: input.domain,

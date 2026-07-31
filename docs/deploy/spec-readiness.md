@@ -1,5 +1,7 @@
 # Spec readiness — honest gate
 
+> Language: English | [中文](./spec-readiness-ZH.md)
+
 This product is evaluated against [AI-Secure-Linux-Server-Manager-Spec.md](../AI-Secure-Linux-Server-Manager-Spec.md).
 
 ## How to probe

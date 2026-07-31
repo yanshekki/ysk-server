@@ -1,5 +1,7 @@
 # 系統級 apply（root + YSK_EXECUTE）
 
+> Language: English | [中文](./root-apply-ZH.md)
+
 YSK Server **預設 fail-closed**：只在 `dataDir` 寫配置。要真改系統需：
 
 ```bash

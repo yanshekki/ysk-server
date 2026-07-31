@@ -116,5 +116,19 @@
   "relatedOps": "Related ops",
   "relatedOpsDesc": "Log observation vs incident response",
   "scLogsLine": "Observe journal / files / projects",
-  "scProtLine": "Incident response, auto ban (click IP)"
+  "scProtLine": "Incident response, auto ban (click IP)",
+  "journalVacuumTitle": "Journal vacuum",
+  "journalSection": "Journal",
+  "sseLabel": "SSE",
+  "logrotateLabel": "logrotate",
+  "srcNginx": "nginx",
+  "srcSsh": "ssh",
+  "srcFail2ban": "fail2ban",
+  "srcAuthLog": "auth.log",
+  "srcNginxError": "nginx error",
+  "groupJournal": "Journal",
+  "groupVarLog": "/var/log",
+  "prioErr": "err+",
+  "prioWarn": "warn+",
+  "prioInfo": "info+"
 }

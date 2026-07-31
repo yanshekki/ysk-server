@@ -36,5 +36,6 @@
 @import './ssh.css';
 @import './security-sessions.css';
 @import './table.css';
+@import './list-toolbar.css';
 @import './tabs.css';
 @import './typography.css';

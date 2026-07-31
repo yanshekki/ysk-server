@@ -28,8 +28,10 @@ import {
   FormLayout,
   Modal,
   SegRadio,
+  ServerListFilters,
   buttonClassName,
 } from '../shared/components/ui';
+import { useServerList } from '../shared/hooks/useServerList';
 
 function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (status === 'running' || status === 'connected') return 'ok';
@@ -145,7 +147,6 @@ function exitHint(code: number | null): string {
 export function AgentsPage() {
   const { t } = useTranslation();
   const {
-    agents,
     runtimes,
     commands,
     error,
@@ -163,6 +164,14 @@ export function AgentsPage() {
     writeUnit,
     installKind,
   } = useAgents();
+  const fleetList = useServerList<FleetAgent>({
+    path: '/api/v1/fleet/agents',
+    debounceMs: 300,
+  });
+  const agents = fleetList.items;
+  const refreshAll = async () => {
+    await Promise.all([refresh(), fleetList.refresh()]);
+  };
 
   const [agentId, setAgentId] = useState('edge-1');
   const [agentGroup, setAgentGroup] = useState('default');
@@ -325,7 +334,7 @@ export function AgentsPage() {
             variant="ghost"
             size="sm"
             loading={busy}
-            onClick={() => void refresh()}
+            onClick={() => void refreshAll()}
           >
             {t('common.refresh')}
           </Button>
@@ -394,6 +403,32 @@ export function AgentsPage() {
                   {t('agents.registerPlus')}
                 </Button>
               </ActionBar>
+            }
+            filters={
+              <ServerListFilters
+                q={fleetList.q}
+                setQ={fleetList.setQ}
+                searching={fleetList.searching}
+                loading={fleetList.loading}
+                total={fleetList.meta?.total ?? agents.length}
+                shown={agents.length}
+                activeFilterCount={fleetList.activeFilterCount}
+                clear={fleetList.clear}
+                chipGroups={[
+                  {
+                    key: 'status',
+                    allLabel: t('common.all', { defaultValue: 'All' }),
+                    value: fleetList.filters.status ?? '',
+                    onChange: (v) => fleetList.setFilter('status', v),
+                    chips: [
+                      { id: 'connected', label: t('agents.status.connected') },
+                      { id: 'registered', label: t('agents.status.registered') },
+                      { id: 'stale', label: t('agents.status.stale'), tone: 'warn' },
+                      { id: 'offline', label: t('agents.status.disconnected'), tone: 'danger' },
+                    ],
+                  },
+                ]}
+              />
             }
             columns={[
               {
@@ -880,26 +915,23 @@ intervalMs: 5000`}
                 </Badge>
               ) : null}
               {asCliAck(resultCmd.result)?.dryRun ? (
-                <Badge tone="warn">dry-run</Badge>
+                <Badge tone="warn">{t('agents.badgeDryRun')}</Badge>
               ) : null}
               {asCliAck(resultCmd.result)?.blocked ? (
-                <Badge tone="warn">blocked</Badge>
+                <Badge tone="warn">{t('agents.badgeBlocked')}</Badge>
               ) : null}
             </ActionBar>
-            <FormHint>
-              {t('agents.resultOuter')} <code className="inline">result</code>：CLI --json
-              stdout.
-            </FormHint>
+            <FormHint>{t('agents.resultOuterHint')}</FormHint>
             {asCliAck(resultCmd.result)?.stderr ? (
               <div>
-                <div className="muted u-text-sm u-mb-1">stderr</div>
+                <div className="muted u-text-sm u-mb-1">{t('agents.labelStderr')}</div>
                 <pre className="ops-pre u-pre-wrap u-scroll-sm">
                   {String(asCliAck(resultCmd.result)?.stderr).slice(0, 4000)}
                 </pre>
               </div>
             ) : null}
             <div>
-              <div className="muted u-text-sm u-mb-1">ack + CLI JSON</div>
+              <div className="muted u-text-sm u-mb-1">{t('agents.labelAckCli')}</div>
               <pre
                 className="ops-pre u-pre-wrap u-scroll-xl"
               >
@@ -908,7 +940,7 @@ intervalMs: 5000`}
             </div>
             {unwrapCliBody(asCliAck(resultCmd.result)) !== resultCmd.result ? (
               <div>
-                <div className="muted u-text-sm u-mb-1">CLI stdout body</div>
+                <div className="muted u-text-sm u-mb-1">{t('agents.labelStdoutBody')}</div>
                 <pre
                   className="ops-pre u-pre-wrap u-scroll-lg"
                 >

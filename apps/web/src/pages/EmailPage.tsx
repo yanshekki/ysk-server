@@ -3,10 +3,10 @@
  * domains · queue · software stack · ops notes.
  * Create only in domains ListPanel toolbar (table top-right).
  */
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { emailApi, useEmailDomains } from '../features/email';
+import { emailApi, type EmailDomain } from '../features/email';
 import {
   PageGuide,
   ActionBar,
@@ -20,6 +20,7 @@ import {
   FormHint,
   FormLayout,
   ListPanel,
+  ListToolbar,
   Modal,
   ConfirmDialog,
   PageTabs,
@@ -27,6 +28,7 @@ import {
 } from '../shared/components/ui';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { useServerList } from '../shared/hooks/useServerList';
 
 const TABS = ['domains', 'queue', 'stack', 'ops', 'about'] as const;
 
@@ -42,37 +44,40 @@ export function EmailPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const ctx = getServerContext();
-  const { items, error, setError, busy, create, refresh } = useEmailDomains();
+  const list = useServerList<EmailDomain>({
+    path: '/api/v1/email/domains',
+    debounceMs: 300,
+  });
+  const items = list.items;
   const [tab, setTab] = usePageTab(TABS, 'domains');
   const [createOpen, setCreateOpen] = useState(false);
   const [domain, setDomain] = useState('');
   const [serverIp, setServerIp] = useState(ctx.serverIp);
   const [serverIpv6, setServerIpv6] = useState(ctx.serverIpv6 ?? '');
-  const [query, setQuery] = useState('');
+  const [busy, setBusy] = useState(false);
   const [queueBusy, setQueueBusy] = useState(false);
   const [flushConfirmOpen, setFlushConfirmOpen] = useState(false);
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
   const [queueOk, setQueueOk] = useState<boolean | null>(null);
   const [queueItems, setQueueItems] = useState<Array<{ id: string; raw: string }>>([]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((d) => d.domain.toLowerCase().includes(q));
-  }, [items, query]);
-
-  const applied = items.filter((d) => (d.apply_status ?? '').toLowerCase() === 'applied').length;
+  const total = list.meta?.total ?? items.length;
+  const facets = list.meta?.facets;
+  const applied = facets?.status?.applied ?? items.filter((d) => (d.apply_status ?? '').toLowerCase() === 'applied').length;
   const healthy = items.filter((d) => d.health_score >= 80).length;
-  const draft = items.filter((d) => {
-    const s = (d.apply_status ?? 'draft').toLowerCase();
-    return s === 'draft' || s === 'written' || !d.apply_status;
-  }).length;
+  const draft = facets
+    ? (facets.status?.draft ?? 0) + (facets.status?.written ?? 0)
+    : items.filter((d) => {
+        const s = (d.apply_status ?? 'draft').toLowerCase();
+        return s === 'draft' || s === 'written' || !d.apply_status;
+      }).length;
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
-    setError(null);
+    list.setError(null);
+    setBusy(true);
     try {
-      const created = await create({
+      const created = await emailApi.create({
         domain,
         serverIp,
         ...(serverIpv6.trim() ? { serverIpv6: serverIpv6.trim() } : {}),
@@ -86,13 +91,22 @@ export function EmailPage() {
       });
       const domainName =
         typeof created.domain === 'string' ? created.domain : created.domain.domain;
-      const list = await refresh();
-      const found =
-        list.find((x) => x.domain === domainName) ??
-        (typeof created.domain === 'object' ? created.domain : null);
-      if (found?.id) navigate(`/email/domains/${found.id}`);
-    } catch {
-      /* hook sets error */
+      const next = await list.refresh();
+      // refresh doesn't return items from useServerList — use list after
+      void next;
+      await list.refresh();
+      // navigate by id from create response if possible
+      const foundId =
+        typeof created.domain === 'object' && created.domain && 'id' in created.domain
+          ? String((created.domain as { id?: string }).id ?? '')
+          : '';
+      if (foundId) navigate(`/email/domains/${foundId}`);
+      else navigate(`/email`);
+      void domainName;
+    } catch (err) {
+      list.setError(err instanceof Error ? err.message : t('common.createFailed'));
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -150,11 +164,11 @@ export function EmailPage() {
       title={t('nav.email')}
       status={{
         pill: {
-          label: items.length ? t('email.pillDomains', { count: items.length }) : t('email.pillNoDomain'),
-          tone: items.length ? 'ok' : 'warn',
+          label: total ? t('email.pillDomains', { count: total }) : t('email.pillNoDomain'),
+          tone: total ? 'ok' : 'warn',
         },
         items: [
-          { label: t('email.statDomains'), value: items.length },
+          { label: t('email.statDomains'), value: total },
           {
             label: t('email.statHealthy80'),
             value: healthy,
@@ -172,21 +186,21 @@ export function EmailPage() {
           },
         ],
       }}
-      actions={<ActionBar>
+      actions={
+        <ActionBar>
           <Button
             variant="ghost"
             size="sm"
-            loading={busy}
-            onClick={() => void refresh().catch((e: Error) => setError(e.message))}
+            loading={busy || list.loading}
+            onClick={() => void list.refresh().catch((e: Error) => list.setError(e.message))}
           >
             {t('common.refresh')}
           </Button>
-          
         </ActionBar>
       }
     >
       <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
-      {error ? <Alert variant="error">{error}</Alert> : null}
+      {list.error ? <Alert variant="error">{list.error}</Alert> : null}
 
       <PageTabs
         tabs={[
@@ -212,7 +226,7 @@ export function EmailPage() {
         {tab === 'domains' ? (
           <div className="tab-panel mail-panel">
             <ListPanel
-              title={t('email.domainsTitle', { filtered: filtered.length, total: items.length })}
+              title={t('email.domainsTitle', { filtered: items.length, total })}
               description={t('email.searchPlaceholder')}
               toolbar={
                 <ActionBar>
@@ -226,24 +240,59 @@ export function EmailPage() {
                 </ActionBar>
               }
               filters={
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t('email.searchPlaceholder')}
-                  aria-label={t('email.searchPlaceholder')}
+                <ListToolbar
+                  search={list.q}
+                  onSearchChange={list.setQ}
+                  searchPlaceholder={t('email.searchPlaceholder')}
+                  searchAriaLabel={t('email.searchPlaceholder')}
+                  searching={list.searching}
+                  loading={list.loading}
+                  total={total}
+                  shown={items.length}
+                  activeFilterCount={list.activeFilterCount}
+                  onClear={list.clear}
+                  chipGroups={[
+                    {
+                      key: 'status',
+                      ariaLabel: t('common.status'),
+                      allLabel: t('common.all', { defaultValue: 'All' }),
+                      value: list.filters.status ?? '',
+                      onChange: (v) => list.setFilter('status', v),
+                      chips: [
+                        {
+                          id: 'applied',
+                          label: t('email.applyApplied'),
+                          count: facets?.status?.applied,
+                          tone: 'ok',
+                        },
+                        {
+                          id: 'draft',
+                          label: t('email.applyDraft'),
+                          count: facets?.status?.draft,
+                        },
+                        {
+                          id: 'failed',
+                          label: t('email.applyFailed'),
+                          count: facets?.status?.failed,
+                          tone: 'danger',
+                        },
+                      ],
+                    },
+                  ]}
                 />
               }
-              empty={filtered.length === 0}
-              emptyTitle={t('email.empty')}
+              empty={items.length === 0}
+              emptyTitle={
+                list.activeFilterCount > 0 ? t('listToolbar.noResults') : t('email.empty')
+              }
               emptyDescription={
-                items.length === 0
-                  ? t('email.emptyCreateHint')
-                  : t('email.emptyFilterHint')
+                list.activeFilterCount > 0
+                  ? t('listToolbar.noResultsHint')
+                  : t('email.emptyCreateHint')
               }
             >
               <div className="list-panel mail-domain-list" role="list">
-                {filtered.map((d) => {
+                {items.map((d) => {
                   const st = applyLabel(d.apply_status, t);
                   return (
                     <Link

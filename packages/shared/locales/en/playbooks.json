@@ -1,0 +1,50 @@
+{
+  "discover-host": {
+    "name": "Host discovery",
+    "description": "Read-only host inventory"
+  },
+  "nginx-health": {
+    "name": "Nginx health check",
+    "description": "Check nginx service status"
+  },
+  "nginx-restart": {
+    "name": "Nginx restart (high risk)",
+    "description": "Restart nginx after approval"
+  },
+  "local-llm-ops-only": {
+    "name": "Local LLM ops only",
+    "description": "Emergency discovery under protection mode"
+  },
+  "disk-pressure": {
+    "name": "Disk pressure check",
+    "description": "Read-only disk usage via df"
+  },
+  "mail-stack-status": {
+    "name": "Mail stack status",
+    "description": "Check postfix + dovecot units"
+  },
+  "security-units": {
+    "name": "Security units",
+    "description": "fail2ban + sshd status (read-only)"
+  },
+  "web-stack-status": {
+    "name": "Web stack status",
+    "description": "nginx + php-fpm probe"
+  },
+  "emergency-read-only": {
+    "name": "Emergency read-only sweep",
+    "description": "Protection-safe facts only"
+  },
+  "backup-health": {
+    "name": "Backup readiness",
+    "description": "Check disk + list processes before backup window"
+  },
+  "db-stack-status": {
+    "name": "Database stack status",
+    "description": "mysql/mariadb/redis/postgres units"
+  },
+  "ssl-nginx-check": {
+    "name": "SSL + Nginx check",
+    "description": "nginx status before cert ops"
+  }
+}

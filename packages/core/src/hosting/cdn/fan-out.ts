@@ -206,19 +206,18 @@ export async function fanOutCdnSite(input: {
       details: { id: input.siteId } });
   }
 
-  if (!input.host.executeEnabled()) {
-    return {
-      ok: false,
-      blocked: true,
-      requiresExecute: true,
-      apply_status: 'blocked',
-      siteId: site.id,
-      notes: [tl('notes.auto.n1126')],
-      edges: [],
-      edge_status: {} };
+  // Honesty split:
+  // - conf render + fleet enqueue = control-plane only (no EXECUTE required)
+  // - local nginx reload / SSH edge apply = host mutation (needs EXECUTE)
+  const canHostMutate = input.host.executeEnabled();
+  const notes: string[] = [];
+  if (!canHostMutate) {
+    notes.push(
+      tl('notes.auto.n1126') +
+        ' — fleet queue + conf write still allowed; local/SSH reload blocked',
+    );
   }
 
-  const notes: string[] = [];
   let confPath = join(input.dataDir, 'cdn', 'sites', site.id, 'edge.conf');
   let contentHash: string | undefined;
   const written: string[] = [];
@@ -365,6 +364,24 @@ export async function fanOutCdnSite(input: {
     }
 
     if (isLocalEdge(node)) {
+      if (!canHostMutate) {
+        // Still write conf under dataDir nginx/conf.d (control-plane managed path)
+        const item = await applyLocalEdge({
+          host: input.host,
+          dataDir: input.dataDir,
+          confPath: edgeConfPath,
+          confBasename,
+          node,
+          siteId: site.id,
+          skipReload: true,
+        });
+        edges.push(item);
+        edge_status[eid] = item.apply_status;
+        notes.push(
+          `${node.name}: ${item.apply_status} (local conf write, no reload without EXECUTE)`,
+        );
+        continue;
+      }
       const item = await applyLocalEdge({
         host: input.host,
         dataDir: input.dataDir,
@@ -377,6 +394,20 @@ export async function fanOutCdnSite(input: {
       notes.push(
         `${node.name}: ${item.apply_status} (${item.method}) — ${item.notes[0] ?? ''}`,
       );
+      continue;
+    }
+
+    if (!canHostMutate) {
+      const item: CdnEdgeApplyItem = {
+        edgeNodeId: eid,
+        name: node.name,
+        apply_status: 'blocked',
+        method: 'ssh',
+        notes: [tl('notes.auto.n1126') + ' — SSH edge apply requires YSK_EXECUTE=1'],
+      };
+      edges.push(item);
+      edge_status[eid] = 'blocked';
+      notes.push(`${node.name}: blocked (SSH needs EXECUTE)`);
       continue;
     }
 
@@ -402,6 +433,7 @@ export async function fanOutCdnSite(input: {
   const fleetQueued = edges.filter(
     (e) => e.method === 'fleet' && e.apply_status === 'written',
   ).length;
+  const writtenOnly = edges.filter((e) => e.apply_status === 'written').length;
   const skipped = edges.filter(
     (e) => e.apply_status === 'planned' || e.method === 'skip',
   ).length;
@@ -413,7 +445,7 @@ export async function fanOutCdnSite(input: {
     apply_status = 'applied';
     ok = true;
     notes.push(tl('notes.auto.n0582'));
-  } else if (blockedN > 0 && applied === 0 && failed === 0 && fleetQueued === 0) {
+  } else if (blockedN > 0 && applied === 0 && failed === 0 && writtenOnly === 0) {
     apply_status = 'blocked';
     ok = false;
     blocked = true;
@@ -424,14 +456,16 @@ export async function fanOutCdnSite(input: {
     apply_status = 'partial';
     ok = false;
     notes.push(
-      `partial：applied=${applied} fleetQueued=${fleetQueued} failed=${failed} blocked=${blockedN} skipped=${skipped}`,
+      `partial：applied=${applied} written=${writtenOnly} failed=${failed} blocked=${blockedN} skipped=${skipped}`,
     );
-  } else if (fleetQueued > 0 && failed === 0 && blockedN === 0) {
-    // Control-plane conf written + fleet commands queued — not edge-applied
+  } else if (writtenOnly > 0 && failed === 0 && (blockedN === 0 || writtenOnly + skipped === edges.length)) {
+    // conf written under dataDir and/or fleet queued — not live nginx-applied
     apply_status = 'written';
     ok = true;
     notes.push(
-      tl('notes.auto.t0725', { v0: (fleetQueued) }),
+      fleetQueued > 0
+        ? tl('notes.auto.t0725', { v0: fleetQueued })
+        : `written=${writtenOnly} (conf under dataDir; not host-applied)`,
     );
   } else if (failed === 0 && skipped === edges.length) {
     apply_status = 'written';
@@ -542,6 +576,8 @@ async function applyLocalEdge(input: {
   confBasename: string;
   node: CdnNodeDto;
   siteId: string;
+  /** Write conf only — no nginx -t / reload (degraded / no EXECUTE) */
+  skipReload?: boolean;
 }): Promise<CdnEdgeApplyItem> {
   const notes: string[] = [];
   const confDir =
@@ -553,6 +589,18 @@ async function applyLocalEdge(input: {
     const { readFileSync } = await import('node:fs');
     writeFileSync(dest, readFileSync(input.confPath, 'utf8'), 'utf8');
     notes.push(`local conf → ${dest}`);
+
+    if (input.skipReload) {
+      notes.push('skipReload: conf written under dataDir only');
+      return {
+        edgeNodeId: input.node.id,
+        name: input.node.name,
+        apply_status: 'written',
+        method: 'local',
+        notes,
+        reloaded: false,
+      };
+    }
 
     // ensure cache dir
     const cacheDir = `/var/cache/ysk-cdn/${input.siteId}`;

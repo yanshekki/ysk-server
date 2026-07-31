@@ -397,7 +397,7 @@
   "deployVersionSaved": "已儲存 {{runtime}} 版本 {{version}}（部署時會用此版本）",
   "deployVersionSaveFailed": "儲存 runtime 版本失敗",
   "deployInstallingToolchain": "正在安裝／確認 toolchain…",
-  "deployToolchainIncomplete": "Toolchain 安裝未完成（權限或網路）；可改手動到執行環境頁",
+  "deployToolchainIncomplete": "Toolchain 安裝未完成（權限或網絡）；可改手動到執行環境頁",
   "deployToolchainDone": "Toolchain 步驟完成，開始部署…",
   "deployToolchainFailed": "安裝 toolchain 失敗",
   "deployChecklistTitle": "建立完成 — 部署檢查清單",

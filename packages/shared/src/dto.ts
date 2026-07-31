@@ -27,6 +27,8 @@ export interface AuthLoginResponse {
   expiresAt: string;
   /** Admin policy: must enable TOTP soon */
   mustEnrollTotp?: boolean;
+  /** Bootstrap / weak password — change before production */
+  mustChangePassword?: boolean;
   message?: string;
 }
 
@@ -37,6 +39,8 @@ export interface UserDto {
   locale: string;
   /** Operator has confirmed TOTP 2FA */
   totpEnabled?: boolean;
+  /** Force password change (weak/bootstrap password) */
+  mustChangePassword?: boolean;
   /** Effective capabilities (from roles + policies + overrides) */
   capabilities?: CapabilityId[];
   /** Per-user extra grants */
@@ -121,6 +125,8 @@ export interface ProjectDto {
   linuxUser: string;
   linuxGroup: string;
   homeDir: string;
+  /** Panel user who owns the project (package quota) */
+  ownerUserId?: string;
   runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
   runtimeVersion?: string;
   env: 'staging' | 'production';

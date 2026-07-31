@@ -1,5 +1,7 @@
 # SSH Identity Vault（身份金鑰）
 
+> Language: English | [中文](./ssh-identities-ZH.md)
+
 管理 **SSH 私鑰／出站身份**，與 **登入公鑰**（`authorized_keys` / SFTP keys）分開。
 
 ## 心智模型

@@ -96,7 +96,8 @@ export async function resolveCloudflareZoneId(
 
 /**
  * Apply DNS records to Cloudflare.
- * dryRun=true or missing token → ok=false, requiresToken, planned records only.
+ * dryRun / missing token → plan-only success (ok=true, requiresToken when no token).
+ * Live apply without token → fail-closed (ok=false).
  */
 export async function applyCloudflareDns(input: {
   zone: string;
@@ -127,16 +128,18 @@ export async function applyCloudflareDns(input: {
     process.env.CLOUDFLARE_API_TOKEN?.trim() ||
     '';
   const notes = [...plan.providerHints];
+  const wantLive = input.dryRun !== true;
 
   if (!token) {
     notes.push(tl('notes.auto.n0980'));
+    // Explicit dry-run (or default plan): success with requiresToken. Live without token: fail-closed.
     return {
-      ok: false,
+      ok: !wantLive,
       zoneName: zone,
       planned,
       created: [],
       skipped: planned.map((r) => `${r.type} ${r.name}`),
-      errors: ['missing Cloudflare API token'],
+      errors: wantLive ? ['missing Cloudflare API token'] : [],
       notes,
       requiresToken: true,
       dryRun: true };

@@ -43,6 +43,7 @@ export class UserRepository {
         | 'suspended'
         | 'password_hash'
         | 'password_salt'
+        | 'must_change_password'
         | 'capability_grants'
         | 'capability_revokes'
       >
@@ -57,6 +58,10 @@ export class UserRepository {
     if (patch.suspended !== undefined) u.suspended = patch.suspended;
     if (patch.password_hash !== undefined) u.password_hash = patch.password_hash;
     if (patch.password_salt !== undefined) u.password_salt = patch.password_salt;
+    if (patch.must_change_password !== undefined) {
+      if (patch.must_change_password) u.must_change_password = true;
+      else delete u.must_change_password;
+    }
     if ('capability_grants' in patch) {
       if (!patch.capability_grants?.length) {
         delete u.capability_grants;

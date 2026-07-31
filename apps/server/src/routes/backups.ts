@@ -5,11 +5,15 @@ import { tl } from '@ysk/shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   listBackups,
+  filterBackupList,
   backupAllProjects,
+  backupControlPlane,
+  restoreControlPlaneBackup,
   restoreProjectBackup,
   deleteProjectBackup,
   resolveBackupDownloadPath,
   localizeLastBackupRun,
+  CONTROL_PLANE_BACKUP_ID,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import {
@@ -28,10 +32,96 @@ export async function handleBackupsRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/backups') {
         ctx.auth.authenticate(getBearer(req));
         const rawLast = ctx.settings.getJson<Record<string, unknown>>('last_backup_run');
+        const items = filterBackupList(listBackups(ctx.dataDir), {
+          projectId: url.searchParams.get('projectId') ?? undefined,
+          q: url.searchParams.get('q') ?? undefined,
+        });
         sendJson(res, 200, {
-          items: listBackups(ctx.dataDir),
+          items,
           lastRun: localizeLastBackupRun(rawLast ?? null),
         });
+        return true;
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/backups/status') {
+        ctx.auth.authenticate(getBearer(req));
+        const rawLast = ctx.settings.getJson<Record<string, unknown>>('last_backup_run');
+        const items = listBackups(ctx.dataDir);
+        const scheduleProbe = await ctx.cron.probeInstallStatus();
+        const backupJobs = ctx.cron
+          .list()
+          .filter((j) => j.command.includes('ysk-backup-all') || j.command.includes('backup all'));
+        sendJson(res, 200, {
+          ok: true,
+          dataDir: ctx.dataDir,
+          archiveCount: items.length,
+          controlPlaneCount: items.filter((x) => x.projectId === CONTROL_PLANE_BACKUP_ID).length,
+          projectArchiveCount: items.filter((x) => x.projectId !== CONTROL_PLANE_BACKUP_ID).length,
+          lastRun: localizeLastBackupRun(rawLast ?? null),
+          scheduleJobs: backupJobs,
+          schedule: scheduleProbe,
+          notes: [
+            scheduleProbe.hostHasYskEntries === true
+              ? 'host crontab has ysk entries'
+              : scheduleProbe.hostHasYskEntries === false
+                ? 'host crontab missing ysk entries — install via POST /backups/schedule {install:true} or cron install'
+                : 'could not probe host crontab',
+            scheduleProbe.executeEnabled
+              ? 'EXECUTE enabled'
+              : 'EXECUTE off — schedule file written only (fail-closed)',
+          ],
+        });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/control-plane') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        // persist store before snapshot so archive is current
+        ctx.db.persist();
+        const r = await backupControlPlane({ host: ctx.host, dataDir: ctx.dataDir });
+        ctx.settings.setJson('last_control_plane_backup', {
+          at: new Date().toISOString(),
+          ok: r.ok,
+          archivePath: r.archivePath,
+          bytes: r.bytes,
+          notes: r.notes,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.control_plane',
+          detail: { ok: r.ok, archivePath: r.archivePath, bytes: r.bytes },
+          ok: r.ok,
+        });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/control-plane/restore') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          mode?: 'dry-run' | 'full';
+          confirmPhrase?: string;
+        };
+        if (!data.name) {
+          sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0049')] });
+          return true;
+        }
+        const r = await restoreControlPlaneBackup({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          archiveName: data.name,
+          mode: data.mode,
+          confirmPhrase: data.confirmPhrase,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action:
+            data.mode === 'full'
+              ? 'backup.control_plane.restore'
+              : 'backup.control_plane.restore.dry_run',
+          detail: { name: data.name, mode: data.mode ?? 'dry-run', ok: r.ok },
+          ok: r.ok,
+        });
+        sendOpsResult(res, r);
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/run-all') {
@@ -384,20 +474,41 @@ export async function handleBackupsRoutes(
       if (method === 'POST' && url.pathname === '/api/v1/backups/schedule') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { schedule?: string };
+        const data = JSON.parse(raw || '{}') as {
+          schedule?: string;
+          /** When true, also install managed crontab to host (needs EXECUTE) */
+          install?: boolean;
+        };
         const job = ctx.cron.ensureBackupSchedule(data.schedule ?? '0 3 * * *');
+        let install: Awaited<ReturnType<typeof ctx.cron.installCrontab>> | undefined;
+        if (data.install) {
+          install = await ctx.cron.installCrontab(user.username);
+        }
+        const overallOk = data.install ? Boolean(install?.ok) : true;
         ctx.audit.append({
           actor: user.username,
           action: 'backup.schedule',
-          detail: job,
-          ok: true });
-        sendJson(res, 200, {
-          ok: true,
+          detail: {
+            jobId: job.id,
+            schedule: job.schedule,
+            install: Boolean(data.install),
+            installOk: install?.ok ?? null,
+          },
+          ok: overallOk,
+        });
+        sendJson(res, overallOk ? 200 : 422, {
+          ok: overallOk,
           job,
+          install: install ?? null,
           notes: [
-            tl('notes.auto.t0791', { v0: (job.schedule), v1: (job.command) }),
-            tl('notes.auto.n0512'),
-          ] });
+            tl('notes.auto.t0791', { v0: job.schedule, v1: job.command }),
+            data.install
+              ? install?.ok
+                ? 'host crontab installed'
+                : (install?.notes?.join('; ') ?? 'install failed')
+              : tl('notes.auto.n0512'),
+          ],
+        });
         return true;
       }
   return false;

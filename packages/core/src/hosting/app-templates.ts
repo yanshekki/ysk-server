@@ -308,9 +308,11 @@ function scaffoldWordpress(
   writeFileSync(
     indexPhp,
     `<?php
-// YSK WordPress 骨架 — 下載完整 WordPress 後覆寫
+// YSK WordPress skeleton — overwrite after full WordPress download
 header('Content-Type: text/plain; charset=utf-8');
-echo tl('notes.auto.n0210');
+http_response_code(200);
+echo "ysk-php-ok\\n";
+echo "WordPress placeholder — download full core to replace this file\\n";
 echo "Download: curl -sL https://wordpress.org/latest.tar.gz | tar xz -C " . __DIR__ . " --strip-components=1\\n";
 `,
     'utf8',

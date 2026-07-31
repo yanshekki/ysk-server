@@ -23,6 +23,8 @@ export interface ApplyResult {
   ok: boolean;
   /** True when system commands were actually run */
   executed?: boolean;
+  /** Plan-only / dry path (no host mutation attempted) */
+  dryRun?: boolean;
   /** True when panel action could not run due to environment */
   blocked?: boolean;
   blockReason?: BlockReason;
@@ -321,6 +323,24 @@ export async function applyLetsEncrypt(input: {
       steps };
   }
 
+  // Explicit plan-only (run=false): plan success — not a failed certificate issue.
+  if (!want) {
+    notes.push('letsencrypt plan only (run=false) — not issued');
+    steps.push({ name: tl('notes.ssl.requestCert'), status: 'ok', detail: 'planned' });
+    return {
+      ok: true,
+      executed: false,
+      blocked: false,
+      dryRun: true,
+      written: [],
+      commands: plan.commands,
+      commandResults,
+      notes,
+      steps,
+    };
+  }
+
+  // Wanted run but blocked (no EXECUTE/root) — honest fail-closed
   return {
     ok: false,
     executed: false,

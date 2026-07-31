@@ -17,11 +17,13 @@ import {
   FormLayout,
   Modal,
   OpsResultPanel,
+  ServerListFilters,
   SoftwareInstallBanner,
   FormHint,
   WithPageGuide,
   buttonClassName,
 } from '../../shared/components/ui';
+import { useServerList } from '../../shared/hooks/useServerList';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
 
@@ -50,7 +52,6 @@ export function SslPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
-    items,
     error,
     msg,
     notes,
@@ -64,6 +65,11 @@ export function SslPage() {
     remove,
     retryLast,
   } = useSslCertificates();
+  const certList = useServerList<CertificateView>({
+    path: '/api/v1/ssl/certificates',
+    debounceMs: 300,
+  });
+  const items = certList.items;
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [leOpen, setLeOpen] = useState(false);
@@ -248,6 +254,18 @@ export function SslPage() {
         <Card>
           <CardSection title={t('ssl.certsTitle', { count: items.length })}>
             <DataTable
+              filters={
+                <ServerListFilters
+                  q={certList.q}
+                  setQ={certList.setQ}
+                  searching={certList.searching}
+                  loading={certList.loading}
+                  total={certList.meta?.total ?? items.length}
+                  shown={items.length}
+                  activeFilterCount={certList.activeFilterCount}
+                  clear={certList.clear}
+                />
+              }
               columns={[
                 {
                   key: 'domain',

@@ -19,7 +19,7 @@ describe('cloudflare dns', () => {
     expect(recs.every((r) => r.proxied === false)).toBe(true);
   });
 
-  it('refuses apply without token (ok=false, not fake success)', async () => {
+  it('refuses live apply without token (ok=false, not fake success)', async () => {
     const r = await applyCloudflareDns({
       zone: 'example.com',
       serverIp: '203.0.113.10',
@@ -29,6 +29,20 @@ describe('cloudflare dns', () => {
     expect(r.ok).toBe(false);
     expect(r.requiresToken).toBe(true);
     expect(r.planned.length).toBeGreaterThan(0);
+  });
+
+  it('dryRun without token is plan success (requiresToken, not fake live apply)', async () => {
+    const r = await applyCloudflareDns({
+      zone: 'example.com',
+      serverIp: '203.0.113.10',
+      dryRun: true,
+      token: '',
+    });
+    expect(r.ok).toBe(true);
+    expect(r.requiresToken).toBe(true);
+    expect(r.dryRun).toBe(true);
+    expect(r.planned.length).toBeGreaterThan(0);
+    expect(r.created.length).toBe(0);
   });
 
   it('dryRun with token returns ok without API create', async () => {

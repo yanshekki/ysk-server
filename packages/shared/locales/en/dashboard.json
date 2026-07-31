@@ -39,6 +39,11 @@
   "prodOk": "Production ready",
   "notFullyReady": "Not fully ready",
   "modeScore": "Mode {{mode}} · score {{ready}}/{{total}}",
+  "mode": {
+    "degraded": "degraded",
+    "production_capable": "production ready",
+    "normal": "normal"
+  },
   "details": "Details",
   "certExpiryTitle": "Certificate expiry:",
   "certExpired": "expired",
@@ -50,6 +55,7 @@
   "warnCount": " · warn {{count}}",
   "applyAuditBadge": "Apply audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
   "executeBadge": "EXECUTE {{state}}",
+  "executeLabel": "EXECUTE",
   "go": "Open",
   "open": "Open",
   "noCriticalWarn": "No critical or warning alerts",

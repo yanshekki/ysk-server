@@ -48,6 +48,16 @@ export type { DataTableProps, DataColumn } from './DataTable';
 export { ListPanel } from './ListPanel';
 export type { ListPanelProps } from './ListPanel';
 
+/** Server-backed list search + filter toolbar */
+export { ListToolbar } from './ListToolbar';
+export type {
+  ListToolbarProps,
+  ListToolbarChip,
+  ListToolbarChipGroup,
+} from './ListToolbar';
+export { ServerListFilters } from './ServerListFilters';
+export type { ServerListFiltersProps } from './ServerListFilters';
+
 /** Info boxes for runtime / entity status (not kpi-card) */
 export { InfoCard, InfoCardGrid } from './InfoCard';
 export type { InfoCardProps, InfoFact, InfoCardGridCols } from './InfoCard';

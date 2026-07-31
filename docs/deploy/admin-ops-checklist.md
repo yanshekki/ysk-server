@@ -1,7 +1,19 @@
 # 伺服器管理員：生產上線 Checklist
 
+> Language: English | [中文](./admin-ops-checklist-ZH.md)
+
+> **最短路徑：** 見 [go-live.md](./go-live.md)（一頁 go-live）。
+
 YSK 係 **Admin 控制面**。生產能力取決於 **root + `YSK_EXECUTE=1`**。  
 記住：**寫入管理檔 ≠ 已套用到系統 ≠ 對外可連**。
+
+## 0b. 安全加固（setup / readiness）
+
+- [ ] `setup` 使用 **強密碼**（非 `admin`）；本地 dev 先可用 `--allow-insecure-defaults`
+- [ ] 登入若見 `mustChangePassword` → 立即改密
+- [ ] admin **2FA**；可選 `security.require_admin_totp_strict=1`
+- [ ] listen 預設 **127.0.0.1**；`0.0.0.0` 要有 UFW / reverse proxy
+- [ ] `dataDir` `chmod 750`；readiness 項 `admin-password` / `datadir-perms` / `listen-bind`
 
 ## 0. 模式
 

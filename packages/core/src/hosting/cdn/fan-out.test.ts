@@ -87,7 +87,7 @@ function mockHost(opts?: {
 }
 
 describe('cdn fan-out (PR-C3)', () => {
-  it('blocks without EXECUTE', async () => {
+  it('without EXECUTE: conf written (not applied); SSH edges blocked', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnfo-'));
     try {
       const db = new JsonStore(join(dir, 'db.json'));
@@ -108,8 +108,48 @@ describe('cdn fan-out (PR-C3)', () => {
         dataDir: dir,
         siteId: site.id,
       });
-      expect(r.blocked).toBe(true);
-      expect(r.apply_status).toBe('blocked');
+      // local conf write under dataDir is allowed; not host-applied
+      expect(r.ok).toBe(true);
+      expect(r.apply_status).toBe('written');
+      expect(r.edges[0]?.apply_status).toBe('written');
+      expect(existsSync(join(dir, 'cdn', 'sites', site.id, 'edge.conf'))).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('fleet-only edge queues command without EXECUTE (queued ≠ applied)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnfleet-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const edge = upsertCdnNode(db, {
+        name: 'fleet-edge',
+        roles: ['edge'],
+        fleetAgentId: 'session-fleet-1',
+      });
+      const site = upsertCdnSite(db, {
+        name: 's',
+        domains: ['f.example.com'],
+        origin: { kind: 'url', url: 'http://127.0.0.1:3000' },
+        edgeNodeIds: [edge.id],
+      });
+      const queued: unknown[] = [];
+      const r = await fanOutCdnSite({
+        db,
+        host: mockHost({ execute: false }),
+        dataDir: dir,
+        siteId: site.id,
+        enqueue: (sessionId, payload) => {
+          queued.push({ sessionId, payload });
+          return { id: 'cmd-1', agent_session_id: sessionId, status: 'queued' };
+        },
+      });
+      expect(r.ok).toBe(true);
+      expect(r.apply_status).toBe('written');
+      expect(r.edges[0]?.method).toBe('fleet');
+      expect(r.edges[0]?.apply_status).toBe('written');
+      expect(queued).toHaveLength(1);
+      expect((queued[0] as { payload: { op: string } }).payload.op).toBe('cdn.edge.apply');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

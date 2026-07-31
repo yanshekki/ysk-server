@@ -88,5 +88,11 @@
   "dangerPolicyDesc": "You are adding destructive or privilege caps, or raising maxLevel for this role. Confirm risk before saving.",
   "needRbacPolicy": "rbac.policy is required to edit role policies.",
   "adminLockedFull": "Admin full-open (locked)",
-  "adminLockedHint": "The admin system role is always fully open and cannot be reduced. Customize Operator/Viewer/Agent, or per-user overrides on non-admin accounts."
+  "adminLockedHint": "The admin system role is always fully open and cannot be reduced. Customize Operator/Viewer/Agent, or per-user overrides on non-admin accounts.",
+  "maxLevelHint": "Capability groups above this level stay locked.",
+  "capabilities": "Capabilities",
+  "capabilitiesHint": "Toggle what this role may do. An orange dot means it differs from factory defaults.",
+  "enabledCount": "{{enabled}} of {{total}} enabled",
+  "bandAboveMax": "Above max level",
+  "dirtyHint": "Customized (differs from factory)"
 }

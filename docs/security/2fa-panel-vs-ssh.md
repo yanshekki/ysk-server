@@ -1,5 +1,7 @@
 # Panel 2FA vs SSH 2FA
 
+> Language: English | [中文](./2fa-panel-vs-ssh-ZH.md)
+
 ## Short answer
 
 | Share? | What |

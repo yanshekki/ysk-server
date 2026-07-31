@@ -1,5 +1,7 @@
 # Production MVP (Spec Phase 2 Hosting)
 
+> Language: English | [中文](./production-mvp-ZH.md)
+
 30-minute path on Ubuntu 22.04/24.04 to a **usable** control plane + Node site.
 
 ## Modes

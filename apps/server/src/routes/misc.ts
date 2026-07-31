@@ -47,14 +47,6 @@ export async function handleMiscRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
-      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/sessions\/[^/]+$/)) {
-        const token = getBearer(req);
-        const user = ctx.auth.authenticate(token);
-        const id = url.pathname.split('/')[5] ?? '';
-        const ok = ctx.auth.revokeSession(user.id, id);
-        sendJson(res, ok ? 200 : 404, { ok });
-        return true;
-      }
       if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/users\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const { requireCap } = await import('../http/rbac-guard.js');
@@ -540,23 +532,27 @@ export async function handleMiscRoutes(
         sendJson(res, ok ? 200 : 404, { ok });
         return true;
       }
-      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/api-keys\/[^/]+$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[5];
-        const { deleteApiKey } = await import('@ysk/core');
-        const ok = deleteApiKey(ctx.db, id);
-        ctx.audit.append({
-          actor: user.username,
-          action: 'auth.api_key.delete',
-          resource: id,
-          detail: { ok },
-          ok });
-        sendJson(res, ok ? 200 : 404, { ok });
-        return true;
-      }
       if (method === 'GET' && url.pathname === '/api/v1/audit') {
         ctx.auth.authenticate(getBearer(req));
-        sendJson(res, 200, { items: ctx.audit.listRecent(100) });
+        const { listWithQuery } = await import('../http/list-response.js');
+        const limitRaw = Number(url.searchParams.get('limit') || 200);
+        const fetchN = Math.min(500, Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 200);
+        type AuditRow = {
+          actor?: string;
+          action?: string;
+          resource?: string;
+          detail?: unknown;
+        };
+        const all = ctx.audit.listRecent(fetchN) as unknown as AuditRow[];
+        const { items, meta } = listWithQuery(url, all, {
+          text: (e: AuditRow) => [
+            String(e.actor ?? ''),
+            String(e.action ?? ''),
+            String(e.resource ?? ''),
+            JSON.stringify(e.detail ?? ''),
+          ],
+        });
+        sendJson(res, 200, { items, meta });
         return true;
       }
       if (
@@ -1011,7 +1007,9 @@ export async function handleMiscRoutes(
           localPart: data.localPart ?? '',
           password: data.password,
           provisionSystem: data.provisionSystem,
-          actor: user.username });
+          actor: user.username,
+          actorUserId: user.id,
+        });
         sendOpsResult(res, result);
         return true;
       }
@@ -1195,62 +1193,7 @@ export async function handleMiscRoutes(
         sendOpsResult(res, r, { notFound: true });
         return true;
       }
-      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/fleet\/agents\/[^/]+$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[5];
-        const r = ctx.fleet.remove(id);
-        ctx.audit.append({
-          actor: user.username,
-          action: 'fleet.remove',
-          resource: id,
-          detail: r,
-          ok: true });
-        sendJson(res, 200, r);
-        return true;
-      }
-      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/fleet\/agents\/[^/]+\/heartbeat$/)) {
-        const id = url.pathname.split('/')[5];
-        sendJson(res, 200, ctx.fleet.heartbeat(id));
-        return true;
-      }
-      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/fleet\/agents\/[^/]+\/commands$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[5];
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { payload?: unknown };
-        const cmd = ctx.fleet.enqueue(id, data.payload ?? {});
-        ctx.audit.append({
-          actor: user.username,
-          action: 'fleet.command',
-          resource: id,
-          detail: cmd,
-          ok: true });
-        sendJson(res, 200, cmd);
-        return true;
-      }
-      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/fleet\/agents\/[^/]+\/commands$/)) {
-        const id = url.pathname.split('/')[5];
-        const history = url.searchParams.get('history') === '1';
-        if (history) {
-          ctx.auth.authenticate(getBearer(req));
-          sendJson(res, 200, { items: ctx.fleet.listCommands(id) });
-          return true;
-        }
-        sendJson(res, 200, { items: ctx.fleet.pullCommands(id) });
-        return true;
-      }
-      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/fleet\/commands\/[^/]+\/ack$/)) {
-        const cmdId = url.pathname.split('/')[5];
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { result?: unknown; error?: boolean };
-        const cmd = ctx.fleet.ack(cmdId, data.result, Boolean(data.error));
-        if (!cmd) {
-          sendJson(res, 404, { error: 'command not found' });
-          return true;
-        }
-        sendJson(res, 200, cmd);
-        return true;
-      }
+      // Fleet routes live in routes/agents.ts (Wave F4)
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/live-check$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
@@ -2459,58 +2402,6 @@ export async function handleMiscRoutes(
           preferFpm: data.preferFpm,
           forceBuiltin: data.forceBuiltin });
         sendJson(res, result.ok ? 200 : 502, result);
-        return true;
-      }
-      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cron\/[^/]+$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[4];
-        const ok = ctx.cron.delete(id);
-        ctx.audit.append({
-          actor: user.username,
-          action: 'cron.delete',
-          resource: id,
-          detail: { ok },
-          ok });
-        sendJson(res, ok ? 200 : 404, { ok });
-        return true;
-      }
-      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/cron\/[^/]+$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[4];
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { enabled?: boolean };
-        if (typeof data.enabled !== 'boolean') {
-          sendJson(res, 400, {
-            ok: false,
-            code: 'YSK_VALIDATION',
-            message: tl('notes.auto.n1406') });
-          return true;
-        }
-        const job = ctx.cron.setEnabled(id, data.enabled);
-        if (!job) {
-          sendJson(res, 404, { ok: false, code: 'YSK_NOT_FOUND', message: tl('notes.auto.n0019') });
-          return true;
-        }
-        ctx.audit.append({
-          actor: user.username,
-          action: 'cron.set_enabled',
-          resource: id,
-          detail: { enabled: data.enabled },
-          ok: true });
-        sendJson(res, 200, { job });
-        return true;
-      }
-      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cron\/[^/]+\/run$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[4];
-        const result = await ctx.cron.runNow(id, user.username);
-        ctx.audit.append({
-          actor: user.username,
-          action: 'cron.run_now',
-          resource: id,
-          detail: result,
-          ok: result.ok });
-        sendOpsResult(res, result);
         return true;
       }
   return false;

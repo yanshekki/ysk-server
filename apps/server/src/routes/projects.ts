@@ -4,7 +4,9 @@ import { tl } from '@ysk/shared';
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { listAppTemplates } from '@ysk/core';
+import type { ProjectDto } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
+import { listWithQuery } from '../http/list-response.js';
 import {
   getBearer,
   readBody,
@@ -19,9 +21,85 @@ export async function handleProjectsRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
+      if (method === 'GET' && url.pathname === '/api/v1/projects/isolation') {
+        ctx.auth.authenticate(getBearer(req));
+        const { listIsolationReport } = await import('@ysk/core');
+        const snaps = ctx.projects.list().map((p) => ({
+          id: p.id,
+          name: p.name,
+          linuxUser: p.linuxUser,
+          homeDir: p.homeDir,
+          osProvisioned: Boolean(p.osProvisioned),
+          ownerUserId: p.ownerUserId,
+        }));
+        sendJson(res, 200, listIsolationReport(snaps));
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/projects/isolation/backfill-owners') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { requireCap } = await import('../http/rbac-guard.js');
+        requireCap(ctx, user, 'users.manage');
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          ownerUserId?: string;
+          projectIds?: string[];
+        };
+        const ownerUserId = data.ownerUserId ?? user.id;
+        const { backfillProjectOwners } = await import('@ysk/core');
+        const r = backfillProjectOwners(ctx.db, ownerUserId, {
+          projectIds: data.projectIds,
+          onlyUnowned: true,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'projects.isolation.backfill_owners',
+          detail: r,
+          ok: true,
+        });
+        sendJson(res, 200, { ok: true, ...r });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/projects/isolation/provision-all') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { requireCap } = await import('../http/rbac-guard.js');
+        requireCap(ctx, user, 'projects.write');
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          limit?: number;
+          projectIds?: string[];
+        };
+        const r = await ctx.projects.provisionOsIsolationAll(user.username, data);
+        sendJson(res, r.ok || r.attempted > 0 ? 200 : 422, r);
+        return true;
+      }
       if (method === 'GET' && url.pathname === '/api/v1/projects') {
         ctx.auth.authenticate(getBearer(req));
-        sendJson(res, 200, { items: ctx.projects.list() });
+        const all = ctx.projects.list() as ProjectDto[];
+        const { items, meta } = listWithQuery(
+          url,
+          all,
+          {
+            text: (p: ProjectDto) => [p.name, p.domain, p.id, p.linuxUser, p.runtime],
+            predicates: {
+              runtime: (p: ProjectDto, v: string) => p.runtime === v,
+            },
+            facetOf: {
+              runtime: (p: ProjectDto) => p.runtime,
+            },
+            sortOf: {
+              name: (a: ProjectDto, b: ProjectDto) => a.name.localeCompare(b.name),
+              domain: (a: ProjectDto, b: ProjectDto) =>
+                (a.domain ?? '').localeCompare(b.domain ?? ''),
+            },
+          },
+          {
+            enums: {
+              runtime: ['node', 'php', 'static', 'python', 'go', 'rust'],
+            },
+            sortFields: ['name', 'domain'],
+          },
+        );
+        sendJson(res, 200, { items, meta });
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/wizard/create') {
@@ -106,6 +184,7 @@ export async function handleProjectsRoutes(
           ),
           env: data.env,
           actor: user.username,
+          actorUserId: user.id,
           templateId: data.templateId,
           forceTemplate: data.forceTemplate,
         });

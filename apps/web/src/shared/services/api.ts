@@ -107,6 +107,64 @@ function throwFromResponse(data: unknown, status: number): never {
   });
 }
 
+/** Paths that may return 401 without implying session death (login / public). */
+function isAuthExemptPath(path: string): boolean {
+  const p = path.split('?')[0] ?? path;
+  return (
+    p === '/api/v1/auth/login' ||
+    p.startsWith('/api/v1/auth/webauthn/login') ||
+    p === '/health' ||
+    p === '/api/v1/health' ||
+    p === '/api/v1/readiness' ||
+    p === '/api/v1/status'
+  );
+}
+
+let sessionLogoutInFlight = false;
+
+/**
+ * On 401 with a stored token: clear session and hard-redirect to login.
+ * Avoids pages stuck showing "Session expired" install banners.
+ */
+function forceLogoutOnSessionExpired(path: string): void {
+  if (isAuthExemptPath(path)) return;
+  if (!authStore.getToken()) return;
+  if (sessionLogoutInFlight) return;
+  sessionLogoutInFlight = true;
+  try {
+    authStore.clear();
+  } catch {
+    /* ignore */
+  }
+  try {
+    const from =
+      typeof window !== 'undefined'
+        ? window.location.pathname + window.location.search
+        : '/';
+    const q = new URLSearchParams({
+      reason: 'session',
+      from: from === '/login' ? '/' : from,
+    });
+    // Full navigation clears React state (install panels, feature hooks, etc.)
+    window.location.assign(`/login?${q.toString()}`);
+  } catch {
+    try {
+      window.location.href = '/login?reason=session';
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+function handleResponseStatus(path: string, status: number, data: unknown): void {
+  if (status === 401) {
+    forceLogoutOnSessionExpired(path);
+  }
+  if (status >= 400) {
+    throwFromResponse(data, status);
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = authStore.getToken();
   const res = await fetch(`${base}${path}`, {
@@ -125,7 +183,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     data = {};
   }
   if (!res.ok) {
-    throwFromResponse(data, res.status);
+    handleResponseStatus(path, res.status, data);
   }
   return data as T;
 }
@@ -160,7 +218,7 @@ export const api = {
       data = {};
     }
     if (!res.ok && !allowStatuses.includes(res.status)) {
-      throwFromResponse(data, res.status);
+      handleResponseStatus(path, res.status, data);
     }
     return data as T;
   },
@@ -183,7 +241,7 @@ export const api = {
       } catch {
         /* ignore */
       }
-      throwFromResponse(data, res.status);
+      handleResponseStatus(path, res.status, data);
     }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);

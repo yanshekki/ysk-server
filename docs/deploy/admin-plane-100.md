@@ -1,5 +1,7 @@
 # Admin 控制面 — in-scope 100%
 
+> Language: English | [中文](./admin-plane-100-ZH.md)
+
 **定義：** 單機伺服器管理員 Day-1～Day-N 運維路徑齊全、誠實 fail-closed、對齊 Hestia 級「Admin」而非 Reseller 商業平台。
 
 ## In-scope（視為完成）
@@ -17,6 +19,9 @@
 | Cron 可視化 + 專案用戶 | ✓ |
 | 備份 tar／遠端／restic／排程 CLI | ✓ |
 | 防火牆／F2B／2FA／API keys／審批 | ✓ |
+| Sessions / API keys CLI | ✓ `security sessions` · `security api-keys` |
+| Document state store | ✓ json 預設 · sqlite · postgres 實驗 · CLI store * |
+| CLI ≡ Panel（Admin 運維） | ✓ 見 [panel-parity-matrix.md](../cli/panel-parity-matrix.md) |
 | 通知中心（Dashboard） | ✓（EXECUTE、憑證、備份、審批、隔離、journal 磁碟、防護威脅） |
 | 日誌中心（System Log Center） | ✓ journal／檔案 allowlist／專案／書籤／SSE／vacuum／設定 |
 | 防護中心（Defense） | ✓ 檔位／自動 ban／CF／誠實 fail-closed |

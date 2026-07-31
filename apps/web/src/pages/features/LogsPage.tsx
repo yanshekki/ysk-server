@@ -699,11 +699,11 @@ export function LogsPage() {
   }
 
   const quickChips = [
-    { label: 'nginx', source: 'journal:nginx.service' },
-    { label: 'ssh', source: 'journal:ssh.service' },
-    { label: 'fail2ban', source: 'journal:fail2ban.service' },
-    { label: 'auth.log', source: 'file:auth' },
-    { label: 'nginx error', source: 'file:nginx-error' },
+    { label: t('logs.srcNginx'), source: 'journal:nginx.service' },
+    { label: t('logs.srcSsh'), source: 'journal:ssh.service' },
+    { label: t('logs.srcFail2ban'), source: 'journal:fail2ban.service' },
+    { label: t('logs.srcAuthLog'), source: 'file:auth' },
+    { label: t('logs.srcNginxError'), source: 'file:nginx-error' },
   ];
 
   return (
@@ -728,7 +728,7 @@ export function LogsPage() {
         },
         items: [
           {
-            label: 'Journal',
+            label: t('logs.groupJournal'),
             value:
               overview?.journalDiskMb != null
                 ? `${overview.journalDiskMb} MB`
@@ -736,7 +736,7 @@ export function LogsPage() {
             tone: journalHigh ? 'warn' : undefined,
           },
           {
-            label: '/var/log',
+            label: t('logs.groupVarLog'),
             value:
               overview?.varLogMb != null ? `≈${overview.varLogMb}MB` : '—',
           },
@@ -752,12 +752,12 @@ export function LogsPage() {
               projects.reduce((n, p) => n + (p.files?.length ?? 0), 0),
           },
           {
-            label: 'EXECUTE',
+            label: t('system.executeLabel'),
             value: overview?.executeEnabled ? t('common.on') : t('common.off'),
             tone: overview?.executeEnabled ? 'ok' : 'warn',
           },
           {
-            label: 'Root',
+            label: t('system.rootLabel'),
             value: overview?.isRoot ? t('common.yes') : t('common.no'),
             tone: overview?.isRoot ? 'ok' : 'warn',
           },
@@ -1003,9 +1003,9 @@ export function LogsPage() {
                             onChange={(v) => setPriority(v === 'all' ? '' : v)}
                             options={[
                               { value: 'all', label: t('updates.all') },
-                              { value: 'err', label: 'err+' },
-                              { value: 'warning', label: 'warn+' },
-                              { value: 'info', label: 'info+' },
+                              { value: 'err', label: t('logs.prioErr') },
+                              { value: 'warning', label: t('logs.prioWarn') },
+                              { value: 'info', label: t('logs.prioInfo') },
                             ]}
                           />
                         </label>
@@ -1065,7 +1065,7 @@ export function LogsPage() {
                         disabled={!follow}
                         onChange={(e) => setUseSse(e.target.checked)}
                       />
-                      <span>SSE</span>
+                      <span>{t('logs.sseLabel')}</span>
                     </label>
                     <label className={`lc-toggle ${wrap ? 'lc-toggle--on' : ''}`}>
                       <input
@@ -1179,7 +1179,7 @@ export function LogsPage() {
               <article className="lc-card lc-card--accent">
                 <div className="lc-card__head">
                   <div className="lc-card__titles">
-                    <h3>Journal vacuum</h3>
+                    <h3>{t('logs.journalVacuumTitle')}</h3>
                     <p className="lc-card__desc">
                       {t('logs.vacuumNote')}
                     </p>

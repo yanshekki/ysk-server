@@ -5,4 +5,5 @@ export * from './protection.js';
 export * from './protection-probe.js';
 export * from './ai-task-service.js';
 export * from './scheduler.js';
+export * from './list-filter.js';
 

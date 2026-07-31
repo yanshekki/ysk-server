@@ -7,8 +7,6 @@ import { Link } from 'react-router-dom';
 import {
   CAPABILITY_CATALOG,
   OPERATION_LEVELS,
-  SYSTEM_ROLES,
-  applyBandToCapabilities,
   computeEffectiveCapabilities,
   factoryRolePolicy,
   type CapabilityId,
@@ -16,6 +14,7 @@ import {
   type SystemRole,
 } from '@ysk/shared';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
+import { useServerList } from '../shared/hooks/useServerList';
 import {
   PageGuide,
   ActionBar,
@@ -26,6 +25,7 @@ import {
   FeaturePageLayout,
   Field,
   Form,
+  ListToolbar,
   LoadingBlock,
   Modal,
   ConfirmDialog,
@@ -35,6 +35,7 @@ import {
   buttonClassName,
 } from '../shared/components/ui';
 import { UserDetailModal } from '../features/users/UserDetailModal';
+import { RolePermissionsPanel } from '../features/users/RolePermissionsPanel';
 import { api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -89,21 +90,6 @@ type RolePolicyView = {
   factory: { maxLevel: OperationLevel; capabilities: CapabilityId[] };
 };
 
-type UserFilter =
-  | 'all'
-  | 'admin'
-  | 'operator'
-  | 'viewer'
-  | 'suspended'
-  | 'noPkg'
-  | '2faOff'
-  | 'overrides';
-
-function capLabelKey(id: CapabilityId): string {
-  const def = CAPABILITY_CATALOG.find((c) => c.id === id);
-  return def?.labelKey ?? id;
-}
-
 export function UsersPage() {
   const { t } = useTranslation();
   const { can } = useCapabilities();
@@ -113,21 +99,22 @@ export function UsersPage() {
     ['users', 'packages', 'permissions', 'about'] as const,
     'users',
   );
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [packages, setPackages] = useState<Pkg[]>([]);
+
+  const usersList = useServerList<UserRow>({ path: '/api/v1/users', debounceMs: 300 });
+  const packagesList = useServerList<Pkg>({ path: '/api/v1/packages', debounceMs: 300 });
+
+  /** Unfiltered package options for create/edit user dropdowns */
+  const [pkgOptions, setPkgOptions] = useState<Pkg[]>([]);
   const [hostUsage, setHostUsage] = useState<HostUsage | null>(null);
   const [policies, setPolicies] = useState<RolePolicyView[]>([]);
   const [createLocale, setCreateLocale] = useState('zh-HK');
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'operator' | 'viewer' | 'admin'>('operator');
   const [userPkgId, setUserPkgId] = useState('');
-  const [q, setQ] = useState('');
-  const [filter, setFilter] = useState<UserFilter>('all');
   const [createUserOpen, setCreateUserOpen] = useState(false);
   const [pkgFormOpen, setPkgFormOpen] = useState(false);
   const [editingPkg, setEditingPkg] = useState<Pkg | null>(null);
@@ -162,14 +149,13 @@ export function UsersPage() {
     | null
   >(null);
 
-  const refresh = useCallback(async () => {
-    const [u, p] = await Promise.all([
-      api.requestRaw<{ items: UserRow[] }>('/api/v1/users'),
-      api.requestRaw<{ items: Pkg[]; hostUsage?: HostUsage }>('/api/v1/packages'),
-    ]);
-    setUsers(u.items ?? []);
-    setPackages(p.items ?? []);
+  const loadPkgOptions = useCallback(async () => {
+    const p = await api.requestRaw<{ items: Pkg[]; hostUsage?: HostUsage }>('/api/v1/packages');
+    setPkgOptions(p.items ?? []);
     setHostUsage(p.hostUsage ?? p.items?.[0]?.hostUsage ?? null);
+  }, []);
+
+  const loadPolicies = useCallback(async () => {
     try {
       const pol = await api.requestRaw<{ items: RolePolicyView[] }>('/api/v1/rbac/policies');
       setPolicies(pol.items ?? []);
@@ -178,12 +164,70 @@ export function UsersPage() {
     }
   }, []);
 
+  const refreshUsers = usersList.refresh;
+  const refreshPackages = packagesList.refresh;
+  const refresh = useCallback(async () => {
+    await Promise.all([
+      refreshUsers(),
+      refreshPackages(),
+      loadPkgOptions(),
+      loadPolicies(),
+    ]);
+  }, [refreshUsers, refreshPackages, loadPkgOptions, loadPolicies]);
+
   useEffect(() => {
-    setLoading(true);
-    void refresh()
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [refresh]);
+    void loadPkgOptions().catch((e: Error) => setError(e.message));
+    void loadPolicies().catch(() => undefined);
+  }, [loadPkgOptions, loadPolicies]);
+
+  // Surface list errors
+  useEffect(() => {
+    if (usersList.error) setError(usersList.error);
+  }, [usersList.error]);
+  useEffect(() => {
+    if (packagesList.error) setError(packagesList.error);
+  }, [packagesList.error]);
+
+  const users = usersList.items;
+  const packages = packagesList.items;
+  const loading = usersList.loading && packagesList.loading && users.length === 0;
+
+  /** Map UI chip id → API filters (single primary dimension) */
+  function applyUserChip(id: string) {
+    if (id === 'all' || id === '') {
+      usersList.setFilters({});
+      return;
+    }
+    if (id === 'admin' || id === 'operator' || id === 'viewer') {
+      usersList.setFilters({ role: id });
+      return;
+    }
+    if (id === 'suspended') {
+      usersList.setFilters({ status: 'suspended' });
+      return;
+    }
+    if (id === 'noPkg') {
+      usersList.setFilters({ package: 'none' });
+      return;
+    }
+    if (id === '2faOff') {
+      usersList.setFilters({ totp: '0' });
+      return;
+    }
+    if (id === 'overrides') {
+      usersList.setFilters({ overrides: '1' });
+    }
+  }
+
+  function activeUserChip(): string {
+    const f = usersList.filters;
+    if (f.role) return f.role;
+    if (f.status === 'suspended') return 'suspended';
+    if (f.package === 'none') return 'noPkg';
+    if (f.totp === '0') return '2faOff';
+    if (f.overrides === '1') return 'overrides';
+    return 'all';
+  }
 
   useEffect(() => {
     const view = policies.find((x) => x.role === policyRole);
@@ -394,50 +438,14 @@ export function UsersPage() {
     }
   }
 
-  const admins = users.filter((u) => u.roles.includes('admin')).length;
-  const suspended = users.filter((u) => u.suspended).length;
-  const with2fa = users.filter((u) => u.totpEnabled).length;
+  const facets = usersList.meta?.facets;
+  const userTotal = usersList.meta?.total ?? users.length;
+  const admins = facets?.role?.admin ?? users.filter((u) => u.roles.includes('admin')).length;
+  const suspended =
+    facets?.status?.suspended ?? users.filter((u) => u.suspended).length;
+  const with2fa = facets?.totp?.['1'] ?? users.filter((u) => u.totpEnabled).length;
+  const pkgTotal = packagesList.meta?.total ?? packages.length;
 
-  const filteredUsers = useMemo(() => {
-    let list = users;
-    switch (filter) {
-      case 'admin':
-        list = list.filter((u) => u.roles.includes('admin'));
-        break;
-      case 'operator':
-        list = list.filter((u) => u.roles.includes('operator'));
-        break;
-      case 'viewer':
-        list = list.filter((u) => u.roles.includes('viewer'));
-        break;
-      case 'suspended':
-        list = list.filter((u) => u.suspended);
-        break;
-      case 'noPkg':
-        list = list.filter((u) => !u.packageId);
-        break;
-      case '2faOff':
-        list = list.filter((u) => !u.totpEnabled);
-        break;
-      case 'overrides':
-        list = list.filter(
-          (u) => (u.capabilityGrants?.length ?? 0) > 0 || (u.capabilityRevokes?.length ?? 0) > 0,
-        );
-        break;
-      default:
-        break;
-    }
-    const needle = q.trim().toLowerCase();
-    if (!needle) return list;
-    return list.filter(
-      (u) =>
-        u.username.toLowerCase().includes(needle) ||
-        u.roles.join(' ').toLowerCase().includes(needle) ||
-        (u.packageName ?? '').toLowerCase().includes(needle),
-    );
-  }, [users, q, filter]);
-
-  const policyView = policies.find((p) => p.role === policyRole);
   const effectivePreview = useMemo(() => {
     if (!detailUser) return [] as CapabilityId[];
     const map: Partial<Record<SystemRole, { maxLevel: OperationLevel; capabilities: CapabilityId[] }>> =
@@ -453,15 +461,46 @@ export function UsersPage() {
     });
   }, [detailUser, detailRole, detailGrants, detailRevokes, policies]);
 
-  const filterChips: { id: UserFilter; label: string }[] = [
-    { id: 'all', label: t('users.filterAll') },
-    { id: 'admin', label: t('users.filterAdmin') },
-    { id: 'operator', label: t('users.filterOperator') },
-    { id: 'viewer', label: t('users.filterViewer') },
-    { id: 'suspended', label: t('users.filterSuspended') },
-    { id: 'noPkg', label: t('users.filterNoPkg') },
-    { id: '2faOff', label: t('users.filter2faOff') },
-    { id: 'overrides', label: t('users.filterOverrides') },
+  const userChipId = activeUserChip();
+  const userFilterChips = [
+    { id: 'all', label: t('users.filterAll'), count: undefined as number | undefined },
+    {
+      id: 'admin',
+      label: t('users.filterAdmin'),
+      count: facets?.role?.admin,
+    },
+    {
+      id: 'operator',
+      label: t('users.filterOperator'),
+      count: facets?.role?.operator,
+    },
+    {
+      id: 'viewer',
+      label: t('users.filterViewer'),
+      count: facets?.role?.viewer,
+    },
+    {
+      id: 'suspended',
+      label: t('users.filterSuspended'),
+      count: facets?.status?.suspended,
+      tone: 'warn' as const,
+    },
+    {
+      id: 'noPkg',
+      label: t('users.filterNoPkg'),
+      count: facets?.package?.none,
+    },
+    {
+      id: '2faOff',
+      label: t('users.filter2faOff'),
+      count: facets?.totp?.['0'],
+    },
+    {
+      id: 'overrides',
+      label: t('users.filterOverrides'),
+      count: facets?.overrides?.['1'],
+      tone: 'warn' as const,
+    },
   ];
 
   return (
@@ -469,16 +508,16 @@ export function UsersPage() {
       title={t('nav.users')}
       showCapability={false}
       status={{
-        pill: { label: t('users.userCount', { count: users.length }), tone: 'ok' },
+        pill: { label: t('users.userCount', { count: userTotal }), tone: 'ok' },
         items: [
-          { label: t('users.users'), value: users.length },
+          { label: t('users.users'), value: userTotal },
           { label: 'Admin', value: admins },
           {
             label: t('users.suspended'),
             value: suspended,
             tone: suspended ? 'warn' : 'ok',
           },
-          { label: t('users.packages'), value: packages.length },
+          { label: t('users.packages'), value: pkgOptions.length || pkgTotal },
           { label: '2FA', value: with2fa },
         ],
       }}
@@ -487,12 +526,9 @@ export function UsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            loading={busy || loading}
+            loading={busy || usersList.loading || packagesList.loading}
             onClick={() => {
-              setLoading(true);
-              void refresh()
-                .catch((e: Error) => setError(e.message))
-                .finally(() => setLoading(false));
+              void refresh().catch((e: Error) => setError(e.message));
             }}
           >
             {t('common.refresh')}
@@ -520,16 +556,16 @@ export function UsersPage() {
         </Alert>
       ) : null}
 
-      {loading && users.length === 0 && packages.length === 0 ? (
+      {loading ? (
         <LoadingBlock label={t('users.loading')} />
       ) : (
         <PageTabs
           tabs={[
-            { id: 'users', label: t('users.users'), badge: users.length || undefined },
+            { id: 'users', label: t('users.users'), badge: userTotal || undefined },
             {
               id: 'packages',
               label: t('users.packages'),
-              badge: packages.length || undefined,
+              badge: pkgTotal || undefined,
             },
             { id: 'permissions', label: t('rbac.permissions') },
             { id: 'about', label: t('common.about') },
@@ -540,7 +576,7 @@ export function UsersPage() {
         >
           {tab === 'users' ? (
             <DataTable
-              title={t('users.userList', { count: filteredUsers.length })}
+              title={t('users.userList', { count: userTotal })}
               description={t('users.userListDesc')}
               toolbar={
                 <ActionBar>
@@ -550,30 +586,35 @@ export function UsersPage() {
                 </ActionBar>
               }
               filters={
-                <Form layoutOnly columns={1}>
-                  <Field label={t('common.search')} htmlFor="user-q" flush>
-                    <input
-                      id="user-q"
-                      type="search"
-                      value={q}
-                      onChange={(e) => setQ(e.target.value)}
-                      placeholder={t('users.searchPh')}
-                      aria-label={t('users.searchUsersAria')}
-                    />
-                  </Field>
-                  <div className="badge-row u-mt-2" role="group" aria-label={t('common.filter', { defaultValue: 'Filter' })}>
-                    {filterChips.map((c) => (
-                      <Button
-                        key={c.id}
-                        size="sm"
-                        variant={filter === c.id ? 'primary' : 'ghost'}
-                        onClick={() => setFilter(c.id)}
-                      >
-                        {c.label}
-                      </Button>
-                    ))}
-                  </div>
-                </Form>
+                <ListToolbar
+                  search={usersList.q}
+                  onSearchChange={usersList.setQ}
+                  searchPlaceholder={t('users.searchPh')}
+                  searchAriaLabel={t('users.searchUsersAria')}
+                  searching={usersList.searching}
+                  loading={usersList.loading}
+                  total={userTotal}
+                  shown={users.length}
+                  activeFilterCount={usersList.activeFilterCount}
+                  onClear={usersList.clear}
+                  chipGroups={[
+                    {
+                      key: 'userFilter',
+                      ariaLabel: t('common.filter', { defaultValue: 'Filter' }),
+                      chips: userFilterChips
+                        .filter((c) => c.id !== 'all')
+                        .map((c) => ({
+                          id: c.id,
+                          label: c.label,
+                          count: c.count,
+                          tone: c.tone,
+                        })),
+                      allLabel: t('users.filterAll'),
+                      value: userChipId === 'all' ? '' : userChipId,
+                      onChange: (v) => applyUserChip(v || 'all'),
+                    },
+                  ]}
+                />
               }
               columns={[
                 {
@@ -625,8 +666,15 @@ export function UsersPage() {
                       : t('users.neverSeen'),
                 },
               ]}
-              rows={filteredUsers}
+              rows={users}
               rowKey={(u) => u.id}
+              empty={
+                usersList.activeFilterCount > 0 ? (
+                  <p className="muted u-text-sm">
+                    {t('listToolbar.noResults')} — {t('listToolbar.noResultsHint')}
+                  </p>
+                ) : undefined
+              }
               rowActions={(u) => (
                 <ActionBar align="end">
                   <Button variant="secondary" size="sm" onClick={() => openDetail(u)}>
@@ -658,7 +706,7 @@ export function UsersPage() {
           {tab === 'packages' ? (
             <div className="tab-panel">
               <DataTable
-                title={t('users.pkgList', { count: packages.length })}
+                title={t('users.pkgList', { count: pkgTotal })}
                 description={t('users.pkgListDesc')}
                 toolbar={
                   <ActionBar>
@@ -666,6 +714,20 @@ export function UsersPage() {
                       {t('users.createPkgPlus')}
                     </Button>
                   </ActionBar>
+                }
+                filters={
+                  <ListToolbar
+                    search={packagesList.q}
+                    onSearchChange={packagesList.setQ}
+                    searchPlaceholder={t('users.searchPh')}
+                    searchAriaLabel={t('users.packages')}
+                    searching={packagesList.searching}
+                    loading={packagesList.loading}
+                    total={pkgTotal}
+                    shown={packages.length}
+                    activeFilterCount={packagesList.activeFilterCount}
+                    onClear={packagesList.clear}
+                  />
                 }
                 columns={[
                   {
@@ -769,157 +831,31 @@ export function UsersPage() {
 
           {tab === 'permissions' ? (
             <div className="tab-panel">
-              {!canEditRbac ? (
-                <Alert variant="info">{t('rbac.needRbacPolicy')}</Alert>
-              ) : null}
-              <p className="muted u-text-sm u-mb-3">{t('rbac.permissionsDesc')}</p>
-              <fieldset
-                disabled={!canEditRbac || policyRole === 'admin'}
-                style={{ border: 0, padding: 0, margin: 0 }}
-              >
-              <ActionBar className="u-mb-3">
-                <SegRadio
-                  name="policy-role"
-                  aria-label={t('users.role')}
-                  value={policyRole}
-                  onChange={(v) => setPolicyRole(v as SystemRole)}
-                  options={SYSTEM_ROLES.map((r) => ({ value: r, label: r }))}
-                />
-                {policyRole === 'admin' ? (
-                  <Badge tone="ok">{t('rbac.adminLockedFull')}</Badge>
-                ) : null}
-                {policyView?.dirty ? (
-                  <Badge tone="warn">{t('rbac.dirty')}</Badge>
-                ) : (
-                  <Badge tone="ok">{t('rbac.factory')}</Badge>
-                )}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={!policyView?.dirty}
-                  onClick={() => setPending({ kind: 'restoreRole', role: policyRole })}
-                >
-                  {t('rbac.restoreRole')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setPending({ kind: 'restoreAll' })}
-                >
-                  {t('rbac.restoreAll')}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  disabled={policyRole === 'admin' || !canEditRbac}
-                  title={
-                    policyRole === 'admin' ? t('rbac.adminLockedFull') : undefined
-                  }
-                  onClick={() => void saveRolePolicy()}
-                >
-                  {t('rbac.save')}
-                </Button>
-              </ActionBar>
-              {policyRole === 'admin' ? (
-                <Alert variant="info">{t('rbac.adminLockedHint')}</Alert>
-              ) : null}
-
-              <Field label={t('rbac.maxLevel')} htmlFor="max-level" flush>
-                <SegRadio
-                  name="max-level"
-                  aria-label={t('rbac.maxLevel')}
-                  value={draftMax}
-                  onChange={(v) => {
-                    if (policyRole === 'admin') return;
-                    const next = v as OperationLevel;
-                    setDraftMax(next);
-                    setDraftCaps((caps) =>
-                      caps.filter((id) => {
-                        const def = CAPABILITY_CATALOG.find((c) => c.id === id);
-                        if (!def) return false;
-                        return (
-                          OPERATION_LEVELS.indexOf(def.band) <= OPERATION_LEVELS.indexOf(next)
-                        );
-                      }),
-                    );
-                  }}
-                  options={OPERATION_LEVELS.map((lv) => ({
-                    value: lv,
-                    label: t(`rbac.level.${lv}`),
-                  }))}
-                />
-              </Field>
-
-              {OPERATION_LEVELS.map((band) => {
-                const bandCaps = CAPABILITY_CATALOG.filter((c) => c.band === band);
-                const locked = OPERATION_LEVELS.indexOf(band) > OPERATION_LEVELS.indexOf(draftMax);
-                const allOn = bandCaps.every((c) => draftCaps.includes(c.id));
-                return (
-                  <div key={band} className="u-mt-4" style={{ opacity: locked ? 0.5 : 1 }}>
-                    <ActionBar>
-                      <strong>{t(`rbac.level.${band}`)}</strong>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={locked || busy}
-                        onClick={() =>
-                          setDraftCaps(applyBandToCapabilities(draftCaps, band, true, draftMax))
-                        }
-                      >
-                        {t('rbac.bandAllOn')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={locked || busy}
-                        onClick={() =>
-                          setDraftCaps(applyBandToCapabilities(draftCaps, band, false, draftMax))
-                        }
-                      >
-                        {t('rbac.bandAllOff')}
-                      </Button>
-                      {allOn && !locked ? <Badge tone="ok">{t('common.on', { defaultValue: 'On' })}</Badge> : null}
-                    </ActionBar>
-                    <div className="u-mt-2" style={{ display: 'grid', gap: '0.35rem' }}>
-                      {bandCaps.map((c) => {
-                        const checked = draftCaps.includes(c.id);
-                        const factoryHas = (policyView?.factory.capabilities ?? factoryRolePolicy(policyRole).capabilities).includes(
-                          c.id,
-                        );
-                        const differs = checked !== factoryHas;
-                        return (
-                          <label
-                            key={c.id}
-                            className="u-text-sm"
-                            style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
-                          >
-                            <input
-                              type="checkbox"
-                              disabled={locked || busy}
-                              checked={checked}
-                              onChange={(e) => {
-                                setDraftCaps((prev) => {
-                                  const set = new Set(prev);
-                                  if (e.target.checked) set.add(c.id);
-                                  else set.delete(c.id);
-                                  return [...set].sort() as CapabilityId[];
-                                });
-                              }}
-                            />
-                            <span>{t(capLabelKey(c.id))}</span>
-                            <code className="muted u-text-xs">{c.id}</code>
-                            {differs ? (
-                              <Badge tone="warn">{t('rbac.diffFromFactory')}</Badge>
-                            ) : null}
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-              </fieldset>
+              <RolePermissionsPanel
+                policies={policies}
+                policyRole={policyRole}
+                draftMax={draftMax}
+                draftCaps={draftCaps}
+                busy={busy}
+                canEdit={canEditRbac}
+                onRoleChange={setPolicyRole}
+                onMaxLevelChange={(next) => {
+                  setDraftMax(next);
+                  setDraftCaps((caps) =>
+                    caps.filter((id) => {
+                      const def = CAPABILITY_CATALOG.find((c) => c.id === id);
+                      if (!def) return false;
+                      return (
+                        OPERATION_LEVELS.indexOf(def.band) <= OPERATION_LEVELS.indexOf(next)
+                      );
+                    }),
+                  );
+                }}
+                onCapsChange={setDraftCaps}
+                onSave={() => void saveRolePolicy()}
+                onRestoreRole={() => setPending({ kind: 'restoreRole', role: policyRole })}
+                onRestoreAll={() => setPending({ kind: 'restoreAll' })}
+              />
             </div>
           ) : null}
 
@@ -1012,7 +948,7 @@ export function UsersPage() {
           <Field label={t('users.package')} htmlFor="u-pkg" flush>
             <select id="u-pkg" value={userPkgId} onChange={(e) => setUserPkgId(e.target.value)}>
               <option value="">{t('users.noneOption')}</option>
-              {packages.map((p) => (
+              {pkgOptions.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
@@ -1152,7 +1088,7 @@ export function UsersPage() {
       <UserDetailModal
         open={detailUser != null}
         user={detailUser}
-        packages={packages.map((p) => ({ id: p.id, name: p.name }))}
+        packages={pkgOptions.map((p) => ({ id: p.id, name: p.name }))}
         role={detailRole}
         packageId={detailPkg}
         suspended={detailSuspended}

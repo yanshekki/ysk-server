@@ -21,5 +21,7 @@ export * from './ai.js';
 export * from './capabilities.js';
 /** Mutating route → capability map + nav feature gates */
 export * from './route-capabilities.js';
+/** Unified list search/filter query contract */
+export * from './list-query.js';
 /** i18n — locale catalogs + t() for server/CLI/web */
 export * from './i18n/index.js';

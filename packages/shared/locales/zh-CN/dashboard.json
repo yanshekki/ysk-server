@@ -39,6 +39,11 @@
   "prodOk": "可作生产",
   "notFullyReady": "尚未完全就绪",
   "modeScore": "模式 {{mode}} · 分数 {{ready}}/{{total}}",
+  "mode": {
+    "degraded": "降级",
+    "production_capable": "可生产",
+    "normal": "正常"
+  },
   "details": "详情",
   "certExpiryTitle": "证书到期：",
   "certExpired": "已过期",
@@ -50,6 +55,7 @@
   "warnCount": " · 警告 {{count}}",
   "applyAuditBadge": "套用 audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
   "executeBadge": "EXECUTE {{state}}",
+  "executeLabel": "系统变更",
   "go": "前往",
   "open": "打开",
   "noCriticalWarn": "目前无严重／警告通知",

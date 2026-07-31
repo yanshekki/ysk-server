@@ -16,7 +16,7 @@ export type SieveScript = {
 
 function safeMailbox(m: string): string {
   const s = m.trim().toLowerCase();
-  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2 }$/i.test(s) && !/^[a-z0-9._-]+$/.test(s)) {
+  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s) && !/^[a-z0-9._-]+$/.test(s)) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1508'), { httpStatus: 400 });
   }
   return s.replace(/[^a-z0-9._@+-]/gi, '_');

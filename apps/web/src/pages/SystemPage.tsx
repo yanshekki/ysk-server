@@ -231,11 +231,11 @@ export function SystemPage() {
               },
               items: [
                 {
-                  label: 'Uptime',
+                  label: t('system.uptime'),
                   value: formatUptime(host?.runtime.uptimeSec),
                 },
                 {
-                  label: 'Load 1m',
+                  label: t('system.load1m'),
                   value: load1 != null ? load1.toFixed(2) : '—',
                 },
                 {
@@ -259,12 +259,12 @@ export function SystemPage() {
                       : undefined,
                 },
                 {
-                  label: 'EXECUTE',
+                  label: t('system.executeLabel'),
                   value: host?.caps.executeEnabled ? t('common.on') : t('common.off'),
                   tone: host?.caps.executeEnabled ? 'ok' : 'warn',
                 },
                 {
-                  label: 'Root',
+                  label: t('system.rootLabel'),
                   value: host?.caps.isRoot ? t('common.yes') : t('common.no'),
                   tone: host?.caps.isRoot ? 'ok' : 'warn',
                 },
@@ -279,9 +279,9 @@ export function SystemPage() {
                   label: t('system.dnsCerts'),
                   value: `${counts?.dns_zones ?? '—'}/${counts?.certificates ?? '—'}`,
                 },
-                { label: 'Managed', value: managed.length },
+                { label: t('system.managedCount'), value: managed.length },
                 {
-                  label: 'EXECUTE',
+                  label: t('system.executeLabel'),
                   value:
                     caps.executeEnabled === undefined
                       ? '?'
@@ -296,7 +296,7 @@ export function SystemPage() {
                         : 'neutral',
                 },
                 {
-                  label: 'Exports',
+                  label: t('system.exportsCount'),
                   value: archives.length,
                 },
               ],
@@ -968,7 +968,7 @@ export function SystemPage() {
                   <div className="sys-step-label">
                     <span className="sys-step-num">2</span>
                     <div>
-                      <h3 className="sys-panel__title">Managed Nginx</h3>
+                      <h3 className="sys-panel__title">{t('system.managedNginxTitle')}</h3>
                       <p className="sys-panel__sub">
                         {t('system.managedNotEtc')}
                       </p>
@@ -1164,21 +1164,21 @@ export function SystemPage() {
                 opsResult
                   ? [
                       ...(opsResult.exportPath
-                        ? [{ label: 'exportPath', value: opsResult.exportPath }]
+                        ? [{ label: t('system.exportPath'), value: opsResult.exportPath }]
                         : []),
                       ...(opsResult.mode
-                        ? [{ label: 'mode', value: String(opsResult.mode) }]
+                        ? [{ label: t('system.mode'), value: String(opsResult.mode) }]
                         : []),
                       ...(opsResult.nginxConfDetails
                         ? [
                             {
-                              label: 'managed conf',
+                              label: t('system.managedConf'),
                               value: String(opsResult.nginxConfDetails.length),
                             },
                           ]
                         : []),
                       ...(opsResult.dryRun
-                        ? [{ label: 'dryRun', value: 'true' }]
+                        ? [{ label: t('system.dryRunFlag'), value: 'true' }]
                         : []),
                     ]
                   : []

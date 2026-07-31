@@ -60,6 +60,40 @@ export const emailApi = {
       method: 'POST',
       body: '{}',
     }),
+  /** Unified deliverability pack (PTR/DNSBL/warmup/relay honesty) */
+  deliverability: (id: string) =>
+    api.requestRaw<{
+      at: string;
+      domain: string;
+      score: number;
+      honesty: string[];
+      items: Array<{
+        id: string;
+        title: string;
+        ok: boolean | null;
+        level: string;
+        detail: string;
+        owner: string;
+        fixHint?: string;
+      }>;
+      externalTodos: Array<{ id: string; title?: string; description?: string }>;
+      warmup: Record<string, unknown>;
+      panelReady: boolean;
+      deliveryGuaranteed: false;
+      relayConfigured: boolean;
+    }>(`/api/v1/email/domains/${id}/deliverability`),
+  deliverabilityOverview: () =>
+    api.requestRaw<{
+      at: string;
+      items: Array<{
+        domainId: string;
+        domain: string;
+        score: number;
+        panelReady: boolean;
+        blocked?: string[];
+      }>;
+      honesty: string[];
+    }>('/api/v1/email/deliverability/overview'),
   dnsbl: (ip: string) =>
     api.requestRaw<Record<string, unknown>>('/api/v1/email/dnsbl/check', {
       method: 'POST',

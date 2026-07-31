@@ -1,5 +1,7 @@
 # YSK Product Page Map (IA)
 
+> Language: English | [中文](./product-page-map-ZH.md)
+
 Every sidebar item maps to a page. Every page lists **required tabs** and **allowed actions** (real ops or preset deep-links only).  
 Cross-feature empty redirects are forbidden.
 

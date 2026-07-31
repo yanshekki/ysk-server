@@ -1,9 +1,11 @@
 /**
  * HTTP routes — users & packages (capability-gated) + usage honesty enrich.
+ * List endpoints support unified ListQuery (q + dimension filters + meta).
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { hostPackageUsage } from '@ysk/core';
+import { hostPackageUsage, userPackageUsage } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
+import { listWithQuery } from '../http/list-response.js';
 import { getBearer, readBody, sendJson } from '../http/util.js';
 import { requireCap } from '../http/rbac-guard.js';
 
@@ -18,6 +20,20 @@ function lastSeenForUser(ctx: AppContext, userId: string): string | undefined {
   return best || undefined;
 }
 
+type UserListRow = {
+  id: string;
+  username: string;
+  roles: string[];
+  packageId?: string;
+  packageName?: string;
+  suspended?: boolean;
+  totpEnabled?: boolean;
+  capabilityGrants?: string[];
+  capabilityRevokes?: string[];
+  capabilities?: string[];
+  lastSeenAt?: string;
+};
+
 export async function handleAdminRoutes(
   ctx: AppContext,
   req: IncomingMessage,
@@ -30,7 +46,7 @@ export async function handleAdminRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     requireCap(ctx, user, 'users.manage');
     const packages = ctx.usersAdmin.listPackages();
-    const items = ctx.usersAdmin.listUsers().map((u) => {
+    const all: UserListRow[] = ctx.usersAdmin.listUsers().map((u) => {
       const row = ctx.db.snapshot.users.find((x) => x.id === u.id);
       return {
         ...u,
@@ -43,7 +59,56 @@ export async function handleAdminRoutes(
         lastSeenAt: lastSeenForUser(ctx, u.id),
       };
     });
-    sendJson(res, 200, { items });
+
+    const { items, meta } = listWithQuery(
+      url,
+      all,
+      {
+        text: (u) => [u.username, u.packageName, u.roles.join(' '), u.id],
+        predicates: {
+          role: (u, v) => u.roles.includes(v),
+          status: (u, v) => (v === 'suspended' ? Boolean(u.suspended) : !u.suspended),
+          totp: (u, v) => (v === '1' ? Boolean(u.totpEnabled) : !u.totpEnabled),
+          overrides: (u, v) => {
+            if (v !== '1') return true;
+            return (
+              (u.capabilityGrants?.length ?? 0) > 0 || (u.capabilityRevokes?.length ?? 0) > 0
+            );
+          },
+          package: (u, v) => {
+            if (v === 'none') return !u.packageId;
+            return u.packageId === v;
+          },
+        },
+        facetOf: {
+          role: (u) => u.roles[0] ?? 'viewer',
+          status: (u) => (u.suspended ? 'suspended' : 'active'),
+          totp: (u) => (u.totpEnabled ? '1' : '0'),
+          overrides: (u) =>
+            (u.capabilityGrants?.length ?? 0) > 0 || (u.capabilityRevokes?.length ?? 0) > 0
+              ? '1'
+              : '0',
+          package: (u) => (u.packageId ? u.packageId : 'none'),
+        },
+        sortOf: {
+          username: (a, b) => a.username.localeCompare(b.username),
+          lastSeenAt: (a, b) => (a.lastSeenAt ?? '').localeCompare(b.lastSeenAt ?? ''),
+        },
+      },
+      {
+        enums: {
+          role: ['admin', 'operator', 'viewer', 'agent'],
+          status: ['active', 'suspended'],
+          totp: ['0', '1'],
+          overrides: ['1'],
+          package: ['none'],
+        },
+        freeFilters: ['package'],
+        sortFields: ['username', 'lastSeenAt'],
+      },
+    );
+
+    sendJson(res, 200, { items, meta });
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/users') {
@@ -93,17 +158,40 @@ export async function handleAdminRoutes(
     }
     const users = ctx.usersAdmin.listUsers();
     const hostUsage = hostPackageUsage(ctx.db);
-    const items = ctx.usersAdmin.listPackages().map((p) => ({
+    const all = ctx.usersAdmin.listPackages().map((p) => ({
       ...p,
       subscriberCount: users.filter((u) => u.packageId === p.id).length,
       /** Honest host-wide totals (not per-package isolation) */
       hostUsage,
       usageScope: 'host' as const,
     }));
+
+    const { items, meta } = listWithQuery(
+      url,
+      all,
+      {
+        text: (p) => [p.name, p.notes, p.id],
+        sortOf: {
+          name: (a, b) => a.name.localeCompare(b.name),
+          subscriberCount: (a, b) => (a.subscriberCount ?? 0) - (b.subscriberCount ?? 0),
+        },
+      },
+      { sortFields: ['name', 'subscriberCount'] },
+    );
+
+    // Per-user usage for the caller (package quota scope)
+    let userUsage = null as ReturnType<typeof userPackageUsage> | null;
+    try {
+      userUsage = userPackageUsage(ctx.db, user.id);
+    } catch {
+      userUsage = null;
+    }
     sendJson(res, 200, {
       items,
+      meta,
       hostUsage,
-      usageNote: 'host_totals',
+      userUsage,
+      usageNote: 'user_owned_counts_for_quota; hostUsage_is_ops_honesty',
     });
     return true;
   }

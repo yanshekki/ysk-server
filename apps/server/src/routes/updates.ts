@@ -10,6 +10,7 @@ import {
   lookupOsvVulns,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
+import { listWithQuery } from '../http/list-response.js';
 import { VERSION } from '../version.js';
 import {
   getBearer,
@@ -17,6 +18,61 @@ import {
   sendJson,
   sendOpsResult,
 } from '../http/util.js';
+
+type InvRow = Record<string, unknown>;
+
+function filterInventoryAdvice(inv: InvRow[], advice: InvRow[], url: URL) {
+  const adviceByPkg = new Map(
+    advice.map((a) => [String(a.packageName ?? a.name ?? ''), a]),
+  );
+  const enriched = inv.map((row) => {
+    const name = String(row.name ?? row.package ?? row.packageName ?? '');
+    const a = adviceByPkg.get(name);
+    return {
+      ...row,
+      packageName: name,
+      risk: (a?.risk as string) ?? (row.risk as string) ?? 'low',
+      candidateVersion: a?.candidateVersion ?? row.candidateVersion,
+      currentVersion: a?.currentVersion ?? row.version ?? row.currentVersion,
+      needsApproval: Boolean(a?.needsApproval ?? row.needsApproval),
+      upgradable: Boolean(
+        a
+          ? a.candidateVersion && a.candidateVersion !== a.currentVersion
+          : row.upgradable,
+      ),
+    };
+  });
+  const { items, meta } = listWithQuery(
+    url,
+    enriched,
+    {
+      text: (r: InvRow) => [
+        String(r.packageName ?? ''),
+        String(r.name ?? ''),
+        String(r.version ?? ''),
+        String(r.candidateVersion ?? ''),
+      ],
+      predicates: {
+        risk: (r: InvRow, v: string) => String(r.risk ?? 'low') === v,
+        upgradable: (r: InvRow, v: string) => (v === '1' ? Boolean(r.upgradable) : true),
+        approval: (r: InvRow, v: string) => (v === '1' ? Boolean(r.needsApproval) : true),
+      },
+      facetOf: {
+        risk: (r: InvRow) => String(r.risk ?? 'low'),
+        upgradable: (r: InvRow) => (r.upgradable ? '1' : '0'),
+        approval: (r: InvRow) => (r.needsApproval ? '1' : '0'),
+      },
+    },
+    {
+      enums: {
+        risk: ['high', 'medium', 'low'],
+        upgradable: ['1'],
+        approval: ['1'],
+      },
+    },
+  );
+  return { inventory: items, meta, advice };
+}
 
 export async function handleUpdatesRoutes(
   ctx: AppContext,
@@ -31,12 +87,16 @@ export async function handleUpdatesRoutes(
         const cached = url.searchParams.get('cached') === '1';
         if (cached) {
           const last = ctx.settings.getJson<Record<string, unknown>>('last_inventory');
+          const inv = ((last?.items as unknown[]) ?? last?.sample ?? []) as InvRow[];
+          const advice = ((last?.advice as unknown[]) ?? []) as InvRow[];
+          const filtered = filterInventoryAdvice(inv, advice, url);
           sendJson(res, 200, {
             cached: true,
             last,
-            inventory: (last?.items as unknown[]) ?? last?.sample ?? [],
-            advice: (last?.advice as unknown[]) ?? [],
-            meta: last?.meta ?? null,
+            inventory: filtered.inventory,
+            advice: filtered.advice,
+            meta: { ...(typeof last?.meta === 'object' && last?.meta ? last.meta : {}), list: filtered.meta },
+            listMeta: filtered.meta,
             collectedAt: (last?.at as string) ?? null,
           });
           return true;
@@ -52,11 +112,17 @@ export async function handleUpdatesRoutes(
           items: inv.slice(0, 120),
           advice: advice.slice(0, 120),
         });
+        const filtered = filterInventoryAdvice(
+          inv as unknown as InvRow[],
+          advice as unknown as InvRow[],
+          url,
+        );
         sendJson(res, 200, {
           cached: false,
-          inventory: inv,
-          advice,
-          meta,
+          inventory: filtered.inventory,
+          advice: filtered.advice,
+          meta: { ...meta, list: filtered.meta },
+          listMeta: filtered.meta,
           collectedAt: new Date().toISOString(),
         });
         return true;

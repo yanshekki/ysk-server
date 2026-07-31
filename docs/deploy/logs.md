@@ -1,5 +1,7 @@
 # 日誌中心（System Log Center）— 100% in-scope
 
+> Language: English | [中文](./logs-ZH.md)
+
 路由：`/logs` · 側欄 **系統 → 日誌中心**
 
 ## 能力（SOC UX）

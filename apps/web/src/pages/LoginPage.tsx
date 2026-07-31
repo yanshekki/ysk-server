@@ -1,6 +1,6 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
 import { ApiError } from '../shared/services/api';
 import {
@@ -16,7 +16,11 @@ export function LoginPage() {
   const { login } = useAuth();
   const nav = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from ?? '/';
+  const [searchParams] = useSearchParams();
+  const fromState = (location.state as { from?: string } | null)?.from;
+  const fromQuery = searchParams.get('from');
+  const from = fromState || fromQuery || '/';
+  const sessionExpired = searchParams.get('reason') === 'session';
 
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin');
@@ -24,6 +28,18 @@ export function LoginPage() {
   const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const sessionBanner = useMemo(
+    () =>
+      sessionExpired
+        ? t('errors.auth.sessionExpired', {
+            defaultValue: t('login.sessionExpired', {
+              defaultValue: 'Session expired; sign in again',
+            }),
+          })
+        : null,
+    [sessionExpired, t],
+  );
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -67,6 +83,7 @@ export function LoginPage() {
           <p>{t('login.subtitle')}</p>
         </div>
 
+        {sessionBanner ? <Alert variant="info">{sessionBanner}</Alert> : null}
         {error ? <Alert variant="error">{error}</Alert> : null}
         {needsTotp ? (
           <Alert variant="info">{t('login.totpRequired')}</Alert>

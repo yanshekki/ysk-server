@@ -1,5 +1,7 @@
 # SSH with FIDO2 / hardware keys
 
+> Language: English | [中文](./ssh-fido2-ZH.md)
+
 Hardware-backed SSH keys (FIDO2) complement panel TOTP / SSH TOTP. They are **orthogonal** to YSK’s identity vault (software keys) and SSH 2FA (PAM TOTP).
 
 ## Generate (client)

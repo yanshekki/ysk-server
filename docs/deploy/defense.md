@@ -1,5 +1,7 @@
 # 防護中心（Defense Center）— 100% 範圍
 
+> Language: English | [中文](./defense-ZH.md)
+
 路由：`/protection` · API：`/api/v1/defense/*`
 
 側欄安全區：**防護中心** + **帳號安全**（單一入口）。  
@@ -60,6 +62,18 @@ UFW `/protection/firewall` · fail2ban `/protection/fail2ban` 由「底層」進
 | fail2ban per-jail 參數 | 全站有；每 jail 獨立屬延伸 |
 | 無 EXECUTE | 只 written／記面板 — 設計如此 |
 | L3/L4／多 CDN／fleet | 範圍外 |
+
+## C2 深化（2026-07-31）
+
+| 能力 | API / CLI |
+|------|-----------|
+| Bans list + `?q=` + `source=` facets | `GET /api/v1/defense/bans` · `ysk-server defense bans --q` |
+| Suspects / timeline list query | `GET …/suspects?q=` · `GET …/timeline?q=` |
+| **One-shot stack apply** | `POST /api/v1/defense/stack/apply` · `ysk-server defense stack-apply [--execute]` |
+| Firewall rules filter | `GET /api/v1/system/firewall/status?q=` |
+| Protection UI | bans ServerListFilters + source chips + stack apply 掣 |
+
+Stack apply = UFW plan + fail2ban jails（當前 preset）+ re-apply defense preset。無 EXECUTE 時 honest blocked。
 
 ## 誠實邊界
 

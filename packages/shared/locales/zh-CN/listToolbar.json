@@ -1,0 +1,12 @@
+{
+  "searchPlaceholder": "搜索…",
+  "searchAria": "搜索列表",
+  "clearSearch": "清除搜索",
+  "clearAll": "清除筛选",
+  "resultCount": "{{count}} 项结果",
+  "showingOf": "显示 {{shown}} / {{total}}",
+  "activeFilters": "已应用 {{count}} 个筛选",
+  "noResults": "无匹配结果",
+  "noResultsHint": "试试其他关键词，或清除筛选。",
+  "searching": "搜索中…"
+}

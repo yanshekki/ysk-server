@@ -1,23 +1,51 @@
-import { useCallback, useEffect, useState } from 'react';
+/**
+ * Resource collection CRUD with **server-backed** search (`q` query param).
+ * List always hits GET /api/v1/resources/{collection}?q=… (debounced).
+ */
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { ListMeta } from '@ysk/shared';
 import { resourcesApi, type ResourceRow } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
-export function useResourceCrud(collection: string, query?: Record<string, string>) {
+export function useResourceCrud(
+  collection: string,
+  query?: Record<string, string>,
+) {
   const { t } = useTranslation();
   const [items, setItems] = useState<ResourceRow[]>([]);
+  const [meta, setMeta] = useState<ListMeta | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
   const [lastNotes, setLastNotes] = useState<string[]>([]);
+  const [q, setQ] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
   const queryKey = query ? JSON.stringify(query) : '';
+  const seq = useRef(0);
+
+  useEffect(() => {
+    const tmr = window.setTimeout(() => setDebouncedQ(q.trim()), 300);
+    return () => window.clearTimeout(tmr);
+  }, [q]);
 
   const refresh = useCallback(async () => {
-    const q = queryKey ? (JSON.parse(queryKey) as Record<string, string>) : undefined;
-    const r = await resourcesApi.list(collection, q);
-    setItems(r.items);
-    return r.items;
-  }, [collection, queryKey]);
+    const id = ++seq.current;
+    setListLoading(true);
+    const extra = queryKey ? (JSON.parse(queryKey) as Record<string, string>) : {};
+    const params: Record<string, string> = { ...extra };
+    if (debouncedQ) params.q = debouncedQ;
+    try {
+      const r = await resourcesApi.list(collection, params);
+      if (id !== seq.current) return r.items;
+      setItems(r.items ?? []);
+      setMeta((r as { meta?: ListMeta }).meta ?? null);
+      return r.items;
+    } finally {
+      if (id === seq.current) setListLoading(false);
+    }
+  }, [collection, queryKey, debouncedQ]);
 
   useEffect(() => {
     void refresh().catch((e: Error) => setError(e.message));
@@ -85,7 +113,9 @@ export function useResourceCrud(collection: string, query?: Record<string, strin
       setBusy(true);
       setError(null);
       try {
-        const r = await resourcesApi.apply(collection, id, { execute: execute !== false });
+        const r = await resourcesApi.apply(collection, id, {
+          execute: execute !== false,
+        });
         await refresh();
         const notes = sanitizeOperatorNotes(r.notes);
         setLastNotes(notes);
@@ -106,11 +136,24 @@ export function useResourceCrud(collection: string, query?: Record<string, strin
     [collection, refresh, t],
   );
 
+  const clearSearch = useCallback(() => {
+    setQ('');
+    setDebouncedQ('');
+  }, []);
+
+  const activeFilterCount = useMemo(() => (q.trim() ? 1 : 0), [q]);
+  const total = meta?.total ?? items.length;
+  const searching = listLoading && Boolean(debouncedQ || q);
+
   return {
     items,
+    meta,
+    total,
     error,
     setError,
     busy,
+    listLoading,
+    searching,
     msg,
     setMsg,
     lastNotes,
@@ -119,5 +162,9 @@ export function useResourceCrud(collection: string, query?: Record<string, strin
     update,
     remove,
     apply,
+    q,
+    setQ,
+    clearSearch,
+    activeFilterCount,
   };
 }

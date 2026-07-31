@@ -1,5 +1,7 @@
 # Deploy, Install, and Update
 
+> Language: English | [中文](./install-update-ZH.md)
+
 ## One-click install
 
 ```bash

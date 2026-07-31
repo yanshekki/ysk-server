@@ -1,0 +1,50 @@
+{
+  "discover-host": {
+    "name": "主机探索",
+    "description": "只读主机清单"
+  },
+  "nginx-health": {
+    "name": "Nginx 健康检查",
+    "description": "检查 nginx 服务状态"
+  },
+  "nginx-restart": {
+    "name": "Nginx 重启（高风险）",
+    "description": "审批后重启 nginx"
+  },
+  "local-llm-ops-only": {
+    "name": "仅本机 LLM 操作",
+    "description": "防护模式下紧急探索"
+  },
+  "disk-pressure": {
+    "name": "磁盘压力检查",
+    "description": "只读磁盘用量（df）"
+  },
+  "mail-stack-status": {
+    "name": "邮件堆栈状态",
+    "description": "检查 postfix + dovecot unit"
+  },
+  "security-units": {
+    "name": "安全 unit",
+    "description": "fail2ban + sshd 状态（只读）"
+  },
+  "web-stack-status": {
+    "name": "Web 堆栈状态",
+    "description": "nginx + php-fpm 探测"
+  },
+  "emergency-read-only": {
+    "name": "紧急只读扫视",
+    "description": "仅防护安全事实"
+  },
+  "backup-health": {
+    "name": "备份就绪",
+    "description": "备份就绪检查"
+  },
+  "db-stack-status": {
+    "name": "数据库堆栈状态",
+    "description": "数据库服务状态"
+  },
+  "ssl-nginx-check": {
+    "name": "SSL + Nginx 检查",
+    "description": "SSL 与 Nginx 检查"
+  }
+}

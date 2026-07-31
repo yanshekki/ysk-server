@@ -33,9 +33,12 @@
   "dependencies": {
     "@simplewebauthn/server": "^13.3.2",
     "@ysk/shared": "workspace:*",
-    "maxmind": "^5.0.6"
+    "better-sqlite3": "13.0.1",
+    "maxmind": "^5.0.6",
+    "sql.js": "^1.14.1"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "7.6.13",
     "@vitest/coverage-v8": "^2.1.8",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

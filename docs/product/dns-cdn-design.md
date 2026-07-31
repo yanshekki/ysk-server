@@ -1,5 +1,7 @@
 # DNS 深化 + 多 ysk-server CDN 設計
 
+> Language: English | [中文](./dns-cdn-design-ZH.md)
+
 > **產品定位：** 用多台 YSK Server + 權威 DNS + Nginx 組成**自建邊緣網**（self-hosted CDN）。  
 > **不是** 商業 Anycast/L3 CDN（Cloudflare/Fastly 級全域層）。  
 > **誠實契約：** DNS written ≠ 公網生效；單 edge applied ≠ 全網 applied。

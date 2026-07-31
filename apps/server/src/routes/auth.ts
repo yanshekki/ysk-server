@@ -362,5 +362,30 @@ export async function handleAuthRoutes(
         sendOpsResult(res, r);
         return true;
       }
+      // DELETE single session by id prefix (moved from misc)
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/sessions\/[^/]+$/)) {
+        const token = getBearer(req);
+        const user = ctx.auth.authenticate(token);
+        const id = url.pathname.split('/')[5] ?? '';
+        const ok = ctx.auth.revokeSession(user.id, id);
+        sendJson(res, ok ? 200 : 404, { ok });
+        return true;
+      }
+      // DELETE API key by id (moved from misc)
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/api-keys\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5] ?? '';
+        const { deleteApiKey } = await import('@ysk/core');
+        const ok = deleteApiKey(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'auth.api_key.delete',
+          resource: id,
+          detail: { ok },
+          ok,
+        });
+        sendJson(res, ok ? 200 : 404, { ok });
+        return true;
+      }
   return false;
 }

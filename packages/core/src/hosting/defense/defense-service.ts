@@ -571,3 +571,111 @@ export async function listDefenseBans(input: {
   }
   return { items: items.slice(0, 100), notes };
 }
+
+/**
+ * One-shot stack apply: UFW plan + fail2ban jails for current defense preset.
+ * Honest: each step may block without YSK_EXECUTE/root; aggregate ok only if all executed ok.
+ */
+export async function applyDefenseStack(input: {
+  host: HostExecutor;
+  db: JsonStore;
+  dataDir: string;
+  execute?: boolean;
+  actor?: string;
+}): Promise<{
+  ok: boolean;
+  executed: boolean;
+  blocked?: boolean;
+  notes: string[];
+  steps: Array<{ id: string; ok: boolean; notes: string[] }>;
+  requiresExecute: boolean;
+  requiresRoot: boolean;
+}> {
+  const execute = Boolean(input.execute);
+  const notes: string[] = [];
+  const steps: Array<{ id: string; ok: boolean; notes: string[] }> = [];
+  const requiresExecute = !input.host.executeEnabled();
+  const requiresRoot = !input.host.isRoot();
+
+  const status = await getDefenseStatus({
+    host: input.host,
+    db: input.db,
+    dataDir: input.dataDir,
+  });
+  const presetId = status.activePreset ?? 'daily';
+  const preset = getDefensePreset(presetId);
+
+  const { applyFirewall, applyFail2ban } = await import('../system-apply.js');
+  const fw = await applyFirewall({
+    host: input.host,
+    dataDir: input.dataDir,
+    apply: execute,
+  });
+  steps.push({
+    id: 'firewall',
+    ok: Boolean(fw.ok),
+    notes: fw.notes ?? [],
+  });
+  notes.push(...(fw.notes ?? []).map((n) => `[firewall] ${n}`));
+
+  const f2b = await applyFail2ban({
+    dataDir: input.dataDir,
+    host: input.host,
+    apply: execute,
+    jails: preset.fail2banJails,
+  });
+  steps.push({
+    id: 'fail2ban',
+    ok: Boolean(f2b.ok),
+    notes: f2b.notes ?? [],
+  });
+  notes.push(...(f2b.notes ?? []).map((n) => `[fail2ban] ${n}`));
+
+  // Re-assert nginx limits for current preset (written; apply needs EXECUTE)
+  try {
+    const r = await applyDefensePreset({
+      host: input.host,
+      db: input.db,
+      dataDir: input.dataDir,
+      preset: presetId as import('./types.js').DefensePresetId,
+      apply: execute,
+    });
+    steps.push({
+      id: 'preset',
+      ok: Boolean(r.ok),
+      notes: r.notes ?? [],
+    });
+    notes.push(...(r.notes ?? []).map((n) => `[preset:${presetId}] ${n}`));
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    steps.push({ id: 'preset', ok: false, notes: [msg] });
+    notes.push(`[preset] ${msg}`);
+  }
+
+  const anyBlocked = Boolean(fw.blocked || f2b.blocked);
+  const allOk = steps.every((s) => s.ok);
+  const executed = Boolean(
+    execute && input.host.executeEnabled() && input.host.isRoot() && (fw.executed || f2b.executed),
+  );
+
+  try {
+    pushTimeline(input.db, {
+      at: new Date().toISOString(),
+      kind: 'stack_apply',
+      title: `Defense stack apply (${presetId})`,
+      detail: steps.map((s) => `${s.id}:${s.ok ? 'ok' : 'fail'}`).join(' · '),
+    });
+  } catch {
+    /* timeline optional */
+  }
+
+  return {
+    ok: allOk && !anyBlocked,
+    executed,
+    blocked: anyBlocked || undefined,
+    notes,
+    steps,
+    requiresExecute,
+    requiresRoot,
+  };
+}

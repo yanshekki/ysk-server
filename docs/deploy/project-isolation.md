@@ -1,5 +1,7 @@
 # 專案隔離契約（Linux User + Home）
 
+> Language: English | [中文](./project-isolation-ZH.md)
+
 每個 **專案** 以獨立 Linux 用戶運作，彼此檔案與行程隔離。
 
 ## 命名
@@ -46,6 +48,32 @@
 - home 是否為 `/home/ysk-server-{id}` 且存在
 
 未隔離專案會列在 `category: isolation` 項目中。
+
+## 批量 / CLI（B3）
+
+```bash
+# 列表：needsMigration / missingOwner / productionReady
+ysk-server projects isolation list --json
+
+# 單站 provision（root + YSK_EXECUTE）
+ysk-server projects isolation provision --id <projectId>
+
+# 批量 provision（預設最多 20）
+ysk-server projects isolation provision-all --limit 20
+
+# 舊站補 package owner（只改 owner_user_id，唔動 linux user）
+ysk-server projects isolation backfill-owners --owner-user-id <panelUserId>
+```
+
+HTTP：
+
+| Method | Path | 說明 |
+|--------|------|------|
+| GET | `/api/v1/projects/isolation` | 全站 isolation report |
+| POST | `/api/v1/projects/isolation/provision-all` | 批量 os-provision |
+| POST | `/api/v1/projects/isolation/backfill-owners` | body: `{ ownerUserId?, projectIds? }` |
+
+Provision 成功時若未設資源限制，會寫入預設：`MemoryMax=512M`、`CPUQuota=50%`、`TasksMax=256`、`LimitNOFILE=4096`。
 
 ## 安全
 

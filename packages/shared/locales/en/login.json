@@ -9,5 +9,6 @@
   "totpRequired": "2FA is enabled for this account. Enter the 6-digit code.",
   "totpLabel": "Authentication code",
   "totpHint": "6-digit code from your authenticator app",
-  "submitting": "Signing in…"
+  "submitting": "Signing in…",
+  "sessionExpired": "Session expired; sign in again"
 }

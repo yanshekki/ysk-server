@@ -1,5 +1,7 @@
 # YSK Server Frontend UI System
 
+> Language: English | [中文](./frontend-ui-ZH.md)
+
 Professional control-plane UI patterns for `apps/web`.  
 **Source of truth for styling:** `apps/web/src/styles/` only (no page-level CSS / inline styles).
 

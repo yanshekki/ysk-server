@@ -2,7 +2,7 @@
   "customPlaceholder": "自訂代碼",
   "searchPlaceholder": "搜尋…",
   "emptyText": "無符合項目",
-  "removeTitle": "點擊移除",
+  "removeTitle": "點選移除",
   "noneSelected": "尚未選擇",
   "optionsAria": "選項",
   "showingCapped": "顯示前 {{shown}}／共 {{total}} 項 — 用搜尋收窄",

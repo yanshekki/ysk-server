@@ -1,5 +1,7 @@
 # Feature single-entry map
 
+> Language: English | [中文](./feature-single-entry-ZH.md)
+
 **Rule (H3):** one capability = one primary operator entry. Secondary paths either redirect, deep-link into the primary page, or are removed.
 
 **Registry source:** `apps/web/src/shared/nav/features.ts`  

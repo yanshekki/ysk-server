@@ -104,5 +104,17 @@
   "downloaded": "Downloaded {{name}}",
   "download": "Download",
   "syncConfirmTitle": "Sync nginx to system?",
-  "syncConfirmDesc": "Sync managed nginx conf to /etc/nginx/conf.d and reload. Needs root + YSK_EXECUTE."
+  "syncConfirmDesc": "Sync managed nginx conf to /etc/nginx/conf.d and reload. Needs root + YSK_EXECUTE.",
+  "uptime": "Uptime",
+  "load1m": "Load 1m",
+  "executeLabel": "EXECUTE",
+  "rootLabel": "Root",
+  "managedLabel": "Managed",
+  "managedCount": "Managed",
+  "exportsCount": "Exports",
+  "managedNginxTitle": "Managed Nginx",
+  "exportPath": "exportPath",
+  "mode": "mode",
+  "managedConf": "managed conf",
+  "dryRunFlag": "dry-run"
 }

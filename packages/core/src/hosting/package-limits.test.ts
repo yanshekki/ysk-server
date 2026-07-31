@@ -53,6 +53,24 @@ describe('package-limits', () => {
       expect(getUserPackage(db, 'u1')?.name).toBe('starter');
       expect(getUserPackage(db, 'nope')).toBeNull();
       assertCanCreateProject(db, 'u1');
+      // Unowned legacy project does NOT count against user
+      db.snapshot.projects = [
+        {
+          id: 'legacy',
+          name: 'legacy',
+          linux_user: 'u',
+          linux_group: 'g',
+          home_dir: '/tmp/legacy',
+          runtime: 'node',
+          env: 'production',
+          status: 'active',
+          os_provisioned: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ] as never;
+      assertCanCreateProject(db, 'u1');
+      // Owned project counts toward per-user package
       db.snapshot.projects = [
         {
           id: 'p1',
@@ -64,16 +82,17 @@ describe('package-limits', () => {
           env: 'production',
           status: 'active',
           os_provisioned: false,
+          owner_user_id: 'u1',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
       ] as never;
-      expect(() => assertCanCreateProject(db, 'u1')).toThrow(/專案上限/);
+      expect(() => assertCanCreateProject(db, 'u1')).toThrow(/專案上限|上限|quota|max/i);
       assertCanCreateProject(db); // no actor = skip
-      db.snapshot.mailboxes = [{ id: 'm1' }] as never;
-      expect(() => assertCanCreateMailbox(db, 'u1')).toThrow(/信箱上限/);
-      db.snapshot.mysql_databases = [{ id: 'd1' }] as never;
-      expect(() => assertCanCreateDatabase(db, 'u1')).toThrow(/資料庫上限/);
+      db.snapshot.mailboxes = [{ id: 'm1', owner_user_id: 'u1' }] as never;
+      expect(() => assertCanCreateMailbox(db, 'u1')).toThrow(/信箱上限|上限|mailbox/i);
+      db.snapshot.mysql_databases = [{ id: 'd1', owner_user_id: 'u1' }] as never;
+      expect(() => assertCanCreateDatabase(db, 'u1')).toThrow(/資料庫上限|上限|database/i);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

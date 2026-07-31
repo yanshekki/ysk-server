@@ -77,6 +77,7 @@ export function FilesPage() {
   const [sort, setSort] = useState<SortKey>('name');
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
   const [error, setError] = useState<string | null>(null);
@@ -136,7 +137,11 @@ export function FilesPage() {
         setItems([]);
         return;
       }
-      const r = await filesApi.list(root, path, { sort, order, q: query || undefined });
+      const r = await filesApi.list(root, path, {
+        sort,
+        order,
+        q: debouncedQuery || undefined,
+      });
       let list = r.items;
       if (side === 'favorites') {
         list = list.filter((i) => i.favorite);
@@ -147,7 +152,12 @@ export function FilesPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, [root, path, sort, order, query, side]);
+  }, [root, path, sort, order, debouncedQuery, side, t]);
+
+  useEffect(() => {
+    const tmr = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => window.clearTimeout(tmr);
+  }, [query]);
 
   useEffect(() => {
     void refresh();

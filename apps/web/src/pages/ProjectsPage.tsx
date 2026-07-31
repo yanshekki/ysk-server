@@ -1,13 +1,14 @@
 /**
- * Projects list — FeaturePageLayout aligned with recent UX.
+ * Projects list — server-backed search / runtime filter + ListToolbar.
  */
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { ProjectDto } from '@ysk/shared';
 import {
   ProjectCreateModal,
   ProjectList,
-  useProjects,
+  projectsApi,
 } from '../features/projects';
 import { summarizeProjects } from '../features/projects/model/status';
 import {
@@ -16,46 +17,37 @@ import {
   Button,
   FeaturePageLayout,
   ListPanel,
-  SegRadio,
+  ListToolbar,
   WithPageGuide,
 } from '../shared/components/ui';
+import { useServerList } from '../shared/hooks/useServerList';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { items, error, setError, busy, create, refresh } = useProjects();
+  const list = useServerList<ProjectDto>({ path: '/api/v1/projects', debounceMs: 300 });
   const [createOpen, setCreateOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [runtimeFilter, setRuntimeFilter] = useState<
-    'all' | 'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
-  >('all');
+  const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return items.filter((p) => {
-      if (runtimeFilter !== 'all' && p.runtime !== runtimeFilter) return false;
-      if (!q) return true;
-      return (
-        p.name.toLowerCase().includes(q) ||
-        (p.domain?.toLowerCase().includes(q) ?? false) ||
-        p.id.toLowerCase().includes(q)
-      );
-    });
-  }, [items, query, runtimeFilter]);
-
+  const items = list.items;
   const stats = useMemo(() => summarizeProjects(items), [items]);
+  const total = list.meta?.total ?? items.length;
+  const facets = list.meta?.facets;
+  const runtime = list.filters.runtime ?? '';
 
   return (
     <FeaturePageLayout
       title={t('nav.projects', { defaultValue: t('common.project') })}
       status={{
         pill: {
-          label: stats.total ? t('projects.statProjects', { count: stats.total }) : t('projects.noProjectsShort'),
-          tone: stats.total ? 'ok' : 'warn',
+          label: total
+            ? t('projects.statProjects', { count: total })
+            : t('projects.noProjectsShort'),
+          tone: total ? 'ok' : 'warn',
         },
         items: [
-          { label: t('projects.statTotal'), value: stats.total },
+          { label: t('projects.statTotal'), value: total },
           { label: t('projects.statRunning'), value: stats.running, tone: 'ok' },
           { label: t('projects.statDegraded'), value: stats.degraded, tone: 'warn' },
           {
@@ -71,12 +63,13 @@ export function ProjectsPage() {
           { label: t('projects.statStopped'), value: stats.stopped },
         ],
       }}
-      actions={<ActionBar>
+      actions={
+        <ActionBar>
           <Button
             variant="ghost"
             size="sm"
-            loading={busy}
-            onClick={() => void refresh().catch((e: Error) => setError(e.message))}
+            loading={list.loading || busy}
+            onClick={() => void list.refresh().catch((e: Error) => list.setError(e.message))}
           >
             {t('common.refresh')}
           </Button>
@@ -84,88 +77,112 @@ export function ProjectsPage() {
       }
     >
       <WithPageGuide guideId="projects">
-      {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
-      <ListPanel
-        title={t('nav.projects', { defaultValue: t('common.project') })}
-        description={t('projects.searchPlaceholder')}
-        toolbar={
-          <ActionBar>
-            <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
-              + {t('projects.create')}
+        {list.error ? <Alert variant="error">{list.error}</Alert> : null}
+        {msg ? (
+          <Alert variant="ok">
+            {msg}{' '}
+            <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+              {t('common.close')}
             </Button>
-          </ActionBar>
-        }
-        filters={
-          <div className="page-toolbar u-m-0">
-            <div className="page-toolbar__search">
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t('projects.searchPlaceholder')}
-                aria-label={t('projects.searchPlaceholder')}
-              />
-            </div>
-            <SegRadio
-              name="proj-rt-filter"
-              aria-label={t('projects.runtime')}
-              size="sm"
-              value={runtimeFilter}
-              onChange={(v) => setRuntimeFilter(v as typeof runtimeFilter)}
-              options={[
-                { value: 'all', label: t('projects.filterAll') },
-                { value: 'node', label: 'Node' },
-                { value: 'php', label: 'PHP' },
-                { value: 'python', label: 'Python' },
-                { value: 'go', label: 'Go' },
-                { value: 'rust', label: 'Rust' },
-                { value: 'static', label: t('common.static') },
+          </Alert>
+        ) : null}
+
+        <ListPanel
+          title={t('nav.projects', { defaultValue: t('common.project') })}
+          description={t('projects.searchPlaceholder')}
+          toolbar={
+            <ActionBar>
+              <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+                + {t('projects.create')}
+              </Button>
+            </ActionBar>
+          }
+          filters={
+            <ListToolbar
+              search={list.q}
+              onSearchChange={list.setQ}
+              searchPlaceholder={t('projects.searchPlaceholder')}
+              searchAriaLabel={t('projects.searchPlaceholder')}
+              searching={list.searching}
+              loading={list.loading}
+              total={total}
+              shown={items.length}
+              activeFilterCount={list.activeFilterCount}
+              onClear={list.clear}
+              chipGroups={[
+                {
+                  key: 'runtime',
+                  ariaLabel: t('projects.runtime'),
+                  allLabel: t('projects.filterAll'),
+                  value: runtime,
+                  onChange: (v) => list.setFilter('runtime', v),
+                  chips: [
+                    { id: 'node', label: 'Node', count: facets?.runtime?.node },
+                    { id: 'php', label: 'PHP', count: facets?.runtime?.php },
+                    { id: 'python', label: 'Python', count: facets?.runtime?.python },
+                    { id: 'go', label: 'Go', count: facets?.runtime?.go },
+                    { id: 'rust', label: 'Rust', count: facets?.runtime?.rust },
+                    {
+                      id: 'static',
+                      label: t('common.static'),
+                      count: facets?.runtime?.static,
+                    },
+                  ],
+                },
               ]}
             />
-          </div>
-        }
-        empty={filtered.length === 0}
-        emptyTitle={items.length === 0 ? t('projects.empty') : t('projects.emptyFilter')}
-        emptyDescription={
-          items.length === 0 ? t('projects.emptyHint') : t('projects.emptyFilterHint')
-        }
-      >
-        <ProjectList
-          items={filtered}
-          emptyTitle={items.length === 0 ? t('projects.empty') : t('projects.emptyFilter')}
+          }
+          empty={items.length === 0}
+          emptyTitle={
+            list.activeFilterCount > 0
+              ? t('projects.emptyFilter')
+              : t('projects.empty')
+          }
           emptyDescription={
-            items.length === 0 ? t('projects.emptyHint') : t('projects.emptyFilterHint')
+            list.activeFilterCount > 0
+              ? t('projects.emptyFilterHint')
+              : t('projects.emptyHint')
           }
-        />
-      </ListPanel>
+        >
+          <ProjectList
+            items={items}
+            emptyTitle={
+              list.activeFilterCount > 0
+                ? t('projects.emptyFilter')
+                : t('projects.empty')
+            }
+            emptyDescription={
+              list.activeFilterCount > 0
+                ? t('projects.emptyFilterHint')
+                : t('projects.emptyHint')
+            }
+          />
+        </ListPanel>
 
-      <ProjectCreateModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        busy={busy}
-        onSubmit={async (input) => {
-          setMsg(null);
-          setError(null);
-          try {
-            const r = await create(input);
-            const extra = r.extras?.notes?.length ? ` · ${r.extras.notes.join('；')}` : '';
-            setMsg(`${t('projects.created', { name: r.project.name })}${extra}`);
-            setCreateOpen(false);
-            navigate(`/projects/${r.project.id}?tab=deploy&fresh=1`);
-          } catch {
-            /* error from hook */
-          }
-        }}
-      />
+        <ProjectCreateModal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          busy={busy}
+          onSubmit={async (input) => {
+            setMsg(null);
+            list.setError(null);
+            setBusy(true);
+            try {
+              const r = await projectsApi.create(input);
+              const extra = r.extras?.notes?.length
+                ? ` · ${r.extras.notes.join('；')}`
+                : '';
+              setMsg(`${t('projects.created', { name: r.project.name })}${extra}`);
+              setCreateOpen(false);
+              await list.refresh();
+              navigate(`/projects/${r.project.id}?tab=deploy&fresh=1`);
+            } catch (e) {
+              list.setError(e instanceof Error ? e.message : t('common.createFailed'));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
       </WithPageGuide>
     </FeaturePageLayout>
   );

@@ -49,6 +49,12 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
     cap: 'backups.restore',
   },
   {
+    methods: ['POST'],
+    pattern: /^\/api\/v1\/backups\/control-plane\/restore$/,
+    cap: 'backups.restore',
+    note: 'control-plane store restore',
+  },
+  {
     methods: ['DELETE'],
     pattern: /^\/api\/v1\/projects\/[^/]+$/,
     cap: 'projects.delete',
@@ -85,7 +91,7 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   },
   {
     methods: ['POST'],
-    pattern: /^\/api\/v1\/backups\/(run-all|restic\/run|schedule)$/,
+    pattern: /^\/api\/v1\/backups\/(run-all|restic\/run|schedule|control-plane)$/,
     cap: 'backups.run',
   },
   { methods: ['POST'], pattern: /^\/api\/v1\/backups\/settings$/, cap: 'backups.run' },
@@ -233,11 +239,83 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
     pattern: /^\/api\/v1\/auth\/api-keys/,
     cap: 'security.api_keys.admin',
   },
+
+  // —— B1 audit fill: previously unlisted mutating surfaces ——
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/approvals\//,
+    cap: 'approvals.respond',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/db\//,
+    cap: 'db.write',
+    note: 'db clusters / temp users / adminer — drop still matched earlier DELETE rules',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/network\//,
+    cap: 'settings.system',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/hosting\//,
+    cap: 'projects.write',
+    note: 'generic hosting mutations; specific dns/nginx rules above win first',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/fleet\//,
+    cap: 'services.control',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/migrate/,
+    cap: 'settings.system',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/ai\//,
+    cap: 'settings.system',
+    note: 'AI task / RCA mutations — privilege for control-plane AI',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/ssh\//,
+    cap: 'security.policy',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/sftp\//,
+    cap: 'files.project',
+  },
+  {
+    methods: ['POST', 'DELETE'],
+    pattern: /^\/api\/v1\/logs\//,
+    cap: 'logs.purge',
+  },
+  {
+    methods: ['POST'],
+    pattern: /^\/api\/v1\/updates\//,
+    cap: 'updates.apply',
+    note: 'inventory refresh is POST; apply already matched more specific',
+  },
   {
     methods: ['POST'],
     pattern: /^\/api\/v1\/system\//,
     cap: 'settings.system',
     note: 'fallback for unlisted system mutations',
+  },
+  /**
+   * Last-resort: any other mutating /api/v1/* not listed above.
+   * Fail-closed for unknown write surface (agents / future routes must add a rule).
+   * Public auth paths are skipped in enforceMutatingRouteCaps.
+   */
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\//,
+    cap: 'settings.system',
+    note: 'B1 fail-closed fallback — prefer a specific rule above',
   },
 ];
 
@@ -286,9 +364,13 @@ export const FEATURE_NAV_CAPS: Readonly<Record<string, readonly CapabilityId[]>>
   security: ['users.self', 'security.policy', 'security.api_keys.admin'],
   // nested defense tools
   firewall: ['firewall.read', 'firewall.edit', 'firewall.flush'],
+  fail2ban: ['firewall.read', 'firewall.edit', 'firewall.flush'],
   // system admin-ish
   systemd: ['services.read', 'services.control', 'settings.system'],
   migrate: ['settings.system', 'backups.restore'],
+  agents: ['services.read', 'services.control', 'runtime.tuning'],
+  cdn: ['publish.apply', 'projects.read'],
+  rbac: ['rbac.policy', 'users.manage'],
 };
 
 /** Path prefix → any-of caps (for SPA route guard). Longer prefixes win. */
@@ -305,9 +387,18 @@ export const PATH_CAP_GUARDS: ReadonlyArray<{
     caps: ['firewall.read', 'firewall.edit', 'firewall.flush'],
   },
   {
+    prefix: '/protection/fail2ban',
+    caps: ['firewall.read', 'firewall.edit', 'firewall.flush'],
+  },
+  {
     prefix: '/protection',
     caps: ['firewall.read', 'firewall.edit', 'firewall.flush'],
   },
+  { prefix: '/system/migrate', caps: ['settings.system', 'backups.restore'] },
+  { prefix: '/system/unit', caps: ['services.control', 'settings.system'] },
+  { prefix: '/system/readiness', caps: ['dashboard.read', 'settings.system'] },
+  { prefix: '/agents', caps: ['services.read', 'services.control', 'runtime.tuning'] },
+  { prefix: '/cdn', caps: ['publish.apply', 'projects.read'] },
 ];
 
 /** True if actor may see a feature nav item. */
