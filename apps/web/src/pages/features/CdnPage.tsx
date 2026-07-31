@@ -91,7 +91,7 @@ const DNS_STRATEGIES: CdnDnsStrategy[] = [
   'geo',
 ];
 
-function statusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
+export function statusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (s === 'online' || s === 'applied' || s === 'written') return 'ok';
   if (s === 'draining' || s === 'planned' || s === 'partial') return 'warn';
   if (s === 'offline' || s === 'failed') return 'danger';
@@ -946,7 +946,7 @@ export function CdnPage() {
                 {
                   key: 'edges',
                   header: 'Edges',
-                  render: (s) => s.edgeNodeIds.length,
+                  render: (s) => s.edgeNodeIds?.length ?? 0,
                 },
                 {
                   key: 'status',

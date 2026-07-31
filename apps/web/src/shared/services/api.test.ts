@@ -240,4 +240,57 @@ describe('api service layer', () => {
       totp: '123456',
     });
   });
+
+  it('covers remaining auth/security helpers and downloadAuthenticated', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
+
+    await api.logout();
+    await api.setLocale('zh-CN');
+    await api.totpStatus();
+    await api.totpBegin({ password: 'x' });
+    await api.totpConfirm('123456');
+    await api.totpStepUp('123456');
+    await api.totpDisable('123456');
+    await api.listSessions();
+    await api.revokeSession('s1');
+    await api.revokeOtherSessions();
+    await api.getSecuritySettings();
+    await api.setSecuritySettings({ requireAdminTotp: true });
+    await api.listApiKeys();
+    await api.createApiKey('ci');
+    await api.deleteApiKey('k1');
+
+    // downloadAuthenticated success
+    const blob = new Blob(['data']);
+    fetchMock.mockResolvedValueOnce(
+      new Response(blob, { status: 200, headers: { 'Content-Type': 'application/octet-stream' } }),
+    );
+    const createObj = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:x');
+    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    authStore.setToken('tok');
+    await api.downloadAuthenticated('/api/v1/files/dl', 'a.bin');
+    createObj.mockRestore();
+    revoke.mockRestore();
+
+    // downloadAuthenticated error
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'nope' }, 404));
+    await expect(api.downloadAuthenticated('/api/v1/files/missing', 'x')).rejects.toMatchObject({
+      status: 404,
+    });
+
+    // empty notes / results fallbacks for 422
+    fetchMock.mockResolvedValueOnce(jsonResponse({ notes: [] }, 422));
+    await expect(api.requestRaw('/api/v1/x')).rejects.toMatchObject({ status: 422 });
+
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ results: [{ notes: ['from-row'] }] }, 400),
+    );
+    await expect(api.requestRaw('/api/v1/batch2')).rejects.toMatchObject({
+      message: 'from-row',
+    });
+
+    // generic status fallback
+    fetchMock.mockResolvedValueOnce(jsonResponse({}, 418));
+    await expect(api.requestRaw('/api/v1/teapot')).rejects.toMatchObject({ status: 418 });
+  });
 });

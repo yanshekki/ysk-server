@@ -42,7 +42,7 @@ import {
 
 const TABS = ['ifaces', 'routes', 'dns', 'advanced', 'about'] as const;
 
-function formatBytes(n?: number): string {
+export function formatBytes(n?: number): string {
   if (n == null || !Number.isFinite(n)) return '—';
   if (n < 1024) return `${n} B`;
   if (n < 1024 ** 2) return `${(n / 1024).toFixed(1)} KiB`;
@@ -50,24 +50,24 @@ function formatBytes(n?: number): string {
   return `${(n / 1024 ** 3).toFixed(2)} GiB`;
 }
 
-function operTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
+export function operTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   const u = s.toUpperCase();
   if (u === 'UP') return 'ok';
   if (u === 'DOWN') return 'neutral';
   return 'warn';
 }
 
-function isUp(iface: NetInterface): boolean {
+export function isUp(iface: NetInterface): boolean {
   return (
     iface.operstate.toUpperCase() === 'UP' || iface.flags.includes('UP')
   );
 }
 
-function cidrOf(a: { local: string; prefixlen: number }): string {
+export function cidrOf(a: { local: string; prefixlen: number }): string {
   return `${a.local}/${a.prefixlen}`;
 }
 
-function joinCidrs(addrs: NetAddress[], family: 'inet' | 'inet6'): string {
+export function joinCidrs(addrs: NetAddress[], family: 'inet' | 'inet6'): string {
   const list = addrs.filter((a) => a.family === family);
   if (!list.length) return '—';
   if (family === 'inet6' && list.length > 2) {

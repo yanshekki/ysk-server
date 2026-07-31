@@ -97,7 +97,7 @@ type TuningGroup = {
   }>;
 };
 
-function isTuningKind(k: HostingRuntimeKind): k is TuningKind {
+export function isTuningKind(k: HostingRuntimeKind): k is TuningKind {
   return k === 'node' || k === 'python' || k === 'go' || k === 'rust';
 }
 

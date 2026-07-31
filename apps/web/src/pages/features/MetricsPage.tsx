@@ -51,7 +51,7 @@ type PendingSignal = {
   command: string;
 };
 
-function formatBytes(n?: number): string {
+export function formatBytes(n?: number): string {
   if (n == null || !Number.isFinite(n)) return '—';
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
@@ -59,7 +59,7 @@ function formatBytes(n?: number): string {
   return `${(n / 1024 ** 3).toFixed(2)} GB`;
 }
 
-function formatUptime(sec?: number): string {
+export function formatUptime(sec?: number): string {
   if (sec == null || !Number.isFinite(sec)) return '—';
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
@@ -69,7 +69,7 @@ function formatUptime(sec?: number): string {
   return `${m}m`;
 }
 
-function alertLabel(a: string, tr: (k: string) => string): string {
+export function alertLabel(a: string, tr: (k: string) => string): string {
   const key = `metrics.alert.${a}`;
   const v = tr(key);
   return v === key ? a : v;

@@ -309,7 +309,8 @@ function routes(): FetchRoute[] {
       },
     },
     {
-      match: /\/api\/v1\/cdn/,
+      match: (url: string, init?: RequestInit) =>
+        url.startsWith('/api/v1/cdn/nodes') && (init?.method ?? 'GET').toUpperCase() === 'GET',
       body: {
         items: [
           {
@@ -325,6 +326,29 @@ function routes(): FetchRoute[] {
         ],
         meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
       },
+    },
+    {
+      match: (url: string, init?: RequestInit) =>
+        url.startsWith('/api/v1/cdn/sites') && (init?.method ?? 'GET').toUpperCase() === 'GET',
+      body: {
+        items: [
+          {
+            id: 's1',
+            name: 'site',
+            domains: ['cdn.example.com'],
+            mode: 'origin_pull',
+            origin: { url: 'http://origin.example.com' },
+            edgeNodeIds: ['n1'],
+            status: 'written',
+            apply_status: 'written',
+          },
+        ],
+        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+      },
+    },
+    {
+      match: /\/api\/v1\/cdn/,
+      body: HONESTY_WRITTEN_BLOCKED,
     },
     {
       match: /\/api\/v1\/dns/,

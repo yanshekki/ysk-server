@@ -62,9 +62,67 @@ describe('project model/status', () => {
       domain: 'x.com',
       lastDeployAt: new Date().toISOString(),
       nginxConfigPath: '/etc/nginx/x',
+      lastHealth: { ok: true },
     } as ProjectDto);
     expect(steps.length).toBeGreaterThan(0);
+    expect(steps.find((s) => s.id === 'health')?.state).toBe('done');
+
+    // OS pending / linuxUser warn / todo branches
+    const pending = buildProjectChecklist({
+      ...base,
+      status: 'pending_os',
+      osProvisioned: false,
+    } as ProjectDto);
+    expect(pending.find((s) => s.id === 'os')?.state).toBe('warn');
+
+    const linuxUser = buildProjectChecklist({
+      ...base,
+      osProvisioned: false,
+      linuxUser: 'demo',
+      status: 'active',
+    } as ProjectDto);
+    expect(linuxUser.find((s) => s.id === 'os')?.state).toBe('warn');
+
+    const runningNoDeploy = buildProjectChecklist({
+      ...base,
+      processStatus: 'running',
+      osProvisioned: true,
+    } as ProjectDto);
+    expect(runningNoDeploy.find((s) => s.id === 'deploy')?.state).toBe('done');
+
+    const badHealth = buildProjectChecklist({
+      ...base,
+      lastHealth: { ok: false },
+    } as ProjectDto);
+    expect(badHealth.find((s) => s.id === 'health')?.state).toBe('warn');
+
     expect(formatHealthFacts(null)).toEqual([]);
+    expect(formatHealthFacts(undefined)).toEqual([]);
+    expect(formatHealthFacts('x' as never)).toEqual([]);
+    const rich = formatHealthFacts({
+      ok: false,
+      nginxStatus: 'managed_only',
+      nginxReloaded: false,
+      status: 502,
+      ms: 42,
+      error: 'bad gateway',
+      at: new Date().toISOString(),
+      customFact: 'yes',
+      nested: { skip: true },
+      body: 'skip',
+    });
+    expect(rich.length).toBeGreaterThan(5);
+    expect(rich.some((f) => f.labelFallback === 'customFact')).toBe(true);
+
+    const nginxOk = formatHealthFacts({
+      ok: true,
+      nginxStatus: 'live',
+      nginxReloaded: true,
+      at: 'not-a-date',
+    });
+    expect(nginxOk.some((f) => f.value === 'Yes')).toBe(true);
+    expect(nginxOk.some((f) => f.value === 'not-a-date')).toBe(true);
+
     expect(
       formatHealthFacts({
         ok: true,
@@ -74,6 +132,21 @@ describe('project model/status', () => {
         httpStatus: 200,
       }).length,
     ).toBeGreaterThan(0);
+  });
+
+  it('deriveProjectStatus remaining branches', () => {
+    expect(deriveProjectStatus({ ...base, status: 'active' }).bucket).toBe('stopped');
+    expect(deriveProjectStatus({ ...base, status: '', processStatus: '' }).labelKey).toMatch(
+      /ready/,
+    );
+    expect(deriveProjectStatus({ ...base, status: 'active_pending_os' }).bucket).toBe(
+      'pending_os',
+    );
+    expect(deriveProjectStatus({ ...base, processStatus: 'starting' }).tone).toBe('info');
+    expect(deriveProjectStatus({ ...base, processStatus: 'active_pending_os' }).bucket).toBe(
+      'pending_os',
+    );
+    expect(deriveProjectStatus({ ...base, status: 'failed' }).tone).toBe('danger');
   });
 });
 

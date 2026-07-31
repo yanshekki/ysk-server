@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
-/** COVERAGE_FLOOR: locked at 85% while climbing to 90% (currently ~85.9% lines). */
-const floor = Number(process.env.COVERAGE_FLOOR ?? '85');
+/** COVERAGE_FLOOR: locked at 89% while climbing to 90% (currently ~89.2% lines). */
+const floor = Number(process.env.COVERAGE_FLOOR ?? '89');
 
 export default defineConfig({
   plugins: [react()],
@@ -42,8 +42,8 @@ export default defineConfig({
               // Lines/statements locked; functions lag (many event handlers only hit via deep RTL).
               lines: floor,
               statements: floor,
-              functions: Math.min(floor, 60),
-              branches: Math.min(floor, 75),
+              functions: Math.min(floor, 70),
+              branches: Math.min(floor, 80),
             }
           : undefined,
     },

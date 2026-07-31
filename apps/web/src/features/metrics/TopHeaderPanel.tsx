@@ -4,7 +4,7 @@
 import { useTranslation } from 'react-i18next';
 import type { CpuTimesPct, TopHeader } from './api';
 
-function formatUptime(sec: number, t: (k: string, o?: Record<string, unknown>) => string): string {
+export function formatUptime(sec: number, t: (k: string, o?: Record<string, unknown>) => string): string {
   if (!Number.isFinite(sec) || sec < 0) return '—';
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
@@ -19,7 +19,7 @@ function formatUptime(sec: number, t: (k: string, o?: Record<string, unknown>) =
   return `${h}:${String(m).padStart(2, '0')}`;
 }
 
-function kibToHuman(kib: number): string {
+export function kibToHuman(kib: number): string {
   if (!Number.isFinite(kib) || kib <= 0) return '0';
   if (kib >= 1024 * 1024) return `${(kib / 1024 / 1024).toFixed(1)} GiB`;
   if (kib >= 1024) return `${(kib / 1024).toFixed(1)} MiB`;
