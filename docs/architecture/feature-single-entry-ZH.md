@@ -1,6 +1,6 @@
 # 功能單入口
 
-> 語言：中文（香港書面語）| [English](./feature-single-entry.md)
+> 語言：中文 | [English](./feature-single-entry.md)
 
 ## 原則
 

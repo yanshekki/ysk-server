@@ -1,6 +1,6 @@
 # 架構概覽
 
-> 語言：中文（香港書面語）| [English](./overview.md)
+> 語言：中文 | [English](./overview.md)
 
 **讀者：** 操作員與工程師  
 **相關：** [monorepo-ZH](./monorepo-ZH.md) · [ops-honesty-ZH](./ops-honesty-ZH.md) · [state-store-ZH](./state-store-ZH.md)

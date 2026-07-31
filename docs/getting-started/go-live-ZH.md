@@ -1,6 +1,6 @@
 # 上線清單
 
-> 語言：中文（香港書面語）| [English](./go-live.md)
+> 語言：中文 | [English](./go-live.md)
 
 1. 強管理員密碼 + 2FA  
 2. 監聽 loopback 或對外加防火牆  

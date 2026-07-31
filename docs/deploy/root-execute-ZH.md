@@ -1,6 +1,6 @@
 # root 與 YSK_EXECUTE
 
-> 語言：中文（香港書面語）| [English](./root-execute.md)
+> 語言：中文 | [English](./root-execute.md)
 
 **用途：** 界定控制平面何時可改真實主機。
 

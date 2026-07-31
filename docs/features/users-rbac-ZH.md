@@ -1,6 +1,6 @@
 # 用戶、方案、RBAC
 
-> 語言：中文（香港書面語）| [English](./users-rbac.md)
+> 語言：中文 | [English](./users-rbac.md)
 
 **面板路由：** `/users`  
 **CLI：** `users`、`packages`、`rbac`

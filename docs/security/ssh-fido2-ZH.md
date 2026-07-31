@@ -1,6 +1,6 @@
 # SSH FIDO2／安全金鑰
 
-> 語言：中文（香港書面語）| [English](./ssh-fido2.md)
+> 語言：中文 | [English](./ssh-fido2.md)
 
 ## 用途
 

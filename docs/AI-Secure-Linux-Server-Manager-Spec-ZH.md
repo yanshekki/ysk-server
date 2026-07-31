@@ -1,6 +1,6 @@
 # AI 安全 Linux 伺服器管理器 — 規格摘要（加厚）
 
-> 語言：中文（香港書面語）| [English full spec](./AI-Secure-Linux-Server-Manager-Spec.md)
+> 語言：中文 | [English full spec](./AI-Secure-Linux-Server-Manager-Spec.md)
 
 **定位：** 英文檔是完整規格；本頁是操作員／工程師用的**結構化中文摘要**（非逐字全文翻譯）。
 

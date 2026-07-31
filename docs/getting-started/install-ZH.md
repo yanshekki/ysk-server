@@ -1,6 +1,6 @@
 # 安裝
 
-> 語言：中文（香港書面語）| [English](./install.md)
+> 語言：中文 | [English](./install.md)
 
 ## Monorepo
 

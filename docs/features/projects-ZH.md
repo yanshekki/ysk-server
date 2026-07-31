@@ -1,6 +1,6 @@
 # 專案與部署
 
-> 語言：中文（香港書面語）| [English](./projects.md)
+> 語言：中文 | [English](./projects.md)
 
 **面板路由：** `/projects`、`/projects/:id`  
 **CLI：** `projects`、`templates`、`hosting`、`nginx`

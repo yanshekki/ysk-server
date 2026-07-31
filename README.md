@@ -1,6 +1,6 @@
 # YSK Server
 
-> Language: English | [中文（香港書面語）](./README-ZH.md)
+> Language: English | [中文](./README-ZH.md)
 
 **YSK Server** (`ysk-server`) is a **security-first, single-host Linux control plane** with a web hosting panel and an AI-friendly CLI.
 

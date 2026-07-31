@@ -1,6 +1,6 @@
 # 資料庫
 
-> 語言：中文（香港書面語）| [English](./databases.md)
+> 語言：中文 | [English](./databases.md)
 
 **面板路由：** `/databases/mysql|mariadb|postgres|redis`（+ 服務主控台）  
 **CLI：** `hosting mysql-provision|postgres-provision|redis-provision`、`db-cluster`

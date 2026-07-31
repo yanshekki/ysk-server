@@ -1,6 +1,6 @@
 # 運維誠實契約
 
-> 語言：中文（香港書面語）| [English](./ops-honesty.md)
+> 語言：中文 | [English](./ops-honesty.md)
 
 YSK **不會**在只寫了計劃或 `dataDir` 檔案時，假裝主機變更已成功。
 

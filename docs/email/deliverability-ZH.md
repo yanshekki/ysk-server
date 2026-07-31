@@ -1,6 +1,6 @@
 # 郵件可送達性
 
-> 語言：中文（香港書面語）| [English](./deliverability.md)
+> 語言：中文 | [English](./deliverability.md)
 
 ## 用途
 

@@ -1,6 +1,6 @@
 # 面板 2FA 與 SSH 2FA
 
-> 語言：中文（香港書面語）| [English](./2fa-panel-vs-ssh.md)
+> 語言：中文 | [English](./2fa-panel-vs-ssh.md)
 
 ## 分別
 

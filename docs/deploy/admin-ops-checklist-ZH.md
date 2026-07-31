@@ -1,6 +1,6 @@
 # 伺服器管理員：生產上線 Checklist
 
-> 語言：中文（香港書面語）| [English](./admin-ops-checklist.md)
+> 語言：中文 | [English](./admin-ops-checklist.md)
 
 > 本頁為對應英文運維文件的香港書面語版；命令與路徑保持原文以便複製。
 

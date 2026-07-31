@@ -1,6 +1,6 @@
 # YSK Server 文件索引
 
-> 語言：中文（香港書面語）| [English](./INDEX.md)
+> 語言：中文 | [English](./INDEX.md)
 
 **產品：** 單機 Linux 控制平面 + 架站面板（`ysk-server`）  
 **不是：** 多租戶 Reseller SaaS、網頁終端機、或保證全球郵件 inbox 送達。
@@ -73,7 +73,7 @@
 
 | 文件 | 用途 |
 |------|------|
-| [user-manual/manual-ZH.md](./user-manual/manual-ZH.md) | 操作員手冊（香港書面語） |
+| [user-manual/manual-ZH.md](./user-manual/manual-ZH.md) | 操作員手冊 |
 | [user-manual/manual.md](./user-manual/manual.md) | Operator handbook (EN) |
 
 ## 規格與歷史
@@ -81,11 +81,11 @@
 | 文件 | 說明 |
 |------|------|
 | [AI-Secure-Linux-Server-Manager-Spec.md](./AI-Secure-Linux-Server-Manager-Spec.md) | 產品規格（英文全文） |
-| [AI-Secure-Linux-Server-Manager-Spec-ZH.md](./AI-Secure-Linux-Server-Manager-Spec-ZH.md) | 規格摘要（香港書面語） |
+| [AI-Secure-Linux-Server-Manager-Spec-ZH.md](./AI-Secure-Linux-Server-Manager-Spec-ZH.md) | 規格摘要 |
 | [_archive/](./_archive/) | 舊缺口清單、階段筆記、code review |
 
 ## 慣例
 
-- 正式文件均有 **`-ZH.md`** 香港書面語版本。  
+- 正式文件均有 **`-ZH.md`** 中文版本。  
 - AI 優先用 **CLI + `--json`**。  
 - 主機變更預設 **dry-run**，直至 `--execute` 且 `YSK_EXECUTE=1`（通常需 root）。  

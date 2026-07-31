@@ -1,6 +1,6 @@
 # 真實套用與降級
 
-> 語言：中文（香港書面語）| [English](./real-ops.md)
+> 語言：中文 | [English](./real-ops.md)
 
 ## 模式
 

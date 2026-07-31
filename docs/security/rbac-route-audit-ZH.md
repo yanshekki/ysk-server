@@ -1,6 +1,6 @@
 # RBAC 路由審計
 
-> 語言：中文（香港書面語）| [English](./rbac-route-audit.md)
+> 語言：中文 | [English](./rbac-route-audit.md)
 
 ## 用途
 

@@ -1,6 +1,6 @@
 # 執行環境
 
-> 語言：中文（香港書面語）| [English](./runtimes.md)
+> 語言：中文 | [English](./runtimes.md)
 
 **面板路由：** `/runtimes/node`、`/runtimes/php`…  
 **CLI：** `hosting runtimes`、`hosting runtime-install`

@@ -1,6 +1,6 @@
 # 面板 ↔ CLI 對等矩陣
 
-> 語言：中文（香港書面語）| [English](./parity.md)
+> 語言：中文 | [English](./parity.md)
 
 
 **硬規則：** 面板有的能力，CLI 必須有對等入口；AI agents 優先用 CLI + 本檔 + [reference.md](./reference.md) + [../agent/commands.json](../agent/commands.json)。

@@ -1,6 +1,6 @@
 # CDN 與 Fleet Agent
 
-> 語言：中文（香港書面語）| [English](./cdn-agents.md)
+> 語言：中文 | [English](./cdn-agents.md)
 
 **面板：** CDN 頁 · `/agents`  
 **CLI：** `cdn`、`agents`、`agent run`

@@ -1,6 +1,6 @@
 # CLI 參考
 
-> 語言：中文（香港書面語）| [English](./reference.md)
+> 語言：中文 | [English](./reference.md)
 
 **二進位：** `ysk-server`  
 **另見：** [overview-ZH.md](./overview-ZH.md) · [parity-ZH.md](./parity-ZH.md) · [../agent/commands.json](../agent/commands.json)

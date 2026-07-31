@@ -1,6 +1,6 @@
 # 前端 UI
 
-> 語言：中文（香港書面語）| [English](./frontend-ui.md)
+> 語言：中文 | [English](./frontend-ui.md)
 
 ## 概覽
 

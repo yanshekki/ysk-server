@@ -1,6 +1,6 @@
 # AI Agent 說明
 
-> 語言：中文（香港書面語）| [English](./README.md)
+> 語言：中文 | [English](./README.md)
 
 ## 規則
 

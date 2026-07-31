@@ -1,6 +1,6 @@
 # YSK Server documentation index
 
-> Language: English | [中文（香港書面語）](./INDEX-ZH.md)
+> Language: English | [中文](./INDEX-ZH.md)
 
 **Product:** single-host Linux control plane + hosting panel (`ysk-server`)  
 **Not:** multi-tenant reseller SaaS, web terminal, or guaranteed global email inbox delivery.
@@ -74,18 +74,18 @@
 | Doc | Purpose |
 |-----|---------|
 | [user-manual/manual.md](./user-manual/manual.md) | Operator handbook (EN) |
-| [user-manual/manual-ZH.md](./user-manual/manual-ZH.md) | 操作員手冊（香港書面語） |
+| [user-manual/manual-ZH.md](./user-manual/manual-ZH.md) | 操作員手冊 |
 
 ## Spec & history
 
 | Doc | Note |
 |-----|------|
 | [AI-Secure-Linux-Server-Manager-Spec.md](./AI-Secure-Linux-Server-Manager-Spec.md) | Product specification (EN full text) |
-| [AI-Secure-Linux-Server-Manager-Spec-ZH.md](./AI-Secure-Linux-Server-Manager-Spec-ZH.md) | Spec summary (Hong Kong written Chinese) |
+| [AI-Secure-Linux-Server-Manager-Spec-ZH.md](./AI-Secure-Linux-Server-Manager-Spec-ZH.md) | Spec summary (Chinese) |
 | [_archive/](./_archive/) | Older gap lists, phase notes, code reviews |
 
 ## Conventions
 
-- Every formal doc has a **`-ZH.md`** sibling (Hong Kong written Chinese).
+- Every formal doc has a **`-ZH.md`** sibling (Chinese).
 - Prefer **CLI + `--json`** for AI agents.
 - Host mutations default **dry-run** until `--execute` and `YSK_EXECUTE=1` (often root).

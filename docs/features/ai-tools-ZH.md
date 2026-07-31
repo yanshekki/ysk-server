@@ -1,6 +1,6 @@
 # AI 工具與 Playbook
 
-> 語言：中文（香港書面語）| [English](./ai-tools.md)
+> 語言：中文 | [English](./ai-tools.md)
 
 **面板路由：** `/ai`、工具／allowlist 介面  
 **CLI：** `tools`、`ask`

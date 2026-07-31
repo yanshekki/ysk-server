@@ -1,6 +1,6 @@
 # 產品頁面地圖
 
-> 語言：中文（香港書面語）| [English](./product-page-map.md)
+> 語言：中文 | [English](./product-page-map.md)
 
 側欄路由與頁面契約。
 

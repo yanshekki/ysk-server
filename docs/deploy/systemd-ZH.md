@@ -1,6 +1,6 @@
 # 控制平面 systemd
 
-> 語言：中文（香港書面語）| [English](./systemd.md)
+> 語言：中文 | [English](./systemd.md)
 
 ## 安裝 unit
 

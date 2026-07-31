@@ -1,6 +1,6 @@
 # 日誌中心（System Log Center）— 100% in-scope
 
-> 語言：中文（香港書面語）| [English](./logs.md)
+> 語言：中文 | [English](./logs.md)
 
 > 本頁為對應英文運維文件的香港書面語版；命令與路徑保持原文以便複製。
 

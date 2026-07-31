@@ -1,6 +1,6 @@
 # 日誌與指標
 
-> 語言：中文（香港書面語）| [English](./logs-metrics.md)
+> 語言：中文 | [English](./logs-metrics.md)
 
 **面板路由：** `/logs`、`/metrics`、主機總覽  
 **CLI：** `logs`、`host`、`health`

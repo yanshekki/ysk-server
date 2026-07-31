@@ -1,6 +1,6 @@
 # 整機遷移（Host full migrate）
 
-> 語言：中文（香港書面語）| [English](./host-migrate.md)
+> 語言：中文 | [English](./host-migrate.md)
 
 > 本頁為對應英文運維文件的香港書面語版；命令與路徑保持原文以便複製。
 

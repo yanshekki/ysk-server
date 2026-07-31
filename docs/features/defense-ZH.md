@@ -1,6 +1,6 @@
 # 防護中心
 
-> 語言：中文（香港書面語）| [English](./defense.md)
+> 語言：中文 | [English](./defense.md)
 
 **面板路由：** `/protection`、`/firewall`、`/fail2ban`  
 **CLI：** `defense`／`protection`

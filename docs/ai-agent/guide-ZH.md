@@ -1,6 +1,6 @@
 # AI Agent 指南
 
-> 語言：中文（香港書面語）| [English](./guide.md)
+> 語言：中文 | [English](./guide.md)
 
 請優先使用：
 

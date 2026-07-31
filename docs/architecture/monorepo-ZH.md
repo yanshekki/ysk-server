@@ -1,6 +1,6 @@
 # Monorepo 結構
 
-> 語言：中文（香港書面語）| [English](./monorepo.md)
+> 語言：中文 | [English](./monorepo.md)
 
 ```
 ysk-server/

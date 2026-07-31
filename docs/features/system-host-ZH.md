@@ -1,6 +1,6 @@
 # 系統與主機
 
-> 語言：中文（香港書面語）| [English](./system-host.md)
+> 語言：中文 | [English](./system-host.md)
 
 **面板路由：** `/system`、`/services`、`/updates`、就緒  
 **CLI：** `system`、`services`、`update`、`readiness`、`doctor`、`host`

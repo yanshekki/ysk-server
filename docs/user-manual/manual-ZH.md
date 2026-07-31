@@ -1,6 +1,6 @@
 # 操作員手冊
 
-> 語言：中文（香港書面語）| [English](./manual.md)
+> 語言：中文 | [English](./manual.md)
 
 單機生產主機的 Day-1 路徑。完整地圖見 [../INDEX-ZH.md](../INDEX-ZH.md)。
 

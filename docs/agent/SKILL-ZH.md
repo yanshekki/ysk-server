@@ -1,6 +1,6 @@
 # YSK Server · Agent 技能（香港書面語）
 
-> 語言：中文（香港書面語）| [English](./SKILL.md)
+> 語言：中文 | [English](./SKILL.md)
 
 你正在操作 **ysk-server** 單機控制平面。
 

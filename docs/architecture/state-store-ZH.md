@@ -1,6 +1,6 @@
 # 控制平面狀態庫
 
-> 語言：中文（香港書面語）| [English](./state-store.md)
+> 語言：中文 | [English](./state-store.md)
 
 控制平面狀態（用戶、專案、設定、session、api_keys…）採用 **document store**：整份快照持久化，**不是**每表完整 relational schema。
 

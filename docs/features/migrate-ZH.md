@@ -1,6 +1,6 @@
 # 整機遷移
 
-> 語言：中文（香港書面語）| [English](./migrate.md)
+> 語言：中文 | [English](./migrate.md)
 
 **面板／CLI：** 遷移介面 · `ysk-server migrate`
 

@@ -1,6 +1,6 @@
 # SSH 身分庫
 
-> 語言：中文（香港書面語）| [English](./ssh-identities.md)
+> 語言：中文 | [English](./ssh-identities.md)
 
 ## 用途
 

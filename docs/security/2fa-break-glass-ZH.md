@@ -1,6 +1,6 @@
 # 2FA 緊急破門
 
-> 語言：中文（香港書面語）| [English](./2fa-break-glass.md)
+> 語言：中文 | [English](./2fa-break-glass.md)
 
 ## 用途
 

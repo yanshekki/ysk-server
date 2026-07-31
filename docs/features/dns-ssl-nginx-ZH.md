@@ -1,6 +1,6 @@
 # DNS、SSL、Nginx
 
-> 語言：中文（香港書面語）| [English](./dns-ssl-nginx.md)
+> 語言：中文 | [English](./dns-ssl-nginx.md)
 
 **面板路由：** `/dns`、`/ssl`、`/nginx`  
 **CLI：** `dns`、`ssl`、`nginx`、`hosting dns-*|powerdns-*`

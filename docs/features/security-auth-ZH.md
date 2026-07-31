@@ -1,6 +1,6 @@
 # 安全與認證
 
-> 語言：中文（香港書面語）| [English](./security-auth.md)
+> 語言：中文 | [English](./security-auth.md)
 
 **面板路由：** `/security`  
 **CLI：** `security`、`users`、`audit`、`ssh-key`、`ssh-2fa`、`rbac`

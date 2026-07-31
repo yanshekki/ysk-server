@@ -1,6 +1,6 @@
 # 專案隔離
 
-> 語言：中文（香港書面語）| [English](./isolation.md)
+> 語言：中文 | [English](./isolation.md)
 
 ## 目標
 

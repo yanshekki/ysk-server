@@ -1,6 +1,6 @@
 # 郵件外部設定
 
-> 語言：中文（香港書面語）| [English](./external-setup.md)
+> 語言：中文 | [English](./external-setup.md)
 
 ## 用途
 

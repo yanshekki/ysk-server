@@ -1,13 +1,13 @@
 # YSK Server
 
-> 語言：中文（香港書面語）| [English](./README.md)
+> 語言：中文 | [English](./README.md)
 
 **YSK Server**（`ysk-server`）是以**安全與誠實**為優先的**單機 Linux 控制平面**，附架站面板與適合 AI 的 CLI。
 
 | 項目 | 說明 |
 |------|------|
 | CLI | `ysk-server` |
-| 預設介面語言 | **zh-HK**（香港書面語），另有 zh-CN、en |
+| 預設介面語言 | **zh-HK**，另有 zh-CN、en |
 | 規格 | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) |
 | 文件索引 | [docs/INDEX-ZH.md](docs/INDEX-ZH.md) |
 

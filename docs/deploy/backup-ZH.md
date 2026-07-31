@@ -1,6 +1,6 @@
 # 備份操作
 
-> 語言：中文（香港書面語）| [English](./backup.md)
+> 語言：中文 | [English](./backup.md)
 
 ## 日常命令
 

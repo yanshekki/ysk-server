@@ -1,6 +1,6 @@
 # HTTP API 概覽
 
-> 語言：中文（香港書面語）| [English](./overview.md)
+> 語言：中文 | [English](./overview.md)
 
 基底：`serve` 監聽上的 `/api/v1/…`。認證：`Authorization: Bearer <session 或 ysk 金鑰>`。
 

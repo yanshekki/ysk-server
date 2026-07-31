@@ -1,6 +1,6 @@
 # 執行環境調校
 
-> 語言：中文（香港書面語）| [English](./runtime-tuning.md)
+> 語言：中文 | [English](./runtime-tuning.md)
 
 ## 用途
 

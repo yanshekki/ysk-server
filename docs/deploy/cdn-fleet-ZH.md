@@ -1,6 +1,6 @@
 # CDN + Fleet 誠實閉環（D3）
 
-> 語言：中文（香港書面語）| [English](./cdn-fleet.md)
+> 語言：中文 | [English](./cdn-fleet.md)
 
 > 本頁為對應英文運維文件的香港書面語版；命令與路徑保持原文以便複製。
 

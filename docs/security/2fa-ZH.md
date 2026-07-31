@@ -1,6 +1,6 @@
 # 雙重認證（2FA）
 
-> 語言：中文（香港書面語）| [English](./2fa.md)
+> 語言：中文 | [English](./2fa.md)
 
 **面板 TOTP** — 於帳號安全登記；可選強制管理員旗標。  
 **SSH TOTP** — 每 Linux 用戶經 `ssh-2fa`（PAM）；與面板密鑰不同。

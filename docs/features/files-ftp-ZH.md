@@ -1,6 +1,6 @@
 # 檔案與 FTPS
 
-> 語言：中文（香港書面語）| [English](./files-ftp.md)
+> 語言：中文 | [English](./files-ftp.md)
 
 **面板路由：** `/files`、`/files/public`、`/ftp`、`/ftp/service`  
 **CLI：** `files`、`hosting ftps-apply`
