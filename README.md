@@ -22,13 +22,28 @@
 
 ## Quick start
 
+### Production / VPS (full system software)
+
+Default `install.sh` installs the control plane **and** the full host stack the panel may use (nginx, mail, DBs, DNS, FTP, defense, PHP/Python/Go/Rust tools, Node 20+). See [docs/getting-started/install.md](docs/getting-started/install.md).
+
 ```bash
-# From monorepo
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash
+# Non-interactive:
+# curl -fsSL …/install.sh | bash -s -- --non-interactive
+# Minimal (control plane only):  … | bash -s -- --minimal
+ysk-server readiness --json
+ysk-server serve --data-dir /var/lib/ysk-server --port 9287
+```
+
+### From monorepo (development)
+
+```bash
 pnpm install
 pnpm build
 pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts setup --data-dir .ysk --json
 pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
 # Open http://127.0.0.1:9287/  (build apps/web for UI assets)
+# Or: ./install.sh --from-source
 ```
 
 Production mutations:

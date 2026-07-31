@@ -10,7 +10,7 @@
 | Doc | Purpose |
 |-----|---------|
 | [../README.md](../README.md) | Product overview + quick start |
-| [getting-started/install.md](./getting-started/install.md) | Install monorepo / package |
+| [getting-started/install.md](./getting-started/install.md) | **install.sh** full system stack + monorepo / npm |
 | [getting-started/setup.md](./getting-started/setup.md) | First-time setup |
 | [getting-started/go-live.md](./getting-started/go-live.md) | Production checklist |
 | [getting-started/readiness.md](./getting-started/readiness.md) | Readiness probe |

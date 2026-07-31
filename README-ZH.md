@@ -22,13 +22,28 @@
 
 ## 快速上手
 
+### 生產／VPS（完整系統軟件）
+
+預設 `install.sh` 會安裝控制平面，以及面板可能用到的**完整主機堆疊**（nginx、郵件、資料庫、DNS、FTP、防禦、PHP／Python／Go／Rust 工具、Node 20+）。詳見 [docs/getting-started/install-ZH.md](docs/getting-started/install-ZH.md)。
+
 ```bash
-# monorepo
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash
+# 非互動：
+# curl -fsSL …/install.sh | bash -s -- --non-interactive
+# 僅控制平面：  … | bash -s -- --minimal
+ysk-server readiness --json
+ysk-server serve --data-dir /var/lib/ysk-server --port 9287
+```
+
+### monorepo 開發
+
+```bash
 pnpm install
 pnpm build
 pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts setup --data-dir .ysk --json
 pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
 # 開啟 http://127.0.0.1:9287/（需建置 apps/web 才有完整 UI）
+# 或：./install.sh --from-source
 ```
 
 生產變更：

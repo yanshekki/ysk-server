@@ -10,7 +10,7 @@
 | 文件 | 用途 |
 |------|------|
 | [../README-ZH.md](../README-ZH.md) | 產品概覽與快速上手 |
-| [getting-started/install-ZH.md](./getting-started/install-ZH.md) | 安裝 monorepo／套件 |
+| [getting-started/install-ZH.md](./getting-started/install-ZH.md) | **install.sh** 完整系統堆疊 + monorepo／npm |
 | [getting-started/setup-ZH.md](./getting-started/setup-ZH.md) | 首次初始化 |
 | [getting-started/go-live-ZH.md](./getting-started/go-live-ZH.md) | 生產上線清單 |
 | [getting-started/readiness-ZH.md](./getting-started/readiness-ZH.md) | 就緒探測 |
