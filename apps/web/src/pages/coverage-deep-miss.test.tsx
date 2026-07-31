@@ -2030,8 +2030,8 @@ describe('deep-miss coverage attacks', () => {
       const dns = renderAt('/dns', <DnsPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       try {
-        const zone = screen.getByText(/example\.com/i);
-        await user.click(zone);
+        const zone = screen.queryAllByText(/example\.com/i)[0];
+        if (zone) await user.click(zone);
       } catch {
         /* ignore */
       }
