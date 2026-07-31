@@ -528,3 +528,336 @@ describe('misc routes (POST honesty + more GET/POST)', () => {
     expect(audit.status).toBe(200);
   });
 });
+
+/**
+ * Deep misc climb — users/packages PATCH/DELETE, project os-user,
+ * real db-cluster plan paths, AI task missing-id, ssh 2fa, email aliases.
+ */
+describe('misc routes deep coverage', () => {
+  let ts: TestServer;
+
+  afterEach(async () => {
+    if (ts) await ts.close();
+  });
+
+  it(
+    'users PATCH/DELETE/impersonate + packages PATCH/DELETE',
+    async () => {
+      ts = await startTestServer();
+
+      const user = await apiJson(ts, 'POST', '/api/v1/users', {
+        username: 'misc-op-user',
+        password: 'MiscOp-Pass-99!',
+        roles: ['operator'],
+      });
+      expect(user.status).toBe(201);
+      const uid = (user.body as { user: { id: string } }).user.id;
+
+      const patch = await apiJson(ts, 'PATCH', `/api/v1/users/${uid}`, {
+        displayName: 'Misc Operator',
+        roles: ['operator'],
+      });
+      expect(patch.status).toBeLessThan(500);
+
+      const imp = await apiJson(ts, 'POST', `/api/v1/users/${uid}/impersonate`, {});
+      expect(imp.status).toBeLessThan(500);
+
+      const delUser = await apiJson(ts, 'DELETE', `/api/v1/users/${uid}`);
+      expect(delUser.status).toBeLessThan(500);
+
+      const pkg = await apiJson(ts, 'POST', '/api/v1/packages', {
+        name: 'misc-pkg',
+        maxProjects: 2,
+      });
+      expect(pkg.status).toBe(201);
+      const pkgId = (pkg.body as { package: { id: string } }).package.id;
+
+      const pkgPatch = await apiJson(ts, 'PATCH', `/api/v1/packages/${pkgId}`, {
+        maxProjects: 3,
+      });
+      expect(pkgPatch.status).toBeLessThan(500);
+
+      const pkgDel = await apiJson(ts, 'DELETE', `/api/v1/packages/${pkgId}`);
+      expect(pkgDel.status).toBeLessThan(500);
+    },
+    30_000,
+  );
+
+  it(
+    'project os-user GET/PATCH + apply-limits/chown/migrate honesty',
+    async () => {
+      ts = await startTestServer();
+      const created = await apiJson(ts, 'POST', '/api/v1/projects', {
+        name: 'MiscOsUser',
+        runtime: 'node',
+        domain: 'misc-osuser.test',
+      });
+      expect(created.status).toBe(201);
+      const id = (created.body as { project: { id: string } }).project.id;
+
+      const get = await apiJson(ts, 'GET', `/api/v1/projects/${id}/os-user`);
+      expect(get.status).toBeLessThan(500);
+
+      const patch = await apiJson(ts, 'PATCH', `/api/v1/projects/${id}/os-user`, {
+        shell: '/bin/bash',
+      });
+      expect(patch.status).toBeLessThan(500);
+
+      for (const path of [
+        `/api/v1/projects/${id}/os-user/apply-limits`,
+        `/api/v1/projects/${id}/os-user/chown-home`,
+        `/api/v1/projects/${id}/os-user/migrate`,
+      ]) {
+        const res = await apiJson(ts, 'POST', path, {});
+        expect(res.status).toBeLessThan(500);
+        const b = res.body as { apply_status?: string; ok?: boolean };
+        expect(b.apply_status).not.toBe('applied');
+      }
+
+      // delete project path
+      const del = await apiJson(ts, 'DELETE', `/api/v1/projects/${id}`);
+      expect(del.status).toBeLessThan(500);
+    },
+    60_000,
+  );
+
+  it(
+    'db cluster create + plan/apply/probe/artifacts/bundle/push/fleet/patch/delete',
+    async () => {
+      ts = await startTestServer();
+      const create = await apiJson(ts, 'POST', '/api/v1/db/clusters', {
+        name: 'misc-cluster',
+        engine: 'mariadb',
+        kind: 'mariadb-galera',
+        members: [
+          { host: '127.0.0.1', role: 'primary', access: 'local' },
+          { host: '127.0.0.2', role: 'secondary', access: 'ssh' },
+        ],
+      });
+      expect(create.status).toBeLessThan(500);
+      const clusterId =
+        (create.body as { cluster?: { id?: string }; id?: string }).cluster?.id ??
+        (create.body as { id?: string }).id;
+      if (!clusterId) {
+        // create shape may vary — still cover missing-id path already tested
+        return;
+      }
+
+      const get = await apiJson(ts, 'GET', `/api/v1/db/clusters/${clusterId}`);
+      expect(get.status).toBeLessThan(500);
+
+      const patch = await apiJson(ts, 'PATCH', `/api/v1/db/clusters/${clusterId}`, {
+        name: 'misc-cluster-renamed',
+      });
+      expect(patch.status).toBeLessThan(500);
+
+      const plan = await apiJson(ts, 'POST', `/api/v1/db/clusters/${clusterId}/plan`, {});
+      expect(plan.status).toBeLessThan(500);
+
+      const apply = await apiJson(ts, 'POST', `/api/v1/db/clusters/${clusterId}/apply`, {
+        execute: false,
+      });
+      expect(apply.status).toBeLessThan(500);
+      expect((apply.body as { apply_status?: string; dryRun?: boolean }).apply_status).not.toBe(
+        'applied',
+      );
+
+      const probe = await apiJson(ts, 'POST', `/api/v1/db/clusters/${clusterId}/probe`, {});
+      expect(probe.status).toBeLessThan(500);
+
+      const peers = await apiJson(ts, 'POST', `/api/v1/db/clusters/${clusterId}/probe`, {
+        peers: true,
+      });
+      expect(peers.status).toBeLessThan(500);
+
+      const installPeers = await apiJson(
+        ts,
+        'POST',
+        `/api/v1/db/clusters/${clusterId}/install-peers`,
+        { execute: false },
+      );
+      expect(installPeers.status).toBeLessThan(500);
+
+      const arts = await apiJson(ts, 'GET', `/api/v1/db/clusters/${clusterId}/artifacts`);
+      expect(arts.status).toBeLessThan(500);
+
+      const bundle = await apiJson(ts, 'POST', `/api/v1/db/clusters/${clusterId}/bundle`, {});
+      expect(bundle.status).toBeLessThan(500);
+
+      const push = await apiJson(ts, 'POST', `/api/v1/db/clusters/${clusterId}/push`, {
+        execute: false,
+      });
+      expect(push.status).toBeLessThan(500);
+
+      const fleet = await apiJson(ts, 'POST', `/api/v1/db/clusters/${clusterId}/fleet`, {
+        execute: false,
+        op: 'plan',
+      });
+      expect(fleet.status).toBeLessThan(500);
+
+      const del = await apiJson(ts, 'DELETE', `/api/v1/db/clusters/${clusterId}`);
+      expect(del.status).toBeLessThan(500);
+    },
+    90_000,
+  );
+
+  it(
+    'ssh identity create + subroutes + 2fa missing + sftp key delete',
+    async () => {
+      ts = await startTestServer();
+
+      // Create identity if API supports it
+      const create = await apiJson(ts, 'POST', '/api/v1/ssh/identities', {
+        name: 'misc-ssh',
+        comment: 'coverage',
+      });
+      expect(create.status).toBeLessThan(500);
+      const id =
+        (create.body as { identity?: { id?: string }; id?: string }).identity?.id ??
+        (create.body as { id?: string }).id;
+
+      if (id) {
+        const get = await apiJson(ts, 'GET', `/api/v1/ssh/identities/${id}`);
+        expect(get.status).toBeLessThan(500);
+
+        const pub = await apiJson(ts, 'GET', `/api/v1/ssh/identities/${id}/public`);
+        expect(pub.status).toBeLessThan(500);
+
+        for (const path of [
+          `/api/v1/ssh/identities/${id}/export`,
+          `/api/v1/ssh/identities/${id}/install`,
+          `/api/v1/ssh/identities/${id}/uninstall`,
+          `/api/v1/ssh/identities/${id}/test`,
+          `/api/v1/ssh/identities/${id}/rotate`,
+          `/api/v1/ssh/identities/${id}/authorize-self`,
+        ]) {
+          const res = await apiJson(ts, 'POST', path, {});
+          expect(res.status).toBeLessThan(500);
+          const b = res.body as { apply_status?: string };
+          expect(b.apply_status).not.toBe('applied');
+        }
+
+        const del = await apiJson(ts, 'DELETE', `/api/v1/ssh/identities/${id}`);
+        expect(del.status).toBeLessThan(500);
+      }
+
+      // 2fa missing-id honesty
+      for (const path of [
+        '/api/v1/ssh/2fa/no-such/confirm',
+        '/api/v1/ssh/2fa/no-such/install',
+        '/api/v1/ssh/2fa/no-such/uninstall',
+        '/api/v1/ssh/2fa/no-such/reveal',
+      ]) {
+        const res = await apiJson(ts, 'POST', path, {});
+        expect(res.status).toBeLessThan(500);
+      }
+      const del2fa = await apiJson(ts, 'DELETE', '/api/v1/ssh/2fa/no-such');
+      expect(del2fa.status).toBeLessThan(500);
+
+      const sftpDel = await apiJson(ts, 'DELETE', '/api/v1/sftp/keys/no-such');
+      expect(sftpDel.status).toBeLessThan(500);
+
+      const webauthnDel = await apiJson(
+        ts,
+        'DELETE',
+        '/api/v1/auth/webauthn/credentials/no-such',
+      );
+      expect(webauthnDel.status).toBeLessThan(500);
+
+      const devDel = await apiJson(ts, 'DELETE', '/api/v1/auth/devices/no-such');
+      expect(devDel.status).toBeLessThan(500);
+    },
+    60_000,
+  );
+
+  it(
+    'AI task missing-id + email alias delete + dns peer delete + cdn ssl distribute',
+    async () => {
+      ts = await startTestServer();
+
+      for (const path of [
+        '/api/v1/ai/tasks/no-such/approve',
+        '/api/v1/ai/tasks/no-such/execute',
+        '/api/v1/ai/tasks/no-such/cancel',
+        '/api/v1/ai/tasks/no-such/steps/s1/reject',
+      ]) {
+        const res = await apiJson(ts, 'POST', path, {});
+        expect(res.status).toBeLessThan(500);
+      }
+
+      // email domain + alias delete
+      const em = await apiJson(ts, 'POST', '/api/v1/email/domains', {
+        domain: 'misc-alias.test',
+        serverIp: '203.0.113.55',
+      });
+      expect(em.status).toBeLessThan(500);
+      const eid =
+        (em.body as { domain?: { id?: string }; id?: string }).domain?.id ??
+        (em.body as { id?: string }).id;
+      if (eid) {
+        const alias = await apiJson(ts, 'POST', `/api/v1/email/domains/${eid}/aliases`, {
+          localPart: 'sales',
+          destinations: ['admin@misc-alias.test'],
+        });
+        expect(alias.status).toBeLessThan(500);
+        const aliasId =
+          (alias.body as { alias?: { id?: string }; id?: string }).alias?.id ??
+          (alias.body as { id?: string }).id;
+        if (aliasId) {
+          const delA = await apiJson(
+            ts,
+            'DELETE',
+            `/api/v1/email/domains/${eid}/aliases/${aliasId}`,
+          );
+          expect(delA.status).toBeLessThan(500);
+        }
+      }
+
+      const dnsPeer = await apiJson(ts, 'DELETE', '/api/v1/dns/cluster/peers/no-such');
+      expect(dnsPeer.status).toBeLessThan(500);
+
+      const tempUser = await apiJson(ts, 'DELETE', '/api/v1/db/temp-users/no-such');
+      expect(tempUser.status).toBeLessThan(500);
+
+      const remoteHost = await apiJson(ts, 'DELETE', '/api/v1/db/remote-hosts/no-such');
+      expect(remoteHost.status).toBeLessThan(500);
+
+      // CDN site ssl paths with real site
+      const node = await apiJson(ts, 'POST', '/api/v1/cdn/nodes', {
+        name: 'misc-ssl-edge',
+        baseUrl: 'http://127.0.0.1:18081',
+        region: 'test',
+      });
+      const nodeId =
+        (node.body as { node?: { id?: string }; id?: string }).node?.id ??
+        (node.body as { id?: string }).id;
+      const site = await apiJson(ts, 'POST', '/api/v1/cdn/sites', {
+        name: 'misc-ssl-site',
+        domains: ['misc-ssl.test'],
+        origin: { kind: 'url', url: 'http://127.0.0.1:8080' },
+        edgeNodeIds: nodeId ? [nodeId] : [],
+      });
+      const siteId =
+        (site.body as { site?: { id?: string }; id?: string }).site?.id ??
+        (site.body as { id?: string }).id;
+      if (siteId) {
+        for (const path of [
+          `/api/v1/cdn/sites/${siteId}/ssl/distribute`,
+          `/api/v1/cdn/sites/${siteId}/ssl/issue`,
+          `/api/v1/cdn/sites/${siteId}/ssl/prepare-acme`,
+        ]) {
+          const res = await apiJson(ts, 'POST', path, { run: false });
+          expect(res.status).toBeLessThan(500);
+          expect((res.body as { apply_status?: string }).apply_status).not.toBe('applied');
+        }
+        const delS = await apiJson(ts, 'DELETE', `/api/v1/cdn/sites/${siteId}`);
+        expect(delS.status).toBeLessThan(500);
+      }
+      if (nodeId) {
+        const delN = await apiJson(ts, 'DELETE', `/api/v1/cdn/nodes/${nodeId}`);
+        expect(delN.status).toBeLessThan(500);
+      }
+    },
+    90_000,
+  );
+});

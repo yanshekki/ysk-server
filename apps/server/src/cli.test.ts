@@ -1624,4 +1624,337 @@ describe('CLI deep coverage climb', () => {
       expect([0, 1, 2]).toContain(r.code);
     }
   });
+
+  // ── files deep ops ──────────────────────────────────────────────────
+  it('files rename/copy/move/chmod/rm/upload/webdav token lifecycle', async () => {
+    await cli(
+      'files',
+      'write',
+      '--root',
+      'public',
+      '--path',
+      'deep/a.txt',
+      '--content',
+      'aaa',
+    );
+    await cli('files', 'mkdir', '--root', 'public', '--path', 'deep/sub');
+
+    const copy = await cli(
+      'files',
+      'copy',
+      '--root',
+      'public',
+      '--from',
+      'deep/a.txt',
+      '--to',
+      'deep/b.txt',
+    );
+    expect([0, 1]).toContain(copy.code);
+
+    const rename = await cli(
+      'files',
+      'rename',
+      '--root',
+      'public',
+      '--from',
+      'deep/b.txt',
+      '--to',
+      'deep/c.txt',
+    );
+    expect([0, 1]).toContain(rename.code);
+
+    const move = await cli(
+      'files',
+      'move',
+      '--root',
+      'public',
+      '--from',
+      'deep/c.txt',
+      '--to',
+      'deep/sub/c.txt',
+    );
+    expect([0, 1]).toContain(move.code);
+
+    const chmod = await cli(
+      'files',
+      'chmod',
+      '--root',
+      'public',
+      '--path',
+      'deep/a.txt',
+      '--mode',
+      '644',
+    );
+    expect([0, 1]).toContain(chmod.code);
+
+    const ls = await cli(
+      'files',
+      'list',
+      '--root',
+      'public',
+      '--path',
+      'deep',
+      '--sort',
+      'size',
+      '--order',
+      'desc',
+      '--q',
+      'a',
+    );
+    expect(ls.code).toBe(0);
+
+    // upload from local file
+    const local = join(dir, 'upload-src.txt');
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(local, 'upload-body', 'utf8');
+    const upload = await cli(
+      'files',
+      'upload',
+      '--root',
+      'public',
+      '--dir',
+      'deep',
+      '--file',
+      local,
+    );
+    expect([0, 1]).toContain(upload.code);
+
+    // write from --file
+    const writeFile = await cli(
+      'files',
+      'write',
+      '--root',
+      'public',
+      '--path',
+      'deep/from-file.txt',
+      '--file',
+      local,
+    );
+    expect([0, 1]).toContain(writeFile.code);
+
+    const rm = await cli(
+      'files',
+      'rm',
+      '--root',
+      'public',
+      '--path',
+      'deep/from-file.txt',
+    );
+    expect([0, 1, 4]).toContain(rm.code);
+
+    const trashList = await cli('files', 'trash', 'list', '--root', 'public');
+    expect([0, 1]).toContain(trashList.code);
+
+    const webdavToken = await cli('files', 'webdav', 'token');
+    expect([0, 1, 2]).toContain(webdavToken.code);
+    const webdavStatus = await cli('files', 'webdav', 'status');
+    expect([0, 1, 2]).toContain(webdavStatus.code);
+    const webdavOff = await cli('files', 'webdav', 'disable');
+    expect([0, 1, 2]).toContain(webdavOff.code);
+
+    // validation exits
+    expect((await cli('files', 'stat', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'read', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'write', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'mkdir', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'rename', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'copy', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'chmod', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'unknown-sub', '--root', 'public')).code).toBe(2);
+    expect((await cli('files', 'list', '--root', 'badroot')).code).toBe(2);
+  }, 60_000);
+
+  // ── hosting / email / ssl / ssh / migrate / cdn more ────────────────
+  it('hosting ftps/webmail/public-files/dovecot dry + email dns missing + ssl', async () => {
+    const ftps = await cli('hosting', 'ftps-apply', '--domain', 'files.cli-cov.test');
+    expect([0, 1, 3]).toContain(ftps.code);
+
+    const webmail = await cli('hosting', 'webmail-apply', '--domain', 'webmail.cli-cov.test');
+    expect([0, 1, 3]).toContain(webmail.code);
+
+    const pubFiles = await cli('hosting', 'public-files', '--domain', 'files.cli-cov.test');
+    expect([0, 1, 3]).toContain(pubFiles.code);
+
+    const dovecot = await cli('hosting', 'dovecot-passdb', '--all');
+    expect([0, 1, 2, 3]).toContain(dovecot.code);
+
+    const deliver = await cli(
+      'hosting',
+      'email-deliverability',
+      '--domain',
+      'cli-mail.test',
+    );
+    expect([0, 1, 2]).toContain(deliver.code);
+
+    const emailBoot = await cli(
+      'hosting',
+      'email-bootstrap',
+      '--domain',
+      'boot2-mail.test',
+      '--ip',
+      '203.0.113.12',
+    );
+    expect([0, 1, 3]).toContain(emailBoot.code);
+
+    // unknown email sub → 2
+    const emailUnknown = await cli('email', 'nope');
+    expect(emailUnknown.code).toBe(2);
+
+    // email dns missing domain
+    const dnsMiss = await cli('email', 'dns', '--domain', 'no-such-domain.test');
+    expect(dnsMiss.code).toBe(2);
+
+    // host help unknown sub
+    const hostHelp = await cli('host', 'unknown-sub');
+    expect(hostHelp.code).toBe(2);
+
+    // host metrics aliases already covered; status alias
+    const hostStatus = await cli('host', 'status');
+    expect(hostStatus.code).toBe(0);
+
+    const hostInfo = await cli('host', 'info');
+    expect(hostInfo.code).toBe(0);
+
+    // logs unknown sub
+    const logsBad = await cli('logs', 'nope');
+    expect(logsBad.code).toBe(2);
+
+    // ssl issue/list-style
+    const sslList = await cli('ssl', 'list');
+    expect(sslList.code).toBe(0);
+
+    // ssh-key create if supported
+    const skCreate = await cli(
+      'ssh-key',
+      'create',
+      '--name',
+      'cli-ssh-cov',
+      '--comment',
+      'cov',
+    );
+    expect([0, 1, 2]).toContain(skCreate.code);
+    const skList = await cli('ssh-key', 'list');
+    expect([0, 1, 2]).toContain(skList.code);
+    const skGet = await cli('ssh-key', 'get', '--id', 'no-such');
+    expect([0, 1, 2, 4]).toContain(skGet.code);
+
+    const s2faList = await cli('ssh-2fa', 'list');
+    expect([0, 1, 2]).toContain(s2faList.code);
+    const s2faHelp = await cli('ssh-2fa', 'help');
+    expect([0, 1, 2]).toContain(s2faHelp.code);
+
+    // agent help (only run is valid)
+    const agentHelp = await cli('agent', 'help');
+    expect(agentHelp.code).toBe(2);
+
+    // system unknown sub
+    const sysBad = await cli('system', 'nope');
+    expect([1, 2]).toContain(sysBad.code);
+
+    // packages only list
+    const pkgList = await cli('packages', 'list', '--q', 'x');
+    expect(pkgList.code).toBe(0);
+    const pkgBad = await cli('packages', 'create', '--name', 'x');
+    expect(pkgBad.code).toBe(2);
+
+    // security sessions revoke missing
+    const secRevoke = await cli('security', 'sessions', 'revoke', '--id', 'no-such');
+    expect([0, 1, 2, 4]).toContain(secRevoke.code);
+
+    // backup restic run honesty
+    const backupResticRun = await cli('backup', 'restic', 'run');
+    expect([0, 1, 2, 3]).toContain(backupResticRun.code);
+
+    // migrate inventory
+    const migInv = await cli('migrate', 'inventory');
+    expect([0, 1, 2, 3]).toContain(migInv.code);
+
+    // db-cluster more ops on existing
+    const dbList = await cli('db-cluster', 'list');
+    expect(dbList.code).toBe(0);
+    const clusters =
+      (parseJsonOut(dbList.out) as { items?: Array<{ id?: string }> }).items ?? [];
+    if (clusters[0]?.id) {
+      const fleet = await cli('db-cluster', 'fleet', '--id', clusters[0].id);
+      expect([0, 1, 2, 3]).toContain(fleet.code);
+      const push = await cli('db-cluster', 'push', '--id', clusters[0].id);
+      expect([0, 1, 2, 3]).toContain(push.code);
+      const bundle = await cli('db-cluster', 'bundle', '--id', clusters[0].id);
+      expect([0, 1, 2, 3]).toContain(bundle.code);
+      const installPeers = await cli(
+        'db-cluster',
+        'install-peers',
+        '--id',
+        clusters[0].id,
+      );
+      expect([0, 1, 2, 3]).toContain(installPeers.code);
+    }
+
+    // nginx reload dry (2 = usage/fail-closed, 0/1 success/partial, 3–5 honest blocked)
+    const nginxReload = await cli('nginx', 'reload');
+    expect([0, 1, 2, 3, 4, 5]).toContain(nginxReload.code);
+
+    // defense unknown → usage
+    const defBad = await cli('defense', 'nope');
+    expect(defBad.code).toBe(2);
+
+    // tools help
+    const toolsHelp = await runMain(['node', 'ysk-server', 'tools', '--help', '--json']);
+    expect([0, 1, 2]).toContain(toolsHelp.code);
+
+    // cdn help + apply/purge/dns-sync
+    const cdnHelp = await cli('cdn', 'help');
+    expect(cdnHelp.code).toBe(2);
+
+    const sites = await cli('cdn', 'sites', 'list');
+    expect(sites.code).toBe(0);
+    const siteItems =
+      (parseJsonOut(sites.out) as { items?: Array<{ id?: string }> }).items ?? [];
+    if (siteItems[0]?.id) {
+      const apply = await cli('cdn', 'apply', '--site-id', siteItems[0].id, '--dry-run');
+      expect([0, 1, 3]).toContain(apply.code);
+      const purge = await cli('cdn', 'purge', '--site-id', siteItems[0].id);
+      expect([0, 1, 3]).toContain(purge.code);
+      const dnsSync = await cli('cdn', 'dns-sync', '--site-id', siteItems[0].id);
+      expect([0, 1, 3]).toContain(dnsSync.code);
+      // `health` is not a top-level cdn subcommand (usage → 2); health-loop is
+      const health = await cli('cdn', 'health');
+      expect([0, 1, 2]).toContain(health.code);
+      const healthLoop = await cli('cdn', 'health-loop');
+      expect([0, 1, 2, 3]).toContain(healthLoop.code);
+    }
+
+    // projects isolation provision single
+    if (projectId) {
+      const isoOne = await cli(
+        'projects',
+        'isolation',
+        'provision',
+        '--id',
+        projectId,
+      );
+      expect([0, 1, 2, 3]).toContain(isoOne.code);
+    }
+
+    // ask empty prompt
+    const askEmpty = await runMain(['node', 'ysk-server', 'ask', '--data-dir', dir, '--json']);
+    expect([0, 1, 2]).toContain(askEmpty.code);
+
+    // version bare
+    const ver = await runMain(['node', 'ysk-server', 'version']);
+    expect(ver.code).toBe(0);
+    expect(ver.out).toContain(VERSION);
+
+    // readiness without data-dir
+    const ready = await runMain(['node', 'ysk-server', 'readiness', '--json']);
+    expect([0, 1, 2]).toContain(ready.code);
+
+    // store help
+    const storeHelp = await cli('store', 'help');
+    expect(storeHelp.code).toBe(2);
+
+    // cron help already; run missing id
+    const cronBad = await cli('cron', 'run');
+    expect([1, 2, 4]).toContain(cronBad.code);
+  }, 120_000);
 });

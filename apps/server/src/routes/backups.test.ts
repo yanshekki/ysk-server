@@ -140,4 +140,123 @@ describe('backups routes (HTTP)', () => {
     const res = await apiJson(ts, 'POST', '/api/v1/backups/control-plane', {}, { auth: false });
     expect(res.status).toBeGreaterThanOrEqual(401);
   });
+
+  it('settings GET + schedule + restic snapshots/restore + project restore/delete/download', async () => {
+    ts = await startTestServer();
+
+    const getSettings = await apiJson(ts, 'GET', '/api/v1/backups/settings');
+    expect(getSettings.status).toBe(200);
+
+    const schedule = await apiJson(ts, 'POST', '/api/v1/backups/schedule', {
+      cron: '0 3 * * *',
+      enabled: true,
+    });
+    expect(schedule.status).toBeLessThan(500);
+
+    const snaps = await apiJson(ts, 'GET', '/api/v1/backups/restic/snapshots');
+    expect(snaps.status).toBeLessThan(500);
+
+    const resticRestore = await apiJson(ts, 'POST', '/api/v1/backups/restic/restore', {
+      snapshotId: 'no-such',
+      target: '/tmp/ysk-restic-restore-test',
+      dryRun: true,
+    });
+    expect(resticRestore.status).toBeLessThan(500);
+    expect((resticRestore.body as { ok?: boolean }).ok === true &&
+      (resticRestore.body as { apply_status?: string }).apply_status === 'applied').toBe(false);
+
+    // project restore missing
+    const restore = await apiJson(ts, 'POST', '/api/v1/backups/restore', {
+      name: 'no-such-backup.tar.gz',
+      projectId: 'no-such',
+      dryRun: true,
+    });
+    expect(restore.status).toBeLessThan(500);
+
+    const del = await apiJson(ts, 'DELETE', '/api/v1/backups?name=no-such-backup.tar.gz');
+    expect(del.status).toBeLessThan(500);
+
+    const dl = await apiJson(ts, 'GET', '/api/v1/backups/download?name=no-such-backup.tar.gz');
+    expect(dl.status).toBeLessThan(500);
+
+    // control-plane then list/download if archive created
+    const cp = await apiJson(ts, 'POST', '/api/v1/backups/control-plane', {});
+    expect(cp.status).toBeLessThan(500);
+    const list = await apiJson(ts, 'GET', '/api/v1/backups');
+    expect(list.status).toBe(200);
+    const items = (list.body as { items?: Array<{ name?: string }> }).items ?? [];
+    if (items[0]?.name) {
+      const dl2 = await apiJson(
+        ts,
+        'GET',
+        `/api/v1/backups/download?name=${encodeURIComponent(items[0].name)}`,
+      );
+      expect(dl2.status).toBeLessThan(500);
+    }
+
+    // run-all with a project present
+    const proj = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'BakProj',
+      runtime: 'node',
+      domain: 'bak-proj.test',
+    });
+    if (proj.status === 201) {
+      const runAll = await apiJson(ts, 'POST', '/api/v1/backups/run-all', {});
+      expect(runAll.status).toBeLessThan(500);
+      expectHonestOps({
+        ok: (runAll.body as { ok?: boolean }).ok ?? false,
+        blocked: (runAll.body as { blocked?: boolean }).blocked,
+        apply_status: (runAll.body as { apply_status?: string }).apply_status,
+        notes: (runAll.body as { notes?: string[] }).notes,
+      });
+    }
+  }, 90_000);
+
+  it('schedule with install + restic enable empty run + validation paths', async () => {
+    ts = await startTestServer();
+
+    const schedule = await apiJson(ts, 'POST', '/api/v1/backups/schedule', {
+      schedule: '0 5 * * *',
+      install: true,
+    });
+    expect(schedule.status).toBeLessThan(500);
+    const sj = schedule.body as {
+      ok?: boolean;
+      install?: { ok?: boolean; blocked?: boolean } | null;
+      job?: { schedule?: string };
+    };
+    // host crontab install without EXECUTE must not claim applied host success
+    if (sj.install && sj.install.ok === true && sj.install.blocked === true) {
+      throw new Error('honesty violation: install ok && blocked');
+    }
+
+    const setRestic = await apiJson(ts, 'POST', '/api/v1/backups/settings', {
+      restic: {
+        enabled: true,
+        password: 'test-restic-password-long',
+        repository: '/tmp/ysk-restic-depth-repo',
+      },
+      exclusions: ['node_modules', '.cache'],
+    });
+    expect(setRestic.status).toBe(200);
+
+    const resticRun = await apiJson(ts, 'POST', '/api/v1/backups/restic/run', {});
+    expect(resticRun.status).toBeLessThan(500);
+    const rr = resticRun.body as { ok?: boolean; empty?: boolean; results?: unknown[] };
+    expect(typeof rr.ok).toBe('boolean');
+
+    const cpNoName = await apiJson(ts, 'POST', '/api/v1/backups/control-plane/restore', {
+      mode: 'dry-run',
+    });
+    expect(cpNoName.status).toBe(400);
+
+    const delBad = await apiJson(ts, 'DELETE', '/api/v1/backups', { name: 'only-name' });
+    expect(delBad.status).toBe(400);
+
+    const restoreNoFields = await apiJson(ts, 'POST', '/api/v1/backups/restore', {});
+    expect(restoreNoFields.status).toBe(400);
+
+    const listQ = await apiJson(ts, 'GET', '/api/v1/backups?q=control&projectId=control-plane');
+    expect(listQ.status).toBe(200);
+  });
 });

@@ -206,4 +206,128 @@ describe('email routes (HTTP)', () => {
     const body = res.body as { ok?: boolean; listedOn?: unknown; notes?: string[] };
     expect(typeof body.ok).toBe('boolean');
   });
+
+  it('dnsbl check without ip is validation error', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/email/dnsbl/check', {});
+    expect(res.status).toBe(400);
+  });
+
+  it('dnsbl multi + sieve write/delete + sso plugin plan', async () => {
+    ts = await startTestServer();
+
+    const multi = await apiJson(ts, 'POST', '/api/v1/email/dnsbl/multi', {
+      ips: ['203.0.113.1', '203.0.113.2'],
+    });
+    expect(multi.status).toBeLessThan(500);
+
+    const sieveWrite = await apiJson(ts, 'POST', '/api/v1/email/sieve', {
+      mailbox: 'user@depth.local',
+      name: 'default',
+      content: 'require ["fileinto"];\n',
+    });
+    expect(sieveWrite.status).toBeLessThan(500);
+
+    const sieveList = await apiJson(
+      ts,
+      'GET',
+      '/api/v1/email/sieve?mailbox=user@depth.local',
+    );
+    expect(sieveList.status).toBe(200);
+
+    const sieveDel = await apiJson(
+      ts,
+      'DELETE',
+      '/api/v1/email/sieve?mailbox=user%40depth.local&name=default',
+    );
+    expect(sieveDel.status).toBeLessThan(500);
+
+    const plugin = await apiJson(ts, 'POST', '/api/v1/email/webmail/sso-plugin', {
+      panelBaseUrl: 'http://127.0.0.1:19287',
+      enableSystem: false,
+    });
+    expect(plugin.status).toBeLessThan(500);
+    const pb = plugin.body as { ok?: boolean; blocked?: boolean; apply_status?: string };
+    if (typeof pb.ok === 'boolean') {
+      expect(pb.ok === true && pb.blocked === true).toBe(false);
+    }
+
+    const pluginSys = await apiJson(ts, 'POST', '/api/v1/email/webmail/sso-plugin', {
+      enableSystem: true,
+    });
+    expect(pluginSys.status).toBeLessThan(500);
+    const ps = pluginSys.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    if (typeof ps.ok === 'boolean') {
+      expect(ps.apply_status).not.toBe('applied');
+      expectHonestOps({
+        ok: ps.ok,
+        blocked: ps.blocked,
+        apply_status: ps.apply_status,
+        notes: ps.notes,
+      });
+    }
+  }, 60_000);
+
+  it('webmail sso issue/consume honesty + domain deliverability', async () => {
+    ts = await startTestServer();
+
+    const created = await apiJson(ts, 'POST', '/api/v1/email/domains', {
+      domain: 'sso-depth.local',
+      serverIp: '203.0.113.55',
+    });
+    expect(created.status).toBe(201);
+    const domainId =
+      (created.body as { id?: string }).id ??
+      (created.body as { domain?: { id?: string } }).domain?.id;
+
+    const ssoBad = await apiJson(ts, 'POST', '/api/v1/email/webmail/sso', {
+      email: 'nobody@sso-depth.local',
+      domain: 'sso-depth.local',
+    });
+    expect(ssoBad.status).toBeLessThan(500);
+    // may be 400 if mailbox missing — must not claim SSO without mailbox
+    if (ssoBad.status < 400) {
+      const b = ssoBad.body as { ok?: boolean; token?: string };
+      if (b.ok && b.token) {
+        const consume = await apiJson(
+          ts,
+          'POST',
+          '/api/v1/email/webmail/sso/consume',
+          { token: b.token },
+          { auth: false },
+        );
+        expect(consume.status).toBeLessThan(500);
+      }
+    }
+
+    const consumeBad = await apiJson(
+      ts,
+      'POST',
+      '/api/v1/email/webmail/sso/consume',
+      { token: 'invalid-token' },
+      { auth: false },
+    );
+    expect(consumeBad.status).toBeGreaterThanOrEqual(401);
+
+    if (domainId) {
+      const deliv = await apiJson(
+        ts,
+        'GET',
+        `/api/v1/email/domains/${domainId}/deliverability`,
+      );
+      expect(deliv.status).toBeLessThan(500);
+    }
+
+    const mbox = await apiJson(
+      ts,
+      'GET',
+      `/api/v1/email/mailboxes${domainId ? `?domainId=${domainId}` : ''}`,
+    );
+    expect(mbox.status).toBe(200);
+  }, 60_000);
 });

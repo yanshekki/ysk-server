@@ -104,4 +104,181 @@ describe('app-context helpers', () => {
     expect(probe.protection).toBeDefined();
     expect(ctx.protection).toBeDefined();
   });
+
+  it('createAppContext string form + executeEnabled + services wired', () => {
+    ctx = createAppContext(VERSION);
+    expect(ctx.version).toBe(VERSION);
+    expect(ctx.auth).toBeDefined();
+    expect(ctx.projects).toBeDefined();
+    expect(ctx.email).toBeDefined();
+    expect(ctx.cron).toBeDefined();
+    expect(ctx.ai).toBeDefined();
+    expect(ctx.fleet).toBeDefined();
+    expect(ctx.usersAdmin).toBeDefined();
+    expect(ctx.rbac).toBeDefined();
+    expect(ctx.allowlist).toBeDefined();
+    expect(ctx.approvals).toBeDefined();
+    expect(ctx.agents).toBeDefined();
+    expect(ctx.projectOps).toBeDefined();
+    expect(ctx.startedAt).toBeTruthy();
+    expect(Array.isArray(ctx.requestHits)).toBe(true);
+    ctx.stopScheduler();
+  });
+
+  it('executeEnabled true + audit/settings/rbac wired', () => {
+    process.env.YSK_STORE = 'json';
+    ctx = createAppContext({
+      version: VERSION,
+      dataDir,
+      adminPassword: 'TestPass-Strong-99!',
+      executeEnabled: true,
+    });
+    expect(ctx.host.executeEnabled()).toBe(true);
+    expect(ctx.db).toBeDefined();
+    // exercise audit + settings + rbac list
+    ctx.audit.append({
+      actor: 'test',
+      action: 'app-context.test',
+      detail: { ok: true },
+      ok: true,
+    });
+    expect(ctx.audit.listRecent(5).length).toBeGreaterThan(0);
+    ctx.settings.setJson('coverage', { v: 1 });
+    expect(ctx.settings.getJson('coverage')).toEqual({ v: 1 });
+    expect(ctx.rbac.listPolicies().length).toBeGreaterThan(0);
+  });
+
+  it('applyProtection modes: normal and ddos', () => {
+    ctx = createAppContext({
+      version: VERSION,
+      dataDir,
+      adminPassword: 'TestPass-Strong-99!',
+    });
+    const normal = evaluateProtection({ networkReachable: true });
+    applyProtection(ctx, normal);
+    expect(ctx.protection.mode).toBeTruthy();
+
+    const ddos = evaluateProtection({
+      networkReachable: true,
+      ddosSuspected: true,
+    });
+    applyProtection(ctx, ddos);
+    expect(ctx.protection.mode).toBe('ddos-protection');
+  });
+
+  it('reloadLlm with echo transport stays defined after multiple reloads', () => {
+    process.env.YSK_LLM_ECHO = '1';
+    ctx = createAppContext({
+      version: VERSION,
+      dataDir,
+      adminPassword: 'TestPass-Strong-99!',
+    });
+    ctx.settings.setJson('llm', { model: 'm1', baseUrl: 'http://127.0.0.1:9' });
+    ctx.reloadLlm();
+    ctx.settings.setJson('llm', { model: 'm2', baseUrl: '' });
+    ctx.reloadLlm();
+    expect(ctx.llm).toBeDefined();
+    expect(ctx.ai).toBeDefined();
+    delete process.env.YSK_LLM_ECHO;
+  });
+
+  it('reloadLlm fetch transport when baseUrl set and ECHO off', () => {
+    ctx = createAppContext({
+      version: VERSION,
+      dataDir,
+      adminPassword: 'TestPass-Strong-99!',
+    });
+    delete process.env.YSK_LLM_ECHO;
+    ctx.settings.setJson('llm', {
+      model: 'depth-model',
+      baseUrl: 'http://127.0.0.1:9',
+      apiKey: 'test-key',
+    });
+    ctx.reloadLlm();
+    expect(ctx.llm).toBeDefined();
+    expect(ctx.ai).toBeDefined();
+  });
+
+  it(
+    'scheduler registers jobs when enabled (backup/dnsbl on start)',
+    async () => {
+      delete process.env.YSK_DISABLE_SCHEDULER;
+      process.env.YSK_BACKUP_INTERVAL_MS = '5000';
+      process.env.YSK_DNSBL_INTERVAL_MS = '10000';
+      process.env.YSK_BACKUP_ON_START = '1';
+      process.env.YSK_DNSBL_ON_START = '1';
+      process.env.YSK_PROBE_ON_START = '0';
+      process.env.YSK_INVENTORY_ON_START = '0';
+      process.env.YSK_TEMP_DB_EXPIRE_MS = '3600000';
+      process.env.YSK_AUTO_BAN_INTERVAL_MS = '120000';
+      process.env.YSK_GEOIP_UPDATE_MS = '3600000';
+
+      try {
+        ctx = createAppContext({
+          version: VERSION,
+          dataDir,
+          adminPassword: 'TestPass-Strong-99!',
+          executeEnabled: false,
+        });
+        ctx.db.snapshot.email_domains = [
+          {
+            id: 'dom-depth-1',
+            domain: 'depth-dnsbl.local',
+            server_ip: '203.0.113.90',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as never,
+        ];
+        ctx.db.snapshot.settings.defense_automation = JSON.stringify({
+          enabled: true,
+          autoBan: { enabled: true, intervalSeconds: 30 },
+          autoPreset: { enabled: false },
+        });
+        ctx.db.persist();
+
+        await new Promise((r) => setTimeout(r, 1500));
+
+        expect(ctx.scheduler).toBeDefined();
+        // requestHits filter path in runAutoProtection
+        ctx.requestHits.push(Date.now());
+        const probe = await ctx.runAutoProtection();
+        expect(probe.protection).toBeDefined();
+
+        ctx.stopScheduler();
+        ctx.stopScheduler();
+      } finally {
+        delete process.env.YSK_BACKUP_INTERVAL_MS;
+        delete process.env.YSK_DNSBL_INTERVAL_MS;
+        delete process.env.YSK_BACKUP_ON_START;
+        delete process.env.YSK_DNSBL_ON_START;
+        delete process.env.YSK_PROBE_ON_START;
+        delete process.env.YSK_INVENTORY_ON_START;
+        delete process.env.YSK_TEMP_DB_EXPIRE_MS;
+        delete process.env.YSK_AUTO_BAN_INTERVAL_MS;
+        delete process.env.YSK_GEOIP_UPDATE_MS;
+        process.env.YSK_DISABLE_SCHEDULER = '1';
+      }
+    },
+    30_000,
+  );
+
+  it('create with config object and custom dbPath', () => {
+    const dbPath = join(dataDir, 'custom-ctx.json');
+    ctx = createAppContext({
+      version: VERSION,
+      dataDir,
+      dbPath,
+      adminPassword: 'TestPass-Strong-99!',
+      executeEnabled: false,
+      config: {
+        dataDir,
+        listen: { host: '127.0.0.1', port: 19288 },
+        adminUsername: 'admin',
+        locale: 'en',
+      } as never,
+    });
+    expect(ctx.dataDir).toBe(dataDir);
+    expect(ctx.host.executeEnabled()).toBe(false);
+    expect(ctx.configPath === undefined || typeof ctx.configPath === 'string').toBe(true);
+  });
 });

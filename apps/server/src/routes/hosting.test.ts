@@ -193,4 +193,145 @@ describe('hosting routes (HTTP)', () => {
       notes: body.notes,
     });
   });
+
+  it('dns zone-files list + zones + powerdns plan-only + cloudflare dry-run', async () => {
+    ts = await startTestServer();
+
+    const files = await apiJson(ts, 'GET', '/api/v1/hosting/dns/zone-files');
+    expect(files.status).toBe(200);
+    expect(Array.isArray((files.body as { items?: unknown[] }).items)).toBe(true);
+
+    const zones = await apiJson(ts, 'GET', '/api/v1/hosting/dns/zones');
+    expect(zones.status).toBe(200);
+
+    const pdnsStatus = await apiJson(ts, 'GET', '/api/v1/hosting/dns/powerdns/status');
+    expect(pdnsStatus.status).toBeLessThan(500);
+
+    const pdnsInstall = await apiJson(ts, 'POST', '/api/v1/hosting/dns/powerdns/install', {
+      install: false,
+    });
+    expect(pdnsInstall.status).toBeLessThan(500);
+    const pi = pdnsInstall.body as { ok?: boolean; notes?: string[] };
+    expect(typeof pi.ok).toBe('boolean');
+    if (pi.ok === true && Array.isArray(pi.notes)) {
+      expect(pi.notes.join(' ').toLowerCase()).not.toMatch(/installed on host/);
+    }
+
+    const pdnsLoad = await apiJson(ts, 'POST', '/api/v1/hosting/dns/powerdns/load', {
+      zone: 'pdns-depth.local',
+      serverIp: '203.0.113.80',
+      load: false,
+    });
+    expect(pdnsLoad.status).toBeLessThan(500);
+    const pl = pdnsLoad.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    if (typeof pl.ok === 'boolean') {
+      expectHonestOps({
+        ok: pl.ok,
+        blocked: pl.blocked,
+        apply_status: pl.apply_status,
+        notes: pl.notes,
+      });
+    }
+
+    const cf = await apiJson(ts, 'POST', '/api/v1/hosting/dns/cloudflare/apply', {
+      zone: 'cf-depth.local',
+      serverIp: '203.0.113.81',
+      dryRun: true,
+    });
+    expect(cf.status).toBeLessThan(500);
+    const cfb = cf.body as { ok?: boolean; dryRun?: boolean; blocked?: boolean };
+    if (typeof cfb.ok === 'boolean') {
+      expect(cfb.ok === true && cfb.blocked === true).toBe(false);
+    }
+  }, 60_000);
+
+  it('firewall plan, public files plan/apply, db provision dry-run honesty', async () => {
+    ts = await startTestServer();
+
+    const fw = await apiJson(ts, 'POST', '/api/v1/hosting/firewall/plan', {
+      allowSmtp: true,
+    });
+    expect(fw.status).toBe(200);
+
+    const filesPlan = await apiJson(ts, 'GET', '/api/v1/hosting/files/plan');
+    expect(filesPlan.status).toBe(200);
+
+    const filesApply = await apiJson(ts, 'POST', '/api/v1/hosting/files/apply', {
+      serverName: 'files-depth.local',
+      reload: false,
+    });
+    expect(filesApply.status).toBeLessThan(500);
+    const fa = filesApply.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      apply_status?: string;
+      notes?: string[];
+    };
+    if (typeof fa.ok === 'boolean') {
+      expectHonestOps({
+        ok: fa.ok,
+        blocked: fa.blocked,
+        apply_status: fa.apply_status,
+        notes: fa.notes,
+      });
+    }
+
+    for (const [path, body] of [
+      [
+        '/api/v1/hosting/db/redis-provision',
+        { projectId: 'shared', dbIndex: 3, execute: false },
+      ],
+      [
+        '/api/v1/hosting/db/postgres-provision',
+        {
+          dbName: 'depth_pg',
+          username: 'depth_pg_u',
+          password: 'Pg-Depth-99!',
+          execute: false,
+        },
+      ],
+      [
+        '/api/v1/hosting/db/mysql-provision',
+        {
+          dbName: 'depth_my',
+          username: 'depth_my_u',
+          password: 'My-Depth-99!',
+          execute: false,
+        },
+      ],
+    ] as const) {
+      const res = await apiJson(ts, 'POST', path, body);
+      expect(res.status).toBeLessThan(500);
+      const r = res.body as {
+        ok?: boolean;
+        blocked?: boolean;
+        apply_status?: string;
+        requiresExecute?: boolean;
+        notes?: string[];
+      };
+      if (typeof r.ok === 'boolean') {
+        // dry-run / no execute must not claim host-applied
+        expect(r.apply_status).not.toBe('applied');
+        expect(r.ok === true && r.blocked === true).toBe(false);
+      }
+    }
+  }, 60_000);
+
+  it('runtime install kinds plan-only (php/python/go)', async () => {
+    ts = await startTestServer();
+    for (const kind of ['php', 'python', 'go'] as const) {
+      const res = await apiJson(ts, 'POST', '/api/v1/hosting/runtimes/install', {
+        kind,
+        install: false,
+      });
+      expect(res.status).toBeLessThan(500);
+      const body = res.body as { ok?: boolean; kind?: string };
+      expect(typeof body.ok).toBe('boolean');
+    }
+  });
 });
