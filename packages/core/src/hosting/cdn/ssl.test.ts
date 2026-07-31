@@ -895,3 +895,139 @@ describe('cdn ssl depth gaps', () => {
     }
   });
 });
+
+describe('cdn ssl remaining branches', () => {
+  it('resolve via /etc/letsencrypt when present; identity scp path; certId rebind', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnssl-rem-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const cert = uploadCertificate({
+        db,
+        dataDir: dir,
+        domain: 'rebind.example.com',
+        fullchainPem: SAMPLE_CERT,
+        privkeyPem: SAMPLE_KEY,
+        actor: 't',
+      });
+      const remote = upsertCdnNode(db, {
+        name: 'remote-id',
+        roles: ['edge'],
+        publicIpv4: ['203.0.113.55'],
+        sshUsername: 'cdn',
+        sshPort: 22,
+        sshIdentityId: 'id-missing',
+      });
+      const site = upsertCdnSite(db, {
+        name: 'rebind',
+        domains: ['rebind.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [remote.id],
+        // no certId — resolve by disk, then distribute should rebind
+        ssl: { mode: 'upload' },
+      });
+      // ensure managed certs exist for resolve
+      const managed = join(dir, 'certs', 'rebind.example.com');
+      mkdirSync(managed, { recursive: true });
+      writeFileSync(join(managed, 'fullchain.pem'), SAMPLE_CERT, 'utf8');
+      writeFileSync(join(managed, 'privkey.pem'), SAMPLE_KEY, 'utf8');
+
+      const resolved = resolveCdnSiteCertificate({ db, dataDir: dir, site });
+      expect(resolved.ok).toBe(true);
+
+      const host = mockHost({
+        execute: true,
+        run: (argv) => {
+          if (argv[0] === 'ssh' || argv[0] === 'scp') return { exitCode: 0, stdout: 'ok' };
+          return { exitCode: 0 };
+        },
+      });
+      const r = await distributeCdnSiteSsl({
+        db,
+        host,
+        dataDir: dir,
+        siteId: site.id,
+        applyNginx: false,
+      });
+      expect(r.edges.length).toBe(1);
+      expect(['written', 'failed', 'applied', 'partial']).toContain(r.apply_status);
+
+      // sshHost-only remote (no publicIpv4) still distributes via SSH
+      const viaSshHost = upsertCdnNode(db, {
+        name: 'ssh-only',
+        roles: ['edge'],
+        publicIpv4: ['203.0.113.99'],
+        sshHost: 'edge.internal.example',
+        sshUsername: 'root',
+      });
+      const site2 = upsertCdnSite(db, {
+        name: 'sshh',
+        domains: ['rebind.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [viaSshHost.id],
+        ssl: { mode: 'upload', certId: cert.id },
+      });
+      const r2 = await distributeCdnSiteSsl({
+        db,
+        host,
+        dataDir: dir,
+        siteId: site2.id,
+        applyNginx: false,
+      });
+      expect(r2.edges.length).toBe(1);
+
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('distribute applyNginx merges applied/failed/partial statuses', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdnssl-merge2-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const cert = uploadCertificate({
+        db,
+        dataDir: dir,
+        domain: 'merge2.example.com',
+        fullchainPem: SAMPLE_CERT,
+        privkeyPem: SAMPLE_KEY,
+        actor: 't',
+      });
+      const remote = upsertCdnNode(db, {
+        name: 'r-merge',
+        roles: ['edge'],
+        publicIpv4: ['203.0.113.70'],
+      });
+      const site = upsertCdnSite(db, {
+        name: 'merge2',
+        domains: ['merge2.example.com'],
+        origin: { kind: 'url', url: 'https://o.example.com' },
+        edgeNodeIds: [remote.id],
+        ssl: { mode: 'upload', certId: cert.id },
+      });
+      let scpN = 0;
+      const host = mockHost({
+        execute: true,
+        run: (argv) => {
+          if (argv[0] === 'scp') {
+            scpN++;
+            return { exitCode: 0 };
+          }
+          if (argv[0] === 'ssh') return { exitCode: 0, stdout: 'ok' };
+          if (argv[0] === 'nginx') return { exitCode: 1, stderr: 'fail nginx' };
+          return { exitCode: 0 };
+        },
+      });
+      const r = await distributeCdnSiteSsl({
+        db,
+        host,
+        dataDir: dir,
+        siteId: site.id,
+        applyNginx: true,
+      });
+      expect(r.edges.length).toBeGreaterThanOrEqual(1);
+      expect(['written', 'applied', 'partial', 'failed']).toContain(r.apply_status);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

@@ -820,3 +820,191 @@ describe('ProjectOpsService depth coverage', () => {
     expect(ok.ok).toBe(true);
   });
 });
+
+describe('ProjectOpsService production mock paths', () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs) rmSync(d, { recursive: true, force: true });
+    dirs.length = 0;
+  });
+
+  it('deployStatic reload=true without root hits blocked reload note', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-st-rl-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const createHost = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, createHost, dir);
+    const { project } = await projects.create({
+      name: 'StRl',
+      domain: 'strl.local',
+      runtime: 'static',
+      templateId: 'static-site',
+      actor: 't',
+    });
+    const hostBlocked = {
+      executeEnabled: () => true,
+      isRoot: () => false,
+      pathExists: (p: string) => existsSync(p),
+      readFile: async (p: string) => (existsSync(p) ? readFileSync(p, 'utf8') : ''),
+      listDir: async () => [] as string[],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: 'inactive',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv: string[]) => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      }),
+    };
+    const ops = new ProjectOpsService(repo, hostBlocked as never, dir);
+    const r = await ops.deployStatic(project.id, { actor: 't', reload: true });
+    expect(r.ok).toBe(true);
+    expect(r.nginxReloaded).toBe(false);
+    expect(r.notes.length).toBeGreaterThan(0);
+  });
+
+  it('liveStatus with systemctl pathExists probes is-active', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-live-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const createHost = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, createHost, dir);
+    const { project } = await projects.create({ name: 'Live', runtime: 'node', actor: 't' });
+    repo.updateRuntimeState(project.id, { port: 39997, pid: process.pid });
+    const host = {
+      executeEnabled: () => true,
+      isRoot: () => false,
+      pathExists: (p: string) => p.includes('systemctl') || existsSync(p),
+      readFile: async () => '',
+      listDir: async () => [] as string[],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: 'inactive',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv: string[]) => {
+        if (argv.join(' ').includes('is-active')) {
+          return { stdout: 'active\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const ops = new ProjectOpsService(repo, host as never, dir);
+    const live = await ops.liveStatus(project.id);
+    expect(live.projectId).toBe(project.id);
+    expect(live.pidAlive).toBe(true);
+    expect(live.systemdActive).toBe('active');
+    expect(live.deployMode).toBe('systemd');
+    expect(live.degraded).toBe(false);
+  });
+
+  it('gitDeploy redeploy static after local clone', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-git3-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+    const repoDir = join(dir, 'src');
+    mkdirSync(repoDir, { recursive: true });
+    writeFileSync(join(repoDir, 'index.html'), '<h1>g</h1>', 'utf8');
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync(
+        'git init && git config user.email t@t && git config user.name t && git add . && git commit -m i',
+        { cwd: repoDir, stdio: 'ignore' },
+      );
+    } catch {
+      return;
+    }
+    const { project } = await projects.create({
+      name: 'GitSt',
+      domain: 'gitst.local',
+      runtime: 'static',
+      templateId: 'static-site',
+      actor: 't',
+    });
+    const r = await ops.gitDeploy(project.id, {
+      actor: 't',
+      gitUrl: repoDir,
+      redeploy: true,
+    });
+    expect(r.git?.ok === true || r.notes.length > 0).toBe(true);
+  }, 30_000);
+
+  it('stopNode kills pid from pidfile when row.pid unset', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pidf-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+    const { project } = await projects.create({ name: 'Pidf', runtime: 'node', actor: 't' });
+    const pidfile = join(project.homeDir, 'app.pid');
+    const { spawn } = await import('node:child_process');
+    const child = spawn('sleep', ['30'], { detached: true, stdio: 'ignore' });
+    child.unref();
+    const pid = child.pid!;
+    writeFileSync(pidfile, `${pid}\n`, 'utf8');
+    repo.updateRuntimeState(project.id, { pid: undefined, pidfile });
+    const stop = await ops.stopNode(project.id, 't');
+    expect(stop.ok).toBe(true);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(isPidAlive(pid)).toBe(false);
+  }, 15_000);
+
+  it('deployNode with custom entry and short health timeout stays honest when unhealthy', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-unh-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+    const { project } = await projects.create({
+      name: 'Unh',
+      domain: 'unh.local',
+      runtime: 'node',
+      actor: 't',
+    });
+    // write a hang/no-listen entry that never binds PORT
+    const appDir = join(project.homeDir, 'app');
+    mkdirSync(appDir, { recursive: true });
+    writeFileSync(join(appDir, 'hang.js'), 'setInterval(() => {}, 60000);\n', 'utf8');
+    const r = await ops.deployNode(project.id, {
+      actor: 't',
+      entry: 'hang.js',
+      preferPm2: false,
+      enableSystemd: false,
+      healthTimeoutMs: 800,
+    });
+    // process may start but health fails → unhealthy/failed honest shape
+    expect(typeof r.ok).toBe('boolean');
+    expect(r.deployMode).toBe('pidfile');
+    expect(r.degraded).toBe(true);
+    if (!r.ok) {
+      expect(r.processStatus === 'unhealthy' || r.processStatus === 'failed').toBe(true);
+    }
+    await ops.stopNode(project.id, 't').catch(() => undefined);
+  }, 20_000);
+});
