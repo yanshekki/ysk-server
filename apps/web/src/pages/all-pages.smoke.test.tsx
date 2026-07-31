@@ -446,12 +446,67 @@ const commonRoutes = (): FetchRoute[] => [
     body: dbConsole,
   },
   {
+    match: (url) => url.startsWith('/api/v1/system/db/redis/status'),
+    body: {
+      serverInstalled: true,
+      clientInstalled: true,
+      unit: 'redis-server',
+      active: 'active',
+      reachable: true,
+      ping: 'PONG',
+      executeEnabled: false,
+      isRoot: false,
+      canRead: true,
+      canWrite: false,
+      canInstall: false,
+      version: '7.0',
+      usedMemory: '12M',
+      connectedClients: '3',
+      keyspace: [
+        { db: 0, keys: 12, expires: 2 },
+        { db: 1, keys: 0 },
+      ],
+      databases: 16,
+      configuredDatabases: 16,
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/system/redis/'),
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return HONESTY_WRITTEN_BLOCKED;
+      }
+      if (url.includes('/keys')) {
+        return {
+          ok: true,
+          keys: [
+            { key: 'session:1', type: 'string', ttl: 3600 },
+            { key: 'cache:home', type: 'hash', ttl: -1 },
+          ],
+          notes: [],
+        };
+      }
+      return {
+        ok: true,
+        view: {
+          key: 'session:1',
+          type: 'string',
+          ttl: 3600,
+          value: 'user-1',
+        },
+        notes: [],
+      };
+    },
+  },
+  {
     match: /\/api\/v1\/system\/db\/\w+\/status/,
     body: {
       serverInstalled: true,
       active: 'inactive',
       activeLabel: 'inactive',
       engine: 'mysql',
+      executeEnabled: false,
+      isRoot: false,
     },
   },
   {
@@ -587,17 +642,61 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/cron/,
-    body: {
-      items: [],
-      managedPath: '/etc/cron.d/ysk',
-      managedLines: 0,
-      enabledJobs: 0,
-      totalJobs: 0,
-      hostHasYskEntries: false,
-      hostCrontabPreview: '',
-      executeEnabled: false,
-      lastInstallOk: null,
-      lastInstallAt: null,
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          item: {
+            id: 'job-1',
+            name: 'Nightly backup',
+            schedule: '0 2 * * *',
+            command: 'ysk backup',
+            enabled: true,
+          },
+        };
+      }
+      if (url.includes('/status') || url.includes('status')) {
+        return {
+          managedPath: '/etc/cron.d/ysk',
+          managedLines: 2,
+          enabledJobs: 1,
+          totalJobs: 1,
+          hostHasYskEntries: true,
+          hostCrontabPreview: '0 2 * * * root ysk backup\n',
+          executeEnabled: false,
+          lastInstallOk: false,
+          lastInstallAt: new Date().toISOString(),
+          notes: ['written ≠ applied'],
+        };
+      }
+      return {
+        items: [
+          {
+            id: 'job-1',
+            name: 'Nightly backup',
+            schedule: '0 2 * * *',
+            command: 'ysk backup',
+            enabled: true,
+            projectId: 'p1',
+          },
+          {
+            id: 'job-2',
+            name: 'Health ping',
+            schedule: '*/5 * * * *',
+            command: 'curl -fsS localhost/health',
+            enabled: false,
+          },
+        ],
+        managedPath: '/etc/cron.d/ysk',
+        managedLines: 2,
+        enabledJobs: 1,
+        totalJobs: 2,
+        hostHasYskEntries: true,
+        hostCrontabPreview: '0 2 * * * root ysk backup\n',
+        executeEnabled: false,
+        lastInstallOk: null,
+        lastInstallAt: null,
+      };
     },
   },
   {
@@ -858,11 +957,29 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: (url) => url.startsWith('/api/v1/defense/geoip/'),
-    body: {
-      ok: true,
-      ...HONESTY_WRITTEN_BLOCKED,
-      lookup: { country: 'US', city: 'NYC' },
-      access: { blocked: false, matched: [] },
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET' && !url.includes('lookup')) {
+        return HONESTY_WRITTEN_BLOCKED;
+      }
+      return {
+        ok: true,
+        ...HONESTY_WRITTEN_BLOCKED,
+        lookup: {
+          ip: '203.0.113.50',
+          country: 'US',
+          regionKey: 'US-NY',
+          regionName: 'New York',
+          city: 'New York',
+          cityKey: 'US-NY-NYC',
+          continent: 'NA',
+          latitude: 40.7,
+          longitude: -74.0,
+          asn: '13335',
+          asName: 'Cloudflare',
+          source: 'dbip',
+        },
+        access: { blocked: false, matched: [] },
+      };
     },
   },
   {
@@ -1519,25 +1636,68 @@ const commonRoutes = (): FetchRoute[] => [
       }
       return {
         ok: true,
-        entries: [{ name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now }],
+        entries: [
+          { name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now, mime: 'text/plain' },
+          { name: 'pic.png', path: 'pic.png', type: 'file', size: 10, mtime: now, mime: 'image/png' },
+          { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
+        ],
         path: '/',
-        items: [{ name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now }],
+        items: [
+          { name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now, mime: 'text/plain' },
+          { name: 'pic.png', path: 'pic.png', type: 'file', size: 10, mtime: now, mime: 'image/png' },
+          { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
+        ],
       };
     },
   },
   {
     match: /\/api\/v1\/system\/services/,
-    body: {
-      items: [
-        {
-          unit: 'nginx.service',
-          active: 'inactive',
-          enabled: 'disabled',
-          description: 'nginx',
-        },
-      ],
-      groups: [],
-      matrix: [],
+    handler: (url, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return HONESTY_WRITTEN_BLOCKED;
+      }
+      if (url.includes('/matrix') || url.includes('services')) {
+        return {
+          items: [
+            {
+              id: 'nginx',
+              label: 'Nginx',
+              unit: 'nginx.service',
+              href: '/nginx',
+              category: 'web',
+              installed: true,
+              active: 'inactive',
+              enabled: 'disabled',
+              activeLabel: 'inactive',
+            },
+            {
+              id: 'redis',
+              label: 'Redis',
+              unit: 'redis-server.service',
+              href: '/databases/redis',
+              category: 'data',
+              installed: true,
+              active: 'active',
+              enabled: 'enabled',
+              activeLabel: 'active',
+            },
+            {
+              id: 'postgresql',
+              label: 'PostgreSQL',
+              unit: 'postgresql.service',
+              category: 'data',
+              installed: true,
+              active: 'inactive',
+              enabled: 'disabled',
+              activeLabel: 'inactive',
+            },
+          ],
+          executeEnabled: false,
+          isRoot: false,
+          probedAt: new Date().toISOString(),
+        };
+      }
+      return emptyList;
     },
   },
   {
@@ -1602,12 +1762,92 @@ const commonRoutes = (): FetchRoute[] => [
     body: emptyList,
   },
   {
+    match: (url) => url.startsWith('/api/v1/security/totp') || url.includes('/totp'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ...HONESTY_WRITTEN_BLOCKED,
+          ok: true,
+          secret: 'JBSWY3DPEHPK3PXP',
+          otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
+          enabled: false,
+          enrolled: true,
+        };
+      }
+      return { enabled: false, enrolled: false, totpEnabled: false };
+    },
+  },
+  {
+    match: (url) => url.includes('/api/v1/security/api-keys') || url.includes('/api-keys'),
+    body: {
+      items: [
+        {
+          id: 'k1',
+          name: 'ci',
+          prefix: 'ysk_ci',
+          createdAt: new Date().toISOString(),
+          lastUsedAt: null,
+        },
+      ],
+    },
+  },
+  {
+    match: (url) => url.includes('/api/v1/security/sessions') || url.includes('/sessions'),
+    body: {
+      items: [
+        {
+          id: 'sess-1',
+          createdAt: new Date().toISOString(),
+          ip: '203.0.113.50',
+          userAgent: 'vitest',
+          current: true,
+        },
+      ],
+    },
+  },
+  {
+    match: (url) =>
+      url.includes('/api/v1/security/approvals') || url.includes('/approvals'),
+    body: {
+      items: [
+        {
+          id: 'ap1',
+          tool: 'sys.shell',
+          status: 'pending',
+          requestedAt: new Date().toISOString(),
+          reason: 'debug',
+        },
+      ],
+    },
+  },
+  {
+    match: (url) => url.includes('/api/v1/security/tools') || url.includes('/tools'),
+    body: {
+      items: [
+        {
+          id: 'sys.info',
+          name: 'sys.info',
+          allowed: true,
+          requiresApproval: false,
+        },
+        {
+          id: 'sys.shell',
+          name: 'sys.shell',
+          allowed: false,
+          requiresApproval: true,
+        },
+      ],
+    },
+  },
+  {
     match: /\/api\/v1\/security/,
     body: {
       ok: true,
       totpEnabled: false,
       enrolled: false,
       enabled: false,
+      requireAdminTotp: false,
+      requireAdminTotpStrict: false,
       webauthnCredentials: [],
       sessions: [
         {
@@ -1639,8 +1879,134 @@ const commonRoutes = (): FetchRoute[] => [
     },
   },
   {
+    match: (url) => url.startsWith('/api/v1/auth/totp'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ok: true,
+          secret: 'JBSWY3DPEHPK3PXP',
+          otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
+          enabled: true,
+          enrolled: true,
+          recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'],
+        };
+      }
+      return { enabled: false, enrolled: false, recoveryRemaining: 0 };
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/auth/sessions'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return { ok: true, revoked: 1 };
+      }
+      return {
+        items: [
+          {
+            id: 'sess-1',
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 86400000).toISOString(),
+            last_seen_at: new Date().toISOString(),
+            user_agent: 'vitest',
+            ip: '203.0.113.50',
+            current: true,
+          },
+          {
+            id: 'sess-2',
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 86400000).toISOString(),
+            user_agent: 'curl',
+            ip: '198.51.100.1',
+            current: false,
+          },
+        ],
+      };
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/auth/api-keys'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ok: true,
+          key: {
+            id: 'k2',
+            name: 'new-key',
+            prefix: 'ysk_nw',
+            created_at: new Date().toISOString(),
+          },
+          token: 'ysk_nw_secret_token',
+        };
+      }
+      return {
+        items: [
+          {
+            id: 'k1',
+            name: 'ci',
+            prefix: 'ysk_ci',
+            created_at: new Date().toISOString(),
+          },
+        ],
+      };
+    },
+  },
+  {
     match: /\/api\/v1\/auth\//,
     body: { ok: true },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/settings/security'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return {
+          ok: true,
+          requireAdminTotp: true,
+          requireAdminTotpStrict: false,
+        };
+      }
+      return { requireAdminTotp: false, requireAdminTotpStrict: false };
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/approvals'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') return { ok: true };
+      return {
+        items: [
+          {
+            id: 'ap1',
+            tool: 'sys.shell',
+            status: 'pending',
+            requestedAt: new Date().toISOString(),
+            reason: 'debug',
+          },
+        ],
+      };
+    },
+  },
+  {
+    match: (url) => url.startsWith('/api/v1/tools'),
+    handler: (_u, init) => {
+      if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+        return { ok: true, hostname: 'ysk-test', uptime: 100, notes: [] };
+      }
+      return {
+        items: [
+          {
+            id: 'sys.info',
+            name: 'sys.info',
+            allowed: true,
+            requiresApproval: false,
+          },
+          {
+            id: 'sys.shell',
+            name: 'sys.shell',
+            allowed: false,
+            requiresApproval: true,
+          },
+        ],
+      };
+    },
   },
   {
     match: /\/api\/v1\/migrate/,
