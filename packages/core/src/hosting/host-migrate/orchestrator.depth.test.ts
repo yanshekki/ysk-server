@@ -219,22 +219,43 @@ describe('orchestrator depth', () => {
   });
 
   it('full path with remotePost=false after package+transfer', async () => {
-    // Host that answers verify with real local sha
+    // Host that answers verify with real local sha + all preflight bins
     const host: HostExecutor = {
-      ...migrateHost({ execute: true }),
+      pathExists: () => true,
+      isRoot: () => true,
+      executeEnabled: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => {},
+      deletePath: async () => {},
+      mkdirp: async () => {},
+      sysInfo: async () => ({}),
+      serviceStatus: async () => empty(),
       runCommand: async (argv) => {
         const joined = argv.join(' ');
         const script = typeof argv[2] === 'string' ? argv[2] : '';
 
-        if (argv[0] === 'bash' && script.includes('command -v')) {
-          return { ...empty(), stdout: 'ok\n', argv };
-        }
-        if (script.includes('du -sb') || joined.includes('du -sb')) {
-          return { ...empty(), stdout: '1048576\n', argv };
+        if (argv[0] === 'bash') {
+          if (script.includes('command -v') || joined.includes('command -v')) {
+            return { ...empty(), stdout: 'ok\n', argv };
+          }
+          if (script.includes('du -sb') || joined.includes('du -sb')) {
+            return { ...empty(), stdout: '1048576\n', argv };
+          }
+          // rsync via bash -c (sshpass path) or other
+          if (joined.includes('rsync')) {
+            return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
+          }
+          return { ...empty(), exitCode: 0, stdout: 'ok\n', argv };
         }
 
-        if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
-          try {
+        if (argv[0] === 'rsync' || joined.includes('rsync')) {
+          return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
+        }
+
+        if (argv[0] === 'ssh') {
+          // verify ysk.json sha (must precede generic preflight response)
+          if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
             const body = readFileSync(join(dir, 'ysk.json'));
             const sha = createHash('sha256').update(body).digest('hex');
             return {
@@ -243,21 +264,7 @@ describe('orchestrator depth', () => {
               stdout: `${sha}\nYSK_SHA_DONE\n`,
               argv,
             };
-          } catch {
-            return {
-              ...empty(),
-              exitCode: 0,
-              stdout: `${'a'.repeat(64)}\nYSK_SHA_DONE\n`,
-              argv,
-            };
           }
-        }
-
-        if (argv[0] === 'rsync' || joined.includes('rsync')) {
-          return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
-        }
-
-        if (argv[0] === 'ssh' || joined.startsWith('ssh') || joined.includes(' ssh ')) {
           return {
             ...empty(),
             exitCode: 0,
@@ -268,6 +275,8 @@ describe('orchestrator depth', () => {
               'YSK_HAS_RSYNC',
               'YSK_BOOTSTRAP_OK',
               'YSK_CLI_OK',
+              'YSK_NODE_OK',
+              'YSK_YSK_OK',
             ].join('\n'),
             argv,
           };
@@ -292,20 +301,14 @@ describe('orchestrator depth', () => {
       remotePost: false,
       dryRun: false,
     });
-    // package with empty DBs should succeed; transfer+bootstrap may ok
     expect(r.phases?.inventory?.ok).toBe(true);
-    if (r.ok) {
-      expect(r.apply_status).toBe('applied');
-      expect(r.phases?.package?.ok).toBe(true);
-      expect(r.phases?.transferBootstrap?.ok).toBe(true);
-      expect(r.phases?.remotePost).toBeUndefined();
-      expect(r.job?.phase).toBe('done');
-    } else {
-      // honest failure still covers package/transfer branches
-      expect(r.apply_status === 'applied').toBe(false);
-      expect(r.phases).toBeTruthy();
-      expect(r.job).toBeTruthy();
-    }
+    expect(r.phases?.preflight?.ok).toBe(true);
+    expect(r.phases?.package?.ok).toBe(true);
+    expect(r.phases?.transferBootstrap?.ok).toBe(true);
+    expect(r.phases?.remotePost).toBeUndefined();
+    expect(r.ok).toBe(true);
+    expect(r.apply_status).toBe('applied');
+    expect(r.job?.phase).toBe('done');
   });
 
   it('package failure returns without transfer when dumps fail', async () => {
@@ -513,5 +516,145 @@ describe('orchestrator depth', () => {
     });
     // marker present without YSK_NO_CLI → ok true (remoteOk default)
     expect(r.ok).toBe(true);
+  });
+
+  it('transfer fails after package when rsync dies', async () => {
+    const host: HostExecutor = {
+      pathExists: () => true,
+      isRoot: () => true,
+      executeEnabled: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => {},
+      deletePath: async () => {},
+      mkdirp: async () => {},
+      sysInfo: async () => ({}),
+      serviceStatus: async () => empty(),
+      runCommand: async (argv) => {
+        const joined = argv.join(' ');
+        const script = typeof argv[2] === 'string' ? argv[2] : '';
+        if (argv[0] === 'bash' && (script.includes('command -v') || joined.includes('command -v'))) {
+          return { ...empty(), stdout: 'ok\n', argv };
+        }
+        if (script.includes('du -sb') || joined.includes('du -sb')) {
+          return { ...empty(), stdout: '2048\n', argv };
+        }
+        if (argv[0] === 'rsync' || joined.includes('rsync')) {
+          return { ...empty(), exitCode: 1, stderr: 'rsync blocked later', argv };
+        }
+        if (argv[0] === 'ssh') {
+          return {
+            ...empty(),
+            exitCode: 0,
+            stdout: [preflightStdout(), 'YSK_APT_OK', 'YSK_HAS_RSYNC', 'YSK_MKDIR_OK'].join('\n'),
+            argv,
+          };
+        }
+        return { ...empty(), exitCode: 0, stdout: preflightStdout(), argv };
+      },
+    };
+    const r = await runSourceMigrateHost({
+      host,
+      db,
+      dataDir: dir,
+      target: 'root@10.20.30.55',
+      auth: { kind: 'agent' },
+      maintenanceAccepted: true,
+      remotePost: false,
+      dryRun: false,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.phases?.preflight?.ok).toBe(true);
+    expect(r.phases?.package?.ok).toBe(true);
+    expect(r.phases?.transferBootstrap?.ok).toBe(false);
+  });
+
+  it('remotePost true after successful transferBootstrap', async () => {
+    const host: HostExecutor = {
+      pathExists: () => true,
+      isRoot: () => true,
+      executeEnabled: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => {},
+      deletePath: async () => {},
+      mkdirp: async () => {},
+      sysInfo: async () => ({}),
+      serviceStatus: async () => empty(),
+      runCommand: async (argv) => {
+        const joined = argv.join(' ');
+        const script = typeof argv[2] === 'string' ? argv[2] : '';
+        if (argv[0] === 'bash') {
+          if (script.includes('command -v') || joined.includes('command -v')) {
+            return { ...empty(), stdout: 'ok\n', argv };
+          }
+          if (script.includes('du -sb') || joined.includes('du -sb')) {
+            return { ...empty(), stdout: '4096\n', argv };
+          }
+          if (joined.includes('rsync')) {
+            return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
+          }
+          return { ...empty(), exitCode: 0, stdout: 'ok\n', argv };
+        }
+        if (argv[0] === 'rsync') {
+          return { ...empty(), exitCode: 0, stdout: 'sent\n', argv };
+        }
+        if (argv[0] === 'ssh') {
+          if (joined.includes('sha256sum') || joined.includes('YSK_SHA')) {
+            const sha = createHash('sha256')
+              .update(readFileSync(join(dir, 'ysk.json')))
+              .digest('hex');
+            return {
+              ...empty(),
+              exitCode: 0,
+              stdout: `${sha}\nYSK_SHA_DONE\n`,
+              argv,
+            };
+          }
+          if (
+            joined.includes('migrate post') ||
+            joined.includes('YSK_REMOTE_POST') ||
+            joined.includes('ysk-server')
+          ) {
+            return {
+              ...empty(),
+              exitCode: 0,
+              stdout: '{"ok":true,"apply_status":"applied"}\nYSK_REMOTE_POST_DONE\n',
+              argv,
+            };
+          }
+          return {
+            ...empty(),
+            exitCode: 0,
+            stdout: [
+              preflightStdout(),
+              'YSK_APT_OK',
+              'YSK_MKDIR_OK',
+              'YSK_HAS_RSYNC',
+              'YSK_BOOTSTRAP_OK',
+              'YSK_CLI_OK',
+              'YSK_NODE_OK',
+            ].join('\n'),
+            argv,
+          };
+        }
+        return { ...empty(), exitCode: 0, stdout: preflightStdout(), argv };
+      },
+    };
+    const r = await runSourceMigrateHost({
+      host,
+      db,
+      dataDir: dir,
+      target: 'root@10.20.30.56',
+      auth: { kind: 'agent' },
+      maintenanceAccepted: true,
+      remotePost: true,
+      dryRun: false,
+    });
+    expect(r.phases?.package?.ok).toBe(true);
+    expect(r.phases?.transferBootstrap?.ok).toBe(true);
+    expect(r.phases?.remotePost?.ok).toBe(true);
+    expect(r.ok).toBe(true);
+    expect(r.apply_status).toBe('applied');
   });
 });
