@@ -87,7 +87,7 @@ export function useUpdates() {
       }
       try {
         const sch = await updatesApi.scheduler();
-        setJobs(sch.jobs);
+        setJobs(sch.jobs ?? []);
       } catch {
         /* optional */
       }
