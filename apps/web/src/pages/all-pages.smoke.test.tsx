@@ -152,8 +152,29 @@ const emailBundle = {
 const networkSnap = {
   ok: true,
   notes: [],
-  interfaces: [],
-  routes: [],
+  backend: { hasIp: true, hasNmcli: false, hasResolvectl: false },
+  interfaces: [
+    {
+      name: 'eth0',
+      up: true,
+      operstate: 'UP',
+      flags: ['UP', 'BROADCAST'],
+      mac: 'aa:bb:cc:dd:ee:ff',
+      addrs: ['10.0.0.5/24'],
+      addresses: [{ address: '10.0.0.5', prefix: 24, family: 'inet' }],
+      rxBytes: 1000,
+      txBytes: 2000,
+    },
+  ],
+  routes: [
+    {
+      destination: 'default',
+      gateway: '10.0.0.1',
+      device: 'eth0',
+      dest: 'default',
+      iface: 'eth0',
+    },
+  ],
   caps: { canMutate: false, executeEnabled: false, isRoot: false },
   dns: {
     nameservers: ['1.1.1.1'],
@@ -576,15 +597,56 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/logs\//,
-    body: {
-      ok: true,
-      items: [],
-      sources: [],
-      journalDiskMb: 0,
-      followIntervalSec: 3,
-      journalWarnMb: 1024,
-      vacuumDefaultDays: 14,
-      maxLines: 300,
+    handler: (url) => {
+      if (url.includes('/projects')) {
+        return {
+          items: [
+            {
+              projectId: 'p1',
+              name: 'Demo',
+              files: [{ name: 'app.log', bytes: 100, previewable: true }],
+              related: [],
+            },
+          ],
+        };
+      }
+      if (url.includes('/sources')) {
+        return {
+          items: [
+            {
+              id: 'j1',
+              kind: 'journal',
+              label: 'nginx',
+              unit: 'nginx.service',
+              group: 'journal',
+              available: true,
+            },
+          ],
+        };
+      }
+      if (url.includes('/journal/units')) {
+        return {
+          items: [
+            { unit: 'nginx.service', active: 'active' },
+            { unit: 'ysk-project-p1.service', active: 'inactive' },
+          ],
+        };
+      }
+      return {
+        ok: true,
+        items: [],
+        sources: [],
+        units: [],
+        quickUnits: [],
+        journalDiskMb: 0,
+        followIntervalSec: 3,
+        journalWarnMb: 1024,
+        vacuumDefaultDays: 14,
+        maxLines: 300,
+        text: '',
+        lines: [],
+        settings: {},
+      };
     },
   },
   {
@@ -792,6 +854,8 @@ const commonRoutes = (): FetchRoute[] => [
         ok: true,
         notes: ['dry-run plan'],
         steps: [{ id: '1', title: 'Write config', detail: 'pg_hba' }],
+        clusterId: 'c1',
+        files: ['pg_hba.conf'],
       },
     },
   },
@@ -871,7 +935,21 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/ai\//,
-    body: emptyList,
+    body: {
+      items: [
+        {
+          id: 't1',
+          title: 'Task',
+          status: 'completed',
+          createdAt: new Date().toISOString(),
+          steps: [
+            { id: 's1', title: 'Plan', status: 'completed' },
+            { id: 's2', title: 'Run', status: 'executed' },
+          ],
+        },
+      ],
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
+    },
   },
   {
     match: /\/api\/v1\/fleet\//,
@@ -914,14 +992,42 @@ const commonRoutes = (): FetchRoute[] => [
   },
   {
     match: /\/api\/v1\/files/,
-    body: { ok: true, entries: [], path: '/', items: [] },
+    body: {
+      ok: true,
+      entries: [],
+      path: '/',
+      items: [],
+    },
   },
   {
     match: (url, init) =>
       url.includes('/api/v1/hosting/files') &&
       !url.includes('/apply') &&
       (init?.method ?? 'GET').toUpperCase() === 'GET',
-    body: { ok: true, entries: [], path: '/', items: [] },
+    handler: (url) => {
+      const now = new Date().toISOString();
+      if (url.includes('trash')) {
+        return {
+          ok: true,
+          items: [
+            {
+              name: 'old.txt',
+              path: 'old.txt',
+              type: 'file',
+              size: 1,
+              deletedAt: now,
+              mtime: now,
+            },
+          ],
+        };
+      }
+      return {
+        ok: true,
+        entries: [{ name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now }],
+        path: '/',
+        items: [{ name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now }],
+      };
+    },
   },
   {
     match: /\/api\/v1\/system\/services/,

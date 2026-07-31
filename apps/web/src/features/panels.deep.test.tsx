@@ -282,7 +282,13 @@ describe('DbClusterPanel', () => {
                 members: [],
                 params: {},
               },
-              plan: { ok: true, notes: ['plan'], steps: [] },
+              plan: {
+                ok: true,
+                notes: ['plan'],
+                steps: [],
+                clusterId: 'c1',
+                files: [],
+              },
               ...HONESTY_WRITTEN_BLOCKED,
             };
           }
@@ -311,7 +317,13 @@ describe('DbClusterPanel', () => {
               members: [],
               params: {},
             },
-            plan: { ok: true, notes: ['dry-run'], steps: [{ id: '1', title: 'cfg' }] },
+            plan: {
+              ok: true,
+              notes: ['dry-run'],
+              steps: [{ id: '1', title: 'cfg' }],
+              clusterId: 'c1',
+              files: [],
+            },
           };
         },
       },

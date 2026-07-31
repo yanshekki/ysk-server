@@ -21,6 +21,9 @@ export default defineConfig({
         'src/main.tsx',
         'src/**/*.css',
         'src/styles/**',
+        // Type-only modules (no runtime statements)
+        'src/**/types.ts',
+        'src/shared/guides/types.ts',
       ],
       thresholds:
         floor > 0
