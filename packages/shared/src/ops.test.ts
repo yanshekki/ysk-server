@@ -106,6 +106,40 @@ describe('assertHonestOps', () => {
     expect(r.written).toEqual(['/a']);
     expect(r.written).not.toBe(written);
   });
+
+  it('defaults missing notes to [] and coerces non-array notes', () => {
+    const noNotes = assertHonestOps({ ok: true, apply_status: 'written' });
+    expect(noNotes.notes).toEqual([]);
+    // non-array notes → empty (asNotes defensive branch)
+    const weird = assertHonestOps({
+      ok: true,
+      notes: 'not-an-array' as unknown as string[],
+    });
+    expect(weird.notes).toEqual([]);
+  });
+
+  it('demotes applied+ok:false+blocked via blocked branch first', () => {
+    // hardBlocked path already rewrites applied → blocked before okFalse demotion
+    const r = assertHonestOps({
+      ok: false,
+      blocked: true,
+      apply_status: 'applied',
+      notes: ['ops.honesty.already'],
+    });
+    expect(r.apply_status).toBe('blocked');
+    expect(r.ok).toBe(false);
+  });
+
+  it('adds blockedNotApplied note when applied+blocked without prior honesty note', () => {
+    const r = assertHonestOps({
+      ok: false,
+      blocked: true,
+      apply_status: 'applied',
+      notes: ['plain note only'],
+    });
+    expect(r.apply_status).toBe('blocked');
+    expect(r.notes.some((n) => n.includes('ops.honesty'))).toBe(true);
+  });
 });
 
 describe('isApplyStatus', () => {

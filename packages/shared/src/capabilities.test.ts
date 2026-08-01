@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
   CAPABILITY_CATALOG,
+  CRITICAL_PRIVILEGE_CAPS,
   applyBandToCapabilities,
+  capabilitiesInBand,
+  capabilitiesUpToLevel,
+  compareLevels,
   computeEffectiveCapabilities,
+  factoryRolePolicies,
   factoryRolePolicy,
+  getCapabilityDef,
   hasCapability,
+  hasCriticalPrivilege,
+  isCapabilityId,
   isFactoryPolicy,
+  levelRank,
   normalizeRolePolicy,
   resolveRolePolicy,
 } from './capabilities.js';
@@ -127,5 +136,110 @@ describe('capability catalog + factory', () => {
     const r = resolveRolePolicy('operator', custom);
     expect(r.dirty).toBe(true);
     expect(hasCapability(r.policy.capabilities, 'backups.restore')).toBe(true);
+  });
+});
+
+describe('capability helpers + resolve edge paths', () => {
+  it('isCapabilityId / getCapabilityDef / band + level helpers', () => {
+    expect(isCapabilityId('dashboard.read')).toBe(true);
+    expect(isCapabilityId('not.a.cap')).toBe(false);
+    expect(getCapabilityDef('dashboard.read')?.band).toBe('read');
+    expect(getCapabilityDef('users.manage')?.labelKey).toMatch(/rbac\.cap/);
+    expect(capabilitiesInBand('privilege')).toContain('users.manage');
+    expect(capabilitiesInBand('read').every((id) => getCapabilityDef(id)?.band === 'read')).toBe(
+      true,
+    );
+    expect(capabilitiesUpToLevel('write-low')).toContain('projects.write');
+    expect(capabilitiesUpToLevel('write-low')).not.toContain('updates.apply');
+    expect(levelRank('read')).toBeLessThan(levelRank('privilege'));
+    expect(compareLevels('write-low', 'write-high')).toBeLessThan(0);
+    expect(compareLevels('destructive', 'destructive')).toBe(0);
+  });
+
+  it('factoryRolePolicies returns all system roles', () => {
+    const all = factoryRolePolicies();
+    expect(all.admin.maxLevel).toBe('privilege');
+    expect(all.operator.maxLevel).toBe('write-high');
+    expect(all.viewer.maxLevel).toBe('read');
+    expect(all.agent.maxLevel).toBe('write-low');
+    expect(all.admin.capabilities.length).toBeGreaterThan(all.viewer.capabilities.length);
+  });
+
+  it('normalizeRolePolicy defaults invalid maxLevel and empty caps', () => {
+    const p = normalizeRolePolicy({});
+    expect(p.maxLevel).toBe('read');
+    expect(p.capabilities).toEqual([]);
+    const bad = normalizeRolePolicy({
+      maxLevel: 'not-a-level' as 'read',
+      capabilities: undefined,
+    });
+    expect(bad.maxLevel).toBe('read');
+  });
+
+  it('resolveRolePolicy admin always factory; missing stored → factory', () => {
+    const adminDirty = resolveRolePolicy('admin', {
+      maxLevel: 'read',
+      capabilities: ['dashboard.read'],
+    });
+    expect(adminDirty.dirty).toBe(false);
+    expect(hasCapability(adminDirty.policy.capabilities, 'users.manage')).toBe(true);
+
+    const missing = resolveRolePolicy('viewer', null);
+    expect(missing.dirty).toBe(false);
+    expect(missing.policy.maxLevel).toBe('read');
+
+    const exact = resolveRolePolicy('viewer', factoryRolePolicy('viewer'));
+    expect(exact.dirty).toBe(false);
+    expect(exact.policy.capabilities).toEqual(factoryRolePolicy('viewer').capabilities);
+  });
+
+  it('hasCriticalPrivilege requires manage + rbac.policy pair', () => {
+    expect(CRITICAL_PRIVILEGE_CAPS).toContain('users.manage');
+    expect(hasCriticalPrivilege(['users.manage', 'rbac.policy'])).toBe(true);
+    expect(hasCriticalPrivilege(['users.manage'])).toBe(false);
+    expect(hasCriticalPrivilege(['rbac.policy', 'settings.system'])).toBe(false);
+  });
+
+  it('computeEffectiveCapabilities defaults empty roles to viewer; skips unknown roles', () => {
+    const emptyRoles = computeEffectiveCapabilities({ roles: [] });
+    expect(hasCapability(emptyRoles, 'dashboard.read')).toBe(true);
+    expect(hasCapability(emptyRoles, 'projects.write')).toBe(false);
+
+    const mixed = computeEffectiveCapabilities({
+      roles: ['not-a-role' as 'viewer', 'operator'],
+      grants: ['not.real', 'backups.restore'],
+      revokes: ['updates.apply', 'also.fake'],
+    });
+    expect(hasCapability(mixed, 'backups.restore')).toBe(true);
+    expect(hasCapability(mixed, 'updates.apply')).toBe(false);
+  });
+
+  it('hasCapability accepts Set; applyBand refuses enable above maxLevel', () => {
+    const set = new Set(factoryRolePolicy('viewer').capabilities);
+    expect(hasCapability(set, 'dashboard.read')).toBe(true);
+    expect(hasCapability(set, 'users.manage')).toBe(false);
+
+    const base = factoryRolePolicy('operator').capabilities;
+    const unchanged = applyBandToCapabilities(base, 'privilege', true, 'write-high');
+    // Enabling privilege band above write-high maxLevel is a no-op
+    expect(hasCapability(unchanged, 'users.manage')).toBe(false);
+    expect(unchanged).toEqual(base);
+
+    // disable above max still strips if present via grant-like list
+    const withPriv = applyBandToCapabilities(
+      [...base, 'users.manage'],
+      'privilege',
+      false,
+      'write-high',
+    );
+    expect(hasCapability(withPriv, 'users.manage')).toBe(false);
+  });
+
+  it('null custom rolePolicies uses factory for non-admin', () => {
+    const caps = computeEffectiveCapabilities({
+      roles: ['operator'],
+      rolePolicies: { operator: null },
+    });
+    expect(hasCapability(caps, 'updates.apply')).toBe(true);
   });
 });

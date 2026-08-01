@@ -51,6 +51,43 @@ describe('parseListQuery', () => {
     const sp = new URLSearchParams('q=hi');
     expect(parseListQuery(sp).q).toBe('hi');
   });
+
+  it('accepts object with searchParams and drops invalid sort', () => {
+    const sp = new URLSearchParams('q=z&sort=evil&page=-3&limit=0');
+    const q = parseListQuery(
+      { searchParams: sp },
+      {
+        sortFields: ['username', 'created'],
+        defaultSort: 'username',
+        defaultOrder: 'desc',
+      },
+    );
+    expect(q.q).toBe('z');
+    expect(q.sort).toBe('username');
+    expect(q.page).toBe(1);
+    expect(q.limit).toBe(0);
+    expect(q.order).toBe('desc');
+  });
+
+  it('handles bad limit/page and reserved free filters', () => {
+    const url = new URL('http://x/api?limit=nope&page=abc&q=  &package=  &sort=');
+    const q = parseListQuery(url, {
+      freeFilters: ['package', 'q', 'locale'],
+      defaultLimit: 10,
+      reserved: ['extra'],
+    });
+    expect(q.limit).toBe(10);
+    expect(q.page).toBe(1);
+    expect(q.filters.package).toBeUndefined();
+    // free filter key 'q' is reserved by default
+    expect(q.filters.q).toBeUndefined();
+
+    // free filter key present but empty / absent
+    const emptyFree = parseListQuery(new URL('http://x/api?tag='), {
+      freeFilters: ['tag', 'missing'],
+    });
+    expect(emptyFree.filters).toEqual({});
+  });
 });
 
 describe('buildListQueryString', () => {
@@ -66,6 +103,17 @@ describe('buildListQueryString', () => {
     expect(s).toContain('page=3');
     expect(s).toContain('limit=20');
     expect(s).toContain('order=desc');
+  });
+
+  it('omits asc order and empty filter values', () => {
+    const s = buildListQueryString({
+      order: 'asc',
+      page: 1,
+      limit: 0,
+      sort: 'name',
+      filters: { role: '', status: null, tag: undefined },
+    });
+    expect(s).toBe('sort=name');
   });
 });
 

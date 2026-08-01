@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canAccessPath,
   canSeeFeature,
+  capsRequiredForPath,
   matchMutatingRouteCap,
 } from './route-capabilities.js';
 
@@ -45,6 +46,15 @@ describe('matchMutatingRouteCap', () => {
   it('ignores GET', () => {
     expect(matchMutatingRouteCap('GET', '/api/v1/backups/restore')).toBe(null);
   });
+
+  it('ssl upload is write-low before generic ssl rules', () => {
+    expect(matchMutatingRouteCap('POST', '/api/v1/ssl/upload')).toBe('ssl.upload');
+  });
+
+  it('returns null for mutating paths outside /api/v1', () => {
+    expect(matchMutatingRouteCap('POST', '/healthz')).toBe(null);
+    expect(matchMutatingRouteCap('PUT', '/not-api')).toBe(null);
+  });
 });
 
 describe('canSeeFeature', () => {
@@ -53,6 +63,11 @@ describe('canSeeFeature', () => {
     expect(canSeeFeature('users', ['users.manage'])).toBe(true);
     expect(canSeeFeature('dashboard', ['dashboard.read'])).toBe(true);
   });
+
+  it('accepts Set effective caps', () => {
+    expect(canSeeFeature('users', new Set(['dashboard.read']))).toBe(false);
+    expect(canSeeFeature('users', new Set(['rbac.policy']))).toBe(true);
+  });
 });
 
 describe('canAccessPath', () => {
@@ -60,6 +75,18 @@ describe('canAccessPath', () => {
     expect(canAccessPath('/users', ['dashboard.read'])).toBe(false);
     expect(canAccessPath('/users', ['users.manage'])).toBe(true);
     expect(canAccessPath('/projects', ['dashboard.read'])).toBe(true);
+  });
+
+  it('longer path prefixes win; Set effective works', () => {
+    expect(capsRequiredForPath('/protection/firewall/rules')).toEqual(
+      expect.arrayContaining(['firewall.read']),
+    );
+    expect(capsRequiredForPath('/protection')).toEqual(
+      expect.arrayContaining(['firewall.read']),
+    );
+    expect(canAccessPath('/protection/fail2ban', new Set(['firewall.read']))).toBe(true);
+    expect(canAccessPath('/cdn/nodes', new Set(['projects.read']))).toBe(true);
+    expect(canAccessPath('/cdn/nodes', new Set(['dashboard.read']))).toBe(false);
   });
 });
 

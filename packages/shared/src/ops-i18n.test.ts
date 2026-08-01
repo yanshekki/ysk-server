@@ -121,4 +121,34 @@ describe('localizeOpsResult', () => {
     expect(r.ok).toBe(false);
     expect(r.apply_status).toBe('blocked');
   });
+
+  it('translates blockMessage when present; uses request locale when omitted', () => {
+    const withMsg = localizeOpsResult(
+      {
+        ok: false,
+        blocked: true,
+        apply_status: 'blocked',
+        blockMessage: 'ops.blocked.needExecute',
+        notes: [],
+      },
+      'en',
+    );
+    expect(withMsg.blockMessage).toBeTruthy();
+    expect(withMsg.blockMessage).not.toBe('ops.blocked.needExecute');
+
+    const viaAls = runWithLocale('en', () =>
+      localizeOpsResult({
+        ok: true,
+        apply_status: 'written',
+        notes: ['ops.honesty.blockedNotOk'],
+      }),
+    );
+    expect(viaAls.notes[0]).not.toBe('ops.honesty.blockedNotOk');
+  });
+
+  it('leaves unknown owned-prefix keys as-is when catalog misses them', () => {
+    expect(translateNote('ops.not.a.real.key.ever', 'en')).toBe('ops.not.a.real.key.ever');
+    // key-like with whitespace around still matches prefix after trim, returns original note
+    expect(translateNote('  ops.not.a.real.key.ever  ', 'en')).toBe('  ops.not.a.real.key.ever  ');
+  });
 });
