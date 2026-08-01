@@ -45,7 +45,8 @@ export function SoftwareInstallBanner({
     return null;
   }
 
-  const names = missing.map((m) => m.title).join(t('softwareBanner.nameSep'));
+  const missingList = Array.isArray(missing) ? missing : [];
+  const names = missingList.map((m) => m.title).join(t('softwareBanner.nameSep'));
   const opsResult: OpsResultLike | null = lastResult
     ? {
         ok: Boolean(lastResult.ok),
@@ -60,7 +61,7 @@ export function SoftwareInstallBanner({
 
   return (
     <div className="software-install-banner">
-      {!ready && missing.length > 0 ? (
+      {!ready && missingList.length > 0 ? (
         <div className="software-install-banner__alert" role="status">
           <div className="software-install-banner__row">
             <div className="software-install-banner__text">
