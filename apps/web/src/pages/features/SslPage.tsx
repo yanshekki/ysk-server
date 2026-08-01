@@ -48,6 +48,42 @@ export function statusBadge(
   return <Badge tone="neutral">{status || '—'}</Badge>;
 }
 
+export function defaultLeEmail(domain: string): string {
+  return `admin@${domain}`;
+}
+
+export function countFailedCerts(
+  items: Array<{ status?: string }>,
+): number {
+  return items.filter((c) => (c.status || '').toLowerCase() === 'failed')
+    .length;
+}
+
+export function stepStatusLabel(
+  status: string,
+  t: (key: string) => string,
+): string {
+  if (status === 'ok') return t('ssl.step.ok');
+  if (status === 'blocked') return t('ssl.step.blocked');
+  if (status === 'failed') return t('ssl.step.failed');
+  return t('ssl.step.skipped');
+}
+
+export function formatStepLine(
+  s: { name: string; status: string; detail?: string },
+  t: (key: string) => string,
+): string {
+  const st = stepStatusLabel(s.status, t);
+  return s.detail ? `${s.name}: ${st} — ${s.detail}` : `${s.name}: ${st}`;
+}
+
+export function bindingHasTargets(b: {
+  projects?: unknown[];
+  mailDomains?: unknown[];
+}): boolean {
+  return (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0;
+}
+
 export function SslPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -94,7 +130,7 @@ export function SslPage() {
     const action = searchParams.get('action');
     if (d) {
       setDomain(d);
-      setEmail(`admin@${d}`);
+      setEmail(defaultLeEmail(d));
       if (action === 'le') setLeOpen(true);
       setSearchParams({}, { replace: true });
     }
@@ -125,15 +161,13 @@ export function SslPage() {
   async function onLe(e: FormEvent) {
     e.preventDefault();
     const d = domain.trim();
-    await requestCertificate(d, email.trim() || `admin@${d}`);
+    await requestCertificate(d, email.trim() || defaultLeEmail(d));
     setLeOpen(false);
     setDomain('');
     setEmail('');
   }
 
-  const failedCount = items.filter(
-    (c) => (c.status || '').toLowerCase() === 'failed',
-  ).length;
+  const failedCount = countFailedCerts(items);
 
   return (
     <FeaturePageLayout
@@ -184,19 +218,7 @@ export function SslPage() {
                   blocked: Boolean(blocked),
                   blockMessage: blockMessage ?? undefined,
                   notes: [
-                    ...steps.map((s) => {
-                      const st =
-                        s.status === 'ok'
-                          ? t('ssl.step.ok')
-                          : s.status === 'blocked'
-                            ? t('ssl.step.blocked')
-                            : s.status === 'failed'
-                              ? t('ssl.step.failed')
-                              : t('ssl.step.skipped');
-                      return s.detail
-                        ? `${s.name}: ${st} — ${s.detail}`
-                        : `${s.name}: ${st}`;
-                    }),
+                    ...steps.map((s) => formatStepLine(s, t)),
                     ...notes,
                   ],
                 }
@@ -214,15 +236,10 @@ export function SslPage() {
                   {n}
                 </p>
               ))}
-              {bindings.filter(
-                (b) => (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0,
-              ).length > 0 ? (
+              {bindings.filter(bindingHasTargets).length > 0 ? (
                 <ul className="list-plain list-spaced u-mt-2">
                   {bindings
-                    .filter(
-                      (b) =>
-                        (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0,
-                    )
+                    .filter(bindingHasTargets)
                     .map((b) => (
                       <li key={b.domain}>
                         <strong>{b.domain}</strong>

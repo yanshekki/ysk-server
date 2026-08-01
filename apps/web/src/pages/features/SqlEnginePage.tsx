@@ -52,11 +52,39 @@ export function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: R
   return { text: s.active || t('common.unknown'), tone: 'warn' };
 }
 
+export function engineTitle(engine: DbEngineKind): string {
+  return engine === 'mysql' ? 'MySQL' : 'MariaDB';
+}
+
+export function engineServicePath(engine: DbEngineKind): string {
+  return engine === 'mysql'
+    ? '/databases/mysql/service'
+    : '/databases/mariadb/service';
+}
+
+export function defaultAdminerDomain(engine: DbEngineKind): string {
+  return `adminer.${engine}.local`;
+}
+
+export function buildDbNameById(
+  items: Array<{ id: string; name?: unknown }>,
+): Map<string, string> {
+  const m = new Map<string, string>();
+  for (const d of items) m.set(d.id, String(d.name));
+  return m;
+}
+
+/** Map service-label tone onto FeaturePageLayout pill tones. */
+export function pillToneFromService(
+  tone: 'ok' | 'warn' | 'danger' | 'neutral',
+): 'ok' | 'warn' | 'danger' {
+  return tone === 'neutral' ? 'warn' : tone;
+}
+
 export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const { t } = useTranslation();
-  const title = engine === 'mysql' ? 'MySQL' : 'MariaDB';
-  const servicePath =
-    engine === 'mysql' ? '/databases/mysql/service' : '/databases/mariadb/service';
+  const title = engineTitle(engine);
+  const servicePath = engineServicePath(engine);
   const dbs = useResourceCrud('mysql/databases', { engine });
   const users = useResourceCrud('mysql/users', { engine });
   const [svc, setSvc] = useState<DbEngineStatus | null>(null);
@@ -191,11 +219,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     setPassword('');
   }
 
-  const dbNameById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const d of dbs.items) m.set(d.id, String(d.name));
-    return m;
-  }, [dbs.items]);
+  const dbNameById = useMemo(() => buildDbNameById(dbs.items), [dbs.items]);
 
   const st = serviceLabel(svc, t);
   const installed = Boolean(svc?.serverInstalled);
@@ -208,7 +232,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       status={{
         pill: {
           label: st.text,
-          tone: st.tone === 'neutral' ? 'warn' : st.tone,
+          tone: pillToneFromService(st.tone),
         },
         items: [
           {
@@ -327,7 +351,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             size="sm"
             loading={busy}
             onClick={() => {
-              setAdminerDomain(`adminer.${engine}.local`);
+              setAdminerDomain(defaultAdminerDomain(engine));
               setAdminerDownload(true);
               setAdminerOpen(true);
             }}

@@ -41,6 +41,40 @@ type SftpKey = {
 
 const FTP_TABS = ['accounts', 'sftp', 'about'] as const;
 
+export function countApplyStatus(
+  items: Array<Record<string, unknown>>,
+): { applied: number; draft: number } {
+  const applied = items.filter((r) => String(r.apply_status) === 'applied')
+    .length;
+  return { applied, draft: items.length - applied };
+}
+
+export function accountPillTone(
+  total: number,
+  draft: number,
+): 'ok' | 'warn' {
+  return draft > 0 ? 'warn' : total ? 'ok' : 'warn';
+}
+
+export function buildFtpAccountBody(input: {
+  username: string;
+  password: string;
+  homePath: string;
+  domain: string;
+}): {
+  username: string;
+  password_plain?: string;
+  homePath?: string;
+  domain?: string;
+} {
+  return {
+    username: input.username,
+    password_plain: input.password || undefined,
+    homePath: input.homePath || undefined,
+    domain: input.domain || undefined,
+  };
+}
+
 export function FtpPage() {
   const { t } = useTranslation();
   const crud = useResourceCrud('ftp/accounts');
@@ -98,12 +132,7 @@ export function FtpPage() {
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
-    const body = {
-      username,
-      password_plain: password || undefined,
-      homePath: homePath || undefined,
-      domain: domain || undefined,
-    };
+    const body = buildFtpAccountBody({ username, password, homePath, domain });
     if (editId) await crud.update(editId, body);
     else await crud.create(body);
     setOpen(false);
@@ -130,8 +159,7 @@ export function FtpPage() {
     setKeyOpen(true);
   }
 
-  const applied = crud.items.filter((r) => String(r.apply_status) === 'applied').length;
-  const draft = crud.items.length - applied;
+  const { applied, draft } = countApplyStatus(crud.items);
 
   return (
     <FeaturePageLayout
@@ -139,7 +167,7 @@ export function FtpPage() {
       status={{
         pill: {
           label: t('ftp.accountsCount', { count: crud.items.length }),
-          tone: draft > 0 ? 'warn' : crud.items.length ? 'ok' : 'warn',
+          tone: accountPillTone(crud.items.length, draft),
         },
         items: [
           { label: t('ftp.accounts'), value: crud.items.length },

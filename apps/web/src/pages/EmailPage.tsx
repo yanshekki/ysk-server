@@ -40,6 +40,55 @@ export function applyLabel(status: string | undefined, t: (k: string) => string)
   return { text: t('email.applyDraft'), tone: 'neutral' };
 }
 
+export function countAppliedDomains(
+  items: Array<{ apply_status?: string }>,
+  facets?: { status?: { applied?: number } } | null,
+): number {
+  return (
+    facets?.status?.applied ??
+    items.filter((d) => (d.apply_status ?? '').toLowerCase() === 'applied')
+      .length
+  );
+}
+
+export function countHealthyDomains(
+  items: Array<{ health_score: number }>,
+  threshold = 80,
+): number {
+  return items.filter((d) => d.health_score >= threshold).length;
+}
+
+export function countDraftDomains(
+  items: Array<{ apply_status?: string }>,
+  facets?: { status?: { draft?: number; written?: number } } | null,
+): number {
+  if (facets) {
+    return (facets.status?.draft ?? 0) + (facets.status?.written ?? 0);
+  }
+  return items.filter((d) => {
+    const s = (d.apply_status ?? 'draft').toLowerCase();
+    return s === 'draft' || s === 'written' || !d.apply_status;
+  }).length;
+}
+
+export function domainNameFromCreate(created: {
+  domain: string | { domain: string };
+}): string {
+  return typeof created.domain === 'string'
+    ? created.domain
+    : created.domain.domain;
+}
+
+export function domainIdFromCreate(created: {
+  domain: string | { id?: string };
+}): string {
+  return typeof created.domain === 'object' &&
+    created.domain &&
+    'id' in created.domain
+    ? String((created.domain as { id?: string }).id ?? '')
+    : '';
+}
+
 export function EmailPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -63,14 +112,9 @@ export function EmailPage() {
 
   const total = list.meta?.total ?? items.length;
   const facets = list.meta?.facets;
-  const applied = facets?.status?.applied ?? items.filter((d) => (d.apply_status ?? '').toLowerCase() === 'applied').length;
-  const healthy = items.filter((d) => d.health_score >= 80).length;
-  const draft = facets
-    ? (facets.status?.draft ?? 0) + (facets.status?.written ?? 0)
-    : items.filter((d) => {
-        const s = (d.apply_status ?? 'draft').toLowerCase();
-        return s === 'draft' || s === 'written' || !d.apply_status;
-      }).length;
+  const applied = countAppliedDomains(items, facets);
+  const healthy = countHealthyDomains(items);
+  const draft = countDraftDomains(items, facets);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -89,17 +133,13 @@ export function EmailPage() {
         serverIp,
         serverIpv6: serverIpv6.trim() || undefined,
       });
-      const domainName =
-        typeof created.domain === 'string' ? created.domain : created.domain.domain;
+      const domainName = domainNameFromCreate(created);
       const next = await list.refresh();
       // refresh doesn't return items from useServerList — use list after
       void next;
       await list.refresh();
       // navigate by id from create response if possible
-      const foundId =
-        typeof created.domain === 'object' && created.domain && 'id' in created.domain
-          ? String((created.domain as { id?: string }).id ?? '')
-          : '';
+      const foundId = domainIdFromCreate(created);
       if (foundId) navigate(`/email/domains/${foundId}`);
       else navigate(`/email`);
       void domainName;

@@ -62,6 +62,46 @@ export function joinPath(dir: string, name: string): string {
   return `${dir.replace(/\/$/, '')}/${name}`;
 }
 
+/** Breadcrumb segments for a relative path (`.` / empty → none). */
+export function pathCrumbs(path: string): string[] {
+  if (path === '.' || !path) return [];
+  return path.split('/').filter(Boolean);
+}
+
+export function previewKind(
+  mime?: string | null,
+): 'image' | 'pdf' | 'text' | 'other' {
+  const m = mime ?? '';
+  if (m.startsWith('image/')) return 'image';
+  if (m === 'application/pdf') return 'pdf';
+  if (m.startsWith('text/') || m.includes('json') || m.includes('javascript'))
+    return 'text';
+  return 'other';
+}
+
+export function parseSortValue(v: string): {
+  sort: SortKey;
+  order: 'asc' | 'desc';
+} {
+  const [s, o] = v.split(':') as [SortKey, 'asc' | 'desc'];
+  return { sort: s, order: o };
+}
+
+export function togglePathInSet(prev: Set<string>, p: string): Set<string> {
+  const n = new Set(prev);
+  if (n.has(p)) n.delete(p);
+  else n.add(p);
+  return n;
+}
+
+export function selectAllPaths(
+  items: Array<{ path: string }>,
+  selectedSize: number,
+): Set<string> {
+  if (selectedSize === items.length) return new Set();
+  return new Set(items.map((i) => i.path));
+}
+
 export function FilesPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -189,10 +229,7 @@ export function FilesPage() {
     setSearchParams(next === 'public' ? {} : { root: next }, { replace: true });
   }
 
-  const crumbs = useMemo(() => {
-    if (path === '.' || !path) return [] as string[];
-    return path.split('/').filter(Boolean);
-  }, [path]);
+  const crumbs = useMemo(() => pathCrumbs(path), [path]);
 
   async function run(fn: () => Promise<void>, okMsg?: string) {
     setBusy(true);
@@ -221,17 +258,11 @@ export function FilesPage() {
   }
 
   function toggleSelect(p: string) {
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (n.has(p)) n.delete(p);
-      else n.add(p);
-      return n;
-    });
+    setSelected((prev) => togglePathInSet(prev, p));
   }
 
   function selectAll() {
-    if (selected.size === items.length) setSelected(new Set());
-    else setSelected(new Set(items.map((i) => i.path)));
+    setSelected(selectAllPaths(items, selected.size));
   }
 
   async function openEntry(e: FileEntry) {
@@ -240,8 +271,8 @@ export function FilesPage() {
       setSide('all');
       return;
     }
-    const mime = e.mime ?? '';
-    if (mime.startsWith('image/')) {
+    const kind = previewKind(e.mime);
+    if (kind === 'image') {
       try {
         const tkn = authStore.getToken();
         const res = await fetch(filesApi.downloadUrl(root, e.path), {
@@ -255,11 +286,11 @@ export function FilesPage() {
       }
       return;
     }
-    if (mime === 'application/pdf') {
+    if (kind === 'pdf') {
       setPreview({ entry: e, kind: 'pdf' });
       return;
     }
-    if (mime.startsWith('text/') || mime.includes('json') || mime.includes('javascript')) {
+    if (kind === 'text') {
       const r = await filesApi.read(root, e.path);
       setPreview({ entry: e, kind: 'text', content: r.content });
       return;
@@ -558,7 +589,7 @@ export function FilesPage() {
                     size="sm"
                     value={`${sort}:${order}`}
                     onChange={(v) => {
-                      const [s, o] = v.split(':') as [SortKey, 'asc' | 'desc'];
+                      const { sort: s, order: o } = parseSortValue(v);
                       setSort(s);
                       setOrder(o);
                     }}

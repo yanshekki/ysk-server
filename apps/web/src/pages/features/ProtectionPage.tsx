@@ -273,6 +273,38 @@ export function relTime(
   return new Date(iso).toLocaleString();
 }
 
+/** Suggested defense preset for the current threat level (never auto-picks emergency). */
+export function recommendedPresetForThreat(threat: ThreatLevel): string | null {
+  if (threat === 'critical' || threat === 'under_attack') return 'under_attack';
+  if (threat === 'elevated') return 'hardened';
+  return null;
+}
+
+export function presetMeta(
+  id: string,
+  fallbackStep = 1,
+): { step: number; accent: string } {
+  return PRESET_META_BASE[id] ?? { step: fallbackStep, accent: 'calm' };
+}
+
+/** Clamp auto-ban scan interval to 30–600 seconds. */
+export function clampScanIntervalSeconds(v: unknown): number {
+  return Math.max(30, Math.min(600, Number(v) || 120));
+}
+
+export function isActionableSuspect(s: {
+  alreadyBanned?: boolean;
+  whitelisted?: boolean;
+}): boolean {
+  return !s.alreadyBanned && !s.whitelisted;
+}
+
+export function filterActionableSuspects<
+  T extends { alreadyBanned?: boolean; whitelisted?: boolean },
+>(suspects: T[]): T[] {
+  return suspects.filter(isActionableSuspect);
+}
+
 type BanRow = { ip: string; source: string; jail?: string; reason?: string };
 
 export function ProtectionPage() {
@@ -492,7 +524,7 @@ export function ProtectionPage() {
   );
 
   const actionableSuspects = useMemo(
-    () => suspects.filter((s) => !s.alreadyBanned && !s.whitelisted),
+    () => filterActionableSuspects(suspects),
     [suspects],
   );
 
@@ -608,12 +640,7 @@ export function ProtectionPage() {
   const activePreset = status?.presets.find((p) => p.id === status.activePreset);
   const score = status?.score ?? 0;
 
-  const recommendedPreset =
-    threat === 'critical' || threat === 'under_attack'
-      ? 'under_attack'
-      : threat === 'elevated'
-        ? 'hardened'
-        : null;
+  const recommendedPreset = recommendedPresetForThreat(threat);
 
   return (
     <FeaturePageLayout
@@ -818,10 +845,7 @@ export function ProtectionPage() {
             <div className="def-ramp" role="list">
               {(status?.presets ?? []).map((p, idx) => {
                 const active = status?.activePreset === p.id;
-                const pm = PRESET_META_BASE[p.id] ?? {
-                  step: idx + 1,
-                  accent: 'calm',
-                };
+                const pm = presetMeta(p.id, idx + 1);
                 const whenLabel = presetWhen(t, p.id) || p.short;
                 const recommended = recommendedPreset === p.id && !active;
                 return (
@@ -1313,7 +1337,7 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoBan.intervalSeconds ?? 120)}
                     onChange={(v) => {
-                      const n = Math.max(30, Math.min(600, Number(v) || 120));
+                      const n = clampScanIntervalSeconds(v);
                       setAutomation((a) =>
                         a
                           ? {

@@ -81,6 +81,35 @@ export function keysInDb(svc: RedisServiceStatus | null, db: number): number {
   return svc?.keyspace?.find((k) => k.db === db)?.keys ?? 0;
 }
 
+export function clampDbCount(
+  configured?: number | null,
+  databases?: number | null,
+): number {
+  return Math.min(
+    256,
+    Math.max(1, Number(configured ?? databases ?? 16) || 16),
+  );
+}
+
+export function totalKeysInKeyspace(
+  keyspace?: Array<{ keys: number }> | null,
+): number {
+  return (keyspace ?? []).reduce((s, k) => s + k.keys, 0);
+}
+
+export function busyKeyspaces(
+  keyspace: Array<{ db: number; keys: number }> | null | undefined,
+  dbCount: number,
+): Array<{ db: number; keys: number }> {
+  return (keyspace ?? [])
+    .filter((k) => k.keys > 0 && k.db < dbCount)
+    .sort((a, b) => a.db - b.db);
+}
+
+export function parseOptionalTtl(s: string): number | undefined {
+  return s ? Number(s) : undefined;
+}
+
 export function RedisPage() {
   const { t } = useTranslation();
   const [svc, setSvc] = useState<RedisServiceStatus | null>(null);
@@ -176,7 +205,7 @@ export function RedisPage() {
           db,
           key: keyToOpen,
           value: newVal,
-          ttl: newTtl ? Number(newTtl) : undefined,
+          ttl: parseOptionalTtl(newTtl),
         });
         setSetOpen(false);
         setNewKey('');
@@ -214,19 +243,13 @@ export function RedisPage() {
   }
 
   const online = Boolean(svc?.canRead);
-  const dbCount = Math.min(
-    256,
-    Math.max(1, Number(svc?.configuredDatabases ?? svc?.databases ?? 16) || 16),
-  );
+  const dbCount = clampDbCount(svc?.configuredDatabases, svc?.databases);
   const totalKeys = useMemo(
-    () => (svc?.keyspace ?? []).reduce((s, k) => s + k.keys, 0),
+    () => totalKeysInKeyspace(svc?.keyspace),
     [svc?.keyspace],
   );
   const busyDbs = useMemo(
-    () =>
-      (svc?.keyspace ?? [])
-        .filter((k) => k.keys > 0 && k.db < dbCount)
-        .sort((a, b) => a.db - b.db),
+    () => busyKeyspaces(svc?.keyspace, dbCount),
     [svc?.keyspace, dbCount],
   );
 

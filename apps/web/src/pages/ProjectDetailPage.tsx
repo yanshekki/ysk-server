@@ -36,6 +36,43 @@ import { useCapabilities } from '../shared/hooks/useCapabilities';
 
 type ConfirmKind = 'stop' | 'delete' | null;
 
+/** Tab ids for project detail chrome from UI profile flags. */
+export function projectTabIds(
+  ui: {
+    showDeployTab?: boolean;
+    showResourcesTab?: boolean;
+    showLogsTab?: boolean;
+  } | null,
+): string[] {
+  if (!ui) return ['overview'];
+  const ids = ['overview'];
+  if (ui.showDeployTab) ids.push('deploy');
+  ids.push('network');
+  if (ui.showResourcesTab) ids.push('resources');
+  if (ui.showLogsTab) ids.push('logs');
+  ids.push('advanced');
+  ids.push('about');
+  return ids;
+}
+
+export function resolveActiveTab(
+  tabs: Array<{ id: string }>,
+  tab: string,
+): string {
+  return tabs.some((x) => x.id === tab) ? tab : 'overview';
+}
+
+/** Format the log viewer header line (`# file · notes`). */
+export function formatLogTailHeader(
+  file: string,
+  notes?: string | string[] | null,
+): string {
+  const noteStr = Array.isArray(notes)
+    ? notes.filter(Boolean).join(' · ')
+    : (notes ?? '');
+  return `# ${file}${noteStr ? ` · ${noteStr}` : ''}\n`;
+}
+
 export function ProjectDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { t } = useTranslation();
@@ -143,9 +180,10 @@ export function ProjectDetailPage() {
           lines: 200,
           grep,
         });
-        const header = `# ${tail.tail?.file ?? first.file}${
-          tail.tail?.notes?.[0] ? ` · ${tail.tail.notes[0]}` : ''
-        }\n`;
+        const header = formatLogTailHeader(
+          tail.tail?.file ?? first.file,
+          tail.tail?.notes?.[0],
+        );
         setLogTail(header + (tail.tail?.lines ?? first.lines).join('\n'));
         return;
       }
@@ -158,9 +196,8 @@ export function ProjectDetailPage() {
           lines: 200,
           grep,
         });
-        const notes = tail.tail?.notes?.join(' · ') ?? '';
         setLogTail(
-          `# ${tail.tail?.file ?? pick}${notes ? ` · ${notes}` : ''}\n` +
+          formatLogTailHeader(tail.tail?.file ?? pick, tail.tail?.notes) +
             (tail.tail?.lines ?? []).join('\n'),
         );
       } else {
@@ -196,17 +233,7 @@ export function ProjectDetailPage() {
   }
 
   const ui = project ? getProjectUiProfile(project.runtime) : null;
-  const tabIds = useMemo(() => {
-    if (!ui) return ['overview'] as const;
-    const ids = ['overview'];
-    if (ui.showDeployTab) ids.push('deploy');
-    ids.push('network');
-    if (ui.showResourcesTab) ids.push('resources');
-    if (ui.showLogsTab) ids.push('logs');
-    ids.push('advanced');
-    ids.push('about');
-    return ids;
-  }, [ui]);
+  const tabIds = useMemo(() => projectTabIds(ui), [ui]);
 
   const defaultTab =
     searchParams.get('tab') === 'deploy' && (tabIds as readonly string[]).includes('deploy')
@@ -257,7 +284,7 @@ export function ProjectDetailPage() {
     { id: 'advanced', label: t('projects.tabAdvanced') },
     { id: 'about', label: t('common.about') },
   ];
-  const activeTab = tabs.some((x) => x.id === tab) ? tab : 'overview';
+  const activeTab = resolveActiveTab(tabs, tab);
   const display = deriveProjectStatus(project);
   const statusHint = display.hintKey
     ? t(display.hintKey, { defaultValue: display.hintFallback ?? '' })

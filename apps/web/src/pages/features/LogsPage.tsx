@@ -164,6 +164,82 @@ export function groupLabel(g: string): string {
   return map[g] || g;
 }
 
+export function isJournalSource(src: string): boolean {
+  return src.startsWith('journal:');
+}
+
+export function resolveLogTab(
+  tab: string | null | undefined,
+): (typeof TABS)[number] | null {
+  if (!tab) return null;
+  return (
+    LEGACY_TAB_MAP[tab] ??
+    ((TABS as readonly string[]).includes(tab)
+      ? (tab as (typeof TABS)[number])
+      : null)
+  );
+}
+
+export function initialSourceFromParams(
+  get: (key: string) => string | null,
+): string {
+  const source = get('source');
+  if (source) return source;
+  const unit = get('unit');
+  if (unit) return `journal:${unit}`;
+  return 'journal:nginx.service';
+}
+
+export function filterRailItems(
+  list: RailItem[],
+  opts: {
+    focusProject?: string | null;
+    projectsOnly?: boolean;
+    q?: string;
+  },
+): RailItem[] {
+  let out = list;
+  if (opts.focusProject) {
+    out = out.filter((i) => i.projectId === opts.focusProject);
+  } else if (opts.projectsOnly) {
+    out = out.filter(
+      (i) => Boolean(i.projectId) || i.group.startsWith('proj:'),
+    );
+  }
+  const q = (opts.q ?? '').trim().toLowerCase();
+  if (!q) return out;
+  return out.filter(
+    (i) =>
+      i.label.toLowerCase().includes(q) ||
+      i.source.toLowerCase().includes(q) ||
+      i.group.toLowerCase().includes(q) ||
+      (i.meta && i.meta.toLowerCase().includes(q)),
+  );
+}
+
+export function groupRailItems(
+  railFiltered: RailItem[],
+): Array<{ group: string; items: RailItem[]; isProject: boolean }> {
+  const order = ['journal', 'security', 'web', 'mail', 'system', 'other', 'app'];
+  const map = new Map<string, RailItem[]>();
+  for (const i of railFiltered) {
+    const g = i.group;
+    if (!map.has(g)) map.set(g, []);
+    map.get(g)!.push(i);
+  }
+  const systemGroups = order
+    .filter((g) => map.has(g))
+    .map((g) => ({ group: g, items: map.get(g)!, isProject: false }));
+  const projectGroups = [...map.keys()]
+    .filter((g) => g.startsWith('proj:'))
+    .sort((a, b) => a.localeCompare(b))
+    .map((g) => ({ group: g, items: map.get(g)!, isProject: true }));
+  const other = [...map.keys()]
+    .filter((g) => !order.includes(g) && !g.startsWith('proj:'))
+    .map((g) => ({ group: g, items: map.get(g)!, isProject: false }));
+  return [...systemGroups, ...other, ...projectGroups];
+}
+
 export function LogsPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -176,13 +252,8 @@ export function LogsPage() {
   const [projectsOnly, setProjectsOnly] = useState(false);
   const [collapsedProjects, setCollapsedProjects] = useState<Record<string, boolean>>({});
 
-  const [activeSource, setActiveSource] = useState(
-    () =>
-      (searchParams.get('source')
-        ? searchParams.get('source')!
-        : searchParams.get('unit')
-          ? `journal:${searchParams.get('unit')}`
-          : 'journal:nginx.service'),
+  const [activeSource, setActiveSource] = useState(() =>
+    initialSourceFromParams((k) => searchParams.get(k)),
   );
   const [since, setSince] = useState('1h');
   const [priority, setPriority] = useState('');
@@ -267,8 +338,8 @@ export function LogsPage() {
     const t = searchParams.get('tab');
     const projectId = searchParams.get('project');
     if (t) {
-      const mapped = LEGACY_TAB_MAP[t] ?? ((TABS as readonly string[]).includes(t) ? t : null);
-      if (mapped) setTab(mapped as (typeof TABS)[number]);
+      const mapped = resolveLogTab(t);
+      if (mapped) setTab(mapped);
       if (t === 'projects') setProjectsOnly(true);
     }
     if (u) setActiveSource(`journal:${u}`);
@@ -421,57 +492,32 @@ export function LogsPage() {
     return items;
   }, [sources, units, projects, overview?.quickUnits]);
 
-  const railFiltered = useMemo(() => {
-    const focusProject = searchParams.get('project');
-    let list = railItems;
-    if (focusProject) {
-      list = list.filter((i) => i.projectId === focusProject);
-    } else if (projectsOnly) {
-      list = list.filter((i) => Boolean(i.projectId) || i.group.startsWith('proj:'));
-    }
-    const q = railFilter.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
-      (i) =>
-        i.label.toLowerCase().includes(q) ||
-        i.source.toLowerCase().includes(q) ||
-        i.group.toLowerCase().includes(q) ||
-        (i.meta && i.meta.toLowerCase().includes(q)),
-    );
-  }, [railItems, railFilter, projectsOnly, searchParams]);
+  const railFiltered = useMemo(
+    () =>
+      filterRailItems(railItems, {
+        focusProject: searchParams.get('project'),
+        projectsOnly,
+        q: railFilter,
+      }),
+    [railItems, railFilter, projectsOnly, searchParams],
+  );
 
-  const railGroups = useMemo(() => {
-    const order = ['journal', 'security', 'web', 'mail', 'system', 'other', 'app'];
-    const map = new Map<string, RailItem[]>();
-    for (const i of railFiltered) {
-      const g = i.group;
-      if (!map.has(g)) map.set(g, []);
-      map.get(g)!.push(i);
-    }
-    const systemGroups = order
-      .filter((g) => map.has(g))
-      .map((g) => ({ group: g, items: map.get(g)!, isProject: false }));
-    const projectGroups = [...map.keys()]
-      .filter((g) => g.startsWith('proj:'))
-      .sort((a, b) => a.localeCompare(b))
-      .map((g) => ({ group: g, items: map.get(g)!, isProject: true }));
-    const other = [...map.keys()]
-      .filter((g) => !order.includes(g) && !g.startsWith('proj:'))
-      .map((g) => ({ group: g, items: map.get(g)!, isProject: false }));
-    return [...systemGroups, ...other, ...projectGroups];
-  }, [railFiltered]);
+  const railGroups = useMemo(
+    () => groupRailItems(railFiltered),
+    [railFiltered],
+  );
 
   const activeMeta = useMemo(
     () => railItems.find((i) => i.source === activeSource),
     [railItems, activeSource],
   );
 
-  const isJournal = activeSource.startsWith('journal:');
+  const isJournal = isJournalSource(activeSource);
   const bookmarks = settings?.bookmarks ?? [];
 
   async function runQuery(source?: string) {
     const src = source ?? activeSource;
-    const srcIsJournal = src.startsWith('journal:');
+    const srcIsJournal = isJournalSource(src);
     await run(async () => {
       const q = new URLSearchParams();
       q.set('source', src);
@@ -490,7 +536,7 @@ export function LogsPage() {
         (prev) => {
           const n = new URLSearchParams(prev);
           n.set('tab', 'explore');
-          if (src.startsWith('journal:')) {
+          if (isJournalSource(src)) {
             n.set('unit', src.slice('journal:'.length));
             n.delete('source');
           } else {

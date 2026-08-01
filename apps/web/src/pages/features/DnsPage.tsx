@@ -35,6 +35,49 @@ import { authStore } from '../../shared/stores/auth-store';
 
 const ZONE_TEMPLATE_IDS = ['minimal', 'web', 'mail', 'full', 'cdn'] as const;
 
+export type ZoneTemplateId = (typeof ZONE_TEMPLATE_IDS)[number];
+
+export function parseDnsTtl(
+  v: string | number | undefined | null,
+  fallback = 300,
+): number {
+  return Number(v) || fallback;
+}
+
+export function isZoneTemplateId(id: string): id is ZoneTemplateId {
+  return (ZONE_TEMPLATE_IDS as readonly string[]).includes(id);
+}
+
+export function mapRecordsForValidate(
+  items: Array<Record<string, unknown>>,
+): Array<{ type: string; name: string; value: string; ttl: number }> {
+  return items.map((r) => ({
+    type: String(r.type ?? ''),
+    name: String(r.name ?? '@'),
+    value: String(r.value ?? ''),
+    ttl: parseDnsTtl(r.ttl as string | number | undefined),
+  }));
+}
+
+/** Build human message from DNS validate API issues/notes. */
+export function formatDnsValidateMessage(
+  check: {
+    ok: boolean;
+    issues?: Array<{ level: string; message: string }>;
+    notes?: string[];
+  },
+  fallback: string,
+): string {
+  return (
+    check.issues
+      ?.filter((i) => i.level === 'error')
+      .map((i) => i.message)
+      .join('；') ||
+    check.notes?.join('；') ||
+    fallback
+  );
+}
+
 export function DnsPage() {
   const { t } = useTranslation();
   const zones = useResourceCrud('dns/zones');
@@ -52,7 +95,7 @@ export function DnsPage() {
   const [zone, setZone] = useState('');
   const [serverIp, setServerIp] = useState('');
   const [serverIpv6, setServerIpv6] = useState('');
-  const [template, setTemplate] = useState<(typeof ZONE_TEMPLATE_IDS)[number]>('full');
+  const [template, setTemplate] = useState<ZoneTemplateId>('full');
   const [rtype, setRtype] = useState('A');
   const [rname, setRname] = useState('@');
   const [rvalue, setRvalue] = useState('');
@@ -151,7 +194,7 @@ export function DnsPage() {
       backend: 'bind',
       template,
       nsName: soaNs.trim() || undefined,
-      ttl: Number(soaTtl) || 300,
+      ttl: parseDnsTtl(soaTtl),
     });
     setZoneOpen(false);
     setSelectedZone(item);
@@ -224,16 +267,11 @@ export function DnsPage() {
       type: rtype,
       name: rname,
       value: val,
-      ttl: Number(rttl) || 300,
+      ttl: parseDnsTtl(rttl),
     };
     // Server-side validation (honest); also check set conflicts with existing
     try {
-      const existing = records.items.map((r) => ({
-        type: String(r.type ?? ''),
-        name: String(r.name ?? '@'),
-        value: String(r.value ?? ''),
-        ttl: Number(r.ttl) || 300,
-      }));
+      const existing = mapRecordsForValidate(records.items);
       const withoutEdit = editRec
         ? existing.filter((r, i) => records.items[i]?.id !== editRec.id)
         : existing;
@@ -248,14 +286,7 @@ export function DnsPage() {
         }),
       });
       if (!check.ok) {
-        const msg =
-          check.issues
-            ?.filter((i) => i.level === 'error')
-            .map((i) => i.message)
-            .join('；') ||
-          check.notes?.join('；') ||
-          t('dns.validateFailed');
-        setValidateMsg(msg);
+        setValidateMsg(formatDnsValidateMessage(check, t('dns.validateFailed')));
         return;
       }
       setValidateMsg(null);
@@ -619,7 +650,7 @@ export function DnsPage() {
                               setSoaBusy(true);
                               setSoaMsg(null);
                               try {
-                                const ttl = Number(editSoaTtl) || 300;
+                                const ttl = parseDnsTtl(editSoaTtl);
                                 await zones.update(selectedLive.id, {
                                   nsName: editSoaNs.trim() || undefined,
                                   ttl,
@@ -646,7 +677,7 @@ export function DnsPage() {
                               setSoaBusy(true);
                               setSoaMsg(null);
                               try {
-                                const ttl = Number(editSoaTtl) || 300;
+                                const ttl = parseDnsTtl(editSoaTtl);
                                 await zones.update(selectedLive.id, {
                                   nsName: editSoaNs.trim() || undefined,
                                   ttl,
