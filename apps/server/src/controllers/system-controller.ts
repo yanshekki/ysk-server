@@ -247,15 +247,20 @@ export async function handleSystemRoutes(
     const { listDefenseTimeline } = await import('@ysk/core');
     const { listWithQuery } = await import('../http/list-response.js');
     const all = listDefenseTimeline(ctx.db, hours);
-    const { items, meta } = listWithQuery(url, all, {
-      text: (e) => [e.kind, e.title, e.detail ?? '', e.at],
-      predicates: {
-        kind: (e, v) => e.kind === v,
+    const { items, meta } = listWithQuery(
+      url,
+      all,
+      {
+        text: (e) => [e.kind, e.title, e.detail ?? '', e.at],
+        predicates: {
+          kind: (e, v) => e.kind === v,
+        },
+        facetOf: {
+          kind: (e) => e.kind,
+        },
       },
-      facetOf: {
-        kind: (e) => e.kind,
-      },
-    });
+      { freeFilters: ['kind'] },
+    );
     sendJson(res, 200, { items, meta, hours });
     return true;
   }

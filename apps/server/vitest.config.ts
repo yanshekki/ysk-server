@@ -25,8 +25,7 @@ export default defineConfig({
           ? {
               lines: floor,
               statements: floor,
-              // Giant cli.ts handlers keep function % lower; raise after CLI split
-              functions: Math.min(floor, 70),
+              functions: floor,
               branches: Math.min(floor, 75),
             }
           : undefined,
