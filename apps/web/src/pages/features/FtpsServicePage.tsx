@@ -48,7 +48,7 @@ const empty: FtpsSettings = {
   guestUsername: 'ftp',
 };
 
-function statusLabel(s: FtpsStatus | null | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' } {
+export function statusLabel(s: FtpsStatus | null | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' } {
   if (!s) return { text: t('common.loading'), tone: 'neutral' };
   if (!s.installed) return { text: t('common.notInstalled'), tone: 'danger' };
   if (s.active === 'active') return { text: t('common.running'), tone: 'ok' };

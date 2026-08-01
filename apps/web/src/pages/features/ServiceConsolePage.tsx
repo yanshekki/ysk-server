@@ -44,14 +44,14 @@ const DATA_LINK: Record<DbServiceEngine, { path: string; label: string }> = {
   postgres: { path: '/databases/postgres', label: i18n.t('db.console.dbManage') },
 };
 
-function applyModeLabel(m: string): string {
+export function applyModeLabel(m: string): string {
   if (m === 'runtime') return i18n.t('db.console.realtime');
   if (m === 'reload') return i18n.t('services.action.reload');
   if (m === 'restart') return i18n.t('db.console.needRestart');
   return m;
 }
 
-function displayValue(v?: string): string {
+export function displayValue(v?: string): string {
   if (v == null || v === '') return '';
   return v;
 }

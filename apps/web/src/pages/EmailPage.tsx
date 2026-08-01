@@ -32,7 +32,7 @@ import { useServerList } from '../shared/hooks/useServerList';
 
 const TABS = ['domains', 'queue', 'stack', 'ops', 'about'] as const;
 
-function applyLabel(status: string | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
+export function applyLabel(status: string | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
   const s = (status ?? 'draft').toLowerCase();
   if (s === 'applied') return { text: t('email.applyApplied'), tone: 'ok' };
   if (s === 'written') return { text: t('email.applyWritten'), tone: 'info' };

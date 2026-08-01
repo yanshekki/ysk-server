@@ -41,7 +41,7 @@ import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 
-function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
+export function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
   text: string;
   tone: 'ok' | 'warn' | 'danger' | 'neutral';
 } {

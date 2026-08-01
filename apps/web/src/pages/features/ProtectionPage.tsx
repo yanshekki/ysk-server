@@ -205,7 +205,7 @@ const LEVEL_TONES: Record<ThreatLevel, 'ok' | 'warn' | 'danger'> = {
   critical: 'danger',
 };
 
-function levelMeta(
+export function levelMeta(
   t: (key: string, opts?: Record<string, unknown>) => string,
   level: ThreatLevel,
 ) {
@@ -224,7 +224,7 @@ const PRESET_META_BASE: Record<string, { step: number; accent: string }> = {
   emergency: { step: 4, accent: 'critical' },
 };
 
-function presetWhen(t: (key: string) => string, id: string): string {
+export function presetWhen(t: (key: string) => string, id: string): string {
   const k = `protection.presetsWhen.${id}`;
   const v = t(k);
   return v === k ? id : v;

@@ -24,7 +24,7 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 
 const RDY_TABS = ['priority', 'checklist', 'summary', 'about'] as const;
 
-function catLabel(cat: string, t: (k: string) => string): string {
+export function catLabel(cat: string, t: (k: string) => string): string {
   const key = `readiness.cat.${cat}`;
   const v = t(key);
   return v === key ? cat : v;
@@ -32,21 +32,21 @@ function catLabel(cat: string, t: (k: string) => string): string {
 
 type LevelFilter = 'all' | 'blockers' | 'missing' | 'degraded' | 'ready';
 
-function levelTone(level: ReadinessLevel): 'ok' | 'warn' | 'danger' | 'neutral' {
+export function levelTone(level: ReadinessLevel): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (level === 'ready') return 'ok';
   if (level === 'degraded') return 'warn';
   if (level === 'missing') return 'danger';
   return 'neutral';
 }
 
-function levelLabel(level: ReadinessLevel, t: (k: string) => string): string {
+export function levelLabel(level: ReadinessLevel, t: (k: string) => string): string {
   if (level === 'ready') return t('readiness.level.ready');
   if (level === 'degraded') return t('readiness.level.degraded');
   if (level === 'missing') return t('readiness.level.missing');
   return t('readiness.level.unknown');
 }
 
-function severityLabel(s: string | undefined, t: (k: string) => string): string | null {
+export function severityLabel(s: string | undefined, t: (k: string) => string): string | null {
   if (s === 'critical') return t('readiness.severity.critical');
   if (s === 'recommended') return t('readiness.severity.recommended');
   if (s === 'optional') return t('readiness.severity.optional');

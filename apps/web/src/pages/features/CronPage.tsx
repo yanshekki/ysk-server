@@ -42,7 +42,7 @@ type CronProjectOpt = {
 };
 
 /** Suggested cron commands under project home (cwd-aware via cd) */
-function projectCommandPresets(p: CronProjectOpt): Array<{ label: string; command: string }> {
+export function projectCommandPresets(p: CronProjectOpt): Array<{ label: string; command: string }> {
   const home = p.homeDir.replace(/\/$/, '') || '/home/ysk';
   const app = `${home}/app`;
   const log = `${home}/logs/cron.log`;
@@ -119,13 +119,13 @@ function projectCommandPresets(p: CronProjectOpt): Array<{ label: string; comman
   }
 }
 
-function defaultCommandForProject(p: CronProjectOpt): string {
+export function defaultCommandForProject(p: CronProjectOpt): string {
   const presets = projectCommandPresets(p);
   return presets[0]?.command ?? `cd ${p.homeDir}/app && /usr/bin/true`;
 }
 
 /** True if command looks like our auto template / placeholder */
-function isAutoCommand(cmd: string, projects: CronProjectOpt[]): boolean {
+export function isAutoCommand(cmd: string, projects: CronProjectOpt[]): boolean {
   const t = cmd.trim();
   if (!t || t === '/usr/bin/true') return true;
   return projects.some((p) => projectCommandPresets(p).some((x) => x.command === t));

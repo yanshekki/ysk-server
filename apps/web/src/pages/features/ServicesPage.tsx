@@ -23,14 +23,14 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { dbClusterApi } from '../../features/db-service/cluster-api';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 
-function enabledLabel(v: string, t: TFunction): string {
+export function enabledLabel(v: string, t: TFunction): string {
   if (v === 'enabled') return t('services.enabledBoot');
   if (v === 'disabled') return t('common.no');
   if (v === 'static' || v === 'indirect') return v;
   return v || t('common.noneSelectedShort');
 }
 
-function actionLabel(
+export function actionLabel(
   action: 'start' | 'stop' | 'restart' | 'reload',
   t: TFunction,
 ): string {
@@ -49,7 +49,7 @@ type MatrixItem = {
   activeLabel: string;
 };
 
-function toneFor(active: string, installed: boolean): 'ok' | 'warn' | 'danger' | 'neutral' {
+export function toneFor(active: string, installed: boolean): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (active === 'active') return 'ok';
   if (!installed || active === 'not-found') return 'danger';
   if (active === 'failed') return 'danger';

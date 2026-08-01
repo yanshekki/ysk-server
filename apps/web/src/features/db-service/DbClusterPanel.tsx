@@ -34,7 +34,7 @@ import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 
-function statusTone(
+export function statusTone(
   s: string,
 ): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (s === 'healthy') return 'ok';
@@ -43,14 +43,14 @@ function statusTone(
   return 'neutral';
 }
 
-function defaultKind(engine: DbServiceEngine): DbClusterKind {
+export function defaultKind(engine: DbServiceEngine): DbClusterKind {
   if (engine === 'mariadb') return 'mariadb-galera';
   if (engine === 'mysql') return 'mysql-replica';
   if (engine === 'postgres') return 'postgres-replica';
   return 'redis-replica';
 }
 
-function wizardTitle(kind: DbClusterKind): string {
+export function wizardTitle(kind: DbClusterKind): string {
   if (kind === 'mariadb-galera') return i18n.t('db.cluster.kindGalera');
   if (kind === 'mysql-replica') return i18n.t('db.cluster.kindMysqlReplica');
   if (kind === 'postgres-replica') return i18n.t('db.cluster.kindPgReplica');
@@ -58,7 +58,7 @@ function wizardTitle(kind: DbClusterKind): string {
   return i18n.t('db.cluster.kindRedisReplica');
 }
 
-function ctaLabel(kind: DbClusterKind): string {
+export function ctaLabel(kind: DbClusterKind): string {
   if (kind === 'mariadb-galera') return i18n.t('db.cluster.createGalera');
   if (kind === 'mysql-replica') return i18n.t('db.cluster.createMysqlReplica');
   if (kind === 'postgres-replica') return i18n.t('db.cluster.createPgReplica');

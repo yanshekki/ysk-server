@@ -59,14 +59,14 @@ type PowerDialog = {
   delaySec: number;
 };
 
-function formatBytes(n?: number): string {
+export function formatBytes(n?: number): string {
   if (n == null) return '—';
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatUptime(sec?: number): string {
+export function formatUptime(sec?: number): string {
   if (sec == null || !Number.isFinite(sec)) return '—';
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
@@ -76,7 +76,7 @@ function formatUptime(sec?: number): string {
   return `${m}m`;
 }
 
-function memTone(ratio?: number): 'ok' | 'warn' | 'danger' | 'neutral' {
+export function memTone(ratio?: number): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (ratio == null) return 'neutral';
   if (ratio > 0.9) return 'danger';
   if (ratio > 0.75) return 'warn';

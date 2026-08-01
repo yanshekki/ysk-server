@@ -42,7 +42,7 @@ const PROFILE_DEFS = [
   { id: 'ftps' as const, allowSmtp: false, extra: '21,30000:30100' },
 ];
 
-function parsePorts(extraPorts: string): number[] {
+export function parsePorts(extraPorts: string): number[] {
   const out: number[] = [];
   for (const part of extraPorts.split(/[,\s]+/).filter(Boolean)) {
     if (part.includes(':')) {

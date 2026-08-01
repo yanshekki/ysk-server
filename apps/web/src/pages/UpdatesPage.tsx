@@ -30,14 +30,14 @@ import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 const UPD_TABS = ['packages', 'panel', 'schedule', 'policy', 'about'] as const;
 type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';
 
-function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
+export function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
   if (risk === 'critical' || risk === 'high') return 'danger';
   if (risk === 'medium') return 'warn';
   if (risk === 'low') return 'ok';
   return 'neutral';
 }
 
-function riskLabel(risk: string | undefined, tr: (k: string) => string): string {
+export function riskLabel(risk: string | undefined, tr: (k: string) => string): string {
   if (risk === 'critical') return tr('updates.risk.critical');
   if (risk === 'high') return tr('updates.risk.high');
   if (risk === 'medium') return tr('updates.risk.medium');
@@ -45,7 +45,7 @@ function riskLabel(risk: string | undefined, tr: (k: string) => string): string 
   return risk ?? '—';
 }
 
-function isHighRisk(row: AdviceRow): boolean {
+export function isHighRisk(row: AdviceRow): boolean {
   return (
     row.risk === 'high' ||
     row.risk === 'critical' ||
@@ -53,7 +53,7 @@ function isHighRisk(row: AdviceRow): boolean {
   );
 }
 
-function relTime(iso: string | null, tr: (k: string, o?: Record<string, unknown>) => string): string {
+export function relTime(iso: string | null, tr: (k: string, o?: Record<string, unknown>) => string): string {
   if (!iso) return '—';
   try {
     const ms = new Date(iso).getTime();

@@ -27,7 +27,7 @@ import { useServerList } from '../../shared/hooks/useServerList';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
 
-function statusBadge(
+export function statusBadge(
   status: string,
   filesExist: boolean,
   t: (key: string) => string,

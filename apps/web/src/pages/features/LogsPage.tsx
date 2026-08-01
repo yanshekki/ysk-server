@@ -143,14 +143,14 @@ type RailItem = {
   projectId?: string;
 };
 
-function formatBytes(n?: number): string {
+export function formatBytes(n?: number): string {
   if (n == null) return '—';
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function groupLabel(g: string): string {
+export function groupLabel(g: string): string {
   if (g.startsWith('proj:')) return g.slice('proj:'.length);
   const map: Record<string, string> = {
     system: i18n.t('logs.catSystem'),

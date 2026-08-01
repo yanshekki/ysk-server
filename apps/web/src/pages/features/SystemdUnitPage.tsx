@@ -43,7 +43,7 @@ type SystemdStatus = {
   };
 };
 
-function enabledLabel(v?: string): string {
+export function enabledLabel(v?: string): string {
   if (!v) return '—';
   if (v === 'enabled') return i18n.t('common.enabled');
   if (v === 'disabled') return i18n.t('systemd.disabled');
@@ -53,7 +53,7 @@ function enabledLabel(v?: string): string {
   return v;
 }
 
-function activeTone(active: string): 'ok' | 'warn' | 'danger' | 'neutral' {
+export function activeTone(active: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (active === 'active') return 'ok';
   if (active === 'activating' || active === 'reloading') return 'warn';
   if (active === 'failed') return 'danger';
@@ -61,7 +61,7 @@ function activeTone(active: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   return 'neutral';
 }
 
-function activeLabel(active: string): string {
+export function activeLabel(active: string): string {
   if (active === 'active') return i18n.t('common.running');
   if (active === 'inactive') return i18n.t('systemd.notRunning');
   if (active === 'failed') return i18n.t('common.failed');
@@ -70,7 +70,7 @@ function activeLabel(active: string): string {
   return active || '—';
 }
 
-function enabledTone(v?: string): 'ok' | 'warn' | 'neutral' {
+export function enabledTone(v?: string): 'ok' | 'warn' | 'neutral' {
   if (v === 'enabled') return 'ok';
   if (v === 'disabled' || v === 'not-found') return 'warn';
   return 'neutral';

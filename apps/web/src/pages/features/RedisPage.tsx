@@ -33,7 +33,7 @@ import {
 } from '../../features/redis';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 
-function formatTtl(
+export function formatTtl(
   ttl: number | undefined,
   t: (k: string, o?: Record<string, unknown>) => string,
 ): string {
@@ -45,7 +45,7 @@ function formatTtl(
   return i18n.t('redis.ttlDays', { n: Math.floor(ttl / 86400) });
 }
 
-function typeTone(type?: string): 'ok' | 'warn' | 'info' | 'neutral' {
+export function typeTone(type?: string): 'ok' | 'warn' | 'info' | 'neutral' {
   switch (type) {
     case 'string':
       return 'ok';
@@ -58,7 +58,7 @@ function typeTone(type?: string): 'ok' | 'warn' | 'info' | 'neutral' {
   }
 }
 
-function typeLabel(
+export function typeLabel(
   type: string | undefined,
   t: (k: string) => string,
 ): string {
@@ -72,12 +72,12 @@ function typeLabel(
   return type ? map[type] ?? type : '—';
 }
 
-function formatValue(view: RedisKeyView): string {
+export function formatValue(view: RedisKeyView): string {
   if (typeof view.value === 'string') return view.value;
   return JSON.stringify(view.value, null, 2);
 }
 
-function keysInDb(svc: RedisServiceStatus | null, db: number): number {
+export function keysInDb(svc: RedisServiceStatus | null, db: number): number {
   return svc?.keyspace?.find((k) => k.db === db)?.keys ?? 0;
 }
 

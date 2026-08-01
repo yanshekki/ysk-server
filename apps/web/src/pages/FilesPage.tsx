@@ -38,7 +38,7 @@ type ViewMode = 'list' | 'grid';
 type SideView = 'all' | 'favorites' | 'shares' | 'trash';
 type SortKey = 'name' | 'size' | 'mtime';
 
-function formatBytes(n: number): string {
+export function formatBytes(n: number): string {
   if (!Number.isFinite(n) || n < 0) return '—';
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
@@ -46,7 +46,7 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-function iconFor(e: FileEntry): string {
+export function iconFor(e: FileEntry): string {
   if (e.type === 'dir') return '📁';
   const m = e.mime ?? '';
   if (m.startsWith('image/')) return '🖼';
@@ -57,7 +57,7 @@ function iconFor(e: FileEntry): string {
   return '📎';
 }
 
-function joinPath(dir: string, name: string): string {
+export function joinPath(dir: string, name: string): string {
   if (!dir || dir === '.') return name;
   return `${dir.replace(/\/$/, '')}/${name}`;
 }

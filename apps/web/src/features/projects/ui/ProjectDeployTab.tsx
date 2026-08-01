@@ -51,7 +51,7 @@ export interface ProjectDeployTabProps {
   onDismissChecklist?: () => void;
 }
 
-function processDeployHint(runtime: string): string {
+export function processDeployHint(runtime: string): string {
   if (runtime === 'python') {
     return i18n.t('projects.deployPyHint');
   }
@@ -67,7 +67,7 @@ function processDeployHint(runtime: string): string {
   return i18n.t('projects.deployDefaultHint');
 }
 
-function defaultEntryHint(runtime: string): string {
+export function defaultEntryHint(runtime: string): string {
   if (runtime === 'python') return 'main:app · app.py · mysite.wsgi:application';
   if (runtime === 'go') return './app';
   if (runtime === 'rust') return './target/release/<crate>';
@@ -75,14 +75,14 @@ function defaultEntryHint(runtime: string): string {
   return '';
 }
 
-function envPlaceholder(runtime: string, deployIsPhp: boolean): string {
+export function envPlaceholder(runtime: string, deployIsPhp: boolean): string {
   if (deployIsPhp) return 'APP_ENV=production\n# KEY=value';
   if (runtime === 'python') return 'APP_ENV=production\n# DATABASE_URL=\n';
   if (runtime === 'go' || runtime === 'rust') return 'APP_ENV=production\n# KEY=value\n';
   return 'NODE_ENV=production\n# KEY=value';
 }
 
-function checklistItems(runtime: string): string[] {
+export function checklistItems(runtime: string): string[] {
   const osFirst = i18n.t('projects.deployOsStep');
   if (runtime === 'python') {
     return [

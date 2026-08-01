@@ -28,7 +28,7 @@ import { usePageTab } from '../shared/hooks/usePageTab';
 
 const AI_TABS = ['tasks', 'playbooks', 'about'] as const;
 
-function taskTone(status: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
+export function taskTone(status: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
   if (status === 'completed' || status === 'done' || status === 'executed') return 'ok';
   if (status === 'failed' || status === 'error' || status === 'rejected') return 'danger';
   if (
@@ -42,25 +42,25 @@ function taskTone(status: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral'
   return 'info';
 }
 
-function statusLabel(status: string, t: TFunction): string {
+export function statusLabel(status: string, t: TFunction): string {
   const key = `ai.status.${status}`;
   const translated = t(key);
   return translated === key ? status : translated;
 }
 
-function isTerminal(status: string): boolean {
+export function isTerminal(status: string): boolean {
   return ['completed', 'done', 'failed', 'error', 'cancelled'].includes(status);
 }
 
-function canApprove(status: string): boolean {
+export function canApprove(status: string): boolean {
   return ['pending', 'planned', 'approved'].includes(status);
 }
 
-function canCancel(status: string): boolean {
+export function canCancel(status: string): boolean {
   return !isTerminal(status);
 }
 
-function pipelinePhase(status: string): 0 | 1 | 2 | 3 {
+export function pipelinePhase(status: string): 0 | 1 | 2 | 3 {
   if (status === 'completed' || status === 'done') return 3;
   if (status === 'running' || status === 'approved') return 2;
   if (status === 'planned' || status === 'pending') return 1;
@@ -68,7 +68,7 @@ function pipelinePhase(status: string): 0 | 1 | 2 | 3 {
   return 0;
 }
 
-function stepCount(task: AiTask) {
+export function stepCount(task: AiTask) {
   const done = task.steps.filter((s) =>
     ['executed', 'completed', 'done'].includes(s.status),
   ).length;

@@ -39,7 +39,7 @@ type Props = {
   onFlash: (tone: 'ok' | 'error', text: string) => void;
 };
 
-function statusLabel(s: string, t: (k: string) => string): string {
+export function statusLabel(s: string, t: (k: string) => string): string {
   switch (s) {
     case 'enrolled':
       return t('security.ssh.enrollStatusSecret');
@@ -54,7 +54,7 @@ function statusLabel(s: string, t: (k: string) => string): string {
   }
 }
 
-function statusTone(s: string): 'ok' | 'warn' | 'info' | 'neutral' | 'danger' {
+export function statusTone(s: string): 'ok' | 'warn' | 'info' | 'neutral' | 'danger' {
   if (s === 'file_written') return 'ok';
   if (s === 'confirmed') return 'info';
   if (s === 'enrolled') return 'warn';
