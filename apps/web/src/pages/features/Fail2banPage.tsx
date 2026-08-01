@@ -35,6 +35,70 @@ const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service', 'about'] as
 
 type F2bStatus = Awaited<ReturnType<typeof systemApi.fail2banStatus>>;
 
+const FALLBACK_JAILS = ['sshd', 'nginx-http-auth', 'postfix', 'dovecot'] as const;
+
+/** Resolve jail option ids from catalog or defaults. */
+export function resolveJailOptions(
+  catalog: Array<{ id: string }> | undefined,
+  defaultJails: string[] | undefined,
+): string[] {
+  if (catalog?.length) return catalog.map((c) => c.id);
+  if (defaultJails?.length) return defaultJails;
+  return [...FALLBACK_JAILS];
+}
+
+/** Initial jail multi-select from live status. */
+export function initialSelectedJails(s: {
+  jails?: Array<{ name: string }>;
+  catalog?: Array<{ id: string }>;
+}): string[] {
+  const live = s.jails?.map((j) => j.name) ?? [];
+  if (live.length) return live;
+  return s.catalog?.slice(0, 4).map((c) => c.id) ?? [...FALLBACK_JAILS];
+}
+
+/** Filter banned rows by free-text query (ip or jail). */
+export function filterBannedRows<T extends { ip: string; jail: string }>(
+  rows: T[],
+  q: string,
+): T[] {
+  const n = q.trim().toLowerCase();
+  if (!n) return rows;
+  return rows.filter(
+    (b) => b.ip.toLowerCase().includes(n) || b.jail.toLowerCase().includes(n),
+  );
+}
+
+/** Badge tone for a fail2ban jail enabled flag. */
+export function jailEnabledTone(enabled: boolean | undefined): 'ok' | 'neutral' | 'warn' {
+  if (enabled === true) return 'ok';
+  if (enabled === false) return 'warn';
+  return 'neutral';
+}
+
+/** Normalize bantime / findtime preset strings. */
+export function normalizeDurationPreset(raw: string, fallback = '1h'): string {
+  const v = raw.trim();
+  if (!v) return fallback;
+  if (/^\d+[smhd]$/i.test(v)) return v.toLowerCase();
+  if (/^\d+$/.test(v)) return `${v}s`;
+  return fallback;
+}
+
+/** Clamp maxretry to a sane range. */
+export function clampMaxretry(v: unknown): number {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 5;
+  return Math.max(1, Math.min(50, Math.floor(n)));
+}
+
+/** Whether a ban IP string looks usable. */
+export function isValidBanIp(ip: string): boolean {
+  const s = ip.trim();
+  if (!s) return false;
+  return /^[\d.a-fA-F:]+$/.test(s) && s.length >= 3;
+}
+
 export function Fail2banPage() {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(F2B_TABS, 'bans');
@@ -50,31 +114,17 @@ export function Fail2banPage() {
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const catalog = status?.catalog ?? [];
-  const jailOptions = useMemo(() => {
-    if (catalog.length) return catalog.map((c) => c.id);
-    return status?.defaultJails?.length
-      ? status.defaultJails
-      : ['sshd', 'nginx-http-auth', 'postfix', 'dovecot'];
-  }, [catalog, status?.defaultJails]);
+  const jailOptions = useMemo(
+    () => resolveJailOptions(catalog, status?.defaultJails),
+    [catalog, status?.defaultJails],
+  );
 
   const refresh = useCallback(async () => {
     setLoadError(null);
     try {
       const s = await systemApi.fail2banStatus();
       setStatus(s);
-      setSelected((prev) => {
-        if (prev.length) return prev;
-        const live = s.jails?.map((j) => j.name) ?? [];
-        if (live.length) return live;
-        return (
-          s.catalog?.slice(0, 4).map((c) => c.id) ?? [
-            'sshd',
-            'nginx-http-auth',
-            'postfix',
-            'dovecot',
-          ]
-        );
-      });
+      setSelected((prev) => (prev.length ? prev : initialSelectedJails(s)));
       if (s.jails?.[0]?.name) setBanJail((j) => j || s.jails[0].name);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
@@ -88,15 +138,7 @@ export function Fail2banPage() {
   const running = status?.active === 'active';
   const [banQ, setBanQ] = useState('');
   const bannedAll = status?.banned ?? [];
-  const banned = useMemo(() => {
-    const n = banQ.trim().toLowerCase();
-    if (!n) return bannedAll;
-    return bannedAll.filter(
-      (b) =>
-        b.ip.toLowerCase().includes(n) ||
-        b.jail.toLowerCase().includes(n),
-    );
-  }, [bannedAll, banQ]);
+  const banned = useMemo(() => filterBannedRows(bannedAll, banQ), [bannedAll, banQ]);
 
   function toggleJail(name: string) {
     setSelected((prev) =>
@@ -271,7 +313,7 @@ export function Fail2banPage() {
                   variant="danger"
                   size="md"
                   loading={busy}
-                  disabled={!banIp.trim()}
+                  disabled={!isValidBanIp(banIp)}
                   onClick={() =>
                     void run(async () => {
                       const r = (await systemApi.fail2banBan(
@@ -435,9 +477,9 @@ export function Fail2banPage() {
                       const r = (await systemApi.fail2banApply({
                         apply: true,
                         jails: selected,
-                        bantime,
-                        findtime,
-                        maxretry,
+                        bantime: normalizeDurationPreset(bantime, '1h'),
+                        findtime: normalizeDurationPreset(findtime, '10m'),
+                        maxretry: clampMaxretry(maxretry),
                       })) as OpsResultLike;
                       await refresh();
                       return r;
@@ -514,6 +556,18 @@ export function Fail2banPage() {
                     key: 'name',
                     header: 'Jail',
                     render: (j) => <code className="inline">{j.name}</code>,
+                  },
+                  {
+                    key: 'enabled',
+                    header: t('fail2ban.colEnabled', { defaultValue: 'On' }),
+                    nowrap: true,
+                    render: (j) => (
+                      <Badge tone={jailEnabledTone((j as { enabled?: boolean }).enabled)}>
+                        {(j as { enabled?: boolean }).enabled === false
+                          ? t('common.off', { defaultValue: 'off' })
+                          : t('common.on', { defaultValue: 'on' })}
+                      </Badge>
+                    ),
                   },
                   {
                     key: 'currently',
@@ -653,9 +707,9 @@ export function Fail2banPage() {
                       const r = (await systemApi.fail2banApply({
                         apply: false,
                         jails: selected,
-                        bantime,
-                        findtime,
-                        maxretry,
+                        bantime: normalizeDurationPreset(bantime, '1h'),
+                        findtime: normalizeDurationPreset(findtime, '10m'),
+                        maxretry: clampMaxretry(maxretry),
                       })) as OpsResultLike;
                       return r;
                     }, t('fail2ban.writtenOnlyMsg'))
@@ -673,9 +727,9 @@ export function Fail2banPage() {
                       const r = (await systemApi.fail2banApply({
                         apply: true,
                         jails: selected,
-                        bantime,
-                        findtime,
-                        maxretry,
+                        bantime: normalizeDurationPreset(bantime, '1h'),
+                        findtime: normalizeDurationPreset(findtime, '10m'),
+                        maxretry: clampMaxretry(maxretry),
                       })) as OpsResultLike;
                       await refresh();
                       return r;

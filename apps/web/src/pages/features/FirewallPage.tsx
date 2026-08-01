@@ -59,6 +59,96 @@ export function parsePorts(extraPorts: string): number[] {
   return [...new Set(out)].slice(0, 40);
 }
 
+/** Badge tone for a UFW rule action string. */
+export function firewallActionTone(
+  action: string | undefined,
+): 'ok' | 'danger' | 'neutral' {
+  if (!action) return 'neutral';
+  if (/DENY|REJECT/i.test(action)) return 'danger';
+  if (/ALLOW/i.test(action)) return 'ok';
+  return 'neutral';
+}
+
+/** Active pill tone from UFW status. */
+export function firewallActiveTone(
+  active: boolean,
+  installed: boolean | undefined,
+): 'ok' | 'warn' | 'danger' {
+  if (active) return 'ok';
+  if (installed) return 'warn';
+  return 'danger';
+}
+
+/** Normalize a single port input for allow-port. */
+export function parsePortInput(raw: string): number | null {
+  const n = Number(String(raw).trim());
+  if (!Number.isInteger(n) || n <= 0 || n >= 65536) return null;
+  return n;
+}
+
+/** Whether a deny IP string looks usable. */
+export function isValidDenyIp(ip: string): boolean {
+  const s = ip.trim();
+  if (!s) return false;
+  return /^[\d.a-fA-F:/]+$/.test(s) && s.length >= 3;
+}
+
+/** Map raw rule rows into table-friendly shape. */
+export function mapFirewallRules(
+  rules:
+    | Array<{
+        num?: number;
+        action?: string;
+        to?: string;
+        from?: string;
+        raw?: string;
+      }>
+    | undefined,
+  numbered:
+    | Array<{
+        num?: number;
+        action?: string;
+        to?: string;
+        from?: string;
+        raw?: string;
+      } | string>
+    | undefined,
+): Array<{
+  num: number | undefined;
+  action: string;
+  to: string;
+  from: string;
+  raw: string;
+}> {
+  if (rules?.length) {
+    return rules.map((r) => ({
+      num: r.num,
+      action: r.action ?? '?',
+      to: r.to ?? r.raw ?? '—',
+      from: r.from ?? '—',
+      raw: r.raw ?? `${r.num ?? ''}`,
+    }));
+  }
+  return (numbered ?? []).map((raw) => {
+    if (typeof raw === 'string') {
+      return {
+        num: undefined as number | undefined,
+        action: '?',
+        to: raw,
+        from: '—',
+        raw,
+      };
+    }
+    return {
+      num: raw.num,
+      action: raw.action ?? '?',
+      to: raw.to ?? raw.raw ?? '—',
+      from: raw.from ?? '—',
+      raw: raw.raw ?? `${raw.num ?? ''}`,
+    };
+  });
+}
+
 export function FirewallPage() {
   const { t } = useTranslation();
   const { can } = useCapabilities();
@@ -117,6 +207,10 @@ export function FirewallPage() {
   }, [refresh]);
 
   const active = status?.active === 'active';
+  const tableRules = useMemo(
+    () => mapFirewallRules(status?.rules, status?.numberedRules as never),
+    [status?.rules, status?.numberedRules],
+  );
 
   async function applyProfile(p: (typeof profiles)[number]) {
     await run(async () => {
@@ -138,7 +232,7 @@ export function FirewallPage() {
       status={{
         pill: {
           label: status?.activeLabel ?? '—',
-          tone: active ? 'ok' : status?.installed ? 'warn' : 'danger',
+          tone: firewallActiveTone(active, status?.installed),
         },
         items: [
           {
@@ -290,17 +384,7 @@ export function FirewallPage() {
                     header: t('firewall.colAction'),
                     nowrap: true,
                     render: (r) => (
-                      <Badge
-                        tone={
-                          /DENY|REJECT/i.test(r.action)
-                            ? 'danger'
-                            : /ALLOW/i.test(r.action)
-                              ? 'ok'
-                              : 'neutral'
-                        }
-                      >
-                        {r.action}
-                      </Badge>
+                      <Badge tone={firewallActionTone(r.action)}>{r.action}</Badge>
                     ),
                   },
                   {
@@ -315,23 +399,7 @@ export function FirewallPage() {
                     render: (r) => r.from ?? '—',
                   },
                 ]}
-                rows={
-                  status?.rules?.length
-                    ? status.rules.map((r) => ({
-                        num: r.num,
-                        action: r.action,
-                        to: r.to,
-                        from: r.from,
-                        raw: r.raw,
-                      }))
-                    : (status?.numberedRules ?? []).map((raw) => ({
-                        num: undefined as number | undefined,
-                        action: '?',
-                        to: raw,
-                        from: '—',
-                        raw,
-                      }))
-                }
+                rows={tableRules}
                 rowKey={(r, i) => r.raw + i}
                 rowActions={(r) =>
                   r.num ? (
@@ -415,11 +483,12 @@ export function FirewallPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  disabled={!canEdit || !portInput.trim() || !Number(portInput)}
+                  disabled={!canEdit || parsePortInput(portInput) == null}
                   title={!canEdit ? t('rbac.cap.firewallEdit') : undefined}
                   onClick={() =>
                     void run(async () => {
-                      const n = Number(portInput);
+                      const n = parsePortInput(portInput);
+                      if (n == null) return { ok: false, notes: ['bad port'] };
                       const r = (await systemApi.firewallAllowPort(
                         n,
                         portProto,
@@ -463,7 +532,7 @@ export function FirewallPage() {
                   variant="danger"
                   size="md"
                   loading={busy}
-                  disabled={!canFlush || !denyIp.trim()}
+                  disabled={!canFlush || !isValidDenyIp(denyIp)}
                   title={!canFlush ? t('rbac.cap.firewallFlush') : undefined}
                   onClick={() =>
                     void run(async () => {

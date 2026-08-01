@@ -7,7 +7,7 @@ import { GuestOnly } from './layout/GuestOnly';
 import { ErrorBoundary } from '../shared/components/ErrorBoundary';
 
 /** Lightweight fallback while route chunks load */
-function RouteFallback() {
+export function RouteFallback() {
   return (
     <div className="u-pad-panel muted u-text-sm">
       Loading…
@@ -155,13 +155,13 @@ const UsersPage = lazy(() =>
 );
 
 /** Legacy top-level paths → protection subtree (preserve query, e.g. ?tab=whitelist). */
-function RedirectPreserveQuery({ to }: { to: string }) {
+export function RedirectPreserveQuery({ to }: { to: string }) {
   const [params] = useSearchParams();
   const q = params.toString();
   return <Navigate to={q ? `${to}?${q}` : to} replace />;
 }
 
-function Lazy({ children }: { children: ReactNode }) {
+export function Lazy({ children }: { children: ReactNode }) {
   return <Suspense fallback={<RouteFallback />}>{children}</Suspense>;
 }
 
