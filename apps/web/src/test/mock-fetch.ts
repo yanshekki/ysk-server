@@ -35,6 +35,16 @@ export function installFetchMock(routes: FetchRoute[]) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = pathOf(input);
     const method = (init?.method ?? 'GET').toUpperCase();
+    // Never leak real DNS/network for external absolute URLs (happy-dom may fetch iframe/preview hosts).
+    const raw =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.href
+          : (input as Request).url;
+    if (/^https?:\/\//i.test(raw) && !/\/api\//.test(raw) && !raw.includes('local.test')) {
+      return new Response('', { status: 204 });
+    }
     for (const r of routes) {
       let hit = false;
       if (typeof r.match === 'string') {
