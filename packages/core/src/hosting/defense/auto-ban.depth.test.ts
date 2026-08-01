@@ -6,12 +6,18 @@ import { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import {
   DEFAULT_AUTO_BAN,
+  countAutoBansLastHour,
   defenseBanBatch,
+  humanizeFail2ban,
+  humanizeFirewall,
   listSuspectIps,
   loadAutoBanPolicy,
+  modeThresholds,
   parseAccessLogSuspects,
   runAutoBanTick,
   saveAutoBanPolicy,
+  suggestedAutoBanForPreset,
+  updateAutoBanPolicy,
 } from './auto-ban.js';
 
 const dirs: string[] = [];
@@ -94,6 +100,86 @@ describe('auto-ban depth', () => {
     expect(a.hits).toBeGreaterThan(200);
     expect(a.s429).toBeGreaterThan(50);
     expect(a.scan).toBeGreaterThan(20);
+  });
+
+  it('mode thresholds, preset suggest, humanize, load policy variants, mid score tiers', () => {
+    expect(modeThresholds('aggressive').minScore).toBe(25);
+    expect(modeThresholds('normal').minHits).toBe(60);
+    expect(modeThresholds('soft').min429).toBe(50);
+    expect(modeThresholds('off').minScore).toBe(9999);
+    expect(suggestedAutoBanForPreset('daily').enabled).toBe(false);
+    expect(suggestedAutoBanForPreset('hardened').mode).toBe('normal');
+    expect(suggestedAutoBanForPreset('under_attack').mode).toBe('aggressive');
+    expect(suggestedAutoBanForPreset('emergency').method).toBe('both');
+
+    expect(humanizeFirewall(undefined, false).tone).toBe('default');
+    expect(humanizeFirewall('need to be root', true, false).tone).toBe('warn');
+    expect(humanizeFirewall('ERROR: boom', true, true).tone).toBe('warn');
+    expect(humanizeFirewall('active', true).tone).toBe('ok');
+    expect(humanizeFirewall('Status: active (running)', true).tone).toBe('ok');
+    // note: "inactive".includes("active") is true → treated as ok by humanizeFirewall
+    expect(humanizeFirewall('inactive', true).tone).toBe('ok');
+    expect(humanizeFirewall('weird', true).short.length).toBeGreaterThan(0);
+    expect(humanizeFail2ban('active', true).tone).toBe('ok');
+    expect(humanizeFail2ban('inactive', true).tone).toBe('warn');
+    expect(humanizeFail2ban(undefined, false).tone).toBe('default');
+    expect(humanizeFail2ban('unknown', true).tone).toBe('default');
+
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-ab-pol-'));
+    dirs.push(dir);
+    const db = store(dir);
+    db.snapshot.settings = {};
+    expect(loadAutoBanPolicy(db).mode).toBe('soft');
+    db.snapshot.settings.defense_auto_ban = JSON.stringify({
+      enabled: true,
+      mode: 'weird-mode',
+      method: 'both',
+      cooldownMinutes: 1,
+      maxAutoBansPerHour: 9999,
+      whitelist: [' 10.0.0.0/8 ', '', 'bad'],
+      recentAutoBanAts: [new Date().toISOString(), 'not-a-date'],
+      lastTickAt: 't',
+      lastTickNotes: ['n'],
+      pausedReason: 'p',
+    });
+    const p = loadAutoBanPolicy(db);
+    expect(p.mode).toBe('soft');
+    expect(p.method).toBe('both');
+    expect(p.cooldownMinutes).toBe(5);
+    expect(p.maxAutoBansPerHour).toBe(500);
+    expect(countAutoBansLastHour(p)).toBeGreaterThanOrEqual(0);
+    db.snapshot.settings.defense_auto_ban = '{bad';
+    expect(loadAutoBanPolicy(db).enabled).toBe(false);
+    updateAutoBanPolicy(db, { enabled: true, mode: 'aggressive', method: 'ufw' });
+    expect(loadAutoBanPolicy(db).mode).toBe('aggressive');
+
+    // mid score tiers: hits 20/50/100, s429 8/20, scan 3/8
+    const mid: string[] = [];
+    for (let i = 0; i < 25; i++) {
+      mid.push(`198.51.100.10 - - [] "GET /a HTTP/1.1" 200 1`);
+    }
+    for (let i = 0; i < 10; i++) {
+      mid.push(`198.51.100.10 - - [] "GET /a HTTP/1.1" 429 1`);
+    }
+    for (let i = 0; i < 4; i++) {
+      mid.push(`198.51.100.10 - - [] "GET /.env HTTP/1.1" 404 1`);
+    }
+    // private skipped + no IP skipped
+    mid.push(`127.0.0.1 - - [] "GET /x HTTP/1.1" 200 1`);
+    mid.push(`no-ip-here "GET /x HTTP/1.1" 500 1`);
+    const m = parseAccessLogSuspects(mid.join('\n'));
+    expect(m.has('198.51.100.10')).toBe(true);
+    expect(m.has('127.0.0.1')).toBe(false);
+
+    const mid2: string[] = [];
+    for (let i = 0; i < 60; i++) mid2.push(`198.51.100.20 - - [] "GET / HTTP/1.1" 200 1`);
+    for (let i = 0; i < 25; i++) mid2.push(`198.51.100.20 - - [] "GET / HTTP/1.1" 429 1`);
+    for (let i = 0; i < 10; i++) mid2.push(`198.51.100.20 - - [] "GET /phpmyadmin HTTP/1.1" 404 1`);
+    expect(parseAccessLogSuspects(mid2.join('\n')).get('198.51.100.20')!.hits).toBeGreaterThan(50);
+
+    const mid3: string[] = [];
+    for (let i = 0; i < 110; i++) mid3.push(`198.51.100.30 - - [] "GET / HTTP/1.1" 200 1`);
+    expect(parseAccessLogSuspects(mid3.join('\n')).get('198.51.100.30')!.hits).toBeGreaterThan(100);
   });
 
   it('listSuspectIps with auth fails and fail2ban when execute on', async () => {

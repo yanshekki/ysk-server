@@ -29,8 +29,8 @@ export default defineConfig({
               lines: floor,
               functions: floor,
               statements: floor,
-              // Branch floor capped below line floor (v8 branch density); lock at 74 until raised.
-              branches: Math.min(floor, 74),
+              // Branch floor capped below line floor (v8 branch density); raised 74 → 78.
+              branches: Math.min(floor, 78),
             }
           : undefined,
     },

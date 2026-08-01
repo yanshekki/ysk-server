@@ -361,4 +361,73 @@ describe('defense automation depth', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('tick autoBan custom + hold note + cloudflare escalate branches', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-auto-tick-cf-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      db.snapshot.settings = {
+        defense_active_preset: 'daily',
+        // hold active to exercise hold note when not de-escalating
+        defense_auto_preset_hold: JSON.stringify({
+          at: new Date().toISOString(),
+          preset: 'hardened',
+        }),
+        defense_timeline: '{bad-json',
+      };
+      saveDefenseAutomation(db, {
+        ...DEFAULT_AUTOMATION,
+        enabled: true,
+        autoPreset: {
+          ...DEFAULT_AUTOMATION.autoPreset,
+          enabled: true,
+          escalateToHardenedAt: 1,
+          escalateToUnderAttackAt: 2,
+          suggestEmergencyAt: 99,
+          deescalateEnabled: true,
+          deescalateToDailyBelow: 0,
+          holdMinutes: 60,
+        },
+        autoBan: {
+          ...DEFAULT_AUTOMATION.autoBan,
+          enabled: true,
+          mode: 'custom',
+          method: 'both',
+          minScore: 1,
+          minHits: 1,
+          min429: 1,
+          minScan: 1,
+        },
+        cloudflare: {
+          enabled: true,
+          zones: ['zone-a'],
+          onAutoEscalate: true,
+          ufwAllowOnlyCf: true,
+          ufwKeepTcpPorts: [22, 443],
+        },
+        signalWeights: {
+          networkDown: 3,
+          highReqRate: 3,
+          ddosHeuristic: 3,
+          tcpInuse: 3,
+          ufwInactive: 3,
+          f2bBans: 3,
+        },
+      });
+      // execute false: preset apply stays written/blocked without touching /etc
+      const host = mockHost({ execute: false, root: false });
+      const r = await runDefenseAutomationTick({
+        host,
+        db,
+        dataDir: dir,
+        requestCountLastMinute: 50_000,
+      });
+      expect(r.ok).toBe(true);
+      expect(r.automation.lastTickAt).toBeTruthy();
+      // autoBan custom path sets temporary thresholds
+      expect(db.snapshot.settings.defense_auto_ban_custom_th).toBeTruthy();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

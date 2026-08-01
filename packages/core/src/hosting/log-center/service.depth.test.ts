@@ -261,6 +261,63 @@ describe('log-center service depth', () => {
     }
   });
 
+  it('parseDiskToMb + load/save log settings clamps and bookmarks', () => {
+    expect(parseDiskToMb(undefined)).toBeUndefined();
+    expect(parseDiskToMb('nope')).toBeUndefined();
+    expect(parseDiskToMb('1.5K')).toBe(0); // rounds
+    expect(parseDiskToMb('10M')).toBe(10);
+    expect(parseDiskToMb('2G')).toBe(2048);
+    expect(parseDiskToMb('1T')).toBe(1024 * 1024);
+
+    const { dir, db } = setup();
+    expect(loadLogSettings(db).maxLines).toBeGreaterThan(0);
+    db.snapshot.settings.log_center = '{bad';
+    expect(loadLogSettings(db).bookmarks).toEqual([]);
+
+    db.snapshot.settings.log_center = JSON.stringify({
+      maxLines: 5,
+      maxBytes: 10,
+      followIntervalSec: 0,
+      vacuumDefaultDays: 9999,
+      maskSecrets: false,
+      disabledSources: 'x',
+      bookmarks: [{ name: '', source: 'x' }, { name: 'n', source: 's', lines: 10, since: '1d' }],
+      customAllowPaths: null,
+      autoVacuumEnabled: true,
+      autoVacuumTime: 'bad',
+      journalWarnMb: 1,
+    });
+    const loaded = loadLogSettings(db);
+    expect(loaded.maxLines).toBeGreaterThanOrEqual(50);
+    expect(loaded.bookmarks.length).toBe(1);
+    expect(loaded.bookmarks[0]!.lines).toBeGreaterThanOrEqual(50);
+
+    const saved = saveLogSettings(db, {
+      maxLines: 99999,
+      maxBytes: 1,
+      followIntervalSec: 100,
+      vacuumDefaultDays: 0,
+      journalWarnMb: 1,
+      autoVacuumTime: '3:30',
+      autoVacuumEnabled: true,
+      maskSecrets: false,
+      disabledSources: ['a', 'b'],
+      bookmarks: [{ name: 'b1', source: 'journal:nginx', lines: 100 }],
+      customAllowPaths: ['/var/log/nginx/access.log', '/etc/passwd', '/run/log/x'],
+    });
+    expect(saved.maxLines).toBeLessThanOrEqual(5000);
+    expect(saved.followIntervalSec).toBeLessThanOrEqual(30);
+    expect(saved.customAllowPaths.some((p) => p.includes('nginx') || p.includes('/run/log'))).toBe(
+      true,
+    );
+    const withBm = addLogBookmark(db, { name: 'x', source: 'file:/var/log/syslog' });
+    expect(withBm.bookmarks.some((b) => b.name === 'x')).toBe(true);
+    expect(addLogBookmark(db, { name: '', source: 'x' }).bookmarks).toBeTruthy();
+    const id = withBm.bookmarks.find((b) => b.name === 'x')!.id;
+    expect(removeLogBookmark(db, id).bookmarks.every((b) => b.id !== id)).toBe(true);
+    void dir;
+  });
+
   it('getLogOverview includes journal usage and warnings', async () => {
     const { dir, db } = setup();
     saveLogSettings(db, { journalWarnMb: 100 });

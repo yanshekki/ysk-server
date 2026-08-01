@@ -104,6 +104,43 @@ describe('rebuild', () => {
       mkdirSync(join(dir, 'nginx', 'conf.d'), { recursive: true });
       writeFileSync(join(dir, 'nginx', 'conf.d', 'demo.conf'), 'server {}\n', 'utf8');
       expect(listManagedNginxDetailed(dir).some((c) => c.name === 'demo.conf')).toBe(true);
+
+      // list-only mode
+      const listOnly = await rebuildManagedConfigs({
+        dataDir: dir,
+        host,
+        db,
+        writeExport: false,
+        syncNginx: false,
+      });
+      expect(listOnly.mode).toBe('list');
+
+      // dryRun with execute+root notes branch
+      const dryRoot = await rebuildManagedConfigs({
+        dataDir: dir,
+        host: {
+          ...host,
+          executeEnabled: () => true,
+          isRoot: () => true,
+        },
+        db,
+        writeExport: false,
+        dryRun: true,
+      });
+      expect(dryRoot.dryRun).toBe(true);
+      expect(dryRoot.mode).toBe('dry_run');
+
+      // resolveExportFile missing file with valid name shape
+      expect(resolveExportFile(dir, 'ysk-export-9999999999999.json').ok).toBe(false);
+      expect(resolveExportFile(dir, '').ok).toBe(false);
+      expect(listControlPlaneExports(join(dir, 'no-exports-here'))).toEqual([]);
+      // junk files skipped
+      mkdirSync(join(dir, 'exports'), { recursive: true });
+      writeFileSync(join(dir, 'exports', 'not-export.json'), '{}');
+      writeFileSync(join(dir, 'exports', 'ysk-export-1.json'), '{}');
+      expect(listControlPlaneExports(dir).every((e) => e.name.startsWith('ysk-export-'))).toBe(
+        true,
+      );
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

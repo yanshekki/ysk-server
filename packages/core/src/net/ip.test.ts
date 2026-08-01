@@ -94,4 +94,63 @@ describe('net/ip dual-stack', () => {
     expect(rev!.endsWith('.8.b.d.0.1.0.0.2')).toBe(true);
     expect(rev!.split('.').length).toBe(32);
   });
+
+  it('edge normalize/cidr/inCidr/private/extract/dnsbl branches', () => {
+    expect(normalizeIp('')).toBeNull();
+    expect(normalizeIp('[]')).toBeNull();
+    expect(normalizeIp('[%eth0]')).toBeNull();
+    expect(normalizeIp('notip')).toBeNull();
+    expect(ipFamily('')).toBe(0);
+    expect(isValidCidr('203.0.113.1')).toBe(false); // no slash
+    expect(normalizeIpOrCidr('10.0.0.0/x')).toBeNull();
+    expect(normalizeIpOrCidr('10.0.0.0/-1')).toBeNull();
+    expect(normalizeIpOrCidr('10.0.0.0/0')).toBe('10.0.0.0/0');
+    expect(normalizeIpOrCidr('10.0.0.0/32')).toBe('10.0.0.0/32');
+    expect(normalizeIpOrCidr('2001:db8::/0')).toBe('2001:db8::/0');
+    expect(normalizeIpOrCidr('2001:db8::/128')).toBe('2001:db8::/128');
+    expect(normalizeIpOrCidr('2001:db8::/abc')).toBeNull();
+    expect(normalizeIpOrCidr('not/24')).toBeNull();
+
+    expect(ipInCidr('bad', '10.0.0.0/8')).toBe(false);
+    expect(ipInCidr('10.0.0.1', 'no-cidr')).toBe(false);
+    expect(ipInCidr('10.0.0.1', '2001:db8::/32')).toBe(false);
+    expect(ipInCidr('10.1.2.3', '0.0.0.0/0')).toBe(true);
+    expect(ipInCidr('10.0.0.1', '10.0.0.1/32')).toBe(true);
+    expect(ipInCidr('2001:db8::1', '::/0')).toBe(true);
+    // full expanded v6 (no ::) for groups path
+    expect(
+      ipInCidr('2001:0db8:0000:0000:0000:0000:0000:0001', '2001:db8::/32'),
+    ).toBe(true);
+    // invalid compressed forms fall back
+    expect(ipInCidr('2001:db8::1::2', '2001:db8::/32')).toBe(false);
+
+    expect(ipMatchesList('bad', ['10.0.0.0/8'])).toBe(false);
+    expect(ipMatchesList('10.0.0.1', ['', 'not-a-rule', '10.0.0.0/8'])).toBe(true);
+    expect(ipMatchesList('10.0.0.1', ['10.0.0.2'])).toBe(false);
+
+    expect(isPrivateOrLocalIp('bad')).toBe(false);
+    expect(isPrivateOrLocalIp('0.0.0.0')).toBe(true);
+    expect(isPrivateOrLocalIp('127.5.5.5')).toBe(true);
+    expect(isPrivateOrLocalIp('169.254.1.1')).toBe(true);
+    expect(isPrivateOrLocalIp('172.15.0.1')).toBe(false);
+    expect(isPrivateOrLocalIp('172.31.0.1')).toBe(true);
+    expect(isPrivateOrLocalIp('172.32.0.1')).toBe(false);
+    expect(isPrivateOrLocalIp('fe90::1')).toBe(true);
+    expect(isPrivateOrLocalIp('fea0::1')).toBe(true);
+    expect(isPrivateOrLocalIp('feb0::1')).toBe(true);
+    expect(isPrivateOrLocalIp('fc00::1')).toBe(true);
+
+    // extract: leading, skip 0.x, bracketed, v6 in middle
+    expect(extractIpsFromText('0.0.0.1 leading')).not.toContain('0.0.0.1');
+    expect(extractIpsFromText('[2001:db8::5] hello')).toContain('2001:db8::5');
+    expect(extractIpsFromText('x 2001:db8::9 y')).toContain('2001:db8::9');
+    expect(extractIpFromLogLine('only 10.0.0.1 private')).toBeNull();
+    expect(extractIpFromLogLine('no ips here')).toBeNull();
+
+    expect(reverseDnsblName('bad')).toBeNull();
+    expect(reverseDnsblName('203.0.113.1')).toBe('1.113.0.203');
+    // expanded ipv6
+    const full = reverseDnsblName('2001:0db8:0000:0000:0000:0000:0000:0001');
+    expect(full?.split('.').length).toBe(32);
+  });
 });

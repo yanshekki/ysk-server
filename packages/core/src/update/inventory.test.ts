@@ -104,4 +104,60 @@ describe('inventory', () => {
     );
     expect(await lookupOsvVulns('x', '1')).toEqual([]);
   });
+
+  it('covers no-execute apt path, security line, policy fail, candidate none', async () => {
+    const host = {
+      executeEnabled: () => false,
+      isRoot: () => false,
+      runCommand: async (argv: string[]) => {
+        const joined = argv.join(' ');
+        if (joined.includes('apt list --upgradable')) {
+          return {
+            exitCode: 0,
+            stdout:
+              'libssl3/jammy-security 3.0.2-0ubuntu1.19 amd64 [upgradable from: 3.0.2-0ubuntu1.10]\n' +
+              'garbage line without match\n' +
+              '///bad\n',
+            stderr: '',
+            argv,
+            dryRun: false,
+          };
+        }
+        if (joined.includes('dpkg-query') || joined.includes('apt-cache')) {
+          return {
+            exitCode: 0,
+            stdout:
+              'libssl3\t3.0.2-0ubuntu1.10\t3.0.2-0ubuntu1.19\n' +
+              'foo\t1.0\t(none)\n' +
+              'bar\t2.0\t\n' +
+              '\t\t\n',
+            stderr: '',
+            argv,
+            dryRun: false,
+          };
+        }
+        return { exitCode: 0, stdout: '', stderr: '', argv, dryRun: false };
+      },
+    } as unknown as HostExecutor;
+    const { items, meta } = await collectInventory(host);
+    expect(meta.notes.some((n) => n.length > 0)).toBe(true);
+    const lib = items.find((i) => i.packageName === 'libssl3');
+    expect(lib?.hasSecurityFix).toBe(true);
+    expect(items.find((i) => i.packageName === 'foo')?.candidateVersion).toBe('1.0');
+    expect(meta.source === 'mixed' || meta.source === 'apt').toBe(true);
+
+    const empty = {
+      executeEnabled: () => true,
+      runCommand: async (argv: string[]) => {
+        const joined = argv.join(' ');
+        if (joined.includes('apt list')) {
+          return { exitCode: 1, stdout: '', stderr: 'err', argv, dryRun: false };
+        }
+        return { exitCode: 1, stdout: '', stderr: 'policy fail', argv, dryRun: false };
+      },
+    } as unknown as HostExecutor;
+    const none = await collectInventory(empty);
+    expect(none.meta.source).toBe('dpkg-only');
+    expect(none.items.length).toBe(0);
+  });
 });

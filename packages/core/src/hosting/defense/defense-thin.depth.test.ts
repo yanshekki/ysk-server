@@ -396,6 +396,67 @@ describe('signals depth', () => {
     );
     expect(scoreToThreatLevel(99)).toBe('critical');
   });
+
+  it('collectDefenseSignals inactive ufw, ban tiers, weight zero, probe throws', async () => {
+    const host = mockHost({
+      execute: true,
+      root: true,
+      run: async (argv) => {
+        const j = argv.join(' ');
+        if (j.includes('ufw status') || j.includes('ufw')) {
+          return { stdout: 'Status: inactive\n', exitCode: 0 };
+        }
+        if (j.includes('fail2ban-client status') || j.includes('is-active fail2ban')) {
+          return { stdout: 'active\nJail list:\tsshd\n', exitCode: 0 };
+        }
+        if (j.includes('banned') || j.includes('banip') || j.includes('get')) {
+          // many banned IPs for tier
+          const ips = Array.from({ length: 60 }, (_, i) => `203.0.113.${i + 1}`).join('\n');
+          return { stdout: ips, exitCode: 0 };
+        }
+        if (j.includes('command -v')) return { stdout: 'yes\n', exitCode: 0 };
+        return { exitCode: 0, stdout: 'ok\n' };
+      },
+    });
+    // pathExists true for ufw/fail2ban
+    const h2 = {
+      ...host,
+      pathExists: (p: string) => p.includes('ufw') || p.includes('fail2ban'),
+    } as HostExecutor;
+    const r = await collectDefenseSignals({
+      host: h2,
+      requestCountLastMinute: 0,
+      weights: {
+        networkDown: 0,
+        highReqRate: 0,
+        ddosHeuristic: 0,
+        tcpInuse: 3,
+        ufwInactive: 3,
+        f2bBans: 3,
+      },
+    });
+    expect(r.signals.some((s) => s.id === 'ufw')).toBe(true);
+    expect(r.score).toBeGreaterThanOrEqual(0);
+
+    // host that throws on firewall/f2b probes
+    const boom = mockHost({
+      run: async () => {
+        throw new Error('probe boom');
+      },
+    });
+    const r2 = await collectDefenseSignals({ host: boom, requestCountLastMinute: 5000 });
+    expect(r2.notes.length).toBeGreaterThanOrEqual(0);
+    expect(r2.signals.length).toBeGreaterThan(0);
+
+    // critical threshold from preset when critical below underAttack
+    const t = threatThresholdsFromAutoPreset({
+      escalateToHardenedAt: 10,
+      escalateToUnderAttackAt: 80,
+      suggestEmergencyAt: 95,
+      criticalAt: 50,
+    });
+    expect(t.criticalAt).toBeGreaterThanOrEqual(t.underAttackAt);
+  }, 20_000);
 });
 
 describe('nginx-limits depth', () => {

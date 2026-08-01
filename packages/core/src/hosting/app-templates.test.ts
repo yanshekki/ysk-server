@@ -65,6 +65,38 @@ describe('app templates', () => {
     }
   });
 
+  it('force re-scaffold covers exists branches for all templates', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl-force-'));
+    try {
+      const ids = listAppTemplates().map((t) => t.id);
+      for (const id of ids) {
+        const home = join(dir, id);
+        const first = scaffoldAppTemplate({
+          templateId: id,
+          homeDir: home,
+          projectName: `P-${id}`,
+        });
+        expect(first.ok).toBe(true);
+        const again = scaffoldAppTemplate({
+          templateId: id,
+          homeDir: home,
+          projectName: `P-${id}`,
+          force: false,
+        });
+        expect(again.ok).toBe(true);
+        const forced = scaffoldAppTemplate({
+          templateId: id,
+          homeDir: home,
+          projectName: `P2-${id}`,
+          force: true,
+        });
+        expect(forced.ok).toBe(true);
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('scaffolds python go rust process apps', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl3-'));
     try {

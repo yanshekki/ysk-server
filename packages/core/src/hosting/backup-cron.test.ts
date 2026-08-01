@@ -378,3 +378,47 @@ describe('backup-cron depth', () => {
     void legacy;
   });
 });
+
+describe('backup-cron pure helpers branch boost', () => {
+  it('resolve archive/list/filter/skip/wrap edges', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bc-pure-'));
+    try {
+      expect(resolveManagedBackupArchive(dir, '', 'x.tar.gz').ok).toBe(false);
+      expect(resolveManagedBackupArchive(dir, 'p1', 'nope.zip').ok).toBe(false);
+      expect(resolveManagedBackupArchive(dir, 'p1', '../evil.tar.gz').ok).toBe(false);
+      expect(resolveManagedBackupArchive(dir, 'p1', 'ok.tar.gz').ok).toBe(true);
+
+      expect(listBackups(dir)).toEqual([]);
+      mkdirSync(join(dir, 'backups', 'p1'), { recursive: true });
+      writeFileSync(join(dir, 'backups', 'p1', 'a.tar.gz'), 'x');
+      writeFileSync(join(dir, 'backups', 'p1', 'skip.txt'), 'x');
+      writeFileSync(join(dir, 'backups', 'file-not-dir'), 'x');
+      expect(listBackups(dir).some((b) => b.name === 'a.tar.gz')).toBe(true);
+
+      expect(isBackupSkipNote('skip reason')).toBe(true);
+      expect(isBackupSkipNote('Skipped foo')).toBe(true);
+      expect(isBackupSkipNote('other')).toBe(false);
+      expect(isBackupSkippedResult({ notes: ['skip me'], ok: false })).toBe(true);
+      expect(isBackupSkippedResult({ notes: ['ok'], ok: true })).toBe(false);
+      expect(isBackupSkippedResult({ notes: [], ok: true, skipped: true })).toBe(true);
+
+      const items = [
+        { projectId: 'p1', name: 'a.tar.gz', path: '/x/a.tar.gz', bytes: 1, mtime: '2' },
+        { projectId: 'p2', name: 'b.tar.gz', path: '/x/b.tar.gz', bytes: 1, mtime: '1' },
+      ];
+      expect(filterBackupList(items, { projectId: 'p1' })).toHaveLength(1);
+      expect(filterBackupList(items, { q: 'b.tar' })).toHaveLength(1);
+      expect(filterBackupList(items, { projectId: 'p1', q: 'missing' })).toHaveLength(0);
+
+      expect(resolveBackupDownloadPath(dir, 'p1', 'missing.tar.gz').ok).toBe(false);
+      expect(resolveBackupDownloadPath(dir, 'p1', 'a.tar.gz').ok).toBe(true);
+
+      expect(wrapCronCommandAsLinuxUser('echo hi', '')).toBe('echo hi');
+      expect(wrapCronCommandAsLinuxUser('', 'u')).toBe('');
+      expect(wrapCronCommandAsLinuxUser("echo 'x'", 'bob')).toContain('runuser');
+      expect(wrapCronCommandAsLinuxUser('runuser -u bob -- true', 'bob')).toContain('runuser -u bob');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

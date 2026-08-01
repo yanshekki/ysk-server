@@ -203,4 +203,110 @@ describe('EmailService aliases flags and honesty', () => {
     closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('mailbox/alias branch edges: short password, list all, catchall clear, no dataDir', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-mail-br-'));
+    try {
+      const db = openDatabase(join(dir, 'ysk.json'));
+      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+      // no dataDir → maildir notes path
+      const bare = new EmailService(db, host, undefined);
+      const created = bare.create({
+        domain: 'br.example.com',
+        serverIp: '203.0.113.50',
+        serverIpv6: '2001:db8::50',
+        mailHostname: 'mx.br.example.com',
+        actor: 'admin',
+      });
+      const mb = await bare.createMailbox(created.domain.id, {
+        localPart: 'user1',
+        password: 'short',
+        actor: 'admin',
+      });
+      expect(mb.notes.some((n) => n.length > 0)).toBe(true);
+      expect(bare.listMailboxes().length).toBe(1);
+      expect(bare.listMailboxes(created.domain.id).length).toBe(1);
+
+      // with dataDir for alias maps
+      const svc = new EmailService(db, host, undefined, dir);
+      expect(() =>
+        svc.createAlias(created.domain.id, {
+          type: 'alias',
+          localPart: 'sales',
+          destinations: [],
+          actor: 'a',
+        }),
+      ).toThrow();
+      expect(() =>
+        svc.createAlias(created.domain.id, {
+          type: 'alias',
+          localPart: 'BAD PART',
+          destinations: ['x@y.com'],
+          actor: 'a',
+        }),
+      ).toThrow();
+      const alias = svc.createAlias(created.domain.id, {
+        type: 'alias',
+        localPart: 'sales',
+        destinations: ['  dest@example.com  '],
+        actor: 'a',
+      });
+      expect(alias.ok).toBe(true);
+      expect(() =>
+        svc.createAlias(created.domain.id, {
+          type: 'alias',
+          localPart: 'sales',
+          destinations: ['dest@example.com'],
+          actor: 'a',
+        }),
+      ).toThrow();
+      expect(svc.listAliases(created.domain.id).length).toBe(1);
+      expect(() => svc.deleteAlias(created.domain.id, 'nope', 'a')).toThrow();
+      expect(svc.deleteAlias(created.domain.id, String(alias.alias.id), 'a').ok).toBe(true);
+
+      // catchall create + update existing + clear
+      await svc.updateDomainMailFlags(
+        created.domain.id,
+        { catchallAddress: 'catch@br.example.com', applySystem: false },
+        'a',
+      );
+      await svc.updateDomainMailFlags(
+        created.domain.id,
+        { catchallAddress: 'other@br.example.com', applySystem: false },
+        'a',
+      );
+      await svc.updateDomainMailFlags(
+        created.domain.id,
+        {
+          catchallAddress: null,
+          autoreplyEnabled: false,
+          autoreplySubject: 's',
+          autoreplyBody: 'b',
+          rateLimitPerHour: null,
+          antispam: false,
+          suspended: false,
+          applySystem: false,
+        },
+        'a',
+      );
+      // not found domain flags
+      await expect(
+        svc.updateDomainMailFlags('missing', { suspended: true }, 'a'),
+      ).rejects.toThrow();
+
+      // short password with provisionSystem blocked path
+      const mb2 = await svc.createMailbox(created.domain.id, {
+        localPart: 'user2',
+        password: 'password123',
+        actor: 'admin',
+        provisionSystem: true,
+      });
+      expect(mb2.ok).toBe(true);
+      expect(mb2.mailbox.status).toMatch(/managed/);
+
+      closeDatabase(db);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

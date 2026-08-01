@@ -17,16 +17,18 @@ import {
   restoreOnHost,
   restoreOsUser,
   restoreSqlDatabase,
+  restoreRedisInstance,
 } from './restore.js';
 
-function empty(): RunResult {
-  return { stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false };
+function empty(extra?: Partial<RunResult>): RunResult {
+  return { stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false, ...extra };
 }
 
 function mockHost(opts: {
   execute?: boolean;
   root?: boolean;
   failUseradd?: boolean;
+  onRun?: (argv: string[]) => Partial<RunResult> | undefined;
 }): HostExecutor {
   return {
     pathExists: () => true,
@@ -40,6 +42,8 @@ function mockHost(opts: {
     sysInfo: async () => ({}),
     serviceStatus: async () => empty(),
     runCommand: async (argv) => {
+      const override = opts.onRun?.(argv);
+      if (override) return { ...empty(), argv, ...override };
       const script = typeof argv[2] === 'string' ? argv[2] : argv.join(' ');
       if (opts.failUseradd && script.includes('useradd')) {
         return { ...empty(), exitCode: 1, stderr: 'useradd fail', argv };
@@ -224,6 +228,115 @@ describe('restoreOsUser / restoreSql', () => {
       db: { engine: 'mysql', name: 'app_db', dumpRelPath: rel },
     });
     expect(r.ok).toBe(true);
+  });
+
+  it('sql/redis missing path and postgres/mariadb engines', async () => {
+    expect(
+      (
+        await restoreSqlDatabase({
+          host: mockHost({ execute: true }),
+          dataDir: dir,
+          db: { engine: 'mysql', name: 'x' },
+        })
+      ).ok,
+    ).toBe(false);
+    expect(
+      (
+        await restoreSqlDatabase({
+          host: mockHost({ execute: true }),
+          dataDir: dir,
+          db: { engine: 'mysql', name: 'x', dumpRelPath: 'missing.sql' },
+        })
+      ).ok,
+    ).toBe(false);
+
+    const pgRel = 'db-dumps/pg.sql';
+    mkdirSync(join(dir, 'db-dumps'), { recursive: true });
+    writeFileSync(join(dir, pgRel), 'SELECT 1;\n');
+    const pg = await restoreSqlDatabase({
+      host: mockHost({ execute: true }),
+      dataDir: dir,
+      db: { engine: 'postgres', name: 'app_pg', dumpRelPath: pgRel, username: 'u' },
+      resolvePassword: () => 'pw',
+    });
+    expect(pg.kind).toBe('sql');
+
+    const maRel = 'db-dumps/maria.sql';
+    writeFileSync(join(dir, maRel), 'SELECT 1;\n');
+    const ma = await restoreSqlDatabase({
+      host: mockHost({ execute: true }),
+      dataDir: dir,
+      db: { engine: 'mariadb', name: 'app_maria', dumpRelPath: maRel },
+    });
+    expect(ma.kind).toBe('sql');
+
+    expect(
+      (
+        await restoreRedisInstance({
+          host: mockHost({ execute: true }),
+          dataDir: dir,
+          redis: { id: 'r1' },
+        })
+      ).ok,
+    ).toBe(false);
+    expect(
+      (
+        await restoreRedisInstance({
+          host: mockHost({ execute: true }),
+          dataDir: dir,
+          redis: { id: 'r1', rdbRelPath: 'no.rdb' },
+        })
+      ).ok,
+    ).toBe(false);
+    const rdbRel = 'redis/dump.rdb';
+    mkdirSync(join(dir, 'redis'), { recursive: true });
+    writeFileSync(join(dir, rdbRel), 'REDIS');
+    expect(
+      (
+        await restoreRedisInstance({
+          host: mockHost({ execute: false }),
+          dataDir: dir,
+          redis: { id: 'r1', rdbRelPath: rdbRel },
+        })
+      ).blocked,
+    ).toBe(true);
+    const redisOk = await restoreRedisInstance({
+      host: mockHost({
+        execute: true,
+        root: true,
+        onRun: (argv) => {
+          const j = argv.join(' ');
+          if (j.includes('CONFIG GET')) {
+            return {
+              stdout: 'dir\n/tmp/redis-data\ndbfilename\ncustom.rdb\n',
+              exitCode: 0,
+            };
+          }
+          if (j.includes('YSK_RDB_RESTORED')) {
+            return { stdout: 'YSK_RDB_RESTORED\n', exitCode: 0 };
+          }
+          if (j.includes('ping') || j.includes('start')) {
+            return { stdout: 'PONG\n', exitCode: 0 };
+          }
+          return { stdout: 'ok\n', exitCode: 0 };
+        },
+      }),
+      dataDir: dir,
+      redis: { id: 'r2', rdbRelPath: rdbRel },
+      redisHost: '127.0.0.1',
+      redisPort: 6380,
+    });
+    expect(redisOk.ok).toBe(true);
+
+    const redisFail = await restoreRedisInstance({
+      host: mockHost({
+        execute: true,
+        onRun: () => ({ stdout: 'fail', exitCode: 1 }),
+      }),
+      dataDir: dir,
+      redis: { id: 'r3', rdbRelPath: rdbRel },
+    });
+    expect(redisFail.ok).toBe(false);
   });
 });
 

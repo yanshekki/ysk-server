@@ -53,6 +53,77 @@ function nmActive(): Partial<RunResult> {
   };
 }
 
+describe('network validation branches', () => {
+  it('rejects invalid iface, lo, and bad cidr/dst across mutators', async () => {
+    const host = mockHost({ executeEnabled: true, isRoot: true });
+    expect((await networkAddAddr({ host, ifname: 'bad name', cidr: '10.0.0.1/24' })).ok).toBe(
+      false,
+    );
+    expect((await networkAddAddr({ host, ifname: 'lo', cidr: '10.0.0.1/24' })).ok).toBe(false);
+    expect((await networkAddAddr({ host, ifname: 'eth0', cidr: 'not-cidr' })).ok).toBe(false);
+    expect((await networkDelAddr({ host, ifname: 'bad!', cidr: '10.0.0.1/24' })).ok).toBe(false);
+    expect((await networkDelAddr({ host, ifname: 'eth0', cidr: 'x' })).ok).toBe(false);
+    expect((await networkSetLink({ host, ifname: 'bad name', action: 'up' })).ok).toBe(false);
+    expect((await networkSetLink({ host, ifname: 'lo', action: 'down', confirmName: 'lo' })).ok).toBe(
+      false,
+    );
+    expect((await networkSetLink({ host, ifname: 'eth0', action: 'down' })).ok).toBe(false);
+    expect((await networkSetLink({ host, ifname: 'eth0', mtu: 10 })).ok).toBe(false);
+    expect((await networkSetLink({ host, ifname: 'eth0' })).ok).toBe(false);
+    expect((await networkAddRoute({ host, dst: '10.0.0.0/8', gateway: 'not-ip' })).ok).toBe(false);
+    expect((await networkAddRoute({ host, dst: '10.0.0.0/8', dev: 'bad name' })).ok).toBe(false);
+    expect(
+      (await networkDelRoute({ host, dst: '0.0.0.0/0', confirmDefault: false })).ok,
+    ).toBe(false);
+    expect((await networkDelRoute({ host, dst: 'default', confirmDefault: false })).ok).toBe(false);
+    expect((await networkSetDns({ host, nameservers: ['not-ip'] })).ok).toBe(false);
+    expect((await networkSetDns({ host, mode: 'static', nameservers: [] })).ok).toBe(false);
+    // name sanitized to empty → invalid
+    expect((await networkTestDns({ host, name: '!!!' })).ok).toBe(false);
+    expect((await networkTestDns({ host, name: 'a'.repeat(300) })).ok).toBe(false);
+  });
+
+  it('setLink down with confirm + mtu fail/success paths', async () => {
+    const host = mockHost({
+      executeEnabled: true,
+      isRoot: true,
+      run: async (argv) => {
+        if (argv.includes('mtu') && argv.includes('99999')) return { exitCode: 1, stderr: 'bad mtu' };
+        if (argv.includes('down')) return { exitCode: 1, stderr: 'down fail' };
+        if (argv.includes('up')) return { exitCode: 1, stderr: 'up fail' };
+        return {};
+      },
+    });
+    expect(
+      (
+        await networkSetLink({
+          host,
+          ifname: 'eth0',
+          action: 'down',
+          confirmName: 'eth0',
+          isDefaultEgress: true,
+        })
+      ).ok,
+    ).toBe(false);
+    expect((await networkSetLink({ host, ifname: 'eth0', action: 'up' })).ok).toBe(false);
+    const mtuOk = await networkSetLink({
+      host: mockHost({ executeEnabled: true, isRoot: true }),
+      ifname: 'eth0',
+      mtu: 1500,
+    });
+    expect(mtuOk.ok).toBe(true);
+    expect(
+      (
+        await networkSetLink({
+          host,
+          ifname: 'eth0',
+          mtu: 1500,
+        })
+      ).ok,
+    ).toBe(true); // host mock returns {} for non-mtu-99999
+  });
+});
+
 describe('network honesty gate', () => {
   it('all mutators block without execute or root', async () => {
     const noExec = mockHost({ executeEnabled: false, isRoot: true });

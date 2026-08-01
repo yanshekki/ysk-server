@@ -204,4 +204,79 @@ describe('inventory depth branches', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('buildHostManifest covers empty-name dbs, mailbox variants, getent throw, missing secrets', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-inv-d3-'));
+    try {
+      // use a separate store file so ysk.json under dataDir can be absent
+      const store = new JsonStore(join(dir, 'control.json'));
+      store.snapshot.projects = [
+        {
+          id: 'empty-user',
+          name: '',
+          runtime: 'static',
+          // default home path when missing
+          linux_user: '',
+          env: 'production',
+          status: 'active',
+          os_provisioned: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ] as never;
+      store.snapshot.mysql_databases = [{ id: 'mx', database: 'from_db_field' }] as never;
+      store.snapshot.postgres_databases = [{ id: 'px', db_name: 'from_db_name' }] as never;
+      store.snapshot.redis_instances = [{ name: 'only-name' }, {}] as never;
+      store.snapshot.mailboxes = [
+        {
+          domain_name: 'alt.example.com',
+          local_part: 'a',
+        },
+        {
+          domain: 'alt.example.com',
+          user: 'b',
+        },
+        {
+          // empty domain/local — no maildir warning path
+          domain: '',
+          local: '',
+        },
+      ] as never;
+      // create one real maildir
+      const md = join(dir, 'email', 'alt.example.com', 'mailboxes', 'a', 'Maildir');
+      mkdirSync(md, { recursive: true });
+      store.persist();
+
+      const throwingHost: HostExecutor = {
+        ...mockHost({ bins: ['rsync'] }),
+        runCommand: async (argv) => {
+          if (argv[0] === 'getent') throw new Error('getent crash');
+          if (argv[0] === 'bash' && String(argv[2] ?? '').includes('command -v')) {
+            // only rsync present → ssh warning + throw path for some
+            const cmd = String(argv[2] ?? '');
+            if (cmd.includes('rsync')) return empty({ stdout: 'ok\n' });
+            if (cmd.includes('ssh')) throw new Error('ssh probe boom');
+            return empty({ stdout: '' });
+          }
+          return empty({ exitCode: 1 });
+        },
+      };
+
+      const m = await buildHostManifest({
+        db: store,
+        dataDir: dir,
+        host: throwingHost,
+      });
+      expect(m.projects[0]?.linux_user).toContain('ysk');
+      expect(m.databases.some((d) => d.name === 'from_db_field')).toBe(true);
+      expect(m.databases.some((d) => d.name === 'from_db_name')).toBe(true);
+      expect(m.redis.length).toBeGreaterThanOrEqual(1);
+      expect(m.mailboxes.length).toBe(3);
+      expect(m.warnings.length).toBeGreaterThan(0);
+      const sum = summarizeManifest(m);
+      expect(sum.lines.length).toBeGreaterThan(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
