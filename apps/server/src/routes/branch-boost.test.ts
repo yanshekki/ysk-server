@@ -10,6 +10,24 @@ import {
   type TestServer,
 } from '../test/harness.js';
 
+function stubHostInventory(ts: TestServer) {
+  const host = ts.ctx.host;
+  const orig = host.runCommand.bind(host);
+  host.runCommand = async (argv, opts) => {
+    const j = argv.join(' ');
+    if (
+      j.includes('apt list') ||
+      j.includes('apt-get') ||
+      j.includes('apt-cache') ||
+      j.includes('dpkg-query')
+    ) {
+      return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+    }
+    return orig(argv, opts);
+  };
+}
+
+
 describe('branch boost — admin / email / hosting filters & defaults', () => {
   let ts: TestServer;
 
@@ -716,6 +734,7 @@ describe('branch boost — controllers logs/network/metrics + misc routes', () =
 
   it('dns/db/projects/agents/ssl/ai/cron/updates validation & list branches', async () => {
     ts = await startTestServer();
+    stubHostInventory(ts);
 
     // DNS records validate empty
     const dnsVal = await apiJson(ts, 'POST', '/api/v1/dns/validate', {});

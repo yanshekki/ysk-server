@@ -97,7 +97,7 @@ done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 8
 
   const pol = await host.runCommand(['bash', '-c', policyScript], {
     dryRun: false,
-    timeoutMs: 90_000,
+    timeoutMs: 25_000,
   });
 
   let policyRows = 0;

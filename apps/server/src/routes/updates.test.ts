@@ -6,6 +6,31 @@ import {
   type TestServer,
 } from '../test/harness.js';
 
+/** Keep inventory HTTP tests off real apt/dpkg (slow/hang on CI runners). */
+function stubHostInventory(ts: TestServer) {
+  const host = ts.ctx.host;
+  const orig = host.runCommand.bind(host);
+  host.runCommand = async (argv, opts) => {
+    const j = argv.join(' ');
+    if (
+      j.includes('apt list') ||
+      j.includes('apt-get') ||
+      j.includes('apt-cache') ||
+      j.includes('dpkg-query')
+    ) {
+      return {
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      };
+    }
+    return orig(argv, opts);
+  };
+}
+
+
 describe('updates routes (HTTP)', () => {
   let ts: TestServer;
 
@@ -138,6 +163,7 @@ describe('updates routes (HTTP)', () => {
 
   it('inventory live + cached + refresh with osv', async () => {
     ts = await startTestServer();
+    stubHostInventory(ts);
     const origFetch = globalThis.fetch;
     globalThis.fetch = (async (input: any, init?: any) => {
       const url = String(input);
