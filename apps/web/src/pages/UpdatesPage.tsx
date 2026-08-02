@@ -26,7 +26,7 @@ import {
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
-import { bindSet, bindVoid, bindCall1, bindCall2 } from './bind-handlers';
+import { bindAllOrValue, bindCall1, bindCall2, bindCloseIfIdle, bindInput, bindSet, bindValueSet, bindVoid } from './bind-handlers';
 
 const UPD_TABS = ['packages', 'panel', 'schedule', 'policy', 'about'] as const;
 type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';

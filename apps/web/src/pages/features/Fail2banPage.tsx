@@ -30,7 +30,17 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import { bindSet, bindInput } from '../bind-handlers';
+import {
+  bindSet,
+  bindInput,
+  bindToggleInList,
+  bindChipNumber,
+  bindRefreshClear,
+  bindApiRefresh0,
+  bindApiRefresh1,
+  bindApiRefresh2,
+  bindClipboard,
+} from '../bind-handlers';
 
 const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service', 'about'] as const;
 
@@ -141,12 +151,6 @@ export function Fail2banPage() {
   const bannedAll = status?.banned ?? [];
   const banned = useMemo(() => filterBannedRows(bannedAll, banQ), [bannedAll, banQ]);
 
-  function toggleJail(name: string) {
-    setSelected((prev) =>
-      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name],
-    );
-  }
-
   function descFor(id: string): string | undefined {
     return catalog.find((c) => c.id === id)?.desc;
   }
@@ -188,11 +192,7 @@ export function Fail2banPage() {
             variant="secondary"
             size="sm"
             loading={busy}
-            onClick={() => {
-              setError(null);
-              setMsg(null);
-              void refresh();
-            }}
+            onClick={bindRefreshClear(setError, setMsg, refresh)}
           >
             {t('common.refresh')}
           </Button>
@@ -201,13 +201,13 @@ export function Fail2banPage() {
               variant="primary"
               size="sm"
               loading={busy}
-              onClick={() =>
-                void run(async () => {
-                  const r = (await systemApi.fail2banService('enable')) as OpsResultLike;
-                  await refresh();
-                  return r;
-                }, t('fail2ban.startedOk'))
-              }
+              onClick={bindApiRefresh1(
+                run,
+                systemApi.fail2banService,
+                'enable',
+                refresh,
+                t('fail2ban.startedOk'),
+              )}
             >
               {t('fail2ban.startService')}
             </Button>
@@ -315,17 +315,15 @@ export function Fail2banPage() {
                   size="md"
                   loading={busy}
                   disabled={!isValidBanIp(banIp)}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await systemApi.fail2banBan(
-                        banJail,
-                        banIp.trim(),
-                      )) as OpsResultLike;
-                      setBanIp('');
-                      await refresh();
-                      return r;
-                    }, t('fail2ban.banipOk'))
-                  }
+                  onClick={bindApiRefresh2(
+                    run,
+                    systemApi.fail2banBan,
+                    banJail,
+                    banIp.trim(),
+                    refresh,
+                    t('fail2ban.banipOk'),
+                    setBanIp,
+                  )}
                 >
                   banip
                 </Button>
@@ -350,7 +348,7 @@ export function Fail2banPage() {
                     total={bannedAll.length}
                     shown={banned.length}
                     activeFilterCount={banQ.trim() ? 1 : 0}
-                    clear={() => setBanQ('')}
+                    clear={bindSet(setBanQ, '')}
                     searchPlaceholder="IP / jail"
                   />
                 }
@@ -374,7 +372,7 @@ export function Fail2banPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => void navigator.clipboard?.writeText(b.ip)}
+                      onClick={bindClipboard(b.ip)}
                     >
                       {t('common.copy')}
                     </Button>
@@ -382,16 +380,14 @@ export function Fail2banPage() {
                       variant="secondary"
                       size="sm"
                       loading={busy}
-                      onClick={() =>
-                        void run(async () => {
-                          const r = (await systemApi.fail2banUnban(
-                            b.jail,
-                            b.ip,
-                          )) as OpsResultLike;
-                          await refresh();
-                          return r;
-                        }, t('fail2ban.unbanOk'))
-                      }
+                      onClick={bindApiRefresh2(
+                        run,
+                        systemApi.fail2banUnban,
+                        b.jail,
+                        b.ip,
+                        refresh,
+                        t('fail2ban.unbanOk'),
+                      )}
                     >
                       {t('fail2ban.unban')}
                     </Button>
@@ -400,16 +396,14 @@ export function Fail2banPage() {
                       size="sm"
                       loading={busy}
                       title={t('fail2ban.addWhitelistTitle')}
-                      onClick={() =>
-                        void run(async () => {
-                          const r = (await systemApi.fail2banIgnoreIp(
-                            b.ip,
-                            'add',
-                          )) as OpsResultLike;
-                          await refresh();
-                          return r;
-                        }, t('fail2ban.whitelistAdded'))
-                      }
+                      onClick={bindApiRefresh2(
+                        run,
+                        systemApi.fail2banIgnoreIp,
+                        b.ip,
+                        'add',
+                        refresh,
+                        t('fail2ban.whitelistAdded'),
+                      )}
                     >
                       {t('fail2ban.addWhitelistShort')}
                     </Button>
@@ -454,17 +448,15 @@ export function Fail2banPage() {
                   size="md"
                   loading={busy}
                   disabled={!ignoreIp.trim()}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await systemApi.fail2banIgnoreIp(
-                        ignoreIp.trim(),
-                        'add',
-                      )) as OpsResultLike;
-                      setIgnoreIp('');
-                      await refresh();
-                      return r;
-                    }, t('fail2ban.whitelistAdded'))
-                  }
+                  onClick={bindApiRefresh2(
+                    run,
+                    systemApi.fail2banIgnoreIp,
+                    ignoreIp.trim(),
+                    'add',
+                    refresh,
+                    t('fail2ban.whitelistAdded'),
+                    setIgnoreIp,
+                  )}
                 >
                   {t('fail2ban.addWhitelist')}
                 </Button>
@@ -473,19 +465,19 @@ export function Fail2banPage() {
                   size="md"
                   loading={busy}
                   disabled={!selected.length}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await systemApi.fail2banApply({
-                        apply: true,
-                        jails: selected,
-                        bantime: normalizeDurationPreset(bantime, '1h'),
-                        findtime: normalizeDurationPreset(findtime, '10m'),
-                        maxretry: clampMaxretry(maxretry),
-                      })) as OpsResultLike;
-                      await refresh();
-                      return r;
-                    }, t('fail2ban.applyIgnoreipOk'))
-                  }
+                  onClick={bindApiRefresh1(
+                    run,
+                    systemApi.fail2banApply,
+                    {
+                      apply: true,
+                      jails: selected,
+                      bantime: normalizeDurationPreset(bantime, '1h'),
+                      findtime: normalizeDurationPreset(findtime, '10m'),
+                      maxretry: clampMaxretry(maxretry),
+                    },
+                    refresh,
+                    t('fail2ban.applyIgnoreipOk'),
+                  )}
                 >
                   {t('fail2ban.applyPolicyIgnoreip')}
                 </Button>
@@ -511,7 +503,7 @@ export function Fail2banPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => void navigator.clipboard?.writeText(row.ip)}
+                      onClick={bindClipboard(row.ip)}
                     >
                       {t('common.copy')}
                     </Button>
@@ -519,16 +511,14 @@ export function Fail2banPage() {
                       variant="danger"
                       size="sm"
                       loading={busy}
-                      onClick={() =>
-                        void run(async () => {
-                          const r = (await systemApi.fail2banIgnoreIp(
-                            row.ip,
-                            'remove',
-                          )) as OpsResultLike;
-                          await refresh();
-                          return r;
-                        }, t('fail2ban.whitelistRemoved'))
-                      }
+                      onClick={bindApiRefresh2(
+                        run,
+                        systemApi.fail2banIgnoreIp,
+                        row.ip,
+                        'remove',
+                        refresh,
+                        t('fail2ban.whitelistRemoved'),
+                      )}
                     >
                       {t('fail2ban.remove')}
                     </Button>
@@ -668,9 +658,7 @@ export function Fail2banPage() {
                       { value: '15', label: '15' },
                     ]}
                     value={String(maxretry)}
-                    onChange={(v) =>
-                      setMaxretry(Math.max(1, Math.min(50, Number(v) || 5)))
-                    }
+                    onChange={bindChipNumber(setMaxretry, 5, 1, 50)}
                     allowCustom
                     customPlaceholder={t('fail2ban.customMaxretry')}
                   />
@@ -693,7 +681,7 @@ export function Fail2banPage() {
                     label={c.label || c.id}
                     description={c.desc}
                     checked={selected.includes(c.id)}
-                    onChange={() => toggleJail(c.id)}
+                    onChange={bindToggleInList(setSelected, c.id)}
                   />
                 ))}
               </div>
@@ -703,18 +691,19 @@ export function Fail2banPage() {
                   size="md"
                   loading={busy}
                   disabled={!selected.length}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await systemApi.fail2banApply({
-                        apply: false,
-                        jails: selected,
-                        bantime: normalizeDurationPreset(bantime, '1h'),
-                        findtime: normalizeDurationPreset(findtime, '10m'),
-                        maxretry: clampMaxretry(maxretry),
-                      })) as OpsResultLike;
-                      return r;
-                    }, t('fail2ban.writtenOnlyMsg'))
-                  }
+                  onClick={bindApiRefresh1(
+                    run,
+                    systemApi.fail2banApply,
+                    {
+                      apply: false,
+                      jails: selected,
+                      bantime: normalizeDurationPreset(bantime, '1h'),
+                      findtime: normalizeDurationPreset(findtime, '10m'),
+                      maxretry: clampMaxretry(maxretry),
+                    },
+                    null,
+                    t('fail2ban.writtenOnlyMsg'),
+                  )}
                 >
                   {t('fail2ban.writeOnly')}
                 </Button>
@@ -723,19 +712,19 @@ export function Fail2banPage() {
                   size="md"
                   loading={busy}
                   disabled={!selected.length}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await systemApi.fail2banApply({
-                        apply: true,
-                        jails: selected,
-                        bantime: normalizeDurationPreset(bantime, '1h'),
-                        findtime: normalizeDurationPreset(findtime, '10m'),
-                        maxretry: clampMaxretry(maxretry),
-                      })) as OpsResultLike;
-                      await refresh();
-                      return r;
-                    }, t('fail2ban.appliedOk'))
-                  }
+                  onClick={bindApiRefresh1(
+                    run,
+                    systemApi.fail2banApply,
+                    {
+                      apply: true,
+                      jails: selected,
+                      bantime: normalizeDurationPreset(bantime, '1h'),
+                      findtime: normalizeDurationPreset(findtime, '10m'),
+                      maxretry: clampMaxretry(maxretry),
+                    },
+                    refresh,
+                    t('fail2ban.appliedOk'),
+                  )}
                 >
                   {t('fail2ban.applyToSystem')}
                 </Button>
@@ -765,15 +754,13 @@ export function Fail2banPage() {
                     variant={action === 'stop' ? 'danger' : 'secondary'}
                     size="sm"
                     loading={busy}
-                    onClick={() =>
-                      void run(async () => {
-                        const r = (await systemApi.fail2banService(
-                          action,
-                        )) as OpsResultLike;
-                        await refresh();
-                        return r;
-                      }, `systemctl ${action}`)
-                    }
+                    onClick={bindApiRefresh1(
+                      run,
+                      systemApi.fail2banService,
+                      action,
+                      refresh,
+                      `systemctl ${action}`,
+                    )}
                   >
                     {label}
                   </Button>

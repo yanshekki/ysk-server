@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Floor-90 surgical coverage: remaining handlers on largest miss pages.
  * Prefer real userEvent paths; honesty responses stay written/blocked.
@@ -450,6 +451,7 @@ describe('coverage floor 90', () => {
   it(
     'EmailDomainPage: deliverability pack + advanced suspend + bootstrap',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock(emailDomainRoutes());
       renderAt('/email/dom-1', <EmailDomainPage />, '/email/:id');
@@ -494,9 +496,11 @@ describe('coverage floor 90', () => {
       const missing = renderAt('/email/missing', <EmailDomainPage />, '/email/:id');
       await waitFor(() => expect(screen.getAllByRole('heading', { level: 1 }).length).toBeGreaterThan(0));
       await clickBtn(user, /back/i, 1);
+      probe.sample();
       missing.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      missing.unmount();
+      probe.assertRendered();
     },
     45_000,
   );
@@ -504,6 +508,7 @@ describe('coverage floor 90', () => {
   it(
     'MetricsPage: select TERM/KILL confirm + detail renice + filters + follow',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock(metricsRoutes());
       renderAt('/metrics?tab=live', <MetricsPage />);
@@ -608,6 +613,7 @@ describe('coverage floor 90', () => {
   it(
     'SecurityPage: TOTP begin/confirm/recovery + sessions + devices',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       let totpEnabled = false;
       installFetchMock([
@@ -765,6 +771,7 @@ describe('coverage floor 90', () => {
   it(
     'DnsPage: DNSSEC + cluster peer ops with rich results + validate fail',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -943,6 +950,7 @@ describe('coverage floor 90', () => {
   it(
     'UsersPage: filter chips + edit package + admin create confirm',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -1093,6 +1101,7 @@ describe('coverage floor 90', () => {
   it(
     'AgentsPage: all command presets + history result modal',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -1220,6 +1229,7 @@ describe('coverage floor 90', () => {
   it(
     'FilesPage remaining: upload path + edit save + bulk',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       const entries = [
@@ -1314,7 +1324,8 @@ describe('coverage floor 90', () => {
       }
       await clickBtn(user, /edit|open|view|save/i, 4);
 
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     40_000,
   );
@@ -1322,6 +1333,7 @@ describe('coverage floor 90', () => {
   it(
     'BackupsPage + NginxPage + ProjectDetail + Cdn + Network',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -1564,7 +1576,7 @@ describe('coverage floor 90', () => {
       }
       await clickBtn(user, /run|backup|restore|download|save|settings|refresh|delete/i, 12);
       await clickBtn(user, /confirm|yes|ok/i, 3);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/nginx', <NginxPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1583,7 +1595,7 @@ describe('coverage floor 90', () => {
       }
       await clickBtn(user, /save|create|apply|delete|edit/i, 6);
       await clickBtn(user, /confirm|yes/i, 2);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/projects/p1', <ProjectDetailPage />, '/projects/:id');
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1596,7 +1608,7 @@ describe('coverage floor 90', () => {
       }
       await clickBtn(user, /deploy|stop|start|restart|health|publish|suspend|resume|logs|refresh|save/i, 12);
       await clickBtn(user, /confirm|yes/i, 3);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/cdn', <CdnPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1609,7 +1621,7 @@ describe('coverage floor 90', () => {
       }
       await clickBtn(user, /create|add|edit|probe|drain|delete|save|apply/i, 12);
       await clickBtn(user, /confirm|yes/i, 3);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/network', <NetworkPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1621,9 +1633,11 @@ describe('coverage floor 90', () => {
         }
       }
       await clickBtn(user, /refresh|apply|save|edit/i, 6);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     90_000,
   );
@@ -1631,6 +1645,7 @@ describe('coverage floor 90', () => {
   it(
     'ProtectionPage geo/bans + Redis deep buttons',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1762,7 +1777,7 @@ describe('coverage floor 90', () => {
       await fillId('geo-ip', '8.8.8.8', user);
       await clickBtn(user, /lookup|query|check/i, 2);
       await clickBtn(user, /confirm|yes/i, 3);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/redis', <RedisPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1774,9 +1789,11 @@ describe('coverage floor 90', () => {
         }
       }
       await clickBtn(user, /create|start|stop|save|flush|delete|refresh|info/i, 10);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     60_000,
   );

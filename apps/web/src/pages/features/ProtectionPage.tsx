@@ -45,6 +45,22 @@ import {
   bindLoadGeo,
   bindBanAndClear,
   bindCloseIfIdle,
+  bindDefenseProbe,
+  bindDefensePost,
+  bindDefenseWhitelist,
+  bindDefenseUnban,
+  bindDefenseAutoBanTick,
+  bindSaveTopChecked,
+  bindSaveChecked,
+  bindSaveString,
+  bindSaveNumber,
+  bindAppendUniqueStr,
+  bindSaveCfZones,
+  bindDefenseWhitelistAction,
+  bindDefensePostOnly,
+  bindDefenseGeoApply,
+  bindSelect,
+  bindFormSubmit,
 } from '../bind-handlers';
 
 import {
@@ -870,20 +886,13 @@ export function ProtectionPage() {
             variant="secondary"
             size="sm"
             loading={busy}
-            onClick={() =>
-              void run(async () => {
-                const s = await api.requestRaw<DefenseStatus>('/api/v1/defense/probe', {
-                  method: 'POST',
-                  body: '{}',
-                });
-                setStatus(s);
-                await refresh();
-                return {
-                  ok: true,
-                  notes: [t('protection.threatPill', { label: levelMeta(t, s.threatLevel).label, score: s.score })],
-                };
-              }, t('protection.reprobed'))
-            }
+            onClick={bindDefenseProbe(
+              run,
+              api.requestRaw,
+              setStatus,
+              refresh,
+              t('protection.reprobed'),
+            )}
           >
             {t('common.reprobe')}
           </Button>
@@ -1143,7 +1152,7 @@ export function ProtectionPage() {
                     type="checkbox"
                     checked={Boolean(automation?.enabled)}
                     disabled={busy}
-                    onChange={(e) => void saveAutomation({ enabled: e.target.checked })}
+                    onChange={bindSaveTopChecked(saveAutomation, 'enabled')}
                   />
                   <span>{automation?.enabled ? t('protection.open') : t('common.close')}</span>
                 </label>
@@ -1151,17 +1160,12 @@ export function ProtectionPage() {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await api.requestRaw('/api/v1/defense/auto-ban/tick', {
-                        method: 'POST',
-                        body: '{}',
-                      })) as OpsResultLike;
-                      if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
-                      await refresh();
-                      return r;
-                    }, t('protection.ranAutomationTick'))
-                  }
+                  onClick={bindDefenseAutoBanTick(
+                    run,
+                    api.requestRaw,
+                    refresh,
+                    t('protection.ranAutomationTick'),
+                  )}
                 >
                   {t('protection.runOneTick')}
                 </Button>
@@ -1182,11 +1186,7 @@ export function ProtectionPage() {
                     type="checkbox"
                     checked={Boolean(automation?.autoPreset.enabled)}
                     disabled={busy || !automation?.enabled}
-                    onChange={(e) =>
-                      void saveAutomation({
-                        autoPreset: { enabled: e.target.checked },
-                      })
-                    }
+                    onChange={bindSaveChecked(saveAutomation, 'autoPreset', 'enabled')}
                   />
                   <span>{automation?.autoPreset.enabled ? t('protection.on') : t('protection.off')}</span>
                 </label>
@@ -1206,18 +1206,13 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoPreset.escalateToHardenedAt ?? 20)}
                     disabled={busy}
-                    onChange={(v) => {
-                      const n = Number(v) || 20;
-                      setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoPreset: { ...a.autoPreset, escalateToHardenedAt: n },
-                            }
-                          : a,
-                      );
-                      void saveAutomation({ autoPreset: { escalateToHardenedAt: n } });
-                    }}
+                    onChange={bindSaveNumber(
+                      saveAutomation,
+                      setAutomation,
+                      'autoPreset',
+                      'escalateToHardenedAt',
+                      20,
+                    )}
                   />
                 </Field>
                 <Field label={t('protection.escalateAttack')} htmlFor="ap-u" flush>
@@ -1231,23 +1226,13 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoPreset.escalateToUnderAttackAt ?? 45)}
                     disabled={busy}
-                    onChange={(v) => {
-                      const n = Number(v) || 45;
-                      setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoPreset: {
-                                ...a.autoPreset,
-                                escalateToUnderAttackAt: n,
-                              },
-                            }
-                          : a,
-                      );
-                      void saveAutomation({
-                        autoPreset: { escalateToUnderAttackAt: n },
-                      });
-                    }}
+                    onChange={bindSaveNumber(
+                      saveAutomation,
+                      setAutomation,
+                      'autoPreset',
+                      'escalateToUnderAttackAt',
+                      45,
+                    )}
                   />
                 </Field>
                 <Field label={t('protection.deescalateDaily')} htmlFor="ap-d" flush>
@@ -1261,23 +1246,13 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoPreset.deescalateToDailyBelow ?? 10)}
                     disabled={busy}
-                    onChange={(v) => {
-                      const n = Number(v) || 0;
-                      setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoPreset: {
-                                ...a.autoPreset,
-                                deescalateToDailyBelow: n,
-                              },
-                            }
-                          : a,
-                      );
-                      void saveAutomation({
-                        autoPreset: { deescalateToDailyBelow: n },
-                      });
-                    }}
+                    onChange={bindSaveNumber(
+                      saveAutomation,
+                      setAutomation,
+                      'autoPreset',
+                      'deescalateToDailyBelow',
+                      0,
+                    )}
                   />
                 </Field>
                 <Field label={t('protection.holdAfterEscalate')} htmlFor="ap-hold" flush>
@@ -1291,18 +1266,13 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoPreset.holdMinutes ?? 15)}
                     disabled={busy}
-                    onChange={(v) => {
-                      const n = Number(v) || 15;
-                      setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoPreset: { ...a.autoPreset, holdMinutes: n },
-                            }
-                          : a,
-                      );
-                      void saveAutomation({ autoPreset: { holdMinutes: n } });
-                    }}
+                    onChange={bindSaveNumber(
+                      saveAutomation,
+                      setAutomation,
+                      'autoPreset',
+                      'holdMinutes',
+                      15,
+                    )}
                   />
                 </Field>
               </FormLayout>
@@ -1311,11 +1281,7 @@ export function ProtectionPage() {
                   type="checkbox"
                   checked={automation?.autoPreset.deescalateEnabled !== false}
                   disabled={busy || !automation?.enabled}
-                  onChange={(e) =>
-                    void saveAutomation({
-                      autoPreset: { deescalateEnabled: e.target.checked },
-                    })
-                  }
+                  onChange={bindSaveChecked(saveAutomation, 'autoPreset', 'deescalateEnabled')}
                 />
                 <span>{t('protection.allowDeescalate')}</span>
               </label>
@@ -1329,11 +1295,7 @@ export function ProtectionPage() {
                     type="checkbox"
                     checked={Boolean(automation?.autoBan.enabled)}
                     disabled={busy || !automation?.enabled}
-                    onChange={(e) =>
-                      void saveAutomation({
-                        autoBan: { enabled: e.target.checked },
-                      })
-                    }
+                    onChange={bindSaveChecked(saveAutomation, 'autoBan', 'enabled')}
                   />
                   <span>{automation?.autoBan.enabled ? t('protection.on') : t('protection.off')}</span>
                 </label>
@@ -1345,14 +1307,7 @@ export function ProtectionPage() {
                     aria-label={t('protection.autoBanMode')}
                     value={(automation?.autoBan.mode ?? 'soft') as string}
                     disabled={busy}
-                    onChange={(mode) => {
-                      void saveAutomation({
-                        autoBan: {
-                          mode: mode as DefenseAutomation['autoBan']['mode'],
-                          enabled: true,
-                        },
-                      });
-                    }}
+                    onChange={bindSaveString(saveAutomation, 'autoBan', 'mode', { enabled: true })}
                     options={[
                       { value: 'soft', label: t('protection.soft') },
                       { value: 'normal', label: t('protection.normal') },
@@ -1367,13 +1322,7 @@ export function ProtectionPage() {
                     aria-label={t('protection.banMethod')}
                     value={(automation?.autoBan.method ?? 'fail2ban') as string}
                     disabled={busy}
-                    onChange={(method) => {
-                      void saveAutomation({
-                        autoBan: {
-                          method: method as 'fail2ban' | 'ufw' | 'both',
-                        },
-                      });
-                    }}
+                    onChange={bindSaveString(saveAutomation, 'autoBan', 'method')}
                     options={[
                       { value: 'fail2ban', label: 'fail2ban' },
                       { value: 'ufw', label: 'UFW' },
@@ -1391,13 +1340,7 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoBan.minScore ?? 55)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(v) => {
-                      const n = Number(v) || 55;
-                      setAutomation((a) =>
-                        a ? { ...a, autoBan: { ...a.autoBan, minScore: n } } : a,
-                      );
-                      void saveAutomation({ autoBan: { minScore: n } });
-                    }}
+                    onChange={bindSaveNumber(saveAutomation, setAutomation, 'autoBan', 'minScore', 55)}
                   />
                 </Field>
                 <Field label={t('protection.hitsGte')} htmlFor="ab-hi" flush>
@@ -1410,13 +1353,7 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoBan.minHits ?? 100)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(v) => {
-                      const n = Number(v) || 100;
-                      setAutomation((a) =>
-                        a ? { ...a, autoBan: { ...a.autoBan, minHits: n } } : a,
-                      );
-                      void saveAutomation({ autoBan: { minHits: n } });
-                    }}
+                    onChange={bindSaveNumber(saveAutomation, setAutomation, 'autoBan', 'minHits', 100)}
                   />
                 </Field>
                 <Field label={t('protection.hits429Gte')} htmlFor="ab-429" flush>
@@ -1429,13 +1366,7 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoBan.min429 ?? 50)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(v) => {
-                      const n = Number(v) || 50;
-                      setAutomation((a) =>
-                        a ? { ...a, autoBan: { ...a.autoBan, min429: n } } : a,
-                      );
-                      void saveAutomation({ autoBan: { min429: n } });
-                    }}
+                    onChange={bindSaveNumber(saveAutomation, setAutomation, 'autoBan', 'min429', 50)}
                   />
                 </Field>
                 <Field label={t('protection.scanHitsGte')} htmlFor="ab-scan" flush>
@@ -1448,13 +1379,7 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoBan.minScan ?? 20)}
                     disabled={busy || automation?.autoBan.mode !== 'custom'}
-                    onChange={(v) => {
-                      const n = Number(v) || 20;
-                      setAutomation((a) =>
-                        a ? { ...a, autoBan: { ...a.autoBan, minScan: n } } : a,
-                      );
-                      void saveAutomation({ autoBan: { minScan: n } });
-                    }}
+                    onChange={bindSaveNumber(saveAutomation, setAutomation, 'autoBan', 'minScan', 20)}
                   />
                 </Field>
                 <Field label={t('protection.cooldown')} htmlFor="ab-cd" flush>
@@ -1468,15 +1393,13 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoBan.cooldownMinutes ?? 60)}
                     disabled={busy}
-                    onChange={(v) => {
-                      const n = Number(v) || 60;
-                      setAutomation((a) =>
-                        a
-                          ? { ...a, autoBan: { ...a.autoBan, cooldownMinutes: n } }
-                          : a,
-                      );
-                      void saveAutomation({ autoBan: { cooldownMinutes: n } });
-                    }}
+                    onChange={bindSaveNumber(
+                      saveAutomation,
+                      setAutomation,
+                      'autoBan',
+                      'cooldownMinutes',
+                      60,
+                    )}
                   />
                 </Field>
                 <Field label={t('protection.maxPerHour')} htmlFor="ab-max" flush>
@@ -1490,18 +1413,13 @@ export function ProtectionPage() {
                     ]}
                     value={String(automation?.autoBan.maxAutoBansPerHour ?? 40)}
                     disabled={busy}
-                    onChange={(v) => {
-                      const n = Number(v) || 40;
-                      setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoBan: { ...a.autoBan, maxAutoBansPerHour: n },
-                            }
-                          : a,
-                      );
-                      void saveAutomation({ autoBan: { maxAutoBansPerHour: n } });
-                    }}
+                    onChange={bindSaveNumber(
+                      saveAutomation,
+                      setAutomation,
+                      'autoBan',
+                      'maxAutoBansPerHour',
+                      40,
+                    )}
                   />
                 </Field>
                 <Field label={t('protection.scanInterval')} htmlFor="ab-iv" flush hint={t('protection.schedulerDefault')}>
@@ -1515,18 +1433,14 @@ export function ProtectionPage() {
                       { value: '600', label: '10m' },
                     ]}
                     value={String(automation?.autoBan.intervalSeconds ?? 120)}
-                    onChange={(v) => {
-                      const n = clampScanIntervalSeconds(v);
-                      setAutomation((a) =>
-                        a
-                          ? {
-                              ...a,
-                              autoBan: { ...a.autoBan, intervalSeconds: n },
-                            }
-                          : a,
-                      );
-                      void saveAutomation({ autoBan: { intervalSeconds: n } });
-                    }}
+                    onChange={bindSaveNumber(
+                      saveAutomation,
+                      setAutomation,
+                      'autoBan',
+                      'intervalSeconds',
+                      120,
+                      clampScanIntervalSeconds,
+                    )}
                     disabled={busy}
                   />
                 </Field>
@@ -1742,20 +1656,12 @@ export function ProtectionPage() {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() =>
-                    void saveAutomation({
-                      cloudflare: {
-                        enabled: true,
-                        zones: cfZonesText
-                          .split(/[,\s]+/)
-                          .map((s) => s.trim())
-                          .filter(Boolean),
-                        onAutoEscalate: true,
-                        ufwAllowOnlyCf: automation?.cloudflare?.ufwAllowOnlyCf,
-                        ufwKeepTcpPorts: automation?.cloudflare?.ufwKeepTcpPorts ?? [22],
-                      },
-                    })
-                  }
+                  onClick={bindSaveCfZones(
+                    saveAutomation,
+                    cfZonesText,
+                    automation?.cloudflare?.ufwAllowOnlyCf,
+                    automation?.cloudflare?.ufwKeepTcpPorts,
+                  )}
                 >
                   {t('protection.saveZones')}
                 </Button>
@@ -1764,21 +1670,19 @@ export function ProtectionPage() {
                   size="sm"
                   loading={busy}
                   disabled={!cfZonesText.trim()}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await api.requestRaw('/api/v1/defense/cloudflare/under-attack', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                          enable: true,
-                          zones: cfZonesText
-                            .split(/[,\s]+/)
-                            .map((s) => s.trim())
-                            .filter(Boolean),
-                        }),
-                      })) as OpsResultLike;
-                      return r;
-                    }, t('protection.underAttackRequested'))
-                  }
+                  onClick={bindDefensePostOnly(
+                    run,
+                    api.requestRaw,
+                    '/api/v1/defense/cloudflare/under-attack',
+                    {
+                      enable: true,
+                      zones: cfZonesText
+                        .split(/[,\s]+/)
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    },
+                    t('protection.underAttackRequested'),
+                  )}
                 >
                   {t('protection.uaNow')}
                 </Button>
@@ -1786,21 +1690,19 @@ export function ProtectionPage() {
                   variant="ghost"
                   size="sm"
                   loading={busy}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await api.requestRaw('/api/v1/defense/cloudflare/under-attack', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                          enable: false,
-                          zones: cfZonesText
-                            .split(/[,\s]+/)
-                            .map((s) => s.trim())
-                            .filter(Boolean),
-                        }),
-                      })) as OpsResultLike;
-                      return r;
-                    }, t('protection.underAttackCleared'))
-                  }
+                  onClick={bindDefensePostOnly(
+                    run,
+                    api.requestRaw,
+                    '/api/v1/defense/cloudflare/under-attack',
+                    {
+                      enable: false,
+                      zones: cfZonesText
+                        .split(/[,\s]+/)
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    },
+                    t('protection.underAttackCleared'),
+                  )}
                 >
                   {t('protection.uaClear')}
                 </Button>
@@ -1949,17 +1851,12 @@ export function ProtectionPage() {
                   variant="ghost"
                   size="sm"
                   loading={busy}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = (await api.requestRaw('/api/v1/defense/auto-ban/tick', {
-                        method: 'POST',
-                        body: '{}',
-                      })) as OpsResultLike;
-                      if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
-                      await refresh();
-                      return r;
-                    }, t('protection.scanned'))
-                  }
+                  onClick={bindDefenseAutoBanTick(
+                    run,
+                    api.requestRaw,
+                    refresh,
+                    t('protection.scanned'),
+                  )}
                 >
                   {t('protection.scanOnce')}
                 </Button>
@@ -2239,16 +2136,16 @@ export function ProtectionPage() {
                       type="button"
                       className="def-wl__x"
                       disabled={busy}
-                      onClick={() =>
-                        void run(async () => {
-                          await api.requestRaw('/api/v1/defense/whitelist', {
-                            method: 'POST',
-                            body: JSON.stringify({ ip: w, action: 'remove' }),
-                          });
-                          await refresh();
-                          return { ok: true, notes: [t('protection.removeItem', { w })] };
-                        }, t('protection.updated'))
-                      }
+                      onClick={bindDefenseWhitelistAction(
+                        run,
+                        api.requestRaw,
+                        w,
+                        'remove',
+                        refresh,
+                        t('protection.updated'),
+                        undefined,
+                        [t('protection.removeItem', { w })],
+                      )}
                       aria-label={t('protection.removeItem', { w })}
                     >
                       ×
@@ -2277,20 +2174,16 @@ export function ProtectionPage() {
                     size="sm"
                     loading={busy}
                     disabled={!wlInput.trim()}
-                    onClick={() =>
-                      void run(async () => {
-                        await api.requestRaw('/api/v1/defense/whitelist', {
-                          method: 'POST',
-                          body: JSON.stringify({
-                            ip: wlInput.trim(),
-                            action: 'add',
-                          }),
-                        });
-                        setWlInput('');
-                        await refresh();
-                        return { ok: true, notes: [t('protection.autoBanWhitelistAdded')] };
-                      }, t('protection.added'))
-                    }
+                    onClick={bindDefenseWhitelistAction(
+                      run,
+                      api.requestRaw,
+                      wlInput.trim(),
+                      'add',
+                      refresh,
+                      t('protection.added'),
+                      setWlInput,
+                      [t('protection.autoBanWhitelistAdded')],
+                    )}
                   >
                     {t('protection.add')}
                   </Button>
@@ -2665,7 +2558,7 @@ export function ProtectionPage() {
                     name="geo-mode"
                     aria-label={t('protection.geoMode')}
                     value={geoMode}
-                    onChange={(v) => setGeoMode(v as 'deny_list' | 'allow_list')}
+                    onChange={bindSelect(setGeoMode as (v: string) => void)}
                     options={[
                       { value: 'deny_list', label: t('protection.denyList') },
                       { value: 'allow_list', label: t('protection.allowListHighRisk') },
@@ -2896,19 +2789,11 @@ export function ProtectionPage() {
                   variant="secondary"
                   size="md"
                   loading={busy}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = await api.requestRaw<{
-                        ok: boolean;
-                        notes: string[];
-                        path?: string;
-                      }>('/api/v1/defense/geoip/apply', {
-                        method: 'POST',
-                        body: '{}',
-                      });
-                      return { ok: r.ok, notes: r.notes ?? [] };
-                    }, t('protection.nginxGeoWritten'))
-                  }
+                  onClick={bindDefenseGeoApply(
+                    run,
+                    api.requestRaw,
+                    t('protection.nginxGeoWritten'),
+                  )}
                 >
                   {t('protection.applyNginxSnippet')}
                 </Button>
@@ -2977,12 +2862,10 @@ export function ProtectionPage() {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => {
-                          const cc = String(lookupResult.lookup!.country);
-                          if (!geoCountries.includes(cc)) {
-                            setGeoCountries((p) => [...p, cc]);
-                          }
-                        }}
+                        onClick={bindAppendUniqueStr(
+                          setGeoCountries,
+                          String(lookupResult.lookup!.country),
+                        )}
                       >
                         {t('protection.plusCountry', { v: String(lookupResult.lookup.country) })}
                       </Button>
@@ -2992,12 +2875,10 @@ export function ProtectionPage() {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => {
-                          const rk = String(lookupResult.lookup!.regionKey);
-                          if (!geoRegions.includes(rk)) {
-                            setGeoRegions((p) => [...p, rk]);
-                          }
-                        }}
+                        onClick={bindAppendUniqueStr(
+                          setGeoRegions,
+                          String(lookupResult.lookup!.regionKey),
+                        )}
                       >
                         {t('protection.plusRegion', { v: String(lookupResult.lookup.regionKey) })}
                       </Button>
@@ -3007,13 +2888,12 @@ export function ProtectionPage() {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => {
-                          const ck = String(lookupResult.lookup!.cityKey);
-                          setGeoCityPolicy(true);
-                          if (!geoCities.includes(ck)) {
-                            setGeoCities((p) => [...p, ck]);
-                          }
-                        }}
+                        onClick={bindAppendUniqueStr(
+                          setGeoCities,
+                          String(lookupResult.lookup!.cityKey),
+                          setGeoCityPolicy,
+                          true,
+                        )}
                       >
                         {t('protection.plusCity', { v: String(lookupResult.lookup.city) })}
                       </Button>

@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Floor-90 wave C: step-accurate wizards + form submits for remaining handlers.
  */
@@ -83,6 +84,7 @@ describe('coverage floor 90c', () => {
   it(
     'OutboundIdentities: full wizard steps + create + reveal ack + row CTAs',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -250,7 +252,8 @@ describe('coverage floor 90c', () => {
       }
       await clickBtn(user, /test|run|confirm|delete|rotate|yes|ok/i, 8);
 
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     50_000,
   );
@@ -258,6 +261,7 @@ describe('coverage floor 90c', () => {
   it(
     'ServiceConsole: lifecycle + dirty apply + number presets + enum radio',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -416,6 +420,7 @@ describe('coverage floor 90c', () => {
   it(
     'Backups restic restore paths + Email suspend flags + Users package PATCH',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -644,7 +649,7 @@ describe('coverage floor 90c', () => {
       setVal('rs-pid', 'proj-aaaaaaaa');
       await clickBtn(user, /preview|dry|safe|overwrite|restore|run|save|download|delete|list|snapshot/i, 16);
       await clickBtn(user, /confirm|yes|ok|overwrite/i, 4);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       // Email domain advanced suspend
       r = renderAt('/email/dom-1', <EmailDomainPage />, '/email/:id');
@@ -661,7 +666,7 @@ describe('coverage floor 90c', () => {
       await clickBtn(user, /suspend|暫停|暂停|resume|恢復|恢复|save|儲存|保存|apply|autoreply/i, 10);
       setVal('boot-pw', 'AdminPass99!');
       await clickBtn(user, /bootstrap|引導|引导/i, 2);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       // Users package edit submit
       r = renderAt('/users', <UsersPage />);
@@ -694,9 +699,11 @@ describe('coverage floor 90c', () => {
       if (rbac) await user.click(rbac);
       await clickBtn(user, /restore|reset|save|還原|还原/i, 6);
       await clickBtn(user, /confirm|yes/i, 3);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     70_000,
   );
@@ -704,6 +711,7 @@ describe('coverage floor 90c', () => {
   it(
     'GenericRuntime tuning + Cdn node/site forms + Network mutate + Project actions',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -934,7 +942,7 @@ describe('coverage floor 90c', () => {
         fireEvent.change(input, { target: { value: '1024' } });
       }
       await clickBtn(user, /install|probe|save|apply|default|switch|refresh/i, 12);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/cdn', <CdnPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -956,7 +964,7 @@ describe('coverage floor 90c', () => {
         }
       }
       await clickBtn(user, /save|create|apply|confirm/i, 6);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/network', <NetworkPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -974,7 +982,7 @@ describe('coverage floor 90c', () => {
         fireEvent.change(input, { target: { value: '10.0.0.10/24' } });
       }
       await clickBtn(user, /save|apply|add|confirm/i, 6);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/projects/p1', <ProjectDetailPage />, '/projects/:id');
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -987,9 +995,11 @@ describe('coverage floor 90c', () => {
       }
       await clickBtn(user, /deploy|stop|start|restart|health|publish|suspend|resume|logs|save|delete|env/i, 16);
       await clickBtn(user, /confirm|yes/i, 3);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     90_000,
   );
@@ -997,6 +1007,7 @@ describe('coverage floor 90c', () => {
   it(
     'Batch: Redis Fail2ban Firewall Protection Sql Logs Dns Files Dashboard deep clicks',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1228,10 +1239,11 @@ describe('coverage floor 90c', () => {
           12,
         );
         await clickBtn(user, /confirm|yes|ok/i, 2);
-        r.unmount();
+        probe.sample(); r.unmount();
       }
 
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     120_000,
   );

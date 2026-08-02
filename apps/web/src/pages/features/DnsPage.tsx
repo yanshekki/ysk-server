@@ -32,7 +32,7 @@ import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
-import { bindSet, bindInput, bindVoid } from '../bind-handlers';
+import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindVoid, bindVoidCall2 } from '../bind-handlers';
 
 const ZONE_TEMPLATE_IDS = ['minimal', 'web', 'mail', 'full', 'cdn'] as const;
 
@@ -377,7 +377,7 @@ export function DnsPage() {
       {zones.msg ? (
         <Alert variant="ok">
           {zones.msg}{' '}
-          <button type="button" className={buttonClassName({ variant: 'ghost', size: 'sm' })} onClick={() => zones.setMsg(null)}>
+          <button type="button" className={buttonClassName({ variant: 'ghost', size: 'sm' })} onClick={bindSet(zones.setMsg, null)}>
             {t('common.close')}
           </button>
         </Alert>
@@ -486,10 +486,7 @@ export function DnsPage() {
                         <button
                           type="button"
                           className={buttonClassName({ variant: 'link', size: 'md' })}
-                          onClick={() => {
-                            setSelectedZone(r);
-                            setTab('records');
-                          }}
+                          onClick={bindSet2(setSelectedZone, r, setTab, 'records')}
                         >
                           <strong>{String(r.zone)}</strong>
                         </button>
@@ -520,7 +517,7 @@ export function DnsPage() {
                         type="button"
                         className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                         disabled={zones.busy}
-                        onClick={() => void zones.apply(r.id)}
+                        onClick={bindCall1(zones.apply, r.id)}
                         title={t('dns.applyZoneTitle')}
                       >
                         {t('dns.applyZone')}
@@ -528,10 +525,7 @@ export function DnsPage() {
                       <button
                         type="button"
                         className={buttonClassName({ variant: 'secondary', size: 'sm' })}
-                        onClick={() => {
-                          setSelectedZone(r);
-                          setTab('records');
-                        }}
+                        onClick={bindSet2(setSelectedZone, r, setTab, 'records')}
                       >
                         {t('dns.tabs.records')}
                       </button>
@@ -589,7 +583,7 @@ export function DnsPage() {
                         type="button"
                         className={buttonClassName({ variant: 'primary', size: 'sm' })}
                         disabled={zones.busy}
-                        onClick={() => void zones.apply(selectedLive.id)}
+                        onClick={bindCall1(zones.apply, selectedLive.id)}
                       >
                         {t('dns.writeZoneFile')}
                       </button>
@@ -865,11 +859,7 @@ export function DnsPage() {
                     size="sm"
                     loading={clusterBusy}
                     disabled={!peers.length}
-                    onClick={() =>
-                      void runClusterOp('/api/v1/dns/cluster/push', {
-                        reload: true,
-                      })
-                    }
+                    onClick={bindVoidCall2(runClusterOp, '/api/v1/dns/cluster/push', { reload: true })}
                   >
                     {t('dns.pushReload')}
                   </Button>
@@ -878,11 +868,7 @@ export function DnsPage() {
                     size="sm"
                     loading={clusterBusy}
                     disabled={!peers.length}
-                    onClick={() =>
-                      void runClusterOp('/api/v1/dns/cluster/push', {
-                        reload: false,
-                      })
-                    }
+                    onClick={bindVoidCall2(runClusterOp, '/api/v1/dns/cluster/push', { reload: false })}
                   >
                     {t('dns.pushOnly')}
                   </Button>
@@ -891,9 +877,7 @@ export function DnsPage() {
                     size="sm"
                     loading={clusterBusy}
                     disabled={!peers.length}
-                    onClick={() =>
-                      void runClusterOp('/api/v1/dns/cluster/reload', {})
-                    }
+                    onClick={bindVoidCall2(runClusterOp, '/api/v1/dns/cluster/reload', {})}
                   >
                     {t('dns.reloadOnly')}
                   </Button>
@@ -902,9 +886,7 @@ export function DnsPage() {
                     size="sm"
                     loading={clusterBusy}
                     disabled={!peers.length}
-                    onClick={() =>
-                      void runClusterOp('/api/v1/dns/cluster/probe', {})
-                    }
+                    onClick={bindVoidCall2(runClusterOp, '/api/v1/dns/cluster/probe', {})}
                   >
                     {t('dns.probePeers')}
                   </Button>
@@ -1021,15 +1003,7 @@ export function DnsPage() {
                               variant="secondary"
                               size="sm"
                               loading={clusterBusy}
-                              onClick={() =>
-                                void runClusterOp(
-                                  '/api/v1/dns/cluster/push',
-                                  {
-                                    peerId: String(p.id),
-                                    reload: true,
-                                  },
-                                )
-                              }
+                              onClick={bindVoidCall2(runClusterOp, '/api/v1/dns/cluster/push', { peerId: String(p.id), reload: true })}
                             >
                               {t('dns.pushReloadShort')}
                             </Button>
@@ -1037,12 +1011,7 @@ export function DnsPage() {
                               variant="secondary"
                               size="sm"
                               loading={clusterBusy}
-                              onClick={() =>
-                                void runClusterOp(
-                                  '/api/v1/dns/cluster/reload',
-                                  { peerId: String(p.id) },
-                                )
-                              }
+                              onClick={bindVoidCall2(runClusterOp, '/api/v1/dns/cluster/reload', { peerId: String(p.id) })}
                             >
                               reload
                             </Button>
@@ -1050,12 +1019,7 @@ export function DnsPage() {
                               variant="secondary"
                               size="sm"
                               loading={clusterBusy}
-                              onClick={() =>
-                                void runClusterOp(
-                                  '/api/v1/dns/cluster/probe',
-                                  { peerId: String(p.id) },
-                                )
-                              }
+                              onClick={bindVoidCall2(runClusterOp, '/api/v1/dns/cluster/probe', { peerId: String(p.id) })}
                             >
                               {t('dns.probe')}
                             </Button>
@@ -1107,7 +1071,7 @@ export function DnsPage() {
                         variant="primary"
                         size="md"
                         loading={dnssecBusy}
-                        onClick={() => void onDnssec(String(selectedLive.zone))}
+                        onClick={bindCall1(onDnssec, String(selectedLive.zone))}
                       >
                         {t('dns.generateAndSign')}
                       </Button>
@@ -1128,7 +1092,7 @@ export function DnsPage() {
                 title={t('dns.lookupTitle')}
                 description={t('dns.lookupDesc')}
               >
-                <form onSubmit={(e) => void onLookup(e)}>
+                <form onSubmit={bindFormSubmit(onLookup)}>
                   <FormLayout columns={2}>
                     <Field
                       label={t('dns.lookupName')}
@@ -1273,7 +1237,7 @@ export function DnsPage() {
           </>
         }
       >
-        <form id="dz" onSubmit={(e) => void onCreateZone(e)}>
+        <form id="dz" onSubmit={bindFormSubmit(onCreateZone)}>
           <FormLayout columns={2}>
             <Field
               label={t('dns.colZoneName')}
@@ -1355,7 +1319,7 @@ export function DnsPage() {
                 name="ztpl"
                 aria-label={t('dns.recordTemplate')}
                 value={template}
-                onChange={(v) => setTemplate(v as (typeof ZONE_TEMPLATE_IDS)[number])}
+                onChange={bindSelect(setTemplate as (v: string) => void)}
                 options={ZONE_TEMPLATE_IDS.map((id) => ({
                   value: id,
                   label: t(`dns.templates.${id}`),
@@ -1385,7 +1349,7 @@ export function DnsPage() {
           </>
         }
       >
-        <form id="dr" onSubmit={(e) => void onSaveRec(e)}>
+        <form id="dr" onSubmit={bindFormSubmit(onSaveRec)}>
           <FormLayout columns={2}>
             <Field label={t('dns.colType')} htmlFor="rt" flush required>
               <SegRadio
@@ -1487,9 +1451,7 @@ export function DnsPage() {
       <ConfirmDialog
         open={Boolean(delRec)}
         onClose={bindSet(setDelRec, null)}
-        onConfirm={() => {
-          if (delRec) void records.remove(delRec).then(() => setDelRec(null));
-        }}
+        onConfirm={bindRemoveIf(delRec, records.remove, setDelRec)}
         title={t('dns.deleteRecordTitle')}
         description={t('dns.deleteRecordDesc')}
         confirmLabel={t('common.delete')}

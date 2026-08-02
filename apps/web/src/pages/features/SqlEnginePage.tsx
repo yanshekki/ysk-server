@@ -40,7 +40,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
-import { bindSet, bindInput, bindVoid } from '../bind-handlers';
+import { bindCall1, bindCloseIfIdle, bindFormSubmit, bindInput, bindRemoveIf, bindSet, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
 
 export function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
   text: string;
@@ -508,7 +508,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       type="button"
                       className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                       disabled={busy}
-                      onClick={() => void dbs.apply(r.id, true)}
+                      onClick={bindVoidCall2(dbs.apply, r.id, true)}
                     >
                       {t('common.apply')}
                     </button>
@@ -620,7 +620,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                         ? Number(tempTtl)
                         : 24,
                     )}
-                    onChange={(v) => setTempTtl(v)}
+                    onChange={bindValueSet(setTempTtl)}
                     options={[
                       { value: '1', label: '1h' },
                       { value: '6', label: '6h' },
@@ -827,7 +827,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </>
         }
       >
-        <form id="sql-create" onSubmit={(e) => void onCreateDb(e)}>
+        <form id="sql-create" onSubmit={bindFormSubmit(onCreateDb)}>
           <FormLayout>
             <Field
               label={t('db.dbName')}
@@ -912,7 +912,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </>
         }
       >
-        <form id="sql-user" onSubmit={(e) => void onCreateUser(e)}>
+        <form id="sql-user" onSubmit={bindFormSubmit(onCreateUser)}>
           <FormLayout columns={2}>
             <Field label={t('common.username')} htmlFor="uun" required flush>
               <input
@@ -992,9 +992,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <ConfirmDialog
         open={Boolean(delDb)}
         onClose={bindSet(setDelDb, null)}
-        onConfirm={() => {
-          if (delDb) void dbs.remove(delDb).then(() => setDelDb(null));
-        }}
+        onConfirm={bindRemoveIf(delDb, dbs.remove, setDelDb)}
         title={t('db.deleteDbTitle')}
         description={t('db.deleteDbDesc')}
         confirmLabel={t('common.delete')}
@@ -1005,9 +1003,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <ConfirmDialog
         open={Boolean(delUser)}
         onClose={bindSet(setDelUser, null)}
-        onConfirm={() => {
-          if (delUser) void users.remove(delUser).then(() => setDelUser(null));
-        }}
+        onConfirm={bindRemoveIf(delUser, users.remove, setDelUser)}
         title={t('db.deleteUserTitle')}
         description={t('db.deleteUserDesc')}
         confirmLabel={t('common.delete')}
@@ -1018,7 +1014,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
       <Modal
         open={adminerOpen}
-        onClose={() => !busy && setAdminerOpen(false)}
+        onClose={bindCloseIfIdle(busy, bindSet(setAdminerOpen, false))}
         title={t('db.adminerTitle')}
         description={t('db.adminerDesc')}
         size="md"

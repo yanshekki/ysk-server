@@ -31,7 +31,7 @@ import {
   PresetChips,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import { bindSet, bindInput, bindCall1 } from '../bind-handlers';
+import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindSet2, bindSet3, bindVoid } from '../bind-handlers';
 import {
   networkApi,
   type NetAddress,
@@ -302,7 +302,7 @@ export function NetworkPage() {
             variant="secondary"
             size="sm"
             loading={loading}
-            onClick={() => void refresh(tab === 'advanced')}
+            onClick={bindCall1(refresh, tab === 'advanced')}
           >
             {t('network.refresh')}
           </Button>
@@ -466,10 +466,7 @@ export function NetworkPage() {
                           variant="danger"
                           size="sm"
                           disabled={busy || r.isLoopback}
-                          onClick={() => {
-                            setDownConfirm('');
-                            setDownDlg(r);
-                          }}
+                          onClick={bindSet2(setDownConfirm, '', setDownDlg, r)}
                         >
                           Down
                         </Button>
@@ -1244,7 +1241,7 @@ export function NetworkPage() {
       {/* Add IP */}
       <Modal
         open={addOpen}
-        onClose={() => !busy && setAddOpen(false)}
+        onClose={bindCloseIfIdle(busy, bindSet(setAddOpen, false))}
         title={t('network.addIpTitle', { name: addIf })}
         size="sm"
         footer={
@@ -1322,7 +1319,7 @@ export function NetworkPage() {
       {/* Down — typed confirm */}
       <Modal
         open={downDlg != null}
-        onClose={() => !busy && setDownDlg(null)}
+        onClose={bindCloseIfIdle(busy, bindSet(setDownDlg, null))}
         title={downDlg ? `Down ${downDlg.name}` : 'Down'}
         size="sm"
         footer={
@@ -1381,7 +1378,7 @@ export function NetworkPage() {
       {/* Delete route — optional also remove from NM profile */}
       <Modal
         open={delRoute != null}
-        onClose={() => !busy && setDelRoute(null)}
+        onClose={bindCloseIfIdle(busy, bindSet(setDelRoute, null))}
         title={t('network.deleteRouteTitle')}
         size="sm"
         footer={

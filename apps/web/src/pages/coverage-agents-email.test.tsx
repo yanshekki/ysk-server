@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * AgentsPage deep (helpers via rich command history) + EmailDomain advanced flags.
  */
@@ -55,6 +56,7 @@ describe('agents + email + batch hole fillers', () => {
   it(
     'AgentsPage register, command presets, history with rich results',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       const commands = [
@@ -373,6 +375,7 @@ describe('agents + email + batch hole fillers', () => {
   it(
     'EmailDomain advanced flags + mailbox/alias create',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -569,6 +572,7 @@ describe('agents + email + batch hole fillers', () => {
   it(
     'Security sessions + TOTP + Outbound detail actions batch',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -759,8 +763,9 @@ describe('agents + email + batch hole fillers', () => {
           /* ignore */
         }
       }
-      unmount();
-      expect(true).toBe(true);
+      probe.sample();
+        unmount();
+      probe.assertRendered();
     },
     40_000,
   );
@@ -768,6 +773,7 @@ describe('agents + email + batch hole fillers', () => {
   it(
     'Dashboard Users Backups Network Cdn Dns rich fixtures',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1107,6 +1113,7 @@ describe('agents + email + batch hole fillers', () => {
         await waitFor(() =>
           expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(),
         ).catch(() => undefined);
+        probe.sample();
         for (const tab of screen.queryAllByRole('tab')) {
           try {
             await user.click(tab);
@@ -1160,9 +1167,11 @@ describe('agents + email + batch hole fillers', () => {
             /* ignore */
           }
         }
+        probe.sample();
         unmount();
       }
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     60_000,
   );

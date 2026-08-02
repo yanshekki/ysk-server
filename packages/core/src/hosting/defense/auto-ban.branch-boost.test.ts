@@ -42,9 +42,10 @@ describe('auto-ban branch boost', () => {
   it('humanizeFirewall and humanizeFail2ban all tones', () => {
     expect(humanizeFirewall(undefined, false).tone).toBe('default');
     expect(humanizeFirewall('active', true).tone).toBe('ok');
-    // shipped: "inactive".includes("active") → ok branch (substring match)
-    expect(humanizeFirewall('inactive', true).tone).toBe('ok');
-    expect(humanizeFirewall('Status: inactive', true).tone).toBe('ok');
+    expect(humanizeFirewall('Status: active', true).tone).toBe('ok');
+    // inactive must not match the "active" substring branch
+    expect(humanizeFirewall('inactive', true).tone).toBe('warn');
+    expect(humanizeFirewall('Status: inactive', true).tone).toBe('warn');
     expect(humanizeFirewall('need to be root', true, false).tone).toBe('warn');
     expect(humanizeFirewall('error reading', true, true).short).toBeTruthy();
     expect(humanizeFirewall('weird-state-xyz', true).tone).toBe('default');

@@ -39,7 +39,7 @@ import { RolePermissionsPanel } from '../features/users/RolePermissionsPanel';
 import { api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
-import { bindSet, bindInput, bindCheck, bindCall1 } from './bind-handlers';
+import { bindCall1, bindCheck, bindCloseIfIdle, bindInput, bindSet, bindValueSet } from './bind-handlers';
 
 type HostUsage = {
   scope: 'host';

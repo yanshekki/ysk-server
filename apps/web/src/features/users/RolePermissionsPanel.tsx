@@ -13,7 +13,7 @@ import {
   type OperationLevel,
   type SystemRole,
 } from '@ysk/shared';
-import { bindCall1, bindCall2 } from '../../pages/bind-handlers';
+import { bindCall1, bindCall2, bindCheck, bindInput, bindValueSet } from '../../pages/bind-handlers';
 import {
   ActionBar,
   Alert,

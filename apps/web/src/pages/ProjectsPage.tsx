@@ -21,7 +21,7 @@ import {
   WithPageGuide,
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
-import { bindSet } from './bind-handlers';
+import { bindFilter, bindFormSubmit, bindInput, bindSet, bindValueSet } from './bind-handlers';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
@@ -116,7 +116,7 @@ export function ProjectsPage() {
                   ariaLabel: t('projects.runtime'),
                   allLabel: t('projects.filterAll'),
                   value: runtime,
-                  onChange: (v) => list.setFilter('runtime', v),
+                  onChange: ((setFilter) => (v: string) => setFilter('runtime', v))(list.setFilter),
                   chips: [
                     { id: 'node', label: 'Node', count: facets?.runtime?.node },
                     { id: 'php', label: 'PHP', count: facets?.runtime?.php },

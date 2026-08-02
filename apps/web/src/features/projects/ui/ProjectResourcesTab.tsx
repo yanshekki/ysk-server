@@ -17,7 +17,7 @@ import {
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import { ProjectSshCard } from './ProjectSshCard';
-import { bindSet, bindVoid } from '../../../pages/bind-handlers';
+import { bindCloseIfIdle, bindSet, bindVoid } from '../../../pages/bind-handlers';
 
 export interface ProjectResourcesTabProps {
   busy?: boolean;

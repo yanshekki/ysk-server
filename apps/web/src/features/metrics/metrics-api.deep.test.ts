@@ -1,3 +1,4 @@
+import { assertMountedUi } from '../../test/assert-rendered';
 /**
  * Deep unit coverage for metricsApi signal / renice / openStream.
  */
@@ -199,6 +200,6 @@ describe('metricsApi deep', () => {
     ac.abort();
     await new Promise((r) => setTimeout(r, 20));
     // aborted path returns early
-    expect(true).toBe(true);
+    expect(onError).not.toHaveBeenCalled();
   });
 });

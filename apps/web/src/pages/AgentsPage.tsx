@@ -32,7 +32,7 @@ import {
   buttonClassName,
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
-import { bindSet, bindInput, bindVoid, bindCall1 } from './bind-handlers';
+import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindVoid } from './bind-handlers';
 
 export function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (status === 'running' || status === 'connected') return 'ok';

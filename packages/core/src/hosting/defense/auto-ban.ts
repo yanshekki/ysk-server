@@ -604,15 +604,20 @@ export function humanizeFirewall(active?: string, installed?: boolean, isRoot?: 
   detail?: string;
 } {
   if (!installed) return { short: tl('notes.notInstalled'), tone: 'default', detail: tl('notes.tpl.ufwNotDetected') };
-  const a = (active ?? '').toLowerCase();
+  const a = (active ?? '').toLowerCase().trim();
   if (a.includes('need to be root') || a.includes('error')) {
     return {
       short: isRoot ? tl('notes.readFailed') : tl('ops.blocked.needRoot'),
       tone: 'warn',
       detail: tl('notes.auto.n1270') };
   }
-  if (a === 'active' || a.includes('active')) return { short: tl('notes.state.active'), tone: 'ok' };
-  if (a === 'inactive') return { short: tl('notes.state.closed'), tone: 'warn', detail: 'UFW inactive' };
+  // Exact / word-boundary inactive before substring "active" (inactive contains "active").
+  if (a === 'inactive' || /(^|[^a-z])inactive([^a-z]|$)/.test(a)) {
+    return { short: tl('notes.state.closed'), tone: 'warn', detail: 'UFW inactive' };
+  }
+  if (a === 'active' || /(^|[^a-z])active([^a-z]|$)/.test(a)) {
+    return { short: tl('notes.state.active'), tone: 'ok' };
+  }
   return { short: active?.slice(0, 16) || tl('notes.unknown'), tone: 'default' };
 }
 

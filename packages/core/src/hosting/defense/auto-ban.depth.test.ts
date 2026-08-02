@@ -118,7 +118,7 @@ describe('auto-ban depth', () => {
     expect(humanizeFirewall('active', true).tone).toBe('ok');
     expect(humanizeFirewall('Status: active (running)', true).tone).toBe('ok');
     // note: "inactive".includes("active") is true → treated as ok by humanizeFirewall
-    expect(humanizeFirewall('inactive', true).tone).toBe('ok');
+    expect(humanizeFirewall('inactive', true).tone).toBe('warn');
     expect(humanizeFirewall('weird', true).short.length).toBeGreaterThan(0);
     expect(humanizeFail2ban('active', true).tone).toBe('ok');
     expect(humanizeFail2ban('inactive', true).tone).toBe('warn');

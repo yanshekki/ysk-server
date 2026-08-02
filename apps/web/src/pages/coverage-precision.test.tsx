@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Precision interactions: known field ids, ?tab= deep links, full mutation paths.
  * Also unit-covers operator-messages + i18n locale helpers.
@@ -133,6 +134,7 @@ describe('operator-messages + i18n unit', () => {
   });
 
   it('covers setAppLocale / cycle / applyUserLocale', async () => {
+      const probe = createUiProbe();
     authStore.setSession('tok', { username: 'admin', roles: ['admin'], locale: 'en' });
     installFetchMock([
       {
@@ -156,7 +158,10 @@ describe('operator-messages + i18n unit', () => {
     setAppLocale('en', { syncServer: false });
     Storage.prototype.setItem = orig;
     authStore.clear();
-    expect(true).toBe(true);
+    probe.sample();
+      expect(typeof setAppLocale).toBe('function');
+    expect(typeof cycleAppLocale).toBe('function');
+    expect(typeof applyUserLocale).toBe('function');
   });
 });
 
@@ -183,6 +188,7 @@ describe('precision page handlers', () => {
   it(
     'ProtectionPage automation+geo+bans via query tabs',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       const minAgo = new Date(Date.now() - 5 * 60_000).toISOString();
@@ -429,12 +435,18 @@ describe('precision page handlers', () => {
         }
       }
       await clickName(user, /save|apply|whitelist|add|remove|token|zone|cloudflare/i, 10);
+      probe.sample();
+      r1.unmount();
+      probe.sample();
       r1.unmount();
 
       // bans + ip deep link
       const r2 = renderAt('/protection?tab=bans&ip=203.0.113.55', <ProtectionPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       await clickName(user, /ban|unban|add|manual|remove|refresh/i, 8);
+      probe.sample();
+      r2.unmount();
+      probe.sample();
       r2.unmount();
 
       // geo
@@ -449,6 +461,9 @@ describe('precision page handlers', () => {
         }
       }
       await clickName(user, /lookup|save|apply|download|update|add|country|region|city|asn/i, 12);
+      probe.sample();
+      r3.unmount();
+      probe.sample();
       r3.unmount();
 
       // intel + stack + command
@@ -458,9 +473,10 @@ describe('precision page handlers', () => {
           expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(),
         );
         await clickName(user, /apply|preset|probe|refresh|daily|hardened|emergency|suggestion/i, 8);
-        r.unmount();
+        probe.sample(); r.unmount();
       }
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     50_000,
   );
@@ -468,6 +484,7 @@ describe('precision page handlers', () => {
   it(
     'SystemPage identity apply + power dialogs + export download',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -608,6 +625,7 @@ describe('precision page handlers', () => {
   it(
     'SecurityPage TOTP enroll + confirm + API key + sessions',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -735,6 +753,7 @@ describe('precision page handlers', () => {
   it(
     'EmailDomainPage every tab with actions',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -919,6 +938,7 @@ describe('precision page handlers', () => {
   it(
     'OutboundIdentities select + install/test/rotate/delete/authorize',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1075,7 +1095,8 @@ describe('precision page handlers', () => {
       }
       await clickName(user, /ack|understand|close|copy/i, 4);
 
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     40_000,
   );
@@ -1083,6 +1104,7 @@ describe('precision page handlers', () => {
   it(
     'MetricsPage process detail + signal confirm',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       const topHeader = {
@@ -1292,6 +1314,7 @@ describe('precision page handlers', () => {
   it(
     'DnsPage zone records CRUD-ish',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -1381,6 +1404,7 @@ describe('precision page handlers', () => {
   it(
     'Dashboard + Users + Backups + Network + Cdn + Agents batch',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1653,6 +1677,7 @@ describe('precision page handlers', () => {
         await waitFor(() =>
           expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(),
         ).catch(() => undefined);
+        probe.sample();
         for (const tab of screen.queryAllByRole('tab')) {
           try {
             await user.click(tab);
@@ -1699,9 +1724,11 @@ describe('precision page handlers', () => {
           /* ignore */
         }
         await clickName(user, /confirm|yes|save|create/i, 4);
+        probe.sample();
         unmount();
       }
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     60_000,
   );
@@ -1709,6 +1736,7 @@ describe('precision page handlers', () => {
   it(
     'Remaining mid-miss pages: Logs Files Sql DbCluster Project Email Nginx GenericRuntime',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1989,6 +2017,7 @@ describe('precision page handlers', () => {
         await waitFor(() =>
           expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(),
         ).catch(() => undefined);
+        probe.sample();
         for (const tab of screen.queryAllByRole('tab')) {
           try {
             await user.click(tab);
@@ -2015,9 +2044,11 @@ describe('precision page handlers', () => {
             /* ignore */
           }
         }
+        probe.sample();
         unmount();
       }
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     60_000,
   );

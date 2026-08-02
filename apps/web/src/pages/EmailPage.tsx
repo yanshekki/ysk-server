@@ -29,7 +29,7 @@ import {
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
-import { bindSet, bindInput, bindVoid, bindCall1 } from './bind-handlers';
+import { bindCall1, bindCloseIfIdle, bindFilter, bindFormSubmit, bindInput, bindInputContext, bindRefreshCatch, bindSeq, bindSet, bindVoid } from './bind-handlers';
 
 const TABS = ['domains', 'queue', 'stack', 'ops', 'about'] as const;
 
@@ -233,7 +233,7 @@ export function EmailPage() {
             variant="ghost"
             size="sm"
             loading={busy || list.loading}
-            onClick={() => void list.refresh().catch((e: Error) => list.setError(e.message))}
+            onClick={bindRefreshCatch(list.refresh, list.setError)}
           >
             {t('common.refresh')}
           </Button>
@@ -298,7 +298,7 @@ export function EmailPage() {
                       ariaLabel: t('common.status'),
                       allLabel: t('common.all', { defaultValue: 'All' }),
                       value: list.filters.status ?? '',
-                      onChange: (v) => list.setFilter('status', v),
+                      onChange: bindFilter(list.setFilter, 'status'),
                       chips: [
                         {
                           id: 'applied',
@@ -549,7 +549,7 @@ export function EmailPage() {
           </>
         }
       >
-        <form id="email-create-form" onSubmit={(e) => void onCreate(e)}>
+        <form id="email-create-form" onSubmit={bindFormSubmit(onCreate)}>
           <FormLayout columns={2}>
             <Field
               label={t('email.domain')}
@@ -578,10 +578,7 @@ export function EmailPage() {
               <input
                 id="eip"
                 value={serverIp}
-                onChange={(e) => {
-                  setServerIp(e.target.value);
-                  setServerContext({ serverIp: e.target.value });
-                }}
+                onChange={bindInputContext(setServerIp, setServerContext, 'serverIp')}
                 required
                 placeholder={t('email.serverIpv4Ph')}
                 spellCheck={false}
@@ -596,10 +593,7 @@ export function EmailPage() {
               <input
                 id="eip6"
                 value={serverIpv6}
-                onChange={(e) => {
-                  setServerIpv6(e.target.value);
-                  setServerContext({ serverIpv6: e.target.value });
-                }}
+                onChange={bindInputContext(setServerIpv6, setServerContext, 'serverIpv6')}
                 placeholder={t('email.serverIpv6Ph')}
                 spellCheck={false}
               />
@@ -613,11 +607,8 @@ export function EmailPage() {
 
       <ConfirmDialog
         open={flushConfirmOpen}
-        onClose={() => !queueBusy && setFlushConfirmOpen(false)}
-        onConfirm={() => {
-          setFlushConfirmOpen(false);
-          void flushAll();
-        }}
+        onClose={bindCloseIfIdle(queueBusy, bindSet(setFlushConfirmOpen, false))}
+        onConfirm={bindSeq(bindSet(setFlushConfirmOpen, false), bindVoid(flushAll))}
         title={t('email.flushConfirmTitle')}
         description={t('email.flushConfirmDesc')}
         confirmLabel={t('email.flushConfirm')}

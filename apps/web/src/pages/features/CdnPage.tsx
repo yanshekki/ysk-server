@@ -28,7 +28,21 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
-import { bindSet, bindInput, bindCheck, bindVoid, bindCall1 } from '../bind-handlers';
+import {
+  bindSet,
+  bindInput,
+  bindCheck,
+  bindVoid,
+  bindCall1,
+  bindSelect,
+  bindVoidCall2,
+  bindVoidCall3,
+  bindCloseIfIdle,
+  bindToggleInList,
+  bindCloseReset,
+  bindRefreshDual,
+  bindFormSubmit,
+} from '../bind-handlers';
 import type {
   CdnDnsStrategy,
   CdnNodeDto,
@@ -555,13 +569,6 @@ export function CdnPage() {
     setSiteOpen(true);
   }
 
-  function toggleRole(r: CdnNodeRole) {
-    setRoles((prev) => toggleMembership(prev, r));
-  }
-
-  function toggleEdge(id: string) {
-    setEdgeIds((prev) => toggleMembership(prev, id));
-  }
 
   async function onSaveNode(e: FormEvent) {
     e.preventDefault();
@@ -830,10 +837,7 @@ export function CdnPage() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => {
-              void refresh();
-              if (tab === 'dashboard') void refreshDashboard();
-            }}
+            onClick={bindRefreshDual(refresh, refreshDashboard, tab === 'dashboard')}
           >
             {t('cdn.refresh')}
           </Button>
@@ -1001,9 +1005,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void onDrain(n.id, n.status !== 'draining')
-                        }
+                        onClick={bindVoidCall2(onDrain, n.id, n.status !== 'draining')}
                       >
                         {n.status === 'draining' ? t('cdn.clearDrain') : 'Drain'}
                       </Button>
@@ -1169,9 +1171,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void postSiteOp(s.id, 'render', { dryRun: true })
-                        }
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'render', { dryRun: true })}
                       >
                         {t('cdn.preview')}
                       </Button>
@@ -1179,9 +1179,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void postSiteOp(s.id, 'render', { dryRun: false })
-                        }
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'render', { dryRun: false })}
                       >
                         {t('cdn.writeConf')}
                       </Button>
@@ -1189,7 +1187,7 @@ export function CdnPage() {
                         variant="primary"
                         size="sm"
                         loading={busy}
-                        onClick={() => void postSiteOp(s.id, 'apply', {})}
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'apply', {})}
                       >
                         {t('cdn.applyEdges')}
                       </Button>
@@ -1197,7 +1195,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() => void postSiteOp(s.id, 'purge', {})}
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'purge', {})}
                       >
                         Purge
                       </Button>
@@ -1205,11 +1203,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void postSiteOp(s.id, 'dns-sync', {
-                            probeFirst: false,
-                          })
-                        }
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'dns-sync', { probeFirst: false })}
                       >
                         {t('cdn.dnsSync')}
                       </Button>
@@ -1217,9 +1211,7 @@ export function CdnPage() {
                         variant="primary"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void postSiteOp(s.id, 'health-loop', {})
-                        }
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'health-loop', {})}
                       >
                         {t('cdn.probeDns')}
                       </Button>
@@ -1227,9 +1219,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void postSiteOp(s.id, 'ssl/distribute', {})
-                        }
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'ssl/distribute', {})}
                       >
                         {t('cdn.distSsl')}
                       </Button>
@@ -1454,10 +1444,7 @@ export function CdnPage() {
       {/* Node modal */}
       <Modal
         open={nodeOpen}
-        onClose={() => {
-          setNodeOpen(false);
-          resetNodeForm();
-        }}
+        onClose={bindCloseReset(setNodeOpen, resetNodeForm)}
         title={editNode ? t('cdn.editNode') : t('cdn.addNode')}
         description={t('cdn.nodeAddrHint')}
         footer={
@@ -1465,10 +1452,7 @@ export function CdnPage() {
             <button
               type="button"
               className={buttonClassName({ variant: 'secondary', size: 'md' })}
-              onClick={() => {
-                setNodeOpen(false);
-                resetNodeForm();
-              }}
+              onClick={bindCloseReset(setNodeOpen, resetNodeForm)}
             >
               {t('common.cancel')}
             </button>
@@ -1483,7 +1467,7 @@ export function CdnPage() {
           </>
         }
       >
-        <form id="cdn-node-form" onSubmit={(e) => void onSaveNode(e)}>
+        <form id="cdn-node-form" onSubmit={bindFormSubmit(onSaveNode)}>
           <FormLayout columns={2}>
             <Field label={t('cdn.colName')} htmlFor="cdn-name" flush required>
               <input
@@ -1509,7 +1493,7 @@ export function CdnPage() {
                     <input
                       type="checkbox"
                       checked={roles.includes(r)}
-                      onChange={() => toggleRole(r)}
+                      onChange={bindToggleInList(setRoles, r)}
                     />{' '}
                     {r}
                   </label>
@@ -1609,10 +1593,7 @@ export function CdnPage() {
       {/* Site modal */}
       <Modal
         open={siteOpen}
-        onClose={() => {
-          setSiteOpen(false);
-          resetSiteForm();
-        }}
+        onClose={bindCloseReset(setSiteOpen, resetSiteForm)}
         title={editSite ? t('cdn.editSite') : t('cdn.addSite')}
         description={t('cdn.originHint')}
         footer={
@@ -1620,10 +1601,7 @@ export function CdnPage() {
             <button
               type="button"
               className={buttonClassName({ variant: 'secondary', size: 'md' })}
-              onClick={() => {
-                setSiteOpen(false);
-                resetSiteForm();
-              }}
+              onClick={bindCloseReset(setSiteOpen, resetSiteForm)}
             >
               {t('common.cancel')}
             </button>
@@ -1638,7 +1616,7 @@ export function CdnPage() {
           </>
         }
       >
-        <form id="cdn-site-form" onSubmit={(e) => void onSaveSite(e)}>
+        <form id="cdn-site-form" onSubmit={bindFormSubmit(onSaveSite)}>
           <FormLayout columns={2}>
             <Field label={t('cdn.colName')} htmlFor="site-name" flush required>
               <input
@@ -1653,7 +1631,7 @@ export function CdnPage() {
               <select
                 id="site-mode"
                 value={mode}
-                onChange={(e) => setMode(e.target.value as CdnSiteMode)}
+                onChange={bindSelect(setMode as (v: string) => void)}
               >
                 {MODE_OPTS.map((m) => (
                   <option key={m} value={m}>
@@ -1706,7 +1684,7 @@ export function CdnPage() {
                       <input
                         type="checkbox"
                         checked={edgeIds.includes(n.id)}
-                        onChange={() => toggleEdge(n.id)}
+                        onChange={bindToggleInList(setEdgeIds, n.id)}
                       />{' '}
                       {n.name}
                     </label>
@@ -1741,9 +1719,7 @@ export function CdnPage() {
               <select
                 id="site-dns-strategy"
                 value={dnsStrategy}
-                onChange={(e) =>
-                  setDnsStrategy(e.target.value as CdnDnsStrategy)
-                }
+                onChange={bindSelect(setDnsStrategy as (v: string) => void)}
               >
                 {DNS_STRATEGIES.map((s) => (
                   <option key={s} value={s}>
@@ -1780,15 +1756,7 @@ export function CdnPage() {
               <select
                 id="site-ssl"
                 value={sslMode}
-                onChange={(e) =>
-                  setSslMode(
-                    e.target.value as
-                      | 'off'
-                      | 'upload'
-                      | 'le_http01'
-                      | 'le_dns01',
-                  )
-                }
+                onChange={bindSelect(setSslMode as (v: string) => void)}
               >
                 <option value="off">off</option>
                 <option value="upload">upload</option>

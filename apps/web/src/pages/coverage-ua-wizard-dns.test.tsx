@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Security session UA parsing + relativeTime branches,
  * Dashboard wizard + software tile badges,
@@ -51,6 +52,7 @@ describe('ua wizard dns precision', () => {
   it(
     'SecurityPage sessions with many UAs + TOTP full flow + legacy tab redirect',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t0 = new Date().toISOString();
       const tMin = new Date(Date.now() - 5 * 60_000).toISOString();
@@ -245,8 +247,9 @@ describe('ua wizard dns precision', () => {
             screen.queryAllByRole('tab').length,
         ).toBeGreaterThan(0);
       }).catch(() => undefined);
-      unmount();
-      expect(true).toBe(true);
+      probe.sample();
+        unmount();
+      probe.assertRendered();
     },
     40_000,
   );
@@ -254,6 +257,7 @@ describe('ua wizard dns precision', () => {
   it(
     'DashboardPage wizard + software badges + alerts',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = new Date().toISOString();
       installFetchMock([
@@ -508,6 +512,7 @@ describe('ua wizard dns precision', () => {
   it(
     'DnsPage DNSSEC + cluster + create zone/record',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -655,6 +660,7 @@ describe('ua wizard dns precision', () => {
   it(
     'UsersPage create + package + policy + Metrics projects tab',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = new Date().toISOString();
       const topHeader = {
@@ -916,6 +922,9 @@ describe('ua wizard dns precision', () => {
           /* ignore */
         }
       }
+      probe.sample();
+      u.unmount();
+      probe.sample();
       u.unmount();
 
       const m = renderAt('/metrics?tab=projects', <MetricsPage />);
@@ -934,8 +943,11 @@ describe('ua wizard dns precision', () => {
           /* ignore */
         }
       }
+      probe.sample();
       m.unmount();
-      expect(true).toBe(true);
+      probe.sample();
+      m.unmount();
+      probe.assertRendered();
     },
     40_000,
   );

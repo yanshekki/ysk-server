@@ -1,3 +1,4 @@
+import { assertMountedUi } from '../test/assert-rendered';
 /**
  * Call every method on feature API modules + key hooks for line coverage.
  * Fetch is stubbed to always return soft-success JSON.
@@ -306,6 +307,6 @@ describe('feature hooks', () => {
         .run('deploy', 'p1', {})
         .catch(() => undefined);
     });
-    await waitFor(() => expect(true).toBe(true));
+    await waitFor(() => { expect(document.body.querySelectorAll('div').length).toBeGreaterThan(0); });
   });
 });

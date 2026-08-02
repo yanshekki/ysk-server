@@ -30,7 +30,7 @@ import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { ftpApi, type SelectOption } from '../../features/ftp';
 import { api } from '../../shared/services/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import {bindSet, bindInput, bindVoid, bindCall1 } from '../bind-handlers';
+import { bindCall1, bindClear2, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSet, bindVoid } from '../bind-handlers';
 
 type SftpKey = {
   id: string;
@@ -204,10 +204,7 @@ export function FtpPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              crud.setMsg?.(null);
-              setKeyMsg(null);
-            }}
+            onClick={bindClear2(crud.setMsg, setKeyMsg)}
           >
             {t('common.close')}
           </Button>
@@ -481,7 +478,7 @@ export function FtpPage() {
           </>
         }
       >
-        <form id="ftp-f" onSubmit={(e) => void onSave(e)}>
+        <form id="ftp-f" onSubmit={bindFormSubmit(onSave)}>
           <FormLayout columns={2}>
             <Field
               label={t('common.username')}
@@ -698,9 +695,7 @@ export function FtpPage() {
       <ConfirmDialog
         open={Boolean(delId)}
         onClose={bindSet(setDelId, null)}
-        onConfirm={() => {
-          if (delId) void crud.remove(delId).then(() => setDelId(null));
-        }}
+        onConfirm={bindRemoveIf(delId, crud.remove, setDelId)}
         title={t('ftp.deleteAccountTitle')}
         description={t('ftp.deleteAccountDesc')}
         confirmLabel={t('common.delete')}

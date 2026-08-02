@@ -27,7 +27,21 @@ import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import { bindSet, bindInput, bindCheck, bindVoid, bindCall1 } from '../bind-handlers';
+import {
+  bindSet,
+  bindInput,
+  bindCheck,
+  bindVoid,
+  bindCall1,
+  bindAllOrValue,
+  bindCloseIfIdle,
+  bindChipNumber,
+  bindDraftNumber,
+  bindDraftCheck,
+  bindToggleAndTab,
+  bindCopyMsg,
+  bindDraftString,
+} from '../bind-handlers';
 
 /** Public tabs — old journal/files/projects deep-links map into explore */
 const TABS = ['explore', 'ops', 'settings', 'about'] as const;
@@ -862,10 +876,7 @@ export function LogsPage() {
           <button
             type="button"
             className={`lc-chip ${projectsOnly ? 'lc-chip--active' : ''}`}
-            onClick={() => {
-              setProjectsOnly((v) => !v);
-              setTab('explore');
-            }}
+            onClick={bindToggleAndTab(setProjectsOnly, setTab, 'explore')}
           >
             {t('logs.projectsOnly')}
           </button>
@@ -1029,7 +1040,7 @@ export function LogsPage() {
                             aria-label={t('logs.timeRange')}
                             size="sm"
                             value={since || 'all'}
-                            onChange={(v) => setSince(v === 'all' ? '' : v)}
+                            onChange={bindAllOrValue(setSince)}
                             options={[
                               { value: '15m', label: '15m' },
                               { value: '1h', label: '1h' },
@@ -1047,7 +1058,7 @@ export function LogsPage() {
                             aria-label={t('logs.priority')}
                             size="sm"
                             value={priority || 'all'}
-                            onChange={(v) => setPriority(v === 'all' ? '' : v)}
+                            onChange={bindAllOrValue(setPriority)}
                             options={[
                               { value: 'all', label: t('updates.all') },
                               { value: 'err', label: t('logs.prioErr') },
@@ -1080,9 +1091,7 @@ export function LogsPage() {
                           { value: '2000', label: '2000' },
                         ]}
                         value={String(lines)}
-                        onChange={(v) =>
-                          setLines(Math.max(50, Math.min(5000, Number(v) || 300)))
-                        }
+                        onChange={bindChipNumber(setLines, 300, 50, 5000)}
                         allowCustom
                         customPlaceholder={t('common.custom')}
                       />
@@ -1143,10 +1152,7 @@ export function LogsPage() {
                         variant="ghost"
                         size="sm"
                         disabled={!text}
-                        onClick={() => {
-                          void navigator.clipboard?.writeText(text);
-                          setMsg(t('logs.copied'));
-                        }}
+                        onClick={bindCopyMsg(text, setMsg, t('logs.copied'))}
                       >
                         {t('common.copy')}
                       </Button>
@@ -1349,12 +1355,7 @@ export function LogsPage() {
                         { value: '2000', label: '2000' },
                       ]}
                       value={String(settingsDraft.maxLines ?? 500)}
-                      onChange={(v) =>
-                        setSettingsDraft((d) => ({
-                          ...d,
-                          maxLines: Number(v) || 500,
-                        }))
-                      }
+                      onChange={bindDraftNumber(setSettingsDraft, 'maxLines', 500)}
                     />
                   </Field>
                   <Field label={t('logs.followInterval')} htmlFor="set-follow" flush>
@@ -1367,12 +1368,7 @@ export function LogsPage() {
                         { value: '10', label: '10s' },
                       ]}
                       value={String(settingsDraft.followIntervalSec ?? 3)}
-                      onChange={(v) =>
-                        setSettingsDraft((d) => ({
-                          ...d,
-                          followIntervalSec: Number(v) || 3,
-                        }))
-                      }
+                      onChange={bindDraftNumber(setSettingsDraft, 'followIntervalSec', 3)}
                     />
                   </Field>
                   <Field label={t('logs.maxBytes')} htmlFor="set-bytes" flush>
@@ -1384,12 +1380,7 @@ export function LogsPage() {
                         { value: '5242880', label: '5 MiB' },
                       ]}
                       value={String(settingsDraft.maxBytes ?? 2097152)}
-                      onChange={(v) =>
-                        setSettingsDraft((d) => ({
-                          ...d,
-                          maxBytes: Number(v) || 2097152,
-                        }))
-                      }
+                      onChange={bindDraftNumber(setSettingsDraft, 'maxBytes', 2097152)}
                     />
                   </Field>
                   <Field label={t('logs.maskSecrets')} htmlFor="set-mask" flush>
@@ -1398,12 +1389,7 @@ export function LogsPage() {
                         id="set-mask"
                         type="checkbox"
                         checked={settingsDraft.maskSecrets !== false}
-                        onChange={(e) =>
-                          setSettingsDraft((d) => ({
-                            ...d,
-                            maskSecrets: e.target.checked,
-                          }))
-                        }
+                        onChange={bindDraftCheck(setSettingsDraft, 'maskSecrets')}
                       />
                       <span>password / token → ***</span>
                     </label>
@@ -1430,12 +1416,7 @@ export function LogsPage() {
                         { value: '90', label: t('logs.d90') },
                       ]}
                       value={String(settingsDraft.vacuumDefaultDays ?? 14)}
-                      onChange={(v) =>
-                        setSettingsDraft((d) => ({
-                          ...d,
-                          vacuumDefaultDays: Number(v) || 14,
-                        }))
-                      }
+                      onChange={bindDraftNumber(setSettingsDraft, 'vacuumDefaultDays', 14)}
                     />
                   </Field>
                   <Field label={t('logs.journalAlerts')} htmlFor="set-warn" flush>
@@ -1447,12 +1428,7 @@ export function LogsPage() {
                         { value: '4096', label: '4 GB' },
                       ]}
                       value={String(settingsDraft.journalWarnMb ?? 1024)}
-                      onChange={(v) =>
-                        setSettingsDraft((d) => ({
-                          ...d,
-                          journalWarnMb: Number(v) || 1024,
-                        }))
-                      }
+                      onChange={bindDraftNumber(setSettingsDraft, 'journalWarnMb', 1024)}
                     />
                   </Field>
                   <Field label={t('logs.autoVacuum')} htmlFor="set-auto-v" flush>
@@ -1461,12 +1437,7 @@ export function LogsPage() {
                         id="set-auto-v"
                         type="checkbox"
                         checked={Boolean(settingsDraft.autoVacuumEnabled)}
-                        onChange={(e) =>
-                          setSettingsDraft((d) => ({
-                            ...d,
-                            autoVacuumEnabled: e.target.checked,
-                          }))
-                        }
+                        onChange={bindDraftCheck(setSettingsDraft, 'autoVacuumEnabled')}
                       />
                       <span>{t('logs.dailyNeedRoot')}</span>
                     </label>
@@ -1480,9 +1451,7 @@ export function LogsPage() {
                         { value: '05:00', label: '05:00' },
                       ]}
                       value={String(settingsDraft.autoVacuumTime ?? '03:00')}
-                      onChange={(v) =>
-                        setSettingsDraft((d) => ({ ...d, autoVacuumTime: v }))
-                      }
+                      onChange={bindDraftString(setSettingsDraft, 'autoVacuumTime')}
                       allowCustom
                       customPlaceholder="HH:MM"
                     />
@@ -1672,7 +1641,7 @@ export function LogsPage() {
 
       <ConfirmDialog
         open={vacuumConfirm != null}
-        onClose={() => !busy && setVacuumConfirm(null)}
+        onClose={bindCloseIfIdle(busy, bindSet(setVacuumConfirm, null))}
         title={
           vacuumConfirm === 'time'
             ? `{t('logs.vacuumTime')} ${vacuumDays}？`

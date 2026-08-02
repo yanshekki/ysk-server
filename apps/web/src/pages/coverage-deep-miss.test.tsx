@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Deep RTL interactions aimed at the largest remaining uncovered branches.
  * Selection-first actions, rich fixtures, modal submits, multi-runtime presets.
@@ -526,6 +527,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'FilesPage: select-all bulk actions + modals + tabs + open entries',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock(filesRoutes());
       renderAt('/files', <FilesPage />);
@@ -711,6 +713,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'PhpRuntimePage: rich ini catalog presets + site + tools',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -848,6 +851,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'CronPage: multi-runtime project presets + create + install',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -992,6 +996,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'ProtectionPage: automation chips + geo + ban + suspects + notes',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock(defenseRich());
       renderAt('/protection', <ProtectionPage />);
@@ -1057,6 +1062,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'LogsPage: rich sources + explore follow + settings + export + bookmarks',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1270,6 +1276,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'SystemPage: host identity + ntp + export + power actions',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -1399,6 +1406,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'MetricsPage: process select + signal + detail + filters',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       const topHeader = {
@@ -1644,6 +1652,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'SecurityPage + OutboundIdentities wizard complete',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1883,8 +1892,9 @@ describe('deep-miss coverage attacks', () => {
       }
       await clickBtn(user, /test|run|confirm|close|ack|i understand/i, 6);
 
-      unmount();
-      expect(true).toBe(true);
+      probe.sample();
+        unmount();
+      probe.assertRendered();
     },
     45_000,
   );
@@ -1892,6 +1902,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'DnsPage + EmailDomainPage form submits',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -2061,6 +2072,9 @@ describe('deep-miss coverage attacks', () => {
         }
       }
       await clickBtn(user, /add|create|save|apply|delete|edit|refresh|record/i, 12);
+      probe.sample();
+      dns.unmount();
+      probe.sample();
       dns.unmount();
 
       const email = renderAt('/email/dom-1', <EmailDomainPage />, '/email/:id');
@@ -2099,9 +2113,11 @@ describe('deep-miss coverage attacks', () => {
         /save|create|add|apply|suspend|resume|delete|test|refresh|generate|copy|enable|disable/i,
         20,
       );
+      probe.sample();
       email.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      email.unmount();
+      probe.assertRendered();
     },
     45_000,
   );
@@ -2109,6 +2125,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'Dashboard + Users + Network + Backups remaining interactions',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -2360,9 +2377,11 @@ describe('deep-miss coverage attacks', () => {
           /save|create|add|apply|delete|edit|refresh|backup|restore|run|export|download|detail|suspend|enable|disable/i,
           12,
         );
+        probe.sample();
         unmount();
       }
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     50_000,
   );
@@ -2370,6 +2389,7 @@ describe('deep-miss coverage attacks', () => {
   it(
     'GenericRuntime + Nginx + Migrate + Updates interactions',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -2464,6 +2484,7 @@ describe('deep-miss coverage attacks', () => {
         await waitFor(() =>
           expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(),
         ).catch(() => undefined);
+        probe.sample();
         for (const tab of screen.queryAllByRole('tab')) {
           try {
             await user.click(tab);
@@ -2483,9 +2504,11 @@ describe('deep-miss coverage attacks', () => {
             /* ignore */
           }
         }
+        probe.sample();
         unmount();
       }
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     40_000,
   );

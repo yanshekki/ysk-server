@@ -120,7 +120,7 @@ describe('auto-ban policy and pure helpers', () => {
     expect(humanizeFirewall(undefined, false).tone).toBe('default');
     expect(humanizeFirewall('active', true).tone).toBe('ok');
     // note: "inactive".includes("active") matches first branch in humanizeFirewall
-    expect(humanizeFirewall('Status: inactive', true).tone).toBe('ok');
+    expect(humanizeFirewall('Status: inactive', true).tone).toBe('warn');
     expect(humanizeFirewall('ERROR: need to be root', true, false).tone).toBe('warn');
     expect(humanizeFirewall('weird-state', true).tone).toBe('default');
     expect(humanizeFail2ban('active', true).tone).toBe('ok');

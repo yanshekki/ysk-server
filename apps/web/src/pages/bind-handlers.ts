@@ -17,6 +17,35 @@ export function bindSet<T>(set: (v: T) => void, value: T): () => void {
   };
 }
 
+/** Two setState calls without a call-site arrow. */
+export function bindSet2<A, B>(
+  setA: (v: A) => void,
+  a: A,
+  setB: (v: B) => void,
+  b: B,
+): () => void {
+  return () => {
+    setA(a);
+    setB(b);
+  };
+}
+
+/** Three setState calls. */
+export function bindSet3<A, B, C>(
+  setA: (v: A) => void,
+  a: A,
+  setB: (v: B) => void,
+  b: B,
+  setC: (v: C) => void,
+  c: C,
+): () => void {
+  return () => {
+    setA(a);
+    setB(b);
+    setC(c);
+  };
+}
+
 /** Functional toggle binder: set(v => !v). */
 export function bindToggle(set: (updater: (v: boolean) => boolean) => void): () => void {
   return () => {
@@ -789,5 +818,661 @@ export function bindCloseIfIdle(
 ): () => void {
   return () => {
     if (!busy) close();
+  };
+}
+
+/** Defense probe: POST /defense/probe → setStatus → refresh */
+export function bindDefenseProbe(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  setStatus: (s: unknown) => void,
+  refresh: () => Promise<unknown>,
+  okMsg: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      const s = await requestRaw('/api/v1/defense/probe', {
+        method: 'POST',
+        body: '{}',
+      });
+      setStatus(s);
+      await refresh();
+      return { ok: true, notes: [] };
+    }, okMsg);
+  };
+}
+
+/** Generic POST defense path with refresh */
+export function bindDefensePost(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  path: string,
+  body: unknown,
+  refresh: () => Promise<unknown>,
+  okMsg: string,
+  mapResult?: (r: unknown) => unknown,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await requestRaw(path, {
+        method: 'POST',
+        body: JSON.stringify(body ?? {}),
+      });
+      await refresh();
+      return mapResult ? mapResult(r) : r;
+    }, okMsg);
+  };
+}
+
+/** Generic PUT defense path */
+export function bindDefensePut(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  path: string,
+  body: unknown,
+  refresh: () => Promise<unknown>,
+  okMsg: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await requestRaw(path, {
+        method: 'PUT',
+        body: JSON.stringify(body ?? {}),
+      });
+      await refresh();
+      return r;
+    }, okMsg);
+  };
+}
+
+/** Whitelist POST then refresh */
+export function bindDefenseWhitelist(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  ip: string,
+  refresh: () => Promise<unknown>,
+  okMsg: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      await requestRaw('/api/v1/defense/whitelist', {
+        method: 'POST',
+        body: JSON.stringify({ ip }),
+      });
+      await refresh();
+      return { ok: true };
+    }, okMsg);
+  };
+}
+
+/** Unban POST */
+export function bindDefenseUnban(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  ip: string,
+  refresh: () => Promise<unknown>,
+  okMsg: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await requestRaw('/api/v1/defense/unban', {
+        method: 'POST',
+        body: JSON.stringify({ ip }),
+      });
+      await refresh();
+      return r;
+    }, okMsg);
+  };
+}
+
+/** Auto-ban tick */
+export function bindDefenseAutoBanTick(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  refresh: () => Promise<unknown>,
+  okMsg: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await requestRaw('/api/v1/defense/auto-ban/tick', {
+        method: 'POST',
+        body: '{}',
+      });
+      await refresh();
+      return r;
+    }, okMsg);
+  };
+}
+
+/** Files API run wrappers */
+export function bindFilesRun(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  work: () => Promise<unknown>,
+  okMsg?: string,
+): () => void {
+  return () => {
+    void run(async () => work(), okMsg);
+  };
+}
+
+/** Toggle favorite path */
+export function bindToggleFavorite(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  toggleFavorite: (root: string, path: string) => Promise<unknown>,
+  root: string,
+  path: string,
+  okMsg?: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      await toggleFavorite(root, path);
+    }, okMsg);
+  };
+}
+
+// ── Automation / nested save binders (ProtectionPage etc.) ──────────────
+
+/** Top-level boolean checkbox → save({ [key]: checked }) */
+export function bindSaveTopChecked(
+  save: (patch: Record<string, unknown>) => unknown,
+  key: string,
+): (e: { target: { checked: boolean } }) => void {
+  return (e) => {
+    void save({ [key]: e.target.checked });
+  };
+}
+
+/** Nested section checkbox → save({ [section]: { [key]: checked } }) */
+export function bindSaveChecked(
+  save: (patch: Record<string, unknown>) => unknown,
+  section: string,
+  key: string,
+): (e: { target: { checked: boolean } }) => void {
+  return (e) => {
+    void save({ [section]: { [key]: e.target.checked } });
+  };
+}
+
+/** Nested section string (SegRadio / chips) → save({ [section]: { [key]: value, ...extra } }) */
+export function bindSaveString(
+  save: (patch: Record<string, unknown>) => unknown,
+  section: string,
+  key: string,
+  extra?: Record<string, unknown>,
+): (value: string) => void {
+  return (value) => {
+    void save({ [section]: { ...(extra ?? {}), [key]: value } });
+  };
+}
+
+/**
+ * Nested number chip: merge into local automation state + save patch.
+ * parse overrides Number(v)||fallback (e.g. clampScanIntervalSeconds).
+ */
+export function bindSaveNumber(
+  save: (patch: Record<string, unknown>) => unknown,
+  setLocal: (updater: (prev: any) => any) => void,
+  section: string,
+  key: string,
+  fallback: number,
+  parse?: (raw: string) => number,
+): (v: string) => void {
+  return (v) => {
+    const n = parse ? parse(v) : Number(v) || fallback;
+    setLocal((a: any) =>
+      a ? { ...a, [section]: { ...(a[section] ?? {}), [key]: n } } : a,
+    );
+    void save({ [section]: { [key]: n } });
+  };
+}
+
+/** Chip/select → set number with optional min/max clamp */
+export function bindChipNumber(
+  set: (n: number) => void,
+  fallback: number,
+  min?: number,
+  max?: number,
+): (v: string) => void {
+  return (v) => {
+    let n = Number(v) || fallback;
+    if (min != null) n = Math.max(min, n);
+    if (max != null) n = Math.min(max, n);
+    set(n);
+  };
+}
+
+/** Append value to string[] state if not already present; optional bool flag set */
+export function bindAppendUniqueStr(
+  setList: (updater: (prev: string[]) => string[]) => void,
+  value: string,
+  setFlag?: (v: boolean) => void,
+  flagValue = true,
+): () => void {
+  return () => {
+    setList((p) => (p.includes(value) ? p : [...p, value]));
+    setFlag?.(flagValue);
+  };
+}
+
+/** Clear error/msg then refresh (Fail2ban / similar toolbars) */
+export function bindRefreshClear(
+  setError: (v: null) => void,
+  setMsg: (v: null) => void,
+  refresh: () => unknown,
+): () => void {
+  return () => {
+    setError(null);
+    setMsg(null);
+    void refresh();
+  };
+}
+
+/** run(apiFn() → optional refresh) with 0 args on the API */
+export function bindApiRefresh0(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  apiFn: () => Promise<unknown>,
+  refresh: (() => Promise<unknown>) | null | undefined,
+  okMsg: string,
+  clearSet?: (v: string) => void,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await apiFn();
+      clearSet?.('');
+      if (refresh) await refresh();
+      return r;
+    }, okMsg);
+  };
+}
+
+/** run(apiFn(a) → optional refresh) */
+export function bindApiRefresh1<A>(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  apiFn: (a: A) => Promise<unknown>,
+  a: A,
+  refresh: (() => Promise<unknown>) | null | undefined,
+  okMsg: string,
+  clearSet?: (v: string) => void,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await apiFn(a);
+      clearSet?.('');
+      if (refresh) await refresh();
+      return r;
+    }, okMsg);
+  };
+}
+
+/** run(apiFn(a,b) → optional refresh) */
+export function bindApiRefresh2<A, B>(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  apiFn: (a: A, b: B) => Promise<unknown>,
+  a: A,
+  b: B,
+  refresh: (() => Promise<unknown>) | null | undefined,
+  okMsg: string,
+  clearSet?: (v: string) => void,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await apiFn(a, b);
+      clearSet?.('');
+      if (refresh) await refresh();
+      return r;
+    }, okMsg);
+  };
+}
+
+/** run(apiFn(a,b,c) → optional refresh) */
+export function bindApiRefresh3<A, B, C>(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  apiFn: (a: A, b: B, c: C) => Promise<unknown>,
+  a: A,
+  b: B,
+  c: C,
+  refresh: (() => Promise<unknown>) | null | undefined,
+  okMsg: string,
+  clearSet?: (v: string) => void,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await apiFn(a, b, c);
+      clearSet?.('');
+      if (refresh) await refresh();
+      return r;
+    }, okMsg);
+  };
+}
+
+/** Defense whitelist with action + optional string field clear (no call-site arrow) */
+export function bindDefenseWhitelistAction(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  ip: string,
+  action: 'add' | 'remove',
+  refresh: () => Promise<unknown>,
+  okMsg: string,
+  clearSet?: (v: string) => void,
+  notes?: string[],
+): () => void {
+  return () => {
+    void run(async () => {
+      await requestRaw('/api/v1/defense/whitelist', {
+        method: 'POST',
+        body: JSON.stringify({ ip, action }),
+      });
+      clearSet?.('');
+      await refresh();
+      return { ok: true, notes: notes ?? [] };
+    }, okMsg);
+  };
+}
+
+/** Cloudflare zone save from free-text + current automation snapshot */
+export function bindSaveCfZones(
+  save: (patch: Record<string, unknown>) => unknown,
+  zonesText: string,
+  ufwAllowOnlyCf: boolean | undefined,
+  ufwKeepTcpPorts: number[] | undefined,
+): () => void {
+  return () => {
+    void save({
+      cloudflare: {
+        enabled: true,
+        zones: zonesText
+          .split(/[,\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+        onAutoEscalate: true,
+        ufwAllowOnlyCf,
+        ufwKeepTcpPorts: ufwKeepTcpPorts ?? [22],
+      },
+    });
+  };
+}
+
+/** POST body then return result (no refresh) — e.g. CF under-attack */
+export function bindDefensePostOnly(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  path: string,
+  body: unknown,
+  okMsg: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      return requestRaw(path, {
+        method: 'POST',
+        body: JSON.stringify(body ?? {}),
+      });
+    }, okMsg);
+  };
+}
+
+
+
+/** GeoIP apply snippet */
+export function bindDefenseGeoApply(
+  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  okMsg: string,
+): () => void {
+  return () => {
+    void run(async () => {
+      const r = await requestRaw<{ ok: boolean; notes?: string[] }>(
+        '/api/v1/defense/geoip/apply',
+        { method: 'POST', body: '{}' },
+      );
+      return { ok: r.ok, notes: r.notes ?? [] };
+    }, okMsg);
+  };
+}
+
+/** SegRadio/select: map sentinel (e.g. "all") to empty string */
+export function bindAllOrValue(
+  set: (v: string) => void,
+  allToken = 'all',
+): (v: string) => void {
+  return (v) => {
+    set(v === allToken ? '' : v);
+  };
+}
+
+/** Input change + context store patch (server IP fields) */
+export function bindInputContext(
+  set: (v: string) => void,
+  setCtx: (patch: Record<string, string>) => void,
+  ctxKey: string,
+): (e: { target: { value: string } }) => void {
+  return (e) => {
+    set(e.target.value);
+    setCtx({ [ctxKey]: e.target.value });
+  };
+}
+
+/** refresh().catch(e => setError(e.message)) */
+export function bindRefreshCatch(
+  refresh: () => Promise<unknown>,
+  setError: (msg: string) => void,
+): () => void {
+  return () => {
+    void refresh().catch((e: Error) => setError(e.message));
+  };
+}
+
+/** form onSubmit: preventDefault + call named handler */
+export function bindFormSubmit(
+  fn: (e: { preventDefault(): void }) => unknown,
+): (e: { preventDefault(): void }) => void {
+  return (e) => {
+    e.preventDefault();
+    void fn(e);
+  };
+}
+
+/** Select/string setState (mode dropdowns) */
+export function bindSelect(
+  set: (v: string) => void,
+): (e: { target: { value: string } }) => void {
+  return (e) => {
+    set(e.target.value);
+  };
+}
+
+/** call named async with fixed args via void (postSiteOp etc.) */
+export function bindVoidCall2<A, B>(
+  fn: (a: A, b: B) => unknown,
+  a: A,
+  b: B,
+): () => void {
+  return () => {
+    void fn(a, b);
+  };
+}
+
+export function bindVoidCall3<A, B, C>(
+  fn: (a: A, b: B, c: C) => unknown,
+  a: A,
+  b: B,
+  c: C,
+): () => void {
+  return () => {
+    void fn(a, b, c);
+  };
+}
+
+/** Close modal + run reset (no call-site arrow) */
+export function bindCloseReset(
+  setOpen: (v: boolean) => void,
+  reset: () => void,
+  openValue = false,
+): () => void {
+  return () => {
+    setOpen(openValue);
+    reset();
+  };
+}
+
+/** Primary refresh + optional second refresh when cond */
+export function bindRefreshDual(
+  primary: () => unknown,
+  secondary: () => unknown,
+  cond: boolean,
+): () => void {
+  return () => {
+    void primary();
+    if (cond) void secondary();
+  };
+}
+
+/** Confirm dialog: close then void action */
+export function bindConfirmThen(
+  setOpen: (v: boolean) => void,
+  action: () => unknown,
+  openValue = false,
+): () => void {
+  return () => {
+    setOpen(openValue);
+    void action();
+  };
+}
+
+/** Confirm dialog with null-clear then action(arg) */
+/** Draft object number field from chip/select string */
+export function bindDraftNumber(
+  setDraft: (updater: (d: any) => any) => void,
+  key: string,
+  fallback: number,
+): (v: string) => void {
+  return (v) => {
+    setDraft((d: any) => ({ ...d, [key]: Number(v) || fallback }));
+  };
+}
+
+/** Draft object boolean from checkbox */
+export function bindDraftCheck(
+  setDraft: (updater: (d: any) => any) => void,
+  key: string,
+): (e: { target: { checked: boolean } }) => void {
+  return (e) => {
+    setDraft((d: any) => ({ ...d, [key]: e.target.checked }));
+  };
+}
+
+/** Draft object string field */
+export function bindDraftString(
+  setDraft: (updater: (d: any) => any) => void,
+  key: string,
+): (v: string) => void {
+  return (v) => {
+    setDraft((d: any) => ({ ...d, [key]: v }));
+  };
+}
+
+/** Toggle bool + set tab string (logs projectsOnly chip) */
+export function bindToggleAndTab(
+  setBool: (updater: (v: boolean) => boolean) => void,
+  setTab: (tab: string) => void,
+  tab: string,
+): () => void {
+  return () => {
+    setBool((v) => !v);
+    setTab(tab);
+  };
+}
+
+/** Copy text then set message */
+export function bindCopyMsg(
+  text: string,
+  setMsg: (m: string) => void,
+  msg: string,
+): () => void {
+  return () => {
+    void navigator.clipboard?.writeText(text);
+    setMsg(msg);
+  };
+}
+
+/** Copy text then onFlash(tone, msg) */
+export function bindCopyFlash(
+  text: string,
+  onFlash: (tone: 'ok' | 'error', text: string) => void,
+  msg: string,
+  tone: 'ok' | 'error' = 'ok',
+): () => void {
+  return () => {
+    void navigator.clipboard?.writeText(text);
+    onFlash(tone, msg);
+  };
+}
+
+/** SegRadio/value → setState (identity binder; collapses call-site arrows) */
+export function bindValueSet<T>(set: (v: T) => void): (v: T) => void {
+  return (v) => {
+    set(v);
+  };
+}
+
+/** input onChange → call(value) (not setState) */
+export function bindInputCall(
+  fn: (v: string) => void,
+): (e: { target: { value: string } }) => void {
+  return (e) => {
+    fn(e.target.value);
+  };
+}
+
+/** checkbox onChange → call(checked) */
+export function bindCheckCall(
+  fn: (v: boolean) => void,
+): (e: { target: { checked: boolean } }) => void {
+  return (e) => {
+    fn(e.target.checked);
+  };
+}
+
+/** list.setFilter(key, value) chip/filter binder */
+export function bindFilter(
+  setFilter: (key: string, value: string) => void,
+  key: string,
+): (value: string) => void {
+  return (value) => {
+    setFilter(key, value);
+  };
+}
+
+/** Confirm delete: if id then remove(id).then(clear null) */
+export function bindRemoveIf(
+  id: string | null | undefined,
+  remove: (id: string) => Promise<unknown> | unknown,
+  clear: (v: null) => void,
+): () => void {
+  return () => {
+    if (id) void Promise.resolve(remove(id)).then(() => clear(null));
+  };
+}
+
+/** Clear two nullable message fields */
+export function bindClear2(
+  a: ((v: null) => void) | undefined | null,
+  b: ((v: null) => void) | undefined | null,
+): () => void {
+  return () => {
+    a?.(null);
+    b?.(null);
+  };
+}
+
+/** Clear three nullable fields */
+export function bindClear3(
+  a: ((v: null) => void) | undefined | null,
+  b: ((v: null) => void) | undefined | null,
+  c: ((v: null) => void) | undefined | null,
+): () => void {
+  return () => {
+    a?.(null);
+    b?.(null);
+    c?.(null);
   };
 }

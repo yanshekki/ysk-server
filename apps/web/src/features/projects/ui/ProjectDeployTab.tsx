@@ -31,7 +31,7 @@ import {
 } from '../model/deploy-prefs';
 import { projectsApi } from '../api';
 import { systemApi } from '../../system/api';
-import { bindInput, bindVoid } from '../../../pages/bind-handlers';
+import { bindInput, bindVoid, bindValueSet, bindAllOrValue } from '../../../pages/bind-handlers';
 
 export interface ProjectDeployTabProps {
   project: ProjectDto;
@@ -461,7 +461,7 @@ export function ProjectDeployTab({
                         skipBuild,
                       });
                     }}
-                    onBlur={() => persist()}
+                    onBlur={bindVoid(persist)}
                     placeholder={defaultEntryHint(project.runtime)}
                     spellCheck={false}
                   />

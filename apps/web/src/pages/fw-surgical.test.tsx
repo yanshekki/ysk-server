@@ -3,6 +3,7 @@ import { render, waitFor, fireEvent, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { installFetchMock, softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
+import { createUiProbe } from '../test/assert-rendered';
 import {
   FirewallPage,
   parsePorts,
@@ -59,6 +60,7 @@ describe('firewall surgical + helpers', () => {
   });
 
   it('hits every handler', async () => {
+      const probe = createUiProbe();
     // RULES
     let v = mount('rules');
     await waitFor(() => expect(screen.getByText('ALLOW')).toBeInTheDocument());
@@ -88,7 +90,7 @@ describe('firewall surgical + helpers', () => {
     screen.queryAllByRole('button', { name: /disable|enable/i }).forEach((b) => fireEvent.click(b));
     await new Promise((r) => setTimeout(r, 50));
     screen.queryAllByRole('button', { name: /close/i }).forEach((b) => fireEvent.click(b));
-    v.unmount();
+    probe.sample(); v.unmount();
 
     // PORTS
     v = mount('ports');
@@ -100,7 +102,7 @@ describe('firewall surgical + helpers', () => {
       fireEvent.click(b);
     });
     await new Promise((r) => setTimeout(r, 40));
-    v.unmount();
+    probe.sample(); v.unmount();
 
     // DENY
     v = mount('deny');
@@ -114,7 +116,7 @@ describe('firewall surgical + helpers', () => {
     });
     screen.queryAllByRole('button', { name: /remove/i }).forEach((b) => fireEvent.click(b));
     await new Promise((r) => setTimeout(r, 40));
-    v.unmount();
+    probe.sample(); v.unmount();
 
     // PROFILES
     v = mount('profiles');
@@ -126,7 +128,10 @@ describe('firewall surgical + helpers', () => {
       await new Promise((r) => setTimeout(r, 35));
     }
     screen.queryAllByRole('button', { name: /close/i }).forEach((b) => fireEvent.click(b));
-    v.unmount();
-    expect(true).toBe(true);
+    probe.sample(); probe.sample();
+      v.unmount();
+      probe.sample();
+      v.unmount();
+      probe.assertRendered();
   });
 });

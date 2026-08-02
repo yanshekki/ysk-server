@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Floor-90 wave B: precise tab targeting + rich fixtures for remaining handlers.
  */
@@ -81,6 +82,7 @@ describe('coverage floor 90b', () => {
   it(
     'SecurityPage account TOTP begin→confirm→recovery + sessions revoke + backup export',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       let enabled = false;
       installFetchMock([
@@ -288,6 +290,7 @@ describe('coverage floor 90b', () => {
   it(
     'EmailDomain advanced suspend/resume + policy write + bootstrap + deliverability rich',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -427,6 +430,7 @@ describe('coverage floor 90b', () => {
   it(
     'UsersPage edit package form submit + chip filters + detail grants',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -578,6 +582,7 @@ describe('coverage floor 90b', () => {
   it(
     'BackupsPage restic snapshots restore + side results + settings save',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -706,6 +711,7 @@ describe('coverage floor 90b', () => {
   it(
     'OutboundIdentities wizard create + install + test + rotate/delete',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -848,7 +854,8 @@ describe('coverage floor 90b', () => {
       }
       await clickBtn(user, /test|run|confirm|delete|rotate|yes/i, 6);
 
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     45_000,
   );
@@ -856,6 +863,7 @@ describe('coverage floor 90b', () => {
   it(
     'ServiceConsole + Redis + Fail2ban + Firewall + Runtime + ProjectDetail + Cdn',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1194,7 +1202,7 @@ describe('coverage floor 90b', () => {
         }
       }
       await clickBtn(user, /save|apply|start|stop|restart|reload|install|refresh/i, 12);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/redis', <RedisPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1207,7 +1215,7 @@ describe('coverage floor 90b', () => {
       }
       await clickBtn(user, /create|start|stop|save|flush|delete|refresh|info|password/i, 12);
       await clickBtn(user, /confirm|yes/i, 2);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/fail2ban', <Fail2banPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1219,7 +1227,7 @@ describe('coverage floor 90b', () => {
         }
       }
       await clickBtn(user, /unban|ban|refresh|start|stop|reload|enable|disable|save/i, 12);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/firewall', <FirewallPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1232,7 +1240,7 @@ describe('coverage floor 90b', () => {
       }
       await clickBtn(user, /add|create|delete|allow|deny|refresh|enable|disable|save|apply/i, 12);
       await clickBtn(user, /confirm|yes/i, 2);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/runtimes/node', <GenericRuntimePage kind="node" />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1244,7 +1252,7 @@ describe('coverage floor 90b', () => {
         }
       }
       await clickBtn(user, /install|probe|save|apply|refresh|default|switch/i, 10);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/projects/p1', <ProjectDetailPage />, '/projects/:id');
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1257,7 +1265,7 @@ describe('coverage floor 90b', () => {
       }
       await clickBtn(user, /deploy|stop|start|restart|health|publish|suspend|resume|logs|refresh|save|delete/i, 14);
       await clickBtn(user, /confirm|yes/i, 3);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/cdn', <CdnPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1270,9 +1278,11 @@ describe('coverage floor 90b', () => {
       }
       await clickBtn(user, /create|add|edit|probe|drain|delete|save|apply/i, 12);
       await clickBtn(user, /confirm|yes/i, 2);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     120_000,
   );
@@ -1280,6 +1290,7 @@ describe('coverage floor 90b', () => {
   it(
     'Dashboard + Readiness + SqlEngine interactions',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -1351,12 +1362,12 @@ describe('coverage floor 90b', () => {
       let r = renderAt('/', <DashboardPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       await clickBtn(user, /refresh|reload|open|view|fix/i, 8);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/readiness', <ReadinessPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       await clickBtn(user, /refresh|recheck|fix|open/i, 6);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/databases/mysql-engine', <SqlEnginePage engine="mysql" />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1369,9 +1380,11 @@ describe('coverage floor 90b', () => {
       }
       await clickBtn(user, /create|install|start|adminer|expire|clean|delete|edit|apply/i, 12);
       await clickBtn(user, /confirm|yes/i, 2);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     60_000,
   );

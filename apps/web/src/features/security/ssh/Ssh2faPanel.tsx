@@ -19,7 +19,17 @@ import { ActionBar,
   PromptDialog,
 } from '../../../shared/components/ui';
 import { api } from '../../../shared/services/api';
-import { bindSet, bindInput, bindVoid, bindCall1 } from '../../../pages/bind-handlers';
+import {
+  bindCall1,
+  bindClear2,
+  bindClipboard,
+  bindCloseIfIdle,
+  bindCopyFlash,
+  bindInput,
+  bindRefreshCatch,
+  bindSet,
+  bindVoid,
+} from '../../../pages/bind-handlers';
 
 type Row = {
   id: string;
@@ -293,7 +303,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               variant="ghost"
               size="md"
               loading={busy}
-              onClick={() => void refresh().catch((e: Error) => setErr(e.message))}
+              onClick={bindRefreshCatch(refresh, setErr)}
             >
               {t('common.refresh')}
             </Button>
@@ -435,10 +445,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             <Button
               variant="secondary"
               size="md"
-              onClick={() => {
-                void navigator.clipboard?.writeText(pamSnippet);
-                onFlash('ok', t('security.ssh.copiedPam'));
-              }}
+              onClick={bindCopyFlash(pamSnippet, onFlash, t('security.ssh.copiedPam'), 'ok')}
             >
               {t('security.ssh.copyPam')}
             </Button>
@@ -550,10 +557,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
 
       <Modal
         open={Boolean(reveal || confirmId)}
-        onClose={() => {
-          setReveal(null);
-          setConfirmId(null);
-        }}
+        onClose={bindClear2(setReveal, setConfirmId)}
         title={t('security.ssh.setupAuthTitle')}
         description={t('security.ssh.setupAuthDesc')}
         size="lg"
@@ -562,10 +566,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             <Button
               variant="secondary"
               size="md"
-              onClick={() => {
-                setReveal(null);
-                setConfirmId(null);
-              }}
+              onClick={bindClear2(setReveal, setConfirmId)}
             >
               {t('security.ssh.later')}
             </Button>
@@ -599,10 +600,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                void navigator.clipboard?.writeText(reveal.secret);
-                onFlash('ok', t('security.ssh.copiedSecret'));
-              }}
+              onClick={bindCopyFlash(reveal.secret, onFlash, t('security.ssh.copiedSecret'), 'ok')}
             >
               {t('security.ssh.copySecret')}
             </Button>
@@ -627,7 +625,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
 
       <PromptDialog
         open={strictTotpOpen}
-        onClose={() => !busy && setStrictTotpOpen(false)}
+        onClose={bindCloseIfIdle(busy, bindSet(setStrictTotpOpen, false))}
         title={t('security.ssh.applyStrictStepUp')}
         description={t('security.ssh.enterPanelTotp')}
         label="TOTP"

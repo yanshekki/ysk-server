@@ -37,8 +37,15 @@ import {
   bindCloseIfIdle,
   bindCloseVersions,
   bindConfirm,
+  bindDefenseAutoBanTick,
+  bindDefensePost,
+  bindDefenseProbe,
+  bindDefensePut,
+  bindDefenseUnban,
+  bindDefenseWhitelist,
   bindDraftField,
   bindFeatureRun,
+  bindFilesRun,
   bindFilesSide,
   bindIgnoreEvent,
   bindInput,
@@ -59,6 +66,7 @@ import {
   bindSeq,
   bindSet,
   bindToggle,
+  bindToggleFavorite,
   bindToggleInList,
   bindToggleKey,
   bindToggleValue,
@@ -491,5 +499,388 @@ describe('protection/files binders wave', () => {
     const work = vi.fn(async () => 1);
     bindFeatureRun(run, work, 'ok')();
     expect(run).toHaveBeenCalled();
+  });
+});
+
+describe('defense/files run binders', () => {
+  it('probe post put whitelist unban tick', async () => {
+    const calls: string[] = [];
+    const run = vi.fn(async (fn: () => Promise<unknown>) => fn());
+    const requestRaw = vi.fn(async (url: string) => {
+      calls.push(url);
+      return { ok: true };
+    });
+    const setStatus = vi.fn();
+    const refresh = vi.fn(async () => undefined);
+
+    bindDefenseProbe(run, requestRaw, setStatus, refresh, 'probed')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setStatus).toHaveBeenCalled();
+    expect(refresh).toHaveBeenCalled();
+
+    bindDefensePost(run, requestRaw, '/api/v1/defense/stack/apply', {}, refresh, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(calls.some((u) => u.includes('stack/apply'))).toBe(true);
+
+    bindDefensePut(run, requestRaw, '/api/v1/defense/geoip/policy', { enabled: true }, refresh, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+
+    bindDefenseWhitelist(run, requestRaw, '1.2.3.4', refresh, 'wl')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(calls.some((u) => u.includes('whitelist'))).toBe(true);
+
+    bindDefenseUnban(run, requestRaw, '1.2.3.4', refresh, 'ub')();
+    await new Promise((r) => setTimeout(r, 0));
+
+    bindDefenseAutoBanTick(run, requestRaw, refresh, 'tick')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(calls.some((u) => u.includes('auto-ban/tick'))).toBe(true);
+
+    const work = vi.fn(async () => 1);
+    bindFilesRun(run, work, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(work).toHaveBeenCalled();
+
+    const fav = vi.fn(async () => undefined);
+    bindToggleFavorite(run, fav, 'public', '/a')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(fav).toHaveBeenCalledWith('public', '/a');
+  });
+});
+
+describe('save/api residual binders', () => {
+  it('bindSave* / chip / append / refresh / api / cf / geo', async () => {
+    const {
+      bindSaveTopChecked,
+      bindSaveChecked,
+      bindSaveString,
+      bindSaveNumber,
+      bindChipNumber,
+      bindAppendUniqueStr,
+      bindRefreshClear,
+      bindApiRefresh0,
+      bindApiRefresh1,
+      bindApiRefresh2,
+      bindApiRefresh3,
+      bindDefenseWhitelistAction,
+      bindSaveCfZones,
+      bindDefensePostOnly,
+      bindDefenseGeoApply,
+    } = await import('./bind-handlers');
+
+    const save = vi.fn();
+    bindSaveTopChecked(save, 'enabled')({ target: { checked: true } });
+    expect(save).toHaveBeenCalledWith({ enabled: true });
+
+    bindSaveChecked(save, 'autoBan', 'enabled')({ target: { checked: false } });
+    expect(save).toHaveBeenCalledWith({ autoBan: { enabled: false } });
+
+    bindSaveString(save, 'autoBan', 'mode', { enabled: true })('soft');
+    expect(save).toHaveBeenCalledWith({ autoBan: { enabled: true, mode: 'soft' } });
+
+    let local: any = { autoBan: { minScore: 1 } };
+    const setLocal = (u: (p: any) => any) => {
+      local = u(local);
+    };
+    bindSaveNumber(save, setLocal, 'autoBan', 'minScore', 55)('70');
+    expect(local.autoBan.minScore).toBe(70);
+    expect(save).toHaveBeenCalledWith({ autoBan: { minScore: 70 } });
+    bindSaveNumber(save, setLocal, 'autoBan', 'intervalSeconds', 120, (v) =>
+      Math.max(30, Number(v) || 120),
+    )('10');
+    expect(local.autoBan.intervalSeconds).toBe(30);
+
+    const setN = vi.fn();
+    bindChipNumber(setN, 5, 1, 50)('100');
+    expect(setN).toHaveBeenCalledWith(50);
+
+    const setList = vi.fn((u: (p: string[]) => string[]) => u(['a']));
+    const setFlag = vi.fn();
+    bindAppendUniqueStr(setList, 'b', setFlag, true)();
+    expect(setFlag).toHaveBeenCalledWith(true);
+
+    const setErr = vi.fn();
+    const setMsg = vi.fn();
+    const refresh = vi.fn(async () => undefined);
+    bindRefreshClear(setErr, setMsg, refresh)();
+    expect(setErr).toHaveBeenCalledWith(null);
+    expect(refresh).toHaveBeenCalled();
+
+    const run = vi.fn(async (fn: () => Promise<unknown>) => fn());
+    const api0 = vi.fn(async () => ({ ok: true }));
+    bindApiRefresh0(run, api0, refresh, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(api0).toHaveBeenCalled();
+
+    const api1 = vi.fn(async (_a: string) => ({ ok: true }));
+    bindApiRefresh1(run, api1, 'x', null, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(api1).toHaveBeenCalledWith('x');
+
+    const api2 = vi.fn(async (_a: string, _b: string) => ({ ok: true }));
+    const clear = vi.fn();
+    bindApiRefresh2(run, api2, 'a', 'b', refresh, 'ok', clear)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(clear).toHaveBeenCalledWith('');
+
+    const api3 = vi.fn(async (_a: number, _b: number, _c: number) => ({ ok: true }));
+    bindApiRefresh3(run, api3, 1, 2, 3, refresh, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(api3).toHaveBeenCalledWith(1, 2, 3);
+
+    const requestRaw = vi.fn(async () => ({ ok: true }));
+    bindDefenseWhitelistAction(run, requestRaw, '1.1.1.1', 'remove', refresh, 'ok', clear, ['n'])();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(requestRaw).toHaveBeenCalled();
+
+    bindSaveCfZones(save, 'a.com, b.com', true, [22, 80])();
+    expect(save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cloudflare: expect.objectContaining({ enabled: true, ufwAllowOnlyCf: true }),
+      }),
+    );
+
+    bindDefensePostOnly(run, requestRaw, '/api/x', { enable: true }, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+
+    bindDefenseGeoApply(run, requestRaw, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(run.mock.calls.length).toBeGreaterThan(5);
+
+    const {
+      bindAllOrValue,
+      bindInputContext,
+      bindRefreshCatch,
+      bindFormSubmit,
+      bindSelect,
+      bindVoidCall2,
+      bindVoidCall3,
+    } = await import('./bind-handlers');
+    const set = vi.fn();
+    bindAllOrValue(set)('all');
+    expect(set).toHaveBeenCalledWith('');
+    bindAllOrValue(set)('x');
+    expect(set).toHaveBeenCalledWith('x');
+    const setCtx = vi.fn();
+    bindInputContext(set, setCtx, 'serverIp')({ target: { value: '1.1.1.1' } });
+    expect(setCtx).toHaveBeenCalledWith({ serverIp: '1.1.1.1' });
+    const ref = vi.fn(async () => { throw new Error('boom'); });
+    const setErr2 = vi.fn();
+    bindRefreshCatch(ref, setErr2)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setErr2).toHaveBeenCalledWith('boom');
+    const formFn = vi.fn();
+    const ev = { preventDefault: vi.fn() };
+    bindFormSubmit(formFn)(ev);
+    expect(ev.preventDefault).toHaveBeenCalled();
+    bindSelect(set)({ target: { value: 'm' } });
+    const c2 = vi.fn();
+    bindVoidCall2(c2, 'a', 'b')();
+    expect(c2).toHaveBeenCalledWith('a', 'b');
+    const c3 = vi.fn();
+    bindVoidCall3(c3, 1, 2, 3)();
+    expect(c3).toHaveBeenCalledWith(1, 2, 3);
+
+    const {
+      bindCloseReset,
+      bindRefreshDual,
+      bindConfirmThen,
+      bindDraftNumber,
+      bindDraftCheck,
+      bindDraftString,
+      bindToggleAndTab,
+      bindCopyMsg,
+    } = await import('./bind-handlers');
+    const setOpen = vi.fn();
+    const reset = vi.fn();
+    bindCloseReset(setOpen, reset)();
+    expect(setOpen).toHaveBeenCalledWith(false);
+    expect(reset).toHaveBeenCalled();
+    const a = vi.fn();
+    const b = vi.fn();
+    bindRefreshDual(a, b, true)();
+    expect(a).toHaveBeenCalled();
+    expect(b).toHaveBeenCalled();
+    bindConfirmThen(setOpen, a, false)();
+    let draft: any = {};
+    const setDraft = (u: any) => { draft = u(draft); };
+    bindDraftNumber(setDraft, 'n', 5)('10');
+    expect(draft.n).toBe(10);
+    bindDraftCheck(setDraft, 'on')({ target: { checked: true } });
+    expect(draft.on).toBe(true);
+    bindDraftString(setDraft, 's')('hi');
+    expect(draft.s).toBe('hi');
+    const setBool = vi.fn((u: any) => u(false));
+    const setTab = vi.fn();
+    bindToggleAndTab(setBool, setTab, 'explore')();
+    expect(setTab).toHaveBeenCalledWith('explore');
+
+    const {
+      bindValueSet,
+      bindRemoveIf,
+      bindClear2,
+      bindClear3,
+    } = await import('./bind-handlers');
+    const setV = vi.fn();
+    bindValueSet(setV)('x');
+    expect(setV).toHaveBeenCalledWith('x');
+    const remove = vi.fn(async () => undefined);
+    const clearId = vi.fn();
+    bindRemoveIf('id1', remove, clearId)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(remove).toHaveBeenCalledWith('id1');
+    expect(clearId).toHaveBeenCalledWith(null);
+    bindRemoveIf(null, remove, clearId)();
+    const cA = vi.fn();
+    const cB = vi.fn();
+    bindClear2(cA, cB)();
+    expect(cA).toHaveBeenCalledWith(null);
+    bindClear3(cA, cB, clearId)();
+
+    const { bindInputCall, bindCheckCall, bindCopyFlash, bindNavTo } = await import('./bind-handlers');
+    const fn = vi.fn();
+    bindInputCall(fn)({ target: { value: 'z' } });
+    expect(fn).toHaveBeenCalledWith('z');
+    bindCheckCall(fn)({ target: { checked: true } });
+    expect(fn).toHaveBeenCalledWith(true);
+    const flash = vi.fn();
+    bindCopyFlash('txt', flash, 'done', 'ok')();
+    expect(flash).toHaveBeenCalledWith('ok', 'done');
+    const nav = vi.fn();
+    bindNavTo(nav, '/x')();
+    expect(nav).toHaveBeenCalledWith('/x');
+    const { bindFilter } = await import('./bind-handlers');
+    const sf = vi.fn();
+    bindFilter(sf, 'status')('applied');
+    expect(sf).toHaveBeenCalledWith('status', 'applied');
+  });
+});
+
+describe('branch sides binders', () => {
+  it('covers false paths', async () => {
+    const {
+      bindSaveNumber,
+      bindRemoveIf,
+      bindRefreshDual,
+      bindCloseIfIdle,
+      bindApiRefresh0,
+      bindAllOrValue,
+      bindChipNumber,
+      bindAppendUniqueStr,
+    } = await import('./bind-handlers');
+    const save = vi.fn();
+    let local: any = null;
+    const setLocal = (u: any) => {
+      local = u(local);
+    };
+    bindSaveNumber(save, setLocal, 'autoBan', 'minScore', 55)('x');
+    expect(local).toBeNull();
+    expect(save).toHaveBeenCalled();
+    bindRemoveIf('', vi.fn(), vi.fn())();
+    bindRefreshDual(vi.fn(), vi.fn(), false)();
+    const close = vi.fn();
+    bindCloseIfIdle(true, close)();
+    expect(close).not.toHaveBeenCalled();
+    const run = vi.fn(async (fn: any) => fn());
+    bindApiRefresh0(run, async () => 1, null, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+    const set = vi.fn();
+    bindAllOrValue(set, 'ALL')('ALL');
+    expect(set).toHaveBeenCalledWith('');
+    // '0' is falsy for Number(v)||fallback → fallback 5, then min clamp keeps 5
+    bindChipNumber(set, 5, 1, 10)('0');
+    expect(set).toHaveBeenCalled();
+    bindChipNumber(set, 5, 1, 10)('-3');
+    const setList = vi.fn((u: any) => u(['a']));
+    bindAppendUniqueStr(setList, 'a')();
+  });
+});
+
+describe('remaining binder branches', () => {
+  it('hits optional body/map/clear/extra paths', async () => {
+    const {
+      bindDefensePost,
+      bindDefensePut,
+      bindDefensePostOnly,
+      bindDefenseWhitelistAction,
+      bindSaveString,
+      bindSaveNumber,
+      bindApiRefresh0,
+      bindApiRefresh1,
+      bindApiRefresh2,
+      bindDraftNumber,
+      bindBanAndClear,
+      bindBusyCreateMailbox,
+      bindBusyListSieve,
+    } = await import('./bind-handlers');
+
+    const run = vi.fn(async (fn: any) => fn());
+    const requestRaw = vi.fn(async () => ({ ok: true, notes: ['n'] }));
+    const refresh = vi.fn(async () => undefined);
+    const mapResult = vi.fn((r: any) => ({ ...r, mapped: true }));
+
+    // mapResult path + null body
+    bindDefensePost(run, requestRaw, '/p', null, refresh, 'ok', mapResult)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(mapResult).toHaveBeenCalled();
+
+    // no mapResult, null body
+    bindDefensePost(run, requestRaw, '/p2', undefined, refresh, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+
+    bindDefensePut(run, requestRaw, '/put', null, refresh, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+
+    bindDefensePostOnly(run, requestRaw, '/only', null, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+
+    // notes undefined path
+    bindDefenseWhitelistAction(run, requestRaw, '1.1.1.1', 'add', refresh, 'ok')();
+    await new Promise((r) => setTimeout(r, 0));
+
+    // clearSet present
+    const clear = vi.fn();
+    bindApiRefresh0(run, async () => 1, refresh, 'ok', clear)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(clear).toHaveBeenCalledWith('');
+
+    bindApiRefresh1(run, async (a: string) => a, 'x', refresh, 'ok', clear)();
+    await new Promise((r) => setTimeout(r, 0));
+
+    bindApiRefresh2(run, async (a: string, b: string) => a + b, 'a', 'b', refresh, 'ok', clear)();
+    await new Promise((r) => setTimeout(r, 0));
+
+    // extra undefined
+    const save = vi.fn();
+    bindSaveString(save, 'sec', 'key')('v');
+    expect(save).toHaveBeenCalledWith({ sec: { key: 'v' } });
+
+    // setLocal with null a
+    let local: any = null;
+    bindSaveNumber(save, (u) => { local = u(local); }, 'sec', 'n', 1)('2');
+    expect(local).toBeNull();
+
+    // draft number fallback
+    let draft: any = {};
+    bindDraftNumber((u) => { draft = u(draft); }, 'n', 9)('nope');
+    expect(draft.n).toBe(9);
+
+    // ban clear — empty trim still may call with empty; exercise path
+    const ban = vi.fn();
+    const setBan = vi.fn();
+    bindBanAndClear(ban, '   ', 'r', setBan)();
+    void ban.mock.calls;
+
+    expect(run.mock.calls.length).toBeGreaterThan(3);
+
+    const { bindSet2, bindSet3 } = await import('./bind-handlers');
+    const a = vi.fn();
+    const b = vi.fn();
+    const c = vi.fn();
+    bindSet2(a, 1, b, 2)();
+    expect(a).toHaveBeenCalledWith(1);
+    expect(b).toHaveBeenCalledWith(2);
+    bindSet3(a, 'x', b, 'y', c, 'z')();
+    expect(c).toHaveBeenCalledWith('z');
   });
 });

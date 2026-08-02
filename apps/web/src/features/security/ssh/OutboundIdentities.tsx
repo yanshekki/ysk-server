@@ -26,7 +26,7 @@ import {
   statusTone,
 } from './labels';
 import type { ProjectOpt, SshIdentityRow } from './types';
-import { bindSet, bindInput, bindCheck, bindVoid, bindCall1 } from '../../../pages/bind-handlers';
+import { bindCall1, bindCheck, bindClipboard, bindInput, bindRefreshCatch, bindSet, bindVoid } from '../../../pages/bind-handlers';
 
 type Filter = 'active' | 'panel' | 'user' | 'retired' | 'all';
 
@@ -260,7 +260,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               variant="ghost"
               size="md"
               loading={busy}
-              onClick={() => void refresh().catch((e: Error) => setLoadErr(e.message))}
+              onClick={bindRefreshCatch(refresh, setLoadErr)}
             >
               {t('common.refresh')}
             </Button>

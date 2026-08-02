@@ -27,7 +27,7 @@ import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
-import { bindSet, bindInput, bindVoid, bindCall1 } from '../bind-handlers';
+import { bindCall1, bindCheck, bindInput, bindSet, bindVoid } from '../bind-handlers';
 
 const BK_TABS = ['files', 'ops', 'remote', 'about'] as const;
 

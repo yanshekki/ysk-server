@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Floor-90 wave E: dashboard notifications/apply-audit, network DNS/routes,
  * project logs + confirm actions — last ~400 lines.
@@ -77,6 +78,7 @@ describe('coverage floor 90e', () => {
   it(
     'Dashboard: notifications + apply-audit + wizard submit',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -272,6 +274,7 @@ describe('coverage floor 90e', () => {
   it(
     'NetworkPage: DNS apply + resolve test + route add + iface ops',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -383,6 +386,7 @@ describe('coverage floor 90e', () => {
   it(
     'ProjectDetail: logs search + stop/delete confirm + deploy tab',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -478,6 +482,7 @@ describe('coverage floor 90e', () => {
   it(
     'Email flags + Backups restic snapshot restore + SqlEngine + Logs + Runtime + Redis + DeployTab',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -713,7 +718,7 @@ describe('coverage floor 90e', () => {
           /* ignore */
         }
       }
-      r.unmount();
+      probe.sample(); r.unmount();
 
       // Backups ops tab list snapshots + restore buttons
       r = renderAt('/backups?tab=ops', <BackupsPage />);
@@ -728,7 +733,7 @@ describe('coverage floor 90e', () => {
       setVal('rs-pid', 'proj-aaaa1111');
       await clickBtn(user, /list|snapshot|列出|restic|run|backup|preview|safe|overwrite|download|delete|restore/i, 16);
       await clickBtn(user, /confirm|yes|ok|overwrite|restore|delete/i, 5);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/databases/mysql-engine', <SqlEnginePage engine="mysql" />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -741,7 +746,7 @@ describe('coverage floor 90e', () => {
       }
       await clickBtn(user, /create|install|start|delete|edit|apply|expire|clean|adminer|grant/i, 14);
       await clickBtn(user, /confirm|yes/i, 3);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/logs', <LogsPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -753,7 +758,7 @@ describe('coverage floor 90e', () => {
         }
       }
       await clickBtn(user, /follow|export|search|refresh|bookmark|save|clear|filter/i, 12);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/runtimes/node', <GenericRuntimePage kind="node" />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -770,7 +775,7 @@ describe('coverage floor 90e', () => {
         fireEvent.change(input, { target: { value: '1024' } });
       }
       await clickBtn(user, /install|probe|save|apply|default|switch|refresh/i, 10);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       r = renderAt('/redis', <RedisPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -782,7 +787,7 @@ describe('coverage floor 90e', () => {
         }
       }
       await clickBtn(user, /create|start|stop|save|flush|delete|refresh|info|password/i, 12);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       // ProjectDeployTab standalone with full props
       const project = {
@@ -838,9 +843,11 @@ describe('coverage floor 90e', () => {
         }
       }
       await clickBtn(user, /deploy|save|git|build|env|history|refresh|apply|dismiss|install/i, 14);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     90_000,
   );

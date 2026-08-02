@@ -1,3 +1,4 @@
+import { bindCall1, bindCheck, bindCheckCall, bindInput, bindInputCall, bindSelect, bindSet, bindValueSet } from '../../pages/bind-handlers';
 /**
  * Professional user detail editor — large modal, sectioned, progressive disclosure.
  */
@@ -197,7 +198,7 @@ export function UserDetailModal({
               { id: 'advanced', label: t('users.tabAdvanced') },
             ]}
             active={tab}
-            onChange={(id) => setTab(id as DetailTab)}
+            onChange={bindValueSet(setTab as (v: string) => void)}
             variant="scroll"
           >
             {tab === 'account' ? (
@@ -218,7 +219,7 @@ export function UserDetailModal({
                           name="user-detail-role"
                           value={r}
                           checked={role === r}
-                          onChange={() => onRoleChange(r)}
+                          onChange={bindCall1(onRoleChange, r)}
                         />
                         <span className="role-card__title">
                           {t(`users.roleName.${r}`, { defaultValue: r })}
@@ -243,7 +244,7 @@ export function UserDetailModal({
                       <select
                         id="ud-pkg"
                         value={packageId}
-                        onChange={(e) => onPackageChange(e.target.value)}
+                        onChange={bindInputCall(onPackageChange)}
                       >
                         <option value="">{t('users.noneOption')}</option>
                         {packages.map((p) => (
@@ -263,7 +264,7 @@ export function UserDetailModal({
                         id="ud-pass"
                         type="password"
                         value={password}
-                        onChange={(e) => onPasswordChange(e.target.value)}
+                        onChange={bindInputCall(onPasswordChange)}
                         minLength={8}
                         autoComplete="new-password"
                         placeholder={t('users.resetPasswordOptional')}
@@ -281,7 +282,7 @@ export function UserDetailModal({
                       <input
                         type="checkbox"
                         checked={suspended}
-                        onChange={(e) => onSuspendedChange(e.target.checked)}
+                        onChange={bindCheckCall(onSuspendedChange)}
                       />
                       {t('users.suspended')}
                     </label>

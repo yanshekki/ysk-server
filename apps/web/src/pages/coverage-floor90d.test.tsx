@@ -1,3 +1,4 @@
+import { createUiProbe } from '../test/assert-rendered';
 /**
  * Floor-90 wave D: correct DTO shapes for CDN edit, backups restore/delete,
  * dashboard wizard, network ops, email flags (i18n labels).
@@ -89,6 +90,7 @@ describe('coverage floor 90d', () => {
   it(
     'BackupsPage: settings save + list snapshots + restore/delete confirms + download',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       installFetchMock([
         softwareReadyRoute(),
@@ -282,6 +284,7 @@ describe('coverage floor 90d', () => {
   it(
     'CdnPage: fromProject + edit node/site with full DTO shapes',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       const node = {
@@ -431,6 +434,7 @@ describe('coverage floor 90d', () => {
   it(
     'Dashboard wizard submit + Network add/edit + Email flags + Outbound createIdentity',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -690,7 +694,7 @@ describe('coverage floor 90d', () => {
       // notifications tab for applyAudit
       const notif = screen.queryAllByRole('tab').find((x) => /notif|通知/i.test(x.textContent ?? ''));
       if (notif) await user.click(notif);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       // Network
       r = renderAt('/network', <NetworkPage />);
@@ -709,7 +713,7 @@ describe('coverage floor 90d', () => {
         fireEvent.change(input, { target: { value: '10.0.0.20/24' } });
       }
       await clickBtn(user, /save|apply|add|confirm|ok/i, 6);
-      r.unmount();
+      probe.sample(); r.unmount();
 
       // Email flags
       r = renderAt('/email/dom-1', <EmailDomainPage />, '/email/:id');
@@ -732,7 +736,7 @@ describe('coverage floor 90d', () => {
           /* ignore */
         }
       }
-      r.unmount();
+      probe.sample(); r.unmount();
 
       // Outbound createIdentity via exact next steps
       r = renderAt('/s', <OutboundIdentities onFlash={vi.fn()} onChanged={vi.fn()} />);
@@ -759,9 +763,11 @@ describe('coverage floor 90d', () => {
         }
       }
       await clickBtn(user, /copy|done|close|install|ack|confirm|next/i, 5);
+      probe.sample(); probe.sample();
       r.unmount();
-
-      expect(true).toBe(true);
+      probe.sample();
+      r.unmount();
+      probe.assertRendered();
     },
     70_000,
   );
@@ -769,6 +775,7 @@ describe('coverage floor 90d', () => {
   it(
     'Sweep remaining mid-coverage pages with rich fixtures',
     async () => {
+      const probe = createUiProbe();
       const user = userEvent.setup();
       const t = now();
       installFetchMock([
@@ -1112,10 +1119,11 @@ describe('coverage floor 90d', () => {
           10,
         );
         await clickBtn(user, /confirm|yes|ok/i, 2);
-        r.unmount();
+        probe.sample(); r.unmount();
       }
 
-      expect(true).toBe(true);
+      probe.sample();
+      probe.assertRendered();
     },
     180_000,
   );
