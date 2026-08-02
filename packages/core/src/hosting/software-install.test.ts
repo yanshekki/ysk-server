@@ -1,7 +1,6 @@
 import { describe, expect, it, afterEach } from 'vitest';
 import { join } from 'node:path';
 import type { HostExecutor, RunResult } from '../host/executor.js';
-import { makeHost } from '../test/host.js';
 import {
   installForFeature,
   installSoftware,
