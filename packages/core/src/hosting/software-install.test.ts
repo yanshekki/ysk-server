@@ -104,9 +104,9 @@ describe('software-install honesty', () => {
   });
 
   it('installSoftware blocks without execute (fail-closed)', async () => {
-    const { host, dir, cleanup } = makeHost({ executeEnabled: false });
-    cleanups.push(cleanup);
-    const r = await installSoftware({ host, id: 'nginx', dataDir: dir });
+    // Use pure mock (bins: []) — LocalHostExecutor would see real nginx on CI.
+    const host = mockHost({ executeEnabled: false, isRoot: true, bins: [] });
+    const r = await installSoftware({ host, id: 'nginx' });
     expect(r.ok).toBe(false);
     expect(r.executed).toBe(false);
     expect(r.blocked).toBe(true);

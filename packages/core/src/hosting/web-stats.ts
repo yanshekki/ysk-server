@@ -89,16 +89,21 @@ export async function collectProjectWebStats(input: {
   homeDir: string;
   linuxUser: string;
 }): Promise<WebStatsSummary> {
-  const candidates = [
+  // Project-local paths only via direct FS. System /var/log paths go through
+  // host.runCommand so CI/sandbox hosts without nginx logs (or with unrelated
+  // production logs) do not leak into unit isolation.
+  const localCandidates = [
     join(input.homeDir, 'logs', 'access.log'),
     join(input.homeDir, 'log', 'access.log'),
     join(input.dataDir, 'nginx', 'logs', `${input.linuxUser}.access.log`),
+  ];
+  const hostCandidates = [
     `/var/log/nginx/${input.linuxUser}.access.log`,
     '/var/log/nginx/access.log',
   ];
   let logPath: string | undefined;
   let content = '';
-  for (const p of candidates) {
+  for (const p of localCandidates) {
     if (existsSync(p) && statSync(p).isFile()) {
       logPath = p;
       try {
@@ -113,17 +118,16 @@ export async function collectProjectWebStats(input: {
   }
 
   if (!logPath && input.host.executeEnabled()) {
-    const r = await input.host.runCommand(
-      [
-        'bash',
-        '-c',
-        `tail -n 2000 /var/log/nginx/access.log 2>/dev/null || true`,
-      ],
-      { timeoutMs: 10_000 },
-    );
-    if (r.stdout.trim()) {
-      logPath = '/var/log/nginx/access.log';
-      content = r.stdout;
+    for (const p of hostCandidates) {
+      const r = await input.host.runCommand(
+        ['bash', '-c', `tail -n 2000 ${JSON.stringify(p)} 2>/dev/null || true`],
+        { timeoutMs: 10_000 },
+      );
+      if (r.stdout.trim()) {
+        logPath = p;
+        content = r.stdout;
+        break;
+      }
     }
   }
 
