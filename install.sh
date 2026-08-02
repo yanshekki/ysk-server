@@ -98,14 +98,16 @@ apt_update() {
 
 # Install packages; on failure try one-by-one for soft packages
 apt_install_core() {
+  # Use env so this works when SUDO is empty (running as root).
   # shellcheck disable=SC2086
-  $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"
+  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"
 }
 
 apt_install_soft() {
   local pkg
   for pkg in "$@"; do
-    if $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" 2>/dev/null; then
+    # shellcheck disable=SC2086
+    if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" 2>/dev/null; then
       log "  + $pkg"
     else
       warn "optional package unavailable: $pkg (continuing)"
