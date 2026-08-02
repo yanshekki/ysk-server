@@ -275,7 +275,8 @@ install_node() {
   fi
   resolve_sudo
   curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO bash -
-  $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+  # shellcheck disable=SC2086
+  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
   log "Node.js $(node -v) / npm $(npm -v)"
 }
 
