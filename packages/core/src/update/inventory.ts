@@ -41,7 +41,8 @@ export async function collectInventory(host: HostExecutor): Promise<{
   }
   const up = await host.runCommand(['bash', '-c', upScript], {
     dryRun: false,
-    timeoutMs: refreshIndexes ? 120_000 : 60_000,
+    // Keep read-only apt list bounded so CI/unit paths cannot hang 60s+ per call.
+    timeoutMs: refreshIndexes ? 120_000 : 20_000,
   });
 
   let upgradableCount = 0;
@@ -189,6 +190,8 @@ export async function lookupOsvVulns(
         package: { name: packageName, ecosystem: 'Debian' },
         version,
       }),
+      // Network-bound helper used by HTTP tests — never hang the suite.
+      signal: AbortSignal.timeout(5_000),
     });
     if (!res.ok) return [];
     const body = (await res.json()) as {

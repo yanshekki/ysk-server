@@ -138,6 +138,19 @@ describe('updates routes (HTTP)', () => {
 
   it('inventory live + cached + refresh with osv', async () => {
     ts = await startTestServer();
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: any, init?: any) => {
+      const url = String(input);
+      if (url.includes('api.osv.dev')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ vulns: [] }),
+          text: async () => '{}',
+        } as Response;
+      }
+      return origFetch(input as never, init);
+    }) as typeof fetch;
     // seed cache
     ts.ctx.settings.setJson('last_inventory', {
       at: new Date().toISOString(),
@@ -181,9 +194,13 @@ describe('updates routes (HTTP)', () => {
     expect(Array.isArray((refresh.body as { inventory?: unknown[] }).inventory)).toBe(true);
     expect(Array.isArray((refresh.body as { advice?: unknown[] }).advice)).toBe(true);
 
-    const refreshPlain = await apiJson(ts, 'POST', '/api/v1/updates/inventory/refresh', {
-      osv: false,
-    });
-    expect(refreshPlain.status).toBe(200);
-  }, 120_000);
+    try {
+      const refreshPlain = await apiJson(ts, 'POST', '/api/v1/updates/inventory/refresh', {
+        osv: false,
+      });
+      expect(refreshPlain.status).toBe(200);
+    } finally {
+      globalThis.fetch = origFetch;
+    }
+  }, 180_000);
 });

@@ -946,10 +946,28 @@ describe('branch boost — controllers logs/network/metrics + misc routes', () =
 
     const refresh = await apiJson(ts, 'POST', '/api/v1/updates/inventory/refresh', {});
     expect(refresh.status).toBeLessThan(500);
-    const refreshOsv = await apiJson(ts, 'POST', '/api/v1/updates/inventory/refresh', {
-      osv: true,
-      limit: 3,
-    });
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: any, init?: any) => {
+      const url = String(input);
+      if (url.includes('api.osv.dev')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ vulns: [] }),
+          text: async () => '{}',
+        } as Response;
+      }
+      return origFetch(input as never, init);
+    }) as typeof fetch;
+    let refreshOsv: Awaited<ReturnType<typeof apiJson>>;
+    try {
+      refreshOsv = await apiJson(ts, 'POST', '/api/v1/updates/inventory/refresh', {
+        osv: true,
+        limit: 3,
+      });
+    } finally {
+      globalThis.fetch = origFetch;
+    }
     expect(refreshOsv.status).toBeLessThan(500);
     const invCached = await apiJson(ts, 'GET', '/api/v1/updates/inventory?cached=1&risk=low');
     expect(invCached.status).toBeLessThan(500);
@@ -1016,5 +1034,5 @@ describe('branch boost — controllers logs/network/metrics + misc routes', () =
     // cdn site health-loop empty
     const hl = await apiJson(ts, 'POST', '/api/v1/cdn/sites/no-such/health-loop', {});
     expect(hl.status).toBeLessThan(500);
-  }, 120_000);
+  }, 180_000);
 });
