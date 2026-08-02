@@ -9,9 +9,24 @@ import {
   bindArg2,
   bindAsync,
   bindBanOne,
+  bindBusyApplyPolicy,
+  bindBusyAutodiscover,
+  bindBusyBootstrap,
+  bindBusyCreateMailbox,
+  bindBusyDnsblMulti,
   bindBusyDual,
+  bindBusyFlagsUpdate,
+  bindBusyListSieve,
+  bindBusyLiveReload,
+  bindBusyMailQueue,
   bindBusyMap,
+  bindBusyMutateList,
   bindBusySet,
+  bindBusySetAndTab,
+  bindBusySetRelay,
+  bindBusyWebmailSso,
+  bindBusyWorkThen,
+  bindBusyWriteSieve,
   bindCall1,
   bindCall2,
   bindCall3,
@@ -242,5 +257,133 @@ describe('bindToggleValue', () => {
     expect(onChange).toHaveBeenCalledWith('b');
     bindToggleValue(onChange, 'b', 'b')();
     expect(onChange).toHaveBeenCalledWith('');
+  });
+});
+
+describe('email busy binders', () => {
+  it('flags / mutate / tab / live / dnsbl / dual / workThen', async () => {
+    const withBusy = vi.fn(async (fn: () => Promise<unknown>) => fn());
+    const setLog = vi.fn();
+    const load = vi.fn(async () => undefined);
+    const toLog = (r: Record<string, unknown>) => ({ mapped: true, ...r });
+    const updateFlags = vi.fn(async () => ({ ok: true }));
+    bindBusyFlagsUpdate(withBusy, updateFlags, 'd1', { suspended: true }, toLog, setLog, load)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(updateFlags).toHaveBeenCalled();
+    expect(setLog).toHaveBeenCalled();
+    expect(load).toHaveBeenCalled();
+
+    const mutate = vi.fn(async () => ({ ok: 1 }));
+    const setRes = vi.fn();
+    const list = vi.fn(async () => ({ items: [1, 2] }));
+    const setItems = vi.fn();
+    const after = vi.fn();
+    bindBusyMutateList(withBusy, mutate, setRes, list, setItems, after)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setItems).toHaveBeenCalledWith([1, 2]);
+    expect(after).toHaveBeenCalled();
+
+    const setTab = vi.fn();
+    const setD = vi.fn();
+    bindBusySetAndTab(withBusy, async () => 'pack', setD, setTab, 'deliverability')();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setTab).toHaveBeenCalledWith('deliverability');
+
+    const setLive = vi.fn();
+    bindBusyLiveReload(withBusy, async () => ({ ok: true }), setLive, load)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setLive).toHaveBeenCalled();
+
+    const setDnsbl = vi.fn();
+    bindBusyDnsblMulti(
+      withBusy,
+      async () => ['9.9.9.9'],
+      '1.1.1.1',
+      async (ips) => ({ ips }),
+      (p, e) => [p ?? '', ...e].filter(Boolean),
+      setDnsbl,
+    )();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setDnsbl).toHaveBeenCalled();
+
+    const setA = vi.fn();
+    const setB = vi.fn();
+    bindBusyDual(withBusy, async () => 'a', setA, async () => 'b', setB)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setA).toHaveBeenCalledWith('a');
+
+    const work = vi.fn(async () => undefined);
+    bindBusyWorkThen(withBusy, work, load)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(work).toHaveBeenCalled();
+  });
+
+  it('autodiscover queue bootstrap sieve createMailbox policy relay sso', async () => {
+    const withBusy = vi.fn(async (fn: () => Promise<unknown>) => fn());
+    const setLog = vi.fn();
+    const writeText = vi.fn(async () => undefined);
+    // @ts-expect-error shim
+    globalThis.navigator = { clipboard: { writeText } };
+
+    bindBusyAutodiscover(
+      withBusy,
+      async () => ({ notes: ['n'], mozillaXml: 'x'.repeat(300), urls: {} }),
+      setLog,
+    )();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(writeText).toHaveBeenCalled();
+
+    bindBusyMailQueue(withBusy, async () => ({ items: Array.from({ length: 30 }, (_, i) => i) }), setLog)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setLog.mock.calls.at(-1)[0].items).toHaveLength(20);
+
+    const load = vi.fn(async () => undefined);
+    const onInvalid = vi.fn();
+    const bootstrap = vi.fn(async () => ({ ok: true }));
+    bindBusyBootstrap(withBusy, 'short', () => false, onInvalid, bootstrap, {}, setLog, load)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(onInvalid).toHaveBeenCalled();
+    bindBusyBootstrap(withBusy, 'longenough', () => true, onInvalid, bootstrap, { domain: 'x.com' }, setLog, load)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(bootstrap).toHaveBeenCalled();
+
+    const applyPolicy = vi.fn(async () => ({ ok: true }));
+    bindBusyApplyPolicy(withBusy, applyPolicy, 'd', { applySystem: true }, setLog, load)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(applyPolicy).toHaveBeenCalled();
+
+    const setRelay = vi.fn(async () => ({ ok: true }));
+    bindBusySetRelay(withBusy, setRelay, { host: 'h' }, setLog)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(setRelay).toHaveBeenCalled();
+
+    // mock getElementById
+    const input = { value: 'pw' } as HTMLInputElement;
+    vi.spyOn(document, 'getElementById').mockReturnValue(input);
+    const webmailSso = vi.fn(async () => ({ token: 't' }));
+    bindBusyWebmailSso(withBusy, 'sso-pw', 'a@b.com', 'b.com', webmailSso, setLog)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(webmailSso).toHaveBeenCalled();
+
+    const writeSieve = vi.fn(async () => ({ ok: true }));
+    bindBusyWriteSieve(withBusy, 'ex.com', writeSieve, setLog)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(writeSieve).toHaveBeenCalled();
+
+    const listSieve = vi.fn(async () => ({ files: [] }));
+    bindBusyListSieve(withBusy, 'ex.com', listSieve, setLog)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(listSieve).toHaveBeenCalledWith('postmaster@ex.com');
+
+    const create = vi.fn(async () => ({ ok: true }));
+    const list = vi.fn(async () => ({ items: [{ id: 1 }] }));
+    const setItems = vi.fn();
+    const close = vi.fn();
+    const clear = vi.fn();
+    bindBusyCreateMailbox(withBusy, create, 'd', 'info', 'secret', setLog, list, setItems, close, clear)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(create).toHaveBeenCalled();
+    expect(close).toHaveBeenCalled();
+    expect(clear).toHaveBeenCalled();
   });
 });

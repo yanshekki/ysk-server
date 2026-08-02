@@ -32,7 +32,30 @@ import {
 } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
-import { bindSet, bindInput, bindNavigate, bindClipboard, bindOpenCreate, bindBusySet, bindBusyMap } from './bind-handlers';
+import {
+  bindBusyApplyPolicy,
+  bindBusyAutodiscover,
+  bindBusyBootstrap,
+  bindBusyCreateMailbox,
+  bindBusyDnsblMulti,
+  bindBusyDual,
+  bindBusyFlagsUpdate,
+  bindBusyListSieve,
+  bindBusyLiveReload,
+  bindBusyMailQueue,
+  bindBusyMap,
+  bindBusyMutateList,
+  bindBusySet,
+  bindBusySetAndTab,
+  bindBusySetRelay,
+  bindBusyWebmailSso,
+  bindBusyWriteSieve,
+  bindClipboard,
+  bindInput,
+  bindNavigate,
+  bindOpenCreate,
+  bindSet,
+} from './bind-handlers';
 
 export function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
@@ -426,12 +449,13 @@ export function EmailDomainPage() {
             variant="secondary"
             size="sm"
             loading={busy}
-            onClick={() =>
-              void withBusy(async () => {
-                setBundle(await emailApi.dns(domain.id));
-                setMailboxes((await emailApi.listMailboxes(domain.id)).items);
-              })
-            }
+            onClick={bindBusyDual(
+              withBusy,
+              () => emailApi.dns(domain.id),
+              setBundle,
+              async () => (await emailApi.listMailboxes(domain.id)).items,
+              setMailboxes,
+            )}
           >
             {t('common.refresh')}
           </Button>
@@ -461,9 +485,7 @@ export function EmailDomainPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        navigate(`/dns`)
-                      }
+                      onClick={bindNavigate(navigate, '/dns')}
                     >
                       {t('email.openDnsPage')}
                     </Button>
@@ -675,19 +697,18 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const destinations = parseAliasDestinations(aliasDest);
-                        setAliasLog(
-                          await emailApi.createAlias(domain.id, {
-                            type: aliasType,
-                            localPart: aliasType === 'catchall' ? undefined : aliasLocal,
-                            destinations,
-                          }),
-                        );
-                        setAliases((await emailApi.listAliases(domain.id)).items);
-                      })
-                    }
+                    onClick={bindBusyMutateList(
+                      withBusy,
+                      () =>
+                        emailApi.createAlias(domain.id, {
+                          type: aliasType,
+                          localPart: aliasType === 'catchall' ? undefined : aliasLocal,
+                          destinations: parseAliasDestinations(aliasDest),
+                        }),
+                      setAliasLog,
+                      () => emailApi.listAliases(domain.id),
+                      setAliases,
+                    )}
                   >
                     {t('email.addAlias')}
                   </Button>
@@ -705,14 +726,13 @@ export function EmailDomainPage() {
                           variant="danger"
                           size="sm"
                           loading={busy}
-                          onClick={() =>
-                            void withBusy(async () => {
-                              setAliasLog(
-                                await emailApi.deleteAlias(domain.id, String(a.id)),
-                              );
-                              setAliases((await emailApi.listAliases(domain.id)).items);
-                            })
-                          }
+                          onClick={bindBusyMutateList(
+                              withBusy,
+                              () => emailApi.deleteAlias(domain.id, String(a.id)),
+                              setAliasLog,
+                              () => emailApi.listAliases(domain.id),
+                              setAliases,
+                            )}
                         >
                           {t('common.delete')}
                         </Button>
@@ -771,18 +791,20 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const r = await emailApi.updateFlags(domain.id, {
-                          autoreplyEnabled: autoreplyOn,
-                          autoreplySubject,
-                          autoreplyBody,
-                          applySystem: flagsApplySystem,
-                        });
-                        setFlagsLog(flagsResultToLog(r));
-                        await load();
-                      })
-                    }
+                    onClick={bindBusyFlagsUpdate(
+                      withBusy,
+                      emailApi.updateFlags,
+                      domain.id,
+                      {
+                        autoreplyEnabled: autoreplyOn,
+                        autoreplySubject,
+                        autoreplyBody,
+                        applySystem: flagsApplySystem,
+                      },
+                      flagsResultToLog,
+                      setFlagsLog,
+                      load,
+                    )}
                   >
                     {flagsApplySystem ? t('email.saveApplyAutoreply') : t('email.saveAutoreplyWritten')}
                   </Button>
@@ -790,16 +812,15 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const r = await emailApi.updateFlags(domain.id, {
-                          suspended: true,
-                          applySystem: flagsApplySystem,
-                        });
-                        setFlagsLog(flagsResultToLog(r));
-                        await load();
-                      })
-                    }
+                    onClick={bindBusyFlagsUpdate(
+                      withBusy,
+                      emailApi.updateFlags,
+                      domain.id,
+                      { suspended: true, applySystem: flagsApplySystem },
+                      flagsResultToLog,
+                      setFlagsLog,
+                      load,
+                    )}
                   >
                     {flagsApplySystem ? t('email.suspendApply') : t('email.suspendWritten')}
                   </Button>
@@ -807,16 +828,15 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const r = await emailApi.updateFlags(domain.id, {
-                          suspended: false,
-                          applySystem: flagsApplySystem,
-                        });
-                        setFlagsLog(flagsResultToLog(r));
-                        await load();
-                      })
-                    }
+                    onClick={bindBusyFlagsUpdate(
+                      withBusy,
+                      emailApi.updateFlags,
+                      domain.id,
+                      { suspended: false, applySystem: flagsApplySystem },
+                      flagsResultToLog,
+                      setFlagsLog,
+                      load,
+                    )}
                   >
                     {flagsApplySystem ? t('email.resumeApply') : t('email.resumeWritten')}
                   </Button>
@@ -892,12 +912,13 @@ export function EmailDomainPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setDeliverability(await emailApi.deliverability(domain.id));
-                      setTab('deliverability');
-                    })
-                  }
+                  onClick={bindBusySetAndTab(
+                    withBusy,
+                    () => emailApi.deliverability(domain.id),
+                    setDeliverability,
+                    setTab,
+                    'deliverability',
+                  )}
                 >
                   {t('email.runDeliverabilityPack', {
                     defaultValue: 'Run deliverability pack',
@@ -907,13 +928,12 @@ export function EmailDomainPage() {
                   variant="secondary"
                   size="md"
                   loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      const r = await emailApi.liveCheck(domain.id);
-                      setLive(r);
-                      await load();
-                    })
-                  }
+                  onClick={bindBusyLiveReload(
+                    withBusy,
+                    () => emailApi.liveCheck(domain.id),
+                    setLive,
+                    load,
+                  )}
                 >
                   {t('email.runLiveCheck')}
                 </Button>
@@ -921,11 +941,7 @@ export function EmailDomainPage() {
                   variant="secondary"
                   size="md"
                   loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      setDnsbl(await emailApi.dnsbl(domain.server_ip));
-                    })
-                  }
+                  onClick={bindBusySet(withBusy, () => emailApi.dnsbl(domain.server_ip), setDnsbl)}
                 >
                   {t('email.dnsblThisIp')}
                 </Button>
@@ -933,24 +949,19 @@ export function EmailDomainPage() {
                   variant="secondary"
                   size="md"
                   loading={busy}
-                  onClick={() =>
-                    void withBusy(async () => {
-                      let hostIps: string[] = [];
-                      try {
-                        const r = await api.requestRaw<{ items: string[] }>(
-                          '/api/v1/system/ips',
-                        );
-                        hostIps = r.items ?? [];
-                      } catch {
-                        /* optional */
-                      }
-                      setDnsbl(
-                        await emailApi.dnsblMulti(
-                          uniqueIps(domain.server_ip, hostIps),
-                        ),
+                  onClick={bindBusyDnsblMulti(
+                    withBusy,
+                    async () => {
+                      const r = await api.requestRaw<{ items: string[] }>(
+                        '/api/v1/system/ips',
                       );
-                    })
-                  }
+                      return r.items ?? [];
+                    },
+                    domain.server_ip,
+                    (ips) => emailApi.dnsblMulti(ips),
+                    uniqueIps,
+                    setDnsbl,
+                  )}
                 >
                   {t('email.multiIpRbl')}
                 </Button>
@@ -1033,33 +1044,24 @@ export function EmailDomainPage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() =>
-                      navigate(
-                        `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`,
-                      )
-                    }
+                    onClick={bindNavigate(navigate, `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`)}
                   >
                     LE · mail.{domain.domain}
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() =>
-                      navigate(
-                        `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`,
-                      )
-                    }
+                    onClick={bindNavigate(navigate, `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`)}
                   >
                     LE · webmail
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      navigate(
-                        `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
-                      )
-                    }
+                    onClick={bindNavigate(
+                      navigate,
+                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
+                    )}
                   >
                     LE · {domain.domain}
                   </Button>
@@ -1080,16 +1082,15 @@ export function EmailDomainPage() {
                     variant="ghost"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        setLive(
-                          await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                            method: 'POST',
-                            body: JSON.stringify({}),
-                          }),
-                        );
-                      })
-                    }
+                    onClick={bindBusySet(
+                      withBusy,
+                      () =>
+                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                          method: 'POST',
+                          body: JSON.stringify({}),
+                        }),
+                      setLive,
+                    )}
                   >
                     {t('email.writeRoundcubeSso')}
                   </Button>
@@ -1097,16 +1098,15 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        setLive(
-                          await api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                            method: 'POST',
-                            body: JSON.stringify({ enableSystem: true }),
-                          }),
-                        );
-                      })
-                    }
+                    onClick={bindBusySet(
+                      withBusy,
+                      () =>
+                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                          method: 'POST',
+                          body: JSON.stringify({ enableSystem: true }),
+                        }),
+                      setLive,
+                    )}
                   >
                     {t('email.ssoSkeletonSymlink')}
                   </Button>
@@ -1148,17 +1148,18 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="sm"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const r = await emailApi.applyPolicy(domain.id, {
-                          rateLimitPerHour: parsePolicyRate(policyRate),
-                          antispam: policyAntispam,
-                          applySystem: false,
-                        });
-                        setPolicyLog(r as Record<string, unknown>);
-                        await load();
-                      })
-                    }
+                    onClick={bindBusyApplyPolicy(
+                      withBusy,
+                      emailApi.applyPolicy,
+                      domain.id,
+                      {
+                        rateLimitPerHour: parsePolicyRate(policyRate),
+                        antispam: policyAntispam,
+                        applySystem: false,
+                      },
+                      setPolicyLog,
+                      load,
+                    )}
                   >
                     {t('email.writeControlOnly')}
                   </Button>
@@ -1166,17 +1167,18 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="sm"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const r = await emailApi.applyPolicy(domain.id, {
-                          rateLimitPerHour: parsePolicyRate(policyRate),
-                          antispam: policyAntispam,
-                          applySystem: true,
-                        });
-                        setPolicyLog(r as Record<string, unknown>);
-                        await load();
-                      })
-                    }
+                    onClick={bindBusyApplyPolicy(
+                      withBusy,
+                      emailApi.applyPolicy,
+                      domain.id,
+                      {
+                        rateLimitPerHour: parsePolicyRate(policyRate),
+                        antispam: policyAntispam,
+                        applySystem: true,
+                      },
+                      setPolicyLog,
+                      load,
+                    )}
                   >
                     {t('email.applyToSystemBtn')}
                   </Button>
@@ -1382,20 +1384,19 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        setRelayLog(
-                          await emailApi.setRelay({
-                            host: relayHost,
-                            port: 587,
-                            username: relayUser || undefined,
-                            password: relayPass || undefined,
-                            security: 'starttls',
-                            applySystem: relayApplySystem,
-                          }),
-                        );
-                      })
-                    }
+                    onClick={bindBusySetRelay(
+                      withBusy,
+                      emailApi.setRelay,
+                      {
+                        host: relayHost,
+                        port: 587,
+                        username: relayUser || undefined,
+                        password: relayPass || undefined,
+                        security: 'starttls',
+                        applySystem: relayApplySystem,
+                      },
+                      setRelayLog,
+                    )}
                   >
                     {relayApplySystem ? t('email.saveApplyRelay') : t('email.saveOnly')}
                   </Button>
@@ -1434,20 +1435,14 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const pwEl = document.getElementById('sso-pw') as HTMLInputElement | null;
-                        const password = pwEl?.value || undefined;
-                        const email = `postmaster@${domain.domain}`;
-                        const r = await emailApi.webmailSso({
-                          email,
-                          domain: domain.domain,
-                          ttlMinutes: 10,
-                          password,
-                        });
-                        setWebmailLog(r as Record<string, unknown>);
-                      })
-                    }
+                    onClick={bindBusyWebmailSso(
+                      withBusy,
+                      'sso-pw',
+                      `postmaster@${domain.domain}`,
+                      domain.domain,
+                      emailApi.webmailSso,
+                      setWebmailLog,
+                    )}
                   >
                     {t('email.issueSsoToken')}
                   </Button>
@@ -1467,17 +1462,12 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const mailbox = `postmaster@${domain.domain}`;
-                        const r = await emailApi.writeSieve({
-                          mailbox,
-                          name: 'default.sieve',
-                          content: `require ["fileinto"];\n# YSK sieve for ${domain.domain}\n# if header :contains "X-Spam-Flag" "YES" { fileinto "Junk"; stop; }\n`,
-                        });
-                        setWebmailLog(r);
-                      })
-                    }
+                    onClick={bindBusyWriteSieve(
+                      withBusy,
+                      domain.domain,
+                      emailApi.writeSieve,
+                      setWebmailLog,
+                    )}
                   >
                     {t('email.writeDefaultSieve')}
                   </Button>
@@ -1485,12 +1475,12 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const mailbox = `postmaster@${domain.domain}`;
-                        setWebmailLog(await emailApi.listSieve(mailbox));
-                      })
-                    }
+                    onClick={bindBusyListSieve(
+                      withBusy,
+                      domain.domain,
+                      emailApi.listSieve,
+                      setWebmailLog,
+                    )}
                   >
                     {t('email.listWrittenFiles')}
                   </Button>
@@ -1512,11 +1502,10 @@ export function EmailDomainPage() {
                   <Button
                     variant="secondary"
                     size="md"
-                    onClick={() =>
-                      navigate(
-                        `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
-                      )
-                    }
+                    onClick={bindNavigate(
+                      navigate,
+                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
+                    )}
                   >
                     {t('email.requestCert', { domain: domain.domain })}
                   </Button>
@@ -1534,18 +1523,11 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const r = await emailApi.autodiscover(domain.id);
-                        setWebmailLog({
-                          ok: true,
-                          notes: r.notes,
-                          mozillaXml: r.mozillaXml.slice(0, 200) + '…',
-                          urls: r.urls,
-                        });
-                        void navigator.clipboard?.writeText(r.mozillaXml);
-                      })
-                    }
+                    onClick={bindBusyAutodiscover(
+                      withBusy,
+                      () => emailApi.autodiscover(domain.id),
+                      setWebmailLog,
+                    )}
                   >
                     {t('email.generateCopyXml')}
                   </Button>
@@ -1562,15 +1544,11 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        const r = await emailApi.mailQueue();
-                        setWebmailLog({
-                          ...r,
-                          items: (r.items ?? []).slice(0, 20),
-                        });
-                      })
-                    }
+                    onClick={bindBusyMailQueue(
+                      withBusy,
+                      () => emailApi.mailQueue(),
+                      setWebmailLog,
+                    )}
                   >
                     {t('email.viewQueue')}
                   </Button>
@@ -1578,11 +1556,11 @@ export function EmailDomainPage() {
                     variant="danger"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        setWebmailLog(await emailApi.flushQueue({ all: true }));
-                      })
-                    }
+                    onClick={bindBusySet(
+                      withBusy,
+                      () => emailApi.flushQueue({ all: true }),
+                      setWebmailLog,
+                    )}
                   >
                     {t('email.flushQueue')}
                   </Button>
@@ -1625,25 +1603,23 @@ export function EmailDomainPage() {
                     size="md"
                     loading={busy}
                     disabled={!isBootstrapPasswordValid(bootstrapPassword)}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        if (!isBootstrapPasswordValid(bootstrapPassword)) {
-                          setError(t('email.adminPasswordRequired'));
-                          return;
-                        }
-                        setWebmailLog(
-                          await emailApi.bootstrap({
-                            domain: domain.domain,
-                            serverIp: domain.server_ip,
-                            adminLocalPart: 'postmaster',
-                            adminPassword: bootstrapPassword.trim(),
-                            installPackages: true,
-                            webmail: true,
-                          }),
-                        );
-                        await load();
-                      })
-                    }
+                    onClick={bindBusyBootstrap(
+                      withBusy,
+                      bootstrapPassword,
+                      isBootstrapPasswordValid,
+                      () => setError(t('email.adminPasswordRequired')),
+                      emailApi.bootstrap,
+                      {
+                        domain: domain.domain,
+                        serverIp: domain.server_ip,
+                        adminLocalPart: 'postmaster',
+                        adminPassword: bootstrapPassword.trim(),
+                        installPackages: true,
+                        webmail: true,
+                      },
+                      setWebmailLog,
+                      load,
+                    )}
                   >
                     {t('email.bootstrapBtn')}
                   </Button>
@@ -1676,16 +1652,15 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void withBusy(async () => {
-                        setWebmailLog(
-                          await emailApi.webmailApply({
-                            domain: webmailDomain,
-                            download: true,
-                          }),
-                        );
-                      })
-                    }
+                    onClick={bindBusySet(
+                      withBusy,
+                      () =>
+                        emailApi.webmailApply({
+                          domain: webmailDomain,
+                          download: true,
+                        }),
+                      setWebmailLog,
+                    )}
                   >
                     {t('email.installWebmail')}
                   </Button>
@@ -1721,21 +1696,18 @@ export function EmailDomainPage() {
               variant="primary"
               size="md"
               loading={busy}
-              onClick={() =>
-                void withBusy(async () => {
-                  setMboxLog(
-                    await emailApi.createMailbox(domain.id, {
-                      localPart: mboxLocal,
-                      password: mboxPass || undefined,
-                    }),
-                  );
-                  setMailboxes(
-                    (await emailApi.listMailboxes(domain.id)).items,
-                  );
-                  setCreateMboxOpen(false);
-                  setMboxPass('');
-                })
-              }
+              onClick={bindBusyCreateMailbox(
+                withBusy,
+                emailApi.createMailbox,
+                domain.id,
+                mboxLocal,
+                mboxPass,
+                setMboxLog,
+                emailApi.listMailboxes,
+                setMailboxes,
+                () => setCreateMboxOpen(false),
+                () => setMboxPass(''),
+              )}
             >
               {t('email.createMailboxBtn')}
             </Button>

@@ -309,3 +309,311 @@ export function bindToggleValue(
     onChange(current === next ? '' : next);
   };
 }
+
+/**
+ * withBusy: run work(), map result into setter, then optional after().
+ * No page-level async arrows when work/after are bound factories.
+ */
+export function bindBusyWorkThen(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  work: () => Promise<unknown>,
+  after?: () => Promise<unknown> | unknown,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      await work();
+      if (after) await after();
+    });
+  };
+}
+
+/** updateFlags → flagsResultToLog → setLog → load */
+export function bindBusyFlagsUpdate(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  updateFlags: (
+    id: string,
+    body: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>,
+  domainId: string,
+  body: Record<string, unknown>,
+  toLog: (r: Record<string, unknown>) => Record<string, unknown>,
+  setLog: (v: Record<string, unknown>) => void,
+  load: () => Promise<unknown>,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      const r = await updateFlags(domainId, body);
+      setLog(toLog(r));
+      await load();
+    });
+  };
+}
+
+/** create/delete then refresh list into setter */
+export function bindBusyMutateList<T, R>(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  mutate: () => Promise<R>,
+  setResult: (v: R) => void,
+  list: () => Promise<{ items: T[] }>,
+  setItems: (v: T[]) => void,
+  after?: () => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      setResult(await mutate());
+      setItems((await list()).items);
+      after?.();
+    });
+  };
+}
+
+/** set result then switch tab */
+export function bindBusySetAndTab<T>(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  loader: () => Promise<T>,
+  setter: (v: T) => void,
+  setTab: (tab: string) => void,
+  tab: string,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      setter(await loader());
+      setTab(tab);
+    });
+  };
+}
+
+/** live check + reload */
+export function bindBusyLiveReload(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  liveCheck: () => Promise<unknown>,
+  setLive: (v: unknown) => void,
+  load: () => Promise<unknown>,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      setLive(await liveCheck());
+      await load();
+    });
+  };
+}
+
+/** multi-IP RBL with optional host ips fetch */
+export function bindBusyDnsblMulti(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  fetchHostIps: () => Promise<string[]>,
+  primaryIp: string | null | undefined,
+  dnsblMulti: (ips: string[]) => Promise<unknown>,
+  uniqueIps: (primary: string | null | undefined, extra: string[]) => string[],
+  setDnsbl: (v: unknown) => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      let hostIps: string[] = [];
+      try {
+        hostIps = await fetchHostIps();
+      } catch {
+        /* optional */
+      }
+      setDnsbl(await dnsblMulti(uniqueIps(primaryIp, hostIps)));
+    });
+  };
+}
+
+/** autodiscover + set log + clipboard */
+export function bindBusyAutodiscover(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  autodiscover: () => Promise<{
+    notes?: unknown;
+    mozillaXml: string;
+    urls?: unknown;
+  }>,
+  setLog: (v: Record<string, unknown>) => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      const r = await autodiscover();
+      setLog({
+        ok: true,
+        notes: r.notes,
+        mozillaXml: r.mozillaXml.slice(0, 200) + '…',
+        urls: r.urls,
+      });
+      void navigator.clipboard?.writeText(r.mozillaXml);
+    });
+  };
+}
+
+/** queue list with slice */
+export function bindBusyMailQueue(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  mailQueue: () => Promise<{ items?: unknown[] } & Record<string, unknown>>,
+  setLog: (v: Record<string, unknown>) => void,
+  limit = 20,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      const r = await mailQueue();
+      setLog({
+        ...r,
+        items: (r.items ?? []).slice(0, limit),
+      });
+    });
+  };
+}
+
+/** bootstrap with password validation */
+export function bindBusyBootstrap(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  password: string,
+  isValid: (pw: string) => boolean,
+  onInvalid: () => void,
+  bootstrap: (body: Record<string, unknown>) => Promise<unknown>,
+  body: Record<string, unknown>,
+  setLog: (v: unknown) => void,
+  load: () => Promise<unknown>,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      if (!isValid(password)) {
+        onInvalid();
+        return;
+      }
+      setLog(await bootstrap(body));
+      await load();
+    });
+  };
+}
+
+/** navigate with prebuilt path (avoids arrow at call site) */
+export function bindNavTo(
+  navigate: (to: string) => void,
+  to: string,
+): () => void {
+  return () => {
+    navigate(to);
+  };
+}
+
+/** applyPolicy → setLog → load */
+export function bindBusyApplyPolicy(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  applyPolicy: (id: string, body: Record<string, unknown>) => Promise<unknown>,
+  domainId: string,
+  body: Record<string, unknown>,
+  setLog: (v: Record<string, unknown>) => void,
+  load: () => Promise<unknown>,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      const r = await applyPolicy(domainId, body);
+      setLog(r as Record<string, unknown>);
+      await load();
+    });
+  };
+}
+
+/** setRelay body → setLog */
+export function bindBusySetRelay(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  setRelay: (body: Record<string, unknown>) => Promise<unknown>,
+  body: Record<string, unknown>,
+  setLog: (v: unknown) => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      setLog(await setRelay(body));
+    });
+  };
+}
+
+/** webmail SSO from optional password field id */
+export function bindBusyWebmailSso(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  passwordInputId: string,
+  email: string,
+  domainName: string,
+  webmailSso: (body: Record<string, unknown>) => Promise<unknown>,
+  setLog: (v: unknown) => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      const pwEl = document.getElementById(passwordInputId) as HTMLInputElement | null;
+      const password = pwEl?.value || undefined;
+      setLog(
+        await webmailSso({
+          email,
+          domain: domainName,
+          ttlMinutes: 10,
+          password,
+        }),
+      );
+    });
+  };
+}
+
+/** write default sieve for postmaster */
+export function bindBusyWriteSieve(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  domainName: string,
+  writeSieve: (body: Record<string, unknown>) => Promise<unknown>,
+  setLog: (v: unknown) => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      const mailbox = `postmaster@${domainName}`;
+      setLog(
+        await writeSieve({
+          mailbox,
+          name: 'default.sieve',
+          content: `require ["fileinto"];\n# YSK sieve for ${domainName}\n# if header :contains "X-Spam-Flag" "YES" { fileinto "Junk"; stop; }\n`,
+        }),
+      );
+    });
+  };
+}
+
+/** list sieve for postmaster */
+export function bindBusyListSieve(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  domainName: string,
+  listSieve: (mailbox: string) => Promise<unknown>,
+  setLog: (v: unknown) => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      setLog(await listSieve(`postmaster@${domainName}`));
+    });
+  };
+}
+
+/** create mailbox + refresh + close modal */
+export function bindBusyCreateMailbox(
+  withBusy: (fn: () => Promise<unknown>) => unknown,
+  createMailbox: (
+    id: string,
+    body: { localPart: string; password?: string },
+  ) => Promise<unknown>,
+  domainId: string,
+  localPart: string,
+  password: string,
+  setLog: (v: unknown) => void,
+  listMailboxes: (id: string) => Promise<{ items: unknown[] }>,
+  setItems: (v: unknown[]) => void,
+  close: () => void,
+  clearPassword: () => void,
+): () => void {
+  return () => {
+    void withBusy(async () => {
+      setLog(
+        await createMailbox(domainId, {
+          localPart,
+          password: password || undefined,
+        }),
+      );
+      setItems((await listMailboxes(domainId)).items);
+      close();
+      clearPassword();
+    });
+  };
+}
