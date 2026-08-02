@@ -34,34 +34,7 @@ import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
-import {
-  bindInput,
-  bindCheck,
-  bindPreset,
-  bindVoid,
-  bindBanOne,
-  bindSelectAllSuspects,
-  bindListRemove,
-  bindLoadGeo,
-  bindBanAndClear,
-  bindCloseIfIdle,
-  bindDefenseProbe,
-  bindDefensePost,
-  bindDefenseWhitelist,
-  bindDefenseUnban,
-  bindDefenseAutoBanTick,
-  bindSaveTopChecked,
-  bindSaveChecked,
-  bindSaveString,
-  bindSaveNumber,
-  bindAppendUniqueStr,
-  bindSaveCfZones,
-  bindDefenseWhitelistAction,
-  bindDefensePostOnly,
-  bindDefenseGeoApply,
-  bindSelect,
-  bindFormSubmit,
-} from '../bind-handlers';
+import { bindAppendUniqueStr, bindBanAndClear, bindBanOne, bindCheck, bindCloseIfIdle, bindDefenseAutoBanTick, bindDefenseGeoApply, bindDefensePost, bindDefensePostOnly, bindDefenseProbe, bindDefenseUnban, bindDefenseWhitelist, bindDefenseWhitelistAction, bindFormSubmit, bindInput, bindListRemove, bindLoadGeo, bindPreset, bindSaveCfZones, bindSaveChecked, bindSaveNumber, bindSaveString, bindSaveTopChecked, bindSelect, bindSelectAllSuspects, bindValueSet, bindVoid } from '../bind-handlers';
 
 import {
   GEO_ASN_PROVIDERS,
@@ -606,7 +579,7 @@ export function ProtectionPage() {
   useEffect(() => {
     const ip = searchParams.get('ip');
     const t = searchParams.get('tab');
-    if (isValidBanIpQuery(ip)) {
+    if (isValidBanIpQuery(ip) && ip) {
       setBanIp(ip);
       setShowManual(true);
       setBanReason((r) => r || 'from logs');
@@ -2558,7 +2531,7 @@ export function ProtectionPage() {
                     name="geo-mode"
                     aria-label={t('protection.geoMode')}
                     value={geoMode}
-                    onChange={bindSelect(setGeoMode as (v: string) => void)}
+                    onChange={bindValueSet(setGeoMode as (v: string) => void)}
                     options={[
                       { value: 'deny_list', label: t('protection.denyList') },
                       { value: 'allow_list', label: t('protection.allowListHighRisk') },

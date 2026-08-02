@@ -22,12 +22,22 @@ const SKIP = new Set([
   'RedisServicePage.tsx',
 ]);
 
+/** Test / helper modules co-located under pages/ — not product UI. */
+function isNonPageTsx(name) {
+  return (
+    name.includes('.test.') ||
+    name.includes('.spec.') ||
+    name.endsWith('.unit.tsx') ||
+    name.endsWith('.stories.tsx')
+  );
+}
+
 function walk(dir, acc = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) walk(p, acc);
-    else if (name.endsWith('.tsx')) acc.push(p);
+    else if (name.endsWith('.tsx') && !isNonPageTsx(name)) acc.push(p);
   }
   return acc;
 }

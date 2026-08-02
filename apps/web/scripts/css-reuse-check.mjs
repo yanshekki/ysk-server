@@ -15,12 +15,19 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = join(root, 'src');
 
+function isTestOrSpec(name) {
+  return name.includes('.test.') || name.includes('.spec.') || name.endsWith('.stories.tsx');
+}
+
 function walk(dir, acc = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     const st = statSync(p);
-    if (st.isDirectory()) walk(p, acc);
-    else if (/\.(tsx|ts|jsx|js)$/.test(name)) acc.push(p);
+    if (st.isDirectory()) {
+      // Skip unit/integration test fixtures under src/test
+      if (name === 'test' || name === '__tests__' || name === '__mocks__') continue;
+      walk(p, acc);
+    } else if (/\.(tsx|ts|jsx|js)$/.test(name) && !isTestOrSpec(name)) acc.push(p);
   }
   return acc;
 }

@@ -20,13 +20,22 @@ const SKIP = new Set([
   'DataTable.tsx',
 ]);
 
+function isNonPageTsx(name) {
+  return (
+    name.includes('.test.') ||
+    name.includes('.spec.') ||
+    name.endsWith('.unit.tsx') ||
+    name.endsWith('.stories.tsx')
+  );
+}
+
 function walk(dir, acc = []) {
   if (!statSync(dir, { throwIfNoEntry: false })?.isDirectory()) return acc;
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) walk(p, acc);
-    else if (name.endsWith('.tsx')) acc.push(p);
+    else if (name.endsWith('.tsx') && !isNonPageTsx(name)) acc.push(p);
   }
   return acc;
 }

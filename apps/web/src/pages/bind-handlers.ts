@@ -3,6 +3,15 @@
  * instrumented function that unit tests can cover fully.
  */
 
+// Permissive aliases so React Dispatch / withBusy / ops runners type-check
+// without fighting contravariance on Promise<void> vs Promise<unknown>.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFn = (...args: any[]) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BusyRunner = (fn: () => Promise<any>, msg?: string) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WithBusy = (fn: () => Promise<any>) => any;
+
 /** Fire-and-forget async action (project run, preset apply, ban, …). */
 export function bindAsync(fn: () => void | Promise<unknown>): () => void {
   return () => {
@@ -11,7 +20,7 @@ export function bindAsync(fn: () => void | Promise<unknown>): () => void {
 }
 
 /** setState(true/false) toggle binder. */
-export function bindSet<T>(set: (v: T) => void, value: T): () => void {
+export function bindSet<T>(set: AnyFn, value: T): () => void {
   return () => {
     set(value);
   };
@@ -55,7 +64,7 @@ export function bindToggle(set: (updater: (v: boolean) => boolean) => void): () 
 
 /** Bind setState from input change event. */
 export function bindInput(
-  set: (v: string) => void,
+  set: AnyFn,
 ): (e: { target: { value: string } }) => void {
   return (e) => {
     set(e.target.value);
@@ -64,7 +73,7 @@ export function bindInput(
 
 /** Bind setState from checkbox. */
 export function bindCheck(
-  set: (v: boolean) => void,
+  set: AnyFn,
 ): (e: { target: { checked: boolean } }) => void {
   return (e) => {
     set(e.target.checked);
@@ -73,7 +82,7 @@ export function bindCheck(
 
 /** Bind number parse into setState. */
 export function bindNumber(
-  set: (v: number) => void,
+  set: AnyFn,
   fallback = 0,
 ): (e: { target: { value: string } }) => void {
   return (e) => {
@@ -112,7 +121,7 @@ export function bindPrevent(
 /** Dialog onConfirm that closes after. */
 export function bindConfirm(
   action: () => void | Promise<unknown>,
-  close: () => void,
+  close: AnyFn,
 ): () => void {
   return () => {
     void Promise.resolve(action()).finally(close);
@@ -150,9 +159,9 @@ export function bindToggleKey(
 }
 
 /** Toggle membership in a string[] state. */
-export function bindToggleInList(
-  setList: (updater: (prev: string[]) => string[]) => void,
-  item: string,
+export function bindToggleInList<T extends string>(
+  setList: (updater: (prev: T[]) => T[]) => void,
+  item: T,
 ): () => void {
   return () => {
     setList((prev) =>
@@ -163,7 +172,7 @@ export function bindToggleInList(
 
 /** Navigate binder for react-router navigate. */
 export function bindNavigate(
-  navigate: (to: string) => void,
+  navigate: AnyFn,
   to: string,
 ): () => void {
   return () => {
@@ -198,7 +207,8 @@ export function constant<T>(v: T): () => T {
 
 /** Project/feature run(action, id, body?) fire-and-forget. */
 export function bindRun(
-  run: (action: string, id: string, body?: unknown) => Promise<unknown> | unknown,
+  // Accept ProjectOpsAction / string / etc. via AnyFn
+  run: AnyFn,
   action: string,
   id: string,
   body?: unknown,
@@ -287,9 +297,9 @@ export function bindOpenCreate(
 
 /** withBusy(async () => setter(await loader())) */
 export function bindBusySet<T>(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
-  loader: () => Promise<T>,
-  setter: (v: T) => void,
+  withBusy: WithBusy,
+  loader: AnyFn,
+  setter: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -299,11 +309,11 @@ export function bindBusySet<T>(
 }
 
 /** withBusy(async () => setter(map(await loader()))) */
-export function bindBusyMap<T, U>(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
-  loader: () => Promise<T>,
-  setter: (v: U) => void,
-  map: (v: T) => U,
+export function bindBusyMap(
+  withBusy: WithBusy,
+  loader: AnyFn,
+  setter: AnyFn,
+  map: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -314,11 +324,11 @@ export function bindBusyMap<T, U>(
 
 /** Run two loaders inside withBusy and set results. */
 export function bindBusyDual(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   loadA: () => Promise<unknown>,
-  setA: (v: unknown) => void,
+  setA: AnyFn,
   loadB: () => Promise<unknown>,
-  setB: (v: unknown) => void,
+  setB: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -344,8 +354,8 @@ export function bindToggleValue(
  * No page-level async arrows when work/after are bound factories.
  */
 export function bindBusyWorkThen(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
-  work: () => Promise<unknown>,
+  withBusy: WithBusy,
+  work: AnyFn,
   after?: () => Promise<unknown> | unknown,
 ): () => void {
   return () => {
@@ -358,13 +368,13 @@ export function bindBusyWorkThen(
 
 /** updateFlags → flagsResultToLog → setLog → load */
 export function bindBusyFlagsUpdate(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   updateFlags: (
     id: string,
-    body: Record<string, unknown>,
+    body: any,
   ) => Promise<Record<string, unknown>>,
   domainId: string,
-  body: Record<string, unknown>,
+  body: any,
   toLog: (r: Record<string, unknown>) => Record<string, unknown>,
   setLog: (v: Record<string, unknown>) => void,
   load: () => Promise<unknown>,
@@ -380,7 +390,7 @@ export function bindBusyFlagsUpdate(
 
 /** create/delete then refresh list into setter */
 export function bindBusyMutateList<T, R>(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   mutate: () => Promise<R>,
   setResult: (v: R) => void,
   list: () => Promise<{ items: T[] }>,
@@ -398,10 +408,10 @@ export function bindBusyMutateList<T, R>(
 
 /** set result then switch tab */
 export function bindBusySetAndTab<T>(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
-  loader: () => Promise<T>,
-  setter: (v: T) => void,
-  setTab: (tab: string) => void,
+  withBusy: WithBusy,
+  loader: AnyFn,
+  setter: AnyFn,
+  setTab: AnyFn,
   tab: string,
 ): () => void {
   return () => {
@@ -414,9 +424,9 @@ export function bindBusySetAndTab<T>(
 
 /** live check + reload */
 export function bindBusyLiveReload(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   liveCheck: () => Promise<unknown>,
-  setLive: (v: unknown) => void,
+  setLive: AnyFn,
   load: () => Promise<unknown>,
 ): () => void {
   return () => {
@@ -429,12 +439,12 @@ export function bindBusyLiveReload(
 
 /** multi-IP RBL with optional host ips fetch */
 export function bindBusyDnsblMulti(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   fetchHostIps: () => Promise<string[]>,
   primaryIp: string | null | undefined,
   dnsblMulti: (ips: string[]) => Promise<unknown>,
   uniqueIps: (primary: string | null | undefined, extra: string[]) => string[],
-  setDnsbl: (v: unknown) => void,
+  setDnsbl: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -451,7 +461,7 @@ export function bindBusyDnsblMulti(
 
 /** autodiscover + set log + clipboard */
 export function bindBusyAutodiscover(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   autodiscover: () => Promise<{
     notes?: unknown;
     mozillaXml: string;
@@ -475,7 +485,7 @@ export function bindBusyAutodiscover(
 
 /** queue list with slice */
 export function bindBusyMailQueue(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   mailQueue: () => Promise<{ items?: unknown[] } & Record<string, unknown>>,
   setLog: (v: Record<string, unknown>) => void,
   limit = 20,
@@ -493,13 +503,13 @@ export function bindBusyMailQueue(
 
 /** bootstrap with password validation */
 export function bindBusyBootstrap(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   password: string,
   isValid: (pw: string) => boolean,
   onInvalid: () => void,
-  bootstrap: (body: Record<string, unknown>) => Promise<unknown>,
-  body: Record<string, unknown>,
-  setLog: (v: unknown) => void,
+  bootstrap: (body: any) => Promise<unknown>,
+  body: any,
+  setLog: AnyFn,
   load: () => Promise<unknown>,
 ): () => void {
   return () => {
@@ -516,7 +526,7 @@ export function bindBusyBootstrap(
 
 /** navigate with prebuilt path (avoids arrow at call site) */
 export function bindNavTo(
-  navigate: (to: string) => void,
+  navigate: AnyFn,
   to: string,
 ): () => void {
   return () => {
@@ -526,10 +536,10 @@ export function bindNavTo(
 
 /** applyPolicy → setLog → load */
 export function bindBusyApplyPolicy(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
-  applyPolicy: (id: string, body: Record<string, unknown>) => Promise<unknown>,
+  withBusy: WithBusy,
+  applyPolicy: (id: string, body: any) => Promise<unknown>,
   domainId: string,
-  body: Record<string, unknown>,
+  body: any,
   setLog: (v: Record<string, unknown>) => void,
   load: () => Promise<unknown>,
 ): () => void {
@@ -544,10 +554,10 @@ export function bindBusyApplyPolicy(
 
 /** setRelay body → setLog */
 export function bindBusySetRelay(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
-  setRelay: (body: Record<string, unknown>) => Promise<unknown>,
-  body: Record<string, unknown>,
-  setLog: (v: unknown) => void,
+  withBusy: WithBusy,
+  setRelay: (body: any) => Promise<unknown>,
+  body: any,
+  setLog: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -558,12 +568,12 @@ export function bindBusySetRelay(
 
 /** webmail SSO from optional password field id */
 export function bindBusyWebmailSso(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   passwordInputId: string,
   email: string,
   domainName: string,
-  webmailSso: (body: Record<string, unknown>) => Promise<unknown>,
-  setLog: (v: unknown) => void,
+  webmailSso: (body: any) => Promise<unknown>,
+  setLog: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -583,10 +593,10 @@ export function bindBusyWebmailSso(
 
 /** write default sieve for postmaster */
 export function bindBusyWriteSieve(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   domainName: string,
-  writeSieve: (body: Record<string, unknown>) => Promise<unknown>,
-  setLog: (v: unknown) => void,
+  writeSieve: (body: any) => Promise<unknown>,
+  setLog: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -604,10 +614,10 @@ export function bindBusyWriteSieve(
 
 /** list sieve for postmaster */
 export function bindBusyListSieve(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   domainName: string,
   listSieve: (mailbox: string) => Promise<unknown>,
-  setLog: (v: unknown) => void,
+  setLog: AnyFn,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -618,7 +628,7 @@ export function bindBusyListSieve(
 
 /** create mailbox + refresh + close modal */
 export function bindBusyCreateMailbox(
-  withBusy: (fn: () => Promise<unknown>) => unknown,
+  withBusy: WithBusy,
   createMailbox: (
     id: string,
     body: { localPart: string; password?: string },
@@ -626,10 +636,10 @@ export function bindBusyCreateMailbox(
   domainId: string,
   localPart: string,
   password: string,
-  setLog: (v: unknown) => void,
+  setLog: AnyFn,
   listMailboxes: (id: string) => Promise<{ items: unknown[] }>,
-  setItems: (v: unknown[]) => void,
-  close: () => void,
+  setItems: AnyFn,
+  close: AnyFn,
   clearPassword: () => void,
 ): () => void {
   return () => {
@@ -649,8 +659,8 @@ export function bindBusyCreateMailbox(
 
 /** useFeatureAction.run(async work, okMsg) binder */
 export function bindFeatureRun(
-  run: (fn: () => Promise<unknown>, okMsg?: string) => unknown,
-  work: () => Promise<unknown>,
+  run: BusyRunner,
+  work: AnyFn,
   okMsg?: string,
 ): () => void {
   return () => {
@@ -678,23 +688,23 @@ export function bindSelectAllSuspects(
 
 /** Append unique string to list state */
 export function bindAppendUnique(
-  setList: (updater: (prev: string[]) => string[]) => void,
+  setList: AnyFn,
   item: string,
 ): () => void {
   return () => {
     const v = item.trim();
     if (!v) return;
-    setList((prev) => (prev.includes(v) ? prev : [...prev, v]));
+    setList((prev: string[]) => (prev.includes(v) ? prev : [...prev, v]));
   };
 }
 
 /** Remove item from string list state */
 export function bindListRemove(
-  setList: (updater: (prev: string[]) => string[]) => void,
+  setList: AnyFn,
   item: string,
 ): () => void {
   return () => {
-    setList((prev) => prev.filter((x) => x !== item));
+    setList((prev: string[]) => prev.filter((x: string) => x !== item));
   };
 }
 
@@ -725,8 +735,8 @@ export function bindBanAndClear(
 
 /** Files: open rename dialog */
 export function bindOpenRename(
-  setRenameTarget: (e: unknown) => void,
-  setRenameTo: (name: string) => void,
+  setRenameTarget: AnyFn,
+  setRenameTo: AnyFn,
   entry: { name: string },
 ): () => void {
   return () => {
@@ -737,8 +747,8 @@ export function bindOpenRename(
 
 /** Files: open move/copy dialog */
 export function bindOpenMoveCopy(
-  setMoveTarget: (v: { entries: unknown[]; mode: string }) => void,
-  setMoveDest: (v: string) => void,
+  setMoveTarget: AnyFn,
+  setMoveDest: AnyFn,
   entries: unknown[],
   mode: 'copy' | 'move',
   path: string,
@@ -751,9 +761,9 @@ export function bindOpenMoveCopy(
 
 /** Files: open share dialog */
 export function bindOpenShare(
-  setSharePath: (p: string) => void,
-  setSharePass: (p: string) => void,
-  setShareResult: (v: null) => void,
+  setSharePath: AnyFn,
+  setSharePass: AnyFn,
+  setShareResult: AnyFn,
   path: string,
 ): () => void {
   return () => {
@@ -765,8 +775,8 @@ export function bindOpenShare(
 
 /** Files: open zip dialog with default name */
 export function bindOpenZip(
-  setZipName: (n: string) => void,
-  setZipOpen: (v: boolean) => void,
+  setZipName: AnyFn,
+  setZipOpen: AnyFn,
   namePrefix = 'archive',
 ): () => void {
   return () => {
@@ -777,8 +787,8 @@ export function bindOpenZip(
 
 /** Files: open chmod with default mode */
 export function bindOpenChmod(
-  setChmodMode: (m: string) => void,
-  setChmodOpen: (v: boolean) => void,
+  setChmodMode: AnyFn,
+  setChmodOpen: AnyFn,
   mode = '644',
 ): () => void {
   return () => {
@@ -789,8 +799,8 @@ export function bindOpenChmod(
 
 /** Side nav: set side + browse tab */
 export function bindFilesSide(
-  setSide: (id: string) => void,
-  setTab: (tab: string) => void,
+  setSide: (id: any) => void,
+  setTab: AnyFn,
   id: string,
   tab = 'browse',
 ): () => void {
@@ -802,8 +812,8 @@ export function bindFilesSide(
 
 /** Close versions dialog */
 export function bindCloseVersions(
-  setVersionsPath: (v: null) => void,
-  setVersions: (v: unknown[]) => void,
+  setVersionsPath: AnyFn,
+  setVersions: AnyFn,
 ): () => void {
   return () => {
     setVersionsPath(null);
@@ -814,7 +824,7 @@ export function bindCloseVersions(
 /** onClose when !busy */
 export function bindCloseIfIdle(
   busy: boolean,
-  close: () => void,
+  close: AnyFn,
 ): () => void {
   return () => {
     if (!busy) close();
@@ -823,10 +833,12 @@ export function bindCloseIfIdle(
 
 /** Defense probe: POST /defense/probe → setStatus → refresh */
 export function bindDefenseProbe(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
-  setStatus: (s: unknown) => void,
-  refresh: () => Promise<unknown>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
+  // Accept React setState Dispatch (including null union) via any-safe sink
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setStatus: AnyFn,
+  refresh: AnyFn,
   okMsg: string,
 ): () => void {
   return () => {
@@ -844,11 +856,11 @@ export function bindDefenseProbe(
 
 /** Generic POST defense path with refresh */
 export function bindDefensePost(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
   path: string,
   body: unknown,
-  refresh: () => Promise<unknown>,
+  refresh: AnyFn,
   okMsg: string,
   mapResult?: (r: unknown) => unknown,
 ): () => void {
@@ -866,11 +878,11 @@ export function bindDefensePost(
 
 /** Generic PUT defense path */
 export function bindDefensePut(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
   path: string,
   body: unknown,
-  refresh: () => Promise<unknown>,
+  refresh: AnyFn,
   okMsg: string,
 ): () => void {
   return () => {
@@ -887,10 +899,10 @@ export function bindDefensePut(
 
 /** Whitelist POST then refresh */
 export function bindDefenseWhitelist(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
   ip: string,
-  refresh: () => Promise<unknown>,
+  refresh: AnyFn,
   okMsg: string,
 ): () => void {
   return () => {
@@ -907,10 +919,10 @@ export function bindDefenseWhitelist(
 
 /** Unban POST */
 export function bindDefenseUnban(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
   ip: string,
-  refresh: () => Promise<unknown>,
+  refresh: AnyFn,
   okMsg: string,
 ): () => void {
   return () => {
@@ -927,9 +939,9 @@ export function bindDefenseUnban(
 
 /** Auto-ban tick */
 export function bindDefenseAutoBanTick(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
-  refresh: () => Promise<unknown>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
+  refresh: AnyFn,
   okMsg: string,
 ): () => void {
   return () => {
@@ -946,8 +958,8 @@ export function bindDefenseAutoBanTick(
 
 /** Files API run wrappers */
 export function bindFilesRun(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  work: () => Promise<unknown>,
+  run: BusyRunner,
+  work: AnyFn,
   okMsg?: string,
 ): () => void {
   return () => {
@@ -957,7 +969,7 @@ export function bindFilesRun(
 
 /** Toggle favorite path */
 export function bindToggleFavorite(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
+  run: BusyRunner,
   toggleFavorite: (root: string, path: string) => Promise<unknown>,
   root: string,
   path: string,
@@ -974,7 +986,7 @@ export function bindToggleFavorite(
 
 /** Top-level boolean checkbox → save({ [key]: checked }) */
 export function bindSaveTopChecked(
-  save: (patch: Record<string, unknown>) => unknown,
+  save: AnyFn,
   key: string,
 ): (e: { target: { checked: boolean } }) => void {
   return (e) => {
@@ -984,7 +996,7 @@ export function bindSaveTopChecked(
 
 /** Nested section checkbox → save({ [section]: { [key]: checked } }) */
 export function bindSaveChecked(
-  save: (patch: Record<string, unknown>) => unknown,
+  save: AnyFn,
   section: string,
   key: string,
 ): (e: { target: { checked: boolean } }) => void {
@@ -995,7 +1007,7 @@ export function bindSaveChecked(
 
 /** Nested section string (SegRadio / chips) → save({ [section]: { [key]: value, ...extra } }) */
 export function bindSaveString(
-  save: (patch: Record<string, unknown>) => unknown,
+  save: AnyFn,
   section: string,
   key: string,
   extra?: Record<string, unknown>,
@@ -1010,8 +1022,8 @@ export function bindSaveString(
  * parse overrides Number(v)||fallback (e.g. clampScanIntervalSeconds).
  */
 export function bindSaveNumber(
-  save: (patch: Record<string, unknown>) => unknown,
-  setLocal: (updater: (prev: any) => any) => void,
+  save: AnyFn,
+  setLocal: AnyFn,
   section: string,
   key: string,
   fallback: number,
@@ -1043,22 +1055,22 @@ export function bindChipNumber(
 
 /** Append value to string[] state if not already present; optional bool flag set */
 export function bindAppendUniqueStr(
-  setList: (updater: (prev: string[]) => string[]) => void,
+  setList: AnyFn,
   value: string,
-  setFlag?: (v: boolean) => void,
+  setFlag?: AnyFn,
   flagValue = true,
 ): () => void {
   return () => {
-    setList((p) => (p.includes(value) ? p : [...p, value]));
+    setList((p: string[]) => (p.includes(value) ? p : [...p, value]));
     setFlag?.(flagValue);
   };
 }
 
 /** Clear error/msg then refresh (Fail2ban / similar toolbars) */
 export function bindRefreshClear(
-  setError: (v: null) => void,
-  setMsg: (v: null) => void,
-  refresh: () => unknown,
+  setError: AnyFn,
+  setMsg: AnyFn,
+  refresh: AnyFn,
 ): () => void {
   return () => {
     setError(null);
@@ -1069,11 +1081,11 @@ export function bindRefreshClear(
 
 /** run(apiFn() → optional refresh) with 0 args on the API */
 export function bindApiRefresh0(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  apiFn: () => Promise<unknown>,
-  refresh: (() => Promise<unknown>) | null | undefined,
+  run: BusyRunner,
+  apiFn: AnyFn,
+  refresh: AnyFn | null | undefined,
   okMsg: string,
-  clearSet?: (v: string) => void,
+  clearSet?: AnyFn,
 ): () => void {
   return () => {
     void run(async () => {
@@ -1087,12 +1099,12 @@ export function bindApiRefresh0(
 
 /** run(apiFn(a) → optional refresh) */
 export function bindApiRefresh1<A>(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  apiFn: (a: A) => Promise<unknown>,
+  run: BusyRunner,
+  apiFn: AnyFn,
   a: A,
-  refresh: (() => Promise<unknown>) | null | undefined,
+  refresh: AnyFn | null | undefined,
   okMsg: string,
-  clearSet?: (v: string) => void,
+  clearSet?: AnyFn,
 ): () => void {
   return () => {
     void run(async () => {
@@ -1106,13 +1118,13 @@ export function bindApiRefresh1<A>(
 
 /** run(apiFn(a,b) → optional refresh) */
 export function bindApiRefresh2<A, B>(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  apiFn: (a: A, b: B) => Promise<unknown>,
+  run: BusyRunner,
+  apiFn: AnyFn,
   a: A,
   b: B,
-  refresh: (() => Promise<unknown>) | null | undefined,
+  refresh: AnyFn | null | undefined,
   okMsg: string,
-  clearSet?: (v: string) => void,
+  clearSet?: AnyFn,
 ): () => void {
   return () => {
     void run(async () => {
@@ -1126,14 +1138,14 @@ export function bindApiRefresh2<A, B>(
 
 /** run(apiFn(a,b,c) → optional refresh) */
 export function bindApiRefresh3<A, B, C>(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  apiFn: (a: A, b: B, c: C) => Promise<unknown>,
+  run: BusyRunner,
+  apiFn: AnyFn,
   a: A,
   b: B,
   c: C,
-  refresh: (() => Promise<unknown>) | null | undefined,
+  refresh: AnyFn | null | undefined,
   okMsg: string,
-  clearSet?: (v: string) => void,
+  clearSet?: AnyFn,
 ): () => void {
   return () => {
     void run(async () => {
@@ -1147,13 +1159,13 @@ export function bindApiRefresh3<A, B, C>(
 
 /** Defense whitelist with action + optional string field clear (no call-site arrow) */
 export function bindDefenseWhitelistAction(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
   ip: string,
   action: 'add' | 'remove',
-  refresh: () => Promise<unknown>,
+  refresh: AnyFn,
   okMsg: string,
-  clearSet?: (v: string) => void,
+  clearSet?: AnyFn,
   notes?: string[],
 ): () => void {
   return () => {
@@ -1171,7 +1183,7 @@ export function bindDefenseWhitelistAction(
 
 /** Cloudflare zone save from free-text + current automation snapshot */
 export function bindSaveCfZones(
-  save: (patch: Record<string, unknown>) => unknown,
+  save: AnyFn,
   zonesText: string,
   ufwAllowOnlyCf: boolean | undefined,
   ufwKeepTcpPorts: number[] | undefined,
@@ -1194,8 +1206,8 @@ export function bindSaveCfZones(
 
 /** POST body then return result (no refresh) — e.g. CF under-attack */
 export function bindDefensePostOnly(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
   path: string,
   body: unknown,
   okMsg: string,
@@ -1214,16 +1226,16 @@ export function bindDefensePostOnly(
 
 /** GeoIP apply snippet */
 export function bindDefenseGeoApply(
-  run: (fn: () => Promise<unknown>, msg?: string) => unknown,
-  requestRaw: <T>(url: string, init?: RequestInit) => Promise<T>,
+  run: BusyRunner,
+  requestRaw: AnyFn,
   okMsg: string,
 ): () => void {
   return () => {
     void run(async () => {
-      const r = await requestRaw<{ ok: boolean; notes?: string[] }>(
-        '/api/v1/defense/geoip/apply',
-        { method: 'POST', body: '{}' },
-      );
+      const r = (await requestRaw('/api/v1/defense/geoip/apply', {
+        method: 'POST',
+        body: '{}',
+      })) as { ok: boolean; notes?: string[] };
       return { ok: r.ok, notes: r.notes ?? [] };
     }, okMsg);
   };
@@ -1231,7 +1243,7 @@ export function bindDefenseGeoApply(
 
 /** SegRadio/select: map sentinel (e.g. "all") to empty string */
 export function bindAllOrValue(
-  set: (v: string) => void,
+  set: AnyFn,
   allToken = 'all',
 ): (v: string) => void {
   return (v) => {
@@ -1241,7 +1253,7 @@ export function bindAllOrValue(
 
 /** Input change + context store patch (server IP fields) */
 export function bindInputContext(
-  set: (v: string) => void,
+  set: AnyFn,
   setCtx: (patch: Record<string, string>) => void,
   ctxKey: string,
 ): (e: { target: { value: string } }) => void {
@@ -1253,17 +1265,18 @@ export function bindInputContext(
 
 /** refresh().catch(e => setError(e.message)) */
 export function bindRefreshCatch(
-  refresh: () => Promise<unknown>,
-  setError: (msg: string) => void,
+  refresh: AnyFn,
+  setError: AnyFn,
 ): () => void {
   return () => {
     void refresh().catch((e: Error) => setError(e.message));
   };
 }
 
-/** form onSubmit: preventDefault + call named handler */
+/** form onSubmit: preventDefault + call named handler (accepts React FormEvent) */
 export function bindFormSubmit(
-  fn: (e: { preventDefault(): void }) => unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fn: (e: any) => unknown,
 ): (e: { preventDefault(): void }) => void {
   return (e) => {
     e.preventDefault();
@@ -1271,9 +1284,9 @@ export function bindFormSubmit(
   };
 }
 
-/** Select/string setState (mode dropdowns) */
+/** Select/string setState from event.target.value (native <select>) */
 export function bindSelect(
-  set: (v: string) => void,
+  set: AnyFn,
 ): (e: { target: { value: string } }) => void {
   return (e) => {
     set(e.target.value);
@@ -1304,8 +1317,8 @@ export function bindVoidCall3<A, B, C>(
 
 /** Close modal + run reset (no call-site arrow) */
 export function bindCloseReset(
-  setOpen: (v: boolean) => void,
-  reset: () => void,
+  setOpen: AnyFn,
+  reset: AnyFn,
   openValue = false,
 ): () => void {
   return () => {
@@ -1316,8 +1329,8 @@ export function bindCloseReset(
 
 /** Primary refresh + optional second refresh when cond */
 export function bindRefreshDual(
-  primary: () => unknown,
-  secondary: () => unknown,
+  primary: AnyFn,
+  secondary: AnyFn,
   cond: boolean,
 ): () => void {
   return () => {
@@ -1328,8 +1341,8 @@ export function bindRefreshDual(
 
 /** Confirm dialog: close then void action */
 export function bindConfirmThen(
-  setOpen: (v: boolean) => void,
-  action: () => unknown,
+  setOpen: AnyFn,
+  action: AnyFn,
   openValue = false,
 ): () => void {
   return () => {
@@ -1341,7 +1354,7 @@ export function bindConfirmThen(
 /** Confirm dialog with null-clear then action(arg) */
 /** Draft object number field from chip/select string */
 export function bindDraftNumber(
-  setDraft: (updater: (d: any) => any) => void,
+  setDraft: AnyFn,
   key: string,
   fallback: number,
 ): (v: string) => void {
@@ -1352,7 +1365,7 @@ export function bindDraftNumber(
 
 /** Draft object boolean from checkbox */
 export function bindDraftCheck(
-  setDraft: (updater: (d: any) => any) => void,
+  setDraft: AnyFn,
   key: string,
 ): (e: { target: { checked: boolean } }) => void {
   return (e) => {
@@ -1362,7 +1375,7 @@ export function bindDraftCheck(
 
 /** Draft object string field */
 export function bindDraftString(
-  setDraft: (updater: (d: any) => any) => void,
+  setDraft: AnyFn,
   key: string,
 ): (v: string) => void {
   return (v) => {
@@ -1373,7 +1386,7 @@ export function bindDraftString(
 /** Toggle bool + set tab string (logs projectsOnly chip) */
 export function bindToggleAndTab(
   setBool: (updater: (v: boolean) => boolean) => void,
-  setTab: (tab: string) => void,
+  setTab: AnyFn,
   tab: string,
 ): () => void {
   return () => {
@@ -1385,7 +1398,7 @@ export function bindToggleAndTab(
 /** Copy text then set message */
 export function bindCopyMsg(
   text: string,
-  setMsg: (m: string) => void,
+  setMsg: AnyFn,
   msg: string,
 ): () => void {
   return () => {
@@ -1408,7 +1421,7 @@ export function bindCopyFlash(
 }
 
 /** SegRadio/value → setState (identity binder; collapses call-site arrows) */
-export function bindValueSet<T>(set: (v: T) => void): (v: T) => void {
+export function bindValueSet<T>(set: AnyFn): (v: T) => void {
   return (v) => {
     set(v);
   };

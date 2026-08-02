@@ -31,7 +31,7 @@ describe('assertHonestOps', () => {
       ok: true,
       apply_status: 'written',
       requiresExecute: false,
-      notes: [],
+      notes: [] as string[],
     });
     expect(r.ok).toBe(true);
     expect(r.apply_status).toBe('written');
@@ -53,7 +53,7 @@ describe('assertHonestOps', () => {
       ok: true,
       blocked: true,
       apply_status: 'written',
-      notes: [],
+      notes: [] as string[],
     });
     expect(r.ok).toBe(false);
   });
@@ -61,7 +61,7 @@ describe('assertHonestOps', () => {
   it('defaults ok from blocked when ok omitted', () => {
     const open = assertHonestOps({ notes: ['n'] });
     expect(open.ok).toBe(true);
-    const blocked = assertHonestOps({ blocked: true, notes: [] });
+    const blocked = assertHonestOps({ blocked: true, notes: [] as string[] });
     expect(blocked.ok).toBe(false);
   });
 
@@ -69,7 +69,7 @@ describe('assertHonestOps', () => {
     const r = assertHonestOps({
       ok: false,
       apply_status: 'applied',
-      notes: [],
+      notes: [] as string[],
     });
     expect(r.apply_status).toBe('failed');
     expect(r.notes.some((n) => n.includes('ops.honesty'))).toBe(true);
@@ -80,7 +80,7 @@ describe('assertHonestOps', () => {
       ok: false,
       blocked: true,
       apply_status: 'applied',
-      notes: [],
+      notes: [] as string[],
     });
     expect(r.apply_status).toBe('blocked');
     expect(r.ok).toBe(false);
@@ -102,7 +102,7 @@ describe('assertHonestOps', () => {
 
   it('copies written array', () => {
     const written = ['/a'];
-    const r = assertHonestOps({ ok: true, notes: [], written });
+    const r = assertHonestOps({ ok: true, notes: [] as string[], written });
     expect(r.written).toEqual(['/a']);
     expect(r.written).not.toBe(written);
   });

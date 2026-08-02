@@ -32,7 +32,7 @@ import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
-import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindVoid, bindVoidCall2 } from '../bind-handlers';
+import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
 
 const ZONE_TEMPLATE_IDS = ['minimal', 'web', 'mail', 'full', 'cdn'] as const;
 
@@ -1319,7 +1319,7 @@ export function DnsPage() {
                 name="ztpl"
                 aria-label={t('dns.recordTemplate')}
                 value={template}
-                onChange={bindSelect(setTemplate as (v: string) => void)}
+                onChange={bindValueSet(setTemplate as (v: string) => void)}
                 options={ZONE_TEMPLATE_IDS.map((id) => ({
                   value: id,
                   label: t(`dns.templates.${id}`),
