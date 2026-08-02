@@ -40,6 +40,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
+import { bindSet, bindInput, bindVoid } from '../bind-handlers';
 
 export function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
   text: string;
@@ -363,7 +364,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             size="sm"
             disabled={busy || !installed}
             title={!installed ? t('db.installFirst', { engine: title }) : undefined}
-            onClick={() => setCreateOpen(true)}
+            onClick={bindSet(setCreateOpen, true)}
           >
             {t('db.createDatabase')}
           </Button>
@@ -412,7 +413,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 {t('db.installBannerHint', { engine: title })}
               </p>
             ) : !running ? (
-              <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
+              <Button variant="primary" size="md" loading={busy} onClick={onStart}>
                 {t('fail2ban.startService')}
               </Button>
             ) : (
@@ -515,7 +516,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       type="button"
                       className={buttonClassName({ variant: 'danger', size: 'sm' })}
                       disabled={busy}
-                      onClick={() => setDelDb(r.id)}
+                      onClick={bindSet(setDelDb, r.id)}
                     >
                       {t('common.delete')}
                     </button>
@@ -534,7 +535,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   type="button"
                   className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                   disabled={!installed}
-                  onClick={() => setUserOpen(true)}
+                  onClick={bindSet(setUserOpen, true)}
                 >
                   {t('users.createUserPlus')}
                 </button>
@@ -584,7 +585,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     type="button"
                     className={buttonClassName({ variant: 'danger', size: 'sm' })}
                     disabled={busy}
-                    onClick={() => setDelUser(r.id)}
+                    onClick={bindSet(setDelUser, r.id)}
                   >
                     {t('common.delete')}
                   </button>
@@ -606,7 +607,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <input
                     id="tmp-db"
                     value={tempDb}
-                    onChange={(e) => setTempDb(e.target.value)}
+                    onChange={bindInput(setTempDb)}
                     placeholder="app_db"
                   />
                 </Field>
@@ -667,7 +668,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 <Button
                   variant="secondary"
                   size="md"
-                  onClick={() => void refreshExtras()}
+                  onClick={bindVoid(refreshExtras)}
                 >
                   {t('common.refresh')}
                 </Button>
@@ -712,7 +713,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <input
                     id="rh-label"
                     value={remoteLabel}
-                    onChange={(e) => setRemoteLabel(e.target.value)}
+                    onChange={bindInput(setRemoteLabel)}
                     placeholder={t('db.prodReplicaPlaceholder')}
                   />
                 </Field>
@@ -720,7 +721,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <input
                     id="rh-host"
                     value={remoteHost}
-                    onChange={(e) => setRemoteHost(e.target.value)}
+                    onChange={bindInput(setRemoteHost)}
                     required
                   />
                 </Field>
@@ -728,14 +729,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <input
                     id="rh-port"
                     value={remotePort}
-                    onChange={(e) => setRemotePort(e.target.value)}
+                    onChange={bindInput(setRemotePort)}
                   />
                 </Field>
                 <Field label={t('common.username')} htmlFor="rh-user" flush>
                   <input
                     id="rh-user"
                     value={remoteUser}
-                    onChange={(e) => setRemoteUser(e.target.value)}
+                    onChange={bindInput(setRemoteUser)}
                   />
                 </Field>
                 <Field label={t('common.password')} htmlFor="rh-pass" flush>
@@ -743,7 +744,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     id="rh-pass"
                     type="password"
                     value={remotePass}
-                    onChange={(e) => setRemotePass(e.target.value)}
+                    onChange={bindInput(setRemotePass)}
                   />
                 </Field>
               </FormLayout>
@@ -812,12 +813,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={bindSet(setCreateOpen, false)}
         title={t('db.createDbTitle', { engine: title })}
         description={t('db.createDbDesc')}
         footer={
           <>
-            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setCreateOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setCreateOpen, false)}>
               {t('common.cancel')}
             </button>
             <button type="submit" form="sql-create" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
@@ -838,7 +839,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               <input
                 id="dn"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={bindInput(setName)}
                 required
                 placeholder="my_app"
                 spellCheck={false}
@@ -860,7 +861,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 <input
                   id="un"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={bindInput(setUsername)}
                   placeholder={name || 'user'}
                   spellCheck={false}
                 />
@@ -870,7 +871,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   id="pw"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={bindInput(setPassword)}
                   required={createUser}
                   minLength={8}
                   autoComplete="new-password"
@@ -885,7 +886,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 <input
                   id="hh"
                   value={host}
-                  onChange={(e) => setHost(e.target.value)}
+                  onChange={bindInput(setHost)}
                   spellCheck={false}
                 />
               </Field>
@@ -897,12 +898,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
       <Modal
         open={userOpen}
-        onClose={() => setUserOpen(false)}
+        onClose={bindSet(setUserOpen, false)}
         title={t('db.createUserTitle', { engine: title })}
         description={t('db.createUserDesc')}
         footer={
           <>
-            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setUserOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setUserOpen, false)}>
               {t('common.cancel')}
             </button>
             <button type="submit" form="sql-user" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
@@ -917,7 +918,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               <input
                 id="uun"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={bindInput(setUsername)}
                 required
                 spellCheck={false}
               />
@@ -927,7 +928,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 id="upw"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={bindInput(setPassword)}
                 required
                 minLength={8}
                 autoComplete="new-password"
@@ -937,12 +938,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               <input
                 id="uh"
                 value={host}
-                onChange={(e) => setHost(e.target.value)}
+                onChange={bindInput(setHost)}
                 spellCheck={false}
               />
             </Field>
             <Field label={t('db.bindDatabase')} htmlFor="udb" flush hint={t('db.bindDatabaseHint')}>
-              <select id="udb" value={dbId} onChange={(e) => setDbId(e.target.value)}>
+              <select id="udb" value={dbId} onChange={bindInput(setDbId)}>
                 <option value="">{t('users.noneOption')}</option>
                 {dbs.items.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -957,7 +958,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
       <ConfirmDialog
         open={importConfirm != null}
-        onClose={() => setImportConfirm(null)}
+        onClose={bindSet(setImportConfirm, null)}
         onConfirm={() => {
           const c = importConfirm;
           setImportConfirm(null);
@@ -990,7 +991,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
       <ConfirmDialog
         open={Boolean(delDb)}
-        onClose={() => setDelDb(null)}
+        onClose={bindSet(setDelDb, null)}
         onConfirm={() => {
           if (delDb) void dbs.remove(delDb).then(() => setDelDb(null));
         }}
@@ -1003,7 +1004,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       />
       <ConfirmDialog
         open={Boolean(delUser)}
-        onClose={() => setDelUser(null)}
+        onClose={bindSet(setDelUser, null)}
         onConfirm={() => {
           if (delUser) void users.remove(delUser).then(() => setDelUser(null));
         }}
@@ -1027,7 +1028,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               variant="secondary"
               size="sm"
               disabled={busy}
-              onClick={() => setAdminerOpen(false)}
+              onClick={bindSet(setAdminerOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -1122,7 +1123,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             <input
               id="adminer-domain"
               value={adminerDomain}
-              onChange={(e) => setAdminerDomain(e.target.value)}
+              onChange={bindInput(setAdminerDomain)}
               placeholder={`adminer.${engine}.local`}
               spellCheck={false}
             />

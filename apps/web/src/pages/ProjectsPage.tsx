@@ -21,6 +21,7 @@ import {
   WithPageGuide,
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
+import { bindSet } from './bind-handlers';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
@@ -81,7 +82,7 @@ export function ProjectsPage() {
         {msg ? (
           <Alert variant="ok">
             {msg}{' '}
-            <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+            <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
               {t('common.close')}
             </Button>
           </Alert>
@@ -92,7 +93,7 @@ export function ProjectsPage() {
           description={t('projects.searchPlaceholder')}
           toolbar={
             <ActionBar>
-              <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+              <Button variant="primary" size="sm" onClick={bindSet(setCreateOpen, true)}>
                 + {t('projects.create')}
               </Button>
             </ActionBar>
@@ -161,7 +162,7 @@ export function ProjectsPage() {
 
         <ProjectCreateModal
           open={createOpen}
-          onClose={() => setCreateOpen(false)}
+          onClose={bindSet(setCreateOpen, false)}
           busy={busy}
           onSubmit={async (input) => {
             setMsg(null);

@@ -31,6 +31,7 @@ import {
 } from '../model/deploy-prefs';
 import { projectsApi } from '../api';
 import { systemApi } from '../../system/api';
+import { bindInput, bindVoid } from '../../../pages/bind-handlers';
 
 export interface ProjectDeployTabProps {
   project: ProjectDto;
@@ -530,7 +531,7 @@ export function ProjectDeployTab({
                   variant="secondary"
                   size="md"
                   loading={anyBusy}
-                  onClick={() => void installToolchainThenDeploy()}
+                  onClick={bindVoid(installToolchainThenDeploy)}
                 >
                   {t('projects.installToolchainDeployShort')}
                 </Button>
@@ -734,7 +735,7 @@ export function ProjectDeployTab({
                 <input
                   id="giturl"
                   value={gitUrl}
-                  onChange={(e) => setGitUrl(e.target.value)}
+                  onChange={bindInput(setGitUrl)}
                   placeholder="https://github.com/org/repo.git"
                 />
               </Field>
@@ -773,7 +774,7 @@ export function ProjectDeployTab({
                   id="penv"
                   rows={8}
                   value={envText}
-                  onChange={(e) => setEnvText(e.target.value)}
+                  onChange={bindInput(setEnvText)}
                   placeholder={envPlaceholder(project.runtime, ui.deployIsPhp)}
                 />
               </Field>

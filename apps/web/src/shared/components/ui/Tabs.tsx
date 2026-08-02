@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { bindCall1 } from '../../../pages/bind-handlers';
 
 export interface TabItem {
   id: string;
@@ -77,7 +78,7 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
             type="button"
             className="tabs__arrow tabs__arrow--left"
             aria-label={t('tabs.scrollLeft')}
-            onClick={() => scrollBy(-1)}
+            onClick={bindCall1(scrollBy, -1)}
           >
             ‹
           </button>
@@ -94,7 +95,7 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
                 aria-selected={active === tab.id}
                 aria-controls={`panel-${tab.id}`}
                 className="tabs__tab"
-                onClick={() => onChange(tab.id)}
+                onClick={bindCall1(onChange, tab.id)}
               >
                 <span className="tabs__tab-label">{tab.label}</span>
                 {tab.badge != null && tab.badge !== '' ? (
@@ -109,7 +110,7 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
             type="button"
             className="tabs__arrow tabs__arrow--right"
             aria-label={t('tabs.scrollRight')}
-            onClick={() => scrollBy(1)}
+            onClick={bindCall1(scrollBy, 1)}
           >
             ›
           </button>

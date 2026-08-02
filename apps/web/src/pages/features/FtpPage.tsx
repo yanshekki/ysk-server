@@ -30,6 +30,7 @@ import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { ftpApi, type SelectOption } from '../../features/ftp';
 import { api } from '../../shared/services/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import {bindSet, bindInput, bindVoid, bindCall1 } from '../bind-handlers';
 
 type SftpKey = {
   id: string;
@@ -313,7 +314,7 @@ export function FtpPage() {
                         variant="primary"
                         size="sm"
                         loading={crud.busy}
-                        onClick={() => void crud.apply(r.id)}
+                        onClick={bindCall1(crud.apply, r.id)}
                       >
                         {t('common.apply')}
                       </Button>
@@ -346,7 +347,7 @@ export function FtpPage() {
                         variant="danger"
                         size="sm"
                         disabled={crud.busy}
-                        onClick={() => setDelId(r.id)}
+                        onClick={bindSet(setDelId, r.id)}
                       >
                         {t('common.delete')}
                       </Button>
@@ -375,7 +376,7 @@ export function FtpPage() {
                     {t('ftp.sshdMatchNote')}
                   </p>
                 </div>
-                <Button variant="primary" size="sm" onClick={() => openKeyCreate()}>
+                <Button variant="primary" size="sm" onClick={bindVoid(openKeyCreate)}>
                   {t('ftp.addPubkeyPlus')}
                 </Button>
               </div>
@@ -420,7 +421,7 @@ export function FtpPage() {
                       variant="danger"
                       size="sm"
                       loading={keyBusy}
-                      onClick={() => setDelKeyId(k.id)}
+                      onClick={bindSet(setDelKeyId, k.id)}
                     >
                       {t('common.delete')}
                     </Button>
@@ -448,7 +449,7 @@ export function FtpPage() {
                         key={r.id}
                         type="button"
                         className="badge badge-link"
-                        onClick={() => openKeyCreate(String(r.username))}
+                        onClick={bindCall1(openKeyCreate, String(r.username))}
                       >
                         <Badge tone="info">{String(r.username)}</Badge>
                       </button>
@@ -466,12 +467,12 @@ export function FtpPage() {
       {/* Create / edit account */}
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={bindSet(setOpen, false)}
         title={editId ? t('ftp.editAccount') : t('ftp.createAccount')}
         description={t('ftp.accountModalDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" form="ftp-f" variant="primary" size="md" loading={crud.busy}>
@@ -492,7 +493,7 @@ export function FtpPage() {
               <input
                 id="fu"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={bindInput(setUsername)}
                 required
                 disabled={Boolean(editId)}
                 pattern="[a-zA-Z0-9._-]+"
@@ -512,7 +513,7 @@ export function FtpPage() {
                 id="fp"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={bindInput(setPassword)}
                 required={!editId}
                 minLength={editId ? 0 : 8}
                 autoComplete="new-password"
@@ -529,7 +530,7 @@ export function FtpPage() {
                 <select
                   id="fd"
                   value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
+                  onChange={bindInput(setDomain)}
                   required={!editId}
                 >
                   <option value="">{t('ftp.pickDomain')}</option>
@@ -546,7 +547,7 @@ export function FtpPage() {
                 <input
                   id="fd"
                   value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
+                  onChange={bindInput(setDomain)}
                   placeholder={t('ftp.domainPh')}
                   required={!editId}
                   spellCheck={false}
@@ -563,7 +564,7 @@ export function FtpPage() {
               <select
                 id="fh"
                 value={homePath}
-                onChange={(e) => setHomePath(e.target.value)}
+                onChange={bindInput(setHomePath)}
                 required={!editId}
               >
                 <option value="">{t('ftp.pickHome')}</option>
@@ -591,12 +592,12 @@ export function FtpPage() {
       {/* Add SFTP key */}
       <Modal
         open={keyOpen}
-        onClose={() => setKeyOpen(false)}
+        onClose={bindSet(setKeyOpen, false)}
         title={t('ftp.addPubkey')}
         description={t('ftp.addPubkeyDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setKeyOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setKeyOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -644,7 +645,7 @@ export function FtpPage() {
               <select
                 id="sk-user"
                 value={keyUser}
-                onChange={(e) => setKeyUser(e.target.value)}
+                onChange={bindInput(setKeyUser)}
                 required
               >
                 <option value="">{t('ftp.pickAccount')}</option>
@@ -658,7 +659,7 @@ export function FtpPage() {
               <input
                 id="sk-user"
                 value={keyUser}
-                onChange={(e) => setKeyUser(e.target.value)}
+                onChange={bindInput(setKeyUser)}
                 placeholder={t('ftp.ftpUsernamePh')}
                 required
                 spellCheck={false}
@@ -669,7 +670,7 @@ export function FtpPage() {
             <input
               id="sk-cmt"
               value={keyComment}
-              onChange={(e) => setKeyComment(e.target.value)}
+              onChange={bindInput(setKeyComment)}
               placeholder={t('ftp.notePh')}
             />
           </Field>
@@ -685,7 +686,7 @@ export function FtpPage() {
               id="sk-pub"
               rows={4}
               value={keyPub}
-              onChange={(e) => setKeyPub(e.target.value)}
+              onChange={bindInput(setKeyPub)}
               placeholder="ssh-ed25519 AAAA… comment"
               required
               spellCheck={false}
@@ -696,7 +697,7 @@ export function FtpPage() {
 
       <ConfirmDialog
         open={Boolean(delId)}
-        onClose={() => setDelId(null)}
+        onClose={bindSet(setDelId, null)}
         onConfirm={() => {
           if (delId) void crud.remove(delId).then(() => setDelId(null));
         }}
@@ -710,7 +711,7 @@ export function FtpPage() {
 
       <ConfirmDialog
         open={Boolean(delKeyId)}
-        onClose={() => setDelKeyId(null)}
+        onClose={bindSet(setDelKeyId, null)}
         onConfirm={() => {
           if (!delKeyId) return;
           setKeyBusy(true);

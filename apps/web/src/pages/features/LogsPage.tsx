@@ -27,6 +27,7 @@ import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { bindSet, bindInput, bindCheck, bindVoid, bindCall1 } from '../bind-handlers';
 
 /** Public tabs — old journal/files/projects deep-links map into explore */
 const TABS = ['explore', 'ops', 'settings', 'about'] as const;
@@ -401,7 +402,7 @@ export function LogsPage() {
     for (const u of units.slice(0, 80)) {
       if (journalSeen.has(u.unit)) continue;
       // hide per-project units from global journal list (they appear under project)
-      if (u.unit.startsWith('ysk-project-')) continue;
+      if ((u.unit ?? '').startsWith('ysk-project-')) continue;
       journalSeen.add(u.unit);
       items.push({
         id: `unit:${u.unit}`,
@@ -814,7 +815,7 @@ export function LogsPage() {
             variant="secondary"
             size="sm"
             loading={metaLoading || busy}
-            onClick={() => void refreshMeta()}
+            onClick={bindVoid(refreshMeta)}
           >
             {t('common.refresh')}
           </Button>
@@ -838,7 +839,7 @@ export function LogsPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -853,7 +854,7 @@ export function LogsPage() {
               key={c.source}
               type="button"
               className={`lc-chip ${activeSource === c.source ? 'lc-chip--active' : ''}`}
-              onClick={() => selectSource(c.source)}
+              onClick={bindCall1(selectSource, c.source)}
             >
               {c.label}
             </button>
@@ -896,7 +897,7 @@ export function LogsPage() {
                 key={b.id}
                 type="button"
                 className="lc-chip lc-chip--bookmark"
-                onClick={() => applyBookmark(b)}
+                onClick={bindCall1(applyBookmark, b)}
                 title={b.source}
               >
                 ★ {b.name}
@@ -932,7 +933,7 @@ export function LogsPage() {
                   type="search"
                   placeholder={t('logs.filterPlaceholder')}
                   value={railFilter}
-                  onChange={(e) => setRailFilter(e.target.value)}
+                  onChange={bindInput(setRailFilter)}
                   aria-label={t('logs.filterSources')}
                 />
                 <div className="lc-rail__body">
@@ -987,7 +988,7 @@ export function LogsPage() {
                                       .filter(Boolean)
                                       .join(' ')}
                                     disabled={!item.available && item.kind === 'file'}
-                                    onClick={() => selectSource(item.source)}
+                                    onClick={bindCall1(selectSource, item.source)}
                                   >
                                     <span className="lc-rail__item-label">{item.label}</span>
                                     {item.meta ? (
@@ -1061,7 +1062,7 @@ export function LogsPage() {
                       <span>{t('logs.filter')}</span>
                       <input
                         value={grep}
-                        onChange={(e) => setGrep(e.target.value)}
+                        onChange={bindInput(setGrep)}
                         placeholder={t('logs.keywordIp')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') void runQuery();
@@ -1092,7 +1093,7 @@ export function LogsPage() {
                       variant="primary"
                       size="md"
                       loading={busy}
-                      onClick={() => void runQuery()}
+                      onClick={bindVoid(runQuery)}
                     >
                       {t('protection.lookup')}
                     </Button>
@@ -1100,7 +1101,7 @@ export function LogsPage() {
                       <input
                         type="checkbox"
                         checked={follow}
-                        onChange={(e) => setFollow(e.target.checked)}
+                        onChange={bindCheck(setFollow)}
                       />
                       <span>{t('logs.followSec', { sec: followSec })}</span>
                     </label>
@@ -1109,7 +1110,7 @@ export function LogsPage() {
                         type="checkbox"
                         checked={useSse}
                         disabled={!follow}
-                        onChange={(e) => setUseSse(e.target.checked)}
+                        onChange={bindCheck(setUseSse)}
                       />
                       <span>{t('logs.sseLabel')}</span>
                     </label>
@@ -1117,7 +1118,7 @@ export function LogsPage() {
                       <input
                         type="checkbox"
                         checked={wrap}
-                        onChange={(e) => setWrap(e.target.checked)}
+                        onChange={bindCheck(setWrap)}
                       />
                       <span>{t('logs.wrap')}</span>
                     </label>
@@ -1126,7 +1127,7 @@ export function LogsPage() {
                         variant="secondary"
                         size="sm"
                         disabled={!text}
-                        onClick={() => void exportServer('text')}
+                        onClick={bindCall1(exportServer, 'text')}
                       >
                         {t('security.export')}
                       </Button>
@@ -1134,7 +1135,7 @@ export function LogsPage() {
                         variant="ghost"
                         size="sm"
                         disabled={!text}
-                        onClick={() => void exportServer('jsonl')}
+                        onClick={bindCall1(exportServer, 'jsonl')}
                       >
                         JSONL
                       </Button>
@@ -1152,7 +1153,7 @@ export function LogsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setBookmarkPromptOpen(true)}
+                        onClick={bindSet(setBookmarkPromptOpen, true)}
                       >
                         {t('logs.bookmarksLabel')}
                       </Button>
@@ -1245,7 +1246,7 @@ export function LogsPage() {
                     <input
                       id="vac-t"
                       value={vacuumDays}
-                      onChange={(e) => setVacuumDays(e.target.value)}
+                      onChange={bindInput(setVacuumDays)}
                       placeholder="14d"
                     />
                   </Field>
@@ -1254,7 +1255,7 @@ export function LogsPage() {
                       variant="danger"
                       size="md"
                       loading={busy}
-                      onClick={() => setVacuumConfirm('time')}
+                      onClick={bindSet(setVacuumConfirm, 'time')}
                     >
                       {t('logs.vacuumTime')}
                     </Button>
@@ -1262,7 +1263,7 @@ export function LogsPage() {
                       variant="secondary"
                       size="md"
                       loading={busy}
-                      onClick={() => setVacuumConfirm('size')}
+                      onClick={bindSet(setVacuumConfirm, 'size')}
                     >
                       Vacuum 500M
                     </Button>
@@ -1506,7 +1507,7 @@ export function LogsPage() {
                     <input
                       id="set-custom"
                       value={customPathInput}
-                      onChange={(e) => setCustomPathInput(e.target.value)}
+                      onChange={bindInput(setCustomPathInput)}
                       placeholder="/var/log/nginx/custom.log"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1598,7 +1599,7 @@ export function LogsPage() {
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={() => applyBookmark(b)}
+                              onClick={bindCall1(applyBookmark, b)}
                             >
                               {t('common.open')}
                             </Button>
@@ -1638,7 +1639,7 @@ export function LogsPage() {
                 variant="primary"
                 size="md"
                 loading={busy}
-                onClick={() => void saveSettings()}
+                onClick={bindVoid(saveSettings)}
               >
                 {t('logs.saveSettings')}
               </Button>
@@ -1653,7 +1654,7 @@ export function LogsPage() {
 
       <PromptDialog
         open={bookmarkPromptOpen}
-        onClose={() => setBookmarkPromptOpen(false)}
+        onClose={bindSet(setBookmarkPromptOpen, false)}
         title={t('logs.saveBookmark')}
         description={t('logs.bookmarkNamePrompt')}
         label={t('common.name')}

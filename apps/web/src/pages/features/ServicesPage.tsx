@@ -22,6 +22,7 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { dbClusterApi } from '../../features/db-service/cluster-api';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
+import { bindSet, bindInput, bindCall2 } from '../bind-handlers';
 
 export function enabledLabel(v: string, t: TFunction): string {
   if (v === 'enabled') return t('services.enabledBoot');
@@ -222,7 +223,7 @@ export function ServicesPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -292,7 +293,7 @@ export function ServicesPage() {
                       <button
                         type="button"
                         className={`ops-chip${catFilter === 'all' ? ' ops-chip--active' : ''}`}
-                        onClick={() => setCatFilter('all')}
+                        onClick={bindSet(setCatFilter, 'all')}
                       >
                         {t('services.all')}
                         <span className="ops-chip__n">{items.length}</span>
@@ -304,7 +305,7 @@ export function ServicesPage() {
                             key={c}
                             type="button"
                             className={`ops-chip${catFilter === c ? ' ops-chip--active' : ''}`}
-                            onClick={() => setCatFilter(c)}
+                            onClick={bindSet(setCatFilter, c)}
                           >
                             {c}
                             <span className="ops-chip__n">{n}</span>
@@ -316,7 +317,7 @@ export function ServicesPage() {
                       <input
                         id="svc-q"
                         value={q}
-                        onChange={(e) => setQ(e.target.value)}
+                        onChange={bindInput(setQ)}
                         placeholder={t('services.searchPh')}
                       />
                     </Field>
@@ -360,7 +361,7 @@ export function ServicesPage() {
                             disabled={
                               (!row.installed && row.active !== 'active') || !canMutate
                             }
-                            onClick={() => void lifecycle(row.unit, 'start')}
+                            onClick={bindCall2(lifecycle, row.unit, 'start')}
                           >
                             {t('services.action.start')}
                           </Button>
@@ -369,7 +370,7 @@ export function ServicesPage() {
                             size="sm"
                             loading={busy}
                             disabled={!canMutate}
-                            onClick={() => void lifecycle(row.unit, 'restart')}
+                            onClick={bindCall2(lifecycle, row.unit, 'restart')}
                           >
                             {t('services.action.restart')}
                           </Button>
@@ -378,7 +379,7 @@ export function ServicesPage() {
                             size="sm"
                             loading={busy}
                             disabled={!canMutate}
-                            onClick={() => void lifecycle(row.unit, 'stop')}
+                            onClick={bindCall2(lifecycle, row.unit, 'stop')}
                           >
                             {t('services.action.stop')}
                           </Button>

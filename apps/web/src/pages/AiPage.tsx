@@ -25,6 +25,7 @@ import {
   buttonClassName,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { bindSet, bindInput, bindCall1, bindCall2 } from './bind-handlers';
 
 const AI_TABS = ['tasks', 'playbooks', 'about'] as const;
 
@@ -69,10 +70,59 @@ export function pipelinePhase(status: string): 0 | 1 | 2 | 3 {
 }
 
 export function stepCount(task: AiTask) {
-  const done = task.steps.filter((s) =>
+  const steps = Array.isArray(task.steps) ? task.steps : [];
+  const done = steps.filter((s) =>
     ['executed', 'completed', 'done'].includes(s.status),
   ).length;
-  return { done, total: task.steps.length };
+  return { done, total: steps.length };
+}
+
+/** Progress fraction 0–1 for pipeline UI. */
+export function stepProgress(task: AiTask): number {
+  const { done, total } = stepCount(task);
+  if (total <= 0) return 0;
+  return Math.min(1, done / total);
+}
+
+/** Whether task can be re-run / re-planned. */
+export function canRerun(status: string): boolean {
+  return isTerminal(status) || status === 'rejected';
+}
+
+/** Sort key for task list (pending first). */
+export function taskSortRank(status: string): number {
+  if (status === 'running') return 0;
+  if (status === 'pending' || status === 'planned' || status === 'approved') return 1;
+  if (status === 'failed' || status === 'error') return 2;
+  if (isTerminal(status)) return 3;
+  return 4;
+}
+
+/** Truncate goal / prompt for list row. */
+export function truncateGoal(goal: string | null | undefined, max = 80): string {
+  const s = (goal ?? '').trim();
+  if (!s) return '—';
+  if (s.length <= max) return s;
+  return `${s.slice(0, max - 1)}…`;
+}
+
+/** Filter tasks by free-text query. */
+export function filterTasksByQuery<
+  T extends { goal?: string; title?: string; status?: string },
+>(tasks: T[], q: string): T[] {
+  const s = q.trim().toLowerCase();
+  if (!s) return tasks;
+  return tasks.filter((t) => {
+    const hay = `${t.goal ?? ''} ${t.title ?? ''} ${t.status ?? ''}`.toLowerCase();
+    return hay.includes(s);
+  });
+}
+
+/** Count non-terminal tasks. */
+export function countActiveTasks(
+  tasks: Array<{ status: string }> | null | undefined,
+): number {
+  return (tasks ?? []).filter((t) => !isTerminal(t.status)).length;
 }
 
 export function AiPage() {
@@ -239,7 +289,7 @@ export function AiPage() {
                           className={`ai-task-row ai-task-row--${tone}${
                             active ? ' is-active' : ''
                           }`}
-                          onClick={() => setSelected(task)}
+                          onClick={bindSet(setSelected, task)}
                         >
                           <div className="ai-task-row__main">
                             <div className="ai-task-row__title">
@@ -306,7 +356,7 @@ export function AiPage() {
                             variant="primary"
                             size="md"
                             loading={busy}
-                            onClick={() => void approveAndRun(selected.id)}
+                            onClick={bindCall1(approveAndRun, selected.id)}
                           >
                             {t('ai.approveRun')}
                           </Button>
@@ -316,7 +366,7 @@ export function AiPage() {
                             variant="ghost"
                             size="md"
                             loading={busy}
-                            onClick={() => void cancelTask(selected.id)}
+                            onClick={bindCall1(cancelTask, selected.id)}
                           >
                             {t('ai.cancelTask')}
                           </Button>
@@ -329,9 +379,14 @@ export function AiPage() {
 
                     <div className="ai-steps">
                       <h4 className="ai-steps__title">
-                        {t('ai.stepsTitle', { count: selected.steps.length })}
+                        {t('ai.stepsTitle', {
+                          count: Array.isArray(selected.steps)
+                            ? selected.steps.length
+                            : 0,
+                        })}
                       </h4>
-                      {selected.steps.length === 0 ? (
+                      {!Array.isArray(selected.steps) ||
+                      selected.steps.length === 0 ? (
                         <p className="ops-muted">{t('ai.noSteps')}</p>
                       ) : (
                         <ol className="ai-steps__list">
@@ -364,7 +419,7 @@ export function AiPage() {
                                   variant="danger"
                                   size="sm"
                                   loading={busy}
-                                  onClick={() => void rejectStep(selected.id, s.id)}
+                                  onClick={bindCall2(rejectStep, selected.id, s.id)}
                                 >
                                   {t('ai.reject')}
                                 </Button>
@@ -403,7 +458,7 @@ export function AiPage() {
                   <input
                     id="pb-filter"
                     value={pbFilter}
-                    onChange={(e) => setPbFilter(e.target.value)}
+                    onChange={bindInput(setPbFilter)}
                     placeholder={t('ai.searchPh')}
                   />
                 </Field>
@@ -455,7 +510,7 @@ export function AiPage() {
 
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={bindSet(setCreateOpen, false)}
         title={t('ai.createTitle')}
         description={t('ai.createDesc')}
         size="lg"
@@ -464,7 +519,7 @@ export function AiPage() {
             <Button
               variant="secondary"
               size="md"
-              onClick={() => setCreateOpen(false)}
+              onClick={bindSet(setCreateOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -493,7 +548,7 @@ export function AiPage() {
               <textarea
                 id="prompt"
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={bindInput(setPrompt)}
                 required
                 rows={5}
                 placeholder={t('ai.promptPh')}

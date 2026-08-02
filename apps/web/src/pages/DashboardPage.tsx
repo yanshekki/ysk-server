@@ -32,6 +32,7 @@ import {
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { bindSet, bindInput } from './bind-handlers';
 import {
   defaultRuntimeInstallVersion,
   runtimeVersionChoices,
@@ -631,7 +632,7 @@ export function DashboardPage() {
                         <button
                           type="button"
                           className="dash-kpi__link btn--link"
-                          onClick={() => setTab('wizard')}
+                          onClick={bindSet(setTab, 'wizard')}
                         >
                           {t('dashboard.wizardLink')}
                         </button>
@@ -707,7 +708,7 @@ export function DashboardPage() {
                       <input
                         id="wiz-name"
                         value={wizName}
-                        onChange={(e) => setWizName(e.target.value)}
+                        onChange={bindInput(setWizName)}
                         required
                         placeholder="my-app"
                         spellCheck={false}
@@ -722,7 +723,7 @@ export function DashboardPage() {
                       <input
                         id="wiz-dom"
                         value={wizDomain}
-                        onChange={(e) => setWizDomain(e.target.value)}
+                        onChange={bindInput(setWizDomain)}
                         placeholder="app.example.com"
                         spellCheck={false}
                       />
@@ -796,7 +797,7 @@ export function DashboardPage() {
                         <input
                           id="wiz-ip"
                           value={wizServerIp}
-                          onChange={(e) => setWizServerIp(e.target.value)}
+                          onChange={bindInput(setWizServerIp)}
                           placeholder={t('dashboard.serverIpv4Ph')}
                           spellCheck={false}
                         />
@@ -810,7 +811,7 @@ export function DashboardPage() {
                         <input
                           id="wiz-ip6"
                           value={wizServerIpv6}
-                          onChange={(e) => setWizServerIpv6(e.target.value)}
+                          onChange={bindInput(setWizServerIpv6)}
                           placeholder={t('dashboard.serverIpv6Ph')}
                           spellCheck={false}
                         />

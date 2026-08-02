@@ -39,6 +39,7 @@ import { RolePermissionsPanel } from '../features/users/RolePermissionsPanel';
 import { api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { bindSet, bindInput, bindCheck, bindCall1 } from './bind-handlers';
 
 type HostUsage = {
   scope: 'host';
@@ -77,10 +78,59 @@ type Pkg = {
   usageScope?: string;
 };
 
-function usageBar(used: number, max: number): string {
+export function usageBar(used: number, max: number): string {
   if (max <= 0) return `${used} / ∞`;
   const pct = Math.min(100, Math.round((used / max) * 100));
   return `${used} / ${max} (${pct}%)`;
+}
+
+/** Usage percent 0–100; unlimited max → 0. */
+export function usagePct(used: number, max: number): number {
+  if (max <= 0) return 0;
+  return Math.min(100, Math.round((used / max) * 100));
+}
+
+export function isUserSuspended(u: { suspended?: boolean }): boolean {
+  return Boolean(u.suspended);
+}
+
+export function primaryRole(roles: string[] | null | undefined): string {
+  return roles?.[0] ?? '—';
+}
+
+export function packageDiskLabel(diskMb: number): string {
+  if (!Number.isFinite(diskMb) || diskMb < 0) return '—';
+  if (diskMb >= 1024) return `${(diskMb / 1024).toFixed(1)} GB`;
+  return `${diskMb} MB`;
+}
+
+export function userStatusTone(u: {
+  suspended?: boolean;
+  totpEnabled?: boolean;
+}): 'danger' | 'ok' | 'warn' {
+  if (u.suspended) return 'danger';
+  if (u.totpEnabled) return 'ok';
+  return 'warn';
+}
+
+export function packageQuotaTone(used: number, max: number): 'ok' | 'warn' | 'danger' {
+  if (max <= 0) return 'ok';
+  const pct = usagePct(used, max);
+  if (pct >= 90) return 'danger';
+  if (pct >= 70) return 'warn';
+  return 'ok';
+}
+
+export function filterUsersByQuery<
+  T extends { username: string; roles?: string[] },
+>(users: T[], q: string): T[] {
+  const s = q.trim().toLowerCase();
+  if (!s) return users;
+  return users.filter(
+    (u) =>
+      u.username.toLowerCase().includes(s) ||
+      (u.roles ?? []).some((r) => r.toLowerCase().includes(s)),
+  );
 }
 
 type RolePolicyView = {
@@ -542,7 +592,7 @@ export function UsersPage() {
       {error ? (
         <Alert variant="error">
           {error}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setError(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setError, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -550,7 +600,7 @@ export function UsersPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -677,7 +727,7 @@ export function UsersPage() {
               }
               rowActions={(u) => (
                 <ActionBar align="end">
-                  <Button variant="secondary" size="sm" onClick={() => openDetail(u)}>
+                  <Button variant="secondary" size="sm" onClick={bindCall1(openDetail, u)}>
                     {t('users.openDetail')}
                   </Button>
                   {canImpersonate ? (
@@ -810,7 +860,7 @@ export function UsersPage() {
                 rowKey={(p) => p.id}
                 rowActions={(p) => (
                   <ActionBar align="end">
-                    <Button variant="secondary" size="sm" onClick={() => openEditPkg(p)}>
+                    <Button variant="secondary" size="sm" onClick={bindCall1(openEditPkg, p)}>
                       {t('users.edit')}
                     </Button>
                     <Button
@@ -891,12 +941,12 @@ export function UsersPage() {
       {/* Create user */}
       <Modal
         open={createUserOpen}
-        onClose={() => setCreateUserOpen(false)}
+        onClose={bindSet(setCreateUserOpen, false)}
         title={t('users.createUser')}
         description={t('users.createUserDesc')}
         footer={
           <ActionBar align="end" size="md">
-            <Button variant="secondary" size="sm" onClick={() => setCreateUserOpen(false)}>
+            <Button variant="secondary" size="sm" onClick={bindSet(setCreateUserOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" form="users-create" variant="primary" size="sm" loading={busy}>
@@ -910,7 +960,7 @@ export function UsersPage() {
             <input
               id="u-name"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={bindInput(setUsername)}
               required
               autoComplete="off"
             />
@@ -926,7 +976,7 @@ export function UsersPage() {
               id="u-pass"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={bindInput(setPassword)}
               required
               minLength={8}
               autoComplete="new-password"
@@ -946,7 +996,7 @@ export function UsersPage() {
             />
           </Field>
           <Field label={t('users.package')} htmlFor="u-pkg" flush>
-            <select id="u-pkg" value={userPkgId} onChange={(e) => setUserPkgId(e.target.value)}>
+            <select id="u-pkg" value={userPkgId} onChange={bindInput(setUserPkgId)}>
               <option value="">{t('users.noneOption')}</option>
               {pkgOptions.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -959,7 +1009,7 @@ export function UsersPage() {
             <select
               id="u-locale"
               value={createLocale}
-              onChange={(e) => setCreateLocale(e.target.value)}
+              onChange={bindInput(setCreateLocale)}
             >
               <option value="zh-HK">zh-HK</option>
               <option value="zh-CN">zh-CN</option>
@@ -985,12 +1035,12 @@ export function UsersPage() {
       {/* Package create/edit */}
       <Modal
         open={pkgFormOpen}
-        onClose={() => setPkgFormOpen(false)}
+        onClose={bindSet(setPkgFormOpen, false)}
         title={editingPkg ? t('users.editPkg') : t('users.createPkg')}
         description={t('users.createPkgDesc')}
         footer={
           <ActionBar align="end" size="md">
-            <Button variant="secondary" size="sm" onClick={() => setPkgFormOpen(false)}>
+            <Button variant="secondary" size="sm" onClick={bindSet(setPkgFormOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" form="pkg-form" variant="primary" size="sm" loading={busy}>
@@ -1004,7 +1054,7 @@ export function UsersPage() {
             <input
               id="p-name"
               value={pkgName}
-              onChange={(e) => setPkgName(e.target.value)}
+              onChange={bindInput(setPkgName)}
               required
             />
           </Field>
@@ -1030,7 +1080,7 @@ export function UsersPage() {
               type="number"
               min={0}
               value={pkgMail}
-              onChange={(e) => setPkgMail(e.target.value)}
+              onChange={bindInput(setPkgMail)}
             />
           </Field>
           <Field label={t('users.databases')} htmlFor="p-db" flush>
@@ -1039,7 +1089,7 @@ export function UsersPage() {
               type="number"
               min={0}
               value={pkgDb}
-              onChange={(e) => setPkgDb(e.target.value)}
+              onChange={bindInput(setPkgDb)}
             />
           </Field>
           <Field label={t('users.diskQuota')} htmlFor="p-disk" flush>
@@ -1063,22 +1113,22 @@ export function UsersPage() {
               type="number"
               min={0}
               value={pkgBw}
-              onChange={(e) => setPkgBw(e.target.value)}
+              onChange={bindInput(setPkgBw)}
             />
           </Field>
           <label className="u-text-sm u-flex u-items-center u-gap-2">
-            <input type="checkbox" checked={pkgFtp} onChange={(e) => setPkgFtp(e.target.checked)} />
+            <input type="checkbox" checked={pkgFtp} onChange={bindCheck(setPkgFtp)} />
             {t('users.ftp')}
           </label>
           <label className="u-text-sm u-flex u-items-center u-gap-2">
-            <input type="checkbox" checked={pkgSsh} onChange={(e) => setPkgSsh(e.target.checked)} />
+            <input type="checkbox" checked={pkgSsh} onChange={bindCheck(setPkgSsh)} />
             {t('users.ssh')}
           </label>
           <Field label={t('users.notes')} htmlFor="p-notes" flush>
             <textarea
               id="p-notes"
               value={pkgNotes}
-              onChange={(e) => setPkgNotes(e.target.value)}
+              onChange={bindInput(setPkgNotes)}
               rows={2}
             />
           </Field>
@@ -1106,7 +1156,7 @@ export function UsersPage() {
         onGrantsChange={setDetailGrants}
         onRevokesChange={setDetailRevokes}
         onSave={() => void saveDetailUser()}
-        onClose={() => setDetailUser(null)}
+        onClose={bindSet(setDetailUser, null)}
         onImpersonate={
           detailUser
             ? () => setPending({ kind: 'impersonate', user: detailUser })

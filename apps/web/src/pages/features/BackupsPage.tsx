@@ -27,6 +27,7 @@ import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
+import { bindSet, bindInput, bindVoid, bindCall1 } from '../bind-handlers';
 
 const BK_TABS = ['files', 'ops', 'remote', 'about'] as const;
 
@@ -65,6 +66,63 @@ export function formatBytes(n?: number): string {
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Short project id chip. */
+export function shortProjectId(id: string | null | undefined, n = 10): string {
+  const s = (id ?? '—').toString();
+  if (s === '—') return s;
+  return s.length <= n ? s : `${s.slice(0, n)}…`;
+}
+
+/** Restore mode is a dry-run preview. */
+export function isDryRunMode(mode: string): boolean {
+  return mode === 'dry-run' || mode === 'preview';
+}
+
+/** Remote kind needs host field. */
+export function remoteNeedsHost(kind: string): boolean {
+  return kind === 'sftp' || kind === 's3';
+}
+
+/** Restic repo configured enough to list. */
+export function resticReady(settings: {
+  enabled?: boolean;
+  repoPath?: string;
+  s3Repo?: string;
+  password?: string;
+}): boolean {
+  if (!settings.enabled) return false;
+  const repo = (settings.repoPath || settings.s3Repo || '').trim();
+  return Boolean(repo && (settings.password ?? '').length > 0);
+}
+
+/** Sort backups newest first by mtime. */
+export function sortBackupsByMtime<T extends { mtime?: string }>(
+  items: T[],
+): T[] {
+  return [...items].sort((a, b) =>
+    String(b.mtime ?? '').localeCompare(String(a.mtime ?? '')),
+  );
+}
+
+/** Filter backups by free-text. */
+export function filterBackups<
+  T extends { name?: string; projectId?: string; path?: string },
+>(items: T[], q: string): T[] {
+  const s = q.trim().toLowerCase();
+  if (!s) return items;
+  return items.filter((b) => {
+    const hay = `${b.name ?? ''} ${b.projectId ?? ''} ${b.path ?? ''}`.toLowerCase();
+    return hay.includes(s);
+  });
+}
+
+/** Total bytes across backup items. */
+export function totalBackupBytes(
+  items: Array<{ bytes?: number }> | null | undefined,
+): number {
+  return (items ?? []).reduce((acc, b) => acc + (Number(b.bytes) || 0), 0);
 }
 
 export function BackupsPage() {
@@ -320,7 +378,7 @@ export function BackupsPage() {
           >
             {t('common.refresh')}
           </Button>
-          <Button variant="primary" size="sm" loading={busy} onClick={() => setTab('ops')}>
+          <Button variant="primary" size="sm" loading={busy} onClick={bindSet(setTab, 'ops')}>
             {t('common.operation')}
           </Button>
         </>
@@ -330,7 +388,7 @@ export function BackupsPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -360,7 +418,7 @@ export function BackupsPage() {
                   </p>
                 </div>
                 {canRun ? (
-                  <Button variant="secondary" size="sm" onClick={() => setTab('ops')}>
+                  <Button variant="secondary" size="sm" onClick={bindSet(setTab, 'ops')}>
                     {t('backups.backupAllBtn')}
                   </Button>
                 ) : null}
@@ -381,7 +439,8 @@ export function BackupsPage() {
                         </div>
                         <div className="ops-svc__meta">
                           <span>
-                            {t('common.project')} <code>{b.projectId.slice(0, 10)}…</code>
+                            {t('common.project')}{' '}
+                            <code>{shortProjectId(b.projectId)}</code>
                           </span>
                           <span>
                             {b.mtime
@@ -395,7 +454,7 @@ export function BackupsPage() {
                             variant="secondary"
                             size="sm"
                             loading={busy}
-                            onClick={() => void downloadBackup(b)}
+                            onClick={bindCall1(downloadBackup, b)}
                           >
                             {t('system.download')}
                           </Button>
@@ -441,7 +500,7 @@ export function BackupsPage() {
                               variant="danger"
                               size="sm"
                               loading={busy}
-                              onClick={() => setDeleteTarget(b)}
+                              onClick={bindSet(setDeleteTarget, b)}
                             >
                               {t('common.delete')}
                             </Button>
@@ -755,7 +814,7 @@ export function BackupsPage() {
                 <input
                   id="rs-pid"
                   value={restoreProjectId}
-                  onChange={(e) => setRestoreProjectId(e.target.value)}
+                  onChange={bindInput(setRestoreProjectId)}
                   placeholder="uuid"
                 />
               </Field>
@@ -1158,7 +1217,7 @@ export function BackupsPage() {
                       id="bk-ex"
                       rows={5}
                       value={exclusionsText}
-                      onChange={(e) => setExclusionsText(e.target.value)}
+                      onChange={bindInput(setExclusionsText)}
                       placeholder={'node_modules\n.git'}
                     />
                   </Field>
@@ -1168,7 +1227,7 @@ export function BackupsPage() {
                     variant="primary"
                     size="md"
                     loading={settingsBusy}
-                    onClick={() => void saveSettings()}
+                    onClick={bindVoid(saveSettings)}
                   >
                     {t('backups.saveAll')}
                   </Button>
@@ -1182,7 +1241,7 @@ export function BackupsPage() {
 
       <ConfirmDialog
         open={Boolean(restoreTarget)}
-        onClose={() => setRestoreTarget(null)}
+        onClose={bindSet(setRestoreTarget, null)}
         onConfirm={() => {
           if (!restoreTarget) return;
           void run(async () => {
@@ -1228,7 +1287,7 @@ export function BackupsPage() {
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        onClose={() => setDeleteTarget(null)}
+        onClose={bindSet(setDeleteTarget, null)}
         onConfirm={() => {
           if (!deleteTarget) return;
           void run(async () => {
@@ -1259,7 +1318,7 @@ export function BackupsPage() {
 
       <ConfirmDialog
         open={resticSafe != null}
-        onClose={() => setResticSafe(null)}
+        onClose={bindSet(setResticSafe, null)}
         title={t('backups.resticSafeTitle')}
         description={
           resticSafe
@@ -1288,7 +1347,7 @@ export function BackupsPage() {
 
       <PromptDialog
         open={resticOverwrite != null}
-        onClose={() => setResticOverwrite(null)}
+        onClose={bindSet(setResticOverwrite, null)}
         title={t('backups.overwriteTitle')}
         description={
           resticOverwrite

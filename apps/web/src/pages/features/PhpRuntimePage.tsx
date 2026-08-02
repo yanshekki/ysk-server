@@ -30,6 +30,7 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { bindSet, bindInput } from '../bind-handlers';
 
 type ToolsProbe = {
   php?: { version?: string; modules: string[] };
@@ -264,7 +265,7 @@ export function PhpRuntimePage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -531,7 +532,7 @@ export function PhpRuntimePage() {
                       id="ini-extra"
                       rows={4}
                       value={extraText}
-                      onChange={(e) => setExtraText(e.target.value)}
+                      onChange={bindInput(setExtraText)}
                       placeholder="variables_order=GPCS"
                       spellCheck={false}
                     />
@@ -548,7 +549,7 @@ export function PhpRuntimePage() {
                       id="ini-raw"
                       rows={4}
                       value={rawAppend}
-                      onChange={(e) => setRawAppend(e.target.value)}
+                      onChange={bindInput(setRawAppend)}
                       placeholder="; custom block"
                       spellCheck={false}
                     />
@@ -649,7 +650,7 @@ export function PhpRuntimePage() {
                     <input
                       id="php-pool"
                       value={poolName}
-                      onChange={(e) => setPoolName(e.target.value)}
+                      onChange={bindInput(setPoolName)}
                       placeholder="demo"
                       spellCheck={false}
                     />

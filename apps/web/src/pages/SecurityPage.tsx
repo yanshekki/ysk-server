@@ -30,6 +30,7 @@ import {
   PageTabs,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { bindSet, bindInput, bindCheck, bindVoid } from './bind-handlers';
 
 const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'allowlist', 'about'] as const;
 
@@ -212,7 +213,7 @@ export function SecurityPage() {
           },
         ],
       }}
-      actions={<Button variant="secondary" size="sm" loading={busy} onClick={() => void runSysInfo()}>
+      actions={<Button variant="secondary" size="sm" loading={busy} onClick={bindVoid(runSysInfo)}>
           {t('security.runSysInfo')}
         </Button>
       }
@@ -233,7 +234,7 @@ export function SecurityPage() {
           >
             {t('common.copy')}
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setNewKeyToken(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setNewKeyToken, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -280,7 +281,7 @@ export function SecurityPage() {
                       id="reauth-pw"
                       type="password"
                       value={reauthPassword}
-                      onChange={(e) => setReauthPassword(e.target.value)}
+                      onChange={bindInput(setReauthPassword)}
                       autoComplete="current-password"
                     />
                   </Field>
@@ -333,7 +334,7 @@ export function SecurityPage() {
                         <input
                           id="totp-confirm"
                           value={totpCode}
-                          onChange={(e) => setTotpCode(e.target.value)}
+                          onChange={bindInput(setTotpCode)}
                           maxLength={6}
                           placeholder="000000"
                           inputMode="numeric"
@@ -391,7 +392,7 @@ export function SecurityPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setRecoveryCodes(null)}
+                      onClick={bindSet(setRecoveryCodes, null)}
                     >
                       {t('security.savedClose')}
                     </Button>
@@ -435,7 +436,7 @@ export function SecurityPage() {
                     variant="danger"
                     size="md"
                     disabled={sessions.filter((s) => !s.current).length === 0}
-                    onClick={() => setRevokeOthersOpen(true)}
+                    onClick={bindSet(setRevokeOthersOpen, true)}
                   >
                     {t('security.revokeOtherSessions')}
                   </Button>
@@ -505,7 +506,7 @@ export function SecurityPage() {
                                 <Button
                                   variant="danger"
                                   size="md"
-                                  onClick={() => setRevokeTarget(s)}
+                                  onClick={bindSet(setRevokeTarget, s)}
                                 >
                                   {t('security.revoke')}
                                 </Button>
@@ -530,7 +531,7 @@ export function SecurityPage() {
                   }
                   confirmLabel={t('security.revoke')}
                   danger
-                  onClose={() => setRevokeTarget(null)}
+                  onClose={bindSet(setRevokeTarget, null)}
                   onConfirm={() => {
                     if (!revokeTarget) return;
                     const id = revokeTarget.id;
@@ -552,7 +553,7 @@ export function SecurityPage() {
                   })}
                   confirmLabel={t('security.revokeOtherSessions')}
                   danger
-                  onClose={() => setRevokeOthersOpen(false)}
+                  onClose={bindSet(setRevokeOthersOpen, false)}
                   onConfirm={() => {
                     setRevokeOthersOpen(false);
                     void api
@@ -747,7 +748,7 @@ export function SecurityPage() {
                   <input
                     type="checkbox"
                     checked={requireAdminTotp}
-                    onChange={(e) => setRequireAdminTotp(e.target.checked)}
+                    onChange={bindCheck(setRequireAdminTotp)}
                   />
                   <span>{t('security.requireAdmin2fa')}</span>
                 </label>
@@ -755,7 +756,7 @@ export function SecurityPage() {
                   <input
                     type="checkbox"
                     checked={requireStrict}
-                    onChange={(e) => setRequireStrict(e.target.checked)}
+                    onChange={bindCheck(setRequireStrict)}
                   />
                   <span>{t('security.strictAdmin2fa')}</span>
                 </label>
@@ -768,7 +769,7 @@ export function SecurityPage() {
                   <input
                     id="pol-totp"
                     value={policyTotp}
-                    onChange={(e) => setPolicyTotp(e.target.value)}
+                    onChange={bindInput(setPolicyTotp)}
                     maxLength={12}
                     placeholder={t('security.totp6digitPlaceholder')}
                   />
@@ -827,7 +828,7 @@ export function SecurityPage() {
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => setCreateKeyOpen(true)}
+                    onClick={bindSet(setCreateKeyOpen, true)}
                   >
                     {t('security.createKey')}
                   </Button>
@@ -966,12 +967,12 @@ export function SecurityPage() {
 
       <Modal
         open={createKeyOpen}
-        onClose={() => setCreateKeyOpen(false)}
+        onClose={bindSet(setCreateKeyOpen, false)}
         title={t('security.createApiKeyTitle')}
         description={t('security.createApiKeyDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setCreateKeyOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setCreateKeyOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -1014,7 +1015,7 @@ export function SecurityPage() {
             <input
               id="ak-name"
               value={newKeyName}
-              onChange={(e) => setNewKeyName(e.target.value)}
+              onChange={bindInput(setNewKeyName)}
               placeholder="ci-deploy"
               spellCheck={false}
             />

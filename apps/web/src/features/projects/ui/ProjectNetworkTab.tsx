@@ -18,6 +18,7 @@ import {
   buttonClassName,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
+import { bindToggle, bindInput, bindCall1, bindCall2 } from '../../../pages/bind-handlers';
 
 export interface ProjectNetworkTabProps {
   project: ProjectDto;
@@ -138,7 +139,7 @@ export function ProjectNetworkTab({
               <input
                 id="net-domain"
                 value={domain}
-                onChange={(e) => setDomain(e.target.value)}
+                onChange={bindInput(setDomain)}
                 placeholder="app.example.com"
                 disabled={suspended}
                 autoComplete="off"
@@ -155,7 +156,7 @@ export function ProjectNetworkTab({
                 id="net-aliases"
                 rows={3}
                 value={aliasesText}
-                onChange={(e) => setAliasesText(e.target.value)}
+                onChange={bindInput(setAliasesText)}
                 placeholder={'www.example.com'}
                 disabled={suspended}
               />
@@ -167,7 +168,7 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended}
-              onClick={() => void saveNetwork(false)}
+              onClick={bindCall1(saveNetwork, false)}
             >
               {t('projects.saveOnly')}
             </Button>
@@ -177,7 +178,7 @@ export function ProjectNetworkTab({
               loading={localBusy}
               disabled={suspended || !hasDomain}
               title={!hasDomain ? t('projects.netNeedPrimary') : undefined}
-              onClick={() => void saveNetwork(true, false)}
+              onClick={bindCall2(saveNetwork, true, false)}
             >
               {t('projects.savePublishNginx')}
             </Button>
@@ -223,7 +224,7 @@ export function ProjectNetworkTab({
               <input
                 id="net-redir"
                 value={redirectUrl}
-                onChange={(e) => setRedirectUrl(e.target.value)}
+                onChange={bindInput(setRedirectUrl)}
                 placeholder="https://www.example.com"
                 disabled={suspended}
               />
@@ -235,7 +236,7 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended}
-              onClick={() => void saveNetwork(false)}
+              onClick={bindCall1(saveNetwork, false)}
             >
               {t('common.save')}
             </Button>
@@ -244,7 +245,7 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended || !hasDomain}
-              onClick={() => void saveNetwork(true, forceHttps)}
+              onClick={bindCall2(saveNetwork, true, forceHttps)}
             >
               {t('projects.savePublish')}
             </Button>
@@ -263,7 +264,7 @@ export function ProjectNetworkTab({
               <input
                 id="net-au"
                 value={authUser}
-                onChange={(e) => setAuthUser(e.target.value)}
+                onChange={bindInput(setAuthUser)}
                 disabled={suspended}
                 autoComplete="username"
                 placeholder="admin"
@@ -274,7 +275,7 @@ export function ProjectNetworkTab({
                 id="net-ap"
                 type="password"
                 value={authPass}
-                onChange={(e) => setAuthPass(e.target.value)}
+                onChange={bindInput(setAuthPass)}
                 disabled={suspended}
                 autoComplete="new-password"
                 placeholder={authUser ? t('projects.netAuthPassSet') : '—'}
@@ -287,7 +288,7 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended}
-              onClick={() => void saveNetwork(false)}
+              onClick={bindCall1(saveNetwork, false)}
             >
               {t('projects.saveAuth')}
             </Button>
@@ -296,7 +297,7 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended || !hasDomain}
-              onClick={() => void saveNetwork(true, false)}
+              onClick={bindCall2(saveNetwork, true, false)}
             >
               {t('projects.savePublishNginx')}
             </Button>
@@ -378,7 +379,7 @@ export function ProjectNetworkTab({
               <input
                 id="net-doc"
                 value={docRoot}
-                onChange={(e) => setDocRoot(e.target.value)}
+                onChange={bindInput(setDocRoot)}
                 placeholder="app/public"
                 disabled={suspended}
                 spellCheck={false}
@@ -404,7 +405,7 @@ export function ProjectNetworkTab({
           <button
             type="button"
             className={`${buttonClassName({ variant: 'ghost', size: 'sm' })} u-mb-4`}
-            onClick={() => setAdvancedOpen((v) => !v)}
+            onClick={bindToggle(setAdvancedOpen)}
           >
             {advancedOpen ? t('projects.netCollapseBind') : t('projects.netExpandBind')}
           </button>
@@ -415,7 +416,7 @@ export function ProjectNetworkTab({
                 <input
                   id="net-ip"
                   value={bindIp}
-                  onChange={(e) => setBindIp(e.target.value)}
+                  onChange={bindInput(setBindIp)}
                   placeholder={t('projects.netBindPh')}
                   disabled={suspended}
                   spellCheck={false}
@@ -431,7 +432,7 @@ export function ProjectNetworkTab({
               loading={localBusy}
               disabled={suspended || !hasDomain}
               title={!hasDomain ? t('projects.netNeedDomainSave') : undefined}
-              onClick={() => void saveNetwork(true, false)}
+              onClick={bindCall2(saveNetwork, true, false)}
             >
               {t('projects.ovPublishNginx')}
             </Button>
@@ -440,7 +441,7 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended || !hasDomain}
-              onClick={() => void saveNetwork(true, true)}
+              onClick={bindCall2(saveNetwork, true, true)}
             >
               {t('projects.ovPublishSsl')}
             </Button>

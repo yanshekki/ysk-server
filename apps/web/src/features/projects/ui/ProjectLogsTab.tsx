@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { bindInput } from '../../../pages/bind-handlers';
 import {
   Button,
   Card,
@@ -140,7 +141,7 @@ export function ProjectLogsTab({
             <input
               id="plog-name"
               value={nameQ}
-              onChange={(e) => setNameQ(e.target.value)}
+              onChange={bindInput(setNameQ)}
               placeholder="error.log"
               disabled={busy}
               onKeyDown={(e) => {
@@ -157,7 +158,7 @@ export function ProjectLogsTab({
             <input
               id="plog-grep"
               value={grepQ}
-              onChange={(e) => setGrepQ(e.target.value)}
+              onChange={bindInput(setGrepQ)}
               placeholder="Exception / error"
               disabled={busy}
               onKeyDown={(e) => {
@@ -384,7 +385,7 @@ export function ProjectLogsTab({
               id="plog-dirs"
               rows={3}
               value={dirsText}
-              onChange={(e) => setDirsText(e.target.value)}
+              onChange={bindInput(setDirsText)}
               placeholder={'storage/logs\nvar/log'}
               disabled={busy || !onSaveExtraDirs}
               className="u-mono-input"

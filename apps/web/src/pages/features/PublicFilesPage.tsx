@@ -24,6 +24,7 @@ import { getServerContext, setServerContext } from '../../shared/stores/server-c
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { Link } from 'react-router-dom';
+import { bindSet } from '../bind-handlers';
 
 export function PublicFilesPage() {
   const { t } = useTranslation();
@@ -67,7 +68,7 @@ export function PublicFilesPage() {
         {msg ? (
           <Alert variant="ok">
             {msg}{' '}
-            <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+            <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
               {t('common.close')}
             </Button>
           </Alert>

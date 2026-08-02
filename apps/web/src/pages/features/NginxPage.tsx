@@ -24,6 +24,7 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { systemApi } from '../../features/system';
+import { bindSet, bindCall1 } from '../bind-handlers';
 
 export function NginxPage() {
   const { t } = useTranslation();
@@ -166,7 +167,7 @@ export function NginxPage() {
         {msg ? (
           <Alert variant="ok">
             {msg}{' '}
-            <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+            <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
               {t('common.close')}
             </Button>
           </Alert>
@@ -248,7 +249,7 @@ export function NginxPage() {
                 variant="primary"
                 size="sm"
                 loading={busy}
-                onClick={() => void apply(r.id)}
+                onClick={bindCall1(apply, r.id)}
                 title={t('nginx.applyTitle')}
               >
                 {t('nginx.applyToSystem')}
@@ -257,7 +258,7 @@ export function NginxPage() {
                 variant="secondary"
                 size="sm"
                 loading={busy}
-                onClick={() => openEdit(r)}
+                onClick={bindCall1(openEdit, r)}
               >
                 {t('common.edit')}
               </Button>
@@ -265,7 +266,7 @@ export function NginxPage() {
                 variant="danger"
                 size="sm"
                 loading={busy}
-                onClick={() => setDelId(r.id)}
+                onClick={bindSet(setDelId, r.id)}
               >
                 {t('common.delete')}
               </Button>
@@ -275,7 +276,7 @@ export function NginxPage() {
 
         <Modal
           open={createOpen}
-          onClose={() => setCreateOpen(false)}
+          onClose={bindSet(setCreateOpen, false)}
           title={t('nginx.createTitle')}
           description={t('nginx.createDesc')}
           footer={
@@ -283,7 +284,7 @@ export function NginxPage() {
               <Button
                 variant="secondary"
                 size="md"
-                onClick={() => setCreateOpen(false)}
+                onClick={bindSet(setCreateOpen, false)}
               >
                 {t('common.cancel')}
               </Button>
@@ -317,12 +318,12 @@ export function NginxPage() {
 
         <Modal
           open={Boolean(edit)}
-          onClose={() => setEdit(null)}
+          onClose={bindSet(setEdit, null)}
           title={t('nginx.editTitle')}
           description={t('nginx.editDesc')}
           footer={
             <>
-              <Button variant="secondary" size="md" onClick={() => setEdit(null)}>
+              <Button variant="secondary" size="md" onClick={bindSet(setEdit, null)}>
                 {t('common.cancel')}
               </Button>
               <Button
@@ -355,7 +356,7 @@ export function NginxPage() {
 
         <ConfirmDialog
           open={Boolean(delId)}
-          onClose={() => setDelId(null)}
+          onClose={bindSet(setDelId, null)}
           onConfirm={() => {
             if (delId) void remove(delId).then(() => setDelId(null));
           }}

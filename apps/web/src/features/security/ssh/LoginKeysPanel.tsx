@@ -15,6 +15,7 @@ import { ActionBar,
 } from '../../../shared/components/ui';
 import { sshApi } from './api';
 import type { ProjectOpt, SftpKeyRow } from './types';
+import { bindSet, bindInput, bindVoid } from '../../../pages/bind-handlers';
 
 type Props = {
   onFlash: (tone: 'ok' | 'error', text: string) => void;
@@ -163,13 +164,13 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
 
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={bindSet(setOpen, false)}
         title={t('security.ssh.loginModalTitle')}
         description={t('security.ssh.loginModalDesc')}
         size="lg"
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -177,7 +178,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
               size="md"
               loading={busy}
               disabled={!projectId || !pub.trim()}
-              onClick={() => void addKey()}
+              onClick={bindVoid(addKey)}
             >
               {t('security.ssh.addAuth')}
             </Button>
@@ -189,7 +190,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
             <select
               id="login-proj"
               value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
+              onChange={bindInput(setProjectId)}
             >
               <option value="">{t('security.ssh.selectOption')}</option>
               {projects.map((p) => (
@@ -211,7 +212,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
               id="login-pub"
               rows={4}
               value={pub}
-              onChange={(e) => setPub(e.target.value)}
+              onChange={bindInput(setPub)}
               className="u-font-mono"
               spellCheck={false}
               placeholder="ssh-ed25519 AAAA… user@laptop"
@@ -221,7 +222,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
             <input
               id="login-cmt"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={bindInput(setComment)}
               placeholder={t('security.ssh.commentPlaceholder')}
             />
           </Field>

@@ -34,6 +34,7 @@ import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
+import { bindInput, bindCheck, bindPreset, bindVoid, bindBanOne } from '../bind-handlers';
 import {
   GEO_ASN_PROVIDERS,
   getGeoContinents,
@@ -305,6 +306,160 @@ export function filterActionableSuspects<
   return suspects.filter(isActionableSuspect);
 }
 
+/** Keys of a selection map that are truthy. */
+export function selectedKeys(selected: Record<string, boolean>): string[] {
+  return Object.entries(selected)
+    .filter(([, v]) => v)
+    .map(([k]) => k);
+}
+
+/** Status strip tone for active ban count. */
+export function banCountTone(count: number): 'warn' | 'neutral' {
+  return count > 10 ? 'warn' : 'neutral';
+}
+
+/** Suspect score badge tone. */
+export function scoreTone(score: number): 'warn' | 'info' | 'ok' {
+  if (score >= 40) return 'warn';
+  if (score >= 20) return 'info';
+  return 'ok';
+}
+
+/** Deep-link ban IP query is a plausible IPv4/IPv6 literal. */
+export function isValidBanIpQuery(ip: string | null | undefined): boolean {
+  return Boolean(ip && /^[\d.a-fA-F:]+$/.test(ip));
+}
+
+/** Whether `t` is a known Protection tab id. */
+export function isProtectionTab(
+  t: string | null | undefined,
+): t is (typeof TABS)[number] {
+  return Boolean(t && (TABS as readonly string[]).includes(t));
+}
+
+/** Split comma / semicolon / whitespace free text. */
+export function parseCommaList(raw: string): string[] {
+  return raw
+    .split(/[,;\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** Installed stack badge tone. */
+export function installedTone(installed?: boolean): 'ok' | 'warn' {
+  return installed ? 'ok' : 'warn';
+}
+
+/** Count signals that contribute points. */
+export function activeSignalsCount(
+  signals: Array<{ points: number }> | null | undefined,
+): number {
+  return (signals ?? []).filter((s) => s.points > 0).length;
+}
+
+/** Emergency preset requires typed EMERGENCY token. */
+export function needsEmergencyConfirm(
+  id: string,
+  danger?: boolean,
+  confirmToken?: string,
+): boolean {
+  return Boolean(danger && id === 'emergency' && confirmToken !== 'EMERGENCY');
+}
+
+/** Non-emergency danger presets need a confirm dialog first. */
+export function needsPresetConfirm(
+  id: string,
+  danger?: boolean,
+  preview?: boolean,
+  confirmToken?: string,
+): boolean {
+  return Boolean(!preview && danger && id !== 'emergency' && !confirmToken);
+}
+
+/** Confirm body token for emergency apply. */
+export function confirmTokenForPreset(id: string): string | undefined {
+  return id === 'emergency' ? 'EMERGENCY' : undefined;
+}
+
+/** Binary on/off display. */
+export function onOffLabel(
+  on: boolean,
+  onLabel: string,
+  offLabel: string,
+): string {
+  return on ? onLabel : offLabel;
+}
+
+/** Normalize geo mode from API. */
+export function geoModeNormalize(
+  mode: string | null | undefined,
+): 'deny_list' | 'allow_list' {
+  return mode === 'allow_list' ? 'allow_list' : 'deny_list';
+}
+
+/** autoUpdate defaults true when unset. */
+export function autoUpdateDefault(v: boolean | undefined | null): boolean {
+  return v !== false;
+}
+
+/** Compact vhost limit label. */
+export function vhostLimitLabel(withLimit: number, total: number): string {
+  return `${withLimit}/${total}`;
+}
+
+/** CSS-ish class key for suspect row state. */
+export function suspectRowClass(s: {
+  alreadyBanned?: boolean;
+  whitelisted?: boolean;
+}): 'banned' | 'whitelist' | 'actionable' {
+  if (s.alreadyBanned) return 'banned';
+  if (s.whitelisted) return 'whitelist';
+  return 'actionable';
+}
+
+/** Threat score with nullish coalesce. */
+export function threatScore(score: number | null | undefined): number {
+  return score ?? 0;
+}
+
+/** Threat level with low default. */
+export function threatLevelOrLow(
+  level: ThreatLevel | null | undefined,
+): ThreatLevel {
+  return level ?? 'low';
+}
+
+/** Join CF zone list for textarea. */
+export function joinZones(zones: string[] | null | undefined): string {
+  return (zones ?? []).join(', ');
+}
+
+/** Nginx limits existence tone. */
+export function nginxLimitsTone(exists?: boolean): 'ok' | 'warn' {
+  return exists ? 'ok' : 'warn';
+}
+
+/** Execute path tone (root + executeEnabled). */
+export function executePathTone(
+  executeEnabled?: boolean,
+  isRoot?: boolean,
+): 'ok' | 'warn' {
+  return executeEnabled && isRoot ? 'ok' : 'warn';
+}
+
+/** Toggle membership in a string set (countries, ASNs, …). */
+export function toggleInList(prev: string[], item: string): string[] {
+  return prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item];
+}
+
+/** Whether recommended preset should show apply CTA. */
+export function showRecommendedCta(
+  activePreset: string | null | undefined,
+  recommended: string | null,
+): boolean {
+  return Boolean(recommended && activePreset !== recommended);
+}
+
 type BanRow = { ip: string; source: string; jail?: string; reason?: string };
 
 export function ProtectionPage() {
@@ -423,12 +578,12 @@ export function ProtectionPage() {
   useEffect(() => {
     const ip = searchParams.get('ip');
     const t = searchParams.get('tab');
-    if (ip && /^[\d.a-fA-F:]+$/.test(ip)) {
+    if (isValidBanIpQuery(ip)) {
       setBanIp(ip);
       setShowManual(true);
       setBanReason((r) => r || 'from logs');
     }
-    if (t && (TABS as readonly string[]).includes(t)) {
+    if (isProtectionTab(t)) {
       setTab(t as (typeof TABS)[number]);
     }
   }, [searchParams, setTab]);
@@ -458,7 +613,7 @@ export function ProtectionPage() {
         setAutoBansLastHour(a.autoBansLastHour ?? 0);
         setSchedNext(a.scheduler?.nextRunAt ?? null);
         setHasCfToken(Boolean(a.hasCfToken));
-        setCfZonesText((a.automation.cloudflare?.zones ?? []).join(', '));
+        setCfZonesText(joinZones(a.automation.cloudflare?.zones));
       } catch {
         /* optional */
       }
@@ -518,10 +673,22 @@ export function ProtectionPage() {
     return () => window.clearInterval(id);
   }, [refresh]);
 
-  const selectedIps = useMemo(
-    () => Object.entries(selected).filter(([, v]) => v).map(([k]) => k),
-    [selected],
-  );
+
+  const selectedIps = useMemo(() => selectedKeys(selected), [selected]);
+
+  const goCommand = useCallback(() => setTab('command'), [setTab]);
+  const goBans = useCallback(() => setTab('bans'), [setTab]);
+  const goAutomation = useCallback(() => setTab('automation'), [setTab]);
+  const goGeo = useCallback(() => setTab('geo'), [setTab]);
+  const goStack = useCallback(() => setTab('stack'), [setTab]);
+  const goIntel = useCallback(() => setTab('intel'), [setTab]);
+  const clearMsg = useCallback(() => setMsg(null), [setMsg]);
+  const clearSelected = useCallback(() => setSelected({}), []);
+  const toggleMech = useCallback(() => setShowMech((v) => !v), []);
+  const toggleWl = useCallback(() => setShowWl((v) => !v), []);
+  const toggleManual = useCallback(() => setShowManual((v) => !v), []);
+  const clearPresetConfirm = useCallback(() => setPresetConfirmId(null), []);
+  const closeEmergency = useCallback(() => setEmergencyPromptOpen(false), []);
 
   const actionableSuspects = useMemo(
     () => filterActionableSuspects(suspects),
@@ -675,8 +842,8 @@ export function ProtectionPage() {
                 },
                 {
                   label: t('protection.statActiveBans'),
-                  value: status.bans.count,
-                  tone: (status.bans.count ?? 0) > 10 ? 'warn' : 'neutral',
+                  value: status.bans?.count ?? 0,
+                  tone: banCountTone(status.bans?.count ?? 0),
                 },
                 {
                   label: t('protection.statPreset'),
@@ -715,21 +882,21 @@ export function ProtectionPage() {
               variant="danger"
               size="sm"
               loading={busy}
-              onClick={() => void applyPreset(recommendedPreset, true)}
+              onClick={bindPreset(applyPreset, recommendedPreset!, true)}
             >
               {t('protection.oneClickSuggested')}
             </Button>
           ) : (
-            <Button variant="primary" size="sm" onClick={() => setTab('command')}>
+            <Button variant="primary" size="sm" onClick={goCommand}>
               {t('protection.viewPresets')}
             </Button>
           )}
           {actionableSuspects.length > 0 ? (
-            <Button variant="danger" size="sm" onClick={() => setTab('bans')}>
+            <Button variant="danger" size="sm" onClick={goBans}>
               {t('protection.suspectIpsCount', { count: actionableSuspects.length })}
             </Button>
           ) : (
-            <Button variant="secondary" size="sm" onClick={() => setTab('bans')}>
+            <Button variant="secondary" size="sm" onClick={goBans}>
               {t('protection.goBans')}
             </Button>
           )}
@@ -741,7 +908,7 @@ export function ProtectionPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={clearMsg}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -788,7 +955,7 @@ export function ProtectionPage() {
           {
             id: 'intel',
             label: t('protection.tabs.intel'),
-            badge: status?.signals.filter((s) => s.points > 0).length || undefined,
+            badge: activeSignalsCount(status?.signals) || undefined,
           },
         
           { id: 'about', label: t('protection.tabs.about') },
@@ -817,7 +984,7 @@ export function ProtectionPage() {
                         {t('common.apply')}
                       </Button>
                     ) : s.action === 'tab:bans' ? (
-                      <Button variant="secondary" size="sm" onClick={() => setTab('bans')}>
+                      <Button variant="secondary" size="sm" onClick={goBans}>
                         {t('protection.goTo')}
                       </Button>
                     ) : s.action?.startsWith('href:') ? (
@@ -885,7 +1052,7 @@ export function ProtectionPage() {
                         variant="ghost"
                         size="sm"
                         disabled={busy}
-                        onClick={() => void applyPreset(p.id, p.danger, true)}
+                        onClick={bindPreset(applyPreset, p.id, p.danger, true)}
                       >
                         {t('protection.preview')}
                       </Button>
@@ -893,7 +1060,7 @@ export function ProtectionPage() {
                         variant={p.danger ? 'danger' : active ? 'secondary' : 'primary'}
                         size="sm"
                         loading={busy}
-                        onClick={() => void applyPreset(p.id, p.danger, false)}
+                        onClick={bindPreset(applyPreset, p.id, p.danger, false)}
                       >
                         {active ? t('protection.reapply') : t('common.apply')}
                       </Button>
@@ -910,7 +1077,7 @@ export function ProtectionPage() {
                   value: status?.nginxLimits.exists
                     ? `${status.nginxLimits.reqRate ?? '—'}/${status.nginxLimits.burst ?? '—'}/${status.nginxLimits.connLimit ?? '—'}`
                     : t('protection.notWritten'),
-                  tone: status?.nginxLimits.exists ? 'ok' : 'warn',
+                  tone: nginxLimitsTone(status?.nginxLimits.exists),
                 },
                 {
                   label: t('protection.mode'),
@@ -919,11 +1086,11 @@ export function ProtectionPage() {
                 {
                   label: t('protection.controlPlane'),
                   value: status?.executeEnabled
-                    ? status.isRoot
+                    ? status?.isRoot
                       ? t('protection.canApply')
                       : t('protection.needRoot')
                     : t('protection.writeOnly'),
-                  tone: status?.executeEnabled && status.isRoot ? 'ok' : 'warn',
+                  tone: executePathTone(status?.executeEnabled, status?.isRoot),
                 },
               ]}
             />
@@ -1360,7 +1527,7 @@ export function ProtectionPage() {
             <div className="def-panel-card def-panel-card--muted">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('protection.sectionMechanism')}</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowMech((v) => !v)}>
+                <Button variant="ghost" size="sm" onClick={toggleMech}>
                   {showMech ? t('protection.collapse') : t('protection.expand')}
                 </Button>
               </div>
@@ -1528,7 +1695,7 @@ export function ProtectionPage() {
                 <input
                   id="cf-zones"
                   value={cfZonesText}
-                  onChange={(e) => setCfZonesText(e.target.value)}
+                  onChange={bindInput(setCfZonesText)}
                   placeholder="example.com, app.example.com"
                   spellCheck={false}
                 />
@@ -1794,10 +1961,10 @@ export function ProtectionPage() {
                   {t('protection.selectedIps', { count: selectedIps.length })}
                 </span>
                 <div className="def-batch-bar__actions">
-                  <Button variant="ghost" size="sm" onClick={() => setSelected({})}>
+                  <Button variant="ghost" size="sm" onClick={clearSelected}>
                     {t('common.cancel')}
                   </Button>
-                  <Button variant="danger" size="sm" loading={busy} onClick={() => void banSelected()}>
+                  <Button variant="danger" size="sm" loading={busy} onClick={bindVoid(banSelected)}>
                     {t('protection.banSelected')}
                   </Button>
                 </div>
@@ -1870,7 +2037,7 @@ export function ProtectionPage() {
                         </span>
                       </label>
                       <div className="def-suspect__badges">
-                        <Badge tone={s.score >= 40 ? 'warn' : 'info'}>{s.score}</Badge>
+                        <Badge tone={scoreTone(s.score)}>{s.score}</Badge>
                         {s.alreadyBanned ? <Badge tone="ok">{t('protection.alreadyBanned')}</Badge> : null}
                         {s.whitelisted ? <Badge tone="info">{t('protection.whitelist')}</Badge> : null}
                       </div>
@@ -1886,7 +2053,7 @@ export function ProtectionPage() {
                           size="sm"
                           loading={busy}
                           disabled={disabled}
-                          onClick={() => void banOne(s.ip, s.reasons[0])}
+                          onClick={bindBanOne(banOne, s.ip, s.reasons[0])}
                         >
                           {t('protection.ban')}
                         </Button>
@@ -2050,7 +2217,7 @@ export function ProtectionPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowWl((v) => !v)}
+                    onClick={toggleWl}
                   >
                     {showWl ? t('protection.collapseQuickAdd') : t('protection.quickAddOne')}
                   </Button>
@@ -2093,7 +2260,7 @@ export function ProtectionPage() {
                 <div className="def-wl-add">
                   <input
                     value={wlInput}
-                    onChange={(e) => setWlInput(e.target.value)}
+                    onChange={bindInput(setWlInput)}
                     placeholder={t('protection.ipOrCidr')}
                     spellCheck={false}
                   />
@@ -2126,7 +2293,7 @@ export function ProtectionPage() {
             <section className="def-panel-card def-panel-card--muted">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('protection.manualBanTitle')}</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowManual((v) => !v)}>
+                <Button variant="ghost" size="sm" onClick={toggleManual}>
                   {showManual ? t('protection.collapse') : t('protection.expand')}
                 </Button>
               </div>
@@ -2136,7 +2303,7 @@ export function ProtectionPage() {
                     <input
                       id="def-ip"
                       value={banIp}
-                      onChange={(e) => setBanIp(e.target.value)}
+                      onChange={bindInput(setBanIp)}
                       placeholder={t('protection.banIpPlaceholder')}
                       spellCheck={false}
                     />
@@ -2145,7 +2312,7 @@ export function ProtectionPage() {
                     <input
                       id="def-reason"
                       value={banReason}
-                      onChange={(e) => setBanReason(e.target.value)}
+                      onChange={bindInput(setBanReason)}
                       placeholder={t('protection.scanBrute')}
                     />
                   </Field>
@@ -2484,7 +2651,7 @@ export function ProtectionPage() {
                   <input
                     type="checkbox"
                     checked={geoEnabled}
-                    onChange={(e) => setGeoEnabled(e.target.checked)}
+                    onChange={bindCheck(setGeoEnabled)}
                   />
                   {t('protection.enable')}
                 </label>
@@ -2516,7 +2683,7 @@ export function ProtectionPage() {
                       id="geo-au"
                       type="checkbox"
                       checked={geoAutoUpdate}
-                      onChange={(e) => setGeoAutoUpdate(e.target.checked)}
+                      onChange={bindCheck(setGeoAutoUpdate)}
                     />
                     {t('protection.dailySchedule')}
                   </label>
@@ -2613,7 +2780,7 @@ export function ProtectionPage() {
                     <input
                       type="checkbox"
                       checked={geoCityPolicy}
-                      onChange={(e) => setGeoCityPolicy(e.target.checked)}
+                      onChange={bindCheck(setGeoCityPolicy)}
                     />
                     {t('protection.useCityAccess')}
                   </label>
@@ -2645,7 +2812,7 @@ export function ProtectionPage() {
                     <div className="mcs__custom">
                       <input
                         value={geoCityDraft}
-                        onChange={(e) => setGeoCityDraft(e.target.value)}
+                        onChange={bindInput(setGeoCityDraft)}
                         placeholder={t('protection.cityExample')}
                         spellCheck={false}
                         onKeyDown={(e) => {
@@ -2767,7 +2934,7 @@ export function ProtectionPage() {
                   <input
                     id="geo-lip"
                     value={lookupIp}
-                    onChange={(e) => setLookupIp(e.target.value)}
+                    onChange={bindInput(setLookupIp)}
                     placeholder={t('protection.lookupPlaceholder')}
                     spellCheck={false}
                   />

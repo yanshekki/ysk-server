@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
 import { ApiError } from '../shared/services/api';
+import { bindInput } from './bind-handlers';
 import {
   Alert,
   Field,
@@ -95,7 +96,7 @@ export function LoginPage() {
               <input
                 id="username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={bindInput(setUsername)}
                 autoComplete="username"
                 required
               />
@@ -105,7 +106,7 @@ export function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={bindInput(setPassword)}
                 autoComplete="current-password"
                 required
               />
@@ -122,7 +123,7 @@ export function LoginPage() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   value={totp}
-                  onChange={(e) => setTotp(e.target.value)}
+                  onChange={bindInput(setTotp)}
                   placeholder="000000"
                   maxLength={6}
                 />

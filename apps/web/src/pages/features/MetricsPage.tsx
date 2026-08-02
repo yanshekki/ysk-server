@@ -36,6 +36,7 @@ import {
   type ProjectDiskUsageRow,
   type ProjectsDiskUsageSnapshot,
 } from '../../features/metrics/api';
+import { bindSet, bindInput, bindCheck, bindVoid, bindCall1, bindCall2 } from '../bind-handlers';
 import {
   TopHeaderPanel,
   formatRes,
@@ -73,6 +74,69 @@ export function alertLabel(a: string, tr: (k: string) => string): string {
   const key = `metrics.alert.${a}`;
   const v = tr(key);
   return v === key ? a : v;
+}
+
+/** CPU % badge tone. */
+export function cpuTone(pct: number): 'ok' | 'warn' | 'danger' | 'neutral' {
+  if (!Number.isFinite(pct)) return 'neutral';
+  if (pct >= 90) return 'danger';
+  if (pct >= 70) return 'warn';
+  return 'ok';
+}
+
+/** Memory % badge tone. */
+export function memTone(pct: number): 'ok' | 'warn' | 'danger' | 'neutral' {
+  if (!Number.isFinite(pct)) return 'neutral';
+  if (pct >= 90) return 'danger';
+  if (pct >= 75) return 'warn';
+  return 'ok';
+}
+
+/** Clamp live refresh interval to 1–60s. */
+export function clampRefreshInterval(sec: unknown): number {
+  const n = Number(sec);
+  if (!Number.isFinite(n)) return 2;
+  return Math.max(1, Math.min(60, Math.floor(n)));
+}
+
+/** Toggle pid membership in a selection set. */
+export function togglePid(prev: Set<string>, pid: string): Set<string> {
+  const next = new Set(prev);
+  if (next.has(pid)) next.delete(pid);
+  else next.add(pid);
+  return next;
+}
+
+/** Match process row against search + quick filter. */
+export function matchProcessRow(
+  row: { user?: string; command?: string; cpu?: number; mem?: number },
+  search: string,
+  quick: QuickFilter,
+  selfUser?: string,
+): boolean {
+  const q = search.trim().toLowerCase();
+  if (q) {
+    const hay = `${row.user ?? ''} ${row.command ?? ''}`.toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  if (quick === 'mine' && selfUser && row.user !== selfUser) return false;
+  if (quick === 'cpu5' && (row.cpu ?? 0) < 5) return false;
+  if (quick === 'mem5' && (row.mem ?? 0) < 5) return false;
+  return true;
+}
+
+/** Format percent for strip display. */
+export function formatPct(n: number | null | undefined, digits = 0): string {
+  if (n == null || !Number.isFinite(n)) return '—';
+  return `${n.toFixed(digits)}%`;
+}
+
+/** Load average compact label. */
+export function formatLoadAvg(
+  load: number[] | null | undefined,
+): string {
+  if (!load?.length) return '—';
+  return load.slice(0, 3).map((x) => x.toFixed(2)).join(' · ');
 }
 
 export function MetricsPage() {
@@ -443,7 +507,7 @@ export function MetricsPage() {
               <input
                 type="checkbox"
                 checked={autoRefresh}
-                onChange={(e) => setAutoRefresh(e.target.checked)}
+                onChange={bindCheck(setAutoRefresh)}
               />
               <span>{t('metrics.auto5s')}</span>
             </label>
@@ -639,7 +703,7 @@ export function MetricsPage() {
                       <button
                         type="button"
                         className="met-linkish"
-                        onClick={() => setTab('storage')}
+                        onClick={bindSet(setTab, 'storage')}
                       >
                         {t('metrics.viewAllMounts', { count: mounts.length })}
                       </button>
@@ -654,7 +718,7 @@ export function MetricsPage() {
                     <button
                       type="button"
                       className="met-linkish"
-                      onClick={() => setTab('alerts')}
+                      onClick={bindSet(setTab, 'alerts')}
                     >
                       {t('metrics.details')}
                     </button>
@@ -709,7 +773,7 @@ export function MetricsPage() {
                     <button
                       type="button"
                       className="met-linkish"
-                      onClick={() => setTab('projects')}
+                      onClick={bindSet(setTab, 'projects')}
                     >
                       {t('metrics.viewAllProjectUsage')}
                     </button>
@@ -738,7 +802,7 @@ export function MetricsPage() {
                     <input
                       type="checkbox"
                       checked={follow}
-                      onChange={(e) => setFollow(e.target.checked)}
+                      onChange={bindCheck(setFollow)}
                     />
                     <span>{t('metrics.followSse')}</span>
                   </label>
@@ -787,7 +851,7 @@ export function MetricsPage() {
                     variant="secondary"
                     size="sm"
                     disabled={follow}
-                    onClick={() => void refreshProcesses()}
+                    onClick={bindVoid(refreshProcesses)}
                   >
                     {t('metrics.onceQuery')}
                   </Button>
@@ -795,7 +859,7 @@ export function MetricsPage() {
                     <input
                       type="checkbox"
                       checked={showRawTop}
-                      onChange={(e) => setShowRawTop(e.target.checked)}
+                      onChange={bindCheck(setShowRawTop)}
                     />
                     <span>raw top</span>
                   </label>
@@ -819,7 +883,7 @@ export function MetricsPage() {
                       type="search"
                       placeholder={t('metrics.procSearchPh')}
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={bindInput(setSearch)}
                       aria-label={t('metrics.procSearchAria')}
                     />
                   </label>
@@ -836,7 +900,7 @@ export function MetricsPage() {
                         key={id}
                         type="button"
                         className={`met-chip${quick === id ? ' is-on' : ''}`}
-                        onClick={() => setQuick(id)}
+                        onClick={bindSet(setQuick, id)}
                       >
                         {lab}
                       </button>
@@ -940,7 +1004,7 @@ export function MetricsPage() {
                         <button
                           type="button"
                           className="met-pid-link"
-                          onClick={() => void openDetail(r.pid)}
+                          onClick={bindCall1(openDetail, r.pid)}
                         >
                           <code>{r.pid}</code>
                         </button>
@@ -1037,7 +1101,7 @@ export function MetricsPage() {
                           type="button"
                           className="met-icon-btn"
                           title={t('metrics.details')}
-                          onClick={() => void openDetail(r.pid)}
+                          onClick={bindCall1(openDetail, r.pid)}
                         >
                           {t('metrics.detailShort')}
                         </button>
@@ -1046,7 +1110,7 @@ export function MetricsPage() {
                           className="met-icon-btn"
                           title="SIGTERM"
                           disabled={cp}
-                          onClick={() => openSignal(r.pid, 'TERM')}
+                          onClick={bindCall2(openSignal, r.pid, 'TERM')}
                         >
                           T
                         </button>
@@ -1055,7 +1119,7 @@ export function MetricsPage() {
                           className="met-icon-btn met-icon-btn--danger"
                           title="SIGKILL"
                           disabled={cp}
-                          onClick={() => openSignal(r.pid, 'KILL')}
+                          onClick={bindCall2(openSignal, r.pid, 'KILL')}
                         >
                           K
                         </button>
@@ -1096,7 +1160,7 @@ export function MetricsPage() {
                 <ConfirmDialog
                   open={pending != null}
                   onClose={() => !signalBusy && setPending(null)}
-                  onConfirm={() => void runSignal()}
+                  onConfirm={bindVoid(runSignal)}
                   title={
                     pending?.signal === 'KILL'
                       ? t('metrics.forceKillTitle', { pid: pending?.pid })
@@ -1140,14 +1204,14 @@ export function MetricsPage() {
                           <Button
                             variant="primary"
                             size="sm"
-                            onClick={() => openSignal(detailPid, 'TERM')}
+                            onClick={bindCall2(openSignal, detailPid, 'TERM')}
                           >
                             TERM
                           </Button>
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => openSignal(detailPid, 'KILL')}
+                            onClick={bindCall2(openSignal, detailPid, 'KILL')}
                           >
                             KILL
                           </Button>
@@ -1196,7 +1260,7 @@ export function MetricsPage() {
                               min={-20}
                               max={19}
                               value={niceVal}
-                              onChange={(e) => setNiceVal(e.target.value)}
+                              onChange={bindInput(setNiceVal)}
                             />
                           </label>
                           <Button
@@ -1362,7 +1426,7 @@ export function MetricsPage() {
                           variant="secondary"
                           size="sm"
                           loading={projectUsageLoading}
-                          onClick={() => void refreshProjectUsage()}
+                          onClick={bindVoid(refreshProjectUsage)}
                         >
                           {t('metrics.remeasure')}
                         </Button>

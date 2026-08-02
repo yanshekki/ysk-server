@@ -19,6 +19,7 @@ import { ActionBar,
   PromptDialog,
 } from '../../../shared/components/ui';
 import { api } from '../../../shared/services/api';
+import { bindSet, bindInput, bindVoid, bindCall1 } from '../../../pages/bind-handlers';
 
 type Row = {
   id: string;
@@ -338,7 +339,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                           variant="primary"
                           size="sm"
                           loading={busy}
-                          onClick={() => void doInstall(row.id)}
+                          onClick={bindCall1(doInstall, row.id)}
                         >
                           {row.status === 'file_written' ? t('security.ssh.rewriteHome') : t('security.ssh.writeHome')}
                         </Button>
@@ -403,7 +404,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             <input
               id="rec-u"
               value={recoveryUsers}
-              onChange={(e) => setRecoveryUsers(e.target.value)}
+              onChange={bindInput(setRecoveryUsers)}
               spellCheck={false}
             />
           </Field>
@@ -472,7 +473,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               variant="primary"
               size="md"
               loading={busy}
-              onClick={() => setStrictTotpOpen(true)}
+              onClick={bindSet(setStrictTotpOpen, true)}
             >
               {t('security.ssh.applyStrict')}
             </Button>
@@ -485,15 +486,15 @@ export function Ssh2faPanel({ onFlash }: Props) {
 
       <Modal
         open={enrollOpen}
-        onClose={() => setEnrollOpen(false)}
+        onClose={bindSet(setEnrollOpen, false)}
         title={t('security.ssh.enrollModalTitle')}
         description={t('security.ssh.enrollModalDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setEnrollOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setEnrollOpen, false)}>
               {t('common.cancel')}
             </Button>
-            <Button variant="primary" size="md" loading={busy} onClick={() => void doEnroll()}>
+            <Button variant="primary" size="md" loading={busy} onClick={bindVoid(doEnroll)}>
               {t('security.ssh.generateShowSecret')}
             </Button>
           </>
@@ -522,7 +523,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               <input
                 id="e2-user"
                 value={linuxUser}
-                onChange={(e) => setLinuxUser(e.target.value)}
+                onChange={bindInput(setLinuxUser)}
                 placeholder="deploy"
                 spellCheck={false}
               />
@@ -573,7 +574,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               size="md"
               loading={busy}
               disabled={confirmCode.trim().length < 6}
-              onClick={() => void doConfirm()}
+              onClick={bindVoid(doConfirm)}
             >
               {t('security.ssh.confirmCodeBtn')}
             </Button>
@@ -614,7 +615,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
             <input
               id="c2"
               value={confirmCode}
-              onChange={(e) => setConfirmCode(e.target.value)}
+              onChange={bindInput(setConfirmCode)}
               maxLength={6}
               inputMode="numeric"
               placeholder="000000"
@@ -667,7 +668,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
 
       <PromptDialog
         open={sharedConfirmOpen}
-        onClose={() => setSharedConfirmOpen(false)}
+        onClose={bindSet(setSharedConfirmOpen, false)}
         title={t('security.ssh.sharePanelTitle')}
         description={t('security.ssh.sharePanelDesc')}
         label={t('security.ssh.confirmString')}

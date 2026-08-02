@@ -13,6 +13,7 @@ import {
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import { formatRuntimeName } from '../model/runtime-ui';
+import { bindInput } from '../../../pages/bind-handlers';
 import {
   defaultRuntimeInstallVersion,
   runtimeVersionChoices,
@@ -177,7 +178,7 @@ export function ProjectCreateModal({
             <input
               id="pname"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={bindInput(setName)}
               required
               autoFocus
               placeholder="my-app"
@@ -241,7 +242,7 @@ export function ProjectCreateModal({
             <input
               id="pdomain"
               value={domain}
-              onChange={(e) => setDomain(e.target.value)}
+              onChange={bindInput(setDomain)}
               placeholder="app.example.com"
             />
           </Field>
@@ -249,7 +250,7 @@ export function ProjectCreateModal({
             <input
               id="paliases"
               value={aliases}
-              onChange={(e) => setAliases(e.target.value)}
+              onChange={bindInput(setAliases)}
               placeholder="www.example.com"
             />
           </Field>
@@ -354,7 +355,7 @@ export function ProjectCreateModal({
                 <input
                   id="pc-ip"
                   value={serverIp}
-                  onChange={(e) => setServerIp(e.target.value)}
+                  onChange={bindInput(setServerIp)}
                   placeholder={t('projects.createServerIpv4Ph')}
                 />
               </Field>
@@ -362,7 +363,7 @@ export function ProjectCreateModal({
                 <input
                   id="pc-ip6"
                   value={serverIpv6}
-                  onChange={(e) => setServerIpv6(e.target.value)}
+                  onChange={bindInput(setServerIpv6)}
                   placeholder={t('projects.createServerIpv6Ph')}
                 />
               </Field>

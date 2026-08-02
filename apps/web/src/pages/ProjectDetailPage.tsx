@@ -33,6 +33,7 @@ import {
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
+import { bindSet, bindRun, bindVoid, bindNavigate } from './bind-handlers';
 
 type ConfirmKind = 'stop' | 'delete' | null;
 
@@ -71,6 +72,74 @@ export function formatLogTailHeader(
     ? notes.filter(Boolean).join(' · ')
     : (notes ?? '');
   return `# ${file}${noteStr ? ` · ${noteStr}` : ''}\n`;
+}
+
+/** Project runtime status badge tone. */
+export function projectStatusTone(
+  status: string | null | undefined,
+): 'ok' | 'warn' | 'danger' | 'neutral' {
+  const s = (status ?? '').toLowerCase();
+  if (s === 'running' || s === 'active' || s === 'online') return 'ok';
+  if (s === 'stopped' || s === 'inactive' || s === 'idle') return 'warn';
+  if (s === 'failed' || s === 'error' || s === 'crashed') return 'danger';
+  return 'neutral';
+}
+
+/** Short project id for UI chips. */
+export function shortProjectId(id: string | null | undefined, n = 8): string {
+  const s = id ?? '';
+  if (!s) return '—';
+  return s.length <= n ? s : `${s.slice(0, n)}…`;
+}
+
+/** Whether stop confirm token matches project name. */
+export function matchesStopConfirm(
+  projectName: string,
+  typed: string,
+): boolean {
+  return projectName.trim() === typed.trim() && projectName.length > 0;
+}
+
+/** Grep filter for log lines (case-insensitive). */
+export function filterLogLines(
+  lines: string[] | null | undefined,
+  grep: string,
+): string[] {
+  const list = lines ?? [];
+  const g = grep.trim().toLowerCase();
+  if (!g) return list;
+  return list.filter((l) => l.toLowerCase().includes(g));
+}
+
+/** Join directory path crumbs for logs save dialog. */
+export function joinLogDirs(dirs: string[] | null | undefined): string {
+  return (dirs ?? []).filter(Boolean).join('\n');
+}
+
+/** Parse multi-line dir list. */
+export function parseLogDirs(raw: string): string[] {
+  return raw
+    .split(/\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** Resource provision payload defaults. */
+export function defaultResourceBody(
+  kind: string,
+  name: string,
+): Record<string, unknown> {
+  return {
+    kind: kind.trim() || 'generic',
+    name: name.trim() || 'resource',
+  };
+}
+
+/** Whether project shows deploy tab from flags. */
+export function hasDeployTab(ui: {
+  showDeployTab?: boolean;
+} | null): boolean {
+  return Boolean(ui?.showDeployTab);
 }
 
 export function ProjectDetailPage() {
@@ -268,7 +337,7 @@ export function ProjectDetailPage() {
         backLabel={t('projects.backToList')}
       >
         <Alert variant="error">{loadError ?? t('projects.notFound')}</Alert>
-        <Button variant="secondary" size="md" onClick={() => navigate('/projects')}>
+        <Button variant="secondary" size="md" onClick={bindNavigate(navigate, '/projects')}>
           {t('projects.backToList')}
         </Button>
       </FeaturePageLayout>
@@ -362,9 +431,9 @@ export function ProjectDetailPage() {
                 phpVersion,
               }).catch(() => undefined)
             }
-            onStop={() => setConfirm('stop')}
-            onHealth={() => void run('health', project.id).catch(() => undefined)}
-            onRefresh={() => void refreshProject()}
+            onStop={bindSet(setConfirm, 'stop')}
+            onHealth={bindRun(run, 'health', project.id)}
+            onRefresh={bindVoid(refreshProject)}
           />
         </ActionBar>
       }
@@ -373,7 +442,7 @@ export function ProjectDetailPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -384,10 +453,10 @@ export function ProjectDetailPage() {
           <ProjectOverviewTab
             project={project}
             busy={busy}
-            onPublishNginx={() => void run('publish-nginx', project.id).catch(() => undefined)}
-            onPublishSsl={() => void run('publish-nginx-ssl', project.id).catch(() => undefined)}
-            onBackup={() => void run('backup', project.id).catch(() => undefined)}
-            onHealth={() => void run('health', project.id).catch(() => undefined)}
+            onPublishNginx={bindRun(run, 'publish-nginx', project.id)}
+            onPublishSsl={bindRun(run, 'publish-nginx-ssl', project.id)}
+            onBackup={bindRun(run, 'backup', project.id)}
+            onHealth={bindRun(run, 'health', project.id)}
           />
         ) : null}
         {activeTab === 'deploy' ? (
@@ -412,7 +481,7 @@ export function ProjectDetailPage() {
                 skipBuild: opts?.skipBuild,
               }).catch(() => undefined)
             }
-            onSaveEnv={() => void run('env', project.id, { envText }).catch(() => undefined)}
+            onSaveEnv={bindRun(run, 'env', project.id, { envText })}
             onPhpVersionChange={setPhpVersion}
             onRuntimeVersionSaved={(v) => {
               setProject((prev) => (prev ? { ...prev, runtimeVersion: v } : prev));
@@ -420,7 +489,7 @@ export function ProjectDetailPage() {
             }}
             onOpsMessage={(m) => setMsg(m)}
             showFreshChecklist={freshChecklist}
-            onDismissChecklist={() => setFreshChecklist(false)}
+            onDismissChecklist={bindSet(setFreshChecklist, false)}
           />
         ) : null}
         {activeTab === 'network' ? (
@@ -428,9 +497,9 @@ export function ProjectDetailPage() {
             <ProjectNetworkTab
               project={project}
               busy={busy}
-              onPublish={() => void run('publish-nginx', project.id).catch(() => undefined)}
-              onPublishSsl={() => void run('publish-nginx-ssl', project.id).catch(() => undefined)}
-              onSaved={() => void refreshProject()}
+              onPublish={bindRun(run, 'publish-nginx', project.id)}
+              onPublishSsl={bindRun(run, 'publish-nginx-ssl', project.id)}
+              onSaved={bindVoid(refreshProject)}
               onOpsResult={(_result, message) => {
                 if (message) setMsg(message);
               }}
@@ -449,7 +518,7 @@ export function ProjectDetailPage() {
               cpuQuota={cpuQuota}
               setCpuQuota={setCpuQuota}
               onOpsMessage={(m) => setMsg(m)}
-              onProjectRefresh={() => void refreshProject()}
+              onProjectRefresh={bindVoid(refreshProject)}
               onProvisionOs={() => {
                 setBusy(true);
                 setError(null);
@@ -476,12 +545,10 @@ export function ProjectDetailPage() {
                   () => undefined,
                 )
               }
-              onSetResources={() =>
-                void run('resources', project.id, {
+              onSetResources={bindRun(run, 'resources', project.id, {
                   memoryMax,
                   cpuQuotaPercent: Number(cpuQuota) || 100,
-                }).catch(() => undefined)
-              }
+                })}
             />
           </div>
         ) : null}
@@ -527,11 +594,11 @@ export function ProjectDetailPage() {
             <ProjectAdvancedTab
               project={project}
               busy={busy}
-              onBackup={() => void run('backup', project.id).catch(() => undefined)}
-              onWordpress={() => void run('wordpress', project.id).catch(() => undefined)}
-              onSuspend={() => void run('suspend', project.id).catch(() => undefined)}
-              onUnsuspend={() => void run('unsuspend', project.id).catch(() => undefined)}
-              onDelete={can('projects.delete') ? () => setConfirm('delete') : undefined}
+              onBackup={bindRun(run, 'backup', project.id)}
+              onWordpress={bindRun(run, 'wordpress', project.id)}
+              onSuspend={bindRun(run, 'suspend', project.id)}
+              onUnsuspend={bindRun(run, 'unsuspend', project.id)}
+              onDelete={can('projects.delete') ? bindSet(setConfirm, 'delete') : undefined}
               onOpsMessage={(m) => setMsg(m)}
             />
           </div>
@@ -544,8 +611,8 @@ export function ProjectDetailPage() {
 
       <ConfirmDialog
         open={confirm === 'stop'}
-        onClose={() => setConfirm(null)}
-        onConfirm={() => void onConfirmAction()}
+        onClose={bindSet(setConfirm, null)}
+        onConfirm={onConfirmAction}
         title={t('projects.confirmStopTitle')}
         description={t('projects.confirmStopDesc', { name: project.name })}
         confirmLabel={t('projects.stop')}
@@ -555,8 +622,8 @@ export function ProjectDetailPage() {
       />
       <ConfirmDialog
         open={confirm === 'delete'}
-        onClose={() => setConfirm(null)}
-        onConfirm={() => void onConfirmAction()}
+        onClose={bindSet(setConfirm, null)}
+        onConfirm={onConfirmAction}
         title={t('projects.confirmDeleteTitle')}
         description={t('projects.confirmDeleteDesc', { name: project.name })}
         confirmLabel={t('projects.delete')}

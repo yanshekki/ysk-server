@@ -33,6 +33,7 @@ const FILE_TABS = ['browse', 'trash', 'shares', 'webdav', 'about'] as const;
 import { filesApi, fileToBase64, type FileEntry, type TrashEntry, type FileShare } from '../features/files/api';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
+import { bindSet, bindInput, bindVoid, bindCall1 } from './bind-handlers';
 
 type ViewMode = 'list' | 'grid';
 type SideView = 'all' | 'favorites' | 'shares' | 'trash';
@@ -92,6 +93,69 @@ export function togglePathInSet(prev: Set<string>, p: string): Set<string> {
   if (n.has(p)) n.delete(p);
   else n.add(p);
   return n;
+}
+
+/** Format mtime cell for table (ISO → local-ish short). */
+export function formatMtimeCell(mtime: string | null | undefined): string {
+  const s = (mtime ?? '').toString().slice(0, 19).replace('T', ' ');
+  return s || '—';
+}
+
+/** Whether entry is a directory. */
+export function isDirEntry(e: { isDir?: boolean; type?: string }): boolean {
+  return Boolean(e.isDir) || e.type === 'directory' || e.type === 'dir';
+}
+
+/** Parent directory of a path. */
+export function parentPath(path: string): string {
+  const p = path.replace(/\/+$/, '');
+  if (!p || p === '/') return '/';
+  const i = p.lastIndexOf('/');
+  if (i <= 0) return '/';
+  return p.slice(0, i) || '/';
+}
+
+/** Filter entries by free-text name. */
+export function filterEntriesByName<T extends { name: string }>(
+  entries: T[],
+  q: string,
+): T[] {
+  const s = q.trim().toLowerCase();
+  if (!s) return entries;
+  return entries.filter((e) => e.name.toLowerCase().includes(s));
+}
+
+/** Sort entries by field. */
+export function sortEntries<
+  T extends { name: string; size?: number; mtime?: string; isDir?: boolean },
+>(
+  entries: T[],
+  sort: { field: string; dir: 'asc' | 'desc' },
+): T[] {
+  const mul = sort.dir === 'asc' ? 1 : -1;
+  return [...entries].sort((a, b) => {
+    // dirs first
+    const ad = isDirEntry(a) ? 0 : 1;
+    const bd = isDirEntry(b) ? 0 : 1;
+    if (ad !== bd) return ad - bd;
+    if (sort.field === 'size') {
+      return ((a.size ?? 0) - (b.size ?? 0)) * mul;
+    }
+    if (sort.field === 'mtime') {
+      return String(a.mtime ?? '').localeCompare(String(b.mtime ?? '')) * mul;
+    }
+    return a.name.localeCompare(b.name) * mul;
+  });
+}
+
+/** Selection count label. */
+export function selectionLabel(count: number): string {
+  return String(count);
+}
+
+/** Whether path is absolute. */
+export function isAbsolutePath(p: string): boolean {
+  return p.startsWith('/');
 }
 
 export function selectAllPaths(
@@ -354,7 +418,7 @@ export function FilesPage() {
           <Link to="/files/public" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
             {t('files.publicSiteSettings')}
           </Link>
-          <Button variant="secondary" size="sm" loading={busy} onClick={() => void refresh()}>
+          <Button variant="secondary" size="sm" loading={busy} onClick={bindVoid(refresh)}>
             {t('common.refresh')}
           </Button>
         </ActionBar>
@@ -364,7 +428,7 @@ export function FilesPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -380,7 +444,7 @@ export function FilesPage() {
             busy={busy}
           />
           <ActionBar size="sm">
-            <Button variant="ghost" size="sm" onClick={() => setOpsNote(null)}>
+            <Button variant="ghost" size="sm" onClick={bindSet(setOpsNote, null)}>
               {t('files.closeResult')}
             </Button>
           </ActionBar>
@@ -415,7 +479,7 @@ export function FilesPage() {
             <button
               type="button"
               className={`fm-side-item${root === 'public' ? ' is-active' : ''}`}
-              onClick={() => changeRoot('public')}
+              onClick={bindCall1(changeRoot, 'public')}
             >
               📁 {t('files.publicFiles')}
             </button>
@@ -471,10 +535,10 @@ export function FilesPage() {
                       }}
                     />
                   </label>
-                  <Button variant="secondary" size="md" onClick={() => setMkdirOpen(true)}>
+                  <Button variant="secondary" size="md" onClick={bindSet(setMkdirOpen, true)}>
                     {t('files.newFolder')}
                   </Button>
-                  <Button variant="secondary" size="md" onClick={() => setNewFileOpen(true)}>
+                  <Button variant="secondary" size="md" onClick={bindSet(setNewFileOpen, true)}>
                     {t('files.newTextFile')}
                   </Button>
                   {selected.size > 0 ? (
@@ -581,7 +645,7 @@ export function FilesPage() {
                     className="fm-search"
                     placeholder={t('files.searchName')}
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={bindInput(setQuery)}
                   />
                   <SegRadio
                     name="fm-sort"
@@ -605,14 +669,14 @@ export function FilesPage() {
                   <Button
                     variant={view === 'list' ? 'primary' : 'ghost'}
                     size="sm"
-                    onClick={() => setView('list')}
+                    onClick={bindSet(setView, 'list')}
                   >
                     {t('files.viewList')}
                   </Button>
                   <Button
                     variant={view === 'grid' ? 'primary' : 'ghost'}
                     size="sm"
-                    onClick={() => setView('grid')}
+                    onClick={bindSet(setView, 'grid')}
                   >
                     {t('files.viewIcons')}
                   </Button>
@@ -621,13 +685,13 @@ export function FilesPage() {
 
               {/* Breadcrumb */}
               <nav className="fm-breadcrumb action-bar" aria-label={t('files.pathAria')}>
-                <Button variant="ghost" size="sm" onClick={() => setPath('.')}>
+                <Button variant="ghost" size="sm" onClick={bindSet(setPath, '.')}>
                   {root === 'public' ? t('files.rootPublic') : t('files.rootProject')}
                 </Button>
                 {crumbs.map((c, i) => {
                   const p = crumbs.slice(0, i + 1).join('/');
                   return (
-                    <Button key={p} variant="ghost" size="sm" onClick={() => setPath(p)}>
+                    <Button key={p} variant="ghost" size="sm" onClick={bindSet(setPath, p)}>
                       / {c}
                     </Button>
                   );
@@ -677,7 +741,7 @@ export function FilesPage() {
                           <button
                             type="button"
                             className="fm-name-btn"
-                            onClick={() => void openEntry(e)}
+                            onClick={bindCall1(openEntry, e)}
                           >
                             <span aria-hidden>{iconFor(e)}</span> {e.name}
                             {e.favorite ? ' ★' : ''}
@@ -697,7 +761,7 @@ export function FilesPage() {
                         className: 'muted',
                         nowrap: true,
                         render: (e) =>
-                          e.mtime.slice(0, 19).replace('T', ' '),
+                          formatMtimeCell(e.mtime),
                       },
                     ]}
                     rows={items}
@@ -708,7 +772,7 @@ export function FilesPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => void doDownload(e.path)}
+                            onClick={bindCall1(doDownload, e.path)}
                           >
                             {t('files.download')}
                           </Button>
@@ -1057,12 +1121,12 @@ export function FilesPage() {
       {/* Mkdir */}
       <Modal
         open={mkdirOpen}
-        onClose={() => setMkdirOpen(false)}
+        onClose={bindSet(setMkdirOpen, false)}
         title={t('files.newFolderTitle')}
         description={t('files.willCreateAt', { path: path || '/' })}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setMkdirOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setMkdirOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -1095,7 +1159,7 @@ export function FilesPage() {
             <input
               id="mn"
               value={mkdirName}
-              onChange={(e) => setMkdirName(e.target.value)}
+              onChange={bindInput(setMkdirName)}
               autoFocus
               placeholder="docs"
               spellCheck={false}
@@ -1107,12 +1171,12 @@ export function FilesPage() {
       {/* New text file */}
       <Modal
         open={newFileOpen}
-        onClose={() => setNewFileOpen(false)}
+        onClose={bindSet(setNewFileOpen, false)}
         title={t('files.newTextTitle')}
         description={t('files.willCreateAt', { path: path || '/' })}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setNewFileOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setNewFileOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -1138,7 +1202,7 @@ export function FilesPage() {
             <input
               id="nf"
               value={newFileName}
-              onChange={(e) => setNewFileName(e.target.value)}
+              onChange={bindInput(setNewFileName)}
               autoFocus
               placeholder="readme.md"
               spellCheck={false}
@@ -1206,12 +1270,12 @@ export function FilesPage() {
       {/* Rename */}
       <Modal
         open={Boolean(renameTarget)}
-        onClose={() => setRenameTarget(null)}
+        onClose={bindSet(setRenameTarget, null)}
         title={t('files.renameTitle')}
         description={renameTarget ? t('files.renameCurrent', { name: renameTarget.name }) : undefined}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setRenameTarget(null)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setRenameTarget, null)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -1240,7 +1304,7 @@ export function FilesPage() {
             <input
               id="rn"
               value={renameTo}
-              onChange={(e) => setRenameTo(e.target.value)}
+              onChange={bindInput(setRenameTo)}
               spellCheck={false}
             />
           </Field>
@@ -1250,7 +1314,7 @@ export function FilesPage() {
       {/* Move / copy */}
       <Modal
         open={Boolean(moveTarget)}
-        onClose={() => setMoveTarget(null)}
+        onClose={bindSet(setMoveTarget, null)}
         title={moveTarget?.mode === 'copy' ? t('files.copyTo') : t('files.moveTo')}
         description={
           moveTarget
@@ -1262,7 +1326,7 @@ export function FilesPage() {
         }
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setMoveTarget(null)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setMoveTarget, null)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -1297,7 +1361,7 @@ export function FilesPage() {
             <input
               id="md"
               value={moveDest}
-              onChange={(e) => setMoveDest(e.target.value)}
+              onChange={bindInput(setMoveDest)}
               placeholder="docs/archive"
               spellCheck={false}
             />
@@ -1308,12 +1372,12 @@ export function FilesPage() {
       {/* Share */}
       <Modal
         open={Boolean(sharePath)}
-        onClose={() => setSharePath(null)}
+        onClose={bindSet(setSharePath, null)}
         title={t('files.shareCreateTitle')}
         description={t('files.shareCreateDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setSharePath(null)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setSharePath, null)}>
               {t('common.close')}
             </Button>
             {!shareResult ? (
@@ -1353,7 +1417,7 @@ export function FilesPage() {
               id="sp"
               type="password"
               value={sharePass}
-              onChange={(e) => setSharePass(e.target.value)}
+              onChange={bindInput(setSharePass)}
               autoComplete="new-password"
               placeholder={t('files.passwordPlaceholder')}
             />
@@ -1379,7 +1443,7 @@ export function FilesPage() {
               variant="secondary"
               size="sm"
               disabled={busy}
-              onClick={() => setChmodOpen(false)}
+              onClick={bindSet(setChmodOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -1442,7 +1506,7 @@ export function FilesPage() {
             <input
               id="fm-chmod-mode"
               value={chmodMode}
-              onChange={(e) => setChmodMode(e.target.value)}
+              onChange={bindInput(setChmodMode)}
               placeholder="644"
               pattern="[0-7]{3,4}"
             />
@@ -1462,7 +1526,7 @@ export function FilesPage() {
               variant="secondary"
               size="sm"
               disabled={busy}
-              onClick={() => setZipOpen(false)}
+              onClick={bindSet(setZipOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -1516,7 +1580,7 @@ export function FilesPage() {
             <input
               id="fm-zip-name"
               value={zipName}
-              onChange={(e) => setZipName(e.target.value)}
+              onChange={bindInput(setZipName)}
               placeholder="archive.zip"
             />
           </Field>
@@ -1526,7 +1590,7 @@ export function FilesPage() {
       {/* Delete confirm */}
       <ConfirmDialog
         open={Boolean(delPaths?.length)}
-        onClose={() => setDelPaths(null)}
+        onClose={bindSet(setDelPaths, null)}
         onConfirm={() =>
           void run(async () => {
             for (const p of delPaths ?? []) {
@@ -1546,18 +1610,18 @@ export function FilesPage() {
       {/* Preview */}
       <Modal
         open={Boolean(preview)}
-        onClose={() => setPreview(null)}
+        onClose={bindSet(setPreview, null)}
         title={preview?.entry.name ?? t('files.preview')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setPreview(null)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setPreview, null)}>
               {t('common.close')}
             </Button>
             {preview ? (
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => void doDownload(preview.entry.path)}
+                onClick={bindCall1(doDownload, preview.entry.path)}
               >
                 {t('files.download')}
               </Button>

@@ -12,6 +12,7 @@ import {
 } from '../../../shared/components/ui';
 import { getProjectUiProfile } from '../model/runtime-ui';
 import { projectsApi } from '../api';
+import { bindInput, bindVoid } from '../../../pages/bind-handlers';
 
 export interface ProjectAdvancedTabProps {
   project: ProjectDto;
@@ -114,7 +115,7 @@ export function ProjectAdvancedTab({
               <input
                 id="ftp-user"
                 value={ftpUser}
-                onChange={(e) => setFtpUser(e.target.value)}
+                onChange={bindInput(setFtpUser)}
                 placeholder={`p_${project.linuxUser.replace(/^ysk_/, '')}`}
                 autoComplete="off"
               />
@@ -130,7 +131,7 @@ export function ProjectAdvancedTab({
                 id="ftp-pass"
                 type="password"
                 value={ftpPass}
-                onChange={(e) => setFtpPass(e.target.value)}
+                onChange={bindInput(setFtpPass)}
                 autoComplete="new-password"
               />
             </Field>
@@ -141,7 +142,7 @@ export function ProjectAdvancedTab({
               size="md"
               loading={ftpBusy || busy}
               disabled={ftpPass.length < 8}
-              onClick={() => void createFtp()}
+              onClick={bindVoid(createFtp)}
             >
               {t('ftp.createAccount')}
             </Button>

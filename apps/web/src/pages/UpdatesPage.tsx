@@ -26,6 +26,7 @@ import {
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
+import { bindSet, bindVoid, bindCall1, bindCall2 } from './bind-handlers';
 
 const UPD_TABS = ['packages', 'panel', 'schedule', 'policy', 'about'] as const;
 type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';
@@ -66,6 +67,75 @@ export function relTime(iso: string | null, tr: (k: string, o?: Record<string, u
   } catch {
     return iso;
   }
+}
+
+/** Whether a package row is upgradable (candidate ≠ current). */
+export function isUpgradableRow(row: {
+  candidateVersion?: string | null;
+  currentVersion?: string | null;
+}): boolean {
+  return Boolean(
+    row.candidateVersion && row.candidateVersion !== row.currentVersion,
+  );
+}
+
+/** Whether a package row matches the risk filter chip. */
+export function matchesRiskFilter(
+  row: AdviceRow,
+  filter: RiskFilter,
+): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'upgradable') return isUpgradableRow(row);
+  if (filter === 'approval') return Boolean(row.requiresApproval);
+  if (filter === 'high') return row.risk === 'high' || row.risk === 'critical';
+  if (filter === 'medium') return row.risk === 'medium';
+  if (filter === 'low') return row.risk === 'low';
+  return true;
+}
+
+/** Free-text match on package name / summary. */
+export function matchesUpdateQuery(
+  row: {
+    name?: string;
+    packageName?: string;
+    package?: string;
+    summary?: string;
+    advice?: string;
+    description?: string;
+  },
+  q: string,
+): boolean {
+  const s = q.trim().toLowerCase();
+  if (!s) return true;
+  const hay =
+    `${row.name ?? ''} ${row.packageName ?? ''} ${row.package ?? ''} ${row.summary ?? ''} ${row.advice ?? ''} ${row.description ?? ''}`.toLowerCase();
+  return hay.includes(s);
+}
+
+/** Count high-risk rows for strip. */
+export function countHighRisk(rows: AdviceRow[] | null | undefined): number {
+  return (rows ?? []).filter(isHighRisk).length;
+}
+
+/** Count upgradable rows. */
+export function countUpgradable(
+  rows:
+    | Array<{ candidateVersion?: string | null; currentVersion?: string | null }>
+    | null
+    | undefined,
+): number {
+  return (rows ?? []).filter(isUpgradableRow).length;
+}
+
+/** Panel self-update status tone. */
+export function selfUpdateTone(
+  status: string | null | undefined,
+): 'ok' | 'warn' | 'danger' | 'neutral' {
+  if (!status) return 'neutral';
+  if (status === 'up_to_date' || status === 'ok') return 'ok';
+  if (status === 'available' || status === 'pending') return 'warn';
+  if (status === 'failed' || status === 'error') return 'danger';
+  return 'neutral';
 }
 
 export function UpdatesPage() {
@@ -193,7 +263,7 @@ export function UpdatesPage() {
             variant="ghost"
             size="sm"
             loading={busy}
-            onClick={() => void load(false)}
+            onClick={bindCall1(load, false)}
           >
             {t('updates.reload')}
           </Button>
@@ -201,7 +271,7 @@ export function UpdatesPage() {
             variant="secondary"
             size="sm"
             loading={busy}
-            onClick={() => void load(true, true)}
+            onClick={bindCall2(load, true, true)}
             title={t('updates.osvTitle')}
           >
             {t('updates.scanOsv')}
@@ -210,7 +280,7 @@ export function UpdatesPage() {
             variant="primary"
             size="sm"
             loading={busy}
-            onClick={() => void load(true, false)}
+            onClick={bindCall2(load, true, false)}
           >
             {t('updates.scanPkgs')}
           </Button>
@@ -221,7 +291,7 @@ export function UpdatesPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -510,7 +580,7 @@ export function UpdatesPage() {
                         loading={busy}
                         disabled={!selfAvailable || !canApply}
                         title={!canApply ? t('rbac.cap.updatesApply') : undefined}
-                        onClick={() => void applySelf()}
+                        onClick={bindVoid(applySelf)}
                       >
                         {t('updates.applyPanelUpdate')}
                       </Button>
@@ -518,7 +588,7 @@ export function UpdatesPage() {
                         variant="ghost"
                         size="sm"
                         loading={busy}
-                        onClick={() => void load(false)}
+                        onClick={bindCall1(load, false)}
                       >
                         {t('updates.recheck')}
                       </Button>
@@ -640,7 +710,7 @@ export function UpdatesPage() {
 
       <ConfirmDialog
         open={highRiskApply != null}
-        onClose={() => setHighRiskApply(null)}
+        onClose={bindSet(setHighRiskApply, null)}
         title={
           highRiskApply
             ? t('updates.applyHighRisk', { name: highRiskApply.packageName })

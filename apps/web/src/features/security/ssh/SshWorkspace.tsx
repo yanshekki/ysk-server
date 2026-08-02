@@ -19,6 +19,7 @@ import { SshdPanel } from './SshdPanel';
 import { Ssh2faPanel } from './Ssh2faPanel';
 import { sshApi } from './api';
 import type { SshSubTab } from './types';
+import { bindSet } from '../../../pages/bind-handlers';
 
 export function SshWorkspace(props: {
   /** Called so parent FeaturePageLayout status can show counts */
@@ -98,7 +99,7 @@ export function SshWorkspace(props: {
   const flashEl = flash ? (
     <Alert variant={flash.tone === 'ok' ? 'ok' : 'error'}>
       {flash.text}{' '}
-      <Button variant="ghost" size="sm" onClick={() => setFlash(null)}>
+      <Button variant="ghost" size="sm" onClick={bindSet(setFlash, null)}>
         {t('common.close')}
       </Button>
     </Alert>
@@ -110,7 +111,7 @@ export function SshWorkspace(props: {
         <button
           type="button"
           className={`ssh-job${sub === 'outbound' ? ' is-on' : ''}`}
-          onClick={() => setSub('outbound')}
+          onClick={bindSet(setSub, 'outbound')}
         >
           <span className="ssh-job__icon" aria-hidden>
             ↗
@@ -124,7 +125,7 @@ export function SshWorkspace(props: {
         <button
           type="button"
           className={`ssh-job${sub === 'login' ? ' is-on' : ''}`}
-          onClick={() => setSub('login')}
+          onClick={bindSet(setSub, 'login')}
         >
           <span className="ssh-job__icon" aria-hidden>
             ↙
@@ -138,7 +139,7 @@ export function SshWorkspace(props: {
         <button
           type="button"
           className={`ssh-job${sub === '2fa' ? ' is-on' : ''}`}
-          onClick={() => setSub('2fa')}
+          onClick={bindSet(setSub, '2fa')}
         >
           <span className="ssh-job__icon" aria-hidden>
             2
@@ -151,7 +152,7 @@ export function SshWorkspace(props: {
         <button
           type="button"
           className={`ssh-job${sub === 'sshd' ? ' is-on' : ''}`}
-          onClick={() => setSub('sshd')}
+          onClick={bindSet(setSub, 'sshd')}
         >
           <span className="ssh-job__icon" aria-hidden>
             ⚙

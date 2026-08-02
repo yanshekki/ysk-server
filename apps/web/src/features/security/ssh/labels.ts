@@ -62,7 +62,8 @@ export function statusTone(status: string): BadgeTone {
   }
 }
 
-export function shortFingerprint(fp: string): string {
+export function shortFingerprint(fp: string | undefined | null): string {
+  if (!fp) return '—';
   const bare = fp.replace(/^SHA256:/, '');
   if (bare.length <= 16) return fp;
   return `SHA256:${bare.slice(0, 8)}…${bare.slice(-6)}`;

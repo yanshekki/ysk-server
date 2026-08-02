@@ -17,6 +17,7 @@ import {
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import { ProjectSshCard } from './ProjectSshCard';
+import { bindSet, bindVoid } from '../../../pages/bind-handlers';
 
 export interface ProjectResourcesTabProps {
   busy?: boolean;
@@ -258,10 +259,10 @@ export function ProjectResourcesTab({
                 {t('projects.resProvisionUser')}
               </Button>
             ) : null}
-            <Button variant="secondary" size="md" loading={anyBusy} onClick={() => void refreshLive()}>
+            <Button variant="secondary" size="md" loading={anyBusy} onClick={bindVoid(refreshLive)}>
               {t('protection.refreshStatus')}
             </Button>
-            <Button variant="secondary" size="md" loading={anyBusy} onClick={() => void chownHome()}>
+            <Button variant="secondary" size="md" loading={anyBusy} onClick={bindVoid(chownHome)}>
               {t('projects.resFixHome')}
             </Button>
             {project.homeDir !== `/home/ysk-server-${project.id}` || !project.osProvisioned ? (
@@ -269,7 +270,7 @@ export function ProjectResourcesTab({
                 variant="secondary"
                 size="md"
                 loading={anyBusy}
-                onClick={() => setMigrateConfirm(true)}
+                onClick={bindSet(setMigrateConfirm, true)}
               >
                 {t('projects.resMigrateHome')}
               </Button>
@@ -410,7 +411,7 @@ export function ProjectResourcesTab({
               variant="primary"
               size="md"
               loading={anyBusy}
-              onClick={() => void saveAndApplyLimits()}
+              onClick={bindVoid(saveAndApplyLimits)}
             >
               {t('projects.resSaveApply')}
             </Button>
@@ -424,7 +425,7 @@ export function ProjectResourcesTab({
             >
               {t('projects.resSaveControlOnly')}
             </Button>
-            <Button variant="ghost" size="md" loading={anyBusy} onClick={() => void applyOnly()}>
+            <Button variant="ghost" size="md" loading={anyBusy} onClick={bindVoid(applyOnly)}>
               {t('projects.resReapply')}
             </Button>
           </FormActions>

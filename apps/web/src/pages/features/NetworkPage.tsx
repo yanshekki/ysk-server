@@ -31,6 +31,7 @@ import {
   PresetChips,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { bindSet, bindInput, bindCall1 } from '../bind-handlers';
 import {
   networkApi,
   type NetAddress,
@@ -77,6 +78,80 @@ export function joinCidrs(addrs: NetAddress[], family: 'inet' | 'inet6'): string
       .join(' · ')} · +${list.length - 2}`;
   }
   return list.map(cidrOf).join(' · ');
+}
+
+const STUB_DNS = new Set(['127.0.0.53', '127.0.0.1', '::1']);
+
+/** Drop resolver stub addresses from DNS server lists. */
+export function filterStubDns(servers: string[] | null | undefined): string[] {
+  return (servers ?? []).filter((s) => !STUB_DNS.has(s.trim()));
+}
+
+/** Parse MTU draft; valid range 576–9000. */
+export function parseMtu(raw: string): number | null {
+  const n = Number(String(raw).trim());
+  if (!Number.isFinite(n) || n < 576 || n > 9000) return null;
+  return Math.floor(n);
+}
+
+/** Loose CIDR validation for add-address form. */
+export function isValidCidr(raw: string): boolean {
+  const s = raw.trim();
+  if (!s) return false;
+  return (
+    /^\d{1,3}(?:\.\d{1,3}){3}\/\d{1,2}$/.test(s) ||
+    /^[0-9a-fA-F:]+\/\d{1,3}$/.test(s)
+  );
+}
+
+/** Count interfaces by UP / not-UP. */
+export function ifaceCountByState(
+  ifaces: Array<{ operstate: string; flags: string[] }>,
+): { up: number; down: number } {
+  let up = 0;
+  let down = 0;
+  for (const i of ifaces) {
+    if (isUp(i as NetInterface)) up += 1;
+    else down += 1;
+  }
+  return { up, down };
+}
+
+/** Compact route label for tables. */
+export function routeLabel(r: {
+  dst?: string;
+  gateway?: string;
+  dev?: string;
+}): string {
+  const parts = [r.dst, r.gateway ? `via ${r.gateway}` : '', r.dev]
+    .map((x) => (x ?? '').trim())
+    .filter(Boolean);
+  return parts.join(' ') || '—';
+}
+
+/** DNS search domain free-text → list. */
+export function parseDnsSearch(raw: string): string[] {
+  return raw
+    .split(/[\s,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** Prefer uplink DNS servers when present. */
+export function preferUplinkDns(dns: {
+  uplinkServers?: string[] | null;
+  servers?: string[] | null;
+}): string[] {
+  const up = dns.uplinkServers?.length ? dns.uplinkServers : dns.servers;
+  return filterStubDns(up ?? []);
+}
+
+/** Whether down-confirm matches interface name. */
+export function matchesDownConfirm(
+  ifaceName: string,
+  typed: string,
+): boolean {
+  return ifaceName.trim() === typed.trim() && ifaceName.length > 0;
 }
 
 export function NetworkPage() {
@@ -374,7 +449,7 @@ export function NetworkPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => openDetail(r)}
+                        onClick={bindCall1(openDetail, r)}
                       >
                         {t('network.details')}
                       </Button>
@@ -382,7 +457,7 @@ export function NetworkPage() {
                         variant="secondary"
                         size="sm"
                         disabled={busy || r.isLoopback}
-                        onClick={() => openAdd(r)}
+                        onClick={bindCall1(openAdd, r)}
                       >
                         {t('network.addIp')}
                       </Button>
@@ -479,7 +554,7 @@ export function NetworkPage() {
                         variant="danger"
                         size="sm"
                         disabled={busy}
-                        onClick={() => setDelRoute(r)}
+                        onClick={bindSet(setDelRoute, r)}
                       >
                         {t('common.delete')}
                       </Button>
@@ -501,7 +576,7 @@ export function NetworkPage() {
                       <input
                         id="net-route-dst"
                         value={routeDst}
-                        onChange={(e) => setRouteDst(e.target.value)}
+                        onChange={bindInput(setRouteDst)}
                         placeholder={t('network.destPlaceholder')}
                       />
                     </Field>
@@ -509,7 +584,7 @@ export function NetworkPage() {
                       <input
                         id="net-route-gw"
                         value={routeGw}
-                        onChange={(e) => setRouteGw(e.target.value)}
+                        onChange={bindInput(setRouteGw)}
                         placeholder={
                           snap.defaultGateway || '192.168.1.1'
                         }
@@ -528,7 +603,7 @@ export function NetworkPage() {
                       <input
                         id="net-route-dev"
                         value={routeDev}
-                        onChange={(e) => setRouteDev(e.target.value)}
+                        onChange={bindInput(setRouteDev)}
                         placeholder={snap.defaultDev || 'eth0'}
                       />
                     </Field>
@@ -813,7 +888,7 @@ export function NetworkPage() {
                       <input
                         id="net-dns-search"
                         value={dnsSearch}
-                        onChange={(e) => setDnsSearch(e.target.value)}
+                        onChange={bindInput(setDnsSearch)}
                         placeholder="lan local"
                         disabled={busy}
                       />
@@ -832,7 +907,7 @@ export function NetworkPage() {
                       variant="ghost"
                       size="sm"
                       disabled={busy}
-                      onClick={() => syncDnsForm(snap)}
+                      onClick={bindCall1(syncDnsForm, snap)}
                     >
                       {t('network.resetForm')}
                     </Button>
@@ -908,7 +983,7 @@ export function NetworkPage() {
                       <input
                         id="net-dns-test"
                         value={dnsTestName}
-                        onChange={(e) => setDnsTestName(e.target.value)}
+                        onChange={bindInput(setDnsTestName)}
                         placeholder="example.com"
                       />
                     </Field>
@@ -970,7 +1045,7 @@ export function NetworkPage() {
                           variant="secondary"
                           size="sm"
                           loading={loading}
-                          onClick={() => void refresh(true)}
+                          onClick={bindCall1(refresh, true)}
                         >
                           {t('network.loadRaw')}
                         </Button>
@@ -1025,7 +1100,7 @@ export function NetworkPage() {
       {/* Detail */}
       <Modal
         open={detail != null}
-        onClose={() => setDetail(null)}
+        onClose={bindSet(setDetail, null)}
         title={detail ? t('network.ifaceDetail', { name: detail.name }) : t('network.statIfaces')}
         size="lg"
         footer={
@@ -1033,7 +1108,7 @@ export function NetworkPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => setDetail(null)}
+              onClick={bindSet(setDetail, null)}
             >
               {t('common.close')}
             </Button>
@@ -1090,7 +1165,7 @@ export function NetworkPage() {
                         min={68}
                         max={65535}
                         value={mtuDraft}
-                        onChange={(e) => setMtuDraft(e.target.value)}
+                        onChange={bindInput(setMtuDraft)}
                         disabled={busy}
                       />
                     </label>
@@ -1111,7 +1186,7 @@ export function NetworkPage() {
                       variant="primary"
                       size="sm"
                       disabled={busy}
-                      onClick={() => openAdd(detail)}
+                      onClick={bindCall1(openAdd, detail)}
                     >
                       {t('network.addIp')}
                     </Button>
@@ -1178,7 +1253,7 @@ export function NetworkPage() {
               variant="secondary"
               size="sm"
               disabled={busy}
-              onClick={() => setAddOpen(false)}
+              onClick={bindSet(setAddOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -1228,7 +1303,7 @@ export function NetworkPage() {
             <input
               id="net-add-cidr"
               value={cidr}
-              onChange={(e) => setCidr(e.target.value)}
+              onChange={bindInput(setCidr)}
               placeholder="192.168.1.50/24"
               autoFocus
             />
@@ -1256,7 +1331,7 @@ export function NetworkPage() {
               variant="secondary"
               size="sm"
               disabled={busy}
-              onClick={() => setDownDlg(null)}
+              onClick={bindSet(setDownDlg, null)}
             >
               {t('common.cancel')}
             </Button>
@@ -1295,7 +1370,7 @@ export function NetworkPage() {
             <input
               id="net-down-confirm"
               value={downConfirm}
-              onChange={(e) => setDownConfirm(e.target.value)}
+              onChange={bindInput(setDownConfirm)}
               placeholder={downDlg?.name}
               autoFocus
             />
@@ -1315,7 +1390,7 @@ export function NetworkPage() {
               variant="secondary"
               size="sm"
               disabled={busy}
-              onClick={() => setDelRoute(null)}
+              onClick={bindSet(setDelRoute, null)}
             >
               {t('common.cancel')}
             </Button>

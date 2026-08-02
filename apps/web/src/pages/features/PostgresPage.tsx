@@ -31,6 +31,7 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { consoleApi, type ServiceConsole } from '../../features/db-service/console-api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { bindSet, bindInput } from '../bind-handlers';
 
 export function PostgresPage() {
   const { t } = useTranslation();
@@ -154,7 +155,7 @@ export function PostgresPage() {
             size="sm"
             disabled={busy || !installed}
             title={!installed ? t('db.installPgFirst') : undefined}
-            onClick={() => setCreateOpen(true)}
+            onClick={bindSet(setCreateOpen, true)}
           >
             {t('db.createDatabase')}
           </Button>
@@ -169,7 +170,7 @@ export function PostgresPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -207,7 +208,7 @@ export function PostgresPage() {
                 {t('db.installPgBanner')}
               </p>
             ) : !running ? (
-              <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
+              <Button variant="primary" size="md" loading={busy} onClick={onStart}>
                 {t('fail2ban.startService')}
               </Button>
             ) : (
@@ -277,7 +278,7 @@ export function PostgresPage() {
                 >
                   {t('firewall.applyToSystem')}
                 </Button>
-                <Button variant="danger" size="sm" loading={busy} onClick={() => setDelId(r.id)}>
+                <Button variant="danger" size="sm" loading={busy} onClick={bindSet(setDelId, r.id)}>
                   {t('common.delete')}
                 </Button>
               </ActionBar>
@@ -288,12 +289,12 @@ export function PostgresPage() {
 
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={bindSet(setCreateOpen, false)}
         title={t('db.pgCreateTitle')}
         description={t('db.pgCreateDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setCreateOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setCreateOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" form="pg-c" variant="primary" size="md" loading={busy}>
@@ -315,7 +316,7 @@ export function PostgresPage() {
               <input
                 id="pn"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={bindInput(setName)}
                 required
                 placeholder="my_app"
                 spellCheck={false}
@@ -344,7 +345,7 @@ export function PostgresPage() {
                 <input
                   id="pu"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={bindInput(setUsername)}
                   required
                   placeholder="my_app_user"
                   spellCheck={false}
@@ -356,7 +357,7 @@ export function PostgresPage() {
                   id="pp"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={bindInput(setPassword)}
                   minLength={8}
                   required
                   autoComplete="new-password"
@@ -372,7 +373,7 @@ export function PostgresPage() {
 
       <ConfirmDialog
         open={Boolean(delId)}
-        onClose={() => setDelId(null)}
+        onClose={bindSet(setDelId, null)}
         onConfirm={() => {
           if (delId) void dbs.remove(delId).then(() => setDelId(null));
         }}

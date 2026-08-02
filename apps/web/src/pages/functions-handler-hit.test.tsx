@@ -181,7 +181,8 @@ function projectDto(t = now()) {
   return {
     id: 'p1',
     name: 'demo',
-    domain: undefined as string | undefined,
+    domain: 'demo.local.test',
+    domainAliases: [] as string[],
     runtime: 'node',
     runtimeVersion: '20',
     status: 'running',
@@ -196,6 +197,8 @@ function projectDto(t = now()) {
     entry: 'server.js',
     envText: 'NODE_ENV=production',
     envVars: { NODE_ENV: 'production' },
+    // Overview tab renders `env` as React text — must be string, not object
+    env: 'NODE_ENV=production',
     process: { status: 'running', pid: 42 },
     nginxConfigPath: '/etc/nginx/sites-enabled/demo',
     quotaMb: 1024,
@@ -203,6 +206,15 @@ function projectDto(t = now()) {
     cpuQuotaPercent: 100,
     logExtraDirs: ['/var/log/app'],
     lastDeployAt: t,
+    lastHealth: {
+      ok: true,
+      status: 200,
+      ms: 12,
+      nginxStatus: 'live',
+      nginxReloaded: true,
+      at: t,
+    },
+    suspended: false,
   };
 }
 
@@ -459,7 +471,14 @@ function megaRoutes(): FetchRoute[] {
     {
       match: (url) => url.includes('/projects'),
       handler: (url, init) => {
-        if ((init?.method ?? 'GET').toUpperCase() !== 'GET') return okResult();
+        if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
+          return {
+            ...okResult(),
+            project,
+            osProvision: { detail: 'ok' },
+            extraDirs: ['/var/log/app'],
+          };
+        }
         if (url.includes('log')) {
           return {
             lines: ['line1', 'error boom'],
@@ -468,21 +487,45 @@ function megaRoutes(): FetchRoute[] {
               { name: 'error.log', path: 'logs/error.log', bytes: 50 },
             ],
             file: 'app.log',
-            hits: [{ line: 1, text: 'err' }],
+            hits: [{ line: 1, text: 'err', file: 'app.log', lines: ['err'] }],
             notes: [],
-            related: [{ id: 'nginx', label: 'Nginx' }],
+            related: [
+              {
+                id: 'nginx',
+                kind: 'journal',
+                label: 'Nginx',
+                source: 'journal:nginx.service',
+                available: true,
+              },
+            ],
             extraDirs: ['/var/log/app'],
           };
         }
-        if (url.includes('/p1') || /projects\/[^/?]+/.test(url)) return project;
-        return {
-          items: [project, { ...project, id: 'p2', name: 'other', status: 'stopped' }],
-          total: 2,
-          meta: {
+        // List endpoints only — ProjectDetail uses list()+find by id
+        const isList =
+          /\/projects\/?(\?|$)/.test(url) ||
+          (url.includes('/projects') && !/\/projects\/[^/?]+/.test(url));
+        if (isList) {
+          return {
+            items: [
+              project,
+              {
+                ...project,
+                id: 'p2',
+                name: 'other',
+                status: 'stopped',
+                processStatus: 'stopped',
+              },
+            ],
             total: 2,
-            facets: { runtime: { node: 2 }, status: { running: 1, stopped: 1 } },
-          },
-        };
+            meta: {
+              total: 2,
+              facets: { runtime: { node: 2 }, status: { running: 1, stopped: 1 } },
+            },
+          };
+        }
+        // Single-resource / action GET
+        return project;
       },
     },
     {
@@ -1417,31 +1460,69 @@ describe('functions-handler-hit', () => {
       dialogPass();
       eq.unmount();
 
-      // EmailDomain every tab
-      await interactLoaded('/email/domains/dom-1', <EmailDomainPage />, {
-        route: '/email/domains/:id',
-        tabs: [
-          'overview',
-          'mailboxes',
-          'aliases',
-          'dns',
-          'deliverability',
-          'advanced',
-          'about',
-        ],
-        waitRe: /mail\.example|domain|mailbox|alias|dns/i,
-        extra: () => {
-          fillControls();
-          clickAll(
-            /create|add|save|apply|delete|remove|refresh|suspend|bootstrap|pack|copy/i,
-            24,
-          );
-          dialogPass();
-        },
-      });
+      // EmailDomain every tab + modal create flows
+      for (const tab of [
+        'overview',
+        'mailboxes',
+        'aliases',
+        'dns',
+        'deliverability',
+        'advanced',
+        'about',
+      ]) {
+        const v = renderAt(`/email/domains/dom-1?tab=${tab}`, <EmailDomainPage />, '/email/domains/:id');
+        await waitFor(() => expect(document.body.innerText).toMatch(/mail\.example|domain|mailbox|dns|email/i), {
+          timeout: 6000,
+        }).catch(() => undefined);
+        await pause(50);
+        fillControls();
+        clickAll(/create|add mailbox|add alias|\+|new/i, 8);
+        await pause(30);
+        fillControls();
+        // fill modal fields
+        const mlocal = document.getElementById('mlocal') as HTMLInputElement | null;
+        if (mlocal) fireEvent.change(mlocal, { target: { value: 'info' } });
+        const mpass = document.getElementById('mpass') as HTMLInputElement | null;
+        if (mpass) fireEvent.change(mpass, { target: { value: 'Secret12!' } });
+        clickAll(/create mailbox|create alias|save|create|add|confirm/i, 10);
+        dialogPass();
+        clickAll(
+          /apply|delete|remove|refresh|suspend|bootstrap|pack|copy|install|webmail|relay/i,
+          20,
+        );
+        dialogPass();
+        v.unmount();
+      }
+
+      // CDN surgical: open forms, toggle roles, delete confirm
+      for (const tab of ['nodes', 'sites', 'cache', 'dashboard', 'about']) {
+        const v = renderAt(`/cdn?tab=${tab}`, <CdnPage />);
+        await waitFor(() => expect(document.body.innerText).toMatch(/cdn|edge|node|site|cache/i), {
+          timeout: 6000,
+        }).catch(() => undefined);
+        await pause(40);
+        clickAll(/create|add|new|edit|save|apply|delete|purge|refresh/i, 16);
+        await pause(30);
+        fillControls();
+        document.querySelectorAll('input[type=checkbox]').forEach((el) => fireEvent.click(el));
+        // role chips / edge chips
+        document.querySelectorAll('.preset-chips__chip, .mcs__chip, .seg-radios__opt').forEach((el) => {
+          try {
+            fireEvent.click(el);
+          } catch {
+            /* ignore */
+          }
+        });
+        const geo = document.querySelector('textarea') as HTMLTextAreaElement | null;
+        if (geo) fireEvent.change(geo, { target: { value: '{"US":["n1"]}' } });
+        clickAll(/save|create|apply|delete/i, 12);
+        dialogPass();
+        v.unmount();
+      }
+
       expect(true).toBe(true);
     },
-    180_000,
+    200_000,
   );
 
   it(

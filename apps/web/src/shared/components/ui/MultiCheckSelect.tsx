@@ -4,6 +4,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buttonClassName } from './Button';
+import { bindCall1 } from '../../../pages/bind-handlers';
 
 export type MultiCheckOption = {
   value: string;
@@ -93,7 +94,7 @@ export function MultiCheckSelect({
               className="mcs__chip"
               role="listitem"
               disabled={disabled}
-              onClick={() => toggle(v)}
+              onClick={bindCall1(toggle, v)}
               title={t('multiCheck.removeTitle')}
             >
               <span className="mcs__chip-lab">

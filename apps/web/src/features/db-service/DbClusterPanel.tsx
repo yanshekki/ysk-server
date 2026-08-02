@@ -33,6 +33,7 @@ import { useFeatureAction } from '../system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
+import { bindSet, bindInput, bindVoid, bindCall1, bindCall2 } from '../../pages/bind-handlers';
 
 export function statusTone(
   s: string,
@@ -326,7 +327,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -353,7 +354,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               variant="secondary"
               size="md"
               loading={busy}
-              onClick={() => void refresh()}
+              onClick={bindVoid(refresh)}
             >
               {t('common.refresh')}
             </Button>
@@ -396,7 +397,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() => void replan(c.id)}
+                  onClick={bindCall1(replan, c.id)}
                 >
                   {t('db.cluster.plan')}
                 </Button>
@@ -404,7 +405,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() => void applyDry(c.id)}
+                  onClick={bindCall1(applyDry, c.id)}
                 >
                   {t('db.cluster.writeFile')}
                 </Button>
@@ -428,7 +429,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() => void doProbe(c.id, false)}
+                  onClick={bindCall2(doProbe, c.id, false)}
                 >
                   {t('common.probe')}
                 </Button>
@@ -436,7 +437,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() => void doProbe(c.id, true)}
+                  onClick={bindCall2(doProbe, c.id, true)}
                 >
                   {t('db.cluster.probeAll')}
                 </Button>
@@ -473,7 +474,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() => void downloadBundle(c.id)}
+                  onClick={bindCall1(downloadBundle, c.id)}
                 >
                   {t('db.cluster.downloadBundle')}
                 </Button>
@@ -481,7 +482,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() => void pushPeers(c.id, false)}
+                  onClick={bindCall2(pushPeers, c.id, false)}
                 >
                   {t('db.cluster.pushPlan')}
                 </Button>
@@ -624,12 +625,12 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
 
       <Modal
         open={wizOpen}
-        onClose={() => setWizOpen(false)}
+        onClose={bindSet(setWizOpen, false)}
         title={wizardTitle(kind)}
         description={t('db.cluster.planModalDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setWizOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setWizOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -650,7 +651,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               <input
                 id="dbc-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={bindInput(setName)}
                 required
                 spellCheck={false}
               />
@@ -669,7 +670,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               <input
                 id="dbc-local"
                 value={localHost}
-                onChange={(e) => setLocalHost(e.target.value)}
+                onChange={bindInput(setLocalHost)}
                 placeholder={t('db.cluster.ipExample1')}
                 required
                 spellCheck={false}
@@ -690,7 +691,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               <input
                 id="dbc-peer"
                 value={peerHost}
-                onChange={(e) => setPeerHost(e.target.value)}
+                onChange={bindInput(setPeerHost)}
                 placeholder={t('db.cluster.ipExample2')}
                 required
                 spellCheck={false}
@@ -706,7 +707,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               <input
                 id="dbc-peer3"
                 value={peer3Host}
-                onChange={(e) => setPeer3Host(e.target.value)}
+                onChange={bindInput(setPeer3Host)}
                 placeholder={t('db.cluster.ipExample3')}
                 spellCheck={false}
                 autoComplete="off"
@@ -746,7 +747,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
 
       <ConfirmDialog
         open={Boolean(applyTarget)}
-        onClose={() => setApplyTarget(null)}
+        onClose={bindSet(setApplyTarget, null)}
         title={t('db.cluster.applyLocalTitle')}
         description={
           applyTarget?.bootstrap

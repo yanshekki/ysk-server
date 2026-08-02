@@ -30,6 +30,7 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { bindSet, bindInput } from '../bind-handlers';
 
 const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service', 'about'] as const;
 
@@ -229,7 +230,7 @@ export function Fail2banPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -271,7 +272,7 @@ export function Fail2banPage() {
                   <input
                     id="f2b-ban-ip"
                     value={banIp}
-                    onChange={(e) => setBanIp(e.target.value)}
+                    onChange={bindInput(setBanIp)}
                     placeholder={t('fail2ban.ipPlaceholder')}
                     spellCheck={false}
                   />
@@ -296,7 +297,7 @@ export function Fail2banPage() {
                       <select
                         id="f2b-ban-jail"
                         value={banJail}
-                        onChange={(e) => setBanJail(e.target.value)}
+                        onChange={bindInput(setBanJail)}
                       >
                         {jails.map((j) => (
                           <option key={j} value={j}>
@@ -441,7 +442,7 @@ export function Fail2banPage() {
                   <input
                     id="f2b-ignore"
                     value={ignoreIp}
-                    onChange={(e) => setIgnoreIp(e.target.value)}
+                    onChange={bindInput(setIgnoreIp)}
                     placeholder={t('fail2ban.ipPlaceholder')}
                     spellCheck={false}
                   />

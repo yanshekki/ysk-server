@@ -32,6 +32,7 @@ import {
   buttonClassName,
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
+import { bindSet, bindInput, bindVoid, bindCall1 } from './bind-handlers';
 
 export function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (status === 'running' || status === 'connected') return 'ok';
@@ -334,7 +335,7 @@ export function AgentsPage() {
             variant="ghost"
             size="sm"
             loading={busy}
-            onClick={() => void refreshAll()}
+            onClick={bindVoid(refreshAll)}
           >
             {t('common.refresh')}
           </Button>
@@ -360,7 +361,7 @@ export function AgentsPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -479,7 +480,7 @@ export function AgentsPage() {
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={() => void openHistory(a)}
+                  onClick={bindCall1(openHistory, a)}
                 >
                   {t('agents.history')}
                 </Button>
@@ -487,7 +488,7 @@ export function AgentsPage() {
                   variant="danger"
                   size="sm"
                   loading={busy}
-                  onClick={() => setDelAgent(a)}
+                  onClick={bindSet(setDelAgent, a)}
                 >
                   {t('common.delete')}
                 </Button>
@@ -516,7 +517,7 @@ export function AgentsPage() {
                     variant="secondary"
                     size="sm"
                     loading={busy}
-                    onClick={() => void loadCommands(histAgent.id)}
+                    onClick={bindCall1(loadCommands, histAgent.id)}
                   >
                     {t('agents.refreshHistory')}
                   </Button>
@@ -533,7 +534,7 @@ export function AgentsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setHistAgent(null)}
+                    onClick={bindSet(setHistAgent, null)}
                   >
                     {t('common.close')}
                   </Button>
@@ -625,7 +626,7 @@ export function AgentsPage() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => setResultCmd(c)}
+                      onClick={bindSet(setResultCmd, c)}
                     >
                       JSON
                     </Button>
@@ -713,7 +714,7 @@ intervalMs: 5000`}
                           variant="secondary"
                           size="sm"
                           loading={busy}
-                          onClick={() => void probeKind(rt.kind)}
+                          onClick={bindCall1(probeKind, rt.kind)}
                         >
                           {t('agents.probe')}
                         </Button>
@@ -721,7 +722,7 @@ intervalMs: 5000`}
                           variant="secondary"
                           size="sm"
                           loading={busy}
-                          onClick={() => void writeUnit(rt.kind)}
+                          onClick={bindCall1(writeUnit, rt.kind)}
                         >
                           unit
                         </Button>
@@ -729,7 +730,7 @@ intervalMs: 5000`}
                           variant="primary"
                           size="sm"
                           loading={busy}
-                          onClick={() => void installKind(rt.kind)}
+                          onClick={bindCall1(installKind, rt.kind)}
                         >
                           {t('agents.install')}
                         </Button>
@@ -762,7 +763,7 @@ intervalMs: 5000`}
 
       <Modal
         open={registerOpen}
-        onClose={() => setRegisterOpen(false)}
+        onClose={bindSet(setRegisterOpen, false)}
         title={t('agents.registerTitle')}
         description={t('agents.registerDesc')}
         footer={
@@ -770,7 +771,7 @@ intervalMs: 5000`}
             <Button
               variant="secondary"
               size="md"
-              onClick={() => setRegisterOpen(false)}
+              onClick={bindSet(setRegisterOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -798,7 +799,7 @@ intervalMs: 5000`}
               <input
                 id="aid"
                 value={agentId}
-                onChange={(e) => setAgentId(e.target.value)}
+                onChange={bindInput(setAgentId)}
                 placeholder="edge-1"
                 spellCheck={false}
                 autoComplete="off"
@@ -809,7 +810,7 @@ intervalMs: 5000`}
               <input
                 id="agroup"
                 value={agentGroup}
-                onChange={(e) => setAgentGroup(e.target.value)}
+                onChange={bindInput(setAgentGroup)}
                 placeholder="default"
                 spellCheck={false}
               />
@@ -823,12 +824,12 @@ intervalMs: 5000`}
 
       <Modal
         open={Boolean(cmdAgent)}
-        onClose={() => setCmdAgent(null)}
+        onClose={bindSet(setCmdAgent, null)}
         title={cmdAgent ? t('agents.cmdTitle', { id: cmdAgent.agent_id }) : t('agents.cmdTitlePlain')}
         description={t('agents.cmdDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setCmdAgent(null)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setCmdAgent, null)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -874,7 +875,7 @@ intervalMs: 5000`}
                 <input
                   id="cmd-custom"
                   value={cmdCustom}
-                  onChange={(e) => setCmdCustom(e.target.value)}
+                  onChange={bindInput(setCmdCustom)}
                   spellCheck={false}
                   autoComplete="off"
                   required
@@ -890,7 +891,7 @@ intervalMs: 5000`}
 
       <Modal
         open={Boolean(resultCmd)}
-        onClose={() => setResultCmd(null)}
+        onClose={bindSet(setResultCmd, null)}
         title={
           resultCmd
             ? t('agents.resultTitle', { code: exitCodeOf(resultCmd) ?? '—' })
@@ -900,7 +901,7 @@ intervalMs: 5000`}
           resultCmd ? summarizePayload(resultCmd.payload) : undefined
         }
         footer={
-          <Button variant="primary" size="md" onClick={() => setResultCmd(null)}>
+          <Button variant="primary" size="md" onClick={bindSet(setResultCmd, null)}>
             {t('common.close')}
           </Button>
         }
@@ -954,7 +955,7 @@ intervalMs: 5000`}
 
       <ConfirmDialog
         open={delAgent != null}
-        onClose={() => setDelAgent(null)}
+        onClose={bindSet(setDelAgent, null)}
         title={
           delAgent
             ? t('agents.deleteTitle', { id: delAgent.agent_id })

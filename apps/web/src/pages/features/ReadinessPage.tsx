@@ -21,6 +21,7 @@ import type {
   ReadinessLevel,
 } from '../../features/system/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { bindSet, bindInput, bindVoid } from '../bind-handlers';
 
 const RDY_TABS = ['priority', 'checklist', 'summary', 'about'] as const;
 
@@ -269,10 +270,10 @@ export function ReadinessPage() {
           : undefined
       }
       actions={<>
-          <Button variant="secondary" size="sm" loading={busy} onClick={() => void load()}>
+          <Button variant="secondary" size="sm" loading={busy} onClick={bindVoid(load)}>
             {busy ? t('readiness.probing') : t('readiness.reprobe')}
           </Button>
-          <Button variant="ghost" size="sm" disabled={!report} onClick={() => downloadReport()}>
+          <Button variant="ghost" size="sm" disabled={!report} onClick={bindVoid(downloadReport)}>
             {t('readiness.exportReport')}
           </Button>
           {firstFix ? (
@@ -412,7 +413,7 @@ export function ReadinessPage() {
                                     ? ' rdy-chip--ok'
                                     : ''
                             }`}
-                            onClick={() => setFilter(id)}
+                            onClick={bindSet(setFilter, id)}
                           >
                             {label}
                             <span className="rdy-chip__n">{n}</span>
@@ -425,7 +426,7 @@ export function ReadinessPage() {
                           <span className="rdy-field__lab">{t('readiness.category')}</span>
                           <select
                             value={catFilter}
-                            onChange={(e) => setCatFilter(e.target.value)}
+                            onChange={bindInput(setCatFilter)}
                           >
                             <option value="all">{t('readiness.allCategories')}</option>
                             {categories.map((c) => (
@@ -439,7 +440,7 @@ export function ReadinessPage() {
                           <span className="rdy-field__lab">{t('common.search')}</span>
                           <input
                             value={q}
-                            onChange={(e) => setQ(e.target.value)}
+                            onChange={bindInput(setQ)}
                             placeholder={t('readiness.searchPh')}
                             autoComplete="off"
                           />
@@ -451,7 +452,7 @@ export function ReadinessPage() {
                           <button
                             type="button"
                             className={`rdy-pill${catFilter === 'all' ? ' rdy-pill--active' : ''}`}
-                            onClick={() => setCatFilter('all')}
+                            onClick={bindSet(setCatFilter, 'all')}
                           >
                             {t('readiness.all')}
                           </button>
@@ -471,7 +472,7 @@ export function ReadinessPage() {
                                 className={`rdy-pill${catFilter === c ? ' rdy-pill--active' : ''}${
                                   bad > 0 ? ' rdy-pill--issue' : ''
                                 }`}
-                                onClick={() => setCatFilter(c)}
+                                onClick={bindSet(setCatFilter, c)}
                               >
                                 {catLabel(c, t)}
                                 <span className="rdy-pill__n">{count}</span>
@@ -578,7 +579,7 @@ export function ReadinessPage() {
         <div className="rdy-empty rdy-empty--start">
           <strong>{t('readiness.notProbedTitle')}</strong>
           <p>{t('readiness.notProbedDesc')}</p>
-          <Button variant="primary" size="md" onClick={() => void load()}>
+          <Button variant="primary" size="md" onClick={bindVoid(load)}>
             {t('readiness.runCheck')}
           </Button>
         </div>

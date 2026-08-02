@@ -5,6 +5,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './Button';
+import { bindCall1, bindToggleValue } from '../../../pages/bind-handlers';
 
 export type ListToolbarChip = {
   id: string;
@@ -110,7 +111,7 @@ export function ListToolbar({
             <button
               type="button"
               className="list-toolbar__search-clear"
-              onClick={() => onSearchChange('')}
+              onClick={bindCall1(onSearchChange, '')}
               aria-label={t('listToolbar.clearSearch')}
             >
               ×
@@ -143,7 +144,7 @@ export function ListToolbar({
                   type="button"
                   className={chipClass(group.value === '' || group.value === 'all')}
                   aria-pressed={group.value === '' || group.value === 'all'}
-                  onClick={() => group.onChange('')}
+                  onClick={bindCall1(group.onChange, '')}
                 >
                   {group.allLabel}
                 </button>
@@ -154,9 +155,7 @@ export function ListToolbar({
                   type="button"
                   className={chipClass(group.value === c.id, c.tone)}
                   aria-pressed={group.value === c.id}
-                  onClick={() =>
-                    group.onChange(group.value === c.id ? '' : c.id)
-                  }
+                  onClick={bindToggleValue(group.onChange, group.value, c.id)}
                 >
                   <span>{c.label}</span>
                   {c.count != null ? (

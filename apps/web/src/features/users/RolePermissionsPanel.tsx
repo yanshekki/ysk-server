@@ -13,6 +13,7 @@ import {
   type OperationLevel,
   type SystemRole,
 } from '@ysk/shared';
+import { bindCall1, bindCall2 } from '../../pages/bind-handlers';
 import {
   ActionBar,
   Alert,
@@ -118,7 +119,7 @@ export function RolePermissionsPanel({
                   role="tab"
                   aria-selected={selected}
                   className={`rbac-role-item${selected ? ' is-selected' : ''}`}
-                  onClick={() => onRoleChange(r)}
+                  onClick={bindCall1(onRoleChange, r)}
                 >
                   <span className="rbac-role-item__name">
                     {t(`users.roleName.${r}`, { defaultValue: r })}
@@ -245,7 +246,7 @@ export function RolePermissionsPanel({
                         <button
                           type="button"
                           className="rbac-band__toggle"
-                          onClick={() => toggleBandOpen(band)}
+                          onClick={bindCall1(toggleBandOpen, band)}
                           aria-expanded={open}
                         >
                           <span className="rbac-band__chevron" aria-hidden>
@@ -266,7 +267,7 @@ export function RolePermissionsPanel({
                             size="sm"
                             variant="ghost"
                             disabled={locked || busy}
-                            onClick={() => setBandAll(band, true)}
+                            onClick={bindCall2(setBandAll, band, true)}
                           >
                             {t('rbac.bandAllOn')}
                           </Button>
@@ -274,7 +275,7 @@ export function RolePermissionsPanel({
                             size="sm"
                             variant="ghost"
                             disabled={locked || busy}
-                            onClick={() => setBandAll(band, false)}
+                            onClick={bindCall2(setBandAll, band, false)}
                           >
                             {t('rbac.bandAllOff')}
                           </Button>

@@ -32,6 +32,7 @@ import {
   type RedisServiceStatus,
 } from '../../features/redis';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { bindSet, bindInput, bindCall1 } from '../bind-handlers';
 
 export function formatTtl(
   ttl: number | undefined,
@@ -328,7 +329,7 @@ export function RedisPage() {
             {t('common.refresh')}
           </Button>
           {online ? (
-            <Button variant="primary" size="sm" onClick={() => setSetOpen(true)}>
+            <Button variant="primary" size="sm" onClick={bindSet(setSetOpen, true)}>
               {t('redis.addKey')}
             </Button>
           ) : null}
@@ -347,7 +348,7 @@ export function RedisPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -398,7 +399,7 @@ export function RedisPage() {
                         key={k.db}
                         type="button"
                         className={`redis-db-pill${db === k.db ? ' is-active' : ''}`}
-                        onClick={() => selectDb(k.db)}
+                        onClick={bindCall1(selectDb, k.db)}
                       >
                         DB {k.db}
                         <span className="redis-db-pill__meta">{t('redis.keysShort', { k: k.keys })}</span>
@@ -419,7 +420,7 @@ export function RedisPage() {
           >
             <input
               value={patternDraft}
-              onChange={(e) => setPatternDraft(e.target.value)}
+              onChange={bindInput(setPatternDraft)}
               placeholder={t('redis.searchPlaceholder')}
               aria-label={t('redis.searchKeys')}
             />
@@ -442,7 +443,7 @@ export function RedisPage() {
             rightTitle={t('redis.content')}
             rightActions={
               selected ? (
-                <Button variant="danger" size="sm" disabled={busy} onClick={() => setDelKey(selected.key)}>
+                <Button variant="danger" size="sm" disabled={busy} onClick={bindSet(setDelKey, selected.key)}>
                   {t('common.delete')}
                 </Button>
               ) : null
@@ -470,7 +471,7 @@ export function RedisPage() {
                       <button
                         type="button"
                         className={`redis-key-row${selectedKey === k.key ? ' is-active' : ''}`}
-                        onClick={() => void openKey(k.key)}
+                        onClick={bindCall1(openKey, k.key)}
                       >
                         <span className="redis-key-row__name">{k.key}</span>
                         <span className="redis-key-row__meta">
@@ -515,12 +516,12 @@ export function RedisPage() {
 
       <Modal
         open={setOpen}
-        onClose={() => setSetOpen(false)}
+        onClose={bindSet(setSetOpen, false)}
         title={t('redis.addStringKey')}
         description={t('redis.writeToDb', { db })}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setSetOpen(false)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setSetOpen, false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" form="redis-set" variant="primary" size="md" loading={busy}>
@@ -541,7 +542,7 @@ export function RedisPage() {
               <input
                 id="nk"
                 value={newKey}
-                onChange={(e) => setNewKey(e.target.value)}
+                onChange={bindInput(setNewKey)}
                 required
                 placeholder="session:user:1"
                 pattern="[\w.:@/+\-\[\]{}|=,~-]+"
@@ -574,7 +575,7 @@ export function RedisPage() {
               <textarea
                 id="nv"
                 value={newVal}
-                onChange={(e) => setNewVal(e.target.value)}
+                onChange={bindInput(setNewVal)}
                 rows={6}
                 required
                 placeholder={t('redis.stringContent')}
@@ -588,8 +589,8 @@ export function RedisPage() {
 
       <ConfirmDialog
         open={Boolean(delKey)}
-        onClose={() => setDelKey(null)}
-        onConfirm={() => void onDeleteKey()}
+        onClose={bindSet(setDelKey, null)}
+        onConfirm={onDeleteKey}
         title={t('redis.deleteKeyTitle')}
         description={t('redis.deleteKeyDesc', { db, key: delKey })}
         confirmLabel={t('common.delete')}

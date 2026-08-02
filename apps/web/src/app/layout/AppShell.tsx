@@ -12,6 +12,7 @@ import {
   LOCALE_LABELS,
   normalizeLocale,
 } from '../../shared/lib/i18n';
+import { bindVoid } from '../../pages/bind-handlers';
 
 /** All nav paths — used so /ftp does not stay active on /ftp/service */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
@@ -20,7 +21,7 @@ const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
  * Active only for exact match, or for nested routes when no longer sibling nav path matches.
  * Prevents both「FTPS 帳戶」and「vsftpd 服務」highlighting on /ftp/service.
  */
-function isNavActive(to: string, pathname: string): boolean {
+export function isNavActive(to: string, pathname: string): boolean {
   if (to === '/') return pathname === '/';
   if (pathname === to) return true;
   if (!pathname.startsWith(`${to}/`)) return false;
@@ -76,10 +77,6 @@ export function AppShell() {
     } catch {
       setSearchHits([]);
     }
-  }
-
-  function cycleLang() {
-    cycleAppLocale();
   }
 
   const primaryRole = user?.roles?.[0];
@@ -183,7 +180,7 @@ export function AppShell() {
           <button
             type="button"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={cycleLang}
+            onClick={bindVoid(cycleAppLocale)}
             title={t('common.switchLanguage')}
             aria-label={`${t('common.language')}: ${langLabel}`}
           >
@@ -195,7 +192,7 @@ export function AppShell() {
               <span className="badge badge--beside">{roleLabel}</span>
             ) : null}
           </span>
-          <button type="button" className={buttonClassName({ variant: 'secondary', size: 'sm' })} onClick={() => void onLogout()}>
+          <button type="button" className={buttonClassName({ variant: 'secondary', size: 'sm' })} onClick={onLogout}>
             {t('nav.logout')}
           </button>
         </header>

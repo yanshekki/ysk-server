@@ -29,6 +29,7 @@ import {
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
+import { bindSet, bindInput, bindVoid, bindCall1 } from './bind-handlers';
 
 const TABS = ['domains', 'queue', 'stack', 'ops', 'about'] as const;
 
@@ -273,7 +274,7 @@ export function EmailPage() {
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => setCreateOpen(true)}
+                    onClick={bindSet(setCreateOpen, true)}
                   >
                     + {t('email.create')}
                   </Button>
@@ -380,7 +381,7 @@ export function EmailPage() {
                     variant="secondary"
                     size="md"
                     loading={queueBusy}
-                    onClick={() => void loadQueue()}
+                    onClick={bindVoid(loadQueue)}
                   >
                     {t('email.viewQueue')}
                   </Button>
@@ -388,7 +389,7 @@ export function EmailPage() {
                     variant="danger"
                     size="md"
                     loading={queueBusy}
-                    onClick={() => setFlushConfirmOpen(true)}
+                    onClick={bindSet(setFlushConfirmOpen, true)}
                   >
                     {t('email.flushQueue')}
                   </Button>
@@ -422,7 +423,7 @@ export function EmailPage() {
                         variant="ghost"
                         size="sm"
                         loading={queueBusy}
-                        onClick={() => void flushOne(it.id)}
+                        onClick={bindCall1(flushOne, it.id)}
                       >
                         {t('email.deleteThisId')}
                       </Button>
@@ -479,7 +480,7 @@ export function EmailPage() {
                   <Button
                     variant="secondary"
                     size="md"
-                    onClick={() => setTab('domains')}
+                    onClick={bindSet(setTab, 'domains')}
                   >
                     {t('email.viewDomainList')}
                   </Button>
@@ -523,7 +524,7 @@ export function EmailPage() {
 
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={bindSet(setCreateOpen, false)}
         title={t('email.create')}
         description={t('email.createModalDesc')}
         footer={
@@ -532,7 +533,7 @@ export function EmailPage() {
               variant="secondary"
               size="md"
               loading={busy}
-              onClick={() => setCreateOpen(false)}
+              onClick={bindSet(setCreateOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -560,7 +561,7 @@ export function EmailPage() {
               <input
                 id="edomain"
                 value={domain}
-                onChange={(e) => setDomain(e.target.value)}
+                onChange={bindInput(setDomain)}
                 placeholder="example.com"
                 required
                 autoFocus

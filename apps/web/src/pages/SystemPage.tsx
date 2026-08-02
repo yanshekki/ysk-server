@@ -27,6 +27,7 @@ import { systemApi } from '../features/system';
 import type { HostOverviewDto } from '../features/system/api';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { bindSet, bindInput, bindVoid } from './bind-handlers';
 
 const SYS_TABS = ['host', 'export', 'about'] as const;
 
@@ -203,11 +204,11 @@ export function SystemPage() {
 
   const counts = snapshot?.counts;
   const memPct =
-    host?.runtime.memory.usedRatio != null
+    host?.runtime?.memory?.usedRatio != null
       ? Math.round(host.runtime.memory.usedRatio * 100)
       : null;
-  const load1 = host?.runtime.loadavg?.[0];
-  const heroTone = host?.caps.canPower
+  const load1 = host?.runtime?.loadavg?.[0];
+  const heroTone = host?.caps?.canPower
     ? 'ok'
     : host
       ? 'warn'
@@ -362,7 +363,7 @@ export function SystemPage() {
                 variant="ghost"
                 size="sm"
                 loading={busy}
-                onClick={() => void refreshExportMeta()}
+                onClick={bindVoid(refreshExportMeta)}
               >
                 {t('common.refresh')}
               </Button>
@@ -377,7 +378,7 @@ export function SystemPage() {
       {err ? (
         <Alert variant="error">
           {err}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setErr(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setErr, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -385,7 +386,7 @@ export function SystemPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -431,7 +432,7 @@ export function SystemPage() {
                           <input
                             id="sys-hn"
                             value={hostname}
-                            onChange={(e) => setHostname(e.target.value)}
+                            onChange={bindInput(setHostname)}
                             disabled={!host?.caps.canIdentity && host != null}
                           />
                         </Field>
@@ -444,7 +445,7 @@ export function SystemPage() {
                           <input
                             id="sys-pretty"
                             value={prettyHostname}
-                            onChange={(e) => setPrettyHostname(e.target.value)}
+                            onChange={bindInput(setPrettyHostname)}
                             placeholder={t('system.prettyPh')}
                             disabled={!host?.caps.canIdentity && host != null}
                           />
@@ -458,7 +459,7 @@ export function SystemPage() {
                           <input
                             id="sys-tz"
                             value={timezone}
-                            onChange={(e) => setTimezone(e.target.value)}
+                            onChange={bindInput(setTimezone)}
                             placeholder="Asia/Hong_Kong"
                             disabled={!host?.caps.canIdentity && host != null}
                           />
@@ -812,7 +813,7 @@ export function SystemPage() {
                         variant="secondary"
                         size="md"
                         disabled={busy}
-                        onClick={() => setPowerDlg(null)}
+                        onClick={bindSet(setPowerDlg, null)}
                       >
                         {t('common.cancel')}
                       </Button>
@@ -867,7 +868,7 @@ export function SystemPage() {
                       id="power-confirm"
                       autoComplete="off"
                       value={powerConfirm}
-                      onChange={(e) => setPowerConfirm(e.target.value)}
+                      onChange={bindInput(setPowerConfirm)}
                       placeholder={powerDlg?.confirmNeed}
                     />
                   </Field>
@@ -1035,7 +1036,7 @@ export function SystemPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setConfPreview(null)}
+                        onClick={bindSet(setConfPreview, null)}
                       >
                         {t('common.close')}
                       </Button>
@@ -1082,7 +1083,7 @@ export function SystemPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() => setRebuildSyncConfirm(true)}
+                    onClick={bindSet(setRebuildSyncConfirm, true)}
                   >
                     {t('system.syncReload')}
                   </Button>

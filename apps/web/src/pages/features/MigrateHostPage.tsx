@@ -24,6 +24,7 @@ import {
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
+import { bindInput, bindCheck, bindVoid } from '../bind-handlers';
 import {
   migrateApi,
   type MigrateJob,
@@ -186,7 +187,7 @@ export function MigrateHostPage() {
             variant="secondary"
             size="sm"
             loading={invLoading}
-            onClick={() => void refreshAll()}
+            onClick={bindVoid(refreshAll)}
           >
             {t('common.refresh')}
           </Button>
@@ -330,7 +331,7 @@ export function MigrateHostPage() {
                     <input
                       id="mig-target"
                       value={target}
-                      onChange={(e) => setTarget(e.target.value)}
+                      onChange={bindInput(setTarget)}
                       placeholder="root@203.0.113.10"
                       autoComplete="off"
                       spellCheck={false}
@@ -340,7 +341,7 @@ export function MigrateHostPage() {
                     <input
                       id="mig-port"
                       value={port}
-                      onChange={(e) => setPort(e.target.value)}
+                      onChange={bindInput(setPort)}
                       inputMode="numeric"
                     />
                   </Field>
@@ -348,7 +349,7 @@ export function MigrateHostPage() {
                     <input
                       id="mig-dd"
                       value={targetDataDir}
-                      onChange={(e) => setTargetDataDir(e.target.value)}
+                      onChange={bindInput(setTargetDataDir)}
                       spellCheck={false}
                     />
                   </Field>
@@ -373,7 +374,7 @@ export function MigrateHostPage() {
                         id="mig-pw"
                         type="password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={bindInput(setPassword)}
                         autoComplete="new-password"
                         placeholder={t('migrate.notPersisted')}
                       />
@@ -384,7 +385,7 @@ export function MigrateHostPage() {
                       <input
                         id="mig-id"
                         value={identityId}
-                        onChange={(e) => setIdentityId(e.target.value)}
+                        onChange={bindInput(setIdentityId)}
                         placeholder={t('migrate.outboundIdentity')}
                         spellCheck={false}
                       />
@@ -397,7 +398,7 @@ export function MigrateHostPage() {
                     <input
                       type="checkbox"
                       checked={maintenance}
-                      onChange={(e) => setMaintenance(e.target.checked)}
+                      onChange={bindCheck(setMaintenance)}
                     />
                     <span>
                       <strong>{t('migrate.confirmMaint')}</strong>
@@ -411,7 +412,7 @@ export function MigrateHostPage() {
                     <input
                       type="checkbox"
                       checked={forceWipe}
-                      onChange={(e) => setForceWipe(e.target.checked)}
+                      onChange={bindCheck(setForceWipe)}
                     />
                     <span>
                       <strong>{t('migrate.allowOverwrite')}</strong>
@@ -425,7 +426,7 @@ export function MigrateHostPage() {
                     <input
                       type="checkbox"
                       checked={dryRun}
-                      onChange={(e) => setDryRun(e.target.checked)}
+                      onChange={bindCheck(setDryRun)}
                     />
                     <span>
                       <strong>{t('migrate.dryRunOnly')}</strong>
@@ -640,7 +641,7 @@ export function MigrateHostPage() {
       <ConfirmDialog
         open={confirmOpen}
         onClose={() => !busy && setConfirmOpen(false)}
-        onConfirm={() => void runMigrate()}
+        onConfirm={bindVoid(runMigrate)}
         title={t('migrate.confirmTitle')}
         description={t('migrate.confirmDesc', { target: target.trim() || t('migrate.unfilledTarget') })}
         confirmLabel={t('migrate.confirmStart')}

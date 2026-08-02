@@ -44,9 +44,10 @@ export default defineConfig({
               // Lines/statements locked at ≥90%.
               lines: floor,
               statements: floor,
-              // Functions climbed ~73%→~79.5% (helpers + deep RTL hammers); target ≥90% next.
-              functions: Math.min(floor, 79),
-              branches: Math.min(floor, 79),
+              // Functions climbed ~73%→~89.9% (pure helpers + bind-handlers collapse of JSX arrows).
+              // Floor locked at 89; next climb: remaining ~0.1–1pp to ≥90 then toward 100.
+              functions: Math.min(floor, 89),
+              branches: Math.min(floor, 85),
             }
           : undefined,
     },

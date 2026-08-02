@@ -26,6 +26,7 @@ import {
   statusTone,
 } from './labels';
 import type { ProjectOpt, SshIdentityRow } from './types';
+import { bindSet, bindInput, bindCheck, bindVoid, bindCall1 } from '../../../pages/bind-handlers';
 
 type Filter = 'active' | 'panel' | 'user' | 'retired' | 'all';
 
@@ -279,7 +280,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 key={id}
                 type="button"
                 className={`ssh-filter${filter === id ? ' is-on' : ''}`}
-                onClick={() => setFilter(id)}
+                onClick={bindSet(setFilter, id)}
               >
                 {label}
               </button>
@@ -288,7 +289,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               className="ssh-filter-search"
               placeholder={t('security.ssh.searchIdentity')}
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={bindInput(setQ)}
               aria-label={t('security.ssh.searchIdentityAria')}
             />
           </div>
@@ -318,7 +319,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                       role="button"
                       tabIndex={0}
                       className={`list-row${on ? ' is-selected' : ''}`}
-                      onClick={() => setSelectedId(row.id)}
+                      onClick={bindSet(setSelectedId, row.id)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
@@ -348,7 +349,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                             variant="primary"
                             size="sm"
                             loading={busy}
-                            onClick={() => void runPrimary(row)}
+                            onClick={bindCall1(runPrimary, row)}
                           >
                             {act.label}
                           </Button>
@@ -366,7 +367,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
           <Card className="ssh-split__detail">
             <CardSection title={selected.name} description={purposeHint(selected.purpose, t)}>
               <ActionBar className="u-mb-3 u-justify-end">
-                <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
+                <Button variant="ghost" size="sm" onClick={bindSet(setSelectedId, null)}>
                   {t('common.close')}
                 </Button>
               </ActionBar>
@@ -427,7 +428,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  onClick={() => void runPrimary(selected)}
+                  onClick={bindCall1(runPrimary, selected)}
                 >
                   {nextAction(selected.status, selected.purpose, t).label || t('security.ssh.actionCopyPub')}
                 </Button>
@@ -507,7 +508,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
       {/* —— Create wizard —— */}
       <Modal
         open={wizOpen}
-        onClose={() => setWizOpen(false)}
+        onClose={bindSet(setWizOpen, false)}
         title={
           wizStep === 1
             ? t('security.ssh.wizStepPurpose')
@@ -555,7 +556,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 {t('security.ssh.nextStep')}
               </Button>
             ) : (
-              <Button variant="primary" size="md" loading={busy} onClick={() => void submitCreate()}>
+              <Button variant="primary" size="md" loading={busy} onClick={bindVoid(submitCreate)}>
                 {t('security.ssh.createIdentity')}
               </Button>
             )}
@@ -567,7 +568,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             <button
               type="button"
               className={`ssh-purpose-card${purpose === 'panel_outbound' ? ' is-on' : ''}`}
-              onClick={() => setPurpose('panel_outbound')}
+              onClick={bindSet(setPurpose, 'panel_outbound')}
             >
               <strong>{t('security.ssh.purposePanelTitle')}</strong>
               <span>{t('security.ssh.purposePanelSub')}</span>
@@ -576,7 +577,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             <button
               type="button"
               className={`ssh-purpose-card${purpose === 'user_outbound' ? ' is-on' : ''}`}
-              onClick={() => setPurpose('user_outbound')}
+              onClick={bindSet(setPurpose, 'user_outbound')}
             >
               <strong>{t('security.ssh.purposeUserTitle')}</strong>
               <span>{t('security.ssh.purposeUserSub')}</span>
@@ -590,7 +591,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             <select
               id="wiz-proj"
               value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
+              onChange={bindInput(setProjectId)}
             >
               <option value="">{t('security.ssh.selectProject')}</option>
               {projects.map((p) => (
@@ -624,7 +625,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               <input
                 id="wiz-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={bindInput(setName)}
                 placeholder={defaultName()}
                 spellCheck={false}
               />
@@ -645,7 +646,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               <input
                 type="checkbox"
                 checked={installNow}
-                onChange={(e) => setInstallNow(e.target.checked)}
+                onChange={bindCheck(setInstallNow)}
               />
               <span>
                 {t('security.ssh.installImmediately')}
@@ -736,7 +737,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
           <input
             type="checkbox"
             checked={revealAck}
-            onChange={(e) => setRevealAck(e.target.checked)}
+            onChange={bindCheck(setRevealAck)}
           />
           <span>{t('security.ssh.privSavedConfirm')}</span>
         </label>
@@ -745,12 +746,12 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
       {/* test */}
       <Modal
         open={Boolean(testId)}
-        onClose={() => setTestId(null)}
+        onClose={bindSet(setTestId, null)}
         title={t('security.ssh.testConnTitle')}
         description={t('security.ssh.testConnDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setTestId(null)}>
+            <Button variant="secondary" size="md" onClick={bindSet(setTestId, null)}>
               {t('common.cancel')}
             </Button>
             <Button
@@ -758,7 +759,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
               size="md"
               loading={busy}
               disabled={!testTarget.includes('@')}
-              onClick={() => void runTest()}
+              onClick={bindVoid(runTest)}
             >
               {t('security.ssh.startTest')}
             </Button>
@@ -775,7 +776,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
           <input
             id="test-target"
             value={testTarget}
-            onChange={(e) => setTestTarget(e.target.value)}
+            onChange={bindInput(setTestTarget)}
             placeholder="root@10.0.0.2"
             spellCheck={false}
           />
@@ -784,8 +785,8 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
 
       <ConfirmDialog
         open={Boolean(confirm)}
-        onClose={() => setConfirm(null)}
-        onConfirm={() => void confirmAction()}
+        onClose={bindSet(setConfirm, null)}
+        onConfirm={bindVoid(confirmAction)}
         title={confirm?.kind === 'delete' ? t('security.ssh.deleteIdentityTitle') : t('security.ssh.rotateKeyTitle')}
         description={
           confirm?.kind === 'delete'

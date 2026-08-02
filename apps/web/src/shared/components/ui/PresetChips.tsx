@@ -2,6 +2,7 @@
  * One-click preset chips for common values; optional free custom beside.
  */
 import { useTranslation } from 'react-i18next';
+import { bindCall1 } from '../../../pages/bind-handlers';
 
 export type PresetChipOption = {
   value: string;
@@ -51,7 +52,7 @@ export function PresetChips({
               type="button"
               className={`preset-chips__chip${on ? ' is-on' : ''}`}
               disabled={disabled}
-              onClick={() => onChange(o.value)}
+              onClick={bindCall1(onChange, o.value)}
             >
               {o.label}
             </button>

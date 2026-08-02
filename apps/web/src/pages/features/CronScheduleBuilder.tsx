@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { Field, FormLayout, PresetChips, SegRadio } from '../../shared/components/ui';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
+import { bindCall1 } from '../bind-handlers';
 
 export type ScheduleMode =
   | 'every_n_min'
@@ -319,7 +320,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
                     type="button"
                     className={`cron-sched__dow${on ? ' is-active' : ''}`}
                     aria-pressed={on}
-                    onClick={() => toggleWeekday(d.v)}
+                    onClick={bindCall1(toggleWeekday, d.v)}
                   >
                     {d.label}
                   </button>

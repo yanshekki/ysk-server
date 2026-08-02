@@ -30,6 +30,12 @@ import {
   severityLabel,
 } from './features/ReadinessPage';
 import { RouteFallback, RedirectPreserveQuery, Lazy } from '../app/App';
+import {
+  statusTone as cdnStatusTone,
+  toggleMembership,
+  parseGeoMapText,
+  canDeleteCdnSite,
+} from './features/CdnPage';
 
 const t = (k: string) => k;
 
@@ -162,6 +168,29 @@ describe('Readiness pure helpers', () => {
     expect(severityLabel('critical', t)).toBeTruthy();
     expect(severityLabel(undefined, t)).toBeNull();
     expect(severityLabel('recommended', t)).toBeTruthy();
+  });
+});
+
+describe('Cdn pure helpers', () => {
+  it('statusTone / toggleMembership / parseGeoMapText / canDelete', () => {
+    expect(cdnStatusTone('online')).toBe('ok');
+    expect(cdnStatusTone('draining')).toBe('warn');
+    expect(cdnStatusTone('offline')).toBe('danger');
+    expect(cdnStatusTone('unknown')).toBe('neutral');
+
+    expect(toggleMembership(['a', 'b'], 'c')).toEqual(['a', 'b', 'c']);
+    expect(toggleMembership(['a', 'b'], 'a')).toEqual(['b']);
+    expect(toggleMembership([], 'x')).toEqual(['x']);
+
+    expect(parseGeoMapText('')).toBeNull();
+    expect(parseGeoMapText('  ')).toBeNull();
+    expect(parseGeoMapText('{')).toBeNull();
+    expect(parseGeoMapText('[1,2]')).toBeNull();
+    expect(parseGeoMapText('{"US":"n1"}')).toEqual({ US: 'n1' });
+
+    expect(canDeleteCdnSite(null)).toBe(false);
+    expect(canDeleteCdnSite({ apply_status: 'applying' })).toBe(false);
+    expect(canDeleteCdnSite({ apply_status: 'applied' })).toBe(true);
   });
 });
 

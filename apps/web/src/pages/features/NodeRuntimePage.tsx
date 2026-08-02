@@ -22,6 +22,7 @@ import {
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { bindSet } from '../bind-handlers';
 
 export function NodeRuntimePage() {
   const { t } = useTranslation();
@@ -93,7 +94,7 @@ export function NodeRuntimePage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>

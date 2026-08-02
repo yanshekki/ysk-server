@@ -32,6 +32,7 @@ import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
+import { bindSet, bindInput, bindVoid } from '../bind-handlers';
 
 const ZONE_TEMPLATE_IDS = ['minimal', 'web', 'mail', 'full', 'cdn'] as const;
 
@@ -360,7 +361,7 @@ export function DnsPage() {
       }}
       actions={<>
           
-          <Button variant="secondary" size="sm" onClick={() => setTab('records')}>
+          <Button variant="secondary" size="sm" onClick={bindSet(setTab, 'records')}>
             {t('dns.statRecords')}
           </Button>
           <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
@@ -411,7 +412,7 @@ export function DnsPage() {
           <button
             type="button"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={() => setValidateMsg(null)}
+            onClick={bindSet(setValidateMsg, null)}
           >
             {t('common.close')}
           </button>
@@ -460,7 +461,7 @@ export function DnsPage() {
                   description={t('dns.zonesDesc')}
                   toolbar={
                     <ActionBar>
-                      <Button variant="primary" size="sm" onClick={() => setZoneOpen(true)}>
+                      <Button variant="primary" size="sm" onClick={bindSet(setZoneOpen, true)}>
                         {t('dns.createZone')}
                       </Button>
                     </ActionBar>
@@ -538,7 +539,7 @@ export function DnsPage() {
                         type="button"
                         className={buttonClassName({ variant: 'danger', size: 'sm' })}
                         disabled={zones.busy}
-                        onClick={() => setDelZone(r.id)}
+                        onClick={bindSet(setDelZone, r.id)}
                       >
                         {t('common.delete')}
                       </button>
@@ -616,7 +617,7 @@ export function DnsPage() {
                           <input
                             id="edit-soa-ns"
                             value={editSoaNs}
-                            onChange={(e) => setEditSoaNs(e.target.value)}
+                            onChange={bindInput(setEditSoaNs)}
                             placeholder={`ns1.${String(selectedLive.zone)}.`}
                             spellCheck={false}
                             disabled={soaBusy || zones.busy}
@@ -755,7 +756,7 @@ export function DnsPage() {
                           <button
                             type="button"
                             className={buttonClassName({ variant: 'danger', size: 'sm' })}
-                            onClick={() => setDelRec(r.id)}
+                            onClick={bindSet(setDelRec, r.id)}
                           >
                             {t('common.delete')}
                           </button>
@@ -792,7 +793,7 @@ export function DnsPage() {
                     <input
                       id="peer-h"
                       value={peerHost}
-                      onChange={(e) => setPeerHost(e.target.value)}
+                      onChange={bindInput(setPeerHost)}
                       placeholder="ns2.example.com"
                       spellCheck={false}
                     />
@@ -806,7 +807,7 @@ export function DnsPage() {
                     <input
                       id="peer-u"
                       value={peerUser}
-                      onChange={(e) => setPeerUser(e.target.value)}
+                      onChange={bindInput(setPeerUser)}
                       placeholder="root"
                     />
                   </Field>
@@ -819,7 +820,7 @@ export function DnsPage() {
                     <input
                       id="peer-label"
                       value={peerLabel}
-                      onChange={(e) => setPeerLabel(e.target.value)}
+                      onChange={bindInput(setPeerLabel)}
                       placeholder="ns2"
                     />
                   </Field>
@@ -828,7 +829,7 @@ export function DnsPage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => void refreshPeers()}
+                    onClick={bindVoid(refreshPeers)}
                     disabled={clusterBusy}
                   >
                     {t('dns.refresh')}
@@ -1139,7 +1140,7 @@ export function DnsPage() {
                       <input
                         id="lookup-name"
                         value={lookupName}
-                        onChange={(e) => setLookupName(e.target.value)}
+                        onChange={bindInput(setLookupName)}
                         placeholder={
                           selectedLive
                             ? String(selectedLive.zone ?? 'example.com')
@@ -1258,12 +1259,12 @@ export function DnsPage() {
 
       <Modal
         open={zoneOpen}
-        onClose={() => setZoneOpen(false)}
+        onClose={bindSet(setZoneOpen, false)}
         title={t('dns.createZoneTitle')}
         description={t('dns.createZoneDesc')}
         footer={
           <>
-            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setZoneOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setZoneOpen, false)}>
               {t('common.cancel')}
             </button>
             <button type="submit" form="dz" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={zones.busy}>
@@ -1284,7 +1285,7 @@ export function DnsPage() {
               <input
                 id="z"
                 value={zone}
-                onChange={(e) => setZone(e.target.value)}
+                onChange={bindInput(setZone)}
                 required
                 placeholder="example.com"
                 spellCheck={false}
@@ -1300,7 +1301,7 @@ export function DnsPage() {
               <input
                 id="sip"
                 value={serverIp}
-                onChange={(e) => setServerIp(e.target.value)}
+                onChange={bindInput(setServerIp)}
                 required
                 placeholder={t('dns.thisHostIpv4')}
                 spellCheck={false}
@@ -1315,7 +1316,7 @@ export function DnsPage() {
               <input
                 id="sip6"
                 value={serverIpv6}
-                onChange={(e) => setServerIpv6(e.target.value)}
+                onChange={bindInput(setServerIpv6)}
                 placeholder={t('dns.thisHostIpv6')}
                 spellCheck={false}
               />
@@ -1329,7 +1330,7 @@ export function DnsPage() {
               <input
                 id="soa-ns"
                 value={soaNs}
-                onChange={(e) => setSoaNs(e.target.value)}
+                onChange={bindInput(setSoaNs)}
                 placeholder="ns1.example.com."
                 spellCheck={false}
               />
@@ -1368,14 +1369,14 @@ export function DnsPage() {
 
       <Modal
         open={recOpen}
-        onClose={() => setRecOpen(false)}
+        onClose={bindSet(setRecOpen, false)}
         title={editRec ? t('dns.editRecord') : t('dns.addRecordTitle')}
         description={
           selectedLive ? t('dns.recordModalDesc', { zone: String(selectedLive.zone) }) : undefined
         }
         footer={
           <>
-            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={() => setRecOpen(false)}>
+            <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setRecOpen, false)}>
               {t('common.cancel')}
             </button>
             <button type="submit" form="dr" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={records.busy}>
@@ -1408,7 +1409,7 @@ export function DnsPage() {
               <input
                 id="rn"
                 value={rname}
-                onChange={(e) => setRname(e.target.value)}
+                onChange={bindInput(setRname)}
                 required
                 placeholder="@"
                 spellCheck={false}
@@ -1435,7 +1436,7 @@ export function DnsPage() {
               <input
                 id="rv"
                 value={rvalue}
-                onChange={(e) => setRvalue(e.target.value)}
+                onChange={bindInput(setRvalue)}
                 required
                 placeholder={
                   rtype === 'AAAA'
@@ -1468,7 +1469,7 @@ export function DnsPage() {
 
       <ConfirmDialog
         open={Boolean(delZone)}
-        onClose={() => setDelZone(null)}
+        onClose={bindSet(setDelZone, null)}
         onConfirm={() => {
           if (delZone)
             void zones.remove(delZone).then(() => {
@@ -1485,7 +1486,7 @@ export function DnsPage() {
       />
       <ConfirmDialog
         open={Boolean(delRec)}
-        onClose={() => setDelRec(null)}
+        onClose={bindSet(setDelRec, null)}
         onConfirm={() => {
           if (delRec) void records.remove(delRec).then(() => setDelRec(null));
         }}

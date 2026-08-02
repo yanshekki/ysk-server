@@ -31,6 +31,7 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
+import { bindSet, bindInput, bindCheck, bindCall1 } from '../bind-handlers';
 
 const FW_TABS = ['rules', 'ports', 'deny', 'profiles', 'about'] as const;
 
@@ -313,7 +314,7 @@ export function FirewallPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -521,7 +522,7 @@ export function FirewallPage() {
                   <input
                     id="fw-deny"
                     value={denyIp}
-                    onChange={(e) => setDenyIp(e.target.value)}
+                    onChange={bindInput(setDenyIp)}
                     placeholder={t('firewall.denyPlaceholder')}
                     spellCheck={false}
                   />
@@ -599,7 +600,7 @@ export function FirewallPage() {
                     variant="primary"
                     size="sm"
                     loading={busy}
-                    onClick={() => void applyProfile(p)}
+                    onClick={bindCall1(applyProfile, p)}
                   >
                     {t('common.apply')}
                   </Button>
@@ -614,7 +615,7 @@ export function FirewallPage() {
                 <input
                   type="checkbox"
                   checked={allowSmtp}
-                  onChange={(e) => setAllowSmtp(e.target.checked)}
+                  onChange={bindCheck(setAllowSmtp)}
                 />
                 <span>{t('firewall.allowSmtp')}</span>
               </label>

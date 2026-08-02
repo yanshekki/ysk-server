@@ -21,6 +21,7 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { bindSet, bindCall1 } from '../bind-handlers';
 
 const SDU_TABS = ['guide', 'status', 'install', 'policy', 'about'] as const;
 
@@ -286,7 +287,7 @@ export function SystemdUnitPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -339,7 +340,7 @@ export function SystemdUnitPage() {
                               variant="secondary"
                               size="sm"
                               loading={busy}
-                              onClick={() => void doInstall(false)}
+                              onClick={bindCall1(doInstall, false)}
                             >
                               {t('redis.writable')}
                             </Button>
@@ -349,7 +350,7 @@ export function SystemdUnitPage() {
                               size="sm"
                               loading={busy}
                               disabled={!canInstall && s.id === 'install'}
-                              onClick={() => void doInstall(true)}
+                              onClick={bindCall1(doInstall, true)}
                             >
                               {t('systemd.installEnableShort')}
                             </Button>
@@ -474,7 +475,7 @@ export function SystemdUnitPage() {
                         variant="secondary"
                         size="md"
                         loading={busy}
-                        onClick={() => void doInstall(false)}
+                        onClick={bindCall1(doInstall, false)}
                       >
                         {t('systemd.writeTemplateBtn')}
                       </Button>
@@ -489,7 +490,7 @@ export function SystemdUnitPage() {
                         size="md"
                         loading={busy}
                         disabled={!canInstall}
-                        onClick={() => void doInstall(true)}
+                        onClick={bindCall1(doInstall, true)}
                       >
                         {t('systemd.installAndEnable')}
                       </Button>

@@ -36,6 +36,7 @@ import { DbClusterPanel } from '../../features/db-service/DbClusterPanel';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
+import { bindSet, bindVoid, bindCall1 } from '../bind-handlers';
 
 const DATA_LINK: Record<DbServiceEngine, { path: string; label: string }> = {
   redis: { path: '/databases/redis', label: i18n.t('db.console.dataBrowse') },
@@ -54,6 +55,74 @@ export function applyModeLabel(m: string): string {
 export function displayValue(v?: string): string {
   if (v == null || v === '') return '';
   return v;
+}
+
+/** Collect dirty setting keys vs live values. */
+export function collectDirtyKeys(
+  categories: Array<{
+    settings: Array<{ key: string; liveValue?: string }>;
+  }> | null | undefined,
+  draft: Record<string, string>,
+): string[] {
+  if (!categories) return [];
+  const out: string[] = [];
+  for (const cat of categories) {
+    for (const s of cat.settings) {
+      const live = displayValue(s.liveValue);
+      const cur = draft[s.key] ?? live;
+      if (cur !== live) out.push(s.key);
+    }
+  }
+  return out;
+}
+
+/** Seed draft map from console categories. */
+export function seedDraftFromConsole(
+  categories: Array<{
+    settings: Array<{ key: string; liveValue?: string }>;
+  }> | null | undefined,
+): Record<string, string> {
+  const d: Record<string, string> = {};
+  if (!categories) return d;
+  for (const cat of categories) {
+    for (const s of cat.settings) {
+      d[s.key] = displayValue(s.liveValue);
+    }
+  }
+  return d;
+}
+
+/** Lifecycle action success i18n-ish key. */
+export function lifecycleActionKey(action: string): string {
+  if (action === 'start') return 'services.action.start';
+  if (action === 'stop') return 'services.action.stop';
+  if (action === 'restart') return 'services.action.restart';
+  if (action === 'reload') return 'services.action.reload';
+  return action;
+}
+
+/** Whether a setting is a number type for presets. */
+export function isNumberSetting(s: { type?: string; kind?: string }): boolean {
+  return s.type === 'number' || s.kind === 'number' || s.type === 'int';
+}
+
+/** Apply a numeric preset (min/mid/max) from catalog bounds. */
+export function applyNumberPreset(
+  current: string,
+  preset: 'min' | 'mid' | 'max',
+  bounds: { min?: number; max?: number; default?: number },
+): string {
+  const min = bounds.min ?? 0;
+  const max = bounds.max ?? 100;
+  if (preset === 'min') return String(min);
+  if (preset === 'max') return String(max);
+  if (bounds.default != null) return String(bounds.default);
+  return String(Math.round((min + max) / 2));
+}
+
+/** Enum option is currently selected. */
+export function isEnumSelected(current: string, option: string): boolean {
+  return current === option;
 }
 
 export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
@@ -86,18 +155,10 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     void refresh();
   }, [refresh]);
 
-  const dirtyKeys = useMemo(() => {
-    if (!console) return [] as string[];
-    const out: string[] = [];
-    for (const cat of console.categories) {
-      for (const s of cat.settings) {
-        const live = displayValue(s.liveValue);
-        const cur = draft[s.key] ?? live;
-        if (cur !== live) out.push(s.key);
-      }
-    }
-    return out;
-  }, [console, draft]);
+  const dirtyKeys = useMemo(
+    () => collectDirtyKeys(console?.categories, draft),
+    [console, draft],
+  );
 
   const tabs = useMemo(() => {
     const base = [
@@ -310,7 +371,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             size="md"
             loading={busy}
             disabled={!catDirty.length}
-            onClick={() => void doApply(catDirty)}
+            onClick={bindCall1(doApply, catDirty)}
           >
             {catDirty.length ? t('db.console.applyCatCount', { n: catDirty.length }) : t('db.console.applyCategory')}
           </Button>
@@ -319,7 +380,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             size="md"
             loading={busy}
             disabled={!dirtyKeys.length}
-            onClick={() => void doApply()}
+            onClick={bindVoid(doApply)}
           >
             {dirtyKeys.length ? t('db.console.applyAllCount', { n: dirtyKeys.length }) : t('db.console.applyAll')}
           </Button>
@@ -444,7 +505,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -473,22 +534,22 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                 </p>
               ) : (
                 <div className="lifecycle-toolbar">
-                  <Button variant="primary" size="md" loading={busy} onClick={() => void doLifecycle('start')}>
+                  <Button variant="primary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'start')}>
                     {t('services.action.start')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={() => void doLifecycle('stop')}>
+                  <Button variant="secondary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'stop')}>
                     {t('services.action.stop')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={() => void doLifecycle('restart')}>
+                  <Button variant="secondary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'restart')}>
                     {t('services.action.restart')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={() => void doLifecycle('reload')}>
+                  <Button variant="secondary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'reload')}>
                     {t('db.console.reloadConfig')}
                   </Button>
-                  <Button variant="ghost" size="md" loading={busy} onClick={() => void doLifecycle('enable')}>
+                  <Button variant="ghost" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'enable')}>
                     {t('systemd.bootEnabled')}
                   </Button>
-                  <Button variant="ghost" size="md" loading={busy} onClick={() => void doLifecycle('disable')}>
+                  <Button variant="ghost" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'disable')}>
                     {t('db.console.disableBoot')}
                   </Button>
                 </div>

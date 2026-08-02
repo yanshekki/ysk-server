@@ -28,6 +28,7 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
+import { bindSet, bindInput, bindCheck, bindVoid, bindCall1 } from '../bind-handlers';
 import type {
   CdnDnsStrategy,
   CdnNodeDto,
@@ -96,6 +97,259 @@ export function statusTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (s === 'draining' || s === 'planned' || s === 'partial') return 'warn';
   if (s === 'offline' || s === 'failed') return 'danger';
   return 'neutral';
+}
+
+/** Toggle membership of `item` in a list (roles, edge ids, …). */
+export function toggleMembership<T>(prev: T[], item: T): T[] {
+  return prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item];
+}
+
+/** Parse free-text geo map JSON; empty / invalid → null. */
+export function parseGeoMapText(raw: string): Record<string, unknown> | null {
+  const s = raw.trim();
+  if (!s) return null;
+  try {
+    const v = JSON.parse(s) as unknown;
+    if (v && typeof v === 'object' && !Array.isArray(v)) return v as Record<string, unknown>;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** Whether a CDN site row is deletable in UI. */
+export function canDeleteCdnSite(s: { apply_status?: string } | null | undefined): boolean {
+  if (!s) return false;
+  return s.apply_status !== 'applying';
+}
+
+/** Split comma / whitespace separated free text into trimmed tokens. */
+export function parseCsvList(raw: string): string[] {
+  return raw
+    .split(/[\s,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** Parse node weight; non-finite / 0 → fallback. */
+export function parseNodeWeight(raw: unknown, fallback = 100): number {
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+/** Empty-after-trim → undefined (API optional fields). */
+export function emptyToUndefined(raw: string | null | undefined): string | undefined {
+  const s = (raw ?? '').trim();
+  return s || undefined;
+}
+
+/** Roles list with edge default when empty. */
+export function normalizeNodeRoles(roles: CdnNodeRole[] | null | undefined): CdnNodeRole[] {
+  return roles?.length ? roles : ['edge'];
+}
+
+/** Join string list for form fields (IPs, domains). */
+export function joinCsv(list: string[] | null | undefined, sep = ', '): string {
+  return (list ?? []).join(sep);
+}
+
+/** Display IP for a node row: first IPv4 list or first IPv6 or em dash. */
+export function formatNodeIp(n: {
+  publicIpv4?: string[] | null;
+  publicIpv6?: string[] | null;
+}): string {
+  const v4 = (n.publicIpv4 ?? []).join(', ');
+  if (v4) return v4;
+  return (n.publicIpv6 ?? [])[0] || '—';
+}
+
+/** Default edge selection when creating a site (first edge node). */
+export function defaultEdgeIds(
+  nodes: Array<{ id: string; roles?: CdnNodeRole[] | null }>,
+): string[] {
+  return nodes
+    .filter((n) => (n.roles ?? []).includes('edge'))
+    .map((n) => n.id)
+    .slice(0, 1);
+}
+
+/** Nodes usable as edge or origin for site form. */
+export function filterEdgeOriginNodes<
+  T extends { roles?: CdnNodeRole[] | null },
+>(nodes: T[]): T[] {
+  return nodes.filter(
+    (n) =>
+      (n.roles ?? []).includes('edge') || (n.roles ?? []).includes('origin'),
+  );
+}
+
+/** Count nodes with online status. */
+export function countOnlineNodes(
+  nodes: Array<{ status?: string | null }>,
+): number {
+  return nodes.filter((n) => n.status === 'online').length;
+}
+
+/** Format `{k: n}` record as `k=n · k=n`. */
+export function formatCountMap(
+  map: Record<string, number> | null | undefined,
+): string {
+  if (!map) return '';
+  return Object.entries(map)
+    .map(([k, v]) => `${k}=${v}`)
+    .join(' · ');
+}
+
+/** Flatten site-op response notes (top-level + per-edge). */
+export function collectSiteOpNotes(r: {
+  notes?: string[] | null;
+  edges?: Array<{ name?: string; notes?: string[] | null }> | null;
+}): string[] {
+  return [
+    ...(r.notes ?? []),
+    ...(r.edges ?? []).flatMap((e) =>
+      (e.notes ?? []).map((n) => `${e.name ?? '?'}: ${n}`),
+    ),
+  ];
+}
+
+export type CdnSiteOpAction =
+  | 'render'
+  | 'apply'
+  | 'purge'
+  | 'dns-sync'
+  | 'health-loop'
+  | 'ssl/distribute'
+  | 'ssl/issue'
+  | 'ssl/prepare-acme';
+
+/** i18n key for a successful site op (caller passes t). */
+export function siteOpSuccessI18nKey(action: CdnSiteOpAction): string {
+  if (action === 'apply') return 'cdn.fanoutDone';
+  if (action === 'purge') return 'cdn.purgeDone';
+  if (action === 'dns-sync' || action === 'health-loop') return 'cdn.dnsSyncDone';
+  if (action.startsWith('ssl/')) return 'cdn.sslDone';
+  return 'cdn.confWritten';
+}
+
+/** Alert variant: treat offline / 失敗 / 不健康 as error. */
+export function cdnMsgIsError(msg: string): boolean {
+  return /失敗|不健康|offline/i.test(msg);
+}
+
+/** Compact hit-rate label for status strip. */
+export function formatHitRatePct(pct: number | null | undefined): string {
+  return pct != null ? `${pct}%` : '—';
+}
+
+/** Status pill label: `Nn / Ss`. */
+export function formatCdnPillLabel(nodeCount: number, siteCount: number): string {
+  return `${nodeCount}n / ${siteCount}s`;
+}
+
+/** Serialize geo map for the site form textarea. */
+export function stringifyGeoMap(
+  geoMap: unknown,
+): string {
+  if (!geoMap || typeof geoMap !== 'object') return '';
+  try {
+    return JSON.stringify(geoMap, null, 0);
+  } catch {
+    return '';
+  }
+}
+
+/** Whether string is a known CDN node role. */
+export function isCdnNodeRole(v: string): v is CdnNodeRole {
+  return (ROLE_OPTS as readonly string[]).includes(v);
+}
+
+/** Whether string is a known CDN site mode. */
+export function isCdnSiteMode(v: string): v is CdnSiteMode {
+  return (MODE_OPTS as readonly string[]).includes(v);
+}
+
+/** Whether string is a known DNS strategy. */
+export function isCdnDnsStrategy(v: string): v is CdnDnsStrategy {
+  return (DNS_STRATEGIES as readonly string[]).includes(v);
+}
+
+/** Build POST body fields for node create/update. */
+export function buildCdnNodeBody(input: {
+  id?: string;
+  name: string;
+  region: string;
+  roles: CdnNodeRole[];
+  ipv4: string;
+  ipv6: string;
+  healthUrl: string;
+  baseUrl: string;
+  weight: string;
+  sshIdentityId: string;
+  sshHost: string;
+  sshUsername: string;
+  fleetAgentId: string;
+}): Record<string, unknown> {
+  return {
+    id: input.id,
+    name: input.name.trim(),
+    region: input.region.trim() || 'default',
+    roles: normalizeNodeRoles(input.roles),
+    publicIpv4: parseCsvList(input.ipv4),
+    publicIpv6: parseCsvList(input.ipv6),
+    healthUrl: emptyToUndefined(input.healthUrl),
+    baseUrl: emptyToUndefined(input.baseUrl),
+    weight: parseNodeWeight(input.weight),
+    sshIdentityId: emptyToUndefined(input.sshIdentityId),
+    sshHost: emptyToUndefined(input.sshHost),
+    sshUsername: emptyToUndefined(input.sshUsername),
+    fleetAgentId: emptyToUndefined(input.fleetAgentId),
+  };
+}
+
+/** Build POST body fields for site create/update (ssl mode + geo already resolved). */
+export function buildCdnSiteBody(input: {
+  id?: string;
+  name: string;
+  domains: string;
+  mode: CdnSiteMode;
+  originUrl: string;
+  edgeNodeIds: string[];
+  shieldId: string;
+  cacheEnabled: boolean;
+  maxAge: string;
+  dnsStrategy: CdnDnsStrategy;
+  dnsZoneId: string;
+  geoMap?: Record<string, string[]>;
+  geoSubdomains: boolean;
+  sslMode: 'off' | 'upload' | 'le_http01' | 'le_dns01';
+}): Record<string, unknown> {
+  return {
+    id: input.id,
+    name: input.name.trim(),
+    domains: parseCsvList(input.domains),
+    mode: input.mode,
+    origin: { kind: 'url', url: input.originUrl.trim() },
+    edgeNodeIds: input.edgeNodeIds,
+    originShieldNodeId: input.shieldId.trim() || null,
+    cache: {
+      enabled: input.cacheEnabled,
+      maxAge: input.maxAge.trim() || '10m',
+      zoneSize: '10m',
+      bypassCookies: true,
+      bypassAuth: true,
+    },
+    dns: {
+      strategy: input.dnsStrategy,
+      zoneId: emptyToUndefined(input.dnsZoneId),
+      ttlHealthy: 60,
+      ttlUnhealthy: 30,
+      minHealthyEdges: 1,
+      geoMap: input.geoMap,
+      geoSubdomains: input.geoSubdomains,
+    },
+    ssl: { mode: input.sslMode },
+  };
 }
 
 export function CdnPage() {
@@ -244,9 +498,7 @@ export function CdnPage() {
     setDomains('');
     setMode('origin_pull');
     setOriginUrl('');
-    setEdgeIds(
-      nodes.filter((n) => n.roles.includes('edge')).map((n) => n.id).slice(0, 1),
-    );
+    setEdgeIds(defaultEdgeIds(nodes));
     setCacheEnabled(true);
     setMaxAge('10m');
     setDnsStrategy('multi_a');
@@ -267,9 +519,9 @@ export function CdnPage() {
     setEditNode(n);
     setName(n.name);
     setRegion(n.region || 'default');
-    setRoles(n.roles?.length ? n.roles : ['edge']);
-    setIpv4((n.publicIpv4 ?? []).join(', '));
-    setIpv6((n.publicIpv6 ?? []).join(', '));
+    setRoles(normalizeNodeRoles(n.roles));
+    setIpv4(joinCsv(n.publicIpv4));
+    setIpv6(joinCsv(n.publicIpv6));
     setHealthUrl(n.healthUrl ?? '');
     setBaseUrl(n.baseUrl ?? '');
     setWeight(String(n.weight ?? 100));
@@ -288,7 +540,7 @@ export function CdnPage() {
   function openEditSite(s: CdnSiteDto) {
     setEditSite(s);
     setSiteName(s.name);
-    setDomains(s.domains.join(', '));
+    setDomains(joinCsv(s.domains));
     setMode(s.mode);
     setOriginUrl(s.origin.url ?? '');
     setEdgeIds(s.edgeNodeIds ?? []);
@@ -298,23 +550,17 @@ export function CdnPage() {
     setDnsZoneId(s.dns?.zoneId ?? '');
     setSslMode(s.ssl?.mode ?? 'off');
     setShieldId(s.originShieldNodeId ?? '');
-    setGeoMapText(
-      s.dns?.geoMap ? JSON.stringify(s.dns.geoMap, null, 0) : '',
-    );
+    setGeoMapText(stringifyGeoMap(s.dns?.geoMap));
     setGeoSubdomains(Boolean(s.dns?.geoSubdomains));
     setSiteOpen(true);
   }
 
   function toggleRole(r: CdnNodeRole) {
-    setRoles((prev) =>
-      prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r],
-    );
+    setRoles((prev) => toggleMembership(prev, r));
   }
 
   function toggleEdge(id: string) {
-    setEdgeIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setEdgeIds((prev) => toggleMembership(prev, id));
   }
 
   async function onSaveNode(e: FormEvent) {
@@ -324,27 +570,23 @@ export function CdnPage() {
     try {
       await api.requestRaw('/api/v1/cdn/nodes', {
         method: 'POST',
-        body: JSON.stringify({
-          id: editNode?.id,
-          name: name.trim(),
-          region: region.trim() || 'default',
-          roles: roles.length ? roles : ['edge'],
-          publicIpv4: ipv4
-            .split(/[\s,]+/)
-            .map((s) => s.trim())
-            .filter(Boolean),
-          publicIpv6: ipv6
-            .split(/[\s,]+/)
-            .map((s) => s.trim())
-            .filter(Boolean),
-          healthUrl: healthUrl.trim() || undefined,
-          baseUrl: baseUrl.trim() || undefined,
-          weight: Number(weight) || 100,
-          sshIdentityId: sshIdentityId.trim() || undefined,
-          sshHost: sshHost.trim() || undefined,
-          sshUsername: sshUsername.trim() || undefined,
-          fleetAgentId: fleetAgentId.trim() || undefined,
-        }),
+        body: JSON.stringify(
+          buildCdnNodeBody({
+            id: editNode?.id,
+            name,
+            region,
+            roles,
+            ipv4,
+            ipv6,
+            healthUrl,
+            baseUrl,
+            weight,
+            sshIdentityId,
+            sshHost,
+            sshUsername,
+            fleetAgentId,
+          }),
+        ),
       });
       setNodeOpen(false);
       resetNodeForm();
@@ -364,45 +606,34 @@ export function CdnPage() {
     try {
       let geoMap: Record<string, string[]> | undefined;
       if (geoMapText.trim()) {
-        try {
-          geoMap = JSON.parse(geoMapText) as Record<string, string[]>;
-        } catch {
+        const parsed = parseGeoMapText(geoMapText);
+        if (!parsed) {
           setMsg(t('cdn.geoMapInvalid'));
           setBusy(false);
           return;
         }
+        geoMap = parsed as Record<string, string[]>;
       }
       await api.requestRaw('/api/v1/cdn/sites', {
         method: 'POST',
-        body: JSON.stringify({
-          id: editSite?.id,
-          name: siteName.trim(),
-          domains: domains
-            .split(/[\s,]+/)
-            .map((s) => s.trim())
-            .filter(Boolean),
-          mode,
-          origin: { kind: 'url', url: originUrl.trim() },
-          edgeNodeIds: edgeIds,
-          originShieldNodeId: shieldId.trim() || null,
-          cache: {
-            enabled: cacheEnabled,
-            maxAge: maxAge.trim() || '10m',
-            zoneSize: '10m',
-            bypassCookies: true,
-            bypassAuth: true,
-          },
-          dns: {
-            strategy: dnsStrategy,
-            zoneId: dnsZoneId.trim() || undefined,
-            ttlHealthy: 60,
-            ttlUnhealthy: 30,
-            minHealthyEdges: 1,
+        body: JSON.stringify(
+          buildCdnSiteBody({
+            id: editSite?.id,
+            name: siteName,
+            domains,
+            mode,
+            originUrl,
+            edgeNodeIds: edgeIds,
+            shieldId,
+            cacheEnabled,
+            maxAge,
+            dnsStrategy,
+            dnsZoneId,
             geoMap,
             geoSubdomains,
-          },
-          ssl: { mode: sslMode },
-        }),
+            sslMode,
+          }),
+        ),
       });
       setSiteOpen(false);
       resetSiteForm();
@@ -519,15 +750,7 @@ export function CdnPage() {
 
   async function postSiteOp(
     id: string,
-    action:
-      | 'render'
-      | 'apply'
-      | 'purge'
-      | 'dns-sync'
-      | 'health-loop'
-      | 'ssl/distribute'
-      | 'ssl/issue'
-      | 'ssl/prepare-acme',
+    action: CdnSiteOpAction,
     body: Record<string, unknown> = {},
   ) {
     setBusy(true);
@@ -555,12 +778,7 @@ export function CdnPage() {
         edges?: Array<{ name?: string; apply_status?: string; notes?: string[] }>;
         blocked?: boolean;
       };
-      setNotes([
-        ...(r.notes ?? []),
-        ...(r.edges ?? []).flatMap((e) =>
-          (e.notes ?? []).map((n) => `${e.name ?? '?'}: ${n}`),
-        ),
-      ]);
+      setNotes(collectSiteOpNotes(r));
       if (r.conf) setConfPreview(r.conf);
       if (r.blocked) {
         setMsg(t('cdn.blocked'));
@@ -570,15 +788,7 @@ export function CdnPage() {
         );
       } else if (r.ok) {
         setMsg(
-          action === 'apply'
-            ? t('cdn.fanoutDone', { status: r.apply_status })
-            : action === 'purge'
-              ? t('cdn.purgeDone', { status: r.apply_status })
-              : action === 'dns-sync' || action === 'health-loop'
-                ? t('cdn.dnsSyncDone', { status: r.apply_status })
-                : action.startsWith('ssl/')
-                  ? t('cdn.sslDone', { status: r.apply_status })
-                  : t('cdn.confWritten', { status: r.apply_status }),
+          t(siteOpSuccessI18nKey(action), { status: r.apply_status }),
         );
       } else {
         setMsg(
@@ -593,10 +803,8 @@ export function CdnPage() {
     }
   }
 
-  const online = nodes.filter((n) => n.status === 'online').length;
-  const edgeNodes = nodes.filter(
-    (n) => (n.roles ?? []).includes('edge') || (n.roles ?? []).includes('origin'),
-  );
+  const online = countOnlineNodes(nodes);
+  const edgeNodes = filterEdgeOriginNodes(nodes);
 
   return (
     <FeaturePageLayout
@@ -604,7 +812,7 @@ export function CdnPage() {
       showCapability={false}
       status={{
         pill: {
-          label: `${nodes.length}n / ${sites.length}s`,
+          label: formatCdnPillLabel(nodes.length, sites.length),
           tone: nodes.length ? 'ok' : 'warn',
         },
         items: [
@@ -613,10 +821,7 @@ export function CdnPage() {
           { label: t('cdn.statSites'), value: sites.length },
           {
             label: 'Hit%',
-            value:
-              dashboard?.overallHitRatePct != null
-                ? `${dashboard.overallHitRatePct}%`
-                : '—',
+            value: formatHitRatePct(dashboard?.overallHitRatePct),
           },
         ],
       }}
@@ -642,12 +847,12 @@ export function CdnPage() {
       }
     >
       {msg ? (
-        <Alert variant={/失敗|不健康|offline/i.test(msg) ? 'error' : 'ok'}>
+        <Alert variant={cdnMsgIsError(msg) ? 'error' : 'ok'}>
           {msg}{' '}
           <button
             type="button"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={() => setMsg(null)}
+            onClick={bindSet(setMsg, null)}
           >
             {t('common.close')}
           </button>
@@ -678,7 +883,7 @@ export function CdnPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setConfPreview(null)}
+                onClick={bindSet(setConfPreview, null)}
               >
                 {t('cdn.closePreview')}
               </Button>
@@ -716,7 +921,7 @@ export function CdnPage() {
                     size="sm"
                     loading={busy}
                     disabled={!nodes.length}
-                    onClick={() => void onProbeAll()}
+                    onClick={onProbeAll}
                   >
                     {t('cdn.probeAll')}
                   </Button>
@@ -742,7 +947,7 @@ export function CdnPage() {
                     <button
                       type="button"
                       className="linkish"
-                      onClick={() => openEditNode(n)}
+                      onClick={bindCall1(openEditNode, n)}
                     >
                       {n.name}
                     </button>
@@ -757,7 +962,7 @@ export function CdnPage() {
                   key: 'roles',
                   header: t('cdn.colRole'),
                   render: (n) =>
-                    n.roles.map((role) => (
+                    (n.roles ?? []).map((role) => (
                       <Badge key={role} className="u-mr-1">
                         {role}
                       </Badge>
@@ -768,9 +973,7 @@ export function CdnPage() {
                   header: 'IP',
                   render: (n) => (
                     <code className="inline u-text-sm">
-                      {(n.publicIpv4 ?? []).join(', ') ||
-                        (n.publicIpv6 ?? [])[0] ||
-                        '—'}
+                      {formatNodeIp(n)}
                     </code>
                   ),
                 },
@@ -790,7 +993,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() => void onProbe(n.id)}
+                        onClick={bindCall1(onProbe, n.id)}
                       >
                         {t('cdn.probe')}
                       </Button>
@@ -808,7 +1011,7 @@ export function CdnPage() {
                         variant="ghost"
                         size="sm"
                         loading={busy}
-                        onClick={() => void onDeleteNode(n.id)}
+                        onClick={bindCall1(onDeleteNode, n.id)}
                       >
                         {t('common.delete')}
                       </Button>
@@ -910,7 +1113,7 @@ export function CdnPage() {
                     <button
                       type="button"
                       className="linkish"
-                      onClick={() => openEditSite(s)}
+                      onClick={bindCall1(openEditSite, s)}
                     >
                       {s.name}
                     </button>
@@ -1053,7 +1256,7 @@ export function CdnPage() {
                         variant="ghost"
                         size="sm"
                         loading={busy}
-                        onClick={() => void onDeleteSite(s.id)}
+                        onClick={bindCall1(onDeleteSite, s.id)}
                       >
                         {t('common.delete')}
                       </Button>
@@ -1092,7 +1295,7 @@ export function CdnPage() {
                     variant="secondary"
                     size="sm"
                     loading={busy}
-                    onClick={() => void refreshDashboard()}
+                    onClick={bindVoid(refreshDashboard)}
                   >
                     {t('cdn.reaggregate')}
                   </Button>
@@ -1125,18 +1328,13 @@ export function CdnPage() {
                     </div>
                     {Object.keys(dashboard.nodes.byRegion).length ? (
                       <p className="muted u-text-sm u-mt-2">
-                        Region：{' '}
-                        {Object.entries(dashboard.nodes.byRegion)
-                          .map(([r, c]) => `${r}=${c}`)
-                          .join(' · ')}
+                        Region：{formatCountMap(dashboard.nodes.byRegion)}
                       </p>
                     ) : null}
                     {Object.keys(dashboard.sites.byApplyStatus).length ? (
                       <p className="muted u-text-sm">
-                        apply_status：{' '}
-                        {Object.entries(dashboard.sites.byApplyStatus)
-                          .map(([k, v]) => `${k}=${v}`)
-                          .join(' · ')}
+                        apply_status：
+                        {formatCountMap(dashboard.sites.byApplyStatus)}
                       </p>
                     ) : null}
                   </>
@@ -1291,7 +1489,7 @@ export function CdnPage() {
               <input
                 id="cdn-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={bindInput(setName)}
                 required
                 placeholder="edge-hkg-1"
               />
@@ -1300,7 +1498,7 @@ export function CdnPage() {
               <input
                 id="cdn-region"
                 value={region}
-                onChange={(e) => setRegion(e.target.value)}
+                onChange={bindInput(setRegion)}
                 placeholder="hkg"
               />
             </Field>
@@ -1322,7 +1520,7 @@ export function CdnPage() {
               <input
                 id="cdn-v4"
                 value={ipv4}
-                onChange={(e) => setIpv4(e.target.value)}
+                onChange={bindInput(setIpv4)}
                 placeholder="203.0.113.10"
                 spellCheck={false}
               />
@@ -1331,7 +1529,7 @@ export function CdnPage() {
               <input
                 id="cdn-v6"
                 value={ipv6}
-                onChange={(e) => setIpv6(e.target.value)}
+                onChange={bindInput(setIpv6)}
                 spellCheck={false}
               />
             </Field>
@@ -1339,7 +1537,7 @@ export function CdnPage() {
               <input
                 id="cdn-health"
                 value={healthUrl}
-                onChange={(e) => setHealthUrl(e.target.value)}
+                onChange={bindInput(setHealthUrl)}
                 placeholder="https://edge.example.com/health"
                 spellCheck={false}
               />
@@ -1348,7 +1546,7 @@ export function CdnPage() {
               <input
                 id="cdn-base"
                 value={baseUrl}
-                onChange={(e) => setBaseUrl(e.target.value)}
+                onChange={bindInput(setBaseUrl)}
                 spellCheck={false}
               />
             </Field>
@@ -1356,7 +1554,7 @@ export function CdnPage() {
               <input
                 id="cdn-w"
                 value={weight}
-                onChange={(e) => setWeight(e.target.value)}
+                onChange={bindInput(setWeight)}
                 inputMode="numeric"
               />
             </Field>
@@ -1369,7 +1567,7 @@ export function CdnPage() {
               <input
                 id="cdn-ssh-host"
                 value={sshHost}
-                onChange={(e) => setSshHost(e.target.value)}
+                onChange={bindInput(setSshHost)}
                 placeholder={t('cdn.sshHostPlaceholder')}
                 spellCheck={false}
               />
@@ -1378,7 +1576,7 @@ export function CdnPage() {
               <input
                 id="cdn-ssh-user"
                 value={sshUsername}
-                onChange={(e) => setSshUsername(e.target.value)}
+                onChange={bindInput(setSshUsername)}
                 placeholder="root"
               />
             </Field>
@@ -1386,7 +1584,7 @@ export function CdnPage() {
               <input
                 id="cdn-ssh"
                 value={sshIdentityId}
-                onChange={(e) => setSshIdentityId(e.target.value)}
+                onChange={bindInput(setSshIdentityId)}
                 spellCheck={false}
               />
             </Field>
@@ -1399,7 +1597,7 @@ export function CdnPage() {
               <input
                 id="cdn-fleet"
                 value={fleetAgentId}
-                onChange={(e) => setFleetAgentId(e.target.value)}
+                onChange={bindInput(setFleetAgentId)}
                 placeholder={t('cdn.fleetPlaceholder')}
                 spellCheck={false}
               />
@@ -1446,7 +1644,7 @@ export function CdnPage() {
               <input
                 id="site-name"
                 value={siteName}
-                onChange={(e) => setSiteName(e.target.value)}
+                onChange={bindInput(setSiteName)}
                 required
                 placeholder="my-app-cdn"
               />
@@ -1475,7 +1673,7 @@ export function CdnPage() {
               <input
                 id="site-domains"
                 value={domains}
-                onChange={(e) => setDomains(e.target.value)}
+                onChange={bindInput(setDomains)}
                 required
                 placeholder="cdn.example.com, www.example.com"
                 spellCheck={false}
@@ -1492,7 +1690,7 @@ export function CdnPage() {
               <input
                 id="site-origin"
                 value={originUrl}
-                onChange={(e) => setOriginUrl(e.target.value)}
+                onChange={bindInput(setOriginUrl)}
                 required
                 placeholder="https://origin.example.com"
                 spellCheck={false}
@@ -1521,7 +1719,7 @@ export function CdnPage() {
                 <input
                   type="checkbox"
                   checked={cacheEnabled}
-                  onChange={(e) => setCacheEnabled(e.target.checked)}
+                  onChange={bindCheck(setCacheEnabled)}
                 />{' '}
                 {t('cdn.enableProxyCache')}
               </label>
@@ -1530,7 +1728,7 @@ export function CdnPage() {
               <input
                 id="site-maxage"
                 value={maxAge}
-                onChange={(e) => setMaxAge(e.target.value)}
+                onChange={bindInput(setMaxAge)}
                 placeholder="10m"
               />
             </Field>
@@ -1563,7 +1761,7 @@ export function CdnPage() {
               <select
                 id="site-zone"
                 value={dnsZoneId}
-                onChange={(e) => setDnsZoneId(e.target.value)}
+                onChange={bindInput(setDnsZoneId)}
               >
                 <option value="">{t('cdn.autoMatch')}</option>
                 {dnsZones.map((z) => (
@@ -1607,7 +1805,7 @@ export function CdnPage() {
               <input
                 id="site-ssl-email"
                 value={sslEmail}
-                onChange={(e) => setSslEmail(e.target.value)}
+                onChange={bindInput(setSslEmail)}
                 placeholder="admin@example.com"
               />
             </Field>
@@ -1620,7 +1818,7 @@ export function CdnPage() {
               <select
                 id="site-shield"
                 value={shieldId}
-                onChange={(e) => setShieldId(e.target.value)}
+                onChange={bindInput(setShieldId)}
               >
                 <option value="">{t('cdn.none')}</option>
                 {edgeNodes.map((n) => (
@@ -1640,7 +1838,7 @@ export function CdnPage() {
               <textarea
                 id="site-geo"
                 value={geoMapText}
-                onChange={(e) => setGeoMapText(e.target.value)}
+                onChange={bindInput(setGeoMapText)}
                 rows={2}
                 placeholder='{"hkg":["edge-id"]}'
                 spellCheck={false}
@@ -1651,7 +1849,7 @@ export function CdnPage() {
                 <input
                   type="checkbox"
                   checked={geoSubdomains}
-                  onChange={(e) => setGeoSubdomains(e.target.checked)}
+                  onChange={bindCheck(setGeoSubdomains)}
                 />{' '}
                 {t('cdn.writeRegionDns')}
               </label>

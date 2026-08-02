@@ -31,6 +31,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
+import { bindSet, bindInput } from '../bind-handlers';
 
 export type HostingRuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust';
 type TuningKind = 'node' | 'python' | 'go' | 'rust';
@@ -241,7 +242,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -334,7 +335,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         <select
                           id={`rt-${kind}-ver`}
                           value={version}
-                          onChange={(e) => setVersion(e.target.value)}
+                          onChange={bindInput(setVersion)}
                         >
                           {vers.map((v) => (
                             <option key={v} value={v}>
@@ -401,7 +402,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         <select
                           id={`tune-${kind}-ver`}
                           value={version}
-                          onChange={(e) => setVersion(e.target.value)}
+                          onChange={bindInput(setVersion)}
                         >
                           {vers.map((v) => (
                             <option key={v} value={v}>
@@ -534,7 +535,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                       id={`tune-${kind}-extra`}
                       rows={4}
                       value={extraEnv}
-                      onChange={(e) => setExtraEnv(e.target.value)}
+                      onChange={bindInput(setExtraEnv)}
                       placeholder="MY_APP_FLAG=1"
                       spellCheck={false}
                     />

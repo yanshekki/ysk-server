@@ -185,7 +185,7 @@ export function ProjectOverviewTab({
               loading={busy}
               disabled={!hasDomain || !onPublishNginx}
               title={!hasDomain ? t('projects.ovNeedNetworkDomain') : undefined}
-              onClick={() => onPublishNginx?.()}
+              onClick={onPublishNginx}
             >
               {t('projects.ovPublishNginx')}
             </Button>
@@ -195,7 +195,7 @@ export function ProjectOverviewTab({
               loading={busy}
               disabled={!hasDomain || !onPublishSsl}
               title={!hasDomain ? t('projects.ovNeedNetworkDomain') : undefined}
-              onClick={() => onPublishSsl?.()}
+              onClick={onPublishSsl}
             >
               {t('projects.ovPublishSsl')}
             </Button>
@@ -204,7 +204,7 @@ export function ProjectOverviewTab({
               size="md"
               loading={busy}
               disabled={!onBackup}
-              onClick={() => onBackup?.()}
+              onClick={onBackup}
             >
               {t('projects.advBackupProject')}
             </Button>

@@ -22,6 +22,7 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { bindSet, bindInput } from '../bind-handlers';
 import {
   buildCronExpr,
   CronScheduleBuilder,
@@ -371,7 +372,7 @@ export function CronPage() {
             variant="primary"
             size="sm"
             loading={busy}
-            onClick={() => void onInstall()}
+            onClick={onInstall}
           >
             {t('security.ssh.installToSystem')}
           </Button>
@@ -382,7 +383,7 @@ export function CronPage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -612,7 +613,7 @@ export function CronPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() => void onInstall()}
+                    onClick={onInstall}
                   >
                     {t('cron.installToSystem')}
                   </Button>
@@ -643,7 +644,7 @@ export function CronPage() {
 
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={bindSet(setCreateOpen, false)}
         title={t('cron.addJobTitle')}
         description={t('cron.addJobDesc')}
         size="lg"
@@ -652,7 +653,7 @@ export function CronPage() {
             <Button
               variant="secondary"
               size="md"
-              onClick={() => setCreateOpen(false)}
+              onClick={bindSet(setCreateOpen, false)}
             >
               {t('common.cancel')}
             </Button>
@@ -756,7 +757,7 @@ export function CronPage() {
               <input
                 id="cron-cmd"
                 value={command}
-                onChange={(e) => setCommand(e.target.value)}
+                onChange={bindInput(setCommand)}
                 required
                 placeholder={
                   selectedProject
@@ -778,7 +779,7 @@ export function CronPage() {
                     key={p.label}
                     type="button"
                     className={`btn btn--sm${command === p.command ? ' btn--secondary' : ' btn--ghost'}`}
-                    onClick={() => setCommand(p.command)}
+                    onClick={bindSet(setCommand, p.command)}
                     title={p.command}
                   >
                     {p.label}

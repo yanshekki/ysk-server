@@ -26,6 +26,7 @@ import {
 import { useServerList } from '../../shared/hooks/useServerList';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
+import { bindSet, bindInput } from '../bind-handlers';
 
 export function statusBadge(
   status: string,
@@ -193,10 +194,10 @@ export function SslPage() {
       }}
       actions={
         <ActionBar>
-          <Button variant="secondary" size="sm" onClick={() => setLeOpen(true)}>
+          <Button variant="secondary" size="sm" onClick={bindSet(setLeOpen, true)}>
             {t('ssl.requestLe')}
           </Button>
-          <Button variant="primary" size="sm" onClick={() => setUploadOpen(true)}>
+          <Button variant="primary" size="sm" onClick={bindSet(setUploadOpen, true)}>
             {t('ssl.uploadCert')}
           </Button>
           <Link to="/nginx" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
@@ -335,7 +336,7 @@ export function SslPage() {
                     variant="danger"
                     size="sm"
                     loading={busy}
-                    onClick={() => setDel(r)}
+                    onClick={bindSet(setDel, r)}
                   >
                     {t('common.delete')}
                   </Button>
@@ -347,7 +348,7 @@ export function SslPage() {
 
         <Modal
           open={uploadOpen}
-          onClose={() => setUploadOpen(false)}
+          onClose={bindSet(setUploadOpen, false)}
           title={t('ssl.uploadTitle')}
           description={t('ssl.uploadDesc')}
           size="lg"
@@ -356,7 +357,7 @@ export function SslPage() {
               <button
                 type="button"
                 className={buttonClassName({ variant: 'secondary', size: 'md' })}
-                onClick={() => setUploadOpen(false)}
+                onClick={bindSet(setUploadOpen, false)}
               >
                 {t('common.cancel')}
               </button>
@@ -383,7 +384,7 @@ export function SslPage() {
                 <input
                   id="ud"
                   value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
+                  onChange={bindInput(setDomain)}
                   required
                   placeholder="example.com"
                   spellCheck={false}
@@ -401,7 +402,7 @@ export function SslPage() {
                   id="uf"
                   rows={6}
                   value={fullchain}
-                  onChange={(e) => setFullchain(e.target.value)}
+                  onChange={bindInput(setFullchain)}
                   required
                   placeholder={
                     '-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----'
@@ -421,7 +422,7 @@ export function SslPage() {
                   id="up"
                   rows={5}
                   value={privkey}
-                  onChange={(e) => setPrivkey(e.target.value)}
+                  onChange={bindInput(setPrivkey)}
                   required
                   placeholder={
                     '-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----'
@@ -436,7 +437,7 @@ export function SslPage() {
 
         <Modal
           open={leOpen}
-          onClose={() => setLeOpen(false)}
+          onClose={bindSet(setLeOpen, false)}
           title={t('ssl.leTitle')}
           description={t('ssl.leDesc')}
           footer={
@@ -444,7 +445,7 @@ export function SslPage() {
               <button
                 type="button"
                 className={buttonClassName({ variant: 'secondary', size: 'md' })}
-                onClick={() => setLeOpen(false)}
+                onClick={bindSet(setLeOpen, false)}
               >
                 {t('common.cancel')}
               </button>
@@ -471,7 +472,7 @@ export function SslPage() {
                 <input
                   id="ld"
                   value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
+                  onChange={bindInput(setDomain)}
                   required
                   placeholder={t('ssl.domainLePlaceholder')}
                   spellCheck={false}
@@ -487,7 +488,7 @@ export function SslPage() {
                   id="le"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={bindInput(setEmail)}
                   placeholder="admin@example.com"
                   spellCheck={false}
                 />
@@ -503,7 +504,7 @@ export function SslPage() {
 
         <ConfirmDialog
           open={Boolean(del)}
-          onClose={() => setDel(null)}
+          onClose={bindSet(setDel, null)}
           onConfirm={() => {
             if (del) void remove(del.domain || del.id).then(() => setDel(null));
           }}

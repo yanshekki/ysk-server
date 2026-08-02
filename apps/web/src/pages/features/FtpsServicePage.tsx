@@ -31,6 +31,7 @@ import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { softwareApi } from '../../features/software';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
+import { bindSet } from '../bind-handlers';
 
 const empty: FtpsSettings = {
   listen: true,
@@ -203,7 +204,7 @@ export function FtpsServicePage() {
       {msg ? (
         <Alert variant="ok">
           {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={() => setMsg(null)}>
+          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
             {t('common.close')}
           </Button>
         </Alert>
@@ -219,11 +220,11 @@ export function FtpsServicePage() {
                     {t('ftp.installFtpsBanner')}
                   </p>
                 ) : status?.active !== 'active' ? (
-                  <Button variant="primary" size="md" loading={busy} onClick={() => void onApplySettings()}>
+                  <Button variant="primary" size="md" loading={busy} onClick={onApplySettings}>
                     {t('fail2ban.startService')}
                   </Button>
                 ) : (
-                  <Button variant="secondary" size="md" loading={busy} onClick={() => void onApplySettings()}>
+                  <Button variant="secondary" size="md" loading={busy} onClick={onApplySettings}>
                     {t('ftp.applyRestart')}
                   </Button>
                 )}
@@ -388,7 +389,7 @@ export function FtpsServicePage() {
                       variant="primary"
                       size="md"
                       loading={busy}
-                      onClick={() => void onApplySettings()}
+                      onClick={onApplySettings}
                     >
                       {t('ftp.applyRestart')}
                     </Button>
@@ -480,7 +481,7 @@ export function FtpsServicePage() {
                       variant="primary"
                       size="md"
                       loading={busy}
-                      onClick={() => void onApplySettings()}
+                      onClick={onApplySettings}
                     >
                       {t('ftp.applyRestart')}
                     </Button>
