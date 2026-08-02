@@ -128,5 +128,42 @@
       "owner": "core",
       "reviewed": "2026-07-31"
     }
-  ]
+  ],
+  "residualNotes": {
+    "reviewed": "2026-08-02",
+    "program": "monorepo unit-test coverage floors L/S/F\u226590 B\u226580 all packages \u2014 PASS as of review",
+    "practicalExhaustion": [
+      {
+        "area": "web/pages/features/ProtectionPage.tsx",
+        "kind": "runtime-handlers",
+        "note": "Dense multi-step defense UI (CF/geo/whitelist/ban batch). Partial pure helpers + bind-handlers; remaining needs deep RTL with full defense fixtures. Not types-only."
+      },
+      {
+        "area": "web/pages/features/NetworkPage.tsx",
+        "kind": "runtime-handlers",
+        "note": "Iface/route/DNS mutators behind multi-dialog flows."
+      },
+      {
+        "area": "web/features/security/ssh/SshWorkspace.tsx",
+        "kind": "runtime-handlers",
+        "note": "Thin host-bound SSH workspace; low function count, high host coupling."
+      },
+      {
+        "area": "core/hosting/project-ops.ts",
+        "kind": "branch-density",
+        "note": "Large ops surface; functions high, v8 branches ~80% residual on deploy/runtime edge paths."
+      },
+      {
+        "area": "core/hosting/defense/auto-ban.ts",
+        "kind": "branch-density",
+        "note": "Policy/tick paths partially covered; residual log/parse edge branches."
+      },
+      {
+        "area": "server/cli.ts",
+        "kind": "cli-thin-delegate",
+        "note": "Large CLI dispatcher; branch residual on rare flags. Prefer route/service unit tests over full CLI matrix."
+      }
+    ],
+    "policyReminder": "Only types-only | re-export | generated | platform-entry | cli-thin-delegate may be excluded from coverage include. ResidualNotes document honest remaining runtime gaps without excluding them from measurement."
+  }
 }

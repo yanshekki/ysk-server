@@ -1,5 +1,12 @@
 # 覆蓋率基線
 
+## 鎖定門檻（爬升後，2026-08-02）
+
+四包均達 **lines/statements/functions ≥90%** 與 **branches ≥80%**（Vitest+v8 獨立跑）。
+
+Web functions 由 ~85% 升至 ≥90%（pure helpers + bind-handlers）。殘餘熱點見 `coverage-exceptions.json` 的 `residualNotes`（**不**從量度中排除）。
+
+
 > 語言：中文 | [English](./baseline.md)
 
 全 monorepo 90% 計劃開始時量度（大量補測前）。
