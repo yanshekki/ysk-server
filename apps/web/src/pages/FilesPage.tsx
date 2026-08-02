@@ -33,7 +33,20 @@ const FILE_TABS = ['browse', 'trash', 'shares', 'webdav', 'about'] as const;
 import { filesApi, fileToBase64, type FileEntry, type TrashEntry, type FileShare } from '../features/files/api';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
-import { bindSet, bindInput, bindVoid, bindCall1 } from './bind-handlers';
+import {
+  bindSet,
+  bindInput,
+  bindVoid,
+  bindCall1,
+  bindOpenRename,
+  bindOpenMoveCopy,
+  bindOpenShare,
+  bindOpenZip,
+  bindOpenChmod,
+  bindFilesSide,
+  bindCloseVersions,
+  bindCloseIfIdle,
+} from './bind-handlers';
 
 type ViewMode = 'list' | 'grid';
 type SideView = 'all' | 'favorites' | 'shares' | 'trash';
@@ -488,7 +501,7 @@ export function FilesPage() {
                 key={p.id}
                 type="button"
                 className={`fm-side-item${root === `project:${p.id}` ? ' is-active' : ''}`}
-                onClick={() => changeRoot(`project:${p.id}`)}
+                onClick={bindCall1(changeRoot, `project:${p.id}`)}
               >
                 ▣ {p.name}
               </button>
@@ -506,10 +519,7 @@ export function FilesPage() {
                 key={id}
                 type="button"
                 className={`fm-side-item${side === id ? ' is-active' : ''}`}
-                onClick={() => {
-                  setSide(id);
-                  setTab('browse');
-                }}
+                onClick={bindFilesSide(setSide, setTab, id)}
               >
                 {label}
               </button>
@@ -557,20 +567,14 @@ export function FilesPage() {
                       <Button
                         variant="secondary"
                         size="md"
-                        onClick={() => {
-                          setMoveTarget({ entries: selectedEntries, mode: 'copy' });
-                          setMoveDest(path === '.' ? '' : path);
-                        }}
+                        onClick={bindOpenMoveCopy(setMoveTarget, setMoveDest, selectedEntries, 'copy', path)}
                       >
                         {t('files.copy')}
                       </Button>
                       <Button
                         variant="secondary"
                         size="md"
-                        onClick={() => {
-                          setMoveTarget({ entries: selectedEntries, mode: 'move' });
-                          setMoveDest(path === '.' ? '' : path);
-                        }}
+                        onClick={bindOpenMoveCopy(setMoveTarget, setMoveDest, selectedEntries, 'move', path)}
                       >
                         {t('files.move')}
                       </Button>
@@ -578,10 +582,7 @@ export function FilesPage() {
                         variant="secondary"
                         size="md"
                         disabled={busy}
-                        onClick={() => {
-                          setChmodMode('644');
-                          setChmodOpen(true);
-                        }}
+                        onClick={bindOpenChmod(setChmodMode, setChmodOpen)}
                       >
                         chmod
                       </Button>
@@ -589,10 +590,7 @@ export function FilesPage() {
                         variant="secondary"
                         size="md"
                         disabled={busy}
-                        onClick={() => {
-                          setZipName(`archive-${Date.now()}.zip`);
-                          setZipOpen(true);
-                        }}
+                        onClick={bindOpenZip(setZipName, setZipOpen)}
                       >
                         {t('files.zip')}
                       </Button>
@@ -633,7 +631,7 @@ export function FilesPage() {
                       <Button
                         variant="danger"
                         size="md"
-                        onClick={() => setDelPaths([...selected])}
+                        onClick={bindCall1(setDelPaths, [...selected])}
                       >
                         {t('files.delete')}
                       </Button>
@@ -780,10 +778,7 @@ export function FilesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
-                            setRenameTarget(e);
-                            setRenameTo(e.name);
-                          }}
+                          onClick={bindOpenRename(setRenameTarget, setRenameTo, e)}
                         >
                           {t('files.rename')}
                         </Button>
@@ -803,11 +798,7 @@ export function FilesPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setSharePath(e.path);
-                                setSharePass('');
-                                setShareResult(null);
-                              }}
+                              onClick={bindOpenShare(setSharePath, setSharePass, setShareResult, e.path)}
                             >
                               {t('files.share')}
                             </Button>
@@ -834,7 +825,7 @@ export function FilesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setDelPaths([e.path])}
+                          onClick={bindCall1(setDelPaths, [e.path])}
                         >
                           {t('files.delete')}
                         </Button>
@@ -1214,20 +1205,14 @@ export function FilesPage() {
       {/* Versions */}
       <Modal
         open={Boolean(versionsPath)}
-        onClose={() => {
-          setVersionsPath(null);
-          setVersions([]);
-        }}
+        onClose={bindCloseVersions(setVersionsPath, setVersions)}
         title={t('files.versionsTitle', { path: versionsPath ?? '' })}
         description={t('files.versionsDesc')}
         footer={
           <Button
             variant="secondary"
             size="md"
-            onClick={() => {
-              setVersionsPath(null);
-              setVersions([]);
-            }}
+            onClick={bindCloseVersions(setVersionsPath, setVersions)}
           >
             {t('common.close')}
           </Button>
@@ -1434,7 +1419,7 @@ export function FilesPage() {
       {/* chmod */}
       <Modal
         open={chmodOpen}
-        onClose={() => !busy && setChmodOpen(false)}
+        onClose={bindCloseIfIdle(busy, () => setChmodOpen(false))}
         title={t('files.chmodTitle')}
         size="sm"
         footer={
@@ -1517,7 +1502,7 @@ export function FilesPage() {
       {/* zip */}
       <Modal
         open={zipOpen}
-        onClose={() => !busy && setZipOpen(false)}
+        onClose={bindCloseIfIdle(busy, () => setZipOpen(false))}
         title={t('files.zipTitle')}
         size="sm"
         footer={

@@ -5,9 +5,11 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   alwaysFalse,
   alwaysTrue,
+  bindAppendUnique,
   bindArg1,
   bindArg2,
   bindAsync,
+  bindBanAndClear,
   bindBanOne,
   bindBusyApplyPolicy,
   bindBusyAutodiscover,
@@ -32,16 +34,28 @@ import {
   bindCall3,
   bindCheck,
   bindClipboard,
+  bindCloseIfIdle,
+  bindCloseVersions,
   bindConfirm,
   bindDraftField,
+  bindFeatureRun,
+  bindFilesSide,
   bindIgnoreEvent,
   bindInput,
+  bindListRemove,
+  bindLoadGeo,
   bindNavigate,
   bindNumber,
+  bindOpenChmod,
   bindOpenCreate,
+  bindOpenMoveCopy,
+  bindOpenRename,
+  bindOpenShare,
+  bindOpenZip,
   bindPreset,
   bindPrevent,
   bindRun,
+  bindSelectAllSuspects,
   bindSeq,
   bindSet,
   bindToggle,
@@ -52,6 +66,7 @@ import {
   constant,
   identity,
   noop,
+  selectAllSuspectIps,
 } from './bind-handlers';
 describe('bind-handlers', () => {
   it('bindAsync resolves and swallows rejection', async () => {
@@ -385,5 +400,96 @@ describe('email busy binders', () => {
     expect(create).toHaveBeenCalled();
     expect(close).toHaveBeenCalled();
     expect(clear).toHaveBeenCalled();
+  });
+});
+
+describe('protection/files binders wave', () => {
+  it('select suspects / list ops / loadGeo / ban clear', async () => {
+    expect(selectAllSuspectIps([{ ip: '1.1.1.1' }, { ip: '2.2.2.2' }])).toEqual({
+      '1.1.1.1': true,
+      '2.2.2.2': true,
+    });
+    const setSelected = vi.fn();
+    bindSelectAllSuspects(setSelected, [{ ip: '9.9.9.9' }])();
+    expect(setSelected).toHaveBeenCalledWith({ '9.9.9.9': true });
+
+    const setList = vi.fn();
+    bindAppendUnique(setList, '  a  ')();
+    const up = setList.mock.calls[0][0] as (p: string[]) => string[];
+    expect(up([])).toEqual(['a']);
+    expect(up(['a'])).toEqual(['a']);
+    bindListRemove(setList, 'a')();
+    const up2 = setList.mock.calls[1][0] as (p: string[]) => string[];
+    expect(up2(['a', 'b'])).toEqual(['b']);
+
+    const loadGeo = vi.fn(async () => {
+      throw new Error('geo');
+    });
+    const onErr = vi.fn();
+    bindLoadGeo(loadGeo, onErr)();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(onErr).toHaveBeenCalled();
+    bindLoadGeo(vi.fn(async () => undefined))();
+    await new Promise((r) => setTimeout(r, 0));
+
+    const ban = vi.fn();
+    const clear = vi.fn();
+    bindBanAndClear(ban, ' 1.2.3.4 ', 'r', clear)();
+    expect(ban).toHaveBeenCalledWith('1.2.3.4', 'r');
+    expect(clear).toHaveBeenCalled();
+  });
+
+  it('files dialog binders + feature run + closeIfIdle', () => {
+    const setRenameTarget = vi.fn();
+    const setRenameTo = vi.fn();
+    bindOpenRename(setRenameTarget, setRenameTo, { name: 'a.txt' })();
+    expect(setRenameTo).toHaveBeenCalledWith('a.txt');
+
+    const setMoveTarget = vi.fn();
+    const setMoveDest = vi.fn();
+    bindOpenMoveCopy(setMoveTarget, setMoveDest, [{ path: '/a' }], 'copy', '.')();
+    expect(setMoveDest).toHaveBeenCalledWith('');
+    bindOpenMoveCopy(setMoveTarget, setMoveDest, [], 'move', '/x')();
+    expect(setMoveDest).toHaveBeenCalledWith('/x');
+
+    const setSharePath = vi.fn();
+    const setSharePass = vi.fn();
+    const setShareResult = vi.fn();
+    bindOpenShare(setSharePath, setSharePass, setShareResult, '/p')();
+    expect(setSharePath).toHaveBeenCalledWith('/p');
+    expect(setShareResult).toHaveBeenCalledWith(null);
+
+    const setZipName = vi.fn();
+    const setZipOpen = vi.fn();
+    bindOpenZip(setZipName, setZipOpen)();
+    expect(setZipOpen).toHaveBeenCalledWith(true);
+    expect(String(setZipName.mock.calls[0][0])).toMatch(/\.zip$/);
+
+    const setChmodMode = vi.fn();
+    const setChmodOpen = vi.fn();
+    bindOpenChmod(setChmodMode, setChmodOpen, '755')();
+    expect(setChmodMode).toHaveBeenCalledWith('755');
+
+    const setSide = vi.fn();
+    const setTab = vi.fn();
+    bindFilesSide(setSide, setTab, 'trash')();
+    expect(setSide).toHaveBeenCalledWith('trash');
+    expect(setTab).toHaveBeenCalledWith('browse');
+
+    const setVersionsPath = vi.fn();
+    const setVersions = vi.fn();
+    bindCloseVersions(setVersionsPath, setVersions)();
+    expect(setVersionsPath).toHaveBeenCalledWith(null);
+
+    const close = vi.fn();
+    bindCloseIfIdle(true, close)();
+    expect(close).not.toHaveBeenCalled();
+    bindCloseIfIdle(false, close)();
+    expect(close).toHaveBeenCalled();
+
+    const run = vi.fn(async (fn: () => Promise<unknown>) => fn());
+    const work = vi.fn(async () => 1);
+    bindFeatureRun(run, work, 'ok')();
+    expect(run).toHaveBeenCalled();
   });
 });

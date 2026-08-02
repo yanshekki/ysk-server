@@ -617,3 +617,177 @@ export function bindBusyCreateMailbox(
     });
   };
 }
+
+/** useFeatureAction.run(async work, okMsg) binder */
+export function bindFeatureRun(
+  run: (fn: () => Promise<unknown>, okMsg?: string) => unknown,
+  work: () => Promise<unknown>,
+  okMsg?: string,
+): () => void {
+  return () => {
+    void run(async () => work(), okMsg);
+  };
+}
+
+/** Build selection map for all suspect IPs */
+export function selectAllSuspectIps(
+  suspects: Array<{ ip: string }>,
+): Record<string, boolean> {
+  const next: Record<string, boolean> = {};
+  for (const s of suspects) next[s.ip] = true;
+  return next;
+}
+
+export function bindSelectAllSuspects(
+  setSelected: (v: Record<string, boolean>) => void,
+  suspects: Array<{ ip: string }>,
+): () => void {
+  return () => {
+    setSelected(selectAllSuspectIps(suspects));
+  };
+}
+
+/** Append unique string to list state */
+export function bindAppendUnique(
+  setList: (updater: (prev: string[]) => string[]) => void,
+  item: string,
+): () => void {
+  return () => {
+    const v = item.trim();
+    if (!v) return;
+    setList((prev) => (prev.includes(v) ? prev : [...prev, v]));
+  };
+}
+
+/** Remove item from string list state */
+export function bindListRemove(
+  setList: (updater: (prev: string[]) => string[]) => void,
+  item: string,
+): () => void {
+  return () => {
+    setList((prev) => prev.filter((x) => x !== item));
+  };
+}
+
+/** loadGeo().catch(handler) */
+export function bindLoadGeo(
+  loadGeo: () => Promise<unknown>,
+  onError?: (e: Error) => void,
+): () => void {
+  return () => {
+    void loadGeo().catch((e: Error) => {
+      onError?.(e);
+    });
+  };
+}
+
+/** ban then clear input */
+export function bindBanAndClear(
+  banOne: (ip: string, reason?: string) => unknown,
+  ip: string,
+  reason: string,
+  clearIp: () => void,
+): () => void {
+  return () => {
+    void banOne(ip.trim(), reason);
+    clearIp();
+  };
+}
+
+/** Files: open rename dialog */
+export function bindOpenRename(
+  setRenameTarget: (e: unknown) => void,
+  setRenameTo: (name: string) => void,
+  entry: { name: string },
+): () => void {
+  return () => {
+    setRenameTarget(entry);
+    setRenameTo(entry.name);
+  };
+}
+
+/** Files: open move/copy dialog */
+export function bindOpenMoveCopy(
+  setMoveTarget: (v: { entries: unknown[]; mode: string }) => void,
+  setMoveDest: (v: string) => void,
+  entries: unknown[],
+  mode: 'copy' | 'move',
+  path: string,
+): () => void {
+  return () => {
+    setMoveTarget({ entries, mode });
+    setMoveDest(path === '.' ? '' : path);
+  };
+}
+
+/** Files: open share dialog */
+export function bindOpenShare(
+  setSharePath: (p: string) => void,
+  setSharePass: (p: string) => void,
+  setShareResult: (v: null) => void,
+  path: string,
+): () => void {
+  return () => {
+    setSharePath(path);
+    setSharePass('');
+    setShareResult(null);
+  };
+}
+
+/** Files: open zip dialog with default name */
+export function bindOpenZip(
+  setZipName: (n: string) => void,
+  setZipOpen: (v: boolean) => void,
+  namePrefix = 'archive',
+): () => void {
+  return () => {
+    setZipName(`${namePrefix}-${Date.now()}.zip`);
+    setZipOpen(true);
+  };
+}
+
+/** Files: open chmod with default mode */
+export function bindOpenChmod(
+  setChmodMode: (m: string) => void,
+  setChmodOpen: (v: boolean) => void,
+  mode = '644',
+): () => void {
+  return () => {
+    setChmodMode(mode);
+    setChmodOpen(true);
+  };
+}
+
+/** Side nav: set side + browse tab */
+export function bindFilesSide(
+  setSide: (id: string) => void,
+  setTab: (tab: string) => void,
+  id: string,
+  tab = 'browse',
+): () => void {
+  return () => {
+    setSide(id);
+    setTab(tab);
+  };
+}
+
+/** Close versions dialog */
+export function bindCloseVersions(
+  setVersionsPath: (v: null) => void,
+  setVersions: (v: unknown[]) => void,
+): () => void {
+  return () => {
+    setVersionsPath(null);
+    setVersions([]);
+  };
+}
+
+/** onClose when !busy */
+export function bindCloseIfIdle(
+  busy: boolean,
+  close: () => void,
+): () => void {
+  return () => {
+    if (!busy) close();
+  };
+}

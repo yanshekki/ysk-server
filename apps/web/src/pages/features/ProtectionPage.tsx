@@ -34,7 +34,19 @@ import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
-import { bindInput, bindCheck, bindPreset, bindVoid, bindBanOne } from '../bind-handlers';
+import {
+  bindInput,
+  bindCheck,
+  bindPreset,
+  bindVoid,
+  bindBanOne,
+  bindSelectAllSuspects,
+  bindListRemove,
+  bindLoadGeo,
+  bindBanAndClear,
+  bindCloseIfIdle,
+} from '../bind-handlers';
+
 import {
   GEO_ASN_PROVIDERS,
   getGeoContinents,
@@ -979,7 +991,7 @@ export function ProtectionPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() => void applyPreset(s.action!.replace('preset:', ''), true)}
+                        onClick={bindPreset(applyPreset, s.action!.replace('preset:', ''), true)}
                       >
                         {t('common.apply')}
                       </Button>
@@ -1988,11 +2000,7 @@ export function ProtectionPage() {
                   variant="ghost"
                   size="sm"
                   disabled={!actionableSuspects.length}
-                  onClick={() => {
-                    const next: Record<string, boolean> = {};
-                    for (const s of actionableSuspects) next[s.ip] = true;
-                    setSelected(next);
-                  }}
+                  onClick={bindSelectAllSuspects(setSelected, actionableSuspects)}
                 >
                   {t('protection.selectAll')}
                 </Button>
@@ -2322,10 +2330,7 @@ export function ProtectionPage() {
                       size="md"
                       loading={busy}
                       disabled={!banIp.trim()}
-                      onClick={() => {
-                        void banOne(banIp.trim(), banReason);
-                        setBanIp('');
-                      }}
+                      onClick={bindBanAndClear(banOne, banIp, banReason, () => setBanIp(''))}
                     >
                       {t('protection.ban')}
                     </Button>
@@ -2423,9 +2428,7 @@ export function ProtectionPage() {
                         variant="danger"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void banOne(row.ip, `top-ip score=${row.score}`)
-                        }
+                        onClick={bindBanOne(banOne, row.ip, `top-ip score=${row.score}`)}
                       >
                         {t('protection.banShort')}
                       </Button>
@@ -2510,7 +2513,7 @@ export function ProtectionPage() {
                     variant="secondary"
                     size="sm"
                     loading={busy}
-                    onClick={() => void loadGeo().catch((e: Error) => setError(e.message))}
+                    onClick={bindLoadGeo(loadGeo, (e) => setError(e.message))}
                   >
                     {t('protection.refreshStatus')}
                   </Button>
@@ -2551,11 +2554,7 @@ export function ProtectionPage() {
                       variant="primary"
                       size="sm"
                       loading={geoLoading || busy}
-                      onClick={() =>
-                        void loadGeo().catch(() => {
-                          /* geoErr set */
-                        })
-                      }
+                      onClick={bindLoadGeo(loadGeo)}
                     >
                       {t('protection.retry')}
                     </Button>
@@ -2632,11 +2631,7 @@ export function ProtectionPage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() =>
-                      void loadGeo().catch(() => {
-                        /* geoErr */
-                      })
-                    }
+                    onClick={bindLoadGeo(loadGeo)}
                   >
                     {t('protection.load')}
                   </Button>
@@ -2799,9 +2794,7 @@ export function ProtectionPage() {
                             key={c}
                             type="button"
                             className="mcs__chip"
-                            onClick={() =>
-                              setGeoCities((prev) => prev.filter((x) => x !== c))
-                            }
+                            onClick={bindListRemove(setGeoCities, c)}
                           >
                             {c}
                             <span className="mcs__chip-x">×</span>
@@ -3118,7 +3111,7 @@ export function ProtectionPage() {
 
       <ConfirmDialog
         open={presetConfirmId != null}
-        onClose={() => !busy && setPresetConfirmId(null)}
+        onClose={bindCloseIfIdle(busy, () => setPresetConfirmId(null))}
         title={t('protection.applyStricterTitle')}
         description={t('protection.applyStricterDesc')}
         confirmLabel={t('common.apply')}
@@ -3134,7 +3127,7 @@ export function ProtectionPage() {
 
       <PromptDialog
         open={emergencyPromptOpen}
-        onClose={() => !busy && setEmergencyPromptOpen(false)}
+        onClose={bindCloseIfIdle(busy, () => setEmergencyPromptOpen(false))}
         title={t('protection.confirmEmergencyTitle')}
         description={t('protection.confirmEmergencyDesc')}
         label={t('protection.confirmString')}
