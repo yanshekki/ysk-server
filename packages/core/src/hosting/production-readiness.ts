@@ -13,6 +13,7 @@ import { probeRuntimes } from './runtime-probe.js';
 import { probePowerDns } from './powerdns-apply.js';
 import { probePm2 } from './pm2-apply.js';
 import { buildProjectIsolationReadinessItems } from './project-isolation-status.js';
+import { binPresent } from './software-probe/index.js';
 
 export type { ReadinessLevel } from '@ysk/shared';
 export type ReadinessItem = ReadinessItemDto;
@@ -50,9 +51,7 @@ export function readinessCategoryLabel(cat: string): string {
 }
 
 async function hasCmd(host: HostExecutor, bin: string): Promise<boolean> {
-  const r = await host.runCommand(['bash', '-c', `command -v ${bin} || true`], {
-    timeoutMs: 5_000 });
-  return Boolean(r.stdout.trim());
+  return binPresent(host, bin);
 }
 
 /**

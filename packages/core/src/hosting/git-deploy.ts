@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { YSK_SCAFFOLD_MARKER } from './app-templates.js';
+import { binPresent } from './software-probe/index.js';
 
 export interface GitDeployResult {
   ok: boolean;
@@ -108,10 +109,7 @@ export async function gitSync(input: {
   const repoDir = input.targetDir;
   mkdirSync(repoDir, { recursive: true });
 
-  const hasGit = await input.host.runCommand(['bash', '-c', 'command -v git || true'], {
-    timeoutMs: 5_000,
-  });
-  if (!hasGit.stdout.trim()) {
+  if (!(await binPresent(input.host, 'git'))) {
     return {
       ok: false,
       action: 'none',

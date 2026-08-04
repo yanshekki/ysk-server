@@ -2285,7 +2285,13 @@
     "createPlus": "+ Create",
     "dbNameHintPg": "Lowercase alnum and underscore; apply after create",
     "deleteNotePg": "Deleting registration does not DROP the server DB; apply success means DDL ran on host.",
-    "tabDatabasesSimple": "Databases ({{count}})"
+    "tabDatabasesSimple": "Databases ({{count}})",
+    "exclusiveMariaHint": "This host runs MariaDB (not Oracle MySQL). Open the MariaDB page to manage databases and the service.",
+    "exclusiveMysqlHint": "This host runs Oracle MySQL (not MariaDB). Open the MySQL page to manage databases and the service.",
+    "openMaria": "MariaDB",
+    "openMysql": "MySQL",
+    "openMariaService": "MariaDB service",
+    "openMysqlService": "MySQL service"
   },
   "dialogs": {
     "confirmDefault": "Confirm",

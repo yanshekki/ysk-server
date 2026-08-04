@@ -7,6 +7,7 @@ import { tl } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { planRedisBinding } from './database.js';
 import { probeEndpoint } from './db-client.js';
+import { binPresent } from './software-probe/index.js';
 
 export interface RedisProvisionResult {
   ok: boolean;
@@ -55,11 +56,7 @@ export async function provisionRedisBinding(input: {
       : tl('notes.auto.t0365', { v0: (host), v1: (port), v2: (reach.detail) }),
   );
 
-  const which = await input.hostExec.runCommand(
-    ['bash', '-c', 'command -v redis-cli || true'],
-    { timeoutMs: 5_000 },
-  );
-  const redisCli = which.stdout.trim().length > 0;
+  const redisCli = await binPresent(input.hostExec, 'redis-cli');
 
   const want = input.execute === true;
   const can = want && input.hostExec.executeEnabled() && redisCli && reachable;

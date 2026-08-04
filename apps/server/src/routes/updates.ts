@@ -6,6 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import {
   collectInventory,
+  collectCatalogSoftwareUpgrades,
   adviseInventory,
   lookupOsvVulns,
 } from '@ysk/core';
@@ -101,7 +102,10 @@ export async function handleUpdatesRoutes(
           });
           return true;
         }
-        const { items: inv, meta } = await collectInventory(ctx.host);
+        const [{ items: inv, meta }, catalogSoftware] = await Promise.all([
+          collectInventory(ctx.host),
+          collectCatalogSoftwareUpgrades(ctx.host),
+        ]);
         const advice = adviseInventory(inv);
         ctx.settings.setJson('last_inventory', {
           at: new Date().toISOString(),
@@ -111,6 +115,7 @@ export async function handleUpdatesRoutes(
           sample: inv.slice(0, 40),
           items: inv.slice(0, 120),
           advice: advice.slice(0, 120),
+          catalogSoftware: catalogSoftware.slice(0, 80),
         });
         const filtered = filterInventoryAdvice(
           inv as unknown as InvRow[],
@@ -121,6 +126,7 @@ export async function handleUpdatesRoutes(
           cached: false,
           inventory: filtered.inventory,
           advice: filtered.advice,
+          catalogSoftware,
           meta: { ...meta, list: filtered.meta },
           listMeta: filtered.meta,
           collectedAt: new Date().toISOString(),
@@ -131,7 +137,10 @@ export async function handleUpdatesRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { osv?: boolean; limit?: number };
-        const { items: inv, meta } = await collectInventory(ctx.host);
+        const [{ items: inv, meta }, catalogSoftware] = await Promise.all([
+          collectInventory(ctx.host),
+          collectCatalogSoftwareUpgrades(ctx.host),
+        ]);
         let advice = adviseInventory(inv);
         if (data.osv) {
           // Prefer packages that actually have upgrades, then rest
@@ -161,6 +170,7 @@ export async function handleUpdatesRoutes(
           sample: inv.slice(0, 40),
           items: inv.slice(0, 120),
           advice: advice.slice(0, 120),
+          catalogSoftware: catalogSoftware.slice(0, 80),
         });
         ctx.audit.append({
           actor: user.username,
@@ -168,6 +178,7 @@ export async function handleUpdatesRoutes(
           detail: {
             count: inv.length,
             upgradable: meta.upgradableCount,
+            catalogUpgradable: catalogSoftware.filter((c) => c.upgradable).length,
             osv: Boolean(data.osv),
             notes: meta.notes,
           },
@@ -176,6 +187,7 @@ export async function handleUpdatesRoutes(
         sendJson(res, 200, {
           inventory: inv,
           advice,
+          catalogSoftware,
           meta,
           collectedAt: new Date().toISOString(),
         });

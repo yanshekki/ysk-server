@@ -412,19 +412,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               <p className="muted u-text-sm u-mb-0">
                 {svc?.blockedByExclusive === 'mariadb-server' ? (
                   <>
-                    {t('db.exclusiveMariaHint', {
-                      defaultValue:
-                        'This host runs MariaDB (not Oracle MySQL). Open the MariaDB page to manage databases.',
-                    })}{' '}
-                    <Link to="/databases/mariadb">{t('db.openMaria', { defaultValue: 'MariaDB' })}</Link>
+                    {t('db.exclusiveMariaHint')}{' '}
+                    <Link to="/databases/mariadb">{t('db.openMaria')}</Link>
                   </>
                 ) : svc?.blockedByExclusive === 'mysql-server' ? (
                   <>
-                    {t('db.exclusiveMysqlHint', {
-                      defaultValue:
-                        'This host runs Oracle MySQL (not MariaDB). Open the MySQL page to manage databases.',
-                    })}{' '}
-                    <Link to="/databases/mysql">{t('db.openMysql', { defaultValue: 'MySQL' })}</Link>
+                    {t('db.exclusiveMysqlHint')}{' '}
+                    <Link to="/databases/mysql">{t('db.openMysql')}</Link>
                   </>
                 ) : (
                   t('db.installBannerHint', { engine: title })

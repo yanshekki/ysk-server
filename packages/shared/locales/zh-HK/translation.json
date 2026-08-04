@@ -2285,7 +2285,13 @@
     "createPlus": "+ 建立",
     "dbNameHintPg": "小寫英數與底線；建立後請再套用到系統",
     "deleteNotePg": "刪除登記不會自動 DROP 伺服器上的庫；套用成功才代表主機已執行 DDL。",
-    "tabDatabasesSimple": "資料庫 ({{count}})"
+    "tabDatabasesSimple": "資料庫 ({{count}})",
+    "exclusiveMariaHint": "此主機運行嘅係 MariaDB（唔係 Oracle MySQL）。請到 MariaDB 頁管理資料庫同服務。",
+    "exclusiveMysqlHint": "此主機運行嘅係 Oracle MySQL（唔係 MariaDB）。請到 MySQL 頁管理資料庫同服務。",
+    "openMaria": "MariaDB",
+    "openMysql": "MySQL",
+    "openMariaService": "MariaDB 服務",
+    "openMysqlService": "MySQL 服務"
   },
   "dialogs": {
     "confirmDefault": "確認",

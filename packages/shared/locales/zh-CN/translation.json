@@ -2285,7 +2285,13 @@
     "createPlus": "+ 创建",
     "dbNameHintPg": "小写英数与底线；创建后请再应用到系统",
     "deleteNotePg": "删除登记不会自动 DROP 服务器上的庫；应用成功才代表主机已执行 DDL。",
-    "tabDatabasesSimple": "数据库 ({{count}})"
+    "tabDatabasesSimple": "数据库 ({{count}})",
+    "exclusiveMariaHint": "此主机运行的是 MariaDB（不是 Oracle MySQL）。请到 MariaDB 页管理数据库与服务。",
+    "exclusiveMysqlHint": "此主机运行的是 Oracle MySQL（不是 MariaDB）。请到 MySQL 页管理数据库与服务。",
+    "openMaria": "MariaDB",
+    "openMysql": "MySQL",
+    "openMariaService": "MariaDB 服务",
+    "openMysqlService": "MySQL 服务"
   },
   "dialogs": {
     "confirmDefault": "确认",

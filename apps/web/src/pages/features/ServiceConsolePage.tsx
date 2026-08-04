@@ -513,24 +513,14 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
 
       {console?.blockedByExclusive === 'mariadb-server' ? (
         <Alert variant="info">
-          {t('db.exclusiveMariaHint', {
-            defaultValue:
-              'This host runs MariaDB (not Oracle MySQL). Use the MariaDB service page for lifecycle and settings.',
-          })}{' '}
-          <Link to="/databases/mariadb/service">
-            {t('db.openMariaService', { defaultValue: 'MariaDB service' })}
-          </Link>
+          {t('db.exclusiveMariaHint')}{' '}
+          <Link to="/databases/mariadb/service">{t('db.openMariaService')}</Link>
         </Alert>
       ) : null}
       {console?.blockedByExclusive === 'mysql-server' ? (
         <Alert variant="info">
-          {t('db.exclusiveMysqlHint', {
-            defaultValue:
-              'This host runs Oracle MySQL (not MariaDB). Use the MySQL service page for lifecycle and settings.',
-          })}{' '}
-          <Link to="/databases/mysql/service">
-            {t('db.openMysqlService', { defaultValue: 'MySQL service' })}
-          </Link>
+          {t('db.exclusiveMysqlHint')}{' '}
+          <Link to="/databases/mysql/service">{t('db.openMysqlService')}</Link>
         </Alert>
       ) : null}
       {console?.blockMessage && !console.blockedByExclusive ? (

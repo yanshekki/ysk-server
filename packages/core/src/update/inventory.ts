@@ -8,6 +8,8 @@ import type { HostExecutor } from '../host/executor.js';
 import type { PackageInventoryItem } from './advisor.js';
 import { adviseUpdate } from './advisor.js';
 import type { UpdateItemDto } from '@ysk/shared';
+import { HostSoftwareProbe } from '../hosting/software-probe/index.js';
+import type { SoftwareUpgradeInfo } from '../hosting/software-probe/index.js';
 
 export type InventoryCollectMeta = {
   /** How candidates were resolved */
@@ -172,6 +174,19 @@ done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 8
  */
 export function adviseInventory(items: PackageInventoryItem[]): UpdateItemDto[] {
   return items.map((i) => adviseUpdate(i));
+}
+
+/**
+ * Catalog software upgrades via HostSoftwareProbe.upgrade (unified standard).
+ * Complements full-host collectInventory with product-scoped package status.
+ */
+export async function collectCatalogSoftwareUpgrades(
+  host: HostExecutor,
+): Promise<SoftwareUpgradeInfo[]> {
+  const probe = new HostSoftwareProbe(host);
+  // Only packages that are installed and may have apt candidates
+  const all = await probe.upgrades();
+  return all.filter((u) => u.installed);
 }
 
 /**
