@@ -268,11 +268,8 @@ async function applySetquota(
   }
   // blocks: soft=hard for simplicity; 0 inodes unlimited-ish large
   const blocks = Math.max(1, Math.floor(row.quota_mb * 1024)); // 1K blocks
-  const has = await host.runCommand(
-    ['bash', '-c', 'command -v setquota >/dev/null 2>&1 && echo yes || echo no'],
-    { timeoutMs: 5_000 },
-  );
-  if (!has.stdout.includes('yes')) {
+  const { binPresent } = await import('./software-probe/index.js');
+  if (!(await binPresent(host, 'setquota'))) {
     notes.push(tl('notes.auto.n0431'));
     return false;
   }

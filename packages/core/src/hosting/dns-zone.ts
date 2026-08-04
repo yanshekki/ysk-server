@@ -241,11 +241,8 @@ export async function writeManagedDnsZone(input: {
   }
 
   if (wantValidate && canExecute && input.host) {
-    const check = await input.host.runCommand(
-      ['bash', '-c', 'command -v named-checkzone || true'],
-      { timeoutMs: 5_000 },
-    );
-    if (check.stdout.trim()) {
+    const { binPresent } = await import('./software-probe/index.js');
+    if (await binPresent(input.host, 'named-checkzone')) {
       const r = await input.host.runCommand(['named-checkzone', zone, zonePath], {
         timeoutMs: 15_000,
       });
@@ -315,11 +312,10 @@ async function tryReloadNameserver(
     ['systemctl', 'reload', 'pdns'],
   ];
   for (const argv of attempts) {
-    const binCheck = await host.runCommand(
-      ['bash', '-c', `command -v ${argv[0]} >/dev/null 2>&1 && echo ok || true`],
-      { timeoutMs: 3_000 },
-    );
-    if (!binCheck.stdout.includes('ok') && argv[0] !== 'systemctl') continue;
+    if (argv[0] !== 'systemctl') {
+      const { binPresent } = await import('./software-probe/index.js');
+      if (!(await binPresent(host, argv[0]!))) continue;
+    }
     if (argv[0] === 'systemctl') {
       const unit = argv[2];
       const active = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });

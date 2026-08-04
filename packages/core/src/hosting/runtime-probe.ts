@@ -16,6 +16,7 @@ import {
   selectRustRuntime,
   type RuntimeKind,
 } from './runtime.js';
+import { resolveBin } from './software-probe/index.js';
 
 export interface RuntimeProbeItem {
   kind: RuntimeKind;
@@ -74,23 +75,27 @@ async function probeBinaryVersions(
     }
 
     if (!available) {
-      // PATH probe by kind
-      let whichCmd = '';
-      if (kind === 'python') whichCmd = `command -v python${v} || command -v python3 || true`;
-      else if (kind === 'go') whichCmd = 'command -v go || true';
-      else if (kind === 'rust') whichCmd = 'command -v cargo || true';
-      else if (kind === 'node') whichCmd = `command -v node${v} || command -v node || true`;
-      else whichCmd = `command -v php${v} || command -v php || true`;
-
-      const alt = await host.runCommand(['bash', '-c', whichCmd], { timeoutMs: 5_000 });
-      const p = alt.stdout.trim().split('\n')[0];
-      if (p) {
+      // PATH probe via unified resolveBin (same PATH rules as HostSoftwareProbe)
+      const candidates: string[] =
+        kind === 'python'
+          ? [`python${v}`, 'python3']
+          : kind === 'go'
+            ? ['go']
+            : kind === 'rust'
+              ? ['cargo']
+              : kind === 'node'
+                ? [`node${v}`, 'node']
+                : [`php${v}`, 'php'];
+      for (const name of candidates) {
+        const p = await resolveBin(host, name);
+        if (!p) continue;
         const ver = await host.runCommand(versionCmd(p), { timeoutMs: 8_000 });
         const text = ver.stdout + ver.stderr;
         if (ver.exitCode === 0 && match(text, v)) {
           available = true;
           resolvedPath = p;
           versionOutput = text.trim().split('\n')[0];
+          break;
         }
       }
     }
@@ -116,40 +121,19 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const supported = listSupportedRuntimes();
   const notes: string[] = [];
 
-  const hostNodeCmd = await host.runCommand(
-    ['bash', '-c', 'command -v node; node -v 2>/dev/null || true'],
-    { timeoutMs: 8_000 },
-  );
-  const hostNodeLines = hostNodeCmd.stdout.trim().split('\n').filter(Boolean);
-  const hostNode = hostNodeLines[1] ?? hostNodeLines[0];
+  async function hostDefault(bin: string, versionArgv: string[]): Promise<string | undefined> {
+    const p = await resolveBin(host, bin);
+    if (!p) return undefined;
+    const ver = await host.runCommand(versionArgv, { timeoutMs: 8_000 });
+    const text = (ver.stdout || ver.stderr || '').trim().split('\n')[0];
+    return text || undefined;
+  }
 
-  const hostPhpCmd = await host.runCommand(
-    ['bash', '-c', 'command -v php; php -v 2>/dev/null | head -1 || true'],
-    { timeoutMs: 8_000 },
-  );
-  const hostPhpLines = hostPhpCmd.stdout.trim().split('\n').filter(Boolean);
-  const hostPhp = hostPhpLines[1] ?? hostPhpLines[0];
-
-  const hostPyCmd = await host.runCommand(
-    ['bash', '-c', 'command -v python3; python3 --version 2>&1 || true'],
-    { timeoutMs: 8_000 },
-  );
-  const hostPyLines = hostPyCmd.stdout.trim().split('\n').filter(Boolean);
-  const hostPython = hostPyLines[1] ?? hostPyLines[0];
-
-  const hostGoCmd = await host.runCommand(
-    ['bash', '-c', 'command -v go; go version 2>&1 || true'],
-    { timeoutMs: 8_000 },
-  );
-  const hostGoLines = hostGoCmd.stdout.trim().split('\n').filter(Boolean);
-  const hostGo = hostGoLines[1] ?? hostGoLines[0];
-
-  const hostRustCmd = await host.runCommand(
-    ['bash', '-c', 'command -v cargo; cargo --version 2>&1 || true'],
-    { timeoutMs: 8_000 },
-  );
-  const hostRustLines = hostRustCmd.stdout.trim().split('\n').filter(Boolean);
-  const hostRust = hostRustLines[1] ?? hostRustLines[0];
+  const hostNode = await hostDefault('node', ['node', '-v']);
+  const hostPhp = await hostDefault('php', ['php', '-v']);
+  const hostPython = await hostDefault('python3', ['python3', '--version']);
+  const hostGo = await hostDefault('go', ['go', 'version']);
+  const hostRust = await hostDefault('cargo', ['cargo', '--version']);
 
   const node = await probeBinaryVersions(
     host,

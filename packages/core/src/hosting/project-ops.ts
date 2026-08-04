@@ -2083,10 +2083,10 @@ export function resolveCargoPackageName(appDir: string): string | null {
 }
 
 async function resolvePhpBinary(host: HostExecutor, version: string): Promise<string | null> {
+  const { resolveBin } = await import('./software-probe/index.js');
   const candidates = [`php${version}`, `php${version.split('.')[0]}`, 'php'];
   for (const bin of candidates) {
-    const r = await host.runCommand(['bash', '-c', `command -v ${bin} || true`], { timeoutMs: 3_000 });
-    const p = r.stdout.trim();
+    const p = await resolveBin(host, bin);
     if (p) return p;
   }
   return null;

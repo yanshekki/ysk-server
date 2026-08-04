@@ -121,29 +121,32 @@ describe('dns-zone depth', () => {
       expect(failValidate.reloaded).toBe(false);
       expect(failValidate.applyStatus).toBe('failed');
 
+      const noCheckzoneHost = mockHost((argv) => {
+        if (argv[0] === 'bash' && argv.join(' ').includes('named-checkzone')) {
+          return { stdout: '' };
+        }
+        // reload via systemctl bind9
+        if (argv[0] === 'bash' && argv.join(' ').includes('rndc')) {
+          return { stdout: '' };
+        }
+        if (argv[0] === 'systemctl' && argv.includes('is-active')) {
+          if (argv.includes('bind9')) return { stdout: 'active\n' };
+          return { stdout: 'inactive\n' };
+        }
+        if (argv[0] === 'systemctl' && argv[1] === 'reload' && argv[2] === 'bind9') {
+          return { exitCode: 0 };
+        }
+        return {};
+      });
+      // resolveBin must not invent absolute named-checkzone via pathExists:true
+      noCheckzoneHost.pathExists = (p: string) => p.includes('systemctl');
       const noCheckzone = await writeManagedDnsZone({
         dataDir: dir,
         zone: 'd.example',
         serverIp: '10.0.0.4',
         validate: true,
         tryReload: true,
-        host: mockHost((argv) => {
-          if (argv[0] === 'bash' && argv.join(' ').includes('named-checkzone')) {
-            return { stdout: '' };
-          }
-          // reload via systemctl bind9
-          if (argv[0] === 'bash' && argv.join(' ').includes('rndc')) {
-            return { stdout: '' };
-          }
-          if (argv[0] === 'systemctl' && argv.includes('is-active')) {
-            if (argv.includes('bind9')) return { stdout: 'active\n' };
-            return { stdout: 'inactive\n' };
-          }
-          if (argv[0] === 'systemctl' && argv[1] === 'reload' && argv[2] === 'bind9') {
-            return { exitCode: 0 };
-          }
-          return {};
-        }),
+        host: noCheckzoneHost,
       });
       expect(noCheckzone.validated).toBeUndefined();
       // may reload via bind9

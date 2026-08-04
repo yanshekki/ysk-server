@@ -197,9 +197,8 @@ export async function getLogrotateStatus(host: HostExecutor): Promise<{
   notes: string[];
 }> {
   const notes: string[] = [];
-  const which = await host.runCommand(['bash', '-c', 'command -v logrotate 2>/dev/null'], {
-    timeoutMs: 5_000 });
-  const installed = Boolean((which.stdout || '').trim());
+  const { binPresent } = await import('../software-probe/index.js');
+  const installed = await binPresent(host, 'logrotate');
   if (!installed) {
     return { installed: false, notes: [tl('notes.auto.n0323')] };
   }

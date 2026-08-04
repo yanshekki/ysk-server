@@ -34,11 +34,9 @@ export async function generateDnssecKeys(input: {
   let keysOk = false;
 
   if (input.host?.executeEnabled()) {
-    const check = await input.host.runCommand(
-      ['bash', '-c', 'command -v dnssec-keygen'],
-      { timeoutMs: 3_000 },
-    );
-    if (check.exitCode === 0 && check.stdout.trim()) {
+    const { binPresent } = await import('./software-probe/index.js');
+    const checkOk = await binPresent(input.host, 'dnssec-keygen');
+    if (checkOk) {
       // Avoid re-generating if keys already present
       const existingKeys = existsSync(dir)
         ? readdirSync(dir).filter((f) => f.endsWith('.key'))
@@ -102,11 +100,8 @@ export async function generateDnssecKeys(input: {
     ];
     const zoneFile = zoneCandidates.find((p) => existsSync(p));
     if (zoneFile) {
-      const signCheck = await input.host.runCommand(
-        ['bash', '-c', 'command -v dnssec-signzone'],
-        { timeoutMs: 3_000 },
-      );
-      if (signCheck.exitCode === 0) {
+      const { binPresent: hasSign } = await import('./software-probe/index.js');
+      if (await hasSign(input.host, 'dnssec-signzone')) {
         // Copy zone into dnssec dir for signing next to keys
         const localZone = join(dir, `${zone}.zone`);
         try {

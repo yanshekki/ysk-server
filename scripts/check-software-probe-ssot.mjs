@@ -41,6 +41,12 @@ const STRICT_FILES = [
   'pm2-apply.ts',
   'mysql-provision.ts',
   'postgres-provision.ts',
+  'runtime-probe.ts',
+  'dnssec.ts',
+  'log-center/service.ts',
+  'git-deploy.ts',
+  'production-readiness.ts',
+  'redis-provision.ts',
 ];
 
 function walk(dir, acc = []) {
