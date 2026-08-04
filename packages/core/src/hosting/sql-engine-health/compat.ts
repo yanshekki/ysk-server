@@ -34,7 +34,9 @@ export async function executeSqlEngineRepairAsRecover(
   };
 }
 
-export { executeSqlEngineRepairAsRecover as recoverMysqlAfterEngineSwitch };
+// Do NOT re-export as recoverMysqlAfterEngineSwitch / unfreezeMysqlEngine —
+// sql-engine-switch/mysql-frozen already owns those names; a second export
+// crashes hosting/index (`export *` duplicate) at import time.
 
 export async function unfreezeViaHealth(
   host: HostExecutor,
