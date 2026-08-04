@@ -159,22 +159,24 @@ export async function installSoftware(input: {
       // If unit is failed (e.g. port conflict), free :80 and retry start
       for (const u of spec.units) {
         const cur = await unitIsActive(input.host, u);
-        if (cur === 'failed' || cur === 'inactive') {
+        if (cur === 'failed' || cur === 'inactive' || cur === 'activating') {
           await freeHttpPortForSpec(input.host, spec.id, steps, notes);
         }
-        const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
+        await input.host.runCommand(['systemctl', 'enable', '--now', u], {
           timeoutMs: 60_000,
         });
-        const active = await unitIsActive(input.host, u);
-        const unitOk = active === 'active' || (en.exitCode === 0 && active !== 'failed');
+        const waited = await waitUnitActive(input.host, u, {
+          timeoutMs: u === 'mysql' || u === 'mariadb' ? 120_000 : 45_000,
+        });
+        const unitOk = waited.ok;
         steps.push({
           name: tl('notes.software.startUnit', { u }),
           status: unitOk ? 'ok' : 'failed',
-          detail: unitOk ? 'ok' : en.stderr || `systemctl is-active → ${active ?? 'unknown'}`,
+          detail: unitOk ? 'ok' : `systemctl is-active → ${waited.active ?? 'unknown'}`,
         });
-        if (active === 'failed' || (!unitOk && active !== 'active')) {
+        if (!unitOk) {
           unitFailed = true;
-          notes.push(await unitFailureHint(input.host, u, active ?? 'unknown'));
+          notes.push(await unitFailureHint(input.host, u, waited.active ?? 'unknown'));
         }
       }
     }

@@ -15,13 +15,16 @@ const SKIP_USERS = new Set([
 export async function exportUserGrants(
   host: HostExecutor,
   flavor: 'mysql' | 'mariadb',
+  rootPassword?: string,
 ): Promise<{ ok: boolean; sql: string; notes: string[] }> {
+  const { sqlPasswordEnvPrefix } = await import('./sql-auth.js');
+  const env = sqlPasswordEnvPrefix(rootPassword);
   const client = flavor === 'mariadb' ? 'mariadb' : 'mysql';
   const list = await host.runCommand(
     [
       'bash',
       '-c',
-      `${client} -N -e "SELECT user,host FROM mysql.user" 2>/dev/null || mysql -N -e "SELECT user,host FROM mysql.user" 2>/dev/null || true`,
+      `${env}${client} -N -e "SELECT user,host FROM mysql.user" 2>/dev/null || ${env}mysql -N -e "SELECT user,host FROM mysql.user" 2>/dev/null || true`,
     ],
     { timeoutMs: 30_000 },
   );
@@ -48,7 +51,7 @@ export async function exportUserGrants(
       [
         'bash',
         '-c',
-        `${client} -N -e "SHOW GRANTS FOR '${uEsc}'@'${hEsc}'" 2>/dev/null || mysql -N -e "SHOW GRANTS FOR '${uEsc}'@'${hEsc}'" 2>/dev/null || true`,
+        `${env}${client} -N -e "SHOW GRANTS FOR '${uEsc}'@'${hEsc}'" 2>/dev/null || ${env}mysql -N -e "SHOW GRANTS FOR '${uEsc}'@'${hEsc}'" 2>/dev/null || true`,
       ],
       { timeoutMs: 10_000 },
     );

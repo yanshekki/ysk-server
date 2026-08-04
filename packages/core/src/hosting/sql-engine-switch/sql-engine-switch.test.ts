@@ -176,6 +176,173 @@ describe('sql-engine-switch', () => {
     });
     expect(r.code).not.toBe('needs_exclusive_switch');
   });
+
+  it('dump failure aborts with failed_safe and never purges', async () => {
+    const called: string[] = [];
+    const host = mockHost({
+      executeEnabled: true,
+      isRoot: true,
+      flavor: 'mariadb',
+      dbs: ['appdb'],
+      run: (argv) => {
+        const s = argv.join(' ');
+        called.push(s.slice(0, 120));
+        if (s.includes('SHOW DATABASES')) {
+          return {
+            stdout: 'information_schema\nmysql\nappdb\n',
+            exitCode: 0,
+          };
+        }
+        if (s.includes('information_schema.tables')) {
+          return { stdout: '1\n', exitCode: 0 };
+        }
+        if (s.includes('command -v')) {
+          if (s.includes('mariadbd')) return { stdout: '/usr/sbin/mariadbd\n', exitCode: 0 };
+          if (s.includes('mysqldump') || s.includes('mariadb-dump')) {
+            return { stdout: '/usr/bin/mysqldump\n', exitCode: 0 };
+          }
+          return { stdout: '', exitCode: 0 };
+        }
+        if (s.includes('dpkg') || s.includes('awk')) {
+          return { stdout: 'mariadb\n', exitCode: 0 };
+        }
+        // dump fails
+        if (s.includes('mysqldump') || s.includes('mariadb-dump') || s.includes('--databases')) {
+          return { stdout: 'dump error', stderr: 'access denied', exitCode: 1 };
+        }
+        if (argv[0] === 'systemctl') {
+          return { stdout: 'active\n', exitCode: 0 };
+        }
+        return { exitCode: 0 };
+      },
+    });
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-sw-dumpfail-'));
+    const r = await switchSqlEngine({
+      host,
+      dataDir,
+      target: 'mysql',
+      confirmPhrase: 'SWITCH',
+      acknowledgeExclusive: true,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.code).toBe('failed_safe');
+    expect(r.dumpPath).toBeTruthy();
+    const joined = called.join('\n');
+    expect(joined).not.toMatch(/apt-get (remove|purge)/);
+    expect(joined).not.toMatch(/mv \/var\/lib\/mysql/);
+  });
+
+  it('datadir mv failure restarts source and does not purge', async () => {
+    const called: string[] = [];
+    let dumpWritten = false;
+    const host = mockHost({
+      executeEnabled: true,
+      isRoot: true,
+      flavor: 'mariadb',
+      dbs: ['appdb'],
+      run: (argv) => {
+        const s = argv.join(' ');
+        called.push(s.slice(0, 160));
+        if (s.includes('SHOW DATABASES')) {
+          return { stdout: 'mysql\nappdb\n', exitCode: 0 };
+        }
+        if (s.includes('information_schema.tables')) {
+          return { stdout: '2\n', exitCode: 0 };
+        }
+        if (s.includes('command -v')) {
+          if (s.includes('mariadbd')) return { stdout: '/usr/sbin/mariadbd\n', exitCode: 0 };
+          if (s.includes('dump')) return { stdout: '/usr/bin/mysqldump\n', exitCode: 0 };
+          return { stdout: '', exitCode: 0 };
+        }
+        if (s.includes('dpkg') || s.includes('awk')) {
+          return { stdout: 'mariadb\n', exitCode: 0 };
+        }
+        if (s.includes('--databases') || s.includes('mysqldump')) {
+          // write a non-empty dump file path from redirect - dumpOneDatabase checks existsSync
+          // The redirect creates file in real FS from shell - mock doesn't create file.
+          // Force success by making exit 0 and pre-create via note: dump checks size after command.
+          dumpWritten = true;
+          return { stdout: '', exitCode: 0 };
+        }
+        if (s.includes('mysql.user') || s.includes('SHOW GRANTS')) {
+          return { stdout: '', exitCode: 0 };
+        }
+        if (s.includes('mv /var/lib/mysql')) {
+          return { stdout: '', stderr: 'permission denied', exitCode: 1 };
+        }
+        if (argv[0] === 'systemctl' && argv.includes('start')) {
+          return { stdout: '', exitCode: 0 };
+        }
+        if (argv[0] === 'systemctl') {
+          return { stdout: 'active\n', exitCode: 0 };
+        }
+        return { exitCode: 0 };
+      },
+    });
+    // dumpOneDatabase requires file exists with size - mock won't create. Patch by writing after failed empty:
+    // Actually empty dump returns failed_safe at dump phase. Need real write in dump mock.
+    // Use host that writes file when dump runs:
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-sw-mvfail-'));
+    const host2: HostExecutor = {
+      ...host,
+      runCommand: async (argv) => {
+        const s = argv.join(' ');
+        called.push(s.slice(0, 160));
+        if (s.includes('SHOW DATABASES')) {
+          return { stdout: 'mysql\nappdb\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('information_schema.tables')) {
+          return { stdout: '2\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('command -v')) {
+          if (s.includes('mariadbd')) {
+            return { stdout: '/usr/sbin/mariadbd\n', stderr: '', exitCode: 0, argv, dryRun: false };
+          }
+          if (s.includes('dump')) {
+            return { stdout: '/usr/bin/mysqldump\n', stderr: '', exitCode: 0, argv, dryRun: false };
+          }
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('dpkg') || s.includes('awk')) {
+          return { stdout: 'mariadb\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('--databases') || s.includes('mysqldump')) {
+          // Extract output path from `> "path"`
+          const m = s.match(/>\s*"([^"]+)"/) || s.match(/>\s*'([^']+)'/) || s.match(/>\s*(\S+\.sql)/);
+          if (m?.[1]) {
+            const { writeFileSync, mkdirSync } = await import('node:fs');
+            const { dirname } = await import('node:path');
+            mkdirSync(dirname(m[1]), { recursive: true });
+            writeFileSync(m[1], '-- dump\nCREATE DATABASE appdb;\n');
+            dumpWritten = true;
+          }
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('mysql.user') || s.includes('SHOW GRANTS')) {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('mv /var/lib/mysql')) {
+          return { stdout: '', stderr: 'permission denied', exitCode: 1, argv, dryRun: false };
+        }
+        if (argv[0] === 'systemctl') {
+          return { stdout: 'active\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const r = await switchSqlEngine({
+      host: host2,
+      dataDir,
+      target: 'mysql',
+      confirmPhrase: 'SWITCH',
+      acknowledgeExclusive: true,
+    });
+    expect(dumpWritten).toBe(true);
+    expect(r.ok).toBe(false);
+    expect(r.code).toBe('failed_safe');
+    expect(called.some((c) => c.includes('apt-get'))).toBe(false);
+    expect(called.some((c) => c.includes('systemctl') && c.includes('start'))).toBe(true);
+  });
 });
 
 describe('getSoftware mysql-server exists', () => {

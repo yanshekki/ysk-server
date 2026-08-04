@@ -1172,6 +1172,7 @@ export async function handleSystemRoutes(
       confirmPhrase?: string;
       acknowledgeExclusive?: boolean;
       migrateData?: boolean;
+      rootPassword?: string;
     };
     const target = data.target as 'mysql' | 'mariadb';
     if (target !== 'mysql' && target !== 'mariadb') {
@@ -1185,6 +1186,7 @@ export async function handleSystemRoutes(
       confirmPhrase: String(data.confirmPhrase ?? ''),
       acknowledgeExclusive: data.acknowledgeExclusive === true,
       migrateData: data.migrateData !== false,
+      rootPassword: typeof data.rootPassword === 'string' ? data.rootPassword : undefined,
     });
     ctx.audit.append({
       actor: user.username,

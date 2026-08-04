@@ -36,7 +36,10 @@ async function dumpOneDatabase(
   flavor: 'mysql' | 'mariadb',
   dbName: string,
   outPath: string,
+  rootPassword?: string,
 ): Promise<{ ok: boolean; detail: string }> {
+  const { sqlPasswordEnvPrefix } = await import('./sql-auth.js');
+  const env = sqlPasswordEnvPrefix(rootPassword);
   const dumpPref = flavor === 'mariadb' ? 'mariadb-dump' : 'mysqldump';
   const bin =
     (await resolveBin(host, dumpPref)) ||
@@ -46,7 +49,7 @@ async function dumpOneDatabase(
     [
       'bash',
       '-c',
-      `${JSON.stringify(bin)} --single-transaction --routines --triggers --events --databases ${JSON.stringify(dbName)} > ${JSON.stringify(outPath)} 2>/tmp/ysk-sqldump.err; ec=$?; if [ $ec -ne 0 ]; then cat /tmp/ysk-sqldump.err; fi; exit $ec`,
+      `${env}${JSON.stringify(bin)} --single-transaction --routines --triggers --events --databases ${JSON.stringify(dbName)} > ${JSON.stringify(outPath)} 2>/tmp/ysk-sqldump.err; ec=$?; if [ $ec -ne 0 ]; then cat /tmp/ysk-sqldump.err; fi; exit $ec`,
     ],
     { timeoutMs: 600_000 },
   );
@@ -67,6 +70,8 @@ export async function switchSqlEngine(input: {
   confirmPhrase: string;
   acknowledgeExclusive: boolean;
   migrateData?: boolean;
+  /** Optional root password (or set YSK_SQL_ROOT_PASSWORD) when socket auth is unavailable */
+  rootPassword?: string;
 }): Promise<SqlSwitchResult> {
   const steps: SqlSwitchStep[] = [];
   const notes: string[] = [];
@@ -117,10 +122,14 @@ export async function switchSqlEngine(input: {
     };
   }
 
+  const { resolveSqlRootPassword, sqlPasswordEnvPrefix } = await import('./sql-auth.js');
+  const rootPassword = resolveSqlRootPassword(input.rootPassword);
+
   const preview = await previewSqlEngineSwitch({
     host: input.host,
     target,
     dataDir: input.dataDir,
+    rootPassword,
   });
   if (!preview.needsSwitch) {
     return {
@@ -181,12 +190,12 @@ export async function switchSqlEngine(input: {
   const dbs =
     preview.databases.length > 0
       ? preview.databases
-      : await listUserDatabases(input.host, sourceFlavor);
+      : await listUserDatabases(input.host, sourceFlavor, rootPassword);
 
   if (migrateData) {
     for (const db of dbs) {
       const out = join(dumpPath, `${db.name}.sql`);
-      const d = await dumpOneDatabase(input.host, sourceFlavor, db.name, out);
+      const d = await dumpOneDatabase(input.host, sourceFlavor, db.name, out, rootPassword);
       steps.push({
         name: `dump ${db.name}`,
         status: d.ok ? 'ok' : 'failed',
@@ -206,7 +215,7 @@ export async function switchSqlEngine(input: {
         };
       }
     }
-    const grants = await exportUserGrants(input.host, sourceFlavor);
+    const grants = await exportUserGrants(input.host, sourceFlavor, rootPassword);
     writeFileSync(join(dumpPath, 'grants.sql'), grants.sql);
     steps.push({
       name: 'export grants',
@@ -317,24 +326,28 @@ export async function switchSqlEngine(input: {
 
   // —— import ——
   const client = target === 'mariadb' ? 'mariadb' : 'mysql';
+  const env = sqlPasswordEnvPrefix(rootPassword);
   let imported = 0;
+  let importHardFail = false;
   if (migrateData && dbs.length) {
     for (const db of dbs) {
       const sqlFile = join(dumpPath, `${db.name}.sql`);
       if (!existsSync(sqlFile)) {
         steps.push({ name: `import ${db.name}`, status: 'failed', detail: 'missing dump file' });
+        importHardFail = true;
         continue;
       }
       const r = await input.host.runCommand(
         [
           'bash',
           '-c',
-          `${client} < ${JSON.stringify(sqlFile)} 2>&1 || mysql < ${JSON.stringify(sqlFile)} 2>&1`,
+          `${env}${client} < ${JSON.stringify(sqlFile)} 2>&1 || ${env}mysql < ${JSON.stringify(sqlFile)} 2>&1`,
         ],
         { timeoutMs: 600_000 },
       );
       const ok = r.exitCode === 0;
       if (ok) imported++;
+      else importHardFail = true;
       steps.push({
         name: `import ${db.name}`,
         status: ok ? 'ok' : 'failed',
@@ -347,7 +360,7 @@ export async function switchSqlEngine(input: {
         [
           'bash',
           '-c',
-          `${client} < ${JSON.stringify(grantsPath)} 2>&1 || mysql < ${JSON.stringify(grantsPath)} 2>&1 || true`,
+          `${env}${client} < ${JSON.stringify(grantsPath)} 2>&1 || ${env}mysql < ${JSON.stringify(grantsPath)} 2>&1 || true`,
         ],
         { timeoutMs: 120_000 },
       );
@@ -360,19 +373,19 @@ export async function switchSqlEngine(input: {
   }
 
   // —— verify ——
-  const after = await listUserDatabases(input.host, target);
+  const after = await listUserDatabases(input.host, target, rootPassword);
   const afterNames = new Set(after.map((d) => d.name));
   const missing = dbs.map((d) => d.name).filter((n) => !afterNames.has(n));
   const probe = new HostSoftwareProbe(input.host);
   const flavor = await probe.detectSqlFlavor();
-  const verifyOk = missing.length === 0 && flavor === target;
+  const verifyOk = missing.length === 0 && flavor === target && !importHardFail;
 
   steps.push({
     name: 'verify',
     status: verifyOk ? 'ok' : 'failed',
     detail: verifyOk
       ? `flavor=${flavor}; dbs=${after.map((d) => d.name).join(',')}`
-      : `missing dbs: ${missing.join(', ')}; flavor=${flavor}`,
+      : `missing dbs: ${missing.join(', ')}; flavor=${flavor}; importHardFail=${importHardFail}`,
   });
 
   if (!verifyOk) {

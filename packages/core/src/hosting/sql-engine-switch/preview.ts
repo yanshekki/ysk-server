@@ -39,13 +39,16 @@ export function sourceServerId(flavor: 'mysql' | 'mariadb'): string {
 export async function listUserDatabases(
   host: HostExecutor,
   flavor: 'mysql' | 'mariadb',
+  rootPassword?: string,
 ): Promise<SqlSwitchDbInfo[]> {
+  const { sqlPasswordEnvPrefix } = await import('./sql-auth.js');
+  const env = sqlPasswordEnvPrefix(rootPassword);
   const client = flavor === 'mariadb' ? 'mariadb' : 'mysql';
   const r = await host.runCommand(
     [
       'bash',
       '-c',
-      `${client} -N -e "SHOW DATABASES" 2>/dev/null || mysql -N -e "SHOW DATABASES" 2>/dev/null || true`,
+      `${env}${client} -N -e "SHOW DATABASES" 2>/dev/null || ${env}mysql -N -e "SHOW DATABASES" 2>/dev/null || true`,
     ],
     { timeoutMs: 30_000 },
   );
@@ -62,7 +65,7 @@ export async function listUserDatabases(
       [
         'bash',
         '-c',
-        `${client} -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${safe}'" 2>/dev/null || mysql -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${safe}'" 2>/dev/null || true`,
+        `${env}${client} -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${safe}'" 2>/dev/null || ${env}mysql -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${safe}'" 2>/dev/null || true`,
       ],
       { timeoutMs: 15_000 },
     );
@@ -77,6 +80,7 @@ export async function previewSqlEngineSwitch(input: {
   host: HostExecutor;
   target: SqlSwitchTarget;
   dataDir: string;
+  rootPassword?: string;
 }): Promise<SqlSwitchPreview> {
   const target = input.target;
   if (target !== 'mysql' && target !== 'mariadb') {
@@ -144,7 +148,9 @@ export async function previewSqlEngineSwitch(input: {
   }
 
   // Other flavor installed → switch required
-  const databases = await listUserDatabases(input.host, currentFlavor);
+  const { resolveSqlRootPassword } = await import('./sql-auth.js');
+  const rootPassword = resolveSqlRootPassword(input.rootPassword);
+  const databases = await listUserDatabases(input.host, currentFlavor, rootPassword);
   const execute = input.host.executeEnabled();
   const root = input.host.isRoot();
   let canProceed = true;
