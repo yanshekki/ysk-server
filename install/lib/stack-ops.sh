@@ -100,6 +100,71 @@ install_component_node() {
   log "Node.js $(node -v)"
 }
 
+# Free :80/:443 so the primary web server can bind. Nginx and Apache must not both be active.
+stop_conflicting_http_servers() {
+  local keep="$1" # nginx | apache2
+  resolve_sudo
+  local u
+  if [[ "$keep" == "nginx" ]]; then
+    for u in apache2 httpd; do
+      if systemctl is-active --quiet "$u" 2>/dev/null; then
+        log "Stopping $u so nginx can bind :80/:443"
+        # shellcheck disable=SC2086
+        $SUDO systemctl stop "$u" 2>/dev/null || true
+        # shellcheck disable=SC2086
+        $SUDO systemctl disable "$u" 2>/dev/null || true
+      fi
+    done
+  elif [[ "$keep" == "apache2" ]]; then
+    for u in nginx; do
+      if systemctl is-active --quiet "$u" 2>/dev/null; then
+        log "Stopping $u so apache2 can bind :80/:443"
+        # shellcheck disable=SC2086
+        $SUDO systemctl stop "$u" 2>/dev/null || true
+        # shellcheck disable=SC2086
+        $SUDO systemctl disable "$u" 2>/dev/null || true
+      fi
+    done
+  fi
+}
+
+enable_component_units() {
+  local id="$1"
+  shift
+  local units=("$@")
+  local u st
+  [[ ${#units[@]} -eq 0 ]] && return 0
+  resolve_sudo
+  for u in "${units[@]}"; do
+    [[ -z "$u" ]] && continue
+    log "Enable/start unit: $u (component $id)"
+    # shellcheck disable=SC2086
+    if ! $SUDO systemctl enable --now "$u" 2>/dev/null; then
+      # shellcheck disable=SC2086
+      $SUDO systemctl start "$u" 2>/dev/null || true
+    fi
+    st="$(systemctl is-active "$u" 2>/dev/null || true)"
+    st="$(echo "$st" | head -1 | tr -d '[:space:]')"
+    if [[ "$st" == "active" ]]; then
+      log "  unit $u → active"
+    elif component_is_optional "$id"; then
+      warn "  unit $u → ${st:-unknown} (optional component; soft)"
+      SOFT_SKIPS+=("unit:$u:$st")
+    else
+      err "  unit $u → ${st:-unknown} (expected active)"
+      # shellcheck disable=SC2086
+      $SUDO journalctl -u "$u" -n 15 --no-pager 2>/dev/null | while IFS= read -r line; do
+        err "    $line"
+      done || true
+      if [[ "$st" == "failed" || "$st" == "inactive" || -z "$st" ]]; then
+        record_hard_fail "unit not active after install: $u ($st)"
+        return 1
+      fi
+    fi
+  done
+  return 0
+}
+
 install_component_apt() {
   local id="$1"
   local pkgs=()
@@ -116,6 +181,13 @@ install_component_apt() {
     preseed_postfix
   fi
 
+  # Port 80/443 exclusivity: stop the other HTTP server before install/start
+  if [[ "$id" == "nginx" ]]; then
+    stop_conflicting_http_servers nginx
+  elif [[ "$id" == "apache2" ]]; then
+    stop_conflicting_http_servers apache2
+  fi
+
   if [[ ${#pkgs[@]} -gt 0 ]]; then
     if component_is_optional "$id"; then
       apt_install_optional "${pkgs[@]}"
@@ -125,6 +197,16 @@ install_component_apt() {
   fi
   if [[ ${#opt[@]} -gt 0 ]]; then
     apt_install_optional "${opt[@]}"
+  fi
+
+  # Package postinst may leave unit failed (e.g. bind conflict). Re-assert + verify.
+  if [[ ${#units[@]} -gt 0 ]]; then
+    if [[ "$id" == "nginx" ]]; then
+      stop_conflicting_http_servers nginx
+    elif [[ "$id" == "apache2" ]]; then
+      stop_conflicting_http_servers apache2
+    fi
+    enable_component_units "$id" "${units[@]}" || return 1
   fi
 
   local pkgs_csv units_csv data_csv

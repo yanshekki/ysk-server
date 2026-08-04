@@ -111,27 +111,44 @@ export async function installSoftware(input: {
   const notes: string[] = [];
   const before = await probeSoftware(input.host, spec);
   if (before.installed) {
-    notes.push(tl('notes.auto.t0149', { v0: (resolveSoftwareTitle(spec)) }));
+    notes.push(tl('notes.auto.t0149', { v0: resolveSoftwareTitle(spec) }));
+    let unitFailed = false;
     if (spec.units?.length && input.enableUnits !== false) {
+      // If unit is failed (e.g. port conflict), free :80 and retry start
       for (const u of spec.units) {
+        const cur = await unitIsActive(input.host, u);
+        if (cur === 'failed' || cur === 'inactive') {
+          await freeHttpPortForSpec(input.host, spec.id, steps, notes);
+        }
         const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
-          timeoutMs: 60_000 });
+          timeoutMs: 60_000,
+        });
+        const active = await unitIsActive(input.host, u);
+        const unitOk = active === 'active' || (en.exitCode === 0 && active !== 'failed');
         steps.push({
           name: tl('notes.software.startUnit', { u }),
-          status: en.exitCode === 0 ? 'ok' : 'failed',
-          detail: en.exitCode === 0 ? 'ok' : en.stderr });
+          status: unitOk ? 'ok' : 'failed',
+          detail: unitOk ? 'ok' : en.stderr || `systemctl is-active → ${active ?? 'unknown'}`,
+        });
+        if (active === 'failed' || (!unitOk && active !== 'active')) {
+          unitFailed = true;
+          notes.push(await unitFailureHint(input.host, u, active ?? 'unknown'));
+        }
       }
     }
     const status = await probeSoftware(input.host, spec);
     return {
-      ok: true,
+      ok: !unitFailed,
       executed: false,
       id: spec.id,
       title: resolveSoftwareTitle(spec),
       installed: true,
       notes,
-      steps: steps.length ? steps : [{ name: tl('notes.probe'), status: 'ok', detail: tl('notes.tpl.installed') }],
-      status };
+      steps: steps.length
+        ? steps
+        : [{ name: tl('notes.probe'), status: 'ok', detail: tl('notes.tpl.installed') }],
+      status,
+    };
   }
 
   const can = input.host.executeEnabled() && input.host.isRoot();
@@ -277,19 +294,35 @@ export async function installSoftware(input: {
   }
 
   if (installOk && spec.units?.length && input.enableUnits !== false) {
+    await freeHttpPortForSpec(input.host, spec.id, steps, notes);
     for (const u of spec.units) {
       const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
         timeoutMs: 60_000 });
+      const active = await unitIsActive(input.host, u);
+      const unitOk = en.exitCode === 0 && active === 'active';
       steps.push({
         name: tl('notes.software.startUnit', { u }),
-        status: en.exitCode === 0 ? 'ok' : 'failed',
-        detail: en.exitCode === 0 ? tl('notes.auto.n0744') : en.stderr });
+        status: unitOk ? 'ok' : 'failed',
+        detail: unitOk ? tl('notes.auto.n0744') : en.stderr || `systemctl is-active → ${active}` });
+      if (!unitOk) {
+        notes.push(await unitFailureHint(input.host, u, active));
+      }
     }
   }
 
   const status = await probeSoftware(input.host, spec);
-  const ok = status.installed;
-  notes.push(ok ? tl('notes.software.installedSpec', { title: resolveSoftwareTitle(spec) }) : tl('notes.auto.t0151', { v0: (resolveSoftwareTitle(spec)) }));
+  let unitsOk = true;
+  if (installOk && spec.units?.length && input.enableUnits !== false) {
+    for (const u of spec.units) {
+      if ((await unitIsActive(input.host, u)) !== 'active') unitsOk = false;
+    }
+  }
+  const ok = status.installed && unitsOk;
+  notes.push(
+    ok
+      ? tl('notes.software.installedSpec', { title: resolveSoftwareTitle(spec) })
+      : tl('notes.auto.t0151', { v0: resolveSoftwareTitle(spec) }),
+  );
   return {
     ok,
     executed: true,
@@ -299,6 +332,42 @@ export async function installSoftware(input: {
     notes,
     steps,
     status };
+}
+
+/** Nginx vs Apache must not both own :80/:443. */
+async function freeHttpPortForSpec(
+  host: HostExecutor,
+  id: string,
+  steps: SoftwareInstallStep[],
+  notes: string[],
+): Promise<void> {
+  const stopList =
+    id === 'nginx' ? ['apache2', 'httpd'] : id === 'apache2' ? ['nginx'] : [];
+  for (const u of stopList) {
+    const active = await unitIsActive(host, u);
+    if (active !== 'active' && active !== 'activating') continue;
+    notes.push(`Stopping ${u} so ${id} can bind :80/:443`);
+    const r = await host.runCommand(['systemctl', 'disable', '--now', u], { timeoutMs: 30_000 });
+    steps.push({
+      name: `stop conflicting ${u}`,
+      status: r.exitCode === 0 ? 'ok' : 'failed',
+      detail: r.exitCode === 0 ? `stopped ${u}` : r.stderr || r.stdout,
+    });
+  }
+}
+
+async function unitFailureHint(host: HostExecutor, unit: string, active: string): Promise<string> {
+  if (unit === 'nginx' && (active === 'failed' || active === 'inactive')) {
+    const apache = await unitIsActive(host, 'apache2');
+    if (apache === 'active') {
+      return 'nginx unit not active — apache2 is still running on :80 (stop/disable apache2, then systemctl restart nginx)';
+    }
+    const t = await host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
+    if (t.exitCode !== 0) {
+      return `nginx -t failed: ${(t.stderr || t.stdout).trim().slice(0, 400)}`;
+    }
+  }
+  return `unit ${unit} is ${active} (expected active)`;
 }
 
 export async function installSoftwareBatch(input: {

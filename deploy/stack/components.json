@@ -22,7 +22,9 @@
       "aptPackages": ["nginx"],
       "bins": ["nginx"],
       "units": ["nginx"],
-      "dataPaths": []
+      "dataPaths": [],
+      "exclusiveWith": ["apache2"],
+      "notes": "Primary HTTP server. Do not run apache2 on the same host ports 80/443."
     },
     "apache2": {
       "title": "Apache HTTP Server",
@@ -31,7 +33,9 @@
       "aptPackages": ["apache2"],
       "bins": ["apache2", "apache2ctl"],
       "units": ["apache2"],
-      "dataPaths": []
+      "dataPaths": [],
+      "exclusiveWith": ["nginx"],
+      "notes": "Optional alternate HTTP server. Conflicts with nginx on :80/:443."
     },
     "certbot": {
       "title": "Certbot",

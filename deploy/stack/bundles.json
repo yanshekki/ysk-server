@@ -41,8 +41,9 @@
     "web": {
       "title": "Web hosting",
       "titleZh": "網頁託管",
-      "description": "Nginx, Apache (optional), Certbot, PHP for sites.",
-      "components": ["nginx", "apache2", "certbot", "php"]
+      "description": "Nginx (primary :80/:443), Certbot, PHP. Apache is optional — do not co-enable with Nginx on the same ports.",
+      "components": ["nginx", "certbot", "php"],
+      "optionalComponents": ["apache2"]
     },
     "database": {
       "title": "Databases",
