@@ -42,6 +42,7 @@ export * from './software-install.js';
 export * from './software-probe/index.js';
 export * from './stack/index.js';
 export * from './db-engine.js';
+export * from './sql-engine-switch/index.js';
 export * from './redis-browser.js';
 export * from './db-service-config.js';
 export * from './service-catalog/index.js';

@@ -80,3 +80,40 @@ export async function unitIsEnabled(host: HostExecutor, unit: string): Promise<s
     return undefined;
   }
 }
+
+/**
+ * Poll systemctl is-active until active (or timeout).
+ * Treats `activating` as transient; `failed` aborts early.
+ */
+export async function waitUnitActive(
+  host: HostExecutor,
+  unit: string,
+  opts?: { timeoutMs?: number; pollMs?: number },
+): Promise<{ ok: boolean; active: string; notes: string[] }> {
+  const timeoutMs = opts?.timeoutMs ?? 120_000;
+  const pollMs = opts?.pollMs ?? 1_500;
+  const start = Date.now();
+  let last = 'unknown';
+  while (Date.now() - start < timeoutMs) {
+    last = (await unitIsActive(host, unit)) ?? 'unknown';
+    if (last === 'active') {
+      return { ok: true, active: last, notes: [] };
+    }
+    if (last === 'failed') {
+      return {
+        ok: false,
+        active: last,
+        notes: [`unit ${unit} failed while waiting for active`],
+      };
+    }
+    await new Promise((r) => setTimeout(r, pollMs));
+  }
+  return {
+    ok: last === 'active',
+    active: last,
+    notes:
+      last === 'active'
+        ? []
+        : [`unit ${unit} still ${last} after ${timeoutMs}ms (expected active)`],
+  };
+}

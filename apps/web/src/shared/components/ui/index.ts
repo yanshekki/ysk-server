@@ -19,6 +19,9 @@ export type { ModalProps } from './Modal';
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
 
+export { SqlEngineSwitchDialog } from './SqlEngineSwitchDialog';
+export type { SqlEngineSwitchDialogProps } from './SqlEngineSwitchDialog';
+
 /** Page-level tabs — prefer PageTabs; Tabs kept as alias */
 export { PageTabs, Tabs } from './PageTabs';
 export type { PageTabsProps, PageTabItem, TabsProps, TabItem } from './PageTabs';

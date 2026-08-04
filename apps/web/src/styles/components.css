@@ -2,3 +2,42 @@
  * Compatibility shim — prefer @import components/index via styles/index.css.
  */
 @import './components/index.css';
+
+/* SQL engine exclusive switch dialog */
+.sql-engine-switch-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.sql-engine-switch-dialog__warnings {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-danger, #b91c1c);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.sql-engine-switch-dialog__db-list {
+  max-height: 8rem;
+  overflow: auto;
+  margin: 0.35rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+}
+.sql-engine-switch-dialog__check,
+.sql-engine-switch-dialog__phrase {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+.sql-engine-switch-dialog__check {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.sql-engine-switch-dialog__phrase input {
+  font-family: ui-monospace, monospace;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+}

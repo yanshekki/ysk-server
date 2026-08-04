@@ -54,6 +54,8 @@ import {
   lifecycleService,
   applyConsoleSettings,
   installServiceEngine,
+  previewSqlEngineSwitch,
+  switchSqlEngine,
   applyFirewall,
   applyFail2ban,
   applyNginxSite,
@@ -1138,12 +1140,65 @@ export async function handleSystemRoutes(
       ctx.audit.append({
         actor: user.username,
         action: `system.db.${engine}.install`,
-        detail: { ok: result.ok },
+        detail: { ok: result.ok, code: result.code },
         ok: result.ok,
       });
       sendOpsResult(res, result);
       return true;
     }
+  }
+
+  // —— SQL engine exclusive switch (MySQL XOR MariaDB) ——
+  if (method === 'GET' && url.pathname === '/api/v1/system/db/sql-engine/switch-preview') {
+    ctx.auth.authenticate(getBearer(req));
+    const target = (url.searchParams.get('target') || '') as 'mysql' | 'mariadb';
+    if (target !== 'mysql' && target !== 'mariadb') {
+      sendJson(res, 400, { ok: false, message: 'target must be mysql|mariadb' });
+      return true;
+    }
+    const preview = await previewSqlEngineSwitch({
+      host: ctx.host,
+      target,
+      dataDir: ctx.dataDir,
+    });
+    sendJson(res, 200, preview);
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/system/db/sql-engine/switch') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      target?: string;
+      confirmPhrase?: string;
+      acknowledgeExclusive?: boolean;
+      migrateData?: boolean;
+    };
+    const target = data.target as 'mysql' | 'mariadb';
+    if (target !== 'mysql' && target !== 'mariadb') {
+      sendJson(res, 400, { ok: false, message: 'target must be mysql|mariadb' });
+      return true;
+    }
+    const result = await switchSqlEngine({
+      host: ctx.host,
+      dataDir: ctx.dataDir,
+      target,
+      confirmPhrase: String(data.confirmPhrase ?? ''),
+      acknowledgeExclusive: data.acknowledgeExclusive === true,
+      migrateData: data.migrateData !== false,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.db.sql_engine.switch',
+      detail: {
+        target,
+        ok: result.ok,
+        code: result.code,
+        dumpPath: result.dumpPath,
+      },
+      ok: result.ok,
+    });
+    sendOpsResult(res, result);
+    return true;
   }
 
   // —— MySQL / MariaDB engine ——

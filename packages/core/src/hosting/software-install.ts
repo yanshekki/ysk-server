@@ -12,7 +12,7 @@ import {
   type SoftwareSpec } from './software-catalog.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { planOrInstallRuntime } from './runtime-probe.js';
-import { HostSoftwareProbe, unitIsActive } from './software-probe/index.js';
+import { HostSoftwareProbe, unitIsActive, waitUnitActive } from './software-probe/index.js';
 
 export type SoftwareStatus = {
   id: SoftwareId | string;
@@ -42,7 +42,14 @@ export type SoftwareInstallResult = {
   notes: string[];
   steps: SoftwareInstallStep[];
   status: SoftwareStatus;
+  /** UI must open SQL engine switch dialog instead of bare apt */
+  code?: 'needs_exclusive_switch' | string;
+  switchTarget?: 'mysql' | 'mariadb';
+  blockedByExclusive?: string;
 };
+
+/** In-process auth from sql-engine-switch only (not HTTP-forgable alone). */
+export type ExclusiveSwitchAuth = { __yskSqlEngineSwitch: true };
 
 let lastAptUpdateMs = 0;
 const APT_UPDATE_MS = 5 * 60_000;
@@ -87,6 +94,11 @@ export async function installSoftware(input: {
   dataDir?: string;
   /** enable units after apt (default true) */
   enableUnits?: boolean;
+  /**
+   * Only sql-engine-switch may set this after user confirmed exclusive switch.
+   * Without it, installing mysql-server while MariaDB is present (or reverse) is refused.
+   */
+  exclusiveSwitchAuth?: ExclusiveSwitchAuth;
 }): Promise<SoftwareInstallResult> {
   const spec = getSoftware(input.id);
   if (!spec) {
@@ -109,6 +121,36 @@ export async function installSoftware(input: {
 
   const steps: SoftwareInstallStep[] = [];
   const notes: string[] = [];
+
+  // Exclusive gate: MySQL XOR MariaDB — bare one-click must not apt-install over the other
+  if (
+    (spec.id === 'mysql-server' || spec.id === 'mariadb-server') &&
+    input.exclusiveSwitchAuth?.__yskSqlEngineSwitch !== true
+  ) {
+    const probe = new HostSoftwareProbe(input.host);
+    const presence = await probe.presence(spec.id);
+    if (presence.blockedByExclusive) {
+      const switchTarget = spec.id === 'mysql-server' ? 'mysql' : 'mariadb';
+      const other =
+        presence.blockedByExclusive === 'mariadb-server' ? 'MariaDB' : 'MySQL';
+      const msg = `Host already runs ${other}. MySQL and MariaDB are exclusive — confirm engine switch (dump → uninstall other → install → import) via POST /api/v1/system/db/sql-engine/switch.`;
+      return {
+        ok: false,
+        executed: false,
+        id: spec.id,
+        title: resolveSoftwareTitle(spec),
+        installed: false,
+        notes: [msg],
+        steps: [{ name: 'exclusive-gate', status: 'blocked', detail: msg }],
+        status: await probeSoftware(input.host, spec),
+        code: 'needs_exclusive_switch',
+        switchTarget,
+        blockedByExclusive: presence.blockedByExclusive,
+        blockMessage: msg,
+      };
+    }
+  }
+
   const before = await probeSoftware(input.host, spec);
   if (before.installed) {
     notes.push(tl('notes.auto.t0149', { v0: resolveSoftwareTitle(spec) }));
@@ -298,14 +340,19 @@ export async function installSoftware(input: {
     for (const u of spec.units) {
       const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
         timeoutMs: 60_000 });
-      const active = await unitIsActive(input.host, u);
-      const unitOk = en.exitCode === 0 && active === 'active';
+      const waited = await waitUnitActive(input.host, u, {
+        timeoutMs: u === 'mysql' || u === 'mariadb' ? 120_000 : 60_000,
+      });
+      const unitOk = waited.ok;
       steps.push({
         name: tl('notes.software.startUnit', { u }),
         status: unitOk ? 'ok' : 'failed',
-        detail: unitOk ? tl('notes.auto.n0744') : en.stderr || `systemctl is-active → ${active}` });
+        detail: unitOk
+          ? tl('notes.auto.n0744')
+          : en.stderr || `systemctl is-active → ${waited.active}`,
+      });
       if (!unitOk) {
-        notes.push(await unitFailureHint(input.host, u, active ?? 'unknown'));
+        notes.push(await unitFailureHint(input.host, u, waited.active ?? 'unknown'));
       }
     }
   }
@@ -314,7 +361,8 @@ export async function installSoftware(input: {
   let unitsOk = true;
   if (installOk && spec.units?.length && input.enableUnits !== false) {
     for (const u of spec.units) {
-      if ((await unitIsActive(input.host, u)) !== 'active') unitsOk = false;
+      const a = await unitIsActive(input.host, u);
+      if (a !== 'active') unitsOk = false;
     }
   }
   const ok = status.installed && unitsOk;
@@ -440,6 +488,9 @@ export async function installForFeature(input: {
   results: SoftwareInstallResult[];
   missingBefore: SoftwareStatus[];
   notes: string[];
+  code?: string;
+  switchTarget?: 'mysql' | 'mariadb';
+  blockedByExclusive?: string;
 }> {
   const probed = await probeAllSoftware(input.host, input.feature);
   const missing = probed.filter((p) => !p.installed);
@@ -456,11 +507,16 @@ export async function installForFeature(input: {
     host: input.host,
     ids,
     dataDir: input.dataDir });
+  const switchHit = batch.results.find((r) => r.code === 'needs_exclusive_switch');
   return {
     ok: batch.ok,
     blocked: batch.blocked,
-    blockMessage: batch.blockMessage,
+    blockMessage: batch.blockMessage ?? switchHit?.blockMessage,
     results: batch.results,
     missingBefore: missing,
-    notes: batch.notes };
+    notes: batch.notes,
+    code: switchHit?.code,
+    switchTarget: switchHit?.switchTarget,
+    blockedByExclusive: switchHit?.blockedByExclusive,
+  };
 }

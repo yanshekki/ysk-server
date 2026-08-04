@@ -1,12 +1,14 @@
 /**
  * Sole page-level one-click install CTA (alert banner only).
  * Feature pages must not render additional install buttons.
+ * MySQL/MariaDB: opens exclusive switch dialog when needed.
  */
 import { useTranslation } from 'react-i18next';
 import { Alert } from './Alert';
 import { buttonClassName } from './Button';
 import { useFeatureSoftware } from '../../../features/software';
 import { OpsResultPanel, type OpsResultLike } from './OpsResultPanel';
+import { SqlEngineSwitchDialog } from './SqlEngineSwitchDialog';
 
 export interface SoftwareInstallBannerProps {
   feature: string;
@@ -35,13 +37,17 @@ export function SoftwareInstallBanner({
     lastResult,
     refresh,
     installAll,
+    switchPreview,
+    switchOpen,
+    setSwitchOpen,
+    confirmSwitch,
   } = useFeatureSoftware(feature);
 
-  if (autoHideWhenReady && ready && !error && !msg && !lastResult) {
+  if (autoHideWhenReady && ready && !error && !msg && !lastResult && !switchOpen) {
     return null;
   }
 
-  if (ready && !error && !msg) {
+  if (ready && !error && !msg && !switchOpen) {
     return null;
   }
 
@@ -71,6 +77,11 @@ export function SoftwareInstallBanner({
               <p className="software-install-banner__desc">
                 {t('softwareBanner.missing', { names })}
               </p>
+              {(feature === 'mysql' || feature === 'mariadb') && (
+                <p className="software-install-banner__desc muted u-text-sm">
+                  {t('sqlEngineSwitch.bannerHint')}
+                </p>
+              )}
             </div>
             <div className="software-install-banner__actions">
               <button
@@ -134,6 +145,18 @@ export function SoftwareInstallBanner({
           />
         </div>
       ) : null}
+
+      <SqlEngineSwitchDialog
+        open={switchOpen}
+        preview={switchPreview}
+        busy={busy}
+        onClose={() => setSwitchOpen(false)}
+        onConfirm={() =>
+          void confirmSwitch().then((r) => {
+            if (r.ok) onInstalled?.();
+          })
+        }
+      />
     </div>
   );
 }

@@ -8918,5 +8918,19 @@
       "viewer": "Read-only: status, logs, lists — no changes.",
       "agent": "Automation agent: low-risk writes with scope limits."
     }
+  },
+  "sqlEngineSwitch": {
+    "title": "Switch to {{target}}",
+    "subtitle": "Replace {{from}} with {{to}}. Only one SQL server is allowed.",
+    "confirm": "Confirm switch and migrate",
+    "success": "SQL engine switched and data migrated",
+    "bannerHint": "If the other engine is already installed, you must confirm an exclusive switch (uninstall other + migrate databases).",
+    "warnExclusive": "MySQL and MariaDB cannot run together on one host.",
+    "warnUninstall": "The current {{from}} server packages will be uninstalled.",
+    "warnMigrate": "User databases will be dumped, then re-imported into the new engine.",
+    "dbListTitle": "Databases to migrate ({{count}})",
+    "noUserDbs": "No user databases detected (system schemas only).",
+    "ackLabel": "I understand only one engine is allowed, agree to uninstall {{from}} and migrate data to {{to}}.",
+    "phraseLabel": "Type {{phrase}} to confirm"
   }
 }

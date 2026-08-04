@@ -54,6 +54,26 @@ export type StackOpResult = SoftwareInstallResult & {
   notes?: string[];
 };
 
+export type SqlSwitchPreview = {
+  ok: boolean;
+  currentFlavor: 'mysql' | 'mariadb' | 'none';
+  target: 'mysql' | 'mariadb';
+  needsSwitch: boolean;
+  canProceed: boolean;
+  blockReason?: string;
+  databases: Array<{ name: string; tableCount?: number }>;
+  warnings: string[];
+  confirmPhrase: string;
+  dataDirHint: string;
+};
+
+export type SqlSwitchResult = SoftwareInstallResult & {
+  dumpPath?: string;
+  oldDatadirBackup?: string;
+  code?: string;
+  steps?: Array<{ name: string; status: string; detail?: string }>;
+};
+
 export const softwareApi = {
   list: (feature?: string) => {
     const q = feature ? `?feature=${encodeURIComponent(feature)}` : '';
@@ -77,6 +97,24 @@ export const softwareApi = {
     api.requestRaw<SoftwareInstallResult>('/api/v1/system/software/install', {
       method: 'POST',
       body: JSON.stringify({ feature }),
+    }),
+
+  /** Preview MySQL ↔ MariaDB exclusive switch (no mutation) */
+  sqlEngineSwitchPreview: (target: 'mysql' | 'mariadb') =>
+    api.requestRaw<SqlSwitchPreview>(
+      `/api/v1/system/db/sql-engine/switch-preview?target=${encodeURIComponent(target)}`,
+    ),
+
+  /** Confirmed exclusive switch with data migration */
+  sqlEngineSwitch: (body: {
+    target: 'mysql' | 'mariadb';
+    confirmPhrase: string;
+    acknowledgeExclusive: boolean;
+    migrateData?: boolean;
+  }) =>
+    api.requestRaw<SqlSwitchResult>('/api/v1/system/db/sql-engine/switch', {
+      method: 'POST',
+      body: JSON.stringify(body),
     }),
 
   stackStatus: () => api.requestRaw<StackStatusResponse>('/api/v1/system/stack'),

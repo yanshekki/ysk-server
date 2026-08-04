@@ -8918,5 +8918,19 @@
       "viewer": "只讀：睇狀態、日誌、列表，唔可以改。",
       "agent": "自動化／代理：低危寫入，受 scope 限制。"
     }
+  },
+  "sqlEngineSwitch": {
+    "title": "切換至 {{target}}",
+    "subtitle": "會以 {{to}} 取代 {{from}}。同一主機只能運行一個 SQL 伺服器。",
+    "confirm": "確認切換並遷移資料",
+    "success": "SQL 引擎已切換並完成資料遷移",
+    "bannerHint": "若主機已安裝另一引擎，必須確認「互斥切換」（卸載對方 + 遷移資料庫），不能直接並列安裝。",
+    "warnExclusive": "MySQL 與 MariaDB 不能喺同一主機同時作為伺服器運行。",
+    "warnUninstall": "將會卸載而家嘅 {{from}} 伺服器軟件包。",
+    "warnMigrate": "會導出用戶資料庫再匯入到新引擎。",
+    "dbListTitle": "將遷移嘅資料庫（{{count}}）",
+    "noUserDbs": "未偵測到用戶資料庫（只有系統庫）。",
+    "ackLabel": "我明白兩者互斥，同意卸載 {{from}} 並將資料遷移到 {{to}}。",
+    "phraseLabel": "請輸入 {{phrase}} 以確認"
   }
 }

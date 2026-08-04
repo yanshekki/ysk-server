@@ -24,6 +24,14 @@ export interface SoftwareInstallResultDto {
   steps?: Array<{ name: string; status: string; detail?: string }>;
   status?: SoftwareStatusDto;
   results?: SoftwareInstallResultDto[];
+  /**
+   * When set to needs_exclusive_switch, UI must open SQL engine switch dialog
+   * (MySQL XOR MariaDB) instead of bare apt install.
+   */
+  code?: 'needs_exclusive_switch' | string;
+  /** Present when code=needs_exclusive_switch */
+  switchTarget?: 'mysql' | 'mariadb';
+  blockedByExclusive?: string;
 }
 
 export type SoftwareStatus = SoftwareStatusDto;

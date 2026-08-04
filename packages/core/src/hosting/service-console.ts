@@ -481,11 +481,23 @@ export async function installServiceEngine(
   host: HostExecutor,
   engine: ServiceEngine,
   dataDir?: string,
-): Promise<{ ok: boolean; notes: string[]; blocked?: boolean; blockMessage?: string }> {
+): Promise<{
+  ok: boolean;
+  notes: string[];
+  blocked?: boolean;
+  blockMessage?: string;
+  code?: string;
+  switchTarget?: 'mysql' | 'mariadb';
+  blockedByExclusive?: string;
+}> {
   const ids = ENGINE_META[engine].installIds;
   const notes: string[] = [];
   let blocked = false;
   let blockMessage: string | undefined;
+  let allOk = true;
+  let code: string | undefined;
+  let switchTarget: 'mysql' | 'mariadb' | undefined;
+  let blockedByExclusive: string | undefined;
   for (const id of ids) {
     const r = await installSoftware({ host, id, dataDir, enableUnits: true });
     notes.push(...r.notes);
@@ -493,6 +505,20 @@ export async function installServiceEngine(
       blocked = true;
       blockMessage = r.blockMessage;
     }
+    if (!r.ok) allOk = false;
+    if (r.code === 'needs_exclusive_switch') {
+      code = r.code;
+      switchTarget = r.switchTarget;
+      blockedByExclusive = r.blockedByExclusive;
+    }
   }
-  return { ok: !blocked, notes, blocked, blockMessage };
+  return {
+    ok: allOk && !blocked,
+    notes,
+    blocked,
+    blockMessage,
+    code,
+    switchTarget,
+    blockedByExclusive,
+  };
 }

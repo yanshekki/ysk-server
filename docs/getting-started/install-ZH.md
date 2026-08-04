@@ -31,7 +31,8 @@ sudo ./install.sh
 步驟：
 
 1. **方案** — 推薦 / 全部 / 僅控制平面 / **自訂多選套餐**
-2. **SQL**（有 database）— MariaDB（預設）**或** MySQL（互斥）
+2. **SQL**（有 database）— MariaDB（預設）**或** MySQL（互斥）  
+   面板一鍵安裝若偵測到對方已安裝，會彈出 **互斥切換** 確認（輸入 `SWITCH`）：先 logical dump 用戶庫 → 卸載對方 → 安裝目標 → 匯入。**不可** 兩引擎並存；直接 apt 會被後端拒絕（`needs_exclusive_switch`）。
 3. **ClamAV**（有 email）— 可選大型套件
 4. **產品來源** — npm 全域或 `--from-source`
 5. **資料目錄** — 預設 `/var/lib/ysk-server` 或 `~/.ysk`
