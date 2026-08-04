@@ -294,14 +294,11 @@ export async function buildHostManifest(input: {
     optionalEtc.push('/etc/letsencrypt');
   }
 
-  // Dump tools presence (for later package phase)
+  // Dump tools presence (for later package phase) — HostSoftwareProbe PATH
+  const { binPresent } = await import('../software-probe/index.js');
   for (const bin of ['mysqldump', 'pg_dump', 'redis-cli', 'rsync', 'ssh']) {
     try {
-      const r = await input.host.runCommand(
-        ['bash', '-c', `command -v ${bin} >/dev/null 2>&1 && echo ok || true`],
-        { timeoutMs: 3_000 },
-      );
-      if (!r.stdout.includes('ok')) {
+      if (!(await binPresent(input.host, bin))) {
         if (bin === 'mysqldump' && databases.some((d) => d.engine === 'mysql')) {
           warnings.push(tl('notes.auto.n0543'));
         }

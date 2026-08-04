@@ -27,7 +27,11 @@ function mockHost(opts: {
   writeRdbPath?: boolean;
 }): HostExecutor {
   return {
-    pathExists: (p) => existsSync(p),
+    pathExists: (p) => {
+      // When testing missing redis-cli, do not let real host /usr/bin/redis-cli leak in
+      if (opts.hasCli === false && /redis-cli$/.test(p)) return false;
+      return existsSync(p);
+    },
     isRoot: () => true,
     executeEnabled: () => opts.execute ?? false,
     readFile: async () => '',
@@ -39,10 +43,15 @@ function mockHost(opts: {
     serviceStatus: async () => empty(),
     runCommand: async (argv) => {
       const script = typeof argv[2] === 'string' ? argv[2] : argv.join(' ');
-      if (script.includes('command -v redis-cli')) {
+      if (script.includes('command -v')) {
         return {
           ...empty(),
-          stdout: opts.hasCli === false ? '' : 'ok\n',
+          stdout:
+            opts.hasCli === false
+              ? ''
+              : script.includes('redis-cli')
+                ? '/usr/bin/redis-cli\n'
+                : '',
           argv,
         };
       }

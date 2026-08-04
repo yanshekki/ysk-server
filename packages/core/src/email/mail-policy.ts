@@ -8,6 +8,7 @@ import { mkdirSync, writeFileSync, readdirSync, existsSync, readFileSync } from 
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { applySenderRatePolicyService, writeSenderRatePolicyDaemon } from './sender-rate-policy.js';
+import { shellBinExists } from '../hosting/software-probe/index.js';
 
 export async function applyMailDomainPolicy(input: {
   dataDir: string;
@@ -139,7 +140,7 @@ export async function applyMailDomainPolicy(input: {
       [
         'bash',
         '-c',
-        `command -v postmap >/dev/null && (postmap hash:${sysPostfix}/ysk-rate.map || postmap ${sysPostfix}/ysk-rate.map)`,
+        `if ${shellBinExists('postmap')}; then postmap hash:${sysPostfix}/ysk-rate.map || postmap ${sysPostfix}/ysk-rate.map; fi`,
       ],
       false,
     );

@@ -12,6 +12,10 @@ import {
   type MigrateSshEndpoint,
   runSshCommand,
   userAtHost } from './transport.js';
+import {
+  shellBinExists,
+  shellProbePathExport,
+} from '../software-probe/index.js';
 
 export type PreflightCheck = {
   id: string;
@@ -111,12 +115,9 @@ export async function preflightSource(input: {
     push(checks, 'maintenance', true, tl('notes.auto.n0795'));
   }
 
+  const { binPresent } = await import('../software-probe/index.js');
   for (const bin of ['ssh', 'rsync', 'ssh-keygen'] as const) {
-    const r = await input.host.runCommand(
-      ['bash', '-c', `command -v ${bin} >/dev/null 2>&1 && echo ok || true`],
-      { timeoutMs: 3_000 },
-    );
-    const ok = r.stdout.includes('ok');
+    const ok = await binPresent(input.host, bin);
     push(
       checks,
       `bin:${bin}`,
@@ -127,17 +128,12 @@ export async function preflightSource(input: {
   }
 
   // sshpass optional — only blocked if password auth will be used (checked by caller)
-  const sp = await input.host.runCommand(
-    ['bash', '-c', 'command -v sshpass >/dev/null 2>&1 && echo ok || true'],
-    { timeoutMs: 3_000 },
-  );
+  const spOk = await binPresent(input.host, 'sshpass');
   push(
     checks,
     'bin:sshpass',
-    sp.stdout.includes('ok'),
-    sp.stdout.includes('ok')
-      ? tl('notes.auto.n0437')
-      : tl('notes.auto.n1087'),
+    spOk,
+    spOk ? tl('notes.auto.n0437') : tl('notes.auto.n1087'),
   );
 
   if (!existsSync(input.dataDir)) {
@@ -230,8 +226,10 @@ export async function preflightTarget(input: {
     `if [ -d ${JSON.stringify(td)} ]; then echo TARGET_EXISTS=1; else echo TARGET_EXISTS=0; fi`,
     `if [ -f ${JSON.stringify(td + '/ysk.json')} ]; then echo YSK_JSON=1; else echo YSK_JSON=0; fi`,
     "echo FREE_KB=$(df -Pk / | awk 'NR==2{print $4}')",
-    'command -v rsync >/dev/null && echo HAS_RSYNC=1 || echo HAS_RSYNC=0',
-    'command -v apt-get >/dev/null && echo HAS_APT=1 || echo HAS_APT=0',
+    // remote host script — shell helpers from software-probe (same PATH)
+    `${shellProbePathExport()}`,
+    `if ${shellBinExists('rsync')}; then echo HAS_RSYNC=1; else echo HAS_RSYNC=0; fi`,
+    `if ${shellBinExists('apt-get')}; then echo HAS_APT=1; else echo HAS_APT=0; fi`,
     'date -u +%s | awk \'{print "TIME_UTC="$1}\'',
     'echo YSK_PREFLIGHT_END',
   ].join('\n');

@@ -12,7 +12,12 @@ import type { HostExecutor } from '../host/executor.js';
 import type { JsonStore } from '../db/store.js';
 import { panelBlockMessage, type ApplyResult, type BlockReason } from './system-apply.js';
 import { createResource, listResources, updateResource } from './managed-resources.js';
-import { HostSoftwareProbe, binPresent } from './software-probe/index.js';
+import {
+  HostSoftwareProbe,
+  binPresent,
+  shellEnsureAptPackage,
+  shellBinExists,
+} from './software-probe/index.js';
 
 /**
  * crypt(3)-compatible hash for pam_userdb (crypt=crypt).
@@ -611,7 +616,7 @@ export async function applyFtpsService(input: {
       [
         'bash',
         '-c',
-        'export DEBIAN_FRONTEND=noninteractive; command -v vsftpd >/dev/null || apt-get update && apt-get install -y vsftpd db-util libpam-modules',
+        shellEnsureAptPackage('vsftpd', 'vsftpd db-util libpam-modules'),
       ],
       { timeoutMs: 300_000 },
     );
@@ -629,7 +634,7 @@ export async function applyFtpsService(input: {
       [
         'bash',
         '-c',
-        `command -v db_load >/dev/null && db_load -T -t hash -f ${JSON.stringify(paths.userDbTxt)} ${JSON.stringify(paths.userDb)} || true`,
+        `if ${shellBinExists('db_load')}; then db_load -T -t hash -f ${JSON.stringify(paths.userDbTxt)} ${JSON.stringify(paths.userDb)}; fi`,
       ],
       { timeoutMs: 30_000 },
     );
@@ -823,7 +828,7 @@ export async function applyFtpAccountReal(input: {
     [
       'bash',
       '-c',
-      `command -v db_load >/dev/null && db_load -T -t hash -f ${JSON.stringify(paths.userDbTxt)} ${JSON.stringify(paths.userDb)} || true`,
+      `if ${shellBinExists('db_load')}; then db_load -T -t hash -f ${JSON.stringify(paths.userDbTxt)} ${JSON.stringify(paths.userDb)}; fi`,
     ],
     { timeoutMs: 30_000 },
   );

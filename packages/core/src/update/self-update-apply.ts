@@ -6,6 +6,7 @@
 import { planSelfUpdate, compareVersions, isValidSha256 } from './self-update.js';
 import type { HostExecutor } from '../host/executor.js';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { shellBinExists } from '../hosting/software-probe/index.js';
 
 export interface RegistryVersion {
   latest: string;
@@ -386,7 +387,7 @@ export async function applySelfUpdateFromGit(input: {
       argv: [
         'bash',
         '-c',
-        `cd ${JSON.stringify(root)} && (command -v pnpm >/dev/null && pnpm install --frozen-lockfile 2>&1 || pnpm install 2>&1 || npm ci 2>&1 || npm install 2>&1)`,
+        `cd ${JSON.stringify(root)} && if ${shellBinExists('pnpm')}; then pnpm install --frozen-lockfile 2>&1 || pnpm install 2>&1; else npm ci 2>&1 || npm install 2>&1; fi`,
       ],
     },
     {
@@ -394,7 +395,7 @@ export async function applySelfUpdateFromGit(input: {
       argv: [
         'bash',
         '-c',
-        `cd ${JSON.stringify(root)} && (command -v pnpm >/dev/null && pnpm build 2>&1 || npm run build 2>&1)`,
+        `cd ${JSON.stringify(root)} && if ${shellBinExists('pnpm')}; then pnpm build 2>&1; else npm run build 2>&1; fi`,
       ],
     },
   ];

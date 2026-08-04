@@ -10,7 +10,7 @@ import { planLetsEncrypt, renderNginxProxy } from './nginx-ssl.js';
 import { renderPhpVhost, selectPhpRuntime } from './runtime.js';
 import { planFirewall } from './extras.js';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
-import { HostSoftwareProbe } from './software-probe/index.js';
+import { HostSoftwareProbe, shellEnsureAptPackage } from './software-probe/index.js';
 
 export type BlockReason =
   | 'no_execute'
@@ -484,7 +484,7 @@ export async function applyFtps(input: {
     [
       'bash',
       '-c',
-      'export DEBIAN_FRONTEND=noninteractive; command -v vsftpd >/dev/null || (apt-get update && apt-get install -y vsftpd db-util)',
+      shellEnsureAptPackage('vsftpd', 'vsftpd db-util'),
     ],
     ['cp', paths.conf, '/etc/vsftpd.conf'],
     ['systemctl', 'enable', '--now', 'vsftpd'],
@@ -888,7 +888,7 @@ export async function applyFail2ban(input: {
     commands.push([
       'bash',
       '-c',
-      'command -v fail2ban-client >/dev/null || (apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y fail2ban)',
+      shellEnsureAptPackage('fail2ban-client', 'fail2ban'),
     ]);
     commands.push(['cp', jailPath, '/etc/fail2ban/jail.local']);
     commands.push(['systemctl', 'enable', '--now', 'fail2ban']);

@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { probeFail2banStatus, fail2banBannedIps, fail2banUnban } from './system-apply.js';
+import { shellEnsureAptPackage } from './software-probe/index.js';
 
 export const FAIL2BAN_JAIL_CATALOG: Array<{
   id: string;
@@ -188,11 +189,7 @@ export async function applyFail2banPolicy(input: {
   }
   // ensure package
   const install = await input.host.runCommand(
-    [
-      'bash',
-      '-c',
-      'command -v fail2ban-client >/dev/null || (DEBIAN_FRONTEND=noninteractive apt-get install -y fail2ban)',
-    ],
+    ['bash', '-c', shellEnsureAptPackage('fail2ban-client', 'fail2ban')],
     { timeoutMs: 180_000 },
   );
   if (install.exitCode !== 0) {

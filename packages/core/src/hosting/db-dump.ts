@@ -74,11 +74,16 @@ export async function dumpSqlDatabase(input: {
   const fallback = 'mysqldump';
   const user = input.username || 'root';
   const passFlag = input.password ? `-p'${input.password.replace(/'/g, `'\\''`)}'` : '';
+  const { resolveBin } = await import('./software-probe/index.js');
+  const dumpBin =
+    (await resolveBin(input.host, client)) ||
+    (await resolveBin(input.host, fallback)) ||
+    fallback;
   const r = await input.host.runCommand(
     [
       'bash',
       '-c',
-      `(command -v ${client} >/dev/null && ${client} || ${fallback}) -u ${user} ${passFlag} ${db} > ${JSON.stringify(out)} 2>&1`,
+      `${JSON.stringify(dumpBin)} -u ${user} ${passFlag} ${db} > ${JSON.stringify(out)} 2>&1`,
     ],
     { timeoutMs: 180_000 },
   );

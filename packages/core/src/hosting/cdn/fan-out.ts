@@ -24,6 +24,7 @@ import type {
 import { getCdnNode } from './nodes.js';
 import { getCdnSite, patchCdnSiteStatus } from './sites.js';
 import { edgeSslPaths } from './ssl.js';
+import { shellBinExists } from '../software-probe/index.js';
 
 export type { CdnFleetEnqueueFn } from './fleet-payload.js';
 
@@ -171,8 +172,9 @@ async function sshRun(
     stderr: r.stderr || '' };
 }
 
+
 const REMOTE_NGINX_RELOAD = [
-  'if ! command -v nginx >/dev/null 2>&1; then echo NGINX_NONE; exit 1; fi',
+  `if ! ${shellBinExists('nginx')}; then echo NGINX_NONE; exit 1; fi`,
   'if ! nginx -t >/tmp/ysk-nginx-t.out 2>&1; then echo NGINX_TEST_FAIL; cat /tmp/ysk-nginx-t.out; exit 1; fi',
   'if systemctl reload nginx >/dev/null 2>&1 || nginx -s reload >/dev/null 2>&1; then echo NGINX_RELOAD_OK; exit 0; fi',
   'echo NGINX_RELOAD_FAIL; exit 1',

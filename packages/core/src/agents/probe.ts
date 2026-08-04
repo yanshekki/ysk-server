@@ -6,6 +6,7 @@ import { tl } from '@ysk/shared';
 import type { AgentRuntimeDto, AgentRuntimeKind } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listAgentRuntimes, parseAgentKind, planAgentInstall } from './runtime.js';
+import { resolveBin } from '../hosting/software-probe/index.js';
 
 export interface AgentRuntimeProbe extends AgentRuntimeDto {
   pathExists: boolean;
@@ -32,7 +33,7 @@ export async function probeAllAgentRuntimes(host: HostExecutor): Promise<AgentRu
 }
 
 /**
- * Resolve first available binary for a kind (command -v).
+ * Resolve first available binary for a kind (HostSoftwareProbe PATH rules).
  */
 export async function resolveAgentBinary(
   kind: AgentRuntimeKind | string,
@@ -43,12 +44,15 @@ export async function resolveAgentBinary(
   const names = plan.binNames.length
     ? plan.binNames
     : [k, plan.runtime.name.toLowerCase()];
-  const script = names
-    .map((n) => `command -v ${JSON.stringify(n)} 2>/dev/null`)
-    .join(' || ');
-  const which = await host.runCommand(['bash', '-c', script], { timeoutMs: 5_000 });
-  const bin = which.stdout.trim().split('\n')[0]?.trim();
-  return bin || undefined;
+  for (const n of names) {
+    try {
+      const p = await resolveBin(host, n);
+      if (p) return p;
+    } catch {
+      /* invalid name skip */
+    }
+  }
+  return undefined;
 }
 
 /**

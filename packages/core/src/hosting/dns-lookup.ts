@@ -45,14 +45,21 @@ export async function lookupDns(input: {
 
   if (input.host) {
     const digType = type === 'CNAME' ? 'CNAME' : type;
-    const r = await input.host.runCommand(
-      [
-        'bash',
-        '-c',
-        `command -v dig >/dev/null 2>&1 && dig +time=3 +tries=1 +short ${JSON.stringify(digType)} ${JSON.stringify(name)} 2>/dev/null || echo YSK_NO_DIG`,
-      ],
-      { timeoutMs: 12_000 },
-    );
+    const { resolveBin, shellBinExists } = await import('./software-probe/index.js');
+    const digPath = await resolveBin(input.host, 'dig');
+    const r = digPath
+      ? await input.host.runCommand(
+          [digPath, '+time=3', '+tries=1', '+short', digType, name],
+          { timeoutMs: 12_000 },
+        )
+      : await input.host.runCommand(
+          [
+            'bash',
+            '-c',
+            `if ${shellBinExists('dig')}; then dig +time=3 +tries=1 +short ${JSON.stringify(digType)} ${JSON.stringify(name)} 2>/dev/null; else echo YSK_NO_DIG; fi`,
+          ],
+          { timeoutMs: 12_000 },
+        );
     const out = (r.stdout || '').trim();
     if (!out.includes('YSK_NO_DIG') && r.exitCode === 0) {
       const answers = out

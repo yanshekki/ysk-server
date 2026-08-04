@@ -11,6 +11,7 @@ import {
   buildIdentityFileOpts,
   parseSshTarget,
   resolveIdentityKeyPath } from '../../security/ssh-identity/ops.js';
+import { shellRequireBin } from '../software-probe/index.js';
 
 export type MigrateSshAuth =
   | { kind: 'identity'; privateKeyPath: string }
@@ -134,7 +135,7 @@ export function buildSshArgv(
     const pw = JSON.stringify(auth.password);
     const remote = JSON.stringify(remoteCommand);
     const script = [
-      'command -v sshpass >/dev/null 2>&1 || { echo YSK_NEED_SSHPASS; exit 2; }',
+      `${shellRequireBin('sshpass', 'YSK_NEED_SSHPASS')}`,
       `SSHPASS=${pw} sshpass -e ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=12 -p ${ep.port} ${JSON.stringify(target)} -- ${remote}`,
     ].join(' && ');
     return {
@@ -207,8 +208,8 @@ export function buildRsyncArgv(
       remoteSpec,
     ];
     const script = [
-      'command -v sshpass >/dev/null 2>&1 || { echo YSK_NEED_SSHPASS; exit 2; }',
-      'command -v rsync >/dev/null 2>&1 || { echo YSK_NEED_RSYNC; exit 2; }',
+      `${shellRequireBin('sshpass', 'YSK_NEED_SSHPASS')}`,
+      `${shellRequireBin('rsync', 'YSK_NEED_RSYNC')}`,
       `export SSHPASS=${pw}`,
       rsyncArgs.map((a) => JSON.stringify(a)).join(' '),
     ].join(' && ');

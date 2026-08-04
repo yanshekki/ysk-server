@@ -3836,15 +3836,9 @@ async function mainInner(
         return 0;
       }
       if (sub === 'test' || sub === 'check') {
-        const hasBin =
-          ctx.host.pathExists('/usr/sbin/nginx') ||
-          ctx.host.pathExists('/usr/bin/nginx');
-        if (!hasBin) {
-          const which = await ctx.host.runCommand(
-            ['bash', '-c', 'command -v nginx || true'],
-            { timeoutMs: 5_000 },
-          );
-          if (!which.stdout.trim()) {
+        {
+          const { binPresent } = await import('@ysk/core');
+          if (!(await binPresent(ctx.host, 'nginx'))) {
             printJson({
               ok: false,
               code: 'not_found',

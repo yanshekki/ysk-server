@@ -309,12 +309,10 @@ export async function applyDbClusterLocal(input: {
   // Lifecycle
   let cmdOk = true;
   if (planned.kind === 'mariadb-galera' && input.bootstrap) {
-    const which = await input.host.runCommand(
-      ['bash', '-c', 'command -v galera_new_cluster || true'],
-      { timeoutMs: 5_000 },
-    );
-    if (which.stdout.trim()) {
-      const r = await input.host.runCommand(['galera_new_cluster'], {
+    const { resolveBin } = await import('../software-probe/index.js');
+    const galeraBin = await resolveBin(input.host, 'galera_new_cluster');
+    if (galeraBin) {
+      const r = await input.host.runCommand([galeraBin], {
         timeoutMs: 120_000,
       });
       cmdOk = r.exitCode === 0;

@@ -54,12 +54,9 @@ export async function dumpRedisRdb(input: {
     : '';
   const base = `redis-cli -h ${JSON.stringify(host)} -p ${port} ${auth}`.trim();
 
-  // Probe redis-cli
-  const which = await input.host.runCommand(
-    ['bash', '-c', 'command -v redis-cli >/dev/null 2>&1 && echo ok || true'],
-    { timeoutMs: 5_000 },
-  );
-  if (!which.stdout.includes('ok')) {
+  // Probe redis-cli (unified PATH)
+  const { binPresent } = await import('../software-probe/index.js');
+  if (!(await binPresent(input.host, 'redis-cli'))) {
     return assertHonestOps({
       ok: false,
       blocked: true,

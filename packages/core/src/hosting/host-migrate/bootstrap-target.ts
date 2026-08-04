@@ -15,7 +15,13 @@ import {
   type MigrateSshAuth,
   type MigrateSshEndpoint,
   runSshCommand,
-  userAtHost } from './transport.js';
+  userAtHost,
+} from './transport.js';
+import {
+  shellBinExists,
+  shellRequireBin,
+  shellProbePathExport,
+} from '../software-probe/index.js';
 
 export type BootstrapStage = 'minimal' | 'software' | 'ysk-cli' | 'full';
 
@@ -61,7 +67,7 @@ export function buildAptInstallScript(packages: string[]): string {
   return [
     'set -e',
     'export DEBIAN_FRONTEND=noninteractive',
-    'command -v apt-get >/dev/null || { echo YSK_NO_APT; exit 2; }',
+    `${shellRequireBin('apt-get', 'YSK_NO_APT')}`,
     'apt-get update -y',
     `apt-get install -y ${joined}`,
     'echo YSK_APT_OK',
@@ -80,7 +86,7 @@ export function buildNodeInstallScript(): string {
   return [
     'set -e',
     'export DEBIAN_FRONTEND=noninteractive',
-    'if command -v node >/dev/null 2>&1; then',
+    `if ${shellBinExists('node')}; then`,
     '  MAJOR=$(node -p "process.versions.node.split(\\".\\")[0]" 2>/dev/null || echo 0)',
     '  if [ "$MAJOR" -ge 20 ]; then echo YSK_NODE_OK; exit 0; fi',
     'fi',
@@ -111,11 +117,11 @@ export function buildYskCliInstallScript(opts?: {
   return [
     'set -e',
     opts?.skipIfPresent !== false
-      ? 'if command -v ysk-server >/dev/null 2>&1; then echo YSK_CLI_PRESENT; ysk-server --version 2>/dev/null || true; exit 0; fi'
+      ? `if ${shellBinExists('ysk-server')}; then echo YSK_CLI_PRESENT; ysk-server --version 2>/dev/null || true; exit 0; fi`
       : 'true',
-    'command -v npm >/dev/null || { echo YSK_NO_NPM; exit 2; }',
+    `${shellRequireBin('npm', 'YSK_NO_NPM')}`,
     `npm install -g ${JSON.stringify(pkg)} 2>&1`,
-    'command -v ysk-server >/dev/null && echo YSK_CLI_OK || { echo YSK_CLI_MISSING; exit 1; }',
+    `if ${shellBinExists('ysk-server')}; then echo YSK_CLI_OK; else echo YSK_CLI_MISSING; exit 1; fi`,
   ].join('\n');
 }
 
@@ -436,7 +442,7 @@ export async function transferThenBootstrap(input: {
       host: input.host,
       endpoint: input.endpoint,
       auth: input.auth,
-      remoteCommand: 'command -v rsync && echo YSK_HAS_RSYNC || echo YSK_NO_RSYNC',
+      remoteCommand: `${shellProbePathExport()}; if ${shellBinExists('rsync')}; then echo YSK_HAS_RSYNC; else echo YSK_NO_RSYNC; fi`,
       timeoutMs: 15_000 });
     if (!probe.stdout.includes('YSK_HAS_RSYNC')) {
       return assertHonestOps({

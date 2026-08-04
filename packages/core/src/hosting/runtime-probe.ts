@@ -16,7 +16,7 @@ import {
   selectRustRuntime,
   type RuntimeKind,
 } from './runtime.js';
-import { resolveBin } from './software-probe/index.js';
+import { resolveBin, shellBinExists, shellResolveBin } from './software-probe/index.js';
 
 export interface RuntimeProbeItem {
   kind: RuntimeKind;
@@ -252,13 +252,13 @@ export async function planOrInstallRuntime(input: {
       `# YSK Server — install Node.js ${plan.version}`,
       'set -euo pipefail',
       'export DEBIAN_FRONTEND=noninteractive',
-      'if command -v node >/dev/null 2>&1; then node -v; fi',
+      `if ${shellBinExists('node')}; then node -v; fi`,
       'apt-get update',
       `curl -fsSL https://deb.nodesource.com/setup_${plan.version}.x | bash -`,
       'apt-get install -y nodejs',
       'node -v',
       `mkdir -p $(dirname ${plan.binaryPath})`,
-      'NODE_BIN="$(command -v node)"',
+      `NODE_BIN="$(${shellResolveBin('node')})"`,
       'test -n "$NODE_BIN"',
       `ln -sfn "$NODE_BIN" ${plan.binaryPath}`,
       '',
@@ -326,7 +326,7 @@ export async function planOrInstallRuntime(input: {
       'export RUSTUP_HOME=/usr/local/ysk/rust',
       'export CARGO_HOME=/usr/local/ysk/rust',
       'mkdir -p /usr/local/ysk/rust',
-      'if ! command -v rustup >/dev/null 2>&1 && [ ! -x /usr/local/ysk/rust/bin/rustup ]; then',
+      `if ! ${shellBinExists('rustup')} && [ ! -x /usr/local/ysk/rust/bin/rustup ]; then`,
       '  curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --default-toolchain ' +
         (plan.version === 'stable' ? 'stable' : plan.version),
       'fi',

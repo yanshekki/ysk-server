@@ -66,7 +66,7 @@ export interface SoftwareSpec {
   title: string;
   /** Optional i18n key resolved under request locale (never call tl at module load). */
   titleKey?: string;
-  /** Binaries to probe with command -v */
+  /** Binaries probed via HostSoftwareProbe / resolveBin */
   bins: string[];
   /** Debian/Ubuntu packages */
   aptPackages: string[];

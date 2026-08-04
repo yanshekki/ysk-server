@@ -10,6 +10,7 @@ import type { ApplyStatus } from '@ysk/shared';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { shellBinExists } from './software-probe/index.js';
 
 export type DnsClusterPeer = {
   id: string;
@@ -198,8 +199,9 @@ const REMOTE_PROBE_SCRIPT = (zonePath: string) =>
   ].join('\n');
 
 /** Remote one-liner: try rndc then systemctl reload. */
+
 const REMOTE_RELOAD_SCRIPT = [
-  'if command -v rndc >/dev/null 2>&1; then',
+  `if ${shellBinExists('rndc')}; then`,
   '  rndc reload && echo RELOAD_OK:rndc && exit 0',
   '  echo RELOAD_FAIL:rndc; exit 1',
   'fi',

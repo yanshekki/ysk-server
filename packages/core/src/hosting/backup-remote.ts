@@ -6,6 +6,7 @@ import { tl } from '@ysk/shared';
 import type { JsonStore } from '../db/store.js';
 import type { HostExecutor } from '../host/executor.js';
 import { existsSync } from 'node:fs';
+import { shellBinExists } from './software-probe/index.js';
 
 export type BackupRemoteSettings = {
   enabled: boolean;
@@ -168,7 +169,7 @@ export async function pushBackupRemote(input: {
       [
         'bash',
         '-c',
-        `command -v sshpass >/dev/null && sshpass -p ${JSON.stringify(remote.password)} scp -o StrictHostKeyChecking=no -P ${port} ${JSON.stringify(input.localArchivePath)} ${JSON.stringify(dest)} || echo NEED_SSHPASS`,
+        `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(remote.password)} scp -o StrictHostKeyChecking=no -P ${port} ${JSON.stringify(input.localArchivePath)} ${JSON.stringify(dest)}; else echo NEED_SSHPASS; fi`,
       ],
       { timeoutMs: 180_000 },
     );
@@ -239,7 +240,7 @@ async function pushBackupS3(
     [
       'bash',
       '-c',
-      `${envPrefix} command -v aws >/dev/null && aws s3 cp ${JSON.stringify(localPath)} ${JSON.stringify(dest)} 2>&1 || echo NEED_AWS_CLI`,
+      `${envPrefix} if ${shellBinExists('aws')}; then aws s3 cp ${JSON.stringify(localPath)} ${JSON.stringify(dest)} 2>&1; else echo NEED_AWS_CLI; fi`,
     ],
     { timeoutMs: 300_000 },
   );

@@ -7,6 +7,7 @@ import { tl } from '@ysk/shared';
 import { mkdirSync, writeFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
+import { shellBinExists } from '../hosting/software-probe/index.js';
 
 export type DomainFlagsApplyResult = {
   ok: boolean;
@@ -123,7 +124,7 @@ export async function applySuspendMapToPostfix(input: {
       argv: [
         'bash',
         '-c',
-        `command -v postmap >/dev/null && (postmap hash:${sysMap} || postmap ${sysMap})`,
+        `if ${shellBinExists('postmap')}; then postmap hash:${sysMap} || postmap ${sysMap}; fi`,
       ],
       hard: true,
     },

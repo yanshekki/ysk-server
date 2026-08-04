@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listManagedDnsZones, writeManagedDnsZone } from './dns-zone.js';
-import { resolveBin } from './software-probe/index.js';
+import { resolveBin, shellBinExists } from './software-probe/index.js';
 
 export interface PowerDnsProbe {
   pdnsutil?: string;
@@ -135,7 +135,7 @@ export async function applyPowerDnsZone(input: {
       'set -euo pipefail',
       `ZONE=${JSON.stringify(zone)}`,
       `FILE=${JSON.stringify(zonePath)}`,
-      'if command -v pdnsutil >/dev/null 2>&1; then',
+      `if ${shellBinExists('pdnsutil')}; then`,
       '  pdnsutil load-zone "$ZONE" "$FILE"',
       '  pdnsutil rectify-zone "$ZONE" || true',
       '  echo "loaded $ZONE"',

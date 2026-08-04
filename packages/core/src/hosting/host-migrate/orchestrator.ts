@@ -33,6 +33,7 @@ import {
 import { bootstrapTempKeyAuth } from './temp-key.js';
 import { openDatabase, closeDatabase } from '../../db/database.js';
 import { join } from 'node:path';
+import { shellBinExists } from '../software-probe/index.js';
 
 export type SourceMigrateResult = OpsResultDto & {
   job?: MigrateJobDto;
@@ -331,7 +332,7 @@ export async function triggerRemotePost(input: {
     'set -e',
     'export YSK_EXECUTE=1',
     'export DEBIAN_FRONTEND=noninteractive',
-    'if ! command -v ysk-server >/dev/null 2>&1; then echo YSK_NO_CLI; exit 2; fi',
+    `if ! ${shellBinExists('ysk-server')}; then echo YSK_NO_CLI; exit 2; fi`,
     `ysk-server migrate post --job ${JSON.stringify(jid)} --data-dir ${JSON.stringify(td)} --execute --json 2>&1 || true`,
     'echo YSK_REMOTE_POST_DONE',
   ].join('\n');

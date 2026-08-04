@@ -37,9 +37,19 @@ describe('mail-queue', () => {
   it('parses queue and flushes', async () => {
     const h = host(true, (argv) => {
       const s = argv.join(' ');
-      if (s.includes('postqueue')) {
+      // Full list script contains both shell probe and postqueue -p
+      if (s.includes('postqueue -p') || (s.includes('postqueue') && s.includes('then'))) {
         return {
           stdout: 'ABC123  (queue active)\n  from@x\nDEF456  (queue active)\n',
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        };
+      }
+      if (s.includes('command -v')) {
+        return {
+          stdout: s.includes('postqueue') ? '/usr/sbin/postqueue\n' : '',
           stderr: '',
           exitCode: 0,
           argv,
@@ -62,24 +72,36 @@ describe('mail-queue', () => {
   });
 
   it('handles empty and missing postqueue', async () => {
-    const empty = host(true, () => ({
-      stdout: 'Mail queue is empty',
-      stderr: '',
-      exitCode: 0,
-      argv: [],
-      dryRun: false,
-    }));
+    const empty = host(true, (argv) => {
+      const s = argv.join(' ');
+      if (s.includes('command -v')) {
+        return { stdout: '/usr/sbin/postqueue\n', stderr: '', exitCode: 0, argv, dryRun: false };
+      }
+      return {
+        stdout: 'Mail queue is empty',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      };
+    });
     const e = await listMailQueue(empty);
     expect(e.ok).toBe(true);
     expect(e.items).toHaveLength(0);
 
-    const missing = host(true, () => ({
-      stdout: 'NO_POSTQUEUE',
-      stderr: '',
-      exitCode: 0,
-      argv: [],
-      dryRun: false,
-    }));
+    const missing = host(true, (argv) => {
+      const s = argv.join(' ');
+      if (s.includes('command -v')) {
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      }
+      return {
+        stdout: 'NO_POSTQUEUE',
+        stderr: '',
+        exitCode: 0,
+        argv,
+        dryRun: false,
+      };
+    });
     const m = await listMailQueue(missing);
     expect(m.ok).toBe(false);
   });

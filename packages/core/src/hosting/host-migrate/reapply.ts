@@ -119,12 +119,9 @@ export async function reapplyOnHost(input: {
         ? '/usr/local/bin/ysk-server'
         : 'ysk-server');
   // installControlPlaneSystemd expects node path to cli js; if CLI is shell wrapper, write unit with which node
-  const which = await host.runCommand(
-    ['bash', '-c', 'command -v ysk-server 2>/dev/null; command -v node 2>/dev/null'],
-    { timeoutMs: 5_000 },
-  );
-  const lines = which.stdout.split('\n').map((l) => l.trim()).filter(Boolean);
-  const resolvedCli = lines[0] || cliPath;
+  const { resolveBin } = await import('../software-probe/index.js');
+  const resolvedCli =
+    (await resolveBin(host, 'ysk-server')) || (await resolveBin(host, 'node')) || cliPath;
   // Prefer running via `ysk-server` binary if it's the npm bin
   const unit = await installControlPlaneSystemd({
     dataDir,

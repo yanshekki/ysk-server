@@ -25,9 +25,21 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
       notes: [tl('notes.auto.n1186')],
     };
   }
-  const r = await host.runCommand(['bash', '-c', 'command -v postqueue >/dev/null && postqueue -p || echo NO_POSTQUEUE'], {
-    timeoutMs: 15_000,
-  });
+  const { shellBinExists, binPresent } = await import('../hosting/software-probe/index.js');
+  if (!(await binPresent(host, 'postqueue'))) {
+    const rEmpty = { stdout: 'NO_POSTQUEUE', stderr: '', exitCode: 1 };
+    const out0 = rEmpty.stdout;
+    return {
+      ok: false,
+      requiresExecute: false,
+      items: [],
+      notes: [tl('notes.auto.n0386'), out0.slice(0, 500)],
+    };
+  }
+  const r = await host.runCommand(
+    ['bash', '-c', `if ${shellBinExists('postqueue')}; then postqueue -p; else echo NO_POSTQUEUE; fi`],
+    { timeoutMs: 15_000 },
+  );
   const out = (r.stdout || r.stderr || '').trim();
   if (out.includes('NO_POSTQUEUE') || r.exitCode !== 0) {
     return {
