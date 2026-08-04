@@ -305,7 +305,7 @@ export async function installSoftware(input: {
         status: unitOk ? 'ok' : 'failed',
         detail: unitOk ? tl('notes.auto.n0744') : en.stderr || `systemctl is-active → ${active}` });
       if (!unitOk) {
-        notes.push(await unitFailureHint(input.host, u, active));
+        notes.push(await unitFailureHint(input.host, u, active ?? 'unknown'));
       }
     }
   }
