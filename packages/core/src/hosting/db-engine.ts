@@ -188,16 +188,34 @@ export async function startDbEngine(input: {
       status: await probeDbEngine(input.host, input.engine),
     };
   }
-  const r = await input.host.runCommand(['systemctl', 'enable', '--now', unit], {
-    timeoutMs: 120_000,
-  });
-  const status = await probeDbEngine(input.host, input.engine);
+  const notes: string[] = [];
+  // enable separately — systemd-sysv-install noise must not hide start/FROZEN failures
+  await input.host.runCommand(['systemctl', 'enable', unit], { timeoutMs: 60_000 });
+  let start = await input.host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
+  let status = await probeDbEngine(input.host, input.engine);
+
+  if (status.active !== 'active') {
+    try {
+      const { recoverMysqlAfterEngineSwitch, frozenUnitFailureHint } = await import(
+        './sql-engine-switch/mysql-frozen.js'
+      );
+      const frozenHint = await frozenUnitFailureHint(input.host, unit);
+      if (frozenHint) notes.push(frozenHint);
+      const rec = await recoverMysqlAfterEngineSwitch(input.host, input.engine);
+      notes.push(...rec.notes);
+      start = await input.host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
+      status = await probeDbEngine(input.host, input.engine);
+    } catch {
+      /* best-effort recovery */
+    }
+  }
+
   const ok = status.active === 'active';
-  return {
-    ok,
-    notes: ok
-      ? [tl('notes.auto.t0252', { v0: status.title })]
-      : [tl('notes.auto.t0253', { v0: r.stderr || status.active })],
-    status,
-  };
+  if (ok) {
+    notes.push(tl('notes.auto.t0252', { v0: status.title }));
+  } else {
+    const detail = (start.stderr || start.stdout || status.active || '').trim();
+    notes.push(tl('notes.auto.t0253', { v0: detail.slice(0, 500) }));
+  }
+  return { ok, notes, status };
 }

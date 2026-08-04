@@ -69,13 +69,11 @@ export function useFeatureAction() {
         const r = await fn();
         const ops = toOpsResult(r);
         setResult(ops);
-        if (ops.blocked) {
+        // Never show a success okMessage when the op failed (honesty).
+        if (ops.blocked || ops.ok === false) {
           setMsg(null);
         } else {
-          setMsg(
-            okMessage ??
-              (ops.ok ? t('common.completed') : t('common.partialSuccess')),
-          );
+          setMsg(okMessage ?? t('common.completed'));
         }
         return r;
       } catch (e) {

@@ -345,7 +345,7 @@ export async function lifecycleService(
     enable: ['systemctl', 'enable', meta.unit],
     disable: ['systemctl', 'disable', meta.unit] };
   const argv = map[action];
-  const r = await host.runCommand(argv, { timeoutMs: 120_000 });
+  let r = await host.runCommand(argv, { timeoutMs: 120_000 });
   // Redis/MySQL may not support reload
   if (r.exitCode !== 0 && action === 'reload') {
     const r2 = await host.runCommand(['systemctl', 'restart', meta.unit], { timeoutMs: 120_000 });
@@ -353,6 +353,38 @@ export async function lifecycleService(
       ok: r2.exitCode === 0,
       notes: r2.exitCode === 0 ? [tl('notes.auto.n0807')] : [tl('notes.tpl.failedDetail', { detail: r2.stderr || r.stderr })] };
   }
+
+  // MySQL/MariaDB start: FROZEN recovery when unit still down after start
+  if (
+    (action === 'start' || action === 'restart') &&
+    (engine === 'mysql' || engine === 'mariadb') &&
+    r.exitCode !== 0
+  ) {
+    try {
+      const { recoverMysqlAfterEngineSwitch, frozenUnitFailureHint } = await import(
+        './sql-engine-switch/mysql-frozen.js'
+      );
+      const notes: string[] = [];
+      const frozenHint = await frozenUnitFailureHint(host, meta.unit);
+      if (frozenHint) notes.push(frozenHint);
+      const rec = await recoverMysqlAfterEngineSwitch(host, engine);
+      notes.push(...rec.notes);
+      r = await host.runCommand(['systemctl', 'start', meta.unit], { timeoutMs: 120_000 });
+      if (r.exitCode === 0) {
+        return { ok: true, notes: [...notes, tl('notes.auto.t0309', { v0: action })] };
+      }
+      return {
+        ok: false,
+        notes: [
+          ...notes,
+          tl('notes.tpl.failedDetail', { detail: r.stderr || r.stdout || meta.unit }),
+        ],
+      };
+    } catch {
+      /* fall through */
+    }
+  }
+
   return {
     ok: r.exitCode === 0,
     notes: r.exitCode === 0 ? [tl('notes.auto.t0309', { v0: (action) })] : [tl('notes.tpl.failedDetail', { detail: r.stderr || r.stdout })] };
