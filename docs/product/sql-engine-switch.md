@@ -58,3 +58,23 @@ POST body:
 - Physical datadir conversion
 - One-click rollback UI (manual dump/datadir restore only)
 - Full web E2E against real apt on CI
+
+## Debian FROZEN after engine switch
+
+Ubuntu/Debian may leave `/etc/mysql/FROZEN` (often `frozen-mode/downgrade`) when MySQL and MariaDB share `/var/lib/mysql`. The package can be installed while `mysql.service` stays **failed**.
+
+YSK behaviour:
+
+1. **Detect** FROZEN on unit start failure → operator note (not “apt failed”).
+2. **installSoftware** for mysql/mariadb: if FROZEN and start fails → clear marker, init empty datadir when safe, `systemctl reset-failed` + start.
+3. **sql-engine-switch** after purge/install: same recovery before final wait.
+
+Manual recovery (empty datadir only):
+
+```bash
+systemctl stop mysql || true
+rm -f /etc/mysql/FROZEN
+mysqld --initialize-insecure --user=mysql
+systemctl reset-failed mysql
+systemctl start mysql
+```

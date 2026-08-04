@@ -44,7 +44,16 @@
     "switched": "Switched {{from}} → {{to}}. Imported {{imported}}/{{total}} database(s).",
     "dumpPath": "Logical export path: {{path}}",
     "datadirBackup": "Old datadir backup: {{path}} (remove when satisfied: rm -rf {{path}})",
-    "grantsExported": "Grants exported ({{detail}})"
+    "grantsExported": "Grants exported ({{detail}})",
+    "frozenDetected": "MySQL/MariaDB is FROZEN (not an apt failure). Path {{path}} (mode: {{mode}}). The package may be installed but the daemon refuses to start after an engine switch or downgrade. Clear freeze and re-init empty datadir if safe. Snippet: {{snippet}}",
+    "frozenCleared": "Removed freeze marker {{path}}.",
+    "frozenClearFailed": "Could not remove freeze marker {{path}} — remove manually as root.",
+    "datadirNotEmptySkipInit": "Data directory already has system tables — skipped re-initialize.",
+    "datadirInitialized": "Initialized empty data directory for {{flavor}}.",
+    "datadirInitFailed": "Failed to initialize data directory: {{detail}}",
+    "unitNotActive": "Unit {{unit}} is {{active}} (expected active).",
+    "nginxPortConflict": "Nginx unit not active — Apache may still bind public :80; rebind Apache to 127.0.0.1:8080, then restart Nginx.",
+    "nginxConfigFailed": "nginx -t failed: {{detail}}"
   },
   "step": {
     "dump": "Export {{db}}",
@@ -57,6 +66,9 @@
     "importGrants": "Import grants",
     "verify": "Verify",
     "preflight": "Preflight",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "clearFrozen": "Clear MySQL FROZEN",
+    "initDatadir": "Initialize empty datadir",
+    "startUnit": "Start {{unit}}"
   }
 }

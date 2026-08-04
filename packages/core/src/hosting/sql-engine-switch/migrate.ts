@@ -337,15 +337,34 @@ export async function switchSqlEngine(input: {
   steps.push(...(inst.steps ?? []).map((s) => ({ name: s.name, status: s.status, detail: s.detail })));
   notes.push(...inst.notes);
 
-  const wait = await waitUnitActive(input.host, tUnit, { timeoutMs: 120_000 });
+  // Debian FROZEN after MySQL↔MariaDB: clear freeze + init empty datadir before wait
+  const { recoverMysqlAfterEngineSwitch, frozenUnitFailureHint } = await import('./mysql-frozen.js');
+  const recover = await recoverMysqlAfterEngineSwitch(input.host, target);
+  steps.push(
+    ...recover.steps.map((s) => ({
+      name: s.name,
+      status: s.status as SqlSwitchStep['status'],
+      detail: s.detail,
+    })),
+  );
+  notes.push(...recover.notes);
+
+  let wait = await waitUnitActive(input.host, tUnit, { timeoutMs: 120_000 });
+  if (!wait.ok && !recover.ok) {
+    // one more recover attempt if still frozen
+    const again = await recoverMysqlAfterEngineSwitch(input.host, target);
+    notes.push(...again.notes);
+    wait = await waitUnitActive(input.host, tUnit, { timeoutMs: 120_000 });
+  }
   steps.push({
     name: tl('sqlEngineSwitch.step.wait', { unit: tUnit }),
     status: wait.ok ? 'ok' : 'failed',
     detail: wait.active,
   });
   if (!wait.ok) {
+    const frozenHint = await frozenUnitFailureHint(input.host, tUnit);
     notes.push(
-      tl('sqlEngineSwitch.note.waitFailed', { dumpPath, datadir: datadirBackup }),
+      frozenHint || tl('sqlEngineSwitch.note.waitFailed', { dumpPath, datadir: datadirBackup }),
     );
     return {
       ok: false,

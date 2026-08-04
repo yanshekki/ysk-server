@@ -8463,7 +8463,16 @@
       "switched": "已由 {{from}} 切換至 {{to}}。已匯入 {{imported}}／{{total}} 個資料庫。",
       "dumpPath": "邏輯匯出路徑：{{path}}",
       "datadirBackup": "舊資料目錄備份：{{path}}（確認無誤後可刪除：rm -rf {{path}}）",
-      "grantsExported": "已匯出權限（{{detail}}）"
+      "grantsExported": "已匯出權限（{{detail}}）",
+      "frozenDetected": "MySQL／MariaDB 處於 FROZEN 狀態（不是套件安裝失敗）。路徑：{{path}}（模式：{{mode}}）。套件可能已安裝，但引擎切換或降級後守護行程拒絕啟動。請解除凍結；若資料目錄為空可安全重新初始化。摘要：{{snippet}}",
+      "frozenCleared": "已移除凍結標記 {{path}}。",
+      "frozenClearFailed": "無法移除凍結標記 {{path}} — 請以管理員手動刪除。",
+      "datadirNotEmptySkipInit": "資料目錄已有系統表 — 略過重新初始化。",
+      "datadirInitialized": "已為 {{flavor}} 初始化空白資料目錄。",
+      "datadirInitFailed": "初始化資料目錄失敗：{{detail}}",
+      "unitNotActive": "服務單元 {{unit}} 狀態為 {{active}}（預期為運作中）。",
+      "nginxPortConflict": "Nginx 未運作 — Apache 可能仍佔用公開 80 埠；請將 Apache 改綁 127.0.0.1:8080 後再重新啟動 Nginx。",
+      "nginxConfigFailed": "Nginx 設定檢查失敗：{{detail}}"
     },
     "step": {
       "dump": "匯出 {{db}}",
@@ -8476,7 +8485,10 @@
       "importGrants": "匯入權限",
       "verify": "校驗",
       "preflight": "預檢",
-      "confirm": "確認"
+      "confirm": "確認",
+      "clearFrozen": "解除 MySQL 凍結",
+      "initDatadir": "初始化空白資料目錄",
+      "startUnit": "啟動 {{unit}}"
     }
   },
   "ssl": {

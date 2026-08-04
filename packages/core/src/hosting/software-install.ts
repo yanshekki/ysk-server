@@ -342,9 +342,36 @@ export async function installSoftware(input: {
     for (const u of spec.units) {
       const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
         timeoutMs: 60_000 });
-      const waited = await waitUnitActive(input.host, u, {
+      let waited = await waitUnitActive(input.host, u, {
         timeoutMs: u === 'mysql' || u === 'mariadb' ? 120_000 : 60_000,
       });
+      // MySQL/MariaDB: Debian FROZEN after engine switch — package OK but daemon blocked
+      if (!waited.ok && (u === 'mysql' || u === 'mariadb' || u === 'mysqld')) {
+        try {
+          const { recoverMysqlAfterEngineSwitch, readMysqlFrozen } = await import(
+            './sql-engine-switch/mysql-frozen.js'
+          );
+          const frozen = await readMysqlFrozen(input.host);
+          if (frozen.frozen) {
+            notes.push(await unitFailureHint(input.host, u, waited.active ?? 'failed'));
+            const flavor = u === 'mariadb' ? 'mariadb' : 'mysql';
+            const rec = await recoverMysqlAfterEngineSwitch(input.host, flavor);
+            notes.push(...rec.notes);
+            for (const s of rec.steps) {
+              steps.push({
+                name: s.name,
+                status: (s.status === 'ok' || s.status === 'skipped' || s.status === 'failed'
+                  ? s.status
+                  : 'failed') as SoftwareInstallStep['status'],
+                detail: s.detail,
+              });
+            }
+            waited = await waitUnitActive(input.host, u, { timeoutMs: 120_000 });
+          }
+        } catch {
+          /* recovery best-effort */
+        }
+      }
       const unitOk = waited.ok;
       steps.push({
         name: tl('notes.software.startUnit', { u }),
@@ -437,14 +464,25 @@ async function unitFailureHint(host: HostExecutor, unit: string, active: string)
   if (unit === 'nginx' && (active === 'failed' || active === 'inactive')) {
     const apache = await unitIsActive(host, 'apache2');
     if (apache === 'active') {
-      return 'nginx unit not active — Apache may still bind public :80; rebind Apache to 127.0.0.1:8080 (Nginx edge, Apache PHP backend), then systemctl restart nginx';
+      return tl('sqlEngineSwitch.note.nginxPortConflict');
     }
     const t = await host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
     if (t.exitCode !== 0) {
-      return `nginx -t failed: ${(t.stderr || t.stdout).trim().slice(0, 400)}`;
+      return tl('sqlEngineSwitch.note.nginxConfigFailed', {
+        detail: (t.stderr || t.stdout).trim().slice(0, 400),
+      });
     }
   }
-  return `unit ${unit} is ${active} (expected active)`;
+  if (unit === 'mysql' || unit === 'mysqld' || unit === 'mariadb') {
+    try {
+      const { frozenUnitFailureHint } = await import('./sql-engine-switch/mysql-frozen.js');
+      const frozen = await frozenUnitFailureHint(host, unit);
+      if (frozen) return frozen;
+    } catch {
+      /* ignore */
+    }
+  }
+  return tl('sqlEngineSwitch.note.unitNotActive', { unit, active });
 }
 
 export async function installSoftwareBatch(input: {

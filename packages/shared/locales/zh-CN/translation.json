@@ -8463,7 +8463,16 @@
       "switched": "已由 {{from}} 切换至 {{to}}。已导入 {{imported}}／{{total}} 个数据库。",
       "dumpPath": "逻辑导出路径：{{path}}",
       "datadirBackup": "旧数据目录备份：{{path}}（确认无误后可删除：rm -rf {{path}}）",
-      "grantsExported": "已导出权限（{{detail}}）"
+      "grantsExported": "已导出权限（{{detail}}）",
+      "frozenDetected": "MySQL／MariaDB 处于 FROZEN 状态（不是软件包安装失败）。路径：{{path}}（模式：{{mode}}）。软件包可能已安装，但引擎切换或降级后守护进程拒绝启动。请解除冻结；若数据目录为空可安全重新初始化。摘要：{{snippet}}",
+      "frozenCleared": "已移除冻结标记 {{path}}。",
+      "frozenClearFailed": "无法移除冻结标记 {{path}} — 请以管理员手动删除。",
+      "datadirNotEmptySkipInit": "数据目录已有系统表 — 跳过重新初始化。",
+      "datadirInitialized": "已为 {{flavor}} 初始化空白数据目录。",
+      "datadirInitFailed": "初始化数据目录失败：{{detail}}",
+      "unitNotActive": "服务单元 {{unit}} 状态为 {{active}}（预期为运行中）。",
+      "nginxPortConflict": "Nginx 未运行 — Apache 可能仍占用公开 80 端口；请将 Apache 改绑 127.0.0.1:8080 后再重新启动 Nginx。",
+      "nginxConfigFailed": "Nginx 配置检查失败：{{detail}}"
     },
     "step": {
       "dump": "导出 {{db}}",
@@ -8476,7 +8485,10 @@
       "importGrants": "导入权限",
       "verify": "校验",
       "preflight": "预检",
-      "confirm": "确认"
+      "confirm": "确认",
+      "clearFrozen": "解除 MySQL 冻结",
+      "initDatadir": "初始化空白数据目录",
+      "startUnit": "启动 {{unit}}"
     }
   },
   "ssl": {
