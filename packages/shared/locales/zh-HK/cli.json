@@ -2,17 +2,17 @@
   "unknownCommand": "未知命令：{{command}}\n執行 `{{cli}} help`",
   "usagePrefix": "用法：",
   "security": {
-    "help": "用法：ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "用法：ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "用法：ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
-    "noUser": "找不到用戶。請先建立管理員，或傳入 --user <名稱|id>",
-    "tokenOnce": "token 只顯示一次 — 請妥善保存",
-    "sessionRevokeUsage": "用法：ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
-    "apiKeyDeleteUsage": "用法：ysk-server security api-keys delete --id KEY_ID"
+    "help": "用法：ysk-server security 狀態\n ysk-server security sessions 列表|revoke|revoke-others [--用戶 U]\n ysk-server security api-keys 列表|建立|delete …",
+    "sessionsHelp": "用法：ysk-server security sessions 列表 [--用戶 U]\n ysk-server security sessions revoke --識別碼 PREFIX [--用戶 U]\n ysk-server security sessions revoke-others [--用戶 U] [--keep-權杖 T]",
+    "apiKeysHelp": "用法：ysk-server security api-keys 列表\n ysk-server security api-keys 建立 --名稱 N [--用戶 U] [--scope full|read]\n ysk-server security api-keys delete --識別碼 KEY_ID",
+    "noUser": "找不到用戶。請先建立管理員，或傳入 --用戶 <名稱|識別碼>",
+    "tokenOnce": "權杖 只顯示一次 — 請妥善保存",
+    "sessionRevokeUsage": "用法：ysk-server security sessions revoke --識別碼 <sessionIdPrefix> [--用戶 U]",
+    "apiKeyDeleteUsage": "用法：ysk-server security api-keys delete --識別碼 KEY_ID"
   },
   "help": {
-    "blurb": "控制平面 CLI — AI agent 請優先用 --json。\n文件：docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-    "main": "{{product}} ({{cli}}) v{{version}}\n\n控制平面 CLI — AI agent 請優先用 --json。\n文件：docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\n用法：\n  {{cli}} <command> [options]\n\n命令：\n  setup                 初始化 dataDir + 管理員\n  update                自我更新檢查／套用\n  serve                 HTTP API + Web UI\n  system unit-install   安裝 ysk-server.service [--enable]\n  tools                 工具列表；tools run --tool <name> [--dry-run]\n  ask                   自然語言 → AI 計劃 [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             應用範本\n  hosting               nginx|dns|db|firewall 輔助\n  dns                   zone|zones（AI 別名 → hosting dns-*）\n  logs                  sources|query|journal|overview\n  host                  overview|metrics（唯讀）\n  nginx                 status|list|test|sync\n  ssl                   list|get（憑證）\n  db-cluster            list|get|create|plan（HA 先計劃）\n  ssh-key               list|create|import|public|export|install|delete（SSH 身分庫）\n  ssh-2fa               list|enroll|confirm|install|pam|retire（SSH 登入 TOTP ≠ 面板 2FA）\n  services              主機服務矩陣（systemctl 探測）\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys（2FA · 撤銷工作階段 · API 金鑰）\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register（面板 + 邊緣）\n  agent run             外送 fleet 輪詢（實驗）\n  store                 status|export|import|migrate（json|sqlite|postgres document 後端）\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares（沙箱）\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns（面板對等）\n  health                本機模式快照或 --url http://host:port/health\n  readiness | doctor    生產就緒（誠實）\n  migrate               inventory|host|post|status|resume（整機遷移）\n  version | help\n\n全域：\n  --json                JSON 標準輸出（AI）\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\n結束碼：0 成功 · 1 錯誤 · 2 驗證 · 3 阻擋 · 4 找不到 · 5 主機錯誤\n\n安全：\n  危險操作預設 dry-run（只出計劃）。\n  傳 --execute（別名 --apply）+ 環境變數 YSK_EXECUTE=1 才改主機。\n\n例子：\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run 計劃\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+    "blurb": "控制平面 命令列 — 人工智能 代理 請優先用 --json。\n文件：docs/代理/README.md · docs/cli/reference.md · docs/代理/commands.json",
+    "main": "{{product}} ({{cli}}) v{{version}}\n\n控制平面 命令列 — 人工智能 代理 請優先用 --json。\n文件：docs/代理/README.md · docs/cli/reference.md · docs/代理/commands.json\n\n用法：\n {{cli}} <command> [options]\n\n命令：\n setup 初始化 dataDir + 管理員\n update 自我更新檢查／套用\n serve HTTP 介面 + Web UI\n system 服務單元-安裝 安裝 ysk-server.service [--啟用]\n tools 工具列表；tools run --tool <名稱> [--預覽試行]\n ask 自然語言 → 人工智能 計劃 [--執行]\n 專案 列表|get|建立|deploy|stop|health|備份|template\n 備份 all|列表|狀態|還原|delete|schedule|control-plane|settings|Restic\n templates 應用範本\n hosting nginx|dns|db|firewall 輔助\n dns zone|zones（人工智能 別名 → hosting dns-*）\n 日誌 sources|query|系統日誌|overview\n 主機 overview|metrics（唯讀）\n nginx 狀態|列表|test|同步\n ssl 列表|get（憑證）\n db-叢集 列表|get|建立|計劃（HA 先計劃）\n ssh-金鑰 列表|建立|匯入|public|export|安裝|delete（遠端登入 身分庫）\n ssh-2fa 列表|enroll|confirm|安裝|pam|retire（遠端登入 登入 TOTP ≠ 面板 雙重驗證）\n services 主機服務矩陣（系統控制 探測）\n defense | protection 狀態|封鎖|unban|whitelist\n security 狀態|sessions|api-keys（雙重驗證 · 撤銷工作階段 · 介面 金鑰）\n cdn nodes|sites|render|套用|清除|探測|dashboard|health-loop|from-project\n agents 運行時s|機群 列表|commands|登記（面板 + 邊緣）\n 代理 run 外送 機群 輪詢（實驗）\n store 狀態|export|匯入|migrate（json|sqlite|postgres document 後端）\n 檔案 列表|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares（沙箱）\n 定時工作 列表|建立|delete|啟用|停用|run|安裝|狀態\n 電郵 domains|mailboxes|deliverability|初始化|dns（面板對等）\n health 本機模式快照或 --url http://主機:埠/health\n 就緒檢查 | doctor 生產就緒（誠實）\n migrate inventory|主機|post|狀態|resume（整機遷移）\n version | help\n\n全域：\n --json JSON 標準輸出（AI）\n --data-dir 路徑\n --config 路徑\n --help | --version\n\n結束碼：0 成功 · 1 錯誤 · 2 驗證 · 3 阻擋 · 4 找不到 · 5 主機錯誤\n\n安全：\n 危險操作預設 預覽試行（只出計劃）。\n 傳 --執行（別名 --套用）+ 環境變數 系統變更權限已開啟 才改主機。\n\n例子：\n {{cli}} 就緒檢查 --json\n {{cli}} 主機 --json\n {{cli}} nginx 狀態 --json\n {{cli}} ssl 列表 --json\n {{cli}} 專案 get --識別碼 UUID --json\n {{cli}} defense 封鎖 --ip 1.2.3.4 --json # 預覽試行 計劃\n {{cli}} 專案 列表 --json\n {{cli}} 日誌 query --source 系統日誌: --lines 100 --json\n {{cli}} tools --json"
   },
   "usage": {
     "tools": {
@@ -20,7 +20,7 @@
         "--tool": {
           "name": {
             "--arg": {
-              "cd327c": "用法： ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              "cd327c": "用法： ysk-server tools run --tool <名稱> [--arg 金鑰=val] [--預覽試行]"
             }
           }
         }
@@ -31,14 +31,14 @@
         "list": {
           "create": {
             "get": {
-              "b94a62": "用法： ysk-server email domains list|create|get …\n"
+              "b94a62": "用法： ysk-server 電郵 domains 列表|建立|get …"
             }
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "bd4036": "用法： ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              "bd4036": "用法： ysk-server 電郵 domains 建立 --網域 example.com --ip A.B.C.D"
             }
           }
         }
@@ -46,13 +46,13 @@
       "mailboxes": {
         "list": {
           "create": {
-            "42b26c": "用法： ysk-server email mailboxes list|create …\n"
+            "42b26c": "用法： ysk-server 電郵 mailboxes 列表|建立 …"
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "7227f3": "用法： ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              "7227f3": "用法： ysk-server 電郵 mailboxes 建立 --網域 example.com --local 用戶 [--密碼 P]"
             }
           }
         }
@@ -61,7 +61,7 @@
         "--domain": {
           "example": {
             "com": {
-              "26b806": "用法： ysk-server email dns --domain example.com\n"
+              "26b806": "用法： ysk-server 電郵 dns --網域 example.com"
             }
           }
         }
@@ -70,7 +70,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "73dad0": "用法： ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # DNS bundle for panel\nAlso: hosting email-apply|email-mailbox|email-deliverability (aliases)\n"
+              "73dad0": "用法： ysk-server 電郵 <sub> [--data-dir 路徑] [--json]\n domains 列表|建立|get [--q TEXT]\n 建立 --網域 example.com --ip A.B.C.D\n get --網域 example.com | --識別碼 UUID\n mailboxes 列表|建立 [--網域 D | --識別碼 domainId]\n 建立 --網域 D --local 用戶 [--密碼 P]\n deliverability --網域 D | --識別碼 UUID\n deliverability-overview\n 初始化 --網域 D --ip A.B.C.D [--安裝]\n dns --網域 D | --識別碼 UUID # DNS bundle for 面板\nAlso: hosting 電郵-套用|電郵-mailbox|電郵-deliverability (aliases)"
             }
           }
         }
@@ -79,7 +79,7 @@
         "--domain": {
           "example": {
             "com": {
-              "b0dff0": "用法： ysk-server email deliverability --domain example.com\n"
+              "b0dff0": "用法： ysk-server 電郵 deliverability --網域 example.com"
             }
           }
         }
@@ -88,7 +88,7 @@
         "--domain": {
           "example": {
             "com": {
-              "affc8d": "用法： ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              "affc8d": "用法： ysk-server 電郵 初始化 --網域 example.com --ip 1.2.3.4 [--安裝]"
             }
           }
         }
@@ -99,7 +99,7 @@
         "--id": {
           "job": {
             "id": {
-              "f6aafe": "用法： ysk-server cron delete --id JOB_ID\n"
+              "f6aafe": "用法： ysk-server 定時工作 delete --識別碼 JOB_ID"
             }
           }
         }
@@ -108,14 +108,14 @@
         "--id": {
           "job": {
             "id": {
-              "99cfdf": "用法： ysk-server cron {{sub}} --id JOB_ID\n"
+              "99cfdf": "用法： ysk-server 定時工作 {{sub}} --識別碼 JOB_ID"
             }
           }
         },
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "用法： ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # run-now (needs YSK_EXECUTE=1)\n  install                     # load managed crontab (needs EXECUTE)\n  status                      # probe managed file vs host crontab\nHonesty: install blocked without YSK_EXECUTE=1 (file still written).\n"
+              "0349e6": "用法： ysk-server 定時工作 <sub> [--data-dir 路徑] [--json]\n 列表 [--project-識別碼 識別碼] [--q TEXT]\n 建立 --schedule \"0 3 * * *\" --command CMD [--project-識別碼 識別碼] [--用戶 用戶]\n delete --識別碼 JOB_ID\n 啟用|停用 --識別碼 JOB_ID\n run --識別碼 JOB_ID # run-now (needs 系統變更權限已開啟)\n 安裝 # load managed 定時工作表 (needs 執行)\n 狀態 # 探測 managed 檔案 vs 主機 定時工作表\nHonesty: 安裝 已封鎖 without 系統變更權限已開啟 (檔案 still 已寫入)."
             }
           }
         }
@@ -124,7 +124,7 @@
         "--id": {
           "job": {
             "id": {
-              "a0a97f": "用法： ysk-server cron run --id JOB_ID\n"
+              "a0a97f": "用法： ysk-server 定時工作 run --識別碼 JOB_ID"
             }
           }
         }
@@ -133,7 +133,7 @@
         "--schedule": {
           "0": {
             "3": {
-              "9a8328": "用法： ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              "9a8328": "用法： ysk-server 定時工作 建立 --schedule \"0 3 * * *\" --command CMD [--project-識別碼 識別碼] [--用戶 用戶]"
             }
           }
         }
@@ -143,21 +143,21 @@
       "stat": {
         "--path": {
           "rel": {
-            "17c8f2": "用法： ysk-server files stat --path REL\n"
+            "17c8f2": "用法： ysk-server 檔案 stat --路徑 REL"
           }
         }
       },
       "read": {
         "--path": {
           "rel": {
-            "e35f8d": "用法： ysk-server files read --path REL\n"
+            "e35f8d": "用法： ysk-server 檔案 read --路徑 REL"
           }
         }
       },
       "mkdir": {
         "--path": {
           "rel": {
-            "ae0438": "用法： ysk-server files mkdir --path REL\n"
+            "ae0438": "用法： ysk-server 檔案 mkdir --路徑 REL"
           }
         }
       },
@@ -165,7 +165,7 @@
         "--path": {
           "rel": {
             "--permanent": {
-              "fe2051": "用法： ysk-server files rm --path REL [--permanent]\n"
+              "fe2051": "用法： ysk-server 檔案 rm --路徑 REL [--permanent]"
             }
           }
         }
@@ -174,7 +174,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "35a260": "用法： ysk-server files rename --from REL --to REL\n"
+              "35a260": "用法： ysk-server 檔案 rename --from REL --to REL"
             }
           }
         }
@@ -183,7 +183,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "5337f4": "用法： ysk-server files copy --from REL --to REL\n"
+              "5337f4": "用法： ysk-server 檔案 copy --from REL --to REL"
             }
           }
         }
@@ -192,7 +192,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "75cf5d": "用法： ysk-server files move --from REL --to REL\n"
+              "75cf5d": "用法： ysk-server 檔案 move --from REL --to REL"
             }
           }
         }
@@ -201,7 +201,7 @@
         "--path": {
           "rel": {
             "--mode": {
-              "39f983": "用法： ysk-server files chmod --path REL --mode 644\n"
+              "39f983": "用法： ysk-server 檔案 chmod --路徑 REL --模式 644"
             }
           }
         }
@@ -210,28 +210,28 @@
         "restore": {
           "--id": {
             "trash": {
-              "c89ce9": "用法： ysk-server files trash restore --id TRASH_ID\n"
+              "c89ce9": "用法： ysk-server 檔案 trash 還原 --識別碼 TRASH_ID"
             }
           }
         },
         "list": {
           "restore": {
             "purge": {
-              "ef063d": "用法： ysk-server files trash list|restore|purge\n"
+              "ef063d": "用法： ysk-server 檔案 trash 列表|還原|清除"
             }
           }
         }
       },
       "shares": {
         "list": {
-          "ac342c": "用法： ysk-server files shares list\n"
+          "ac342c": "用法： ysk-server 檔案 shares 列表"
         }
       },
       "webdav": {
         "status": {
           "token": {
             "disable": {
-              "f8e94b": "用法： ysk-server files webdav status|token|disable\n"
+              "f8e94b": "用法： ysk-server 檔案 webdav 狀態|權杖|停用"
             }
           }
         }
@@ -240,7 +240,7 @@
         "--root": {
           "public": {
             "project": {
-              "42ebd4": "用法： ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nSandbox: only public files root or project home (path-constrained).\n"
+              "42ebd4": "用法： ysk-server 檔案 <sub> [--管理員 public|project:識別碼] [--data-dir 路徑] [--json]\n 列表 [--路徑 DIR] [--q TEXT] [--sort 名稱|size|mtime] [--order asc|desc]\n stat --路徑 REL\n read --路徑 REL\n write --路徑 REL --content TEXT | --檔案 LOCAL\n mkdir --路徑 REL\n rm --路徑 REL [--permanent]\n rename --from REL --to REL\n copy --from REL --to REL\n move --from REL --to REL\n chmod --路徑 REL --模式 644\n trash 列表|還原|清除 [--識別碼 TRASH_ID]\n shares 列表\n favorites 列表\n 上載 --dir REL --檔案 LOCAL [--檔案 LOCAL2…]\n webdav 狀態|權杖|停用\nSandbox: only public 檔案 管理員 or project 主目錄 (路徑-constrained)."
             }
           }
         }
@@ -249,7 +249,7 @@
         "--path": {
           "rel": {
             "--content": {
-              "0addb1": "用法： ysk-server files write --path REL --content TEXT | --file LOCAL\n"
+              "0addb1": "用法： ysk-server 檔案 write --路徑 REL --content TEXT | --檔案 LOCAL"
             }
           }
         }
@@ -258,7 +258,7 @@
         "--dir": {
           "rel": {
             "--file": {
-              "f8c3bf": "用法： ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
+              "f8c3bf": "用法： ysk-server 檔案 上載 --dir REL --檔案 LOCAL [--檔案 LOCAL2…]"
             }
           }
         }
@@ -269,7 +269,7 @@
         "--in": {
           "file": {
             "json": {
-              "5b6fdd": "用法： ysk-server store import --in FILE.json\n"
+              "5b6fdd": "用法： ysk-server store import --in FILE.json"
             }
           }
         }
@@ -278,7 +278,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "d580e4": "用法： ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         Show backend kind + counts\n  export --out FILE.json         Dump document snapshot\n  import --in FILE.json          Overwrite snapshot from file\n  migrate --to sqlite|json [--out PATH]\n    Copy current store into another backend file\nEnv: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\nHonesty: document-blob backends (not full relational schema yet).\n"
+              "d580e4": "用法： ysk-server store <sub> [--data-dir PATH] [--json]\n status Show backend kind + counts\n export --out FILE.json Dump document snapshot\n import --in FILE.json Overwrite snapshot from file\n migrate --to sqlite|json [--out PATH]\n Copy current store into another backend file\nEnv: YSK_STORE=json|sqlite|postgres YSK_DATABASE_URL=postgres://…\nHonesty: document-blob backends (not full relational schema yet)."
             }
           }
         }
@@ -287,7 +287,7 @@
         "--to": {
           "json": {
             "sqlite": {
-              "1c52a3": "用法： ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: export JSON then import under YSK_DATABASE_URL)\n"
+              "1c52a3": "用法： ysk-server store migrate --to json|sqlite [--out PATH]\n (postgres: export JSON then import under YSK_DATABASE_URL)"
             }
           }
         }
@@ -298,28 +298,28 @@
         "delete": {
           "--id": {
             "node": {
-              "0c6a1e": "用法： ysk-server cdn nodes delete --id NODE_ID\n"
+              "0c6a1e": "用法： ysk-server cdn nodes delete --識別碼 NODE_ID"
             }
           }
         },
         "drain": {
           "--id": {
             "node": {
-              "a8aa81": "用法： ysk-server cdn nodes drain --id NODE_ID [--off]\n"
+              "a8aa81": "用法： ysk-server cdn nodes drain --識別碼 NODE_ID [--off]"
             }
           }
         },
         "list": {
           "upsert": {
             "delete": {
-              "52549e": "用法： ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
+              "52549e": "用法： ysk-server cdn nodes 列表|upsert|delete|探測|drain …"
             }
           }
         },
         "upsert": {
           "--name": {
             "name": {
-              "8f6f39": "用法： ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
+              "8f6f39": "用法： ysk-server cdn nodes upsert --名稱 名稱 [--識別碼 識別碼] [--base-url U] [--機群-代理-識別碼 S] [--ssh-主機 H] [--region R]"
             }
           }
         }
@@ -328,28 +328,28 @@
         "get": {
           "--id": {
             "site": {
-              "3c3c35": "用法： ysk-server cdn sites get --id SITE_ID\n"
+              "3c3c35": "用法： ysk-server cdn sites get --識別碼 SITE_ID"
             }
           }
         },
         "delete": {
           "--id": {
             "site": {
-              "51ef8f": "用法： ysk-server cdn sites delete --id SITE_ID\n"
+              "51ef8f": "用法： ysk-server cdn sites delete --識別碼 SITE_ID"
             }
           }
         },
         "list": {
           "get": {
             "upsert": {
-              "609da6": "用法： ysk-server cdn sites list|get|upsert|delete …\n"
+              "609da6": "用法： ysk-server cdn sites 列表|get|upsert|delete …"
             }
           }
         },
         "upsert": {
           "--name": {
             "n": {
-              "6ebb75": "用法： ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
+              "6ebb75": "用法： ysk-server cdn sites upsert --名稱 N --domains a.com,b.com [--邊緣-識別碼 識別碼]… [--origin-url U] [--origin-project 識別碼]"
             }
           }
         }
@@ -358,7 +358,7 @@
         "--site-id": {
           "id": {
             "--dry-run": {
-              "2149eb": "用法： ysk-server cdn render --site-id ID [--dry-run]\n"
+              "2149eb": "用法： ysk-server cdn render --site-識別碼 識別碼 [--預覽試行]"
             }
           }
         }
@@ -367,7 +367,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "a527b3": "用法： ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
+              "a527b3": "用法： ysk-server cdn 套用 --site-識別碼 識別碼 [--邊緣-識別碼 邊緣]"
             }
           }
         }
@@ -376,7 +376,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "bc08ec": "用法： ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
+              "bc08ec": "用法： ysk-server cdn 清除 --site-識別碼 識別碼 [--邊緣-識別碼 邊緣]"
             }
           }
         }
@@ -385,7 +385,7 @@
         "--site-id": {
           "id": {
             "--apply-zone": {
-              "343068": "用法： ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
+              "343068": "用法： ysk-server cdn dns-同步 --site-識別碼 識別碼 [--套用-zone]"
             }
           }
         }
@@ -394,7 +394,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "092842": "用法： ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # fan-out (fleet queue ok without EXECUTE)\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\nHonesty: apply_status written/queued ≠ edge nginx applied until agent ack / EXECUTE reload.\n"
+              "092842": "用法： ysk-server cdn <sub> [--data-dir 路徑] [--json]\n nodes 列表|upsert|delete|探測|drain\n sites 列表|upsert|delete|get\n render --site-識別碼 識別碼 [--預覽試行]\n 套用 --site-識別碼 識別碼 [--邊緣-識別碼 識別碼] # fan-out (機群 queue 成功 without 執行)\n 清除 --site-識別碼 識別碼 [--邊緣-識別碼 識別碼]\n dns-同步 --site-識別碼 識別碼 [--套用-zone]\n 探測 | dashboard | health-loop [--套用-zone]\n from-project --project-識別碼 識別碼 [--邊緣-識別碼 識別碼…]\nHonesty: apply_status 已寫入/已排隊 ≠ 邊緣 nginx 已套用 until 代理 回報 / 執行 重新載入."
             }
           }
         }
@@ -403,7 +403,7 @@
         "--project-id": {
           "id": {
             "--edge-id": {
-              "a96f42": "用法： ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
+              "a96f42": "用法： ysk-server cdn from-project --project-識別碼 識別碼 [--邊緣-識別碼 識別碼]…"
             }
           }
         }
@@ -414,21 +414,21 @@
         "remove": {
           "--session": {
             "session": {
-              "1827fe": "用法： ysk-server agents fleet remove --session SESSION_ID\n"
+              "1827fe": "用法： ysk-server agents 機群 remove --工作階段 SESSION_ID"
             }
           }
         },
         "register": {
           "--id": {
             "agent": {
-              "209b2d": "用法： ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
+              "209b2d": "用法： ysk-server agents 機群 登記 --識別碼 AGENT_ID [--group g] [--邊緣]"
             }
           }
         },
         "commands": {
           "--session": {
             "session": {
-              "f8067c": "用法： ysk-server agents fleet commands --session SESSION_ID\n"
+              "f8067c": "用法： ysk-server agents 機群 commands --工作階段 SESSION_ID"
             }
           }
         }
@@ -437,7 +437,7 @@
         "--id": {
           "agent": {
             "id": {
-              "3c4477": "用法： ysk-server agents register --id AGENT_ID [--group g]\n"
+              "3c4477": "用法： ysk-server agents 登記 --識別碼 AGENT_ID [--group g]"
             }
           }
         }
@@ -446,7 +446,7 @@
         "--session": {
           "session": {
             "id": {
-              "e620d2": "用法： ysk-server agents commands --session SESSION_ID\n"
+              "e620d2": "用法： ysk-server agents commands --工作階段 SESSION_ID"
             }
           }
         }
@@ -455,7 +455,7 @@
         "probe": {
           "fleet": {
             "list": {
-              "261fa4": "用法： ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
+              "261fa4": "用法： ysk-server agents [運行時s|探測|機群 列表|機群 登記|機群 commands|登記|commands]"
             }
           }
         }
@@ -466,7 +466,7 @@
         "--control-plane": {
           "url": {
             "--id": {
-              "cfefbe": "用法： ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
+              "cfefbe": "用法： ysk-server 代理 run --control-plane URL --識別碼 AGENT_ID [--group g]"
             }
           }
         }
@@ -476,7 +476,7 @@
       "check": {
         "system": {
           "info": {
-            "b0c781": "用法： ysk-server ask \"check system info\"\n"
+            "b0c781": "用法： ysk-server ask \"check system info\""
           }
         }
       }
@@ -486,7 +486,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "d66c29": "用法： ysk-server backup delete --project-id ID --name ARCHIVE\n"
+              "d66c29": "用法： ysk-server backup delete --project-識別碼 識別碼 --名稱 ARCHIVE"
             }
           }
         }
@@ -495,14 +495,14 @@
         "list": {
           "run": {
             "restore": {
-              "10402b": "用法： ysk-server backup restic list|run|restore …\n"
+              "10402b": "用法： ysk-server backup Restic 列表|run|還原 …"
             }
           }
         },
         "restore": {
           "--project-id": {
             "id": {
-              "a8f133": "用法： ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
+              "a8f133": "用法： ysk-server backup Restic 還原 --project-識別碼 識別碼 --快照 SNAP [--預覽試行] [--overwrite-主目錄 --confirm PHRASE]"
             }
           }
         }
@@ -511,7 +511,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "777243": "用法： ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         Backup all project homes (+ remote/restic side when configured)\n  list [--project-id ID] [--q TEXT]\n  status                      Last run + schedule probe\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               Snapshot ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remote / exclusions / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # full patch {remote?,exclusions?,restic?}\n  restic list|run|restore     Incremental restic helpers\n"
+              "777243": "用法： ysk-server backup <sub> [--data-dir 路徑] [--json]\n all 備份 all project homes (+ remote/Restic side when configured)\n 列表 [--project-識別碼 識別碼] [--q TEXT]\n 狀態 Last run + schedule 探測\n 還原 --project-識別碼 識別碼 --名稱 ARCHIVE [--模式 full|網站|預覽試行]\n delete --project-識別碼 識別碼 --名稱 ARCHIVE\n schedule [--定時工作 \"0 3 * * *\"] [--安裝]\n control-plane 快照 ysk.json + config.json\n control-plane-還原 --名稱 ARCHIVE [--模式 預覽試行|full] [--confirm 還原-CONTROL-PLANE]\n settings [get|set] Remote / exclusions / Restic\n set --remote-kind local|sftp|s3 --remote-路徑 P [--remote-主機 H] …\n set --exclude a,b,c | --exclusions-檔案 檔案\n set --Restic-啟用 --Restic-密碼 P [--Restic-儲存庫 路徑]\n set --from-json 檔案 # full patch {remote?,exclusions?,Restic?}\n Restic 列表|run|還原 Incremental Restic helpers"
             }
           }
         }
@@ -520,7 +520,7 @@
         "--name": {
           "archive": {
             "--mode": {
-              "316a76": "用法： ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
+              "316a76": "用法： ysk-server backup control-plane-還原 --名稱 ARCHIVE [--模式 預覽試行|full] [--confirm 還原-CONTROL-PLANE]"
             }
           }
         }
@@ -529,7 +529,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "bc7041": "用法： ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
+              "bc7041": "用法： ysk-server backup 還原 --project-識別碼 識別碼 --名稱 ARCHIVE [--模式 full|網站|預覽試行]"
             }
           }
         }
@@ -539,7 +539,7 @@
       "list": {
         "--q": {
           "text": {
-            "b8e16b": "用法： ysk-server packages list [--q text]\n"
+            "b8e16b": "用法： ysk-server 套件 列表 [--q text]"
           }
         }
       }
@@ -548,21 +548,21 @@
       "stop": {
         "--id": {
           "projectid": {
-            "b15409": "用法： ysk-server projects stop --id <projectId>\n"
+            "b15409": "用法： ysk-server 專案 stop --識別碼 <projectId>"
           }
         }
       },
       "backup": {
         "--id": {
           "projectid": {
-            "e62846": "用法： ysk-server projects backup --id <projectId>\n"
+            "e62846": "用法： ysk-server 專案 備份 --識別碼 <projectId>"
           }
         }
       },
       "health": {
         "--id": {
           "projectid": {
-            "e816ec": "用法： ysk-server projects health --id <projectId>\n"
+            "e816ec": "用法： ysk-server 專案 health --識別碼 <projectId>"
           }
         }
       },
@@ -570,21 +570,21 @@
         "provision": {
           "--id": {
             "projectid": {
-              "5aff44": "用法： ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
+              "5aff44": "用法： ysk-server 專案 isolation provision --識別碼 <projectId>\n ysk-server 專案 isolation provision-all [--limit 20]"
             }
           }
         },
         "backfill-owners": {
           "--owner-user-id": {
             "id": {
-              "8691da": "用法： ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
+              "8691da": "用法： ysk-server 專案 isolation backfill-owners --owner-用戶-識別碼 <識別碼>"
             }
           }
         },
         "list": {
           "provision": {
             "provision-all": {
-              "8e9da3": "用法： ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
+              "8e9da3": "用法： ysk-server 專案 isolation 列表|provision|provision-all|backfill-owners"
             }
           }
         }
@@ -593,7 +593,7 @@
         "--id": {
           "projectid": {
             "name": {
-              "b0d532": "用法： ysk-server projects get --id <projectId|name> [--json]\n"
+              "b0d532": "用法： ysk-server 專案 get --識別碼 <projectId|名稱> [--json]"
             }
           }
         }
@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "用法： ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
+              "66e857": "用法： ysk-server 專案 建立 --名稱 <名稱> [--網域 d] [--運行時 node|php|static|python|go|rust] [--template 識別碼]"
             }
           }
         }
@@ -611,7 +611,7 @@
         "--id": {
           "projectid": {
             "--entry": {
-              "339111": "用法： ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
+              "339111": "用法： ysk-server 專案 deploy --識別碼 <projectId> [--entry f] [--埠 N] [--fpm|--builtin] [--重新載入]"
             }
           }
         }
@@ -620,7 +620,7 @@
         "--id": {
           "id": {
             "--git-url": {
-              "a513f5": "用法： ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              "a513f5": "用法： ysk-server 專案 git-deploy --識別碼 識別碼 [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]"
             }
           }
         }
@@ -629,7 +629,7 @@
         "--id": {
           "projectid": {
             "--template": {
-              "591ce4": "用法： ysk-server projects template --id <projectId> --template <id> [--force]\n"
+              "591ce4": "用法： ysk-server 專案 template --識別碼 <projectId> --template <識別碼> [--force]"
             }
           }
         }
@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "用法： ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+              "253b48": "用法： ysk-server 專案 列表|get|建立|deploy|git-deploy|stop|備份|template|health [options]\n deploy --識別碼 UUID [--entry f] [--埠 N] [--fpm|--builtin] [--重新載入]\n git-deploy --識別碼 UUID [--git-url URL] [--branch B] [--no-redeploy]"
             }
           }
         }
@@ -649,240 +649,240 @@
         "db-cluster": {
           "get": {
             "--id": {
-              "00f803": "用法： {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
+              "00f803": "用法： {{CLI_NAME}} db-叢集 get --識別碼 UUID [--json]"
             }
           },
           "plan": {
             "--id": {
-              "483f52": "用法： {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
+              "483f52": "用法： {{CLI_NAME}} db-叢集 計劃 --識別碼 UUID [--json]"
             }
           },
           "artifacts": {
             "--id": {
-              "6b33c4": "用法： {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
+              "6b33c4": "用法： {{CLI_NAME}} db-叢集 artifacts --識別碼 UUID [--json]"
             }
           },
           "bundle": {
             "--id": {
-              "94ed27": "用法： {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
+              "94ed27": "用法： {{CLI_NAME}} db-叢集 bundle --識別碼 UUID [--json]"
             }
           },
           "delete": {
             "--id": {
-              "3de0e4": "用法： {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
+              "3de0e4": "用法： {{CLI_NAME}} db-叢集 delete --識別碼 UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "e3b733": "用法： {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
+              "e3b733": "用法： {{CLI_NAME}} db-叢集 建立 --名稱 N --engine mariadb --kind mariadb-galera --member 主機=role[:access] ..."
             }
           },
           "apply": {
             "--id": {
-              "4cddb8": "用法： {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
+              "4cddb8": "用法： {{CLI_NAME}} db-叢集 套用 --識別碼 UUID [--執行] [--初始化] [--json]"
             }
           },
           "probe": {
             "--id": {
-              "22870c": "用法： {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
+              "22870c": "用法： {{CLI_NAME}} db-叢集 探測 --識別碼 UUID [--peers] [--json]"
             }
           },
           "install-peers": {
             "--id": {
-              "600b02": "用法： {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
+              "600b02": "用法： {{CLI_NAME}} db-叢集 安裝-peers --識別碼 UUID [--執行] [--no-重新啟動] [--identity 識別碼] [--json]"
             }
           },
           "push": {
             "--id": {
-              "697080": "用法： {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
+              "697080": "用法： {{CLI_NAME}} db-叢集 推送 --識別碼 UUID [--member 識別碼] [--identity 識別碼] [--執行] [--json]"
             }
           },
           "fleet": {
             "--id": {
-              "239462": "用法： {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
+              "239462": "用法： {{CLI_NAME}} db-叢集 機群 --識別碼 UUID [--op 套用|探測|計劃] [--執行] [--邊緣-執行] [--json]"
             }
           },
           "list": {
             "get": {
-              "3b9cfa": "用法： {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
+              "3b9cfa": "用法： {{CLI_NAME}} db-叢集 列表|get|建立|計劃|套用|探測|安裝-peers|artifacts|bundle|推送|機群|overview|delete [--peers] [--執行] [--json]"
             }
           }
         },
         "ssh-key": {
           "get": {
             "--id": {
-              "292716": "用法： {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
+              "292716": "用法： {{CLI_NAME}} ssh-金鑰 get --識別碼 UUID [--json]"
             }
           },
           "public": {
             "--id": {
-              "525d7d": "用法： {{CLI_NAME}} ssh-key public --id UUID\n"
+              "525d7d": "用法： {{CLI_NAME}} ssh-金鑰 public --識別碼 UUID"
             }
           },
           "export": {
             "--id": {
-              "0a6d81": "用法： {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
+              "0a6d81": "用法： {{CLI_NAME}} ssh-金鑰 export --識別碼 UUID [--out 路徑] [--json]"
             }
           },
           "delete": {
             "--id": {
-              "a6e2f2": "用法： {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
+              "a6e2f2": "用法： {{CLI_NAME}} ssh-金鑰 delete --識別碼 UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "8b1d79": "用法： {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
+              "8b1d79": "用法： {{CLI_NAME}} ssh-金鑰 建立 --名稱 N [--algo ed25519|rsa-4096] [--purpose 用戶|面板|unbound] [--project 識別碼] [--用戶 U] [--主目錄 路徑] [--reveal] [--json]"
             }
           },
           "import": {
             "--name": {
-              "6eb800": "用法： {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
+              "6eb800": "用法： {{CLI_NAME}} ssh-金鑰 匯入 --名稱 N --檔案 路徑 [--purpose 面板|用戶] [--json]"
             }
           },
           "install": {
             "--id": {
-              "b99c56": "用法： {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
+              "b99c56": "用法： {{CLI_NAME}} ssh-金鑰 安裝 --識別碼 UUID [--執行] [--json]"
             }
           },
           "test": {
             "--id": {
-              "e1aed3": "用法： {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
+              "e1aed3": "用法： {{CLI_NAME}} ssh-金鑰 test --識別碼 UUID --目標 用戶@主機[:埠] [--執行] [--json]"
             }
           },
           "rotate": {
             "--id": {
-              "9c3224": "用法： {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
+              "9c3224": "用法： {{CLI_NAME}} ssh-金鑰 rotate --識別碼 UUID [--reveal] [--json]"
             }
           },
           "authorize-self": {
             "--id": {
-              "b7ea2e": "用法： {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
+              "b7ea2e": "用法： {{CLI_NAME}} ssh-金鑰 authorize-self --識別碼 UUID [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "afcba0": "用法： {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
+              "afcba0": "用法： {{CLI_NAME}} ssh-金鑰 卸載 --識別碼 UUID [--執行] [--json]"
             }
           },
           "list": {
             "get": {
-              "2c92c6": "用法： {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
+              "2c92c6": "用法： {{CLI_NAME}} ssh-金鑰 列表|get|建立|匯入|public|export|安裝|test|rotate|authorize-self|卸載|delete [--json]"
             }
           }
         },
         "ssh-2fa": {
           "reveal": {
             "--id": {
-              "a6c27f": "用法： {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
+              "a6c27f": "用法： {{CLI_NAME}} ssh-2fa reveal --識別碼 UUID [--json]"
             }
           },
           "retire": {
             "--id": {
-              "6e1fa3": "用法： {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
+              "6e1fa3": "用法： {{CLI_NAME}} ssh-2fa retire --識別碼 UUID [--json]"
             }
           },
           "enroll": {
             "--user": {
-              "081432": "用法： {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
+              "081432": "用法： {{CLI_NAME}} ssh-2fa enroll --用戶 LINUX|--project 識別碼 [--主目錄 路徑] [--from-面板] [--json]"
             }
           },
           "confirm": {
             "--id": {
-              "9ee8a2": "用法： {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
+              "9ee8a2": "用法： {{CLI_NAME}} ssh-2fa confirm --識別碼 UUID --code 123456 [--json]"
             }
           },
           "install": {
             "--id": {
-              "dace06": "用法： {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
+              "dace06": "用法： {{CLI_NAME}} ssh-2fa 安裝 --識別碼 UUID [--執行] [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "0bb464": "用法： {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
+              "0bb464": "用法： {{CLI_NAME}} ssh-2fa 卸載 --識別碼 UUID [--執行] [--json]"
             }
           },
           "list": {
             "enroll": {
-              "802ed0": "用法： {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
+              "802ed0": "用法： {{CLI_NAME}} ssh-2fa 列表|enroll|confirm|安裝|卸載|pam|reveal|retire [--json]"
             }
           }
         },
         "ssl": {
           "list": {
             "get": {
-              "79c232": "用法： {{CLI_NAME}} ssl list|get --domain X [--json]\n"
+              "79c232": "用法： {{CLI_NAME}} ssl 列表|get --網域 X [--json]"
             }
           },
           "get": {
             "--domain": {
-              "91c444": "用法： {{CLI_NAME}} ssl get --domain example.com [--json]\n"
+              "91c444": "用法： {{CLI_NAME}} ssl get --網域 example.com [--json]"
             }
           }
         },
         "dns": {
           "zone": {
             "--zone": {
-              "ad30fa": "用法： {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "ad30fa": "用法： {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--重新載入]"
             }
           },
           "zones": {
             "zone": {
-              "5b8bda": "用法： {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
+              "5b8bda": "用法： {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]"
             }
           }
         },
         "nginx": {
           "status": {
             "list": {
-              "d67a16": "用法： {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
+              "d67a16": "用法： {{CLI_NAME}} nginx 狀態|列表|test|同步 [--執行] [--json]"
             }
           }
         },
         "host": {
           "overview": {
             "metrics": {
-              "93c828": "用法： {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
+              "93c828": "用法： {{CLI_NAME}} 主機 overview|metrics|network [--路徑 /] [--json]"
             }
           }
         },
         "logs": {
           "sources": {
             "overview": {
-              "79058c": "用法： {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
+              "79058c": "用法： {{CLI_NAME}} 日誌 sources|overview|units|系統日誌|query [--source 識別碼] [--json]"
             }
           }
         },
         "services": {
           "sub": {
             "--unit": {
-              "4fe3fa": "用法： {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
+              "4fe3fa": "用法： {{CLI_NAME}} services {{sub}} --unit <系統服務-服務單元> [--執行] [--json]"
             }
           },
           "matrix": {
             "start": {
-              "4f3a35": "用法： {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
+              "4f3a35": "用法： {{CLI_NAME}} services matrix|start|stop|重新啟動|重新載入 --unit 名稱 [--執行] [--json]"
             }
           }
         },
         "defense": {
           "ban": {
             "--ip": {
-              "cc22de": "用法： {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
+              "cc22de": "用法： {{CLI_NAME}} defense 封鎖 --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--執行]"
             }
           },
           "unban": {
             "--ip": {
-              "46aa23": "用法： {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
+              "46aa23": "用法： {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--執行]"
             }
           },
           "whitelist": {
             "--action": {
-              "c1cbdf": "用法： {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
+              "c1cbdf": "用法： {{CLI_NAME}} defense whitelist --action 列表|add|remove [--ip IP]"
             }
           },
           "status": {
             "bans": {
-              "a8d96b": "用法： {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + current preset\n` +\n          `  fail2ban | firewall       # deep probes (honest)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # list + activePreset\n"
+              "a8d96b": "用法： {{CLI_NAME}} defense 狀態|bans|suspects|封鎖|unban|whitelist|stack-套用|fail2ban|firewall|timeline|預設方案s [--json]\n` +\n ` bans [--q text] [--source fail2ban|面板|ufw|auto]\n` +\n ` suspects [--q text]\n` +\n ` stack-套用 [--執行] # UFW + fail2ban + current 預設方案\n` +\n ` fail2ban | firewall # deep probes (honest)\n` +\n ` timeline [--limit N] [--q text]\n` +\n ` 預設方案s # 列表 + active預設方案"
             }
           }
         }
@@ -893,7 +893,7 @@
         "--enable": {
           "--data-dir": {
             "path": {
-              "33daa1": "用法： ysk-server system unit-install [--enable] [--data-dir PATH]\n"
+              "33daa1": "用法： ysk-server system 服務單元-安裝 [--啟用] [--data-dir 路徑]"
             }
           }
         }
@@ -904,7 +904,7 @@
         "--username": {
           "u": {
             "--password": {
-              "7145c7": "用法： ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              "7145c7": "用法： ysk-server users 建立 --username <u> --密碼 <p> [--role operator|viewer|管理員] [--套件-識別碼 識別碼]"
             }
           }
         }
@@ -913,7 +913,7 @@
         "--q": {
           "text": {
             "--role": {
-              "544685": "用法： ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
+              "544685": "用法： ysk-server users 列表 [--q text] [--role 管理員|operator|viewer]\n ysk-server users 建立 --username u --密碼 p [--role operator]"
             }
           }
         }
@@ -922,7 +922,7 @@
     "rbac": {
       "list": {
         "policies": {
-          "330ade": "用法： ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # route→cap sample matrix\n"
+          "330ade": "用法： ysk-server rbac 列表|policies\n ysk-server rbac show --role operator\n ysk-server rbac audit # route→cap sample matrix"
         }
       }
     },
@@ -931,7 +931,7 @@
         "--db": {
           "name": {
             "--user": {
-              "2c8889": "用法： ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (no host change). Pass --execute + YSK_EXECUTE=1 to apply.\n"
+              "2c8889": "用法： ysk-server hosting postgres-provision --db 名稱 --用戶 U --密碼 P(min8) [--執行]\n 預設 預覽試行 (no 主機 change). Pass --執行 + 系統變更權限已開啟 to 套用."
             }
           }
         }
@@ -940,7 +940,7 @@
         "--db": {
           "name": {
             "--user": {
-              "fc25aa": "用法： ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (no host change). Pass --execute + YSK_EXECUTE=1 to apply.\n"
+              "fc25aa": "用法： ysk-server hosting mysql-provision --db 名稱 --用戶 U --密碼 P(min8) [--執行]\n 預設 預覽試行 (no 主機 change). Pass --執行 + 系統變更權限已開啟 to 套用."
             }
           }
         }
@@ -949,7 +949,7 @@
         "--zone": {
           "example": {
             "com": {
-              "bdaa0d": "用法： ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "bdaa0d": "用法： ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--重新載入]"
             }
           }
         }
@@ -958,7 +958,7 @@
         "--zone": {
           "example": {
             "com": {
-              "dba49c": "用法： ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
+              "dba49c": "用法： ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--執行]"
             }
           }
         }
@@ -967,7 +967,7 @@
         "--domain": {
           "example": {
             "com": {
-              "37d350": "用法： ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
+              "37d350": "用法： ysk-server hosting 電郵-套用 --網域 example.com [--安裝|--執行]"
             }
           }
         }
@@ -976,7 +976,7 @@
         "--domain": {
           "x": {
             "--local": {
-              "3d9be3": "用法： ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
+              "3d9be3": "用法： ysk-server hosting 電郵-mailbox --網域 X --local 用戶 [--密碼 P] [--ip A.B.C.D]"
             }
           }
         }
@@ -985,7 +985,7 @@
         "--domain": {
           "files": {
             "example": {
-              "284a7c": "用法： ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
+              "284a7c": "用法： ysk-server hosting ftps-套用 --網域 檔案.example.com [--安裝|--執行]"
             }
           }
         }
@@ -994,7 +994,7 @@
         "--domain": {
           "webmail": {
             "example": {
-              "2ad5b5": "用法： ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
+              "2ad5b5": "用法： ysk-server hosting webmail-套用 --網域 webmail.example.com [--下載]"
             }
           }
         }
@@ -1003,7 +1003,7 @@
         "--domain": {
           "files": {
             "example": {
-              "0e9013": "用法： ysk-server hosting public-files --domain files.example.com [--reload]\n"
+              "0e9013": "用法： ysk-server hosting public-檔案 --網域 檔案.example.com [--重新載入]"
             }
           }
         }
@@ -1012,7 +1012,7 @@
         "--domain": {
           "example": {
             "com": {
-              "8774a4": "用法： ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
+              "8774a4": "用法： ysk-server hosting 電郵-deliverability --網域 example.com\n ysk-server hosting 電郵-deliverability --識別碼 <domainId>"
             }
           }
         }
@@ -1021,7 +1021,7 @@
         "--domain": {
           "example": {
             "com": {
-              "796da5": "用法： ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
+              "796da5": "用法： ysk-server hosting 電郵-初始化 --網域 example.com --ip 1.2.3.4 [--管理員 postmaster] [--密碼 P] [--安裝]"
             }
           }
         }
@@ -1032,7 +1032,7 @@
         "--job": {
           "id": {
             "--data-dir": {
-              "6a73cd": "用法： ysk-server migrate post --job <id> --data-dir PATH --execute\n"
+              "6a73cd": "用法： ysk-server migrate post --job <識別碼> --data-dir 路徑 --執行"
             }
           }
         }
@@ -1041,23 +1041,23 @@
         "--target": {
           "root": {
             "new": {
-              "3e94a2": "用法： ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
+              "3e94a2": "用法： ysk-server migrate 主機 --目標 管理員@NEW_IP [--identity-檔案 路徑|--identity-識別碼 識別碼] [--密碼] --執行 --data-dir 路徑"
             }
           }
         }
       }
     },
     "x": {
-      "972912": "用法：\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # on target\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+      "972912": "用法：\n ysk-server migrate inventory [--data-dir 路徑] --json\n ysk-server migrate 主機 --目標 管理員@IP [--identity-檔案 路徑|--identity-識別碼 識別碼|--密碼 PW] --執行 [--maintenance] [--force-wipe-目標]\n ysk-server migrate post --job 識別碼 --data-dir 路徑 --執行 # on 目標\n ysk-server migrate 狀態 [--job 識別碼]\n ysk-server migrate resume --job 識別碼 --執行"
     },
-    "hostingHelp": "用法：ysk-server hosting <sub>\n  危險操作預設 dry-run；加 --execute（+ YSK_EXECUTE=1）才真正套用\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # PTR/DNSBL/warmup 誠實報告\n  firewall-apply [--smtp] [--execute]\n",
-    "logsQuery": "用法：{{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  source 例：journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
+    "hostingHelp": "用法：ysk-server hosting <sub>\n 危險操作預設 預覽試行；加 --執行（+ 系統變更權限已開啟）才真正套用\n nginx | nginx-同步 [--執行]\n redis-provision | postgres-provision | mysql-provision [--執行]\n dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--重新載入]\n dns-zones | powerdns-狀態 | powerdns-安裝 [--安裝|--執行]\n powerdns-load --zone X --ip A.B.C.D [--load|--執行]\n 電郵-套用 --網域 X [--安裝|--執行]\n 電郵-mailbox --網域 X --local 用戶 [--密碼 P] [--ip A.B.C.D] [--system]\n ftps-套用 --網域 X [--安裝|--執行]\n 運行時s | 運行時-安裝 --kind node|php|python|go|rust --version V [--安裝|--執行]\n dovecot-passdb --網域 X | --all\n webmail-套用 --網域 webmail.example.com [--下載]\n public-檔案 --網域 檔案.example.com [--重新載入]\n 電郵-初始化 --網域 example.com --ip A.B.C.D [--安裝|--執行]\n 電郵-deliverability --網域 example.com # PTR/DNSBL/warmup 誠實報告\n firewall-套用 [--smtp] [--執行]",
+    "logsQuery": "用法：{{CLI_NAME}} 日誌 query --source <識別碼> [--lines N] [--grep G] [--since 1h] [--priority err]\n source 例：系統日誌: 系統日誌:nginx.service 檔案:syslog project:<uuid>\n {{CLI_NAME}} 日誌 sources --json\n {{CLI_NAME}} 日誌 系統日誌 [--unit nginx.service] --json"
   },
   "msg": {
     "domain": {
       "missing": {
         "pass": {
-          "5be09b": "缺少域名 — 請傳 --ip 以先建立域名\n"
+          "5be09b": "缺少域名 — 請傳 --ip 以先建立域名"
         }
       }
     },
@@ -1121,62 +1121,62 @@
       "email": {
         "sub": {
           "sub": {
-            "e37257": "未知 email 子命令： {{sub}}\n執行： ysk-server email help\n"
+            "e37257": "未知 電郵 子命令： {{sub}}\n執行： ysk-server 電郵 help"
           }
         }
       },
       "cron": {
         "sub": {
           "sub": {
-            "e1a9ed": "未知 cron 子命令： {{sub}}\n執行： ysk-server cron help\n"
+            "e1a9ed": "未知 定時工作 子命令： {{sub}}\n執行： ysk-server 定時工作 help"
           }
         }
       },
       "files": {
         "sub": {
           "sub": {
-            "07ad7e": "未知 files 子命令： {{sub}}\n執行： ysk-server files help\n"
+            "07ad7e": "未知 檔案 子命令： {{sub}}\n執行： ysk-server 檔案 help"
           }
         }
       },
       "store": {
         "sub": {
           "sub": {
-            "b7a083": "未知 store 子命令： {{sub}}\n執行： ysk-server store help\n"
+            "b7a083": "未知 store 子命令： {{sub}}\n執行： ysk-server store help"
           }
         }
       },
       "cdn": {
         "subcommand": {
           "sub": {
-            "76664f": "未知 cdn 子命令： {{sub}}\n執行： ysk-server cdn help\n"
+            "76664f": "未知 cdn 子命令： {{sub}}\n執行： ysk-server cdn help"
           }
         }
       },
       "backup": {
         "subcommand": {
           "sub": {
-            "4092ad": "未知 backup 子命令： {{sub}}\n執行： ysk-server backup help\n"
+            "4092ad": "未知 備份 子命令： {{sub}}\n執行： ysk-server backup help"
           }
         }
       }
     }
   },
   "setup": {
-    "dryRunOk": "{{product}} setup dry-run 成功",
-    "dryRunNext": "再次執行時請去掉 --dry-run，以寫入設定並初始化資料庫",
-    "weakPassword": "管理員密碼過弱或仍為預設。請傳入強密碼 --admin-password（最少 8 位，勿用 admin／常見預設），或本機開發設 YSK_ALLOW_INSECURE_DEFAULTS=1。",
+    "dryRunOk": "{{product}} setup 預覽試行 成功",
+    "dryRunNext": "再次執行時請去掉 --預覽試行，以寫入設定並初始化資料庫",
+    "weakPassword": "管理員密碼過弱或仍為預設。請傳入強密碼 --管理員-密碼（最少 8 位，勿用 管理員／常見預設），或本機開發設 YSK_ALLOW_INSECURE_DEFAULTS=1。",
     "weakPasswordShort": "已拒絕過弱或預設管理員密碼",
-    "nextStart": "啟動（API + Web UI）：{{cli}} serve --config {{configPath}}",
-    "nextOpen": "開啟 http://{{host}}:{{port}}/ 並以 {{user}} 登入",
-    "nextUnit": "Systemd unit 範本：{{unitPath}}",
-    "nextInstall": "安裝 unit（root + YSK_EXECUTE）：{{cli}} system unit-install --enable --data-dir {{dataDir}}",
-    "nextExecute": "生產主機變更需要 YSK_EXECUTE=1 與 root",
-    "nextGolive": "上線：docs/deploy/go-live.md + ysk-server readiness --json",
-    "secPassword": "安全：請立即更改管理員密碼（bootstrap 使用了弱／預設密碼）",
-    "sec2fa": "安全：請在「帳號安全 → 帳戶」啟用管理員 2FA",
-    "secListen": "安全：正在監聽所有介面 — 請放防火牆／反向代理之後；管理建議 127.0.0.1 + SSH tunnel",
+    "nextStart": "啟動（介面 + Web UI）：{{cli}} serve --config {{configPath}}",
+    "nextOpen": "開啟 http://{{host}}:{{埠}}/ 並以 {{user}} 登入",
+    "nextUnit": "系統服務單元 範本：{{unitPath}}",
+    "nextInstall": "安裝 服務單元（管理員權限與系統變更權限）：{{cli}} system 服務單元-安裝 --啟用 --data-dir {{dataDir}}",
+    "nextExecute": "生產主機變更需要 系統變更權限已開啟 與管理員權限",
+    "nextGolive": "上線：docs/deploy/go-live.md + ysk-server 就緒檢查 --json",
+    "secPassword": "安全：請立即更改管理員密碼（初始化 使用了弱／預設密碼）",
+    "sec2fa": "安全：請在「帳號安全 → 帳戶」啟用管理員 雙重驗證",
+    "secListen": "安全：正在監聽所有介面 — 請放防火牆／反向代理之後；管理建議 127.0.0.1 + 遠端登入 tunnel",
     "ok": "{{product}} setup 完成（資料庫已初始化）",
-    "okInsecure": "{{product}} setup 完成（資料庫已初始化）［不安全 bootstrap — 請改密碼］"
+    "okInsecure": "{{product}} setup 完成（資料庫已初始化）［不安全 初始化 — 請改密碼］"
   }
 }

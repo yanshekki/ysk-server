@@ -12,7 +12,7 @@
   "domain": "網域",
   "user": "用戶",
   "keyFingerprint": "金鑰指紋（前綴）",
-  "createHint": "建議先建立 FTP 帳戶，再為該用戶加 SSH 公鑰（列表右上角）。",
+  "createHint": "建議先建立 FTP 帳戶，再為該用戶加 遠端登入 公鑰（列表右上角）。",
   "pubkeyHint": "用列表右上角為既有 FTP 用戶登記 ssh-ed25519 / ssh-rsa 公鑰。",
   "quickSelect": "快速選擇帳戶",
   "quickSelectHint": "點用戶名帶入新增公鑰表單",
@@ -36,7 +36,7 @@
   "note": "備註",
   "noteHint": "方便辨識裝置，例如 筆電／公司",
   "notePh": "筆電 / 公司主機",
-  "sshPubkey": "SSH 公鑰",
+  "sshPubkey": "遠端登入 公鑰",
   "sshPubkeyHint": "通常來自 ~/.ssh/id_ed25519.pub，整行貼上",
   "deleteAccountTitle": "刪除 FTP 帳戶？",
   "deleteAccountDesc": "移除後請再套用",
@@ -94,8 +94,8 @@
   "opsResult": "操作結果",
   "saved": "已儲存",
   "accountsList": "帳戶列表",
-  "accountsListDesc": "建立後按「套用」同步到 vsftpd。服務未裝時請先用上方安裝，再到 ",
-  "startService": " 啟動。",
+  "accountsListDesc": "建立後按「套用」同步到 vsftpd。服務未裝時請先用上方安裝，再到",
+  "startService": "啟動。",
   "createAccountPlus": "+ 建立帳戶",
   "noFtpAccounts": "尚未有 FTP 帳戶",
   "noFtpAccountsDesc": "用列表右上角「建立帳戶」新增；可指定家目錄與網域，再套用到系統。",
@@ -114,5 +114,5 @@
   "applyRestart": "套用並重啟",
   "afterInstall": "安裝後即可使用 FTPS 帳戶登入。需系統管理員權限才能完成安裝。",
   "saveSettings": "儲存設定",
-  "saveApplyHint": "儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.conf 並重載服務。"
+  "saveApplyHint": "儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.設定檔 並重載服務。"
 }

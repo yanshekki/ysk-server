@@ -1,0 +1,19 @@
+{
+  "purgeConfirm": "Confirm purge? Registered data paths (databases/mail) will be deleted permanently.",
+  "installedCount": "Installed {{installed}} · Missing {{missing}}",
+  "needRootExecute": "Live install/remove needs administrator rights and system-change permission. You can still dry-run.",
+  "modeInstall": "Install plan",
+  "modeUninstall": "Uninstall",
+  "plan": "Plan",
+  "customBundles": "Custom bundles",
+  "sqlExclusive": "SQL server (exclusive)",
+  "clamavOptional": "optional, large",
+  "componentsTitle": "Components to install",
+  "dryRun": "Dry-run preview",
+  "installNow": "Install now",
+  "uninstallHint": "Select bundles to remove. If none selected, removes all tracked components. Data is kept by default.",
+  "dataPolicy": "Data policy",
+  "keepData": "Keep data",
+  "purgeData": "Purge data",
+  "uninstallNow": "Uninstall now"
+}

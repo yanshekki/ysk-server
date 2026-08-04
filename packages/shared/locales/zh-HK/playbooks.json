@@ -21,10 +21,10 @@
   },
   "mail-stack-status": {
     "name": "郵件堆疊狀態",
-    "description": "檢查 postfix + dovecot unit"
+    "description": "檢查 postfix + dovecot 服務單元"
   },
   "security-units": {
-    "name": "安全 unit",
+    "name": "安全 服務單元",
     "description": "fail2ban + sshd 狀態（唯讀）"
   },
   "web-stack-status": {

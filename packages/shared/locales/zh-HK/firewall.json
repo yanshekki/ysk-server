@@ -1,8 +1,17 @@
 {
   "profiles": {
-    "web": { "label": "Web 主機", "short": "SSH · 80 · 443" },
-    "mail": { "label": "Web + 郵件", "short": "另開 25/465/587/993" },
-    "ftps": { "label": "Web + FTPS", "short": "21 + PASV 30000–30100" }
+    "web": {
+      "label": "Web 主機",
+      "short": "SSH · 80 · 443"
+    },
+    "mail": {
+      "label": "Web + 郵件",
+      "short": "另開 25/465/587/993"
+    },
+    "ftps": {
+      "label": "Web + FTPS",
+      "short": "21 + PASV 30000–30100"
+    }
   },
   "appliedProfile": "已套用設定檔：{{label}}",
   "backToProtection": "防護中心",
@@ -19,9 +28,9 @@
   "enableUfw": "啟用 UFW",
   "notInstalled": "UFW 尚未安裝",
   "toolHintPrefix": "底層工具：",
-  "toolHintBody": "UFW = 埠／永久規則 · 攻擊應變與自動 ban 請用",
-  "toolHintFail2ban": "fail2ban = 日誌臨時 ban",
-  "executeOffHint": "系統變更未開 — 可看狀態，改規則需 root + YSK_EXECUTE=1",
+  "toolHintBody": "UFW = 埠／永久規則 · 攻擊應變與自動 封鎖 請用",
+  "toolHintFail2ban": "fail2ban = 日誌臨時 封鎖",
+  "executeOffHint": "系統變更未開 — 可看狀態，改規則需 管理員權限與系統變更權限已開啟",
   "tabs": {
     "rules": "規則表",
     "ports": "開埠",
@@ -35,18 +44,18 @@
   "colFrom": "來源",
   "deleteShort": "刪",
   "emptyRulesTitle": "無規則或無權讀取",
-  "emptyRulesInstalled": "UFW inactive 或需 root 讀取",
+  "emptyRulesInstalled": "UFW inactive 或需要管理員權限 讀取",
   "emptyRulesNotInstalled": "安裝 UFW 後再整理",
   "allowPortTitle": "允許埠",
   "protocol": "協議",
   "port": "埠",
   "portHint": "選常用埠，或下面自訂",
   "customPort": "自訂埠號",
-  "allowedPort": "已允許 {{proto}}/{{port}}",
+  "allowedPort": "已允許 {{proto}}/{{埠}}",
   "allowThisPort": "允許此埠",
   "allowPortHint": "預設 Web 主機應保留 22／80／443；勿隨便 allow 全部。",
   "denyTitle": "永久拒絕 IP",
-  "denySub": "UFW DENY · 與 fail2ban 臨時 ban 不同",
+  "denySub": "UFW DENY · 與 fail2ban 臨時 封鎖 不同",
   "denyPlaceholder": "要拒絕的 IPv4 或 IPv6",
   "deniedOk": "已永久拒絕",
   "removedDeny": "已移除 DENY",

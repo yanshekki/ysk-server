@@ -8546,6 +8546,25 @@
     "applyFailed": "申请失败",
     "deletedCert": "已删除 {{domain}}"
   },
+  "stackWizard": {
+    "purgeConfirm": "确认清除？将删除已登记的数据目录（数据库／邮件等），此操作无法复原。",
+    "installedCount": "已安装 {{installed}} · 未安装 {{missing}}",
+    "needRootExecute": "实际安装或移除需要管理员权限，并开启系统变更权限。仍可先做预览试行。",
+    "modeInstall": "安装套餐",
+    "modeUninstall": "移除套餐",
+    "plan": "方案",
+    "customBundles": "自定义套餐",
+    "sqlExclusive": "SQL 服务器（互斥）",
+    "clamavOptional": "可选，体积较大",
+    "componentsTitle": "将安装的组件",
+    "dryRun": "预览试行",
+    "installNow": "立即安装",
+    "uninstallHint": "勾选要移除的套餐；若全部不勾选，则移除清单内全部组件。默认保留数据。",
+    "dataPolicy": "数据策略",
+    "keepData": "保留数据",
+    "purgeData": "清除数据",
+    "uninstallNow": "立即移除"
+  },
   "system": {
     "exportLoadFailed": "加载导出数据失败",
     "dryRunDone": "模拟完成（未改系统）",
