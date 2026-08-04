@@ -71,7 +71,7 @@ When stdin is not a TTY (typical `curl|bash`), the installer runs **non-interact
 | Bundle | Contents (summary) |
 |--------|-------------------|
 | `control-plane` | base tools, git, Node 20+, `ysk-server` product (**always included**) |
-| `web` | nginx, apache2 (optional), certbot, PHP |
+| `web` | nginx (:80/:443 edge), apache2 (PHP backend `127.0.0.1:8080`), certbot, PHP |
 | `database` | MariaDB **or** MySQL, PostgreSQL, Redis, clients, sqlite |
 | `email` | postfix, dovecot, opendkim; optional rspamd / ClamAV |
 | `dns` | PowerDNS |

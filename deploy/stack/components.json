@@ -23,19 +23,16 @@
       "bins": ["nginx"],
       "units": ["nginx"],
       "dataPaths": [],
-      "exclusiveWith": ["apache2"],
-      "notes": "Primary HTTP server. Do not run apache2 on the same host ports 80/443."
+      "notes": "Public edge: :80/:443, SSL termination, reverse proxy to Apache (or php-fpm)."
     },
     "apache2": {
-      "title": "Apache HTTP Server",
+      "title": "Apache HTTP Server (PHP backend)",
       "source": "apt",
-      "optional": true,
       "aptPackages": ["apache2"],
       "bins": ["apache2", "apache2ctl"],
       "units": ["apache2"],
       "dataPaths": [],
-      "exclusiveWith": ["nginx"],
-      "notes": "Optional alternate HTTP server. Conflicts with nginx on :80/:443."
+      "notes": "PHP backend only. Install rebinds to 127.0.0.1:8080 (YSK_APACHE_BACKEND_*). Nginx proxies public traffic here."
     },
     "certbot": {
       "title": "Certbot",

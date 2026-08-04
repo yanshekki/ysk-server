@@ -41,9 +41,8 @@
     "web": {
       "title": "Web hosting",
       "titleZh": "網頁託管",
-      "description": "Nginx (primary :80/:443), Certbot, PHP. Apache is optional — do not co-enable with Nginx on the same ports.",
-      "components": ["nginx", "certbot", "php"],
-      "optionalComponents": ["apache2"]
+      "description": "Nginx public edge (:80/:443 TLS proxy) + Apache PHP backend (127.0.0.1:8080) + Certbot + PHP. Both web servers run; ports are split, not exclusive.",
+      "components": ["apache2", "nginx", "certbot", "php"]
     },
     "database": {
       "title": "Databases",

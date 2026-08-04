@@ -22,11 +22,11 @@ verify_component_units() {
       SOFT_SKIPS+=("verify-unit:$id:$u:$st")
       continue
     fi
-    # nginx often fails with apache still holding :80 — call it out
+    # nginx failed while apache still listens on public :80 — need backend rebind
     if [[ "$u" == "nginx" && "$st" == "failed" ]]; then
       if systemctl is-active --quiet apache2 2>/dev/null || systemctl is-active --quiet httpd 2>/dev/null; then
-        VERIFY_FAIL+=("${id}: unit nginx failed — apache/httpd is active on :80 (stop it: systemctl stop apache2)")
-        err "  verify FAIL: nginx failed while apache2/httpd is active (port conflict)"
+        VERIFY_FAIL+=("${id}: unit nginx failed — apache likely still on :80 (want Apache on 127.0.0.1:8080, Nginx on :80/:443)")
+        err "  verify FAIL: nginx failed; rebind Apache off public :80 (configure_apache_as_nginx_backend / ports.conf Listen 127.0.0.1:8080)"
         return 1
       fi
     fi

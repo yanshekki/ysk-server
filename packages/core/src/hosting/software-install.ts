@@ -334,33 +334,60 @@ export async function installSoftware(input: {
     status };
 }
 
-/** Nginx vs Apache must not both own :80/:443. */
+/**
+ * Topology: Nginx public :80/:443; Apache PHP backend on 127.0.0.1:8080.
+ * When starting Nginx, rebind Apache off public ports (do not stop Apache).
+ * When installing Apache, apply the same backend listen so it never steals :80.
+ */
 async function freeHttpPortForSpec(
   host: HostExecutor,
   id: string,
   steps: SoftwareInstallStep[],
   notes: string[],
 ): Promise<void> {
-  const stopList =
-    id === 'nginx' ? ['apache2', 'httpd'] : id === 'apache2' ? ['nginx'] : [];
-  for (const u of stopList) {
-    const active = await unitIsActive(host, u);
-    if (active !== 'active' && active !== 'activating') continue;
-    notes.push(`Stopping ${u} so ${id} can bind :80/:443`);
-    const r = await host.runCommand(['systemctl', 'disable', '--now', u], { timeoutMs: 30_000 });
-    steps.push({
-      name: `stop conflicting ${u}`,
-      status: r.exitCode === 0 ? 'ok' : 'failed',
-      detail: r.exitCode === 0 ? `stopped ${u}` : r.stderr || r.stdout,
-    });
-  }
+  if (id !== 'nginx' && id !== 'apache2') return;
+  if (!host.pathExists('/etc/apache2') && id === 'nginx') return;
+
+  const bind = process.env.YSK_APACHE_BACKEND_BIND || '127.0.0.1';
+  const port = process.env.YSK_APACHE_BACKEND_PORT || '8080';
+  notes.push(
+    id === 'nginx'
+      ? `Rebinding Apache to ${bind}:${port} so Nginx can own public :80/:443 (Apache stays as PHP backend)`
+      : `Configuring Apache as Nginx backend on ${bind}:${port}`,
+  );
+
+  const script = `
+set -e
+BIND=${JSON.stringify(bind)}
+PORT=${JSON.stringify(port)}
+if [ ! -d /etc/apache2 ]; then exit 0; fi
+cp -a /etc/apache2/ports.conf /etc/apache2/ports.conf.ysk-bak 2>/dev/null || true
+cat > /etc/apache2/ports.conf <<EOF
+# Managed by YSK — Apache PHP backend; Nginx owns public :80/:443
+Listen \${BIND}:\${PORT}
+EOF
+if [ -f /etc/apache2/sites-available/000-default.conf ]; then
+  cp -a /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.ysk-bak 2>/dev/null || true
+  sed -i "s/<VirtualHost \\*:80>/<VirtualHost \${BIND}:\${PORT}>/g" /etc/apache2/sites-available/000-default.conf || true
+fi
+command -v a2dissite >/dev/null 2>&1 && a2dissite default-ssl 2>/dev/null || true
+if command -v apache2ctl >/dev/null 2>&1; then apache2ctl configtest; fi
+systemctl restart apache2 2>/dev/null || systemctl start apache2 2>/dev/null || true
+`.trim();
+
+  const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 60_000 });
+  steps.push({
+    name: 'apache backend rebind (127.0.0.1:8080)',
+    status: r.exitCode === 0 ? 'ok' : 'failed',
+    detail: r.exitCode === 0 ? `Listen ${bind}:${port}` : (r.stderr || r.stdout).slice(0, 400),
+  });
 }
 
 async function unitFailureHint(host: HostExecutor, unit: string, active: string): Promise<string> {
   if (unit === 'nginx' && (active === 'failed' || active === 'inactive')) {
     const apache = await unitIsActive(host, 'apache2');
     if (apache === 'active') {
-      return 'nginx unit not active — apache2 is still running on :80 (stop/disable apache2, then systemctl restart nginx)';
+      return 'nginx unit not active — Apache may still bind public :80; rebind Apache to 127.0.0.1:8080 (Nginx edge, Apache PHP backend), then systemctl restart nginx';
     }
     const t = await host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
     if (t.exitCode !== 0) {

@@ -100,31 +100,90 @@ install_component_node() {
   log "Node.js $(node -v)"
 }
 
-# Free :80/:443 so the primary web server can bind. Nginx and Apache must not both be active.
-stop_conflicting_http_servers() {
-  local keep="$1" # nginx | apache2
+# Topology: Nginx owns public :80/:443 (TLS edge / reverse proxy).
+# Apache is PHP backend only on loopback (default 127.0.0.1:8080) — both may run together.
+# Override with YSK_APACHE_BACKEND_BIND / YSK_APACHE_BACKEND_PORT.
+apache_backend_bind() { printf '%s' "${YSK_APACHE_BACKEND_BIND:-127.0.0.1}"; }
+apache_backend_port() { printf '%s' "${YSK_APACHE_BACKEND_PORT:-8080}"; }
+
+# Move Apache off :80/:443 so Nginx can be the public edge. Idempotent.
+configure_apache_as_nginx_backend() {
   resolve_sudo
-  local u
-  if [[ "$keep" == "nginx" ]]; then
-    for u in apache2 httpd; do
-      if systemctl is-active --quiet "$u" 2>/dev/null; then
-        log "Stopping $u so nginx can bind :80/:443"
-        # shellcheck disable=SC2086
-        $SUDO systemctl stop "$u" 2>/dev/null || true
-        # shellcheck disable=SC2086
-        $SUDO systemctl disable "$u" 2>/dev/null || true
-      fi
-    done
-  elif [[ "$keep" == "apache2" ]]; then
-    for u in nginx; do
-      if systemctl is-active --quiet "$u" 2>/dev/null; then
-        log "Stopping $u so apache2 can bind :80/:443"
-        # shellcheck disable=SC2086
-        $SUDO systemctl stop "$u" 2>/dev/null || true
-        # shellcheck disable=SC2086
-        $SUDO systemctl disable "$u" 2>/dev/null || true
-      fi
-    done
+  local bind port ports conf_d sites_d f
+  bind="$(apache_backend_bind)"
+  port="$(apache_backend_port)"
+  ports="/etc/apache2/ports.conf"
+  conf_d="/etc/apache2/conf-available"
+  sites_d="/etc/apache2/sites-available"
+
+  if [[ ! -d /etc/apache2 ]]; then
+    return 0
+  fi
+
+  log "Configuring Apache as Nginx backend (${bind}:${port}); Nginx keeps public :80/:443"
+
+  if [[ -f "$ports" ]]; then
+    # shellcheck disable=SC2086
+    $SUDO cp -a "$ports" "${ports}.ysk-bak" 2>/dev/null || true
+  fi
+  # shellcheck disable=SC2086
+  $SUDO tee "$ports" >/dev/null <<EOF
+# Managed by YSK install — Apache is PHP backend only.
+# Nginx terminates TLS / listens on public :80 and :443 and proxies here.
+# Override: YSK_APACHE_BACKEND_BIND / YSK_APACHE_BACKEND_PORT
+Listen ${bind}:${port}
+EOF
+
+  # Default site: bind backend port only (not *:80)
+  if [[ -f "${sites_d}/000-default.conf" ]]; then
+    # shellcheck disable=SC2086
+    $SUDO cp -a "${sites_d}/000-default.conf" "${sites_d}/000-default.conf.ysk-bak" 2>/dev/null || true
+    # shellcheck disable=SC2086
+    $SUDO sed -i \
+      -e "s/<VirtualHost \*:80>/<VirtualHost ${bind}:${port}>/g" \
+      -e "s/<VirtualHost \*:443>/<VirtualHost ${bind}:$((port + 1))>/g" \
+      "${sites_d}/000-default.conf" 2>/dev/null || true
+  fi
+  # Drop public SSL vhost if present — TLS is Nginx's job
+  if [[ -f "${sites_d}/default-ssl.conf" ]] && command -v a2dissite >/dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    $SUDO a2dissite default-ssl 2>/dev/null || true
+  fi
+
+  # Marker for operators / panel
+  # shellcheck disable=SC2086
+  $SUDO mkdir -p "$conf_d" 2>/dev/null || true
+  # shellcheck disable=SC2086
+  $SUDO tee "${conf_d}/ysk-backend-port.conf" >/dev/null <<EOF
+# YSK: Apache backend for Nginx reverse proxy
+# Listen is set in ports.conf → ${bind}:${port}
+EOF
+  if command -v a2enconf >/dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    $SUDO a2enconf ysk-backend-port 2>/dev/null || true
+  fi
+
+  if command -v apache2ctl >/dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    if ! $SUDO apache2ctl configtest 2>/dev/null; then
+      warn "apache2ctl configtest failed after backend rebind — check /etc/apache2"
+      return 1
+    fi
+  fi
+  # shellcheck disable=SC2086
+  $SUDO systemctl restart apache2 2>/dev/null || $SUDO systemctl start apache2 2>/dev/null || true
+  if systemctl is-active --quiet apache2 2>/dev/null; then
+    log "  Apache backend active on ${bind}:${port}"
+    return 0
+  fi
+  warn "  Apache not active after backend rebind (may still be installing)"
+  return 0
+}
+
+# Before Nginx starts: if Apache is present, move it to loopback backend (do NOT stop Apache).
+ensure_nginx_owns_public_http() {
+  if [[ -d /etc/apache2 ]] || systemctl list-unit-files apache2.service 2>/dev/null | grep -q apache2; then
+    configure_apache_as_nginx_backend || true
   fi
 }
 
@@ -181,11 +240,9 @@ install_component_apt() {
     preseed_postfix
   fi
 
-  # Port 80/443 exclusivity: stop the other HTTP server before install/start
+  # Nginx edge needs :80 free of Apache's default Listen 80 — rebind Apache, never kill it.
   if [[ "$id" == "nginx" ]]; then
-    stop_conflicting_http_servers nginx
-  elif [[ "$id" == "apache2" ]]; then
-    stop_conflicting_http_servers apache2
+    ensure_nginx_owns_public_http
   fi
 
   if [[ ${#pkgs[@]} -gt 0 ]]; then
@@ -199,12 +256,15 @@ install_component_apt() {
     apt_install_optional "${opt[@]}"
   fi
 
+  # After Apache package: immediately backend-only so it does not steal :80 from Nginx
+  if [[ "$id" == "apache2" ]]; then
+    configure_apache_as_nginx_backend || true
+  fi
+
   # Package postinst may leave unit failed (e.g. bind conflict). Re-assert + verify.
   if [[ ${#units[@]} -gt 0 ]]; then
     if [[ "$id" == "nginx" ]]; then
-      stop_conflicting_http_servers nginx
-    elif [[ "$id" == "apache2" ]]; then
-      stop_conflicting_http_servers apache2
+      ensure_nginx_owns_public_http
     fi
     enable_component_units "$id" "${units[@]}" || return 1
   fi

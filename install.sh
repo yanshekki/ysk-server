@@ -360,7 +360,7 @@ main() {
   local id
   for id in "${SELECTED_COMPONENTS[@]+"${SELECTED_COMPONENTS[@]}"}"; do
     case "$id" in
-      rspamd|clamav|apache2) continue ;;
+      rspamd|clamav) continue ;;
       control-plane-product) verify_list+=("$id") ;;
       *) verify_list+=("$id") ;;
     esac

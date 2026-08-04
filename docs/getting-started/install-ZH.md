@@ -71,7 +71,7 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 | 套餐 | 內容摘要 |
 |------|----------|
 | `control-plane` | 基礎工具、git、Node 20+、`ysk-server`（**必選**） |
-| `web` | nginx、apache2（可選）、certbot、PHP |
+| `web` | nginx（對外 :80/:443）、apache2（PHP 後端 `127.0.0.1:8080`）、certbot、PHP |
 | `database` | MariaDB **或** MySQL、PostgreSQL、Redis、clients、sqlite |
 | `email` | postfix、dovecot、opendkim；可選 rspamd／ClamAV |
 | `dns` | PowerDNS |
