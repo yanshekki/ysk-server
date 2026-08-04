@@ -7,6 +7,7 @@ import { tl } from '@ysk/shared';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
+import { resolveBin } from './software-probe/index.js';
 
 export interface Pm2EcosystemResult {
   ecosystemPath: string;
@@ -84,8 +85,7 @@ module.exports = {
  * Detect pm2 on PATH.
  */
 export async function probePm2(host: HostExecutor): Promise<{ available: boolean; path?: string }> {
-  const r = await host.runCommand(['bash', '-c', 'command -v pm2 || true'], { timeoutMs: 5_000 });
-  const path = r.stdout.trim() || undefined;
+  const path = (await resolveBin(host, 'pm2')) || undefined;
   return { available: Boolean(path), path };
 }
 

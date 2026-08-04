@@ -12,7 +12,7 @@ import {
   type SoftwareSpec } from './software-catalog.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { planOrInstallRuntime } from './runtime-probe.js';
-import { HostSoftwareProbe, binPresent, unitIsActive } from './software-probe/index.js';
+import { HostSoftwareProbe, unitIsActive } from './software-probe/index.js';
 
 export type SoftwareStatus = {
   id: SoftwareId | string;
@@ -46,11 +46,6 @@ export type SoftwareInstallResult = {
 
 let lastAptUpdateMs = 0;
 const APT_UPDATE_MS = 5 * 60_000;
-
-/** @deprecated use HostSoftwareProbe / binPresent — kept as thin alias for callers */
-async function binExists(host: HostExecutor, bin: string): Promise<boolean> {
-  return binPresent(host, bin);
-}
 
 export async function probeSoftware(
   host: HostExecutor,

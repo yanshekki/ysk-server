@@ -73,10 +73,6 @@ function validatePattern(pattern: string): string {
   return p;
 }
 
-async function hasBin(host: HostExecutor, bin: string): Promise<boolean> {
-  return binPresent(host, bin);
-}
-
 async function unitActive(host: HostExecutor, unit: string): Promise<string> {
   return (await unitIsActive(host, unit)) ?? 'unknown';
 }
@@ -93,7 +89,7 @@ export async function probeRedisService(host: HostExecutor): Promise<RedisServic
   const probe = new HostSoftwareProbe(host);
   const server = await probe.presence('redis-server');
   const client = await probe.presence('redis-tools');
-  const clientInstalled = client.installed || (await hasBin(host, 'redis-cli'));
+  const clientInstalled = client.installed || (await binPresent(host, 'redis-cli'));
   const serverInstalled = server.installed;
   let active =
     server.units?.[0]?.active ?? (await unitActive(host, 'redis-server'));
@@ -244,7 +240,7 @@ export async function listRedisKeys(input: {
   const pattern = validatePattern(input.pattern ?? '*');
   const count = Math.min(Math.max(Number(input.count) || 100, 1), 500);
 
-  if (!(await hasBin(input.host, 'redis-cli'))) {
+  if (!(await binPresent(input.host, 'redis-cli'))) {
     return {
       ok: false,
       keys: [],
@@ -357,7 +353,7 @@ export async function setRedisString(input: {
   notes: string[];
 }> {
   // Local redis-cli data writes do not require YSK_EXECUTE (panel manages app data).
-  if (!(await hasBin(input.host, 'redis-cli'))) {
+  if (!(await binPresent(input.host, 'redis-cli'))) {
     return {
       ok: false,
       executed: false,
@@ -394,7 +390,7 @@ export async function deleteRedisKey(input: {
   blockMessage?: string;
   notes: string[];
 }> {
-  if (!(await hasBin(input.host, 'redis-cli'))) {
+  if (!(await binPresent(input.host, 'redis-cli'))) {
     return {
       ok: false,
       executed: false,

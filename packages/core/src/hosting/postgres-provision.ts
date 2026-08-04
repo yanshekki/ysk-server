@@ -6,6 +6,7 @@
 import type { HostExecutor } from '../host/executor.js';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { probeEndpoint } from './db-client.js';
+import { binPresent } from './software-probe/index.js';
 
 export interface PostgresProvisionResult {
   ok: boolean;
@@ -100,9 +101,7 @@ export async function provisionPostgresDatabase(input: {
       : `TCP ${host}:${port} fail: ${reach.detail}`,
   );
 
-  const which = await input.hostExec.runCommand(['bash', '-c', 'command -v psql || true'], {
-    timeoutMs: 5_000 });
-  const psqlClient = which.stdout.trim().length > 0;
+  const psqlClient = await binPresent(input.hostExec, 'psql');
   if (!psqlClient) notes.push(tl('notes.auto.n0522'));
   if (!input.hostExec.executeEnabled()) {
     notes.push(tl('ops.blocked.needExecute'));

@@ -6,6 +6,7 @@ import { tl } from '@ysk/shared';
 
 import type { HostExecutor } from '../host/executor.js';
 import { renderMysqlProvisionSql, validateMysqlIdent } from './db-client.js';
+import { binPresent } from './software-probe/index.js';
 
 export interface MysqlProvisionResult {
   ok: boolean;
@@ -56,9 +57,7 @@ export async function provisionMysqlDatabase(input: {
     password: input.password,
     host: input.host ?? 'localhost' });
 
-  const which = await input.hostExec.runCommand(['bash', '-c', 'command -v mysql || true'], {
-    timeoutMs: 5_000 });
-  const mysqlClient = which.stdout.trim().length > 0;
+  const mysqlClient = await binPresent(input.hostExec, 'mysql');
   const wantsExecute = input.execute === true;
   const canExecute = wantsExecute && input.hostExec.executeEnabled() && mysqlClient;
 

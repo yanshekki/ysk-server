@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listManagedDnsZones, writeManagedDnsZone } from './dns-zone.js';
+import { resolveBin } from './software-probe/index.js';
 
 export interface PowerDnsProbe {
   pdnsutil?: string;
@@ -36,11 +37,10 @@ export interface PowerDnsLoadResult {
 export async function probePowerDns(host: HostExecutor): Promise<PowerDnsProbe> {
   const notes: string[] = [];
   const find = async (bin: string) => {
-    const r = await host.runCommand(['bash', '-c', `command -v ${bin} || true`], {
-      timeoutMs: 5_000,
-    });
-    return r.stdout.trim() || undefined;
+    const p = await resolveBin(host, bin);
+    return p || undefined;
   };
+  // Prefer catalog presence for server; CLI tools via unified resolveBin
   const pdnsutil = await find('pdnsutil');
   const pdnsControl = await find('pdns_control');
   const pdnsServer = await find('pdns_server');

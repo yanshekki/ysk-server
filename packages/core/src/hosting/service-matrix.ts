@@ -5,6 +5,7 @@ import { tl } from '@ysk/shared';
  */
 
 import type { HostExecutor } from '../host/executor.js';
+import { HostSoftwareProbe, binPresent } from './software-probe/index.js';
 
 export type ServiceMatrixItem = {
   id: string;
@@ -31,26 +32,70 @@ const CATALOG: Array<{
   unit: string;
   href?: string;
   categoryKey: string;
-  /** Binary hints for "installed" when unit missing */
+  /** Binary hints when no softwareProbeId */
   bins?: string[];
+  /** Prefer HostSoftwareProbe.presence(id) for exclusive/catalog rules */
+  softwareProbeId?: string;
 }> = [
-  { id: 'nginx', label: 'Nginx', unit: 'nginx', href: '/nginx', categoryKey: 'notes.auto.n1318', bins: ['nginx'] },
-  { id: 'mysql', label: 'MySQL', unit: 'mysql', href: '/databases/mysql/service', categoryKey: 'notes.cat.database', bins: ['mysqld', 'mysql'] },
-  { id: 'mariadb', label: 'MariaDB', unit: 'mariadb', href: '/databases/mariadb/service', categoryKey: 'notes.cat.database', bins: ['mariadbd', 'mariadb'] },
+  { id: 'nginx', label: 'Nginx', unit: 'nginx', href: '/nginx', categoryKey: 'notes.auto.n1318', softwareProbeId: 'nginx', bins: ['nginx'] },
+  {
+    id: 'mysql',
+    label: 'MySQL',
+    unit: 'mysql',
+    href: '/databases/mysql/service',
+    categoryKey: 'notes.cat.database',
+    softwareProbeId: 'mysql-server',
+    bins: ['mysqld'],
+  },
+  {
+    id: 'mariadb',
+    label: 'MariaDB',
+    unit: 'mariadb',
+    href: '/databases/mariadb/service',
+    categoryKey: 'notes.cat.database',
+    softwareProbeId: 'mariadb-server',
+    bins: ['mariadbd'],
+  },
   {
     id: 'postgres',
     label: 'PostgreSQL',
     unit: 'postgresql',
     href: '/databases/postgres/service',
     categoryKey: 'notes.cat.database',
-    bins: ['postgres', 'psql'] },
-  { id: 'redis', label: 'Redis', unit: 'redis-server', href: '/databases/redis/service', categoryKey: 'notes.cat.database', bins: ['redis-server', 'redis-cli'] },
-  { id: 'vsftpd', label: 'vsftpd (FTPS)', unit: 'vsftpd', href: '/ftp/service', categoryKey: 'notes.auto.n1019', bins: ['vsftpd'] },
-  { id: 'fail2ban', label: 'fail2ban', unit: 'fail2ban', href: '/protection/fail2ban', categoryKey: 'notes.readiness.security', bins: ['fail2ban-client'] },
-  { id: 'ufw', labelKey: 'notes.auto.n0017', unit: 'ufw', href: '/protection/firewall', categoryKey: 'notes.readiness.security', bins: ['ufw'] },
-  { id: 'postfix', label: 'Postfix', unit: 'postfix', href: '/email', categoryKey: 'notes.readiness.email', bins: ['postfix'] },
-  { id: 'dovecot', label: 'Dovecot', unit: 'dovecot', href: '/email', categoryKey: 'notes.readiness.email', bins: ['dovecot'] },
-  { id: 'php-fpm', label: 'PHP-FPM', unit: 'php8.2-fpm', href: '/runtimes/php', categoryKey: 'notes.auto.n0018', bins: ['php-fpm8.2', 'php-fpm'] },
+    softwareProbeId: 'postgresql',
+    bins: ['postgres', 'psql'],
+  },
+  {
+    id: 'redis',
+    label: 'Redis',
+    unit: 'redis-server',
+    href: '/databases/redis/service',
+    categoryKey: 'notes.cat.database',
+    softwareProbeId: 'redis-server',
+    bins: ['redis-server', 'redis-cli'],
+  },
+  { id: 'vsftpd', label: 'vsftpd (FTPS)', unit: 'vsftpd', href: '/ftp/service', categoryKey: 'notes.auto.n1019', softwareProbeId: 'vsftpd', bins: ['vsftpd'] },
+  {
+    id: 'fail2ban',
+    label: 'fail2ban',
+    unit: 'fail2ban',
+    href: '/protection/fail2ban',
+    categoryKey: 'notes.readiness.security',
+    softwareProbeId: 'fail2ban',
+    bins: ['fail2ban-client'],
+  },
+  {
+    id: 'ufw',
+    labelKey: 'notes.auto.n0017',
+    unit: 'ufw',
+    href: '/protection/firewall',
+    categoryKey: 'notes.readiness.security',
+    softwareProbeId: 'ufw',
+    bins: ['ufw'],
+  },
+  { id: 'postfix', label: 'Postfix', unit: 'postfix', href: '/email', categoryKey: 'notes.readiness.email', softwareProbeId: 'postfix', bins: ['postfix'] },
+  { id: 'dovecot', label: 'Dovecot', unit: 'dovecot', href: '/email', categoryKey: 'notes.readiness.email', softwareProbeId: 'dovecot', bins: ['dovecot'] },
+  { id: 'php-fpm', label: 'PHP-FPM', unit: 'php8.2-fpm', href: '/runtimes/php', categoryKey: 'notes.auto.n0018', softwareProbeId: 'php', bins: ['php-fpm8.2', 'php-fpm', 'php'] },
   { id: 'ysk-server', labelKey: 'notes.tpl.yskControlPlane', unit: 'ysk-server', href: '/system/unit', categoryKey: 'notes.readiness.core' },
 ];
 
@@ -89,19 +134,19 @@ async function probeUnit(
   return { active, enabled };
 }
 
-async function hasAnyBin(host: HostExecutor, bins?: string[]): Promise<boolean> {
-  if (!bins?.length) return false;
-  for (const b of bins) {
-    try {
-      if (host.pathExists(`/usr/sbin/${b}`) || host.pathExists(`/usr/bin/${b}`) || host.pathExists(`/bin/${b}`)) {
-        return true;
-      }
-      const r = await host.runCommand(['bash', '-c', `command -v ${b} >/dev/null 2>&1 && echo yes || echo no`], {
-        timeoutMs: 3_000 });
-      if ((r.stdout || '').trim() === 'yes') return true;
-    } catch {
-      /* continue */
-    }
+async function isEntryInstalled(
+  host: HostExecutor,
+  probe: HostSoftwareProbe,
+  entry: (typeof CATALOG)[number],
+): Promise<boolean> {
+  if (entry.softwareProbeId) {
+    return probe.isInstalled(entry.softwareProbeId);
+  }
+  if (entry.id === 'ysk-server') {
+    return (await binPresent(host, 'ysk-server')) || (await binPresent(host, 'node'));
+  }
+  for (const b of entry.bins ?? []) {
+    if (await binPresent(host, b)) return true;
   }
   return false;
 }
@@ -120,6 +165,7 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
   probedAt: string;
 }> {
   const items: ServiceMatrixItem[] = [];
+  const probe = new HostSoftwareProbe(host);
 
   for (const entry of CATALOG) {
     const aliases = UNIT_ALIASES[entry.id] ?? [entry.unit];
@@ -143,29 +189,28 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
 
     const label = resolveCatalogLabel(entry);
     const category = tl(entry.categoryKey);
+    // Product-semantic installed (MySQL vs MariaDB exclusive, etc.)
+    const installed = await isEntryInstalled(host, probe, entry);
 
-    // not-found from systemctl often means inactive wording differs — normalize
-    if (bestActive === 'unknown' || bestActive === 'not-found') {
-      const binOk = await hasAnyBin(host, entry.bins);
+    // not-found from systemctl when package missing
+    if (!installed) {
       items.push({
         id: entry.id,
         label,
         unit: bestUnit,
         href: entry.href,
         category,
-        installed: binOk,
-        active: binOk ? 'inactive' : 'not-found',
+        installed: false,
+        active: 'not-found',
         enabled: bestEnabled,
-        activeLabel: activeLabel(binOk ? 'inactive' : 'not-found', binOk) });
+        activeLabel: activeLabel('not-found', false),
+      });
       continue;
     }
 
-    const installed =
-      bestActive === 'active' ||
-      bestActive === 'inactive' ||
-      bestActive === 'failed' ||
-      bestActive === 'activating' ||
-      (await hasAnyBin(host, entry.bins));
+    if (bestActive === 'unknown' || bestActive === 'not-found') {
+      bestActive = 'inactive';
+    }
 
     items.push({
       id: entry.id,
@@ -173,10 +218,11 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
       unit: bestUnit,
       href: entry.href,
       category,
-      installed,
+      installed: true,
       active: bestActive,
       enabled: bestEnabled,
-      activeLabel: activeLabel(bestActive, installed) });
+      activeLabel: activeLabel(bestActive, true),
+    });
   }
 
   return {

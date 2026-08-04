@@ -68,11 +68,6 @@ function activeLabel(active: string, installed: boolean): string {
   return active || tl('notes.unknown');
 }
 
-/** @deprecated product software must use HostSoftwareProbe; alias for live CLI checks only */
-async function hasBin(host: HostExecutor, bin: string): Promise<boolean> {
-  return binPresent(host, bin);
-}
-
 async function unitState(host: HostExecutor, unit: string): Promise<{ active: string; enabled: string }> {
   if (!host.pathExists('/bin/systemctl') && !host.pathExists('/usr/bin/systemctl')) {
     return { active: 'unknown', enabled: 'unknown' };
@@ -90,7 +85,7 @@ async function loadMysqlLive(
 ): Promise<{ version?: string; live: Record<string, string>; metrics: Record<string, string> }> {
   const live: Record<string, string> = {};
   const metrics: Record<string, string> = {};
-  if (!(await hasBin(host, 'mysql'))) return { live, metrics };
+  if (!(await binPresent(host, 'mysql'))) return { live, metrics };
   const ver = await host.runCommand(['mysql', '--version'], { timeoutMs: 5_000 });
   const version = ver.stdout.trim();
   const vars = await host.runCommand(
@@ -118,7 +113,7 @@ async function loadPostgresLive(
 ): Promise<{ version?: string; live: Record<string, string>; metrics: Record<string, string> }> {
   const live: Record<string, string> = {};
   const metrics: Record<string, string> = {};
-  if (!(await hasBin(host, 'psql'))) return { live, metrics };
+  if (!(await binPresent(host, 'psql'))) return { live, metrics };
   const ver = await host.runCommand(['psql', '--version'], { timeoutMs: 5_000 });
   const version = ver.stdout.trim();
   const keys = [
@@ -156,7 +151,7 @@ async function loadRedisLive(
 ): Promise<{ version?: string; live: Record<string, string>; metrics: Record<string, string> }> {
   const live: Record<string, string> = {};
   const metrics: Record<string, string> = {};
-  if (!(await hasBin(host, 'redis-cli'))) return { live, metrics };
+  if (!(await binPresent(host, 'redis-cli'))) return { live, metrics };
   const ping = await host.runCommand(['redis-cli', 'PING'], { timeoutMs: 5_000 });
   if (ping.stdout.trim().toUpperCase() !== 'PONG') return { live, metrics };
   const info = await host.runCommand(['redis-cli', 'INFO', 'server'], { timeoutMs: 5_000 });
@@ -383,7 +378,7 @@ export async function applyConsoleSettings(input: {
   const byKey = new Map(defs.map((d) => [d.key, d]));
 
   if (engine === 'redis') {
-    if (!(await hasBin(host, 'redis-cli'))) {
+    if (!(await binPresent(host, 'redis-cli'))) {
       return {
         ok: false,
         notes: [tl('notes.redis.cliMissing')],
@@ -420,7 +415,7 @@ export async function applyConsoleSettings(input: {
   }
 
   if (engine === 'mysql' || engine === 'mariadb') {
-    if (!(await hasBin(host, 'mysql'))) {
+    if (!(await binPresent(host, 'mysql'))) {
       return {
         ok: false,
         notes: [tl('notes.auto.n0015')],
@@ -451,7 +446,7 @@ export async function applyConsoleSettings(input: {
   }
 
   // postgres
-  if (!(await hasBin(host, 'psql'))) {
+  if (!(await binPresent(host, 'psql'))) {
     return {
       ok: false,
       notes: [tl('notes.auto.n0016')],

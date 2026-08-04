@@ -46,7 +46,10 @@ describe('powerdns-apply depth', () => {
     expect(found.available).toBe(true);
     expect(found.pdnsutil).toContain('pdnsutil');
 
-    const miss = await probePowerDns(mockHost(() => ({ stdout: '' })));
+    const miss = await probePowerDns({
+      ...mockHost(() => ({ stdout: '' })),
+      pathExists: () => false,
+    });
     expect(miss.available).toBe(false);
     expect(miss.notes.length).toBeGreaterThan(0);
   });

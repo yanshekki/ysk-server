@@ -7,6 +7,7 @@ import { mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import type { JsonStore } from '../db/store.js';
+import { binPresent } from './software-probe/index.js';
 
 export type ResticSettings = {
   enabled: boolean;
@@ -89,9 +90,7 @@ export async function resticBackupProject(input: {
       blocked: true,
       notes: [tl('notes.auto.n1134')] };
   }
-  const check = await input.host.runCommand(['bash', '-c', 'command -v restic || true'], {
-    timeoutMs: 3_000 });
-  if (!check.stdout.trim()) {
+  if (!(await binPresent(input.host, 'restic'))) {
     return {
       ok: false,
       notes: [tl('notes.auto.n0414')] };
@@ -205,9 +204,7 @@ export async function listResticSnapshots(input: {
       blocked: true,
       notes: [tl('notes.auto.n1128')] };
   }
-  const check = await input.host.runCommand(['bash', '-c', 'command -v restic || true'], {
-    timeoutMs: 3_000 });
-  if (!check.stdout.trim()) {
+  if (!(await binPresent(input.host, 'restic'))) {
     return { ok: false, snapshots: [], notes: [tl('notes.backup.resticNotInPath')] };
   }
   const defaultRepo = join(input.dataDir, 'restic-repo');
@@ -301,9 +298,7 @@ export async function resticRestoreProject(input: {
     }
   }
 
-  const check = await input.host.runCommand(['bash', '-c', 'command -v restic || true'], {
-    timeoutMs: 3_000 });
-  if (!check.stdout.trim()) {
+  if (!(await binPresent(input.host, 'restic'))) {
     return { ok: false, notes: [tl('notes.backup.resticNotInPath')] };
   }
 

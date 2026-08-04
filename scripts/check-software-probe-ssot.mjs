@@ -35,6 +35,12 @@ const STRICT_FILES = [
   'ftps-service.ts',
   'db-service-config.ts',
   'stack/ops.ts',
+  'service-matrix.ts',
+  'backup-restic.ts',
+  'powerdns-apply.ts',
+  'pm2-apply.ts',
+  'mysql-provision.ts',
+  'postgres-provision.ts',
 ];
 
 function walk(dir, acc = []) {
@@ -60,9 +66,12 @@ for (const file of files) {
   const lines = src.split('\n');
   lines.forEach((line, i) => {
     if (line.includes('command -v') && !line.trim().startsWith('//') && !line.includes('HostSoftwareProbe')) {
-      // allow install/apply bash one-liners (not product presence UI)
+      // allow install/apply bash one-liners / generated shell helpers (not product presence UI)
       if (line.includes('apt-get install')) return;
       if (line.includes('db_load')) return;
+      if (line.includes('pdnsutil load-zone') || line.includes("'/if command -v") || line.includes("'if command -v"))
+        return;
+      if (line.trim().startsWith("'") && line.includes('command -v')) return; // string fragment in shell script builder
       offenders.push(`${rel}:${i + 1}: ${line.trim().slice(0, 100)}`);
     }
   });
