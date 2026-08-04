@@ -14,7 +14,6 @@ import { panelBlockMessage, type ApplyResult, type BlockReason } from './system-
 import { createResource, listResources, updateResource } from './managed-resources.js';
 import {
   HostSoftwareProbe,
-  binPresent,
   shellEnsureAptPackage,
   shellBinExists,
 } from './software-probe/index.js';

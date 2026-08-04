@@ -35,6 +35,8 @@ export type ServiceConsole = {
   isRoot: boolean;
   canLifecycle: boolean;
   blockMessage?: string;
+  /** Exclusive peer that blocks this engine (e.g. mariadb-server vs mysql-server). */
+  blockedByExclusive?: string;
   metrics: Record<string, string>;
   categories: ConsoleCategory[];
   live: Record<string, string>;
