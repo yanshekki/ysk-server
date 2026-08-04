@@ -16,7 +16,15 @@ import {
   createDefaultAllowlist,
   installControlPlaneSystemd,
   listAgentRuntimes,
-  planSelfUpdate } from '@ysk/core';
+  planSelfUpdate,
+  listStackPlans,
+  listStackBundles,
+  getStackStatus,
+  installStack,
+  uninstallStack,
+  scanStack,
+  expandComponents,
+} from '@ysk/core';
 import { createAppContext, closeAppContext } from './app-context.js';
 import { createHttpServer, listen } from './http-server.js';
 import { runSetup } from './cli/setup.js';
@@ -37,6 +45,7 @@ const CLI_COMMANDS = [
   'update',
   'serve',
   'system',
+  'stack',
   'tools',
   'ask',
   'projects',
@@ -4531,6 +4540,163 @@ async function mainInner(
     }
     process.stderr.write(`${tl('cli.usage.system.unit-install.--enable.--data-dir.path.33daa1')}\n`);
     return 1;
+  }
+
+  if (command === 'stack') {
+    const sub = args[1] ?? 'status';
+    const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
+    const ctx = createAppContext({
+      version: VERSION,
+      dataDir,
+      executeEnabled: process.env.YSK_EXECUTE === '1',
+    });
+    try {
+      if (sub === 'plans') {
+        const plans = listStackPlans();
+        if (json) printJson({ ok: true, plans });
+        else {
+          for (const p of plans) {
+            process.stdout.write(`${p.id}\t${p.title}\t${p.bundles.join(',')}\n`);
+          }
+        }
+        return 0;
+      }
+      if (sub === 'bundles') {
+        const bundles = listStackBundles();
+        if (json) printJson({ ok: true, bundles });
+        else {
+          for (const b of bundles) {
+            process.stdout.write(`${b.id}\t${b.title}\t${b.components.join(',')}\n`);
+          }
+        }
+        return 0;
+      }
+      if (sub === 'expand' || sub === 'preview') {
+        const plan = getOpt(args, '--plan') ?? undefined;
+        const bundlesCsv = getOpt(args, '--bundles');
+        const bundles = bundlesCsv ? bundlesCsv.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+        const sql = hasFlag(args, '--with-mysql-server') ? 'mysql' : 'mariadb';
+        const r = expandComponents({ plan, bundles }, { sqlServer: sql as 'mysql' | 'mariadb', clamav: hasFlag(args, '--with-clamav') });
+        if (json) printJson(r);
+        else if (!r.ok) {
+          process.stderr.write(`${r.error}\n`);
+          return 2;
+        } else {
+          process.stdout.write(`plan=${r.plan}\nbundles=${r.bundles.join(',')}\ncomponents:\n`);
+          for (const c of r.components) process.stdout.write(`  - ${c}\n`);
+        }
+        return r.ok ? 0 : 2;
+      }
+      if (sub === 'status') {
+        const st = await getStackStatus({ host: ctx.host, dataDir });
+        if (json) printJson({ ok: true, ...st });
+        else {
+          process.stdout.write(`manifest plan=${st.manifest.plan} bundles=${st.manifest.bundles.join(',')}\n`);
+          for (const c of st.components.filter((x) => x.installed || x.inManifest)) {
+            process.stdout.write(
+              `${c.id}\tinstalled=${c.installed}\tinManifest=${c.inManifest}\n`,
+            );
+          }
+        }
+        return 0;
+      }
+      if (sub === 'scan') {
+        const scan = await scanStack({ host: ctx.host, dataDir });
+        if (json) printJson({ ok: true, ...scan });
+        else {
+          process.stdout.write(`${scan.notes.join('\n')}\n`);
+          process.stdout.write(`components: ${Object.keys(scan.manifest.components).join(', ')}\n`);
+        }
+        return 0;
+      }
+      if (sub === 'install') {
+        const plan = getOpt(args, '--plan') ?? undefined;
+        const bundlesCsv = getOpt(args, '--bundles');
+        const bundles = bundlesCsv ? bundlesCsv.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+        const wantExecute = hasFlag(args, '--yes') || hasFlag(args, '--execute');
+        const useDry = hasFlag(args, '--dry-run') || !wantExecute;
+        // Real install requires YSK_EXECUTE=1 + root honesty via host
+        const runCtx = createAppContext({
+          version: VERSION,
+          dataDir,
+          executeEnabled: wantExecute && process.env.YSK_EXECUTE === '1',
+        });
+        try {
+          const result = await installStack({
+            host: runCtx.host,
+            dataDir,
+            plan,
+            bundles,
+            options: {
+              sqlServer: hasFlag(args, '--with-mysql-server') ? 'mysql' : 'mariadb',
+              clamav: hasFlag(args, '--with-clamav'),
+            },
+            dryRun: useDry || process.env.YSK_EXECUTE !== '1',
+          });
+          if (json) printJson(result);
+          else {
+            process.stdout.write(`${result.notes.join('\n')}\n`);
+            for (const s of result.steps.slice(0, 40)) {
+              process.stdout.write(`  [${s.status}] ${s.name}${s.detail ? `: ${s.detail}` : ''}\n`);
+            }
+            if (result.dryRun) {
+              process.stdout.write(
+                `Dry-run only. Apply with: YSK_EXECUTE=1 sudo ${CLI_NAME} stack install --yes --plan ${plan ?? 'recommended'} --data-dir ${dataDir}\n`,
+              );
+            }
+          }
+          return exitFromResult(result);
+        } finally {
+          closeAppContext(runCtx);
+        }
+      }
+      if (sub === 'uninstall') {
+        const wantExecute = hasFlag(args, '--yes') || hasFlag(args, '--execute');
+        const useDry = hasFlag(args, '--dry-run') || !wantExecute;
+        const bundlesCsv = getOpt(args, '--bundles');
+        const componentsCsv = getOpt(args, '--components');
+        const runCtx = createAppContext({
+          version: VERSION,
+          dataDir,
+          executeEnabled: wantExecute && process.env.YSK_EXECUTE === '1',
+        });
+        try {
+          const result = await uninstallStack({
+            host: runCtx.host,
+            dataDir,
+            all: hasFlag(args, '--all'),
+            bundles: bundlesCsv ? bundlesCsv.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+            components: componentsCsv
+              ? componentsCsv.split(',').map((s) => s.trim()).filter(Boolean)
+              : undefined,
+            dataPolicy: hasFlag(args, '--purge-data') ? 'purge' : 'keep',
+            removeProduct: hasFlag(args, '--remove-product'),
+            dryRun: useDry || process.env.YSK_EXECUTE !== '1',
+          });
+          if (json) printJson(result);
+          else {
+            process.stdout.write(`${result.notes.join('\n')}\n`);
+            for (const s of result.steps.slice(0, 40)) {
+              process.stdout.write(`  [${s.status}] ${s.name}${s.detail ? `: ${s.detail}` : ''}\n`);
+            }
+            if (result.dryRun) {
+              process.stdout.write(
+                `Dry-run only. Apply with: YSK_EXECUTE=1 sudo ${CLI_NAME} stack uninstall --yes ...\n`,
+              );
+            }
+          }
+          return exitFromResult(result);
+        } finally {
+          closeAppContext(runCtx);
+        }
+      }
+      process.stderr.write(
+        `Usage: ${CLI_NAME} stack plans|bundles|status|scan|expand|install|uninstall [--plan recommended] [--bundles web,defense] [--dry-run|--yes] [--keep-data|--purge-data] [--data-dir PATH] [--json]\n`,
+      );
+      return 2;
+    } finally {
+      closeAppContext(ctx);
+    }
   }
 
   if (command === 'serve') {

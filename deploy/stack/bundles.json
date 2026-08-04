@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "description": "Install plans and software bundles for YSK Server stack bootstrap.",
+  "plans": {
+    "minimal": {
+      "title": "Control plane only",
+      "titleZh": "僅控制平面",
+      "description": "Node + ysk-server + base tools. No hosting stack.",
+      "bundles": ["control-plane"]
+    },
+    "recommended": {
+      "title": "Recommended hosting",
+      "titleZh": "推薦託管方案",
+      "description": "Control plane + web + database + defense. Good default for a VPS panel.",
+      "bundles": ["control-plane", "web", "database", "defense"]
+    },
+    "full": {
+      "title": "All software",
+      "titleZh": "全部軟件",
+      "description": "Every bundle: web, DB, mail, DNS, FTP, defense, language runtimes.",
+      "bundles": [
+        "control-plane",
+        "web",
+        "database",
+        "email",
+        "dns",
+        "ftp",
+        "defense",
+        "runtimes"
+      ]
+    }
+  },
+  "bundles": {
+    "control-plane": {
+      "title": "Control plane",
+      "titleZh": "控制平面",
+      "required": true,
+      "description": "Base deps, Node.js 20+, ysk-server product, git.",
+      "components": ["base-deps", "git", "node", "control-plane-product"]
+    },
+    "web": {
+      "title": "Web hosting",
+      "titleZh": "網頁託管",
+      "description": "Nginx, Apache (optional), Certbot, PHP for sites.",
+      "components": ["nginx", "apache2", "certbot", "php"]
+    },
+    "database": {
+      "title": "Databases",
+      "titleZh": "資料庫",
+      "description": "MariaDB or MySQL (exclusive), PostgreSQL, Redis, clients, sqlite.",
+      "components": [
+        "mysql-client",
+        "mariadb-server",
+        "postgresql-client",
+        "postgresql",
+        "redis-tools",
+        "redis-server",
+        "sqlite3"
+      ],
+      "sqlChoice": true
+    },
+    "email": {
+      "title": "Mail stack",
+      "titleZh": "郵件",
+      "description": "Postfix, Dovecot, OpenDKIM; optional rspamd/ClamAV.",
+      "components": ["postfix", "dovecot", "opendkim"],
+      "optionalComponents": ["rspamd", "clamav"]
+    },
+    "dns": {
+      "title": "DNS",
+      "titleZh": "DNS",
+      "description": "PowerDNS authoritative server.",
+      "components": ["pdns-server"]
+    },
+    "ftp": {
+      "title": "FTP / FTPS",
+      "titleZh": "FTP／FTPS",
+      "description": "vsftpd + db-util for virtual users.",
+      "components": ["vsftpd", "db-util"]
+    },
+    "defense": {
+      "title": "Host defense",
+      "titleZh": "主機防禦",
+      "description": "UFW firewall and fail2ban.",
+      "components": ["ufw", "fail2ban"]
+    },
+    "runtimes": {
+      "title": "Language runtimes",
+      "titleZh": "語言工具鏈",
+      "description": "PHP (also in web), Python, Go, Rust toolchains.",
+      "components": ["php", "python", "go", "rust"]
+    }
+  }
+}

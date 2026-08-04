@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# YSK Server one-click bootstrap for Ubuntu 22.04 / 24.04
-# Installs control plane + full system software stack (hosting / mail / DB / defense / runtimes).
+# YSK Server bootstrap — plan/bundle wizard + full stack install
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash
-#   ./install.sh --non-interactive
-#   ./install.sh --upgrade
-#   ./install.sh --minimal
-#   ./install.sh --from-source --install-systemd
+#   ./install.sh                          # interactive wizard (TTY)
+#   ./install.sh --non-interactive        # plan=recommended
+#   ./install.sh --plan full --non-interactive
+#   ./install.sh --bundles control-plane,web,defense --non-interactive
+#   ./install.sh --plan minimal --from-source
 #
 # Docs: docs/getting-started/install.md · install-ZH.md
+# Uninstall: ./uninstall.sh
 
 set -euo pipefail
 
@@ -22,42 +22,65 @@ RUN_SETUP=1
 UPGRADE=0
 INSTALL_FROM_SOURCE=0
 INSTALL_SYSTEMD=0
-# Default: install full system software (everything the panel/CLI may use)
-FULL_STACK=1
-SKIP_RUNTIMES=0
 WITH_MYSQL_SERVER=0
 WITH_CLAMAV=0
-SUDO=""
+PLAN=""
+BUNDLES_CSV=""
+SQL_SERVER="mariadb"
+DATA_DIR=""
+SKIP_WIZARD=0
+OPERATION=install
 
-log() { printf '[%s] %s\n' "$PRODUCT" "$*"; }
-warn() { printf '[%s] WARN: %s\n' "$PRODUCT" "$*" >&2; }
-err() { printf '[%s] ERROR: %s\n' "$PRODUCT" "$*" >&2; }
+# Resolve script directory (works when executed as file; pipe uses fetch)
+SCRIPT_DIR=""
+if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+INSTALL_ROOT="${SCRIPT_DIR:-}"
+
+INSTALL_ARGV=("$@")
 
 usage() {
   cat <<EOF
-$PRODUCT installer — control plane + full system software
+$PRODUCT installer — plan/bundle selection + stack install
 
-Default installs ALL packages the panel/CLI may use (nginx, DBs, mail stack,
-firewall, PHP/Go/Rust toolchains, etc.). Packages are installed; most services
-are NOT force-enabled (configure via panel/CLI + YSK_EXECUTE=1).
+Interactive (default on TTY):
+  ./install.sh
+
+Non-interactive:
+  ./install.sh --non-interactive [--plan recommended|full|minimal]
+  ./install.sh --non-interactive --bundles control-plane,web,database,defense
+
+Plans:
+  minimal       control-plane only
+  recommended   control-plane + web + database + defense  (default non-interactive)
+  full          all bundles
 
 Options:
-  --non-interactive     No prompts (scripted deploy)
-  --skip-setup          Install only; do not run '$CLI setup'
-  --upgrade             Upgrade mode (reinstall / update npm package)
-  --from-source         Install from current git checkout (development)
-  --install-systemd     After setup, write/install ysk-server.service
-  --full                Full system software (default)
-  --minimal             Only base deps + Node + product (no hosting stack)
-  --skip-runtimes       Skip PHP/Go/Rust/pm2 (still installs Node)
-  --with-mysql-server   Install mysql-server instead of mariadb-server
-  --with-clamav         Also install clamav (large)
-  -h, --help            Show help
+  --plan NAME             Use a named plan
+  --bundles LIST          Comma-separated bundle ids (implies custom)
+  --non-interactive       No prompts (CI / cloud-init)
+  --skip-setup            Do not run 'ysk-server setup'
+  --upgrade               Reinstall/upgrade npm package
+  --from-source           Build from current git checkout
+  --install-systemd       Write systemd unit after setup
+  --with-mysql-server     Use mysql-server instead of mariadb-server
+  --with-clamav           Include ClamAV when email bundle selected
+  --data-dir PATH         Panel data directory
+  --full                  Alias for --plan full
+  --minimal               Alias for --plan minimal
+  --skip-runtimes         Remove 'runtimes' from selected bundles
+  -h, --help              Show help
+
+Logs: /var/log/ysk-server/install-*.log (root) or ~/.ysk/logs/
+Manifest: \$dataDir/stack-manifest.json
+Uninstall: ./uninstall.sh
 
 Docs: docs/getting-started/install.md
 EOF
 }
 
+SKIP_RUNTIMES=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --non-interactive) NON_INTERACTIVE=1; shift ;;
@@ -65,235 +88,75 @@ while [[ $# -gt 0 ]]; do
     --upgrade) UPGRADE=1; shift ;;
     --from-source) INSTALL_FROM_SOURCE=1; shift ;;
     --install-systemd) INSTALL_SYSTEMD=1; shift ;;
-    --full) FULL_STACK=1; shift ;;
-    --minimal) FULL_STACK=0; shift ;;
-    --skip-runtimes) SKIP_RUNTIMES=1; shift ;;
-    --with-mysql-server) WITH_MYSQL_SERVER=1; shift ;;
+    --with-mysql-server) WITH_MYSQL_SERVER=1; SQL_SERVER=mysql; shift ;;
     --with-clamav) WITH_CLAMAV=1; shift ;;
+    --full) PLAN=full; shift ;;
+    --minimal) PLAN=minimal; shift ;;
+    --skip-runtimes) SKIP_RUNTIMES=1; shift ;;
+    --plan) PLAN="${2:-}"; shift 2 ;;
+    --bundles) BUNDLES_CSV="${2:-}"; PLAN="${PLAN:-custom}"; shift 2 ;;
+    --data-dir) DATA_DIR="${2:-}"; shift 2 ;;
+    --skip-wizard) SKIP_WIZARD=1; NON_INTERACTIVE=1; shift ;;
     -h|--help) usage; exit 0 ;;
-    *) err "Unknown option: $1"; usage; exit 1 ;;
+    *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
   esac
 done
 
-require_cmd() {
-  command -v "$1" >/dev/null 2>&1 || return 1
-}
+# CI convenience
+if [[ "${CI:-}" == "true" || "${CI:-}" == "1" ]]; then
+  NON_INTERACTIVE=1
+fi
 
-resolve_sudo() {
-  if [[ "$(id -u)" -eq 0 ]]; then
-    SUDO=""
-    return 0
+# Load libraries
+load_libs() {
+  local root="${INSTALL_ROOT:-}"
+  local lib
+  if [[ -n "$root" && -f "$root/install/lib/common.sh" ]]; then
+    lib="$root/install/lib"
+  elif [[ -n "$root" && -f "$root/lib/common.sh" ]]; then
+    lib="$root/lib"
+  else
+    # will fetch via ensure_stack_assets after sourcing minimal stubs — pull assets first
+    return 1
   fi
-  if require_cmd sudo; then
-    SUDO="sudo"
-    return 0
-  fi
-  err "Root or sudo required to install system packages"
-  return 1
+  # shellcheck source=/dev/null
+  source "$lib/common.sh"
+  # shellcheck source=/dev/null
+  source "$lib/manifest.sh"
+  # shellcheck source=/dev/null
+  source "$lib/stack-ops.sh"
+  # shellcheck source=/dev/null
+  source "$lib/verify.sh"
+  # shellcheck source=/dev/null
+  source "$lib/wizard-install.sh"
 }
 
-apt_update() {
-  $SUDO apt-get update -y
-}
-
-# Install packages; on failure try one-by-one for soft packages
-apt_install_core() {
-  # Use env so this works when SUDO is empty (running as root).
-  # shellcheck disable=SC2086
-  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"
-}
-
-apt_install_soft() {
-  local pkg
-  for pkg in "$@"; do
-    # shellcheck disable=SC2086
-    if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" 2>/dev/null; then
-      log "  + $pkg"
-    else
-      warn "optional package unavailable: $pkg (continuing)"
-    fi
+if ! load_libs; then
+  # Bootstrap: fetch assets then load
+  PRODUCT="YSK Server"
+  log() { printf '[%s] %s\n' "$PRODUCT" "$*"; }
+  err() { printf '[%s] ERROR: %s\n' "$PRODUCT" "$*" >&2; }
+  raw="${YSK_INSTALL_RAW:-https://raw.githubusercontent.com/yanshekki/ysk-server/main}"
+  tmp="$(mktemp -d "${TMPDIR:-/tmp}/ysk-install-XXXXXX")"
+  log "Fetching installer assets from $raw …"
+  mkdir -p "$tmp/install/lib" "$tmp/deploy/stack"
+  for f in install/lib/common.sh install/lib/manifest.sh install/lib/stack-ops.sh \
+           install/lib/verify.sh install/lib/wizard-install.sh \
+           deploy/stack/bundles.json deploy/stack/components.json; do
+    curl -fsSL "$raw/$f" -o "$tmp/$f" || {
+      err "Failed to download $raw/$f"
+      exit 1
+    }
   done
-}
+  INSTALL_ROOT="$tmp"
+  SCRIPT_DIR="$tmp"
+  load_libs || {
+    err "Failed to load installer libraries"
+    exit 1
+  }
+fi
 
-preseed_postfix() {
-  # Noninteractive postfix (no forced mailer configuration)
-  echo "postfix postfix/main_mailer_type select No configuration" | $SUDO debconf-set-selections || true
-  echo "postfix postfix/mailname string localhost" | $SUDO debconf-set-selections || true
-}
-
-detect_os() {
-  if [[ -f /etc/os-release ]]; then
-    # shellcheck disable=SC1091
-    . /etc/os-release
-    OS_ID="${ID:-unknown}"
-    OS_VER="${VERSION_ID:-unknown}"
-  else
-    OS_ID="unknown"
-    OS_VER="unknown"
-  fi
-  log "Detected OS: ${OS_ID} ${OS_VER}"
-  if [[ "$OS_ID" != "ubuntu" && "$OS_ID" != "debian" ]]; then
-    log "Warning: official support targets Ubuntu 22.04/24.04; continuing best-effort"
-  fi
-}
-
-install_base_deps() {
-  if ! require_cmd apt-get; then
-    err "apt-get not found; cannot install system packages"
-    return 1
-  fi
-  resolve_sudo
-  log "Installing base system dependencies..."
-  apt_update
-  apt_install_core \
-    curl git ca-certificates build-essential gnupg \
-    software-properties-common apt-transport-https \
-    openssl jq unzip zip rsync tar cron logrotate \
-    htop net-tools iproute2 dnsutils whois lsof procps sudo \
-    acl attr
-}
-
-# Full hosting / mail / DB / defense stack from SOFTWARE_CATALOG + extras
-install_hosting_stack() {
-  if [[ "$FULL_STACK" -ne 1 ]]; then
-    log "Minimal mode: skipping full hosting stack"
-    return 0
-  fi
-  resolve_sudo
-  log "Installing FULL system software stack (hosting / mail / DB / defense / FTP / DNS)..."
-  log "Note: packages are installed; services are not all force-enabled."
-
-  preseed_postfix
-
-  # Core web + SSL
-  apt_install_core \
-    nginx apache2 \
-    certbot python3-certbot-nginx \
-    openssl
-
-  apt_install_soft python3-certbot-apache
-
-  # DB clients always; one SQL server default MariaDB
-  apt_install_core \
-    postgresql postgresql-client \
-    redis-server redis-tools \
-    sqlite3
-
-  if [[ "$WITH_MYSQL_SERVER" -eq 1 ]]; then
-    log "Installing mysql-server (not mariadb-server)"
-    apt_install_soft mariadb-client mysql-client
-    apt_install_core mysql-server
-  else
-    log "Installing mariadb-server (default; use --with-mysql-server for Oracle MySQL)"
-    apt_install_soft mysql-client
-    apt_install_core mariadb-server mariadb-client
-  fi
-
-  # Mail stack
-  apt_install_core \
-    postfix \
-    dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd \
-    opendkim opendkim-tools
-
-  apt_install_soft rspamd
-
-  if [[ "$WITH_CLAMAV" -eq 1 ]]; then
-    log "Installing clamav (large)..."
-    apt_install_soft clamav clamav-daemon
-  fi
-
-  # DNS
-  apt_install_core pdns-server pdns-backend-bind
-  apt_install_soft bind9-dnsutils
-
-  # FTP
-  apt_install_core vsftpd db-util libpam-modules
-
-  # Defense
-  apt_install_core ufw fail2ban
-
-  # Backup / quota
-  apt_install_soft restic quota
-
-  log "Hosting stack package phase complete"
-}
-
-install_runtimes() {
-  if [[ "$SKIP_RUNTIMES" -eq 1 ]]; then
-    log "Skipping extra runtimes (--skip-runtimes)"
-    return 0
-  fi
-  if [[ "$FULL_STACK" -ne 1 ]]; then
-    return 0
-  fi
-  resolve_sudo
-  log "Installing language runtimes (PHP / Python / Go)..."
-
-  # PHP 8.2 + 8.3 common modules + FPM (Ubuntu 22.04 may only have 8.1/8.2)
-  apt_install_soft \
-    php php-cli php-fpm php-common \
-    php-mysql php-pgsql php-sqlite3 php-redis \
-    php-curl php-xml php-mbstring php-zip php-gd php-bcmath php-intl php-soap
-
-  apt_install_soft \
-    php8.1-cli php8.1-fpm php8.1-mysql php8.1-pgsql php8.1-curl php8.1-xml php8.1-mbstring php8.1-zip \
-    php8.2-cli php8.2-fpm php8.2-mysql php8.2-pgsql php8.2-curl php8.2-xml php8.2-mbstring php8.2-zip \
-    php8.3-cli php8.3-fpm php8.3-mysql php8.3-pgsql php8.3-curl php8.3-xml php8.3-mbstring php8.3-zip
-
-  apt_install_core python3 python3-pip python3-venv
-  apt_install_soft golang-go
-
-  # Rust via rustup (optional network)
-  if ! require_cmd cargo && ! require_cmd rustc; then
-    log "Installing Rust toolchain via rustup (non-interactive)..."
-    if curl -fsSL https://sh.rustup.rs | sh -s -- -y; then
-      # shellcheck disable=SC1090
-      [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env" || true
-      log "Rust installed (cargo=$(command -v cargo || echo pending-login-shell))"
-    else
-      warn "rustup failed; install later: https://rustup.rs"
-    fi
-  else
-    log "Rust/cargo already present"
-  fi
-}
-
-install_node() {
-  if require_cmd node; then
-    NODE_MAJOR="$(node -p "process.versions.node.split('.')[0]")"
-    if [[ "$NODE_MAJOR" -ge "$MIN_NODE_MAJOR" ]]; then
-      log "Node.js $(node -v) already installed"
-      return 0
-    fi
-    log "Node.js too old ($(node -v)); installing LTS via NodeSource"
-  else
-    log "Installing Node.js LTS via NodeSource"
-  fi
-  if ! require_cmd curl; then
-    err "curl required to install Node.js"
-    return 1
-  fi
-  resolve_sudo
-  curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO bash -
-  # shellcheck disable=SC2086
-  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
-  log "Node.js $(node -v) / npm $(npm -v)"
-}
-
-install_node_globals() {
-  if ! require_cmd npm; then
-    warn "npm not found; skip pnpm/pm2"
-    return 0
-  fi
-  log "Installing global npm tools (pnpm, pm2)..."
-  if [[ "$(id -u)" -eq 0 ]]; then
-    npm install -g pnpm@latest 2>/dev/null || npm install -g pnpm || warn "pnpm global install failed"
-    npm install -g pm2@latest 2>/dev/null || npm install -g pm2 || warn "pm2 global install failed"
-  else
-    npm install -g pnpm@latest 2>/dev/null || npm install -g pnpm || warn "pnpm global install failed"
-    npm install -g pm2@latest 2>/dev/null || npm install -g pm2 || warn "pm2 global install failed"
-  fi
-}
+trap 'on_err $LINENO $?' ERR
 
 embed_web_ui() {
   local root="$1"
@@ -309,45 +172,65 @@ embed_web_ui() {
   log "Web UI dist missing — run pnpm --filter @ysk/web build (API-only until then)"
 }
 
+install_node_globals() {
+  phase "node-globals"
+  if ! require_cmd npm; then
+    record_hard_fail "npm not found"
+    return 1
+  fi
+  log "Installing global npm tools (pnpm, pm2)..."
+  npm install -g pnpm@latest 2>/dev/null || npm install -g pnpm || warn "pnpm install failed"
+  npm install -g pm2@latest 2>/dev/null || npm install -g pm2 || warn "pm2 install failed"
+}
+
 install_product() {
+  phase "product"
   if [[ "$INSTALL_FROM_SOURCE" -eq 1 ]]; then
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    log "Installing from source: $SCRIPT_DIR"
-    if require_cmd pnpm; then
-      (cd "$SCRIPT_DIR" && pnpm install && pnpm build)
+    local src_root="${SCRIPT_DIR:-.}"
+    # if we fetched assets to tmp, prefer cwd if it looks like the monorepo
+    if [[ -f "./apps/server/package.json" ]]; then
+      src_root="$(pwd)"
+    elif [[ -f "$src_root/apps/server/package.json" ]]; then
+      :
     else
-      (cd "$SCRIPT_DIR" && npm install -g pnpm && pnpm install && pnpm build)
+      record_hard_fail "--from-source requires running inside the git checkout"
+      return 1
     fi
-    embed_web_ui "$SCRIPT_DIR"
-    (cd "$SCRIPT_DIR/apps/server" && npm link 2>/dev/null || true)
-    export PATH="$SCRIPT_DIR/apps/server/dist:$PATH"
-    local wrapper="/usr/local/bin/ysk-server"
-    local local_wrapper="$HOME/.local/bin/ysk-server"
-    local cli_js="$SCRIPT_DIR/apps/server/dist/cli.js"
+    log "Installing from source: $src_root"
+    if require_cmd pnpm; then
+      (cd "$src_root" && pnpm install && pnpm build)
+    else
+      (cd "$src_root" && npm install -g pnpm && pnpm install && pnpm build)
+    fi
+    embed_web_ui "$src_root"
+    (cd "$src_root/apps/server" && npm link 2>/dev/null || true)
+    local cli_js="$src_root/apps/server/dist/cli.js"
     if [[ -f "$cli_js" ]]; then
-      mkdir -p "$HOME/.local/bin" 2>/dev/null || true
-      write_cli_wrapper() {
+      local wrapper="/usr/local/bin/ysk-server"
+      write_cli() {
         local dest="$1"
-        cat > "$dest" <<WRAP
+        cat >"$dest" <<WRAP
 #!/usr/bin/env bash
 exec node "$cli_js" "\$@"
 WRAP
         chmod +x "$dest"
       }
       if [[ "$(id -u)" -eq 0 ]]; then
-        write_cli_wrapper "$wrapper" || true
+        write_cli "$wrapper"
       else
-        write_cli_wrapper "$local_wrapper" 2>/dev/null || true
+        mkdir -p "$HOME/.local/bin"
+        write_cli "$HOME/.local/bin/ysk-server"
         if require_cmd sudo; then
-          sudo bash -c "cat > $wrapper <<'WRAP'
+          sudo tee "$wrapper" >/dev/null <<WRAP
 #!/usr/bin/env bash
-exec node $cli_js \"\$@\"
+exec node $cli_js "\$@"
 WRAP
-chmod +x $wrapper" 2>/dev/null || true
+          sudo chmod +x "$wrapper" || true
         fi
       fi
-      log "CLI wrapper ready (ysk-server). Ensure /usr/local/bin or ~/.local/bin is on PATH"
+      log "CLI wrapper ready"
     fi
+    manifest_add_component "control-plane-product" "" "ysk-server" "" "npm"
     return 0
   fi
 
@@ -360,35 +243,29 @@ chmod +x $wrapper" 2>/dev/null || true
     npm install -g "$PKG@latest" || npm install -g "$PKG"
   else
     npm install -g "$PKG@latest" || npm install -g "$PKG" || {
-      log "Global npm install failed; try: npm install -g $PKG"
+      record_hard_fail "Global npm install failed for $PKG"
       return 1
     }
   fi
+  manifest_add_component "control-plane-product" "" "ysk-server" "" "npm"
 }
 
 run_setup() {
+  phase "setup"
   if [[ "$RUN_SETUP" -ne 1 ]]; then
     log "Skipping setup (--skip-setup)"
     return 0
   fi
-  if ! require_cmd "$CLI" && ! require_cmd node; then
-    err "$CLI not found after install"
-    return 1
-  fi
-  local setup_cmd=("$CLI" setup --non-interactive)
+  export YSK_DATA_DIR="${DATA_DIR}"
+  local setup_cmd=("$CLI" setup --non-interactive --data-dir "$DATA_DIR")
   if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
     setup_cmd+=(--force)
   fi
   if require_cmd "$CLI"; then
     log "Running: ${setup_cmd[*]}"
     "${setup_cmd[@]}" || log "setup returned non-zero (config may already exist)"
-  elif [[ "$INSTALL_FROM_SOURCE" -eq 1 && -f "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/apps/server/dist/cli.js" ]]; then
-    local root
-    root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    log "Running setup via node dist/cli.js"
-    node "$root/apps/server/dist/cli.js" setup --non-interactive --force || true
   else
-    log "CLI binary not on PATH yet; run manually: $CLI setup"
+    log "CLI not on PATH yet; run: $CLI setup --data-dir $DATA_DIR"
   fi
 }
 
@@ -396,20 +273,17 @@ install_systemd_unit() {
   if [[ "$INSTALL_SYSTEMD" -ne 1 ]]; then
     return 0
   fi
-  local root
-  root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local cli_js="$root/apps/server/dist/cli.js"
-  if [[ ! -f "$cli_js" ]]; then
-    log "No dist/cli.js — skip systemd"
+  phase "systemd"
+  if ! require_cmd "$CLI" && [[ "$INSTALL_FROM_SOURCE" -ne 1 ]]; then
+    log "No CLI for unit-install — skip"
     return 0
   fi
-  local data="${YSK_DATA_DIR:-$HOME/.ysk}"
-  log "Writing systemd unit for dataDir=$data"
+  log "Writing systemd unit for dataDir=$DATA_DIR"
   if [[ "$(id -u)" -eq 0 && "${YSK_EXECUTE:-}" == "1" ]]; then
-    YSK_EXECUTE=1 node "$cli_js" system unit-install --enable --data-dir "$data" || log "unit-install enable failed"
-  else
-    node "$cli_js" system unit-install --data-dir "$data" || true
-    log "Unit written under $data/systemd — enable with: YSK_EXECUTE=1 sudo $CLI system unit-install --enable --data-dir $data"
+    YSK_EXECUTE=1 "$CLI" system unit-install --enable --data-dir "$DATA_DIR" || log "unit-install enable failed"
+  elif require_cmd "$CLI"; then
+    "$CLI" system unit-install --data-dir "$DATA_DIR" || true
+    log "Unit written — enable with: YSK_EXECUTE=1 sudo $CLI system unit-install --enable --data-dir $DATA_DIR"
   fi
 }
 
@@ -419,49 +293,88 @@ print_next() {
 ============================================================
  $PRODUCT installation finished
 ============================================================
- Mode: $([[ "$FULL_STACK" -eq 1 ]] && echo "FULL system software" || echo "MINIMAL (control plane only)")
+ Plan:     ${PLAN:-custom}
+ Bundles:  $BUNDLES_CSV
+ Log:      ${INSTALL_LOG:-n/a}
+ Manifest: ${MANIFEST_PATH:-n/a}
+ Data dir: $DATA_DIR
 
- Docs:
-   docs/getting-started/install.md
-   docs/getting-started/install-ZH.md
+ Next:
+   1. $CLI setup --non-interactive --data-dir $DATA_DIR
+   2. $CLI readiness --data-dir $DATA_DIR --json
+   3. $CLI serve --data-dir $DATA_DIR --port 9287
+   4. Open Web UI → login → enable 2FA
 
- Next steps:
-   1. $CLI setup --non-interactive --data-dir /var/lib/ysk-server
-   2. $CLI readiness --data-dir /var/lib/ysk-server --json
-   3. $CLI serve --data-dir /var/lib/ysk-server --port 9287
-      or: YSK_EXECUTE=1 sudo -E $CLI system unit-install --enable --data-dir /var/lib/ysk-server
-   4. Open Web UI → login → enable 2FA → create project → deploy
-   5. Host mutations need: export YSK_EXECUTE=1  (and often root)
+ Host mutations need: export YSK_EXECUTE=1  (and often root)
 
- Installed packages are available on PATH; panel/CLI still apply configs
- honestly (written ≠ applied until EXECUTE).
+ Uninstall (partial or full):
+   ./uninstall.sh
+   ./uninstall.sh --bundles email --keep-data --yes
+   ./uninstall.sh --all --purge-data --yes
 
- Commands:
-   $CLI --help
-   $CLI readiness --json
-   $CLI serve --data-dir .ysk --port 9287
-   $CLI update --check
-
- Optional env:
-   YSK_EXECUTE=1          # allow system mutations (apt apply, ufw, …)
-   YSK_ADMIN_PASSWORD=…   # initial admin password on first setup
+ Docs: docs/getting-started/install.md · uninstall.md
 
 EOF
 }
 
 main() {
-  log "Starting installer (non-interactive=$NON_INTERACTIVE upgrade=$UPGRADE full=$FULL_STACK)"
-  detect_os
-  install_base_deps
-  install_hosting_stack
-  install_runtimes
-  install_node
+  setup_logging install "${INSTALL_ARGV[*]:-}"
+  OPERATION=install
+  ensure_stack_assets
+  manifest_require_jq
+
+  DATA_DIR="${DATA_DIR:-$(default_data_dir)}"
+
+  if [[ "$SKIP_WIZARD" -eq 1 ]]; then
+    wizard_install_apply_defaults_noninteractive
+  else
+    wizard_install_run
+  fi
+
+  if [[ "$SKIP_RUNTIMES" -eq 1 ]]; then
+    BUNDLES_CSV="$(printf '%s' "$BUNDLES_CSV" | tr ',' '\n' | grep -v '^runtimes$' | paste -sd, -)"
+  fi
+
+  resolve_components_from_bundles "$BUNDLES_CSV" "$SQL_SERVER" "$WITH_CLAMAV"
+  wizard_print_summary
+
+  # manifest init
+  local mpath
+  mpath="$(default_manifest_path)"
+  # override data dir for path
+  YSK_DATA_DIR="$DATA_DIR"
+  mpath="${DATA_DIR}/stack-manifest.json"
+  manifest_load "$mpath"
+  local clamav_json=false
+  [[ "$WITH_CLAMAV" -eq 1 ]] && clamav_json=true
+  manifest_set_meta "$PLAN" "$DATA_DIR" "$BUNDLES_CSV" "$SQL_SERVER" "$clamav_json"
+
+  install_selected_components
   install_node_globals
   install_product
   run_setup
   install_systemd_unit
+
+  # verify (skip pure optional soft components that may not exist)
+  local verify_list=()
+  local id
+  for id in "${SELECTED_COMPONENTS[@]+"${SELECTED_COMPONENTS[@]}"}"; do
+    case "$id" in
+      rspamd|clamav|apache2) continue ;;
+      control-plane-product) verify_list+=("$id") ;;
+      *) verify_list+=("$id") ;;
+    esac
+  done
+  verify_selected_components "${verify_list[@]+"${verify_list[@]}"}"
+
+  manifest_save "$mpath"
   print_next
-  log "Done"
+
+  if [[ ${#HARD_FAILURES[@]} -gt 0 ]]; then
+    err "Completed with hard failures — see $INSTALL_LOG"
+    exit 1
+  fi
+  log "Done — log: $INSTALL_LOG manifest: $mpath"
 }
 
-main "$@"
+main

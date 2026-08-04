@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "description": "Host stack components owned by YSK install/uninstall. Aligns with SOFTWARE_CATALOG.",
+  "components": {
+    "base-deps": {
+      "title": "Base system utilities",
+      "source": "apt",
+      "required": true,
+      "aptPackages": [
+        "curl", "git", "ca-certificates", "build-essential", "gnupg",
+        "software-properties-common", "apt-transport-https", "openssl", "jq",
+        "unzip", "zip", "rsync", "tar", "cron", "logrotate", "htop", "net-tools",
+        "iproute2", "dnsutils", "whois", "lsof", "procps", "sudo", "acl", "attr"
+      ],
+      "bins": ["curl", "git", "jq"],
+      "units": [],
+      "dataPaths": []
+    },
+    "nginx": {
+      "title": "Nginx",
+      "source": "apt",
+      "aptPackages": ["nginx"],
+      "bins": ["nginx"],
+      "units": ["nginx"],
+      "dataPaths": []
+    },
+    "apache2": {
+      "title": "Apache HTTP Server",
+      "source": "apt",
+      "optional": true,
+      "aptPackages": ["apache2"],
+      "bins": ["apache2", "apache2ctl"],
+      "units": ["apache2"],
+      "dataPaths": []
+    },
+    "certbot": {
+      "title": "Certbot",
+      "source": "apt",
+      "aptPackages": ["certbot", "python3-certbot-nginx"],
+      "optionalApt": ["python3-certbot-apache"],
+      "bins": ["certbot"],
+      "units": [],
+      "dataPaths": ["/etc/letsencrypt"]
+    },
+    "mysql-client": {
+      "title": "MySQL/MariaDB client",
+      "source": "apt",
+      "aptPackages": ["mariadb-client"],
+      "optionalApt": ["default-mysql-client", "mysql-client"],
+      "bins": ["mysql", "mariadb"],
+      "units": [],
+      "dataPaths": []
+    },
+    "mysql-server": {
+      "title": "MySQL server",
+      "source": "apt",
+      "aptPackages": ["mysql-server"],
+      "bins": ["mysqld"],
+      "units": ["mysql"],
+      "dataPaths": ["/var/lib/mysql"],
+      "exclusiveWith": ["mariadb-server"]
+    },
+    "mariadb-server": {
+      "title": "MariaDB server",
+      "source": "apt",
+      "aptPackages": ["mariadb-server"],
+      "bins": ["mariadbd", "mysqld"],
+      "units": ["mariadb"],
+      "dataPaths": ["/var/lib/mysql"],
+      "exclusiveWith": ["mysql-server"]
+    },
+    "postgresql-client": {
+      "title": "PostgreSQL client",
+      "source": "apt",
+      "aptPackages": ["postgresql-client"],
+      "bins": ["psql"],
+      "units": [],
+      "dataPaths": []
+    },
+    "postgresql": {
+      "title": "PostgreSQL server",
+      "source": "apt",
+      "aptPackages": ["postgresql"],
+      "bins": ["postgres"],
+      "units": ["postgresql"],
+      "dataPaths": ["/var/lib/postgresql"]
+    },
+    "redis-tools": {
+      "title": "Redis client",
+      "source": "apt",
+      "aptPackages": ["redis-tools"],
+      "bins": ["redis-cli"],
+      "units": [],
+      "dataPaths": []
+    },
+    "redis-server": {
+      "title": "Redis server",
+      "source": "apt",
+      "aptPackages": ["redis-server"],
+      "bins": ["redis-server"],
+      "units": ["redis-server"],
+      "dataPaths": ["/var/lib/redis"]
+    },
+    "sqlite3": {
+      "title": "SQLite",
+      "source": "apt",
+      "aptPackages": ["sqlite3"],
+      "bins": ["sqlite3"],
+      "units": [],
+      "dataPaths": []
+    },
+    "postfix": {
+      "title": "Postfix",
+      "source": "apt",
+      "aptPackages": ["postfix"],
+      "bins": ["postfix"],
+      "units": ["postfix"],
+      "dataPaths": ["/var/spool/postfix"]
+    },
+    "dovecot": {
+      "title": "Dovecot",
+      "source": "apt",
+      "aptPackages": ["dovecot-core", "dovecot-imapd", "dovecot-pop3d", "dovecot-lmtpd"],
+      "bins": ["dovecot"],
+      "units": ["dovecot"],
+      "dataPaths": ["/var/mail"]
+    },
+    "opendkim": {
+      "title": "OpenDKIM",
+      "source": "apt",
+      "aptPackages": ["opendkim", "opendkim-tools"],
+      "bins": ["opendkim"],
+      "units": ["opendkim"],
+      "dataPaths": []
+    },
+    "rspamd": {
+      "title": "Rspamd",
+      "source": "apt",
+      "optional": true,
+      "aptPackages": ["rspamd"],
+      "bins": ["rspamd"],
+      "units": ["rspamd"],
+      "dataPaths": []
+    },
+    "clamav": {
+      "title": "ClamAV",
+      "source": "apt",
+      "optional": true,
+      "aptPackages": ["clamav", "clamav-daemon"],
+      "bins": ["clamscan"],
+      "units": ["clamav-daemon"],
+      "dataPaths": ["/var/lib/clamav"]
+    },
+    "pdns-server": {
+      "title": "PowerDNS",
+      "source": "apt",
+      "aptPackages": ["pdns-server", "pdns-backend-bind"],
+      "bins": ["pdns_server", "pdnsutil"],
+      "units": ["pdns"],
+      "dataPaths": []
+    },
+    "vsftpd": {
+      "title": "vsftpd",
+      "source": "apt",
+      "aptPackages": ["vsftpd"],
+      "bins": ["vsftpd"],
+      "units": ["vsftpd"],
+      "dataPaths": []
+    },
+    "db-util": {
+      "title": "db-util",
+      "source": "apt",
+      "aptPackages": ["db-util", "libpam-modules"],
+      "bins": ["db_load"],
+      "units": [],
+      "dataPaths": []
+    },
+    "ufw": {
+      "title": "UFW",
+      "source": "apt",
+      "aptPackages": ["ufw"],
+      "bins": ["ufw"],
+      "units": [],
+      "dataPaths": []
+    },
+    "fail2ban": {
+      "title": "fail2ban",
+      "source": "apt",
+      "aptPackages": ["fail2ban"],
+      "bins": ["fail2ban-client"],
+      "units": ["fail2ban"],
+      "dataPaths": []
+    },
+    "php": {
+      "title": "PHP",
+      "source": "apt",
+      "aptPackages": [
+        "php", "php-cli", "php-fpm", "php-common",
+        "php-mysql", "php-pgsql", "php-sqlite3", "php-redis",
+        "php-curl", "php-xml", "php-mbstring", "php-zip", "php-gd",
+        "php-bcmath", "php-intl", "php-soap"
+      ],
+      "bins": ["php"],
+      "units": [],
+      "dataPaths": []
+    },
+    "python": {
+      "title": "Python 3",
+      "source": "apt",
+      "aptPackages": ["python3", "python3-pip", "python3-venv"],
+      "bins": ["python3"],
+      "units": [],
+      "dataPaths": []
+    },
+    "go": {
+      "title": "Go",
+      "source": "apt",
+      "aptPackages": ["golang-go"],
+      "bins": ["go"],
+      "units": [],
+      "dataPaths": []
+    },
+    "rust": {
+      "title": "Rust (cargo)",
+      "source": "rustup",
+      "aptPackages": [],
+      "bins": ["cargo"],
+      "units": [],
+      "dataPaths": ["/usr/local/cargo", "/usr/local/rustup"]
+    },
+    "node": {
+      "title": "Node.js",
+      "source": "nodesource",
+      "aptPackages": ["nodejs"],
+      "bins": ["node"],
+      "units": [],
+      "dataPaths": []
+    },
+    "git": {
+      "title": "Git",
+      "source": "apt",
+      "aptPackages": ["git"],
+      "bins": ["git"],
+      "units": [],
+      "dataPaths": []
+    },
+    "control-plane-product": {
+      "title": "YSK Server product (npm/CLI)",
+      "source": "npm",
+      "aptPackages": [],
+      "bins": ["ysk-server", "node"],
+      "units": ["ysk-server"],
+      "dataPaths": []
+    }
+  }
+}

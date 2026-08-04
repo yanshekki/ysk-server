@@ -46,10 +46,36 @@ export type SoftwareInstallResult = {
 let lastAptUpdateMs = 0;
 const APT_UPDATE_MS = 5 * 60_000;
 
+/**
+ * Probe whether a binary is available on the host.
+ * Uses command -v first, then common absolute paths (sbin often missing from
+ * non-login PATH under systemd / npm-started Node).
+ */
 async function binExists(host: HostExecutor, bin: string): Promise<boolean> {
-  const r = await host.runCommand(['bash', '-c', `command -v ${bin} 2>/dev/null || true`], {
-    timeoutMs: 5_000 });
-  return r.stdout.trim().length > 0;
+  // Reject path separators / weird tokens — catalog bins are bare names only
+  if (!bin || /[^a-zA-Z0-9._+-]/.test(bin)) return false;
+  const r = await host.runCommand(
+    [
+      'bash',
+      '-c',
+      `export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin:\${HOME}/.cargo/bin:\${PATH:-}"; command -v ${bin} 2>/dev/null || true`,
+    ],
+    { timeoutMs: 5_000 },
+  );
+  if (r.stdout.trim().length > 0) return true;
+  const candidates = [
+    `/usr/local/sbin/${bin}`,
+    `/usr/local/bin/${bin}`,
+    `/usr/sbin/${bin}`,
+    `/usr/bin/${bin}`,
+    `/sbin/${bin}`,
+    `/bin/${bin}`,
+    `/usr/local/cargo/bin/${bin}`,
+  ];
+  for (const p of candidates) {
+    if (host.pathExists(p)) return true;
+  }
+  return false;
 }
 
 async function unitActive(host: HostExecutor, unit: string): Promise<string | undefined> {

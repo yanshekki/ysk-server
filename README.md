@@ -22,15 +22,15 @@
 
 ## Quick start
 
-### Production / VPS (full system software)
+### Production / VPS (plan / bundle wizard)
 
-Default `install.sh` installs the control plane **and** the full host stack the panel may use (nginx, mail, DBs, DNS, FTP, defense, PHP/Python/Go/Rust tools, Node 20+). See [docs/getting-started/install.md](docs/getting-started/install.md).
+`install.sh` walks through **plans** (`recommended` / `full` / `minimal` / custom bundles). Non-interactive default is **recommended** (control-plane + web + database + defense). Use `uninstall.sh` for partial/full removal with keep-data or purge-data. See [install.md](docs/getting-started/install.md) · [uninstall.md](docs/getting-started/uninstall.md).
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash
-# Non-interactive:
-# curl -fsSL …/install.sh | bash -s -- --non-interactive
-# Minimal (control plane only):  … | bash -s -- --minimal
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
+# Full stack:  … | bash -s -- --non-interactive --plan full
+# Minimal:     … | bash -s -- --non-interactive --plan minimal
+# Uninstall:   ./uninstall.sh
 ysk-server readiness --json
 ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 ```

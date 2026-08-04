@@ -124,8 +124,9 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     id: 'mysql-client',
     title: 'MySQL/MariaDB client',
     titleKey: 'notes.auto.n0136',
-    bins: ['mysql'],
-    aptPackages: ['mysql-client', 'mariadb-client'],
+    // Ubuntu/Debian often ship `mariadb` client; older installs still use `mysql`
+    bins: ['mysql', 'mariadb'],
+    aptPackages: ['mariadb-client', 'default-mysql-client', 'mysql-client'],
     features: ['mysql', 'mariadb'] },
   {
     id: 'mysql-server',
@@ -139,7 +140,8 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     id: 'mariadb-server',
     title: 'MariaDB server',
     titleKey: 'notes.auto.n0133',
-    bins: ['mariadbd'],
+    // Some releases only expose mariadbd; others still provide mysqld symlink
+    bins: ['mariadbd', 'mysqld'],
     aptPackages: ['mariadb-server'],
     units: ['mariadb'],
     features: ['mariadb'] },

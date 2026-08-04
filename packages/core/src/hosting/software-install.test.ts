@@ -87,6 +87,38 @@ describe('software-install honesty', () => {
     expect(st.missingBins).toEqual([]);
   });
 
+  it('probeSoftware finds bins via absolute path when command -v misses PATH', async () => {
+    const nginx = getSoftware('nginx');
+    expect(nginx).toBeTruthy();
+    const host: HostExecutor = {
+      executeEnabled: () => false,
+      isRoot: () => false,
+      pathExists: (p) => p === '/usr/sbin/nginx' || p.includes('systemctl'),
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => {
+        // Simulate sbin not on PATH
+        if (argv.join(' ').includes('command -v')) {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const st = await probeSoftware(host, nginx!);
+    expect(st.installed).toBe(true);
+  });
+
   it('probeAllSoftware returns catalog slice', async () => {
     const host = mockHost({ bins: [] });
     const all = await probeAllSoftware(host, 'all');

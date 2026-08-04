@@ -385,7 +385,8 @@ describe('software-install depth', () => {
     const host: HostExecutor = {
       executeEnabled: () => true,
       isRoot: () => true,
-      pathExists: () => true,
+      // systemctl only — do not claim every path exists (binExists falls back to absolute paths)
+      pathExists: (p) => p.includes('systemctl'),
       readFile: async () => '',
       listDir: async () => [],
       writeFile: async () => undefined,

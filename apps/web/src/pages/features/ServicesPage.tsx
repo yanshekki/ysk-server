@@ -21,6 +21,7 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { dbClusterApi } from '../../features/db-service/cluster-api';
+import { StackWizard } from '../../features/software/StackWizard';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { bindSet, bindInput, bindCall2 } from '../bind-handlers';
 
@@ -267,6 +268,7 @@ export function ServicesPage() {
           <PageTabs
             tabs={[
               { id: 'matrix', label: t('services.matrixTab', { count: items.length }) },
+              { id: 'stack', label: t('services.stackTab', { defaultValue: 'Stack / 套餐' }) },
               { id: 'protection', label: t('services.protectionTab') },
               { id: 'about', label: t('common.about') },
             ]}
@@ -274,6 +276,22 @@ export function ServicesPage() {
             onChange={setTab}
             variant="scroll"
           >
+            {tab === 'stack' ? (
+              <section className="ops-panel" data-testid="services-stack-tab">
+                <header className="ops-panel__head">
+                  <h2 className="ops-panel__title">
+                    {t('services.stackTitle', { defaultValue: 'Software stack plans' })}
+                  </h2>
+                  <p className="muted" style={{ margin: 0 }}>
+                    {t('services.stackHint', {
+                      defaultValue:
+                        'Install or remove host software by plan/bundle. Dry-run first; live ops need root + YSK_EXECUTE=1.',
+                    })}
+                  </p>
+                </header>
+                <StackWizard />
+              </section>
+            ) : null}
             {tab === 'matrix' ? (
               <section className="ops-panel">
                 <header className="ops-panel__head ops-panel__head--stack">

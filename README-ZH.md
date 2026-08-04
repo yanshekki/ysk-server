@@ -22,15 +22,15 @@
 
 ## 快速上手
 
-### 生產／VPS（完整系統軟件）
+### 生產／VPS（套餐／方案嚮導）
 
-預設 `install.sh` 會安裝控制平面，以及面板可能用到的**完整主機堆疊**（nginx、郵件、資料庫、DNS、FTP、防禦、PHP／Python／Go／Rust 工具、Node 20+）。詳見 [docs/getting-started/install-ZH.md](docs/getting-started/install-ZH.md)。
+`install.sh` 提供**方案**（`recommended`／`full`／`minimal`／自訂套餐）。非互動預設 **recommended**（控制平面 + web + database + defense）。用 `uninstall.sh` 做部份／全部移除（可保留或清除資料）。詳見 [install-ZH.md](docs/getting-started/install-ZH.md) · [uninstall-ZH.md](docs/getting-started/uninstall-ZH.md)。
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash
-# 非互動：
-# curl -fsSL …/install.sh | bash -s -- --non-interactive
-# 僅控制平面：  … | bash -s -- --minimal
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
+# 全裝：… | bash -s -- --non-interactive --plan full
+# 僅控制平面：… | bash -s -- --non-interactive --plan minimal
+# 解除安裝：./uninstall.sh
 ysk-server readiness --json
 ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 ```
