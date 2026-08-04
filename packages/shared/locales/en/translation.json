@@ -2299,7 +2299,9 @@
     "unfreezeConfirmDesc": "Will: stop service → remove /etc/mysql/FROZEN → re-initialize if datadir is empty → start service. Datadir empty: {{empty}}. Back up first if the directory holds important data.",
     "unfreezeConfirmBtn": "Confirm unfreeze",
     "unfreezeOk": "{{engine}} unfrozen and started",
-    "startAfterUnfreeze": "Start service (auto-repair freeze if needed)"
+    "startAfterUnfreeze": "Start service (auto-repair freeze if needed)",
+    "serviceDownTitle": "Database service is down",
+    "serviceDownBody": "Service is not running. Possible FROZEN marker, empty datadir, or config error. Datadir empty: {{empty}}. Click “Unfreeze and repair” to confirm (stop → clear freeze → re-init if empty → start)."
   },
   "dialogs": {
     "confirmDefault": "Confirm",

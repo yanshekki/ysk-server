@@ -20,37 +20,62 @@ export type MysqlFrozenInfo = {
 
 export async function readMysqlFrozen(host: HostExecutor): Promise<MysqlFrozenInfo> {
   const path = FROZEN_PATH;
-  // pathExists may be false for dangling symlink; still try read via cat
+  // Symlink may exist even when target is empty / unreadable — never treat empty cat as "not frozen"
   const r = await host.runCommand(
-    ['bash', '-c', `if [ -e ${JSON.stringify(path)} ] || [ -L ${JSON.stringify(path)} ]; then cat ${JSON.stringify(path)} 2>/dev/null; echo; ls -la ${JSON.stringify(path)} 2>/dev/null; else echo ''; fi`],
+    [
+      'bash',
+      '-c',
+      `
+p=${JSON.stringify(path)}
+if [ -L "$p" ] || [ -e "$p" ]; then
+  echo "__FROZEN_PRESENT__"
+  cat "$p" 2>/dev/null || true
+  echo
+  readlink -f "$p" 2>/dev/null || ls -la "$p" 2>/dev/null || true
+else
+  echo "__FROZEN_ABSENT__"
+fi
+`,
+    ],
     { timeoutMs: 5_000 },
   );
-  const raw = (r.stdout || '').trim();
-  if (!raw) {
+  const out = r.stdout || '';
+  if (!out.includes('__FROZEN_PRESENT__')) {
+    // Journal fallback: daemon may log freeze without readable marker in some setups
+    const j = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        `journalctl -u mysql -u mariadb -n 30 --no-pager 2>/dev/null | grep -i frozen | head -3 || true`,
+      ],
+      { timeoutMs: 8_000 },
+    );
+    const jline = (j.stdout || '').trim();
+    if (jline) {
+      return {
+        frozen: true,
+        path,
+        content: jline.slice(0, 600),
+        modeHint: /downgrade/i.test(jline) ? 'downgrade' : 'frozen',
+      };
+    }
     return { frozen: false, path, content: '' };
   }
-  // present if file/symlink exists
-  const exists = await host.runCommand(
-    ['bash', '-c', `if [ -e ${JSON.stringify(path)} ] || [ -L ${JSON.stringify(path)} ]; then echo yes; fi`],
-    { timeoutMs: 3_000 },
-  );
-  if (exists.stdout.trim() !== 'yes') {
-    return { frozen: false, path, content: '' };
-  }
-  const modeHint = raw.includes('downgrade')
+  const raw = out.replace('__FROZEN_PRESENT__', '').trim();
+  const modeHint = /downgrade/i.test(raw)
     ? 'downgrade'
-    : raw.includes('frozen')
+    : /frozen/i.test(raw)
       ? 'frozen'
-      : undefined;
+      : 'frozen';
   return {
     frozen: true,
     path,
-    content: raw.slice(0, 600),
+    content: (raw || 'FROZEN marker present').slice(0, 600),
     modeHint,
   };
 }
 
-/** True when datadir has no system tables (safe to re-initialize). */
+/** True when datadir has no usable system tables (safe to re-initialize). */
 export async function isMysqlDatadirEmptyOrUninitialized(host: HostExecutor): Promise<boolean> {
   const r = await host.runCommand(
     [
@@ -59,14 +84,17 @@ export async function isMysqlDatadirEmptyOrUninitialized(host: HostExecutor): Pr
       `
 d=${JSON.stringify(DATADIR)}
 if [ ! -d "$d" ]; then echo empty; exit 0; fi
-# system tables markers
-if [ -d "$d/mysql" ] || [ -f "$d/ibdata1" ] || [ -d "$d/performance_schema" ] || [ -d "$d/sys" ]; then
+# Real system catalog = initialized
+if [ -d "$d/mysql" ] && [ "$(ls -A "$d/mysql" 2>/dev/null | head -1)" ]; then
   echo has_data
   exit 0
 fi
-# only lost+found / empty / FROZEN leftovers
-cnt=$(find "$d" -mindepth 1 -maxdepth 1 ! -name lost+found 2>/dev/null | wc -l)
-if [ "$cnt" -eq 0 ]; then echo empty; else echo has_data; fi
+# ibdata1 alone without mysql/ often means broken half-init — treat as uninit for recovery
+if [ -d "$d/mysql" ]; then
+  echo has_data
+  exit 0
+fi
+echo empty
 `,
     ],
     { timeoutMs: 10_000 },
@@ -79,18 +107,30 @@ export async function clearMysqlFrozen(host: HostExecutor): Promise<{ ok: boolea
   if (!info.frozen) {
     return { ok: true, notes: [] };
   }
+  // Remove symlink or file; also common alternate markers
   const r = await host.runCommand(
-    ['bash', '-c', `rm -f ${JSON.stringify(FROZEN_PATH)} ${JSON.stringify(FROZEN_PATH + '.bak')} 2>/dev/null; true`],
+    [
+      'bash',
+      '-c',
+      `
+rm -f /etc/mysql/FROZEN /etc/mysql/FROZEN.bak 2>/dev/null || true
+# Some images use debian.cnf side-effects only; ensure marker gone
+if [ -L /etc/mysql/FROZEN ] || [ -e /etc/mysql/FROZEN ]; then
+  echo CLEAR_FAIL
+  ls -la /etc/mysql/FROZEN 2>&1 || true
+  exit 1
+fi
+echo CLEAR_OK
+`,
+    ],
     { timeoutMs: 5_000 },
   );
-  const still = await readMysqlFrozen(host);
-  if (still.frozen) {
+  if (r.exitCode !== 0 || (r.stdout || '').includes('CLEAR_FAIL')) {
     return {
       ok: false,
       notes: [tl('sqlEngineSwitch.note.frozenClearFailed', { path: FROZEN_PATH })],
     };
   }
-  void r;
   return {
     ok: true,
     notes: [tl('sqlEngineSwitch.note.frozenCleared', { path: FROZEN_PATH })],

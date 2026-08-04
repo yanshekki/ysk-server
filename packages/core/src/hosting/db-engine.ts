@@ -250,24 +250,19 @@ export async function startDbEngine(input: {
   let start = await input.host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
   let status = await probeDbEngine(input.host, input.engine);
 
+  // Any start failure for SQL server: always run full recovery (stop/clear FROZEN/init empty/start)
   if (status.active !== 'active') {
     try {
-      const { recoverMysqlAfterEngineSwitch, readMysqlFrozen } = await import(
-        './sql-engine-switch/mysql-frozen.js'
-      );
-      const fr = await readMysqlFrozen(input.host);
-      // Auto-recover when FROZEN (operator already clicked Start with execute+root)
-      if (fr.frozen || status.active === 'failed') {
-        const rec = await recoverMysqlAfterEngineSwitch(input.host, input.engine);
-        notes.push(...rec.notes);
+      const { recoverMysqlAfterEngineSwitch } = await import('./sql-engine-switch/mysql-frozen.js');
+      const rec = await recoverMysqlAfterEngineSwitch(input.host, input.engine);
+      notes.push(...rec.notes);
+      status = await probeDbEngine(input.host, input.engine);
+      if (status.active !== 'active') {
+        start = await input.host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
         status = await probeDbEngine(input.host, input.engine);
-        if (!status.active || status.active !== 'active') {
-          start = await input.host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
-          status = await probeDbEngine(input.host, input.engine);
-        }
       }
-    } catch {
-      /* best-effort recovery */
+    } catch (e) {
+      notes.push(String(e instanceof Error ? e.message : e));
     }
   }
 
@@ -277,14 +272,12 @@ export async function startDbEngine(input: {
   } else {
     const detail = (start.stderr || start.stdout || status.active || '').trim();
     notes.push(tl('notes.auto.t0253', { v0: detail.slice(0, 500) }));
-    if (status.frozen) {
-      notes.push(tl('sqlEngineSwitch.note.unfreezePrompt'));
-    }
+    notes.push(tl('sqlEngineSwitch.note.unfreezePrompt'));
   }
   return {
     ok,
     notes,
     status,
-    code: !ok && status.frozen ? 'needs_unfreeze' : undefined,
+    code: !ok ? 'needs_unfreeze' : undefined,
   };
 }

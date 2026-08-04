@@ -8,10 +8,17 @@ import {
 } from './mysql-frozen.js';
 
 function mockHost(opts: {
-  frozenContent?: string | null;
+  frozen?: boolean;
+  frozenContent?: string;
   datadirEmpty?: boolean;
-  run?: (argv: string[]) => Partial<RunResult>;
 }): HostExecutor {
+  let frozen = opts.frozen ?? Boolean(opts.frozenContent);
+  const content =
+    opts.frozenContent ??
+    (frozen
+      ? 'This MySQL installation has entered frozen mode.\nfrozen-mode/downgrade'
+      : '');
+
   return {
     executeEnabled: () => true,
     isRoot: () => true,
@@ -30,30 +37,39 @@ function mockHost(opts: {
       dryRun: false,
     }),
     runCommand: async (argv) => {
-      if (opts.run) {
-        const p = opts.run(argv);
-        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false, ...p };
-      }
       const s = argv.join(' ');
-      if (s.includes('/etc/mysql/FROZEN') && s.includes('cat')) {
-        if (opts.frozenContent) {
+      if (s.includes('__FROZEN_PRESENT__') || s.includes('FROZEN_ABSENT') || s.includes('/etc/mysql/FROZEN')) {
+        if (s.includes('rm -f') || s.includes('CLEAR_OK') || s.includes('CLEAR_FAIL')) {
+          if (s.includes('rm -f')) frozen = false;
           return {
-            stdout: opts.frozenContent + '\n',
+            stdout: frozen ? 'CLEAR_FAIL\n' : 'CLEAR_OK\n',
+            stderr: '',
+            exitCode: frozen ? 1 : 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (s.includes('journalctl')) {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (frozen) {
+          return {
+            stdout: `__FROZEN_PRESENT__\n${content}\n`,
             stderr: '',
             exitCode: 0,
             argv,
             dryRun: false,
           };
         }
-        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        return {
+          stdout: '__FROZEN_ABSENT__\n',
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        };
       }
-      if (s.includes('echo yes') || (s.includes('FROZEN') && s.includes('[ -e'))) {
-        if (opts.frozenContent) {
-          return { stdout: 'yes\n', stderr: '', exitCode: 0, argv, dryRun: false };
-        }
-        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
-      }
-      if (s.includes('/var/lib/mysql') && s.includes('has_data')) {
+      if (s.includes('/var/lib/mysql') || s.includes('has_data') || s.includes('empty')) {
         return {
           stdout: opts.datadirEmpty === false ? 'has_data\n' : 'empty\n',
           stderr: '',
@@ -61,9 +77,6 @@ function mockHost(opts: {
           argv,
           dryRun: false,
         };
-      }
-      if (s.includes('rm -f') && s.includes('FROZEN')) {
-        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
       }
       return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
     },
@@ -73,7 +86,8 @@ function mockHost(opts: {
 describe('mysql-frozen', () => {
   it('readMysqlFrozen detects freeze content', async () => {
     const host = mockHost({
-      frozenContent: 'MySQL has been frozen to prevent damage.\nfrozen-mode/downgrade',
+      frozen: true,
+      frozenContent: 'MySQL has been frozen.\nfrozen-mode/downgrade',
     });
     const info = await readMysqlFrozen(host);
     expect(info.frozen).toBe(true);
@@ -82,7 +96,7 @@ describe('mysql-frozen', () => {
   });
 
   it('readMysqlFrozen when absent', async () => {
-    const host = mockHost({ frozenContent: null });
+    const host = mockHost({ frozen: false });
     const info = await readMysqlFrozen(host);
     expect(info.frozen).toBe(false);
   });
@@ -95,34 +109,15 @@ describe('mysql-frozen', () => {
   });
 
   it('clearMysqlFrozen removes marker', async () => {
-    let frozen = true;
-    const host = mockHost({
-      run: (argv) => {
-        const s = argv.join(' ');
-        if (s.includes('rm -f') && s.includes('FROZEN')) {
-          frozen = false;
-          return { exitCode: 0 };
-        }
-        if (s.includes('echo yes') || (s.includes('[ -e') && s.includes('FROZEN'))) {
-          return { stdout: frozen ? 'yes\n' : '', exitCode: 0 };
-        }
-        if (s.includes('cat') && s.includes('FROZEN')) {
-          return {
-            stdout: frozen ? 'frozen-mode/downgrade\n' : '',
-            exitCode: 0,
-          };
-        }
-        return { exitCode: 0 };
-      },
-    });
+    const host = mockHost({ frozen: true });
     const r = await clearMysqlFrozen(host);
     expect(r.ok).toBe(true);
-    expect(frozen).toBe(false);
   });
 
   it('frozenUnitFailureHint for mysql unit', async () => {
     const host = mockHost({
-      frozenContent: 'MySQL has been frozen to prevent damage to your system.\nfrozen-mode/downgrade',
+      frozen: true,
+      frozenContent: 'MySQL has been frozen to prevent damage.\nfrozen-mode/downgrade',
     });
     const hint = await frozenUnitFailureHint(host, 'mysql');
     expect(hint).toBeTruthy();

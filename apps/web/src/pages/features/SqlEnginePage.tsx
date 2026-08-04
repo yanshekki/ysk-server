@@ -427,24 +427,31 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               {svc.blockMessage}
             </p>
           ) : null}
-          {installed && svc?.frozen ? (
+          {installed && !running ? (
             <Alert variant="error">
-              <strong>{t('db.frozenTitle')}</strong>
+              <strong>{svc?.frozen ? t('db.frozenTitle') : t('db.serviceDownTitle')}</strong>
               <p className="u-mb-0 u-mt-2 u-text-sm">
-                {t('db.frozenBody', {
-                  mode: svc.frozenMode || 'frozen',
-                  empty: svc.datadirEmpty ? t('common.yes') : t('common.no'),
-                })}
+                {svc?.frozen
+                  ? t('db.frozenBody', {
+                      mode: svc.frozenMode || 'frozen',
+                      empty: svc.datadirEmpty ? t('common.yes') : t('common.no'),
+                    })
+                  : t('db.serviceDownBody', {
+                      empty: svc?.datadirEmpty ? t('common.yes') : t('common.no'),
+                    })}
               </p>
-              <div className="u-mt-3">
+              <div className="u-mt-3 u-flex u-gap-2 u-flex-wrap">
                 <Button
                   variant="danger"
                   size="md"
                   loading={busy}
-                  disabled={!svc.executeEnabled || !svc.isRoot}
+                  disabled={!svc?.executeEnabled || !svc?.isRoot}
                   onClick={() => setUnfreezeOpen(true)}
                 >
                   {t('db.unfreezeBtn')}
+                </Button>
+                <Button variant="primary" size="md" loading={busy} onClick={onStart}>
+                  {t('db.startAfterUnfreeze')}
                 </Button>
               </div>
             </Alert>
@@ -466,30 +473,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   t('db.installBannerHint', { engine: title })
                 )}
               </p>
-            ) : !running ? (
-              <>
-                <Button variant="primary" size="md" loading={busy} onClick={onStart}>
-                  {svc?.frozen ? t('db.startAfterUnfreeze') : t('fail2ban.startService')}
-                </Button>
-                {svc?.frozen ? (
-                  <Button
-                    variant="danger"
-                    size="md"
-                    loading={busy}
-                    className="u-ml-2"
-                    onClick={() => setUnfreezeOpen(true)}
-                  >
-                    {t('db.unfreezeBtn')}
-                  </Button>
-                ) : null}
-              </>
-            ) : (
+            ) : running ? (
               <Link to={servicePath}>
                 <Button variant="secondary" size="md">
                   {t('db.openServiceConsole')}
                 </Button>
               </Link>
-            )}
+            ) : null}
           </div>
         </CardSection>
       </Card>

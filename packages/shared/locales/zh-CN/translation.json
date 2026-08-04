@@ -2299,7 +2299,9 @@
     "unfreezeConfirmDesc": "将执行：停止服务 → 删除 /etc/mysql/FROZEN → 若数据目录为空则重新初始化 → 再启动服务。数据目录是否为空：{{empty}}。若目录内有重要数据，请先备份再继续。",
     "unfreezeConfirmBtn": "确认解除冻结",
     "unfreezeOk": "{{engine}} 已解除冻结并启动",
-    "startAfterUnfreeze": "启动服务（会尝试自动修复冻结）"
+    "startAfterUnfreeze": "启动服务（会尝试自动修复冻结）",
+    "serviceDownTitle": "数据库服务未运行",
+    "serviceDownBody": "服务状态异常。可能是 FROZEN、空白数据目录或配置错误。数据目录是否为空：{{empty}}。请按「解除冻结并修复」确认处理（会停止服务、清除冻结标记，空白目录会重新初始化）。"
   },
   "dialogs": {
     "confirmDefault": "确认",
