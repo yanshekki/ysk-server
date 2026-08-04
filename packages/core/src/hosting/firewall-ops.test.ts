@@ -116,8 +116,9 @@ describe('firewall-ops', () => {
     const notInstalled = host({
       paths: [],
       run: (argv) => {
-        if (argv.join(' ').includes('command -v ufw')) {
-          return { stdout: 'no\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        // HostSoftwareProbe.resolveBin: empty stdout = missing
+        if (argv.join(' ').includes('command -v')) {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
         }
         return { stdout: '', stderr: '', exitCode: 1, argv, dryRun: false };
       },

@@ -44,6 +44,8 @@ export interface ServiceConsoleDto {
   isRoot: boolean;
   canLifecycle: boolean;
   blockMessage?: string;
+  /** e.g. mariadb-server when viewing MySQL console */
+  blockedByExclusive?: string;
   metrics: Record<string, string>;
   categories: ConsoleCategory[];
   live: Record<string, string>;
@@ -296,9 +298,17 @@ export async function getServiceConsole(
 
   const executeEnabled = host.executeEnabled();
   const isRoot = host.isRoot();
-  const canLifecycle = executeEnabled && isRoot;
+  const canLifecycle = executeEnabled && isRoot && installed;
   let blockMessage: string | undefined;
-  if (!installed) blockMessage = tl('notes.auto.t0308', { v0: (meta.title) });
+  if (!installed && server.blockedByExclusive) {
+    const other =
+      server.blockedByExclusive === 'mariadb-server'
+        ? 'MariaDB'
+        : server.blockedByExclusive === 'mysql-server'
+          ? 'MySQL'
+          : server.blockedByExclusive;
+    blockMessage = tl('notes.auto.t0308', { v0: meta.title }) + ` (${other})`;
+  } else if (!installed) blockMessage = tl('notes.auto.t0308', { v0: meta.title });
   else if (!executeEnabled) blockMessage = tl('notes.auto.n0613');
   else if (!isRoot) blockMessage = tl('notes.auto.n1583');
 
@@ -315,6 +325,7 @@ export async function getServiceConsole(
     isRoot,
     canLifecycle,
     blockMessage,
+    blockedByExclusive: server.blockedByExclusive,
     metrics,
     categories,
     live };

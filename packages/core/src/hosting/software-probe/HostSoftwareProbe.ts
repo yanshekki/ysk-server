@@ -126,24 +126,32 @@ export class HostSoftwareProbe {
 
     const units: SoftwarePresence['units'] = [];
     for (const u of entry.units ?? []) {
-      const active = await unitIsActive(this.host, u);
-      const enabled = await unitIsEnabled(this.host, u);
-      units.push({ name: u, active, enabled });
+      try {
+        const active = await unitIsActive(this.host, u);
+        const enabled = await unitIsEnabled(this.host, u);
+        units.push({ name: u, active, enabled });
+      } catch {
+        units.push({ name: u, active: 'unknown', enabled: 'unknown' });
+      }
     }
 
     // Optional: check primary dpkg package present
     let packagesPresent: string[] | undefined;
     if (entry.dpkgPackage) {
-      const r = await this.host.runCommand(
-        [
-          'bash',
-          '-c',
-          `dpkg-query -W -f='\${Status}' ${JSON.stringify(entry.dpkgPackage)} 2>/dev/null || true`,
-        ],
-        { timeoutMs: 5_000 },
-      );
-      if (/install ok installed/i.test(r.stdout)) {
-        packagesPresent = [entry.dpkgPackage];
+      try {
+        const r = await this.host.runCommand(
+          [
+            'bash',
+            '-c',
+            `dpkg-query -W -f='\${Status}' ${JSON.stringify(entry.dpkgPackage)} 2>/dev/null || true`,
+          ],
+          { timeoutMs: 5_000 },
+        );
+        if (/install ok installed/i.test(r.stdout)) {
+          packagesPresent = [entry.dpkgPackage];
+        }
+      } catch {
+        /* ignore dpkg probe errors */
       }
     }
 

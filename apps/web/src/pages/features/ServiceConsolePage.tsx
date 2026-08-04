@@ -511,7 +511,31 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         </Alert>
       ) : null}
 
-      {console?.blockMessage ? <Alert variant="info">{console.blockMessage}</Alert> : null}
+      {console?.blockedByExclusive === 'mariadb-server' ? (
+        <Alert variant="info">
+          {t('db.exclusiveMariaHint', {
+            defaultValue:
+              'This host runs MariaDB (not Oracle MySQL). Use the MariaDB service page for lifecycle and settings.',
+          })}{' '}
+          <Link to="/databases/mariadb/service">
+            {t('db.openMariaService', { defaultValue: 'MariaDB service' })}
+          </Link>
+        </Alert>
+      ) : null}
+      {console?.blockedByExclusive === 'mysql-server' ? (
+        <Alert variant="info">
+          {t('db.exclusiveMysqlHint', {
+            defaultValue:
+              'This host runs Oracle MySQL (not MariaDB). Use the MySQL service page for lifecycle and settings.',
+          })}{' '}
+          <Link to="/databases/mysql/service">
+            {t('db.openMysqlService', { defaultValue: 'MySQL service' })}
+          </Link>
+        </Alert>
+      ) : null}
+      {console?.blockMessage && !console.blockedByExclusive ? (
+        <Alert variant="info">{console.blockMessage}</Alert>
+      ) : null}
 
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'overview' && console ? (

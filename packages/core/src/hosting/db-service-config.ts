@@ -11,6 +11,7 @@ import type { JsonStore } from '../db/store.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { probeRedisService } from './redis-browser.js';
 import { probeDbEngine, type DbEngineKind } from './db-engine.js';
+import { HostSoftwareProbe } from './software-probe/index.js';
 
 export type DbServiceEngine = 'redis' | 'mysql' | 'mariadb' | 'postgres';
 
@@ -490,23 +491,19 @@ export async function getPostgresServiceView(input: {
   blockMessage?: string;
 }> {
   const settings = loadPostgresSettings(input.db);
-  const which = await input.host.runCommand(['bash', '-c', 'command -v psql || true'], {
-    timeoutMs: 5_000 });
-  const clientInstalled = which.stdout.trim().length > 0;
-  const whichS = await input.host.runCommand(['bash', '-c', 'command -v postgres || true'], {
-    timeoutMs: 5_000 });
-  const serverInstalled = whichS.stdout.trim().length > 0;
-  let active = 'unknown';
-  if (input.host.pathExists('/bin/systemctl') || input.host.pathExists('/usr/bin/systemctl')) {
-    const r = await input.host.runCommand(['systemctl', 'is-active', 'postgresql'], {
-      timeoutMs: 5_000 });
-    active = (r.stdout || r.stderr || 'unknown').trim().split('\n')[0] || 'unknown';
-  }
-  let version: string | undefined;
-  if (clientInstalled) {
-    const v = await input.host.runCommand(['psql', '--version'], { timeoutMs: 5_000 });
-    version = v.stdout.trim().slice(0, 80);
-  }
+  const probe = new HostSoftwareProbe(input.host);
+  const server = await probe.presence('postgresql');
+  const client = await probe.presence('postgresql-client');
+  const serverInstalled = server.installed;
+  const clientInstalled = client.installed;
+  const active =
+    server.units?.[0]?.active ??
+    (await input.host
+      .runCommand(['systemctl', 'is-active', 'postgresql'], { timeoutMs: 5_000 })
+      .then((r) => (r.stdout || r.stderr || 'unknown').trim().split('\n')[0] || 'unknown')
+      .catch(() => 'unknown'));
+  const ver = await probe.version(clientInstalled ? 'postgresql-client' : 'postgresql');
+  const version = ver.version?.slice(0, 80);
   const executeEnabled = input.host.executeEnabled();
   const isRoot = input.host.isRoot();
   let blockMessage: string | undefined;

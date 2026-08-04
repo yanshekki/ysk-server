@@ -9,6 +9,7 @@ import type { HostExecutor } from '../host/executor.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { installSoftware } from './software-install.js';
 import { probeEndpoint } from './db-client.js';
+import { HostSoftwareProbe, binPresent, unitIsActive } from './software-probe/index.js';
 
 const SAFE_KEY = /^[\w.:@/+\-[\]{}|=,~-]{1,512}$/;
 const SAFE_PATTERN = /^[\w.:@/+\-[\]{}|=,~*?-]{1,256}$/;
@@ -73,17 +74,11 @@ function validatePattern(pattern: string): string {
 }
 
 async function hasBin(host: HostExecutor, bin: string): Promise<boolean> {
-  const r = await host.runCommand(['bash', '-c', `command -v ${bin} 2>/dev/null || true`], {
-    timeoutMs: 5_000 });
-  return r.stdout.trim().length > 0;
+  return binPresent(host, bin);
 }
 
 async function unitActive(host: HostExecutor, unit: string): Promise<string> {
-  if (!host.pathExists('/bin/systemctl') && !host.pathExists('/usr/bin/systemctl')) {
-    return 'unknown';
-  }
-  const r = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });
-  return (r.stdout || r.stderr || 'unknown').trim().split('\n')[0] || 'unknown';
+  return (await unitIsActive(host, unit)) ?? 'unknown';
 }
 
 async function redisCli(
@@ -95,10 +90,13 @@ async function redisCli(
 }
 
 export async function probeRedisService(host: HostExecutor): Promise<RedisServiceStatus> {
-  const clientInstalled = await hasBin(host, 'redis-cli');
-  const serverInstalled =
-    (await hasBin(host, 'redis-server')) || (await hasBin(host, 'redis-server'));
-  let active = await unitActive(host, 'redis-server');
+  const probe = new HostSoftwareProbe(host);
+  const server = await probe.presence('redis-server');
+  const client = await probe.presence('redis-tools');
+  const clientInstalled = client.installed || (await hasBin(host, 'redis-cli'));
+  const serverInstalled = server.installed;
+  let active =
+    server.units?.[0]?.active ?? (await unitActive(host, 'redis-server'));
   if (active !== 'active') {
     const alt = await unitActive(host, 'redis');
     if (alt === 'active') active = alt;

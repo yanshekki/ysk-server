@@ -10,6 +10,7 @@ import { planLetsEncrypt, renderNginxProxy } from './nginx-ssl.js';
 import { renderPhpVhost, selectPhpRuntime } from './runtime.js';
 import { planFirewall } from './extras.js';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { HostSoftwareProbe } from './software-probe/index.js';
 
 export type BlockReason =
   | 'no_execute'
@@ -518,14 +519,7 @@ export async function probeFirewallStatus(host: HostExecutor): Promise<{
   executeEnabled: boolean;
   isRoot: boolean;
 }> {
-  const installed =
-    host.pathExists('/usr/sbin/ufw') ||
-    host.pathExists('/usr/bin/ufw') ||
-    (await host
-      .runCommand(['bash', '-c', 'command -v ufw >/dev/null && echo yes || echo no'], {
-        timeoutMs: 3_000 })
-      .then((r) => (r.stdout || '').trim() === 'yes')
-      .catch(() => false));
+  const installed = (await new HostSoftwareProbe(host).presence('ufw')).installed;
 
   let active = 'unknown';
   let statusText = '';
@@ -577,19 +571,16 @@ export async function probeFail2banStatus(host: HostExecutor): Promise<{
   defaultJails: string[];
 }> {
   const defaultJails = planFirewall({}).fail2banJails;
-  const installed =
-    host.pathExists('/usr/bin/fail2ban-client') ||
-    (await host
-      .runCommand(['bash', '-c', 'command -v fail2ban-client >/dev/null && echo yes || echo no'], {
-        timeoutMs: 3_000 })
-      .then((r) => (r.stdout || '').trim() === 'yes')
-      .catch(() => false));
+  const f2b = await new HostSoftwareProbe(host).presence('fail2ban');
+  const installed = f2b.installed;
 
-  let active = 'unknown';
-  let enabled = 'unknown';
+  let active = f2b.units?.[0]?.active ?? 'unknown';
+  let enabled = f2b.units?.[0]?.enabled ?? 'unknown';
   try {
-    const a = await host.runCommand(['systemctl', 'is-active', 'fail2ban'], { timeoutMs: 4_000 });
-    active = (a.stdout || a.stderr || 'unknown').trim().split(/\s+/)[0] || 'unknown';
+    if (active === 'unknown' || !active) {
+      const a = await host.runCommand(['systemctl', 'is-active', 'fail2ban'], { timeoutMs: 4_000 });
+      active = (a.stdout || a.stderr || 'unknown').trim().split(/\s+/)[0] || 'unknown';
+    }
   } catch {
     active = installed ? 'unknown' : 'not-found';
   }

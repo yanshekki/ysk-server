@@ -12,6 +12,7 @@ import type { HostExecutor } from '../host/executor.js';
 import type { JsonStore } from '../db/store.js';
 import { panelBlockMessage, type ApplyResult, type BlockReason } from './system-apply.js';
 import { createResource, listResources, updateResource } from './managed-resources.js';
+import { HostSoftwareProbe, binPresent } from './software-probe/index.js';
 
 /**
  * crypt(3)-compatible hash for pam_userdb (crypt=crypt).
@@ -487,16 +488,18 @@ export async function probeFtpsStatus(input: {
 }): Promise<FtpsStatus> {
   const settings = loadFtpsSettings(input.db);
   const paths = ftpsPaths(input.dataDir);
-  const which = await input.host.runCommand(['bash', '-c', 'command -v vsftpd || true'], {
-    timeoutMs: 5_000 });
-  const installed = which.stdout.trim().length > 0;
-  let active = 'unknown';
-  if (input.host.pathExists('/bin/systemctl') || input.host.pathExists('/usr/bin/systemctl')) {
-    const r = await input.host.runCommand(['systemctl', 'is-active', 'vsftpd'], {
-      timeoutMs: 5_000 });
-    active = (r.stdout || r.stderr || `exit_${r.exitCode}`).trim().split('\n')[0] ?? 'unknown';
-  } else {
-    active = installed ? 'unknown' : 'not_installed';
+  const probe = new HostSoftwareProbe(input.host);
+  const vs = await probe.presence('vsftpd');
+  const installed = vs.installed;
+  let active = vs.units?.[0]?.active ?? 'unknown';
+  if (active === 'unknown' && installed) {
+    if (input.host.pathExists('/bin/systemctl') || input.host.pathExists('/usr/bin/systemctl')) {
+      const r = await input.host.runCommand(['systemctl', 'is-active', 'vsftpd'], {
+        timeoutMs: 5_000 });
+      active = (r.stdout || r.stderr || `exit_${r.exitCode}`).trim().split('\n')[0] ?? 'unknown';
+    }
+  } else if (!installed) {
+    active = 'not_installed';
   }
   const meta = input.db.snapshot.settings?.['ftps_last_applied_at'];
   return {

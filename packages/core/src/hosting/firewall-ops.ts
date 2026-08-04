@@ -6,6 +6,7 @@ import { tl } from '@ysk/shared';
 
 import type { HostExecutor } from '../host/executor.js';
 import { isValidIp, normalizeIp } from '../net/ip.js';
+import { HostSoftwareProbe } from './software-probe/index.js';
 
 export type UfwRule = {
   num?: number;
@@ -85,14 +86,7 @@ export function extractDenyFromIps(rules: UfwRule[]): string[] {
 
 export async function probeFirewallDeep(host: HostExecutor): Promise<FirewallDeepStatus> {
   const notes: string[] = [];
-  const installed =
-    host.pathExists('/usr/sbin/ufw') ||
-    host.pathExists('/usr/bin/ufw') ||
-    (await host
-      .runCommand(['bash', '-c', 'command -v ufw >/dev/null && echo yes || echo no'], {
-        timeoutMs: 3_000 })
-      .then((r) => (r.stdout || '').trim() === 'yes')
-      .catch(() => false));
+  const installed = (await new HostSoftwareProbe(host).presence('ufw')).installed;
 
   let active = 'unknown';
   let statusText = '';

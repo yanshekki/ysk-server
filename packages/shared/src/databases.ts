@@ -48,6 +48,8 @@ export interface DbEngineStatusDto {
   canProvision: boolean;
   canInstall: boolean;
   blockMessage?: string;
+  /** Other exclusive engine installed on host (e.g. mariadb-server) */
+  blockedByExclusive?: string;
 }
 
 export type DbEngineStatus = DbEngineStatusDto;

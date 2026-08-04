@@ -410,7 +410,25 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <div className="lifecycle-toolbar u-mt-3">
             {!installed ? (
               <p className="muted u-text-sm u-mb-0">
-                {t('db.installBannerHint', { engine: title })}
+                {svc?.blockedByExclusive === 'mariadb-server' ? (
+                  <>
+                    {t('db.exclusiveMariaHint', {
+                      defaultValue:
+                        'This host runs MariaDB (not Oracle MySQL). Open the MariaDB page to manage databases.',
+                    })}{' '}
+                    <Link to="/databases/mariadb">{t('db.openMaria', { defaultValue: 'MariaDB' })}</Link>
+                  </>
+                ) : svc?.blockedByExclusive === 'mysql-server' ? (
+                  <>
+                    {t('db.exclusiveMysqlHint', {
+                      defaultValue:
+                        'This host runs Oracle MySQL (not MariaDB). Open the MySQL page to manage databases.',
+                    })}{' '}
+                    <Link to="/databases/mysql">{t('db.openMysql', { defaultValue: 'MySQL' })}</Link>
+                  </>
+                ) : (
+                  t('db.installBannerHint', { engine: title })
+                )}
               </p>
             ) : !running ? (
               <Button variant="primary" size="md" loading={busy} onClick={onStart}>
