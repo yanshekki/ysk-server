@@ -23,8 +23,9 @@ export function LoginPage() {
   const from = fromState || fromQuery || '/';
   const sessionExpired = searchParams.get('reason') === 'session';
 
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  // Never pre-fill credentials — empty fields for production login.
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [totp, setTotp] = useState('');
   const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);

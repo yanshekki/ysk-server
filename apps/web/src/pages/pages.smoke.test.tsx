@@ -52,8 +52,12 @@ describe('page smoke tests (honesty fixtures)', () => {
       },
     ]);
     renderPage('/login', <LoginPage />);
-    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    const userInput = screen.getByLabelText(/username/i);
+    const passInput = screen.getByLabelText(/password/i);
+    expect(userInput).toHaveValue('');
+    expect(passInput).toHaveValue('');
+    await user.type(userInput, 'admin');
+    await user.type(passInput, 'wrong');
     await user.click(screen.getByRole('button', { name: /sign in|login|log in|submit/i }));
     await waitFor(() => {
       expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
