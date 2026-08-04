@@ -16,7 +16,7 @@
   "mysql": "MySQL",
   "mysqlService": "MySQL 服務",
   "mariadb": "MariaDB",
-  "mariadbService": "Maria資料庫 服務",
+  "mariadbService": "MariaDB 服務",
   "postgres": "PostgreSQL",
   "postgresService": "PostgreSQL 服務",
   "redis": "Redis",

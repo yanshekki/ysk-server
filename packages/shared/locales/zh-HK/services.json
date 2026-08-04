@@ -14,7 +14,7 @@
   "logs": "日誌",
   "dbHa": "資料庫 HA",
   "clusterCount": "{{count}} 個叢集",
-  "mariadbCluster": "Maria資料庫 叢集",
+  "mariadbCluster": "MariaDB 叢集",
   "probing": "探測服務矩陣…",
   "lifecycleLocked": "生命週期操作已鎖定：需 管理員權限與系統變更權限。探測仍可用。見",
   "hostSettings": "主機設定",

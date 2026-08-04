@@ -129,10 +129,13 @@ export function SqlEngineSwitchDialog({
         {/* What will happen */}
         <section className="sesd__section">
           <h3 className="sesd__section-title">{t('sqlEngineSwitch.sectionImpact')}</h3>
-          <ol className="sesd__steps">
+          {/* ul + custom badges only — never <ol> markers (avoids 1. 1 double numbers) */}
+          <ul className="sesd__steps">
             {impactKeys.map((key, i) => (
               <li key={key} className="sesd__step">
-                <span className="sesd__step-num">{i + 1}</span>
+                <span className="sesd__step-num" aria-hidden>
+                  {i + 1}
+                </span>
                 <span className="sesd__step-text">
                   {t(`sqlEngineSwitch.warn.${key}`, {
                     from: fromLabel,
@@ -142,7 +145,7 @@ export function SqlEngineSwitchDialog({
                 </span>
               </li>
             ))}
-          </ol>
+          </ul>
         </section>
 
         {/* Databases */}

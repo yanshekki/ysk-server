@@ -29,7 +29,7 @@
   "exclusiveMysqlHint": "此主機目前運行為 Oracle MySQL，而非 MariaDB。請前往 MySQL 服務頁管理資料庫與服務；或於本頁按「一鍵安裝」確認互斥切換（須輸入 SWITCH，會遷移資料並卸載 MariaDB）。",
   "openMaria": "MariaDB",
   "openMysql": "MySQL",
-  "openMariaService": "Maria資料庫 服務",
+  "openMariaService": "MariaDB 服務",
   "openMysqlService": "MySQL 服務",
   "startService": "啟動服務",
   "openServiceConsole": "開啟服務控制台",
