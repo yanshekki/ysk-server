@@ -429,17 +429,19 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           ) : null}
           {installed && !running ? (
             <Alert variant="error">
-              <strong>{svc?.frozen ? t('db.frozenTitle') : t('db.serviceDownTitle')}</strong>
+              <strong>{t('db.serviceDownTitle')}</strong>
               <p className="u-mb-0 u-mt-2 u-text-sm">
-                {svc?.frozen
-                  ? t('db.frozenBody', {
-                      mode: svc.frozenMode || 'frozen',
-                      empty: svc.datadirEmpty ? t('common.yes') : t('common.no'),
-                    })
-                  : t('db.serviceDownBody', {
-                      empty: svc?.datadirEmpty ? t('common.yes') : t('common.no'),
-                    })}
+                {t('db.serviceDownBody', {
+                  empty: svc?.datadirEmpty ? t('common.yes') : t('common.no'),
+                })}
               </p>
+              {Array.isArray(svc?.healthFindings) && svc.healthFindings.length > 0 ? (
+                <ul className="list-plain u-mt-2 u-mb-0 u-text-sm">
+                  {svc.healthFindings.map((f) => (
+                    <li key={f.id}>{t(f.messageKey)}</li>
+                  ))}
+                </ul>
+              ) : null}
               <div className="u-mt-3 u-flex u-gap-2 u-flex-wrap">
                 <Button
                   variant="danger"

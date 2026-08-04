@@ -70,17 +70,35 @@ export async function probeDbEngine(
   let frozen = false;
   let frozenMode: string | undefined;
   let datadirEmpty: boolean | undefined;
+  // Mass-market health report (findings catalog — not only FROZEN)
+  let healthFindings: Array<{ id: string; severity: string; messageKey: string }> = [];
   if (server.installed && (engine === 'mysql' || engine === 'mariadb')) {
     try {
-      const { readMysqlFrozen, isMysqlDatadirEmptyOrUninitialized } = await import(
-        './sql-engine-switch/mysql-frozen.js'
-      );
-      const fr = await readMysqlFrozen(host);
-      frozen = fr.frozen;
-      frozenMode = fr.modeHint;
-      datadirEmpty = await isMysqlDatadirEmptyOrUninitialized(host);
+      const { diagnoseSqlEngine } = await import('./sql-engine-health/diagnose.js');
+      const health = await diagnoseSqlEngine(host, engine);
+      frozen = health.frozen;
+      frozenMode = health.frozenMode;
+      datadirEmpty = health.datadirUninitialized;
+      if (health.active && health.active !== 'not_installed') {
+        active = health.active;
+      }
+      healthFindings = health.findings.map((f) => ({
+        id: f.id,
+        severity: f.severity,
+        messageKey: f.messageKey,
+      }));
     } catch {
-      /* optional */
+      try {
+        const { readMysqlFrozen, isMysqlDatadirEmptyOrUninitialized } = await import(
+          './sql-engine-switch/mysql-frozen.js'
+        );
+        const fr = await readMysqlFrozen(host);
+        frozen = fr.frozen;
+        frozenMode = fr.modeHint;
+        datadirEmpty = await isMysqlDatadirEmptyOrUninitialized(host);
+      } catch {
+        /* optional */
+      }
     }
   }
 
@@ -120,6 +138,10 @@ export async function probeDbEngine(
     frozen,
     frozenMode,
     datadirEmpty,
+    /** Generic findings for UI (sqlEngineHealth.finding.*) */
+    healthFindings,
+  } as DbEngineStatus & {
+    healthFindings?: Array<{ id: string; severity: string; messageKey: string }>;
   };
 }
 

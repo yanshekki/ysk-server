@@ -55,6 +55,8 @@ export interface DbEngineStatusDto {
   frozenMode?: string;
   /** Data dir looks empty / no system tables — safe to re-init after unfreeze */
   datadirEmpty?: boolean;
+  /** Generic health findings (sqlEngineHealth.finding.*) for mass-market repair UI */
+  healthFindings?: Array<{ id: string; severity: string; messageKey: string }>;
 }
 
 export type DbEngineStatus = DbEngineStatusDto;

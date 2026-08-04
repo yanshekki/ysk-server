@@ -2292,16 +2292,16 @@
     "dbNameHintPg": "小写英数与底线；创建后请再应用到系统",
     "deleteNotePg": "删除登记不会自动 DROP 服务器上的庫；应用成功才代表主机已执行 DDL。",
     "tabDatabasesSimple": "数据库 ({{count}})",
-    "frozenTitle": "检测到 MySQL 冻结状态",
-    "frozenBody": "系统处于 FROZEN（模式：{{mode}}），不是软件包未安装。守护进程被禁止启动。数据目录是否为空（可安全重新初始化）：{{empty}}。请按「解除冻结并修复」确认处理。",
-    "unfreezeBtn": "解除冻结并修复",
-    "unfreezeConfirmTitle": "确认解除 {{engine}} 冻结？",
-    "unfreezeConfirmDesc": "将执行：停止服务 → 删除 /etc/mysql/FROZEN → 若数据目录为空则重新初始化 → 再启动服务。数据目录是否为空：{{empty}}。若目录内有重要数据，请先备份再继续。",
-    "unfreezeConfirmBtn": "确认解除冻结",
-    "unfreezeOk": "{{engine}} 已解除冻结并启动",
-    "startAfterUnfreeze": "启动服务（会尝试自动修复冻结）",
+    "frozenTitle": "数据库服务需要修复",
+    "frozenBody": "已检测到问题（模式／冻结：{{mode}}；数据目录为空：{{empty}}）。系统会按健康检查结果生成修复计划，而不是只针对单一错误硬编码。",
+    "unfreezeBtn": "检查并修复服务",
+    "unfreezeConfirmTitle": "确认修复 {{engine}}？",
+    "unfreezeConfirmDesc": "将按诊断结果执行通用修复计划（停止服务、清除冻结、清理错误引擎配置、空白目录初始化、再启动）。数据目录是否为空：{{empty}}。若有重要数据请先备份。",
+    "unfreezeConfirmBtn": "确认修复",
+    "unfreezeOk": "{{engine}} 修复完成",
+    "startAfterUnfreeze": "启动服务（失败时会自动套用修复计划）",
     "serviceDownTitle": "数据库服务未运行",
-    "serviceDownBody": "服务状态异常。可能是 FROZEN、空白数据目录或配置错误。数据目录是否为空：{{empty}}。请按「解除冻结并修复」确认处理（会停止服务、清除冻结标记，空白目录会重新初始化）。"
+    "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。"
   },
   "dialogs": {
     "confirmDefault": "确认",
@@ -8426,6 +8426,37 @@
     "installIncomplete": "安装未完成",
     "installedOne": "已安装 {{name}}",
     "allInstalled": "所需软件已安装"
+  },
+  "sqlEngineHealth": {
+    "finding": {
+      "package_missing": "尚未安装 {{flavor}} 服务器软件包。",
+      "client_missing": "尚未安装 SQL 客户端工具。",
+      "frozen_marker": "存在 Debian 冻结标记（模式：{{mode}}）。解除前守护进程无法启动。",
+      "datadir_uninitialized": "数据目录没有系统目录，需要初始化。",
+      "config_flavor_mismatch": "my.cnf 指向与 {{flavor}} 不符的引擎（{{path}}）。",
+      "residual_foreign_plugins": "另一引擎的残留配置或插件可能导致本守护进程崩溃。",
+      "unit_failed": "服务单元 {{unit}} 状态为 failed。",
+      "unit_not_active": "服务单元 {{unit}} 状态为 {{active}}（未运行）。",
+      "port_conflict": "本引擎未运行但 3306 端口已被占用（可能冲突）。"
+    },
+    "action": {
+      "stop_unit": "停止服务单元",
+      "clear_frozen": "清除冻结标记",
+      "sanitize_config": "对齐 my.cnf 并停用外来引擎插件",
+      "init_datadir": "初始化空白数据目录",
+      "reset_failed": "重置失败的服务状态",
+      "enable_unit": "设置开机启动",
+      "start_unit": "启动服务",
+      "verify_active": "确认服务已运行"
+    },
+    "note": {
+      "alreadyHealthy": "SQL 引擎状态正常，无需修复。",
+      "needsConfirm": "修复需要确认（共 {{count}} 步：{{findings}}）。",
+      "installPackageFirst": "请先安装 {{flavor}} 服务器软件包，再执行修复。",
+      "stepFailed": "修复步骤 {{action}} 失败：{{detail}}",
+      "repairOk": "修复完成 — {{unit}} 已运行。",
+      "repairIncomplete": "修复已执行，但服务状态仍为 {{active}}。"
+    }
   },
   "sqlEngineSwitch": {
     "title": "切换至 {{target}}",

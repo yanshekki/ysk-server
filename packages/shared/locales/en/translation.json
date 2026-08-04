@@ -2292,16 +2292,16 @@
     "dbNameHintPg": "Lowercase alnum and underscore; apply after create",
     "deleteNotePg": "Deleting registration does not DROP the server DB; apply success means DDL ran on host.",
     "tabDatabasesSimple": "Databases ({{count}})",
-    "frozenTitle": "MySQL frozen state detected",
-    "frozenBody": "The host is FROZEN (mode: {{mode}}) — not a missing package. The daemon is blocked from starting. Datadir empty (safe to re-init): {{empty}}. Click “Unfreeze and repair” to confirm.",
-    "unfreezeBtn": "Unfreeze and repair",
-    "unfreezeConfirmTitle": "Unfreeze {{engine}}?",
-    "unfreezeConfirmDesc": "Will: stop service → remove /etc/mysql/FROZEN → re-initialize if datadir is empty → start service. Datadir empty: {{empty}}. Back up first if the directory holds important data.",
-    "unfreezeConfirmBtn": "Confirm unfreeze",
-    "unfreezeOk": "{{engine}} unfrozen and started",
-    "startAfterUnfreeze": "Start service (auto-repair freeze if needed)",
+    "frozenTitle": "Database service needs repair",
+    "frozenBody": "Issues detected (freeze mode: {{mode}}; empty datadir: {{empty}}). Repair follows a health checklist, not a single hard-coded fix.",
+    "unfreezeBtn": "Diagnose and repair",
+    "unfreezeConfirmTitle": "Repair {{engine}}?",
+    "unfreezeConfirmDesc": "Runs a generic repair plan from diagnostics (stop, clear freeze, sanitize config, init empty datadir, start). Empty datadir: {{empty}}. Back up important data first.",
+    "unfreezeConfirmBtn": "Confirm repair",
+    "unfreezeOk": "{{engine}} repair complete",
+    "startAfterUnfreeze": "Start service (auto-runs repair plan on failure)",
     "serviceDownTitle": "Database service is down",
-    "serviceDownBody": "Service is not running. Possible FROZEN marker, empty datadir, or config error. Datadir empty: {{empty}}. Click “Unfreeze and repair” to confirm (stop → clear freeze → re-init if empty → start)."
+    "serviceDownBody": "Service is unhealthy. The panel diagnoses common causes (freeze, residual config, empty datadir, port conflict). Empty datadir: {{empty}}. Click “Diagnose and repair” to confirm."
   },
   "dialogs": {
     "confirmDefault": "Confirm",
@@ -8426,6 +8426,37 @@
     "installIncomplete": "Install incomplete",
     "installedOne": "Installed {{name}}",
     "allInstalled": "Required software installed"
+  },
+  "sqlEngineHealth": {
+    "finding": {
+      "package_missing": "Server package for {{flavor}} is not installed.",
+      "client_missing": "SQL client tools are not installed.",
+      "frozen_marker": "Debian freeze marker present (mode: {{mode}}). Daemon start is blocked until released.",
+      "datadir_uninitialized": "Data directory has no system catalog — needs initialization.",
+      "config_flavor_mismatch": "my.cnf points at the wrong engine for {{flavor}} ({{path}}).",
+      "residual_foreign_plugins": "Residual config/plugins from the other SQL engine can crash this daemon.",
+      "unit_failed": "Service unit {{unit}} is failed.",
+      "unit_not_active": "Service unit {{unit}} is {{active}} (not active).",
+      "port_conflict": "Port 3306 is in use while this engine is down (possible conflict)."
+    },
+    "action": {
+      "stop_unit": "Stop service unit",
+      "clear_frozen": "Clear freeze marker",
+      "sanitize_config": "Align my.cnf and disable foreign engine plugins",
+      "init_datadir": "Initialize empty data directory",
+      "reset_failed": "Reset failed unit state",
+      "enable_unit": "Enable service at boot",
+      "start_unit": "Start service",
+      "verify_active": "Verify service is active"
+    },
+    "note": {
+      "alreadyHealthy": "SQL engine already healthy — no repair needed.",
+      "needsConfirm": "Repair needs confirmation ({{count}} steps: {{findings}}).",
+      "installPackageFirst": "Install {{flavor}} server package first, then repair.",
+      "stepFailed": "Repair step {{action}} failed: {{detail}}",
+      "repairOk": "Repair complete — {{unit}} is active.",
+      "repairIncomplete": "Repair finished but unit is still {{active}}."
+    }
   },
   "sqlEngineSwitch": {
     "title": "Switch to {{target}}",

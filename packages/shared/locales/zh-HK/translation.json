@@ -2292,16 +2292,16 @@
     "dbNameHintPg": "小寫英數與底線；建立後請再套用到系統",
     "deleteNotePg": "刪除登記不會自動 刪除 伺服器上的庫；套用成功才代表主機已執行 資料定義。",
     "tabDatabasesSimple": "資料庫 ({{count}})",
-    "frozenTitle": "偵測到 MySQL 凍結狀態",
-    "frozenBody": "系統處於 FROZEN（模式：{{mode}}），不是套件未安裝。守護行程被禁止啟動。資料目錄是否為空（可安全重新初始化）：{{empty}}。請按「解除凍結並修復」確認處理。",
-    "unfreezeBtn": "解除凍結並修復",
-    "unfreezeConfirmTitle": "確認解除 {{engine}} 凍結？",
-    "unfreezeConfirmDesc": "將執行：停止服務 → 刪除 /etc/mysql/FROZEN → 若資料目錄為空則重新初始化 → 再啟動服務。資料目錄是否為空：{{empty}}。若目錄內有重要資料，請先備份再繼續。",
-    "unfreezeConfirmBtn": "確認解除凍結",
-    "unfreezeOk": "{{engine}} 已解除凍結並啟動",
-    "startAfterUnfreeze": "啟動服務（會嘗試自動修復凍結）",
+    "frozenTitle": "資料庫服務需要修復",
+    "frozenBody": "已偵測到問題（模式／凍結：{{mode}}；資料目錄為空：{{empty}}）。系統會按健康檢查結果產生修復計劃，不會只針對單一錯誤硬編碼。",
+    "unfreezeBtn": "檢查並修復服務",
+    "unfreezeConfirmTitle": "確認修復 {{engine}}？",
+    "unfreezeConfirmDesc": "將按診斷結果執行通用修復計劃（停止服務、清除凍結、清理錯誤引擎設定、空白目錄初始化、再啟動）。資料目錄是否為空：{{empty}}。若有重要資料請先備份。",
+    "unfreezeConfirmBtn": "確認修復",
+    "unfreezeOk": "{{engine}} 修復完成",
+    "startAfterUnfreeze": "啟動服務（失敗時會自動套用修復計劃）",
     "serviceDownTitle": "資料庫服務未運作",
-    "serviceDownBody": "服務狀態異常。可能是 FROZEN、空白資料目錄或設定錯誤。資料目錄是否為空：{{empty}}。請按「解除凍結並修復」確認處理（會停止服務、清除凍結標記，空白目錄會重新初始化）。"
+    "serviceDownBody": "服務異常。面板會診斷常見原因（凍結、設定殘留、空白資料目錄、埠衝突等）。資料目錄為空：{{empty}}。請按「檢查並修復服務」確認執行。"
   },
   "dialogs": {
     "confirmDefault": "確認",
@@ -8426,6 +8426,37 @@
     "installIncomplete": "安裝未完成",
     "installedOne": "已安裝 {{name}}",
     "allInstalled": "所需軟件已安裝"
+  },
+  "sqlEngineHealth": {
+    "finding": {
+      "package_missing": "尚未安裝 {{flavor}} 伺服器套件。",
+      "client_missing": "尚未安裝 SQL 客戶端工具。",
+      "frozen_marker": "存在 Debian 凍結標記（模式：{{mode}}）。解除前守護行程無法啟動。",
+      "datadir_uninitialized": "資料目錄沒有系統目錄，需要初始化。",
+      "config_flavor_mismatch": "my.cnf 指向與 {{flavor}} 不符的引擎（{{path}}）。",
+      "residual_foreign_plugins": "另一引擎的殘留設定或外掛可能令本守護行程崩潰。",
+      "unit_failed": "服務單元 {{unit}} 狀態為 failed。",
+      "unit_not_active": "服務單元 {{unit}} 狀態為 {{active}}（非運作中）。",
+      "port_conflict": "本引擎未運作但 3306 埠已被佔用（可能衝突）。"
+    },
+    "action": {
+      "stop_unit": "停止服務單元",
+      "clear_frozen": "清除凍結標記",
+      "sanitize_config": "對齊 my.cnf 並停用外來引擎外掛",
+      "init_datadir": "初始化空白資料目錄",
+      "reset_failed": "重設失敗的服務狀態",
+      "enable_unit": "設定開機啟動",
+      "start_unit": "啟動服務",
+      "verify_active": "確認服務已運作"
+    },
+    "note": {
+      "alreadyHealthy": "SQL 引擎狀態正常，無須修復。",
+      "needsConfirm": "修復需要確認（共 {{count}} 步：{{findings}}）。",
+      "installPackageFirst": "請先安裝 {{flavor}} 伺服器套件，再執行修復。",
+      "stepFailed": "修復步驟 {{action}} 失敗：{{detail}}",
+      "repairOk": "修復完成 — {{unit}} 已運作。",
+      "repairIncomplete": "修復已執行，但服務狀態仍為 {{active}}。"
+    }
   },
   "sqlEngineSwitch": {
     "title": "切換至 {{target}}",

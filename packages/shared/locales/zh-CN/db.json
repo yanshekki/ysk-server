@@ -267,14 +267,14 @@
   "dbNameHintPg": "小写英数与底线；创建后请再应用到系统",
   "deleteNotePg": "删除登记不会自动 DROP 服务器上的庫；应用成功才代表主机已执行 DDL。",
   "tabDatabasesSimple": "数据库 ({{count}})",
-  "frozenTitle": "检测到 MySQL 冻结状态",
-  "frozenBody": "系统处于 FROZEN（模式：{{mode}}），不是软件包未安装。守护进程被禁止启动。数据目录是否为空（可安全重新初始化）：{{empty}}。请按「解除冻结并修复」确认处理。",
-  "unfreezeBtn": "解除冻结并修复",
-  "unfreezeConfirmTitle": "确认解除 {{engine}} 冻结？",
-  "unfreezeConfirmDesc": "将执行：停止服务 → 删除 /etc/mysql/FROZEN → 若数据目录为空则重新初始化 → 再启动服务。数据目录是否为空：{{empty}}。若目录内有重要数据，请先备份再继续。",
-  "unfreezeConfirmBtn": "确认解除冻结",
-  "unfreezeOk": "{{engine}} 已解除冻结并启动",
-  "startAfterUnfreeze": "启动服务（会尝试自动修复冻结）",
+  "frozenTitle": "数据库服务需要修复",
+  "frozenBody": "已检测到问题（模式／冻结：{{mode}}；数据目录为空：{{empty}}）。系统会按健康检查结果生成修复计划，而不是只针对单一错误硬编码。",
+  "unfreezeBtn": "检查并修复服务",
+  "unfreezeConfirmTitle": "确认修复 {{engine}}？",
+  "unfreezeConfirmDesc": "将按诊断结果执行通用修复计划（停止服务、清除冻结、清理错误引擎配置、空白目录初始化、再启动）。数据目录是否为空：{{empty}}。若有重要数据请先备份。",
+  "unfreezeConfirmBtn": "确认修复",
+  "unfreezeOk": "{{engine}} 修复完成",
+  "startAfterUnfreeze": "启动服务（失败时会自动套用修复计划）",
   "serviceDownTitle": "数据库服务未运行",
-  "serviceDownBody": "服务状态异常。可能是 FROZEN、空白数据目录或配置错误。数据目录是否为空：{{empty}}。请按「解除冻结并修复」确认处理（会停止服务、清除冻结标记，空白目录会重新初始化）。"
+  "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。"
 }

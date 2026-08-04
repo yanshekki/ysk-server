@@ -267,14 +267,14 @@
   "dbNameHintPg": "小寫英數與底線；建立後請再套用到系統",
   "deleteNotePg": "刪除登記不會自動 刪除 伺服器上的庫；套用成功才代表主機已執行 資料定義。",
   "tabDatabasesSimple": "資料庫 ({{count}})",
-  "frozenTitle": "偵測到 MySQL 凍結狀態",
-  "frozenBody": "系統處於 FROZEN（模式：{{mode}}），不是套件未安裝。守護行程被禁止啟動。資料目錄是否為空（可安全重新初始化）：{{empty}}。請按「解除凍結並修復」確認處理。",
-  "unfreezeBtn": "解除凍結並修復",
-  "unfreezeConfirmTitle": "確認解除 {{engine}} 凍結？",
-  "unfreezeConfirmDesc": "將執行：停止服務 → 刪除 /etc/mysql/FROZEN → 若資料目錄為空則重新初始化 → 再啟動服務。資料目錄是否為空：{{empty}}。若目錄內有重要資料，請先備份再繼續。",
-  "unfreezeConfirmBtn": "確認解除凍結",
-  "unfreezeOk": "{{engine}} 已解除凍結並啟動",
-  "startAfterUnfreeze": "啟動服務（會嘗試自動修復凍結）",
+  "frozenTitle": "資料庫服務需要修復",
+  "frozenBody": "已偵測到問題（模式／凍結：{{mode}}；資料目錄為空：{{empty}}）。系統會按健康檢查結果產生修復計劃，不會只針對單一錯誤硬編碼。",
+  "unfreezeBtn": "檢查並修復服務",
+  "unfreezeConfirmTitle": "確認修復 {{engine}}？",
+  "unfreezeConfirmDesc": "將按診斷結果執行通用修復計劃（停止服務、清除凍結、清理錯誤引擎設定、空白目錄初始化、再啟動）。資料目錄是否為空：{{empty}}。若有重要資料請先備份。",
+  "unfreezeConfirmBtn": "確認修復",
+  "unfreezeOk": "{{engine}} 修復完成",
+  "startAfterUnfreeze": "啟動服務（失敗時會自動套用修復計劃）",
   "serviceDownTitle": "資料庫服務未運作",
-  "serviceDownBody": "服務狀態異常。可能是 FROZEN、空白資料目錄或設定錯誤。資料目錄是否為空：{{empty}}。請按「解除凍結並修復」確認處理（會停止服務、清除凍結標記，空白目錄會重新初始化）。"
+  "serviceDownBody": "服務異常。面板會診斷常見原因（凍結、設定殘留、空白資料目錄、埠衝突等）。資料目錄為空：{{empty}}。請按「檢查並修復服務」確認執行。"
 }

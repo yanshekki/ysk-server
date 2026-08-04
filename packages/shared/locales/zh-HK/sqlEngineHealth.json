@@ -1,0 +1,31 @@
+{
+  "finding": {
+    "package_missing": "尚未安裝 {{flavor}} 伺服器套件。",
+    "client_missing": "尚未安裝 SQL 客戶端工具。",
+    "frozen_marker": "存在 Debian 凍結標記（模式：{{mode}}）。解除前守護行程無法啟動。",
+    "datadir_uninitialized": "資料目錄沒有系統目錄，需要初始化。",
+    "config_flavor_mismatch": "my.cnf 指向與 {{flavor}} 不符的引擎（{{path}}）。",
+    "residual_foreign_plugins": "另一引擎的殘留設定或外掛可能令本守護行程崩潰。",
+    "unit_failed": "服務單元 {{unit}} 狀態為 failed。",
+    "unit_not_active": "服務單元 {{unit}} 狀態為 {{active}}（非運作中）。",
+    "port_conflict": "本引擎未運作但 3306 埠已被佔用（可能衝突）。"
+  },
+  "action": {
+    "stop_unit": "停止服務單元",
+    "clear_frozen": "清除凍結標記",
+    "sanitize_config": "對齊 my.cnf 並停用外來引擎外掛",
+    "init_datadir": "初始化空白資料目錄",
+    "reset_failed": "重設失敗的服務狀態",
+    "enable_unit": "設定開機啟動",
+    "start_unit": "啟動服務",
+    "verify_active": "確認服務已運作"
+  },
+  "note": {
+    "alreadyHealthy": "SQL 引擎狀態正常，無須修復。",
+    "needsConfirm": "修復需要確認（共 {{count}} 步：{{findings}}）。",
+    "installPackageFirst": "請先安裝 {{flavor}} 伺服器套件，再執行修復。",
+    "stepFailed": "修復步驟 {{action}} 失敗：{{detail}}",
+    "repairOk": "修復完成 — {{unit}} 已運作。",
+    "repairIncomplete": "修復已執行，但服務狀態仍為 {{active}}。"
+  }
+}
