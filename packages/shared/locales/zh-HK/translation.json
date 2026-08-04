@@ -8953,6 +8953,35 @@
       "root_auth": "切換後可能要重新設定 root 嘅 unix_socket／密碼認證。",
       "no_user_dbs": "未偵測到用戶資料庫 — 只會更換引擎軟件包。",
       "has_user_dbs": "會導出並匯入 {{count}} 個用戶資料庫。"
+    },
+    "note": {
+      "needsSwitch": "此主機已運行 {{other}}。MySQL 與 MariaDB 互斥 — 請確認切換（導出 → 卸載對方 → 安裝 → 匯入）。",
+      "invalidTarget": "無效目標（只可 mysql 或 mariadb）。",
+      "badConfirmPhrase": "確認字必須為 SWITCH。",
+      "needAck": "必須勾選同意互斥切換（MySQL 與 MariaDB 二揀一）。",
+      "switchNotNeeded": "唔使切換 — 請用普通安裝。",
+      "migrateDataRequired": "有用戶資料庫時必須開啟資料遷移。",
+      "dumpFailed": "導出失敗 — 來源引擎 {{source}} 仍在運行。{{detail}}",
+      "datadirBackupFailed": "資料目錄備份失敗 — 已喺卸載前中止。請嘗試手動啟動來源服務。",
+      "waitFailed": "目標服務未就緒。備份：{{dumpPath}}。舊資料目錄：{{datadir}}。需要人手處理。",
+      "incomplete": "切換未完成。導出保留喺 {{dumpPath}}，舊資料目錄喺 {{datadir}}。唔好盲目再 purge。",
+      "switched": "已由 {{from}} 切換到 {{to}}。已匯入 {{imported}}/{{total}} 個資料庫。",
+      "dumpPath": "邏輯導出：{{path}}",
+      "datadirBackup": "舊資料目錄備份：{{path}}（確認無誤後可刪除：rm -rf {{path}}）",
+      "grantsExported": "已導出權限（{{detail}}）"
+    },
+    "step": {
+      "dump": "導出 {{db}}",
+      "exportGrants": "導出權限",
+      "stop": "停止 {{unit}}",
+      "backupDatadir": "備份資料目錄",
+      "purge": "卸載 {{pkg}}",
+      "wait": "等待 {{unit}}",
+      "importDb": "匯入 {{db}}",
+      "importGrants": "匯入權限",
+      "verify": "校驗",
+      "preflight": "預檢",
+      "confirm": "確認"
     }
   },
   "stackWizard": {

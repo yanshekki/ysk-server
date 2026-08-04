@@ -4,6 +4,7 @@
 
 import { mkdirSync, writeFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { tl } from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { panelBlockMessage } from '../system-apply.js';
 import { installSoftware } from '../software-install.js';
@@ -22,6 +23,7 @@ import {
   type SqlSwitchResult,
   type SqlSwitchStep,
   type SqlSwitchTarget,
+  type SqlSwitchWarningKey,
 } from './types.js';
 
 /** In-process only — installSoftware refuses exclusive without this flag set by switch. */
@@ -29,6 +31,25 @@ export const EXCLUSIVE_SWITCH_AUTH = { __yskSqlEngineSwitch: true as const };
 
 function stamp(): string {
   return new Date().toISOString().replace(/[:.]/g, '-');
+}
+
+function flavorLabel(f: string): string {
+  if (f === 'mysql') return 'MySQL';
+  if (f === 'mariadb') return 'MariaDB';
+  return f;
+}
+
+/** Operator notes from warning keys (request locale via tl). */
+function notesFromWarningKeys(
+  keys: SqlSwitchWarningKey[] | undefined,
+  from: string,
+  to: string,
+  dbCount: number,
+): string[] {
+  if (!keys?.length) return [];
+  return keys.slice(0, 6).map((k) =>
+    tl(`sqlEngineSwitch.warn.${k}`, { from: flavorLabel(from), to: flavorLabel(to), count: dbCount }),
+  );
 }
 
 async function dumpOneDatabase(
@@ -82,8 +103,8 @@ export async function switchSqlEngine(input: {
       ok: false,
       executed: false,
       code: 'needs_confirm',
-      notes: ['invalid target'],
-      steps: [{ name: 'preflight', status: 'failed', detail: 'invalid target' }],
+      notes: [tl('sqlEngineSwitch.note.invalidTarget')],
+      steps: [{ name: tl('sqlEngineSwitch.step.preflight'), status: 'failed', detail: 'invalid target' }],
     };
   }
 
@@ -92,8 +113,8 @@ export async function switchSqlEngine(input: {
       ok: false,
       executed: false,
       code: 'needs_confirm',
-      notes: [`confirmPhrase must be exactly "${SQL_SWITCH_CONFIRM_PHRASE}"`],
-      steps: [{ name: 'confirm', status: 'failed', detail: 'bad confirmPhrase' }],
+      notes: [tl('sqlEngineSwitch.note.badConfirmPhrase')],
+      steps: [{ name: tl('sqlEngineSwitch.step.confirm'), status: 'failed', detail: 'bad confirmPhrase' }],
       target,
     };
   }
@@ -102,8 +123,8 @@ export async function switchSqlEngine(input: {
       ok: false,
       executed: false,
       code: 'needs_confirm',
-      notes: ['acknowledgeExclusive must be true — MySQL and MariaDB are exclusive'],
-      steps: [{ name: 'confirm', status: 'failed', detail: 'acknowledgeExclusive required' }],
+      notes: [tl('sqlEngineSwitch.note.needAck')],
+      steps: [{ name: tl('sqlEngineSwitch.step.confirm'), status: 'failed', detail: 'acknowledgeExclusive required' }],
       target,
     };
   }
@@ -135,8 +156,8 @@ export async function switchSqlEngine(input: {
     return {
       ok: false,
       executed: false,
-      notes: [preview.blockReason ?? 'switch not needed — use normal install'],
-      steps: [{ name: 'preflight', status: 'failed', detail: preview.blockReason }],
+      notes: [tl('sqlEngineSwitch.note.switchNotNeeded')],
+      steps: [{ name: tl('sqlEngineSwitch.step.preflight'), status: 'failed', detail: preview.blockReason }],
       currentFlavor: preview.currentFlavor,
       target,
     };
@@ -147,8 +168,8 @@ export async function switchSqlEngine(input: {
       executed: false,
       blocked: true,
       blockMessage: preview.blockReason,
-      notes: [preview.blockReason ?? 'cannot proceed'],
-      steps: [{ name: 'preflight', status: 'blocked', detail: preview.blockReason }],
+      notes: [preview.blockReason ?? tl('sqlEngineSwitch.note.switchNotNeeded')],
+      steps: [{ name: tl('sqlEngineSwitch.step.preflight'), status: 'blocked', detail: preview.blockReason }],
       currentFlavor: preview.currentFlavor,
       target,
     };
@@ -161,8 +182,8 @@ export async function switchSqlEngine(input: {
       ok: false,
       executed: false,
       code: 'needs_confirm',
-      notes: ['migrateData must be true when user databases exist'],
-      steps: [{ name: 'confirm', status: 'failed', detail: 'migrateData required' }],
+      notes: [tl('sqlEngineSwitch.note.migrateDataRequired')],
+      steps: [{ name: tl('sqlEngineSwitch.step.confirm'), status: 'failed', detail: 'migrateData required' }],
       currentFlavor: sourceFlavor,
       target,
     };
@@ -186,7 +207,14 @@ export async function switchSqlEngine(input: {
   );
 
   // —— Phase dump ——
-  notes.push(...preview.warnings.slice(0, 4));
+  notes.push(
+    ...notesFromWarningKeys(
+      preview.warningKeys,
+      sourceFlavor,
+      target,
+      preview.databases.length,
+    ),
+  );
   const dbs =
     preview.databases.length > 0
       ? preview.databases
@@ -197,12 +225,17 @@ export async function switchSqlEngine(input: {
       const out = join(dumpPath, `${db.name}.sql`);
       const d = await dumpOneDatabase(input.host, sourceFlavor, db.name, out, rootPassword);
       steps.push({
-        name: `dump ${db.name}`,
+        name: tl('sqlEngineSwitch.step.dump', { db: db.name }),
         status: d.ok ? 'ok' : 'failed',
         detail: d.detail,
       });
       if (!d.ok) {
-        notes.push(`Dump failed — source ${sourceFlavor} left running. ${d.detail}`);
+        notes.push(
+          tl('sqlEngineSwitch.note.dumpFailed', {
+            source: flavorLabel(sourceFlavor),
+            detail: d.detail,
+          }),
+        );
         return {
           ok: false,
           executed: true,
@@ -218,20 +251,24 @@ export async function switchSqlEngine(input: {
     const grants = await exportUserGrants(input.host, sourceFlavor, rootPassword);
     writeFileSync(join(dumpPath, 'grants.sql'), grants.sql);
     steps.push({
-      name: 'export grants',
+      name: tl('sqlEngineSwitch.step.exportGrants'),
       status: 'ok',
       detail: grants.notes.join('; '),
     });
     writeFileSync(join(dumpPath, 'databases.json'), JSON.stringify(dbs, null, 2));
   } else {
-    steps.push({ name: 'dump', status: 'skipped', detail: 'no user DBs / migrateData false' });
+    steps.push({
+      name: tl('sqlEngineSwitch.step.dump', { db: '—' }),
+      status: 'skipped',
+      detail: 'no user DBs / migrateData false',
+    });
   }
 
   // —— stop + backup datadir + purge ——
   const sUnit = sourceUnit(sourceFlavor);
   const sPkg = sourceServerId(sourceFlavor);
   await input.host.runCommand(['systemctl', 'stop', sUnit], { timeoutMs: 60_000 });
-  steps.push({ name: `stop ${sUnit}`, status: 'ok' });
+  steps.push({ name: tl('sqlEngineSwitch.step.stop', { unit: sUnit }), status: 'ok' });
 
   const datadirBackup = `/var/lib/mysql.ysk-pre-switch-${runStamp}`;
   const mv = await input.host.runCommand(
@@ -243,12 +280,12 @@ export async function switchSqlEngine(input: {
     { timeoutMs: 120_000 },
   );
   steps.push({
-    name: 'backup datadir',
+    name: tl('sqlEngineSwitch.step.backupDatadir'),
     status: mv.exitCode === 0 ? 'ok' : 'failed',
     detail: mv.exitCode === 0 ? datadirBackup : mv.stderr || mv.stdout,
   });
   if (mv.exitCode !== 0) {
-    notes.push('datadir backup failed — abort before purge; try start source unit manually');
+    notes.push(tl('sqlEngineSwitch.note.datadirBackupFailed'));
     await input.host.runCommand(['systemctl', 'start', sUnit], { timeoutMs: 60_000 });
     return {
       ok: false,
@@ -280,7 +317,7 @@ export async function switchSqlEngine(input: {
     { timeoutMs: 600_000 },
   );
   steps.push({
-    name: `purge ${sPkg}`,
+    name: tl('sqlEngineSwitch.step.purge', { pkg: sPkg }),
     status: purge.exitCode === 0 ? 'ok' : 'failed',
     detail: (purge.stdout || purge.stderr).slice(-400),
   });
@@ -302,14 +339,13 @@ export async function switchSqlEngine(input: {
 
   const wait = await waitUnitActive(input.host, tUnit, { timeoutMs: 120_000 });
   steps.push({
-    name: `wait ${tUnit}`,
+    name: tl('sqlEngineSwitch.step.wait', { unit: tUnit }),
     status: wait.ok ? 'ok' : 'failed',
     detail: wait.active,
   });
   if (!wait.ok) {
     notes.push(
-      ...wait.notes,
-      `Install may be partial. Dump: ${dumpPath}. Old datadir: ${datadirBackup}. Manual recovery required.`,
+      tl('sqlEngineSwitch.note.waitFailed', { dumpPath, datadir: datadirBackup }),
     );
     return {
       ok: false,
@@ -333,7 +369,11 @@ export async function switchSqlEngine(input: {
     for (const db of dbs) {
       const sqlFile = join(dumpPath, `${db.name}.sql`);
       if (!existsSync(sqlFile)) {
-        steps.push({ name: `import ${db.name}`, status: 'failed', detail: 'missing dump file' });
+        steps.push({
+          name: tl('sqlEngineSwitch.step.importDb', { db: db.name }),
+          status: 'failed',
+          detail: 'missing dump file',
+        });
         importHardFail = true;
         continue;
       }
@@ -349,7 +389,7 @@ export async function switchSqlEngine(input: {
       if (ok) imported++;
       else importHardFail = true;
       steps.push({
-        name: `import ${db.name}`,
+        name: tl('sqlEngineSwitch.step.importDb', { db: db.name }),
         status: ok ? 'ok' : 'failed',
         detail: ok ? undefined : (r.stderr || r.stdout).slice(0, 400),
       });
@@ -365,7 +405,7 @@ export async function switchSqlEngine(input: {
         { timeoutMs: 120_000 },
       );
       steps.push({
-        name: 'import grants',
+        name: tl('sqlEngineSwitch.step.importGrants'),
         status: g.exitCode === 0 ? 'ok' : 'skipped',
         detail: (g.stderr || g.stdout).slice(0, 200),
       });
@@ -381,7 +421,7 @@ export async function switchSqlEngine(input: {
   const verifyOk = missing.length === 0 && flavor === target && !importHardFail;
 
   steps.push({
-    name: 'verify',
+    name: tl('sqlEngineSwitch.step.verify'),
     status: verifyOk ? 'ok' : 'failed',
     detail: verifyOk
       ? `flavor=${flavor}; dbs=${after.map((d) => d.name).join(',')}`
@@ -390,7 +430,7 @@ export async function switchSqlEngine(input: {
 
   if (!verifyOk) {
     notes.push(
-      `Switch incomplete. Dump retained at ${dumpPath}. Old datadir at ${datadirBackup}. Do not re-purge blindly.`,
+      tl('sqlEngineSwitch.note.incomplete', { dumpPath, datadir: datadirBackup }),
     );
     return {
       ok: false,
@@ -406,9 +446,14 @@ export async function switchSqlEngine(input: {
   }
 
   notes.push(
-    `Switched ${sourceFlavor} → ${target}. Imported ${imported}/${dbs.length} database(s).`,
-    `Logical dump: ${dumpPath}`,
-    `Old datadir backup: ${datadirBackup} (remove manually when satisfied: rm -rf ${datadirBackup})`,
+    tl('sqlEngineSwitch.note.switched', {
+      from: flavorLabel(sourceFlavor),
+      to: flavorLabel(target),
+      imported,
+      total: dbs.length,
+    }),
+    tl('sqlEngineSwitch.note.dumpPath', { path: dumpPath }),
+    tl('sqlEngineSwitch.note.datadirBackup', { path: datadirBackup }),
   );
 
   return {

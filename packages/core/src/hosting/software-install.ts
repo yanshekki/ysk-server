@@ -133,7 +133,7 @@ export async function installSoftware(input: {
       const switchTarget = spec.id === 'mysql-server' ? 'mysql' : 'mariadb';
       const other =
         presence.blockedByExclusive === 'mariadb-server' ? 'MariaDB' : 'MySQL';
-      const msg = `Host already runs ${other}. MySQL and MariaDB are exclusive — confirm engine switch (dump → uninstall other → install → import) via POST /api/v1/system/db/sql-engine/switch.`;
+      const msg = tl('sqlEngineSwitch.note.needsSwitch', { other });
       return {
         ok: false,
         executed: false,

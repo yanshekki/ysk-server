@@ -8953,6 +8953,35 @@
       "root_auth": "Root unix_socket / password auth may need re-setup after switch.",
       "no_user_dbs": "No user databases detected — only the engine packages will change.",
       "has_user_dbs": "{{count}} user database(s) will be exported and imported."
+    },
+    "note": {
+      "needsSwitch": "This host already runs {{other}}. MySQL and MariaDB are exclusive — confirm switch (dump → uninstall other → install → import).",
+      "invalidTarget": "Invalid target (mysql or mariadb only).",
+      "badConfirmPhrase": "Confirm phrase must be exactly SWITCH.",
+      "needAck": "You must acknowledge exclusive switch (MySQL XOR MariaDB).",
+      "switchNotNeeded": "Switch not needed — use normal install.",
+      "migrateDataRequired": "migrateData must be true when user databases exist.",
+      "dumpFailed": "Dump failed — source {{source}} left running. {{detail}}",
+      "datadirBackupFailed": "Datadir backup failed — aborted before purge. Try starting the source unit manually.",
+      "waitFailed": "Target unit did not become active. Dump: {{dumpPath}}. Old datadir: {{datadir}}. Manual recovery required.",
+      "incomplete": "Switch incomplete. Dump retained at {{dumpPath}}. Old datadir at {{datadir}}. Do not re-purge blindly.",
+      "switched": "Switched {{from}} → {{to}}. Imported {{imported}}/{{total}} database(s).",
+      "dumpPath": "Logical dump: {{path}}",
+      "datadirBackup": "Old datadir backup: {{path}} (remove when satisfied: rm -rf {{path}})",
+      "grantsExported": "Exported grants ({{detail}})"
+    },
+    "step": {
+      "dump": "Dump {{db}}",
+      "exportGrants": "Export grants",
+      "stop": "Stop {{unit}}",
+      "backupDatadir": "Backup datadir",
+      "purge": "Purge {{pkg}}",
+      "wait": "Wait for {{unit}}",
+      "importDb": "Import {{db}}",
+      "importGrants": "Import grants",
+      "verify": "Verify",
+      "preflight": "Preflight",
+      "confirm": "Confirm"
     }
   },
   "stackWizard": {
