@@ -22,6 +22,43 @@ export function absoluteBinCandidates(bin: string): string[] {
 }
 
 /**
+ * Debian/Ubuntu PostgreSQL ships versioned binaries outside PATH, e.g.
+ * /usr/lib/postgresql/16/bin/postgres — not on /usr/bin.
+ */
+const PG_VERSIONED_BINS = new Set([
+  'postgres',
+  'pg_ctl',
+  'initdb',
+  'pg_isready',
+  'pg_dump',
+  'pg_restore',
+  'createdb',
+  'dropdb',
+  'createuser',
+  'dropuser',
+]);
+
+async function resolvePostgresVersionedBin(host: HostExecutor, bin: string): Promise<string> {
+  if (!PG_VERSIONED_BINS.has(bin)) return '';
+  try {
+    const r = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        // Prefer highest version; paths are fixed under /usr/lib/postgresql
+        `ls -1 /usr/lib/postgresql/*/bin/${bin} 2>/dev/null | sort -V | tail -n 1 || true`,
+      ],
+      { timeoutMs: 5_000 },
+    );
+    const p = r.stdout.trim().split('\n').filter(Boolean).pop()?.trim() ?? '';
+    if (p.startsWith('/') && host.pathExists(p)) return p;
+  } catch {
+    /* ignore */
+  }
+  return '';
+}
+
+/**
  * Resolve a bare binary name to an absolute path if present on the host.
  * Returns empty string when missing.
  */
@@ -49,6 +86,8 @@ export async function resolveBin(host: HostExecutor, bin: string): Promise<strin
       /* ignore */
     }
   }
+  const pg = await resolvePostgresVersionedBin(host, bin);
+  if (pg) return pg;
   return '';
 }
 
