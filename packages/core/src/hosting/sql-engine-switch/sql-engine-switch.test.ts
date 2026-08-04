@@ -111,6 +111,9 @@ describe('sql-engine-switch', () => {
     expect(p.target).toBe('mysql');
     expect(p.databases.map((d) => d.name).sort()).toEqual(['blog', 'shop']);
     expect(p.confirmPhrase).toBe('SWITCH');
+    expect(p.warningKeys).toContain('replace_engine');
+    expect(p.warningKeys).toContain('exclusive');
+    expect(p.warningKeys).toContain('has_user_dbs');
     expect(p.warnings.length).toBeGreaterThan(2);
   });
 

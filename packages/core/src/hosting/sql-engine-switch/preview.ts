@@ -10,7 +10,17 @@ import {
   type SqlSwitchPreview,
   type SqlSwitchTarget,
   type SqlSwitchDbInfo,
+  type SqlSwitchWarningKey,
 } from './types.js';
+
+const BASE_WARNING_KEYS: SqlSwitchWarningKey[] = [
+  'exclusive',
+  'uninstall_packages',
+  'logical_dump',
+  'dialect_risk',
+  'no_replication',
+  'root_auth',
+];
 
 const SYSTEM_DBS = new Set([
   'information_schema',
@@ -93,6 +103,7 @@ export async function previewSqlEngineSwitch(input: {
       blockReason: 'invalid target (mysql|mariadb)',
       databases: [],
       warnings: [],
+      warningKeys: [],
       confirmPhrase: SQL_SWITCH_CONFIRM_PHRASE,
       dataDirHint: join(input.dataDir, 'sql-engine-switch'),
     };
@@ -101,15 +112,6 @@ export async function previewSqlEngineSwitch(input: {
   const probe = new HostSoftwareProbe(input.host);
   const currentFlavor = await probe.detectSqlFlavor();
   const dataDirHint = join(input.dataDir, 'sql-engine-switch');
-
-  const warnings: string[] = [
-    'MySQL and MariaDB cannot run together on one host (exclusive).',
-    'Switching will uninstall the current SQL server packages.',
-    'User databases will be logical-dumped and re-imported; system schema is not copied as files.',
-    'MariaDB-specific or MySQL-specific SQL may fail on import.',
-    'Replication, plugins, and binary logs are not migrated.',
-    'Root unix_socket / password auth may need re-setup after switch.',
-  ];
 
   if (currentFlavor === 'none') {
     return {
@@ -120,7 +122,8 @@ export async function previewSqlEngineSwitch(input: {
       canProceed: false,
       blockReason: 'no SQL server installed — use normal one-click install',
       databases: [],
-      warnings,
+      warnings: [],
+      warningKeys: [...BASE_WARNING_KEYS],
       confirmPhrase: SQL_SWITCH_CONFIRM_PHRASE,
       dataDirHint,
       targetUnit: targetUnit(target),
@@ -137,7 +140,8 @@ export async function previewSqlEngineSwitch(input: {
       canProceed: false,
       blockReason: `${target} is already the host SQL flavor`,
       databases: [],
-      warnings,
+      warnings: [],
+      warningKeys: [...BASE_WARNING_KEYS],
       confirmPhrase: SQL_SWITCH_CONFIRM_PHRASE,
       dataDirHint,
       sourceUnit: sourceUnit(currentFlavor),
@@ -163,16 +167,24 @@ export async function previewSqlEngineSwitch(input: {
     blockReason = 'root required';
   }
 
-  warnings.unshift(
+  const warningKeys: SqlSwitchWarningKey[] = [
+    'replace_engine',
+    ...BASE_WARNING_KEYS,
+    databases.length ? 'has_user_dbs' : 'no_user_dbs',
+  ];
+  // English prose only for API logs / non-UI clients (UI uses warningKeys + i18n)
+  const warnings: string[] = [
     `Will uninstall ${currentFlavor === 'mysql' ? 'MySQL' : 'MariaDB'} and install ${target === 'mysql' ? 'MySQL' : 'MariaDB'}.`,
-  );
-  if (databases.length) {
-    warnings.push(
-      `${databases.length} user database(s) will be exported then imported: ${databases.map((d) => d.name).join(', ')}`,
-    );
-  } else {
-    warnings.push('No user databases detected (only system schemas). Switch will still replace the server.');
-  }
+    'MySQL and MariaDB cannot run together on one host (exclusive).',
+    'Switching will uninstall the current SQL server packages.',
+    'User databases will be logical-dumped and re-imported; system schema is not copied as files.',
+    'MariaDB-specific or MySQL-specific SQL may fail on import.',
+    'Replication, plugins, and binary logs are not migrated.',
+    'Root unix_socket / password auth may need re-setup after switch.',
+    databases.length
+      ? `${databases.length} user database(s) will be exported then imported: ${databases.map((d) => d.name).join(', ')}`
+      : 'No user databases detected (only system schemas). Switch will still replace the server.',
+  ];
 
   return {
     ok: true,
@@ -183,6 +195,7 @@ export async function previewSqlEngineSwitch(input: {
     blockReason,
     databases,
     warnings,
+    warningKeys,
     confirmPhrase: SQL_SWITCH_CONFIRM_PHRASE,
     dataDirHint,
     sourceUnit: sourceUnit(currentFlavor),

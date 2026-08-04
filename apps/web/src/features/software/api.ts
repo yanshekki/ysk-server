@@ -62,7 +62,10 @@ export type SqlSwitchPreview = {
   canProceed: boolean;
   blockReason?: string;
   databases: Array<{ name: string; tableCount?: number }>;
+  /** @deprecated UI uses warningKeys + i18n */
   warnings: string[];
+  /** Stable keys → sqlEngineSwitch.warn.* */
+  warningKeys?: string[];
   confirmPhrase: string;
   dataDirHint: string;
 };

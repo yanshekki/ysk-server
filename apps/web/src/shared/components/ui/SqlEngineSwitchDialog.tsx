@@ -1,10 +1,12 @@
 /**
- * Strict confirm dialog: MySQL XOR MariaDB switch with data migration.
+ * MySQL XOR MariaDB exclusive switch — professional confirm UX.
+ * All operator copy from i18n (warningKeys from API, not English prose).
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from './Modal';
 import { Button } from './Button';
+import { Badge } from './Badge';
 import type { SqlSwitchPreview } from '../../../features/software/api';
 
 export interface SqlEngineSwitchDialogProps {
@@ -14,6 +16,16 @@ export interface SqlEngineSwitchDialogProps {
   onClose: () => void;
   onConfirm: () => void;
 }
+
+const DEFAULT_WARN_KEYS = [
+  'replace_engine',
+  'exclusive',
+  'uninstall_packages',
+  'logical_dump',
+  'dialect_risk',
+  'no_replication',
+  'root_auth',
+] as const;
 
 export function SqlEngineSwitchDialog({
   open,
@@ -33,17 +45,39 @@ export function SqlEngineSwitchDialog({
     }
   }, [open, preview?.target]);
 
+  const expected = preview?.confirmPhrase || 'SWITCH';
+  const canConfirm = Boolean(preview && ack && phrase.trim() === expected && !busy);
+
+  const fromLabel = useMemo(() => {
+    if (!preview) return '—';
+    if (preview.currentFlavor === 'mysql') return 'MySQL';
+    if (preview.currentFlavor === 'mariadb') return 'MariaDB';
+    return '—';
+  }, [preview]);
+
+  const toLabel = preview?.target === 'mysql' ? 'MySQL' : preview?.target === 'mariadb' ? 'MariaDB' : '—';
+
+  const warnKeys = useMemo(() => {
+    if (!preview) return [...DEFAULT_WARN_KEYS];
+    if (preview.warningKeys?.length) return preview.warningKeys;
+    return [
+      ...DEFAULT_WARN_KEYS,
+      (preview.databases?.length ?? 0) > 0 ? 'has_user_dbs' : 'no_user_dbs',
+    ];
+  }, [preview]);
+
+  const impactKeys = warnKeys.filter((k) =>
+    ['replace_engine', 'exclusive', 'uninstall_packages', 'logical_dump', 'has_user_dbs', 'no_user_dbs'].includes(
+      k,
+    ),
+  );
+  const limitKeys = warnKeys.filter((k) =>
+    ['dialect_risk', 'no_replication', 'root_auth'].includes(k),
+  );
+
   if (!preview) return null;
 
-  const expected = preview.confirmPhrase || 'SWITCH';
-  const canConfirm = ack && phrase.trim() === expected && !busy;
-  const fromLabel =
-    preview.currentFlavor === 'mysql'
-      ? 'MySQL'
-      : preview.currentFlavor === 'mariadb'
-        ? 'MariaDB'
-        : '—';
-  const toLabel = preview.target === 'mysql' ? 'MySQL' : 'MariaDB';
+  const dbCount = preview.databases?.length ?? 0;
 
   return (
     <Modal
@@ -51,7 +85,7 @@ export function SqlEngineSwitchDialog({
       onClose={busy ? () => undefined : onClose}
       title={t('sqlEngineSwitch.title', { target: toLabel })}
       description={t('sqlEngineSwitch.subtitle', { from: fromLabel, to: toLabel })}
-      size="md"
+      size="lg"
       footer={
         <>
           <Button variant="secondary" size="md" onClick={onClose} disabled={busy}>
@@ -69,58 +103,126 @@ export function SqlEngineSwitchDialog({
         </>
       }
     >
-      <div className="sql-engine-switch-dialog">
-        <ul className="sql-engine-switch-dialog__warnings">
-          {(preview.warnings?.length
-            ? preview.warnings
-            : [
-                t('sqlEngineSwitch.warnExclusive'),
-                t('sqlEngineSwitch.warnUninstall', { from: fromLabel }),
-                t('sqlEngineSwitch.warnMigrate'),
-              ]
-          ).map((w) => (
-            <li key={w}>{w}</li>
-          ))}
-        </ul>
+      <div className="sesd">
+        {/* Engine flow */}
+        <section className="sesd__hero" aria-label={t('sqlEngineSwitch.flowAria')}>
+          <div className="sesd__engine">
+            <span className="sesd__engine-label">{t('sqlEngineSwitch.from')}</span>
+            <Badge tone="warn">{fromLabel}</Badge>
+          </div>
+          <div className="sesd__arrow" aria-hidden>
+            →
+          </div>
+          <div className="sesd__engine">
+            <span className="sesd__engine-label">{t('sqlEngineSwitch.to')}</span>
+            <Badge tone="ok">{toLabel}</Badge>
+          </div>
+        </section>
 
-        <div className="sql-engine-switch-dialog__dbs">
-          <strong>{t('sqlEngineSwitch.dbListTitle', { count: preview.databases?.length ?? 0 })}</strong>
-          {(preview.databases?.length ?? 0) === 0 ? (
-            <p className="muted u-text-sm">{t('sqlEngineSwitch.noUserDbs')}</p>
+        <div className="sesd__callout" role="status">
+          <strong className="sesd__callout-title">{t('sqlEngineSwitch.calloutTitle')}</strong>
+          <p className="sesd__callout-body muted u-text-sm u-mb-0">
+            {t('sqlEngineSwitch.calloutBody', { from: fromLabel, to: toLabel })}
+          </p>
+        </div>
+
+        {/* What will happen */}
+        <section className="sesd__section">
+          <h3 className="sesd__section-title">{t('sqlEngineSwitch.sectionImpact')}</h3>
+          <ol className="sesd__steps">
+            {impactKeys.map((key, i) => (
+              <li key={key} className="sesd__step">
+                <span className="sesd__step-num">{i + 1}</span>
+                <span className="sesd__step-text">
+                  {t(`sqlEngineSwitch.warn.${key}`, {
+                    from: fromLabel,
+                    to: toLabel,
+                    count: dbCount,
+                  })}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* Databases */}
+        <section className="sesd__section">
+          <div className="sesd__section-head">
+            <h3 className="sesd__section-title u-mb-0">
+              {t('sqlEngineSwitch.dbListTitle', { count: dbCount })}
+            </h3>
+            {dbCount > 0 ? (
+              <Badge tone="neutral">{t('sqlEngineSwitch.dbMigrateBadge', { count: dbCount })}</Badge>
+            ) : (
+              <Badge tone="warn">{t('sqlEngineSwitch.dbEmptyBadge')}</Badge>
+            )}
+          </div>
+          {dbCount === 0 ? (
+            <p className="muted u-text-sm u-mb-0">{t('sqlEngineSwitch.noUserDbs')}</p>
           ) : (
-            <ul className="sql-engine-switch-dialog__db-list">
+            <ul className="sesd__db-grid">
               {preview.databases.map((d) => (
-                <li key={d.name}>
-                  {d.name}
-                  {typeof d.tableCount === 'number' ? ` (${d.tableCount} tables)` : ''}
+                <li key={d.name} className="sesd__db-chip">
+                  <span className="sesd__db-name">{d.name}</span>
+                  {typeof d.tableCount === 'number' ? (
+                    <span className="sesd__db-meta muted">
+                      {t('sqlEngineSwitch.tableCount', { count: d.tableCount })}
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>
           )}
-        </div>
+        </section>
 
-        <label className="sql-engine-switch-dialog__check">
-          <input
-            type="checkbox"
-            checked={ack}
-            disabled={busy}
-            onChange={(e) => setAck(e.target.checked)}
-          />
-          <span>{t('sqlEngineSwitch.ackLabel', { from: fromLabel, to: toLabel })}</span>
-        </label>
+        {/* Limitations */}
+        {limitKeys.length > 0 ? (
+          <section className="sesd__section sesd__section--muted">
+            <h3 className="sesd__section-title">{t('sqlEngineSwitch.sectionLimits')}</h3>
+            <ul className="sesd__limits">
+              {limitKeys.map((key) => (
+                <li key={key}>
+                  {t(`sqlEngineSwitch.warn.${key}`, { from: fromLabel, to: toLabel })}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
-        <label className="sql-engine-switch-dialog__phrase">
-          <span>{t('sqlEngineSwitch.phraseLabel', { phrase: expected })}</span>
-          <input
-            type="text"
-            value={phrase}
-            disabled={busy}
-            autoComplete="off"
-            spellCheck={false}
-            placeholder={expected}
-            onChange={(e) => setPhrase(e.target.value)}
-          />
-        </label>
+        {/* Confirm gates */}
+        <section className="sesd__confirm">
+          <label className="sesd__ack">
+            <input
+              type="checkbox"
+              checked={ack}
+              disabled={busy}
+              onChange={(e) => setAck(e.target.checked)}
+            />
+            <span>{t('sqlEngineSwitch.ackLabel', { from: fromLabel, to: toLabel })}</span>
+          </label>
+
+          <div className="sesd__phrase">
+            <label className="sesd__phrase-label" htmlFor="sesd-phrase">
+              {t('sqlEngineSwitch.phraseLabel', { phrase: expected })}
+            </label>
+            <input
+              id="sesd-phrase"
+              className="sesd__phrase-input"
+              type="text"
+              value={phrase}
+              disabled={busy}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={expected}
+              onChange={(e) => setPhrase(e.target.value)}
+            />
+            {phrase.length > 0 && phrase.trim() !== expected ? (
+              <p className="sesd__phrase-hint" role="alert">
+                {t('sqlEngineSwitch.phraseMismatch')}
+              </p>
+            ) : null}
+          </div>
+        </section>
       </div>
     </Modal>
   );

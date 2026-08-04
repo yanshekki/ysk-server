@@ -12,6 +12,18 @@ export type SqlSwitchDbInfo = {
   tableCount?: number;
 };
 
+/** Stable codes for UI i18n (never send English prose as the only channel). */
+export type SqlSwitchWarningKey =
+  | 'replace_engine'
+  | 'exclusive'
+  | 'uninstall_packages'
+  | 'logical_dump'
+  | 'dialect_risk'
+  | 'no_replication'
+  | 'root_auth'
+  | 'no_user_dbs'
+  | 'has_user_dbs';
+
 export type SqlSwitchPreview = {
   ok: boolean;
   currentFlavor: SqlSwitchFlavor;
@@ -21,7 +33,10 @@ export type SqlSwitchPreview = {
   canProceed: boolean;
   blockReason?: string;
   databases: SqlSwitchDbInfo[];
+  /** Prefer warningKeys + UI t(); kept for logs / non-UI clients */
   warnings: string[];
+  /** i18n keys under sqlEngineSwitch.warn.* */
+  warningKeys: SqlSwitchWarningKey[];
   confirmPhrase: typeof SQL_SWITCH_CONFIRM_PHRASE;
   dataDirHint: string;
   sourceUnit?: string;
