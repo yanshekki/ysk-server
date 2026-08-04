@@ -2291,7 +2291,15 @@
     "createPlus": "+ 建立",
     "dbNameHintPg": "小寫英數與底線；建立後請再套用到系統",
     "deleteNotePg": "刪除登記不會自動 刪除 伺服器上的庫；套用成功才代表主機已執行 資料定義。",
-    "tabDatabasesSimple": "資料庫 ({{count}})"
+    "tabDatabasesSimple": "資料庫 ({{count}})",
+    "frozenTitle": "偵測到 MySQL 凍結狀態",
+    "frozenBody": "系統處於 FROZEN（模式：{{mode}}），不是套件未安裝。守護行程被禁止啟動。資料目錄是否為空（可安全重新初始化）：{{empty}}。請按「解除凍結並修復」確認處理。",
+    "unfreezeBtn": "解除凍結並修復",
+    "unfreezeConfirmTitle": "確認解除 {{engine}} 凍結？",
+    "unfreezeConfirmDesc": "將執行：停止服務 → 刪除 /etc/mysql/FROZEN → 若資料目錄為空則重新初始化 → 再啟動服務。資料目錄是否為空：{{empty}}。若目錄內有重要資料，請先備份再繼續。",
+    "unfreezeConfirmBtn": "確認解除凍結",
+    "unfreezeOk": "{{engine}} 已解除凍結並啟動",
+    "startAfterUnfreeze": "啟動服務（會嘗試自動修復凍結）"
   },
   "dialogs": {
     "confirmDefault": "確認",
@@ -8472,7 +8480,12 @@
       "datadirInitFailed": "初始化資料目錄失敗：{{detail}}",
       "unitNotActive": "服務單元 {{unit}} 狀態為 {{active}}（預期為運作中）。",
       "nginxPortConflict": "Nginx 未運作 — Apache 可能仍佔用公開 80 埠；請將 Apache 改綁 127.0.0.1:8080 後再重新啟動 Nginx。",
-      "nginxConfigFailed": "Nginx 設定檢查失敗：{{detail}}"
+      "nginxConfigFailed": "Nginx 設定檢查失敗：{{detail}}",
+      "frozenShort": "FROZEN（{{mode}}）— 守護行程被封鎖；需要解除凍結並修復。",
+      "unfreezeNeedsConfirm": "解除凍結需要確認（凍結={{frozen}}，資料目錄為空={{empty}}）。請以 confirm:true 提交。",
+      "unfreezeOk": "解除凍結後服務 {{unit}} 已運作。",
+      "unfreezeStartFailed": "解除凍結後仍未運作：{{detail}}",
+      "unfreezePrompt": "請按「解除凍結並修復」以清除 FROZEN，並在資料目錄為空時重新初始化。"
     },
     "step": {
       "dump": "匯出 {{db}}",

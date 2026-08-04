@@ -98,6 +98,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const [userOpen, setUserOpen] = useState(false);
   const [delDb, setDelDb] = useState<string | null>(null);
   const [delUser, setDelUser] = useState<string | null>(null);
+  const [unfreezeOpen, setUnfreezeOpen] = useState(false);
   const [name, setName] = useState('');
   const [createUser, setCreateUser] = useState(true);
   const [username, setUsername] = useState('');
@@ -186,6 +187,25 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         } satisfies OpsResultLike;
       }
     }, t('db.startedOk', { engine: title }));
+  }
+
+  async function onUnfreezeConfirm() {
+    setUnfreezeOpen(false);
+    await run(async () => {
+      try {
+        const r = await dbEngineApi.unfreeze(engine, true);
+        await refreshSvc();
+        return r as unknown as OpsResultLike;
+      } catch (e) {
+        const m = e instanceof Error ? e.message : t('common.opFailed');
+        return {
+          ok: false,
+          blocked: looksLikeBlockedMessage(m),
+          blockMessage: m,
+          notes: [m],
+        } satisfies OpsResultLike;
+      }
+    }, t('db.unfreezeOk', { engine: title }));
   }
 
   async function onCreateDb(e: FormEvent) {
@@ -407,6 +427,28 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               {svc.blockMessage}
             </p>
           ) : null}
+          {installed && svc?.frozen ? (
+            <Alert variant="error">
+              <strong>{t('db.frozenTitle')}</strong>
+              <p className="u-mb-0 u-mt-2 u-text-sm">
+                {t('db.frozenBody', {
+                  mode: svc.frozenMode || 'frozen',
+                  empty: svc.datadirEmpty ? t('common.yes') : t('common.no'),
+                })}
+              </p>
+              <div className="u-mt-3">
+                <Button
+                  variant="danger"
+                  size="md"
+                  loading={busy}
+                  disabled={!svc.executeEnabled || !svc.isRoot}
+                  onClick={() => setUnfreezeOpen(true)}
+                >
+                  {t('db.unfreezeBtn')}
+                </Button>
+              </div>
+            </Alert>
+          ) : null}
           <div className="lifecycle-toolbar u-mt-3">
             {!installed ? (
               <p className="muted u-text-sm u-mb-0">
@@ -425,9 +467,22 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 )}
               </p>
             ) : !running ? (
-              <Button variant="primary" size="md" loading={busy} onClick={onStart}>
-                {t('fail2ban.startService')}
-              </Button>
+              <>
+                <Button variant="primary" size="md" loading={busy} onClick={onStart}>
+                  {svc?.frozen ? t('db.startAfterUnfreeze') : t('fail2ban.startService')}
+                </Button>
+                {svc?.frozen ? (
+                  <Button
+                    variant="danger"
+                    size="md"
+                    loading={busy}
+                    className="u-ml-2"
+                    onClick={() => setUnfreezeOpen(true)}
+                  >
+                    {t('db.unfreezeBtn')}
+                  </Button>
+                ) : null}
+              </>
             ) : (
               <Link to={servicePath}>
                 <Button variant="secondary" size="md">
@@ -438,6 +493,20 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </div>
         </CardSection>
       </Card>
+
+      <ConfirmDialog
+        open={unfreezeOpen}
+        onClose={() => setUnfreezeOpen(false)}
+        onConfirm={() => void onUnfreezeConfirm()}
+        danger
+        busy={busy}
+        title={t('db.unfreezeConfirmTitle', { engine: title })}
+        description={t('db.unfreezeConfirmDesc', {
+          engine: title,
+          empty: svc?.datadirEmpty ? t('common.yes') : t('common.no'),
+        })}
+        confirmLabel={t('db.unfreezeConfirmBtn')}
+      />
 
       <OpsResultPanel
         title={t('systemd.opsResult')}

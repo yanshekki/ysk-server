@@ -53,7 +53,12 @@
     "datadirInitFailed": "Failed to initialize data directory: {{detail}}",
     "unitNotActive": "Unit {{unit}} is {{active}} (expected active).",
     "nginxPortConflict": "Nginx unit not active — Apache may still bind public :80; rebind Apache to 127.0.0.1:8080, then restart Nginx.",
-    "nginxConfigFailed": "nginx -t failed: {{detail}}"
+    "nginxConfigFailed": "nginx -t failed: {{detail}}",
+    "frozenShort": "FROZEN ({{mode}}) — daemon blocked; unfreeze and repair required.",
+    "unfreezeNeedsConfirm": "Confirm required to unfreeze (frozen={{frozen}}, emptyDatadir={{empty}}). POST with confirm:true.",
+    "unfreezeOk": "Service {{unit}} is active after unfreeze repair.",
+    "unfreezeStartFailed": "Still not active after unfreeze: {{detail}}",
+    "unfreezePrompt": "Click “Unfreeze and repair” to clear FROZEN and re-init empty datadir."
   },
   "step": {
     "dump": "Export {{db}}",

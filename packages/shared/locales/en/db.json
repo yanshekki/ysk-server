@@ -266,5 +266,13 @@
   "createPlus": "+ Create",
   "dbNameHintPg": "Lowercase alnum and underscore; apply after create",
   "deleteNotePg": "Deleting registration does not DROP the server DB; apply success means DDL ran on host.",
-  "tabDatabasesSimple": "Databases ({{count}})"
+  "tabDatabasesSimple": "Databases ({{count}})",
+  "frozenTitle": "MySQL frozen state detected",
+  "frozenBody": "The host is FROZEN (mode: {{mode}}) — not a missing package. The daemon is blocked from starting. Datadir empty (safe to re-init): {{empty}}. Click “Unfreeze and repair” to confirm.",
+  "unfreezeBtn": "Unfreeze and repair",
+  "unfreezeConfirmTitle": "Unfreeze {{engine}}?",
+  "unfreezeConfirmDesc": "Will: stop service → remove /etc/mysql/FROZEN → re-initialize if datadir is empty → start service. Datadir empty: {{empty}}. Back up first if the directory holds important data.",
+  "unfreezeConfirmBtn": "Confirm unfreeze",
+  "unfreezeOk": "{{engine}} unfrozen and started",
+  "startAfterUnfreeze": "Start service (auto-repair freeze if needed)"
 }

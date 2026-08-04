@@ -19,4 +19,10 @@ export const dbEngineApi = {
       method: 'POST',
       body: '{}',
     }),
+  /** Confirm-clear Debian FROZEN + re-init empty datadir + start */
+  unfreeze: (engine: DbEngineKind, confirm: boolean) =>
+    api.requestRaw<Record<string, unknown>>(`/api/v1/system/db/${engine}/unfreeze`, {
+      method: 'POST',
+      body: JSON.stringify({ confirm }),
+    }),
 };

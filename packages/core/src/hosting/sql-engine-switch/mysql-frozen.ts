@@ -162,16 +162,35 @@ fi
 
 /**
  * Clear FROZEN + init empty datadir + reset-failed unit (for switch / install recovery).
+ * Order: stop → clear freeze → init empty datadir → reset-failed → start (not enable --now).
  */
 export async function recoverMysqlAfterEngineSwitch(
   host: HostExecutor,
   flavor: 'mysql' | 'mariadb',
-): Promise<{ ok: boolean; notes: string[]; steps: Array<{ name: string; status: string; detail?: string }> }> {
+  opts?: { forceInitEmpty?: boolean },
+): Promise<{
+  ok: boolean;
+  notes: string[];
+  steps: Array<{ name: string; status: string; detail?: string }>;
+  frozenBefore?: boolean;
+  initialized?: boolean;
+}> {
   const steps: Array<{ name: string; status: string; detail?: string }> = [];
   const notes: string[] = [];
+  const unit = flavor === 'mysql' ? 'mysql' : 'mariadb';
+
+  await host.runCommand(['systemctl', 'stop', unit], { timeoutMs: 60_000 });
+  steps.push({ name: tl('sqlEngineSwitch.step.stop', { unit }), status: 'ok' });
 
   const frozen = await readMysqlFrozen(host);
   if (frozen.frozen) {
+    notes.push(
+      tl('sqlEngineSwitch.note.frozenDetected', {
+        path: frozen.path,
+        mode: frozen.modeHint || 'frozen',
+        snippet: frozen.content.replace(/\s+/g, ' ').slice(0, 160),
+      }),
+    );
     const c = await clearMysqlFrozen(host);
     notes.push(...c.notes);
     steps.push({
@@ -179,33 +198,104 @@ export async function recoverMysqlAfterEngineSwitch(
       status: c.ok ? 'ok' : 'failed',
       detail: frozen.modeHint || frozen.content.slice(0, 120),
     });
-    if (!c.ok) return { ok: false, notes, steps };
+    if (!c.ok) return { ok: false, notes, steps, frozenBefore: true };
   } else {
     steps.push({ name: tl('sqlEngineSwitch.step.clearFrozen'), status: 'skipped', detail: 'not frozen' });
   }
 
-  const init = await initializeMysqlDatadirIfEmpty(host, flavor);
-  notes.push(...init.notes);
-  steps.push({
-    name: tl('sqlEngineSwitch.step.initDatadir'),
-    status: init.ok ? (init.initialized ? 'ok' : 'skipped') : 'failed',
-  });
-  if (!init.ok) return { ok: false, notes, steps };
+  // Always try init when empty (or force). Non-empty with freeze only: just clear freeze + start.
+  const empty = await isMysqlDatadirEmptyOrUninitialized(host);
+  let initialized = false;
+  if (empty || opts?.forceInitEmpty) {
+    if (!empty && opts?.forceInitEmpty) {
+      // force only when explicitly empty check failed but caller insists — still refuse if has system tables
+      notes.push(tl('sqlEngineSwitch.note.datadirNotEmptySkipInit'));
+    }
+    const init = await initializeMysqlDatadirIfEmpty(host, flavor);
+    notes.push(...init.notes);
+    initialized = init.initialized;
+    steps.push({
+      name: tl('sqlEngineSwitch.step.initDatadir'),
+      status: init.ok ? (init.initialized ? 'ok' : 'skipped') : 'failed',
+    });
+    if (!init.ok) return { ok: false, notes, steps, frozenBefore: frozen.frozen, initialized };
+  } else {
+    steps.push({
+      name: tl('sqlEngineSwitch.step.initDatadir'),
+      status: 'skipped',
+      detail: 'datadir has data',
+    });
+  }
 
-  const unit = flavor === 'mysql' ? 'mysql' : 'mariadb';
   await host.runCommand(['systemctl', 'reset-failed', unit], { timeoutMs: 10_000 });
-  const start = await host.runCommand(['systemctl', 'enable', '--now', unit], { timeoutMs: 120_000 });
+  await host.runCommand(['systemctl', 'enable', unit], { timeoutMs: 60_000 });
+  const start = await host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
+  const active = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });
+  const isActive = (active.stdout || active.stderr || '').trim().startsWith('active');
   steps.push({
     name: tl('sqlEngineSwitch.step.startUnit', { unit }),
-    status: start.exitCode === 0 ? 'ok' : 'failed',
-    detail: start.exitCode === 0 ? undefined : (start.stderr || start.stdout).slice(0, 200),
+    status: isActive ? 'ok' : 'failed',
+    detail: isActive
+      ? undefined
+      : (start.stderr || start.stdout || active.stdout || 'not active').slice(0, 300),
   });
 
+  if (!isActive) {
+    notes.push(
+      tl('sqlEngineSwitch.note.unfreezeStartFailed', {
+        detail: (start.stderr || start.stdout || active.stdout || unit).trim().slice(0, 400),
+      }),
+    );
+  } else {
+    notes.push(tl('sqlEngineSwitch.note.unfreezeOk', { unit }));
+  }
+
   return {
-    ok: start.exitCode === 0 || init.ok,
+    ok: isActive,
     notes,
     steps,
+    frozenBefore: frozen.frozen,
+    initialized,
   };
+}
+
+/**
+ * Explicit operator-confirmed unfreeze (API). Same as recover but requires caller to pass confirm.
+ */
+export async function unfreezeMysqlEngine(
+  host: HostExecutor,
+  flavor: 'mysql' | 'mariadb',
+  opts?: { confirm?: boolean },
+): Promise<{
+  ok: boolean;
+  blocked?: boolean;
+  blockMessage?: string;
+  notes: string[];
+  steps: Array<{ name: string; status: string; detail?: string }>;
+  code?: string;
+}> {
+  if (!host.executeEnabled() || !host.isRoot()) {
+    const reason = !host.executeEnabled() ? 'no_execute' : 'no_root';
+    const { panelBlockMessage } = await import('../system-apply.js');
+    const blockMessage = panelBlockMessage(reason);
+    return { ok: false, blocked: true, blockMessage, notes: [blockMessage], steps: [] };
+  }
+  if (opts?.confirm !== true) {
+    const frozen = await readMysqlFrozen(host);
+    const empty = await isMysqlDatadirEmptyOrUninitialized(host);
+    return {
+      ok: false,
+      code: 'needs_confirm',
+      notes: [
+        tl('sqlEngineSwitch.note.unfreezeNeedsConfirm', {
+          frozen: frozen.frozen ? 'yes' : 'no',
+          empty: empty ? 'yes' : 'no',
+        }),
+      ],
+      steps: [],
+    };
+  }
+  return recoverMysqlAfterEngineSwitch(host, flavor);
 }
 
 /** Operator-facing hint when unit failed due to FROZEN. */

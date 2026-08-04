@@ -266,5 +266,13 @@
   "createPlus": "+ 创建",
   "dbNameHintPg": "小写英数与底线；创建后请再应用到系统",
   "deleteNotePg": "删除登记不会自动 DROP 服务器上的庫；应用成功才代表主机已执行 DDL。",
-  "tabDatabasesSimple": "数据库 ({{count}})"
+  "tabDatabasesSimple": "数据库 ({{count}})",
+  "frozenTitle": "检测到 MySQL 冻结状态",
+  "frozenBody": "系统处于 FROZEN（模式：{{mode}}），不是软件包未安装。守护进程被禁止启动。数据目录是否为空（可安全重新初始化）：{{empty}}。请按「解除冻结并修复」确认处理。",
+  "unfreezeBtn": "解除冻结并修复",
+  "unfreezeConfirmTitle": "确认解除 {{engine}} 冻结？",
+  "unfreezeConfirmDesc": "将执行：停止服务 → 删除 /etc/mysql/FROZEN → 若数据目录为空则重新初始化 → 再启动服务。数据目录是否为空：{{empty}}。若目录内有重要数据，请先备份再继续。",
+  "unfreezeConfirmBtn": "确认解除冻结",
+  "unfreezeOk": "{{engine}} 已解除冻结并启动",
+  "startAfterUnfreeze": "启动服务（会尝试自动修复冻结）"
 }

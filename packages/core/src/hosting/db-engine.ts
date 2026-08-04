@@ -26,6 +26,9 @@ export interface DbEngineStatus {
   blockMessage?: string;
   /** When true, host runs the other SQL engine exclusively */
   blockedByExclusive?: string;
+  frozen?: boolean;
+  frozenMode?: string;
+  datadirEmpty?: boolean;
 }
 
 export async function probeDbEngine(
@@ -64,6 +67,23 @@ export async function probeDbEngine(
   const canProvision =
     client.installed && executeEnabled && server.installed && active === 'active';
 
+  let frozen = false;
+  let frozenMode: string | undefined;
+  let datadirEmpty: boolean | undefined;
+  if (server.installed && (engine === 'mysql' || engine === 'mariadb')) {
+    try {
+      const { readMysqlFrozen, isMysqlDatadirEmptyOrUninitialized } = await import(
+        './sql-engine-switch/mysql-frozen.js'
+      );
+      const fr = await readMysqlFrozen(host);
+      frozen = fr.frozen;
+      frozenMode = fr.modeHint;
+      datadirEmpty = await isMysqlDatadirEmptyOrUninitialized(host);
+    } catch {
+      /* optional */
+    }
+  }
+
   let blockMessage: string | undefined;
   if (!executeEnabled) {
     blockMessage = panelBlockMessage('no_execute');
@@ -73,6 +93,10 @@ export async function probeDbEngine(
     } else {
       blockMessage = tl('notes.auto.t0245', { v0: title });
     }
+  } else if (frozen && active !== 'active') {
+    blockMessage = tl('sqlEngineSwitch.note.frozenShort', {
+      mode: frozenMode || 'frozen',
+    });
   } else if (active !== 'active') {
     blockMessage = tl('notes.auto.t0246', { v0: title });
   } else if (!client.installed) {
@@ -93,6 +117,37 @@ export async function probeDbEngine(
     canInstall,
     blockMessage: canProvision ? undefined : blockMessage,
     blockedByExclusive: server.blockedByExclusive,
+    frozen,
+    frozenMode,
+    datadirEmpty,
+  };
+}
+
+/** Operator-confirmed unfreeze + start (empty datadir re-init when safe). */
+export async function unfreezeDbEngine(input: {
+  host: HostExecutor;
+  engine: DbEngineKind;
+  confirm: boolean;
+}): Promise<{
+  ok: boolean;
+  blocked?: boolean;
+  blockMessage?: string;
+  notes: string[];
+  steps?: Array<{ name: string; status: string; detail?: string }>;
+  code?: string;
+  status: DbEngineStatus;
+}> {
+  const { unfreezeMysqlEngine } = await import('./sql-engine-switch/mysql-frozen.js');
+  const r = await unfreezeMysqlEngine(input.host, input.engine, { confirm: input.confirm });
+  const status = await probeDbEngine(input.host, input.engine);
+  return {
+    ok: r.ok && status.active === 'active',
+    blocked: r.blocked,
+    blockMessage: r.blockMessage,
+    notes: r.notes,
+    steps: r.steps,
+    code: r.code,
+    status,
   };
 }
 
@@ -175,6 +230,7 @@ export async function startDbEngine(input: {
   blockMessage?: string;
   notes: string[];
   status: DbEngineStatus;
+  code?: string;
 }> {
   const unit = input.engine === 'mysql' ? 'mysql' : 'mariadb';
   if (!input.host.executeEnabled() || !input.host.isRoot()) {
@@ -196,15 +252,20 @@ export async function startDbEngine(input: {
 
   if (status.active !== 'active') {
     try {
-      const { recoverMysqlAfterEngineSwitch, frozenUnitFailureHint } = await import(
+      const { recoverMysqlAfterEngineSwitch, readMysqlFrozen } = await import(
         './sql-engine-switch/mysql-frozen.js'
       );
-      const frozenHint = await frozenUnitFailureHint(input.host, unit);
-      if (frozenHint) notes.push(frozenHint);
-      const rec = await recoverMysqlAfterEngineSwitch(input.host, input.engine);
-      notes.push(...rec.notes);
-      start = await input.host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
-      status = await probeDbEngine(input.host, input.engine);
+      const fr = await readMysqlFrozen(input.host);
+      // Auto-recover when FROZEN (operator already clicked Start with execute+root)
+      if (fr.frozen || status.active === 'failed') {
+        const rec = await recoverMysqlAfterEngineSwitch(input.host, input.engine);
+        notes.push(...rec.notes);
+        status = await probeDbEngine(input.host, input.engine);
+        if (!status.active || status.active !== 'active') {
+          start = await input.host.runCommand(['systemctl', 'start', unit], { timeoutMs: 120_000 });
+          status = await probeDbEngine(input.host, input.engine);
+        }
+      }
     } catch {
       /* best-effort recovery */
     }
@@ -216,6 +277,14 @@ export async function startDbEngine(input: {
   } else {
     const detail = (start.stderr || start.stdout || status.active || '').trim();
     notes.push(tl('notes.auto.t0253', { v0: detail.slice(0, 500) }));
+    if (status.frozen) {
+      notes.push(tl('sqlEngineSwitch.note.unfreezePrompt'));
+    }
   }
-  return { ok, notes, status };
+  return {
+    ok,
+    notes,
+    status,
+    code: !ok && status.frozen ? 'needs_unfreeze' : undefined,
+  };
 }

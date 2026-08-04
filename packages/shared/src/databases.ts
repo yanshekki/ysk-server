@@ -50,6 +50,11 @@ export interface DbEngineStatusDto {
   blockMessage?: string;
   /** Other exclusive engine installed on host (e.g. mariadb-server) */
   blockedByExclusive?: string;
+  /** Debian/Ubuntu /etc/mysql/FROZEN present — daemon blocked after engine switch */
+  frozen?: boolean;
+  frozenMode?: string;
+  /** Data dir looks empty / no system tables — safe to re-init after unfreeze */
+  datadirEmpty?: boolean;
 }
 
 export type DbEngineStatus = DbEngineStatusDto;

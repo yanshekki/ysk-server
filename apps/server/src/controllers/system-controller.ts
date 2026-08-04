@@ -32,6 +32,7 @@ import {
   expandComponents,
   installDbEngine,
   startDbEngine,
+  unfreezeDbEngine,
   installRedisService,
   startRedisService,
   listRedisKeys,
@@ -1327,7 +1328,27 @@ export async function handleSystemRoutes(
     ctx.audit.append({
       actor: user.username,
       action: `system.db.${engine}.start`,
-      detail: { ok: result.ok },
+      detail: { ok: result.ok, code: result.code },
+      ok: result.ok,
+    });
+    sendOpsResult(res, result);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/system\/db\/(mysql|mariadb)\/unfreeze$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const engine = url.pathname.split('/')[5] as 'mysql' | 'mariadb';
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { confirm?: boolean };
+    const result = await unfreezeDbEngine({
+      host: ctx.host,
+      engine,
+      confirm: data.confirm === true,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: `system.db.${engine}.unfreeze`,
+      detail: { ok: result.ok, code: result.code },
       ok: result.ok,
     });
     sendOpsResult(res, result);

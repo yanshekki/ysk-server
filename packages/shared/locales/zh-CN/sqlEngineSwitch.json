@@ -53,7 +53,12 @@
     "datadirInitFailed": "初始化数据目录失败：{{detail}}",
     "unitNotActive": "服务单元 {{unit}} 状态为 {{active}}（预期为运行中）。",
     "nginxPortConflict": "Nginx 未运行 — Apache 可能仍占用公开 80 端口；请将 Apache 改绑 127.0.0.1:8080 后再重新启动 Nginx。",
-    "nginxConfigFailed": "Nginx 配置检查失败：{{detail}}"
+    "nginxConfigFailed": "Nginx 配置检查失败：{{detail}}",
+    "frozenShort": "FROZEN（{{mode}}）— 守护进程被封锁；需要解除冻结并修复。",
+    "unfreezeNeedsConfirm": "解除冻结需要确认（冻结={{frozen}}，数据目录为空={{empty}}）。请以 confirm:true 提交。",
+    "unfreezeOk": "解除冻结后服务 {{unit}} 已运行。",
+    "unfreezeStartFailed": "解除冻结后仍未运行：{{detail}}",
+    "unfreezePrompt": "请按「解除冻结并修复」以清除 FROZEN，并在数据目录为空时重新初始化。"
   },
   "step": {
     "dump": "导出 {{db}}",
