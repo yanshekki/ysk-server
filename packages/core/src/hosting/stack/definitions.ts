@@ -41,19 +41,16 @@ export type StackPlanDef = {
 export const STACK_PLANS: Record<string, StackPlanDef> = {
   minimal: {
     title: 'Control plane only',
-    titleZh: '僅控制平面',
     description: 'Node + ysk-server + base tools. No hosting stack.',
     bundles: ['control-plane'],
   },
   recommended: {
     title: 'Recommended hosting',
-    titleZh: '推薦託管方案',
     description: 'Control plane + web + database + defense.',
     bundles: ['control-plane', 'web', 'database', 'defense'],
   },
   full: {
     title: 'All software',
-    titleZh: '全部軟件',
     description: 'Every bundle.',
     bundles: [
       'control-plane',
@@ -71,19 +68,16 @@ export const STACK_PLANS: Record<string, StackPlanDef> = {
 export const STACK_BUNDLES: Record<string, StackBundleDef> = {
   'control-plane': {
     title: 'Control plane',
-    titleZh: '控制平面',
     required: true,
     description: 'Base deps, Node.js 20+, ysk-server product, git.',
     components: ['base-deps', 'git', 'node', 'control-plane-product'],
   },
   web: {
     title: 'Web hosting',
-    titleZh: '網頁託管',
     components: ['nginx', 'apache2', 'certbot', 'php'],
   },
   database: {
     title: 'Databases',
-    titleZh: '資料庫',
     components: [
       'mysql-client',
       'mariadb-server',
@@ -97,28 +91,23 @@ export const STACK_BUNDLES: Record<string, StackBundleDef> = {
   },
   email: {
     title: 'Mail stack',
-    titleZh: '郵件',
     components: ['postfix', 'dovecot', 'opendkim'],
     optionalComponents: ['rspamd', 'clamav'],
   },
   dns: {
     title: 'DNS',
-    titleZh: 'DNS',
     components: ['pdns-server'],
   },
   ftp: {
     title: 'FTP / FTPS',
-    titleZh: 'FTP／FTPS',
     components: ['vsftpd', 'db-util'],
   },
   defense: {
     title: 'Host defense',
-    titleZh: '主機防禦',
     components: ['ufw', 'fail2ban'],
   },
   runtimes: {
     title: 'Language runtimes',
-    titleZh: '語言工具鏈',
     components: ['php', 'python', 'go', 'rust'],
   },
 };

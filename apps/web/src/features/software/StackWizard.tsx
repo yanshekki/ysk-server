@@ -118,11 +118,7 @@ export function StackWizard() {
     setResult(null);
     try {
       if (dataPolicy === 'purge' && !dryRun) {
-        const ok = window.confirm(
-          zh
-            ? '確定 purge？會刪除已登記的資料目錄（DB／郵件等），不可復原！'
-            : 'Confirm PURGE? Registered data paths (DB/mail) will be deleted permanently.',
-        );
+        const ok = window.confirm(t('stackWizard.purgeConfirm'));
         if (!ok) {
           setBusy(false);
           return;
@@ -159,32 +155,26 @@ export function StackWizard() {
 
   return (
     <div className="stack-wizard" data-testid="stack-wizard">
-      <div className="stack-wizard__status" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+      <div className="stack-wizard__status u-flex u-flex-wrap u-gap-3 u-mb-4">
         <Badge tone={canMutate ? 'ok' : 'warn'}>
           EXECUTE {status?.executeEnabled ? 'ON' : 'OFF'} / root {status?.isRoot ? 'yes' : 'no'}
         </Badge>
         <Badge tone="neutral">
-          {zh ? '已安裝' : 'Installed'} {installed} · {zh ? '未安裝' : 'Missing'} {missing}
+          {t('stackWizard.installedCount', { installed, missing })}
         </Badge>
         <Badge tone="neutral">
           manifest: {status?.manifest?.plan || '—'} ({(status?.manifest?.bundles ?? []).join(', ') || '—'})
         </Badge>
       </div>
 
-      {!canMutate ? (
-        <Alert variant="info">
-          {zh
-            ? '真實安裝／移除需要 root + YSK_EXECUTE=1。可先做 dry-run 預覽。'
-            : 'Live install/remove needs root + YSK_EXECUTE=1. You can still dry-run.'}
-        </Alert>
-      ) : null}
+      {!canMutate ? <Alert variant="info">{t('stackWizard.needRootExecute')}</Alert> : null}
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+      <div className="stack-wizard__mode-bar u-flex u-gap-2 u-mb-4">
         <Button variant={mode === 'install' ? 'primary' : 'secondary'} onClick={() => setMode('install')}>
-          {zh ? '安裝套餐' : 'Install plan'}
+          {t('stackWizard.modeInstall')}
         </Button>
         <Button variant={mode === 'uninstall' ? 'primary' : 'secondary'} onClick={() => setMode('uninstall')}>
-          {zh ? '移除套餐' : 'Uninstall'}
+          {t('stackWizard.modeUninstall')}
         </Button>
         <Button
           variant="secondary"
@@ -199,7 +189,7 @@ export function StackWizard() {
 
       {mode === 'install' ? (
         <div className="stack-wizard__install">
-          <Field label={zh ? '方案' : 'Plan'} htmlFor="stack-plan-select">
+          <Field label={t('stackWizard.plan')} htmlFor="stack-plan-select">
             <select
               id="stack-plan-select"
               value={plan}
@@ -211,16 +201,16 @@ export function StackWizard() {
                   {titleOf(p)} — {p.bundles.join(', ')}
                 </option>
               ))}
-              <option value="custom">{zh ? '自訂套餐' : 'Custom bundles'}</option>
+              <option value="custom">{t('stackWizard.customBundles')}</option>
             </select>
           </Field>
 
           {plan === 'custom' ? (
-            <div style={{ display: 'grid', gap: 6, margin: '12px 0' }}>
+            <div className="stack-wizard__checks u-mt-3 u-mb-3">
               {ALL_BUNDLE_IDS.map((id) => {
                 const b = bundles.find((x) => x.id === id);
                 return (
-                  <label key={id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <label key={id} className="stack-wizard__check-row u-flex u-gap-2 u-items-center">
                     <input
                       type="checkbox"
                       checked={custom.includes(id)}
@@ -228,7 +218,7 @@ export function StackWizard() {
                     />
                     <span>
                       {b ? titleOf(b) : id}
-                      <small style={{ opacity: 0.7 }}> ({id})</small>
+                      <small className="muted"> ({id})</small>
                     </span>
                   </label>
                 );
@@ -238,7 +228,7 @@ export function StackWizard() {
 
           {(plan === 'full' || plan === 'recommended' || plan === 'custom') &&
           selectedBundles.includes('database') ? (
-            <Field label={zh ? 'SQL 伺服器（互斥）' : 'SQL server (exclusive)'} htmlFor="stack-sql">
+            <Field label={t('stackWizard.sqlExclusive')} htmlFor="stack-sql">
               <select
                 id="stack-sql"
                 value={sqlServer}
@@ -251,42 +241,38 @@ export function StackWizard() {
           ) : null}
 
           {selectedBundles.includes('email') ? (
-            <label style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
+            <label className="stack-wizard__check-row u-flex u-gap-2 u-items-center u-mt-2 u-mb-2">
               <input type="checkbox" checked={clamav} onChange={(e) => setClamav(e.target.checked)} />
-              ClamAV ({zh ? '可選、體積大' : 'optional, large'})
+              ClamAV ({t('stackWizard.clamavOptional')})
             </label>
           ) : null}
 
-          <div style={{ margin: '12px 0' }}>
-            <strong>{zh ? '將安裝組件' : 'Components to install'}</strong> ({preview.length})
-            <ul style={{ maxHeight: 180, overflow: 'auto', fontSize: 13 }}>
+          <div className="stack-wizard__preview u-mt-3 u-mb-3">
+            <strong>{t('stackWizard.componentsTitle')}</strong> ({preview.length})
+            <ul className="stack-wizard__scroll-list list-plain u-text-sm">
               {preview.map((c) => (
                 <li key={c}>{c}</li>
               ))}
             </ul>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="stack-wizard__actions u-flex u-gap-2 u-flex-wrap">
             <Button disabled={busy} variant="secondary" onClick={() => void runInstall(true)}>
-              {zh ? '預覽 dry-run' : 'Dry-run preview'}
+              {t('stackWizard.dryRun')}
             </Button>
             <Button disabled={busy || !canMutate} onClick={() => void runInstall(false)}>
-              {zh ? '執行安裝' : 'Install now'}
+              {t('stackWizard.installNow')}
             </Button>
           </div>
         </div>
       ) : (
         <div className="stack-wizard__uninstall">
-          <Alert variant="info">
-            {zh
-              ? '移除範圍：勾選套餐；若全部不勾 = 移除 manifest 內全部組件。預設保留資料。'
-              : 'Pick bundles to remove. If none selected, removes all tracked components. Default keeps data.'}
-          </Alert>
-          <div style={{ display: 'grid', gap: 6, margin: '12px 0' }}>
+          <Alert variant="info">{t('stackWizard.uninstallHint')}</Alert>
+          <div className="stack-wizard__checks u-mt-3 u-mb-3">
             {ALL_BUNDLE_IDS.map((id) => {
               const b = bundles.find((x) => x.id === id);
               return (
-                <label key={id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <label key={id} className="stack-wizard__check-row u-flex u-gap-2 u-items-center">
                   <input
                     type="checkbox"
                     checked={unBundles.includes(id)}
@@ -297,26 +283,26 @@ export function StackWizard() {
               );
             })}
           </div>
-          <Field label={zh ? '資料策略' : 'Data policy'} htmlFor="stack-data-policy">
+          <Field label={t('stackWizard.dataPolicy')} htmlFor="stack-data-policy">
             <select
               id="stack-data-policy"
               value={dataPolicy}
               onChange={(e) => setDataPolicy(e.target.value as 'keep' | 'purge')}
             >
-              <option value="keep">{zh ? '保留資料 (keep-data)' : 'Keep data'}</option>
-              <option value="purge">{zh ? '清除資料 (purge-data) ⚠' : 'Purge data ⚠'}</option>
+              <option value="keep">{t('stackWizard.keepData')}</option>
+              <option value="purge">{t('stackWizard.purgeData')}</option>
             </select>
           </Field>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+          <div className="stack-wizard__actions u-flex u-gap-2 u-flex-wrap u-mt-3">
             <Button disabled={busy} variant="secondary" onClick={() => void runUninstall(true)}>
-              {zh ? '預覽 dry-run' : 'Dry-run preview'}
+              {t('stackWizard.dryRun')}
             </Button>
             <Button
               disabled={busy || !canMutate}
               variant="danger"
               onClick={() => void runUninstall(false)}
             >
-              {zh ? '執行移除' : 'Uninstall now'}
+              {t('stackWizard.uninstallNow')}
             </Button>
           </div>
         </div>
@@ -324,10 +310,10 @@ export function StackWizard() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
       {result ? (
-        <div style={{ marginTop: 16 }}>
+        <div className="stack-wizard__result u-mt-4">
           <OpsResultPanel result={result as OpsResultLike} />
           {result.steps?.length ? (
-            <ul style={{ fontSize: 12, maxHeight: 200, overflow: 'auto' }}>
+            <ul className="stack-wizard__scroll-list stack-wizard__scroll-list--steps list-plain u-text-sm">
               {result.steps.slice(0, 50).map((s, i) => (
                 <li key={`${s.name}-${i}`}>
                   [{s.status}] {s.name}

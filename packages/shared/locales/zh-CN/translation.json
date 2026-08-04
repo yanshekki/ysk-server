@@ -8401,7 +8401,10 @@
     "protectionDoneNote": "保护探测完成",
     "probeDone": "探测完成",
     "runProtection": "执行保护探测",
-    "notProbedYet": "尚未探测"
+    "notProbedYet": "尚未探测",
+    "stackTab": "套餐",
+    "stackTitle": "软件套餐方案",
+    "stackHint": "按方案／套餐安装或移除主机软件。请先 dry-run；真实操作需要 root + YSK_EXECUTE=1。"
   },
   "softwareBanner": {
     "titleDefault": "尚未安装所需软件",
@@ -8932,5 +8935,24 @@
     "noUserDbs": "未检测到用户数据库（仅系统库）。",
     "ackLabel": "我明白二者互斥，同意卸载 {{from}} 并将数据迁移到 {{to}}。",
     "phraseLabel": "请输入 {{phrase}} 以确认"
+  },
+  "stackWizard": {
+    "purgeConfirm": "确定 purge？会删除已登记的数据目录（DB／邮件等），不可复原！",
+    "installedCount": "已安装 {{installed}} · 未安装 {{missing}}",
+    "needRootExecute": "真实安装／移除需要 root + YSK_EXECUTE=1。可先做 dry-run 预览。",
+    "modeInstall": "安装套餐",
+    "modeUninstall": "移除套餐",
+    "plan": "方案",
+    "customBundles": "自定义套餐",
+    "sqlExclusive": "SQL 服务器（互斥）",
+    "clamavOptional": "可选、体积大",
+    "componentsTitle": "将安装组件",
+    "dryRun": "预览 dry-run",
+    "installNow": "执行安装",
+    "uninstallHint": "移除范围：勾选套餐；若全部不勾 = 移除 manifest 内全部组件。默认保留数据。",
+    "dataPolicy": "数据策略",
+    "keepData": "保留数据 (keep-data)",
+    "purgeData": "清除数据 (purge-data)",
+    "uninstallNow": "执行移除"
   }
 }

@@ -420,8 +420,8 @@ if [ -f /etc/apache2/sites-available/000-default.conf ]; then
   cp -a /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.ysk-bak 2>/dev/null || true
   sed -i "s/<VirtualHost \\*:80>/<VirtualHost \${BIND}:\${PORT}>/g" /etc/apache2/sites-available/000-default.conf || true
 fi
-command -v a2dissite >/dev/null 2>&1 && a2dissite default-ssl 2>/dev/null || true
-if command -v apache2ctl >/dev/null 2>&1; then apache2ctl configtest; fi
+if [ -x /usr/sbin/a2dissite ]; then /usr/sbin/a2dissite default-ssl 2>/dev/null || true; fi
+if [ -x /usr/sbin/apache2ctl ]; then /usr/sbin/apache2ctl configtest; fi
 systemctl restart apache2 2>/dev/null || systemctl start apache2 2>/dev/null || true
 `.trim();
 

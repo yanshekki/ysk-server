@@ -8401,7 +8401,10 @@
     "protectionDoneNote": "Protection probe finished",
     "probeDone": "Probe complete",
     "runProtection": "Run protection probe",
-    "notProbedYet": "Not probed yet"
+    "notProbedYet": "Not probed yet",
+    "stackTab": "Stack plans",
+    "stackTitle": "Software stack plans",
+    "stackHint": "Install or remove host software by plan/bundle. Dry-run first; live ops need root + YSK_EXECUTE=1."
   },
   "softwareBanner": {
     "titleDefault": "Required software is not installed",
@@ -8932,5 +8935,24 @@
     "noUserDbs": "No user databases detected (system schemas only).",
     "ackLabel": "I understand only one engine is allowed, agree to uninstall {{from}} and migrate data to {{to}}.",
     "phraseLabel": "Type {{phrase}} to confirm"
+  },
+  "stackWizard": {
+    "purgeConfirm": "Confirm PURGE? Registered data paths (DB/mail) will be deleted permanently.",
+    "installedCount": "Installed {{installed}} · Missing {{missing}}",
+    "needRootExecute": "Live install/remove needs root + YSK_EXECUTE=1. You can still dry-run.",
+    "modeInstall": "Install plan",
+    "modeUninstall": "Uninstall",
+    "plan": "Plan",
+    "customBundles": "Custom bundles",
+    "sqlExclusive": "SQL server (exclusive)",
+    "clamavOptional": "optional, large",
+    "componentsTitle": "Components to install",
+    "dryRun": "Dry-run preview",
+    "installNow": "Install now",
+    "uninstallHint": "Pick bundles to remove. If none selected, removes all tracked components. Default keeps data.",
+    "dataPolicy": "Data policy",
+    "keepData": "Keep data",
+    "purgeData": "Purge data",
+    "uninstallNow": "Uninstall now"
   }
 }
