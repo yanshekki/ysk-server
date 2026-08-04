@@ -2,6 +2,8 @@ export * from './types.js';
 export * from './diagnose.js';
 export * from './execute.js';
 
-/** Backward-compatible alias used by older call sites */
-export { executeSqlEngineRepair as recoverMysqlAfterEngineSwitch } from './compat.js';
-export { unfreezeViaHealth as unfreezeMysqlEngine } from './compat.js';
+/** Compat helpers (distinct names — switch module already owns recover/unfreeze aliases). */
+export {
+  executeSqlEngineRepairAsRecover,
+  unfreezeViaHealth,
+} from './compat.js';
