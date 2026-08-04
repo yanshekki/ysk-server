@@ -58,7 +58,9 @@
     "unfreezeNeedsConfirm": "解除冻结需要确认（冻结={{frozen}}，数据目录为空={{empty}}）。请以 confirm:true 提交。",
     "unfreezeOk": "解除冻结后服务 {{unit}} 已运行。",
     "unfreezeStartFailed": "解除冻结后仍未运行：{{detail}}",
-    "unfreezePrompt": "请按「解除冻结并修复」以清除 FROZEN，并在数据目录为空时重新初始化。"
+    "unfreezePrompt": "请按「解除冻结并修复」以清除 FROZEN，并在数据目录为空时重新初始化。",
+    "configSanitized": "已将 SQL 配置对齐为 {{flavor}}（my.cnf → {{target}}）。若目标为 MySQL，已停用 MariaDB 插件残留配置。",
+    "configSanitizeFailed": "清理 SQL 配置失败：{{detail}}"
   },
   "step": {
     "dump": "导出 {{db}}",
@@ -74,6 +76,7 @@
     "confirm": "确认",
     "clearFrozen": "解除 MySQL 冻结",
     "initDatadir": "初始化空白数据目录",
-    "startUnit": "启动 {{unit}}"
+    "startUnit": "启动 {{unit}}",
+    "sanitizeConfig": "清理 my.cnf 与残留插件"
   }
 }

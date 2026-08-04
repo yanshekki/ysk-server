@@ -138,6 +138,97 @@ echo CLEAR_OK
 }
 
 /**
+ * After MySQL↔MariaDB switch, residual config kills the daemon:
+ * - my.cnf still points at MariaDB (or vice versa)
+ * - MariaDB plugin.provider_* cnf loaded by MySQL 8 → crash
+ */
+export async function sanitizeSqlConfigForFlavor(
+  host: HostExecutor,
+  flavor: 'mysql' | 'mariadb',
+): Promise<{ ok: boolean; notes: string[] }> {
+  const script =
+    flavor === 'mysql'
+      ? `
+set -e
+# Point alternatives my.cnf at Oracle MySQL config
+if [ -f /etc/mysql/mysql.cnf ]; then
+  if [ -x /usr/bin/update-alternatives ]; then
+    /usr/bin/update-alternatives --install /etc/mysql/my.cnf my.cnf /etc/mysql/mysql.cnf 200 2>/dev/null || true
+    /usr/bin/update-alternatives --set my.cnf /etc/mysql/mysql.cnf 2>/dev/null || true
+  fi
+  if [ -L /etc/alternatives/my.cnf ] || [ -e /etc/alternatives/my.cnf ]; then
+    ln -sfn /etc/mysql/mysql.cnf /etc/alternatives/my.cnf 2>/dev/null || true
+  fi
+  # Prefer direct mysql.cnf if alternatives broken
+  if [ -L /etc/mysql/my.cnf ]; then
+    cur=$(readlink -f /etc/mysql/my.cnf 2>/dev/null || true)
+    case "$cur" in
+      *mariadb*) ln -sfn /etc/mysql/mysql.cnf /etc/mysql/my.cnf 2>/dev/null || true ;;
+    esac
+  fi
+fi
+# Disable MariaDB conf.d / plugin providers that MySQL 8 cannot load
+ts=$(date +%Y%m%d%H%M%S)
+if [ -d /etc/mysql/mariadb.conf.d ]; then
+  mkdir -p /etc/mysql/mariadb.conf.d.ysk-disabled-$ts
+  # provider_* and other .cnf that crash mysqld
+  for f in /etc/mysql/mariadb.conf.d/*.cnf /etc/mysql/mariadb.conf.d/*provider*; do
+    [ -e "$f" ] || continue
+    base=$(basename "$f")
+    mv "$f" "/etc/mysql/mariadb.conf.d.ysk-disabled-$ts/$base" 2>/dev/null || true
+  done
+fi
+# conf.d leftovers
+for f in /etc/mysql/conf.d/*provider* /etc/mysql/conf.d/*mariadb*; do
+  [ -e "$f" ] || continue
+  mv "$f" "$f.ysk-disabled" 2>/dev/null || true
+done
+# Ensure active my.cnf does not include mariadb.conf.d
+if [ -f /etc/mysql/mysql.cnf ]; then
+  # mysql.cnf should only include conf.d + mysql.conf.d (stock)
+  true
+fi
+echo CONFIG_OK
+readlink -f /etc/mysql/my.cnf 2>/dev/null || true
+`
+      : `
+set -e
+# Point at MariaDB config when present
+if [ -f /etc/mysql/mariadb.cnf ]; then
+  if [ -x /usr/bin/update-alternatives ]; then
+    /usr/bin/update-alternatives --install /etc/mysql/my.cnf my.cnf /etc/mysql/mariadb.cnf 200 2>/dev/null || true
+    /usr/bin/update-alternatives --set my.cnf /etc/mysql/mariadb.cnf 2>/dev/null || true
+  fi
+  ln -sfn /etc/mysql/mariadb.cnf /etc/alternatives/my.cnf 2>/dev/null || true
+fi
+echo CONFIG_OK
+readlink -f /etc/mysql/my.cnf 2>/dev/null || true
+`;
+
+  const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 30_000 });
+  if (r.exitCode !== 0 && !(r.stdout || '').includes('CONFIG_OK')) {
+    return {
+      ok: false,
+      notes: [
+        tl('sqlEngineSwitch.note.configSanitizeFailed', {
+          detail: (r.stderr || r.stdout).trim().slice(0, 300),
+        }),
+      ],
+    };
+  }
+  const target = (r.stdout || '').split('\n').filter(Boolean).pop() || '';
+  return {
+    ok: true,
+    notes: [
+      tl('sqlEngineSwitch.note.configSanitized', {
+        flavor,
+        target: target || 'ok',
+      }),
+    ],
+  };
+}
+
+/**
  * Initialize empty datadir for MySQL 8 / MariaDB when safe (no system tables).
  */
 export async function initializeMysqlDatadirIfEmpty(
@@ -242,6 +333,15 @@ export async function recoverMysqlAfterEngineSwitch(
   } else {
     steps.push({ name: tl('sqlEngineSwitch.step.clearFrozen'), status: 'skipped', detail: 'not frozen' });
   }
+
+  // Residual MariaDB my.cnf / provider_* plugins crash MySQL 8 (and reverse)
+  const cfg = await sanitizeSqlConfigForFlavor(host, flavor);
+  notes.push(...cfg.notes);
+  steps.push({
+    name: tl('sqlEngineSwitch.step.sanitizeConfig'),
+    status: cfg.ok ? 'ok' : 'failed',
+  });
+  if (!cfg.ok) return { ok: false, notes, steps, frozenBefore: frozen.frozen };
 
   // Always try init when empty (or force). Non-empty with freeze only: just clear freeze + start.
   const empty = await isMysqlDatadirEmptyOrUninitialized(host);

@@ -8487,7 +8487,9 @@
       "unfreezeNeedsConfirm": "解除凍結需要確認（凍結={{frozen}}，資料目錄為空={{empty}}）。請以 confirm:true 提交。",
       "unfreezeOk": "解除凍結後服務 {{unit}} 已運作。",
       "unfreezeStartFailed": "解除凍結後仍未運作：{{detail}}",
-      "unfreezePrompt": "請按「解除凍結並修復」以清除 FROZEN，並在資料目錄為空時重新初始化。"
+      "unfreezePrompt": "請按「解除凍結並修復」以清除 FROZEN，並在資料目錄為空時重新初始化。",
+      "configSanitized": "已將 SQL 設定對齊為 {{flavor}}（my.cnf → {{target}}）。若目標為 MySQL，已停用 MariaDB 外掛殘留設定。",
+      "configSanitizeFailed": "清理 SQL 設定失敗：{{detail}}"
     },
     "step": {
       "dump": "匯出 {{db}}",
@@ -8503,7 +8505,8 @@
       "confirm": "確認",
       "clearFrozen": "解除 MySQL 凍結",
       "initDatadir": "初始化空白資料目錄",
-      "startUnit": "啟動 {{unit}}"
+      "startUnit": "啟動 {{unit}}",
+      "sanitizeConfig": "清理 my.cnf 與殘留外掛"
     }
   },
   "ssl": {

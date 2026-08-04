@@ -58,7 +58,9 @@
     "unfreezeNeedsConfirm": "Confirm required to unfreeze (frozen={{frozen}}, emptyDatadir={{empty}}). POST with confirm:true.",
     "unfreezeOk": "Service {{unit}} is active after unfreeze repair.",
     "unfreezeStartFailed": "Still not active after unfreeze: {{detail}}",
-    "unfreezePrompt": "Click “Unfreeze and repair” to clear FROZEN and re-init empty datadir."
+    "unfreezePrompt": "Click “Unfreeze and repair” to clear FROZEN and re-init empty datadir.",
+    "configSanitized": "SQL config aligned for {{flavor}} (my.cnf → {{target}}). MariaDB plugin remnants disabled when targeting MySQL.",
+    "configSanitizeFailed": "Failed to sanitize SQL config: {{detail}}"
   },
   "step": {
     "dump": "Export {{db}}",
@@ -74,6 +76,7 @@
     "confirm": "Confirm",
     "clearFrozen": "Clear MySQL FROZEN",
     "initDatadir": "Initialize empty datadir",
-    "startUnit": "Start {{unit}}"
+    "startUnit": "Start {{unit}}",
+    "sanitizeConfig": "Sanitize my.cnf / residual plugins"
   }
 }

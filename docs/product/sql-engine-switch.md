@@ -59,21 +59,35 @@ POST body:
 - One-click rollback UI (manual dump/datadir restore only)
 - Full web E2E against real apt on CI
 
-## Debian FROZEN after engine switch
+## Debian FROZEN + residual MariaDB config after engine switch
 
 Ubuntu/Debian may leave `/etc/mysql/FROZEN` (often `frozen-mode/downgrade`) when MySQL and MariaDB share `/var/lib/mysql`. The package can be installed while `mysql.service` stays **failed**.
 
-YSK behaviour:
+Additionally, after MariaDB → MySQL:
 
-1. **Detect** FROZEN on unit start failure → operator note (not “apt failed”).
-2. **installSoftware** for mysql/mariadb: if FROZEN and start fails → clear marker, init empty datadir when safe, `systemctl reset-failed` + start.
-3. **sql-engine-switch** after purge/install: same recovery before final wait.
+- `/etc/mysql/my.cnf` may still point at **MariaDB** via alternatives
+- `mariadb.conf.d/*provider_*` (bzip2/lz4/…) is loaded and **crashes MySQL 8**
+
+YSK recovery order (`unfreeze` / start auto-repair):
+
+1. `systemctl stop`
+2. Remove `/etc/mysql/FROZEN`
+3. **Sanitize config** for target flavor (my.cnf alternatives + disable residual plugin cnf)
+4. Re-init empty datadir if no system catalog
+5. `reset-failed` + `start`
+
+UI: when service is installed but not running → red banner **「解除凍結並修復」** (confirm dialog).
 
 Manual recovery (empty datadir only):
 
 ```bash
 systemctl stop mysql || true
 rm -f /etc/mysql/FROZEN
+# Point at Oracle MySQL config
+update-alternatives --set my.cnf /etc/mysql/mysql.cnf 2>/dev/null || true
+# Disable MariaDB plugin snippets
+mkdir -p /etc/mysql/mariadb.conf.d.ysk-disabled
+mv /etc/mysql/mariadb.conf.d/*provider* /etc/mysql/mariadb.conf.d.ysk-disabled/ 2>/dev/null || true
 mysqld --initialize-insecure --user=mysql
 systemctl reset-failed mysql
 systemctl start mysql
