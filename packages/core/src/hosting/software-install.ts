@@ -12,6 +12,7 @@ import {
   type SoftwareSpec } from './software-catalog.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { planOrInstallRuntime } from './runtime-probe.js';
+import { HostSoftwareProbe, binPresent, unitIsActive } from './software-probe/index.js';
 
 export type SoftwareStatus = {
   id: SoftwareId | string;
@@ -46,72 +47,30 @@ export type SoftwareInstallResult = {
 let lastAptUpdateMs = 0;
 const APT_UPDATE_MS = 5 * 60_000;
 
-/**
- * Probe whether a binary is available on the host.
- * Uses command -v first, then common absolute paths (sbin often missing from
- * non-login PATH under systemd / npm-started Node).
- */
+/** @deprecated use HostSoftwareProbe / binPresent — kept as thin alias for callers */
 async function binExists(host: HostExecutor, bin: string): Promise<boolean> {
-  // Reject path separators / weird tokens — catalog bins are bare names only
-  if (!bin || /[^a-zA-Z0-9._+-]/.test(bin)) return false;
-  const r = await host.runCommand(
-    [
-      'bash',
-      '-c',
-      `export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin:\${HOME}/.cargo/bin:\${PATH:-}"; command -v ${bin} 2>/dev/null || true`,
-    ],
-    { timeoutMs: 5_000 },
-  );
-  if (r.stdout.trim().length > 0) return true;
-  const candidates = [
-    `/usr/local/sbin/${bin}`,
-    `/usr/local/bin/${bin}`,
-    `/usr/sbin/${bin}`,
-    `/usr/bin/${bin}`,
-    `/sbin/${bin}`,
-    `/bin/${bin}`,
-    `/usr/local/cargo/bin/${bin}`,
-  ];
-  for (const p of candidates) {
-    if (host.pathExists(p)) return true;
-  }
-  return false;
-}
-
-async function unitActive(host: HostExecutor, unit: string): Promise<string | undefined> {
-  if (!host.pathExists('/bin/systemctl') && !host.pathExists('/usr/bin/systemctl')) {
-    return undefined;
-  }
-  const r = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });
-  return (r.stdout || r.stderr || '').trim().split('\n')[0] || undefined;
+  return binPresent(host, bin);
 }
 
 export async function probeSoftware(
   host: HostExecutor,
   spec: SoftwareSpec,
 ): Promise<SoftwareStatus> {
-  const missingBins: string[] = [];
-  let anyOk = false;
-  for (const b of spec.bins) {
-    const ok = await binExists(host, b);
-    if (ok) anyOk = true;
-    else missingBins.push(b);
-  }
-  // For multi-bin packages (e.g. mysqld|mariadbd): installed if ANY bin exists
-  const installedAny = spec.bins.length === 0 ? false : anyOk;
-
+  // Single standard: HostSoftwareProbe.presence (exclusive flavor for mysql/mariadb)
+  const probe = new HostSoftwareProbe(host);
+  const p = await probe.presence(spec.id);
   let active: string | undefined;
-  if (spec.units?.[0] && installedAny) {
-    active = await unitActive(host, spec.units[0]);
+  if (spec.units?.[0] && p.installed) {
+    active = await unitIsActive(host, spec.units[0]);
   }
 
   return {
     id: spec.id,
     title: resolveSoftwareTitle(spec),
-    installed: installedAny,
+    installed: p.installed,
     active,
     bins: spec.bins,
-    missingBins: installedAny ? [] : missingBins,
+    missingBins: p.missingBins,
     features: spec.features };
 }
 

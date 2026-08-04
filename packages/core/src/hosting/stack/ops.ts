@@ -4,9 +4,10 @@
 
 import type { HostExecutor } from '../../host/executor.js';
 import { panelBlockMessage, type BlockReason } from '../system-apply.js';
-import { installSoftware, probeSoftware } from '../software-install.js';
+import { installSoftware } from '../software-install.js';
 import { getSoftware } from '../software-catalog.js';
 import { planOrInstallRuntime } from '../runtime-probe.js';
+import { HostSoftwareProbe } from '../software-probe/index.js';
 import {
   expandComponents,
   expandUninstallComponents,
@@ -104,34 +105,20 @@ export async function getStackStatus(input: {
   bundles: ReturnType<typeof listStackBundles>;
 }> {
   const manifest = await loadStackManifest(input.host, input.dataDir);
+  const probe = new HostSoftwareProbe(input.host);
   const components = [];
   for (const id of Object.keys(STACK_COMPONENTS)) {
     const def = STACK_COMPONENTS[id]!;
     let installed = false;
     if (def.softwareId && getSoftware(def.softwareId)) {
-      const st = await probeSoftware(input.host, getSoftware(def.softwareId)!);
-      installed = st.installed;
+      installed = (await probe.presence(def.softwareId)).installed;
     } else {
+      // Non-catalog stack ids (base-deps, apache2, …): any bin via unified resolveBin
       for (const b of def.bins) {
-        const r = await input.host.runCommand(
-          [
-            'bash',
-            '-c',
-            `export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin:\${PATH:-}"; command -v ${b} 2>/dev/null || true`,
-          ],
-          { timeoutMs: 5_000 },
-        );
-        if (r.stdout.trim()) {
+        if (await probe.binPresent(b)) {
           installed = true;
           break;
         }
-        for (const p of [`/usr/sbin/${b}`, `/usr/bin/${b}`, `/usr/local/bin/${b}`]) {
-          if (input.host.pathExists(p)) {
-            installed = true;
-            break;
-          }
-        }
-        if (installed) break;
       }
     }
     components.push({

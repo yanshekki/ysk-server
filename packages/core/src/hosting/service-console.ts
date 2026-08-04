@@ -14,6 +14,7 @@ import {
   type SettingCategoryId,
   type SettingDef } from './service-catalog/index.js';
 import { installSoftware } from './software-install.js';
+import { HostSoftwareProbe, binPresent } from './software-probe/index.js';
 
 export type LifecycleAction = 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable';
 
@@ -65,10 +66,9 @@ function activeLabel(active: string, installed: boolean): string {
   return active || tl('notes.unknown');
 }
 
+/** @deprecated product software must use HostSoftwareProbe; alias for live CLI checks only */
 async function hasBin(host: HostExecutor, bin: string): Promise<boolean> {
-  const r = await host.runCommand(['bash', '-c', `command -v ${bin} 2>/dev/null || true`], {
-    timeoutMs: 5_000 });
-  return r.stdout.trim().length > 0;
+  return binPresent(host, bin);
 }
 
 async function unitState(host: HostExecutor, unit: string): Promise<{ active: string; enabled: string }> {
@@ -199,39 +199,52 @@ export async function getServiceConsole(
   _db?: JsonStore,
 ): Promise<ServiceConsoleDto> {
   const meta = ENGINE_META[engine];
-  let installed = false;
-  if (engine === 'redis') installed = await hasBin(host, 'redis-server');
-  else if (engine === 'postgres') installed = await hasBin(host, 'postgres');
-  else if (engine === 'mysql') installed = (await hasBin(host, 'mysqld')) || (await hasBin(host, 'mysql'));
-  else installed = (await hasBin(host, 'mariadbd')) || (await hasBin(host, 'mysqld'));
+  // Unified presence (mysql vs mariadb exclusive) — same standard as db-engine / software catalog
+  const probe = new HostSoftwareProbe(host);
+  const { server } = await probe.presenceForEngine(engine);
+  const installed = server.installed;
+  const verInfo = await probe.version(
+    engine === 'mysql'
+      ? 'mysql-server'
+      : engine === 'mariadb'
+        ? 'mariadb-server'
+        : engine === 'postgres'
+          ? 'postgresql'
+          : 'redis-server',
+  );
 
   let { active, enabled } = await unitState(host, meta.unit);
-  if (engine === 'mysql' && active !== 'active') {
+  if (engine === 'mysql' && active !== 'active' && installed) {
     const alt = await unitState(host, 'mysqld');
     if (alt.active === 'active') {
       active = alt.active;
       enabled = alt.enabled;
     }
   }
+  // Prefer unit state from presence when available
+  if (server.units?.[0]?.active) {
+    active = server.units[0].active ?? active;
+    enabled = server.units[0].enabled ?? enabled;
+  }
   if (!installed) active = 'not_installed';
 
-  let version: string | undefined;
+  let version: string | undefined = verInfo.version;
   let live: Record<string, string> = {};
   let metrics: Record<string, string> = {};
 
-  if (engine === 'mysql' || engine === 'mariadb') {
+  if (installed && (engine === 'mysql' || engine === 'mariadb')) {
     const r = await loadMysqlLive(host, engine);
-    version = r.version;
+    version = r.version || version;
     live = r.live;
     metrics = r.metrics;
-  } else if (engine === 'postgres') {
+  } else if (installed && engine === 'postgres') {
     const r = await loadPostgresLive(host);
-    version = r.version;
+    version = r.version || version;
     live = r.live;
     metrics = r.metrics;
-  } else {
+  } else if (installed && engine === 'redis') {
     const r = await loadRedisLive(host);
-    version = r.version;
+    version = r.version || version;
     live = r.live;
     metrics = r.metrics;
   }

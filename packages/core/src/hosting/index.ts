@@ -39,6 +39,7 @@ export * from './managed-resources.js';
 export * from './ftps-service.js';
 export * from './software-catalog.js';
 export * from './software-install.js';
+export * from './software-probe/index.js';
 export * from './stack/index.js';
 export * from './db-engine.js';
 export * from './redis-browser.js';

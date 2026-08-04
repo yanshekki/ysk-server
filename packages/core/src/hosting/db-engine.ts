@@ -1,11 +1,13 @@
 import { tl } from '@ysk/shared';
 /**
  * MySQL vs MariaDB engine probe / install / start — panel only.
+ * Presence/version always via HostSoftwareProbe (never ad-hoc command -v).
  */
 
 import type { HostExecutor } from '../host/executor.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { installSoftware } from './software-install.js';
+import { HostSoftwareProbe } from './software-probe/index.js';
 
 export type DbEngineKind = 'mysql' | 'mariadb';
 
@@ -22,41 +24,8 @@ export interface DbEngineStatus {
   canProvision: boolean;
   canInstall: boolean;
   blockMessage?: string;
-}
-
-async function hasBin(host: HostExecutor, bin: string): Promise<boolean> {
-  const r = await host.runCommand(['bash', '-c', `command -v ${bin} 2>/dev/null || true`], {
-    timeoutMs: 5_000,
-  });
-  return r.stdout.trim().length > 0;
-}
-
-async function unitActive(host: HostExecutor, unit: string): Promise<string> {
-  if (!host.pathExists('/bin/systemctl') && !host.pathExists('/usr/bin/systemctl')) {
-    return 'unknown';
-  }
-  const r = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });
-  return (r.stdout || r.stderr || 'unknown').trim().split('\n')[0] || 'unknown';
-}
-
-/** Detect if package is likely MariaDB vs Oracle MySQL when both might share mysql CLI */
-async function detectServerFlavor(host: HostExecutor): Promise<'mysql' | 'mariadb' | 'none'> {
-  const hasMariadbd = await hasBin(host, 'mariadbd');
-  if (hasMariadbd) return 'mariadb';
-  // dpkg check best-effort
-  const pkg = await host.runCommand(
-    [
-      'bash',
-      '-c',
-      "dpkg -l 2>/dev/null | awk '/^ii/ && /mariadb-server/ {print \"mariadb\"; exit} /^ii/ && /mysql-server/ {print \"mysql\"; exit}'",
-    ],
-    { timeoutMs: 10_000 },
-  );
-  const line = pkg.stdout.trim();
-  if (line === 'mariadb' || line === 'mysql') return line;
-  const hasMysqld = await hasBin(host, 'mysqld');
-  if (hasMysqld) return 'mysql';
-  return 'none';
+  /** When true, host runs the other SQL engine exclusively */
+  blockedByExclusive?: string;
 }
 
 export async function probeDbEngine(
@@ -65,71 +34,65 @@ export async function probeDbEngine(
 ): Promise<DbEngineStatus> {
   const title = engine === 'mysql' ? 'MySQL' : 'MariaDB';
   const unit = engine === 'mysql' ? 'mysql' : 'mariadb';
-  const clientInstalled =
-    (await hasBin(host, 'mysql')) || (await hasBin(host, 'mariadb'));
+  const serverId = engine === 'mysql' ? 'mysql-server' : 'mariadb-server';
+  const probe = new HostSoftwareProbe(host);
 
-  const flavor = await detectServerFlavor(host);
-  // Server "installed for this engine" only if flavor matches or package unit present
-  let serverInstalled = false;
-  if (engine === 'mariadb') {
-    serverInstalled =
-      flavor === 'mariadb' ||
-      (await hasBin(host, 'mariadbd')) ||
-      (await unitActive(host, 'mariadb')) === 'active';
-  } else {
-    // MySQL: mysqld present AND not pure MariaDB flavor
-    serverInstalled =
-      flavor === 'mysql' ||
-      ((await hasBin(host, 'mysqld')) && flavor !== 'mariadb');
-    // If only mariadb is installed, mysql page shows server not installed
-    if (flavor === 'mariadb') serverInstalled = false;
+  const server = await probe.presence(serverId);
+  const client = await probe.presence('mysql-client');
+  const ver = await probe.version(serverId);
+  // client version often available even when server exclusive-blocked
+  const clientVer = await probe.version('mysql-client');
+
+  let active = 'not_installed';
+  if (server.installed && server.units?.[0]?.active) {
+    active = server.units[0].active ?? 'unknown';
+  } else if (server.installed) {
+    // unit list may be empty if unit not registered; re-check via presence units
+    const u = server.units?.find((x) => x.name === unit);
+    active = u?.active ?? 'unknown';
   }
-
-  let active = await unitActive(host, unit);
-  // MySQL 8 on Ubuntu often uses mysql.service; MariaDB uses mariadb.service
-  if (active !== 'active' && engine === 'mysql') {
-    const alt = await unitActive(host, 'mysqld');
-    if (alt === 'active') active = alt;
-  }
-
-  let version: string | undefined;
-  if (clientInstalled) {
-    const v = await host.runCommand(
-      ['bash', '-c', 'mysql --version 2>/dev/null || mariadb --version 2>/dev/null || true'],
-      { timeoutMs: 5_000 },
-    );
-    version = v.stdout.trim().slice(0, 120) || undefined;
+  if (server.installed && active !== 'active' && engine === 'mysql') {
+    // mysqld unit alias on some distros
+    const alt = await host.runCommand(['systemctl', 'is-active', 'mysqld'], { timeoutMs: 5_000 });
+    const a = (alt.stdout || alt.stderr || '').trim().split('\n')[0];
+    if (a === 'active') active = a;
   }
 
   const executeEnabled = host.executeEnabled();
   const isRoot = host.isRoot();
   const canInstall = executeEnabled && isRoot;
-  const canProvision = clientInstalled && executeEnabled && serverInstalled && active === 'active';
+  const canProvision =
+    client.installed && executeEnabled && server.installed && active === 'active';
 
   let blockMessage: string | undefined;
   if (!executeEnabled) {
     blockMessage = panelBlockMessage('no_execute');
-  } else if (!serverInstalled) {
-    blockMessage = tl('notes.auto.t0245', { v0: (title) });
+  } else if (!server.installed) {
+    if (server.blockedByExclusive) {
+      blockMessage = tl('notes.auto.t0245', { v0: title });
+    } else {
+      blockMessage = tl('notes.auto.t0245', { v0: title });
+    }
   } else if (active !== 'active') {
-    blockMessage = tl('notes.auto.t0246', { v0: (title) });
-  } else if (!clientInstalled) {
-    blockMessage = tl('notes.auto.t0247', { v0: (title) });
+    blockMessage = tl('notes.auto.t0246', { v0: title });
+  } else if (!client.installed) {
+    blockMessage = tl('notes.auto.t0247', { v0: title });
   }
 
   return {
     engine,
     title,
-    clientInstalled,
-    serverInstalled,
+    clientInstalled: client.installed,
+    serverInstalled: server.installed,
     unit,
-    active: serverInstalled ? active : 'not_installed',
-    version,
+    active: server.installed ? active : 'not_installed',
+    version: ver.version || clientVer.version,
     executeEnabled,
     isRoot,
     canProvision,
     canInstall,
     blockMessage: canProvision ? undefined : blockMessage,
+    blockedByExclusive: server.blockedByExclusive,
   };
 }
 
@@ -159,7 +122,13 @@ export async function installDbEngine(input: {
     dataDir: input.dataDir,
     enableUnits: false,
   });
-  steps.push(...(client.steps ?? []).map((s) => ({ ...s, name: tl('notes.auto.t0248', { v0: (s.name) }) })));
+  steps.push(
+    ...(client.steps ?? []).map((s) => ({
+      name: tl('notes.auto.t0248', { v0: s.name }),
+      status: s.status,
+      detail: s.detail,
+    })),
+  );
   notes.push(...client.notes);
 
   const server = await installSoftware({
@@ -168,7 +137,13 @@ export async function installDbEngine(input: {
     dataDir: input.dataDir,
     enableUnits: true,
   });
-  steps.push(...(server.steps ?? []).map((s) => ({ ...s, name: tl('notes.auto.t0249', { v0: (s.name) }) })));
+  steps.push(
+    ...(server.steps ?? []).map((s) => ({
+      name: tl('notes.auto.t0249', { v0: s.name }),
+      status: s.status,
+      detail: s.detail,
+    })),
+  );
   notes.push(...server.notes);
 
   const status = await probeDbEngine(input.host, input.engine);
@@ -181,7 +156,11 @@ export async function installDbEngine(input: {
     blocked,
     blockReason: client.blockReason ?? server.blockReason,
     blockMessage: client.blockMessage ?? server.blockMessage,
-    notes: notes.length ? notes : ok ? [tl('notes.auto.t0250', { v0: (status.title) })] : [tl('notes.auto.t0251', { v0: (status.title) })],
+    notes: notes.length
+      ? notes
+      : ok
+        ? [tl('notes.auto.t0250', { v0: status.title })]
+        : [tl('notes.auto.t0251', { v0: status.title })],
     status,
     steps,
   };
@@ -217,8 +196,8 @@ export async function startDbEngine(input: {
   return {
     ok,
     notes: ok
-      ? [tl('notes.auto.t0252', { v0: (status.title) })]
-      : [tl('notes.auto.t0253', { v0: (r.stderr || status.active) })],
+      ? [tl('notes.auto.t0252', { v0: status.title })]
+      : [tl('notes.auto.t0253', { v0: r.stderr || status.active })],
     status,
   };
 }

@@ -6,7 +6,9 @@ function host(opts: { execute?: boolean; root?: boolean; installed?: boolean }):
   return {
     executeEnabled: () => opts.execute !== false,
     isRoot: () => opts.root !== false,
-    pathExists: () => true,
+    // Only systemctl paths exist when not installed (HostSoftwareProbe also checks absolute bins)
+    pathExists: (p) =>
+      opts.installed === false ? p.includes('systemctl') : true,
     readFile: async () => '',
     listDir: async () => [],
     writeFile: async () => undefined,
@@ -71,7 +73,14 @@ describe('service-console lifecycle apply and live paths', () => {
     return {
       executeEnabled: () => opts.execute !== false,
       isRoot: () => opts.root !== false,
-      pathExists: (p) => p.includes('systemctl') || true,
+      pathExists: (p) => {
+        if (p.includes('systemctl')) return true;
+        // Absolute bin paths only if that bin is marked present
+        for (const [bin, on] of Object.entries(bins)) {
+          if (on && p.endsWith(`/${bin}`)) return true;
+        }
+        return false;
+      },
       readFile: async () => '',
       listDir: async () => [],
       writeFile: async () => undefined,
@@ -83,7 +92,8 @@ describe('service-console lifecycle apply and live paths', () => {
         const s = argv.join(' ');
         if (s.includes('command -v')) {
           const bin = s.match(/command -v (\S+)/)?.[1] ?? '';
-          const present = bins[bin] ?? true;
+          // Explicit map only — do not default-true (would make mariadbd always present)
+          const present = bins[bin] === true;
           return {
             stdout: present ? `/usr/bin/${bin}\n` : '',
             stderr: '',
@@ -182,7 +192,7 @@ describe('service-console lifecycle apply and live paths', () => {
       richHost({
         execute: true,
         root: true,
-        bins: { mysqld: true, mysql: true, redis: false },
+        bins: { mysqld: true, mysql: true, mariadbd: false },
         active: 'active',
       }),
       'mysql',
