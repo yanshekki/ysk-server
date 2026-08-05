@@ -1,7 +1,16 @@
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ApiError } from '../../shared/services/api';
 import { sslApi, type CertificateView } from './api';
+
+function notesFromThrown(e: unknown): string[] {
+  if (e instanceof ApiError && e.details && typeof e.details === 'object') {
+    const n = (e.details as { notes?: unknown }).notes;
+    if (Array.isArray(n)) return n.map(String).filter(Boolean);
+  }
+  return [];
+}
 
 /** SSL apply step (from LE / system apply notes) */
 export type SslCertStep = {
@@ -93,20 +102,31 @@ export function useSslCertificates() {
               : null),
         );
         setOk(r.ok);
-        setNotes(r.notes ?? []);
+        const rNotes = r.notes ?? [];
+        setNotes(rNotes);
         const rSteps = (r as { steps?: SslCertStep[] }).steps;
         setSteps(rSteps ?? []);
-        setMsg(
-          r.ok
-            ? t('ssl.requestDone')
-            : blockedFlag
-              ? null
-              : t('ssl.requestFailed'),
-        );
+        if (r.ok) {
+          setMsg(t('ssl.requestDone'));
+          setError(null);
+        } else if (blockedFlag) {
+          setMsg(null);
+        } else {
+          // Lead with human reason (first note from backend LE classifier)
+          setMsg(t('ssl.requestFailed'));
+          setError(rNotes[0] || t('ssl.requestFailed'));
+        }
         return r;
       } catch (e) {
         setOk(false);
-        setError(e instanceof Error ? e.message : t('ssl.applyFailed'));
+        const fromBody = notesFromThrown(e);
+        if (fromBody.length) {
+          setNotes(fromBody);
+          setError(fromBody[0] ?? t('ssl.applyFailed'));
+          setMsg(t('ssl.requestFailed'));
+        } else {
+          setError(e instanceof Error ? e.message : t('ssl.applyFailed'));
+        }
         throw e;
       } finally {
         setBusy(false);

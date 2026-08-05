@@ -319,9 +319,18 @@ export async function applyLetsEncrypt(input: {
       steps.push({ name: tl('notes.ssl.requestCert'), status: 'ok' });
       steps.push({ name: tl('notes.auto.n1515'), status: 'ok' });
     } else {
-      const err = commandResults.map((c) => c.stderr).filter(Boolean).join('; ').slice(0, 400);
-      notes.push(err || tl('notes.auto.n0836'));
-      steps.push({ name: tl('notes.ssl.requestCert'), status: 'failed', detail: err || undefined });
+      const err = commandResults
+        .map((c) => `${c.stderr || ''}\n${c.stdout || ''}`)
+        .filter((s) => s.trim())
+        .join('\n');
+      const { notesForLetsEncryptFailure } = await import('./ssl-le-errors.js');
+      const humanNotes = notesForLetsEncryptFailure(err, domain);
+      notes.push(...humanNotes);
+      steps.push({
+        name: tl('notes.ssl.requestCert'),
+        status: 'failed',
+        detail: humanNotes[0] || err.slice(0, 200) || undefined,
+      });
     }
     return {
       ok: ranOk,

@@ -19,6 +19,7 @@ export * from './git-deploy.js';
 export * from './backup-cron.js';
 export * from './project-logs.js';
 export * from './ssl-certs.js';
+export * from './ssl-le-errors.js';
 export * from './php-fpm.js';
 export * from './php-ini-catalog.js';
 export * from './php-disable-functions.js';

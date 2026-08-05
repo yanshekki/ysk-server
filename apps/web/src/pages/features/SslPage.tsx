@@ -210,7 +210,14 @@ export function SslPage() {
         <SoftwareInstallBanner feature="ssl" title={t('ssl.certbotNotInstalled')} />
         {error ? (
           <Alert variant="error" className="u-mb-3">
+            <strong className="u-block u-mb-1">{t('ssl.requestFailedWhy')}</strong>
             {error}
+            {notes.length > 1 ? (
+              <span className="u-block u-mt-2 muted u-text-sm">
+                <strong>{t('ssl.requestFailedNext')}：</strong>
+                {notes[1]}
+              </span>
+            ) : null}
             <span className="u-block u-mt-2">
               <Link
                 to="/logs?tab=explore&source=file:letsencrypt"
@@ -223,9 +230,10 @@ export function SslPage() {
         ) : null}
 
         <OpsResultPanel
-          message={msg}
+          message={msg && !error ? msg : null}
           result={
-            ok != null || blocked || notes.length || steps.length
+            // Avoid dumping raw certbot twice when error alert already shows the reason
+            !error && (ok != null || blocked || notes.length || steps.length)
               ? {
                   ok: blocked ? false : ok !== false,
                   blocked: Boolean(blocked),
@@ -235,20 +243,16 @@ export function SslPage() {
                     ...notes,
                   ],
                 }
-              : null
+              : error && steps.length
+                ? {
+                    ok: false,
+                    notes: steps.map((s) => formatStepLine(s, t)),
+                  }
+                : null
           }
-          onRetry={blocked ? () => void retryLast() : undefined}
+          onRetry={blocked || ok === false ? () => void retryLast() : undefined}
           busy={busy}
         />
-        {ok === false || blocked ? (
-          <p className="muted u-text-sm u-mb-3">
-            <Link to="/logs?tab=explore&source=file:letsencrypt">
-              {t('ssl.openLetsEncryptLog')}
-            </Link>
-            {' · '}
-            <code className="inline">/var/log/letsencrypt/letsencrypt.log</code>
-          </p>
-        ) : null}
 
         {renewNotes.length || bindings.length ? (
           <Card>
