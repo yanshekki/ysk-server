@@ -8094,7 +8094,7 @@
     "pluginsRecommended": "常用默认",
     "pluginsSelectAll": "全选可安装",
     "pluginsNone": "不安装工具",
-    "pluginsInstallNote": "工具在运行时装好后以 best-effort 安装；失败不会回滚主环境。已安装项请用上方「卸载」。",
+    "pluginsInstallNote": "勾选后点「安装选定工具」。首次装 runtime 时可连工具一起装；已装 runtime 请只点上方按钮。",
     "installPluginsOnly": "安装选定工具（{{version}} 已有）",
     "installExtOnly": "安装选定扩展（PHP {{version}} 已有）",
     "pluginAlreadyOnHost": "主机已有",
@@ -8427,7 +8427,8 @@
     "pluginBatchUninstall": "卸载选定 ({{n}})",
     "pluginBatchUninstallConfirm": "将卸载 {{n}} 个已选工具。",
     "pluginBatchUninstalled": "已卸载 {{n}} 个工具",
-    "pluginBatchLabel": "选定工具"
+    "pluginBatchLabel": "选定工具",
+    "usePluginsInstallBtn": "运行时已在主机：请用上方「安装选定工具」安装 PM2 等配套（不必再装 runtime）。"
   },
   "security": {
     "title": "安全与审批",

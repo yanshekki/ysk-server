@@ -62,7 +62,7 @@
   "pluginsRecommended": "Recommended set",
   "pluginsSelectAll": "Select all available",
   "pluginsNone": "No companion tools",
-  "pluginsInstallNote": "Tools install best-effort after the runtime; failures do not roll back the runtime. Use Uninstall above for installed tools.",
+  "pluginsInstallNote": "Select tools then Install selected. First-time runtime install can include tools; if runtime is present, only use the button above.",
   "installPluginsOnly": "Install selected tools ({{version}} already present)",
   "installExtOnly": "Install selected extensions (PHP {{version}} present)",
   "pluginAlreadyOnHost": "already on host",
@@ -395,5 +395,6 @@
   "pluginBatchUninstall": "Uninstall selected ({{n}})",
   "pluginBatchUninstallConfirm": "Uninstall {{n}} selected tools?",
   "pluginBatchUninstalled": "Uninstalled {{n}} tool(s)",
-  "pluginBatchLabel": "selected tools"
+  "pluginBatchLabel": "selected tools",
+  "usePluginsInstallBtn": "Runtime already on host: use “Install selected tools” above for PM2 etc. (no need to reinstall the runtime)."
 }
