@@ -20,6 +20,7 @@
   "statBindings": "Bindings",
   "statFailed": "Failed",
   "requestLe": "Request Let’s Encrypt",
+  "openLetsEncryptLog": "Open letsencrypt.log in Log Center",
   "uploadCert": "+ Upload certificate",
   "certbotNotInstalled": "Certbot is not installed",
   "bindingsTitle": "Bindings & renewal",

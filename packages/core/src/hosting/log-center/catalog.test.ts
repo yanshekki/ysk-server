@@ -49,6 +49,10 @@ describe('catalog forbidden paths', () => {
     expect(BUILTIN_LOG_SOURCES.every((s) => s.id && s.kind && s.label)).toBe(true);
     expect(BUILTIN_LOG_SOURCES.some((s) => s.kind === 'journal')).toBe(true);
     expect(BUILTIN_LOG_SOURCES.some((s) => s.kind === 'file')).toBe(true);
+    expect(BUILTIN_LOG_SOURCES.some((s) => s.id === 'file:letsencrypt')).toBe(true);
+    expect(
+      BUILTIN_LOG_SOURCES.find((s) => s.id === 'file:letsencrypt')?.paths,
+    ).toContain('/var/log/letsencrypt/letsencrypt.log');
     expect(LOG_PATH_ROOTS).toContain('/var/log');
     expect(LOG_PATH_ROOTS).toContain('/run/log');
   });

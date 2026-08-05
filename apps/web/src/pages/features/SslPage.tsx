@@ -208,7 +208,19 @@ export function SslPage() {
     >
       <WithPageGuide guideId="ssl">
         <SoftwareInstallBanner feature="ssl" title={t('ssl.certbotNotInstalled')} />
-        {error ? <Alert variant="error">{error}</Alert> : null}
+        {error ? (
+          <Alert variant="error" className="u-mb-3">
+            {error}
+            <span className="u-block u-mt-2">
+              <Link
+                to="/logs?tab=explore&source=file:letsencrypt"
+                className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+              >
+                {t('ssl.openLetsEncryptLog')}
+              </Link>
+            </span>
+          </Alert>
+        ) : null}
 
         <OpsResultPanel
           message={msg}
@@ -228,6 +240,15 @@ export function SslPage() {
           onRetry={blocked ? () => void retryLast() : undefined}
           busy={busy}
         />
+        {ok === false || blocked ? (
+          <p className="muted u-text-sm u-mb-3">
+            <Link to="/logs?tab=explore&source=file:letsencrypt">
+              {t('ssl.openLetsEncryptLog')}
+            </Link>
+            {' · '}
+            <code className="inline">/var/log/letsencrypt/letsencrypt.log</code>
+          </p>
+        ) : null}
 
         {renewNotes.length || bindings.length ? (
           <Card>

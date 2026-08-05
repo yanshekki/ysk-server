@@ -87,6 +87,25 @@ export const BUILTIN_LOG_SOURCES: LogSourceDef[] = [
     paths: ['/var/log/fail2ban.log'],
     group: 'security',
     defaultEnabled: true },
+  {
+    id: 'file:letsencrypt',
+    kind: 'file',
+    label: 'letsencrypt',
+    paths: [
+      '/var/log/letsencrypt/letsencrypt.log',
+      '/var/log/letsencrypt/letsencrypt.log.1',
+    ],
+    group: 'web',
+    defaultEnabled: true,
+    description: "Certbot / Let's Encrypt ACME (HTTP-01 challenges)" },
+  {
+    id: 'journal:certbot',
+    kind: 'journal',
+    label: 'certbot',
+    unit: 'certbot.service',
+    group: 'web',
+    defaultEnabled: false,
+    description: 'certbot systemd timer/service (if packaged)' },
 ];
 
 /** Roots under which file logs may be read (after realpath). */

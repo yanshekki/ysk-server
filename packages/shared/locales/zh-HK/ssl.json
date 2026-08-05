@@ -20,6 +20,7 @@
   "statBindings": "綁定",
   "statFailed": "失敗",
   "requestLe": "申請 Let’s Encrypt",
+  "openLetsEncryptLog": "在日誌中心開啟 letsencrypt.log",
   "uploadCert": "+ 上傳憑證",
   "certbotNotInstalled": "Certbot 尚未安裝",
   "bindingsTitle": "綁定與續期",

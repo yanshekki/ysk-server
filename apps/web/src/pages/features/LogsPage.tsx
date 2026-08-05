@@ -765,6 +765,7 @@ export function LogsPage() {
     { label: t('logs.srcFail2ban'), source: 'journal:fail2ban.service' },
     { label: t('logs.srcAuthLog'), source: 'file:auth' },
     { label: t('logs.srcNginxError'), source: 'file:nginx-error' },
+    { label: t('logs.srcLetsEncrypt'), source: 'file:letsencrypt' },
   ];
 
   return (
