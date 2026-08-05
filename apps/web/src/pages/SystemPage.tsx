@@ -453,7 +453,7 @@ export function SystemPage() {
                           <h3 className="sys-panel__title">{t('system.identity')}</h3>
                           <p className="sys-panel__sub">
                             {host?.caps.canIdentity
-                              ? 'hostnamectl / timedatectl'
+                              ? t('system.identityTools')
                               : t('system.identityReadonly')}
                           </p>
                         </div>
@@ -462,7 +462,12 @@ export function SystemPage() {
                         </Badge>
                       </header>
                       <FormLayout columns={1}>
-                        <Field label={t('system.hostname')} htmlFor="sys-hn" hint="hostname" flush>
+                        <Field
+                          label={t('system.hostname')}
+                          htmlFor="sys-hn"
+                          hint={t('system.hostnameHint')}
+                          flush
+                        >
                           <input
                             id="sys-hn"
                             value={hostname}
@@ -646,7 +651,7 @@ export function SystemPage() {
                       ) : null}
                       {host?.network.resolvers?.length ? (
                         <div className="sys-resolvers">
-                          <span className="sys-resolvers__lab">DNS</span>
+                          <span className="sys-resolvers__lab">{t('system.dns')}</span>
                           {host.network.resolvers.map((r) => (
                             <code key={r} className="sys-chip-code">
                               {r}
@@ -727,7 +732,7 @@ export function SystemPage() {
                         </Link>
                         <Link to="/system/unit" className="sys-shortcut">
                           <span className="sys-shortcut__t">{t('system.scUnit')}</span>
-                          <span className="sys-shortcut__d">ysk-server systemd</span>
+                          <span className="sys-shortcut__d">{t('system.scUnitD')}</span>
                         </Link>
                         <Link to="/system/readiness" className="sys-shortcut">
                           <span className="sys-shortcut__t">{t('system.scReadiness')}</span>
