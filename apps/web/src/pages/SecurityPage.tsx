@@ -158,7 +158,6 @@ export function SecurityPage() {
   /** Passkey errors stay in-section — do not spam page-top like TOTP/session errors. */
   const [passkeyErr, setPasskeyErr] = useState<string | null>(null);
   const [passkeyMsg, setPasskeyMsg] = useState<string | null>(null);
-  const [webauthnReady] = useState(() => browserSupportsWebAuthn() && isSecureWebAuthnContext());
   const [totpBusy, setTotpBusy] = useState(false);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [reauthPassword, setReauthPassword] = useState('');
@@ -633,16 +632,8 @@ export function SecurityPage() {
                 title={t('security.passkeyTitle')}
                 description={t('security.passkeyDesc')}
               >
-                {!webauthnReady ? (
-                  <Alert variant="info" className="u-mb-3">
-                    {!browserSupportsWebAuthn()
-                      ? t('security.webauthnUnsupported')
-                      : t('security.webauthnInsecureContext')}
-                    <span className="u-block u-mt-1 muted u-text-sm">
-                      {t('security.webauthnUnavailableHint')}
-                    </span>
-                  </Alert>
-                ) : null}
+                {/* No product-side gate: Brave / NordPass / 1Password / platform authenticators
+                    all work via standard WebAuthn. Soft hint only; errors stay in-section. */}
                 {passkeyErr ? (
                   <Alert variant="error" className="u-mb-3">
                     {passkeyErr}
@@ -674,16 +665,7 @@ export function SecurityPage() {
                     variant="primary"
                     size="sm"
                     loading={totpBusy}
-                    disabled={!webauthnReady}
                     onClick={() => {
-                      if (!webauthnReady) {
-                        setPasskeyErr(
-                          !browserSupportsWebAuthn()
-                            ? t('security.webauthnUnsupported')
-                            : t('security.webauthnInsecureContext'),
-                        );
-                        return;
-                      }
                       setPasskeyErr(null);
                       setPasskeyMsg(null);
                       setTotpBusy(true);
@@ -727,16 +709,7 @@ export function SecurityPage() {
                     variant="secondary"
                     size="sm"
                     loading={totpBusy}
-                    disabled={!webauthnReady}
                     onClick={() => {
-                      if (!webauthnReady) {
-                        setPasskeyErr(
-                          !browserSupportsWebAuthn()
-                            ? t('security.webauthnUnsupported')
-                            : t('security.webauthnInsecureContext'),
-                        );
-                        return;
-                      }
                       setPasskeyErr(null);
                       setPasskeyMsg(null);
                       setTotpBusy(true);
