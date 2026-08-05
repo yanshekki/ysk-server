@@ -23,11 +23,14 @@ describe('runtime-plugins', () => {
     );
   });
 
-  it('builds npm install lines for pm2', () => {
+  it('builds npm install lines for pm2 with fail tracking', () => {
     const { lines, ids } = buildRuntimePluginScriptLines('node', ['pm2', 'yarn']);
     expect(ids).toEqual(expect.arrayContaining(['pm2', 'yarn']));
-    expect(lines.join('\n')).toMatch(/npm install -g/);
-    expect(lines.join('\n')).toMatch(/pm2/);
+    const body = lines.join('\n');
+    expect(body).toMatch(/npm install -g/);
+    expect(body).toMatch(/pm2/);
+    expect(body).toContain('YSK_PLUGIN_FAILED');
+    expect(body).toContain('ysk_plugin_fail');
   });
 
   it('dto for each kind', () => {

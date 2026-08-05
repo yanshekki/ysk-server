@@ -411,9 +411,14 @@ export function buildRuntimePluginScriptLines(
 
   const lines: string[] = [
     '',
-    '# —— Companion tools / plugins (best-effort) ——',
+    '# —— Companion tools / plugins ——',
+    'YSK_PLUGIN_FAILED=""',
+    'ysk_plugin_fail() { YSK_PLUGIN_FAILED="${YSK_PLUGIN_FAILED} $1"; echo "YSK_PLUGIN_SKIP:$1" >&2; }',
     'echo "Installing companion tools: ' + ids.join(', ') + '"',
-    'export PATH="/usr/local/bin:/usr/local/ysk/node/*/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
+    // Prefer concrete bin dirs (glob in PATH is unreliable)
+    'export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
+    'for _d in /usr/local/ysk/node/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
+    'export PATH',
   ];
 
   for (const p of plugins) {
@@ -422,9 +427,9 @@ export function buildRuntimePluginScriptLines(
       case 'npm-global': {
         const pkgs = (p.npmPackages ?? []).map((x) => JSON.stringify(x)).join(' ');
         lines.push(
-          `if command -v npm >/dev/null 2>&1; then npm install -g ${pkgs} || echo "skip ${p.id}: npm failed" >&2`,
-          `elif command -v bun >/dev/null 2>&1; then bun add -g ${pkgs} || echo "skip ${p.id}: bun failed" >&2`,
-          `else echo "skip ${p.id}: npm not found" >&2; fi`,
+          `if command -v npm >/dev/null 2>&1; then npm install -g ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `elif command -v bun >/dev/null 2>&1; then bun add -g ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `else ysk_plugin_fail ${p.id}; fi`,
         );
         break;
       }
@@ -432,24 +437,24 @@ export function buildRuntimePluginScriptLines(
         const pkgs = (p.aptPackages ?? []).join(' ');
         lines.push(
           `export DEBIAN_FRONTEND=noninteractive`,
-          `apt-get install -y ${pkgs} || echo "skip ${p.id}: apt failed" >&2`,
+          `apt-get install -y ${pkgs} || ysk_plugin_fail ${p.id}`,
         );
         break;
       }
       case 'pip': {
         const pkgs = (p.pipPackages ?? []).map((x) => JSON.stringify(x)).join(' ');
         lines.push(
-          `if command -v pip3 >/dev/null 2>&1; then pip3 install --break-system-packages ${pkgs} 2>/dev/null || pip3 install ${pkgs} || echo "skip ${p.id}" >&2`,
-          `elif command -v pip >/dev/null 2>&1; then pip install ${pkgs} || echo "skip ${p.id}" >&2`,
-          `else echo "skip ${p.id}: pip not found" >&2; fi`,
+          `if command -v pip3 >/dev/null 2>&1; then pip3 install --break-system-packages ${pkgs} 2>/dev/null || pip3 install ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `elif command -v pip >/dev/null 2>&1; then pip install ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `else ysk_plugin_fail ${p.id}; fi`,
         );
         break;
       }
       case 'go-install': {
         for (const mod of p.goModules ?? []) {
           lines.push(
-            `if command -v go >/dev/null 2>&1; then go install ${JSON.stringify(mod)} || echo "skip ${mod}" >&2`,
-            `else echo "skip ${p.id}: go not found" >&2; fi`,
+            `if command -v go >/dev/null 2>&1; then go install ${JSON.stringify(mod)} || ysk_plugin_fail ${p.id}`,
+            `else ysk_plugin_fail ${p.id}; fi`,
           );
         }
         break;
@@ -457,8 +462,8 @@ export function buildRuntimePluginScriptLines(
       case 'cargo-install': {
         for (const crate of p.cargoCrates ?? []) {
           lines.push(
-            `if command -v cargo >/dev/null 2>&1; then cargo install ${JSON.stringify(crate)} || echo "skip ${crate}" >&2`,
-            `else echo "skip ${p.id}: cargo not found" >&2; fi`,
+            `if command -v cargo >/dev/null 2>&1; then cargo install ${JSON.stringify(crate)} || ysk_plugin_fail ${p.id}`,
+            `else ysk_plugin_fail ${p.id}; fi`,
           );
         }
         break;
@@ -466,17 +471,25 @@ export function buildRuntimePluginScriptLines(
       case 'rustup-component': {
         for (const c of p.rustupComponents ?? []) {
           lines.push(
-            `if command -v rustup >/dev/null 2>&1; then rustup component add ${JSON.stringify(c)} || echo "skip ${c}" >&2`,
-            `elif [ -x /usr/local/ysk/rust/bin/rustup ]; then /usr/local/ysk/rust/bin/rustup component add ${JSON.stringify(c)} || true`,
-            `else echo "skip ${p.id}: rustup not found" >&2; fi`,
+            `if command -v rustup >/dev/null 2>&1; then rustup component add ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
+            `elif [ -x /usr/local/ysk/rust/bin/rustup ]; then /usr/local/ysk/rust/bin/rustup component add ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
+            `else ysk_plugin_fail ${p.id}; fi`,
           );
         }
         break;
       }
       default:
-        lines.push(`echo "skip ${p.id}: no installer"`);
+        lines.push(`ysk_plugin_fail ${p.id}`);
     }
   }
+
+  lines.push(
+    'if [ -n "${YSK_PLUGIN_FAILED// }" ]; then',
+    '  echo "YSK_PLUGIN_FAILED:${YSK_PLUGIN_FAILED}"',
+    '  exit 3',
+    'fi',
+    'echo "YSK_PLUGIN_OK=1"',
+  );
 
   return {
     lines,

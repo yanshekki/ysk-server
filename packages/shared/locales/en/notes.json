@@ -103,7 +103,9 @@
     "aptPackages": "Will install {{count}} packages: {{list}}"
   },
   "runtime": {
-    "plugins": "Companion tools: {{list}}"
+    "plugins": "Companion tools: {{list}}",
+    "pluginsOk": "Companion tools installed",
+    "pluginsFailed": "Some tools failed or were skipped: {{list}}"
   },
   "approval": {
     "notFound": "Approval not found: {{id}}"

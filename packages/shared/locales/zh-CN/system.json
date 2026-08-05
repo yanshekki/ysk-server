@@ -63,7 +63,12 @@
     "restartManual": "请手动：systemctl restart ysk-server",
     "restarted": "已重启 ysk-server",
     "restartFailed": "重启失败：{{detail}}",
-    "firewallHint": "若从外网连接，请在防火墙放行面板端口（默认 9287/tcp）"
+    "firewallHint": "若从外网连接，请在防火墙放行面板端口（默认 9287/tcp）",
+    "restartNow": "完成后立即重启 ysk-server",
+    "restartNowHint": "会中断当前连接；未勾选则只写配置，需手动 systemctl restart",
+    "restartConfirm": "确定立即重启面板服务？此连接可能断开，请改用 HTTPS 重新打开。",
+    "manualRestart": "请手动重启后用 {{url}} 打开",
+    "reconnectHttps": "服务可能已重启。请用 {{url}} 重新连接。"
   },
   "timeNtp": "时间与 NTP",
   "clockStatus": "系统时钟状态",

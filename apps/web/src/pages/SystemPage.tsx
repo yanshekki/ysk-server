@@ -135,6 +135,8 @@ export function SystemPage() {
   > | null>(null);
   const [panelEmail, setPanelEmail] = useState('');
   const [tlsBusy, setTlsBusy] = useState(false);
+  /** Apply TLS config without killing this session unless user opts in */
+  const [tlsRestart, setTlsRestart] = useState(false);
 
   const refresh = useCallback(async () => {
     const [o, tz, tls] = await Promise.all([
@@ -665,6 +667,21 @@ export function SystemPage() {
                         </ul>
                       ) : null}
                       <p className="form-hint u-mt-2">{t('system.panelTls.firewallHint')}</p>
+                      <label className="checkbox-field u-mt-2">
+                        <input
+                          type="checkbox"
+                          checked={tlsRestart}
+                          onChange={(e) => setTlsRestart(e.target.checked)}
+                        />
+                        <span className="checkbox-field__text">
+                          <span className="checkbox-field__label">
+                            {t('system.panelTls.restartNow')}
+                          </span>
+                          <span className="checkbox-field__desc">
+                            {t('system.panelTls.restartNowHint')}
+                          </span>
+                        </span>
+                      </label>
                       <div className="sys-panel__actions">
                         <Button
                           variant="primary"
@@ -676,25 +693,34 @@ export function SystemPage() {
                               setErr(t('system.panelTls.needDomain'));
                               return;
                             }
+                            if (
+                              tlsRestart &&
+                              !window.confirm(t('system.panelTls.restartConfirm'))
+                            ) {
+                              return;
+                            }
                             setTlsBusy(true);
                             setErr(null);
                             setMsg(null);
+                            const httpsHint = `https://${hostname.trim()}:${panelTls?.listenPort ?? 9287}`;
                             void systemApi
                               .panelTlsIssue({
                                 domain: hostname.trim(),
                                 email:
                                   panelEmail.trim() ||
                                   `admin@${hostname.trim().replace(/^\*\./, '')}`,
-                                restart: true,
+                                restart: tlsRestart,
                               })
                               .then((r) => {
                                 setOpsResult(r as RebuildResult);
                                 if (r.ok) {
-                                  setMsg(
+                                  const base =
                                     (r.notes ?? []).join('；') ||
-                                      t('system.panelTls.urlHint', {
-                                        url: `https://${hostname.trim()}:9287`,
-                                      }),
+                                    t('system.panelTls.urlHint', { url: httpsHint });
+                                  setMsg(
+                                    tlsRestart
+                                      ? base
+                                      : `${base}；${t('system.panelTls.manualRestart', { url: httpsHint })}`,
                                   );
                                 } else {
                                   setErr(
@@ -705,7 +731,18 @@ export function SystemPage() {
                                 }
                                 return refresh();
                               })
-                              .catch((e: Error) => setErr(e.message))
+                              .catch((e: Error) => {
+                                // Restart may drop the connection mid-flight
+                                if (tlsRestart) {
+                                  setMsg(
+                                    t('system.panelTls.reconnectHttps', {
+                                      url: httpsHint,
+                                    }),
+                                  );
+                                } else {
+                                  setErr(e.message);
+                                }
+                              })
                               .finally(() => setTlsBusy(false));
                           }}
                         >
@@ -717,24 +754,46 @@ export function SystemPage() {
                           loading={tlsBusy}
                           disabled={!hostname.trim()}
                           onClick={() => {
+                            if (
+                              tlsRestart &&
+                              !window.confirm(t('system.panelTls.restartConfirm'))
+                            ) {
+                              return;
+                            }
                             setTlsBusy(true);
                             setErr(null);
                             setMsg(null);
+                            const httpsHint = `https://${hostname.trim()}:${panelTls?.listenPort ?? 9287}`;
                             void systemApi
                               .panelTlsEnable({
                                 domain: hostname.trim(),
-                                restart: true,
+                                restart: tlsRestart,
                               })
                               .then((r) => {
                                 setOpsResult(r as RebuildResult);
                                 if (r.ok) {
-                                  setMsg((r.notes ?? []).join('；'));
+                                  const base = (r.notes ?? []).join('；');
+                                  setMsg(
+                                    tlsRestart
+                                      ? base
+                                      : `${base}；${t('system.panelTls.manualRestart', { url: httpsHint })}`,
+                                  );
                                 } else {
                                   setErr((r.notes ?? []).join('；') || t('common.opFailed'));
                                 }
                                 return refresh();
                               })
-                              .catch((e: Error) => setErr(e.message))
+                              .catch((e: Error) => {
+                                if (tlsRestart) {
+                                  setMsg(
+                                    t('system.panelTls.reconnectHttps', {
+                                      url: httpsHint,
+                                    }),
+                                  );
+                                } else {
+                                  setErr(e.message);
+                                }
+                              })
                               .finally(() => setTlsBusy(false));
                           }}
                         >
@@ -746,11 +805,17 @@ export function SystemPage() {
                           loading={tlsBusy}
                           disabled={!panelTls?.tlsEnabled}
                           onClick={() => {
+                            if (
+                              tlsRestart &&
+                              !window.confirm(t('system.panelTls.restartConfirm'))
+                            ) {
+                              return;
+                            }
                             setTlsBusy(true);
                             setErr(null);
                             setMsg(null);
                             void systemApi
-                              .panelTlsDisable({ restart: true })
+                              .panelTlsDisable({ restart: tlsRestart })
                               .then((r) => {
                                 setOpsResult(r as RebuildResult);
                                 setMsg((r.notes ?? []).join('；'));

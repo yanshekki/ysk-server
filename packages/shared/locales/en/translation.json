@@ -4209,7 +4209,9 @@
       "aptPackages": "Will install {{count}} packages: {{list}}"
     },
     "runtime": {
-      "plugins": "Companion tools: {{list}}"
+      "plugins": "Companion tools: {{list}}",
+      "pluginsOk": "Companion tools installed",
+      "pluginsFailed": "Some tools failed or were skipped: {{list}}"
     },
     "approval": {
       "notFound": "Approval not found: {{id}}"
@@ -8063,6 +8065,7 @@
     "pluginsNone": "No companion tools",
     "pluginsInstallNote": "Tools install best-effort after the runtime; failures do not roll back the runtime.",
     "installPluginsOnly": "Install selected tools ({{version}} already present)",
+    "installExtOnly": "Install selected extensions (PHP {{version}} present)",
     "installedPhp": "Installed PHP {{version}}",
     "nextSteps": "Next",
     "suggestedFlow": "Suggested flow",
@@ -9116,7 +9119,12 @@
       "restartManual": "Restart manually: systemctl restart ysk-server",
       "restarted": "ysk-server restarted",
       "restartFailed": "Restart failed: {{detail}}",
-      "firewallHint": "If reaching from the internet, allow the panel port (default 9287/tcp)"
+      "firewallHint": "If reaching from the internet, allow the panel port (default 9287/tcp)",
+      "restartNow": "Restart ysk-server immediately after",
+      "restartNowHint": "Drops this session; if unchecked, only writes config — run systemctl restart manually",
+      "restartConfirm": "Restart the panel service now? This connection may drop — reopen over HTTPS.",
+      "manualRestart": "Restart manually, then open {{url}}",
+      "reconnectHttps": "Service may have restarted. Reconnect at {{url}}."
     },
     "timeNtp": "Time & NTP",
     "clockStatus": "System clock status",

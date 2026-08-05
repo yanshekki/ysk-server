@@ -63,7 +63,12 @@
     "restartManual": "Restart manually: systemctl restart ysk-server",
     "restarted": "ysk-server restarted",
     "restartFailed": "Restart failed: {{detail}}",
-    "firewallHint": "If reaching from the internet, allow the panel port (default 9287/tcp)"
+    "firewallHint": "If reaching from the internet, allow the panel port (default 9287/tcp)",
+    "restartNow": "Restart ysk-server immediately after",
+    "restartNowHint": "Drops this session; if unchecked, only writes config — run systemctl restart manually",
+    "restartConfirm": "Restart the panel service now? This connection may drop — reopen over HTTPS.",
+    "manualRestart": "Restart manually, then open {{url}}",
+    "reconnectHttps": "Service may have restarted. Reconnect at {{url}}."
   },
   "timeNtp": "Time & NTP",
   "clockStatus": "System clock status",

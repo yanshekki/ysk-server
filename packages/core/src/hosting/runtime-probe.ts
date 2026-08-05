@@ -617,18 +617,42 @@ export async function planOrInstallRuntime(input: {
       exitCode: r.exitCode,
       stderr: r.stderr,
     });
+    const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+    const pluginFailMatch = out.match(/YSK_PLUGIN_FAILED:([^\n]+)/);
+    const pluginFailed = pluginFailMatch
+      ? pluginFailMatch[1]!
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+      : [];
+    // exit 3 = runtime ok-ish but plugins failed; other non-zero = hard fail
     if (r.exitCode === 0) {
       notes.push(tl('notes.auto.n0656'));
+      if (pluginIds?.length) notes.push(tl('notes.runtime.pluginsOk'));
+    } else if (r.exitCode === 3 && pluginFailed.length) {
+      notes.push(tl('notes.auto.n0656'));
+      notes.unshift(
+        tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }),
+      );
     } else {
       const detail = summarizeInstallLog(r.stderr || '', r.stdout || '') || String(r.exitCode);
       const failNote = tl('notes.auto.t0411', { v0: detail });
       notes.unshift(failNote);
+      if (pluginFailed.length) {
+        notes.push(tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }));
+      }
     }
   }
 
-  const ranOk = commandResults.length === 0 || commandResults.every((c) => c.exitCode === 0);
+  const hardFail = commandResults.some((c) => c.exitCode !== 0 && c.exitCode !== 3);
+  const pluginPartial = commandResults.some((c) => c.exitCode === 3);
+  // Runtime install ok if hard success OR plugin-only partial (exit 3)
+  const ranOk =
+    commandResults.length === 0 ||
+    commandResults.every((c) => c.exitCode === 0) ||
+    (pluginPartial && !hardFail);
   return {
-    ok: want ? can && ranOk : true,
+    ok: want ? can && ranOk && !pluginPartial : true,
     kind: input.kind,
     version: input.version,
     written,

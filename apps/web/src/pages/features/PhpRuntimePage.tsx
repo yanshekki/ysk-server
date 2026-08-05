@@ -493,9 +493,13 @@ export function PhpRuntimePage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    disabled={phpInstallState.installDisabled}
+                    disabled={
+                      phpInstallState.installDisabled &&
+                      extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
+                    }
                     title={
-                      phpInstallState.installDisabled
+                      phpInstallState.installDisabled &&
+                      extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
                         ? t('runtime.versionAlreadyInstalled', { version })
                         : undefined
                     }
@@ -512,9 +516,12 @@ export function PhpRuntimePage() {
                       }, t('runtime.installedPhp', { version }))
                     }
                   >
-                    {phpInstallState.installDisabled
-                      ? t('runtime.installedVersionBtn', { version })
-                      : t('runtime.installPhpVBtn', { version })}
+                    {phpInstallState.installDisabled &&
+                    extSelected.filter((id) => selectableExtIds.includes(id)).length > 0
+                      ? t('runtime.installExtOnly', { version })
+                      : phpInstallState.installDisabled
+                        ? t('runtime.installedVersionBtn', { version })
+                        : t('runtime.installPhpVBtn', { version })}
                   </Button>
                   {phpInstallState.newerAvailable[0] && phpInstallState.installDisabled ? (
                     <Button

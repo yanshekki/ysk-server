@@ -4209,7 +4209,9 @@
       "aptPackages": "將安裝 {{count}} 個套件：{{list}}"
     },
     "runtime": {
-      "plugins": "一併安裝工具：{{list}}"
+      "plugins": "一併安裝工具：{{list}}",
+      "pluginsOk": "選定工具已安裝",
+      "pluginsFailed": "部分工具安裝失敗或跳過：{{list}}"
     },
     "approval": {
       "notFound": "找不到審批：{{id}}"
@@ -8063,6 +8065,7 @@
     "pluginsNone": "不安裝工具",
     "pluginsInstallNote": "工具在執行環境裝好後以 best-effort 安裝；失敗唔會回滾主環境。",
     "installPluginsOnly": "安裝選定工具（{{version}} 已有）",
+    "installExtOnly": "安裝選定擴充（PHP {{version}} 已有）",
     "installedPhp": "已安裝 PHP {{version}}",
     "nextSteps": "下一步",
     "suggestedFlow": "建議流程",
@@ -9116,7 +9119,12 @@
       "restartManual": "請手動：systemctl restart ysk-server",
       "restarted": "已重啟 ysk-server",
       "restartFailed": "重啟失敗：{{detail}}",
-      "firewallHint": "若從外網連線，請在防火牆允許面板埠（預設 9287/tcp）"
+      "firewallHint": "若從外網連線，請在防火牆允許面板埠（預設 9287/tcp）",
+      "restartNow": "完成後立即重啟 ysk-server",
+      "restartNowHint": "會中斷目前連線；未勾選則只寫設定，需手動 systemctl restart",
+      "restartConfirm": "確定立即重啟面板服務？此連線可能會斷開，請改用 HTTPS 重新開啟。",
+      "manualRestart": "請手動重啟後用 {{url}} 開啟",
+      "reconnectHttps": "服務可能已重啟。請用 {{url}} 重新連線。"
     },
     "timeNtp": "時間與 NTP",
     "clockStatus": "系統時鐘狀態",

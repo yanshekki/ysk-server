@@ -64,6 +64,7 @@
   "pluginsNone": "不安装工具",
   "pluginsInstallNote": "工具在运行时装好后以 best-effort 安装；失败不会回滚主环境。",
   "installPluginsOnly": "安装选定工具（{{version}} 已有）",
+  "installExtOnly": "安装选定扩展（PHP {{version}} 已有）",
   "installedPhp": "已安装 PHP {{version}}",
   "nextSteps": "下一步",
   "suggestedFlow": "建议流程",
