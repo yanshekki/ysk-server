@@ -84,12 +84,35 @@ export function memTone(ratio?: number): 'ok' | 'warn' | 'danger' | 'neutral' {
   return 'ok';
 }
 
+/** timedatectl "NTP service: active|inactive|n/a" → locale */
+export function formatNtpServiceLabel(
+  source: string | null | undefined,
+  t: (key: string) => string,
+): string {
+  if (source == null || !String(source).trim()) return '—';
+  const s = String(source).trim().toLowerCase();
+  if (s === 'active') return t('system.ntpServiceActive');
+  if (s === 'inactive') return t('system.ntpServiceInactive');
+  if (s === 'n/a' || s === 'na' || s === 'not available') return t('system.ntpServiceNa');
+  return String(source).trim();
+}
+
+export function formatNtpSyncedLabel(
+  synced: boolean | null | undefined,
+  t: (key: string) => string,
+): string {
+  if (synced === true) return t('system.ntpSyncedYes');
+  if (synced === false) return t('system.ntpSyncedNo');
+  return t('system.ntpSyncedUnknown');
+}
+
 export function SystemPage() {
   const { t } = useTranslation();
 
   const [hostname, setHostname] = useState('');
   const [prettyHostname, setPrettyHostname] = useState('');
   const [timezone, setTimezone] = useState('');
+  const [timezoneOptions, setTimezoneOptions] = useState<string[]>([]);
   const [host, setHost] = useState<HostOverviewDto | null>(null);
   const [hostLoading, setHostLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -109,11 +132,22 @@ export function SystemPage() {
   const [caps, setCaps] = useState<{ executeEnabled?: boolean; isRoot?: boolean }>({});
 
   const refresh = useCallback(async () => {
-    const o = await systemApi.hostOverview();
+    const [o, tz] = await Promise.all([
+      systemApi.hostOverview(),
+      systemApi.timezones().catch(() => null),
+    ]);
     setHost(o);
     setHostname(o.identity.hostname ?? '');
     setPrettyHostname(o.identity.prettyHostname ?? '');
-    setTimezone(o.identity.timezone ?? '');
+    const current = o.identity.timezone ?? '';
+    setTimezone(current);
+    if (tz?.timezones?.length) {
+      const opts = [...tz.timezones];
+      if (current && !opts.includes(current)) opts.unshift(current);
+      setTimezoneOptions(opts);
+    } else if (current) {
+      setTimezoneOptions((prev) => (prev.includes(current) ? prev : [current, ...prev]));
+    }
     setCaps({
       executeEnabled: o.caps.executeEnabled,
       isRoot: o.caps.isRoot,
@@ -456,13 +490,25 @@ export function SystemPage() {
                           hint={t('system.timezoneHint')}
                           flush
                         >
-                          <input
+                          <select
                             id="sys-tz"
                             value={timezone}
                             onChange={bindInput(setTimezone)}
-                            placeholder="Asia/Hong_Kong"
                             disabled={!host?.caps.canIdentity && host != null}
-                          />
+                            aria-label={t('system.timezone')}
+                          >
+                            {!timezone ? (
+                              <option value="">{t('system.timezoneSelect')}</option>
+                            ) : null}
+                            {timezone && !timezoneOptions.includes(timezone) ? (
+                              <option value={timezone}>{timezone}</option>
+                            ) : null}
+                            {timezoneOptions.map((z) => (
+                              <option key={z} value={z}>
+                                {z}
+                              </option>
+                            ))}
+                          </select>
                         </Field>
                       </FormLayout>
                       <div className="sys-panel__actions">
@@ -518,14 +564,18 @@ export function SystemPage() {
                           </dd>
                         </div>
                         <div>
-                          <dt>UTC</dt>
+                          <dt>{t('system.utc')}</dt>
                           <dd>
                             <code className="sys-dl__muted">{host?.time.utc ?? '—'}</code>
                           </dd>
                         </div>
                         <div>
-                          <dt>{t('system.source')}</dt>
-                          <dd>{host?.time.timeSource ?? '—'}</dd>
+                          <dt>{t('system.ntpService')}</dt>
+                          <dd>{formatNtpServiceLabel(host?.time.timeSource, t)}</dd>
+                        </div>
+                        <div>
+                          <dt>{t('system.ntpSync')}</dt>
+                          <dd>{formatNtpSyncedLabel(host?.time.ntpSynchronized, t)}</dd>
                         </div>
                       </dl>
                       <div className="sys-panel__actions">

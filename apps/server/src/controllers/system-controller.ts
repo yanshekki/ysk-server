@@ -1868,6 +1868,27 @@ export async function handleSystemRoutes(
     });
     return true;
   }
+
+  if (method === 'GET' && url.pathname === '/api/v1/system/timezones') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listHostTimezones, mergeTimezoneOptions, collectHostOverview } = await import(
+      '@ysk/core'
+    );
+    const listed = await listHostTimezones(ctx.host);
+    let current: string | null = null;
+    try {
+      const o = await collectHostOverview(ctx.host);
+      current = o.identity.timezone;
+    } catch {
+      /* ignore */
+    }
+    sendJson(res, 200, {
+      timezones: mergeTimezoneOptions(listed.timezones, current),
+      current,
+      source: listed.source,
+    });
+    return true;
+  }
   if (method === 'POST' && url.pathname === '/api/v1/system/host-identity') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
@@ -1908,14 +1929,26 @@ export async function handleSystemRoutes(
       );
     }
     if (data.timezone?.trim()) {
-      const r = await ctx.host.runCommand(['timedatectl', 'set-timezone', data.timezone.trim()], {
-        timeoutMs: 10_000,
-      });
-      notes.push(
-        r.exitCode === 0
-          ? `timezone → ${data.timezone.trim()}`
-          : tl('notes.auto.t0797', { v0: (r.stderr || r.stdout) }),
-      );
+      const tz = data.timezone.trim();
+      const { isValidTimezoneId, listHostTimezones } = await import('@ysk/core');
+      if (!isValidTimezoneId(tz)) {
+        notes.push(tl('notes.auto.t0797', { v0: 'invalid timezone id' }));
+      } else {
+        // Prefer host list; still allow well-formed IANA if list is fallback/short
+        const listed = await listHostTimezones(ctx.host);
+        if (listed.source === 'timedatectl' && !listed.timezones.includes(tz)) {
+          notes.push(tl('notes.auto.t0797', { v0: `not in host timezone list: ${tz}` }));
+        } else {
+          const r = await ctx.host.runCommand(['timedatectl', 'set-timezone', tz], {
+            timeoutMs: 10_000,
+          });
+          notes.push(
+            r.exitCode === 0
+              ? `timezone → ${tz}`
+              : tl('notes.auto.t0797', { v0: r.stderr || r.stdout }),
+          );
+        }
+      }
     }
     ctx.audit.append({
       actor: user.username,

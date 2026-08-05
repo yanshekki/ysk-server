@@ -130,6 +130,12 @@ export const systemApi = {
       executeEnabled: boolean;
       isRoot: boolean;
     }>('/api/v1/system/host-identity'),
+  timezones: () =>
+    api.requestRaw<{
+      timezones: string[];
+      current: string | null;
+      source: 'timedatectl' | 'fallback';
+    }>('/api/v1/system/timezones'),
   hostOverview: () => api.requestRaw<HostOverviewDto>('/api/v1/system/host'),
   setHostIdentity: (body: {
     hostname?: string;
