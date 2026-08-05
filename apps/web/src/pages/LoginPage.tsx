@@ -98,8 +98,10 @@ export function LoginPage() {
         </div>
 
         {sessionBanner ? <Alert variant="info">{sessionBanner}</Alert> : null}
-        {error ? <Alert variant="error">{error}</Alert> : null}
-        {needsTotp ? (
+        {/* One alert only: prefer error; otherwise TOTP prompt when field is revealed. */}
+        {error ? (
+          <Alert variant="error">{error}</Alert>
+        ) : needsTotp ? (
           <Alert variant="info">{t('login.totpRequired')}</Alert>
         ) : null}
 
