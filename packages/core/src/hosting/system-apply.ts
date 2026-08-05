@@ -34,7 +34,7 @@ export interface ApplyResult {
   written: string[];
   /** Internal only — not for user homework */
   commands: string[];
-  commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+  commandResults: Array<{ argv: string[]; exitCode: number; stderr: string; stdout?: string }>;
   notes: string[];
   steps?: Array<{ name: string; status: 'ok' | 'skipped' | 'failed' | 'blocked'; detail?: string }>;
 }
@@ -65,7 +65,7 @@ async function runAll(
   if (!execute) return out;
   for (const argv of commands) {
     const r = await host.runCommand(argv, { timeoutMs: 180_000 });
-    out.push({ argv, exitCode: r.exitCode, stderr: r.stderr });
+    out.push({ argv, exitCode: r.exitCode, stderr: r.stderr, stdout: r.stdout });
   }
   return out;
 }
