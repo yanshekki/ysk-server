@@ -68,7 +68,12 @@
     "restartNowHint": "会中断当前连接；未勾选则只写配置，需手动 systemctl restart",
     "restartConfirm": "确定立即重启面板服务？此连接可能断开，请改用 HTTPS 重新打开。",
     "manualRestart": "请手动重启后用 {{url}} 打开",
-    "reconnectHttps": "服务可能已重启。请用 {{url}} 重新连接。"
+    "reconnectHttps": "服务可能已重启。请用 {{url}} 重新连接。",
+    "leStrategies": "面板证书：依次尝试 webroot → nginx certonly → standalone（无需 --redirect）",
+    "leOk": "已取得 {{domain}} 的 Let’s Encrypt 证书",
+    "leFailed": "申请证书失败：{{detail}}",
+    "leHint": "请确认域名 A 记录指向本机，且 80 端口可从外网到达（或 nginx 已服务该域名）",
+    "openFirewall": "若外网连接：防火墙请允许面板端口 {{port}}/tcp（防火墙 → 开埠 → 9287 Panel）"
   },
   "timeNtp": "时间与 NTP",
   "clockStatus": "系统时钟状态",

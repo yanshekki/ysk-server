@@ -3,6 +3,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, existsSync, readFileSync } from 
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
+  applyPanelLetsEncrypt,
   disablePanelTls,
   enablePanelTls,
   getPanelTlsStatus,
@@ -10,6 +11,7 @@ import {
   resolvePanelTlsMaterials,
 } from './panel-tls.js';
 import type { YskConfig } from '../config/schema.js';
+import type { HostExecutor, RunResult } from '../host/executor.js';
 
 function baseConfig(dataDir: string): YskConfig {
   return {
@@ -84,4 +86,22 @@ describe('panel-tls', () => {
     expect(r.ok).toBe(false);
     expect(existsSync(configPath)).toBe(true);
   });
+
+  it('applyPanelLetsEncrypt blocks without execute', async () => {
+    const host = {
+      executeEnabled: () => false,
+      isRoot: () => true,
+      runCommand: async () =>
+        ({ stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false }) as RunResult,
+    } as unknown as HostExecutor;
+    const r = await applyPanelLetsEncrypt({
+      domain: 'panel.test',
+      email: 'a@b.c',
+      dataDir: '/tmp',
+      host,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.blocked).toBe(true);
+  });
 });
+

@@ -68,7 +68,12 @@
     "restartNowHint": "會中斷目前連線；未勾選則只寫設定，需手動 systemctl restart",
     "restartConfirm": "確定立即重啟面板服務？此連線可能會斷開，請改用 HTTPS 重新開啟。",
     "manualRestart": "請手動重啟後用 {{url}} 開啟",
-    "reconnectHttps": "服務可能已重啟。請用 {{url}} 重新連線。"
+    "reconnectHttps": "服務可能已重啟。請用 {{url}} 重新連線。",
+    "leStrategies": "面板憑證：依次嘗試 webroot → nginx certonly → standalone（無需 --redirect）",
+    "leOk": "已取得 {{domain}} 的 Let’s Encrypt 憑證",
+    "leFailed": "申請憑證失敗：{{detail}}",
+    "leHint": "請確認域名 A 記錄指向本機，且 80 埠可從外網到達（或 nginx 已服務該域名）",
+    "openFirewall": "若外網連線：防火牆請允許面板埠 {{port}}/tcp（防火牆 → 開埠 → 9287 Panel）"
   },
   "timeNtp": "時間與 NTP",
   "clockStatus": "系統時鐘狀態",

@@ -3,19 +3,19 @@
  * Uses Let's Encrypt live paths or managed dataDir certs; config written to config.json.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { YskConfig } from '../config/schema.js';
 import { mergePanelTlsConfig, parseConfig } from '../config/schema.js';
 import type { HostExecutor } from '../host/executor.js';
 import type { YskDatabase } from '../db/store.js';
-import { applyLetsEncrypt } from './system-apply.js';
 import {
   parseCertExpiryFromPath,
   resolveBestCertPaths,
   resolveLetsEncryptLivePaths,
   upsertLetsEncryptRecord,
 } from './ssl-certs.js';
+import { panelBlockMessage } from './system-apply.js';
 import { tl } from '@ysk/shared';
 
 export type PanelTlsStatus = {
@@ -234,6 +234,81 @@ export function disablePanelTls(input: { configPath: string }): PanelTlsResult {
 }
 
 /**
+ * Panel-specific ACME: certonly (no nginx --redirect).
+ * Tries webroot under dataDir → nginx plugin → standalone (port 80 free).
+ */
+export async function applyPanelLetsEncrypt(input: {
+  domain: string;
+  email: string;
+  dataDir: string;
+  host: HostExecutor;
+}): Promise<{
+  ok: boolean;
+  executed: boolean;
+  blocked?: boolean;
+  blockMessage?: string;
+  notes: string[];
+  commands: string[];
+}> {
+  const domain = input.domain.trim().toLowerCase().replace(/\.$/, '');
+  const email = input.email.trim();
+  const notes: string[] = [];
+  const commands: string[] = [];
+
+  if (!input.host.executeEnabled()) {
+    const blockMessage = panelBlockMessage('no_execute');
+    return { ok: false, executed: false, blocked: true, blockMessage, notes: [blockMessage], commands };
+  }
+  if (!input.host.isRoot()) {
+    const blockMessage = panelBlockMessage('no_root');
+    return { ok: false, executed: false, blocked: true, blockMessage, notes: [blockMessage], commands };
+  }
+
+  const webroot = join(input.dataDir, 'acme-www');
+  try {
+    mkdirSync(join(webroot, '.well-known', 'acme-challenge'), { recursive: true });
+  } catch {
+    /* best-effort */
+  }
+
+  // Single bash: try strategies in order; succeed if live cert appears
+  const script = [
+    '#!/usr/bin/env bash',
+    'set -u',
+    `DOMAIN=${JSON.stringify(domain)}`,
+    `EMAIL=${JSON.stringify(email)}`,
+    `WEBROOT=${JSON.stringify(webroot)}`,
+    'mkdir -p "$WEBROOT/.well-known/acme-challenge"',
+    'if ! command -v certbot >/dev/null 2>&1; then echo "certbot missing" >&2; exit 2; fi',
+    'try() { echo "trying: $*" >&2; "$@" && return 0; return 1; }',
+    // 1) webroot (works if any reverse-proxy serves this path)
+    'try certbot certonly --webroot -w "$WEBROOT" -d "$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive --keep-until-expiring && exit 0',
+    // 2) nginx plugin without --redirect (does not force site redirect)
+    'try certbot certonly --nginx -d "$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive --keep-until-expiring && exit 0',
+    // 3) standalone (needs free :80 — may fail if nginx holds it)
+    'try certbot certonly --standalone -d "$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive --preferred-challenges http --keep-until-expiring && exit 0',
+    'echo "all ACME strategies failed for $DOMAIN" >&2',
+    'exit 1',
+    '',
+  ].join('\n');
+
+  commands.push('certbot certonly (webroot|nginx|standalone)');
+  notes.push(tl('system.panelTls.leStrategies'));
+
+  const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 300_000 });
+  const live = resolveLetsEncryptLivePaths(domain);
+  const ok = r.exitCode === 0 || live.exists;
+  if (ok) {
+    notes.push(tl('system.panelTls.leOk', { domain }));
+  } else {
+    const detail = `${r.stderr || ''}\n${r.stdout || ''}`.trim().slice(0, 400);
+    notes.push(tl('system.panelTls.leFailed', { detail: detail || `exit ${r.exitCode}` }));
+    notes.push(tl('system.panelTls.leHint'));
+  }
+  return { ok, executed: true, notes, commands };
+}
+
+/**
  * Issue LE for panel domain then enable TLS in config.
  */
 export async function issueAndEnablePanelTls(input: {
@@ -254,12 +329,11 @@ export async function issueAndEnablePanelTls(input: {
   let issueOk = existing.exists || le.exists;
 
   if (!issueOk) {
-    const r = await applyLetsEncrypt({
+    const r = await applyPanelLetsEncrypt({
       domain,
       email: input.email,
+      dataDir: input.dataDir,
       host: input.host,
-      run: true,
-      challenge: 'http-01',
     });
     notes.push(...(r.notes ?? []));
     if (r.blocked) {
@@ -309,6 +383,9 @@ export async function issueAndEnablePanelTls(input: {
     enabled: true,
   });
   notes.push(...en.notes);
+  // Firewall reminder for panel port
+  const port = en.status.listenPort || 9287;
+  notes.push(tl('system.panelTls.openFirewall', { port: String(port) }));
   return {
     ok: en.ok,
     notes,
