@@ -91,18 +91,44 @@ export const MYSQL_SETTING_DEFS: SettingDef[] = [
     category: 'performance',
     type: 'int',
     applyMode: 'runtime' },
-  // Charset
+  // Charset / collation — select only (no free text)
   {
     key: 'character_set_server',
     label: 'notes.auto.n0518',
     category: 'network',
-    type: 'string',
+    type: 'enum',
+    enumValues: [
+      'utf8mb4',
+      'utf8mb3',
+      'utf8',
+      'latin1',
+      'ascii',
+      'binary',
+      'gbk',
+      'big5',
+      'ujis',
+      'sjis',
+      'euckr',
+    ],
     applyMode: 'restart' },
   {
     key: 'collation_server',
     label: 'notes.auto.n0520',
     category: 'network',
-    type: 'string',
+    type: 'enum',
+    enumValues: [
+      'utf8mb4_unicode_ci',
+      'utf8mb4_general_ci',
+      'utf8mb4_0900_ai_ci',
+      'utf8mb4_bin',
+      'utf8mb3_general_ci',
+      'utf8_general_ci',
+      'latin1_swedish_ci',
+      'ascii_general_ci',
+      'binary',
+      'gbk_chinese_ci',
+      'big5_chinese_ci',
+    ],
     applyMode: 'restart' },
   // Logging
   {

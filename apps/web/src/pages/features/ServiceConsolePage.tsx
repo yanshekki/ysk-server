@@ -250,22 +250,24 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       );
     }
     if (s.enumValues?.length) {
-      if (s.enumValues.length <= 12) {
-        const current = s.enumValues.includes(val) ? val : s.enumValues[0]!;
+      const enums =
+        val && !s.enumValues.includes(val) ? [val, ...s.enumValues] : s.enumValues;
+      if (enums.length <= 12) {
+        const current = enums.includes(val) ? val : enums[0]!;
         return (
           <SegRadio
             name={id}
             aria-label={s.label}
             value={current}
             onChange={onChange}
-            options={s.enumValues.map((x) => ({ value: x, label: x }))}
+            options={enums.map((x) => ({ value: x, label: x }))}
           />
         );
       }
       return (
         <select id={id} value={val} onChange={(e) => onChange(e.target.value)} aria-label={s.label}>
           {val === '' ? <option value="">{t('db.console.noneFetched')}</option> : null}
-          {s.enumValues.map((x) => (
+          {enums.map((x) => (
             <option key={x} value={x}>
               {x}
             </option>

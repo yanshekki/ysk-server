@@ -8109,7 +8109,173 @@
     "installBunLabel": "安裝／更新 Bun",
     "javaMissing": "未偵測到 Java（OpenJDK）",
     "kotlinMissing": "未偵測到 Kotlin 編譯器",
-    "bunMissing": "未偵測到 Bun"
+    "bunMissing": "未偵測到 Bun",
+    "phpIniCatalog": {
+      "groups": {
+        "resource": {
+          "title": "資源限制",
+          "description": "記憶體、執行時間與輸入限制"
+        },
+        "upload": {
+          "title": "上傳與 POST",
+          "description": "檔案上傳與 POST 體積"
+        },
+        "session": {
+          "title": "工作階段",
+          "description": "工作階段儲存與 cookie"
+        },
+        "error": {
+          "title": "錯誤與日誌",
+          "description": "顯示錯誤、記錄與報告等級"
+        },
+        "opcache": {
+          "title": "OPcache",
+          "description": "位元碼快取"
+        },
+        "security": {
+          "title": "安全與路徑",
+          "description": "遠端檔案、暴露資訊、函式禁用"
+        },
+        "locale": {
+          "title": "時區與字元"
+        },
+        "misc": {
+          "title": "其他常用"
+        }
+      },
+      "fields": {
+        "memory_limit": {
+          "label": "記憶體上限",
+          "hint": "例如 128M、256M、512M、-1（無限）"
+        },
+        "max_execution_time": {
+          "label": "最長執行時間",
+          "hint": "秒；0 = 無限（命令列）"
+        },
+        "max_input_time": {
+          "label": "最長輸入時間",
+          "hint": "秒；解析請求的最長時間"
+        },
+        "max_input_vars": {
+          "label": "最多輸入變數",
+          "hint": "$_GET / $_POST / $_COOKIE 變數上限"
+        },
+        "max_input_nesting_level": {
+          "label": "輸入巢狀層級"
+        },
+        "file_uploads": {
+          "label": "允許上傳檔案"
+        },
+        "upload_max_filesize": {
+          "label": "單一檔案上限"
+        },
+        "post_max_size": {
+          "label": "POST 體積上限",
+          "hint": "應 ≥ 單一檔案上限"
+        },
+        "max_file_uploads": {
+          "label": "單次最多檔案數"
+        },
+        "session_save_handler": {
+          "label": "工作階段儲存方式"
+        },
+        "session_gc_maxlifetime": {
+          "label": "工作階段存活秒數",
+          "hint": "秒"
+        },
+        "session_cookie_httponly": {
+          "label": "Cookie 僅 HTTP（HttpOnly）"
+        },
+        "session_cookie_secure": {
+          "label": "Cookie 僅 HTTPS（Secure）",
+          "hint": "HTTPS 站點建議開啟"
+        },
+        "session_use_strict_mode": {
+          "label": "工作階段嚴格模式"
+        },
+        "display_errors": {
+          "label": "顯示錯誤（畫面）",
+          "hint": "生產環境請關閉"
+        },
+        "display_startup_errors": {
+          "label": "顯示啟動錯誤"
+        },
+        "log_errors": {
+          "label": "記錄錯誤到日誌"
+        },
+        "error_reporting": {
+          "label": "錯誤報告等級",
+          "hint": "或整數如 32767"
+        },
+        "error_log": {
+          "label": "錯誤日誌路徑",
+          "hint": "留空用系統預設；可填絕對路徑"
+        },
+        "opcache_enable": {
+          "label": "啟用 OPcache"
+        },
+        "opcache_enable_cli": {
+          "label": "命令列啟用 OPcache"
+        },
+        "opcache_memory_consumption": {
+          "label": "OPcache 記憶體（MB）",
+          "hint": "單位：MB"
+        },
+        "opcache_interned_strings_buffer": {
+          "label": "字串 intern 緩衝（MB）"
+        },
+        "opcache_max_accelerated_files": {
+          "label": "最多快取檔案數"
+        },
+        "opcache_validate_timestamps": {
+          "label": "檢查檔案變更",
+          "hint": "生產可關並手動重載"
+        },
+        "opcache_revalidate_freq": {
+          "label": "檢查間隔（秒）"
+        },
+        "allow_url_fopen": {
+          "label": "允許 URL 當檔案開啟"
+        },
+        "allow_url_include": {
+          "label": "允許 URL include"
+        },
+        "expose_php": {
+          "label": "暴露 PHP 版本標頭"
+        },
+        "open_basedir": {
+          "label": "open_basedir 路徑限制",
+          "hint": "留空不限制；多路徑用 : 分隔"
+        },
+        "disable_functions": {
+          "label": "禁用函式列表",
+          "hint": "逗號分隔；過嚴可能弄壞套件"
+        },
+        "date_timezone": {
+          "label": "時區"
+        },
+        "default_charset": {
+          "label": "預設字元集"
+        },
+        "short_open_tag": {
+          "label": "允許短開標籤（<?）"
+        },
+        "realpath_cache_size": {
+          "label": "真實路徑快取大小"
+        },
+        "realpath_cache_ttl": {
+          "label": "真實路徑快取秒數"
+        },
+        "cgi_fix_redirect": {
+          "label": "CGI 路徑修正重新導向"
+        }
+      },
+      "options": {
+        "sessionFiles": "檔案",
+        "sessionRedis": "Redis",
+        "sessionMemcached": "Memcached"
+      }
+    }
   },
   "security": {
     "title": "帳號安全",

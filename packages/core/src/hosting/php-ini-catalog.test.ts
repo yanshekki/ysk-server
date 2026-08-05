@@ -28,4 +28,34 @@ describe('php-ini-catalog', () => {
     }
     expect(defaults.memory_limit).toBeTruthy();
   });
+
+  it('timezone and charset are select fields with options containing defaults', () => {
+    const fields = listPhpIniCatalog().flatMap((g) => g.fields);
+    const tz = fields.find((f) => f.key === 'date.timezone');
+    const cs = fields.find((f) => f.key === 'default_charset');
+    expect(tz?.type).toBe('select');
+    expect(cs?.type).toBe('select');
+    expect((tz?.options?.length ?? 0) > 5).toBe(true);
+    expect((cs?.options?.length ?? 0) > 3).toBe(true);
+    expect(tz?.options?.some((o) => o.value === String(tz.default))).toBe(true);
+    expect(cs?.options?.some((o) => o.value === String(cs.default))).toBe(true);
+    expect(tz?.options?.some((o) => o.value === 'Asia/Hong_Kong')).toBe(true);
+    expect(cs?.options?.some((o) => o.value === 'UTF-8')).toBe(true);
+  });
+
+  it('labels are localized (not raw keys or empty English stubs)', () => {
+    const groups = listPhpIniCatalog();
+    for (const grp of groups) {
+      expect(grp.title.length).toBeGreaterThan(1);
+      expect(grp.title).not.toMatch(/^notes\.|^runtime\.|^catalog\./);
+      for (const f of grp.fields) {
+        expect(f.label.length).toBeGreaterThan(1);
+        expect(f.label).not.toBe(f.key);
+        expect(f.label).not.toMatch(/^notes\.|^runtime\./);
+      }
+    }
+    const misc = groups.find((g) => g.id === 'misc')!;
+    const cgi = misc.fields.find((f) => f.key === 'cgi.fix_redirect')!;
+    expect(cgi.label).not.toBe('cgi.fix_redirect');
+  });
 });

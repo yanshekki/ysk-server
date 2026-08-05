@@ -8109,7 +8109,173 @@
     "installBunLabel": "安装／更新 Bun",
     "javaMissing": "未检测到 Java（OpenJDK）",
     "kotlinMissing": "未检测到 Kotlin 编译器",
-    "bunMissing": "未检测到 Bun"
+    "bunMissing": "未检测到 Bun",
+    "phpIniCatalog": {
+      "groups": {
+        "resource": {
+          "title": "资源限制",
+          "description": "内存、执行时间与输入限制"
+        },
+        "upload": {
+          "title": "上传与 POST",
+          "description": "文件上传与 POST 体积"
+        },
+        "session": {
+          "title": "会话",
+          "description": "会话存储与 cookie"
+        },
+        "error": {
+          "title": "错误与日志",
+          "description": "显示错误、记录与报告等级"
+        },
+        "opcache": {
+          "title": "OPcache",
+          "description": "字节码缓存"
+        },
+        "security": {
+          "title": "安全与路径",
+          "description": "远程文件、暴露信息、函数禁用"
+        },
+        "locale": {
+          "title": "时区与字符"
+        },
+        "misc": {
+          "title": "其他常用"
+        }
+      },
+      "fields": {
+        "memory_limit": {
+          "label": "内存上限",
+          "hint": "例如 128M、256M、512M、-1（无限）"
+        },
+        "max_execution_time": {
+          "label": "最长执行时间",
+          "hint": "秒；0 = 无限（命令行）"
+        },
+        "max_input_time": {
+          "label": "最长输入时间",
+          "hint": "秒；解析请求的最长时间"
+        },
+        "max_input_vars": {
+          "label": "最多输入变量",
+          "hint": "$_GET / $_POST / $_COOKIE 变量上限"
+        },
+        "max_input_nesting_level": {
+          "label": "输入嵌套层级"
+        },
+        "file_uploads": {
+          "label": "允许上传文件"
+        },
+        "upload_max_filesize": {
+          "label": "单文件上限"
+        },
+        "post_max_size": {
+          "label": "POST 体积上限",
+          "hint": "应 ≥ 单文件上限"
+        },
+        "max_file_uploads": {
+          "label": "单次最多文件数"
+        },
+        "session_save_handler": {
+          "label": "会话存储方式"
+        },
+        "session_gc_maxlifetime": {
+          "label": "会话存活秒数",
+          "hint": "秒"
+        },
+        "session_cookie_httponly": {
+          "label": "Cookie 仅 HTTP（HttpOnly）"
+        },
+        "session_cookie_secure": {
+          "label": "Cookie 仅 HTTPS（Secure）",
+          "hint": "HTTPS 站点建议开启"
+        },
+        "session_use_strict_mode": {
+          "label": "会话严格模式"
+        },
+        "display_errors": {
+          "label": "显示错误（页面）",
+          "hint": "生产环境请关闭"
+        },
+        "display_startup_errors": {
+          "label": "显示启动错误"
+        },
+        "log_errors": {
+          "label": "记录错误到日志"
+        },
+        "error_reporting": {
+          "label": "错误报告等级",
+          "hint": "或整数如 32767"
+        },
+        "error_log": {
+          "label": "错误日志路径",
+          "hint": "留空用系统默认；可填绝对路径"
+        },
+        "opcache_enable": {
+          "label": "启用 OPcache"
+        },
+        "opcache_enable_cli": {
+          "label": "命令行启用 OPcache"
+        },
+        "opcache_memory_consumption": {
+          "label": "OPcache 内存（MB）",
+          "hint": "单位：MB"
+        },
+        "opcache_interned_strings_buffer": {
+          "label": "字符串 intern 缓冲（MB）"
+        },
+        "opcache_max_accelerated_files": {
+          "label": "最多缓存文件数"
+        },
+        "opcache_validate_timestamps": {
+          "label": "检查文件变更",
+          "hint": "生产可关并手动重载"
+        },
+        "opcache_revalidate_freq": {
+          "label": "检查间隔（秒）"
+        },
+        "allow_url_fopen": {
+          "label": "允许 URL 当文件打开"
+        },
+        "allow_url_include": {
+          "label": "允许 URL include"
+        },
+        "expose_php": {
+          "label": "暴露 PHP 版本头"
+        },
+        "open_basedir": {
+          "label": "open_basedir 路径限制",
+          "hint": "留空不限制；多路径用 : 分隔"
+        },
+        "disable_functions": {
+          "label": "禁用函数列表",
+          "hint": "逗号分隔；过严可能弄坏软件包"
+        },
+        "date_timezone": {
+          "label": "时区"
+        },
+        "default_charset": {
+          "label": "默认字符集"
+        },
+        "short_open_tag": {
+          "label": "允许短开标签（<?）"
+        },
+        "realpath_cache_size": {
+          "label": "真实路径缓存大小"
+        },
+        "realpath_cache_ttl": {
+          "label": "真实路径缓存秒数"
+        },
+        "cgi_fix_redirect": {
+          "label": "CGI 路径修正重定向"
+        }
+      },
+      "options": {
+        "sessionFiles": "文件",
+        "sessionRedis": "Redis",
+        "sessionMemcached": "Memcached"
+      }
+    }
   },
   "security": {
     "title": "安全与审批",

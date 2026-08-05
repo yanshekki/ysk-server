@@ -1,10 +1,62 @@
 import { tl } from '@ysk/shared';
+import { FALLBACK_TIMEZONES } from '../host/timezones.js';
 /**
  * Curated php.ini directives for panel forms (zh-TW labels).
  * One catalog field → one form row in the UI.
  */
 
 export type PhpIniFieldType = 'string' | 'int' | 'bool' | 'bytes' | 'select' | 'textarea';
+
+/** IANA zones for date.timezone — select only, not free text. */
+export const PHP_TIMEZONE_OPTIONS: Array<{ value: string; label: string }> = [
+  ...new Set([
+    ...FALLBACK_TIMEZONES,
+    'Asia/Macau',
+    'Asia/Seoul',
+    'Asia/Jakarta',
+    'Asia/Manila',
+    'Asia/Ho_Chi_Minh',
+    'Asia/Kuala_Lumpur',
+    'Asia/Kathmandu',
+    'Asia/Karachi',
+    'Asia/Riyadh',
+    'Asia/Tehran',
+    'Asia/Jerusalem',
+    'Europe/Amsterdam',
+    'Europe/Madrid',
+    'Europe/Rome',
+    'Europe/Istanbul',
+    'Europe/Warsaw',
+    'Europe/Stockholm',
+    'Africa/Cairo',
+    'Africa/Johannesburg',
+    'America/Toronto',
+    'America/Vancouver',
+    'America/Mexico_City',
+    'America/Argentina/Buenos_Aires',
+    'Pacific/Honolulu',
+    'Pacific/Fiji',
+  ]),
+]
+  .filter(Boolean)
+  .sort((a, b) => a.localeCompare(b))
+  .map((z) => ({ value: z, label: z }));
+
+/** Common PHP default_charset values — select only. */
+export const PHP_CHARSET_OPTIONS: Array<{ value: string; label: string }> = [
+  'UTF-8',
+  'ISO-8859-1',
+  'ISO-8859-15',
+  'Windows-1252',
+  'GBK',
+  'GB2312',
+  'Big5',
+  'EUC-JP',
+  'Shift_JIS',
+  'EUC-KR',
+  'KOI8-R',
+  'ISO-8859-2',
+].map((c) => ({ value: c, label: c }));
 
 export interface PhpIniField {
   key: string;
@@ -25,311 +77,328 @@ export interface PhpIniGroup {
   fields: PhpIniField[];
 }
 
-export const PHP_INI_GROUPS: PhpIniGroup[] = [
+/** i18n helpers — dedicated runtime.phpIniCatalog (not broken notes.auto EN). */
+const g = (id: string) => tl(`runtime.phpIniCatalog.groups.${id}.title`);
+const gd = (id: string) => tl(`runtime.phpIniCatalog.groups.${id}.description`);
+const fl = (id: string) => tl(`runtime.phpIniCatalog.fields.${id}.label`);
+const fh = (id: string) => tl(`runtime.phpIniCatalog.fields.${id}.hint`);
+const opt = (id: string) => tl(`runtime.phpIniCatalog.options.${id}`);
+
+/** Build catalog at call time so request locale is respected. */
+function buildPhpIniGroups(): PhpIniGroup[] {
+  return [
   {
     id: 'resource',
-    title: tl('notes.auto.n1456'),
-    description: tl('notes.auto.n1042'),
+    title: g('resource'),
+    description: gd('resource'),
     fields: [
       {
         key: 'memory_limit',
-        label: tl('notes.auto.n1356'),
+        label: fl('memory_limit'),
         type: 'bytes',
         default: '256M',
-        hint: tl('notes.auto.n0550'),
+        hint: fh('memory_limit'),
         group: 'resource' },
       {
         key: 'max_execution_time',
-        label: tl('notes.auto.n0941'),
+        label: fl('max_execution_time'),
         type: 'int',
         default: 60,
-        hint: tl('notes.auto.n1296'),
+        hint: fh('max_execution_time'),
         group: 'resource' },
       {
         key: 'max_input_time',
-        label: tl('notes.auto.n0942'),
+        label: fl('max_input_time'),
         type: 'int',
         default: 60,
-        hint: tl('notes.auto.n1297'),
+        hint: fh('max_input_time'),
         group: 'resource' },
       {
         key: 'max_input_vars',
-        label: tl('notes.auto.n0934'),
+        label: fl('max_input_vars'),
         type: 'int',
         default: 5000,
-        hint: tl('notes.auto.n0055'),
+        hint: fh('max_input_vars'),
         group: 'resource' },
       {
         key: 'max_input_nesting_level',
-        label: tl('notes.auto.n1464'),
+        label: fl('max_input_nesting_level'),
         type: 'int',
         default: 64,
         group: 'resource' },
     ] },
   {
     id: 'upload',
-    title: tl('notes.auto.n0489'),
-    description: tl('notes.auto.n1020'),
+    title: g('upload'),
+    description: gd('upload'),
     fields: [
       {
         key: 'file_uploads',
-        label: tl('notes.auto.n0580'),
+        label: fl('file_uploads'),
         type: 'bool',
         default: true,
         group: 'upload' },
       {
         key: 'upload_max_filesize',
-        label: tl('notes.auto.n0624'),
+        label: fl('upload_max_filesize'),
         type: 'bytes',
         default: '64M',
         group: 'upload' },
       {
         key: 'post_max_size',
-        label: tl('notes.auto.n0154'),
+        label: fl('post_max_size'),
         type: 'bytes',
         default: '64M',
-        hint: tl('notes.auto.n0837'),
+        hint: fh('post_max_size'),
         group: 'upload' },
       {
         key: 'max_file_uploads',
-        label: tl('notes.auto.n0625'),
+        label: fl('max_file_uploads'),
         type: 'int',
         default: 20,
         group: 'upload' },
     ] },
   {
     id: 'session',
-    title: tl('catalog.php.session'),
-    description: tl('notes.auto.n0722'),
+    title: g('session'),
+    description: gd('session'),
     fields: [
       {
         key: 'session.save_handler',
-        label: tl('notes.auto.n0191'),
+        label: fl('session_save_handler'),
         type: 'select',
         default: 'files',
         options: [
-          { value: 'files', label: tl('notes.auto.n0290') },
-          { value: 'redis', label: 'redis' },
-          { value: 'memcached', label: 'memcached' },
+          { value: 'files', label: opt('sessionFiles') },
+          { value: 'redis', label: opt('sessionRedis') },
+          { value: 'memcached', label: opt('sessionMemcached') },
         ],
         group: 'session' },
       {
         key: 'session.gc_maxlifetime',
-        label: tl('notes.auto.n0193'),
+        label: fl('session_gc_maxlifetime'),
         type: 'int',
         default: 1440,
-        hint: tl('notes.auto.n1295'),
+        hint: fh('session_gc_maxlifetime'),
         group: 'session' },
       {
         key: 'session.cookie_httponly',
-        label: 'Cookie HttpOnly',
+        label: fl('session_cookie_httponly'),
         type: 'bool',
         default: true,
         group: 'session' },
       {
         key: 'session.cookie_secure',
-        label: tl('notes.auto.n0090'),
+        label: fl('session_cookie_secure'),
         type: 'bool',
         default: false,
-        hint: tl('notes.auto.n0116'),
+        hint: fh('session_cookie_secure'),
         group: 'session' },
       {
         key: 'session.use_strict_mode',
-        label: tl('notes.auto.n0192'),
+        label: fl('session_use_strict_mode'),
         type: 'bool',
         default: true,
         group: 'session' },
     ] },
   {
     id: 'error',
-    title: tl('notes.auto.n1518'),
-    description: tl('notes.auto.n1604'),
+    title: g('error'),
+    description: gd('error'),
     fields: [
       {
         key: 'display_errors',
-        label: tl('notes.auto.n1605'),
+        label: fl('display_errors'),
         type: 'bool',
         default: false,
-        hint: tl('notes.auto.n1244'),
+        hint: fh('display_errors'),
         danger: true,
         group: 'error' },
       {
         key: 'display_startup_errors',
-        label: tl('notes.auto.n1603'),
+        label: fl('display_startup_errors'),
         type: 'bool',
         default: false,
         group: 'error' },
       {
         key: 'log_errors',
-        label: tl('notes.auto.n1364'),
+        label: fl('log_errors'),
         type: 'bool',
         default: true,
         group: 'error' },
       {
         key: 'error_reporting',
-        label: tl('notes.auto.n1516'),
+        label: fl('error_reporting'),
         type: 'string',
         default: 'E_ALL & ~E_DEPRECATED & ~E_STRICT',
-        hint: tl('notes.auto.n0840'),
+        hint: fh('error_reporting'),
         group: 'error' },
       {
         key: 'error_log',
-        label: tl('notes.auto.n0023'),
+        label: fl('error_log'),
         type: 'string',
         default: '',
-        hint: tl('notes.auto.n1251'),
+        hint: fh('error_log'),
         group: 'error' },
     ] },
   {
     id: 'opcache',
-    title: tl('catalog.php.opcache'),
-    description: tl('notes.auto.n0536'),
+    title: g('opcache'),
+    description: gd('opcache'),
     fields: [
       {
         key: 'opcache.enable',
-        label: tl('notes.auto.n0621'),
+        label: fl('opcache_enable'),
         type: 'bool',
         default: true,
         group: 'opcache' },
       {
         key: 'opcache.enable_cli',
-        label: tl('notes.auto.n0085'),
+        label: fl('opcache_enable_cli'),
         type: 'bool',
         default: false,
         group: 'opcache' },
       {
         key: 'opcache.memory_consumption',
-        label: tl('notes.auto.n0144'),
+        label: fl('opcache_memory_consumption'),
         type: 'int',
         default: 128,
-        hint: 'MB',
+        hint: fh('opcache_memory_consumption'),
         group: 'opcache' },
       {
         key: 'opcache.interned_strings_buffer',
-        label: tl('notes.auto.n0647'),
+        label: fl('opcache_interned_strings_buffer'),
         type: 'int',
         default: 16,
         group: 'opcache' },
       {
         key: 'opcache.max_accelerated_files',
-        label: tl('notes.auto.n0933'),
+        label: fl('opcache_max_accelerated_files'),
         type: 'int',
         default: 10000,
         group: 'opcache' },
       {
         key: 'opcache.validate_timestamps',
-        label: tl('notes.auto.n1024'),
+        label: fl('opcache_validate_timestamps'),
         type: 'bool',
         default: true,
-        hint: tl('notes.auto.n1243'),
+        hint: fh('opcache_validate_timestamps'),
         group: 'opcache' },
       {
         key: 'opcache.revalidate_freq',
-        label: tl('notes.auto.n1025'),
+        label: fl('opcache_revalidate_freq'),
         type: 'int',
         default: 2,
         group: 'opcache' },
     ] },
   {
     id: 'security',
-    title: tl('notes.auto.n0651'),
-    description: tl('notes.auto.n1483'),
+    title: g('security'),
+    description: gd('security'),
     fields: [
       {
         key: 'allow_url_fopen',
-        label: tl('notes.auto.n0579'),
+        label: fl('allow_url_fopen'),
         type: 'bool',
         default: true,
         group: 'security' },
       {
         key: 'allow_url_include',
-        label: tl('notes.auto.n0578'),
+        label: fl('allow_url_include'),
         type: 'bool',
         default: false,
         danger: true,
         group: 'security' },
       {
         key: 'expose_php',
-        label: tl('notes.auto.n0925'),
+        label: fl('expose_php'),
         type: 'bool',
         default: false,
         group: 'security' },
       {
         key: 'open_basedir',
-        label: tl('notes.auto.n0351'),
+        label: fl('open_basedir'),
         type: 'string',
         default: '',
-        hint: tl('notes.auto.n1250'),
+        hint: fh('open_basedir'),
         danger: true,
         group: 'security' },
       {
         key: 'disable_functions',
-        label: tl('notes.auto.n1293'),
+        label: fl('disable_functions'),
         type: 'textarea',
         default:
           'exec,passthru,shell_exec,system,proc_open,popen,curl_multi_exec,parse_ini_file,show_source',
-        hint: tl('notes.auto.n1466'),
+        hint: fh('disable_functions'),
         danger: true,
         group: 'security' },
     ] },
   {
     id: 'locale',
-    title: tl('notes.auto.n0923'),
+    title: g('locale'),
     fields: [
       {
         key: 'date.timezone',
-        label: tl('notes.auto.n0922'),
-        type: 'string',
+        label: fl('date_timezone'),
+        type: 'select',
         default: 'Asia/Hong_Kong',
+        options: PHP_TIMEZONE_OPTIONS,
         group: 'locale' },
       {
         key: 'default_charset',
-        label: tl('notes.auto.n1600'),
-        type: 'string',
+        label: fl('default_charset'),
+        type: 'select',
         default: 'UTF-8',
+        options: PHP_CHARSET_OPTIONS,
         group: 'locale' },
     ] },
   {
     id: 'misc',
-    title: tl('notes.auto.n0594'),
+    title: g('misc'),
     fields: [
       {
         key: 'short_open_tag',
-        label: tl('notes.auto.n1285'),
+        label: fl('short_open_tag'),
         type: 'bool',
         default: false,
         group: 'misc' },
       {
         key: 'realpath_cache_size',
-        label: tl('notes.auto.n0400'),
+        label: fl('realpath_cache_size'),
         type: 'bytes',
         default: '4096K',
         group: 'misc' },
       {
         key: 'realpath_cache_ttl',
-        label: tl('notes.auto.n0401'),
+        label: fl('realpath_cache_ttl'),
         type: 'int',
         default: 120,
         group: 'misc' },
       {
         key: 'cgi.fix_redirect',
-        label: 'cgi.fix_redirect',
+        label: fl('cgi_fix_redirect'),
         type: 'int',
         default: 0,
         group: 'misc' },
     ] },
-];
+  ];
+}
+
+/** @deprecated Prefer listPhpIniCatalog() — kept for tests that import static groups */
+export const PHP_INI_GROUPS: PhpIniGroup[] = buildPhpIniGroups();
 
 export function listPhpIniCatalog(): PhpIniGroup[] {
-  return PHP_INI_GROUPS.map((g) => ({
-    ...g,
-    fields: g.fields.map((f) => ({ ...f })) }));
+  // Rebuild so labels match current request locale
+  return buildPhpIniGroups().map((grp) => ({
+    ...grp,
+    fields: grp.fields.map((f) => ({ ...f })),
+  }));
 }
 
 export function defaultPhpIniValues(): Record<string, string | number | boolean> {
   const out: Record<string, string | number | boolean> = {};
-  for (const g of PHP_INI_GROUPS) {
-    for (const f of g.fields) {
+  for (const grp of buildPhpIniGroups()) {
+    for (const f of grp.fields) {
       out[f.key] = f.default;
     }
   }
@@ -337,5 +406,5 @@ export function defaultPhpIniValues(): Record<string, string | number | boolean>
 }
 
 export function allPhpIniKeys(): string[] {
-  return PHP_INI_GROUPS.flatMap((g) => g.fields.map((f) => f.key));
+  return buildPhpIniGroups().flatMap((grp) => grp.fields.map((f) => f.key));
 }

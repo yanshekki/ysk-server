@@ -8109,7 +8109,173 @@
     "installBunLabel": "Install / update Bun",
     "javaMissing": "Java (OpenJDK) not detected",
     "kotlinMissing": "Kotlin compiler not detected",
-    "bunMissing": "Bun not detected"
+    "bunMissing": "Bun not detected",
+    "phpIniCatalog": {
+      "groups": {
+        "resource": {
+          "title": "Resource limits",
+          "description": "Memory, execution time, and input limits"
+        },
+        "upload": {
+          "title": "Upload & POST",
+          "description": "File uploads and POST body size"
+        },
+        "session": {
+          "title": "Session",
+          "description": "Session storage and cookies"
+        },
+        "error": {
+          "title": "Errors & logging",
+          "description": "Display errors, logging, and reporting level"
+        },
+        "opcache": {
+          "title": "OPcache",
+          "description": "Bytecode cache"
+        },
+        "security": {
+          "title": "Security & paths",
+          "description": "Remote files, exposure, and disabled functions"
+        },
+        "locale": {
+          "title": "Timezone & charset"
+        },
+        "misc": {
+          "title": "Other common settings"
+        }
+      },
+      "fields": {
+        "memory_limit": {
+          "label": "Memory limit",
+          "hint": "e.g. 128M, 256M, 512M, -1 (unlimited)"
+        },
+        "max_execution_time": {
+          "label": "Max execution time",
+          "hint": "Seconds; 0 = unlimited (CLI)"
+        },
+        "max_input_time": {
+          "label": "Max input time",
+          "hint": "Seconds; max time to parse the request"
+        },
+        "max_input_vars": {
+          "label": "Max input variables",
+          "hint": "Limit for $_GET / $_POST / $_COOKIE variables"
+        },
+        "max_input_nesting_level": {
+          "label": "Max input nesting level"
+        },
+        "file_uploads": {
+          "label": "Allow file uploads"
+        },
+        "upload_max_filesize": {
+          "label": "Max upload file size"
+        },
+        "post_max_size": {
+          "label": "Max POST size",
+          "hint": "Should be ≥ max upload file size"
+        },
+        "max_file_uploads": {
+          "label": "Max files per request"
+        },
+        "session_save_handler": {
+          "label": "Session save handler"
+        },
+        "session_gc_maxlifetime": {
+          "label": "Session lifetime (seconds)",
+          "hint": "Seconds"
+        },
+        "session_cookie_httponly": {
+          "label": "Cookie HttpOnly"
+        },
+        "session_cookie_secure": {
+          "label": "Cookie Secure (HTTPS only)",
+          "hint": "Recommended for HTTPS sites"
+        },
+        "session_use_strict_mode": {
+          "label": "Session strict mode"
+        },
+        "display_errors": {
+          "label": "Display errors (on page)",
+          "hint": "Disable in production"
+        },
+        "display_startup_errors": {
+          "label": "Display startup errors"
+        },
+        "log_errors": {
+          "label": "Log errors"
+        },
+        "error_reporting": {
+          "label": "Error reporting level",
+          "hint": "Or an integer such as 32767"
+        },
+        "error_log": {
+          "label": "Error log path",
+          "hint": "Empty = system default; absolute path allowed"
+        },
+        "opcache_enable": {
+          "label": "Enable OPcache"
+        },
+        "opcache_enable_cli": {
+          "label": "Enable OPcache for CLI"
+        },
+        "opcache_memory_consumption": {
+          "label": "OPcache memory (MB)",
+          "hint": "Unit: MB"
+        },
+        "opcache_interned_strings_buffer": {
+          "label": "Interned strings buffer (MB)"
+        },
+        "opcache_max_accelerated_files": {
+          "label": "Max accelerated files"
+        },
+        "opcache_validate_timestamps": {
+          "label": "Validate timestamps",
+          "hint": "In production you may disable and reload manually"
+        },
+        "opcache_revalidate_freq": {
+          "label": "Revalidate frequency (seconds)"
+        },
+        "allow_url_fopen": {
+          "label": "Allow URL fopen"
+        },
+        "allow_url_include": {
+          "label": "Allow URL include"
+        },
+        "expose_php": {
+          "label": "Expose PHP version header"
+        },
+        "open_basedir": {
+          "label": "open_basedir path restriction",
+          "hint": "Empty = no limit; separate paths with :"
+        },
+        "disable_functions": {
+          "label": "Disabled functions",
+          "hint": "Comma-separated; too strict may break packages"
+        },
+        "date_timezone": {
+          "label": "Timezone"
+        },
+        "default_charset": {
+          "label": "Default charset"
+        },
+        "short_open_tag": {
+          "label": "Allow short open tags (<?)"
+        },
+        "realpath_cache_size": {
+          "label": "Realpath cache size"
+        },
+        "realpath_cache_ttl": {
+          "label": "Realpath cache TTL (seconds)"
+        },
+        "cgi_fix_redirect": {
+          "label": "CGI fix path redirect"
+        }
+      },
+      "options": {
+        "sessionFiles": "Files",
+        "sessionRedis": "Redis",
+        "sessionMemcached": "Memcached"
+      }
+    }
   },
   "security": {
     "title": "Security & Approvals",

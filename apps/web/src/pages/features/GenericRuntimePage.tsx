@@ -474,30 +474,46 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                               onChange={(c) => setValue(f.key, c)}
                             />
                           ) : f.type === 'select' && f.options ? (
-                            f.options.length <= 8 ? (
-                              <SegRadio
-                                name={id}
-                                aria-label={f.label}
-                                value={String(val)}
-                                onChange={(v) => setValue(f.key, v)}
-                                options={f.options.map((o) => ({
-                                  value: o.value,
-                                  label: o.label,
-                                }))}
-                              />
-                            ) : (
-                              <select
-                                id={id}
-                                value={String(val)}
-                                onChange={(e) => setValue(f.key, e.target.value)}
-                              >
-                                {f.options.map((o) => (
-                                  <option key={o.value} value={o.value}>
-                                    {o.label}
-                                  </option>
-                                ))}
-                              </select>
-                            )
+                            (() => {
+                              const cur = String(val ?? '');
+                              const opts = f.options!;
+                              const hasCur = !cur || opts.some((o) => o.value === cur);
+                              const merged = hasCur
+                                ? opts
+                                : [{ value: cur, label: cur }, ...opts];
+                              if (merged.length <= 8) {
+                                const current = merged.some((o) => o.value === cur)
+                                  ? cur
+                                  : merged[0]!.value;
+                                return (
+                                  <SegRadio
+                                    name={id}
+                                    aria-label={f.label}
+                                    value={current}
+                                    onChange={(v) => setValue(f.key, v)}
+                                    options={merged.map((o) => ({
+                                      value: o.value,
+                                      label: o.label,
+                                    }))}
+                                  />
+                                );
+                              }
+                              return (
+                                <select
+                                  id={id}
+                                  value={cur}
+                                  onChange={(e) => setValue(f.key, e.target.value)}
+                                  aria-label={f.label}
+                                >
+                                  {!cur ? <option value="" /> : null}
+                                  {merged.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                      {o.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              );
+                            })()
                           ) : f.type === 'int' ? (
                             <PresetChips
                               options={

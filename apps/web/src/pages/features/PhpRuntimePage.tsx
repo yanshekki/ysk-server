@@ -54,6 +54,16 @@ function phpIniPresets(
         { value: '-1', label: i18n.t('runtime.unlimited') },
       ];
     }
+    // realpath_cache_size is typically KiB, not multi-MB like upload limits
+    if (key === 'realpath_cache_size') {
+      return [
+        { value: '512K', label: '512K' },
+        { value: '1024K', label: '1024K' },
+        { value: '2048K', label: '2048K' },
+        { value: '4096K', label: '4096K' },
+        { value: '8192K', label: '8192K' },
+      ];
+    }
     return [
       { value: '8M', label: '8M' },
       { value: '32M', label: '32M' },
@@ -71,6 +81,18 @@ function phpIniPresets(
         { value: '60', label: '60' },
         { value: '120', label: '120' },
         { value: '300', label: '300' },
+      ];
+    case 'realpath_cache_ttl':
+      return [
+        { value: '60', label: '60' },
+        { value: '120', label: '120' },
+        { value: '300', label: '300' },
+        { value: '600', label: '600' },
+      ];
+    case 'cgi.fix_redirect':
+      return [
+        { value: '0', label: '0' },
+        { value: '1', label: '1' },
       ];
     case 'max_input_vars':
       return [
@@ -449,30 +471,48 @@ export function PhpRuntimePage() {
                               onChange={(c) => setValue(f.key, c)}
                             />
                           ) : f.type === 'select' && f.options ? (
-                            f.options.length <= 8 ? (
-                              <SegRadio
-                                name={id}
-                                aria-label={f.label}
-                                value={String(val)}
-                                onChange={(v) => setValue(f.key, v)}
-                                options={f.options.map((o) => ({
-                                  value: o.value,
-                                  label: o.label,
-                                }))}
-                              />
-                            ) : (
-                              <select
-                                id={id}
-                                value={String(val)}
-                                onChange={(e) => setValue(f.key, e.target.value)}
-                              >
-                                {f.options.map((o) => (
-                                  <option key={o.value} value={o.value}>
-                                    {o.label}
-                                  </option>
-                                ))}
-                              </select>
-                            )
+                            (() => {
+                              const cur = String(val ?? '');
+                              const opts = f.options!;
+                              const hasCur = !cur || opts.some((o) => o.value === cur);
+                              const merged = hasCur
+                                ? opts
+                                : [{ value: cur, label: cur }, ...opts];
+                              if (merged.length <= 8) {
+                                const current = merged.some((o) => o.value === cur)
+                                  ? cur
+                                  : merged[0]!.value;
+                                return (
+                                  <SegRadio
+                                    name={id}
+                                    aria-label={f.label}
+                                    value={current}
+                                    onChange={(v) => setValue(f.key, v)}
+                                    options={merged.map((o) => ({
+                                      value: o.value,
+                                      label: o.label,
+                                    }))}
+                                  />
+                                );
+                              }
+                              return (
+                                <select
+                                  id={id}
+                                  value={cur}
+                                  onChange={(e) => setValue(f.key, e.target.value)}
+                                  aria-label={f.label}
+                                >
+                                  {!cur ? (
+                                    <option value="">{/* empty */}</option>
+                                  ) : null}
+                                  {merged.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                      {o.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              );
+                            })()
                           ) : f.type === 'textarea' ? (
                             <textarea
                               id={id}
