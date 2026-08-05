@@ -48,6 +48,8 @@ export interface CertificateView {
   notes: string[];
   updated_at?: string;
   created_at?: string;
+  /** LE contact email from last request (retry) */
+  email?: string;
 }
 
 const PEM_CERT = /-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----/;
@@ -297,6 +299,7 @@ export function listCertificatesView(db: YskDatabase, dataDir: string): Certific
       notes: Array.isArray(raw.notes) ? (raw.notes as string[]) : [],
       updated_at: raw.updated_at ? String(raw.updated_at) : undefined,
       created_at: raw.created_at ? String(raw.created_at) : undefined,
+      email: raw.email ? String(raw.email) : undefined,
     });
   }
 

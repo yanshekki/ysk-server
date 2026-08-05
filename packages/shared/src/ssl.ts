@@ -15,6 +15,8 @@ export interface CertificateViewDto {
   notes?: string[];
   updated_at?: string;
   commands?: string[];
+  /** Contact email used for last Let's Encrypt request (for retry) */
+  email?: string;
 }
 
 export type CertificateView = CertificateViewDto;

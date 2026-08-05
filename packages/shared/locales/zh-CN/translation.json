@@ -8918,6 +8918,8 @@
     "requestFailedWhy": "为什么不行",
     "requestFailedNext": "下一步",
     "retryRequest": "重试申请",
+    "retryRequestFor": "重试申请 {{domain}}",
+    "retryInTableHint": "可在下方证书列表该域名行重试",
     "bindingsTitle": "绑定与续期",
     "expiresAt": " · 到期 {{date}}",
     "projectsAt": " · 项目: {{names}}",

@@ -101,7 +101,6 @@ export function SslPage() {
     upload,
     requestCertificate,
     remove,
-    retryLast,
   } = useSslCertificates();
   const certList = useServerList<CertificateView>({
     path: '/api/v1/ssl/certificates',
@@ -191,10 +190,28 @@ export function SslPage() {
     }
   }
 
-  async function onRetryLe() {
-    await retryLast();
-    await refreshTable().catch(() => undefined);
-    refreshBindings();
+  /** Retry LE for a failed row domain (table action). */
+  async function onRetryDomain(r: CertificateView) {
+    const d = String(r.domain || '').trim();
+    if (!d) return;
+    const em =
+      (r.email && String(r.email).trim()) ||
+      (lastLe?.domain === d ? lastLe.email : '') ||
+      defaultLeEmail(d);
+    try {
+      await requestCertificate(d, em);
+    } catch {
+      /* error surface via hook state */
+    } finally {
+      await refreshTable().catch(() => undefined);
+      refreshBindings();
+    }
+  }
+
+  function isFailedLeRow(r: CertificateView): boolean {
+    const st = (r.status || '').toLowerCase();
+    if (r.provider !== 'letsencrypt') return false;
+    return st === 'failed' || st === 'planned' || (st === 'missing' && !r.files_exist);
   }
 
   const failedCount = countFailedCerts(items);
@@ -248,23 +265,13 @@ export function SslPage() {
               </span>
             ) : null}
             <ActionBar className="u-mt-3">
-              {lastLe || ok === false || blocked ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  disabled={!lastLe}
-                  onClick={() => void onRetryLe()}
-                >
-                  {t('ssl.retryRequest')}
-                </Button>
-              ) : null}
               <Link
                 to="/logs?tab=explore&source=file:letsencrypt"
                 className={buttonClassName({ variant: 'ghost', size: 'sm' })}
               >
                 {t('ssl.openLetsEncryptLog')}
               </Link>
+              <span className="muted u-text-sm">{t('ssl.retryInTableHint')}</span>
             </ActionBar>
           </Alert>
         ) : null}
@@ -289,11 +296,6 @@ export function SslPage() {
                     notes: steps.map((s) => formatStepLine(s, t)),
                   }
                 : null
-          }
-          onRetry={
-            lastLe && (blocked || ok === false || Boolean(error))
-              ? () => void onRetryLe()
-              : undefined
           }
           busy={busy}
         />
@@ -401,6 +403,17 @@ export function SslPage() {
               }
               rowActions={(r) => (
                 <ActionBar>
+                  {isFailedLeRow(r) ? (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      loading={busy}
+                      onClick={() => void onRetryDomain(r)}
+                      title={t('ssl.retryRequestFor', { domain: r.domain })}
+                    >
+                      {t('ssl.retryRequest')}
+                    </Button>
+                  ) : null}
                   <Button
                     variant="danger"
                     size="sm"

@@ -41,6 +41,8 @@
   "requestFailedWhy": "Why it failed",
   "requestFailedNext": "Next steps",
   "retryRequest": "Retry request",
+  "retryRequestFor": "Retry request for {{domain}}",
+  "retryInTableHint": "Retry from the failed domain row in the list below",
   "bindingsTitle": "Bindings & renewal",
   "expiresAt": " · Expires {{date}}",
   "projectsAt": " · Projects: {{names}}",
