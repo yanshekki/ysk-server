@@ -259,13 +259,57 @@ export async function lifecycleServiceUnit(
   }
   const safe = unit.replace(/[^a-zA-Z0-9@._-]/g, '');
   if (!safe) return { ok: false, notes: [tl('notes.auto.n1107')] };
-  const r = await host.runCommand(['systemctl', action, safe], { timeoutMs: 60_000 });
+
+  const notes: string[] = [];
+  // Postfix: missing main.cf → systemd ConditionPathExists skips start (inactive, not crash)
+  const base = safe.replace(/\.service$/, '');
+  if ((action === 'start' || action === 'restart') && (base === 'postfix' || safe === 'postfix.service')) {
+    try {
+      const { preparePostfixForStart, ensurePostfixMainCf } = await import('./postfix-bootstrap.js');
+      const prep = await preparePostfixForStart(host);
+      notes.push(...prep.notes);
+      if (!prep.ok) {
+        const heal = await ensurePostfixMainCf(host);
+        notes.push(...heal.notes);
+      }
+    } catch {
+      /* best-effort */
+    }
+  }
+
+  let r = await host.runCommand(['systemctl', action, safe], { timeoutMs: 60_000 });
+  // If still down, try one more ensure + start (e.g. first ensure raced with pathExists)
+  if (
+    r.exitCode !== 0 &&
+    (action === 'start' || action === 'restart') &&
+    (base === 'postfix' || safe === 'postfix.service')
+  ) {
+    try {
+      const { ensurePostfixMainCf } = await import('./postfix-bootstrap.js');
+      const heal = await ensurePostfixMainCf(host);
+      notes.push(...heal.notes);
+      if (heal.ok || heal.created) {
+        r = await host.runCommand(['systemctl', 'start', safe], { timeoutMs: 60_000 });
+      }
+    } catch {
+      /* fall through */
+    }
+  }
+
   const p = await probeUnit(host, safe);
   const ok = r.exitCode === 0;
+  if (ok) {
+    notes.push(tl('notes.auto.t0316', { v0: action, v1: safe }));
+  } else {
+    notes.push(
+      tl('notes.tpl.actionFailed', {
+        action,
+        detail: (r.stderr || r.stdout).trim() || String(r.exitCode),
+      }),
+    );
+  }
   return {
     ok,
-    notes: ok
-      ? [tl('notes.auto.t0316', { v0: (action), v1: (safe) })]
-      : [tl('notes.tpl.actionFailed', { action: action, detail: (r.stderr || r.stdout).trim() || String(r.exitCode) })],
+    notes,
     active: p.active };
 }

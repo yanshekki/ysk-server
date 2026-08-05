@@ -312,6 +312,16 @@ export async function installSoftware(input: {
     steps.push({ name: tl('notes.apt.updateIndex'), status: 'skipped', detail: tl('notes.tpl.recentlyUpdated') });
   }
 
+  // Postfix: seed debconf so postinst creates main.cf (never "No configuration")
+  if (spec.id === 'postfix') {
+    try {
+      const { preseedPostfixDebconf } = await import('./postfix-bootstrap.js');
+      notes.push(...(await preseedPostfixDebconf(input.host)));
+    } catch {
+      /* best-effort */
+    }
+  }
+
   // Try packages one-by-one groups: first package set as OR — install all listed, ignore individual fails partially
   const installCmd = `export DEBIAN_FRONTEND=noninteractive; apt-get install -y ${pkgs.map((p) => JSON.stringify(p)).join(' ')}`;
   const inst = await input.host.runCommand(['bash', '-c', installCmd], { timeoutMs: 600_000 });
@@ -339,6 +349,21 @@ export async function installSoftware(input: {
 
   if (installOk && spec.units?.length && input.enableUnits !== false) {
     await freeHttpPortForSpec(input.host, spec.id, steps, notes);
+    // Postfix: package can install without main.cf → unit ConditionPathExists skip
+    if (spec.id === 'postfix') {
+      try {
+        const { ensurePostfixMainCf } = await import('./postfix-bootstrap.js');
+        const heal = await ensurePostfixMainCf(input.host);
+        notes.push(...heal.notes);
+        steps.push({
+          name: 'postfix main.cf',
+          status: heal.ok ? 'ok' : 'failed',
+          detail: heal.created ? 'created from template' : heal.ok ? 'already present' : heal.notes.join('; '),
+        });
+      } catch (e) {
+        notes.push(`postfix main.cf ensure failed: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
     for (const u of spec.units) {
       const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
         timeoutMs: 60_000 });

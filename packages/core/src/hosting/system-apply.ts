@@ -213,6 +213,16 @@ export async function applyEmailStack(input: {
   const commands: string[][] = [];
   if (input.installPackages) {
     commands.push(['apt-get', 'update']);
+    // Never leave postfix in "No configuration" (no main.cf → unit skipped)
+    commands.push([
+      'bash',
+      '-c',
+      [
+        'MAILNAME="$(hostname -f 2>/dev/null || hostname 2>/dev/null || echo localhost)"',
+        'echo "postfix postfix/main_mailer_type select Internet Site" | debconf-set-selections',
+        'echo "postfix postfix/mailname string $MAILNAME" | debconf-set-selections',
+      ].join('; '),
+    ]);
     commands.push([
       'bash',
       '-c',

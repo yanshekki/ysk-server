@@ -2,9 +2,38 @@
 # Install / remove components by id
 # shellcheck shell=bash
 
+# Never use "No configuration" — that leaves package installed but no main.cf,
+# so systemd ConditionPathExists=/etc/postfix/main.cf skips start (panel: 已停止).
 preseed_postfix() {
-  echo "postfix postfix/main_mailer_type select No configuration" | $SUDO debconf-set-selections || true
-  echo "postfix postfix/mailname string localhost" | $SUDO debconf-set-selections || true
+  local mailname
+  mailname="$(hostname -f 2>/dev/null || hostname 2>/dev/null || echo localhost)"
+  echo "postfix postfix/main_mailer_type select Internet Site" | $SUDO debconf-set-selections || true
+  echo "postfix postfix/mailname string ${mailname}" | $SUDO debconf-set-selections || true
+  echo "postfix postfix/destinations string ${mailname}, localhost.localdomain, localhost" | $SUDO debconf-set-selections || true
+}
+
+# Safe heal: only create main.cf when missing (never overwrite operator config).
+ensure_postfix_main_cf() {
+  resolve_sudo
+  if [[ -f /etc/postfix/main.cf ]]; then
+    return 0
+  fi
+  local src=""
+  if [[ -f /etc/postfix/main.cf.proto ]]; then
+    src=/etc/postfix/main.cf.proto
+  elif [[ -f /usr/share/postfix/main.cf.debian ]]; then
+    src=/usr/share/postfix/main.cf.debian
+  fi
+  if [[ -z "$src" ]]; then
+    warn "postfix main.cf missing and no template found"
+    return 1
+  fi
+  log "postfix: creating /etc/postfix/main.cf from $src (was missing)"
+  # shellcheck disable=SC2086
+  $SUDO cp -a "$src" /etc/postfix/main.cf || return 1
+  # shellcheck disable=SC2086
+  $SUDO postfix set-permissions 2>/dev/null || true
+  return 0
 }
 
 ensure_rust_on_path() {
@@ -259,6 +288,12 @@ install_component_apt() {
   # After Apache package: immediately backend-only so it does not steal :80 from Nginx
   if [[ "$id" == "apache2" ]]; then
     configure_apache_as_nginx_backend || true
+  fi
+
+  # Postfix: package may be present without main.cf (old No-configuration seed or
+  # incomplete configure). Heal before enable/start so unit is not permanently skipped.
+  if [[ "$id" == "postfix" ]]; then
+    ensure_postfix_main_cf || true
   fi
 
   # Package postinst may leave unit failed (e.g. bind conflict). Re-assert + verify.
