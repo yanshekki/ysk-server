@@ -161,6 +161,64 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  panelTlsStatus: () =>
+    api.requestRaw<{
+      ok: boolean;
+      tlsEnabled: boolean;
+      servingHttps: boolean;
+      panelDomain?: string;
+      certPath?: string;
+      keyPath?: string;
+      certExists: boolean;
+      keyExists: boolean;
+      expiresAt?: string | null;
+      listenPort: number;
+      listenHost: string;
+      httpsUrl?: string;
+      httpUrl?: string;
+      notes: string[];
+      restartRequired: boolean;
+      configPath?: string | null;
+    }>('/api/v1/system/panel-tls'),
+  panelTlsIssue: (body: { domain: string; email?: string; restart?: boolean }) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      notes?: string[];
+      blocked?: boolean;
+      blockMessage?: string;
+      restartRequired?: boolean;
+      status?: Record<string, unknown>;
+    }>('/api/v1/system/panel-tls/issue', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
+  panelTlsEnable: (body: {
+    domain: string;
+    certPath?: string;
+    keyPath?: string;
+    restart?: boolean;
+  }) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      notes?: string[];
+      blocked?: boolean;
+      restartRequired?: boolean;
+    }>('/api/v1/system/panel-tls/enable', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
+  panelTlsDisable: (body?: { restart?: boolean }) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      notes?: string[];
+      restartRequired?: boolean;
+    }>('/api/v1/system/panel-tls/disable', {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+      allowStatuses: [403, 422],
+    }),
   hostNtpSync: () =>
     api.requestRaw<{ ok: boolean; blocked?: boolean; notes?: string[]; blockMessage?: string }>(
       '/api/v1/system/host/ntp-sync',

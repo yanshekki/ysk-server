@@ -14,6 +14,15 @@ export interface YskConfig {
   locale: string;
   setupCompleted: boolean;
   createdAt: string;
+  /**
+   * Control-plane TLS (panel HTTPS). When enabled and cert/key files exist,
+   * `ysk-server serve` binds HTTPS on listenPort.
+   */
+  tlsEnabled?: boolean;
+  tlsCertPath?: string;
+  tlsKeyPath?: string;
+  /** Domain used for panel LE / URL hints (e.g. hermes.ysk.hk) */
+  panelDomain?: string;
 }
 
 const DEFAULTS = {
@@ -80,5 +89,33 @@ export function parseConfig(raw: unknown): YskConfig {
     locale: typeof o.locale === 'string' ? o.locale : DEFAULTS.locale,
     setupCompleted: Boolean(o.setupCompleted),
     createdAt: typeof o.createdAt === 'string' ? o.createdAt : new Date().toISOString(),
+    tlsEnabled: Boolean(o.tlsEnabled),
+    tlsCertPath: typeof o.tlsCertPath === 'string' ? o.tlsCertPath : undefined,
+    tlsKeyPath: typeof o.tlsKeyPath === 'string' ? o.tlsKeyPath : undefined,
+    panelDomain: typeof o.panelDomain === 'string' ? o.panelDomain : undefined,
   };
+}
+
+/** Merge TLS / panel fields into existing config (persist-safe). */
+export function mergePanelTlsConfig(
+  base: YskConfig,
+  patch: {
+    tlsEnabled?: boolean;
+    tlsCertPath?: string | null;
+    tlsKeyPath?: string | null;
+    panelDomain?: string | null;
+  },
+): YskConfig {
+  const next: YskConfig = { ...base };
+  if (patch.tlsEnabled !== undefined) next.tlsEnabled = patch.tlsEnabled;
+  if (patch.tlsCertPath !== undefined) {
+    next.tlsCertPath = patch.tlsCertPath || undefined;
+  }
+  if (patch.tlsKeyPath !== undefined) {
+    next.tlsKeyPath = patch.tlsKeyPath || undefined;
+  }
+  if (patch.panelDomain !== undefined) {
+    next.panelDomain = patch.panelDomain?.trim() || undefined;
+  }
+  return next;
 }

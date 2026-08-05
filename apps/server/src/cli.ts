@@ -26,7 +26,7 @@ import {
   expandComponents,
 } from '@ysk/core';
 import { createAppContext, closeAppContext } from './app-context.js';
-import { createHttpServer, listen } from './http-server.js';
+import { listen } from './http-server.js';
 import { runSetup } from './cli/setup.js';
 import { runUpdate } from './cli/update.js';
 import { loadConfigFile } from './config-loader.js';
@@ -4712,9 +4712,11 @@ async function mainInner(
       dataDir: dataDirOpt ?? config?.dataDir,
       adminPassword: process.env.YSK_ADMIN_PASSWORD,
       webRoot: webRoot ?? undefined });
-    const server = createHttpServer(ctx);
+    const { createControlPlaneServer } = await import('./http-server.js');
+    const { server, https: servingHttps } = createControlPlaneServer(ctx);
     const addr = await listen(server, host, port);
-    const msg = `${PRODUCT_NAME} listening on http://${addr.host}:${addr.port}`;
+    const scheme = servingHttps ? 'https' : 'http';
+    const msg = `${PRODUCT_NAME} listening on ${scheme}://${addr.host}:${addr.port}`;
     const publicBind = host === '0.0.0.0' || host === '::' || host === '[::]';
     if (json) {
       printJson({
@@ -4723,6 +4725,8 @@ async function mainInner(
         message: msg,
         data: {
           ...addr,
+          https: servingHttps,
+          scheme,
           configPath: configPath ?? null,
           adminUsername: config?.adminUsername ?? 'admin',
           locale: config?.locale ?? 'zh-TW',
@@ -4740,10 +4744,10 @@ async function mainInner(
       if (publicBind) {
         process.stderr.write(`${tl('cli.msg.security.control.plane.f59a63')}\n`);
       }
-      process.stdout.write(`Health: http://${addr.host}:${addr.port}/health\n`);
+      process.stdout.write(`Health: ${scheme}://${addr.host}:${addr.port}/health\n`);
       process.stdout.write(
         webRoot
-          ? `Web UI:  http://${addr.host}:${addr.port}/\n`
+          ? `Web UI:  ${scheme}://${addr.host}:${addr.port}/\n`
           : tl('notes.auto.t0784'),
       );
       if (configPath) {

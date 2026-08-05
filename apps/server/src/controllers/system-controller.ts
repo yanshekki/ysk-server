@@ -1981,6 +1981,158 @@ export async function handleSystemRoutes(
     return true;
   }
 
+  // —— Panel control-plane TLS (HTTPS on listenPort) ——
+  if (method === 'GET' && url.pathname === '/api/v1/system/panel-tls') {
+    ctx.auth.authenticate(getBearer(req));
+    const { getPanelTlsStatus } = await import('@ysk/core');
+    const encrypted = Boolean(
+      (req.socket as { encrypted?: boolean }).encrypted,
+    );
+    sendJson(res, 200, {
+      ...getPanelTlsStatus({
+        config: ctx.config,
+        servingHttps: encrypted,
+      }),
+      configPath: ctx.configPath ?? null,
+    });
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/panel-tls/enable') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      domain?: string;
+      certPath?: string;
+      keyPath?: string;
+      restart?: boolean;
+    };
+    const { enablePanelTls, tryRestartPanelService, getPanelTlsStatus } =
+      await import('@ysk/core');
+    if (!ctx.configPath) {
+      sendJson(res, 422, {
+        ok: false,
+        notes: [tl('system.panelTls.noConfig')],
+        status: getPanelTlsStatus({ config: ctx.config }),
+      });
+      return true;
+    }
+    const domain =
+      data.domain?.trim() ||
+      ctx.config?.panelDomain ||
+      '';
+    const r = enablePanelTls({
+      configPath: ctx.configPath,
+      dataDir: ctx.dataDir,
+      domain,
+      certPath: data.certPath,
+      keyPath: data.keyPath,
+      enabled: true,
+    });
+    // Refresh in-memory config so subsequent status is honest
+    if (r.ok && ctx.config) {
+      ctx.config.tlsEnabled = true;
+      ctx.config.tlsCertPath = r.status.certPath;
+      ctx.config.tlsKeyPath = r.status.keyPath;
+      ctx.config.panelDomain = r.status.panelDomain;
+    }
+    const notes = [...r.notes];
+    if (r.ok && data.restart !== false) {
+      const rs = await tryRestartPanelService(ctx.host);
+      notes.push(...rs.notes);
+    }
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.panel_tls.enable',
+      detail: { domain, ok: r.ok },
+      ok: r.ok,
+    });
+    sendOpsResult(res, { ...r, notes, ok: r.ok });
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/panel-tls/disable') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { restart?: boolean };
+    const { disablePanelTls, tryRestartPanelService } = await import('@ysk/core');
+    if (!ctx.configPath) {
+      sendJson(res, 422, {
+        ok: false,
+        notes: [tl('system.panelTls.noConfig')],
+      });
+      return true;
+    }
+    const r = disablePanelTls({ configPath: ctx.configPath });
+    if (r.ok && ctx.config) {
+      ctx.config.tlsEnabled = false;
+    }
+    const notes = [...r.notes];
+    if (r.ok && data.restart !== false) {
+      const rs = await tryRestartPanelService(ctx.host);
+      notes.push(...rs.notes);
+    }
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.panel_tls.disable',
+      detail: { ok: r.ok },
+      ok: r.ok,
+    });
+    sendOpsResult(res, { ...r, notes, ok: r.ok });
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/panel-tls/issue') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      domain?: string;
+      email?: string;
+      restart?: boolean;
+    };
+    const { issueAndEnablePanelTls, tryRestartPanelService } = await import('@ysk/core');
+    if (!ctx.configPath) {
+      sendJson(res, 422, {
+        ok: false,
+        notes: [tl('system.panelTls.noConfig')],
+      });
+      return true;
+    }
+    const domain = data.domain?.trim() || ctx.config?.panelDomain || '';
+    const email =
+      data.email?.trim() ||
+      `admin@${domain.replace(/^\*\./, '')}` ||
+      'admin@localhost';
+    const r = await issueAndEnablePanelTls({
+      configPath: ctx.configPath,
+      dataDir: ctx.dataDir,
+      db: ctx.db,
+      host: ctx.host,
+      domain,
+      email,
+      actor: user.username,
+    });
+    if (r.ok && ctx.config) {
+      ctx.config.tlsEnabled = true;
+      ctx.config.tlsCertPath = r.status.certPath;
+      ctx.config.tlsKeyPath = r.status.keyPath;
+      ctx.config.panelDomain = r.status.panelDomain;
+    }
+    const notes = [...r.notes];
+    if (r.ok && data.restart !== false) {
+      const rs = await tryRestartPanelService(ctx.host);
+      notes.push(...rs.notes);
+    }
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.panel_tls.issue',
+      detail: { domain, ok: r.ok },
+      ok: r.ok,
+    });
+    sendOpsResult(res, { ...r, notes, ok: r.ok });
+    return true;
+  }
+
   if (method === 'POST' && url.pathname === '/api/v1/system/host/ntp-sync') {
     const user = ctx.auth.authenticate(getBearer(req));
     const { enableHostNtp } = await import('@ysk/core');

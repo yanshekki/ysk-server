@@ -130,11 +130,17 @@ export function SystemPage() {
   );
   const [opsResult, setOpsResult] = useState<RebuildResult | null>(null);
   const [caps, setCaps] = useState<{ executeEnabled?: boolean; isRoot?: boolean }>({});
+  const [panelTls, setPanelTls] = useState<Awaited<
+    ReturnType<typeof systemApi.panelTlsStatus>
+  > | null>(null);
+  const [panelEmail, setPanelEmail] = useState('');
+  const [tlsBusy, setTlsBusy] = useState(false);
 
   const refresh = useCallback(async () => {
-    const [o, tz] = await Promise.all([
+    const [o, tz, tls] = await Promise.all([
       systemApi.hostOverview(),
       systemApi.timezones().catch(() => null),
+      systemApi.panelTlsStatus().catch(() => null),
     ]);
     setHost(o);
     setHostname(o.identity.hostname ?? '');
@@ -152,6 +158,12 @@ export function SystemPage() {
       executeEnabled: o.caps.executeEnabled,
       isRoot: o.caps.isRoot,
     });
+    if (tls) {
+      setPanelTls(tls);
+      if (tls.panelDomain && !hostname) {
+        /* keep hostname from host overview */
+      }
+    }
   }, []);
 
   const refreshExportMeta = useCallback(async () => {
@@ -542,6 +554,202 @@ export function SystemPage() {
                           }}
                         >
                           {t('system.applyIdentity')}
+                        </Button>
+                      </div>
+                    </section>
+
+                    <section className="sys-panel">
+                      <header className="sys-panel__head">
+                        <div>
+                          <h3 className="sys-panel__title">{t('system.panelTls.title')}</h3>
+                          <p className="sys-panel__sub">{t('system.panelTls.sub')}</p>
+                        </div>
+                        <Badge
+                          tone={
+                            panelTls?.servingHttps
+                              ? 'ok'
+                              : panelTls?.tlsEnabled
+                                ? 'warn'
+                                : 'neutral'
+                          }
+                        >
+                          {panelTls?.servingHttps
+                            ? t('system.panelTls.serving')
+                            : panelTls?.tlsEnabled
+                              ? t('system.panelTls.enabled')
+                              : t('system.panelTls.disabled')}
+                        </Badge>
+                      </header>
+                      <FormLayout columns={2}>
+                        <Field
+                          label={t('system.panelTls.domain')}
+                          htmlFor="panel-tls-domain"
+                          flush
+                          hint={t('system.panelTls.domainHint')}
+                        >
+                          <input
+                            id="panel-tls-domain"
+                            value={hostname}
+                            onChange={bindInput(setHostname)}
+                            spellCheck={false}
+                            placeholder="panel.example.com"
+                          />
+                        </Field>
+                        <Field
+                          label={t('system.panelTls.email')}
+                          htmlFor="panel-tls-email"
+                          flush
+                        >
+                          <input
+                            id="panel-tls-email"
+                            type="email"
+                            value={panelEmail}
+                            onChange={bindInput(setPanelEmail)}
+                            placeholder={
+                              hostname
+                                ? `admin@${hostname.replace(/^\*\./, '')}`
+                                : 'admin@example.com'
+                            }
+                            spellCheck={false}
+                          />
+                        </Field>
+                      </FormLayout>
+                      <dl className="sys-dl u-mt-2">
+                        <div>
+                          <dt>{t('system.panelTls.status')}</dt>
+                          <dd>
+                            {panelTls?.servingHttps
+                              ? t('system.panelTls.serving')
+                              : t('system.panelTls.servingHttp')}
+                            {panelTls?.httpsUrl ? (
+                              <>
+                                {' · '}
+                                <code>{panelTls.httpsUrl}</code>
+                              </>
+                            ) : null}
+                          </dd>
+                        </div>
+                        {panelTls?.expiresAt ? (
+                          <div>
+                            <dt>{t('system.panelTls.expires')}</dt>
+                            <dd>
+                              <code>{panelTls.expiresAt}</code>
+                            </dd>
+                          </div>
+                        ) : null}
+                        {panelTls?.certPath ? (
+                          <div>
+                            <dt>{t('system.panelTls.certPath')}</dt>
+                            <dd>
+                              <code className="sys-dl__muted">{panelTls.certPath}</code>
+                            </dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                      {panelTls?.notes?.length ? (
+                        <ul className="list-plain list-spaced u-mt-2 u-text-sm muted">
+                          {panelTls.notes.map((n) => (
+                            <li key={n.slice(0, 48)}>{n}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      <p className="form-hint u-mt-2">{t('system.panelTls.firewallHint')}</p>
+                      <div className="sys-panel__actions">
+                        <Button
+                          variant="primary"
+                          size="md"
+                          loading={tlsBusy}
+                          disabled={!hostname.trim()}
+                          onClick={() => {
+                            if (!hostname.trim()) {
+                              setErr(t('system.panelTls.needDomain'));
+                              return;
+                            }
+                            setTlsBusy(true);
+                            setErr(null);
+                            setMsg(null);
+                            void systemApi
+                              .panelTlsIssue({
+                                domain: hostname.trim(),
+                                email:
+                                  panelEmail.trim() ||
+                                  `admin@${hostname.trim().replace(/^\*\./, '')}`,
+                                restart: true,
+                              })
+                              .then((r) => {
+                                setOpsResult(r as RebuildResult);
+                                if (r.ok) {
+                                  setMsg(
+                                    (r.notes ?? []).join('；') ||
+                                      t('system.panelTls.urlHint', {
+                                        url: `https://${hostname.trim()}:9287`,
+                                      }),
+                                  );
+                                } else {
+                                  setErr(
+                                    r.blockMessage ||
+                                      (r.notes ?? []).join('；') ||
+                                      t('common.opFailed'),
+                                  );
+                                }
+                                return refresh();
+                              })
+                              .catch((e: Error) => setErr(e.message))
+                              .finally(() => setTlsBusy(false));
+                          }}
+                        >
+                          {t('system.panelTls.issueEnable')}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          loading={tlsBusy}
+                          disabled={!hostname.trim()}
+                          onClick={() => {
+                            setTlsBusy(true);
+                            setErr(null);
+                            setMsg(null);
+                            void systemApi
+                              .panelTlsEnable({
+                                domain: hostname.trim(),
+                                restart: true,
+                              })
+                              .then((r) => {
+                                setOpsResult(r as RebuildResult);
+                                if (r.ok) {
+                                  setMsg((r.notes ?? []).join('；'));
+                                } else {
+                                  setErr((r.notes ?? []).join('；') || t('common.opFailed'));
+                                }
+                                return refresh();
+                              })
+                              .catch((e: Error) => setErr(e.message))
+                              .finally(() => setTlsBusy(false));
+                          }}
+                        >
+                          {t('system.panelTls.enableExisting')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="md"
+                          loading={tlsBusy}
+                          disabled={!panelTls?.tlsEnabled}
+                          onClick={() => {
+                            setTlsBusy(true);
+                            setErr(null);
+                            setMsg(null);
+                            void systemApi
+                              .panelTlsDisable({ restart: true })
+                              .then((r) => {
+                                setOpsResult(r as RebuildResult);
+                                setMsg((r.notes ?? []).join('；'));
+                                return refresh();
+                              })
+                              .catch((e: Error) => setErr(e.message))
+                              .finally(() => setTlsBusy(false));
+                          }}
+                        >
+                          {t('system.panelTls.disable')}
                         </Button>
                         {hostname ? (
                           <Link

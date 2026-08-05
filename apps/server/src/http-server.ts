@@ -1,10 +1,13 @@
 /**
- * Control-plane HTTP API — dispatcher.
+ * Control-plane HTTP(S) API — dispatcher.
  * Route bodies live in `./routes/*` and `./controllers/*` (Wave2 R2).
+ * When config.tlsEnabled + cert/key files exist, binds HTTPS on the same port.
  */
 
-import { createServer, type Server } from 'node:http';
+import { createServer as createNodeHttpServer, type Server as HttpServer } from 'node:http';
+import { createServer as createNodeHttpsServer, type Server as HttpsServer } from 'node:https';
 import { runWithLocaleAsync, tl } from '@ysk/shared';
+import { loadPanelTlsOptions } from '@ysk/core';
 import type { AppContext } from './app-context.js';
 import {
   localeFromRequest,
@@ -44,10 +47,16 @@ import {
   handleUpdatesRoutes,
 } from './routes/index.js';
 
-export function createHttpServer(ctx: AppContext): Server {
-  const webRoot = resolveWebRoot(ctx.webRoot);
+export type ControlPlaneServer = HttpServer | HttpsServer;
 
-  return createServer((req, res) => {
+export type CreateServerResult = {
+  server: ControlPlaneServer;
+  /** True when HTTPS materials loaded and server is TLS */
+  https: boolean;
+};
+
+function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
+  return (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => {
     const url = parseUrl(req);
     // Accept-Language (web i18n) + optional ?locale= — avoids double authenticate
     const locale = localeFromRequest(req, url);
@@ -121,11 +130,36 @@ export function createHttpServer(ctx: AppContext): Server {
         return sendError(res, err);
       }
     });
-  });
+  };
+}
+
+/**
+ * Create control-plane server (HTTP or HTTPS from config.tls*).
+ * Prefer createControlPlaneServer; createHttpServer kept for tests.
+ */
+export function createControlPlaneServer(ctx: AppContext): CreateServerResult {
+  const webRoot = resolveWebRoot(ctx.webRoot);
+  const handler = attachRequestHandler(ctx, webRoot);
+  const tls = loadPanelTlsOptions(ctx.config);
+  if (tls) {
+    return { server: createNodeHttpsServer(tls, handler), https: true };
+  }
+  if (ctx.config?.tlsEnabled) {
+    // Config wants TLS but files missing — fall back to HTTP with stderr warning
+    process.stderr.write(
+      '[ysk-server] tlsEnabled but cert/key missing or unreadable — serving plain HTTP\n',
+    );
+  }
+  return { server: createNodeHttpServer(handler), https: false };
+}
+
+/** @deprecated use createControlPlaneServer — returns HTTP server only for tests */
+export function createHttpServer(ctx: AppContext): HttpServer {
+  return createControlPlaneServer(ctx).server as HttpServer;
 }
 
 export async function listen(
-  server: Server,
+  server: ControlPlaneServer,
   host: string,
   port: number,
 ): Promise<{ host: string; port: number }> {
