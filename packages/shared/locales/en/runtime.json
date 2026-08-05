@@ -386,5 +386,14 @@
   "phpExtAlreadyOnHost": "Installed extensions",
   "pluginsInstallSelected": "Install selected ({{n}})",
   "pluginInstallOk": "Installed {{n}} tool(s)",
-  "pluginInstallFailed": "Tool install failed"
+  "pluginInstallFailed": "Tool install failed",
+  "phpExtUninstallHint": "Uninstall optional extensions (apt remove; never FPM/CLI)",
+  "phpExtUninstallConfirmTitle": "Uninstall PHP extension?",
+  "phpExtUninstallConfirm": "Will apt remove “{{pkg}}” ({{name}}). Core FPM/CLI is never removed.",
+  "phpExtOpsTitle": "Extension ops result",
+  "pluginsOpsTitle": "Tools ops result",
+  "pluginBatchUninstall": "Uninstall selected ({{n}})",
+  "pluginBatchUninstallConfirm": "Uninstall {{n}} selected tools?",
+  "pluginBatchUninstalled": "Uninstalled {{n}} tool(s)",
+  "pluginBatchLabel": "selected tools"
 }

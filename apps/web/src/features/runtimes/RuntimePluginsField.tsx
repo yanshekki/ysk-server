@@ -13,8 +13,9 @@ import {
   FormActions,
   FormHint,
   MultiCheckSelect,
+  OpsResultPanel,
 } from '../../shared/components/ui';
-import type { MultiCheckOption } from '../../shared/components/ui';
+import type { MultiCheckOption, OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../system';
 import { toast } from '../../shared/stores/toast-store';
 
@@ -46,6 +47,9 @@ export function RuntimePluginsField({
   const [busyUninstall, setBusyUninstall] = useState(false);
   const [busyInstall, setBusyInstall] = useState(false);
   const [confirmUninstall, setConfirmUninstall] = useState<RuntimePluginRow | null>(null);
+  const [batchUninstall, setBatchUninstall] = useState(false);
+  const [uninstallSelected, setUninstallSelected] = useState<string[]>([]);
+  const [opsResult, setOpsResult] = useState<OpsResultLike | null>(null);
 
   const load = useCallback(async () => {
     if (kind === 'php') {
@@ -159,6 +163,29 @@ export function RuntimePluginsField({
     | 'kotlin'
     | 'bun';
 
+  const presentOps = useCallback(
+    (
+      r: { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string },
+      okToast: string,
+      failToast: string,
+    ) => {
+      setOpsResult({
+        ok: r.ok !== false && !r.blocked,
+        notes: r.notes,
+        blocked: r.blocked,
+        blockMessage: r.blockMessage,
+      });
+      if (r.blocked) {
+        toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
+      } else if (r.ok === false) {
+        toast.error(r.notes?.[0] ?? failToast);
+      } else {
+        toast.ok(okToast);
+      }
+    },
+    [t],
+  );
+
   const doInstallSelected = useCallback(async () => {
     if (!selectedForInstall.length) return;
     setBusyInstall(true);
@@ -167,46 +194,57 @@ export function RuntimePluginsField({
         kind: kindArg,
         plugins: selectedForInstall,
       })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
-      if (r.blocked) {
-        toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
-      } else if (r.ok === false) {
-        toast.error(r.notes?.[0] ?? t('runtime.pluginInstallFailed'));
-      } else {
-        toast.ok(t('runtime.pluginInstallOk', { n: selectedForInstall.length }));
-        onChange(requiredRows.map((x) => x.id));
-      }
+      presentOps(
+        r,
+        t('runtime.pluginInstallOk', { n: selectedForInstall.length }),
+        t('runtime.pluginInstallFailed'),
+      );
+      if (r.ok !== false && !r.blocked) onChange(requiredRows.map((x) => x.id));
       await load();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t('runtime.pluginInstallFailed'));
+      const m = e instanceof Error ? e.message : t('runtime.pluginInstallFailed');
+      toast.error(m);
+      setOpsResult({ ok: false, notes: [m] });
     } finally {
       setBusyInstall(false);
     }
-  }, [kindArg, load, onChange, requiredRows, selectedForInstall, t]);
+  }, [kindArg, load, onChange, presentOps, requiredRows, selectedForInstall, t]);
 
-  const doUninstall = useCallback(
-    async (plugin: RuntimePluginRow) => {
+  const runUninstallIds = useCallback(
+    async (ids: string[], label: string) => {
       setBusyUninstall(true);
       try {
         const r = (await systemApi.runtimePluginsUninstall({
           kind: kindArg,
-          plugins: [plugin.id],
+          plugins: ids,
         })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
-        if (r.blocked) {
-          toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
-        } else if (r.ok === false) {
-          toast.error(r.notes?.[0] ?? t('runtime.pluginUninstallFailed', { name: plugin.label }));
-        } else {
-          toast.ok(t('runtime.pluginUninstalled', { name: plugin.label }));
-        }
+        presentOps(
+          r,
+          ids.length === 1
+            ? t('runtime.pluginUninstalled', { name: label })
+            : t('runtime.pluginBatchUninstalled', { n: ids.length, defaultValue: `已卸載 ${ids.length} 個工具` }),
+          t('runtime.pluginUninstallFailed', { name: label }),
+        );
+        setUninstallSelected([]);
         await load();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : t('runtime.pluginUninstallFailed', { name: plugin.label }));
+        const m = e instanceof Error ? e.message : t('runtime.pluginUninstallFailed', { name: label });
+        toast.error(m);
+        setOpsResult({ ok: false, notes: [m] });
       } finally {
         setBusyUninstall(false);
         setConfirmUninstall(null);
+        setBatchUninstall(false);
       }
     },
-    [kindArg, load, t],
+    [kindArg, load, presentOps, t],
+  );
+
+  const doUninstall = useCallback(
+    async (plugin: RuntimePluginRow) => {
+      await runUninstallIds([plugin.id], plugin.label);
+    },
+    [runUninstallIds],
   );
 
   if (kind === 'php' || (loaded && rows.length === 0)) return null;
@@ -222,28 +260,66 @@ export function RuntimePluginsField({
             hint={t('runtime.pluginsInstalledHint')}
           >
             <ul className="runtime-plugins__list" id={`rt-plugins-installed-${kind}`}>
-              {installed.map((p) => (
-                <li key={p.id} className="runtime-plugins__row">
-                  <div className="runtime-plugins__meta">
-                    <span className="runtime-plugins__name">{p.label}</span>
-                    <Badge tone="ok">{t('runtime.pluginStatusInstalled')}</Badge>
-                    {p.hint ? (
-                      <code className="runtime-plugins__hint muted u-text-sm">{p.hint}</code>
-                    ) : null}
-                  </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={disabled || busyUninstall}
-                    loading={busyUninstall && confirmUninstall?.id === p.id}
-                    onClick={() => setConfirmUninstall(p)}
-                  >
-                    {t('runtime.pluginUninstall')}
-                  </Button>
-                </li>
-              ))}
+              {installed.map((p) => {
+                const checked = uninstallSelected.includes(p.id);
+                return (
+                  <li key={p.id} className="runtime-plugins__row">
+                    <label className="runtime-plugins__meta u-flex u-items-center u-gap-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled || busyUninstall}
+                        onChange={() => {
+                          setUninstallSelected((prev) =>
+                            checked ? prev.filter((x) => x !== p.id) : [...prev, p.id],
+                          );
+                        }}
+                      />
+                      <span className="runtime-plugins__name">{p.label}</span>
+                      <Badge tone="ok">{t('runtime.pluginStatusInstalled')}</Badge>
+                      {p.hint ? (
+                        <code className="runtime-plugins__hint muted u-text-sm">{p.hint}</code>
+                      ) : null}
+                    </label>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={disabled || busyUninstall}
+                      loading={busyUninstall && confirmUninstall?.id === p.id}
+                      onClick={() => setConfirmUninstall(p)}
+                    >
+                      {t('runtime.pluginUninstall')}
+                    </Button>
+                  </li>
+                );
+              })}
             </ul>
+            {uninstallSelected.length > 0 ? (
+              <FormActions>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  disabled={disabled || busyUninstall}
+                  loading={busyUninstall && batchUninstall}
+                  onClick={() => setBatchUninstall(true)}
+                >
+                  {t('runtime.pluginBatchUninstall', {
+                    n: uninstallSelected.length,
+                    defaultValue: `卸載選定 (${uninstallSelected.length})`,
+                  })}
+                </Button>
+              </FormActions>
+            ) : null}
           </Field>
+        </div>
+      ) : null}
+
+      {opsResult ? (
+        <div className="u-mt-2 u-mb-2" id={`rt-plugins-ops-${kind}`}>
+          <OpsResultPanel
+            title={t('runtime.pluginsOpsTitle', { defaultValue: '工具操作結果' })}
+            result={opsResult}
+          />
         </div>
       ) : null}
 
@@ -338,6 +414,27 @@ export function RuntimePluginsField({
         }}
         onClose={() => {
           if (!busyUninstall) setConfirmUninstall(null);
+        }}
+      />
+      <ConfirmDialog
+        open={batchUninstall}
+        title={t('runtime.pluginUninstallConfirmTitle')}
+        description={t('runtime.pluginBatchUninstallConfirm', {
+          n: uninstallSelected.length,
+          defaultValue: `將卸載 ${uninstallSelected.length} 個已選工具。`,
+        })}
+        confirmLabel={t('runtime.pluginUninstall')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busyUninstall}
+        onConfirm={() => {
+          void runUninstallIds(
+            uninstallSelected,
+            t('runtime.pluginBatchLabel', { defaultValue: '選定工具' }),
+          );
+        }}
+        onClose={() => {
+          if (!busyUninstall) setBatchUninstall(false);
         }}
       />
     </div>

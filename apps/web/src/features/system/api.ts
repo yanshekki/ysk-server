@@ -489,6 +489,12 @@ export const systemApi = {
         refresh ? '&refresh=1' : ''
       }`,
     ),
+  phpExtensionsUninstall: (body: { version: string; extensions: string[] }) =>
+    api.requestRawAllowStatus('/api/v1/hosting/php/extensions/uninstall', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
   phpExtensions: (version = '8.2') =>
     api.requestRaw<{
       version: string;

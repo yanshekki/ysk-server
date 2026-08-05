@@ -9,6 +9,7 @@ import { useSecurity } from '../features/security';
 import { TotpSetupPanel } from '../features/security/TotpSetupPanel';
 import { SshWorkspace } from '../features/security/ssh';
 import { api } from '../shared/services/api';
+import { toast } from '../shared/stores/toast-store';
 import {
   PageGuide,
   ActionBar,
@@ -255,8 +256,14 @@ export function SecurityPage() {
   /** Per-section flashes — never page-top (except tab-local tool errors). */
   type SecFlash = { kind: 'ok' | 'error'; message: string } | null;
   const [sessionFlash, setSessionFlash] = useState<SecFlash>(null);
-  const [passkeyErr, setPasskeyErr] = useState<string | null>(null);
-  const [passkeyMsg, setPasskeyMsg] = useState<string | null>(null);
+  const [passkeyErr, setPasskeyErrRaw] = useState<string | null>(null);
+  const setPasskeyErr = useCallback((text: string | null) => {
+    if (text) toast.error(text);
+    setPasskeyErrRaw(null);
+  }, []);
+  const setPasskeyMsg = useCallback((text: string | null) => {
+    if (text) toast.ok(text);
+  }, []);
   const [devicesFlash, setDevicesFlash] = useState<SecFlash>(null);
   const [policyFlash, setPolicyFlash] = useState<SecFlash>(null);
   const [keysFlash, setKeysFlash] = useState<SecFlash>(null);
@@ -620,32 +627,6 @@ export function SecurityPage() {
                     </Alert>
                   );
                 })()}
-                {passkeyErr ? (
-                  <Alert variant="error" className="u-mb-3">
-                    {passkeyErr}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="u-ml-2"
-                      onClick={bindSet(setPasskeyErr, null)}
-                    >
-                      {t('common.close')}
-                    </Button>
-                  </Alert>
-                ) : null}
-                {passkeyMsg ? (
-                  <Alert variant="ok" className="u-mb-3">
-                    {passkeyMsg}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="u-ml-2"
-                      onClick={bindSet(setPasskeyMsg, null)}
-                    >
-                      {t('common.close')}
-                    </Button>
-                  </Alert>
-                ) : null}
                 <ActionBar className="u-mb-3">
                   <Button
                     variant="primary"

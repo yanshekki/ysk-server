@@ -290,6 +290,33 @@ export async function handleHostingRoutes(
         sendJson(res, 200, await phpExtensionCatalogWithProbe(version, ctx.host));
         return true;
       }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/php/extensions/uninstall') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          version?: string;
+          extensions?: string[];
+        };
+        const { uninstallPhpExtensions } = await import('@ysk/core');
+        const result = await uninstallPhpExtensions({
+          host: ctx.host,
+          version: data.version ?? '8.2',
+          extensions: Array.isArray(data.extensions) ? data.extensions : [],
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.php.extensions.uninstall',
+          detail: {
+            version: result.version,
+            extensions: result.extensionIds,
+            ok: result.ok,
+            blocked: Boolean(result.blocked),
+          },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
       // —— Global PHP php.ini (panel-managed) ——
       if (method === 'GET' && url.pathname === '/api/v1/hosting/php/ini') {
         ctx.auth.authenticate(getBearer(req));

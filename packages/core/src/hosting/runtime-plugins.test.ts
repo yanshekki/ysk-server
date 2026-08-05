@@ -75,4 +75,20 @@ describe('runtime-plugins', () => {
     expect(r.blocked).toBe(true);
     expect(r.ok).toBe(false);
   });
+
+  it('installRuntimePlugins builds and blocks without execute', async () => {
+    const { installRuntimePlugins } = await import('./runtime-plugins.js');
+    const r = await installRuntimePlugins({
+      dataDir: '/tmp/ysk-test-plugins-i',
+      host: {
+        executeEnabled: () => false,
+        isRoot: () => true,
+        runCommand: async () => ({ exitCode: 0, stdout: '', stderr: '' }),
+      },
+      kind: 'node',
+      plugins: ['pm2'],
+    });
+    expect(r.blocked).toBe(true);
+    expect(r.pluginIds).toContain('pm2');
+  });
 });

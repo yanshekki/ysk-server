@@ -12,6 +12,7 @@ import {
   Card,
   CardSection,
   CheckboxField,
+  ConfirmDialog,
   DescriptionList,
   FeaturePageLayout,
   Field,
@@ -35,6 +36,7 @@ import {
 } from '../../features/runtimes/install-state';
 import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
 import { api } from '../../shared/services/api';
+import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput } from '../bind-handlers';
 
@@ -213,6 +215,9 @@ export function PhpRuntimePage() {
   const [extCatalog, setExtCatalog] = useState<PhpExtRow[]>([]);
   const [extSelected, setExtSelected] = useState<string[]>([]);
   const [extDefaults, setExtDefaults] = useState<string[]>([]);
+  const [extUninstallBusy, setExtUninstallBusy] = useState(false);
+  const [confirmExtUninstall, setConfirmExtUninstall] = useState<PhpExtRow | null>(null);
+  const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const phpInstallState = useMemo(() => {
@@ -310,12 +315,8 @@ export function PhpRuntimePage() {
       }));
   }, [extCatalog]);
 
-  const installedExtLabels = useMemo(
-    () =>
-      extCatalog
-        .filter((e) => e.installed && !e.required)
-        .map((e) => e.label)
-        .join(' · '),
+  const installedOptionalExt = useMemo(
+    () => extCatalog.filter((e) => e.installed && !e.required),
     [extCatalog],
   );
 
@@ -452,11 +453,42 @@ export function PhpRuntimePage() {
                     {requiredExtLabels}
                   </p>
                 ) : null}
-                {installedExtLabels ? (
-                  <p className="muted u-text-sm u-mb-2">
-                    <strong>{t('runtime.phpExtAlreadyOnHost', { defaultValue: '已安裝擴充' })}：</strong>
-                    {installedExtLabels}
-                  </p>
+                {installedOptionalExt.length > 0 ? (
+                  <div className="runtime-plugins__installed u-mb-3">
+                    <Field
+                      label={t('runtime.phpExtAlreadyOnHost')}
+                      htmlFor="php-ext-installed"
+                      flush
+                      hint={t('runtime.phpExtUninstallHint', {
+                        defaultValue: '可卸載非核心擴充（apt remove；唔會卸 FPM/CLI）',
+                      })}
+                    >
+                      <ul className="runtime-plugins__list" id="php-ext-installed">
+                        {installedOptionalExt.map((e) => (
+                          <li key={e.id} className="runtime-plugins__row">
+                            <div className="runtime-plugins__meta">
+                              <span className="runtime-plugins__name">{e.label}</span>
+                              <Badge tone="ok">{t('runtime.pluginStatusInstalled')}</Badge>
+                              <code className="runtime-plugins__hint muted u-text-sm">
+                                {e.package}
+                              </code>
+                            </div>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              disabled={busy || extUninstallBusy}
+                              loading={
+                                extUninstallBusy && confirmExtUninstall?.id === e.id
+                              }
+                              onClick={() => setConfirmExtUninstall(e)}
+                            >
+                              {t('runtime.pluginUninstall')}
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </Field>
+                  </div>
                 ) : null}
                 <Field
                   label={t('runtime.phpExtSelect')}
@@ -532,9 +564,75 @@ export function PhpRuntimePage() {
                         extensions: extSelected.length ? extSelected : extDefaults,
                       });
                       await refresh();
+                      await loadExtensions(version);
                       return r as OpsResultLike;
                     }, t('runtime.installedPhp', { version }))
                   }
+                />
+                {extOps ? (
+                  <div className="u-mt-3">
+                    <OpsResultPanel title={t('runtime.phpExtOpsTitle', { defaultValue: '擴充操作結果' })} result={extOps} />
+                  </div>
+                ) : null}
+                <ConfirmDialog
+                  open={Boolean(confirmExtUninstall)}
+                  title={t('runtime.phpExtUninstallConfirmTitle', { defaultValue: '卸載 PHP 擴充？' })}
+                  description={
+                    confirmExtUninstall
+                      ? t('runtime.phpExtUninstallConfirm', {
+                          name: confirmExtUninstall.label,
+                          pkg: confirmExtUninstall.package,
+                          defaultValue: `將 apt remove「${confirmExtUninstall.package}」。核心 FPM/CLI 唔會卸載。`,
+                        })
+                      : ''
+                  }
+                  confirmLabel={t('runtime.pluginUninstall')}
+                  cancelLabel={t('common.cancel')}
+                  danger
+                  busy={extUninstallBusy}
+                  onConfirm={() => {
+                    if (!confirmExtUninstall) return;
+                    const row = confirmExtUninstall;
+                    setExtUninstallBusy(true);
+                    void systemApi
+                      .phpExtensionsUninstall({
+                        version,
+                        extensions: [row.id],
+                      })
+                      .then((r) => {
+                        const body = r as {
+                          ok?: boolean;
+                          notes?: string[];
+                          blocked?: boolean;
+                          blockMessage?: string;
+                        };
+                        setExtOps({
+                          ok: body.ok !== false && !body.blocked,
+                          notes: body.notes,
+                          blocked: body.blocked,
+                          blockMessage: body.blockMessage,
+                        });
+                        if (body.blocked) {
+                          toast.warn(body.blockMessage ?? body.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
+                        } else if (body.ok === false) {
+                          toast.error(body.notes?.[0] ?? t('runtime.pluginUninstallFailed', { name: row.label }));
+                        } else {
+                          toast.ok(t('runtime.pluginUninstalled', { name: row.label }));
+                        }
+                        return loadExtensions(version);
+                      })
+                      .catch((e: Error) => {
+                        toast.error(e.message);
+                        setExtOps({ ok: false, notes: [e.message] });
+                      })
+                      .finally(() => {
+                        setExtUninstallBusy(false);
+                        setConfirmExtUninstall(null);
+                      });
+                  }}
+                  onClose={() => {
+                    if (!extUninstallBusy) setConfirmExtUninstall(null);
+                  }}
                 />
               </CardSection>
             </Card>

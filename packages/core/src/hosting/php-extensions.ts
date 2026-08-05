@@ -483,3 +483,94 @@ export async function phpExtensionCatalogWithProbe(
     defaults,
   };
 }
+
+export type PhpExtensionUninstallResult = {
+  ok: boolean;
+  version: string;
+  notes: string[];
+  extensionIds: string[];
+  blocked?: boolean;
+  blockMessage?: string;
+  requiresExecute?: boolean;
+  requiresRoot?: boolean;
+};
+
+/**
+ * Remove optional PHP apt packages. Never uninstalls required (fpm/cli/common).
+ */
+export async function uninstallPhpExtensions(input: {
+  host: {
+    executeEnabled: () => boolean;
+    isRoot: () => boolean;
+    runCommand: (
+      argv: string[],
+      opts?: { timeoutMs?: number },
+    ) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
+  };
+  version?: string;
+  extensions: string[];
+}): Promise<PhpExtensionUninstallResult> {
+  const { tl } = await import('@ysk/shared');
+  const ver =
+    input.version && (PHP_SUPPORTED as readonly string[]).includes(input.version)
+      ? input.version
+      : '8.2';
+  const requested = [...new Set((input.extensions ?? []).filter(Boolean))];
+  const removable = requested.filter((id) => {
+    const spec = BY_ID.get(id);
+    return Boolean(spec && !spec.required && spec.aptSuffix);
+  });
+  if (!removable.length) {
+    return {
+      ok: false,
+      version: ver,
+      notes: [tl('notes.runtime.pluginsNoneToUninstall')],
+      extensionIds: [],
+    };
+  }
+
+  const packages = removable.map((id) => {
+    const spec = BY_ID.get(id)!;
+    return `php${ver}-${spec.aptSuffix}`;
+  });
+
+  const notes: string[] = [`Removing: ${packages.join(', ')}`];
+  const execOn = input.host.executeEnabled();
+  const rootOn = input.host.isRoot();
+  if (!execOn || !rootOn) {
+    const blockMessage = !execOn ? tl('ops.blocked.install') : tl('notes.auto.n1582');
+    return {
+      ok: false,
+      version: ver,
+      notes: [blockMessage, ...notes],
+      extensionIds: removable,
+      blocked: true,
+      blockMessage,
+      requiresExecute: !execOn,
+      requiresRoot: !rootOn,
+    };
+  }
+
+  const r = await input.host.runCommand(
+    [
+      'bash',
+      '-c',
+      [
+        'export DEBIAN_FRONTEND=noninteractive',
+        `apt-get remove -y ${packages.map((p) => JSON.stringify(p)).join(' ')}`,
+      ].join('\n'),
+    ],
+    { timeoutMs: 300_000 },
+  );
+
+  if (r.exitCode === 0) {
+    notes.push(tl('notes.runtime.pluginsUninstallOk'));
+    return { ok: true, version: ver, notes, extensionIds: removable };
+  }
+  notes.unshift(
+    tl('notes.runtime.pluginsUninstallFailed', {
+      list: (r.stderr || r.stdout || String(r.exitCode)).slice(0, 300),
+    }),
+  );
+  return { ok: false, version: ver, notes, extensionIds: removable };
+}

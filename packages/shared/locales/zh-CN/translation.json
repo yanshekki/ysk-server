@@ -8418,7 +8418,16 @@
     "phpExtAlreadyOnHost": "已安装扩展",
     "pluginsInstallSelected": "安装选定工具 ({{n}})",
     "pluginInstallOk": "已安装 {{n}} 个工具",
-    "pluginInstallFailed": "工具安装失败"
+    "pluginInstallFailed": "工具安装失败",
+    "phpExtUninstallHint": "可卸载非核心扩展（apt remove；不会卸 FPM/CLI）",
+    "phpExtUninstallConfirmTitle": "卸载 PHP 扩展？",
+    "phpExtUninstallConfirm": "将 apt remove「{{pkg}}」（{{name}}）。核心 FPM/CLI 不会卸载。",
+    "phpExtOpsTitle": "扩展操作结果",
+    "pluginsOpsTitle": "工具操作结果",
+    "pluginBatchUninstall": "卸载选定 ({{n}})",
+    "pluginBatchUninstallConfirm": "将卸载 {{n}} 个已选工具。",
+    "pluginBatchUninstalled": "已卸载 {{n}} 个工具",
+    "pluginBatchLabel": "选定工具"
   },
   "security": {
     "title": "安全与审批",

@@ -15,6 +15,7 @@ import {
 } from '@ysk/shared';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { useServerList } from '../shared/hooks/useServerList';
+import { toast } from '../shared/stores/toast-store';
 import {
   PageGuide,
   ActionBar,
@@ -159,8 +160,14 @@ export function UsersPage() {
   const [hostUsage, setHostUsage] = useState<HostUsage | null>(null);
   const [policies, setPolicies] = useState<RolePolicyView[]>([]);
   const [createLocale, setCreateLocale] = useState('zh-HK');
-  const [error, setError] = useState<string | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setErrorRaw] = useState<string | null>(null);
+  const setError = useCallback((text: string | null) => {
+    if (text) toast.error(text);
+    setErrorRaw(null);
+  }, []);
+  const setMsg = useCallback((text: string | null) => {
+    if (text) toast.ok(text);
+  }, []);
   const [busy, setBusy] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -596,14 +603,6 @@ export function UsersPage() {
         </ActionBar>
       }
     >
-      {error ? (
-        <Alert variant="error">
-          {error}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setError, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
       {loading ? (
         <LoadingBlock label={t('users.loading')} />
       ) : (

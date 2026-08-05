@@ -1,5 +1,6 @@
 /**
  * Shared operation feedback — always top-right toast (no page-top Alert).
+ * Pass `detail` for extra ops notes under the main line.
  */
 import { toast, type ToastOptions } from '../stores/toast-store';
 

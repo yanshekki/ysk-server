@@ -37,10 +37,25 @@
   }
 }
 
-.ysk-toast__msg {
+.ysk-toast__body {
   flex: 1;
+  min-width: 0;
+}
+
+.ysk-toast__msg {
   margin: 0;
   word-break: break-word;
+}
+
+.ysk-toast__detail {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0.88;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-height: 4.5rem;
+  overflow: auto;
 }
 
 .ysk-toast__close {

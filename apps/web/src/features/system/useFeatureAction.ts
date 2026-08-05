@@ -89,11 +89,19 @@ export function useFeatureAction() {
         if (ops.blocked || ops.ok === false) {
           const warn =
             ops.blockMessage ?? ops.notes?.[0] ?? t('common.panelBlocked');
-          notifyWarn(warn);
+          const extra = ops.notes?.slice(ops.blockMessage ? 0 : 1).filter(Boolean);
+          notifyWarn(warn, {
+            detail: extra?.length ? extra.slice(0, 4).join('\n') : undefined,
+            durationMs: extra?.length ? 8000 : undefined,
+          });
         } else {
           // Prefer caller label; fall back to first operator note, then generic completed
           const note = ops.notes?.[0]?.trim();
-          notifyOk(okMessage ?? note ?? t('common.completed'));
+          const extra = ops.notes?.slice(okMessage || note ? 1 : 0).filter(Boolean);
+          notifyOk(okMessage ?? note ?? t('common.completed'), {
+            detail: extra?.length ? extra.slice(0, 4).join('\n') : undefined,
+            durationMs: extra && extra.length > 1 ? 7000 : undefined,
+          });
         }
         return r;
       } catch (e) {

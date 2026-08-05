@@ -22,7 +22,10 @@ function ToastCard({ item }: { item: ToastItem }) {
   const role = item.variant === 'error' ? 'alert' : 'status';
   return (
     <div className={VARIANT_CLASS[item.variant]} role={role} data-toast-id={item.id}>
-      <p className="ysk-toast__msg">{item.message}</p>
+      <div className="ysk-toast__body">
+        <p className="ysk-toast__msg">{item.message}</p>
+        {item.detail ? <p className="ysk-toast__detail">{item.detail}</p> : null}
+      </div>
       <button
         type="button"
         className="ysk-toast__close"

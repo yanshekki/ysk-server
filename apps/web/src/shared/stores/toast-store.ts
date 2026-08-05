@@ -8,6 +8,8 @@ export type ToastVariant = 'ok' | 'error' | 'info' | 'warn';
 export interface ToastItem {
   id: string;
   message: string;
+  /** Optional longer notes (shown under message) */
+  detail?: string;
   variant: ToastVariant;
   durationMs: number;
   createdAt: number;
@@ -15,6 +17,8 @@ export interface ToastItem {
 
 export interface ToastOptions {
   durationMs?: number;
+  /** Extra lines under the main message (e.g. ops notes) */
+  detail?: string;
 }
 
 type Listener = () => void;
@@ -58,9 +62,11 @@ function push(variant: ToastVariant, message: string, options?: ToastOptions): s
   if (!text) return '';
 
   const durationMs = options?.durationMs ?? DEFAULT_DURATION[variant];
+  const detail = options?.detail?.trim() || undefined;
   const item: ToastItem = {
     id: nextId(),
     message: text,
+    detail,
     variant,
     durationMs,
     createdAt: Date.now(),
