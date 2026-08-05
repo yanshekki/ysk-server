@@ -165,6 +165,12 @@ export type DualListenResult = {
  * Bind primary server (+ optional dual HTTP when TLS is on).
  * Dual HTTP defaults to listenPort-1 with 301 → HTTPS (config.tlsHttpRedirect).
  */
+function boundPort(server: ControlPlaneServer, fallback: number): number {
+  const addr = server.address();
+  if (addr && typeof addr === 'object' && typeof addr.port === 'number') return addr.port;
+  return fallback;
+}
+
 export async function listenControlPlane(
   ctx: AppContext,
   host: string,
@@ -172,10 +178,11 @@ export async function listenControlPlane(
 ): Promise<DualListenResult> {
   const { server, https } = createControlPlaneServer(ctx);
   await listen(server, host, port);
+  const actualPort = boundPort(server, port);
   const servers: ControlPlaneServer[] = [server];
   const primary = {
     host,
-    port,
+    port: actualPort,
     scheme: (https ? 'https' : 'http') as 'http' | 'https',
   };
 
@@ -184,9 +191,11 @@ export async function listenControlPlane(
   }
 
   const { defaultHttpListenPort } = await import('@ysk/core');
-  const httpPort =
-    ctx.config.httpListenPort ?? defaultHttpListenPort(port);
-  if (httpPort === port) {
+  // When primary used ephemeral 0, pick another free port (0) for dual HTTP
+  const wantHttp =
+    ctx.config.httpListenPort ??
+    (port === 0 ? 0 : defaultHttpListenPort(actualPort));
+  if (wantHttp !== 0 && wantHttp === actualPort) {
     process.stderr.write(
       '[ysk-server] httpListenPort equals HTTPS port — skip dual HTTP\n',
     );
@@ -207,7 +216,7 @@ export async function listenControlPlane(
           return attachRequestHandler(ctx, resolveWebRoot(ctx.webRoot))(req, res);
         }
         const hostHeader = panelHost || String(req.headers.host || host).split(':')[0];
-        const loc = `https://${hostHeader}:${port}${path}`;
+        const loc = `https://${hostHeader}:${actualPort}${path}`;
         res.writeHead(301, { Location: loc, 'Content-Length': '0' });
         res.end();
       }
@@ -215,11 +224,12 @@ export async function listenControlPlane(
 
   const httpServer = createNodeHttpServer(httpHandler);
   try {
-    await listen(httpServer, host, httpPort);
+    await listen(httpServer, host, wantHttp);
+    const httpPort = boundPort(httpServer, wantHttp);
     servers.push(httpServer);
     process.stdout.write(
       `[ysk-server] dual HTTP on ${host}:${httpPort}` +
-        (redirect ? ` → https :${port}\n` : ' (full API)\n'),
+        (redirect ? ` → https :${actualPort}\n` : ' (full API)\n'),
     );
     return {
       https,
@@ -229,7 +239,7 @@ export async function listenControlPlane(
     };
   } catch (err) {
     process.stderr.write(
-      `[ysk-server] dual HTTP bind failed on :${httpPort}: ${err instanceof Error ? err.message : err}\n`,
+      `[ysk-server] dual HTTP bind failed on :${wantHttp}: ${err instanceof Error ? err.message : err}\n`,
     );
     return { https, primary, servers };
   }

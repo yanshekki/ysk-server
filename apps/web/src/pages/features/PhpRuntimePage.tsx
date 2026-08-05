@@ -250,21 +250,38 @@ export function PhpRuntimePage() {
 
   const loadExtensions = useCallback(async (ver: string) => {
     try {
-      const r = await systemApi.phpExtensions(ver);
-      setExtCatalog(r.extensions);
-      setExtDefaults(r.defaults);
-      // Keep user picks that still exist; else apply recommended defaults
+      // Prefer unified addons API; fall back to legacy php/extensions
+      let extensions: PhpExtRow[] = [];
+      let defaults: string[] = [];
+      try {
+        const r = await systemApi.runtimeAddons('php', ver);
+        extensions = (r.items ?? []).map((e) => ({
+          id: e.id,
+          group: e.group ?? 'other',
+          label: e.label,
+          hint: e.hint,
+          recommended: Boolean(e.recommended),
+          required: Boolean(e.required),
+          package: e.package ?? `php${ver}-${e.id}`,
+        }));
+        defaults = r.defaults ?? [];
+      } catch {
+        const r = await systemApi.phpExtensions(ver);
+        extensions = r.extensions;
+        defaults = r.defaults;
+      }
+      setExtCatalog(extensions);
+      setExtDefaults(defaults);
       setExtSelected((prev) => {
-        const ids = new Set(r.extensions.map((e) => e.id));
+        const ids = new Set(extensions.map((e) => e.id));
         const kept = prev.filter((id) => ids.has(id));
         if (kept.length) {
-          // always force required
-          for (const e of r.extensions) {
+          for (const e of extensions) {
             if (e.required && !kept.includes(e.id)) kept.push(e.id);
           }
           return kept;
         }
-        return [...r.defaults];
+        return [...defaults];
       });
     } catch {
       /* optional — install still works with server defaults */

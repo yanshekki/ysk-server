@@ -48,9 +48,36 @@ export function RuntimePluginsField({
       return;
     }
     try {
-      const r = await systemApi.runtimePlugins(kind);
+      // Unified addons API (plugins mode); falls back to legacy plugins if needed
+      let items: Array<{
+        id: string;
+        label: string;
+        hint?: string;
+        group?: string;
+        recommended: boolean;
+        required: boolean;
+        installed?: boolean;
+      }> = [];
+      let defaults: string[] = [];
+      try {
+        const r = await systemApi.runtimeAddons(kind);
+        items = r.items ?? [];
+        defaults = r.defaults ?? [];
+      } catch {
+        const r = await systemApi.runtimePlugins(kind);
+        items = (r.plugins ?? []).map((p) => ({
+          id: p.id,
+          label: p.label,
+          hint: p.hint,
+          group: p.group,
+          recommended: Boolean(p.recommended),
+          required: Boolean(p.required),
+          installed: Boolean(p.installed),
+        }));
+        defaults = r.defaults ?? [];
+      }
       setRows(
-        (r.plugins ?? []).map((p) => ({
+        items.map((p) => ({
           id: p.id,
           label: p.installed ? `${p.label} ✓` : p.label,
           hint: p.installed
@@ -62,15 +89,14 @@ export function RuntimePluginsField({
           installed: Boolean(p.installed),
         })),
       );
-      // Prefer server defaults (recommended && !installed)
-      setDefaults(r.defaults ?? []);
+      setDefaults(defaults);
       setLoaded(true);
     } catch {
       setRows([]);
       setDefaults([]);
       setLoaded(true);
     }
-  }, [kind]);
+  }, [kind, t]);
 
   useEffect(() => {
     void load();

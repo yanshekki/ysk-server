@@ -14,7 +14,7 @@
   gap: 0 0.5rem;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .desc-list--cols-2 {
     grid-template-columns: 1fr;
   }
@@ -22,8 +22,8 @@
 
 .desc-list__row {
   display: grid;
-  /* minmax so long keys (e.g. NODE_OPTIONS) don't overflow into value */
-  grid-template-columns: minmax(7rem, 14rem) minmax(0, 1fr);
+  /* Fluid label column — long keys wrap; never overflow into value */
+  grid-template-columns: minmax(6.5rem, min(42%, 16rem)) minmax(0, 1fr);
   gap: 0.5rem 0.85rem;
   padding: 0.7rem 0.25rem;
   border-bottom: 1px solid var(--border-color);
@@ -36,6 +36,16 @@
 }
 
 @media (max-width: 720px) {
+  .desc-list--cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .desc-list__row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem 0.5rem;
+    align-items: start;
+  }
+
   .desc-list--cols-2 .desc-list__row:nth-last-child(-n + 2) {
     border-bottom: 1px solid var(--border-color);
   }
@@ -49,6 +59,13 @@
   border-bottom: none;
 }
 
+/* Explicit stack: label above value (env, long keys) */
+.desc-list--stack .desc-list__row {
+  grid-template-columns: 1fr;
+  gap: 0.2rem;
+  align-items: start;
+}
+
 .desc-list__label {
   margin: 0;
   font-size: var(--text-xs);
@@ -59,6 +76,7 @@
   overflow-wrap: anywhere;
   word-break: break-word;
   min-width: 0;
+  max-width: 100%;
 }
 
 .desc-list__value {
@@ -147,4 +165,3 @@
   line-height: 1.5;
   max-width: 40rem;
 }
-
