@@ -432,6 +432,20 @@ export const systemApi = {
       defaults: string[];
       useExtensions?: boolean;
     }>(`/api/v1/hosting/runtimes/plugins?kind=${encodeURIComponent(kind)}`),
+  runtimeLatest: (kind: string, refresh = false) =>
+    api.requestRaw<{
+      kind: string;
+      panelLatest: string;
+      remoteLatest?: string;
+      newerThanPanel?: boolean;
+      source?: string;
+      fetchedAt?: string;
+      notes: string[];
+    }>(
+      `/api/v1/hosting/runtimes/latest?kind=${encodeURIComponent(kind)}${
+        refresh ? '&refresh=1' : ''
+      }`,
+    ),
   phpExtensions: (version = '8.2') =>
     api.requestRaw<{
       version: string;

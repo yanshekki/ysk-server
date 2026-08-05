@@ -26,6 +26,7 @@ export * from './php-ini-catalog.js';
 export * from './php-disable-functions.js';
 export * from './php-extensions.js';
 export * from './runtime-plugins.js';
+export * from './runtime-latest.js';
 export * from './php-ini.js';
 export * from './runtime-tuning.js';
 export * from './quota.js';

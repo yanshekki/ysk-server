@@ -149,11 +149,30 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const [envPreview, setEnvPreview] = useState<Record<string, string>>({});
   const [tuningLoaded, setTuningLoaded] = useState(false);
   const [plugins, setPlugins] = useState<string[]>([]);
+  const [latestHint, setLatestHint] = useState<{
+    panelLatest: string;
+    remoteLatest?: string;
+    newerThanPanel?: boolean;
+  } | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   // Reset plugin picks when switching runtime kind
   useEffect(() => {
     setPlugins([]);
+    setLatestHint(null);
+  }, [kind]);
+
+  useEffect(() => {
+    void systemApi
+      .runtimeLatest(kind)
+      .then((h) =>
+        setLatestHint({
+          panelLatest: h.panelLatest,
+          remoteLatest: h.remoteLatest,
+          newerThanPanel: h.newerThanPanel,
+        }),
+      )
+      .catch(() => setLatestHint(null));
   }, [kind]);
 
   const refresh = useCallback(async () => {
@@ -429,6 +448,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     })()}
                   </Field>
                 </FormLayout>
+                {latestHint?.remoteLatest && latestHint.newerThanPanel ? (
+                  <FormHint>
+                    {t('runtime.remoteNewerHint', {
+                      remote: latestHint.remoteLatest,
+                      panel: latestHint.panelLatest,
+                    })}
+                  </FormHint>
+                ) : null}
                 <RuntimePluginsField
                   kind={kind}
                   value={plugins}

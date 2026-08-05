@@ -17,6 +17,7 @@ import {
   listSupportedRuntimes,
   phpExtensionCatalogDto,
   runtimePluginsCatalogWithProbe,
+  getRuntimeLatestHint,
   applyPublicFileServer,
   planFirewall,
   planPublicFileServer,
@@ -107,6 +108,30 @@ export async function handleHostingRoutes(
         });
         // Honest ops status (403 blocked / 422 failed) + full body notes for UI
         sendOpsResult(res, result);
+        return true;
+      }
+      // —— Optional remote latest hint (cached 24h) ——
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/latest') {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = (url.searchParams.get('kind') ?? 'node') as
+          | 'node'
+          | 'php'
+          | 'python'
+          | 'go'
+          | 'rust'
+          | 'java'
+          | 'kotlin'
+          | 'bun';
+        const refresh = url.searchParams.get('refresh') === '1';
+        const supported = listSupportedRuntimes();
+        const panelSupported = (supported as Record<string, string[]>)[kind] ?? [];
+        const hint = await getRuntimeLatestHint({
+          dataDir: ctx.dataDir,
+          kind,
+          panelSupported,
+          refresh,
+        });
+        sendJson(res, 200, hint);
         return true;
       }
       // —— Runtime companion plugins (pm2, poetry, maven, …) ——
