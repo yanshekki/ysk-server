@@ -593,10 +593,15 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               <Card>
                 <CardSection title={t('runtime.envPreview')} description={t('runtime.envPreviewDesc')}>
                   <DescriptionList
-                    columns={2}
+                    columns={1}
+                    className="desc-list--env"
                     items={Object.entries(envPreview).map(([k, v]) => ({
                       label: k,
-                      value: v,
+                      value: (
+                        <code className="desc-list__code">
+                          {v == null || v === '' ? '—' : String(v)}
+                        </code>
+                      ),
                     }))}
                   />
                 </CardSection>
