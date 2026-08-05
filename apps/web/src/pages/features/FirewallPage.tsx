@@ -672,7 +672,10 @@ export function FirewallPage() {
         {tab === 'about' ? <PageGuide guideId="firewall" /> : null}
       </PageTabs>
 
-      <OpsResultPanel result={result} message={msg} busy={busy} />
+      {/* When page already shows ok/error Alert, skip duplicate 操作結果 panel */}
+      {result && !msg && !error ? (
+        <OpsResultPanel result={result} busy={busy} />
+      ) : null}
 
       <ConfirmDialog
         open={delRuleNum != null}

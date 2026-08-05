@@ -414,7 +414,7 @@
   "deployEntryHint": "可留空用預設（{{hint}}）；會同步到伺服器",
   "deploySkipBuild": "略過建置",
   "deploySkipBuildHint": "已有 venv／二進位時可勾選，加快重啟（會記住本機偏好）",
-  "deployPort": "· 埠 {{埠}}",
+  "deployPort": "· 埠 {{port}}",
   "deployFpmApplied": "已套用 PHP-FPM 程序池",
   "deployFpmIncomplete": "FPM 未完成",
   "deployFpmNote": "會寫入站點／程序池 設定；真正 重新載入 需系統變更權限。",
