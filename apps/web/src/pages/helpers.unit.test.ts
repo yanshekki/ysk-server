@@ -8,6 +8,9 @@ import {
   mapWebAuthnError,
   browserSupportsWebAuthn,
   isSecureWebAuthnContext,
+  isWebAuthnIpHostname,
+  diagnoseWebAuthnBlocker,
+  getWebAuthnEnv,
 } from './SecurityPage';
 import {
   statusTone,
@@ -62,11 +65,11 @@ describe('SecurityPage helpers', () => {
   });
 
   it('mapWebAuthnError localizes library English messages', () => {
-    expect(mapWebAuthnError(new Error('WebAuthn is not supported in this browser'), t)).toBe(
-      'security.webauthnUnsupported',
-    );
-    expect(mapWebAuthnError(new Error('This feature is only available in secure contexts'), t)).toBe(
-      'security.webauthnInsecureContext',
+    // jsdom is usually insecure → "not supported" maps via diagnose, not bare unsupported
+    const mapped = mapWebAuthnError(new Error('WebAuthn is not supported in this browser'), t);
+    expect(mapped).toMatch(/webauthn(InsecureContext|Unsupported|IpHost)/);
+    expect(mapWebAuthnError(new Error('This feature is only available in secure contexts'), t)).toMatch(
+      /webauthnInsecureContext/,
     );
     expect(mapWebAuthnError(new Error('The operation either timed out or was not allowed'), t)).toBe(
       'security.webauthnCancelled',
@@ -74,11 +77,68 @@ describe('SecurityPage helpers', () => {
     expect(mapWebAuthnError(new Error(''), t)).toBe('security.webauthnFailed');
     expect(mapWebAuthnError(new Error('面板 未登記 passkey'), t)).toMatch(/passkey|面板/);
     expect(mapWebAuthnError(new Error('A'.repeat(200)), t)).toBe('security.webauthnFailed');
+    expect(
+      mapWebAuthnError(
+        Object.assign(new Error('1.2.3.4 is an invalid domain'), { code: 'ERROR_INVALID_DOMAIN' }),
+        t,
+      ),
+    ).toMatch(/webauthnIpHost/);
   });
 
-  it('browserSupportsWebAuthn / isSecureWebAuthnContext are boolean in jsdom', () => {
+  it('isWebAuthnIpHostname detects public IP RP hosts', () => {
+    expect(isWebAuthnIpHostname('219.73.47.192')).toBe(true);
+    expect(isWebAuthnIpHostname('10.0.0.1')).toBe(true);
+    expect(isWebAuthnIpHostname('localhost')).toBe(false);
+    expect(isWebAuthnIpHostname('127.0.0.1')).toBe(false);
+    expect(isWebAuthnIpHostname('panel.example.com')).toBe(false);
+  });
+
+  it('diagnoseWebAuthnBlocker prefers IP / insecure over bare unsupported', () => {
+    expect(
+      diagnoseWebAuthnBlocker(t, {
+        origin: 'http://1.2.3.4:9173',
+        hostname: '1.2.3.4',
+        isSecureContext: false,
+        hasPublicKeyCredential: true,
+        isIpHost: true,
+        isLocalhost: false,
+        likelyOk: false,
+      }),
+    ).toMatch(/webauthnIpHost/);
+    expect(
+      diagnoseWebAuthnBlocker(t, {
+        origin: 'http://panel.example.com',
+        hostname: 'panel.example.com',
+        isSecureContext: false,
+        hasPublicKeyCredential: true,
+        isIpHost: false,
+        isLocalhost: false,
+        likelyOk: false,
+      }),
+    ).toMatch(/webauthnInsecureContext/);
+    expect(
+      diagnoseWebAuthnBlocker(t, {
+        origin: 'https://panel.example.com',
+        hostname: 'panel.example.com',
+        isSecureContext: true,
+        hasPublicKeyCredential: true,
+        isIpHost: false,
+        isLocalhost: false,
+        likelyOk: true,
+      }),
+    ).toBeNull();
+  });
+
+  it('browserSupportsWebAuthn / isSecureWebAuthnContext / getWebAuthnEnv', () => {
     expect(typeof browserSupportsWebAuthn()).toBe('boolean');
     expect(typeof isSecureWebAuthnContext()).toBe('boolean');
+    const env = getWebAuthnEnv();
+    expect(env).toMatchObject({
+      isSecureContext: expect.any(Boolean),
+      hasPublicKeyCredential: expect.any(Boolean),
+      isIpHost: expect.any(Boolean),
+      likelyOk: expect.any(Boolean),
+    });
   });
 });
 

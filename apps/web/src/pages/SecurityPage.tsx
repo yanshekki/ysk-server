@@ -96,6 +96,8 @@ export function browserSupportsWebAuthn(): boolean {
   try {
     return (
       typeof window.PublicKeyCredential !== 'undefined' &&
+      typeof (window as unknown as { PublicKeyCredential?: unknown }).PublicKeyCredential ===
+        'function' &&
       typeof navigator.credentials?.create === 'function' &&
       typeof navigator.credentials?.get === 'function'
     );
@@ -114,18 +116,108 @@ export function isSecureWebAuthnContext(): boolean {
   }
 }
 
+/** Hostnames that browsers treat as valid WebAuthn RP IDs (not public IPs). */
+export function isWebAuthnIpHostname(hostname: string): boolean {
+  const h = (hostname || '').trim().toLowerCase();
+  if (!h) return false;
+  if (h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '::1') return false;
+  // IPv4
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return true;
+  // IPv6 (with or without brackets)
+  if (h.includes(':')) return true;
+  return false;
+}
+
+export type WebAuthnEnv = {
+  origin: string;
+  hostname: string;
+  isSecureContext: boolean;
+  hasPublicKeyCredential: boolean;
+  isIpHost: boolean;
+  isLocalhost: boolean;
+  /** Browser + URL look usable for a Passkey ceremony (still may fail for other reasons). */
+  likelyOk: boolean;
+};
+
+/** Snapshot of current page environment for Passkey (diagnosis only — never a product gate). */
+export function getWebAuthnEnv(): WebAuthnEnv {
+  if (typeof window === 'undefined' || typeof location === 'undefined') {
+    return {
+      origin: '',
+      hostname: '',
+      isSecureContext: false,
+      hasPublicKeyCredential: false,
+      isIpHost: false,
+      isLocalhost: false,
+      likelyOk: false,
+    };
+  }
+  const hostname = location.hostname || '';
+  const isLocalhost =
+    hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+  const isSecureContext = window.isSecureContext === true;
+  const hasPublicKeyCredential = browserSupportsWebAuthn();
+  const isIpHost = isWebAuthnIpHostname(hostname);
+  // Spec: secure context required; public IP is not a valid RP ID.
+  const likelyOk = hasPublicKeyCredential && isSecureContext && !isIpHost;
+  return {
+    origin: location.origin || '',
+    hostname,
+    isSecureContext,
+    hasPublicKeyCredential,
+    isIpHost,
+    isLocalhost,
+    likelyOk,
+  };
+}
+
+/**
+ * Human diagnosis when Passkey cannot start.
+ * Prefer environment truth over library's misleading "not supported in this browser"
+ * (often thrown on http://IP even in Brave).
+ */
+export function diagnoseWebAuthnBlocker(
+  t: (k: string, o?: Record<string, unknown>) => string,
+  env: WebAuthnEnv = getWebAuthnEnv(),
+): string | null {
+  if (env.isIpHost) {
+    return t('security.webauthnIpHost', { origin: env.origin || env.hostname });
+  }
+  if (!env.isSecureContext) {
+    return t('security.webauthnInsecureContext', { origin: env.origin });
+  }
+  if (!env.hasPublicKeyCredential) {
+    return t('security.webauthnUnsupported');
+  }
+  return null;
+}
+
 /** Map library / DOMException messages to locale keys (avoid raw English on top of zh UI). */
 export function mapWebAuthnError(
   err: unknown,
   t: (k: string, o?: Record<string, unknown>) => string,
 ): string {
+  const env = getWebAuthnEnv();
   const msg = err instanceof Error ? err.message : String(err ?? '');
+  const code =
+    err && typeof err === 'object' && 'code' in err
+      ? String((err as { code?: unknown }).code ?? '')
+      : '';
+
   if (!msg.trim()) return t('security.webauthnFailed');
+  // Library often says "not supported" when the real issue is http://IP or insecure context.
   if (/not supported|unsupported|publickeycredential is not defined/i.test(msg)) {
-    return t('security.webauthnUnsupported');
+    return diagnoseWebAuthnBlocker(t, env) ?? t('security.webauthnUnsupported');
+  }
+  if (
+    code === 'ERROR_INVALID_DOMAIN' ||
+    code === 'ERROR_INVALID_RP_ID' ||
+    /invalid domain|invalid for this domain|rp id/i.test(msg)
+  ) {
+    return t('security.webauthnIpHost', { origin: env.origin || env.hostname });
   }
   if (/secure context|insecure|must be.*https|only available in secure/i.test(msg)) {
-    return t('security.webauthnInsecureContext');
+    return t('security.webauthnInsecureContext', { origin: env.origin });
   }
   if (
     /timed out|timeout|not allowed|notallowederror|abort|cancel|operation either timed out/i.test(
@@ -139,6 +231,13 @@ export function mapWebAuthnError(
     return msg;
   }
   return t('security.webauthnFailed');
+}
+
+/** Pre-flight before calling @simplewebauthn/browser — still allows click; returns error text. */
+export function preflightWebAuthn(
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string | null {
+  return diagnoseWebAuthnBlocker(t);
 }
 
 export function SecurityPage() {
@@ -632,8 +731,25 @@ export function SecurityPage() {
                 title={t('security.passkeyTitle')}
                 description={t('security.passkeyDesc')}
               >
-                {/* No product-side gate: Brave / NordPass / 1Password / platform authenticators
-                    all work via standard WebAuthn. Soft hint only; errors stay in-section. */}
+                {/* Diagnosis only — never disable buttons. Brave/NordPass need HTTPS + domain. */}
+                {(() => {
+                  const env = getWebAuthnEnv();
+                  if (env.likelyOk) {
+                    return (
+                      <Alert variant="ok" className="u-mb-3">
+                        {t('security.webauthnEnvOk', { origin: env.origin })}
+                      </Alert>
+                    );
+                  }
+                  return (
+                    <Alert variant="info" className="u-mb-3">
+                      {t('security.webauthnEnvCurrent', { origin: env.origin || '—' })}
+                      <span className="u-block u-mt-1 muted u-text-sm">
+                        {diagnoseWebAuthnBlocker(t, env) ?? t('security.webauthnUnavailableHint')}
+                      </span>
+                    </Alert>
+                  );
+                })()}
                 {passkeyErr ? (
                   <Alert variant="error" className="u-mb-3">
                     {passkeyErr}
@@ -668,18 +784,32 @@ export function SecurityPage() {
                     onClick={() => {
                       setPasskeyErr(null);
                       setPasskeyMsg(null);
+                      const block = preflightWebAuthn(t);
+                      if (block) {
+                        setPasskeyErr(block);
+                        return;
+                      }
                       setTotpBusy(true);
                       void (async () => {
                         try {
-                          const { startRegistration } = await import(
-                            '@simplewebauthn/browser'
-                          );
+                          const { startRegistration, browserSupportsWebAuthn: libSupports } =
+                            await import('@simplewebauthn/browser');
+                          if (typeof libSupports === 'function' && !libSupports()) {
+                            setPasskeyErr(
+                              diagnoseWebAuthnBlocker(t) ?? t('security.webauthnUnsupported'),
+                            );
+                            return;
+                          }
                           const begin = await api.requestRaw<{
                             options: PublicKeyCredentialCreationOptionsJSON;
                           }>('/api/v1/auth/webauthn/register/begin', {
                             method: 'POST',
                             body: '{}',
                           });
+                          if (!begin?.options) {
+                            setPasskeyErr(t('security.webauthnFailed'));
+                            return;
+                          }
                           const att = await startRegistration({
                             optionsJSON: begin.options as never,
                           });
@@ -712,12 +842,22 @@ export function SecurityPage() {
                     onClick={() => {
                       setPasskeyErr(null);
                       setPasskeyMsg(null);
+                      const block = preflightWebAuthn(t);
+                      if (block) {
+                        setPasskeyErr(block);
+                        return;
+                      }
                       setTotpBusy(true);
                       void (async () => {
                         try {
-                          const { startAuthentication } = await import(
-                            '@simplewebauthn/browser'
-                          );
+                          const { startAuthentication, browserSupportsWebAuthn: libSupports } =
+                            await import('@simplewebauthn/browser');
+                          if (typeof libSupports === 'function' && !libSupports()) {
+                            setPasskeyErr(
+                              diagnoseWebAuthnBlocker(t) ?? t('security.webauthnUnsupported'),
+                            );
+                            return;
+                          }
                           const begin = await api.requestRaw<{
                             ok: boolean;
                             options?: PublicKeyCredentialRequestOptionsJSON;
