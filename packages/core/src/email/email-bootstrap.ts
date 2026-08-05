@@ -114,8 +114,13 @@ export async function bootstrapEmailServer(input: {
     id: 'mta-configs',
     ok: mta.ok,
     detail: mta.ok
-      ? `MTA configs written (${mta.written.length} files)`
-      : `MTA install incomplete: ${mta.notes.filter((n) => /skip|YSK_EXECUTE|fail/i.test(n)).join('; ') || 'see notes'}` });
+      ? tl('email.bootstrap.mtaOk', { count: mta.written.length })
+      : tl('email.bootstrap.mtaIncomplete', {
+          detail:
+            mta.notes.filter((n) => /skip|YSK_EXECUTE|fail|權限|root/i.test(n)).join('; ') ||
+            tl('email.bootstrap.seeNotes'),
+        }),
+  });
 
   // 3. Optional admin mailbox
   if (input.adminLocalPart) {
@@ -129,12 +134,20 @@ export async function bootstrapEmailServer(input: {
       steps.push({
         id: 'mailbox',
         ok: mb.ok,
-        detail: `Mailbox ${String(mb.mailbox.address)} status=${String(mb.mailbox.status)}` });
+        detail: tl('email.bootstrap.mailboxOk', {
+          address: String(mb.mailbox.address),
+          status: String(mb.mailbox.status),
+        }),
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       // already exists is soft-ok
-      const soft = /already exists/i.test(msg);
-      steps.push({ id: 'mailbox', ok: soft, detail: msg });
+      const soft = /already exists|已存在/i.test(msg);
+      steps.push({
+        id: 'mailbox',
+        ok: soft,
+        detail: soft ? tl('email.bootstrap.mailboxExists', { detail: msg }) : msg,
+      });
     }
   }
 
@@ -150,12 +163,14 @@ export async function bootstrapEmailServer(input: {
     steps.push({
       id: 'dovecot-passdb',
       ok: pd.ok,
-      detail: `Passdb mailboxes=${pd.mailboxCount}` });
+      detail: tl('email.bootstrap.passdbOk', { count: pd.mailboxCount }),
+    });
   } catch (e) {
     steps.push({
       id: 'dovecot-passdb',
       ok: false,
-      detail: e instanceof Error ? e.message : String(e) });
+      detail: e instanceof Error ? e.message : String(e),
+    });
   }
 
   // 5. Optional relay
@@ -197,15 +212,27 @@ export async function bootstrapEmailServer(input: {
     steps.push({
       id: 'webmail',
       ok: wm.ok,
-      detail: `Webmail ${wm.mode} for webmail.${domain}` });
+      detail: tl('email.bootstrap.webmailOk', {
+        mode: wm.mode,
+        host: `webmail.${domain}`,
+      }),
+    });
   }
 
-  const bundle = email.getDnsBundle(domainId);
+  // Honesty: mail TLS is separate — cert issue + path apply are operator steps
   notes.push(
-    'EXTERNAL (operator-owned): set MX/SPF/DKIM/DMARC at DNS provider; PTR at VPS; Port 25 or relay',
+    tl('email.bootstrap.mailTlsTodo', {
+      mailHost: input.mailHostname ?? `mail.${domain}`,
+    }),
   );
+
+  const bundle = email.getDnsBundle(domainId);
+  notes.push(tl('email.bootstrap.externalDns'));
   notes.push(
-    `Health score now ${bundle.health.score}/${bundle.health.maxScore} (DNS/PTR/Port25 not auto-complete)`,
+    tl('email.bootstrap.healthScore', {
+      score: bundle.health.score,
+      max: bundle.health.maxScore,
+    }),
   );
 
   input.audit?.append({

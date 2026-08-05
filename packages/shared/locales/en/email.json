@@ -359,5 +359,20 @@
     "dovecotSkipped": "Skipped Dovecot (not installed or doveconf unavailable)."
   },
   "policyApplySystemHint": "Check “apply to system” to write Postfix/Rspamd maps and reload; otherwise only control-plane draft is saved.",
-  "rateLimitAppliedNote": "Hourly outbound rate and antispam flag applied (when system apply is on)."
+  "rateLimitAppliedNote": "Hourly outbound rate and antispam flag applied (when system apply is on).",
+  "bootstrapHonesty": "One-click bootstrap writes MTA configs and mailboxes under the panel data directory. Applying packages/services needs root + YSK_EXECUTE. DNS/PTR/Port 25/mail SSL remain operator-owned.",
+  "bootstrapAfterSteps": "Next: ① publish DNS (MX/SPF/DKIM/DMARC) ② issue mail SSL ③ Apply mail TLS paths.",
+  "bootstrapThenSsl": "Next: issue mail SSL",
+  "bootstrap": {
+    "mtaOk": "MTA configs written ({{count}} files)",
+    "mtaIncomplete": "MTA incomplete: {{detail}}",
+    "seeNotes": "see notes",
+    "mailboxOk": "Mailbox {{address}} (status {{status}})",
+    "mailboxExists": "Mailbox already exists (skipped): {{detail}}",
+    "passdbOk": "Dovecot passdb written ({{count}} mailboxes)",
+    "webmailOk": "Webmail plan {{mode}} for {{host}}",
+    "mailTlsTodo": "Mail TLS: issue a cert for {{mailHost}}, then use Apply mail TLS paths on the health tab.",
+    "externalDns": "External (operator-owned): set MX/SPF/DKIM/DMARC at DNS; PTR at VPS; Port 25 or SMTP relay.",
+    "healthScore": "Health score {{score}}/{{max}} (DNS/PTR/Port25 not auto-complete)"
+  }
 }

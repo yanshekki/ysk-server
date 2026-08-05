@@ -97,5 +97,10 @@
   "itemFleetSessions": "Fleet agent 会话",
   "itemFleetNone": "单机可选；多边缘需 agent run + heartbeat",
   "itemFleetNoHb": "已注册但无 heartbeat — 请启动边缘 agent",
-  "itemPdnsutil": "pdnsutil（PowerDNS）"
+  "itemPdnsutil": "pdnsutil（PowerDNS）",
+  "apachePort80Title": "Apache 与公开 80 端口",
+  "apachePort80Detail": "Apache 正在监听 :80，Nginx 未占用公开 HTTP — 与「Nginx 作边缘」拓扑冲突。",
+  "apachePort80Both": "Apache 与 Nginx 同时出现在 :80 — 请将 Apache 改绑 127.0.0.1:8080。",
+  "apachePort80Ok": "Apache 运行中但未独占公开 :80（拓扑可接受）。",
+  "apachePort80Fix": "安装脚本已有 rebind；可停用占用 80 的 Apache vhost，或 reload 后用 ss -lntp 确认。"
 }

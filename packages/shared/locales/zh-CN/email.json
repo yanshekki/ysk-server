@@ -359,5 +359,20 @@
     "dovecotSkipped": "已跳过 Dovecot（未安装或 doveconf 不可用）。"
   },
   "policyApplySystemHint": "勾选「套用到系统」才会写入 Postfix／Rspamd 映射并重新加载；否则只写控制面草稿。",
-  "rateLimitAppliedNote": "已套用每小时外发限额与反垃圾标记（若启用系统套用）。"
+  "rateLimitAppliedNote": "已套用每小时外发限额与反垃圾标记（若启用系统套用）。",
+  "bootstrapHonesty": "一键建立会写入面板数据目录内的 MTA 配置与邮箱；真正套用到系统软件包／服务需要管理员与系统变更权限。DNS／PTR／端口 25／邮件 SSL 仍须你手动完成。",
+  "bootstrapAfterSteps": "完成后建议：① 发布 DNS（MX/SPF/DKIM/DMARC）② 申请 mail.域名 SSL ③ 按「套用邮件 TLS 路径」。",
+  "bootstrapThenSsl": "下一步：申请 mail SSL",
+  "bootstrap": {
+    "mtaOk": "已写入 MTA 配置（{{count}} 个文件）",
+    "mtaIncomplete": "MTA 配置未完成：{{detail}}",
+    "seeNotes": "见 notes",
+    "mailboxOk": "邮箱 {{address}}（状态 {{status}}）",
+    "mailboxExists": "邮箱已存在（跳过）：{{detail}}",
+    "passdbOk": "Dovecot passdb 已写入（{{count}} 个邮箱）",
+    "webmailOk": "网页邮件方案 {{mode}}（{{host}}）",
+    "mailTlsTodo": "邮件 TLS：请为 {{mailHost}} 申请证书后，在健康分页按「套用邮件 TLS 路径」。",
+    "externalDns": "外部待办（你负责）：在 DNS 商设置 MX/SPF/DKIM/DMARC；VPS 设 PTR；开放端口 25 或改用 SMTP 中继。",
+    "healthScore": "健康分数 {{score}}/{{max}}（DNS/PTR/端口 25 不会自动完成）"
+  }
 }

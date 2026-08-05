@@ -97,5 +97,10 @@
   "itemFleetSessions": "機群 代理 工作階段",
   "itemFleetNone": "單機可選：多邊緣需 代理 run + 心跳",
   "itemFleetNoHb": "已註冊但無 心跳 — 請啟動邊緣 代理",
-  "itemPdnsutil": "pdnsutil（PowerDNS）"
+  "itemPdnsutil": "pdnsutil（PowerDNS）",
+  "apachePort80Title": "Apache 與公開 80 埠",
+  "apachePort80Detail": "Apache 正在監聽 :80，Nginx 未佔用公開 HTTP — 與「Nginx 作邊緣」拓撲衝突。",
+  "apachePort80Both": "Apache 與 Nginx 同時出現在 :80 監聽 — 請將 Apache 改綁 127.0.0.1:8080。",
+  "apachePort80Ok": "Apache 運作中但未獨佔公開 :80（拓撲可接受）。",
+  "apachePort80Fix": "於安裝腳本已有 rebind；可停用 Apache 佔用 80 的 vhost，或 systemctl reload 後確認 ss -lntp。"
 }

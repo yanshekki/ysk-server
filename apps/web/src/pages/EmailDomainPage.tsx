@@ -1643,6 +1643,9 @@ export function EmailDomainPage() {
                 title={t('email.bootstrapTitle')}
                 description={t('email.bootstrapDesc')}
               >
+                <Alert variant="info">
+                  {t('email.bootstrapHonesty')}
+                </Alert>
                 <FormLayout>
                   <Field
                     label={t('email.adminPassword')}
@@ -1662,6 +1665,7 @@ export function EmailDomainPage() {
                     />
                   </Field>
                 </FormLayout>
+                <p className="muted u-text-sm u-mb-3">{t('email.bootstrapAfterSteps')}</p>
                 <FormActions>
                   <Button
                     variant="primary"
@@ -1687,6 +1691,17 @@ export function EmailDomainPage() {
                     )}
                   >
                     {t('email.bootstrapBtn')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={bindNavigate(
+                      navigate,
+                      `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`,
+                    )}
+                  >
+                    {t('email.bootstrapThenSsl')}
                   </Button>
                 </FormActions>
               </CardSection>

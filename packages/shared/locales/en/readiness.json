@@ -97,5 +97,10 @@
   "itemFleetSessions": "Fleet agent sessions",
   "itemFleetNone": "Optional for single-host; multi-edge needs agent run + heartbeat",
   "itemFleetNoHb": "Sessions registered but not heartbeating — start edge agent",
-  "itemPdnsutil": "pdnsutil (PowerDNS)"
+  "itemPdnsutil": "pdnsutil (PowerDNS)",
+  "apachePort80Title": "Apache vs public :80",
+  "apachePort80Detail": "Apache is listening on :80 and Nginx is not on public HTTP — conflicts with Nginx-as-edge topology.",
+  "apachePort80Both": "Both Apache and Nginx appear on :80 — rebind Apache to 127.0.0.1:8080.",
+  "apachePort80Ok": "Apache is running but not solely owning public :80 (topology OK).",
+  "apachePort80Fix": "Install rebind helpers exist; disable Apache vhosts on 80 or verify with ss -lntp after reload."
 }

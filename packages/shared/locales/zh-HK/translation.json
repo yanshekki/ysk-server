@@ -2840,7 +2840,22 @@
       "dovecotSkipped": "已略過 Dovecot（未安裝或 doveconf 不可用）。"
     },
     "policyApplySystemHint": "勾選「套用到系統」才會寫入 Postfix／Rspamd 映射並重新載入；否則只寫控制面草稿。",
-    "rateLimitAppliedNote": "已套用每小時外寄限額與反垃圾標記（若啟用系統套用）。"
+    "rateLimitAppliedNote": "已套用每小時外寄限額與反垃圾標記（若啟用系統套用）。",
+    "bootstrapHonesty": "一鍵建立會寫入面板資料目錄內的 MTA 設定與信箱；真正套用到系統套件／服務需要管理員與系統變更權限。DNS／PTR／埠 25／郵件 SSL 仍須你手動完成。",
+    "bootstrapAfterSteps": "完成後建議：① 發佈 DNS（MX/SPF/DKIM/DMARC）② 申請 mail.網域 SSL ③ 按「套用郵件 TLS 路徑」。",
+    "bootstrapThenSsl": "下一步：申請 mail SSL",
+    "bootstrap": {
+      "mtaOk": "已寫入 MTA 設定（{{count}} 個檔）",
+      "mtaIncomplete": "MTA 設定未完成：{{detail}}",
+      "seeNotes": "見 notes",
+      "mailboxOk": "信箱 {{address}}（狀態 {{status}}）",
+      "mailboxExists": "信箱已存在（略過）：{{detail}}",
+      "passdbOk": "Dovecot passdb 已寫入（{{count}} 個信箱）",
+      "webmailOk": "網頁郵件方案 {{mode}}（{{host}}）",
+      "mailTlsTodo": "郵件 TLS：請為 {{mailHost}} 申請憑證後，於健康分頁按「套用郵件 TLS 路徑」。",
+      "externalDns": "外部待辦（你負責）：於 DNS 商設定 MX/SPF/DKIM/DMARC；VPS 設 PTR；開放埠 25 或改用 SMTP 中繼。",
+      "healthScore": "健康分數 {{score}}/{{max}}（DNS/PTR/埠 25 不會自動完成）"
+    }
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授權",
@@ -7863,7 +7878,12 @@
     "itemFleetSessions": "機群 代理 工作階段",
     "itemFleetNone": "單機可選：多邊緣需 代理 run + 心跳",
     "itemFleetNoHb": "已註冊但無 心跳 — 請啟動邊緣 代理",
-    "itemPdnsutil": "pdnsutil（PowerDNS）"
+    "itemPdnsutil": "pdnsutil（PowerDNS）",
+    "apachePort80Title": "Apache 與公開 80 埠",
+    "apachePort80Detail": "Apache 正在監聽 :80，Nginx 未佔用公開 HTTP — 與「Nginx 作邊緣」拓撲衝突。",
+    "apachePort80Both": "Apache 與 Nginx 同時出現在 :80 監聽 — 請將 Apache 改綁 127.0.0.1:8080。",
+    "apachePort80Ok": "Apache 運作中但未獨佔公開 :80（拓撲可接受）。",
+    "apachePort80Fix": "於安裝腳本已有 rebind；可停用 Apache 佔用 80 的 vhost，或 systemctl reload 後確認 ss -lntp。"
   },
   "redis": {
     "neverExpire": "永不過期",

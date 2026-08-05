@@ -578,6 +578,61 @@ export async function assessProductionReadiness(input: {
     }
   }
 
+  // S8: Apache must not steal public :80 when Nginx is the edge
+  try {
+    const apacheActive = await host.runCommand(['systemctl', 'is-active', 'apache2'], {
+      timeoutMs: 5_000,
+    });
+    const isApacheUp = (apacheActive.stdout || apacheActive.stderr || '').trim() === 'active';
+    if (isApacheUp) {
+      const ports = await host.runCommand(
+        [
+          'bash',
+          '-c',
+          "ss -lntp 2>/dev/null | grep -E ':80\\b' || netstat -lntp 2>/dev/null | grep -E ':80\\b' || true",
+        ],
+        { timeoutMs: 8_000 },
+      );
+      const listen = `${ports.stdout || ''}${ports.stderr || ''}`;
+      const apacheOn80 =
+        /apache2|httpd/i.test(listen) && /:80\b/.test(listen);
+      const nginxOn80 = /nginx/i.test(listen) && /:80\b/.test(listen);
+      if (apacheOn80 && !nginxOn80) {
+        push({
+          id: 'ops-apache-port80',
+          category: 'ops',
+          title: tl('readiness.apachePort80Title'),
+          level: 'degraded',
+          detail: tl('readiness.apachePort80Detail'),
+          fixHint: tl('readiness.apachePort80Fix'),
+          fixHref: '/services',
+          severity: 'critical',
+        });
+      } else if (apacheOn80 && nginxOn80) {
+        push({
+          id: 'ops-apache-port80',
+          category: 'ops',
+          title: tl('readiness.apachePort80Title'),
+          level: 'degraded',
+          detail: tl('readiness.apachePort80Both'),
+          fixHref: '/services',
+          severity: 'critical',
+        });
+      } else {
+        push({
+          id: 'ops-apache-port80',
+          category: 'ops',
+          title: tl('readiness.apachePort80Title'),
+          level: 'ready',
+          detail: tl('readiness.apachePort80Ok'),
+          severity: 'optional',
+        });
+      }
+    }
+  } catch {
+    /* optional probe */
+  }
+
   // Per-project OS isolation (independent Linux user + /home/ysk-server-{id})
   if (input.projects) {
     for (const item of buildProjectIsolationReadinessItems(input.projects)) {

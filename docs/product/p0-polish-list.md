@@ -16,9 +16,9 @@
 | S3 | Nginx edge + Apache backend 8080 | **done** | install rebind |
 | S4 | MySQL XOR MariaDB switch + migrate | **done** | dialog + dump/import |
 | S5 | unit `activating` 假失敗 | **done** | `waitUnitActive` |
-| S6 | 真機 E2E switch（有數據） | **partial** | 清單：`docs/product/sql-switch-e2e-checklist.md`；待運維跑通 |
+| S6 | 真機 E2E switch（有數據） | **partial** | 清單 + `pnpm e2e:sql-switch` 單元驗收；有數據雙引擎仍須運維 checklist |
 | S7 | Cron UI vs 主機 crontab | **done** | 狀態頁顯示非 YSK 行數；install 合併保留主機非 YSK 行 |
-| S8 | 本機 Apache 仍佔 :80 | **ops** | 環境：rebind/stop apache 後起 nginx |
+| S8 | 本機 Apache 仍佔 :80 | **done** | 就緒探測偵測 Apache 佔 :80；修復提示綁 127.0.0.1:8080 |
 
 ---
 
@@ -46,7 +46,7 @@
 | F6–F7 | DKIM/SPF/DMARC 面板完整度 | **done** | 即時檢查 + 失敗修復提示（SPF/DKIM/DMARC/MX） |
 | F10 | Antispam per-domain | **done** | 控制面 + 套用系統誠實提示；mail-policy 映射 |
 | F13 | Outbound rate limits | **done** | 每小時外寄限額 UI + applySystem 提示 |
-| F20–F22 | Bootstrap honesty · mail SSL · suspend | **partial** | suspend flags 有；mail SSL 深鏈 |
+| F20–F22 | Bootstrap honesty · mail SSL · suspend | **done** | bootstrap 誠實說明 + TLS 後續步驟；suspend apply/written；mail SSL 套用 |
 
 ---
 
@@ -77,13 +77,11 @@
 
 ---
 
-## 建議 sprint 順序（若繼續 polish）
+## 建議 sprint 順序（若繼續）
 
-1. **S6** 真機 switch 驗收 checklist（半日）  
-2. **S7** Cron 誠實：只讀顯示「主機 crontab 有 N 行 / 含 ysk 標記」或 import  
-3. **B7–B8** custom docroot  
-4. **D7 + F6–F7** mail TLS / DNS 郵件記錄核對  
-5. **installCrontab 警告** + coverage track  
+1. **S6** 真機有數據 switch（運維 checklist）  
+2. **Cov** coverage → 90%  
+3. 新功能／parity 再對 matrix  
 
 ---
 
@@ -91,7 +89,7 @@
 
 | 子集 | 完成 |
 |------|------|
-| A 今輪主線碼 | **~95–100%**（差真機 S6 / 環境 S8） |
-| B–E matrix partial | **~60–70%** 已有能力，差收口 |
+| A 今輪主線碼 | **~98%**（差真機有數據 S6） |
+| B–E matrix partial | **~95%** 已收口 |
 | F 多租戶 | **0%（刻意不做 P0）** |
-| 整體「P0 polish 清單收口」 | **約 90%**；若只計 Admin 已交付功能則 **~94%+** |
+| 整體「P0 polish 清單收口」 | **約 93%**；若只計 Admin 已交付功能則 **~95%+** |
