@@ -31,6 +31,10 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
+import {
+  resolveRuntimeInstallState,
+  versionChipLabel,
+} from '../../features/runtimes/install-state';
 import { bindSet, bindInput } from '../bind-handlers';
 
 export type HostingRuntimeKind =
@@ -195,15 +199,41 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             ? 'hostPython'
             : kind === 'go'
               ? 'hostGo'
-              : 'hostRust';
+              : kind === 'rust'
+                ? 'hostRust'
+                : kind === 'java'
+                  ? 'hostJava'
+                  : kind === 'kotlin'
+                    ? 'hostKotlin'
+                    : kind === 'bun'
+                      ? 'hostBun'
+                      : 'hostRust';
+    const hostRaw = p?.[hostKey] != null ? String(p[hostKey]) : '';
     return {
       items,
       available,
-      host: p?.[hostKey] != null ? String(p[hostKey]) : '—',
+      host: hostRaw || '—',
+      hostRaw,
       supported: supported?.[kind] ?? meta.versions,
       notes: Array.isArray(p?.notes) ? (p!.notes as string[]) : [],
     };
   }, [probe, kind, meta.versions]);
+
+  const installState = useMemo(
+    () =>
+      resolveRuntimeInstallState({
+        selectedVersion: version,
+        supportedVersions: probeData.supported,
+        availableVersions: probeData.available,
+        probeItems: probeData.items.map((i) => ({
+          version: i.version != null ? String(i.version) : undefined,
+          available: Boolean(i.available),
+          versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
+        })),
+        hostDefault: probeData.hostRaw || null,
+      }),
+    [version, probeData],
+  );
 
   const parseExtraEnv = (): Record<string, string> => {
     const out: Record<string, string> = {};
@@ -345,7 +375,19 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 description={t('runtime.installHint')}
               >
                 <FormLayout columns={2}>
-                  <Field label={t('runtime.targetVersion')} htmlFor={`rt-${kind}-ver`} flush required>
+                  <Field
+                    label={t('runtime.targetVersion')}
+                    htmlFor={`rt-${kind}-ver`}
+                    flush
+                    required
+                    hint={
+                      installState.installedVersions.length
+                        ? t('runtime.installedVersionsHint', {
+                            list: installState.installedVersions.join(', '),
+                          })
+                        : t('runtime.installScriptNote')
+                    }
+                  >
                     {(() => {
                       const vers =
                         probeData.supported.length ? probeData.supported : meta.versions;
@@ -356,7 +398,10 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             aria-label={t('runtime.targetVersion')}
                             value={version}
                             onChange={setVersion}
-                            options={vers.map((v) => ({ value: v, label: v }))}
+                            options={vers.map((v) => ({
+                              value: v,
+                              label: versionChipLabel(v, installState.installedVersions),
+                            }))}
                           />
                         );
                       }
@@ -368,7 +413,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         >
                           {vers.map((v) => (
                             <option key={v} value={v}>
-                              {v}
+                              {versionChipLabel(v, installState.installedVersions)}
                             </option>
                           ))}
                         </select>
@@ -376,14 +421,31 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     })()}
                   </Field>
                 </FormLayout>
-                <FormHint>
-                  {t('runtime.installScriptNote')}
-                </FormHint>
+                {installState.selectedInstalled ? (
+                  <FormHint>
+                    {t('runtime.versionAlreadyInstalled', { version })}
+                  </FormHint>
+                ) : installState.newerAvailable.length > 0 ? (
+                  <FormHint>
+                    {t('runtime.newerVersionAvailable', {
+                      current: installState.newestInstalled ?? '—',
+                      newer: installState.newerAvailable.join(', '),
+                    })}
+                  </FormHint>
+                ) : (
+                  <FormHint>{t('runtime.installScriptNote')}</FormHint>
+                )}
                 <FormActions>
                   <Button
                     variant="primary"
                     size="md"
                     loading={busy}
+                    disabled={installState.installDisabled}
+                    title={
+                      installState.installDisabled
+                        ? t('runtime.versionAlreadyInstalled', { version })
+                        : undefined
+                    }
                     onClick={() =>
                       void run(async () => {
                         const r = await systemApi.runtimeInstall({
@@ -396,8 +458,22 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                       }, t(meta.installLabelKey, { v: version }))
                     }
                   >
-                    {t(meta.installLabelKey, { v: version })}
+                    {installState.installDisabled
+                      ? t('runtime.installedVersionBtn', { version })
+                      : t(meta.installLabelKey, { v: version })}
                   </Button>
+                  {installState.newerAvailable[0] && installState.installDisabled ? (
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={busy}
+                      onClick={() => setVersion(installState.newerAvailable[0]!)}
+                    >
+                      {t('runtime.switchToNewer', {
+                        version: installState.newerAvailable[0],
+                      })}
+                    </Button>
+                  ) : null}
                 </FormActions>
               </CardSection>
             </Card>

@@ -29,6 +29,10 @@ import type { OpsResultLike, MultiCheckOption } from '../../shared/components/ui
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import {
+  resolveRuntimeInstallState,
+  versionChipLabel,
+} from '../../features/runtimes/install-state';
 import { api } from '../../shared/services/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput } from '../bind-handlers';
@@ -209,6 +213,27 @@ export function PhpRuntimePage() {
   const [extDefaults, setExtDefaults] = useState<string[]>([]);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
+  const phpInstallState = useMemo(() => {
+    const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
+    const supported =
+      (probe?.supported as Record<string, string[]> | undefined)?.php ??
+      ['8.1', '8.2', '8.3'];
+    const items = (p?.php as Array<Record<string, unknown>> | undefined) ?? [];
+    const available = items.filter((i) => i.available).map((i) => String(i.version));
+    const hostPhp = p?.hostPhp != null ? String(p.hostPhp) : null;
+    return resolveRuntimeInstallState({
+      selectedVersion: version,
+      supportedVersions: supported,
+      availableVersions: available,
+      probeItems: items.map((i) => ({
+        version: i.version != null ? String(i.version) : undefined,
+        available: Boolean(i.available),
+        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
+      })),
+      hostDefault: hostPhp,
+    });
+  }, [probe, version]);
+
   const refresh = useCallback(async () => {
     try {
       setProbe((await systemApi.runtimes()) as Record<string, unknown>);
@@ -388,15 +413,27 @@ export function PhpRuntimePage() {
                       aria-label={t('runtime.phpVersion')}
                       value={version}
                       onChange={setVersion}
-                      options={[
-                        { value: '8.1', label: '8.1' },
-                        { value: '8.2', label: '8.2' },
-                        { value: '8.3', label: '8.3' },
-                      ]}
+                      options={['8.1', '8.2', '8.3'].map((v) => ({
+                        value: v,
+                        label: versionChipLabel(v, phpInstallState.installedVersions),
+                      }))}
                     />
                   </Field>
                 </FormLayout>
-                <FormHint>{t('runtime.phpExtHint')}</FormHint>
+                {phpInstallState.selectedInstalled ? (
+                  <FormHint>
+                    {t('runtime.versionAlreadyInstalled', { version })}
+                  </FormHint>
+                ) : phpInstallState.newerAvailable.length > 0 ? (
+                  <FormHint>
+                    {t('runtime.newerVersionAvailable', {
+                      current: phpInstallState.newestInstalled ?? '—',
+                      newer: phpInstallState.newerAvailable.join(', '),
+                    })}
+                  </FormHint>
+                ) : (
+                  <FormHint>{t('runtime.phpExtHint')}</FormHint>
+                )}
                 {requiredExtLabels ? (
                   <p className="muted u-text-sm u-mb-2">
                     <strong>{t('runtime.phpExtRequired')}：</strong>
@@ -442,6 +479,12 @@ export function PhpRuntimePage() {
                     variant="primary"
                     size="md"
                     loading={busy}
+                    disabled={phpInstallState.installDisabled}
+                    title={
+                      phpInstallState.installDisabled
+                        ? t('runtime.versionAlreadyInstalled', { version })
+                        : undefined
+                    }
                     onClick={() =>
                       void run(async () => {
                         const r = await systemApi.runtimeInstall({
@@ -455,8 +498,22 @@ export function PhpRuntimePage() {
                       }, t('runtime.installedPhp', { version }))
                     }
                   >
-                    {t('runtime.installPhpVBtn', { version })}
+                    {phpInstallState.installDisabled
+                      ? t('runtime.installedVersionBtn', { version })
+                      : t('runtime.installPhpVBtn', { version })}
                   </Button>
+                  {phpInstallState.newerAvailable[0] && phpInstallState.installDisabled ? (
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={busy}
+                      onClick={() => setVersion(phpInstallState.newerAvailable[0]!)}
+                    >
+                      {t('runtime.switchToNewer', {
+                        version: phpInstallState.newerAvailable[0],
+                      })}
+                    </Button>
+                  ) : null}
                 </FormActions>
               </CardSection>
             </Card>

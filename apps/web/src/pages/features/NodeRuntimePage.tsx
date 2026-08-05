@@ -25,6 +25,10 @@ import { systemApi } from '../../features/system';
 import { softwareApi } from '../../features/software';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { useFeatureSoftware } from '../../features/software';
+import {
+  resolveRuntimeInstallState,
+  versionChipLabel,
+} from '../../features/runtimes/install-state';
 import { bindSet } from '../bind-handlers';
 
 export function NodeRuntimePage() {
@@ -66,13 +70,30 @@ export function NodeRuntimePage() {
   const nodeItems = Array.isArray(probeInner?.node)
     ? (probeInner!.node as Array<Record<string, unknown>>)
     : [];
-  const availableMajors = nodeItems
-    .filter((i) => i.available)
-    .map((i) => String(i.version));
+  const availableMajors = useMemo(
+    () => nodeItems.filter((i) => i.available).map((i) => String(i.version)),
+    [nodeItems],
+  );
+  const installState = useMemo(
+    () =>
+      resolveRuntimeInstallState({
+        selectedVersion: version,
+        supportedVersions: ['18', '20', '22'],
+        availableVersions: availableMajors,
+        probeItems: nodeItems.map((i) => ({
+          version: i.version != null ? String(i.version) : undefined,
+          available: Boolean(i.available),
+          versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
+        })),
+        hostDefault: hostNode,
+      }),
+    [version, availableMajors, nodeItems, hostNode],
+  );
   const softNode = softItems.find((s) => s.id === 'node');
   const hasNode = Boolean(
     hostNode ||
       availableMajors.length > 0 ||
+      installState.anyInstalled ||
       softNode?.installed ||
       (!missing.some((m) => m.id === 'node') && softItems.length > 0 && softNode),
   );
@@ -184,14 +205,34 @@ export function NodeRuntimePage() {
                 value={version}
                 onChange={setVersion}
                 options={[
-                  { value: '18', label: '18' },
-                  { value: '20', label: '20 LTS' },
-                  { value: '22', label: '22' },
+                  {
+                    value: '18',
+                    label: versionChipLabel('18', installState.installedVersions),
+                  },
+                  {
+                    value: '20',
+                    label: installState.installedVersions.includes('20')
+                      ? '20 ✓'
+                      : '20 LTS',
+                  },
+                  {
+                    value: '22',
+                    label: versionChipLabel('22', installState.installedVersions),
+                  },
                 ]}
               />
             </Field>
           </FormLayout>
-          {hasNode ? (
+          {installState.selectedInstalled ? (
+            <FormHint>{t('runtime.versionAlreadyInstalled', { version })}</FormHint>
+          ) : installState.newerAvailable.length > 0 ? (
+            <FormHint>
+              {t('runtime.newerVersionAvailable', {
+                current: installState.newestInstalled ?? hostNode ?? '—',
+                newer: installState.newerAvailable.join(', '),
+              })}
+            </FormHint>
+          ) : hasNode ? (
             <FormHint>{t('runtime.nodeDetectedHint')}</FormHint>
           ) : (
             <FormHint>{t('runtime.nodeProbeAfter')}</FormHint>
@@ -201,6 +242,12 @@ export function NodeRuntimePage() {
               variant="primary"
               size="md"
               loading={busy}
+              disabled={installState.installDisabled}
+              title={
+                installState.installDisabled
+                  ? t('runtime.versionAlreadyInstalled', { version })
+                  : undefined
+              }
               onClick={() =>
                 void run(async () => {
                   const r = await systemApi.runtimeInstall({
@@ -213,8 +260,22 @@ export function NodeRuntimePage() {
                 }, t('runtime.installedNode', { version }))
               }
             >
-              {t('runtime.installNodeVBtn', { version })}
+              {installState.installDisabled
+                ? t('runtime.installedVersionBtn', { version })
+                : t('runtime.installNodeVBtn', { version })}
             </Button>
+            {installState.newerAvailable[0] && installState.installDisabled ? (
+              <Button
+                variant="secondary"
+                size="md"
+                loading={busy}
+                onClick={() => setVersion(installState.newerAvailable[0]!)}
+              >
+                {t('runtime.switchToNewer', {
+                  version: installState.newerAvailable[0],
+                })}
+              </Button>
+            ) : null}
           </FormActions>
         </CardSection>
       </Card>
