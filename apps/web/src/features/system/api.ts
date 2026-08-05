@@ -157,9 +157,14 @@ export const systemApi = {
     timezone?: string;
     prettyHostname?: string;
   }) =>
-    api.requestRaw('/api/v1/system/host-identity', {
+    api.requestRawAllowStatus<{
+      ok?: boolean;
+      blocked?: boolean;
+      notes?: string[];
+    }>('/api/v1/system/host-identity', {
       method: 'POST',
       body: JSON.stringify(body),
+      allowStatuses: [403, 422],
     }),
   panelTlsStatus: () =>
     api.requestRaw<{

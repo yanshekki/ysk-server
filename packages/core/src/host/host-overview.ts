@@ -153,6 +153,144 @@ function ipsFromInterfaces(ifaces: Array<{ name: string; addrs: string[] }>): st
   return ips;
 }
 
+/** Parse `Pretty hostname: …` from hostnamectl status. */
+export function parsePrettyHostnameFromStatus(stdout: string): string | null {
+  for (const line of stdout.split('\n')) {
+    const m = line.match(/^\s*Pretty hostname:\s*(.*?)\s*$/i);
+    if (m) {
+      const v = m[1]!.trim();
+      return v || null;
+    }
+  }
+  return null;
+}
+
+/** Parse PRETTY_HOSTNAME= from /etc/machine-info */
+export function parsePrettyHostnameFromMachineInfo(raw: string): string | null {
+  for (const line of raw.split('\n')) {
+    const m = line.match(/^\s*PRETTY_HOSTNAME\s*=\s*(.*)\s*$/);
+    if (!m) continue;
+    let v = m[1]!.trim();
+    if (
+      (v.startsWith('"') && v.endsWith('"')) ||
+      (v.startsWith("'") && v.endsWith("'"))
+    ) {
+      v = v.slice(1, -1);
+    }
+    return v || null;
+  }
+  return null;
+}
+
+/**
+ * Read pretty hostname across systemd versions.
+ * systemd 255+: `hostnamectl hostname --pretty` (show -p is gone / broken).
+ */
+export async function readPrettyHostname(host: HostExecutor): Promise<string | null> {
+  // 1) Modern: hostnamectl hostname --pretty
+  try {
+    const r = await host.runCommand(['hostnamectl', 'hostname', '--pretty'], {
+      timeoutMs: 5_000,
+    });
+    if (r.exitCode === 0) {
+      const v = r.stdout.trim();
+      // empty line = unset
+      if (v) return v;
+    }
+  } catch {
+    /* */
+  }
+  // 2) Status text (works on most versions)
+  try {
+    const st = await host.runCommand(['hostnamectl', 'status'], { timeoutMs: 5_000 });
+    if (st.exitCode === 0) {
+      const v = parsePrettyHostnameFromStatus(st.stdout + '\n' + st.stderr);
+      if (v) return v;
+    }
+  } catch {
+    /* */
+  }
+  // 3) Legacy property API (pre-255)
+  try {
+    const ph = await host.runCommand(
+      ['hostnamectl', 'show', '-p', 'PrettyHostname', '--value'],
+      { timeoutMs: 5_000 },
+    );
+    if (ph.exitCode === 0 && ph.stdout.trim()) return ph.stdout.trim();
+  } catch {
+    /* */
+  }
+  // 4) /etc/machine-info
+  try {
+    if (host.pathExists('/etc/machine-info')) {
+      const raw = await host.readFile('/etc/machine-info');
+      const v = parsePrettyHostnameFromMachineInfo(raw);
+      if (v) return v;
+    }
+  } catch {
+    /* */
+  }
+  return null;
+}
+
+/**
+ * Set pretty hostname (display name). Tries modern then legacy hostnamectl.
+ * Empty string clears the pretty name.
+ */
+export async function setPrettyHostname(
+  host: HostExecutor,
+  pretty: string,
+): Promise<{ ok: boolean; detail: string }> {
+  const name = pretty.trim();
+  // Modern systemd 255+
+  const modern = await host.runCommand(
+    ['hostnamectl', 'hostname', '--pretty', name],
+    { timeoutMs: 10_000 },
+  );
+  if (modern.exitCode === 0) {
+    return { ok: true, detail: name || '(cleared)' };
+  }
+  // Legacy set-hostname
+  const legacy = await host.runCommand(
+    ['hostnamectl', 'set-hostname', '--pretty', name || ''],
+    { timeoutMs: 10_000 },
+  );
+  if (legacy.exitCode === 0) {
+    return { ok: true, detail: name || '(cleared)' };
+  }
+  const err = [modern.stderr, modern.stdout, legacy.stderr, legacy.stdout]
+    .map((s) => (s || '').trim())
+    .filter(Boolean)
+    .join(' · ')
+    .slice(0, 300);
+  return { ok: false, detail: err || 'hostnamectl failed' };
+}
+
+/**
+ * Set static hostname with modern/legacy fallback.
+ */
+export async function setStaticHostname(
+  host: HostExecutor,
+  hostname: string,
+): Promise<{ ok: boolean; detail: string }> {
+  const name = hostname.trim();
+  if (!name) return { ok: false, detail: 'empty hostname' };
+  const modern = await host.runCommand(['hostnamectl', 'hostname', name], {
+    timeoutMs: 10_000,
+  });
+  if (modern.exitCode === 0) return { ok: true, detail: name };
+  const legacy = await host.runCommand(['hostnamectl', 'set-hostname', name], {
+    timeoutMs: 10_000,
+  });
+  if (legacy.exitCode === 0) return { ok: true, detail: name };
+  const err = [modern.stderr, modern.stdout, legacy.stderr, legacy.stdout]
+    .map((s) => (s || '').trim())
+    .filter(Boolean)
+    .join(' · ')
+    .slice(0, 300);
+  return { ok: false, detail: err || 'hostnamectl failed' };
+}
+
 export async function collectHostOverview(host: HostExecutor): Promise<HostOverview> {
   const executeEnabled = host.executeEnabled();
   const isRoot = host.isRoot();
@@ -176,15 +314,7 @@ export async function collectHostOverview(host: HostExecutor): Promise<HostOverv
   } catch {
     /* */
   }
-  try {
-    const ph = await host.runCommand(
-      ['hostnamectl', 'show', '-p', 'PrettyHostname', '--value'],
-      { timeoutMs: 5_000 },
-    );
-    if (ph.exitCode === 0 && ph.stdout.trim()) prettyHostname = ph.stdout.trim();
-  } catch {
-    /* */
-  }
+  prettyHostname = await readPrettyHostname(host);
 
   // timedatectl
   try {
@@ -361,4 +491,6 @@ export const _hostOverviewTest = {
   parseDf,
   readResolvers,
   readPendingShutdown,
+  parsePrettyHostnameFromStatus,
+  parsePrettyHostnameFromMachineInfo,
 };

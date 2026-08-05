@@ -79,6 +79,19 @@ describe('host overview helpers', () => {
     expect(p.ntpSynchronized).toBe(false);
   });
 
+  it('parses pretty hostname from status and machine-info', () => {
+    expect(
+      _hostOverviewTest.parsePrettyHostnameFromStatus(
+        ' Static hostname: box\n Pretty hostname: YSK Panel\n',
+      ),
+    ).toBe('YSK Panel');
+    expect(
+      _hostOverviewTest.parsePrettyHostnameFromMachineInfo(
+        'PRETTY_HOSTNAME="Friendly Host"\nICON_NAME=computer\n',
+      ),
+    ).toBe('Friendly Host');
+  });
+
   it('parses df -hT', () => {
     const rows = _hostOverviewTest.parseDf(
       'Filesystem Type Size Used Avail Use% Mounted on\n/dev/sda1 ext4 100G 40G 60G 40% /\ntmpfs tmpfs 1G 0 1G 0% /run\n',
@@ -128,9 +141,22 @@ describe('host overview helpers', () => {
 describe('collectHostOverview', () => {
   it('returns structured overview with caps', async () => {
     const o = await collectHostOverview(
-      mockHost({ executeEnabled: false, isRoot: false }),
+      mockHost({
+        executeEnabled: false,
+        isRoot: false,
+        commands: {
+          'hostnamectl hostname --pretty': {
+            stdout: 'Display Name\n',
+            stderr: '',
+            exitCode: 0,
+            argv: [],
+            dryRun: false,
+          },
+        },
+      }),
     );
     expect(o.identity.hostname).toBeTruthy();
+    expect(o.identity.prettyHostname).toBe('Display Name');
     expect(o.identity.timezone).toBe('Asia/Hong_Kong');
     expect(o.runtime.cpus).toBeGreaterThan(0);
     expect(o.disks.some((d) => d.mount === '/')).toBe(true);
@@ -151,6 +177,13 @@ describe('collectHostOverview', () => {
       isRoot: false,
       commands: {
         hostname: { stdout: '', stderr: 'err', exitCode: 1, argv: [], dryRun: false },
+        'hostnamectl hostname --pretty': {
+          stdout: 'Pretty Host\n',
+          stderr: '',
+          exitCode: 0,
+          argv: [],
+          dryRun: false,
+        },
         'hostnamectl show': {
           stdout: 'Pretty Host\n',
           stderr: '',

@@ -1928,25 +1928,23 @@ export async function handleSystemRoutes(
       return true;
     }
     if (data.hostname?.trim()) {
-      const r = await ctx.host.runCommand(['hostnamectl', 'set-hostname', data.hostname.trim()], {
-        timeoutMs: 10_000,
-      });
+      const { setStaticHostname } = await import('@ysk/core');
+      const r = await setStaticHostname(ctx.host, data.hostname.trim());
       notes.push(
-        r.exitCode === 0
+        r.ok
           ? `hostname → ${data.hostname.trim()}`
-          : tl('notes.auto.t0795', { v0: (r.stderr || r.stdout) }),
+          : tl('notes.auto.t0795', { v0: r.detail }),
       );
     }
+    // Always allow setting/clearing pretty (display) name when key is present
     if (data.prettyHostname !== undefined) {
-      const pretty = data.prettyHostname.trim();
-      const r = await ctx.host.runCommand(
-        ['hostnamectl', 'set-hostname', '--pretty', pretty || ' '],
-        { timeoutMs: 10_000 },
-      );
+      const { setPrettyHostname } = await import('@ysk/core');
+      const pretty = String(data.prettyHostname ?? '').trim();
+      const r = await setPrettyHostname(ctx.host, pretty);
       notes.push(
-        r.exitCode === 0
+        r.ok
           ? `pretty hostname → ${pretty || '(cleared)'}`
-          : tl('notes.auto.t0796', { v0: (r.stderr || r.stdout) }),
+          : tl('notes.auto.t0796', { v0: r.detail }),
       );
     }
     if (data.timezone?.trim()) {

@@ -542,12 +542,23 @@ export function SystemPage() {
                               .setHostIdentity({
                                 hostname: hostname || undefined,
                                 timezone: timezone || undefined,
-                                prettyHostname,
+                                // Always send so clear is possible
+                                prettyHostname: prettyHostname ?? '',
                               })
-                              .then((r) => {
-                                const notes = (r as { notes?: string[] }).notes;
-                                setMsg(notes?.join('；') ?? t('system.updated'));
-                                return refresh();
+                              .then(async (r) => {
+                                const body = r as {
+                                  ok?: boolean;
+                                  blocked?: boolean;
+                                  notes?: string[];
+                                };
+                                const notes = body.notes ?? [];
+                                const text = notes.join('；') || t('system.updated');
+                                if (body.blocked || body.ok === false) {
+                                  setErr(text);
+                                } else {
+                                  setMsg(text);
+                                }
+                                await refresh();
                               })
                               .catch((e: Error) => setErr(e.message))
                               .finally(() => setBusy(false));
