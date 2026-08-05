@@ -186,6 +186,43 @@ export async function handleHostingRoutes(
         sendJson(res, 200, hint);
         return true;
       }
+      // —— Uninstall companion plugins (pm2, poetry, …) ——
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/runtimes/plugins/uninstall') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          kind?: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
+          plugins?: string[];
+        };
+        const kind = data.kind ?? 'node';
+        if (kind === 'php') {
+          sendOpsResult(res, {
+            ok: false,
+            notes: ['PHP uses extension management, not companion plugins'],
+          });
+          return true;
+        }
+        const { uninstallRuntimePlugins } = await import('@ysk/core');
+        const result = await uninstallRuntimePlugins({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          kind,
+          plugins: Array.isArray(data.plugins) ? data.plugins : [],
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.runtime.plugins.uninstall',
+          detail: {
+            kind: result.kind,
+            plugins: result.pluginIds,
+            ok: result.ok,
+            blocked: Boolean(result.blocked),
+          },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
       // —— Runtime companion plugins (pm2, poetry, maven, …) ——
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/plugins') {
         ctx.auth.authenticate(getBearer(req));

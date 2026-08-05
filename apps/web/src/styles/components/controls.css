@@ -141,6 +141,15 @@
   background: rgba(255, 255, 255, 0.85);
 }
 
+.mcs__opt.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.mcs__opt.is-disabled:hover {
+  background: transparent;
+}
+
 .mcs__opt.is-on {
   background: color-mix(in srgb, var(--color-primary, #2563eb) 8%, white);
 }
@@ -184,6 +193,44 @@
   display: flex;
   gap: 0.4rem;
   align-items: center;
+}
+
+/* Runtime companion plugins — installed / available split */
+.runtime-plugins__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.runtime-plugins__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+}
+
+.runtime-plugins__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+  min-width: 0;
+}
+
+.runtime-plugins__name {
+  font-weight: 650;
+  color: var(--text-main);
+}
+
+.runtime-plugins__hint {
+  font-size: var(--text-xs);
 }
 
 .mcs__custom input {

@@ -105,7 +105,11 @@
   "runtime": {
     "plugins": "一併安裝工具：{{list}}",
     "pluginsOk": "選定工具已安裝",
-    "pluginsFailed": "部分工具安裝失敗或跳過：{{list}}"
+    "pluginsFailed": "部分工具安裝失敗或跳過：{{list}}",
+    "pluginsUninstall": "卸載工具：{{list}}",
+    "pluginsUninstallOk": "選定工具已卸載",
+    "pluginsUninstallFailed": "部分工具卸載失敗或跳過：{{list}}",
+    "pluginsNoneToUninstall": "沒有可卸載的工具（可能已移除或屬必裝）"
   },
   "approval": {
     "notFound": "找不到審批：{{id}}"

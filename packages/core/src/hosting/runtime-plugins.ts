@@ -489,6 +489,220 @@ export function buildRuntimePluginScriptLines(
   };
 }
 
+/**
+ * Bash lines to uninstall companion tools (best-effort reverse of install).
+ * Skips `required` plugins. Caller should only pass ids the user confirmed.
+ */
+export function buildRuntimePluginUninstallScriptLines(
+  kind: RuntimeKind,
+  pluginIds: string[] | null | undefined,
+): { lines: string[]; ids: string[]; labels: string[] } {
+  const catalog = listRuntimePlugins(kind);
+  const byId = new Map(catalog.map((p) => [p.id, p]));
+  const ids = [...new Set((pluginIds ?? []).filter(Boolean))].filter((id) => {
+    const p = byId.get(id);
+    return Boolean(p && !p.required);
+  });
+  const plugins = ids.map((id) => byId.get(id)!);
+  if (!plugins.length) return { lines: [], ids: [], labels: [] };
+
+  const lines: string[] = [
+    '#!/usr/bin/env bash',
+    '# YSK Server — uninstall companion tools',
+    'set -uo pipefail',
+    'YSK_PLUGIN_FAILED=""',
+    'ysk_plugin_fail() { YSK_PLUGIN_FAILED="${YSK_PLUGIN_FAILED} $1"; echo "YSK_PLUGIN_SKIP:$1" >&2; }',
+    'echo "Uninstalling companion tools: ' + ids.join(', ') + '"',
+    'export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
+    'for _d in /usr/local/ysk/node/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
+    'export PATH',
+  ];
+
+  for (const p of plugins) {
+    lines.push(`echo "← ${p.label} (${p.id})"`);
+    switch (p.installer) {
+      case 'npm-global': {
+        const pkgs = (p.npmPackages ?? []).map((x) => JSON.stringify(x)).join(' ');
+        lines.push(
+          `if command -v npm >/dev/null 2>&1; then npm uninstall -g ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `elif command -v bun >/dev/null 2>&1; then bun remove -g ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `else ysk_plugin_fail ${p.id}; fi`,
+        );
+        break;
+      }
+      case 'apt': {
+        const pkgs = (p.aptPackages ?? []).join(' ');
+        lines.push(
+          `export DEBIAN_FRONTEND=noninteractive`,
+          `apt-get remove -y ${pkgs} || ysk_plugin_fail ${p.id}`,
+        );
+        break;
+      }
+      case 'pip': {
+        const pkgs = (p.pipPackages ?? []).map((x) => JSON.stringify(x)).join(' ');
+        lines.push(
+          `if command -v pip3 >/dev/null 2>&1; then pip3 uninstall -y ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `elif command -v pip >/dev/null 2>&1; then pip uninstall -y ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `else ysk_plugin_fail ${p.id}; fi`,
+        );
+        break;
+      }
+      case 'go-install': {
+        // Remove known bins from PATH (go install places them in GOPATH/bin)
+        const bins = (p.bins ?? []).filter(Boolean);
+        if (bins.length) {
+          for (const b of bins) {
+            lines.push(
+              `if command -v ${JSON.stringify(b)} >/dev/null 2>&1; then rm -f "$(command -v ${JSON.stringify(b)})" || ysk_plugin_fail ${p.id}; else true; fi`,
+            );
+          }
+        } else {
+          lines.push(`ysk_plugin_fail ${p.id}`);
+        }
+        break;
+      }
+      case 'cargo-install': {
+        for (const crate of p.cargoCrates ?? []) {
+          lines.push(
+            `if command -v cargo >/dev/null 2>&1; then cargo uninstall ${JSON.stringify(crate)} || ysk_plugin_fail ${p.id}`,
+            `else ysk_plugin_fail ${p.id}; fi`,
+          );
+        }
+        break;
+      }
+      case 'rustup-component': {
+        for (const c of p.rustupComponents ?? []) {
+          lines.push(
+            `if command -v rustup >/dev/null 2>&1; then rustup component remove ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
+            `elif [ -x /usr/local/ysk/rust/bin/rustup ]; then /usr/local/ysk/rust/bin/rustup component remove ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
+            `else ysk_plugin_fail ${p.id}; fi`,
+          );
+        }
+        break;
+      }
+      default:
+        lines.push(`ysk_plugin_fail ${p.id}`);
+    }
+  }
+
+  lines.push(
+    'if [ -n "${YSK_PLUGIN_FAILED// }" ]; then',
+    '  echo "YSK_PLUGIN_FAILED:${YSK_PLUGIN_FAILED}"',
+    '  exit 3',
+    'fi',
+    'echo "YSK_PLUGIN_UNINSTALL_OK=1"',
+  );
+
+  return {
+    lines,
+    ids,
+    labels: plugins.map((p) => p.label),
+  };
+}
+
+export type RuntimePluginUninstallResult = {
+  ok: boolean;
+  kind: RuntimeKind;
+  notes: string[];
+  pluginIds: string[];
+  blocked?: boolean;
+  blockMessage?: string;
+  requiresExecute?: boolean;
+  requiresRoot?: boolean;
+};
+
+/**
+ * Uninstall selected companion plugins on the host (root + execute).
+ */
+export async function uninstallRuntimePlugins(input: {
+  dataDir: string;
+  host: {
+    executeEnabled: () => boolean;
+    isRoot: () => boolean;
+    runCommand: (
+      argv: string[],
+      opts?: { timeoutMs?: number },
+    ) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
+  };
+  kind: RuntimeKind;
+  plugins: string[];
+}): Promise<RuntimePluginUninstallResult> {
+  const { join } = await import('node:path');
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  const { tl } = await import('@ysk/shared');
+
+  const built = buildRuntimePluginUninstallScriptLines(input.kind, input.plugins);
+  const notes: string[] = [];
+  if (!built.ids.length) {
+    return {
+      ok: false,
+      kind: input.kind,
+      notes: [tl('notes.runtime.pluginsNoneToUninstall')],
+      pluginIds: [],
+    };
+  }
+
+  const dir = join(input.dataDir, 'runtimes', input.kind, '_plugins');
+  mkdirSync(dir, { recursive: true });
+  const scriptPath = join(dir, 'uninstall-plugins.sh');
+  writeFileSync(scriptPath, built.lines.join('\n') + '\n', 'utf8');
+  notes.push(
+    tl('notes.runtime.pluginsUninstall', {
+      list: built.labels.join(', ') || built.ids.join(', '),
+    }),
+  );
+
+  const execOn = input.host.executeEnabled();
+  const rootOn = input.host.isRoot();
+  if (!execOn || !rootOn) {
+    const blockMessage = !execOn
+      ? tl('ops.blocked.install')
+      : tl('notes.auto.n1582');
+    return {
+      ok: false,
+      kind: input.kind,
+      notes: [blockMessage, ...notes],
+      pluginIds: built.ids,
+      blocked: true,
+      blockMessage,
+      requiresExecute: !execOn,
+      requiresRoot: !rootOn,
+    };
+  }
+
+  const r = await input.host.runCommand(['bash', scriptPath], { timeoutMs: 300_000 });
+  const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+  const pluginFailMatch = out.match(/YSK_PLUGIN_FAILED:([^\n]+)/);
+  const pluginFailed = pluginFailMatch
+    ? pluginFailMatch[1]!
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+    : [];
+
+  if (r.exitCode === 0) {
+    notes.push(tl('notes.runtime.pluginsUninstallOk'));
+    return { ok: true, kind: input.kind, notes, pluginIds: built.ids };
+  }
+  if (pluginFailed.length) {
+    notes.unshift(
+      tl('notes.runtime.pluginsUninstallFailed', { list: pluginFailed.join(', ') }),
+    );
+  } else {
+    notes.unshift(
+      tl('notes.runtime.pluginsUninstallFailed', {
+        list: (r.stderr || r.stdout || String(r.exitCode)).slice(0, 300),
+      }),
+    );
+  }
+  return {
+    ok: false,
+    kind: input.kind,
+    notes,
+    pluginIds: built.ids,
+  };
+}
+
 /** API / UI DTO (sync; installed flags filled by async probe helper) */
 export function runtimePluginsCatalogDto(kind: RuntimeKind) {
   const plugins = listRuntimePlugins(kind);

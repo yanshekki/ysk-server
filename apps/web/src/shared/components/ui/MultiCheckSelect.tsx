@@ -10,6 +10,8 @@ export type MultiCheckOption = {
   value: string;
   label: string;
   hint?: string;
+  /** Not selectable (e.g. already installed) */
+  disabled?: boolean;
 };
 
 export type MultiCheckSelectProps = {
@@ -96,12 +98,25 @@ export function MultiCheckSelect({
   const optionValues = useMemo(() => options.map((o) => o.value), [options]);
   const filteredValues = useMemo(() => filtered.map((o) => o.value), [filtered]);
 
+  const disabledSet = useMemo(
+    () => new Set(options.filter((o) => o.disabled).map((o) => o.value)),
+    [options],
+  );
+  const selectableFiltered = useMemo(
+    () => filteredValues.filter((v) => !disabledSet.has(v)),
+    [filteredValues, disabledSet],
+  );
+  const selectableOptions = useMemo(
+    () => optionValues.filter((v) => !disabledSet.has(v)),
+    [optionValues, disabledSet],
+  );
+
   const allFilteredSelected =
-    filteredValues.length > 0 && filteredValues.every((v) => selected.has(v));
-  const someFilteredSelected = filteredValues.some((v) => selected.has(v));
+    selectableFiltered.length > 0 && selectableFiltered.every((v) => selected.has(v));
+  const someFilteredSelected = selectableFiltered.some((v) => selected.has(v));
 
   function toggle(v: string) {
-    if (disabled) return;
+    if (disabled || disabledSet.has(v)) return;
     if (selected.has(v)) onChange(value.filter((x) => x !== v));
     else onChange([...value, v]);
   }
@@ -109,27 +124,27 @@ export function MultiCheckSelect({
   function selectAllFiltered() {
     if (disabled) return;
     const next = new Set(value);
-    for (const v of filteredValues) next.add(v);
+    for (const v of selectableFiltered) next.add(v);
     onChange([...next]);
   }
 
   function clearFiltered() {
     if (disabled) return;
-    const drop = new Set(filteredValues);
+    const drop = new Set(selectableFiltered);
     onChange(value.filter((v) => !drop.has(v)));
   }
 
   function selectAllOptions() {
     if (disabled) return;
     const next = new Set(value);
-    for (const v of optionValues) next.add(v);
+    for (const v of selectableOptions) next.add(v);
     onChange([...next]);
   }
 
   function clearAllOptions() {
     if (disabled) return;
-    // Keep custom values that are not in the options catalog
-    const catalog = new Set(optionValues);
+    // Keep custom values that are not in the options catalog; keep disabled locked selections out
+    const catalog = new Set(selectableOptions);
     onChange(value.filter((v) => !catalog.has(v)));
   }
 
@@ -278,15 +293,16 @@ export function MultiCheckSelect({
         ) : (
           shown.map((o) => {
             const on = selected.has(o.value);
+            const rowDisabled = disabled || Boolean(o.disabled);
             return (
               <label
                 key={o.value}
-                className={`mcs__opt${on ? ' is-on' : ''}`}
+                className={`mcs__opt${on ? ' is-on' : ''}${o.disabled ? ' is-disabled' : ''}`}
               >
                 <input
                   type="checkbox"
-                  checked={on}
-                  disabled={disabled}
+                  checked={on && !o.disabled}
+                  disabled={rowDisabled}
                   onChange={() => toggle(o.value)}
                 />
                 <span className="mcs__opt-main">

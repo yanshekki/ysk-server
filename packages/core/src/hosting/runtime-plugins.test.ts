@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildRuntimePluginScriptLines,
+  buildRuntimePluginUninstallScriptLines,
   defaultRuntimePluginIds,
   listRuntimePlugins,
   resolveRuntimePlugins,
   runtimePluginsCatalogDto,
+  uninstallRuntimePlugins,
 } from './runtime-plugins.js';
 
 describe('runtime-plugins', () => {
@@ -39,5 +41,28 @@ describe('runtime-plugins', () => {
       expect(dto.kind).toBe(kind);
       expect(Array.isArray(dto.plugins)).toBe(true);
     }
+  });
+
+  it('builds uninstall lines for npm-global and skips empty', () => {
+    const empty = buildRuntimePluginUninstallScriptLines('node', []);
+    expect(empty.ids).toEqual([]);
+    const { lines, ids } = buildRuntimePluginUninstallScriptLines('node', ['pm2']);
+    expect(ids).toEqual(['pm2']);
+    expect(lines.join('\n')).toMatch(/npm uninstall -g/);
+  });
+
+  it('uninstallRuntimePlugins blocked without execute', async () => {
+    const r = await uninstallRuntimePlugins({
+      dataDir: '/tmp/ysk-test-plugins',
+      host: {
+        executeEnabled: () => false,
+        isRoot: () => true,
+        runCommand: async () => ({ exitCode: 0, stdout: '', stderr: '' }),
+      },
+      kind: 'node',
+      plugins: ['pm2'],
+    });
+    expect(r.blocked).toBe(true);
+    expect(r.ok).toBe(false);
   });
 });

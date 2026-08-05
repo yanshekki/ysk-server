@@ -105,7 +105,11 @@
   "runtime": {
     "plugins": "Companion tools: {{list}}",
     "pluginsOk": "Companion tools installed",
-    "pluginsFailed": "Some tools failed or were skipped: {{list}}"
+    "pluginsFailed": "Some tools failed or were skipped: {{list}}",
+    "pluginsUninstall": "Uninstall tools: {{list}}",
+    "pluginsUninstallOk": "Companion tools uninstalled",
+    "pluginsUninstallFailed": "Some tools failed to uninstall or were skipped: {{list}}",
+    "pluginsNoneToUninstall": "No tools to uninstall (already gone or required)"
   },
   "approval": {
     "notFound": "Approval not found: {{id}}"

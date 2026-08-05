@@ -4213,7 +4213,11 @@
     "runtime": {
       "plugins": "一并安装工具：{{list}}",
       "pluginsOk": "选定工具已安装",
-      "pluginsFailed": "部分工具安装失败或跳过：{{list}}"
+      "pluginsFailed": "部分工具安装失败或跳过：{{list}}",
+      "pluginsUninstall": "卸载工具：{{list}}",
+      "pluginsUninstallOk": "选定工具已卸载",
+      "pluginsUninstallFailed": "部分工具卸载失败或跳过：{{list}}",
+      "pluginsNoneToUninstall": "没有可卸载的工具（可能已移除或属必装）"
     },
     "approval": {
       "notFound": "找不到审批：{{id}}"
@@ -8059,13 +8063,13 @@
     "phpExtSearch": "搜索扩展（mysql、gd、redis…）",
     "phpExtEmpty": "无匹配的扩展",
     "pluginsSelect": "常用工具 / 插件",
-    "pluginsSelectHint": "与运行时一并安装（例如 Node 的 PM2、Python 的 Poetry）",
+    "pluginsSelectHint": "勾选后与运行时一并安装（例如 Node 的 PM2、Python 的 Poetry）",
     "pluginsSearch": "搜索工具（pm2、poetry、maven…）",
     "pluginsEmpty": "无匹配的工具",
     "pluginsRecommended": "常用默认",
-    "pluginsSelectAll": "全选工具",
+    "pluginsSelectAll": "全选可安装",
     "pluginsNone": "不安装工具",
-    "pluginsInstallNote": "工具在运行时装好后以 best-effort 安装；失败不会回滚主环境。",
+    "pluginsInstallNote": "工具在运行时装好后以 best-effort 安装；失败不会回滚主环境。已安装项请用上方「卸载」。",
     "installPluginsOnly": "安装选定工具（{{version}} 已有）",
     "installExtOnly": "安装选定扩展（PHP {{version}} 已有）",
     "pluginAlreadyOnHost": "主机已有",
@@ -8374,7 +8378,18 @@
         "searchPlaceholder": "搜索函数…",
         "emptyText": "无匹配项"
       }
-    }
+    },
+    "pluginsAvailableTitle": "可安装工具",
+    "pluginsInstalledTitle": "主机已安装",
+    "pluginsInstalledHint": "已在 PATH 检测到；不再出现在安装勾选。可卸载（best-effort）。",
+    "pluginsAllInstalled": "目录内工具均已在主机；如需新工具请先卸载或等待目录更新。",
+    "pluginStatusInstalled": "已安装",
+    "pluginUninstall": "卸载",
+    "pluginUninstallConfirmTitle": "卸载工具？",
+    "pluginUninstallConfirm": "将从主机移除「{{name}}」（npm/apt/pip 等对应方式）。如有依赖此工具的服务，请先停用。",
+    "pluginUninstalled": "已卸载 {{name}}",
+    "pluginUninstallFailed": "卸载 {{name}} 失败",
+    "pluginUninstallBlocked": "面板无权执行卸载（需要 root 与 EXECUTE）"
   },
   "security": {
     "title": "安全与审批",

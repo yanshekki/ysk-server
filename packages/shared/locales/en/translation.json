@@ -4213,7 +4213,11 @@
     "runtime": {
       "plugins": "Companion tools: {{list}}",
       "pluginsOk": "Companion tools installed",
-      "pluginsFailed": "Some tools failed or were skipped: {{list}}"
+      "pluginsFailed": "Some tools failed or were skipped: {{list}}",
+      "pluginsUninstall": "Uninstall tools: {{list}}",
+      "pluginsUninstallOk": "Companion tools uninstalled",
+      "pluginsUninstallFailed": "Some tools failed to uninstall or were skipped: {{list}}",
+      "pluginsNoneToUninstall": "No tools to uninstall (already gone or required)"
     },
     "approval": {
       "notFound": "Approval not found: {{id}}"
@@ -8059,13 +8063,13 @@
     "phpExtSearch": "Search extensions (mysql, gd, redis…)",
     "phpExtEmpty": "No matching extensions",
     "pluginsSelect": "Common tools / plugins",
-    "pluginsSelectHint": "Installed with the runtime (e.g. PM2 for Node, Poetry for Python)",
+    "pluginsSelectHint": "Select to install with the runtime (e.g. PM2 for Node, Poetry for Python)",
     "pluginsSearch": "Search tools (pm2, poetry, maven…)",
     "pluginsEmpty": "No matching tools",
     "pluginsRecommended": "Recommended set",
-    "pluginsSelectAll": "Select all tools",
+    "pluginsSelectAll": "Select all available",
     "pluginsNone": "No companion tools",
-    "pluginsInstallNote": "Tools install best-effort after the runtime; failures do not roll back the runtime.",
+    "pluginsInstallNote": "Tools install best-effort after the runtime; failures do not roll back the runtime. Use Uninstall above for installed tools.",
     "installPluginsOnly": "Install selected tools ({{version}} already present)",
     "installExtOnly": "Install selected extensions (PHP {{version}} present)",
     "pluginAlreadyOnHost": "already on host",
@@ -8374,7 +8378,18 @@
         "searchPlaceholder": "Search functions…",
         "emptyText": "No matches"
       }
-    }
+    },
+    "pluginsAvailableTitle": "Available to install",
+    "pluginsInstalledTitle": "Installed on host",
+    "pluginsInstalledHint": "Detected on PATH; excluded from install selection. Uninstall is best-effort.",
+    "pluginsAllInstalled": "All catalog tools are already on this host.",
+    "pluginStatusInstalled": "Installed",
+    "pluginUninstall": "Uninstall",
+    "pluginUninstallConfirmTitle": "Uninstall tool?",
+    "pluginUninstallConfirm": "Remove \"{{name}}\" from this host (via npm/apt/pip as applicable). Stop services that depend on it first.",
+    "pluginUninstalled": "Uninstalled {{name}}",
+    "pluginUninstallFailed": "Failed to uninstall {{name}}",
+    "pluginUninstallBlocked": "Panel cannot uninstall (needs root + EXECUTE)"
   },
   "security": {
     "title": "Security & Approvals",
