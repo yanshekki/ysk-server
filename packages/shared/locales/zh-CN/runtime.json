@@ -135,5 +135,11 @@
   "installScriptNote": "写入安装脚本后，有权限才会真正执行。调校在「执行调校」分页；重新部署项目后才进进程。",
   "envNote": "Node：max-old-space-size 等会合成 NODE_OPTIONS。Go／Python／Rust 对应官方环境变量。",
   "saveTune": "保存调校",
-  "pressReprobeLoad": "按「重新探测工具」加载"
+  "pressReprobeLoad": "按「重新探测工具」加载",
+  "installJavaLabel": "安装／更新 OpenJDK",
+  "installKotlinLabel": "安装／更新 Kotlin",
+  "installBunLabel": "安装／更新 Bun",
+  "javaMissing": "未检测到 Java（OpenJDK）",
+  "kotlinMissing": "未检测到 Kotlin 编译器",
+  "bunMissing": "未检测到 Bun"
 }

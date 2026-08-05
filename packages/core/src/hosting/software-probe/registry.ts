@@ -30,6 +30,9 @@ const VERSION_CMD: Partial<Record<SoftwareId, string[]>> = {
   python: ['python3', '--version'],
   go: ['go', 'version'],
   rust: ['cargo', '--version'],
+  java: ['java', '-version'],
+  kotlin: ['kotlinc', '-version'],
+  bun: ['bun', '--version'],
   vsftpd: ['vsftpd', '-v'],
   'pdns-server': ['pdns_server', '--version'],
 };
@@ -54,6 +57,7 @@ const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
   python: 'python3',
   go: 'golang-go',
   node: 'nodejs',
+  java: 'openjdk-21-jdk',
 };
 
 function buildFromCatalog(): Map<SoftwareProbeId, ProbeRegistryEntry> {

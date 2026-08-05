@@ -3879,7 +3879,10 @@
       "security": "安全",
       "system": "系統",
       "ai": "AI"
-    }
+    },
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "bun": "Bun"
   },
   "network": {
     "title": "網絡介面",
@@ -4054,7 +4057,8 @@
     "cat": {
       "security": "安全",
       "mail": "郵件",
-      "database": "資料庫"
+      "database": "資料庫",
+      "runtime": "執行環境"
     },
     "ssh": {
       "identityNotFound": "找不到 identity",
@@ -6167,9 +6171,9 @@
       "t0409": "準備安裝 Go {{v0}} 到 /usr/local/ysk/go",
       "t0410": "準備安裝 Rust（{{v0}}）到 /usr/local/ysk/rust",
       "t0411": "安裝失敗：{{v0}}",
-      "t0412": "憑證檔已寫入 {{v0}}",
-      "t0413": "已移除 {{v0}} 筆登記",
-      "t0414": "管理檔 {{v0}}",
+      "t0412": "已準備 OpenJDK {{v0}} 安裝腳本",
+      "t0413": "已準備 Kotlin {{v0}} 安裝腳本（需 JDK）",
+      "t0414": "已準備 Bun（{{v0}}）安裝腳本",
       "t0415": "專案 主目錄 公鑰：{{v0}}",
       "t0416": "登入目標用戶 {{v0}}（專案隔離 主目錄）；請對 .ssh 執行 變更擁有者（介面 會嘗試）",
       "t0417": "已 變更擁有者 {{v0}} → {{v1}}",
@@ -6641,7 +6645,8 @@
       "routeAdded": "已加入路由 {{dst}}{{via}}{{dev}}",
       "dnsWritten": "已寫入 {{conn}}：DNS {{dns}}{{search}}",
       "peerInstalled": "已安裝到 {{dest}}{{重新啟動}}"
-    }
+    },
+    "installedTool": "已安裝（工具）"
   },
   "ops": {
     "blocked": {
@@ -8021,7 +8026,13 @@
     "installScriptNote": "寫入安裝腳本後，有權限才會真正執行。調校在「執行調校」分頁；重新部署專案後才進行程。",
     "envNote": "節點：max-old-space-size 等會合成 NODE_OPTIONS。Go／Python／Rust 對應官方環境變數。",
     "saveTune": "儲存調校",
-    "pressReprobeLoad": "按「重新探測工具」載入"
+    "pressReprobeLoad": "按「重新探測工具」載入",
+    "installJavaLabel": "安裝／更新 OpenJDK",
+    "installKotlinLabel": "安裝／更新 Kotlin",
+    "installBunLabel": "安裝／更新 Bun",
+    "javaMissing": "未偵測到 Java（OpenJDK）",
+    "kotlinMissing": "未偵測到 Kotlin 編譯器",
+    "bunMissing": "未偵測到 Bun"
   },
   "security": {
     "title": "帳號安全",
@@ -8409,6 +8420,7 @@
     "noMatch": "沒有符合的服務",
     "bootPrefix": "開機 {{state}}",
     "controlPage": "控制頁",
+    "manageRuntime": "安裝／更新",
     "protectionTitle": "保護探測",
     "protectionSub": "唯讀；不改防火牆／fail2ban",
     "protectionDoneNote": "保護探測完成",

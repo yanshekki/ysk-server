@@ -25,7 +25,8 @@
   "cat": {
     "security": "Security",
     "mail": "Mail",
-    "database": "Database"
+    "database": "Database",
+    "runtime": "Runtimes"
   },
   "ssh": {
     "identityNotFound": "Identity not found",
@@ -2138,9 +2139,9 @@
     "t0409": "install Go {{v0}} to /usr/local/ysk/go",
     "t0410": "install Rust ({{v0}}) to /usr/local/ysk/rust",
     "t0411": "Install failed: {{v0}}",
-    "t0412": "certificateWrote {{v0}}",
-    "t0413": "Removed {{v0}}",
-    "t0414": "managed file {{v0}}",
+    "t0412": "Prepared OpenJDK {{v0}} install script",
+    "t0413": "Prepared Kotlin {{v0}} install script (needs JDK)",
+    "t0414": "Prepared Bun ({{v0}}) install script",
     "t0415": "project home: {{v0}}",
     "t0416": "targetuser {{v0}} (project home); please.ssh chown (API will)",
     "t0417": "did chown {{v0}} → {{v1}}",
@@ -2612,5 +2613,6 @@
     "routeAdded": "Added route {{dst}}{{via}}{{dev}}",
     "dnsWritten": "Wrote {{conn}}: DNS {{dns}}{{search}}",
     "peerInstalled": "Installed to {{dest}}{{restart}}"
-  }
+  },
+  "installedTool": "Installed (tool)"
 }

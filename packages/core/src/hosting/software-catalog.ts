@@ -27,7 +27,10 @@ export type SoftwareId =
   | 'php'
   | 'python'
   | 'go'
-  | 'rust';
+  | 'rust'
+  | 'java'
+  | 'kotlin'
+  | 'bun';
 
 export type FeatureSoftwareKey =
   | 'ftp'
@@ -46,6 +49,9 @@ export type FeatureSoftwareKey =
   | 'python'
   | 'go'
   | 'rust'
+  | 'java'
+  | 'kotlin'
+  | 'bun'
   | 'git'
   | 'all';
 
@@ -55,7 +61,10 @@ export type RuntimeInstaller =
   | 'runtime-php'
   | 'runtime-python'
   | 'runtime-go'
-  | 'runtime-rust';
+  | 'runtime-rust'
+  | 'runtime-java'
+  | 'runtime-kotlin'
+  | 'runtime-bun';
 
 export interface SoftwareSpec {
   id: SoftwareId;
@@ -263,6 +272,30 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     features: ['rust'],
     installer: 'runtime-rust',
     runtimeVersion: 'stable' },
+  {
+    id: 'java',
+    title: 'Java (OpenJDK)',
+    bins: ['java', 'javac'],
+    aptPackages: ['openjdk-21-jdk'],
+    features: ['java'],
+    installer: 'runtime-java',
+    runtimeVersion: '21' },
+  {
+    id: 'kotlin',
+    title: 'Kotlin',
+    bins: ['kotlin', 'kotlinc'],
+    aptPackages: [],
+    features: ['kotlin'],
+    installer: 'runtime-kotlin',
+    runtimeVersion: '2.1.0' },
+  {
+    id: 'bun',
+    title: 'Bun',
+    bins: ['bun'],
+    aptPackages: [],
+    features: ['bun'],
+    installer: 'runtime-bun',
+    runtimeVersion: 'latest' },
 ];
 
 export function getSoftware(id: string): SoftwareSpec | undefined {

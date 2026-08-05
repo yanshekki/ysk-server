@@ -30,6 +30,7 @@
   "noMatch": "No matching services",
   "bootPrefix": "Boot {{state}}",
   "controlPage": "Control page",
+  "manageRuntime": "Install / update",
   "protectionTitle": "Protection probe",
   "protectionSub": "Read-only; does not change firewall / fail2ban",
   "protectionDoneNote": "Protection probe finished",

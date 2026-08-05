@@ -29,6 +29,7 @@ const CATALOG: Array<{
   /** Literal brand name, or i18n key when labelKey set */
   label?: string;
   labelKey?: string;
+  /** Empty unit = toolchain/tool row (no systemd lifecycle) */
   unit: string;
   href?: string;
   categoryKey: string;
@@ -96,6 +97,9 @@ const CATALOG: Array<{
   { id: 'postfix', label: 'Postfix', unit: 'postfix', href: '/email', categoryKey: 'notes.readiness.email', softwareProbeId: 'postfix', bins: ['postfix'] },
   { id: 'dovecot', label: 'Dovecot', unit: 'dovecot', href: '/email', categoryKey: 'notes.readiness.email', softwareProbeId: 'dovecot', bins: ['dovecot'] },
   { id: 'php-fpm', label: 'PHP-FPM', unit: 'php8.2-fpm', href: '/runtimes/php', categoryKey: 'notes.auto.n0018', softwareProbeId: 'php', bins: ['php-fpm8.2', 'php-fpm', 'php'] },
+  { id: 'java', label: 'Java', unit: '', href: '/runtimes/java', categoryKey: 'notes.cat.runtime', softwareProbeId: 'java', bins: ['java', 'javac'] },
+  { id: 'kotlin', label: 'Kotlin', unit: '', href: '/runtimes/kotlin', categoryKey: 'notes.cat.runtime', softwareProbeId: 'kotlin', bins: ['kotlin', 'kotlinc'] },
+  { id: 'bun', label: 'Bun', unit: '', href: '/runtimes/bun', categoryKey: 'notes.cat.runtime', softwareProbeId: 'bun', bins: ['bun'] },
   { id: 'ysk-server', labelKey: 'notes.tpl.yskControlPlane', unit: 'ysk-server', href: '/system/unit', categoryKey: 'notes.readiness.core' },
 ];
 
@@ -106,6 +110,7 @@ function resolveCatalogLabel(entry: (typeof CATALOG)[number]): string {
 
 function activeLabel(active: string, installed: boolean): string {
   if (!installed && active !== 'active') return tl('notes.notInstalled');
+  if (active === 'tool') return tl('notes.installedTool');
   if (active === 'active') return tl('notes.running');
   if (active === 'inactive') return tl('notes.stopped');
   if (active === 'failed') return tl('notes.failed');
@@ -168,6 +173,27 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
   const probe = new HostSoftwareProbe(host);
 
   for (const entry of CATALOG) {
+    const label = resolveCatalogLabel(entry);
+    const category = tl(entry.categoryKey);
+    // Product-semantic installed (MySQL vs MariaDB exclusive, etc.)
+    const installed = await isEntryInstalled(host, probe, entry);
+
+    // Toolchain rows (no systemd unit): installed vs not — no start/stop
+    if (!entry.unit) {
+      items.push({
+        id: entry.id,
+        label,
+        unit: '—',
+        href: entry.href,
+        category,
+        installed,
+        active: installed ? 'tool' : 'not-found',
+        enabled: 'n/a',
+        activeLabel: activeLabel(installed ? 'tool' : 'not-found', installed),
+      });
+      continue;
+    }
+
     const aliases = UNIT_ALIASES[entry.id] ?? [entry.unit];
     let bestActive = 'unknown';
     let bestEnabled = 'unknown';
@@ -186,11 +212,6 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
         bestUnit = u;
       }
     }
-
-    const label = resolveCatalogLabel(entry);
-    const category = tl(entry.categoryKey);
-    // Product-semantic installed (MySQL vs MariaDB exclusive, etc.)
-    const installed = await isEntryInstalled(host, probe, entry);
 
     // not-found from systemctl when package missing
     if (!installed) {
@@ -258,7 +279,9 @@ export async function lifecycleServiceUnit(
       notes: [tl('notes.auto.n1570')] };
   }
   const safe = unit.replace(/[^a-zA-Z0-9@._-]/g, '');
-  if (!safe) return { ok: false, notes: [tl('notes.auto.n1107')] };
+  if (!safe || safe === '—' || safe === '-') {
+    return { ok: false, notes: [tl('notes.auto.n1107')] };
+  }
 
   const notes: string[] = [];
   // Postfix: missing main.cf → systemd ConditionPathExists skips start (inactive, not crash)

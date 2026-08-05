@@ -8,7 +8,7 @@ export type DataPolicy = 'keep' | 'purge';
 
 export type StackComponentDef = {
   title: string;
-  source: 'apt' | 'nodesource' | 'rustup' | 'npm';
+  source: 'apt' | 'nodesource' | 'rustup' | 'npm' | 'bun-official' | 'kotlin-official';
   required?: boolean;
   optional?: boolean;
   aptPackages: string[];
@@ -108,7 +108,7 @@ export const STACK_BUNDLES: Record<string, StackBundleDef> = {
   },
   runtimes: {
     title: 'Language runtimes',
-    components: ['php', 'python', 'go', 'rust'],
+    components: ['php', 'python', 'go', 'rust', 'java', 'kotlin', 'bun'],
   },
 };
 
@@ -392,6 +392,33 @@ export const STACK_COMPONENTS: Record<string, StackComponentDef> = {
     units: [],
     dataPaths: ['/usr/local/cargo', '/usr/local/rustup'],
     softwareId: 'rust',
+  },
+  java: {
+    title: 'Java (OpenJDK)',
+    source: 'apt',
+    aptPackages: ['openjdk-21-jdk'],
+    bins: ['java', 'javac'],
+    units: [],
+    dataPaths: [],
+    softwareId: 'java',
+  },
+  kotlin: {
+    title: 'Kotlin',
+    source: 'kotlin-official',
+    aptPackages: [],
+    bins: ['kotlin', 'kotlinc'],
+    units: [],
+    dataPaths: ['/usr/local/ysk/kotlin'],
+    softwareId: 'kotlin',
+  },
+  bun: {
+    title: 'Bun',
+    source: 'bun-official',
+    aptPackages: [],
+    bins: ['bun'],
+    units: [],
+    dataPaths: ['/usr/local/ysk/bun'],
+    softwareId: 'bun',
   },
   node: {
     title: 'Node.js',

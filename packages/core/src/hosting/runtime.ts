@@ -6,9 +6,18 @@
 
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
-export type RuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust';
+export type RuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
 
-export type ProjectRuntimeKind = 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+export type ProjectRuntimeKind =
+  | 'node'
+  | 'php'
+  | 'static'
+  | 'python'
+  | 'go'
+  | 'rust'
+  | 'java'
+  | 'kotlin'
+  | 'bun';
 
 export type RuntimeManager =
   | 'nvm'
@@ -18,6 +27,9 @@ export type RuntimeManager =
   | 'deadsnakes'
   | 'go-official'
   | 'rustup'
+  | 'openjdk-apt'
+  | 'kotlin-official'
+  | 'bun-official'
   | 'system';
 
 export interface RuntimeSelection {
@@ -34,8 +46,14 @@ export const PYTHON_SUPPORTED = ['3.10', '3.11', '3.12'] as const;
 export const GO_SUPPORTED = ['1.21', '1.22', '1.23'] as const;
 /** rustup channel or stable minor pin */
 export const RUST_SUPPORTED = ['stable', '1.78', '1.81'] as const;
+/** OpenJDK LTS majors */
+export const JAVA_SUPPORTED = ['17', '21'] as const;
+/** Kotlin compiler releases (JetBrains) */
+export const KOTLIN_SUPPORTED = ['2.1.0', '2.0.21'] as const;
+/** Bun — latest channel + common pin */
+export const BUN_SUPPORTED = ['latest', '1.1.38'] as const;
 
-const PROCESS_RUNTIMES = new Set(['node', 'python', 'go', 'rust']);
+const PROCESS_RUNTIMES = new Set(['node', 'python', 'go', 'rust', 'java', 'kotlin', 'bun']);
 
 export function isProcessRuntime(runtime: string): boolean {
   return PROCESS_RUNTIMES.has(runtime);
@@ -48,7 +66,10 @@ export function isHostingRuntime(value: string): value is ProjectRuntimeKind {
     value === 'static' ||
     value === 'python' ||
     value === 'go' ||
-    value === 'rust'
+    value === 'rust' ||
+    value === 'java' ||
+    value === 'kotlin' ||
+    value === 'bun'
   );
 }
 
@@ -59,6 +80,9 @@ export function defaultRuntimeVersion(runtime: ProjectRuntimeKind | string): str
   if (runtime === 'python') return '3.12';
   if (runtime === 'go') return '1.22';
   if (runtime === 'rust') return 'stable';
+  if (runtime === 'java') return '21';
+  if (runtime === 'kotlin') return '2.1.0';
+  if (runtime === 'bun') return 'latest';
   return '';
 }
 
@@ -124,6 +148,25 @@ export function normalizeRuntimeVersion(
     const minor = raw.match(/^(\d+\.\d+)/)?.[1];
     if (minor && RUST_SUPPORTED.includes(minor as (typeof RUST_SUPPORTED)[number])) return minor;
     return defaultRuntimeVersion('rust');
+  }
+
+  if (runtime === 'java') {
+    if (!raw) return defaultRuntimeVersion('java');
+    const major = raw.replace(/^jdk-?|^java-?/i, '').split('.')[0];
+    if (JAVA_SUPPORTED.includes(major as (typeof JAVA_SUPPORTED)[number])) return major;
+    return defaultRuntimeVersion('java');
+  }
+
+  if (runtime === 'kotlin') {
+    if (!raw || raw === 'stable' || raw === 'latest') return defaultRuntimeVersion('kotlin');
+    if (KOTLIN_SUPPORTED.includes(raw as (typeof KOTLIN_SUPPORTED)[number])) return raw;
+    return defaultRuntimeVersion('kotlin');
+  }
+
+  if (runtime === 'bun') {
+    if (!raw) return defaultRuntimeVersion('bun');
+    if (BUN_SUPPORTED.includes(raw as (typeof BUN_SUPPORTED)[number])) return raw;
+    return defaultRuntimeVersion('bun');
   }
 
   return raw;
@@ -212,12 +255,45 @@ export function selectRustRuntime(version: string): RuntimeSelection {
   };
 }
 
+export function selectJavaRuntime(version: string): RuntimeSelection {
+  const v = normalizeRuntimeVersion('java', version);
+  return {
+    kind: 'java',
+    version: v,
+    binaryPath: `/usr/lib/jvm/java-${v}-openjdk-amd64/bin/java`,
+    manager: 'openjdk-apt',
+  };
+}
+
+export function selectKotlinRuntime(version: string): RuntimeSelection {
+  const v = normalizeRuntimeVersion('kotlin', version);
+  return {
+    kind: 'kotlin',
+    version: v,
+    binaryPath: `/usr/local/ysk/kotlin/bin/kotlinc`,
+    manager: 'kotlin-official',
+  };
+}
+
+export function selectBunRuntime(version: string): RuntimeSelection {
+  const v = normalizeRuntimeVersion('bun', version);
+  return {
+    kind: 'bun',
+    version: v,
+    binaryPath: '/usr/local/ysk/bun/bin/bun',
+    manager: 'bun-official',
+  };
+}
+
 export function selectRuntime(kind: RuntimeKind, version: string): RuntimeSelection {
   if (kind === 'node') return selectNodeRuntime(version);
   if (kind === 'php') return selectPhpRuntime(version);
   if (kind === 'python') return selectPythonRuntime(version);
   if (kind === 'go') return selectGoRuntime(version);
   if (kind === 'rust') return selectRustRuntime(version);
+  if (kind === 'java') return selectJavaRuntime(version);
+  if (kind === 'kotlin') return selectKotlinRuntime(version);
+  if (kind === 'bun') return selectBunRuntime(version);
   throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0258', { v0: (kind) }), { httpStatus: 400 });
 }
 
@@ -425,6 +501,9 @@ export function listSupportedRuntimes(): {
   python: string[];
   go: string[];
   rust: string[];
+  java: string[];
+  kotlin: string[];
+  bun: string[];
 } {
   return {
     node: [...NODE_SUPPORTED],
@@ -432,5 +511,8 @@ export function listSupportedRuntimes(): {
     python: [...PYTHON_SUPPORTED],
     go: [...GO_SUPPORTED],
     rust: [...RUST_SUPPORTED],
+    java: [...JAVA_SUPPORTED],
+    kotlin: [...KOTLIN_SUPPORTED],
+    bun: [...BUN_SUPPORTED],
   };
 }

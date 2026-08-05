@@ -54,5 +54,8 @@
     "security": "Security",
     "system": "System",
     "ai": "AI"
-  }
+  },
+  "java": "Java",
+  "kotlin": "Kotlin",
+  "bun": "Bun"
 }

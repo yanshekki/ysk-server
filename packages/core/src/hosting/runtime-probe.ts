@@ -9,7 +9,10 @@ import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import {
   listSupportedRuntimes,
+  selectBunRuntime,
   selectGoRuntime,
+  selectJavaRuntime,
+  selectKotlinRuntime,
   selectNodeRuntime,
   selectPhpRuntime,
   selectPythonRuntime,
@@ -34,11 +37,17 @@ export interface RuntimeProbeReport {
   python: RuntimeProbeItem[];
   go: RuntimeProbeItem[];
   rust: RuntimeProbeItem[];
+  java: RuntimeProbeItem[];
+  kotlin: RuntimeProbeItem[];
+  bun: RuntimeProbeItem[];
   hostNode?: string;
   hostPhp?: string;
   hostPython?: string;
   hostGo?: string;
   hostRust?: string;
+  hostJava?: string;
+  hostKotlin?: string;
+  hostBun?: string;
   notes: string[];
 }
 
@@ -85,7 +94,13 @@ async function probeBinaryVersions(
               ? ['cargo']
               : kind === 'node'
                 ? [`node${v}`, 'node']
-                : [`php${v}`, 'php'];
+                : kind === 'java'
+                  ? ['java', 'javac']
+                  : kind === 'kotlin'
+                    ? ['kotlin', 'kotlinc']
+                    : kind === 'bun'
+                      ? ['bun']
+                      : [`php${v}`, 'php'];
       for (const name of candidates) {
         const p = await resolveBin(host, name);
         if (!p) continue;
@@ -134,6 +149,11 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const hostPython = await hostDefault('python3', ['python3', '--version']);
   const hostGo = await hostDefault('go', ['go', 'version']);
   const hostRust = await hostDefault('cargo', ['cargo', '--version']);
+  const hostJava = await hostDefault('java', ['java', '-version']);
+  const hostKotlin =
+    (await hostDefault('kotlinc', ['kotlinc', '-version'])) ||
+    (await hostDefault('kotlin', ['kotlin', '-version']));
+  const hostBun = await hostDefault('bun', ['bun', '--version']);
 
   const node = await probeBinaryVersions(
     host,
@@ -188,6 +208,39 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
     hostRust,
   );
 
+  const java = await probeBinaryVersions(
+    host,
+    'java',
+    supported.java,
+    selectJavaRuntime,
+    (p) => [p, '-version'],
+    (out, v) => out.includes(`"${v}`) || out.includes(`version ${v}`) || new RegExp(`\\b${v}\\b`).test(out),
+    hostJava,
+  );
+
+  const kotlin = await probeBinaryVersions(
+    host,
+    'kotlin',
+    supported.kotlin,
+    selectKotlinRuntime,
+    (p) => [p, '-version'],
+    (out, v) => out.includes(v) || /kotlinc/i.test(out),
+    hostKotlin,
+  );
+
+  const bun = await probeBinaryVersions(
+    host,
+    'bun',
+    supported.bun,
+    selectBunRuntime,
+    (p) => [p, '--version'],
+    (out, v) => {
+      if (v === 'latest') return /\d+\.\d+/.test(out);
+      return out.includes(v);
+    },
+    hostBun,
+  );
+
   notes.push(
     tl('notes.auto.t0396', { v0: (hostNode ?? tl('notes.tpl.none')) }),
     tl('notes.auto.t0397', { v0: (hostPhp ?? tl('notes.tpl.none')) }),
@@ -207,11 +260,17 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
     python,
     go,
     rust,
+    java,
+    kotlin,
+    bun,
     hostNode,
     hostPhp,
     hostPython,
     hostGo,
     hostRust,
+    hostJava,
+    hostKotlin,
+    hostBun,
     notes,
   };
 }
@@ -317,7 +376,7 @@ export async function planOrInstallRuntime(input: {
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0409', { v0: (plan.version) }));
-  } else {
+  } else if (input.kind === 'rust') {
     const plan = selectRustRuntime(input.version);
     script = [
       '#!/usr/bin/env bash',
@@ -339,6 +398,69 @@ export async function planOrInstallRuntime(input: {
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0410', { v0: (plan.version) }));
+  } else if (input.kind === 'java') {
+    const plan = selectJavaRuntime(input.version);
+    script = [
+      '#!/usr/bin/env bash',
+      `# YSK Server — install OpenJDK ${plan.version}`,
+      'set -euo pipefail',
+      'export DEBIAN_FRONTEND=noninteractive',
+      'apt-get update -qq',
+      `if ! apt-get install -y openjdk-${plan.version}-jdk; then`,
+      '  apt-get install -y openjdk-17-jdk',
+      'fi',
+      'java -version',
+      'javac -version',
+      '',
+    ].join('\n');
+    notes.push(tl('notes.auto.t0412', { v0: plan.version }));
+  } else if (input.kind === 'kotlin') {
+    const plan = selectKotlinRuntime(input.version);
+    script = [
+      '#!/usr/bin/env bash',
+      `# YSK Server — install Kotlin ${plan.version} (requires JDK)`,
+      'set -euo pipefail',
+      'export DEBIAN_FRONTEND=noninteractive',
+      `if ! ${shellBinExists('java')}; then apt-get update -qq && apt-get install -y openjdk-21-jdk; fi`,
+      `VER=${plan.version}`,
+      'DEST=/usr/local/ysk/kotlin',
+      'TMP=$(mktemp -d)',
+      'mkdir -p /usr/local/ysk /usr/local/bin',
+      'URL="https://github.com/JetBrains/kotlin/releases/download/v${VER}/kotlin-compiler-${VER}.zip"',
+      'curl -fsSL "$URL" -o "$TMP/kotlin.zip" || {',
+      '  VER=2.0.21',
+      '  URL="https://github.com/JetBrains/kotlin/releases/download/v${VER}/kotlin-compiler-${VER}.zip"',
+      '  curl -fsSL "$URL" -o "$TMP/kotlin.zip"',
+      '}',
+      'rm -rf "$DEST"',
+      'mkdir -p "$DEST" "$TMP/out"',
+      'if command -v unzip >/dev/null 2>&1; then unzip -q "$TMP/kotlin.zip" -d "$TMP/out";',
+      'else python3 -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$TMP/kotlin.zip" "$TMP/out"; fi',
+      'if [ -d "$TMP/out/kotlinc" ]; then cp -a "$TMP/out/kotlinc/." "$DEST/"; else cp -a "$TMP/out/." "$DEST/"; fi',
+      'ln -sfn "$DEST/bin/kotlin" /usr/local/bin/kotlin || true',
+      'ln -sfn "$DEST/bin/kotlinc" /usr/local/bin/kotlinc || true',
+      'rm -rf "$TMP"',
+      'kotlinc -version || kotlin -version',
+      '',
+    ].join('\n');
+    notes.push(tl('notes.auto.t0413', { v0: plan.version }));
+  } else if (input.kind === 'bun') {
+    const plan = selectBunRuntime(input.version);
+    script = [
+      '#!/usr/bin/env bash',
+      `# YSK Server — install Bun (${plan.version})`,
+      'set -euo pipefail',
+      'export BUN_INSTALL=/usr/local/ysk/bun',
+      'mkdir -p /usr/local/ysk/bun /usr/local/bin',
+      'curl -fsSL https://bun.sh/install | bash',
+      'ln -sfn /usr/local/ysk/bun/bin/bun /usr/local/bin/bun || true',
+      'export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:$PATH"',
+      'bun --version',
+      '',
+    ].join('\n');
+    notes.push(tl('notes.auto.t0414', { v0: plan.version }));
+  } else {
+    throw new Error(`unsupported runtime kind: ${input.kind}`);
   }
 
   const scriptPath = join(dir, 'install.sh');

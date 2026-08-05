@@ -135,5 +135,11 @@
   "installScriptNote": "Writes install script; runs only with privileges. Tuning is on the Tuning tab; redeploy projects for process changes.",
   "envNote": "Node: max-old-space-size merges into NODE_OPTIONS. Go/Python/Rust use official env vars.",
   "saveTune": "Save tuning",
-  "pressReprobeLoad": "Press Re-probe tools to load"
+  "pressReprobeLoad": "Press Re-probe tools to load",
+  "installJavaLabel": "Install / update OpenJDK",
+  "installKotlinLabel": "Install / update Kotlin",
+  "installBunLabel": "Install / update Bun",
+  "javaMissing": "Java (OpenJDK) not detected",
+  "kotlinMissing": "Kotlin compiler not detected",
+  "bunMissing": "Bun not detected"
 }

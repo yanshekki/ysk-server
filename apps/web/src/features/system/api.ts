@@ -322,7 +322,7 @@ export const systemApi = {
   runtimes: () =>
     api.requestRaw<Record<string, unknown>>('/api/v1/hosting/runtimes'),
   runtimeInstall: (body: {
-    kind: 'node' | 'php' | 'python' | 'go' | 'rust';
+    kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
     version: string;
     install?: boolean;
   }) =>

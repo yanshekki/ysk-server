@@ -68,6 +68,15 @@ const PythonRuntimePage = lazy(() =>
 const RustRuntimePage = lazy(() =>
   import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.RustRuntimePage })),
 );
+const JavaRuntimePage = lazy(() =>
+  import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.JavaRuntimePage })),
+);
+const KotlinRuntimePage = lazy(() =>
+  import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.KotlinRuntimePage })),
+);
+const BunRuntimePage = lazy(() =>
+  import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.BunRuntimePage })),
+);
 const SslPage = lazy(() =>
   import('../pages/features/SslPage').then((m) => ({ default: m.SslPage })),
 );
@@ -350,6 +359,30 @@ export function App() {
               element={
                 <Lazy>
                   <RustRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/java"
+              element={
+                <Lazy>
+                  <JavaRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/kotlin"
+              element={
+                <Lazy>
+                  <KotlinRuntimePage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="runtimes/bun"
+              element={
+                <Lazy>
+                  <BunRuntimePage />
                 </Lazy>
               }
             />

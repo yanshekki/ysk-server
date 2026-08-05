@@ -54,5 +54,8 @@
     "security": "安全",
     "system": "系统",
     "ai": "AI"
-  }
+  },
+  "java": "Java",
+  "kotlin": "Kotlin",
+  "bun": "Bun"
 }

@@ -221,7 +221,10 @@ export async function installSoftware(input: {
     spec.installer === 'runtime-php' ||
     spec.installer === 'runtime-python' ||
     spec.installer === 'runtime-go' ||
-    spec.installer === 'runtime-rust'
+    spec.installer === 'runtime-rust' ||
+    spec.installer === 'runtime-java' ||
+    spec.installer === 'runtime-kotlin' ||
+    spec.installer === 'runtime-bun'
   ) {
     if (!input.dataDir) {
       notes.push(tl('notes.auto.n1323'));
@@ -235,27 +238,28 @@ export async function installSoftware(input: {
         steps: [{ name: tl('notes.install'), status: 'failed', detail: tl('notes.tpl.missingDataDir') }],
         status: before };
     }
-    const kind =
-      spec.installer === 'runtime-node'
-        ? 'node'
-        : spec.installer === 'runtime-php'
-          ? 'php'
-          : spec.installer === 'runtime-python'
-            ? 'python'
-            : spec.installer === 'runtime-go'
-              ? 'go'
-              : 'rust';
-    const version =
-      spec.runtimeVersion ??
-      (kind === 'node'
-        ? '20'
-        : kind === 'php'
-          ? '8.3'
-          : kind === 'python'
-            ? '3.12'
-            : kind === 'go'
-              ? '1.22'
-              : 'stable');
+    const kindMap = {
+      'runtime-node': 'node',
+      'runtime-php': 'php',
+      'runtime-python': 'python',
+      'runtime-go': 'go',
+      'runtime-rust': 'rust',
+      'runtime-java': 'java',
+      'runtime-kotlin': 'kotlin',
+      'runtime-bun': 'bun',
+    } as const;
+    const kind = kindMap[spec.installer];
+    const defaultVer: Record<string, string> = {
+      node: '20',
+      php: '8.3',
+      python: '3.12',
+      go: '1.22',
+      rust: 'stable',
+      java: '21',
+      kotlin: '2.1.0',
+      bun: 'latest',
+    };
+    const version = spec.runtimeVersion ?? defaultVer[kind] ?? 'latest';
     const r = await planOrInstallRuntime({
       host: input.host,
       dataDir: input.dataDir,

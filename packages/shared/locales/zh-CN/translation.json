@@ -3879,7 +3879,10 @@
       "security": "安全",
       "system": "系统",
       "ai": "AI"
-    }
+    },
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "bun": "Bun"
   },
   "network": {
     "title": "网络接口",
@@ -4054,7 +4057,8 @@
     "cat": {
       "security": "安全",
       "mail": "邮件",
-      "database": "数据库"
+      "database": "数据库",
+      "runtime": "执行环境"
     },
     "ssh": {
       "identityNotFound": "找不到 identity",
@@ -6167,9 +6171,9 @@
       "t0409": "準備安装 Go {{v0}} 到 /usr/local/ysk/go",
       "t0410": "準備安装 Rust（{{v0}}）到 /usr/local/ysk/rust",
       "t0411": "安装失败：{{v0}}",
-      "t0412": "证书檔已写入 {{v0}}",
-      "t0413": "已移除 {{v0}} 筆登記",
-      "t0414": "管理檔 {{v0}}",
+      "t0412": "已准备 OpenJDK {{v0}} 安装脚本",
+      "t0413": "已准备 Kotlin {{v0}} 安装脚本（需 JDK）",
+      "t0414": "已准备 Bun（{{v0}}）安装脚本",
       "t0415": "项目 home 公鑰：{{v0}}",
       "t0416": "登入目標用户 {{v0}}（项目隔離 home）；請對 .ssh 执行 chown（API 會嘗試）",
       "t0417": "已 chown {{v0}} → {{v1}}",
@@ -6641,7 +6645,8 @@
       "routeAdded": "已加入路由 {{dst}}{{via}}{{dev}}",
       "dnsWritten": "已写入 {{conn}}：DNS {{dns}}{{search}}",
       "peerInstalled": "已安装到 {{dest}}{{restart}}"
-    }
+    },
+    "installedTool": "已安装（工具）"
   },
   "ops": {
     "blocked": {
@@ -8021,7 +8026,13 @@
     "installScriptNote": "写入安装脚本后，有权限才会真正执行。调校在「执行调校」分页；重新部署项目后才进进程。",
     "envNote": "Node：max-old-space-size 等会合成 NODE_OPTIONS。Go／Python／Rust 对应官方环境变量。",
     "saveTune": "保存调校",
-    "pressReprobeLoad": "按「重新探测工具」加载"
+    "pressReprobeLoad": "按「重新探测工具」加载",
+    "installJavaLabel": "安装／更新 OpenJDK",
+    "installKotlinLabel": "安装／更新 Kotlin",
+    "installBunLabel": "安装／更新 Bun",
+    "javaMissing": "未检测到 Java（OpenJDK）",
+    "kotlinMissing": "未检测到 Kotlin 编译器",
+    "bunMissing": "未检测到 Bun"
   },
   "security": {
     "title": "安全与审批",
@@ -8409,6 +8420,7 @@
     "noMatch": "没有符合的服务",
     "bootPrefix": "开机 {{state}}",
     "controlPage": "控制页",
+    "manageRuntime": "安装／更新",
     "protectionTitle": "保护探测",
     "protectionSub": "只读；不改防火墙／fail2ban",
     "protectionDoneNote": "保护探测完成",

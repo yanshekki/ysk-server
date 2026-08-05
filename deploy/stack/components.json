@@ -237,6 +237,30 @@
       "units": [],
       "dataPaths": []
     },
+    "java": {
+      "title": "Java (OpenJDK)",
+      "source": "apt",
+      "aptPackages": ["openjdk-21-jdk"],
+      "bins": ["java", "javac"],
+      "units": [],
+      "dataPaths": []
+    },
+    "kotlin": {
+      "title": "Kotlin",
+      "source": "kotlin-official",
+      "aptPackages": [],
+      "bins": ["kotlin", "kotlinc"],
+      "units": [],
+      "dataPaths": ["/usr/local/ysk/kotlin"]
+    },
+    "bun": {
+      "title": "Bun",
+      "source": "bun-official",
+      "aptPackages": [],
+      "bins": ["bun"],
+      "units": [],
+      "dataPaths": ["/usr/local/ysk/bun"]
+    },
     "git": {
       "title": "Git",
       "source": "apt",

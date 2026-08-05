@@ -273,6 +273,54 @@ async function installOneComponent(
     return steps;
   }
 
+  if (def.softwareId === 'java') {
+    const r = await planOrInstallRuntime({
+      host,
+      dataDir,
+      kind: 'java',
+      version: '21',
+      install: true,
+    });
+    steps.push({
+      name: id,
+      status: r.ok ? 'ok' : 'failed',
+      detail: r.notes.join('; '),
+    });
+    return steps;
+  }
+
+  if (def.softwareId === 'kotlin' || def.source === 'kotlin-official') {
+    const r = await planOrInstallRuntime({
+      host,
+      dataDir,
+      kind: 'kotlin',
+      version: '2.1.0',
+      install: true,
+    });
+    steps.push({
+      name: id,
+      status: r.ok ? 'ok' : 'failed',
+      detail: r.notes.join('; '),
+    });
+    return steps;
+  }
+
+  if (def.softwareId === 'bun' || def.source === 'bun-official') {
+    const r = await planOrInstallRuntime({
+      host,
+      dataDir,
+      kind: 'bun',
+      version: 'latest',
+      install: true,
+    });
+    steps.push({
+      name: id,
+      status: r.ok ? 'ok' : 'failed',
+      detail: r.notes.join('; '),
+    });
+    return steps;
+  }
+
   // raw apt
   if (def.source === 'apt' || def.aptPackages.length) {
     const up = await host.runCommand(

@@ -87,8 +87,8 @@
     "runtimes": {
       "title": "Language runtimes",
       "titleZh": "語言工具鏈",
-      "description": "PHP (also in web), Python, Go, Rust toolchains.",
-      "components": ["php", "python", "go", "rust"]
+      "description": "PHP (also in web), Python, Go, Rust, Java, Kotlin, Bun toolchains.",
+      "components": ["php", "python", "go", "rust", "java", "kotlin", "bun"]
     }
   }
 }

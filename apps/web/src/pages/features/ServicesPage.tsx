@@ -52,7 +52,7 @@ type MatrixItem = {
 };
 
 export function toneFor(active: string, installed: boolean): 'ok' | 'warn' | 'danger' | 'neutral' {
-  if (active === 'active') return 'ok';
+  if (active === 'active' || active === 'tool') return 'ok';
   if (!installed || active === 'not-found') return 'danger';
   if (active === 'failed') return 'danger';
   if (active === 'inactive') return 'warn';
@@ -369,49 +369,62 @@ export function ServicesPage() {
                           </div>
                         </div>
                         <div className="ops-svc__actions">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            loading={busy}
-                            disabled={
-                              (!row.installed && row.active !== 'active') || !canMutate
-                            }
-                            onClick={bindCall2(lifecycle, row.unit, 'start')}
-                          >
-                            {t('services.action.start')}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            disabled={!canMutate}
-                            onClick={bindCall2(lifecycle, row.unit, 'restart')}
-                          >
-                            {t('services.action.restart')}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            loading={busy}
-                            disabled={!canMutate}
-                            onClick={bindCall2(lifecycle, row.unit, 'stop')}
-                          >
-                            {t('services.action.stop')}
-                          </Button>
-                          {row.href ? (
-                            <Link
-                              to={row.href}
-                              className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-                            >
-                              {t('services.controlPage')}
-                            </Link>
-                          ) : null}
-                          <Link
-                            to={`/logs?unit=${encodeURIComponent(row.unit)}`}
-                            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-                          >
-                            {t('services.logs')}
-                          </Link>
+                          {row.active === 'tool' || row.unit === '—' || !row.unit ? (
+                            row.href ? (
+                              <Link
+                                to={row.href}
+                                className={buttonClassName({ variant: 'primary', size: 'sm' })}
+                              >
+                                {t('services.manageRuntime')}
+                              </Link>
+                            ) : null
+                          ) : (
+                            <>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                loading={busy}
+                                disabled={
+                                  (!row.installed && row.active !== 'active') || !canMutate
+                                }
+                                onClick={bindCall2(lifecycle, row.unit, 'start')}
+                              >
+                                {t('services.action.start')}
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                loading={busy}
+                                disabled={!canMutate}
+                                onClick={bindCall2(lifecycle, row.unit, 'restart')}
+                              >
+                                {t('services.action.restart')}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                loading={busy}
+                                disabled={!canMutate}
+                                onClick={bindCall2(lifecycle, row.unit, 'stop')}
+                              >
+                                {t('services.action.stop')}
+                              </Button>
+                              {row.href ? (
+                                <Link
+                                  to={row.href}
+                                  className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                                >
+                                  {t('services.controlPage')}
+                                </Link>
+                              ) : null}
+                              <Link
+                                to={`/logs?unit=${encodeURIComponent(row.unit)}`}
+                                className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                              >
+                                {t('services.logs')}
+                              </Link>
+                            </>
+                          )}
                         </div>
                       </article>
                     ))}

@@ -33,7 +33,15 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import { bindSet, bindInput } from '../bind-handlers';
 
-export type HostingRuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust';
+export type HostingRuntimeKind =
+  | 'node'
+  | 'php'
+  | 'python'
+  | 'go'
+  | 'rust'
+  | 'java'
+  | 'kotlin'
+  | 'bun';
 type TuningKind = 'node' | 'python' | 'go' | 'rust';
 
 const META: Record<
@@ -80,6 +88,27 @@ const META: Record<
     versions: ['stable', '1.78', '1.81'],
     installLabelKey: 'runtime.installRustLabel',
     bannerTitle: i18n.t('runtime.rustMissing'),
+  },
+  java: {
+    title: 'Java',
+    defaultVersion: '21',
+    versions: ['17', '21'],
+    installLabelKey: 'runtime.installJavaLabel',
+    bannerTitle: i18n.t('runtime.javaMissing'),
+  },
+  kotlin: {
+    title: 'Kotlin',
+    defaultVersion: '2.1.0',
+    versions: ['2.1.0', '2.0.21'],
+    installLabelKey: 'runtime.installKotlinLabel',
+    bannerTitle: i18n.t('runtime.kotlinMissing'),
+  },
+  bun: {
+    title: 'Bun',
+    defaultVersion: 'latest',
+    versions: ['latest', '1.1.38'],
+    installLabelKey: 'runtime.installBunLabel',
+    bannerTitle: i18n.t('runtime.bunMissing'),
   },
 };
 
@@ -606,7 +635,9 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     ? 'go'
                     : kind === 'rust'
                       ? 'rust'
-                      : 'node'
+                      : kind === 'java' || kind === 'kotlin' || kind === 'bun'
+                        ? 'node'
+                        : 'node'
             }
           />
         ) : null}
@@ -635,4 +666,16 @@ export function GoRuntimePage() {
 
 export function RustRuntimePage() {
   return <GenericRuntimePage kind="rust" />;
+}
+
+export function JavaRuntimePage() {
+  return <GenericRuntimePage kind="java" />;
+}
+
+export function KotlinRuntimePage() {
+  return <GenericRuntimePage kind="kotlin" />;
+}
+
+export function BunRuntimePage() {
+  return <GenericRuntimePage kind="bun" />;
 }

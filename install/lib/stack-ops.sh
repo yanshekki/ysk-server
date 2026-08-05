@@ -129,6 +129,159 @@ install_component_node() {
   log "Node.js $(node -v)"
 }
 
+# Default OpenJDK LTS for stack install (panel can install 17/21 via runtime API).
+install_component_java() {
+  export PATH="/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
+  local ver="${YSK_JAVA_VERSION:-21}"
+  if require_cmd java && require_cmd javac; then
+    log "Java already present: $(java -version 2>&1 | head -1)"
+    manifest_add_component "java" "openjdk-${ver}-jdk" "" "" "apt"
+    return 0
+  fi
+  resolve_sudo
+  log "Installing OpenJDK ${ver}..."
+  # shellcheck disable=SC2086
+  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get update -qq || true
+  # shellcheck disable=SC2086
+  if ! $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "openjdk-${ver}-jdk"; then
+    if [[ "$ver" != "17" ]]; then
+      log "openjdk-${ver}-jdk failed; trying openjdk-17-jdk"
+      # shellcheck disable=SC2086
+      $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-17-jdk || {
+        record_hard_fail "OpenJDK install failed"
+        return 1
+      }
+      ver=17
+    else
+      record_hard_fail "OpenJDK install failed"
+      return 1
+    fi
+  fi
+  if ! require_cmd java; then
+    record_hard_fail "java missing after apt install"
+    return 1
+  fi
+  manifest_add_component "java" "openjdk-${ver}-jdk" "" "" "apt"
+  log "Java: $(java -version 2>&1 | head -1)"
+}
+
+install_component_bun() {
+  export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
+  if require_cmd bun; then
+    log "Bun already present: $(bun --version 2>/dev/null || true)"
+    manifest_add_component "bun" "" "" "/usr/local/ysk/bun" "bun-official"
+    return 0
+  fi
+  if ! require_cmd curl; then
+    record_hard_fail "curl required for Bun install"
+    return 1
+  fi
+  resolve_sudo
+  log "Installing Bun to /usr/local/ysk/bun..."
+  # shellcheck disable=SC2086
+  $SUDO mkdir -p /usr/local/ysk/bun /usr/local/bin
+  # Official installer respects BUN_INSTALL
+  # shellcheck disable=SC2086
+  if ! $SUDO env BUN_INSTALL=/usr/local/ysk/bun bash -c 'curl -fsSL https://bun.sh/install | bash'; then
+    record_hard_fail "Bun install script failed"
+    return 1
+  fi
+  if [[ -x /usr/local/ysk/bun/bin/bun ]]; then
+    # shellcheck disable=SC2086
+    $SUDO ln -sfn /usr/local/ysk/bun/bin/bun /usr/local/bin/bun
+  fi
+  export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:${PATH:-}"
+  if ! require_cmd bun; then
+    record_hard_fail "bun missing after install"
+    return 1
+  fi
+  manifest_add_component "bun" "" "" "/usr/local/ysk/bun" "bun-official"
+  log "Bun: $(bun --version)"
+}
+
+# Kotlin compiler (needs JDK). Uses GitHub release zip from JetBrains.
+install_component_kotlin() {
+  export PATH="/usr/local/bin:/usr/local/ysk/kotlin/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
+  if require_cmd kotlin || require_cmd kotlinc; then
+    log "Kotlin already present"
+    manifest_add_component "kotlin" "" "" "/usr/local/ysk/kotlin" "kotlin-official"
+    return 0
+  fi
+  # Ensure JDK first
+  if ! require_cmd java; then
+    log "Kotlin requires Java — installing OpenJDK first"
+    install_component_java || return 1
+  fi
+  if ! require_cmd curl; then
+    record_hard_fail "curl required for Kotlin install"
+    return 1
+  fi
+  resolve_sudo
+  local ver="${YSK_KOTLIN_VERSION:-2.1.0}"
+  local dest="/usr/local/ysk/kotlin"
+  local tmp url
+  tmp="$(mktemp -d)"
+  log "Installing Kotlin ${ver} to ${dest}..."
+  url="https://github.com/JetBrains/kotlin/releases/download/v${ver}/kotlin-compiler-${ver}.zip"
+  if ! curl -fsSL "$url" -o "$tmp/kotlin.zip"; then
+    # fallback slightly older LTS-ish
+    ver="2.0.21"
+    url="https://github.com/JetBrains/kotlin/releases/download/v${ver}/kotlin-compiler-${ver}.zip"
+    curl -fsSL "$url" -o "$tmp/kotlin.zip" || {
+      rm -rf "$tmp"
+      record_hard_fail "Kotlin download failed"
+      return 1
+    }
+  fi
+  # shellcheck disable=SC2086
+  $SUDO rm -rf "$dest"
+  # shellcheck disable=SC2086
+  $SUDO mkdir -p "$dest" /usr/local/bin "$tmp/out"
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q "$tmp/kotlin.zip" -d "$tmp/out" || {
+      rm -rf "$tmp"
+      record_hard_fail "unzip kotlin failed"
+      return 1
+    }
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 - "$tmp/kotlin.zip" "$tmp/out" <<'PY' || {
+import sys, zipfile, os
+os.makedirs(sys.argv[2], exist_ok=True)
+zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])
+PY
+      rm -rf "$tmp"
+      record_hard_fail "extract kotlin failed"
+      return 1
+    }
+  else
+    rm -rf "$tmp"
+    record_hard_fail "unzip or python3 required for Kotlin"
+    return 1
+  fi
+  # zip extracts to kotlinc/
+  if [[ -d "$tmp/out/kotlinc" ]]; then
+    # shellcheck disable=SC2086
+    $SUDO cp -a "$tmp/out/kotlinc/." "$dest/"
+  else
+    # shellcheck disable=SC2086
+    $SUDO cp -a "$tmp/out/." "$dest/"
+  fi
+  rm -rf "$tmp"
+  for b in kotlin kotlinc; do
+    if [[ -x "$dest/bin/$b" ]]; then
+      # shellcheck disable=SC2086
+      $SUDO ln -sfn "$dest/bin/$b" "/usr/local/bin/$b"
+    fi
+  done
+  export PATH="/usr/local/bin:${dest}/bin:${PATH:-}"
+  if ! require_cmd kotlinc && ! require_cmd kotlin; then
+    record_hard_fail "kotlin missing after install"
+    return 1
+  fi
+  manifest_add_component "kotlin" "" "" "/usr/local/ysk/kotlin" "kotlin-official"
+  log "Kotlin installed (${ver})"
+}
+
 # Topology: Nginx owns public :80/:443 (TLS edge / reverse proxy).
 # Apache is PHP backend only on loopback (default 127.0.0.1:8080) — both may run together.
 # Override with YSK_APACHE_BACKEND_BIND / YSK_APACHE_BACKEND_PORT.
@@ -317,6 +470,9 @@ install_component() {
   case "$id" in
     rust) install_component_rust ;;
     node) install_component_node ;;
+    java) install_component_java ;;
+    kotlin) install_component_kotlin ;;
+    bun) install_component_bun ;;
     control-plane-product)
       # handled later in install_product phase
       log "  (product deferred to product phase)"
@@ -327,6 +483,8 @@ install_component() {
       case "$src" in
         rustup) install_component_rust ;;
         nodesource) install_component_node ;;
+        bun-official) install_component_bun ;;
+        kotlin-official) install_component_kotlin ;;
         npm) log "  npm product deferred" ;;
         *) install_component_apt "$id" ;;
       esac
@@ -414,6 +572,36 @@ remove_component() {
       $SUDO rm -f /usr/local/bin/cargo /usr/local/bin/rustc /usr/local/bin/rustup 2>/dev/null || true
     else
       log "  keep Rust toolchains on disk (keep-data)"
+    fi
+    manifest_remove_component "$id"
+    return 0
+  fi
+
+  if [[ "$id" == "bun" ]]; then
+    if [[ "$data_policy" == "purge" ]]; then
+      # shellcheck disable=SC2086
+      $SUDO rm -rf /usr/local/ysk/bun 2>/dev/null || true
+      # shellcheck disable=SC2086
+      $SUDO rm -f /usr/local/bin/bun 2>/dev/null || true
+    else
+      log "  keep Bun install dir (keep-data); remove PATH link only"
+      # shellcheck disable=SC2086
+      $SUDO rm -f /usr/local/bin/bun 2>/dev/null || true
+    fi
+    manifest_remove_component "$id"
+    return 0
+  fi
+
+  if [[ "$id" == "kotlin" ]]; then
+    if [[ "$data_policy" == "purge" ]]; then
+      # shellcheck disable=SC2086
+      $SUDO rm -rf /usr/local/ysk/kotlin 2>/dev/null || true
+      # shellcheck disable=SC2086
+      $SUDO rm -f /usr/local/bin/kotlin /usr/local/bin/kotlinc 2>/dev/null || true
+    else
+      log "  keep Kotlin install dir (keep-data); remove PATH links only"
+      # shellcheck disable=SC2086
+      $SUDO rm -f /usr/local/bin/kotlin /usr/local/bin/kotlinc 2>/dev/null || true
     fi
     manifest_remove_component "$id"
     return 0

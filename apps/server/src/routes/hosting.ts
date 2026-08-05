@@ -59,21 +59,22 @@ export async function handleHostingRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
-          kind?: 'node' | 'php' | 'python' | 'go' | 'rust';
+          kind?: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
           version?: string;
           install?: boolean;
         };
         const kind = data.kind ?? 'node';
-        const defaultVer =
-          kind === 'php'
-            ? '8.2'
-            : kind === 'python'
-              ? '3.12'
-              : kind === 'go'
-                ? '1.22'
-                : kind === 'rust'
-                  ? 'stable'
-                  : '20';
+        const defaultVerMap: Record<string, string> = {
+          node: '20',
+          php: '8.2',
+          python: '3.12',
+          go: '1.22',
+          rust: 'stable',
+          java: '21',
+          kotlin: '2.1.0',
+          bun: 'latest',
+        };
+        const defaultVer = defaultVerMap[kind] ?? '20';
         const result = await planOrInstallRuntime({
           dataDir: ctx.dataDir,
           host: ctx.host,
