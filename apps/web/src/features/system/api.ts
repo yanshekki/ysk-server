@@ -432,6 +432,29 @@ export const systemApi = {
       defaults: string[];
       useExtensions?: boolean;
     }>(`/api/v1/hosting/runtimes/plugins?kind=${encodeURIComponent(kind)}`),
+  /** Unified addons: PHP extensions or companion plugins */
+  runtimeAddons: (kind: string, version?: string) => {
+    const q = new URLSearchParams({ kind });
+    if (version) q.set('version', version);
+    return api.requestRaw<{
+      kind: string;
+      mode: 'extensions' | 'plugins';
+      version?: string;
+      items: Array<{
+        id: string;
+        label: string;
+        hint?: string;
+        group?: string;
+        recommended: boolean;
+        required: boolean;
+        installed?: boolean;
+        package?: string;
+        installer?: string;
+        bins?: string[];
+      }>;
+      defaults: string[];
+    }>(`/api/v1/hosting/runtimes/addons?${q.toString()}`);
+  },
   runtimeLatest: (kind: string, refresh = false) =>
     api.requestRaw<{
       kind: string;

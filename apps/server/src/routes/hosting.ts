@@ -110,6 +110,58 @@ export async function handleHostingRoutes(
         sendOpsResult(res, result);
         return true;
       }
+      // —— Unified addons catalog: PHP extensions OR companion plugins ——
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/addons') {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = (url.searchParams.get('kind') ?? 'node') as
+          | 'node'
+          | 'php'
+          | 'python'
+          | 'go'
+          | 'rust'
+          | 'java'
+          | 'kotlin'
+          | 'bun';
+        const version = url.searchParams.get('version') ?? undefined;
+        if (kind === 'php') {
+          const ext = phpExtensionCatalogDto(version ?? '8.2');
+          sendJson(res, 200, {
+            kind: 'php',
+            mode: 'extensions' as const,
+            version: ext.version,
+            items: ext.extensions.map((e) => ({
+              id: e.id,
+              label: e.label,
+              hint: e.hint,
+              group: e.group,
+              recommended: e.recommended,
+              required: e.required,
+              package: e.package,
+              installed: false,
+            })),
+            defaults: ext.defaults,
+          });
+          return true;
+        }
+        const catalog = await runtimePluginsCatalogWithProbe(kind, ctx.host);
+        sendJson(res, 200, {
+          kind: catalog.kind,
+          mode: 'plugins' as const,
+          items: catalog.plugins.map((p) => ({
+            id: p.id,
+            label: p.label,
+            hint: p.hint,
+            group: p.group,
+            recommended: p.recommended,
+            required: p.required,
+            installer: p.installer,
+            bins: p.bins,
+            installed: p.installed,
+          })),
+          defaults: catalog.defaults,
+        });
+        return true;
+      }
       // —— Optional remote latest hint (cached 24h) ——
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/latest') {
         ctx.auth.authenticate(getBearer(req));
