@@ -2468,7 +2468,16 @@
     "createAfterHint": "创建后请在「记录」分页检视并「写入区域文件」才会落到磁盘。",
     "valueLabel": "值",
     "ttlHint": "缓存时间",
-    "soaSavedControl": "已保存 SOA 设定（控制面）— 请「写入区域文件」套用"
+    "soaSavedControl": "已保存 SOA 设定（控制面）— 请「写入区域文件」套用",
+    "soaNs2Label": "次要 NS（可选）",
+    "soaNs2Hint": "第二名称服务器 FQDN，例如 ns2.example.com.",
+    "soaHostmaster": "SOA 管理员邮箱（RNAME）",
+    "soaHostmasterHint": "用点代替 @，例如 hostmaster.example.com.",
+    "soaRefresh": "Refresh（秒）",
+    "soaRetry": "Retry（秒）",
+    "soaExpire": "Expire（秒）",
+    "soaMinimum": "Minimum／负缓存 TTL（秒）",
+    "soaTimingHint": "SOA 定时参数（秒）。"
   },
   "email": {
     "title": "邮件",
@@ -2829,7 +2838,9 @@
       "postfixReloadFailed": "Postfix 重新加载失败：{{detail}}",
       "dovecotApplied": "已写入 Dovecot TLS 片段并尝试重新加载。",
       "dovecotSkipped": "已跳过 Dovecot（未安装或 doveconf 不可用）。"
-    }
+    },
+    "policyApplySystemHint": "勾选「套用到系统」才会写入 Postfix／Rspamd 映射并重新加载；否则只写控制面草稿。",
+    "rateLimitAppliedNote": "已套用每小时外发限额与反垃圾标记（若启用系统套用）。"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",

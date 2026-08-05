@@ -122,7 +122,13 @@ export function DnsPage() {
   const [soaTtl, setSoaTtl] = useState('300');
   /** Edit SOA for selected zone (persist + re-write zone file) */
   const [editSoaNs, setEditSoaNs] = useState('');
+  const [editSoaNs2, setEditSoaNs2] = useState('');
+  const [editSoaHostmaster, setEditSoaHostmaster] = useState('');
   const [editSoaTtl, setEditSoaTtl] = useState('300');
+  const [editSoaRefresh, setEditSoaRefresh] = useState('7200');
+  const [editSoaRetry, setEditSoaRetry] = useState('3600');
+  const [editSoaExpire, setEditSoaExpire] = useState('1209600');
+  const [editSoaMinimum, setEditSoaMinimum] = useState('300');
   const [soaBusy, setSoaBusy] = useState(false);
   const [soaMsg, setSoaMsg] = useState<string | null>(null);
   /** Tools tab: dig/lookup */
@@ -148,9 +154,38 @@ export function DnsPage() {
   useEffect(() => {
     if (!selectedLive) return;
     setEditSoaNs(String(selectedLive.nsName ?? ''));
+    setEditSoaNs2(String(selectedLive.ns2Name ?? ''));
+    setEditSoaHostmaster(String(selectedLive.hostmaster ?? ''));
     setEditSoaTtl(String(selectedLive.ttl ?? 300));
+    setEditSoaRefresh(String(selectedLive.soaRefresh ?? 7200));
+    setEditSoaRetry(String(selectedLive.soaRetry ?? 3600));
+    setEditSoaExpire(String(selectedLive.soaExpire ?? 1209600));
+    setEditSoaMinimum(String(selectedLive.soaMinimum ?? selectedLive.ttl ?? 300));
     setSoaMsg(null);
-  }, [selectedLive?.id, selectedLive?.nsName, selectedLive?.ttl]);
+  }, [
+    selectedLive?.id,
+    selectedLive?.nsName,
+    selectedLive?.ns2Name,
+    selectedLive?.hostmaster,
+    selectedLive?.ttl,
+    selectedLive?.soaRefresh,
+    selectedLive?.soaRetry,
+    selectedLive?.soaExpire,
+    selectedLive?.soaMinimum,
+  ]);
+
+  function buildSoaPatch() {
+    return {
+      nsName: editSoaNs.trim() || undefined,
+      ns2Name: editSoaNs2.trim() || null,
+      hostmaster: editSoaHostmaster.trim() || undefined,
+      ttl: parseDnsTtl(editSoaTtl),
+      soaRefresh: parseDnsTtl(editSoaRefresh),
+      soaRetry: parseDnsTtl(editSoaRetry),
+      soaExpire: parseDnsTtl(editSoaExpire),
+      soaMinimum: parseDnsTtl(editSoaMinimum),
+    };
+  }
 
   async function onDnssec(zoneName: string) {
     setDnssecBusy(true);
@@ -617,6 +652,36 @@ export function DnsPage() {
                             disabled={soaBusy || zones.busy}
                           />
                         </Field>
+                        <Field
+                          label={t('dns.soaNs2Label')}
+                          htmlFor="edit-soa-ns2"
+                          flush
+                          hint={t('dns.soaNs2Hint')}
+                        >
+                          <input
+                            id="edit-soa-ns2"
+                            value={editSoaNs2}
+                            onChange={bindInput(setEditSoaNs2)}
+                            placeholder={`ns2.${String(selectedLive.zone)}.`}
+                            spellCheck={false}
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
+                        <Field
+                          label={t('dns.soaHostmaster')}
+                          htmlFor="edit-soa-hm"
+                          flush
+                          hint={t('dns.soaHostmasterHint')}
+                        >
+                          <input
+                            id="edit-soa-hm"
+                            value={editSoaHostmaster}
+                            onChange={bindInput(setEditSoaHostmaster)}
+                            placeholder={`hostmaster.${String(selectedLive.zone)}.`}
+                            spellCheck={false}
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
                         <Field label={t('dns.defaultTtl')} htmlFor="edit-soa-ttl" flush>
                           <PresetChips
                             options={[
@@ -633,6 +698,42 @@ export function DnsPage() {
                             disabled={soaBusy || zones.busy}
                           />
                         </Field>
+                        <Field label={t('dns.soaRefresh')} htmlFor="edit-soa-ref" flush hint={t('dns.soaTimingHint')}>
+                          <input
+                            id="edit-soa-ref"
+                            value={editSoaRefresh}
+                            onChange={bindInput(setEditSoaRefresh)}
+                            inputMode="numeric"
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
+                        <Field label={t('dns.soaRetry')} htmlFor="edit-soa-ret" flush>
+                          <input
+                            id="edit-soa-ret"
+                            value={editSoaRetry}
+                            onChange={bindInput(setEditSoaRetry)}
+                            inputMode="numeric"
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
+                        <Field label={t('dns.soaExpire')} htmlFor="edit-soa-exp" flush>
+                          <input
+                            id="edit-soa-exp"
+                            value={editSoaExpire}
+                            onChange={bindInput(setEditSoaExpire)}
+                            inputMode="numeric"
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
+                        <Field label={t('dns.soaMinimum')} htmlFor="edit-soa-min" flush>
+                          <input
+                            id="edit-soa-min"
+                            value={editSoaMinimum}
+                            onChange={bindInput(setEditSoaMinimum)}
+                            inputMode="numeric"
+                            disabled={soaBusy || zones.busy}
+                          />
+                        </Field>
                       </FormLayout>
                       <FormActions align="end">
                         <Button
@@ -645,11 +746,7 @@ export function DnsPage() {
                               setSoaBusy(true);
                               setSoaMsg(null);
                               try {
-                                const ttl = parseDnsTtl(editSoaTtl);
-                                await zones.update(selectedLive.id, {
-                                  nsName: editSoaNs.trim() || undefined,
-                                  ttl,
-                                });
+                                await zones.update(selectedLive.id, buildSoaPatch());
                                 setSoaMsg(t('dns.soaSaved'));
                               } catch (e) {
                                 setSoaMsg(
@@ -672,11 +769,7 @@ export function DnsPage() {
                               setSoaBusy(true);
                               setSoaMsg(null);
                               try {
-                                const ttl = parseDnsTtl(editSoaTtl);
-                                await zones.update(selectedLive.id, {
-                                  nsName: editSoaNs.trim() || undefined,
-                                  ttl,
-                                });
+                                await zones.update(selectedLive.id, buildSoaPatch());
                                 await zones.apply(selectedLive.id);
                                 setSoaMsg(t('dns.soaSavedAndWritten'));
                               } catch (e) {

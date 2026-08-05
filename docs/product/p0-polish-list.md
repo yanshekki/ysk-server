@@ -35,7 +35,7 @@
 
 | ID | 項 | Status | 建議 |
 |----|-----|--------|------|
-| C4 | SOA/TTL/NS 編輯 | **partial** | 記錄級 TTL 有；SOA/NS 全局編輯 |
+| C4 | SOA/TTL/NS 編輯 | **done** | 區級 NS/NS2/hostmaster/TTL + SOA refresh/retry/expire/minimum 可存可寫 zone |
 
 ---
 
@@ -44,8 +44,8 @@
 | ID | 項 | Status | 建議 |
 |----|-----|--------|------|
 | F6–F7 | DKIM/SPF/DMARC 面板完整度 | **done** | 即時檢查 + 失敗修復提示（SPF/DKIM/DMARC/MX） |
-| F10 | Antispam per-domain | **partial** | flag 層 |
-| F13 | Outbound rate limits | **partial** | flag 層 |
+| F10 | Antispam per-domain | **done** | 控制面 + 套用系統誠實提示；mail-policy 映射 |
+| F13 | Outbound rate limits | **done** | 每小時外寄限額 UI + applySystem 提示 |
 | F20–F22 | Bootstrap honesty · mail SSL · suspend | **partial** | suspend flags 有；mail SSL 深鏈 |
 
 ---
@@ -94,4 +94,4 @@
 | A 今輪主線碼 | **~95–100%**（差真機 S6 / 環境 S8） |
 | B–E matrix partial | **~60–70%** 已有能力，差收口 |
 | F 多租戶 | **0%（刻意不做 P0）** |
-| 整體「P0 polish 清單收口」 | **約 85%**；若只計 Admin 已交付功能則 **~93%+** |
+| 整體「P0 polish 清單收口」 | **約 90%**；若只計 Admin 已交付功能則 **~94%+** |

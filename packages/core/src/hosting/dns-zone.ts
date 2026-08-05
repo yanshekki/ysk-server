@@ -78,6 +78,15 @@ export function renderBindZoneFile(input: {
   serial?: number;
   ttl?: number;
   nsName?: string;
+  /** Optional secondary nameserver (FQDN, with or without trailing dot) */
+  ns2Name?: string;
+  /** SOA RNAME hostmaster mailbox (defaults hostmaster.<zone>.) */
+  hostmaster?: string;
+  /** SOA timing (seconds) */
+  soaRefresh?: number;
+  soaRetry?: number;
+  soaExpire?: number;
+  soaMinimum?: number;
   /** Data records (A/MX/TXT/…); if omitted, uses planDnsZone template */
   records?: DnsRecordPlan['records'];
   template?: DnsZoneTemplate | string;
@@ -91,7 +100,20 @@ export function renderBindZoneFile(input: {
       `${new Date().getUTCFullYear()}${String(new Date().getUTCMonth() + 1).padStart(2, '0')}${String(new Date().getUTCDate()).padStart(2, '0')}${String(new Date().getUTCHours()).padStart(2, '0')}`,
     );
   const ttl = input.ttl ?? 300;
-  const ns = input.nsName ?? `ns1.${zone}.`;
+  const clamp = (n: number | undefined, def: number, min: number, max: number) => {
+    if (n == null || !Number.isFinite(n)) return def;
+    return Math.min(max, Math.max(min, Math.floor(n)));
+  };
+  const refresh = clamp(input.soaRefresh, 7200, 300, 86400 * 7);
+  const retry = clamp(input.soaRetry, 3600, 300, 86400);
+  const expire = clamp(input.soaExpire, 1209600, 86400, 86400 * 365);
+  const minimum = clamp(input.soaMinimum, ttl, 30, 86400 * 7);
+  let ns = (input.nsName ?? `ns1.${zone}.`).trim();
+  if (!ns.endsWith('.')) ns = `${ns}.`;
+  let ns2 = (input.ns2Name ?? '').trim();
+  if (ns2 && !ns2.endsWith('.')) ns2 = `${ns2}.`;
+  let rname = (input.hostmaster ?? `hostmaster.${zone}.`).trim().replace(/@/g, '.');
+  if (!rname.endsWith('.')) rname = `${rname}.`;
   const dataRecords =
     input.records ??
     planDnsZone({
@@ -107,16 +129,19 @@ export function renderBindZoneFile(input: {
     `; written ≠ authoritative until nameserver reloads this file`,
     `$TTL ${ttl}`,
     `$ORIGIN ${zone}.`,
-    `@\tIN\tSOA\t${ns}\thostmaster.${zone}.\t(`,
+    `@\tIN\tSOA\t${ns}\t${rname}\t(`,
     `\t\t${serial}\t; serial`,
-    `\t\t7200\t\t; refresh`,
-    `\t\t3600\t\t; retry`,
-    `\t\t1209600\t\t; expire`,
-    `\t\t${ttl}\t\t; minimum`,
+    `\t\t${refresh}\t\t; refresh`,
+    `\t\t${retry}\t\t; retry`,
+    `\t\t${expire}\t\t; expire`,
+    `\t\t${minimum}\t\t; minimum`,
     `\t\t)`,
     `@\tIN\tNS\t${ns}`,
-    `ns1\tIN\tA\t${serverIp}`,
   ];
+  if (ns2) {
+    lines.push(`@\tIN\tNS\t${ns2}`);
+  }
+  lines.push(`ns1\tIN\tA\t${serverIp}`);
   if (serverIpv6) {
     lines.push(`ns1\tIN\tAAAA\t${serverIpv6}`);
   }
@@ -180,7 +205,13 @@ export async function writeManagedDnsZone(input: {
   records?: DnsRecordPlan['records'];
   template?: DnsZoneTemplate | string;
   nsName?: string;
+  ns2Name?: string;
+  hostmaster?: string;
   ttl?: number;
+  soaRefresh?: number;
+  soaRetry?: number;
+  soaExpire?: number;
+  soaMinimum?: number;
 }): Promise<ZoneFileResult> {
   const zone = assertZoneName(input.zone);
   const template = normalizeDnsZoneTemplate(input.template);
@@ -192,7 +223,13 @@ export async function writeManagedDnsZone(input: {
     records: input.records,
     template,
     nsName: input.nsName,
+    ns2Name: input.ns2Name,
+    hostmaster: input.hostmaster,
     ttl: input.ttl,
+    soaRefresh: input.soaRefresh,
+    soaRetry: input.soaRetry,
+    soaExpire: input.soaExpire,
+    soaMinimum: input.soaMinimum,
   });
 
   const dir = join(input.dataDir, 'dns', 'zones');

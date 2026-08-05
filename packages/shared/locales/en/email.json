@@ -357,5 +357,7 @@
     "postfixReloadFailed": "Postfix reload failed: {{detail}}",
     "dovecotApplied": "Wrote Dovecot TLS snippet and attempted reload.",
     "dovecotSkipped": "Skipped Dovecot (not installed or doveconf unavailable)."
-  }
+  },
+  "policyApplySystemHint": "Check “apply to system” to write Postfix/Rspamd maps and reload; otherwise only control-plane draft is saved.",
+  "rateLimitAppliedNote": "Hourly outbound rate and antispam flag applied (when system apply is on)."
 }

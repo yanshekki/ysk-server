@@ -36,6 +36,28 @@ describe('dns-zone', () => {
     expect(r.body).not.toContain('IN\tMX');
   });
 
+  it('renders custom SOA timings, hostmaster and secondary NS', () => {
+    const r = renderBindZoneFile({
+      zone: 'example.com',
+      serverIp: '203.0.113.10',
+      nsName: 'ns1.example.com',
+      ns2Name: 'ns2.example.com',
+      hostmaster: 'admin.example.com',
+      ttl: 600,
+      soaRefresh: 3600,
+      soaRetry: 900,
+      soaExpire: 604800,
+      soaMinimum: 120,
+      template: 'minimal',
+    });
+    expect(r.body).toMatch(/SOA\tns1\.example\.com\.\tadmin\.example\.com\./);
+    expect(r.body).toContain('3600');
+    expect(r.body).toContain('900');
+    expect(r.body).toContain('604800');
+    expect(r.body).toContain('120');
+    expect(r.body).toMatch(/IN\tNS\tns2\.example\.com\./);
+  });
+
   it('rejects bad zone and IP', () => {
     expect(() => renderBindZoneFile({ zone: '', serverIp: '1.2.3.4' })).toThrow(YskError);
     expect(() =>

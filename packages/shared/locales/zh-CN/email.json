@@ -357,5 +357,7 @@
     "postfixReloadFailed": "Postfix 重新加载失败：{{detail}}",
     "dovecotApplied": "已写入 Dovecot TLS 片段并尝试重新加载。",
     "dovecotSkipped": "已跳过 Dovecot（未安装或 doveconf 不可用）。"
-  }
+  },
+  "policyApplySystemHint": "勾选「套用到系统」才会写入 Postfix／Rspamd 映射并重新加载；否则只写控制面草稿。",
+  "rateLimitAppliedNote": "已套用每小时外发限额与反垃圾标记（若启用系统套用）。"
 }

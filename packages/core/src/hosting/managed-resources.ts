@@ -427,7 +427,14 @@ export async function applyDnsZone(
       template: zone.template ? String(zone.template) : 'full',
       records: dataRecords.length ? dataRecords : undefined,
       nsName: zone.nsName ? String(zone.nsName) : undefined,
-      ttl: zone.ttl != null ? Number(zone.ttl) : undefined });
+      ns2Name: zone.ns2Name ? String(zone.ns2Name) : undefined,
+      hostmaster: zone.hostmaster ? String(zone.hostmaster) : undefined,
+      ttl: zone.ttl != null ? Number(zone.ttl) : undefined,
+      soaRefresh: zone.soaRefresh != null ? Number(zone.soaRefresh) : undefined,
+      soaRetry: zone.soaRetry != null ? Number(zone.soaRetry) : undefined,
+      soaExpire: zone.soaExpire != null ? Number(zone.soaExpire) : undefined,
+      soaMinimum: zone.soaMinimum != null ? Number(zone.soaMinimum) : undefined,
+    });
     // Honest: applied only if nameserver reload OK; else written
     const applyStatus = result.applyStatus;
     updateResource(db, 'dns_zones', id, {

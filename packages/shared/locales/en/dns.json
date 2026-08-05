@@ -157,5 +157,14 @@
   "createAfterHint": "After create, review on Records tab and write the zone file to disk.",
   "valueLabel": "Value",
   "ttlHint": "Cache time",
-  "soaSavedControl": "SOA saved (control plane) — write zone file to apply"
+  "soaSavedControl": "SOA saved (control plane) — write zone file to apply",
+  "soaNs2Label": "Secondary NS (optional)",
+  "soaNs2Hint": "Second nameserver FQDN, e.g. ns2.example.com.",
+  "soaHostmaster": "SOA hostmaster (RNAME)",
+  "soaHostmasterHint": "Use dots instead of @, e.g. hostmaster.example.com.",
+  "soaRefresh": "Refresh (seconds)",
+  "soaRetry": "Retry (seconds)",
+  "soaExpire": "Expire (seconds)",
+  "soaMinimum": "Minimum / negative cache TTL (seconds)",
+  "soaTimingHint": "SOA timing parameters in seconds."
 }

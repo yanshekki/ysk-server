@@ -157,5 +157,14 @@
   "createAfterHint": "建立後請在「記錄」分頁檢視並「寫入區域檔」才會落到磁碟。",
   "valueLabel": "值",
   "ttlHint": "快取時間",
-  "soaSavedControl": "已儲存 SOA 設定（控制面）— 請「寫入區域檔」套用"
+  "soaSavedControl": "已儲存 SOA 設定（控制面）— 請「寫入區域檔」套用",
+  "soaNs2Label": "次要 NS（可選）",
+  "soaNs2Hint": "第二名稱伺服器 FQDN，例如 ns2.example.com.",
+  "soaHostmaster": "SOA 管理員電郵（RNAME）",
+  "soaHostmasterHint": "用點代替 @，例如 hostmaster.example.com.",
+  "soaRefresh": "Refresh（秒）",
+  "soaRetry": "Retry（秒）",
+  "soaExpire": "Expire（秒）",
+  "soaMinimum": "Minimum／負快取 TTL（秒）",
+  "soaTimingHint": "SOA 定時參數（秒）。"
 }

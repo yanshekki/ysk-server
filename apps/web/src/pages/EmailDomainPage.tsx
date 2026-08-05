@@ -1182,6 +1182,7 @@ export function EmailDomainPage() {
                 <p className="section-block__desc">
                   {t('email.rateLimitDesc')}
                 </p>
+                <p className="muted u-text-sm u-mb-3">{t('email.policyApplySystemHint')}</p>
                 <FormLayout columns={2}>
                   <Field
                     label={t('email.hourlyMsgCap')}
