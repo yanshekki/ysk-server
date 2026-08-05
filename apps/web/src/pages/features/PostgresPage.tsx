@@ -73,18 +73,6 @@ export function PostgresPage() {
     setPassword('');
   }
 
-  async function onInstall() {
-    await run(async () => {
-      try {
-        const r = await consoleApi.install('postgres');
-        await refreshSvc();
-        return r as unknown as OpsResultLike;
-      } catch (err) {
-        const m = err instanceof Error ? err.message : t('common.installFailed');
-        return { ok: false, blocked: true, blockMessage: m, notes: [m] };
-      }
-    }, t('db.pgInstalled'));
-  }
 
   async function onStart() {
     await run(async () => {

@@ -153,23 +153,6 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     void refreshExtras();
   }, [refreshSvc, refreshExtras]);
 
-  async function onInstall() {
-    await run(async () => {
-      try {
-        const r = await dbEngineApi.install(engine);
-        await refreshSvc();
-        return r as unknown as OpsResultLike;
-      } catch (e) {
-        const m = e instanceof Error ? e.message : t('common.installFailed');
-        return {
-          ok: false,
-          blocked: looksLikeBlockedMessage(m),
-          blockMessage: m,
-          notes: [m],
-        } satisfies OpsResultLike;
-      }
-    }, t('db.installedOk', { engine: title }));
-  }
 
   async function onStart() {
     await run(async () => {

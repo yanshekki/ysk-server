@@ -1,8 +1,8 @@
 /**
- * Shared install CTA block for language runtimes:
- * - disabled when selected version already installed and no addons selected
- * - label switches to "installed" / "install addons only"
- * - optional "switch to newer version" button
+ * Shared **runtime version** install CTA only.
+ * Companion tools / PHP extensions install via their own「安裝選定…」buttons above.
+ * - Disabled when selected version already installed
+ * - Optional "switch to newer version" button
  */
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,6 @@ export function RuntimeInstallActions({
   installState,
   version,
   busy,
-  hasAddonsSelected,
   installLabel,
   onInstall,
   onSelectNewer,
@@ -22,23 +21,17 @@ export function RuntimeInstallActions({
   installState: RuntimeInstallState;
   version: string;
   busy?: boolean;
-  /** extensions or plugins selected beyond bare runtime */
-  hasAddonsSelected: boolean;
-  /** Primary button when installing fresh e.g. t('runtime.installNodeVBtn', {version}) */
+  /** Primary when installing e.g. t('runtime.installNodeVBtn', {version}) */
   installLabel: string;
   onInstall: () => void;
   onSelectNewer?: (v: string) => void;
   extraHints?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const disabled = installState.installDisabled && !hasAddonsSelected;
-
-  let primaryLabel = installLabel;
-  if (installState.installDisabled && hasAddonsSelected) {
-    primaryLabel = t('runtime.installAddonsOnly', { version });
-  } else if (installState.installDisabled) {
-    primaryLabel = t('runtime.installedVersionBtn', { version });
-  }
+  const already = installState.installDisabled;
+  const primaryLabel = already
+    ? t('runtime.installedVersionBtn', { version })
+    : installLabel;
 
   return (
     <>
@@ -58,15 +51,13 @@ export function RuntimeInstallActions({
           variant="primary"
           size="md"
           loading={busy}
-          disabled={disabled}
-          title={
-            disabled ? t('runtime.versionAlreadyInstalled', { version }) : undefined
-          }
+          disabled={already}
+          title={already ? t('runtime.versionAlreadyInstalled', { version }) : undefined}
           onClick={onInstall}
         >
           {primaryLabel}
         </Button>
-        {installState.newerAvailable[0] && installState.installDisabled && onSelectNewer ? (
+        {installState.newerAvailable[0] && already && onSelectNewer ? (
           <Button
             variant="secondary"
             size="md"

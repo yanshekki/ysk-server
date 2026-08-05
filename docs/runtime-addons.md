@@ -36,12 +36,20 @@
 | `POST /api/v1/hosting/runtimes/plugins/install` | Install companion tools only `{ kind, plugins[] }` |
 | `POST /api/v1/hosting/runtimes/plugins/uninstall` | Uninstall companion tools `{ kind, plugins[] }` |
 
-### Install vs uninstall UX
+### Install vs uninstall UX (unified)
 
-- **Available**: multi-select only tools/extensions **not** already on host.
-- **Installed**: listed separately; companion tools support **Uninstall** (confirm).
-- PHP: installed extensions hidden from install multi-select (core still listed as required).
+Same pattern for **all** runtimes (Node/… and PHP):
+
+| Zone | Control |
+|------|---------|
+| **Installed** | List + Uninstall (confirm). Not in multi-select. |
+| **Available** | Multi-select + **「安裝選定…」** primary |
+| **Runtime version** | `RuntimeInstallActions` only — install/confirm **version**; never a second “install addons” label |
+
+- First-time runtime install may still bundle currently selected plugins/extensions.
+- If version already on host: runtime button disabled; use **Install selected** above.
 - Go uninstall only removes binaries under `go/bin` / `/usr/local/ysk/**` (never system `/usr/bin`).
+- PHP uninstall: `POST …/php/extensions/uninstall` (never removes FPM/CLI/common).
 
 ## Panel TLS
 

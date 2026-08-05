@@ -8428,7 +8428,9 @@
     "pluginBatchUninstallConfirm": "Uninstall {{n}} selected tools?",
     "pluginBatchUninstalled": "Uninstalled {{n}} tool(s)",
     "pluginBatchLabel": "selected tools",
-    "usePluginsInstallBtn": "Runtime already on host: use “Install selected tools” above for PM2 etc. (no need to reinstall the runtime)."
+    "addonsInstallAbove": "Use “Install selected…” above for tools/extensions. This button only installs/confirms the runtime version.",
+    "phpExtInstallSelected": "Install selected extensions ({{n}})",
+    "phpExtInstallNote": "Select extensions then Install selected. First-time PHP install can use the runtime button below; if PHP is present, only use Install selected above."
   },
   "security": {
     "title": "Security & Approvals",

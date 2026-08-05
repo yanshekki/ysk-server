@@ -8428,7 +8428,9 @@
     "pluginBatchUninstallConfirm": "将卸载 {{n}} 个已选工具。",
     "pluginBatchUninstalled": "已卸载 {{n}} 个工具",
     "pluginBatchLabel": "选定工具",
-    "usePluginsInstallBtn": "运行时已在主机：请用上方「安装选定工具」安装 PM2 等配套（不必再装 runtime）。"
+    "addonsInstallAbove": "配套／扩展请用上方「安装选定…」；此按钮只负责装／确认 runtime 版本。",
+    "phpExtInstallSelected": "安装选定扩展 ({{n}})",
+    "phpExtInstallNote": "勾选后点「安装选定扩展」。首次装 PHP 可用下方主按钮一并装核心+扩展；已装 PHP 请只点上方选定扩展。"
   },
   "security": {
     "title": "安全与审批",

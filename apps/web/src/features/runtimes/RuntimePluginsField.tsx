@@ -351,7 +351,7 @@ export function RuntimePluginsField({
           <FormActions>
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               disabled={
                 disabled || busyUninstall || busyInstall || !selectedForInstall.length
               }
@@ -365,7 +365,7 @@ export function RuntimePluginsField({
             </Button>
             <Button
               variant="secondary"
-              size="sm"
+              size="md"
               disabled={disabled || busyUninstall || busyInstall || !recommendedAvailable.length}
               onClick={() => onChange([...recommendedAvailable])}
             >
@@ -373,7 +373,7 @@ export function RuntimePluginsField({
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="md"
               disabled={disabled || busyUninstall || busyInstall || !selectableIds.length}
               onClick={() => {
                 const required = requiredRows.map((r) => r.id);
@@ -384,7 +384,7 @@ export function RuntimePluginsField({
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="md"
               disabled={disabled || busyUninstall || busyInstall}
               onClick={() => onChange(requiredRows.map((r) => r.id))}
             >

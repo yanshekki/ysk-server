@@ -511,6 +511,41 @@ export function PhpRuntimePage() {
                 </Field>
                 <FormActions>
                   <Button
+                    variant="primary"
+                    size="md"
+                    disabled={
+                      busy ||
+                      extUninstallBusy ||
+                      extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
+                    }
+                    loading={busy}
+                    onClick={() =>
+                      void run(async () => {
+                        const optional = extSelected.filter((id) =>
+                          selectableExtIds.includes(id),
+                        );
+                        const required = extCatalog
+                          .filter((e) => e.required)
+                          .map((e) => e.id);
+                        const r = await systemApi.runtimeInstall({
+                          kind: 'php',
+                          version,
+                          install: true,
+                          extensions: [...new Set([...required, ...optional])],
+                        });
+                        await refresh();
+                        await loadExtensions(version);
+                        return r as OpsResultLike;
+                      }, t('runtime.phpExtInstallSelected', {
+                        n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
+                      }))
+                    }
+                  >
+                    {t('runtime.phpExtInstallSelected', {
+                      n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
+                    })}
+                  </Button>
+                  <Button
                     variant="secondary"
                     size="md"
                     disabled={busy || !extDefaults.length}
@@ -540,23 +575,23 @@ export function PhpRuntimePage() {
                     {t('runtime.phpExtCoreOnly')}
                   </Button>
                 </FormActions>
+                <FormHint>{t('runtime.phpExtInstallNote')}</FormHint>
                 <RuntimeInstallActions
                   installState={phpInstallState}
                   version={version}
                   busy={busy}
-                  hasAddonsSelected={
-                    extSelected.filter((id) => selectableExtIds.includes(id)).length > 0
-                  }
                   installLabel={t('runtime.installPhpVBtn', { version })}
                   onSelectNewer={setVersion}
                   extraHints={
-                    !phpInstallState.selectedInstalled &&
-                    phpInstallState.newerAvailable.length === 0 ? (
+                    phpInstallState.selectedInstalled ? (
+                      <FormHint>{t('runtime.addonsInstallAbove')}</FormHint>
+                    ) : phpInstallState.newerAvailable.length === 0 ? (
                       <FormHint>{t('runtime.phpExtHint')}</FormHint>
                     ) : null
                   }
                   onInstall={() =>
                     void run(async () => {
+                      // Full PHP stack: selected extensions or catalog defaults
                       const r = await systemApi.runtimeInstall({
                         kind: 'php',
                         version,
