@@ -30,10 +30,12 @@
     "about": "说明"
   },
   "currentRules": "当前规则",
+  "rulesSourceHint": "UFW 编号规则（ufw status numbered）",
   "colAction": "动作",
   "colTo": "目标",
   "colFrom": "来源",
-  "deleteShort": "删",
+  "deleteShort": "删除",
+  "denyBadge": "拒绝",
   "emptyRulesTitle": "无规则或无权读取",
   "emptyRulesInstalled": "UFW inactive 或需 root 读取",
   "emptyRulesNotInstalled": "安装 UFW 后再刷新",

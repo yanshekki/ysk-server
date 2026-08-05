@@ -349,7 +349,7 @@ export function FirewallPage() {
             <div className="def-panel-card">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('firewall.currentRules')}</h3>
-                <span className="muted u-text-sm">ufw status numbered</span>
+                <span className="muted u-text-sm">{t('firewall.rulesSourceHint')}</span>
               </div>
               <DataTable
                 filters={
@@ -406,12 +406,12 @@ export function FirewallPage() {
                   r.num ? (
                     <ActionBar align="end">
                       <Button
-                        variant="ghost"
+                        variant="danger"
                         size="sm"
                         loading={busy}
                         onClick={() => setDelRuleNum(r.num!)}
                       >
-                        {t('firewall.deleteShort')}
+                        {t('common.delete')}
                       </Button>
                     </ActionBar>
                   ) : null
@@ -554,9 +554,9 @@ export function FirewallPage() {
                   {status!.denyFromIps.map((ip) => (
                     <li key={ip}>
                       <code>{ip}</code>
-                      <span className="muted">DENY</span>
+                      <span className="muted">{t('firewall.denyBadge')}</span>
                       <Button
-                        variant="ghost"
+                        variant="danger"
                         size="sm"
                         loading={busy}
                         onClick={() =>
@@ -569,7 +569,7 @@ export function FirewallPage() {
                           }, t('firewall.removedDeny'))
                         }
                       >
-                        {t('firewall.remove')}
+                        {t('common.delete')}
                       </Button>
                     </li>
                   ))}

@@ -3191,10 +3191,12 @@
       "about": "說明"
     },
     "currentRules": "目前規則",
+    "rulesSourceHint": "UFW 編號規則（ufw status numbered）",
     "colAction": "動作",
     "colTo": "目標",
     "colFrom": "來源",
-    "deleteShort": "刪",
+    "deleteShort": "刪除",
+    "denyBadge": "拒絕",
     "emptyRulesTitle": "無規則或無權讀取",
     "emptyRulesInstalled": "UFW inactive 或需要管理員權限 讀取",
     "emptyRulesNotInstalled": "安裝 UFW 後再整理",

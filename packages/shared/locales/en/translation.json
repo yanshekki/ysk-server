@@ -3191,10 +3191,12 @@
       "about": "About"
     },
     "currentRules": "Current rules",
+    "rulesSourceHint": "UFW numbered rules (ufw status numbered)",
     "colAction": "Action",
     "colTo": "To",
     "colFrom": "From",
-    "deleteShort": "Del",
+    "deleteShort": "Delete",
+    "denyBadge": "DENY",
     "emptyRulesTitle": "No rules or no permission to read",
     "emptyRulesInstalled": "UFW inactive or needs root to read",
     "emptyRulesNotInstalled": "Install UFW then refresh",
