@@ -102,21 +102,29 @@ export async function handleSslRoutes(
             mailDomains: linkedMail,
           };
         });
-        // renew job probe
+        // renew job probe — systemd timer + panel cron
         const cronJobs = ctx.cron.list().filter(
           (j) =>
             j.command.includes('certbot') ||
             j.command.includes('letsencrypt') ||
             j.command.includes('ssl'),
         );
+        const { probeSslAutoRenewal } = await import('@ysk/core');
+        const renewal = await probeSslAutoRenewal({
+          host: ctx.host,
+          cronJobs,
+        });
         sendJson(res, 200, {
           items: bindings,
           renewJobs: cronJobs,
-          notes: [
-            cronJobs.length
-              ? tl('notes.auto.t0789', { v0: (cronJobs.length) })
-              : tl('notes.auto.n0962'),
-          ],
+          renewal,
+          notes: renewal.notes.length
+            ? renewal.notes
+            : [
+                cronJobs.length
+                  ? tl('notes.auto.t0789', { v0: cronJobs.length })
+                  : tl('notes.auto.n0962'),
+              ],
         });
         return true;
       }

@@ -185,12 +185,19 @@ export function upsertLetsEncryptRecord(input: {
   else if (input.run && !input.ok) apply_status = 'failed';
   else if (!input.run) apply_status = 'planned';
 
+  const live = resolveLetsEncryptLivePaths(domain);
+  const expires =
+    live.exists ? parseCertExpiryFromPath(live.fullchain) : existing?.expires_at;
   const row: StoredCertificate = {
     id: existing?.id ?? randomUUID(),
     domain,
     provider: 'letsencrypt',
-    fullchain_path: existing?.fullchain_path ?? lePaths.fullchain_path,
-    privkey_path: existing?.privkey_path ?? lePaths.privkey_path,
+    fullchain_path: live.exists
+      ? live.fullchain
+      : existing?.fullchain_path ?? lePaths.fullchain_path,
+    privkey_path: live.exists
+      ? live.privkey
+      : existing?.privkey_path ?? lePaths.privkey_path,
     apply_status,
     ok: input.ok,
     notes: input.notes,
@@ -199,6 +206,7 @@ export function upsertLetsEncryptRecord(input: {
     created_at: existing?.created_at ?? now,
     updated_at: now,
     actor: input.actor,
+    expires_at: expires ?? undefined,
   };
   return upsertCertificateRow(input.db, row);
 }
@@ -222,6 +230,188 @@ export function resolveManagedCertPaths(
     fullchain,
     privkey,
     exists: existsSync(fullchain) && existsSync(privkey),
+  };
+}
+
+/** Host path used by certbot --nginx / certonly (not under dataDir). */
+export function resolveLetsEncryptLivePaths(domain: string): {
+  fullchain: string;
+  privkey: string;
+  exists: boolean;
+} {
+  const d = domain.trim().toLowerCase().replace(/\.$/, '');
+  const fullchain = `/etc/letsencrypt/live/${d}/fullchain.pem`;
+  const privkey = `/etc/letsencrypt/live/${d}/privkey.pem`;
+  return {
+    fullchain,
+    privkey,
+    exists: existsSync(fullchain) && existsSync(privkey),
+  };
+}
+
+/**
+ * Prefer managed dataDir certs, then Let's Encrypt live/, then stored paths.
+ * Used so UI can show expiry for LE-issued certs outside dataDir.
+ */
+export function resolveBestCertPaths(
+  dataDir: string,
+  domain: string,
+  stored?: { fullchain_path?: string; privkey_path?: string },
+): {
+  fullchain?: string;
+  privkey?: string;
+  exists: boolean;
+  location: 'managed' | 'letsencrypt' | 'stored' | 'none';
+} {
+  const managed = resolveManagedCertPaths(dataDir, domain);
+  if (managed.exists) {
+    return {
+      fullchain: managed.fullchain,
+      privkey: managed.privkey,
+      exists: true,
+      location: 'managed',
+    };
+  }
+  const le = resolveLetsEncryptLivePaths(domain);
+  if (le.exists) {
+    return {
+      fullchain: le.fullchain,
+      privkey: le.privkey,
+      exists: true,
+      location: 'letsencrypt',
+    };
+  }
+  const fc = stored?.fullchain_path ? String(stored.fullchain_path) : '';
+  const pk = stored?.privkey_path ? String(stored.privkey_path) : '';
+  if (fc && pk && existsSync(fc) && existsSync(pk)) {
+    return { fullchain: fc, privkey: pk, exists: true, location: 'stored' };
+  }
+  return {
+    fullchain: fc || le.fullchain || managed.fullchain,
+    privkey: pk || le.privkey || managed.privkey,
+    exists: false,
+    location: 'none',
+  };
+}
+
+/** Detect certbot.timer unit files (sync — no systemctl). */
+export function probeCertbotTimerUnitFiles(): {
+  unitFound: boolean;
+  path?: string;
+  unitName?: string;
+} {
+  const candidates: Array<{ path: string; unit: string }> = [
+    { path: '/lib/systemd/system/certbot.timer', unit: 'certbot.timer' },
+    { path: '/usr/lib/systemd/system/certbot.timer', unit: 'certbot.timer' },
+    { path: '/etc/systemd/system/certbot.timer', unit: 'certbot.timer' },
+    {
+      path: '/lib/systemd/system/snap.certbot.renew.timer',
+      unit: 'snap.certbot.renew.timer',
+    },
+    {
+      path: '/etc/systemd/system/snap.certbot.renew.timer',
+      unit: 'snap.certbot.renew.timer',
+    },
+  ];
+  for (const c of candidates) {
+    if (existsSync(c.path)) {
+      return { unitFound: true, path: c.path, unitName: c.unit };
+    }
+  }
+  return { unitFound: false };
+}
+
+export type SslRenewalStatus = {
+  /** True when certbot.timer is enabled (or equivalent renew mechanism found active) */
+  autoRenew: boolean;
+  /** Human source: certbot.timer | snap.certbot.renew.timer | cron | none */
+  source: 'certbot.timer' | 'snap.certbot.renew.timer' | 'cron' | 'none';
+  unitFound: boolean;
+  enabled?: boolean;
+  active?: boolean;
+  unitName?: string;
+  cronJobCount: number;
+  notes: string[];
+};
+
+/**
+ * Probe auto-renew: systemd timer preferred, panel/system cron as secondary signal.
+ */
+export async function probeSslAutoRenewal(input: {
+  host?: { runCommand: (argv: string[], opts?: { timeoutMs?: number }) => Promise<{ exitCode: number; stdout?: string; stderr?: string }> };
+  cronJobs?: Array<{ command?: string }>;
+}): Promise<SslRenewalStatus> {
+  const files = probeCertbotTimerUnitFiles();
+  const cronJobCount = (input.cronJobs ?? []).filter((j) => {
+    const c = String(j.command ?? '');
+    return /certbot|letsencrypt|ssl.?renew/i.test(c);
+  }).length;
+
+  let enabled: boolean | undefined;
+  let active: boolean | undefined;
+  const unitName = files.unitName ?? 'certbot.timer';
+
+  if (input.host && files.unitFound && files.unitName) {
+    try {
+      const en = await input.host.runCommand(
+        ['systemctl', 'is-enabled', files.unitName],
+        { timeoutMs: 4_000 },
+      );
+      enabled = en.exitCode === 0 || /enabled/i.test(`${en.stdout || ''}`);
+    } catch {
+      enabled = undefined;
+    }
+    try {
+      const act = await input.host.runCommand(
+        ['systemctl', 'is-active', files.unitName],
+        { timeoutMs: 4_000 },
+      );
+      active = act.exitCode === 0 || /active/i.test(`${act.stdout || ''}`);
+    } catch {
+      active = undefined;
+    }
+  }
+
+  const notes: string[] = [];
+  let autoRenew = false;
+  let source: SslRenewalStatus['source'] = 'none';
+  const isSnap = Boolean(files.unitName?.includes('snap'));
+
+  if (files.unitFound) {
+    source = isSnap ? 'snap.certbot.renew.timer' : 'certbot.timer';
+    if (enabled === true) {
+      autoRenew = true;
+      notes.push(tl('ssl.renewTimerEnabled', { unit: unitName }));
+    } else if (enabled === false) {
+      autoRenew = false;
+      notes.push(tl('ssl.renewTimerDisabled', { unit: unitName }));
+    } else {
+      // Timer unit present but systemctl not queried / unknown
+      autoRenew = false;
+      notes.push(tl('ssl.renewTimerInstalledUnknown', { unit: unitName }));
+    }
+    if (active === true) {
+      notes.push(tl('ssl.renewTimerActive', { unit: unitName }));
+    }
+  } else if (cronJobCount > 0) {
+    autoRenew = true;
+    source = 'cron';
+    notes.push(tl('ssl.renewViaCron', { count: cronJobCount }));
+  } else {
+    autoRenew = false;
+    source = 'none';
+    notes.push(tl('ssl.renewNone'));
+  }
+
+  return {
+    autoRenew,
+    source,
+    unitFound: files.unitFound,
+    enabled,
+    active,
+    unitName: files.unitName,
+    cronJobCount,
+    notes,
   };
 }
 
@@ -259,29 +449,40 @@ export function listCertificatesView(db: YskDatabase, dataDir: string): Certific
   for (const raw of db.snapshot.certificates) {
     const domain = String(raw.domain ?? '').toLowerCase();
     if (!domain) continue;
-    const paths = resolveManagedCertPaths(dataDir, domain);
-    const fullchain = paths.exists
-      ? paths.fullchain
-      : raw.fullchain_path
-        ? String(raw.fullchain_path)
-        : undefined;
+    const best = resolveBestCertPaths(dataDir, domain, {
+      fullchain_path: raw.fullchain_path ? String(raw.fullchain_path) : undefined,
+      privkey_path: raw.privkey_path ? String(raw.privkey_path) : undefined,
+    });
+    const expiresFromDisk = best.exists && best.fullchain
+      ? parseCertExpiryFromPath(best.fullchain)
+      : null;
     const expires =
-      (raw.expires_at ? String(raw.expires_at) : null) ??
-      (paths.exists ? parseCertExpiryFromPath(paths.fullchain) : null);
+      expiresFromDisk ??
+      (raw.expires_at ? String(raw.expires_at) : null);
     const provider = (raw.provider === 'letsencrypt' ? 'letsencrypt' : 'upload') as
       | 'upload'
       | 'letsencrypt';
     // Honest status: never show "applied" without local files (unless LE issued on host paths)
     let status = String(raw.apply_status ?? 'planned').toLowerCase();
     if (status === 'applied' || status === 'issued_or_planned') {
-      status = paths.exists ? 'uploaded' : provider === 'letsencrypt' ? 'planned' : 'missing';
+      status = best.exists
+        ? provider === 'letsencrypt'
+          ? 'issued'
+          : 'uploaded'
+        : provider === 'letsencrypt'
+          ? 'planned'
+          : 'missing';
     }
-    if (paths.exists && (status === 'planned' || status === 'draft' || status === 'missing')) {
-      status = 'uploaded';
+    if (best.exists && (status === 'planned' || status === 'draft' || status === 'missing')) {
+      status = provider === 'letsencrypt' ? 'issued' : 'uploaded';
     }
-    if (!paths.exists && status === 'uploaded') status = 'missing';
-    if (!paths.exists && provider === 'letsencrypt' && status === 'issued') {
-      status = 'issued'; // may live under /etc/letsencrypt
+    if (best.exists && status === 'failed' && provider === 'letsencrypt') {
+      // Cert material exists on disk — treat as issued even if last attempt was marked failed
+      status = 'issued';
+    }
+    if (!best.exists && status === 'uploaded') status = 'missing';
+    if (!best.exists && provider === 'letsencrypt' && status === 'issued') {
+      status = 'issued'; // may exist but unreadable by panel user
     }
 
     byDomain.set(domain, {
@@ -289,13 +490,14 @@ export function listCertificatesView(db: YskDatabase, dataDir: string): Certific
       domain,
       provider,
       status,
-      files_exist: paths.exists,
-      fullchain_path: fullchain,
-      privkey_path: paths.exists ? paths.privkey : raw.privkey_path ? String(raw.privkey_path) : undefined,
+      files_exist: best.exists,
+      fullchain_path: best.fullchain,
+      privkey_path: best.privkey,
       expires_at: expires,
-      bytes: paths.exists
-        ? statSync(paths.fullchain).size + statSync(paths.privkey).size
-        : undefined,
+      bytes:
+        best.exists && best.fullchain && best.privkey
+          ? statSync(best.fullchain).size + statSync(best.privkey).size
+          : undefined,
       notes: Array.isArray(raw.notes) ? (raw.notes as string[]) : [],
       updated_at: raw.updated_at ? String(raw.updated_at) : undefined,
       created_at: raw.created_at ? String(raw.created_at) : undefined,

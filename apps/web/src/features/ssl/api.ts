@@ -18,6 +18,16 @@ export const sslApi = {
       >;
       renewJobs?: Array<Record<string, unknown>>;
       notes?: string[];
+      renewal?: {
+        autoRenew: boolean;
+        source: string;
+        unitFound: boolean;
+        enabled?: boolean;
+        active?: boolean;
+        unitName?: string;
+        cronJobCount: number;
+        notes: string[];
+      };
     }>('/api/v1/ssl/bindings'),
   upload: (body: { domain: string; fullchainPem: string; privkeyPem: string }) =>
     api.requestRaw<{ certificate: Record<string, unknown> }>('/api/v1/ssl/upload', {

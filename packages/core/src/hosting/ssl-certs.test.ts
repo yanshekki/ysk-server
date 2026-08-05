@@ -6,6 +6,9 @@ import { JsonStore } from '../db/store.js';
 import {
   uploadCertificate,
   resolveManagedCertPaths,
+  resolveBestCertPaths,
+  resolveLetsEncryptLivePaths,
+  probeCertbotTimerUnitFiles,
   validatePemBundle,
   listUploadedCertFiles,
   listCertificatesView,
@@ -152,6 +155,28 @@ describe('ssl certs real lifecycle', () => {
     expect(parseCertExpiryFromPem(SAMPLE_CERT)).toBeNull(); // sample is not valid x509
     expect(parseCertExpiryFromPath('/no/such/cert.pem')).toBeNull();
     expect(readCertSnippet('/missing.pem')).toBe('');
+  });
+
+  it('resolveBestCertPaths prefers managed then LE live paths', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-ssl-best-'));
+    try {
+      const domain = 'best.example.com';
+      const managedDir = join(dir, 'certs', domain);
+      mkdirSync(managedDir, { recursive: true });
+      writeFileSync(join(managedDir, 'fullchain.pem'), SAMPLE_CERT);
+      writeFileSync(join(managedDir, 'privkey.pem'), SAMPLE_KEY);
+      const best = resolveBestCertPaths(dir, domain);
+      expect(best.exists).toBe(true);
+      expect(best.location).toBe('managed');
+      expect(resolveLetsEncryptLivePaths('no-such-domain-xyz.example').exists).toBe(
+        false,
+      );
+      expect(probeCertbotTimerUnitFiles()).toMatchObject({
+        unitFound: expect.any(Boolean),
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('listCertificatesView status merge + disk-only + delete by id/disk-', () => {
