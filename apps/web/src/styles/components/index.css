@@ -37,6 +37,7 @@
 @import './ssh.css';
 @import './security-sessions.css';
 @import './totp-setup.css';
+@import './dns-zone.css';
 @import './table.css';
 @import './list-toolbar.css';
 @import './tabs.css';

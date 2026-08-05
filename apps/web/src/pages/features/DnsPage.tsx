@@ -580,255 +580,361 @@ export function DnsPage() {
 
         {tab === 'records' ? (
           <div className="tab-panel">
-            <Card>
-              <CardSection
-                title={
-                  selectedLive
-                    ? t('dns.recordsFor', { zone: String(selectedLive.zone) })
-                    : t('dns.recordsNeedSelect')
-                }
-              >
-                {selectedLive ? (
-                  <>
-                    <p className="muted u-text-sm">
-                      {t('dns.statusLabel')} <ResourceStatusBadge status={String(selectedLive.apply_status)} />
+            {selectedLive ? (
+              <div className="dns-zone">
+                {/* Zone hero — primary actions never float mid-page */}
+                <header className="dns-zone__hero">
+                  <div className="dns-zone__hero-main">
+                    <div className="dns-zone__hero-title-row">
+                      <h2 className="dns-zone__zone-name">{String(selectedLive.zone)}</h2>
+                      <ResourceStatusBadge status={String(selectedLive.apply_status)} />
+                    </div>
+                    <div className="dns-zone__meta">
+                      <span>
+                        {t('dns.statRecords')}: {records.total}
+                      </span>
                       {selectedLive.zonePath ? (
                         <>
-                          {' '}
-                          · <code className="inline">{String(selectedLive.zonePath)}</code>
+                          <span aria-hidden>·</span>
+                          <code className="inline" title={String(selectedLive.zonePath)}>
+                            {String(selectedLive.zonePath)}
+                          </code>
                         </>
                       ) : null}
-                    </p>
-                    <FormActions>
-                      <button
-                        type="button"
-                        className={buttonClassName({ variant: 'secondary', size: 'sm' })}
-                        onClick={() => {
-                          setEditRec(null);
-                          setRtype('A');
-                          setRname('@');
-                          setRvalue(String(selectedLive.serverIp ?? ''));
-                          setRttl(String(selectedLive.ttl ?? 300));
-                          setRecOpen(true);
-                        }}
-                      >
-                        {t('dns.addRecord')}
-                      </button>
-                      <button
-                        type="button"
-                        className={buttonClassName({ variant: 'primary', size: 'sm' })}
-                        disabled={zones.busy}
-                        onClick={bindCall1(zones.apply, selectedLive.id)}
-                      >
-                        {t('dns.writeZoneFile')}
-                      </button>
-                      <Link
-                        to={`/ssl?domain=${encodeURIComponent(String(selectedLive.zone))}&action=le`}
-                        className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-                        title={t('dns.requestLeTitle', { zone: String(selectedLive.zone) })}
-                      >
-                        {t('dns.requestZoneSsl')}
-                      </Link>
-                    </FormActions>
-
-                    <div className="u-mt-4">
-                      <h3 className="section-block__title">{t('dns.soaTitle')}</h3>
-                      <p className="section-block__desc">
-                        {t('dns.soaDesc')}
-                      </p>
-                      <FormLayout columns={2}>
-                        <Field
-                          label={t('dns.soaNsLabel')}
-                          htmlFor="edit-soa-ns"
-                          flush
-                          hint={t('dns.soaNsHint')}
-                        >
-                          <input
-                            id="edit-soa-ns"
-                            value={editSoaNs}
-                            onChange={bindInput(setEditSoaNs)}
-                            placeholder={`ns1.${String(selectedLive.zone)}.`}
-                            spellCheck={false}
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                        <Field
-                          label={t('dns.soaNs2Label')}
-                          htmlFor="edit-soa-ns2"
-                          flush
-                          hint={t('dns.soaNs2Hint')}
-                        >
-                          <input
-                            id="edit-soa-ns2"
-                            value={editSoaNs2}
-                            onChange={bindInput(setEditSoaNs2)}
-                            placeholder={`ns2.${String(selectedLive.zone)}.`}
-                            spellCheck={false}
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                        <Field
-                          label={t('dns.soaHostmaster')}
-                          htmlFor="edit-soa-hm"
-                          flush
-                          hint={t('dns.soaHostmasterHint')}
-                        >
-                          <input
-                            id="edit-soa-hm"
-                            value={editSoaHostmaster}
-                            onChange={bindInput(setEditSoaHostmaster)}
-                            placeholder={`hostmaster.${String(selectedLive.zone)}.`}
-                            spellCheck={false}
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                        <Field label={t('dns.defaultTtl')} htmlFor="edit-soa-ttl" flush>
-                          <PresetChips
-                            options={[
-                              { value: '60', label: t('dns.min1') },
-                              { value: '300', label: t('dns.min5') },
-                              { value: '600', label: t('dns.min10') },
-                              { value: '3600', label: t('dns.hour1') },
-                              { value: '86400', label: t('dns.day1') },
-                            ]}
-                            value={editSoaTtl}
-                            onChange={setEditSoaTtl}
-                            allowCustom
-                            customPlaceholder={t('dns.customSeconds')}
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                        <Field label={t('dns.soaRefresh')} htmlFor="edit-soa-ref" flush hint={t('dns.soaTimingHint')}>
-                          <input
-                            id="edit-soa-ref"
-                            value={editSoaRefresh}
-                            onChange={bindInput(setEditSoaRefresh)}
-                            inputMode="numeric"
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                        <Field label={t('dns.soaRetry')} htmlFor="edit-soa-ret" flush>
-                          <input
-                            id="edit-soa-ret"
-                            value={editSoaRetry}
-                            onChange={bindInput(setEditSoaRetry)}
-                            inputMode="numeric"
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                        <Field label={t('dns.soaExpire')} htmlFor="edit-soa-exp" flush>
-                          <input
-                            id="edit-soa-exp"
-                            value={editSoaExpire}
-                            onChange={bindInput(setEditSoaExpire)}
-                            inputMode="numeric"
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                        <Field label={t('dns.soaMinimum')} htmlFor="edit-soa-min" flush>
-                          <input
-                            id="edit-soa-min"
-                            value={editSoaMinimum}
-                            onChange={bindInput(setEditSoaMinimum)}
-                            inputMode="numeric"
-                            disabled={soaBusy || zones.busy}
-                          />
-                        </Field>
-                      </FormLayout>
-                      <FormActions align="end">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          loading={soaBusy}
-                          disabled={zones.busy}
-                          onClick={() => {
-                            void (async () => {
-                              setSoaBusy(true);
-                              setSoaMsg(null);
-                              try {
-                                await zones.update(selectedLive.id, buildSoaPatch());
-                                setSoaMsg(t('dns.soaSaved'));
-                              } catch (e) {
-                                setSoaMsg(
-                                  e instanceof Error ? e.message : t('dns.soaSaveFailed'),
-                                );
-                              } finally {
-                                setSoaBusy(false);
-                              }
-                            })();
-                          }}
-                        >
-                          {t('dns.saveSoaSettings')}
-                        </Button>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          loading={soaBusy || zones.busy}
-                          onClick={() => {
-                            void (async () => {
-                              setSoaBusy(true);
-                              setSoaMsg(null);
-                              try {
-                                await zones.update(selectedLive.id, buildSoaPatch());
-                                await zones.apply(selectedLive.id);
-                                setSoaMsg(t('dns.soaSavedAndWritten'));
-                              } catch (e) {
-                                setSoaMsg(
-                                  e instanceof Error ? e.message : t('dns.soaWriteFailed'),
-                                );
-                              } finally {
-                                setSoaBusy(false);
-                              }
-                            })();
-                          }}
-                        >
-                          {t('dns.saveSoaAndWriteBtn')}
-                        </Button>
-                      </FormActions>
-                      {soaMsg ? (
-                        <Alert
-                          variant={
-                            /失敗|Failed|失败/.test(soaMsg) ? 'error' : 'ok'
-                          }
-                        >
-                          {soaMsg}
-                        </Alert>
-                      ) : null}
                     </div>
+                  </div>
+                  <div className="dns-zone__hero-actions">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={() => {
+                        setEditRec(null);
+                        setRtype('A');
+                        setRname('@');
+                        setRvalue(String(selectedLive.serverIp ?? ''));
+                        setRttl(String(selectedLive.ttl ?? 300));
+                        setRecOpen(true);
+                      }}
+                    >
+                      {t('dns.addRecord')}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      loading={zones.busy}
+                      onClick={bindCall1(zones.apply, selectedLive.id)}
+                    >
+                      {t('dns.writeZoneFile')}
+                    </Button>
+                    <Link
+                      to={`/ssl?domain=${encodeURIComponent(String(selectedLive.zone))}&action=le`}
+                      className={buttonClassName({ variant: 'ghost', size: 'md' })}
+                      title={t('dns.requestLeTitle', { zone: String(selectedLive.zone) })}
+                    >
+                      {t('dns.requestZoneSsl')}
+                    </Link>
+                  </div>
+                </header>
 
+                {/* SOA card */}
+                <section className="dns-zone__card" aria-labelledby="dns-soa-title">
+                  <div className="dns-zone__card-head">
+                    <div className="dns-zone__card-head-text">
+                      <h3 id="dns-soa-title" className="dns-zone__card-title">
+                        {t('dns.soaTitle')}
+                      </h3>
+                      <p className="dns-zone__card-desc">{t('dns.soaDesc')}</p>
+                    </div>
+                  </div>
+                  {soaMsg ? (
+                    <div className="dns-zone__flash">
+                      <Alert
+                        variant={/失敗|Failed|失败/.test(soaMsg) ? 'error' : 'ok'}
+                      >
+                        {soaMsg}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="u-ml-2"
+                          onClick={() => setSoaMsg(null)}
+                        >
+                          {t('common.close')}
+                        </Button>
+                      </Alert>
+                    </div>
+                  ) : null}
+                  <div className="dns-zone__card-body">
+                    <div className="dns-zone__soa-grid">
+                      <div className="dns-zone__soa-block">
+                        <p className="dns-zone__soa-block-title">{t('dns.soaBlockNs')}</p>
+                        <div className="dns-zone__soa-fields">
+                          <Field
+                            label={t('dns.soaNsLabel')}
+                            htmlFor="edit-soa-ns"
+                            flush
+                            hint={t('dns.soaNsHint')}
+                          >
+                            <input
+                              id="edit-soa-ns"
+                              value={editSoaNs}
+                              onChange={bindInput(setEditSoaNs)}
+                              placeholder={`ns1.${String(selectedLive.zone)}.`}
+                              spellCheck={false}
+                              disabled={soaBusy || zones.busy}
+                              autoComplete="off"
+                            />
+                          </Field>
+                          <Field
+                            label={t('dns.soaNs2Label')}
+                            htmlFor="edit-soa-ns2"
+                            flush
+                            hint={t('dns.soaNs2Hint')}
+                          >
+                            <input
+                              id="edit-soa-ns2"
+                              value={editSoaNs2}
+                              onChange={bindInput(setEditSoaNs2)}
+                              placeholder={`ns2.${String(selectedLive.zone)}.`}
+                              spellCheck={false}
+                              disabled={soaBusy || zones.busy}
+                              autoComplete="off"
+                            />
+                          </Field>
+                          <Field
+                            label={t('dns.soaHostmaster')}
+                            htmlFor="edit-soa-hm"
+                            flush
+                            hint={t('dns.soaHostmasterHint')}
+                          >
+                            <input
+                              id="edit-soa-hm"
+                              value={editSoaHostmaster}
+                              onChange={bindInput(setEditSoaHostmaster)}
+                              placeholder={`hostmaster.${String(selectedLive.zone)}.`}
+                              spellCheck={false}
+                              disabled={soaBusy || zones.busy}
+                              autoComplete="off"
+                            />
+                          </Field>
+                        </div>
+                      </div>
+                      <div className="dns-zone__soa-block">
+                        <p className="dns-zone__soa-block-title">{t('dns.soaBlockTiming')}</p>
+                        <div className="dns-zone__soa-fields">
+                          <Field label={t('dns.defaultTtl')} htmlFor="edit-soa-ttl" flush>
+                            <PresetChips
+                              options={[
+                                { value: '60', label: t('dns.min1') },
+                                { value: '300', label: t('dns.min5') },
+                                { value: '600', label: t('dns.min10') },
+                                { value: '3600', label: t('dns.hour1') },
+                                { value: '86400', label: t('dns.day1') },
+                              ]}
+                              value={editSoaTtl}
+                              onChange={setEditSoaTtl}
+                              allowCustom
+                              customPlaceholder={t('dns.customSeconds')}
+                              disabled={soaBusy || zones.busy}
+                            />
+                          </Field>
+                          <div className="dns-zone__soa-timing-row">
+                            <Field
+                              label={t('dns.soaRefresh')}
+                              htmlFor="edit-soa-ref"
+                              flush
+                              hint={t('dns.soaTimingHint')}
+                            >
+                              <input
+                                id="edit-soa-ref"
+                                value={editSoaRefresh}
+                                onChange={bindInput(setEditSoaRefresh)}
+                                inputMode="numeric"
+                                disabled={soaBusy || zones.busy}
+                                autoComplete="off"
+                              />
+                            </Field>
+                            <Field label={t('dns.soaRetry')} htmlFor="edit-soa-ret" flush>
+                              <input
+                                id="edit-soa-ret"
+                                value={editSoaRetry}
+                                onChange={bindInput(setEditSoaRetry)}
+                                inputMode="numeric"
+                                disabled={soaBusy || zones.busy}
+                                autoComplete="off"
+                              />
+                            </Field>
+                          </div>
+                          <div className="dns-zone__soa-timing-row">
+                            <Field label={t('dns.soaExpire')} htmlFor="edit-soa-exp" flush>
+                              <input
+                                id="edit-soa-exp"
+                                value={editSoaExpire}
+                                onChange={bindInput(setEditSoaExpire)}
+                                inputMode="numeric"
+                                disabled={soaBusy || zones.busy}
+                                autoComplete="off"
+                              />
+                            </Field>
+                            <Field label={t('dns.soaMinimum')} htmlFor="edit-soa-min" flush>
+                              <input
+                                id="edit-soa-min"
+                                value={editSoaMinimum}
+                                onChange={bindInput(setEditSoaMinimum)}
+                                inputMode="numeric"
+                                disabled={soaBusy || zones.busy}
+                                autoComplete="off"
+                              />
+                            </Field>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <footer className="dns-zone__card-footer">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={soaBusy}
+                      disabled={zones.busy}
+                      onClick={() => {
+                        void (async () => {
+                          setSoaBusy(true);
+                          setSoaMsg(null);
+                          try {
+                            await zones.update(selectedLive.id, buildSoaPatch());
+                            setSoaMsg(t('dns.soaSaved'));
+                          } catch (e) {
+                            setSoaMsg(
+                              e instanceof Error ? e.message : t('dns.soaSaveFailed'),
+                            );
+                          } finally {
+                            setSoaBusy(false);
+                          }
+                        })();
+                      }}
+                    >
+                      {t('dns.saveSoaSettings')}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      loading={soaBusy || zones.busy}
+                      onClick={() => {
+                        void (async () => {
+                          setSoaBusy(true);
+                          setSoaMsg(null);
+                          try {
+                            await zones.update(selectedLive.id, buildSoaPatch());
+                            await zones.apply(selectedLive.id);
+                            setSoaMsg(t('dns.soaSavedAndWritten'));
+                          } catch (e) {
+                            setSoaMsg(
+                              e instanceof Error ? e.message : t('dns.soaWriteFailed'),
+                            );
+                          } finally {
+                            setSoaBusy(false);
+                          }
+                        })();
+                      }}
+                    >
+                      {t('dns.saveSoaAndWriteBtn')}
+                    </Button>
+                  </footer>
+                </section>
+
+                {/* Records card */}
+                <section className="dns-zone__card" aria-labelledby="dns-rec-title">
+                  <div className="dns-zone__card-head">
+                    <div className="dns-zone__card-head-text">
+                      <h3 id="dns-rec-title" className="dns-zone__card-title">
+                        {t('dns.recordsListTitle', { count: records.total })}
+                      </h3>
+                      <p className="dns-zone__card-desc">{t('dns.recordsListDesc')}</p>
+                    </div>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        setEditRec(null);
+                        setRtype('A');
+                        setRname('@');
+                        setRvalue(String(selectedLive.serverIp ?? ''));
+                        setRttl(String(selectedLive.ttl ?? 300));
+                        setRecOpen(true);
+                      }}
+                    >
+                      {t('dns.addRecord')}
+                    </Button>
+                  </div>
+                  <div className="dns-zone__card-body">
+                    <div className="dns-zone__records-toolbar">
+                      <ServerListFilters
+                        q={records.q}
+                        setQ={records.setQ}
+                        searching={records.searching}
+                        loading={records.listLoading}
+                        total={records.total}
+                        shown={records.items.length}
+                        activeFilterCount={records.activeFilterCount}
+                        clear={records.clearSearch}
+                      />
+                    </div>
                     <DataTable
-                      filters={
-                        <ServerListFilters
-                          q={records.q}
-                          setQ={records.setQ}
-                          searching={records.searching}
-                          loading={records.listLoading}
-                          total={records.total}
-                          shown={records.items.length}
-                          activeFilterCount={records.activeFilterCount}
-                          clear={records.clearSearch}
-                        />
-                      }
                       columns={[
-                        { key: 'type', header: t('dns.colType'), render: (r) => String(r.type) },
-                        { key: 'name', header: t('dns.colName'), render: (r) => String(r.name) },
+                        {
+                          key: 'type',
+                          header: t('dns.colType'),
+                          nowrap: true,
+                          render: (r) => {
+                            const ty = String(r.type ?? 'A').toUpperCase();
+                            const mod =
+                              ty === 'MX'
+                                ? 'dns-zone__type-badge--mx'
+                                : ty === 'TXT'
+                                  ? 'dns-zone__type-badge--txt'
+                                  : ty === 'CNAME' || ty === 'NS'
+                                    ? 'dns-zone__type-badge--cname'
+                                    : ty === 'AAAA'
+                                      ? 'dns-zone__type-badge--aaaa'
+                                      : '';
+                            return (
+                              <span className={`dns-zone__type-badge ${mod}`.trim()}>
+                                {ty}
+                              </span>
+                            );
+                          },
+                        },
+                        {
+                          key: 'name',
+                          header: t('dns.colName'),
+                          render: (r) => (
+                            <span className="dns-zone__rec-name">{String(r.name)}</span>
+                          ),
+                        },
                         {
                           key: 'value',
                           header: t('dns.colValue'),
                           render: (r) => (
-                            <code className="inline u-break-all">{String(r.value)}</code>
+                            <span className="dns-zone__rec-value">{String(r.value)}</span>
                           ),
                         },
-                        { key: 'ttl', header: 'TTL', render: (r) => String(r.ttl ?? 300) },
+                        {
+                          key: 'ttl',
+                          header: 'TTL',
+                          nowrap: true,
+                          render: (r) => (
+                            <span className="dns-zone__rec-ttl">{String(r.ttl ?? 300)}</span>
+                          ),
+                        },
                       ]}
                       rows={records.items}
-                  rowKey={(r) => String((r as { id?: string }).id ?? '')}
+                      rowKey={(r) => String((r as { id?: string }).id ?? '')}
                       empty={<EmptyState title={t('dns.emptyRecords')} />}
                       rowActions={(r) => (
-                        <ActionBar>
-                          <button
-                            type="button"
-                            className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                        <div className="dns-zone__row-actions">
+                          <Button
+                            variant="secondary"
+                            size="sm"
                             onClick={() => {
                               setEditRec(r);
                               setRtype(String(r.type ?? 'A'));
@@ -839,26 +945,28 @@ export function DnsPage() {
                             }}
                           >
                             {t('common.edit')}
-                          </button>
-                          <button
-                            type="button"
-                            className={buttonClassName({ variant: 'danger', size: 'sm' })}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
                             onClick={bindSet(setDelRec, r.id)}
                           >
                             {t('common.delete')}
-                          </button>
-                        </ActionBar>
+                          </Button>
+                        </div>
                       )}
                     />
-                  </>
-                ) : (
-                  <EmptyState
-                    title={t('dns.noZoneSelectedTitle')}
-                    description={t('dns.noZoneSelectedDesc')}
-                  />
-                )}
-              </CardSection>
-            </Card>
+                  </div>
+                </section>
+              </div>
+            ) : (
+              <div className="dns-zone__empty-select">
+                <EmptyState
+                  title={t('dns.noZoneSelectedTitle')}
+                  description={t('dns.noZoneSelectedDesc')}
+                />
+              </div>
+            )}
           </div>
         ) : null}
 
