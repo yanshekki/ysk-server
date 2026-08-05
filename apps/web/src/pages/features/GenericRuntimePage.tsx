@@ -457,17 +457,22 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   installState={installState}
                   version={version}
                   busy={busy}
-                  hasAddonsSelected={plugins.length > 0}
+                  // Companion tools have their own「安裝選定工具」CTA (plugins/install).
+                  // Do not surface a second「安裝選定插件」button when runtime already present.
+                  hasAddonsSelected={false}
                   installLabel={t(meta.installLabelKey, { v: version })}
                   onSelectNewer={setVersion}
                   extraHints={
                     !installState.selectedInstalled &&
                     installState.newerAvailable.length === 0 ? (
                       <FormHint>{t('runtime.installScriptNote')}</FormHint>
+                    ) : installState.selectedInstalled && plugins.length > 0 ? (
+                      <FormHint>{t('runtime.usePluginsInstallBtn')}</FormHint>
                     ) : null
                   }
                   onInstall={() =>
                     void run(async () => {
+                      // Fresh runtime install may still bundle selected plugins
                       const r = await systemApi.runtimeInstall({
                         kind,
                         version,
