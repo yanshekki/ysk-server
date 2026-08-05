@@ -998,7 +998,7 @@ export function SystemPage() {
                 {snapshot ? (
                   <div className="sys-preview">
                     <div className="sys-preview__meta">
-                      {t('system.snapshotMeta', { at: new Date(snapshot.exportedAt).toLocaleString(), users: snapshot.users, packages: snapshot.packages })}
+                      {t('system.snapshotMeta', { at: new Date(snapshot.exportedAt).toLocaleString(), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
                     </div>
                     <LogViewer
                       text={JSON.stringify(snapshot, null, 2)}
@@ -1127,7 +1127,7 @@ export function SystemPage() {
                       })
                     }
                   >
-                    Dry-run
+                    {t('system.dryRun')}
                   </Button>
                   <Button
                     variant="primary"
@@ -1229,7 +1229,12 @@ export function SystemPage() {
                           ]
                         : []),
                       ...(opsResult.dryRun
-                        ? [{ label: t('system.dryRunFlag'), value: 'true' }]
+                        ? [
+                            {
+                              label: t('system.dryRunFlag'),
+                              value: t('common.yes'),
+                            },
+                          ]
                         : []),
                     ]
                   : []
@@ -1246,7 +1251,7 @@ export function SystemPage() {
         onClose={() => !busy && setRebuildSyncConfirm(false)}
         title={t('system.syncConfirmTitle')}
         description={t('system.syncConfirmDesc')}
-        confirmLabel="{t('system.syncReload')}"
+        confirmLabel={t('system.syncReload')}
         cancelLabel={t('common.cancel')}
         danger
         busy={busy}
