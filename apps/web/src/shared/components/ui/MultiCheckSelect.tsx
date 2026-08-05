@@ -124,6 +124,8 @@ export function MultiCheckSelect({
       )}
 
       <input
+        id={`${id}-search`}
+        name={`${id}-search`}
         type="search"
         className="mcs__search"
         value={q}
@@ -131,6 +133,7 @@ export function MultiCheckSelect({
         placeholder={resolvedSearch}
         onChange={(e) => setQ(e.target.value)}
         aria-label={resolvedSearch}
+        autoComplete="off"
       />
 
       <div className="mcs__list" role="group" aria-label={t('multiCheck.optionsAria')}>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { canSeeFeature } from '@ysk/shared';
@@ -40,6 +40,7 @@ export function AppShell() {
   const { capabilities } = useCapabilities();
   const navigate = useNavigate();
   const location = useLocation();
+  const globalSearchId = useId();
   const [open, setOpen] = useState(false);
   const [searchQ, setSearchQ] = useState('');
   const [searchHits, setSearchHits] = useState<

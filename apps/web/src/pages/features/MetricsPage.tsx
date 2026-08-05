@@ -878,13 +878,16 @@ export function MetricsPage() {
                 />
 
                 <div className="met-live-bar met-live-bar--ops">
-                  <label className="met-search">
+                  <label className="met-search" htmlFor="metrics-proc-search">
                     <input
+                      id="metrics-proc-search"
+                      name="metrics-proc-search"
                       type="search"
                       placeholder={t('metrics.procSearchPh')}
                       value={search}
                       onChange={bindInput(setSearch)}
                       aria-label={t('metrics.procSearchAria')}
+                      autoComplete="off"
                     />
                   </label>
                   <div className="met-chips">

@@ -3,6 +3,7 @@
  * Use inside DataTable.filters / ListPanel.filters only.
  */
 import type { ReactNode } from 'react';
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './Button';
 import { bindCall1, bindToggleValue } from '../../../pages/bind-handlers';
@@ -74,6 +75,7 @@ export function ListToolbar({
   className,
 }: ListToolbarProps) {
   const { t } = useTranslation();
+  const searchId = useId();
   const ph = searchPlaceholder ?? t('listToolbar.searchPlaceholder');
   const aria = searchAriaLabel ?? t('listToolbar.searchAria');
   const hasSearch = search.trim().length > 0;
@@ -92,6 +94,8 @@ export function ListToolbar({
             ⌕
           </span>
           <input
+            id={searchId}
+            name="list-search"
             type="search"
             className="list-toolbar__search-input"
             value={search}

@@ -940,12 +940,15 @@ export function LogsPage() {
                   <span className="muted u-text-sm">{railFiltered.length}</span>
                 </div>
                 <input
+                  id="logs-source-search"
+                  name="logs-source-search"
                   className="lc-rail__search"
                   type="search"
                   placeholder={t('logs.filterPlaceholder')}
                   value={railFilter}
                   onChange={bindInput(setRailFilter)}
                   aria-label={t('logs.filterSources')}
+                  autoComplete="off"
                 />
                 <div className="lc-rail__body">
                   {railGroups.length === 0 ? (
