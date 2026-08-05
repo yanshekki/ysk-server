@@ -97,6 +97,7 @@ export function SslPage() {
     blockMessage,
     ok,
     busy,
+    lastLe,
     upload,
     requestCertificate,
     remove,
@@ -107,6 +108,19 @@ export function SslPage() {
     debounceMs: 300,
   });
   const items = certList.items;
+  const refreshTable = certList.refresh;
+
+  const refreshBindings = () => {
+    void import('../../features/ssl/api').then(({ sslApi }) =>
+      sslApi
+        .bindings()
+        .then((r) => {
+          setBindings(r.items ?? []);
+          setRenewNotes(r.notes ?? []);
+        })
+        .catch(() => undefined),
+    );
+  };
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [leOpen, setLeOpen] = useState(false);
@@ -139,33 +153,48 @@ export function SslPage() {
   }, []);
 
   useEffect(() => {
-    void import('../../features/ssl/api').then(({ sslApi }) =>
-      sslApi
-        .bindings()
-        .then((r) => {
-          setBindings(r.items ?? []);
-          setRenewNotes(r.notes ?? []);
-        })
-        .catch(() => undefined),
-    );
+    refreshBindings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length]);
 
   async function onUpload(e: FormEvent) {
     e.preventDefault();
-    await upload(domain, fullchain, privkey);
-    setUploadOpen(false);
-    setDomain('');
-    setFullchain('');
-    setPrivkey('');
+    try {
+      await upload(domain, fullchain, privkey);
+      setUploadOpen(false);
+      setDomain('');
+      setFullchain('');
+      setPrivkey('');
+    } finally {
+      await refreshTable().catch(() => undefined);
+      refreshBindings();
+    }
   }
 
   async function onLe(e: FormEvent) {
     e.preventDefault();
     const d = domain.trim();
-    await requestCertificate(d, email.trim() || defaultLeEmail(d));
-    setLeOpen(false);
-    setDomain('');
-    setEmail('');
+    const em = email.trim() || defaultLeEmail(d);
+    try {
+      const r = await requestCertificate(d, em);
+      // Close dialog so user sees result + retry on the page (success or explained fail)
+      setLeOpen(false);
+      if (r?.ok) {
+        setDomain('');
+        setEmail('');
+      }
+    } catch {
+      setLeOpen(false);
+    } finally {
+      await refreshTable().catch(() => undefined);
+      refreshBindings();
+    }
+  }
+
+  async function onRetryLe() {
+    await retryLast();
+    await refreshTable().catch(() => undefined);
+    refreshBindings();
   }
 
   const failedCount = countFailedCerts(items);
@@ -218,14 +247,25 @@ export function SslPage() {
                 {notes[1]}
               </span>
             ) : null}
-            <span className="u-block u-mt-2">
+            <ActionBar className="u-mt-3">
+              {lastLe || ok === false || blocked ? (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  disabled={!lastLe}
+                  onClick={() => void onRetryLe()}
+                >
+                  {t('ssl.retryRequest')}
+                </Button>
+              ) : null}
               <Link
                 to="/logs?tab=explore&source=file:letsencrypt"
                 className={buttonClassName({ variant: 'ghost', size: 'sm' })}
               >
                 {t('ssl.openLetsEncryptLog')}
               </Link>
-            </span>
+            </ActionBar>
           </Alert>
         ) : null}
 
@@ -250,7 +290,11 @@ export function SslPage() {
                   }
                 : null
           }
-          onRetry={blocked || ok === false ? () => void retryLast() : undefined}
+          onRetry={
+            lastLe && (blocked || ok === false || Boolean(error))
+              ? () => void onRetryLe()
+              : undefined
+          }
           busy={busy}
         />
 
@@ -531,7 +575,14 @@ export function SslPage() {
           open={Boolean(del)}
           onClose={bindSet(setDel, null)}
           onConfirm={() => {
-            if (del) void remove(del.domain || del.id).then(() => setDel(null));
+            if (!del) return;
+            const key = del.domain || del.id;
+            void remove(key)
+              .then(() => setDel(null))
+              .finally(() => {
+                void refreshTable().catch(() => undefined);
+                refreshBindings();
+              });
           }}
           title={t('ssl.deleteTitle')}
           description={t('ssl.deleteDesc', { domain: del?.domain ?? '' })}

@@ -40,6 +40,7 @@
   "leFailRawTail": "技術詳情（摘要）：{{snippet}}",
   "requestFailedWhy": "點解唔得",
   "requestFailedNext": "下一步",
+  "retryRequest": "重試申請",
   "bindingsTitle": "綁定與續期",
   "expiresAt": "· 到期 {{date}}",
   "projectsAt": "· 專案: {{names}}",

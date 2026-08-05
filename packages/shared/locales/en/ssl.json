@@ -40,6 +40,7 @@
   "leFailRawTail": "Technical detail (excerpt): {{snippet}}",
   "requestFailedWhy": "Why it failed",
   "requestFailedNext": "Next steps",
+  "retryRequest": "Retry request",
   "bindingsTitle": "Bindings & renewal",
   "expiresAt": " · Expires {{date}}",
   "projectsAt": " · Projects: {{names}}",

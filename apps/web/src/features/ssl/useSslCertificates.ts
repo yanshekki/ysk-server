@@ -171,6 +171,8 @@ export function useSslCertificates() {
     blockMessage,
     ok,
     busy,
+    /** Last LE domain/email — enables Retry when set */
+    lastLe,
     refresh,
     upload,
     requestCertificate,
