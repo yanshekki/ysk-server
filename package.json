@@ -17,6 +17,8 @@
     "dev:server": "pnpm --filter @ysk/server dev",
     "dev:web": "pnpm --filter @ysk/web dev",
     "typecheck": "pnpm -r --if-present run typecheck",
+    "typecheck:web": "pnpm --filter @ysk/shared build && pnpm --filter @ysk/core build && pnpm --filter @ysk/web exec tsc -p tsconfig.json --noEmit",
+    "deploy:verify": "pnpm i18n:rebuild && pnpm typecheck:web && pnpm --filter @ysk/core test && pnpm gates",
     "honesty:lint": "pnpm --filter @ysk/server honesty:lint",
     "primitives:check": "pnpm --filter @ysk/web primitives:check",
     "chrome:check": "pnpm --filter @ysk/web chrome:check",

@@ -1,7 +1,7 @@
 # P0 polish list（對標缺口 + 誠實度收尾）
 
 **用途：** 產品定義 Admin 控制面已齊（見 `product-remaining-plan`），呢份係 **parity / 誠實 / UX polish**，唔係「功能全缺」。  
-**更新：** 2026-08-04（SQL switch 收尾後）
+**更新：** 2026-08-05（部署 typecheck、SQL E2E 清單、runtime arch、i18n residual）
 
 圖例：`open` = 未收尾 · `partial` = 有但未滿 · `done` = 可當 P0 過。
 
@@ -16,7 +16,7 @@
 | S3 | Nginx edge + Apache backend 8080 | **done** | install rebind |
 | S4 | MySQL XOR MariaDB switch + migrate | **done** | dialog + dump/import |
 | S5 | unit `activating` 假失敗 | **done** | `waitUnitActive` |
-| S6 | 真機 E2E switch（有數據） | **open** | 運維驗收，非碼洞 |
+| S6 | 真機 E2E switch（有數據） | **partial** | 清單：`docs/product/sql-switch-e2e-checklist.md`；待運維跑通 |
 | S7 | Cron UI vs 主機 crontab | **partial** | 只顯示控制面 `cron_jobs`；可選只讀 import 全機 crontab |
 | S8 | 本機 Apache 仍佔 :80 | **ops** | 環境：rebind/stop apache 後起 nginx |
 

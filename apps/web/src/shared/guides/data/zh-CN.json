@@ -2042,5 +2042,41 @@
         "to": "/services"
       }
     ]
+  },
+  "java": {
+    "id": "java",
+    "title": "Java",
+    "summary": "管理主機 OpenJDK 版本與安裝。",
+    "keywords": [
+      "Java",
+      "java"
+    ],
+    "sections": [],
+    "tips": [],
+    "cautions": []
+  },
+  "kotlin": {
+    "id": "kotlin",
+    "title": "Kotlin",
+    "summary": "管理 Kotlin 編譯器（需 JDK）。",
+    "keywords": [
+      "Kotlin",
+      "kotlin"
+    ],
+    "sections": [],
+    "tips": [],
+    "cautions": []
+  },
+  "bun": {
+    "id": "bun",
+    "title": "Bun",
+    "summary": "管理 Bun 執行環境安裝與更新。",
+    "keywords": [
+      "Bun",
+      "bun"
+    ],
+    "sections": [],
+    "tips": [],
+    "cautions": []
   }
 }

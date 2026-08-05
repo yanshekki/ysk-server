@@ -625,21 +625,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         ) : null}
       
         {tab === 'about' ? (
-          <PageGuide
-            guideId={
-              kind === 'php'
-                ? 'php'
-                : kind === 'python'
-                  ? 'python'
-                  : kind === 'go'
-                    ? 'go'
-                    : kind === 'rust'
-                      ? 'rust'
-                      : kind === 'java' || kind === 'kotlin' || kind === 'bun'
-                        ? 'node'
-                        : 'node'
-            }
-          />
+          <PageGuide guideId={kind === 'php' ? 'php' : kind} />
         ) : null}
       </PageTabs>
 

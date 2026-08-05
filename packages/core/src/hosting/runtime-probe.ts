@@ -358,7 +358,6 @@ export async function planOrInstallRuntime(input: {
     notes.push(tl('notes.auto.t0408', { v0: (plan.version) }));
   } else if (input.kind === 'go') {
     const plan = selectGoRuntime(input.version);
-    const arch = 'linux-amd64';
     script = [
       '#!/usr/bin/env bash',
       `# YSK Server — install Go ${plan.version}`,
@@ -367,7 +366,8 @@ export async function planOrInstallRuntime(input: {
       `DEST=/usr/local/ysk/go/$VER`,
       'mkdir -p /usr/local/ysk/go /tmp/ysk-go-install',
       'cd /tmp/ysk-go-install',
-      `curl -fsSL "https://go.dev/dl/go\${VER}.${arch}.tar.gz" -o go.tgz`,
+      'case "$(uname -m)" in aarch64|arm64) GOARCH=linux-arm64 ;; *) GOARCH=linux-amd64 ;; esac',
+      'curl -fsSL "https://go.dev/dl/go${VER}.${GOARCH}.tar.gz" -o go.tgz',
       'rm -rf "$DEST"',
       'mkdir -p "$DEST"',
       'tar -C "$DEST" --strip-components=1 -xzf go.tgz',

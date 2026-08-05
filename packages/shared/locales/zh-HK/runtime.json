@@ -109,7 +109,7 @@
   "installNodeVBtn": "安裝 節點 {{version}}",
   "installPhpVBtn": "安裝 PHP {{version}}",
   "phpIniSteps1": "在 php.ini 分頁設計全域數值並儲存",
-  "phpIniSteps2": "可選：套用到系統（寫入 /etc/php/…/設定檔.d，需要管理員權限）",
+  "phpIniSteps2": "可選：套用到系統（寫入 /etc/php/…/conf.d，需要管理員權限）",
   "phpIniSteps3": "專案部署時會把合併後 ini 寫入 FPM 程序池 的 php_admin_*",
   "phpIniSteps4": "專案可再覆寫個別鍵（專案 → 部署）",
   "phpIniNote": "變更會先存到面板 dataDir；「套用到系統」才複製到 /etc/php 並 重新載入 FPM。專案 程序池 會在部署時注入 php_admin_value。",

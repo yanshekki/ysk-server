@@ -2042,5 +2042,41 @@
         "to": "/services"
       }
     ]
+  },
+  "java": {
+    "id": "java",
+    "title": "Java",
+    "summary": "Manage host OpenJDK install.",
+    "keywords": [
+      "Java",
+      "java"
+    ],
+    "sections": [],
+    "tips": [],
+    "cautions": []
+  },
+  "kotlin": {
+    "id": "kotlin",
+    "title": "Kotlin",
+    "summary": "Manage Kotlin compiler (requires JDK).",
+    "keywords": [
+      "Kotlin",
+      "kotlin"
+    ],
+    "sections": [],
+    "tips": [],
+    "cautions": []
+  },
+  "bun": {
+    "id": "bun",
+    "title": "Bun",
+    "summary": "Manage Bun runtime install and updates.",
+    "keywords": [
+      "Bun",
+      "bun"
+    ],
+    "sections": [],
+    "tips": [],
+    "cautions": []
   }
 }
