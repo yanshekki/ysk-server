@@ -25,12 +25,11 @@ export type TotpStatus = {
 type TotpSetupPanelProps = {
   status: TotpStatus | null;
   onStatusChange?: () => void | Promise<void>;
-  onFlash?: (kind: 'ok' | 'error', message: string) => void;
 };
 
 type Phase = 'idle' | 'enroll' | 'recovery';
 
-export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPanelProps) {
+export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) {
   const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
   const [password, setPassword] = useState('');
@@ -39,7 +38,9 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
   const [code, setCode] = useState('');
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Alerts stay inside this panel only — never page-top. */
   const [localErr, setLocalErr] = useState<string | null>(null);
+  const [localOk, setLocalOk] = useState<string | null>(null);
   const [showSecret, setShowSecret] = useState(true);
   const [disableCode, setDisableCode] = useState('');
 
@@ -53,12 +54,14 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
     }
   }, [enrolledPending, secret, phase]);
 
-  const flash = useCallback(
-    (kind: 'ok' | 'error', message: string) => {
-      onFlash?.(kind, message);
-    },
-    [onFlash],
-  );
+  const flashOk = useCallback((message: string) => {
+    setLocalErr(null);
+    setLocalOk(message);
+  }, []);
+  const flashErr = useCallback((message: string) => {
+    setLocalOk(null);
+    setLocalErr(message);
+  }, []);
 
   const refresh = useCallback(async () => {
     await onStatusChange?.();
@@ -71,12 +74,14 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
     setCode('');
     setPassword('');
     setLocalErr(null);
+    setLocalOk(null);
   };
 
   const beginEnroll = () => {
     setLocalErr(null);
+    setLocalOk(null);
     if (!password.trim()) {
-      setLocalErr(t('security.reauthPasswordRequired'));
+      flashErr(t('security.reauthPasswordRequired'));
       return;
     }
     setBusy(true);
@@ -89,21 +94,19 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
         setCode('');
         setPhase('enroll');
         setShowSecret(true);
-        flash('ok', t('security.totpSecretGenerated'));
+        flashOk(t('security.totpSecretGenerated'));
         return refresh();
       })
-      .catch((e: Error) => {
-        setLocalErr(e.message);
-        flash('error', e.message);
-      })
+      .catch((e: Error) => flashErr(e.message))
       .finally(() => setBusy(false));
   };
 
   const confirmEnroll = () => {
     setLocalErr(null);
+    setLocalOk(null);
     const c = code.replace(/\s+/g, '');
     if (!/^\d{6}$/.test(c)) {
-      setLocalErr(t('security.confirmCodeInvalid'));
+      flashErr(t('security.confirmCodeInvalid'));
       return;
     }
     setBusy(true);
@@ -115,21 +118,19 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
         setOtpauthUrl(null);
         setCode('');
         setPhase(r.recoveryCodes?.length ? 'recovery' : 'idle');
-        flash('ok', t('security.totpEnabledSaveCodes'));
+        flashOk(t('security.totpEnabledSaveCodes'));
         return refresh();
       })
-      .catch((e: Error) => {
-        setLocalErr(e.message);
-        flash('error', e.message);
-      })
+      .catch((e: Error) => flashErr(e.message))
       .finally(() => setBusy(false));
   };
 
   const disableTotp = () => {
     setLocalErr(null);
+    setLocalOk(null);
     const c = disableCode.replace(/\s+/g, '');
     if (!c) {
-      setLocalErr(t('security.confirmCodeInvalid'));
+      flashErr(t('security.confirmCodeInvalid'));
       return;
     }
     setBusy(true);
@@ -137,13 +138,10 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
       .totpDisable(c)
       .then(() => {
         setDisableCode('');
-        flash('ok', t('security.totpDisabledOk'));
+        flashOk(t('security.totpDisabledOk'));
         return refresh();
       })
-      .catch((e: Error) => {
-        setLocalErr(e.message);
-        flash('error', e.message);
-      })
+      .catch((e: Error) => flashErr(e.message))
       .finally(() => setBusy(false));
   };
 
@@ -155,14 +153,14 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
   const copySecret = () => {
     if (!secret) return;
     void navigator.clipboard?.writeText(secret.replace(/\s+/g, '')).then(() => {
-      flash('ok', t('security.totpSecretCopied'));
+      flashOk(t('security.totpSecretCopied'));
     });
   };
 
   const copyRecovery = () => {
     if (!recoveryCodes?.length) return;
     void navigator.clipboard?.writeText(recoveryCodes.join('\n')).then(() => {
-      flash('ok', t('security.copiedRecoveryCodes'));
+      flashOk(t('security.copiedRecoveryCodes'));
     });
   };
 
@@ -181,7 +179,7 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
     a.download = `ysk-totp-recovery-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(a.href);
-    flash('ok', t('security.recoveryDownloaded'));
+    flashOk(t('security.recoveryDownloaded'));
   };
 
   const activeStep =
@@ -239,6 +237,17 @@ export function TotpSetupPanel({ status, onStatusChange, onFlash }: TotpSetupPan
       {localErr ? (
         <Alert variant="error" className="u-mb-3">
           {localErr}
+          <Button variant="ghost" size="sm" className="u-ml-2" onClick={() => setLocalErr(null)}>
+            {t('common.close')}
+          </Button>
+        </Alert>
+      ) : null}
+      {localOk ? (
+        <Alert variant="ok" className="u-mb-3">
+          {localOk}
+          <Button variant="ghost" size="sm" className="u-ml-2" onClick={() => setLocalOk(null)}>
+            {t('common.close')}
+          </Button>
         </Alert>
       ) : null}
 
