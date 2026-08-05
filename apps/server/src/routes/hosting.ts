@@ -16,6 +16,7 @@ import {
   planOrInstallRuntime,
   listSupportedRuntimes,
   phpExtensionCatalogDto,
+  runtimePluginsCatalogDto,
   applyPublicFileServer,
   planFirewall,
   planPublicFileServer,
@@ -65,6 +66,8 @@ export async function handleHostingRoutes(
           install?: boolean;
           /** PHP extension ids (mysql, gd, redis, …) — see phpExtensionCatalogDto */
           extensions?: string[];
+          /** Companion tools: node pm2, python poetry, go air, … */
+          plugins?: string[];
         };
         const kind = data.kind ?? 'node';
         const defaultVerMap: Record<string, string> = {
@@ -85,6 +88,7 @@ export async function handleHostingRoutes(
           version: data.version ?? defaultVer,
           install: data.install,
           extensions: kind === 'php' ? data.extensions : undefined,
+          plugins: kind !== 'php' ? data.plugins : undefined,
         });
         ctx.audit.append({
           actor: user.username,
@@ -97,11 +101,32 @@ export async function handleHostingRoutes(
             blocked: Boolean(result.blocked),
             extensions: result.extensionIds,
             packages: result.packages,
+            plugins: result.pluginIds,
           },
           ok: result.ok,
         });
         // Honest ops status (403 blocked / 422 failed) + full body notes for UI
         sendOpsResult(res, result);
+        return true;
+      }
+      // —— Runtime companion plugins (pm2, poetry, maven, …) ——
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/plugins') {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = (url.searchParams.get('kind') ?? 'node') as
+          | 'node'
+          | 'php'
+          | 'python'
+          | 'go'
+          | 'rust'
+          | 'java'
+          | 'kotlin'
+          | 'bun';
+        if (kind === 'php') {
+          // PHP uses /php/extensions for apt modules
+          sendJson(res, 200, { kind: 'php', plugins: [], defaults: [], useExtensions: true });
+          return true;
+        }
+        sendJson(res, 200, runtimePluginsCatalogDto(kind));
         return true;
       }
       // —— PHP extension catalog (version-aware apt names) ——

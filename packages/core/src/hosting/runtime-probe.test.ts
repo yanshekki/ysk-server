@@ -73,6 +73,20 @@ describe('runtime-probe', () => {
     expect(phpScript).toContain('php8.2-mysql');
     expect(phpScript).toContain('php8.2-gd');
 
+    const nodeWithPm2 = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'node',
+      version: '20',
+      install: false,
+      plugins: ['pm2', 'pnpm'],
+    });
+    expect(nodeWithPm2.pluginIds).toEqual(expect.arrayContaining(['pm2', 'pnpm']));
+    const nodeScript = (await import('node:fs')).readFileSync(nodeWithPm2.written[0], 'utf8');
+    expect(nodeScript).toMatch(/npm install -g/);
+    expect(nodeScript).toContain('pm2');
+    expect(nodeScript).not.toMatch(/exit 0\nfi\n$/);
+
     rmSync(dir, { recursive: true, force: true });
   });
 });

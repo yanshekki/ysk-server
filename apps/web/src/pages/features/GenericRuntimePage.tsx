@@ -35,6 +35,7 @@ import {
   resolveRuntimeInstallState,
   versionChipLabel,
 } from '../../features/runtimes/install-state';
+import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
 import { bindSet, bindInput } from '../bind-handlers';
 
 export type HostingRuntimeKind =
@@ -146,7 +147,13 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const [extraEnv, setExtraEnv] = useState('');
   const [envPreview, setEnvPreview] = useState<Record<string, string>>({});
   const [tuningLoaded, setTuningLoaded] = useState(false);
+  const [plugins, setPlugins] = useState<string[]>([]);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+
+  // Reset plugin picks when switching runtime kind
+  useEffect(() => {
+    setPlugins([]);
+  }, [kind]);
 
   const refresh = useCallback(async () => {
     try {
@@ -435,14 +442,20 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 ) : (
                   <FormHint>{t('runtime.installScriptNote')}</FormHint>
                 )}
+                <RuntimePluginsField
+                  kind={kind}
+                  value={plugins}
+                  onChange={setPlugins}
+                  disabled={busy}
+                />
                 <FormActions>
                   <Button
                     variant="primary"
                     size="md"
                     loading={busy}
-                    disabled={installState.installDisabled}
+                    disabled={installState.installDisabled && plugins.length === 0}
                     title={
-                      installState.installDisabled
+                      installState.installDisabled && plugins.length === 0
                         ? t('runtime.versionAlreadyInstalled', { version })
                         : undefined
                     }
@@ -452,15 +465,18 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                           kind,
                           version,
                           install: true,
+                          plugins,
                         });
                         await refresh();
                         return r as OpsResultLike;
                       }, t(meta.installLabelKey, { v: version }))
                     }
                   >
-                    {installState.installDisabled
+                    {installState.installDisabled && plugins.length === 0
                       ? t('runtime.installedVersionBtn', { version })
-                      : t(meta.installLabelKey, { v: version })}
+                      : installState.installDisabled && plugins.length > 0
+                        ? t('runtime.installPluginsOnly', { version })
+                        : t(meta.installLabelKey, { v: version })}
                   </Button>
                   {installState.newerAvailable[0] && installState.installDisabled ? (
                     <Button

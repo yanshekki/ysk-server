@@ -20,6 +20,7 @@ import {
   type RuntimeKind,
 } from './runtime.js';
 import { resolvePhpAptPackages } from './php-extensions.js';
+import { buildRuntimePluginScriptLines } from './runtime-plugins.js';
 import { resolveBin, shellBinExists, shellResolveBin } from './software-probe/index.js';
 
 export interface RuntimeProbeItem {
@@ -292,6 +293,8 @@ export interface RuntimeInstallResult {
   packages?: string[];
   /** PHP: extension ids that were resolved into packages */
   extensionIds?: string[];
+  /** Companion tools (pm2, poetry, maven, …) */
+  pluginIds?: string[];
 }
 
 /** Compress install stderr for panel notes (avoid dumping full apt logs). */
@@ -327,6 +330,12 @@ export async function planOrInstallRuntime(input: {
    * Omit for recommended defaults; pass [] for core-only (fpm/cli/common).
    */
   extensions?: string[];
+  /**
+   * Companion plugins (node: pm2/yarn; python: poetry; go: air; …).
+   * Omit for recommended defaults; pass [] for none.
+   * PHP still uses `extensions` for apt modules; can also pass plugins if defined.
+   */
+  plugins?: string[];
 }): Promise<RuntimeInstallResult> {
   const notes: string[] = [];
   const written: string[] = [];
@@ -337,6 +346,7 @@ export async function planOrInstallRuntime(input: {
   let script = '';
   let packages: string[] | undefined;
   let extensionIds: string[] | undefined;
+  let pluginIds: string[] | undefined;
   if (input.kind === 'node') {
     const plan = selectNodeRuntime(input.version);
     // Official binary tarball → /usr/local/ysk/node/<major> (same layout as go/rust).
@@ -360,10 +370,12 @@ export async function planOrInstallRuntime(input: {
       '      ln -sfn "$NODE_BIN" "$DEST/bin/node"',
       `      if ${shellBinExists('npm')}; then ln -sfn "$(${shellResolveBin('npm')})" "$DEST/bin/npm" || true; fi`,
       '      "$DEST/bin/node" -v',
-      '      exit 0',
+      '      # fall through to companion tools (do not exit — plugins still run)',
+      '      SKIP_NODE_TARBALL=1',
       '      ;;',
       '  esac',
       'fi',
+      'if [ "${SKIP_NODE_TARBALL:-0}" != "1" ]; then',
       'case "$(uname -m)" in aarch64|arm64) ARCH=linux-arm64 ;; *) ARCH=linux-x64 ;; esac',
       'cd /tmp/ysk-node-install',
       'rm -f SHASUMS256.txt node.tgz',
@@ -383,17 +395,18 @@ export async function planOrInstallRuntime(input: {
       '  ln -sfn "$DEST/bin/npm" /usr/local/bin/npm || true',
       '  ln -sfn "$DEST/bin/npx" /usr/local/bin/npx || true',
       '  "$DEST/bin/node" -v',
-      '  exit 0',
+      'else',
+      '  echo "official tarball resolve failed; trying NodeSource apt fallback" >&2',
+      '  apt-get update -qq',
+      '  curl -fsSL "https://deb.nodesource.com/setup_${MAJOR}.x" | bash -',
+      '  apt-get install -y nodejs',
+      '  node -v',
+      '  mkdir -p "$DEST/bin"',
+      `  NODE_BIN="$(${shellResolveBin('node')})"`,
+      '  test -n "$NODE_BIN"',
+      '  ln -sfn "$NODE_BIN" "$DEST/bin/node"',
       'fi',
-      'echo "official tarball resolve failed; trying NodeSource apt fallback" >&2',
-      'apt-get update -qq',
-      'curl -fsSL "https://deb.nodesource.com/setup_${MAJOR}.x" | bash -',
-      'apt-get install -y nodejs',
-      'node -v',
-      'mkdir -p "$DEST/bin"',
-      `NODE_BIN="$(${shellResolveBin('node')})"`,
-      'test -n "$NODE_BIN"',
-      'ln -sfn "$NODE_BIN" "$DEST/bin/node"',
+      'fi', // SKIP_NODE_TARBALL
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0406', { v0: plan.version }));
@@ -557,6 +570,21 @@ export async function planOrInstallRuntime(input: {
     throw new Error(`unsupported runtime kind: ${input.kind}`);
   }
 
+  // Companion plugins (pm2, poetry, maven, …) — all kinds except pure PHP extensions path
+  // PHP uses `extensions` for apt modules; other kinds use `plugins`.
+  if (input.kind !== 'php') {
+    const built = buildRuntimePluginScriptLines(input.kind, input.plugins);
+    pluginIds = built.ids;
+    if (built.lines.length) {
+      script = script.replace(/\n$/, '') + '\n' + built.lines.join('\n') + '\n';
+      notes.push(
+        tl('notes.runtime.plugins', {
+          list: built.labels.join(', ') || built.ids.join(', '),
+        }),
+      );
+    }
+  }
+
   const scriptPath = join(dir, 'install.sh');
   writeFileSync(scriptPath, script, 'utf8');
   written.push(scriptPath);
@@ -612,5 +640,6 @@ export async function planOrInstallRuntime(input: {
     blockMessage: want ? blockMessage : undefined,
     packages,
     extensionIds,
+    pluginIds,
   };
 }

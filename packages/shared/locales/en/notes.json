@@ -102,6 +102,9 @@
   "php": {
     "aptPackages": "Will install {{count}} packages: {{list}}"
   },
+  "runtime": {
+    "plugins": "Companion tools: {{list}}"
+  },
   "approval": {
     "notFound": "Approval not found: {{id}}"
   },

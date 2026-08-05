@@ -405,6 +405,8 @@ export const systemApi = {
     install?: boolean;
     /** PHP: extension ids (mysql, gd, redis, …) */
     extensions?: string[];
+    /** Companion tools: node pm2, python poetry, go air, … */
+    plugins?: string[];
   }) =>
     // Install failures return 403 (blocked) / 422 (failed) with full ops body —
     // must not throw on those so notes / requires* reach OpsResultPanel.
@@ -413,6 +415,22 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  runtimePlugins: (kind: string) =>
+    api.requestRaw<{
+      kind: string;
+      plugins: Array<{
+        id: string;
+        label: string;
+        hint?: string;
+        group?: string;
+        recommended: boolean;
+        required: boolean;
+        installer: string;
+        bins?: string[];
+      }>;
+      defaults: string[];
+      useExtensions?: boolean;
+    }>(`/api/v1/hosting/runtimes/plugins?kind=${encodeURIComponent(kind)}`),
   phpExtensions: (version = '8.2') =>
     api.requestRaw<{
       version: string;

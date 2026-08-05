@@ -102,6 +102,9 @@
   "php": {
     "aptPackages": "將安裝 {{count}} 個套件：{{list}}"
   },
+  "runtime": {
+    "plugins": "一併安裝工具：{{list}}"
+  },
   "approval": {
     "notFound": "找不到審批：{{id}}"
   },

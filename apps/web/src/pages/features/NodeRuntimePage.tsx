@@ -29,12 +29,14 @@ import {
   resolveRuntimeInstallState,
   versionChipLabel,
 } from '../../features/runtimes/install-state';
+import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
 import { bindSet } from '../bind-handlers';
 
 export function NodeRuntimePage() {
   const { t } = useTranslation();
   const [version, setVersion] = useState('20');
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
+  const [plugins, setPlugins] = useState<string[]>([]);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const {
     items: softItems,
@@ -237,14 +239,20 @@ export function NodeRuntimePage() {
           ) : (
             <FormHint>{t('runtime.nodeProbeAfter')}</FormHint>
           )}
+          <RuntimePluginsField
+            kind="node"
+            value={plugins}
+            onChange={setPlugins}
+            disabled={busy}
+          />
           <FormActions>
             <Button
               variant="primary"
               size="md"
               loading={busy}
-              disabled={installState.installDisabled}
+              disabled={installState.installDisabled && plugins.length === 0}
               title={
-                installState.installDisabled
+                installState.installDisabled && plugins.length === 0
                   ? t('runtime.versionAlreadyInstalled', { version })
                   : undefined
               }
@@ -254,15 +262,18 @@ export function NodeRuntimePage() {
                     kind: 'node',
                     version,
                     install: true,
+                    plugins,
                   });
                   await refresh();
                   return r as OpsResultLike;
                 }, t('runtime.installedNode', { version }))
               }
             >
-              {installState.installDisabled
+              {installState.installDisabled && plugins.length === 0
                 ? t('runtime.installedVersionBtn', { version })
-                : t('runtime.installNodeVBtn', { version })}
+                : installState.installDisabled && plugins.length > 0
+                  ? t('runtime.installPluginsOnly', { version })
+                  : t('runtime.installNodeVBtn', { version })}
             </Button>
             {installState.newerAvailable[0] && installState.installDisabled ? (
               <Button

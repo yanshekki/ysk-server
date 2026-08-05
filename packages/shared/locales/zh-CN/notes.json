@@ -102,6 +102,9 @@
   "php": {
     "aptPackages": "将安装 {{count}} 个软件包：{{list}}"
   },
+  "runtime": {
+    "plugins": "一并安装工具：{{list}}"
+  },
   "approval": {
     "notFound": "找不到审批：{{id}}"
   },

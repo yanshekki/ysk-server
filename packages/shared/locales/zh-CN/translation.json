@@ -4208,6 +4208,9 @@
     "php": {
       "aptPackages": "将安装 {{count}} 个软件包：{{list}}"
     },
+    "runtime": {
+      "plugins": "一并安装工具：{{list}}"
+    },
     "approval": {
       "notFound": "找不到审批：{{id}}"
     },
@@ -8051,6 +8054,15 @@
     "phpExtCoreOnly": "只装核心",
     "phpExtSearch": "搜索扩展（mysql、gd、redis…）",
     "phpExtEmpty": "无匹配的扩展",
+    "pluginsSelect": "常用工具 / 插件",
+    "pluginsSelectHint": "与运行时一并安装（例如 Node 的 PM2、Python 的 Poetry）",
+    "pluginsSearch": "搜索工具（pm2、poetry、maven…）",
+    "pluginsEmpty": "无匹配的工具",
+    "pluginsRecommended": "常用默认",
+    "pluginsSelectAll": "全选工具",
+    "pluginsNone": "不安装工具",
+    "pluginsInstallNote": "工具在运行时装好后以 best-effort 安装；失败不会回滚主环境。",
+    "installPluginsOnly": "安装选定工具（{{version}} 已有）",
     "installedPhp": "已安装 PHP {{version}}",
     "nextSteps": "下一步",
     "suggestedFlow": "建议流程",
