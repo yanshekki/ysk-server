@@ -90,6 +90,57 @@ export function relativeTime(
   return new Date(iso).toLocaleString();
 }
 
+/** True when browser exposes WebAuthn APIs (does not guarantee platform authenticator). */
+export function browserSupportsWebAuthn(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  try {
+    return (
+      typeof window.PublicKeyCredential !== 'undefined' &&
+      typeof navigator.credentials?.create === 'function' &&
+      typeof navigator.credentials?.get === 'function'
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** WebAuthn requires a secure context (HTTPS or localhost). */
+export function isSecureWebAuthnContext(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.isSecureContext === true;
+  } catch {
+    return false;
+  }
+}
+
+/** Map library / DOMException messages to locale keys (avoid raw English on top of zh UI). */
+export function mapWebAuthnError(
+  err: unknown,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  const msg = err instanceof Error ? err.message : String(err ?? '');
+  if (!msg.trim()) return t('security.webauthnFailed');
+  if (/not supported|unsupported|publickeycredential is not defined/i.test(msg)) {
+    return t('security.webauthnUnsupported');
+  }
+  if (/secure context|insecure|must be.*https|only available in secure/i.test(msg)) {
+    return t('security.webauthnInsecureContext');
+  }
+  if (
+    /timed out|timeout|not allowed|notallowederror|abort|cancel|operation either timed out/i.test(
+      msg,
+    )
+  ) {
+    return t('security.webauthnCancelled');
+  }
+  // Keep short server notes (often already localized); drop long English library noise.
+  if (/[\u4e00-\u9fff]/.test(msg) || msg.startsWith('YSK_') || msg.length <= 80) {
+    return msg;
+  }
+  return t('security.webauthnFailed');
+}
+
 export function SecurityPage() {
   const { t } = useTranslation();
   const { tools, approvals, error, result, busy, runSysInfo, approve } = useSecurity();
@@ -104,6 +155,10 @@ export function SecurityPage() {
   const [totpCode, setTotpCode] = useState('');
   const [totpMsg, setTotpMsg] = useState<string | null>(null);
   const [totpErr, setTotpErr] = useState<string | null>(null);
+  /** Passkey errors stay in-section — do not spam page-top like TOTP/session errors. */
+  const [passkeyErr, setPasskeyErr] = useState<string | null>(null);
+  const [passkeyMsg, setPasskeyMsg] = useState<string | null>(null);
+  const [webauthnReady] = useState(() => browserSupportsWebAuthn() && isSecureWebAuthnContext());
   const [totpBusy, setTotpBusy] = useState(false);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [reauthPassword, setReauthPassword] = useState('');
@@ -578,12 +633,59 @@ export function SecurityPage() {
                 title={t('security.passkeyTitle')}
                 description={t('security.passkeyDesc')}
               >
+                {!webauthnReady ? (
+                  <Alert variant="info" className="u-mb-3">
+                    {!browserSupportsWebAuthn()
+                      ? t('security.webauthnUnsupported')
+                      : t('security.webauthnInsecureContext')}
+                    <span className="u-block u-mt-1 muted u-text-sm">
+                      {t('security.webauthnUnavailableHint')}
+                    </span>
+                  </Alert>
+                ) : null}
+                {passkeyErr ? (
+                  <Alert variant="error" className="u-mb-3">
+                    {passkeyErr}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="u-ml-2"
+                      onClick={bindSet(setPasskeyErr, null)}
+                    >
+                      {t('common.close')}
+                    </Button>
+                  </Alert>
+                ) : null}
+                {passkeyMsg ? (
+                  <Alert variant="ok" className="u-mb-3">
+                    {passkeyMsg}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="u-ml-2"
+                      onClick={bindSet(setPasskeyMsg, null)}
+                    >
+                      {t('common.close')}
+                    </Button>
+                  </Alert>
+                ) : null}
                 <ActionBar className="u-mb-3">
                   <Button
                     variant="primary"
                     size="sm"
                     loading={totpBusy}
+                    disabled={!webauthnReady}
                     onClick={() => {
+                      if (!webauthnReady) {
+                        setPasskeyErr(
+                          !browserSupportsWebAuthn()
+                            ? t('security.webauthnUnsupported')
+                            : t('security.webauthnInsecureContext'),
+                        );
+                        return;
+                      }
+                      setPasskeyErr(null);
+                      setPasskeyMsg(null);
                       setTotpBusy(true);
                       void (async () => {
                         try {
@@ -606,13 +708,13 @@ export function SecurityPage() {
                             method: 'POST',
                             body: JSON.stringify({ response: att, name: 'Passkey' }),
                           });
-                          setTotpMsg(
+                          setPasskeyMsg(
                             fin.ok
                               ? t('security.passkeyRegistered')
                               : (fin.notes ?? []).join(' · ') || t('common.failed'),
                           );
                         } catch (e) {
-                          setTotpErr(e instanceof Error ? e.message : t('security.webauthnFailed'));
+                          setPasskeyErr(mapWebAuthnError(e, t));
                         } finally {
                           setTotpBusy(false);
                         }
@@ -625,7 +727,18 @@ export function SecurityPage() {
                     variant="secondary"
                     size="sm"
                     loading={totpBusy}
+                    disabled={!webauthnReady}
                     onClick={() => {
+                      if (!webauthnReady) {
+                        setPasskeyErr(
+                          !browserSupportsWebAuthn()
+                            ? t('security.webauthnUnsupported')
+                            : t('security.webauthnInsecureContext'),
+                        );
+                        return;
+                      }
+                      setPasskeyErr(null);
+                      setPasskeyMsg(null);
                       setTotpBusy(true);
                       void (async () => {
                         try {
@@ -641,7 +754,9 @@ export function SecurityPage() {
                             body: '{}',
                           });
                           if (!begin.ok || !begin.options) {
-                            setTotpErr((begin.notes ?? []).join(' · ') || t('security.noPasskey'));
+                            setPasskeyErr(
+                              (begin.notes ?? []).join(' · ') || t('security.noPasskey'),
+                            );
                             return;
                           }
                           const ass = await startAuthentication({
@@ -654,13 +769,13 @@ export function SecurityPage() {
                               body: JSON.stringify({ response: ass }),
                             },
                           );
-                          setTotpMsg(
+                          setPasskeyMsg(
                             fin.ok
                               ? t('security.passkeyVerifyOk')
                               : (fin.notes ?? []).join(' · ') || t('common.failed'),
                           );
                         } catch (e) {
-                          setTotpErr(e instanceof Error ? e.message : t('security.verifyFailed'));
+                          setPasskeyErr(mapWebAuthnError(e, t));
                         } finally {
                           setTotpBusy(false);
                         }

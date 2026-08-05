@@ -2,7 +2,13 @@
  * Unit tests for pure page helpers (exported for coverage of branch tables).
  */
 import { describe, expect, it } from 'vitest';
-import { parseUserAgent, relativeTime } from './SecurityPage';
+import {
+  parseUserAgent,
+  relativeTime,
+  mapWebAuthnError,
+  browserSupportsWebAuthn,
+  isSecureWebAuthnContext,
+} from './SecurityPage';
 import {
   statusTone,
   statusLabel,
@@ -53,6 +59,26 @@ describe('SecurityPage helpers', () => {
       /Day|session/,
     );
     expect(relativeTime(new Date(Date.now() - 20 * 86400_000).toISOString(), t)).toBeTruthy();
+  });
+
+  it('mapWebAuthnError localizes library English messages', () => {
+    expect(mapWebAuthnError(new Error('WebAuthn is not supported in this browser'), t)).toBe(
+      'security.webauthnUnsupported',
+    );
+    expect(mapWebAuthnError(new Error('This feature is only available in secure contexts'), t)).toBe(
+      'security.webauthnInsecureContext',
+    );
+    expect(mapWebAuthnError(new Error('The operation either timed out or was not allowed'), t)).toBe(
+      'security.webauthnCancelled',
+    );
+    expect(mapWebAuthnError(new Error(''), t)).toBe('security.webauthnFailed');
+    expect(mapWebAuthnError(new Error('面板 未登記 passkey'), t)).toMatch(/passkey|面板/);
+    expect(mapWebAuthnError(new Error('A'.repeat(200)), t)).toBe('security.webauthnFailed');
+  });
+
+  it('browserSupportsWebAuthn / isSecureWebAuthnContext are boolean in jsdom', () => {
+    expect(typeof browserSupportsWebAuthn()).toBe('boolean');
+    expect(typeof isSecureWebAuthnContext()).toBe('boolean');
   });
 });
 
