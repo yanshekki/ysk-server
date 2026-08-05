@@ -19,6 +19,7 @@ import {
   selectRustRuntime,
   type RuntimeKind,
 } from './runtime.js';
+import { resolvePhpAptPackages } from './php-extensions.js';
 import { resolveBin, shellBinExists, shellResolveBin } from './software-probe/index.js';
 
 export interface RuntimeProbeItem {
@@ -287,6 +288,10 @@ export interface RuntimeInstallResult {
   /** True when install was requested but host lacks EXECUTE/root */
   blocked?: boolean;
   blockMessage?: string;
+  /** PHP: resolved apt package names for the selected extensions */
+  packages?: string[];
+  /** PHP: extension ids that were resolved into packages */
+  extensionIds?: string[];
 }
 
 /** Compress install stderr for panel notes (avoid dumping full apt logs). */
@@ -317,6 +322,11 @@ export async function planOrInstallRuntime(input: {
   version: string;
   /** When true, attempt package install (root + EXECUTE) */
   install?: boolean;
+  /**
+   * PHP only: extension ids from php-extensions catalog (mysql, gd, redis, …).
+   * Omit for recommended defaults; pass [] for core-only (fpm/cli/common).
+   */
+  extensions?: string[];
 }): Promise<RuntimeInstallResult> {
   const notes: string[] = [];
   const written: string[] = [];
@@ -325,6 +335,8 @@ export async function planOrInstallRuntime(input: {
   mkdirSync(dir, { recursive: true });
 
   let script = '';
+  let packages: string[] | undefined;
+  let extensionIds: string[] | undefined;
   if (input.kind === 'node') {
     const plan = selectNodeRuntime(input.version);
     // Official binary tarball → /usr/local/ysk/node/<major> (same layout as go/rust).
@@ -387,21 +399,41 @@ export async function planOrInstallRuntime(input: {
     notes.push(tl('notes.auto.t0406', { v0: plan.version }));
   } else if (input.kind === 'php') {
     const plan = selectPhpRuntime(input.version);
+    const resolved = resolvePhpAptPackages(plan.version, input.extensions);
+    packages = resolved.packages;
+    extensionIds = resolved.resolvedIds;
+    const pkgLine = packages.map((p) => `'${p.replace(/'/g, '')}'`).join(' ');
     script = [
       '#!/usr/bin/env bash',
-      `# YSK Server — install PHP ${plan.version} + FPM`,
+      `# YSK Server — install PHP ${plan.version} + selected extensions`,
       'set -euo pipefail',
       'export DEBIAN_FRONTEND=noninteractive',
-      'apt-get update',
-      'apt-get install -y software-properties-common',
-      'add-apt-repository -y ppa:ondrej/php 2>/dev/null || echo "skip ondrej PPA"',
-      'apt-get update',
-      `apt-get install -y php${plan.version}-fpm php${plan.version}-cli php${plan.version}-mysql php${plan.version}-xml php${plan.version}-mbstring`,
+      'apt-get update -qq',
+      'apt-get install -y software-properties-common ca-certificates apt-transport-https 2>/dev/null || true',
+      'add-apt-repository -y ppa:ondrej/php 2>/dev/null || echo "skip ondrej PPA (use distro packages)"',
+      'apt-get update -qq',
+      `PKGS=(${pkgLine})`,
+      'echo "Installing: ${PKGS[*]}"',
+      // Best-effort: install all selected; if a package is missing, retry without it once
+      'if ! apt-get install -y "${PKGS[@]}"; then',
+      '  echo "full set failed; installing packages one-by-one" >&2',
+      '  for p in "${PKGS[@]}"; do apt-get install -y "$p" || echo "skip $p" >&2; done',
+      'fi',
       `php${plan.version} -v`,
-      'systemctl enable --now php' + plan.version + '-fpm',
+      `php${plan.version} -m 2>/dev/null | head -60 || true`,
+      `systemctl enable --now php${plan.version}-fpm 2>/dev/null || systemctl enable --now php-fpm 2>/dev/null || true`,
       '',
     ].join('\n');
-    notes.push(tl('notes.auto.t0407', { v0: (plan.version) }));
+    notes.push(tl('notes.auto.t0407', { v0: plan.version }));
+    // Package list also returned as result.packages for the panel
+    if (packages.length) {
+      notes.push(
+        tl('notes.php.aptPackages', {
+          count: packages.length,
+          list: packages.slice(0, 14).join(', ') + (packages.length > 14 ? '…' : ''),
+        }),
+      );
+    }
   } else if (input.kind === 'python') {
     const plan = selectPythonRuntime(input.version);
     script = [
@@ -578,5 +610,7 @@ export async function planOrInstallRuntime(input: {
     requiresRoot: !rootOn,
     blocked: want ? blocked : false,
     blockMessage: want ? blockMessage : undefined,
+    packages,
+    extensionIds,
   };
 }

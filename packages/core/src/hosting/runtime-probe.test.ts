@@ -56,6 +56,23 @@ describe('runtime-probe', () => {
       install: false,
     });
     expect(goPlan.written[0]).toMatch(/install\.sh$/);
+
+    const phpPlan = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'php',
+      version: '8.2',
+      install: false,
+      extensions: ['mysql', 'gd', 'redis'],
+    });
+    expect(phpPlan.packages).toEqual(
+      expect.arrayContaining(['php8.2-fpm', 'php8.2-mysql', 'php8.2-gd', 'php8.2-redis']),
+    );
+    expect(phpPlan.extensionIds).toEqual(expect.arrayContaining(['mysql', 'gd', 'redis']));
+    const phpScript = (await import('node:fs')).readFileSync(phpPlan.written[0], 'utf8');
+    expect(phpScript).toContain('php8.2-mysql');
+    expect(phpScript).toContain('php8.2-gd');
+
     rmSync(dir, { recursive: true, force: true });
   });
 });

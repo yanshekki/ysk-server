@@ -99,6 +99,9 @@
     "npmGlobal": "npm install -g {{pkgs}}",
     "needNodeForNpm": "node/npm not found — install Node.js before {{title}}"
   },
+  "php": {
+    "aptPackages": "Will install {{count}} packages: {{list}}"
+  },
   "approval": {
     "notFound": "Approval not found: {{id}}"
   },

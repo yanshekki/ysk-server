@@ -325,6 +325,8 @@ export const systemApi = {
     kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
     version: string;
     install?: boolean;
+    /** PHP: extension ids (mysql, gd, redis, …) */
+    extensions?: string[];
   }) =>
     // Install failures return 403 (blocked) / 422 (failed) with full ops body —
     // must not throw on those so notes / requires* reach OpsResultPanel.
@@ -333,6 +335,21 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  phpExtensions: (version = '8.2') =>
+    api.requestRaw<{
+      version: string;
+      supportedVersions: string[];
+      extensions: Array<{
+        id: string;
+        group: string;
+        label: string;
+        hint?: string;
+        recommended: boolean;
+        required: boolean;
+        package: string;
+      }>;
+      defaults: string[];
+    }>(`/api/v1/hosting/php/extensions?version=${encodeURIComponent(version)}`),
   phpIniGet: (version = '8.2') =>
     api.requestRaw<{
       version: string;

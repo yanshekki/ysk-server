@@ -99,6 +99,9 @@
     "npmGlobal": "npm install -g {{pkgs}}",
     "needNodeForNpm": "未找到 node／npm — 請先安裝 Node.js 再安裝 {{title}}"
   },
+  "php": {
+    "aptPackages": "將安裝 {{count}} 個套件：{{list}}"
+  },
   "approval": {
     "notFound": "找不到審批：{{id}}"
   },

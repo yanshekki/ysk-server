@@ -15,6 +15,7 @@ import {
   probeRuntimes,
   planOrInstallRuntime,
   listSupportedRuntimes,
+  phpExtensionCatalogDto,
   applyPublicFileServer,
   planFirewall,
   planPublicFileServer,
@@ -62,6 +63,8 @@ export async function handleHostingRoutes(
           kind?: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
           version?: string;
           install?: boolean;
+          /** PHP extension ids (mysql, gd, redis, …) — see phpExtensionCatalogDto */
+          extensions?: string[];
         };
         const kind = data.kind ?? 'node';
         const defaultVerMap: Record<string, string> = {
@@ -81,6 +84,7 @@ export async function handleHostingRoutes(
           kind,
           version: data.version ?? defaultVer,
           install: data.install,
+          extensions: kind === 'php' ? data.extensions : undefined,
         });
         ctx.audit.append({
           actor: user.username,
@@ -91,11 +95,20 @@ export async function handleHostingRoutes(
             ok: result.ok,
             install: Boolean(data.install),
             blocked: Boolean(result.blocked),
+            extensions: result.extensionIds,
+            packages: result.packages,
           },
           ok: result.ok,
         });
         // Honest ops status (403 blocked / 422 failed) + full body notes for UI
         sendOpsResult(res, result);
+        return true;
+      }
+      // —— PHP extension catalog (version-aware apt names) ——
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/php/extensions') {
+        ctx.auth.authenticate(getBearer(req));
+        const version = url.searchParams.get('version') ?? '8.2';
+        sendJson(res, 200, phpExtensionCatalogDto(version));
         return true;
       }
       // —— Global PHP php.ini (panel-managed) ——

@@ -1,7 +1,7 @@
 /**
  * PHP runtime — Overview · php.ini · FPM/站點 · 工具
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import {
@@ -25,13 +25,23 @@ import {
   SoftwareInstallBanner,
   PageTabs,
 } from '../../shared/components/ui';
-import type { OpsResultLike } from '../../shared/components/ui';
+import type { OpsResultLike, MultiCheckOption } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput } from '../bind-handlers';
+
+type PhpExtRow = {
+  id: string;
+  group: string;
+  label: string;
+  hint?: string;
+  recommended: boolean;
+  required: boolean;
+  package: string;
+};
 
 type ToolsProbe = {
   php?: { version?: string; modules: string[] };
@@ -194,6 +204,9 @@ export function PhpRuntimePage() {
   const [managedPath, setManagedPath] = useState('');
   const [iniUpdatedAt, setIniUpdatedAt] = useState<string | undefined>();
   const [iniLoaded, setIniLoaded] = useState(false);
+  const [extCatalog, setExtCatalog] = useState<PhpExtRow[]>([]);
+  const [extSelected, setExtSelected] = useState<string[]>([]);
+  const [extDefaults, setExtDefaults] = useState<string[]>([]);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -208,6 +221,63 @@ export function PhpRuntimePage() {
       /* optional */
     }
   }, []);
+
+  const loadExtensions = useCallback(async (ver: string) => {
+    try {
+      const r = await systemApi.phpExtensions(ver);
+      setExtCatalog(r.extensions);
+      setExtDefaults(r.defaults);
+      // Keep user picks that still exist; else apply recommended defaults
+      setExtSelected((prev) => {
+        const ids = new Set(r.extensions.map((e) => e.id));
+        const kept = prev.filter((id) => ids.has(id));
+        if (kept.length) {
+          // always force required
+          for (const e of r.extensions) {
+            if (e.required && !kept.includes(e.id)) kept.push(e.id);
+          }
+          return kept;
+        }
+        return [...r.defaults];
+      });
+    } catch {
+      /* optional — install still works with server defaults */
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadExtensions(version);
+  }, [version, loadExtensions]);
+
+  const extOptions: MultiCheckOption[] = useMemo(() => {
+    return extCatalog
+      .filter((e) => !e.required)
+      .map((e) => ({
+        value: e.id,
+        label: `${e.label} (${e.package})`,
+        hint: e.hint,
+      }));
+  }, [extCatalog]);
+
+  const requiredExtLabels = useMemo(
+    () =>
+      extCatalog
+        .filter((e) => e.required)
+        .map((e) => `${e.label} (${e.package})`)
+        .join(' · '),
+    [extCatalog],
+  );
+
+  const selectableExtIds = useMemo(
+    () => extCatalog.filter((e) => !e.required).map((e) => e.id),
+    [extCatalog],
+  );
+
+  const onExtChange = (next: string[]) => {
+    const required = extCatalog.filter((e) => e.required).map((e) => e.id);
+    const merged = [...new Set([...required, ...next.filter((id) => selectableExtIds.includes(id))])];
+    setExtSelected(merged);
+  };
 
   const loadIni = useCallback(async (ver: string) => {
     const r = await systemApi.phpIniGet(ver);
@@ -326,7 +396,48 @@ export function PhpRuntimePage() {
                     />
                   </Field>
                 </FormLayout>
+                <FormHint>{t('runtime.phpExtHint')}</FormHint>
+                {requiredExtLabels ? (
+                  <p className="muted u-text-sm u-mb-2">
+                    <strong>{t('runtime.phpExtRequired')}：</strong>
+                    {requiredExtLabels}
+                  </p>
+                ) : null}
+                <Field
+                  label={t('runtime.phpExtSelect')}
+                  htmlFor="php-ext"
+                  flush
+                  hint={t('runtime.phpExtSelectHint', { version })}
+                >
+                  <MultiCheckSelect
+                    id="php-ext"
+                    options={extOptions}
+                    value={extSelected.filter((id) => selectableExtIds.includes(id))}
+                    onChange={onExtChange}
+                    searchPlaceholder={t('runtime.phpExtSearch')}
+                    emptyText={t('runtime.phpExtEmpty')}
+                    maxVisible={80}
+                  />
+                </Field>
                 <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    disabled={busy || !extDefaults.length}
+                    onClick={() => setExtSelected([...extDefaults])}
+                  >
+                    {t('runtime.phpExtRecommended')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    disabled={busy}
+                    onClick={() =>
+                      setExtSelected(extCatalog.filter((e) => e.required).map((e) => e.id))
+                    }
+                  >
+                    {t('runtime.phpExtCoreOnly')}
+                  </Button>
                   <Button
                     variant="primary"
                     size="md"
@@ -337,6 +448,7 @@ export function PhpRuntimePage() {
                           kind: 'php',
                           version,
                           install: true,
+                          extensions: extSelected.length ? extSelected : extDefaults,
                         });
                         await refresh();
                         return r as OpsResultLike;
