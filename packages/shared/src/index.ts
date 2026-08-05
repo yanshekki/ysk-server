@@ -17,6 +17,7 @@ export * from './software.js';
 export * from './ssl.js';
 export * from './updates.js';
 export * from './ai.js';
+export * from './service-ports.js';
 /** Adjustable multi-level RBAC catalog + factory defaults */
 export * from './capabilities.js';
 /** Mutating route → capability map + nav feature gates */

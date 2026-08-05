@@ -1711,16 +1711,37 @@ export async function handleSystemRoutes(
     sendOpsResult(res, r);
     return true;
   }
+  if (method === 'GET' && url.pathname === '/api/v1/system/firewall/service-ports') {
+    ctx.auth.authenticate(getBearer(req));
+    const { listFirewallPortChips, YSK_SERVICE_PORTS } = await import('@ysk/shared');
+    sendJson(res, 200, {
+      ok: true,
+      chips: listFirewallPortChips(),
+      catalog: YSK_SERVICE_PORTS,
+    });
+    return true;
+  }
+
   if (method === 'POST' && url.pathname === '/api/v1/system/firewall/allow-port') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { port?: number; proto?: 'tcp' | 'udp' };
+    const data = JSON.parse(raw || '{}') as {
+      port?: number | string;
+      proto?: 'tcp' | 'udp';
+    };
     const { firewallAllowPort } = await import('@ysk/core');
-    const r = await firewallAllowPort(ctx.host, Number(data.port), data.proto ?? 'tcp');
+    // number | "80" | "30000:30100" | "53/udp" (proto from body wins if set)
+    const portArg =
+      typeof data.port === 'number'
+        ? data.port
+        : String(data.port ?? '')
+            .trim()
+            .replace(/\/(tcp|udp)$/i, '');
+    const r = await firewallAllowPort(ctx.host, portArg, data.proto ?? 'tcp');
     ctx.audit.append({
       actor: user.username,
       action: 'system.firewall.allow_port',
-      detail: data,
+      detail: { port: portArg, proto: data.proto ?? 'tcp' },
       ok: r.ok,
     });
     sendOpsResult(res, r);

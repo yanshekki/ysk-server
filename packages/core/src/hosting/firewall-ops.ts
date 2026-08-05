@@ -249,24 +249,42 @@ export async function firewallDeleteRuleNumber(
     ] };
 }
 
+/**
+ * Allow a single port or UFW range (e.g. 30000:30100 for FTPS PASV).
+ * `port` may be number, "80", or "30000:30100".
+ */
 export async function firewallAllowPort(
   host: HostExecutor,
-  port: number,
+  port: number | string,
   proto: 'tcp' | 'udp' = 'tcp',
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
   const block = needExec(host);
   if (block) return block;
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+
+  const { parsePortSpec, ufwPortTarget } = await import('@ysk/shared');
+  const raw = typeof port === 'number' ? String(port) : String(port ?? '').trim();
+  const spec = parsePortSpec(raw);
+  if (!spec) {
     return { ok: false, notes: [tl('notes.auto.n1113')] };
   }
-  const r = await host.runCommand(['ufw', 'allow', `${port}/${proto}`], { timeoutMs: 12_000 });
+  // Cap range size so a typo does not open the whole stack
+  if (spec.to - spec.from > 200) {
+    return { ok: false, notes: [tl('notes.auto.n1113')] };
+  }
+  const target = ufwPortTarget(raw, proto);
+  if (!target) {
+    return { ok: false, notes: [tl('notes.auto.n1113')] };
+  }
+  const r = await host.runCommand(['ufw', 'allow', target], { timeoutMs: 12_000 });
+  const label = spec.from === spec.to ? String(spec.from) : `${spec.from}:${spec.to}`;
   return {
     ok: r.exitCode === 0,
     notes: [
       r.exitCode === 0
-        ? tl('notes.auto.t0168', { v0: (port), v1: (proto) })
-        : tl('notes.auto.t0169', { v0: ((r.stderr || r.stdout || '').slice(0, 300)) }),
-    ] };
+        ? tl('notes.auto.t0168', { v0: label, v1: proto })
+        : tl('notes.auto.t0169', { v0: (r.stderr || r.stdout || '').slice(0, 300) }),
+    ],
+  };
 }
 
 /** Hosting-oriented quick profiles (ports only — not fail2ban). */

@@ -54,7 +54,8 @@ describe('firewall surgical + helpers', () => {
     expect(parsePorts('80')).toEqual([80]);
     expect(firewallActionTone('ALLOW')).toBe('ok');
     expect(firewallActiveTone(true, true)).toBe('ok');
-    expect(parsePortInput('443')).toBe(443);
+    expect(parsePortInput('443')).toBe('443');
+    expect(parsePortInput('30000:30100/tcp')).toBe('30000:30100');
     expect(isValidDenyIp('1.1.1.1')).toBe(true);
     expect(mapFirewallRules([{ num: 1, action: 'ALLOW', to: 'x', from: 'y', raw: 'r' }], undefined)[0].num).toBe(1);
   });

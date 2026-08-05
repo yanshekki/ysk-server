@@ -77,11 +77,26 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify({ num }),
     }),
-  firewallAllowPort: (port: number, proto: 'tcp' | 'udp' = 'tcp') =>
+  /** port: number | "80" | "30000:30100" */
+  firewallAllowPort: (port: number | string, proto: 'tcp' | 'udp' = 'tcp') =>
     api.requestRaw('/api/v1/system/firewall/allow-port', {
       method: 'POST',
       body: JSON.stringify({ port, proto }),
     }),
+  firewallServicePorts: () =>
+    api.requestRaw<{
+      ok: boolean;
+      chips: Array<{
+        value: string;
+        label: string;
+        proto: 'tcp' | 'udp';
+        port: string;
+        privateRecommended?: boolean;
+        service: string;
+        category: string;
+        hint?: string;
+      }>;
+    }>('/api/v1/system/firewall/service-ports'),
   fail2banStatus: () =>
     api.requestRaw<Fail2banStatusDto>('/api/v1/system/fail2ban/status'),
   fail2banApply: (body: {

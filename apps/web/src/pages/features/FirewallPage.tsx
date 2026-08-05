@@ -6,6 +6,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  listFirewallPortChips,
+  parsePortChipValue,
+} from '@ysk/shared';
+import {
   PageGuide,
   ActionBar,
   Alert,
@@ -42,6 +46,9 @@ const PROFILE_DEFS = [
   { id: 'mail' as const, allowSmtp: true, extra: '' },
   { id: 'ftps' as const, allowSmtp: false, extra: '21,30000:30100' },
 ];
+
+/** YSK service ports for open-port chips (SSOT from @ysk/shared). */
+const SERVICE_PORT_CHIPS = listFirewallPortChips();
 
 export function parsePorts(extraPorts: string): number[] {
   const out: number[] = [];
@@ -80,11 +87,24 @@ export function firewallActiveTone(
   return 'danger';
 }
 
-/** Normalize a single port input for allow-port. */
-export function parsePortInput(raw: string): number | null {
-  const n = Number(String(raw).trim());
-  if (!Number.isInteger(n) || n <= 0 || n >= 65536) return null;
-  return n;
+/**
+ * Normalize port input for allow-port.
+ * Accepts `80`, `80/tcp`, `30000:30100`, `30000:30100/tcp`.
+ * Returns a UFW-friendly port string (single or range), not only a number.
+ */
+export function parsePortInput(raw: string): string | null {
+  const parsed = parsePortChipValue(raw);
+  if (!parsed) return null;
+  return parsed.from === parsed.to
+    ? String(parsed.from)
+    : `${parsed.from}:${parsed.to}`;
+}
+
+/** @deprecated use parsePortInput — kept for tests expecting number|null on plain digits */
+export function parsePortInputNumber(raw: string): number | null {
+  const p = parsePortChipValue(raw);
+  if (!p || p.from !== p.to) return null;
+  return p.from;
 }
 
 /** Whether a deny IP string looks usable. */
@@ -161,8 +181,14 @@ export function FirewallPage() {
   const [extraPorts, setExtraPorts] = useState('21,30000:30100');
   const [allowSmtp, setAllowSmtp] = useState(false);
   const [denyIp, setDenyIp] = useState('');
-  const [portInput, setPortInput] = useState('8080');
+  const [portInput, setPortInput] = useState('80/tcp');
   const [portProto, setPortProto] = useState<'tcp' | 'udp'>('tcp');
+
+  const onPortChipChange = useCallback((v: string) => {
+    setPortInput(v);
+    const parsed = parsePortChipValue(v);
+    if (parsed?.proto) setPortProto(parsed.proto);
+  }, []);
   const [delRuleNum, setDelRuleNum] = useState<number | null>(null);
   const [ruleQ, setRuleQ] = useState('');
   const [debouncedRuleQ, setDebouncedRuleQ] = useState('');
@@ -455,30 +481,32 @@ export function FirewallPage() {
                   label={t('firewall.port')}
                   htmlFor="fw-port"
                   flush
-                  hint={t('firewall.portHint')}
+                  hint={t('firewall.portHintYsk')}
                 >
                   <PresetChips
-                    options={[
-                      { value: '22', label: '22 SSH' },
-                      { value: '80', label: '80 HTTP' },
-                      { value: '443', label: '443 HTTPS' },
-                      { value: '21', label: '21 FTP' },
-                      { value: '25', label: '25 SMTP' },
-                      { value: '587', label: '587' },
-                      { value: '993', label: '993 IMAPS' },
-                      { value: '3306', label: '3306 MySQL' },
-                      { value: '5432', label: '5432 PG' },
-                      { value: '6379', label: '6379 Redis' },
-                      { value: '8080', label: '8080' },
-                    ]}
+                    options={SERVICE_PORT_CHIPS.map((c) => ({
+                      value: c.value,
+                      label: c.label,
+                    }))}
                     value={portInput}
-                    onChange={setPortInput}
+                    onChange={onPortChipChange}
                     allowCustom
                     customPlaceholder={t('firewall.customPort')}
                     disabled={busy}
                   />
                 </Field>
               </FormLayout>
+              {(() => {
+                const chip = SERVICE_PORT_CHIPS.find((c) => c.value === portInput);
+                if (!chip?.privateRecommended) return null;
+                return (
+                  <Alert variant="warn" className="u-mt-2">
+                    {t('firewall.privatePortWarn', {
+                      service: chip.label,
+                    })}
+                  </Alert>
+                );
+              })()}
               <FormActions>
                 <Button
                   variant="primary"
@@ -498,7 +526,7 @@ export function FirewallPage() {
                       return r;
                     }, t('firewall.allowedPort', {
                       proto: portProto.toUpperCase(),
-                      port: portInput,
+                      port: parsePortInput(portInput) ?? portInput,
                     }))
                   }
                 >
