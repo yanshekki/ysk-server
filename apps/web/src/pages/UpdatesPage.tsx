@@ -288,15 +288,6 @@ export function UpdatesPage() {
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       <PageTabs
         tabs={[
           {

@@ -8055,7 +8055,7 @@
     "phpVersion": "PHP version",
     "phpExtHint": "Choose extensions to install. Each PHP version maps to different apt packages (php8.2-mysql ≠ php8.3-mysql). GD is the old “gd2”.",
     "phpExtSelect": "PHP extensions",
-    "phpExtSelectHint": "Packages install as php{{version}}-…; FPM/CLI core is always included",
+    "phpExtSelectHint": "Packages install as php{{version}}-…; FPM/CLI core is always included; already installed are hidden from selection",
     "phpExtRequired": "Required (core)",
     "phpExtRecommended": "Recommended set",
     "phpExtSelectAll": "Select all extensions",
@@ -8389,7 +8389,8 @@
     "pluginUninstallConfirm": "Remove \"{{name}}\" from this host (via npm/apt/pip as applicable). Stop services that depend on it first.",
     "pluginUninstalled": "Uninstalled {{name}}",
     "pluginUninstallFailed": "Failed to uninstall {{name}}",
-    "pluginUninstallBlocked": "Panel cannot uninstall (needs root + EXECUTE)"
+    "pluginUninstallBlocked": "Panel cannot uninstall (needs root + EXECUTE)",
+    "phpExtAlreadyOnHost": "Installed extensions"
   },
   "security": {
     "title": "Security & Approvals",

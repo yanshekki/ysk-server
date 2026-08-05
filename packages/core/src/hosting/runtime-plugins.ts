@@ -548,12 +548,23 @@ export function buildRuntimePluginUninstallScriptLines(
         break;
       }
       case 'go-install': {
-        // Remove known bins from PATH (go install places them in GOPATH/bin)
+        // Only remove bins under go install / ysk layouts — never rm system /usr/bin/*
         const bins = (p.bins ?? []).filter(Boolean);
         if (bins.length) {
+          lines.push(
+            'ysk_rm_go_bin() {',
+            '  local b="$1" p',
+            '  p="$(command -v "$b" 2>/dev/null || true)"',
+            '  [ -n "$p" ] || return 0',
+            '  case "$p" in',
+            '    "$HOME"/go/bin/*|*/go/bin/*|/root/go/bin/*|/usr/local/go/bin/*|/usr/local/ysk/*|*/.cache/go-build/*) rm -f "$p" || return 1 ;;',
+            '    *) echo "YSK_PLUGIN_SKIP_PATH:$b:$p (not under go/ysk bin)" >&2; return 0 ;;',
+            '  esac',
+            '}',
+          );
           for (const b of bins) {
             lines.push(
-              `if command -v ${JSON.stringify(b)} >/dev/null 2>&1; then rm -f "$(command -v ${JSON.stringify(b)})" || ysk_plugin_fail ${p.id}; else true; fi`,
+              `ysk_rm_go_bin ${JSON.stringify(b)} || ysk_plugin_fail ${p.id}`,
             );
           }
         } else {

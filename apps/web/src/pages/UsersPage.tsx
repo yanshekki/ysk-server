@@ -604,15 +604,6 @@ export function UsersPage() {
           </Button>
         </Alert>
       ) : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       {loading ? (
         <LoadingBlock label={t('users.loading')} />
       ) : (

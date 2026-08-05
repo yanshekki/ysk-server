@@ -85,13 +85,15 @@ export function useFeatureAction() {
         const r = await fn();
         const ops = toOpsResult(r);
         setResult(ops);
-        // Never show a success okMessage when the op failed (honesty).
+        // Never toast success when the op failed (honesty).
         if (ops.blocked || ops.ok === false) {
           const warn =
             ops.blockMessage ?? ops.notes?.[0] ?? t('common.panelBlocked');
           toast.warn(warn);
         } else {
-          toast.ok(okMessage ?? t('common.completed'));
+          // Prefer caller label; fall back to first operator note, then generic completed
+          const note = ops.notes?.[0]?.trim();
+          toast.ok(okMessage ?? note ?? t('common.completed'));
         }
         return r;
       } catch (e) {

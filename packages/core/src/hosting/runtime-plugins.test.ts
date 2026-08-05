@@ -51,6 +51,16 @@ describe('runtime-plugins', () => {
     expect(lines.join('\n')).toMatch(/npm uninstall -g/);
   });
 
+  it('go uninstall only removes bins under go/ysk paths', () => {
+    const air = listRuntimePlugins('go').find((p) => p.installer === 'go-install');
+    if (!air) return;
+    const { lines } = buildRuntimePluginUninstallScriptLines('go', [air.id]);
+    const body = lines.join('\n');
+    expect(body).toMatch(/ysk_rm_go_bin/);
+    expect(body).toMatch(/YSK_PLUGIN_SKIP_PATH|go\/bin|ysk/);
+    expect(body).not.toMatch(/rm -f "\$\(command -v/);
+  });
+
   it('uninstallRuntimePlugins blocked without execute', async () => {
     const r = await uninstallRuntimePlugins({
       dataDir: '/tmp/ysk-test-plugins',

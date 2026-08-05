@@ -201,15 +201,6 @@ export function FtpsServicePage() {
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'lifecycle' ? (
           <Card>

@@ -124,7 +124,8 @@ export async function handleHostingRoutes(
           | 'bun';
         const version = url.searchParams.get('version') ?? undefined;
         if (kind === 'php') {
-          const ext = phpExtensionCatalogDto(version ?? '8.2');
+          const { phpExtensionCatalogWithProbe } = await import('@ysk/core');
+          const ext = await phpExtensionCatalogWithProbe(version ?? '8.2', ctx.host);
           sendJson(res, 200, {
             kind: 'php',
             mode: 'extensions' as const,
@@ -137,7 +138,7 @@ export async function handleHostingRoutes(
               recommended: e.recommended,
               required: e.required,
               package: e.package,
-              installed: false,
+              installed: Boolean(e.installed),
             })),
             defaults: ext.defaults,
           });
@@ -248,7 +249,8 @@ export async function handleHostingRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/hosting/php/extensions') {
         ctx.auth.authenticate(getBearer(req));
         const version = url.searchParams.get('version') ?? '8.2';
-        sendJson(res, 200, phpExtensionCatalogDto(version));
+        const { phpExtensionCatalogWithProbe } = await import('@ysk/core');
+        sendJson(res, 200, await phpExtensionCatalogWithProbe(version, ctx.host));
         return true;
       }
       // —— Global PHP php.ini (panel-managed) ——

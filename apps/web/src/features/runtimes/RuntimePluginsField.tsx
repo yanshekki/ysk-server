@@ -95,16 +95,16 @@ export function RuntimePluginsField({
       setLoaded(true);
       // Drop already-installed ids from install selection
       const installedIds = new Set(mapped.filter((r) => r.installed).map((r) => r.id));
-      if (value.some((id) => installedIds.has(id))) {
-        onChange(value.filter((id) => !installedIds.has(id)));
-      }
+      const cur = Array.isArray(value) ? value : [];
+      const stripped = cur.filter((id) => !installedIds.has(id));
+      if (stripped.length !== cur.length) onChange(stripped);
     } catch {
       setRows([]);
       setDefaults([]);
       setLoaded(true);
     }
-    // value/onChange intentionally omitted — only strip on catalog load
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // value included so re-load after uninstall can strip again with fresh selection
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onChange identity may change each render
   }, [kind, t]);
 
   useEffect(() => {

@@ -28,6 +28,7 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
+import { toast } from '../../shared/stores/toast-store';
 import {
   bindSet,
   bindInput,
@@ -380,7 +381,12 @@ export function CdnPage() {
   const nodes = nodeList.items;
   const sites = siteList.items;
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  /** Toast-backed feedback (errors must not use ok toast). */
+  const setMsg = useCallback((text: string | null) => {
+    if (!text) return;
+    if (cdnMsgIsError(text)) toast.error(text);
+    else toast.ok(text);
+  }, []);
   const [notes, setNotes] = useState<string[]>([]);
   const [confPreview, setConfPreview] = useState<string | null>(null);
 
@@ -850,18 +856,6 @@ export function CdnPage() {
         </>
       }
     >
-      {msg ? (
-        <Alert variant={cdnMsgIsError(msg) ? 'error' : 'ok'}>
-          {msg}{' '}
-          <button
-            type="button"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={bindSet(setMsg, null)}
-          >
-            {t('common.close')}
-          </button>
-        </Alert>
-      ) : null}
       {notes.length ? (
         <Card>
           <CardSection title={t('cdn.recentNotes')}>

@@ -524,15 +524,6 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       {console?.blockedByExclusive === 'mariadb-server' ? (
         <Alert variant="info">
           {t('db.exclusiveMariaHint')}{' '}

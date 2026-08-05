@@ -8055,7 +8055,7 @@
     "phpVersion": "PHP 版本",
     "phpExtHint": "選擇要一併安裝的擴充。不同 PHP 版本對應不同 apt 套件名（例：php8.2-mysql ≠ php8.3-mysql）。GD 即舊稱 gd2。",
     "phpExtSelect": "PHP 擴充 / 插件",
-    "phpExtSelectHint": "套件會裝成 php{{version}}-…；核心 FPM/CLI 必裝",
+    "phpExtSelectHint": "套件會裝成 php{{version}}-…；核心 FPM/CLI 必裝；已裝項目唔會出現喺勾選清單",
     "phpExtRequired": "必裝（核心）",
     "phpExtRecommended": "常用預設",
     "phpExtSelectAll": "全選擴充",
@@ -8389,7 +8389,8 @@
     "pluginUninstallConfirm": "將從主機移除「{{name}}」（npm/apt/pip 等對應方式）。如有依賴此工具的服務，請先停用。",
     "pluginUninstalled": "已卸載 {{name}}",
     "pluginUninstallFailed": "卸載 {{name}} 失敗",
-    "pluginUninstallBlocked": "面板無權執行卸載（需要 root 與 EXECUTE）"
+    "pluginUninstallBlocked": "面板無權執行卸載（需要 root 與 EXECUTE）",
+    "phpExtAlreadyOnHost": "已安裝擴充"
   },
   "security": {
     "title": "帳號安全",

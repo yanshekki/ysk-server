@@ -491,6 +491,7 @@ export const systemApi = {
         recommended: boolean;
         required: boolean;
         package: string;
+        installed?: boolean;
       }>;
       defaults: string[];
     }>(`/api/v1/hosting/php/extensions?version=${encodeURIComponent(version)}`),

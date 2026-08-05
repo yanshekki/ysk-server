@@ -899,15 +899,6 @@ export function ProtectionPage() {
     >
       {loadErr ? <Alert variant="error">{loadErr}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={clearMsg}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       {loading && !status ? <LoadingBlock label={t('protection.loadingStatus')} /> : null}
 
       <Alert variant="info">

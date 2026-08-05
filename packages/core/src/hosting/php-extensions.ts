@@ -364,7 +364,122 @@ export function phpExtensionCatalogDto(version?: string) {
       required: Boolean(e.required),
       /** Example package for selected version */
       package: `php${ver}-${e.aptSuffix}`,
+      installed: false as boolean,
     })),
     defaults: defaultPhpExtensionIds(),
+  };
+}
+
+/**
+ * Probe which PHP extensions are present (php -m + dpkg package check).
+ * Defaults = recommended && !installed (skip already present), plus required.
+ */
+export async function phpExtensionCatalogWithProbe(
+  version: string | undefined,
+  host: {
+    runCommand: (
+      argv: string[],
+      opts?: { timeoutMs?: number },
+    ) => Promise<{ exitCode: number; stdout: string; stderr?: string }>;
+  },
+) {
+  const base = phpExtensionCatalogDto(version);
+  const ver = base.version;
+
+  // Module names from phpX.Y -m (lowercase set)
+  let mods = new Set<string>();
+  try {
+    const r = await host.runCommand(
+      ['bash', '-c', `php${ver} -m 2>/dev/null || php -m 2>/dev/null || true`],
+      { timeoutMs: 8_000 },
+    );
+    mods = new Set(
+      (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim().toLowerCase())
+        .filter((l) => l && !l.startsWith('[')),
+    );
+  } catch {
+    /* empty */
+  }
+
+  // Map catalog id / apt suffix → common php -m names
+  const moduleAliases: Record<string, string[]> = {
+    mysql: ['mysqli', 'mysqlnd', 'pdo_mysql'],
+    pgsql: ['pgsql', 'pdo_pgsql'],
+    sqlite3: ['sqlite3', 'pdo_sqlite'],
+    gd: ['gd'],
+    imagick: ['imagick'],
+    curl: ['curl'],
+    xml: ['xml', 'libxml'],
+    mbstring: ['mbstring'],
+    zip: ['zip'],
+    intl: ['intl'],
+    redis: ['redis'],
+    memcached: ['memcached'],
+    apcu: ['apcu'],
+    bz2: ['bz2'],
+    ldap: ['ldap'],
+    imap: ['imap'],
+    opcache: ['zend opcache', 'opcache'],
+    fpm: [], // package-only
+    cli: [],
+    common: [],
+  };
+
+  const extensions = [];
+  for (const e of base.extensions) {
+    const spec = BY_ID.get(e.id);
+    const suffix = spec?.aptSuffix ?? e.id;
+    const aliases = moduleAliases[e.id] ?? moduleAliases[suffix] ?? [suffix, e.id];
+    let installed = false;
+
+    if (aliases.length === 0) {
+      // fpm/cli/common: dpkg only
+      try {
+        const r = await host.runCommand(
+          [
+            'bash',
+            '-c',
+            `dpkg -s ${JSON.stringify(e.package)} 2>/dev/null | grep -q '^Status:.*installed' && echo OK`,
+          ],
+          { timeoutMs: 5_000 },
+        );
+        installed = r.exitCode === 0 && (r.stdout || '').includes('OK');
+      } catch {
+        installed = false;
+      }
+    } else {
+      installed = aliases.some((a) => mods.has(a.toLowerCase()));
+      if (!installed) {
+        try {
+          const r = await host.runCommand(
+            [
+              'bash',
+              '-c',
+              `dpkg -s ${JSON.stringify(e.package)} 2>/dev/null | grep -q '^Status:.*installed' && echo OK`,
+            ],
+            { timeoutMs: 5_000 },
+          );
+          installed = r.exitCode === 0 && (r.stdout || '').includes('OK');
+        } catch {
+          /* keep */
+        }
+      }
+    }
+    extensions.push({ ...e, installed });
+  }
+
+  const defaults = extensions
+    .filter((e) => (e.recommended || e.required) && !e.installed)
+    .map((e) => e.id);
+  for (const e of extensions) {
+    if (e.required && !defaults.includes(e.id)) defaults.push(e.id);
+  }
+
+  return {
+    ...base,
+    extensions,
+    defaults,
   };
 }

@@ -164,15 +164,6 @@ export function NginxPage() {
         <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
         {error ? <Alert variant="error">{error}</Alert> : null}
         {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
-        {msg ? (
-          <Alert variant="ok">
-            {msg}{' '}
-            <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-              {t('common.close')}
-            </Button>
-          </Alert>
-        ) : null}
-
         <DataTable
           rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
           title={t('nginx.listTitle', { count: total })}

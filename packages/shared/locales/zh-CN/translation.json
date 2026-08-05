@@ -8055,7 +8055,7 @@
     "phpVersion": "PHP 版本",
     "phpExtHint": "选择要一并安装的扩展。不同 PHP 版本对应不同 apt 包名（例：php8.2-mysql ≠ php8.3-mysql）。GD 即旧称 gd2。",
     "phpExtSelect": "PHP 扩展 / 插件",
-    "phpExtSelectHint": "软件包会装成 php{{version}}-…；核心 FPM/CLI 必装",
+    "phpExtSelectHint": "软件包会装成 php{{version}}-…；核心 FPM/CLI 必装；已装项不出现在勾选清单",
     "phpExtRequired": "必装（核心）",
     "phpExtRecommended": "常用默认",
     "phpExtSelectAll": "全选扩展",
@@ -8389,7 +8389,8 @@
     "pluginUninstallConfirm": "将从主机移除「{{name}}」（npm/apt/pip 等对应方式）。如有依赖此工具的服务，请先停用。",
     "pluginUninstalled": "已卸载 {{name}}",
     "pluginUninstallFailed": "卸载 {{name}} 失败",
-    "pluginUninstallBlocked": "面板无权执行卸载（需要 root 与 EXECUTE）"
+    "pluginUninstallBlocked": "面板无权执行卸载（需要 root 与 EXECUTE）",
+    "phpExtAlreadyOnHost": "已安装扩展"
   },
   "security": {
     "title": "安全与审批",

@@ -221,15 +221,6 @@ export function ServicesPage() {
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       {haOverview && haOverview.count > 0 ? (
         <Alert variant="info">
           <strong>{t('services.dbHa')}</strong>：

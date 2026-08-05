@@ -851,15 +851,6 @@ export function LogsPage() {
     >
       {loadErr ? <Alert variant="error">{loadErr}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       {/* Quick + bookmarks */}
       <div className="lc-strip">
         <div className="lc-strip__row">

@@ -46,6 +46,7 @@ type PhpExtRow = {
   recommended: boolean;
   required: boolean;
   package: string;
+  installed?: boolean;
 };
 
 type ToolsProbe = {
@@ -263,25 +264,31 @@ export function PhpRuntimePage() {
           recommended: Boolean(e.recommended),
           required: Boolean(e.required),
           package: e.package ?? `php${ver}-${e.id}`,
+          installed: Boolean(e.installed),
         }));
         defaults = r.defaults ?? [];
       } catch {
         const r = await systemApi.phpExtensions(ver);
-        extensions = r.extensions;
+        extensions = r.extensions.map((e) => ({
+          ...e,
+          installed: Boolean(e.installed),
+        }));
         defaults = r.defaults;
       }
       setExtCatalog(extensions);
       setExtDefaults(defaults);
+      const installedIds = new Set(extensions.filter((e) => e.installed).map((e) => e.id));
       setExtSelected((prev) => {
         const ids = new Set(extensions.map((e) => e.id));
-        const kept = prev.filter((id) => ids.has(id));
+        // Never keep already-installed in install selection
+        const kept = prev.filter((id) => ids.has(id) && !installedIds.has(id));
         if (kept.length) {
           for (const e of extensions) {
-            if (e.required && !kept.includes(e.id)) kept.push(e.id);
+            if (e.required && !e.installed && !kept.includes(e.id)) kept.push(e.id);
           }
           return kept;
         }
-        return [...defaults];
+        return defaults.filter((id) => !installedIds.has(id) || extensions.find((e) => e.id === id)?.required);
       });
     } catch {
       /* optional — install still works with server defaults */
@@ -293,8 +300,9 @@ export function PhpRuntimePage() {
   }, [version, loadExtensions]);
 
   const extOptions: MultiCheckOption[] = useMemo(() => {
+    // Only show not-yet-installed optional extensions for install selection
     return extCatalog
-      .filter((e) => !e.required)
+      .filter((e) => !e.required && !e.installed)
       .map((e) => ({
         value: e.id,
         label: `${e.label} (${e.package})`,
@@ -302,17 +310,26 @@ export function PhpRuntimePage() {
       }));
   }, [extCatalog]);
 
+  const installedExtLabels = useMemo(
+    () =>
+      extCatalog
+        .filter((e) => e.installed && !e.required)
+        .map((e) => e.label)
+        .join(' · '),
+    [extCatalog],
+  );
+
   const requiredExtLabels = useMemo(
     () =>
       extCatalog
         .filter((e) => e.required)
-        .map((e) => `${e.label} (${e.package})`)
+        .map((e) => `${e.label} (${e.package})${e.installed ? ' ✓' : ''}`)
         .join(' · '),
     [extCatalog],
   );
 
   const selectableExtIds = useMemo(
-    () => extCatalog.filter((e) => !e.required).map((e) => e.id),
+    () => extCatalog.filter((e) => !e.required && !e.installed).map((e) => e.id),
     [extCatalog],
   );
 
@@ -398,15 +415,6 @@ export function PhpRuntimePage() {
     >
       <SoftwareInstallBanner feature="php" title={t('runtime.phpMissing')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       <PageTabs
         tabs={[
           { id: 'overview', label: t('runtime.overview') },
@@ -442,6 +450,12 @@ export function PhpRuntimePage() {
                   <p className="muted u-text-sm u-mb-2">
                     <strong>{t('runtime.phpExtRequired')}：</strong>
                     {requiredExtLabels}
+                  </p>
+                ) : null}
+                {installedExtLabels ? (
+                  <p className="muted u-text-sm u-mb-2">
+                    <strong>{t('runtime.phpExtAlreadyOnHost', { defaultValue: '已安裝擴充' })}：</strong>
+                    {installedExtLabels}
                   </p>
                 ) : null}
                 <Field
