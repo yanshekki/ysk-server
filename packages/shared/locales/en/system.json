@@ -32,6 +32,10 @@
   "dns": "DNS",
   "updated": "Updated",
   "applyIdentity": "Apply identity",
+  "identitySetHostname": "Hostname set to {{name}}",
+  "identitySetPretty": "Pretty hostname set to {{name}}",
+  "identityClearPretty": "Pretty hostname cleared",
+  "identitySetTimezone": "Timezone set to {{tz}}",
   "panelSsl": "Panel SSL",
   "panelTls": {
     "title": "Panel HTTPS",

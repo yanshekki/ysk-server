@@ -66,6 +66,7 @@
   "installPluginsOnly": "Install selected tools ({{version}} already present)",
   "installExtOnly": "Install selected extensions (PHP {{version}} present)",
   "pluginAlreadyOnHost": "already on host",
+  "installAddonsOnly": "Install selected add-ons ({{version}} present)",
   "installedPhp": "Installed PHP {{version}}",
   "nextSteps": "Next",
   "suggestedFlow": "Suggested flow",

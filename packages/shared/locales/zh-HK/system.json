@@ -32,6 +32,10 @@
   "dns": "DNS",
   "updated": "已更新",
   "applyIdentity": "套用身份",
+  "identitySetHostname": "主機名稱已設為 {{name}}",
+  "identitySetPretty": "顯示名稱已設為 {{name}}",
+  "identityClearPretty": "已清除顯示名稱",
+  "identitySetTimezone": "時區已設為 {{tz}}",
   "panelSsl": "面板 SSL",
   "panelTls": {
     "title": "面板 HTTPS",

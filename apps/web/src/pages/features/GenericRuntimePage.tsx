@@ -36,6 +36,7 @@ import {
   versionChipLabel,
 } from '../../features/runtimes/install-state';
 import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
+import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
 import { bindSet, bindInput } from '../bind-handlers';
 
 export type HostingRuntimeKind =
@@ -428,69 +429,38 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     })()}
                   </Field>
                 </FormLayout>
-                {installState.selectedInstalled ? (
-                  <FormHint>
-                    {t('runtime.versionAlreadyInstalled', { version })}
-                  </FormHint>
-                ) : installState.newerAvailable.length > 0 ? (
-                  <FormHint>
-                    {t('runtime.newerVersionAvailable', {
-                      current: installState.newestInstalled ?? '—',
-                      newer: installState.newerAvailable.join(', '),
-                    })}
-                  </FormHint>
-                ) : (
-                  <FormHint>{t('runtime.installScriptNote')}</FormHint>
-                )}
                 <RuntimePluginsField
                   kind={kind}
                   value={plugins}
                   onChange={setPlugins}
                   disabled={busy}
                 />
-                <FormActions>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    loading={busy}
-                    disabled={installState.installDisabled && plugins.length === 0}
-                    title={
-                      installState.installDisabled && plugins.length === 0
-                        ? t('runtime.versionAlreadyInstalled', { version })
-                        : undefined
-                    }
-                    onClick={() =>
-                      void run(async () => {
-                        const r = await systemApi.runtimeInstall({
-                          kind,
-                          version,
-                          install: true,
-                          plugins,
-                        });
-                        await refresh();
-                        return r as OpsResultLike;
-                      }, t(meta.installLabelKey, { v: version }))
-                    }
-                  >
-                    {installState.installDisabled && plugins.length === 0
-                      ? t('runtime.installedVersionBtn', { version })
-                      : installState.installDisabled && plugins.length > 0
-                        ? t('runtime.installPluginsOnly', { version })
-                        : t(meta.installLabelKey, { v: version })}
-                  </Button>
-                  {installState.newerAvailable[0] && installState.installDisabled ? (
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      loading={busy}
-                      onClick={() => setVersion(installState.newerAvailable[0]!)}
-                    >
-                      {t('runtime.switchToNewer', {
-                        version: installState.newerAvailable[0],
-                      })}
-                    </Button>
-                  ) : null}
-                </FormActions>
+                <RuntimeInstallActions
+                  installState={installState}
+                  version={version}
+                  busy={busy}
+                  hasAddonsSelected={plugins.length > 0}
+                  installLabel={t(meta.installLabelKey, { v: version })}
+                  onSelectNewer={setVersion}
+                  extraHints={
+                    !installState.selectedInstalled &&
+                    installState.newerAvailable.length === 0 ? (
+                      <FormHint>{t('runtime.installScriptNote')}</FormHint>
+                    ) : null
+                  }
+                  onInstall={() =>
+                    void run(async () => {
+                      const r = await systemApi.runtimeInstall({
+                        kind,
+                        version,
+                        install: true,
+                        plugins,
+                      });
+                      await refresh();
+                      return r as OpsResultLike;
+                    }, t(meta.installLabelKey, { v: version }))
+                  }
+                />
               </CardSection>
             </Card>
           </div>

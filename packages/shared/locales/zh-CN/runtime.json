@@ -66,6 +66,7 @@
   "installPluginsOnly": "安装选定工具（{{version}} 已有）",
   "installExtOnly": "安装选定扩展（PHP {{version}} 已有）",
   "pluginAlreadyOnHost": "主机已有",
+  "installAddonsOnly": "安装选定插件／扩展（{{version}} 已有）",
   "installedPhp": "已安装 PHP {{version}}",
   "nextSteps": "下一步",
   "suggestedFlow": "建议流程",

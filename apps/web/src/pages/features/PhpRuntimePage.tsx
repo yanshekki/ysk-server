@@ -33,6 +33,7 @@ import {
   resolveRuntimeInstallState,
   versionChipLabel,
 } from '../../features/runtimes/install-state';
+import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
 import { api } from '../../shared/services/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput } from '../bind-handlers';
@@ -420,20 +421,6 @@ export function PhpRuntimePage() {
                     />
                   </Field>
                 </FormLayout>
-                {phpInstallState.selectedInstalled ? (
-                  <FormHint>
-                    {t('runtime.versionAlreadyInstalled', { version })}
-                  </FormHint>
-                ) : phpInstallState.newerAvailable.length > 0 ? (
-                  <FormHint>
-                    {t('runtime.newerVersionAvailable', {
-                      current: phpInstallState.newestInstalled ?? '—',
-                      newer: phpInstallState.newerAvailable.join(', '),
-                    })}
-                  </FormHint>
-                ) : (
-                  <FormHint>{t('runtime.phpExtHint')}</FormHint>
-                )}
                 {requiredExtLabels ? (
                   <p className="muted u-text-sm u-mb-2">
                     <strong>{t('runtime.phpExtRequired')}：</strong>
@@ -489,53 +476,35 @@ export function PhpRuntimePage() {
                   >
                     {t('runtime.phpExtCoreOnly')}
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    loading={busy}
-                    disabled={
-                      phpInstallState.installDisabled &&
-                      extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
-                    }
-                    title={
-                      phpInstallState.installDisabled &&
-                      extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
-                        ? t('runtime.versionAlreadyInstalled', { version })
-                        : undefined
-                    }
-                    onClick={() =>
-                      void run(async () => {
-                        const r = await systemApi.runtimeInstall({
-                          kind: 'php',
-                          version,
-                          install: true,
-                          extensions: extSelected.length ? extSelected : extDefaults,
-                        });
-                        await refresh();
-                        return r as OpsResultLike;
-                      }, t('runtime.installedPhp', { version }))
-                    }
-                  >
-                    {phpInstallState.installDisabled &&
-                    extSelected.filter((id) => selectableExtIds.includes(id)).length > 0
-                      ? t('runtime.installExtOnly', { version })
-                      : phpInstallState.installDisabled
-                        ? t('runtime.installedVersionBtn', { version })
-                        : t('runtime.installPhpVBtn', { version })}
-                  </Button>
-                  {phpInstallState.newerAvailable[0] && phpInstallState.installDisabled ? (
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      loading={busy}
-                      onClick={() => setVersion(phpInstallState.newerAvailable[0]!)}
-                    >
-                      {t('runtime.switchToNewer', {
-                        version: phpInstallState.newerAvailable[0],
-                      })}
-                    </Button>
-                  ) : null}
                 </FormActions>
+                <RuntimeInstallActions
+                  installState={phpInstallState}
+                  version={version}
+                  busy={busy}
+                  hasAddonsSelected={
+                    extSelected.filter((id) => selectableExtIds.includes(id)).length > 0
+                  }
+                  installLabel={t('runtime.installPhpVBtn', { version })}
+                  onSelectNewer={setVersion}
+                  extraHints={
+                    !phpInstallState.selectedInstalled &&
+                    phpInstallState.newerAvailable.length === 0 ? (
+                      <FormHint>{t('runtime.phpExtHint')}</FormHint>
+                    ) : null
+                  }
+                  onInstall={() =>
+                    void run(async () => {
+                      const r = await systemApi.runtimeInstall({
+                        kind: 'php',
+                        version,
+                        install: true,
+                        extensions: extSelected.length ? extSelected : extDefaults,
+                      });
+                      await refresh();
+                      return r as OpsResultLike;
+                    }, t('runtime.installedPhp', { version }))
+                  }
+                />
               </CardSection>
             </Card>
 

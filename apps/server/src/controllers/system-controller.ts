@@ -1927,45 +1927,55 @@ export async function handleSystemRoutes(
       });
       return true;
     }
+    let anyFail = false;
     if (data.hostname?.trim()) {
       const { setStaticHostname } = await import('@ysk/core');
       const r = await setStaticHostname(ctx.host, data.hostname.trim());
-      notes.push(
-        r.ok
-          ? `hostname → ${data.hostname.trim()}`
-          : tl('notes.auto.t0795', { v0: r.detail }),
-      );
+      if (r.ok) {
+        notes.push(tl('system.identitySetHostname', { name: data.hostname.trim() }));
+      } else {
+        anyFail = true;
+        notes.push(tl('notes.auto.t0795', { v0: r.detail }));
+      }
     }
     // Always allow setting/clearing pretty (display) name when key is present
     if (data.prettyHostname !== undefined) {
       const { setPrettyHostname } = await import('@ysk/core');
       const pretty = String(data.prettyHostname ?? '').trim();
       const r = await setPrettyHostname(ctx.host, pretty);
-      notes.push(
-        r.ok
-          ? `pretty hostname → ${pretty || '(cleared)'}`
-          : tl('notes.auto.t0796', { v0: r.detail }),
-      );
+      if (r.ok) {
+        notes.push(
+          pretty
+            ? tl('system.identitySetPretty', { name: pretty })
+            : tl('system.identityClearPretty'),
+        );
+      } else {
+        anyFail = true;
+        notes.push(tl('notes.auto.t0796', { v0: r.detail }));
+      }
     }
     if (data.timezone?.trim()) {
       const tz = data.timezone.trim();
       const { isValidTimezoneId, listHostTimezones } = await import('@ysk/core');
       if (!isValidTimezoneId(tz)) {
+        anyFail = true;
         notes.push(tl('notes.auto.t0797', { v0: 'invalid timezone id' }));
       } else {
         // Prefer host list; still allow well-formed IANA if list is fallback/short
         const listed = await listHostTimezones(ctx.host);
         if (listed.source === 'timedatectl' && !listed.timezones.includes(tz)) {
+          anyFail = true;
           notes.push(tl('notes.auto.t0797', { v0: `not in host timezone list: ${tz}` }));
         } else {
           const r = await ctx.host.runCommand(['timedatectl', 'set-timezone', tz], {
             timeoutMs: 10_000,
           });
-          notes.push(
-            r.exitCode === 0
-              ? `timezone → ${tz}`
-              : tl('notes.auto.t0797', { v0: r.stderr || r.stdout }),
-          );
+          if (r.exitCode === 0) {
+            notes.push(tl('system.identitySetTimezone', { tz }));
+          } else {
+            anyFail = true;
+            notes.push(tl('notes.auto.t0797', { v0: r.stderr || r.stdout }));
+          }
         }
       }
     }
@@ -1973,9 +1983,9 @@ export async function handleSystemRoutes(
       actor: user.username,
       action: 'system.host_identity',
       detail: data,
-      ok: true,
+      ok: !anyFail,
     });
-    sendJson(res, 200, { ok: true, notes });
+    sendJson(res, anyFail ? 422 : 200, { ok: !anyFail, notes });
     return true;
   }
 

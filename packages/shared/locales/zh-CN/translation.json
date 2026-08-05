@@ -8067,6 +8067,7 @@
     "installPluginsOnly": "安装选定工具（{{version}} 已有）",
     "installExtOnly": "安装选定扩展（PHP {{version}} 已有）",
     "pluginAlreadyOnHost": "主机已有",
+    "installAddonsOnly": "安装选定插件／扩展（{{version}} 已有）",
     "installedPhp": "已安装 PHP {{version}}",
     "nextSteps": "下一步",
     "suggestedFlow": "建议流程",
@@ -9089,6 +9090,10 @@
     "dns": "DNS",
     "updated": "已更新",
     "applyIdentity": "套用身份",
+    "identitySetHostname": "主机名已设为 {{name}}",
+    "identitySetPretty": "显示名称已设为 {{name}}",
+    "identityClearPretty": "已清除显示名称",
+    "identitySetTimezone": "时区已设为 {{tz}}",
     "panelSsl": "面板 SSL",
     "panelTls": {
       "title": "面板 HTTPS",
