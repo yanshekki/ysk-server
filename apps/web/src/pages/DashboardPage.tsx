@@ -1,7 +1,7 @@
 /**
  * Dashboard — health strip + feature tiles with capability badges.
  */
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../shared/hooks/useAuth';
@@ -31,6 +31,7 @@ import {
 } from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
+import { toast } from '../shared/stores/toast-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindSet, bindInput } from './bind-handlers';
 import {
@@ -136,8 +137,12 @@ export function DashboardPage() {
   const [wizServerIp, setWizServerIp] = useState('');
   const [wizServerIpv6, setWizServerIpv6] = useState('');
   const [wizBusy, setWizBusy] = useState(false);
-  const [wizMsg, setWizMsg] = useState<string | null>(null);
-  const [wizErr, setWizErr] = useState<string | null>(null);
+  const setWizMsg = useCallback((text: string | null) => {
+    if (text) toast.ok(text);
+  }, []);
+  const setWizErr = useCallback((text: string | null) => {
+    if (text) toast.error(text);
+  }, []);
 
   useEffect(() => {
     void softwareApi
@@ -289,8 +294,6 @@ export function DashboardPage() {
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {wizErr ? <Alert variant="error">{wizErr}</Alert> : null}
-      {wizMsg ? <Alert variant="ok">{wizMsg}</Alert> : null}
       {loading ? <LoadingBlock /> : null}
 
       <PageTabs

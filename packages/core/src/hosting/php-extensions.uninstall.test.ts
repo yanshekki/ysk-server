@@ -27,10 +27,10 @@ describe('uninstallPhpExtensions', () => {
   });
 
   it('removes optional packages via apt', async () => {
-    let cmd = '';
+    const cmds: string[] = [];
     const r = await uninstallPhpExtensions({
       host: host((argv) => {
-        cmd = argv.join(' ');
+        cmds.push(argv.join(' '));
         return { exitCode: 0, stdout: 'ok' };
       }),
       version: '8.2',
@@ -38,9 +38,10 @@ describe('uninstallPhpExtensions', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.extensionIds).toEqual(expect.arrayContaining(['redis', 'gd']));
-    expect(cmd).toMatch(/apt-get remove/);
-    expect(cmd).toMatch(/php8\.2-redis/);
-    expect(cmd).toMatch(/php8\.2-gd/);
+    const all = cmds.join('\n');
+    expect(all).toMatch(/apt-get remove/);
+    expect(all).toMatch(/php8\.2-redis/);
+    expect(all).toMatch(/php8\.2-gd/);
   });
 
   it('blocks without execute', async () => {

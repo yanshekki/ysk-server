@@ -565,6 +565,20 @@ export async function uninstallPhpExtensions(input: {
 
   if (r.exitCode === 0) {
     notes.push(tl('notes.runtime.pluginsUninstallOk'));
+    // Best-effort reload FPM so removed modules drop from pool without reboot
+    try {
+      await input.host.runCommand(
+        [
+          'bash',
+          '-c',
+          `systemctl reload php${ver}-fpm 2>/dev/null || systemctl reload php-fpm 2>/dev/null || true`,
+        ],
+        { timeoutMs: 15_000 },
+      );
+      notes.push(`php${ver}-fpm reload attempted`);
+    } catch {
+      /* optional */
+    }
     return { ok: true, version: ver, notes, extensionIds: removable };
   }
   notes.unshift(

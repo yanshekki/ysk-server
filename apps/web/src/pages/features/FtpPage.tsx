@@ -29,6 +29,7 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { ftpApi, type SelectOption } from '../../features/ftp';
 import { api } from '../../shared/services/api';
+import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindCall1, bindClear2, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSet, bindVoid } from '../bind-handlers';
 
@@ -95,7 +96,9 @@ export function FtpPage() {
   const [keyPub, setKeyPub] = useState('');
   const [keyComment, setKeyComment] = useState('');
   const [keyBusy, setKeyBusy] = useState(false);
-  const [keyMsg, setKeyMsg] = useState<string | null>(null);
+  const setKeyMsg = useCallback((text: string | null) => {
+    if (text) toast.ok(text);
+  }, []);
   const [keyErr, setKeyErr] = useState<string | null>(null);
   const [delKeyId, setDelKeyId] = useState<string | null>(null);
 
@@ -197,18 +200,8 @@ export function FtpPage() {
     >
       <SoftwareInstallBanner feature="ftp" title={t('ftp.softwareMissing')} />
 
-      {crud.error || keyErr ? <Alert variant="error">{crud.error ?? keyErr}</Alert> : null}
-      {crud.msg || keyMsg ? (
-        <Alert variant="ok">
-          {crud.msg ?? keyMsg}{' '}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={bindClear2(crud.setMsg, setKeyMsg)}
-          >
-            {t('common.close')}
-          </Button>
-        </Alert>
+      {crud.error || keyErr ? (
+        <Alert variant="error">{crud.error ?? keyErr}</Alert>
       ) : null}
       {crud.lastNotes?.length ? (
         <Alert variant="info">

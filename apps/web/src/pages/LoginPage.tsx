@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
 import { ApiError } from '../shared/services/api';
+import { toast } from '../shared/stores/toast-store';
 import { bindInput } from './bind-handlers';
 import {
   Alert,
@@ -75,11 +76,14 @@ export function LoginPage() {
         // Wrong/missing code after the field is visible still shows a single error.
         if (!needsTotp && !totp.trim()) {
           setError(null);
+          toast.info(t('login.totpRequired'));
         } else {
           setError(msg);
+          toast.error(msg);
         }
       } else {
         setError(msg);
+        toast.error(msg);
       }
     } finally {
       setLoading(false);

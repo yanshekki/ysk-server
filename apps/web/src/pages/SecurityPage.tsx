@@ -252,22 +252,14 @@ export function SecurityPage() {
     enabled: boolean;
     enrolled: boolean;
     recoveryRemaining?: number;
-  } | null>(null);
-  /** Per-section flashes — never page-top (except tab-local tool errors). */
-  type SecFlash = { kind: 'ok' | 'error'; message: string } | null;
-  const [sessionFlash, setSessionFlash] = useState<SecFlash>(null);
-  const [passkeyErr, setPasskeyErrRaw] = useState<string | null>(null);
+  } | null>(null);  const [passkeyErr, setPasskeyErrRaw] = useState<string | null>(null);
   const setPasskeyErr = useCallback((text: string | null) => {
     if (text) toast.error(text);
     setPasskeyErrRaw(null);
   }, []);
   const setPasskeyMsg = useCallback((text: string | null) => {
     if (text) toast.ok(text);
-  }, []);
-  const [devicesFlash, setDevicesFlash] = useState<SecFlash>(null);
-  const [policyFlash, setPolicyFlash] = useState<SecFlash>(null);
-  const [keysFlash, setKeysFlash] = useState<SecFlash>(null);
-  const [totpBusy, setTotpBusy] = useState(false);
+  }, []);  const [totpBusy, setTotpBusy] = useState(false);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [revokeTarget, setRevokeTarget] = useState<SessionRow | null>(null);
   const [revokeOthersOpen, setRevokeOthersOpen] = useState(false);
@@ -413,22 +405,6 @@ export function SecurityPage() {
                 title={t('security.sessionsTitle')}
                 description={t('security.sessionsDesc')}
               >
-                {sessionFlash ? (
-                  <Alert
-                    variant={sessionFlash.kind === 'ok' ? 'ok' : 'error'}
-                    className="u-mb-3"
-                  >
-                    {sessionFlash.message}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="u-ml-2"
-                      onClick={() => setSessionFlash(null)}
-                    >
-                      {t('common.close')}
-                    </Button>
-                  </Alert>
-                ) : null}
                 {sessions.length > 0 ? (
                   <div className="sess-summary u-mb-3">
                     <div className="sess-summary__stat">
@@ -562,14 +538,11 @@ export function SecurityPage() {
                     void api
                       .revokeSession(id)
                       .then(() => {
-                        setSessionFlash({
-                          kind: 'ok',
-                          message: t('security.sessionRevoked'),
-                        });
+                        toast.ok(t('security.sessionRevoked'));
                         return refreshSessions();
                       })
                       .catch((e: Error) =>
-                        setSessionFlash({ kind: 'error', message: e.message }),
+                        toast.error(e.message),
                       );
                   }}
                 />
@@ -587,16 +560,13 @@ export function SecurityPage() {
                     void api
                       .revokeOtherSessions()
                       .then((r) => {
-                        setSessionFlash({
-                          kind: 'ok',
-                          message: t('security.revokedOtherSessions', {
+                        toast.ok(t('security.revokedOtherSessions', {
                             count: r.revoked,
-                          }),
-                        });
+                          }));
                         return refreshSessions();
                       })
                       .catch((e: Error) =>
-                        setSessionFlash({ kind: 'error', message: e.message }),
+                        toast.error(e.message),
                       );
                   }}
                 />
@@ -613,7 +583,7 @@ export function SecurityPage() {
                   const env = getWebAuthnEnv();
                   if (env.likelyOk) {
                     return (
-                      <Alert variant="ok" className="u-mb-3">
+                      <Alert variant="info" className="u-mb-3">
                         {t('security.webauthnEnvOk', { origin: env.origin })}
                       </Alert>
                     );
@@ -760,22 +730,6 @@ export function SecurityPage() {
                 title={t('security.devicesTitle')}
                 description={t('security.devicesDesc')}
               >
-                {devicesFlash ? (
-                  <Alert
-                    variant={devicesFlash.kind === 'ok' ? 'ok' : 'error'}
-                    className="u-mb-3"
-                  >
-                    {devicesFlash.message}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="u-ml-2"
-                      onClick={() => setDevicesFlash(null)}
-                    >
-                      {t('common.close')}
-                    </Button>
-                  </Alert>
-                ) : null}
                 <FormActions>
                   <Button
                     variant="secondary"
@@ -786,15 +740,12 @@ export function SecurityPage() {
                           '/api/v1/auth/devices',
                         )
                         .then((r) =>
-                          setDevicesFlash({
-                            kind: 'ok',
-                            message: t('security.trustedDevicesCount', {
+                          toast.ok(t('security.trustedDevicesCount', {
                               count: (r.items ?? []).length,
-                            }),
-                          }),
+                            })),
                         )
                         .catch((e: Error) =>
-                          setDevicesFlash({ kind: 'error', message: e.message }),
+                          toast.error(e.message),
                         );
                     }}
                   >
@@ -806,14 +757,9 @@ export function SecurityPage() {
                     onClick={() => {
                       void api
                         .requestRaw('/api/v1/auth/devices', { method: 'DELETE' })
-                        .then(() =>
-                          setDevicesFlash({
-                            kind: 'ok',
-                            message: t('security.revokedAllDevices'),
-                          }),
-                        )
+                        .then(() => toast.ok(t('security.revokedAllDevices')))
                         .catch((e: Error) =>
-                          setDevicesFlash({ kind: 'error', message: e.message }),
+                          toast.error(e.message),
                         );
                     }}
                   >
@@ -835,16 +781,13 @@ export function SecurityPage() {
                           '/api/v1/security/fail2ban-snippets',
                         )
                         .then((r) =>
-                          setDevicesFlash({
-                            kind: 'ok',
-                            message: t('security.fail2banSnippetMsg', {
+                          toast.ok(t('security.fail2banSnippetMsg', {
                               written: (r.written ?? []).join(', '),
                               notes: (r.notes ?? []).join(' · '),
-                            }),
-                          }),
+                            })),
                         )
                         .catch((e: Error) =>
-                          setDevicesFlash({ kind: 'error', message: e.message }),
+                          toast.error(e.message),
                         );
                     }}
                   >
@@ -859,22 +802,6 @@ export function SecurityPage() {
                 title={t('security.adminPolicyTitle')}
                 description={t('security.adminPolicyDesc')}
               >
-                {policyFlash ? (
-                  <Alert
-                    variant={policyFlash.kind === 'ok' ? 'ok' : 'error'}
-                    className="u-mb-3"
-                  >
-                    {policyFlash.message}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="u-ml-2"
-                      onClick={() => setPolicyFlash(null)}
-                    >
-                      {t('common.close')}
-                    </Button>
-                  </Alert>
-                ) : null}
                 <p className="muted u-text-sm u-mb-3">{t('security.policyTotpHint')}</p>
                 <label className="ssh-check">
                   <input
@@ -918,15 +845,12 @@ export function SecurityPage() {
                           totp: policyTotp || undefined,
                         })
                         .then(() => {
-                          setPolicyFlash({
-                            kind: 'ok',
-                            message: t('security.policyUpdated'),
-                          });
+                          toast.ok(t('security.policyUpdated'));
                           setPolicyTotp('');
                           return refreshPolicy();
                         })
                         .catch((e: Error) =>
-                          setPolicyFlash({ kind: 'error', message: e.message }),
+                          toast.error(e.message),
                         );
                     }}
                   >
@@ -950,41 +874,37 @@ export function SecurityPage() {
 
         {tab === 'keys' ? (
           <div className="tab-panel">
-            {keysFlash ? (
-              <Alert
-                variant={keysFlash.kind === 'ok' ? 'ok' : 'error'}
-                className="u-mb-3"
-              >
-                {keysFlash.message}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="u-ml-2"
-                  onClick={() => setKeysFlash(null)}
-                >
-                  {t('common.close')}
-                </Button>
-              </Alert>
-            ) : null}
-            {newKeyToken ? (
-              <Alert variant="ok" className="u-mb-3">
-                {t('security.apiTokenOnce')}
-                <code className="inline u-break-all">{newKeyToken}</code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    void navigator.clipboard?.writeText(newKeyToken);
-                    setKeysFlash({ kind: 'ok', message: t('security.copiedToken') });
-                  }}
-                >
-                  {t('common.copy')}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={bindSet(setNewKeyToken, null)}>
-                  {t('common.close')}
-                </Button>
-              </Alert>
-            ) : null}
+            <Modal
+              open={Boolean(newKeyToken)}
+              onClose={() => setNewKeyToken(null)}
+              title={t('security.apiTokenOnce')}
+              size="sm"
+              footer={
+                <>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => {
+                      if (newKeyToken) {
+                        void navigator.clipboard?.writeText(newKeyToken);
+                        toast.ok(t('security.copiedToken'));
+                      }
+                    }}
+                  >
+                    {t('common.copy')}
+                  </Button>
+                  <Button variant="primary" size="md" onClick={() => setNewKeyToken(null)}>
+                    {t('common.close')}
+                  </Button>
+                </>
+              }
+            >
+              {newKeyToken ? (
+                <p className="u-break-all">
+                  <code>{newKeyToken}</code>
+                </p>
+              ) : null}
+            </Modal>
             <DataTable
               title={t('security.apiKeysTitle')}
               description={t('security.apiKeysDesc')}
@@ -1042,7 +962,7 @@ export function SecurityPage() {
                         .deleteApiKey(k.id)
                         .then(() => refreshKeys())
                         .catch((e: Error) =>
-                          setKeysFlash({ kind: 'error', message: e.message }),
+                          toast.error(e.message),
                         );
                     }}
                   >
@@ -1181,12 +1101,12 @@ export function SecurityPage() {
                   })
                   .then((r) => {
                     setNewKeyToken(r.token);
-                    setKeysFlash({ kind: 'ok', message: t('security.apiKeyCreated') });
+                    toast.ok(t('security.apiKeyCreated'));
                     setCreateKeyOpen(false);
                     return refreshKeys();
                   })
                   .catch((e: Error) =>
-                    setKeysFlash({ kind: 'error', message: e.message }),
+                    toast.error(e.message),
                   )
                   .finally(() => setTotpBusy(false));
               }}
@@ -1244,19 +1164,13 @@ export function SecurityPage() {
               });
               if (r.blob) {
                 void navigator.clipboard?.writeText(r.blob);
-                setDevicesFlash({ kind: 'ok', message: t('security.backupCopied') });
+                toast.ok(t('security.backupCopied'));
               } else {
-                setDevicesFlash({
-                  kind: 'error',
-                  message: (r.notes ?? []).join(' · ') || t('common.failed'),
-                });
+                toast.error((r.notes ?? []).join(' · ') || t('common.failed'));
                 return false;
               }
             } catch (e) {
-              setDevicesFlash({
-                kind: 'error',
-                message: e instanceof Error ? e.message : t('common.failed'),
-              });
+              toast.error(e instanceof Error ? e.message : t('common.failed'));
               return false;
             } finally {
               setTotpBusy(false);
@@ -1284,15 +1198,12 @@ export function SecurityPage() {
                 body: JSON.stringify({ name: newKeyName, totp, scope }),
               });
               setNewKeyToken(r.token);
-              setKeysFlash({ kind: 'ok', message: t('security.apiKeyCreated') });
+              toast.ok(t('security.apiKeyCreated'));
               setCreateKeyOpen(false);
               setTotpPrompt(null);
               await refreshKeys();
             } catch (e) {
-              setKeysFlash({
-                kind: 'error',
-                message: e instanceof Error ? e.message : t('common.failed'),
-              });
+              toast.error(e instanceof Error ? e.message : t('common.failed'));
               return false;
             } finally {
               setTotpBusy(false);

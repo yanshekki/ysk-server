@@ -508,12 +508,23 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         busy={busy}
       />
 
-      {lastTempPassword ? (
-        <Alert variant="ok">
-          {t('db.tempPasswordOnce')}
-          <code className="inline">{lastTempPassword}</code>
-        </Alert>
-      ) : null}
+      <Modal
+        open={Boolean(lastTempPassword)}
+        onClose={() => setLastTempPassword(null)}
+        title={t('db.tempPasswordOnce')}
+        size="sm"
+        footer={
+          <Button variant="primary" size="md" onClick={() => setLastTempPassword(null)}>
+            {t('common.close')}
+          </Button>
+        }
+      >
+        {lastTempPassword ? (
+          <p className="u-break-all">
+            <code>{lastTempPassword}</code>
+          </p>
+        ) : null}
+      </Modal>
 
       <PageTabs
         tabs={[

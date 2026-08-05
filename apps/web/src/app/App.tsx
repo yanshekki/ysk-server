@@ -5,6 +5,7 @@ import { RequireAuth } from './layout/RequireAuth';
 import { RequireCapability } from './layout/RequireCapability';
 import { GuestOnly } from './layout/GuestOnly';
 import { ErrorBoundary } from '../shared/components/ErrorBoundary';
+import { ToastViewport } from '../shared/components/ui';
 
 /** Lightweight fallback while route chunks load */
 export function RouteFallback() {
@@ -183,6 +184,8 @@ export function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        {/* Global toast: login + authenticated shell */}
+        <ToastViewport />
         <Routes>
           <Route
             path="/login"

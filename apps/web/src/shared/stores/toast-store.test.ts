@@ -55,6 +55,13 @@ describe('toastStore', () => {
     expect(toastStore.getToasts()).toHaveLength(0);
   });
 
+  it('accepts detail option on toast', () => {
+    toast.ok('Done', { detail: 'note line 1\nnote line 2' });
+    const item = toastStore.getToasts()[0];
+    expect(item?.message).toBe('Done');
+    expect(item?.detail).toContain('note line 1');
+  });
+
   it('subscribe notifies on push and dismiss; unsubscribe stops', () => {
     let n = 0;
     const unsub = toastStore.subscribe(() => {
