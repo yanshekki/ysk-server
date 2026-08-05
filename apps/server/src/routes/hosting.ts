@@ -16,7 +16,7 @@ import {
   planOrInstallRuntime,
   listSupportedRuntimes,
   phpExtensionCatalogDto,
-  runtimePluginsCatalogDto,
+  runtimePluginsCatalogWithProbe,
   applyPublicFileServer,
   planFirewall,
   planPublicFileServer,
@@ -126,7 +126,8 @@ export async function handleHostingRoutes(
           sendJson(res, 200, { kind: 'php', plugins: [], defaults: [], useExtensions: true });
           return true;
         }
-        sendJson(res, 200, runtimePluginsCatalogDto(kind));
+        const catalog = await runtimePluginsCatalogWithProbe(kind, ctx.host);
+        sendJson(res, 200, catalog);
         return true;
       }
       // —— PHP extension catalog (version-aware apt names) ——

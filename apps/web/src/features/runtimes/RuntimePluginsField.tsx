@@ -21,6 +21,7 @@ export type RuntimePluginRow = {
   group?: string;
   recommended: boolean;
   required: boolean;
+  installed?: boolean;
 };
 
 export function RuntimePluginsField({
@@ -51,13 +52,17 @@ export function RuntimePluginsField({
       setRows(
         (r.plugins ?? []).map((p) => ({
           id: p.id,
-          label: p.label,
-          hint: p.hint,
+          label: p.installed ? `${p.label} ✓` : p.label,
+          hint: p.installed
+            ? `${p.hint ?? p.id} · ${t('runtime.pluginAlreadyOnHost')}`
+            : p.hint,
           group: p.group,
           recommended: Boolean(p.recommended),
           required: Boolean(p.required),
+          installed: Boolean(p.installed),
         })),
       );
+      // Prefer server defaults (recommended && !installed)
       setDefaults(r.defaults ?? []);
       setLoaded(true);
     } catch {
@@ -90,6 +95,9 @@ export function RuntimePluginsField({
         })),
     [rows],
   );
+
+  // When parent holds empty selection after load, seed with defaults (skip already-on-host)
+  // Handled below in effect with defaults from API.
 
   const selectableIds = useMemo(
     () => rows.filter((r) => !r.required).map((r) => r.id),

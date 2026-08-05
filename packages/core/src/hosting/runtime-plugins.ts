@@ -61,7 +61,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'Yarn',
     hint: 'npm i -g yarn',
     group: 'package',
-    recommended: true,
     installer: 'npm-global',
     npmPackages: ['yarn'],
     bins: ['yarn'],
@@ -72,7 +71,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'pnpm',
     hint: 'npm i -g pnpm',
     group: 'package',
-    recommended: true,
     installer: 'npm-global',
     npmPackages: ['pnpm'],
     bins: ['pnpm'],
@@ -83,7 +81,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'TypeScript',
     hint: 'npm i -g typescript',
     group: 'toolchain',
-    recommended: true,
     installer: 'npm-global',
     npmPackages: ['typescript'],
     bins: ['tsc'],
@@ -148,7 +145,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'Poetry',
     hint: 'pip install poetry',
     group: 'package',
-    recommended: true,
     installer: 'pip',
     pipPackages: ['poetry'],
     bins: ['poetry'],
@@ -179,7 +175,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'Uvicorn',
     hint: 'ASGI server',
     group: 'web',
-    recommended: true,
     installer: 'pip',
     pipPackages: ['uvicorn'],
     bins: ['uvicorn'],
@@ -190,7 +185,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'Gunicorn',
     hint: 'WSGI server',
     group: 'web',
-    recommended: true,
     installer: 'pip',
     pipPackages: ['gunicorn'],
     bins: ['gunicorn'],
@@ -234,7 +228,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'golangci-lint',
     hint: 'go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest',
     group: 'dev',
-    recommended: true,
     installer: 'go-install',
     goModules: ['github.com/golangci/golangci-lint/cmd/golangci-lint@latest'],
     bins: ['golangci-lint'],
@@ -323,7 +316,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'Gradle',
     hint: 'apt gradle',
     group: 'build',
-    recommended: true,
     installer: 'apt',
     aptPackages: ['gradle'],
     bins: ['gradle'],
@@ -347,7 +339,6 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     label: 'Gradle',
     hint: 'apt gradle',
     group: 'build',
-    recommended: true,
     installer: 'apt',
     aptPackages: ['gradle'],
     bins: ['gradle'],
@@ -498,7 +489,7 @@ export function buildRuntimePluginScriptLines(
   };
 }
 
-/** API / UI DTO */
+/** API / UI DTO (sync; installed flags filled by async probe helper) */
 export function runtimePluginsCatalogDto(kind: RuntimeKind) {
   const plugins = listRuntimePlugins(kind);
   return {
@@ -512,7 +503,46 @@ export function runtimePluginsCatalogDto(kind: RuntimeKind) {
       required: Boolean(p.required),
       installer: p.installer,
       bins: p.bins ?? [],
+      installed: false as boolean,
     })),
     defaults: defaultRuntimePluginIds(kind),
   };
+}
+
+/**
+ * Probe which plugins already exist on PATH (via bins).
+ * Defaults = recommended && !installed (skip already present tools).
+ */
+export async function runtimePluginsCatalogWithProbe(
+  kind: RuntimeKind,
+  host: { runCommand: (argv: string[], opts?: { timeoutMs?: number }) => Promise<{ exitCode: number; stdout: string }> },
+) {
+  const base = runtimePluginsCatalogDto(kind);
+  const plugins = [];
+  for (const p of base.plugins) {
+    let installed = false;
+    for (const bin of p.bins ?? []) {
+      if (!bin) continue;
+      try {
+        const r = await host.runCommand(['bash', '-c', `command -v ${JSON.stringify(bin)}`], {
+          timeoutMs: 4_000,
+        });
+        if (r.exitCode === 0 && r.stdout.trim()) {
+          installed = true;
+          break;
+        }
+      } catch {
+        /* */
+      }
+    }
+    plugins.push({ ...p, installed });
+  }
+  const defaults = plugins
+    .filter((p) => (p.recommended || p.required) && !p.installed)
+    .map((p) => p.id);
+  // Always include required even if "installed" flag wrong
+  for (const p of plugins) {
+    if (p.required && !defaults.includes(p.id)) defaults.push(p.id);
+  }
+  return { kind, plugins, defaults };
 }

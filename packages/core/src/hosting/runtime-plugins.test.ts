@@ -8,10 +8,10 @@ import {
 } from './runtime-plugins.js';
 
 describe('runtime-plugins', () => {
-  it('lists node tools including pm2 as recommended', () => {
+  it('lists node tools including pm2 as sole recommended default', () => {
     const node = listRuntimePlugins('node');
     expect(node.some((p) => p.id === 'pm2' && p.recommended)).toBe(true);
-    expect(defaultRuntimePluginIds('node')).toContain('pm2');
+    expect(defaultRuntimePluginIds('node')).toEqual(['pm2']);
   });
 
   it('resolves null → defaults; [] → only required', () => {

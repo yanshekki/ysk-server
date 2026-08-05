@@ -427,6 +427,7 @@ export const systemApi = {
         required: boolean;
         installer: string;
         bins?: string[];
+        installed?: boolean;
       }>;
       defaults: string[];
       useExtensions?: boolean;

@@ -65,6 +65,7 @@
   "pluginsInstallNote": "Tools install best-effort after the runtime; failures do not roll back the runtime.",
   "installPluginsOnly": "Install selected tools ({{version}} already present)",
   "installExtOnly": "Install selected extensions (PHP {{version}} present)",
+  "pluginAlreadyOnHost": "already on host",
   "installedPhp": "Installed PHP {{version}}",
   "nextSteps": "Next",
   "suggestedFlow": "Suggested flow",
