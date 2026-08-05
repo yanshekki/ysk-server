@@ -2,6 +2,7 @@ export { createAppContext, closeAppContext, applyProtection } from './app-contex
 export {
   createHttpServer,
   createControlPlaneServer,
+  listenControlPlane,
   listen,
 } from './http-server.js';
 export { runSetup } from './cli/setup.js';

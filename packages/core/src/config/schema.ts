@@ -23,6 +23,13 @@ export interface YskConfig {
   tlsKeyPath?: string;
   /** Domain used for panel LE / URL hints (e.g. hermes.ysk.hk) */
   panelDomain?: string;
+  /**
+   * When TLS is on, also bind plain HTTP on this port (default listenPort-1 if > 1024).
+   * Used for migration / health; optional redirect to HTTPS.
+   */
+  httpListenPort?: number;
+  /** If dual HTTP is up, 301 to HTTPS (default true) */
+  tlsHttpRedirect?: boolean;
 }
 
 const DEFAULTS = {
@@ -93,7 +100,21 @@ export function parseConfig(raw: unknown): YskConfig {
     tlsCertPath: typeof o.tlsCertPath === 'string' ? o.tlsCertPath : undefined,
     tlsKeyPath: typeof o.tlsKeyPath === 'string' ? o.tlsKeyPath : undefined,
     panelDomain: typeof o.panelDomain === 'string' ? o.panelDomain : undefined,
+    httpListenPort:
+      typeof o.httpListenPort === 'number' &&
+      Number.isInteger(o.httpListenPort) &&
+      o.httpListenPort > 0 &&
+      o.httpListenPort < 65536
+        ? o.httpListenPort
+        : undefined,
+    tlsHttpRedirect: o.tlsHttpRedirect === undefined ? true : Boolean(o.tlsHttpRedirect),
   };
+}
+
+/** Default companion HTTP port when TLS is on (avoid privileged 80). */
+export function defaultHttpListenPort(httpsPort: number): number {
+  if (httpsPort > 1024) return httpsPort - 1;
+  return 9286;
 }
 
 /** Merge TLS / panel fields into existing config (persist-safe). */

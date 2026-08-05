@@ -26,7 +26,7 @@ import {
   expandComponents,
 } from '@ysk/core';
 import { createAppContext, closeAppContext } from './app-context.js';
-import { listen } from './http-server.js';
+
 import { runSetup } from './cli/setup.js';
 import { runUpdate } from './cli/update.js';
 import { loadConfigFile } from './config-loader.js';
@@ -4712,10 +4712,10 @@ async function mainInner(
       dataDir: dataDirOpt ?? config?.dataDir,
       adminPassword: process.env.YSK_ADMIN_PASSWORD,
       webRoot: webRoot ?? undefined });
-    const { createControlPlaneServer } = await import('./http-server.js');
-    const { server, https: servingHttps } = createControlPlaneServer(ctx);
-    const addr = await listen(server, host, port);
-    const scheme = servingHttps ? 'https' : 'http';
+    const { listenControlPlane } = await import('./http-server.js');
+    const dual = await listenControlPlane(ctx, host, port);
+    const scheme = dual.primary.scheme;
+    const addr = { host: dual.primary.host, port: dual.primary.port };
     const msg = `${PRODUCT_NAME} listening on ${scheme}://${addr.host}:${addr.port}`;
     const publicBind = host === '0.0.0.0' || host === '::' || host === '[::]';
     if (json) {
@@ -4725,8 +4725,9 @@ async function mainInner(
         message: msg,
         data: {
           ...addr,
-          https: servingHttps,
+          https: dual.https,
           scheme,
+          http: dual.http ?? null,
           configPath: configPath ?? null,
           adminUsername: config?.adminUsername ?? 'admin',
           locale: config?.locale ?? 'zh-TW',
@@ -4741,6 +4742,12 @@ async function mainInner(
       });
     } else {
       process.stdout.write(`${msg}\n`);
+      if (dual.http) {
+        process.stdout.write(
+          `HTTP dual: http://${dual.http.host}:${dual.http.port}` +
+            (config?.tlsHttpRedirect !== false ? ` → https :${port}\n` : '\n'),
+        );
+      }
       if (publicBind) {
         process.stderr.write(`${tl('cli.msg.security.control.plane.f59a63')}\n`);
       }
@@ -4760,7 +4767,7 @@ async function mainInner(
       }
     }
     if (process.env.YSK_SERVE_ONCE === '1') {
-      server.close();
+      for (const s of dual.servers) s.close();
       return 0;
     }
     await new Promise(() => {

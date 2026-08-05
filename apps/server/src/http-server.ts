@@ -153,6 +153,88 @@ export function createControlPlaneServer(ctx: AppContext): CreateServerResult {
   return { server: createNodeHttpServer(handler), https: false };
 }
 
+export type DualListenResult = {
+  https: boolean;
+  primary: { host: string; port: number; scheme: 'http' | 'https' };
+  /** Plain HTTP companion (redirect or full API) when TLS dual mode */
+  http?: { host: string; port: number };
+  servers: ControlPlaneServer[];
+};
+
+/**
+ * Bind primary server (+ optional dual HTTP when TLS is on).
+ * Dual HTTP defaults to listenPort-1 with 301 → HTTPS (config.tlsHttpRedirect).
+ */
+export async function listenControlPlane(
+  ctx: AppContext,
+  host: string,
+  port: number,
+): Promise<DualListenResult> {
+  const { server, https } = createControlPlaneServer(ctx);
+  await listen(server, host, port);
+  const servers: ControlPlaneServer[] = [server];
+  const primary = {
+    host,
+    port,
+    scheme: (https ? 'https' : 'http') as 'http' | 'https',
+  };
+
+  if (!https || !ctx.config) {
+    return { https, primary, servers };
+  }
+
+  const { defaultHttpListenPort } = await import('@ysk/core');
+  const httpPort =
+    ctx.config.httpListenPort ?? defaultHttpListenPort(port);
+  if (httpPort === port) {
+    process.stderr.write(
+      '[ysk-server] httpListenPort equals HTTPS port — skip dual HTTP\n',
+    );
+    return { https, primary, servers };
+  }
+
+  const redirect = ctx.config.tlsHttpRedirect !== false;
+  const panelHost = ctx.config.panelDomain?.trim();
+  const httpHandler = redirect
+    ? (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => {
+        const path = req.url || '/';
+        // Keep ACME / health on plain HTTP without redirect
+        if (
+          path.startsWith('/.well-known/') ||
+          path === '/health' ||
+          path.startsWith('/api/v1/health')
+        ) {
+          return attachRequestHandler(ctx, resolveWebRoot(ctx.webRoot))(req, res);
+        }
+        const hostHeader = panelHost || String(req.headers.host || host).split(':')[0];
+        const loc = `https://${hostHeader}:${port}${path}`;
+        res.writeHead(301, { Location: loc, 'Content-Length': '0' });
+        res.end();
+      }
+    : attachRequestHandler(ctx, resolveWebRoot(ctx.webRoot));
+
+  const httpServer = createNodeHttpServer(httpHandler);
+  try {
+    await listen(httpServer, host, httpPort);
+    servers.push(httpServer);
+    process.stdout.write(
+      `[ysk-server] dual HTTP on ${host}:${httpPort}` +
+        (redirect ? ` → https :${port}\n` : ' (full API)\n'),
+    );
+    return {
+      https,
+      primary,
+      http: { host, port: httpPort },
+      servers,
+    };
+  } catch (err) {
+    process.stderr.write(
+      `[ysk-server] dual HTTP bind failed on :${httpPort}: ${err instanceof Error ? err.message : err}\n`,
+    );
+    return { https, primary, servers };
+  }
+}
+
 /** @deprecated use createControlPlaneServer — returns HTTP server only for tests */
 export function createHttpServer(ctx: AppContext): HttpServer {
   return createControlPlaneServer(ctx).server as HttpServer;
