@@ -149,6 +149,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const [envPreview, setEnvPreview] = useState<Record<string, string>>({});
   const [tuningLoaded, setTuningLoaded] = useState(false);
   const [plugins, setPlugins] = useState<string[]>([]);
+  const [pluginsRefreshToken, setPluginsRefreshToken] = useState(0);
   const [latestHint, setLatestHint] = useState<{
     panelLatest: string;
     remoteLatest?: string;
@@ -452,6 +453,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   value={plugins}
                   onChange={setPlugins}
                   disabled={busy}
+                  refreshToken={pluginsRefreshToken}
                 />
                 <RuntimeInstallActions
                   installState={installState}
@@ -476,6 +478,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         plugins,
                       });
                       await refresh();
+                      // Force plugins catalog re-probe (installed chips)
+                      setPluginsRefreshToken((n) => n + 1);
                       return r as OpsResultLike;
                     }, t(meta.installLabelKey, { v: version }))
                   }

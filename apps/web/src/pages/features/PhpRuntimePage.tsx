@@ -254,51 +254,58 @@ export function PhpRuntimePage() {
     }
   }, []);
 
-  const loadExtensions = useCallback(async (ver: string) => {
-    try {
-      // Prefer unified addons API; fall back to legacy php/extensions
-      let extensions: PhpExtRow[] = [];
-      let defaults: string[] = [];
+  const loadExtensions = useCallback(
+    async (ver: string, opts?: { bust?: boolean; optimisticInstalled?: string[] }) => {
       try {
-        const r = await systemApi.runtimeAddons('php', ver);
-        extensions = (r.items ?? []).map((e) => ({
-          id: e.id,
-          group: e.group ?? 'other',
-          label: e.label,
-          hint: e.hint,
-          recommended: Boolean(e.recommended),
-          required: Boolean(e.required),
-          package: e.package ?? `php${ver}-${e.id}`,
-          installed: Boolean(e.installed),
-        }));
-        defaults = r.defaults ?? [];
-      } catch {
-        const r = await systemApi.phpExtensions(ver);
-        extensions = r.extensions.map((e) => ({
-          ...e,
-          installed: Boolean(e.installed),
-        }));
-        defaults = r.defaults;
-      }
-      setExtCatalog(extensions);
-      setExtDefaults(defaults);
-      const installedIds = new Set(extensions.filter((e) => e.installed).map((e) => e.id));
-      setExtSelected((prev) => {
-        const ids = new Set(extensions.map((e) => e.id));
-        // Never keep already-installed in install selection
-        const kept = prev.filter((id) => ids.has(id) && !installedIds.has(id));
-        if (kept.length) {
-          for (const e of extensions) {
-            if (e.required && !e.installed && !kept.includes(e.id)) kept.push(e.id);
-          }
-          return kept;
+        // Prefer unified addons API; fall back to legacy php/extensions
+        let extensions: PhpExtRow[] = [];
+        let defaults: string[] = [];
+        const bust = Boolean(opts?.bust);
+        const optSet = new Set(opts?.optimisticInstalled ?? []);
+        try {
+          const r = await systemApi.runtimeAddons('php', ver, { bust });
+          extensions = (r.items ?? []).map((e) => ({
+            id: e.id,
+            group: e.group ?? 'other',
+            label: e.label,
+            hint: e.hint,
+            recommended: Boolean(e.recommended),
+            required: Boolean(e.required),
+            package: e.package ?? `php${ver}-${e.id}`,
+            installed: Boolean(e.installed) || optSet.has(e.id),
+          }));
+          defaults = r.defaults ?? [];
+        } catch {
+          const r = await systemApi.phpExtensions(ver, { bust });
+          extensions = r.extensions.map((e) => ({
+            ...e,
+            installed: Boolean(e.installed) || optSet.has(e.id),
+          }));
+          defaults = r.defaults;
         }
-        return defaults.filter((id) => !installedIds.has(id) || extensions.find((e) => e.id === id)?.required);
-      });
-    } catch {
-      /* optional — install still works with server defaults */
-    }
-  }, []);
+        setExtCatalog(extensions);
+        setExtDefaults(defaults);
+        const installedIds = new Set(extensions.filter((e) => e.installed).map((e) => e.id));
+        setExtSelected((prev) => {
+          const ids = new Set(extensions.map((e) => e.id));
+          // Never keep already-installed in install selection
+          const kept = prev.filter((id) => ids.has(id) && !installedIds.has(id));
+          if (kept.length) {
+            for (const e of extensions) {
+              if (e.required && !e.installed && !kept.includes(e.id)) kept.push(e.id);
+            }
+            return kept;
+          }
+          return defaults.filter(
+            (id) => !installedIds.has(id) || extensions.find((e) => e.id === id)?.required,
+          );
+        });
+      } catch {
+        /* optional — install still works with server defaults */
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     void loadExtensions(version);
@@ -519,11 +526,11 @@ export function PhpRuntimePage() {
                       extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
                     }
                     loading={busy}
-                    onClick={() =>
+                    onClick={() => {
+                      const optional = extSelected.filter((id) =>
+                        selectableExtIds.includes(id),
+                      );
                       void run(async () => {
-                        const optional = extSelected.filter((id) =>
-                          selectableExtIds.includes(id),
-                        );
                         const required = extCatalog
                           .filter((e) => e.required)
                           .map((e) => e.id);
@@ -533,13 +540,22 @@ export function PhpRuntimePage() {
                           install: true,
                           extensions: [...new Set([...required, ...optional])],
                         });
+                        // Optimistic UI + forced re-probe so list moves to「已安裝」
+                        setExtCatalog((prev) =>
+                          prev.map((e) =>
+                            optional.includes(e.id) ? { ...e, installed: true } : e,
+                          ),
+                        );
                         await refresh();
-                        await loadExtensions(version);
+                        await loadExtensions(version, {
+                          bust: true,
+                          optimisticInstalled: optional,
+                        });
                         return r as OpsResultLike;
                       }, t('runtime.phpExtInstallSelected', {
-                        n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
-                      }))
-                    }
+                        n: optional.length,
+                      }));
+                    }}
                   >
                     {t('runtime.phpExtInstallSelected', {
                       n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
@@ -599,7 +615,7 @@ export function PhpRuntimePage() {
                         extensions: extSelected.length ? extSelected : extDefaults,
                       });
                       await refresh();
-                      await loadExtensions(version);
+                      await loadExtensions(version, { bust: true });
                       return r as OpsResultLike;
                     }, t('runtime.installedPhp', { version }))
                   }
@@ -654,7 +670,14 @@ export function PhpRuntimePage() {
                         } else {
                           toast.ok(t('runtime.pluginUninstalled', { name: row.label }));
                         }
-                        return loadExtensions(version);
+                        if (body.ok !== false && !body.blocked) {
+                          setExtCatalog((prev) =>
+                            prev.map((e) =>
+                              e.id === row.id ? { ...e, installed: false } : e,
+                            ),
+                          );
+                        }
+                        return loadExtensions(version, { bust: true });
                       })
                       .catch((e: Error) => {
                         toast.error(e.message);

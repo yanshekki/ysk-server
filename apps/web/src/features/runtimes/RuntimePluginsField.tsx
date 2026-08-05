@@ -3,7 +3,7 @@
  * Install: multi-select only items not yet on host.
  * Uninstall: separate list of installed tools with confirm.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Badge,
@@ -34,11 +34,14 @@ export function RuntimePluginsField({
   value,
   onChange,
   disabled,
+  /** Bump after parent runtime install so catalog re-probes */
+  refreshToken = 0,
 }: {
   kind: string;
   value: string[];
   onChange: (ids: string[]) => void;
   disabled?: boolean;
+  refreshToken?: number;
 }) {
   const { t } = useTranslation();
   const [rows, setRows] = useState<RuntimePluginRow[]>([]);
@@ -50,71 +53,78 @@ export function RuntimePluginsField({
   const [batchUninstall, setBatchUninstall] = useState(false);
   const [uninstallSelected, setUninstallSelected] = useState<string[]>([]);
   const [opsResult, setOpsResult] = useState<OpsResultLike | null>(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
-  const load = useCallback(async () => {
-    if (kind === 'php') {
-      setRows([]);
-      setDefaults([]);
-      setLoaded(true);
-      return;
-    }
-    try {
-      let items: Array<{
-        id: string;
-        label: string;
-        hint?: string;
-        group?: string;
-        recommended: boolean;
-        required: boolean;
-        installed?: boolean;
-      }> = [];
-      let defs: string[] = [];
+  const load = useCallback(
+    async (opts?: { bust?: boolean; optimisticInstalled?: string[] }) => {
+      if (kind === 'php') {
+        setRows([]);
+        setDefaults([]);
+        setLoaded(true);
+        return;
+      }
       try {
-        const r = await systemApi.runtimeAddons(kind);
-        items = r.items ?? [];
-        defs = r.defaults ?? [];
-      } catch {
-        const r = await systemApi.runtimePlugins(kind);
-        items = (r.plugins ?? []).map((p) => ({
+        let items: Array<{
+          id: string;
+          label: string;
+          hint?: string;
+          group?: string;
+          recommended: boolean;
+          required: boolean;
+          installed?: boolean;
+        }> = [];
+        let defs: string[] = [];
+        const bust = Boolean(opts?.bust);
+        try {
+          const r = await systemApi.runtimeAddons(kind, undefined, { bust });
+          items = r.items ?? [];
+          defs = r.defaults ?? [];
+        } catch {
+          const r = await systemApi.runtimePlugins(kind, { bust });
+          items = (r.plugins ?? []).map((p) => ({
+            id: p.id,
+            label: p.label,
+            hint: p.hint,
+            group: p.group,
+            recommended: Boolean(p.recommended),
+            required: Boolean(p.required),
+            installed: Boolean(p.installed),
+          }));
+          defs = r.defaults ?? [];
+        }
+        const optSet = new Set(opts?.optimisticInstalled ?? []);
+        const mapped: RuntimePluginRow[] = items.map((p) => ({
           id: p.id,
           label: p.label,
           hint: p.hint,
           group: p.group,
           recommended: Boolean(p.recommended),
           required: Boolean(p.required),
-          installed: Boolean(p.installed),
+          installed: Boolean(p.installed) || optSet.has(p.id),
         }));
-        defs = r.defaults ?? [];
+        setRows(mapped);
+        setDefaults(defs);
+        setLoaded(true);
+        // Drop already-installed from selection (latest value via ref)
+        const installedIds = new Set(mapped.filter((r) => r.installed).map((r) => r.id));
+        const cur = Array.isArray(valueRef.current) ? valueRef.current : [];
+        const stripped = cur.filter((id) => !installedIds.has(id));
+        if (stripped.length !== cur.length) onChangeRef.current(stripped);
+      } catch {
+        setRows([]);
+        setDefaults([]);
+        setLoaded(true);
       }
-      const mapped: RuntimePluginRow[] = items.map((p) => ({
-        id: p.id,
-        label: p.label,
-        hint: p.hint,
-        group: p.group,
-        recommended: Boolean(p.recommended),
-        required: Boolean(p.required),
-        installed: Boolean(p.installed),
-      }));
-      setRows(mapped);
-      setDefaults(defs);
-      setLoaded(true);
-      // Drop already-installed ids from install selection
-      const installedIds = new Set(mapped.filter((r) => r.installed).map((r) => r.id));
-      const cur = Array.isArray(value) ? value : [];
-      const stripped = cur.filter((id) => !installedIds.has(id));
-      if (stripped.length !== cur.length) onChange(stripped);
-    } catch {
-      setRows([]);
-      setDefaults([]);
-      setLoaded(true);
-    }
-    // value included so re-load after uninstall can strip again with fresh selection
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onChange identity may change each render
-  }, [kind, t]);
+    },
+    [kind],
+  );
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load({ bust: refreshToken > 0 });
+  }, [load, refreshToken]);
 
   // Seed recommended defaults once (API already excludes installed)
   useEffect(() => {
@@ -188,23 +198,35 @@ export function RuntimePluginsField({
 
   const doInstallSelected = useCallback(async () => {
     if (!selectedForInstall.length) return;
+    const installedNow = [...selectedForInstall];
     setBusyInstall(true);
     try {
       const r = (await systemApi.runtimePluginsInstall({
         kind: kindArg,
-        plugins: selectedForInstall,
+        plugins: installedNow,
       })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
       presentOps(
         r,
-        t('runtime.pluginInstallOk', { n: selectedForInstall.length }),
+        t('runtime.pluginInstallOk', { n: installedNow.length }),
         t('runtime.pluginInstallFailed'),
       );
-      if (r.ok !== false && !r.blocked) onChange(requiredRows.map((x) => x.id));
-      await load();
+      if (r.ok !== false && !r.blocked) {
+        // Optimistic: move to「已安裝」immediately, then re-probe host
+        setRows((prev) =>
+          prev.map((row) =>
+            installedNow.includes(row.id) ? { ...row, installed: true } : row,
+          ),
+        );
+        onChange(requiredRows.map((x) => x.id));
+        await load({ bust: true, optimisticInstalled: installedNow });
+      } else {
+        await load({ bust: true });
+      }
     } catch (e) {
       const m = e instanceof Error ? e.message : t('runtime.pluginInstallFailed');
       toast.error(m);
       setOpsResult({ ok: false, notes: [m] });
+      await load({ bust: true });
     } finally {
       setBusyInstall(false);
     }
@@ -226,11 +248,17 @@ export function RuntimePluginsField({
           t('runtime.pluginUninstallFailed', { name: label }),
         );
         setUninstallSelected([]);
-        await load();
+        if (r.ok !== false && !r.blocked) {
+          setRows((prev) =>
+            prev.map((row) => (ids.includes(row.id) ? { ...row, installed: false } : row)),
+          );
+        }
+        await load({ bust: true });
       } catch (e) {
         const m = e instanceof Error ? e.message : t('runtime.pluginUninstallFailed', { name: label });
         toast.error(m);
         setOpsResult({ ok: false, notes: [m] });
+        await load({ bust: true });
       } finally {
         setBusyUninstall(false);
         setConfirmUninstall(null);

@@ -415,8 +415,10 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
-  runtimePlugins: (kind: string) =>
-    api.requestRaw<{
+  runtimePlugins: (kind: string, opts?: { bust?: boolean }) => {
+    const q = new URLSearchParams({ kind });
+    if (opts?.bust) q.set('_', String(Date.now()));
+    return api.requestRaw<{
       kind: string;
       plugins: Array<{
         id: string;
@@ -431,7 +433,8 @@ export const systemApi = {
       }>;
       defaults: string[];
       useExtensions?: boolean;
-    }>(`/api/v1/hosting/runtimes/plugins?kind=${encodeURIComponent(kind)}`),
+    }>(`/api/v1/hosting/runtimes/plugins?${q.toString()}`);
+  },
   /** Install companion tools only (no full runtime stack) */
   runtimePluginsInstall: (body: {
     kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
@@ -453,9 +456,10 @@ export const systemApi = {
       allowStatuses: [403, 422],
     }),
   /** Unified addons: PHP extensions or companion plugins */
-  runtimeAddons: (kind: string, version?: string) => {
+  runtimeAddons: (kind: string, version?: string, opts?: { bust?: boolean }) => {
     const q = new URLSearchParams({ kind });
     if (version) q.set('version', version);
+    if (opts?.bust) q.set('_', String(Date.now()));
     return api.requestRaw<{
       kind: string;
       mode: 'extensions' | 'plugins';
@@ -495,8 +499,10 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
-  phpExtensions: (version = '8.2') =>
-    api.requestRaw<{
+  phpExtensions: (version = '8.2', opts?: { bust?: boolean }) => {
+    const q = new URLSearchParams({ version });
+    if (opts?.bust) q.set('_', String(Date.now()));
+    return api.requestRaw<{
       version: string;
       supportedVersions: string[];
       extensions: Array<{
@@ -510,7 +516,8 @@ export const systemApi = {
         installed?: boolean;
       }>;
       defaults: string[];
-    }>(`/api/v1/hosting/php/extensions?version=${encodeURIComponent(version)}`),
+    }>(`/api/v1/hosting/php/extensions?${q.toString()}`);
+  },
   phpIniGet: (version = '8.2') =>
     api.requestRaw<{
       version: string;
