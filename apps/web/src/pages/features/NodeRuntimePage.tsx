@@ -1,7 +1,7 @@
 /**
  * Node.js runtime — probe + install Node + PM2 with standard UX.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   WithPageGuide,
@@ -53,17 +53,36 @@ export function NodeRuntimePage() {
     void refresh();
   }, [refresh]);
 
-  const nodePath = probe?.nodePath ?? probe?.node ?? probe?.['node.version'];
+  // API shape: { supported, probe: { hostNode, node: RuntimeProbeItem[], ... } }
+  const probeInner = useMemo(() => {
+    const p = (probe?.probe as Record<string, unknown> | undefined) ?? probe;
+    return p && typeof p === 'object' ? p : null;
+  }, [probe]);
+
+  const hostNode =
+    probeInner?.hostNode != null && String(probeInner.hostNode).trim()
+      ? String(probeInner.hostNode)
+      : null;
+  const nodeItems = Array.isArray(probeInner?.node)
+    ? (probeInner!.node as Array<Record<string, unknown>>)
+    : [];
+  const availableMajors = nodeItems
+    .filter((i) => i.available)
+    .map((i) => String(i.version));
+  const softNode = softItems.find((s) => s.id === 'node');
   const hasNode = Boolean(
-    probe &&
-      (probe.node ||
-        probe.nodeVersion ||
-        probe.nodePath ||
-        (typeof probe.ok === 'boolean' && probe.ok)),
+    hostNode ||
+      availableMajors.length > 0 ||
+      softNode?.installed ||
+      (!missing.some((m) => m.id === 'node') && softItems.length > 0 && softNode),
   );
+  const nodePath =
+    hostNode ??
+    (nodeItems.find((i) => i.available && i.resolvedPath)?.resolvedPath as string | undefined) ??
+    null;
   const pm2Status = softItems.find((s) => s.id === 'pm2');
   const hasPm2 = Boolean(pm2Status?.installed);
-  const nodeMissing = missing.some((m) => m.id === 'node');
+  const nodeMissing = missing.some((m) => m.id === 'node') && !hasNode;
   const pm2Missing = missing.some((m) => m.id === 'pm2');
 
   return (
@@ -71,14 +90,22 @@ export function NodeRuntimePage() {
       title={t('nav.node', { defaultValue: 'Node.js' })}
       status={{
         pill: {
-          label: probe ? t('common.probed') : t('common.notProbed'),
-          tone: probe ? 'ok' : 'warn',
+          label: hasNode
+            ? t('runtime.pm2Ready')
+            : probe
+              ? t('common.probed')
+              : t('common.notProbed'),
+          tone: hasNode ? 'ok' : probe ? 'warn' : 'neutral',
         },
         items: [
           {
-            label: t('common.probe'),
-            value: probe ? t('runtime.read') : t('common.notProbed'),
-            tone: probe ? 'ok' : 'neutral',
+            label: 'Node.js',
+            value: hasNode
+              ? hostNode ?? t('runtime.pm2Ready')
+              : probe
+                ? t('runtime.pm2MissingShort')
+                : t('common.notProbed'),
+            tone: hasNode ? 'ok' : 'warn',
           },
           { label: t('runtime.targetVersion'), value: version },
           {
@@ -118,21 +145,25 @@ export function NodeRuntimePage() {
         </Alert>
       ) : null}
 
-      {probe ? (
+      {probeInner ? (
         <Card>
           <CardSection title={t('runtime.probeResult')} description={t('runtime.readonly')}>
             <DescriptionList
               columns={2}
-              items={Object.entries(probe)
-                .filter(([, v]) => v == null || typeof v !== 'object')
-                .slice(0, 16)
-                .map(([k, v]) => ({ label: k, value: String(v) }))}
+              items={[
+                {
+                  label: 'hostNode',
+                  value: hostNode ?? t('runtime.pm2MissingShort'),
+                },
+                {
+                  label: t('runtime.nodeMajor'),
+                  value: availableMajors.length ? availableMajors.join(', ') : '—',
+                },
+                ...(nodePath
+                  ? [{ label: 'PATH', value: String(nodePath) }]
+                  : []),
+              ]}
             />
-            {nodePath != null ? (
-              <p className="muted u-text-sm u-mt-2">
-                {t('redis.refPath', { path: String(nodePath) })}
-              </p>
-            ) : null}
           </CardSection>
         </Card>
       ) : null}
@@ -238,7 +269,7 @@ export function NodeRuntimePage() {
         </CardSection>
       </Card>
 
-      {result && !msg && !error ? (
+      {result ? (
         <OpsResultPanel title={t('db.opsResult')} result={result} busy={busy || softBusy} />
       ) : null}
     

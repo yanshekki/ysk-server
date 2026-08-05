@@ -90,10 +90,12 @@ export async function handleHostingRoutes(
             version: result.version,
             ok: result.ok,
             install: Boolean(data.install),
+            blocked: Boolean(result.blocked),
           },
           ok: result.ok,
         });
-        sendJson(res, result.ok || !data.install ? 200 : 422, result);
+        // Honest ops status (403 blocked / 422 failed) + full body notes for UI
+        sendOpsResult(res, result);
         return true;
       }
       // —— Global PHP php.ini (panel-managed) ——

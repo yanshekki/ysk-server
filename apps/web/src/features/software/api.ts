@@ -87,19 +87,25 @@ export const softwareApi = {
     }>(`/api/v1/system/software${q}`);
   },
   installOne: (id: string) =>
-    api.requestRaw<SoftwareInstallResult>(`/api/v1/system/software/${id}/install`, {
-      method: 'POST',
-      body: '{}',
-    }),
+    api.requestRawAllowStatus<SoftwareInstallResult>(
+      `/api/v1/system/software/${id}/install`,
+      {
+        method: 'POST',
+        body: '{}',
+        allowStatuses: [403, 422],
+      },
+    ),
   installMany: (ids: string[]) =>
-    api.requestRaw<SoftwareInstallResult>('/api/v1/system/software/install', {
+    api.requestRawAllowStatus<SoftwareInstallResult>('/api/v1/system/software/install', {
       method: 'POST',
       body: JSON.stringify({ ids }),
+      allowStatuses: [403, 422],
     }),
   installFeature: (feature: string) =>
-    api.requestRaw<SoftwareInstallResult>('/api/v1/system/software/install', {
+    api.requestRawAllowStatus<SoftwareInstallResult>('/api/v1/system/software/install', {
       method: 'POST',
       body: JSON.stringify({ feature }),
+      allowStatuses: [403, 422],
     }),
 
   /** Preview MySQL ↔ MariaDB exclusive switch (no mutation) */

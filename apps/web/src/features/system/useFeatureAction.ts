@@ -4,6 +4,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OpsResultLike } from '../../shared/components/ui';
+import { ApiError } from '../../shared/services/api';
 import {
   humanizeOperatorMessage,
   looksLikeBlockedMessage,
@@ -33,7 +34,11 @@ export function useFeatureAction() {
 
         const notes = sanitizeOperatorNotes(rawNotes);
         const blocked = Boolean(
-          o.blocked || o.requiresExecute || o.requiresRoot || (o.ok === false && o.executed === false),
+          o.blocked ||
+            o.requiresExecute ||
+            o.requiresRoot ||
+            o.apply_status === 'blocked' ||
+            (o.ok === false && o.executed === false),
         );
         const blockMessage =
           typeof o.blockMessage === 'string'
@@ -77,6 +82,22 @@ export function useFeatureAction() {
         }
         return r;
       } catch (e) {
+        // Prefer full ops body from 403/422 responses (notes + requires* flags)
+        if (e instanceof ApiError && e.details && typeof e.details === 'object') {
+          const d = e.details as Record<string, unknown>;
+          if (
+            Array.isArray(d.notes) ||
+            d.requiresExecute != null ||
+            d.requiresRoot != null ||
+            d.blocked != null ||
+            typeof d.blockMessage === 'string'
+          ) {
+            const ops = toOpsResult({ ...d, ok: false });
+            setResult(ops);
+            setError(null);
+            return null;
+          }
+        }
         const raw = e instanceof Error ? e.message : t('common.opFailed');
         const m = humanizeOperatorMessage(raw);
         // L4: multi-locale / code-aware block detection (not CJK-only)

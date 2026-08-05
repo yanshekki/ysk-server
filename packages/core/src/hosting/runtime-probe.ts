@@ -284,6 +284,27 @@ export interface RuntimeInstallResult {
   commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
   requiresExecute: boolean;
   requiresRoot: boolean;
+  /** True when install was requested but host lacks EXECUTE/root */
+  blocked?: boolean;
+  blockMessage?: string;
+}
+
+/** Compress install stderr for panel notes (avoid dumping full apt logs). */
+function summarizeInstallLog(stderr: string, stdout: string): string {
+  const text = `${stderr || ''}\n${stdout || ''}`.trim();
+  if (!text) return '';
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .filter(
+      (l) =>
+        !/^(Get:|Hit:|Ign:|Reading package|Building dependency|Preparing to unpack|Unpacking |Setting up |Processing triggers|Fetched )/i.test(
+          l,
+        ),
+    );
+  const pick = (lines.length ? lines : text.split('\n')).slice(-6).join(' · ');
+  return pick.replace(/\s+/g, ' ').slice(0, 360);
 }
 
 /**
@@ -306,23 +327,64 @@ export async function planOrInstallRuntime(input: {
   let script = '';
   if (input.kind === 'node') {
     const plan = selectNodeRuntime(input.version);
+    // Official binary tarball → /usr/local/ysk/node/<major> (same layout as go/rust).
+    // Reuse PATH node when major already matches; NodeSource apt is fallback only.
     script = [
       '#!/usr/bin/env bash',
       `# YSK Server — install Node.js ${plan.version}`,
       'set -euo pipefail',
       'export DEBIAN_FRONTEND=noninteractive',
-      `if ${shellBinExists('node')}; then node -v; fi`,
-      'apt-get update',
-      `curl -fsSL https://deb.nodesource.com/setup_${plan.version}.x | bash -`,
+      `MAJOR="${plan.version}"`,
+      `DEST="/usr/local/ysk/node/${plan.version}"`,
+      'mkdir -p /usr/local/ysk/node /tmp/ysk-node-install',
+      '# Reuse existing node when major version already matches',
+      `if ${shellBinExists('node')}; then`,
+      '  CUR="$(node -v 2>/dev/null | sed "s/^v//" || true)"',
+      '  case "$CUR" in',
+      '    ${MAJOR}.*)',
+      '      mkdir -p "$DEST/bin"',
+      `      NODE_BIN="$(${shellResolveBin('node')})"`,
+      '      test -n "$NODE_BIN"',
+      '      ln -sfn "$NODE_BIN" "$DEST/bin/node"',
+      `      if ${shellBinExists('npm')}; then ln -sfn "$(${shellResolveBin('npm')})" "$DEST/bin/npm" || true; fi`,
+      '      "$DEST/bin/node" -v',
+      '      exit 0',
+      '      ;;',
+      '  esac',
+      'fi',
+      'case "$(uname -m)" in aarch64|arm64) ARCH=linux-arm64 ;; *) ARCH=linux-x64 ;; esac',
+      'cd /tmp/ysk-node-install',
+      'rm -f SHASUMS256.txt node.tgz',
+      'curl -fsSL "https://nodejs.org/dist/latest-v${MAJOR}.x/SHASUMS256.txt" -o SHASUMS256.txt',
+      '# Prefer .tar.gz (no xz dependency); fall back to .tar.xz',
+      'TARBALL=$(grep -E "node-v${MAJOR}\\.[0-9]+\\.[0-9]+-${ARCH}\\.tar\\.gz$" SHASUMS256.txt | awk \'{print $2}\' | head -1)',
+      'if [ -z "$TARBALL" ]; then',
+      '  TARBALL=$(grep -E "node-v${MAJOR}\\.[0-9]+\\.[0-9]+-${ARCH}\\.tar\\.xz$" SHASUMS256.txt | awk \'{print $2}\' | head -1)',
+      'fi',
+      'if [ -n "$TARBALL" ]; then',
+      '  curl -fsSL "https://nodejs.org/dist/latest-v${MAJOR}.x/$TARBALL" -o node.tgz',
+      '  rm -rf "$DEST"',
+      '  mkdir -p "$DEST"',
+      '  if echo "$TARBALL" | grep -q "\\.xz$"; then tar -C "$DEST" --strip-components=1 -xJf node.tgz',
+      '  else tar -C "$DEST" --strip-components=1 -xzf node.tgz; fi',
+      '  ln -sfn "$DEST/bin/node" /usr/local/bin/node || true',
+      '  ln -sfn "$DEST/bin/npm" /usr/local/bin/npm || true',
+      '  ln -sfn "$DEST/bin/npx" /usr/local/bin/npx || true',
+      '  "$DEST/bin/node" -v',
+      '  exit 0',
+      'fi',
+      'echo "official tarball resolve failed; trying NodeSource apt fallback" >&2',
+      'apt-get update -qq',
+      'curl -fsSL "https://deb.nodesource.com/setup_${MAJOR}.x" | bash -',
       'apt-get install -y nodejs',
       'node -v',
-      `mkdir -p $(dirname ${plan.binaryPath})`,
+      'mkdir -p "$DEST/bin"',
       `NODE_BIN="$(${shellResolveBin('node')})"`,
       'test -n "$NODE_BIN"',
-      `ln -sfn "$NODE_BIN" ${plan.binaryPath}`,
+      'ln -sfn "$NODE_BIN" "$DEST/bin/node"',
       '',
     ].join('\n');
-    notes.push(tl('notes.auto.t0406', { v0: (plan.version) }));
+    notes.push(tl('notes.auto.t0406', { v0: plan.version }));
   } else if (input.kind === 'php') {
     const plan = selectPhpRuntime(input.version);
     script = [
@@ -469,13 +531,23 @@ export async function planOrInstallRuntime(input: {
   notes.push(tl('notes.auto.n0762'));
 
   const want = Boolean(input.install);
-  const can = want && input.host.executeEnabled() && input.host.isRoot();
+  const execOn = input.host.executeEnabled();
+  const rootOn = input.host.isRoot();
+  const can = want && execOn && rootOn;
+  let blocked = false;
+  let blockMessage: string | undefined;
+
   if (want && !can) {
-    if (!input.host.executeEnabled()) {
-      notes.push(tl('ops.blocked.install'));
-    } else if (!input.host.isRoot()) {
-      notes.push(tl('notes.auto.n1582'));
+    blocked = true;
+    if (!execOn) {
+      blockMessage = tl('ops.blocked.install');
+    } else if (!rootOn) {
+      blockMessage = tl('notes.auto.n1582');
+    } else {
+      blockMessage = tl('ops.blocked.panel');
     }
+    // Lead with the real reason so panels / 422 first-note fallback stay honest
+    notes.unshift(blockMessage);
   }
 
   if (can) {
@@ -485,11 +557,16 @@ export async function planOrInstallRuntime(input: {
       exitCode: r.exitCode,
       stderr: r.stderr,
     });
-    if (r.exitCode === 0) notes.push(tl('notes.auto.n0656'));
-    else notes.push(tl('notes.auto.t0411', { v0: (r.stderr || r.stdout) }));
+    if (r.exitCode === 0) {
+      notes.push(tl('notes.auto.n0656'));
+    } else {
+      const detail = summarizeInstallLog(r.stderr || '', r.stdout || '') || String(r.exitCode);
+      const failNote = tl('notes.auto.t0411', { v0: detail });
+      notes.unshift(failNote);
+    }
   }
 
-  const ranOk = commandResults.every((c) => c.exitCode === 0);
+  const ranOk = commandResults.length === 0 || commandResults.every((c) => c.exitCode === 0);
   return {
     ok: want ? can && ranOk : true,
     kind: input.kind,
@@ -497,7 +574,9 @@ export async function planOrInstallRuntime(input: {
     written,
     notes,
     commandResults,
-    requiresExecute: !input.host.executeEnabled(),
-    requiresRoot: !input.host.isRoot(),
+    requiresExecute: !execOn,
+    requiresRoot: !rootOn,
+    blocked: want ? blocked : false,
+    blockMessage: want ? blockMessage : undefined,
   };
 }

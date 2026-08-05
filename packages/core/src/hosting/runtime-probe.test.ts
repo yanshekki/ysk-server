@@ -30,6 +30,10 @@ describe('runtime-probe', () => {
     });
     expect(plan.ok).toBe(true);
     expect(existsSync(plan.written[0])).toBe(true);
+    // Node script prefers official tarball + reuse PATH node
+    const script = (await import('node:fs')).readFileSync(plan.written[0], 'utf8');
+    expect(script).toMatch(/nodejs\.org\/dist\/latest-v/);
+    expect(script).toMatch(/MAJOR=/);
 
     const refused = await planOrInstallRuntime({
       dataDir: dir,
@@ -39,7 +43,10 @@ describe('runtime-probe', () => {
       install: true,
     });
     expect(refused.ok).toBe(false);
-    expect(refused.notes.some((n) => /系統變更|YSK_EXECUTE|權限/i.test(n))).toBe(true);
+    expect(refused.blocked).toBe(true);
+    expect(refused.blockMessage).toBeTruthy();
+    expect(refused.notes[0]).toBe(refused.blockMessage);
+    expect(refused.notes.some((n) => /系統變更|YSK_EXECUTE|權限|安装|安裝/i.test(n))).toBe(true);
 
     const goPlan = await planOrInstallRuntime({
       dataDir: dir,

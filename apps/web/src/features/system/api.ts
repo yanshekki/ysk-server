@@ -326,9 +326,12 @@ export const systemApi = {
     version: string;
     install?: boolean;
   }) =>
-    api.requestRaw('/api/v1/hosting/runtimes/install', {
+    // Install failures return 403 (blocked) / 422 (failed) with full ops body —
+    // must not throw on those so notes / requires* reach OpsResultPanel.
+    api.requestRawAllowStatus('/api/v1/hosting/runtimes/install', {
       method: 'POST',
       body: JSON.stringify(body),
+      allowStatuses: [403, 422],
     }),
   phpIniGet: (version = '8.2') =>
     api.requestRaw<{

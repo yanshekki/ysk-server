@@ -125,6 +125,12 @@ export function humanizeOperatorNote(text: string): string | null {
     return tr('common.opFailed');
   }
 
+  // Install failure notes — keep localized prefix; do not drop as shell noise
+  if (/安裝失敗|安装失败|Install failed/i.test(raw)) {
+    const cleaned = raw.replace(/\s+/g, ' ').trim().slice(0, 280);
+    return cleaned || tr('notes.failed');
+  }
+
   if (isOperatorNoise(raw)) {
     return null;
   }
