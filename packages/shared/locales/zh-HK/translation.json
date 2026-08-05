@@ -3895,7 +3895,9 @@
     "selectFilteredTitle": "全選目前搜尋結果 {{n}} 項",
     "clearAll": "全不選",
     "clearFiltered": "清除篩選",
-    "selectedCount": "已選 {{n}}／{{total}}"
+    "selectedCount": "已選 {{n}}／{{total}}",
+    "chipsCollapsed": "已選 {{n}} 項 — 展開",
+    "chipsCollapse": "收起"
   },
   "nav": {
     "dashboard": "儀表板",

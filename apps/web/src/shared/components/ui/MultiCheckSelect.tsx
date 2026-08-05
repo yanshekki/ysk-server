@@ -35,6 +35,11 @@ export type MultiCheckSelectProps = {
   listMaxHeight?: string;
   /** Optional size preset */
   listSize?: 'sm' | 'md' | 'lg';
+  /**
+   * When selected chips exceed this count, collapse to “N selected” toggle.
+   * Default 8; set 0 to never collapse.
+   */
+  chipCollapseAt?: number;
 };
 
 const LIST_SIZE_CLASS: Record<NonNullable<MultiCheckSelectProps['listSize']>, string> = {
@@ -59,10 +64,12 @@ export function MultiCheckSelect({
   showSelectAll = true,
   listMaxHeight,
   listSize = 'lg',
+  chipCollapseAt = 8,
 }: MultiCheckSelectProps) {
   const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [custom, setCustom] = useState('');
+  const [chipsExpanded, setChipsExpanded] = useState(false);
   const selected = useMemo(() => new Set(value), [value]);
 
   const resolvedSearch = searchPlaceholder ?? t('multiCheck.searchPlaceholder');
@@ -146,32 +153,65 @@ export function MultiCheckSelect({
   const shown = shouldCap ? filtered.slice(0, maxVisible) : filtered;
   const searching = Boolean(q.trim());
 
+  const collapseChips =
+    chipCollapseAt > 0 && value.length > chipCollapseAt && !chipsExpanded;
+
   return (
     <div className={`mcs mcs--${listSize}`} id={id}>
       {value.length > 0 ? (
-        <div className="mcs__chips" role="list">
-          {value.map((v) => (
+        collapseChips ? (
+          <div className="mcs__chips-collapsed">
             <button
-              key={v}
               type="button"
-              className="mcs__chip"
-              role="listitem"
+              className={buttonClassName({ variant: 'secondary', size: 'sm' })}
               disabled={disabled}
-              onClick={bindCall1(toggle, v)}
-              title={t('multiCheck.removeTitle')}
+              onClick={() => setChipsExpanded(true)}
             >
-              <span className="mcs__chip-lab">
-                {labelByValue.get(v) ?? v}
-                {labelByValue.has(v) ? (
-                  <span className="mcs__chip-code"> {v}</span>
-                ) : null}
-              </span>
-              <span className="mcs__chip-x" aria-hidden>
-                ×
-              </span>
+              {t('multiCheck.chipsCollapsed', { n: value.length })}
             </button>
-          ))}
-        </div>
+            <button
+              type="button"
+              className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+              disabled={disabled}
+              onClick={clearAllOptions}
+            >
+              {t('multiCheck.clearAll')}
+            </button>
+          </div>
+        ) : (
+          <div className="mcs__chips" role="list">
+            {value.map((v) => (
+              <button
+                key={v}
+                type="button"
+                className="mcs__chip"
+                role="listitem"
+                disabled={disabled}
+                onClick={bindCall1(toggle, v)}
+                title={t('multiCheck.removeTitle')}
+              >
+                <span className="mcs__chip-lab">
+                  {labelByValue.get(v) ?? v}
+                  {labelByValue.has(v) ? (
+                    <span className="mcs__chip-code"> {v}</span>
+                  ) : null}
+                </span>
+                <span className="mcs__chip-x" aria-hidden>
+                  ×
+                </span>
+              </button>
+            ))}
+            {chipCollapseAt > 0 && value.length > chipCollapseAt ? (
+              <button
+                type="button"
+                className="mcs__chip mcs__chip--meta"
+                onClick={() => setChipsExpanded(false)}
+              >
+                {t('multiCheck.chipsCollapse')}
+              </button>
+            ) : null}
+          </div>
+        )
       ) : (
         <p className="mcs__empty muted u-text-sm">{t('multiCheck.noneSelected')}</p>
       )}

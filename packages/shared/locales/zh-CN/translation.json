@@ -3895,7 +3895,9 @@
     "selectFilteredTitle": "全选当前搜索结果 {{n}} 项",
     "clearAll": "全不选",
     "clearFiltered": "清除筛选",
-    "selectedCount": "已选 {{n}}／{{total}}"
+    "selectedCount": "已选 {{n}}／{{total}}",
+    "chipsCollapsed": "已选 {{n}} 项 — 展开",
+    "chipsCollapse": "收起"
   },
   "nav": {
     "dashboard": "仪表盘",

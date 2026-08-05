@@ -3895,7 +3895,9 @@
     "selectFilteredTitle": "Select all {{n}} search results",
     "clearAll": "Clear all",
     "clearFiltered": "Clear filtered",
-    "selectedCount": "{{n}} / {{total}} selected"
+    "selectedCount": "{{n}} / {{total}} selected",
+    "chipsCollapsed": "{{n}} selected — expand",
+    "chipsCollapse": "Collapse"
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -10,6 +10,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  max-height: 7.5rem;
+  overflow: auto;
+}
+
+.mcs__chips-collapsed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mcs__chip--meta {
+  opacity: 0.85;
+  border-style: dashed;
 }
 
 .mcs__chip {
