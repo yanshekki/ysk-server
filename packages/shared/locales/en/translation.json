@@ -4889,7 +4889,7 @@
       "n0743": "to system and reload",
       "n0744": "start",
       "n0745": "Enabled HSTS",
-      "n0746": "Enabled NTP (timedatectl set-ntp true)",
+      "n0746": "NTP synchronization enabled",
       "n0747": "Enabled UFW",
       "n0748": "Enabled WebDAV · Basic user ysk · password for token ()",
       "n0749": "Enabled systemd service",
