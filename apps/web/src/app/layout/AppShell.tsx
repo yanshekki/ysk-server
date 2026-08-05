@@ -6,7 +6,7 @@ import { useAuth } from '../../shared/hooks/useAuth';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { api } from '../../shared/services/api';
-import { buttonClassName } from '../../shared/components/ui';
+import { buttonClassName, ToastViewport } from '../../shared/components/ui';
 import {
   cycleAppLocale,
   LOCALE_LABELS,
@@ -90,6 +90,7 @@ export function AppShell() {
 
   return (
     <div className="shell">
+      <ToastViewport />
       {open && <div className="shell__backdrop" onClick={() => setOpen(false)} aria-hidden />}
       <aside className={`shell__sidebar${open ? ' is-open' : ''}`}>
         <div className="shell__brand">

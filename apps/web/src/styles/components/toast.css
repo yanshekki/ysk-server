@@ -1,0 +1,87 @@
+/* —— Toast (fixed top-right operation feedback) —— */
+.ysk-toast-viewport {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(22rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.ysk-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  box-shadow: var(--shadow-md);
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  animation: ysk-toast-in 0.18s ease-out;
+}
+
+@keyframes ysk-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ysk-toast__msg {
+  flex: 1;
+  margin: 0;
+  word-break: break-word;
+}
+
+.ysk-toast__close {
+  flex-shrink: 0;
+  margin: -0.15rem -0.25rem 0 0;
+  padding: 0.1rem 0.4rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.55;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.ysk-toast__close:hover {
+  opacity: 1;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.ysk-toast--ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+.ysk-toast--error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+.ysk-toast--info {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.24);
+}
+
+.ysk-toast--warn {
+  background: color-mix(in srgb, var(--warn, #f59e0b) 14%, white);
+  color: #b45309;
+  border-color: color-mix(in srgb, var(--warn, #f59e0b) 32%, transparent);
+}

@@ -3,17 +3,27 @@ import { useTranslation } from 'react-i18next';
 import type { OpsApplyResultDto } from '@ysk/shared';
 import { projectsApi } from './api';
 import { formatOpsMessage, parseEnvText, type ProjectOpsAction } from './model/ops';
+import { toast } from '../../shared/stores/toast-store';
 
 export function useProjectOps(onSuccess?: () => void | Promise<void>) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  /** Page-level banners unused — operation feedback is toast-only. */
+  const [error, setErrorRaw] = useState<string | null>(null);
+  const [msg, setMsgRaw] = useState<string | null>(null);
+  const setMsg = useCallback((m: string | null) => {
+    if (m) toast.ok(m);
+    setMsgRaw(null);
+  }, []);
+  const setError = useCallback((m: string | null) => {
+    if (m) toast.error(m);
+    setErrorRaw(null);
+  }, []);
   const [opsLog, setOpsLog] = useState<OpsApplyResultDto | null>(null);
 
   const clearFeedback = useCallback(() => {
-    setError(null);
-    setMsg(null);
+    setErrorRaw(null);
+    setMsgRaw(null);
   }, []);
 
   const run = useCallback(
@@ -32,8 +42,8 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
       },
     ) => {
       setBusy(true);
-      setError(null);
-      setMsg(null);
+      setErrorRaw(null);
+      setMsgRaw(null);
       try {
         let result: OpsApplyResultDto;
         switch (action) {
@@ -99,12 +109,12 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
             throw new Error(`Unknown action: ${action}`);
         }
         setOpsLog(result);
-        setMsg(formatOpsMessage(action, result, t));
+        toast.ok(formatOpsMessage(action, result, t));
         await onSuccess?.();
         return result;
       } catch (err) {
         const m = err instanceof Error ? err.message : `${action} failed`;
-        setError(m);
+        toast.error(m);
         throw err;
       } finally {
         setBusy(false);

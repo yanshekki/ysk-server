@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import type { ListMeta } from '@ysk/shared';
 import { resourcesApi, type ResourceRow } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
+import { toast } from '../../shared/stores/toast-store';
 
 export function useResourceCrud(
   collection: string,
@@ -58,10 +59,14 @@ export function useResourceCrud(
       try {
         const r = await resourcesApi.create(collection, body);
         await refresh();
-        setMsg(t('resources.created'));
+        const ok = t('resources.created');
+        setMsg(null);
+        toast.ok(ok);
         return r.item;
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('common.createFailed'));
+        const m = e instanceof Error ? e.message : t('common.createFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -77,10 +82,14 @@ export function useResourceCrud(
       try {
         const r = await resourcesApi.update(collection, id, body);
         await refresh();
-        setMsg(t('resources.updated'));
+        const ok = t('resources.updated');
+        setMsg(null);
+        toast.ok(ok);
         return r.item;
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('common.saveFailed'));
+        const m = e instanceof Error ? e.message : t('common.saveFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -96,9 +105,13 @@ export function useResourceCrud(
       try {
         await resourcesApi.remove(collection, id);
         await refresh();
-        setMsg(t('resources.deleted'));
+        const ok = t('resources.deleted');
+        setMsg(null);
+        toast.ok(ok);
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('common.deleteFailed'));
+        const m = e instanceof Error ? e.message : t('common.deleteFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -120,14 +133,20 @@ export function useResourceCrud(
         const notes = sanitizeOperatorNotes(r.notes);
         setLastNotes(notes);
         if (r.ok) {
-          setMsg(notes[0] ?? t('resources.applyDone'));
-        } else {
-          setError(notes[0] ?? t('resources.applyIncomplete'));
+          const ok = notes[0] ?? t('resources.applyDone');
           setMsg(null);
+          toast.ok(ok);
+        } else {
+          const errText = notes[0] ?? t('resources.applyIncomplete');
+          setError(null);
+          setMsg(null);
+          toast.error(errText);
         }
         return r;
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('common.applyFailed'));
+        const m = e instanceof Error ? e.message : t('common.applyFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);

@@ -11,6 +11,7 @@ import {
   type RuntimeProbe,
 } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
+import { toast } from '../../shared/stores/toast-store';
 
 export function useAgents() {
   const { t } = useTranslation();
@@ -72,7 +73,10 @@ export function useAgents() {
         r.ok === false &&
           (r.requiresExecute || notes.some((n) => looksLikeBlockedMessage(n))),
       );
-      setMsg(blocked ? notes[0] ?? t('agents.installBlocked') : fallbackMsg);
+      const text = blocked ? notes[0] ?? t('agents.installBlocked') : fallbackMsg;
+      setMsg(null);
+      if (blocked) toast.warn(text);
+      else toast.ok(text);
     },
     [t],
   );
@@ -84,9 +88,12 @@ export function useAgents() {
       try {
         await agentsApi.register({ agentId, group, meta: { source: 'panel' } });
         await refresh();
-        setMsg(t('agents.registeredMsg', { id: agentId }));
+        setMsg(null);
+        toast.ok(t('agents.registeredMsg', { id: agentId }));
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('agents.registerFailed'));
+        const m = e instanceof Error ? e.message : t('agents.registerFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -103,9 +110,12 @@ export function useAgents() {
         await agentsApi.remove(sessionId);
         setCommands([]);
         await refresh();
-        setMsg(t('agents.removedFleet'));
+        setMsg(null);
+        toast.ok(t('agents.removedFleet'));
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('common.deleteFailed'));
+        const m = e instanceof Error ? e.message : t('common.deleteFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -122,10 +132,13 @@ export function useAgents() {
         const cmd = await agentsApi.enqueue(sessionId, payload);
         const hist = await agentsApi.listCommands(sessionId);
         setCommands(hist.items);
-        setMsg(t('agents.enqueuedMsg', { id: cmd.id.slice(0, 8) }));
+        setMsg(null);
+        toast.ok(t('agents.enqueuedMsg', { id: cmd.id.slice(0, 8) }));
         return cmd;
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('agents.enqueueFailed'));
+        const m = e instanceof Error ? e.message : t('agents.enqueueFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -165,7 +178,9 @@ export function useAgents() {
         );
         await refresh();
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('agents.probeFailed'));
+        const m = e instanceof Error ? e.message : t('agents.probeFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -182,7 +197,9 @@ export function useAgents() {
         const r = (await agentsApi.writeUnit(kind)) as Record<string, unknown>;
         presentResult(r, t('agents.wroteUnitMsg', { kind }));
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('agents.writeFailed'));
+        const m = e instanceof Error ? e.message : t('agents.writeFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);
@@ -205,7 +222,9 @@ export function useAgents() {
         await refresh();
         return r;
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('common.installFailed'));
+        const m = e instanceof Error ? e.message : t('common.installFailed');
+        setError(null);
+        toast.error(m);
         throw e;
       } finally {
         setBusy(false);

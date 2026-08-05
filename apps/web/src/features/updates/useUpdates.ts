@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { updatesApi, type AdviceRow } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
+import { toast } from '../../shared/stores/toast-store';
 
 export function useUpdates() {
   const { t } = useTranslation();
@@ -32,17 +33,17 @@ export function useUpdates() {
           (a) => a.candidateVersion && a.candidateVersion !== a.currentVersion,
         ).length;
         const notes = (inv as { meta?: { notes?: string[] } }).meta?.notes;
-        setMsg(
-          [
-            osv
-              ? t('updates.scannedWithOsv', { count: inv.inventory?.length ?? 0 })
-              : t('updates.scanned', { count: inv.inventory?.length ?? 0 }),
-            t('updates.realUpgradeable', { count: up }),
-            ...(notes ?? []).slice(0, 2),
-          ]
-            .filter(Boolean)
-            .join(' · '),
-        );
+        const scanMsg = [
+          osv
+            ? t('updates.scannedWithOsv', { count: inv.inventory?.length ?? 0 })
+            : t('updates.scanned', { count: inv.inventory?.length ?? 0 }),
+          t('updates.realUpgradeable', { count: up }),
+          ...(notes ?? []).slice(0, 2),
+        ]
+          .filter(Boolean)
+          .join(' · ');
+        setMsg(null);
+        toast.ok(scanMsg);
       } else {
         const inv = await updatesApi.inventory(listQuery);
         // Prefer filtered inventory rows (backend ListQuery) when present
@@ -92,7 +93,9 @@ export function useUpdates() {
         /* optional */
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('common.loadFailed'));
+      const m = e instanceof Error ? e.message : t('common.loadFailed');
+      setError(null);
+      toast.error(m);
     } finally {
       setBusy(false);
     }
@@ -115,13 +118,17 @@ export function useUpdates() {
       });
       const notes = sanitizeOperatorNotes(r.notes);
       if (r.blocked || !r.ok) {
-        setError(r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete'));
+        setError(null);
+        toast.error(r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete'));
       } else {
-        setMsg(notes[0] ?? t('updates.appliedPackage'));
+        setMsg(null);
+        toast.ok(notes[0] ?? t('updates.appliedPackage'));
       }
       return r;
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('updates.updateFailed'));
+      const m = e instanceof Error ? e.message : t('updates.updateFailed');
+      setError(null);
+      toast.error(m);
       throw e;
     } finally {
       setBusy(false);
@@ -136,11 +143,14 @@ export function useUpdates() {
       const r = await updatesApi.selfApply();
       const notes = sanitizeOperatorNotes(r.notes);
       if (r.ok === false || (r.applied === false && r.ok !== true)) {
-        setError(notes[0] ?? t('updates.updateIncomplete'));
+        setError(null);
+        toast.error(notes[0] ?? t('updates.updateIncomplete'));
       } else if (r.applied) {
-        setMsg(notes[0] ?? t('updates.appliedUpdate'));
+        setMsg(null);
+        toast.ok(notes[0] ?? t('updates.appliedUpdate'));
       } else {
-        setMsg(notes[0] ?? t('updates.selfUpToDate'));
+        setMsg(null);
+        toast.ok(notes[0] ?? t('updates.selfUpToDate'));
       }
       try {
         const self = await updatesApi.self();
@@ -150,7 +160,9 @@ export function useUpdates() {
       }
       return r;
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('updates.updateFailed'));
+      const m = e instanceof Error ? e.message : t('updates.updateFailed');
+      setError(null);
+      toast.error(m);
       throw e;
     } finally {
       setBusy(false);

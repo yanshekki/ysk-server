@@ -1,5 +1,6 @@
 /**
  * Shared runner for system feature pages — panel execution results only.
+ * Operation feedback uses top-right toast (not in-page Alert).
  */
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,13 +11,23 @@ import {
   looksLikeBlockedMessage,
   sanitizeOperatorNotes,
 } from '../../shared/lib/operator-messages';
+import { toast } from '../../shared/stores/toast-store';
 
 export function useFeatureAction() {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<OpsResultLike | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  /** Page banners unused — feedback is toast-only (API kept for callers). */
+  const [error, setErrorRaw] = useState<string | null>(null);
+  const [msg, setMsgRaw] = useState<string | null>(null);
+  const setMsg = useCallback((m: string | null) => {
+    if (m) toast.ok(m);
+    setMsgRaw(null);
+  }, []);
+  const setError = useCallback((m: string | null) => {
+    if (m) toast.error(m);
+    setErrorRaw(null);
+  }, []);
 
   const toOpsResult = useCallback(
     (r: unknown): OpsResultLike => {
@@ -68,17 +79,19 @@ export function useFeatureAction() {
   const run = useCallback(
     async (fn: () => Promise<unknown>, okMessage?: string) => {
       setBusy(true);
-      setError(null);
-      setMsg(null);
+      setErrorRaw(null);
+      setMsgRaw(null);
       try {
         const r = await fn();
         const ops = toOpsResult(r);
         setResult(ops);
         // Never show a success okMessage when the op failed (honesty).
         if (ops.blocked || ops.ok === false) {
-          setMsg(null);
+          const warn =
+            ops.blockMessage ?? ops.notes?.[0] ?? t('common.panelBlocked');
+          toast.warn(warn);
         } else {
-          setMsg(okMessage ?? t('common.completed'));
+          toast.ok(okMessage ?? t('common.completed'));
         }
         return r;
       } catch (e) {
@@ -94,7 +107,7 @@ export function useFeatureAction() {
           ) {
             const ops = toOpsResult({ ...d, ok: false });
             setResult(ops);
-            setError(null);
+            toast.warn(ops.blockMessage ?? ops.notes?.[0] ?? t('common.opFailed'));
             return null;
           }
         }
@@ -102,13 +115,13 @@ export function useFeatureAction() {
         const m = humanizeOperatorMessage(raw);
         // L4: multi-locale / code-aware block detection (not CJK-only)
         const blocked = looksLikeBlockedMessage(raw) || looksLikeBlockedMessage(m);
-        setError(null);
         setResult({
           ok: false,
           blocked,
           blockMessage: m,
           notes: sanitizeOperatorNotes([raw]),
         });
+        toast.error(m);
         return null;
       } finally {
         setBusy(false);

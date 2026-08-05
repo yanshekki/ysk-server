@@ -12,6 +12,7 @@ import {
   type SqlSwitchPreview,
 } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
+import { toast } from '../../shared/stores/toast-store';
 
 function sqlTargetFromFeature(feature: string): 'mysql' | 'mariadb' | null {
   if (feature === 'mysql') return 'mysql';
@@ -72,11 +73,16 @@ export function useFeatureSoftware(feature: string) {
         notes,
       });
       if (blocked || r.ok === false) {
-        setError(blockMessage ?? notes[0] ?? t('softwareBanner.installIncomplete'));
+        const errText = blockMessage ?? notes[0] ?? t('softwareBanner.installIncomplete');
+        setError(errText);
         setMsg(null);
+        toast.error(errText);
       } else {
+        const okText = notes[0] ?? okLabel;
         setError(null);
-        setMsg(notes[0] ?? okLabel);
+        // Toast only — banner no longer shows success Alert
+        setMsg(null);
+        toast.ok(okText);
       }
     },
     [t],

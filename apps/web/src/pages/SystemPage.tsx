@@ -27,6 +27,7 @@ import { systemApi } from '../features/system';
 import type { HostOverviewDto } from '../features/system/api';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { toast } from '../shared/stores/toast-store';
 import { bindSet, bindInput, bindVoid } from './bind-handlers';
 
 const SYS_TABS = ['host', 'export', 'about'] as const;
@@ -116,8 +117,13 @@ export function SystemPage() {
   const [host, setHost] = useState<HostOverviewDto | null>(null);
   const [hostLoading, setHostLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  /** Toast-backed feedback (replaces page-top Alert). */
+  const setMsg = useCallback((text: string | null) => {
+    if (text) toast.ok(text);
+  }, []);
+  const setErr = useCallback((text: string | null) => {
+    if (text) toast.error(text);
+  }, []);
   const [powerDlg, setPowerDlg] = useState<PowerDialog | null>(null);
   const [powerConfirm, setPowerConfirm] = useState('');
   const [rebuildSyncConfirm, setRebuildSyncConfirm] = useState(false);
@@ -423,23 +429,6 @@ export function SystemPage() {
         </ActionBar>
       }
     >
-      {err ? (
-        <Alert variant="error">
-          {err}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setErr, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
-
       <PageTabs
         tabs={[
           { id: 'host', label: t('system.hostConsole') },
@@ -1498,7 +1487,6 @@ export function SystemPage() {
             <OpsResultPanel
               title={t('opsResult.title')}
               result={opsResult}
-              message={msg}
               busy={busy}
               facts={
                 opsResult

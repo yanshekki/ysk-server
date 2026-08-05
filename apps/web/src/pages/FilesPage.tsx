@@ -33,6 +33,7 @@ const FILE_TABS = ['browse', 'trash', 'shares', 'webdav', 'about'] as const;
 import { filesApi, fileToBase64, type FileEntry, type TrashEntry, type FileShare } from '../features/files/api';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
+import { toast } from '../shared/stores/toast-store';
 import {
   bindSet,
   bindInput,
@@ -197,8 +198,14 @@ export function FilesPage() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setErrorRaw] = useState<string | null>(null);
+  const setError = useCallback((text: string | null) => {
+    if (text) toast.error(text);
+    setErrorRaw(null);
+  }, []);
+  const setMsg = useCallback((text: string | null) => {
+    if (text) toast.ok(text);
+  }, []);
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
@@ -437,15 +444,7 @@ export function FilesPage() {
         </ActionBar>
       }
     >
-      {error ? <Alert variant="error">{error}</Alert> : null}
-      {msg ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-            {t('common.close')}
-          </Button>
-        </Alert>
-      ) : null}
+
       {opsNote ? (
         <div className="stack">
           <OpsResultPanel

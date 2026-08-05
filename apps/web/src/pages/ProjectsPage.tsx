@@ -1,7 +1,7 @@
 /**
  * Projects list — server-backed search / runtime filter + ListToolbar.
  */
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
@@ -21,6 +21,7 @@ import {
   WithPageGuide,
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
+import { toast } from '../shared/stores/toast-store';
 import { bindFilter, bindFormSubmit, bindInput, bindSet, bindValueSet } from './bind-handlers';
 
 export function ProjectsPage() {
@@ -29,7 +30,9 @@ export function ProjectsPage() {
   const list = useServerList<ProjectDto>({ path: '/api/v1/projects', debounceMs: 300 });
   const [createOpen, setCreateOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const setMsg = useCallback((text: string | null) => {
+    if (text) toast.ok(text);
+  }, []);
 
   const items = list.items;
   const stats = useMemo(() => summarizeProjects(items), [items]);
@@ -79,14 +82,6 @@ export function ProjectsPage() {
     >
       <WithPageGuide guideId="projects">
         {list.error ? <Alert variant="error">{list.error}</Alert> : null}
-        {msg ? (
-          <Alert variant="ok">
-            {msg}{' '}
-            <Button variant="ghost" size="sm" onClick={bindSet(setMsg, null)}>
-              {t('common.close')}
-            </Button>
-          </Alert>
-        ) : null}
 
         <ListPanel
           title={t('nav.projects', { defaultValue: t('common.project') })}

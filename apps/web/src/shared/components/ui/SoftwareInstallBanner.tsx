@@ -4,7 +4,6 @@
  * MySQL/MariaDB: opens exclusive switch dialog when needed.
  */
 import { useTranslation } from 'react-i18next';
-import { Alert } from './Alert';
 import { buttonClassName } from './Button';
 import { useFeatureSoftware } from '../../../features/software';
 import { OpsResultPanel, type OpsResultLike } from './OpsResultPanel';
@@ -31,7 +30,6 @@ export function SoftwareInstallBanner({
     ready,
     busy,
     error,
-    msg,
     setMsg,
     setError,
     lastResult,
@@ -43,11 +41,12 @@ export function SoftwareInstallBanner({
     confirmSwitch,
   } = useFeatureSoftware(feature);
 
-  if (autoHideWhenReady && ready && !error && !msg && !lastResult && !switchOpen) {
+  // Success feedback is toast-only; hide banner when ready (keep switch dialog / ops detail)
+  if (autoHideWhenReady && ready && !error && !lastResult && !switchOpen) {
     return null;
   }
 
-  if (ready && !error && !msg && !switchOpen) {
+  if (ready && !error && !lastResult && !switchOpen) {
     return null;
   }
 
@@ -113,19 +112,6 @@ export function SoftwareInstallBanner({
             </div>
           </div>
         </div>
-      ) : null}
-
-      {msg && !error ? (
-        <Alert variant="ok">
-          {msg}{' '}
-          <button
-            type="button"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={() => setMsg(null)}
-          >
-            {t('softwareBanner.close')}
-          </button>
-        </Alert>
       ) : null}
 
       {opsResult && (error || lastResult) ? (
