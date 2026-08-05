@@ -49,7 +49,9 @@ describe('LocalHostExecutor depth', () => {
       allowedWriteRoots: [dir],
       executeEnabled: false,
     });
-    await expect(dry.runCommand(['rm', '-rf', '/tmp/nope'])).rejects.toThrow(/FORBIDDEN|execute|YSK|blocked/i);
+    await expect(dry.runCommand(['rm', '-rf', '/tmp/nope'])).rejects.toThrow(
+      /FORBIDDEN|execute|YSK|blocked|系統變更|指令被擋/i,
+    );
     // non-mutating allowed without execute
     const ls = await dry.runCommand(['true']);
     expect(ls.exitCode === 0 || ls.dryRun === true || typeof ls.exitCode === 'number').toBe(true);

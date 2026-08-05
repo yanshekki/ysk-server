@@ -1,4 +1,8 @@
-import { tl } from '@ysk/shared';
+import {
+  tl,
+  type ServiceConsoleDto,
+  type ServiceConsoleLifecycleAction,
+} from '@ysk/shared';
 /**
  * Professional DB service console: lifecycle + categorized settings + live values.
  */
@@ -16,7 +20,8 @@ import {
 import { installSoftware } from './software-install.js';
 import { HostSoftwareProbe, binPresent } from './software-probe/index.js';
 
-export type LifecycleAction = 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable';
+/** @deprecated Prefer ServiceConsoleLifecycleAction from @ysk/shared */
+export type LifecycleAction = ServiceConsoleLifecycleAction;
 
 export interface ConsoleSettingRow extends SettingDef {
   liveValue?: string;
@@ -31,25 +36,8 @@ export interface ConsoleCategory {
   settings: ConsoleSettingRow[];
 }
 
-export interface ServiceConsoleDto {
-  engine: ServiceEngine;
-  title: string;
-  version?: string;
-  unit: string;
-  active: string;
-  activeLabel: string;
-  enabled?: string;
-  installed: boolean;
-  executeEnabled: boolean;
-  isRoot: boolean;
-  canLifecycle: boolean;
-  blockMessage?: string;
-  /** e.g. mariadb-server when viewing MySQL console */
-  blockedByExclusive?: string;
-  metrics: Record<string, string>;
-  categories: ConsoleCategory[];
-  live: Record<string, string>;
-}
+/** Re-export shared SSOT (web + API). */
+export type { ServiceConsoleDto };
 
 const ENGINE_META: Record<
   ServiceEngine,

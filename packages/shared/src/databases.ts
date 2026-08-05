@@ -104,3 +104,55 @@ export interface RedisKeyViewDto {
 }
 
 export type RedisKeyView = RedisKeyViewDto;
+
+/** DB service console (lifecycle + settings) — shared by core API + web. */
+export type ServiceConsoleLifecycleAction =
+  | 'start'
+  | 'stop'
+  | 'restart'
+  | 'reload'
+  | 'enable'
+  | 'disable';
+
+export interface ServiceConsoleSettingDto {
+  key: string;
+  label: string;
+  category: string;
+  type: string;
+  unit?: string;
+  enumValues?: string[];
+  description?: string;
+  applyMode: string;
+  liveValue?: string;
+  draftValue?: string;
+  supported?: boolean;
+  danger?: boolean;
+  advanced?: boolean;
+}
+
+export interface ServiceConsoleCategoryDto {
+  id: string;
+  label: string;
+  description: string;
+  settings: ServiceConsoleSettingDto[];
+}
+
+export interface ServiceConsoleDto {
+  engine: DbServiceEngine;
+  title: string;
+  version?: string;
+  unit: string;
+  active: string;
+  activeLabel: string;
+  enabled?: string;
+  installed: boolean;
+  executeEnabled: boolean;
+  isRoot: boolean;
+  canLifecycle: boolean;
+  blockMessage?: string;
+  /** e.g. mariadb-server when viewing MySQL console */
+  blockedByExclusive?: string;
+  metrics: Record<string, string>;
+  categories: ServiceConsoleCategoryDto[];
+  live: Record<string, string>;
+}

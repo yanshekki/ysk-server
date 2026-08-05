@@ -58,7 +58,7 @@ describe('email DNS + external checklist', () => {
     });
     expect(report.score).toBeLessThan(100);
     expect(report.messages.some((m) => /PTR/i.test(m))).toBe(true);
-    expect(report.messages.some((m) => /Port 25/i.test(m))).toBe(true);
+    expect(report.messages.some((m) => /Port 25|埠 25|TCP 25/i.test(m))).toBe(true);
     expect(report.records.some((r) => r.type === 'MX')).toBe(true);
 
     const install = planEmailStackInstall('example.com');

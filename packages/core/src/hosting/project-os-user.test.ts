@@ -189,7 +189,7 @@ describe('project-os-user', () => {
       expect(r.blocked).toBe(true);
       expect(r.applied).toBe(false);
       expect(r.written).toBe(true);
-      expect(r.notes.join(' ')).toMatch(/YSK_EXECUTE|root/i);
+      expect(r.notes.join(' ')).toMatch(/YSK_EXECUTE|root|系統變更權限|管理員/i);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

@@ -112,9 +112,12 @@ describe('residual ≥90 push', () => {
   });
 
   it('resolveAgentBinary empty-binNames fallback L45; api key catch L110', async () => {
-    const bin = await resolveAgentBinary('openclaw', mockHost({
-      run: () => ({ stdout: '' }),
-    }));
+    // pathExists false so absolute candidates do not pick host-installed openclaw
+    const hostMissing: HostExecutor = {
+      ...mockHost({ run: () => ({ stdout: '' }) }),
+      pathExists: () => false,
+    };
+    const bin = await resolveAgentBinary('openclaw', hostMissing);
     expect(bin).toBeUndefined();
 
     const dir = mkdtempSync(join(tmpdir(), 'ysk-res3-'));

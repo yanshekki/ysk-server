@@ -4,6 +4,7 @@ import {
   ensurePostfixMainCf,
   postfixMainCfMissing,
   preparePostfixForStart,
+  preseedPostfixDebconf,
 } from './postfix-bootstrap.js';
 
 function host(opts: {
@@ -85,5 +86,50 @@ describe('postfix-bootstrap', () => {
     const r = await preparePostfixForStart(h);
     expect(r.ok).toBe(true);
     expect(r.notes).toEqual([]);
+  });
+
+  it('preparePostfixForStart creates when missing', async () => {
+    const h = host({ paths: ['/etc/postfix/main.cf.proto'] });
+    const r = await preparePostfixForStart(h);
+    expect(r.ok).toBe(true);
+    expect(r.notes.length).toBeGreaterThan(0);
+  });
+
+  it('cp failure is honest', async () => {
+    const h = host({
+      paths: ['/etc/postfix/main.cf.proto'],
+      run: (argv) => ({
+        stdout: '',
+        stderr: 'permission denied',
+        exitCode: argv[0] === 'cp' ? 1 : 0,
+        argv,
+        dryRun: false,
+      }),
+    });
+    const r = await ensurePostfixMainCf(h);
+    expect(r.ok).toBe(false);
+    expect(r.notes.join(' ')).toMatch(/failed|permission/i);
+  });
+
+  it('preseedPostfixDebconf notes success and soft-fail', async () => {
+    const ok = await preseedPostfixDebconf(
+      host({
+        run: () => ({ stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false }),
+      }),
+    );
+    expect(ok.some((n) => /Internet Site|debconf/i.test(n))).toBe(true);
+
+    const soft = await preseedPostfixDebconf(
+      host({
+        run: () => ({
+          stdout: '',
+          stderr: 'debconf missing',
+          exitCode: 1,
+          argv: [],
+          dryRun: false,
+        }),
+      }),
+    );
+    expect(soft.some((n) => /soft-fail|debconf/i.test(n))).toBe(true);
   });
 });

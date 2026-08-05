@@ -38,7 +38,11 @@ describe('dnssec', () => {
       });
       expect(r.ok).toBe(false);
       expect(r.requiresExecute).toBe(true);
-      expect(r.notes.some((n) => /唔假成功|未產生金鑰|written/i.test(n))).toBe(true);
+      expect(
+        r.notes.some((n) =>
+          /唔假成功|未產生金鑰|written|已寫入|不假成功|系統變更|dnssec-keygen/i.test(n),
+        ),
+      ).toBe(true);
       expect(r.written.length).toBeGreaterThan(0);
       const list = listDnssecMaterial(dir, 'example.com');
       expect(list.files.length).toBeGreaterThan(0);

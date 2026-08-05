@@ -786,9 +786,18 @@ describe('hosting residual thin — service-matrix + pm2 + software', () => {
 
     const active = await getServiceMatrix(
       mockHost({
+        // installed + unit active → matrix row active
+        paths: {
+          '/usr/bin/nginx': true,
+          '/bin/systemctl': true,
+          '/usr/bin/systemctl': true,
+        },
         onRun: (argv) => {
           if (argv[1] === 'is-active') return { stdout: 'active\n' };
           if (argv[1] === 'is-enabled') return { stdout: 'enabled\n' };
+          if (argv.join(' ').includes('command -v') && argv.join(' ').includes('nginx')) {
+            return { stdout: '/usr/bin/nginx\n' };
+          }
           return {};
         },
       }),

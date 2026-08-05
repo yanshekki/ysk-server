@@ -247,7 +247,10 @@ describe('applyDbClusterLocal execute lifecycle (fake /etc)', () => {
             if (argv.join(' ').includes('galera_new_cluster') && argv[0] === 'bash') {
               return { exitCode: 0, stdout: '/usr/bin/galera_new_cluster\n' };
             }
-            if (argv[0] === 'galera_new_cluster') return { exitCode: 0, stdout: 'bootstrapped' };
+            // resolveBin returns absolute path → runCommand([absPath])
+            if (String(argv[0]).endsWith('galera_new_cluster')) {
+              return { exitCode: 0, stdout: 'bootstrapped' };
+            }
             if (argv[0] === 'systemctl') return { exitCode: 0 };
             return {};
           },
@@ -258,7 +261,11 @@ describe('applyDbClusterLocal execute lifecycle (fake /etc)', () => {
       });
       expect(r.executed).toBe(true);
       expect(r.ok).toBe(true);
-      expect(cmds.some((a) => a[0] === 'galera_new_cluster')).toBe(true);
+      expect(
+        cmds.some(
+          (a) => a[0] === 'galera_new_cluster' || String(a[0]).endsWith('/galera_new_cluster'),
+        ),
+      ).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -320,8 +327,10 @@ describe('applyDbClusterLocal execute lifecycle (fake /etc)', () => {
         dataDir: dir,
         host: mockHost({
           run: (argv) => {
-            if (argv[0] === 'bash') return { stdout: '/usr/bin/galera_new_cluster\n' };
-            if (argv[0] === 'galera_new_cluster') {
+            if (argv[0] === 'bash' && argv.join(' ').includes('galera_new_cluster')) {
+              return { stdout: '/usr/bin/galera_new_cluster\n' };
+            }
+            if (String(argv[0]).endsWith('galera_new_cluster')) {
               return { exitCode: 1, stderr: 'bootstrap failed hard' };
             }
             return {};

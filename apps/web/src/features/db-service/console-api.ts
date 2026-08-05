@@ -1,46 +1,17 @@
 import { api } from '../../shared/services/api';
-import type { DbServiceEngine } from './api';
+import type {
+  DbServiceEngine,
+  ServiceConsoleDto,
+  ServiceConsoleCategoryDto,
+  ServiceConsoleSettingDto,
+} from '@ysk/shared';
 
-export type ConsoleSetting = {
-  key: string;
-  label: string;
-  category: string;
-  type: string;
-  unit?: string;
-  enumValues?: string[];
-  description?: string;
-  applyMode: string;
-  liveValue?: string;
-  danger?: boolean;
-  advanced?: boolean;
-};
-
-export type ConsoleCategory = {
-  id: string;
-  label: string;
-  description: string;
-  settings: ConsoleSetting[];
-};
-
-export type ServiceConsole = {
-  engine: DbServiceEngine;
-  title: string;
-  version?: string;
-  unit: string;
-  active: string;
-  activeLabel: string;
-  enabled?: string;
-  installed: boolean;
-  executeEnabled: boolean;
-  isRoot: boolean;
-  canLifecycle: boolean;
-  blockMessage?: string;
-  /** Exclusive peer that blocks this engine (e.g. mariadb-server vs mysql-server). */
-  blockedByExclusive?: string;
-  metrics: Record<string, string>;
-  categories: ConsoleCategory[];
-  live: Record<string, string>;
-};
+/** @deprecated Prefer ServiceConsoleDto from @ysk/shared */
+export type ConsoleSetting = ServiceConsoleSettingDto;
+/** @deprecated Prefer ServiceConsoleCategoryDto from @ysk/shared */
+export type ConsoleCategory = ServiceConsoleCategoryDto;
+/** SSOT: shared ServiceConsoleDto */
+export type ServiceConsole = ServiceConsoleDto;
 
 export const consoleApi = {
   get: (engine: DbServiceEngine) =>

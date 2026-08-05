@@ -60,3 +60,24 @@ mysql -N -e "SELECT COUNT(*) FROM ysk_e2e.t;"
 | 假成功訊息 | 無／有 | |
 
 **通過標準：** 正向 + 數據 + 無誠實度回歸即 S6 **done**。
+
+---
+
+## 7. 程式門禁（CI / 本機）
+
+```bash
+pnpm e2e:sql-switch        # 單元 + DTO + export + checklist
+pnpm e2e:sql-switch-live   # Docker：MySQL 建庫寫入 → dump → MariaDB import → 驗證 row
+```
+
+驗收內容：
+
+- `@ysk/core`：`sql-engine-switch` + `mysql-frozen` + `sql-engine-health` 單元測試
+- shared DTO：`needs_exclusive_switch` / `healthFindings` 等欄位仍在
+- core export：`previewSqlEngineSwitch`、`diagnoseSqlEngine`、`planRepairFromFindings`、`recoverMysqlAfterEngineSwitch`…
+- 本 checklist 檔存在且含 FROZEN／反向／通過標準章節
+- Docker live：有用戶數據（`ysk_e2e.t` = 42）跨引擎 dump/import 通過
+- （可選）本機 `systemctl is-active mysql|mariadb` 快照；雙 active 會 WARN
+- 本機 **apt 互斥 purge/install**（§1–6）仍建議 root + `YSK_EXECUTE` 再跑一次
+
+**S6 done 標準：** `e2e:sql-switch` + `e2e:sql-switch-live` 綠（碼 + 有數據路徑）；§1–6 本機 apt 為運維加強項。

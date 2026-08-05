@@ -72,7 +72,7 @@ describe('backup lifecycle 100%', () => {
       mode: 'dry-run',
     });
     expect(dry.ok).toBe(true);
-    expect(dry.notes.some((n) => /dry-run/i.test(n))).toBe(true);
+    expect(dry.notes.some((n) => /dry-run|預覽試行|預覽/i.test(n))).toBe(true);
 
     // 4) mutate home then full restore
     writeFileSync(join(home, 'app', 'index.html'), 'CORRUPTED\n', 'utf8');

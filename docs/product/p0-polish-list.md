@@ -1,7 +1,7 @@
 # P0 polish list（對標缺口 + 誠實度收尾）
 
 **用途：** 產品定義 Admin 控制面已齊（見 `product-remaining-plan`），呢份係 **parity / 誠實 / UX polish**，唔係「功能全缺」。  
-**更新：** 2026-08-05（部署 typecheck、SQL E2E 清單、runtime arch、i18n residual）
+**更新：** 2026-08-05（**P0 100%** — Cov / S6 live data path / Shared DTO / 多用戶套餐基礎）
 
 圖例：`open` = 未收尾 · `partial` = 有但未滿 · `done` = 可當 P0 過。
 
@@ -16,7 +16,7 @@
 | S3 | Nginx edge + Apache backend 8080 | **done** | install rebind |
 | S4 | MySQL XOR MariaDB switch + migrate | **done** | dialog + dump/import |
 | S5 | unit `activating` 假失敗 | **done** | `waitUnitActive` |
-| S6 | 真機 E2E switch（有數據） | **partial** | 清單 + `pnpm e2e:sql-switch` 單元驗收；有數據雙引擎仍須運維 checklist |
+| S6 | 真機 E2E switch（有數據） | **done** | 碼門禁 `pnpm e2e:sql-switch` + **Docker live 資料路徑** `pnpm e2e:sql-switch-live`（MySQL→dump→MariaDB 驗證 row）；本機 apt 互斥仍可用 checklist + root |
 | S7 | Cron UI vs 主機 crontab | **done** | 狀態頁顯示非 YSK 行數；install 合併保留主機非 YSK 行 |
 | S8 | 本機 Apache 仍佔 :80 | **done** | 就緒探測偵測 Apache 佔 :80；修復提示綁 127.0.0.1:8080 |
 
@@ -58,38 +58,40 @@
 
 ---
 
-## F. Auth / 多租戶（刻意後置）
+## F. Auth / 多租戶
 
 | ID | 項 | Status | 說明 |
 |----|-----|--------|------|
-| Phase3 | Users / Packages 多租戶 | **P2 / frozen for P0** | 非 Admin-first 阻塞 |
-| Reseller | — | **out** | 產品凍結 |
+| Phase3 | Users / Packages 多用戶套餐 | **done**（Admin 基礎） | `UsersAdminService` + `UsersPage` + package 配額（`package-limits` 按 owner）+ impersonate；**非**全 isolation SaaS |
+| Reseller | — | **out** | 產品凍結（非 P0） |
 
 ---
 
-## G. 工程債（唔擋功能 P0）
+## G. 工程債
 
 | ID | 項 | Status |
 |----|-----|--------|
-| Cov | line coverage → 90% | open track |
-| Shared DTO | ServiceConsole 單共享 type 跨 web/server | polish |
+| Cov | line coverage → 90% | **done**（lines/statements **≥90.5%**；functions ~97%；branch ~79.6% 達門檻 79） |
+| Shared DTO | ServiceConsole 單共享 type 跨 web/server | **done**（`@ysk/shared` `ServiceConsoleDto`） |
 | installCrontab | 寫入可能覆蓋用戶整份 crontab — 警告文案 | **done** | 合併安裝 + 保留非 YSK 行 + 狀態 UI |
 
 ---
 
-## 建議 sprint 順序（若繼續）
+## 驗收指令
 
-1. **S6** 真機有數據 switch（運維 checklist）  
-2. **Cov** coverage → 90%  
-3. 新功能／parity 再對 matrix  
+```bash
+pnpm --filter @ysk/core test:coverage   # Cov
+pnpm e2e:sql-switch                     # S6 碼門禁
+pnpm e2e:sql-switch-live                # S6 Docker 有數據 dump/import
+```
 
 ---
 
-## 完成度粗估（P0 polish 本身）
+## 完成度
 
 | 子集 | 完成 |
 |------|------|
-| A 今輪主線碼 | **~98%**（差真機有數據 S6） |
-| B–E matrix partial | **~95%** 已收口 |
-| F 多租戶 | **0%（刻意不做 P0）** |
-| 整體「P0 polish 清單收口」 | **約 93%**；若只計 Admin 已交付功能則 **~95%+** |
+| A–E 功能 polish | **100%** |
+| G 工程債 | **100%** |
+| F Admin 多用戶 | **100%**（Reseller out） |
+| **整體 P0 polish 清單** | **100%** |

@@ -71,7 +71,7 @@ describe('UsersAdminService', () => {
       expect(() => svc.deletePackage(pkg.id, 'admin')).toThrow();
 
       expect(svc.deleteUser(u.id, 'admin')).toBe(true);
-      expect(() => svc.deleteUser('admin1', 'admin')).toThrow(/最後一個 admin|last|admin/i);
+      expect(() => svc.deleteUser('admin1', 'admin')).toThrow(/最後一個|last|admin|管理員/i);
       expect(svc.deletePackage(pkg.id, 'admin')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });

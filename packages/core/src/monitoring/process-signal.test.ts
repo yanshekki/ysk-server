@@ -77,7 +77,7 @@ describe('signalProcess', () => {
     const r = await signalProcess({ host, pid: '99999', signal: 'TERM' });
     expect(r.ok).toBe(false);
     expect(r.blocked).toBe(true);
-    expect(r.blockMessage).toMatch(/YSK_EXECUTE/);
+    expect(r.blockMessage).toMatch(/YSK_EXECUTE|系統變更權限/);
   });
 
   it('refuses PID 1', async () => {

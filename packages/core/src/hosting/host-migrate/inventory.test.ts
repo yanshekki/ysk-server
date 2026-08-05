@@ -148,7 +148,14 @@ describe('buildHostManifest', () => {
       expect.arrayContaining(['demo.example', 'mail.example']),
     );
     expect(m.fingerprints['dataDir/ysk.json']).toMatch(/^[a-f0-9]{64}$/);
-    expect(m.warnings.some((w) => w.includes('home 不存在'))).toBe(true);
+    // zh-HK: 「主目錄 不存在」; zh-CN: 「home 不存在」; en: path-only
+    expect(
+      m.warnings.some(
+        (w) =>
+          /主目錄\s*不存在|home\s*不存在|home:/i.test(w) ||
+          w.includes(m.projects[0]!.home_dir),
+      ),
+    ).toBe(true);
 
     const sum = summarizeManifest(m);
     expect(sum.lines.length).toBeGreaterThan(2);

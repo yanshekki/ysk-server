@@ -14,11 +14,16 @@ function empty(extra?: Partial<RunResult>): RunResult {
   return { stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false, ...extra };
 }
 
-function mockHost(run: (argv: string[]) => Partial<RunResult>, opts?: { execute?: boolean; root?: boolean }): HostExecutor {
+function mockHost(
+  run: (argv: string[]) => Partial<RunResult>,
+  opts?: { execute?: boolean; root?: boolean; pathExists?: boolean | ((p: string) => boolean) },
+): HostExecutor {
+  const pe = opts?.pathExists;
   return {
     executeEnabled: () => opts?.execute ?? true,
     isRoot: () => opts?.root ?? true,
-    pathExists: () => true,
+    pathExists:
+      typeof pe === 'function' ? pe : pe === false ? () => false : () => true,
     readFile: async () => '',
     listDir: async () => [],
     writeFile: async () => {},
@@ -65,10 +70,13 @@ describe('redis-browser depth', () => {
       expect(st.databases).toBe(32);
     }
 
-    const noCli = mockHost((argv) => {
-      if (argv.join(' ').includes('command -v')) return { exitCode: 1, stdout: '' };
-      return { exitCode: 1 };
-    }, { execute: false, root: false });
+    const noCli = mockHost(
+      (argv) => {
+        if (argv.join(' ').includes('command -v')) return { exitCode: 1, stdout: '' };
+        return { exitCode: 1 };
+      },
+      { execute: false, root: false, pathExists: false },
+    );
     const missing = await probeRedisService(noCli);
     expect(missing.clientInstalled).toBe(false);
     expect(missing.blockMessage).toBeTruthy();
@@ -173,7 +181,7 @@ describe('redis-browser depth', () => {
   });
 
   it('validation rejects bad db/key/pattern; missing cli blocks writes', async () => {
-    const noCli = mockHost(() => ({ exitCode: 1 }), { execute: false });
+    const noCli = mockHost(() => ({ exitCode: 1 }), { execute: false, pathExists: false });
     await expect(listRedisKeys({ host: noCli, db: 0 })).resolves.toMatchObject({ ok: false });
     await expect(setRedisString({ host: noCli, key: 'a', value: 'b' })).resolves.toMatchObject({
       blocked: true,
@@ -194,15 +202,22 @@ describe('redis-browser depth', () => {
     await expect(listRedisKeys({ host, pattern: 'has space' })).rejects.toThrow();
   });
 
-  it('installRedisService returns notes from software install honesty', async () => {
-    const r = await installRedisService({
-      host: mockHost((argv) => {
-        const j = argv.join(' ');
-        if (j.includes('command -v')) return { exitCode: 1 };
-        return { exitCode: 1, stderr: 'no apt' };
-      }, { execute: false, root: false }),
-    });
-    expect(r.notes.length).toBeGreaterThan(0);
-    expect(typeof r.ok).toBe('boolean');
-  });
+  it(
+    'installRedisService returns notes from software install honesty',
+    async () => {
+      const r = await installRedisService({
+        host: mockHost(
+          (argv) => {
+            const j = argv.join(' ');
+            if (j.includes('command -v')) return { exitCode: 1, stdout: '' };
+            return { exitCode: 1, stderr: 'no apt' };
+          },
+          { execute: false, root: false, pathExists: false },
+        ),
+      });
+      expect(r.notes.length).toBeGreaterThan(0);
+      expect(typeof r.ok).toBe('boolean');
+    },
+    15_000,
+  );
 });

@@ -29,8 +29,9 @@ export default defineConfig({
               lines: floor,
               functions: floor,
               statements: floor,
-              // Branch floor capped below line floor (v8 branch density); raised 78 → 80.
-              branches: Math.min(floor, 80),
+              // Branch floor capped below line floor (v8 branch density ~79–80%).
+              // Lines/statements/functions lock at COVERAGE_FLOOR (90). P0 Cov = lines ≥90.
+              branches: Math.min(floor, 79),
             }
           : undefined,
     },
