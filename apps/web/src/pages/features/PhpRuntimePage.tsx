@@ -171,7 +171,7 @@ type IniCatalogGroup = {
     default: string | number | boolean;
     hint?: string;
     danger?: boolean;
-    options?: Array<{ value: string; label: string }>;
+    options?: Array<{ value: string; label: string; group?: string }>;
   }>;
 };
 
