@@ -21,6 +21,7 @@ export * from './updates.js';
 export * from './ai.js';
 export * from './capabilities.js';
 export * from './route-capabilities.js';
+export * from './service-ports.js';
 /** Unified list search/filter (browser-safe pure helpers) */
 export * from './list-query.js';
 

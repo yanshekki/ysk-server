@@ -15,7 +15,6 @@ import {
   probeRuntimes,
   planOrInstallRuntime,
   listSupportedRuntimes,
-  phpExtensionCatalogDto,
   runtimePluginsCatalogWithProbe,
   getRuntimeLatestHint,
   applyPublicFileServer,
