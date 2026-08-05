@@ -305,7 +305,33 @@
     "options": {
       "sessionFiles": "檔案",
       "sessionRedis": "Redis",
-      "sessionMemcached": "Memcached"
+      "sessionMemcached": "Memcached",
+      "errorReportingProd": "生產建議（E_ALL 除 deprecated/strict）",
+      "errorReportingAll": "全部（E_ALL）",
+      "errorReportingQuiet": "較安靜（除 NOTICE/DEPRECATED）",
+      "errorReportingMinimal": "僅錯誤／警告／剖析",
+      "errorReportingOff": "關閉（0）",
+      "openBasedirNone": "不限制（空）",
+      "openBasedirVarWww": "/var/www",
+      "openBasedirHome": "/home",
+      "openBasedirWwwTmp": "/var/www 與 /tmp",
+      "errorLogDefault": "系統預設（空）",
+      "errorLogPhp": "/var/log/php/error.log",
+      "errorLogFpm": "FPM 日誌路徑",
+      "errorLogSyslog": "syslog"
+    },
+    "disableFn": {
+      "groups": {
+        "process": "程序執行",
+        "dynamic": "動態載入",
+        "info": "資訊洩露",
+        "filesystem": "檔案系統",
+        "network": "網絡／其他"
+      },
+      "extraHint": "清單外（主機既有）",
+      "customPlaceholder": "其他函式名…",
+      "searchPlaceholder": "搜尋函式…",
+      "emptyText": "無符合項目"
     }
   }
 }

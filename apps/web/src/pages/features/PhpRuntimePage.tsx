@@ -18,6 +18,7 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  MultiCheckSelect,
   OpsResultPanel,
   PresetChips,
   SegRadio,
@@ -511,6 +512,49 @@ export function PhpRuntimePage() {
                                     </option>
                                   ))}
                                 </select>
+                              );
+                            })()
+                          ) : f.type === 'multiselect' && f.options ? (
+                            (() => {
+                              const raw = String(val ?? '');
+                              const selected = raw
+                                .split(/[\s,]+/)
+                                .map((s) => s.trim())
+                                .filter(Boolean);
+                              const known = new Set(f.options!.map((o) => o.value));
+                              const extras = selected.filter((s) => !known.has(s));
+                              const opts = [
+                                ...f.options!.map((o) => ({
+                                  value: o.value,
+                                  label: o.label || o.value,
+                                  hint: o.group
+                                    ? t(`runtime.phpIniCatalog.disableFn.groups.${o.group}`, {
+                                        defaultValue: o.group,
+                                      })
+                                    : undefined,
+                                })),
+                                ...extras.map((v) => ({
+                                  value: v,
+                                  label: v,
+                                  hint: t('runtime.phpIniCatalog.disableFn.extraHint'),
+                                })),
+                              ];
+                              return (
+                                <MultiCheckSelect
+                                  id={id}
+                                  options={opts}
+                                  value={selected}
+                                  onChange={(next) => setValue(f.key, next.join(','))}
+                                  allowCustom={f.key === 'disable_functions'}
+                                  customCase="lower"
+                                  customPlaceholder={t(
+                                    'runtime.phpIniCatalog.disableFn.customPlaceholder',
+                                  )}
+                                  searchPlaceholder={t(
+                                    'runtime.phpIniCatalog.disableFn.searchPlaceholder',
+                                  )}
+                                  emptyText={t('runtime.phpIniCatalog.disableFn.emptyText')}
+                                />
                               );
                             })()
                           ) : f.type === 'textarea' ? (

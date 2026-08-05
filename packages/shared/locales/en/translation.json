@@ -7303,14 +7303,20 @@
       "static": "Static",
       "python": "Python",
       "go": "Go",
-      "rust": "Rust"
+      "rust": "Rust",
+      "java": "Java",
+      "kotlin": "Kotlin",
+      "bun": "Bun"
     },
     "netCacheTitle": "Cache",
     "logsDeepAccess": "Log center · access",
     "logsDeepError": "Log center · error",
     "logsDeepNginxUnit": "Nginx unit logs",
     "logsPresetAccess": "Filter access.log",
-    "logsPresetError": "Filter error.log"
+    "logsPresetError": "Filter error.log",
+    "railJava": "Java process",
+    "railKotlin": "Kotlin process",
+    "railBun": "Bun process"
   },
   "protection": {
     "levels": {
@@ -8273,7 +8279,33 @@
       "options": {
         "sessionFiles": "Files",
         "sessionRedis": "Redis",
-        "sessionMemcached": "Memcached"
+        "sessionMemcached": "Memcached",
+        "errorReportingProd": "Production (E_ALL minus deprecated/strict)",
+        "errorReportingAll": "Everything (E_ALL)",
+        "errorReportingQuiet": "Quieter (no NOTICE/DEPRECATED)",
+        "errorReportingMinimal": "Errors / warnings / parse only",
+        "errorReportingOff": "Off (0)",
+        "openBasedirNone": "No restriction (empty)",
+        "openBasedirVarWww": "/var/www",
+        "openBasedirHome": "/home",
+        "openBasedirWwwTmp": "/var/www and /tmp",
+        "errorLogDefault": "System default (empty)",
+        "errorLogPhp": "/var/log/php/error.log",
+        "errorLogFpm": "FPM log path",
+        "errorLogSyslog": "syslog"
+      },
+      "disableFn": {
+        "groups": {
+          "process": "Process execution",
+          "dynamic": "Dynamic loading",
+          "info": "Information disclosure",
+          "filesystem": "Filesystem",
+          "network": "Network / other"
+        },
+        "extraHint": "Not in catalog (host existing)",
+        "customPlaceholder": "Other function name…",
+        "searchPlaceholder": "Search functions…",
+        "emptyText": "No matches"
       }
     }
   },

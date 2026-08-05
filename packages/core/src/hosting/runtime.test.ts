@@ -2,18 +2,26 @@ import { describe, expect, it } from 'vitest';
 import {
   defaultProcessCommands,
   defaultRuntimeVersion,
+  detectBunEntry,
+  detectJavaEntry,
   isProcessRuntime,
   listSupportedRuntimes,
   normalizeRuntimeVersion,
   renderNodeProcessUnit,
   renderPhpVhost,
   renderProcessUnit,
+  selectBunRuntime,
   selectGoRuntime,
+  selectJavaRuntime,
+  selectKotlinRuntime,
   selectNodeRuntime,
   selectPhpRuntime,
   selectPythonRuntime,
   selectRustRuntime,
 } from './runtime.js';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 describe('multi-version runtimes', () => {
   it('selects supported node and php versions', () => {
@@ -60,8 +68,43 @@ describe('multi-version runtimes', () => {
     expect(isProcessRuntime('python')).toBe(true);
     expect(isProcessRuntime('go')).toBe(true);
     expect(isProcessRuntime('rust')).toBe(true);
+    expect(isProcessRuntime('java')).toBe(true);
+    expect(isProcessRuntime('kotlin')).toBe(true);
+    expect(isProcessRuntime('bun')).toBe(true);
     expect(isProcessRuntime('php')).toBe(false);
     expect(isProcessRuntime('static')).toBe(false);
+  });
+
+  it('supports java kotlin bun selection and commands (not node fallback)', () => {
+    expect(selectJavaRuntime('21').binaryPath).toContain('java-21');
+    expect(selectKotlinRuntime('2.1.0').manager).toBe('kotlin-official');
+    expect(selectBunRuntime('latest').binaryPath).toContain('bun');
+    expect(defaultRuntimeVersion('java')).toBe('21');
+    expect(normalizeRuntimeVersion('java', '17')).toBe('17');
+    expect(listSupportedRuntimes().java).toContain('21');
+    expect(listSupportedRuntimes().bun).toContain('latest');
+
+    const j = defaultProcessCommands('java', { entry: 'app.jar', port: 8080 });
+    expect(j.execStart).toContain('java -jar');
+    expect(j.execStart).not.toContain('node ');
+    expect(j.build).toMatch(/mvnw|gradlew|Maven/);
+
+    const b = defaultProcessCommands('bun', { entry: 'index.ts' });
+    expect(b.execStart).toContain('bun');
+    expect(b.execStart).not.toMatch(/\bnode /);
+  });
+
+  it('detects java jar and bun entry on disk', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-rt-'));
+    try {
+      mkdirSync(join(dir, 'target'), { recursive: true });
+      writeFileSync(join(dir, 'target', 'demo-SNAPSHOT.jar'), 'x');
+      expect(detectJavaEntry(dir)).toContain('.jar');
+      writeFileSync(join(dir, 'index.ts'), 'console.log(1)');
+      expect(detectBunEntry(dir)).toBe('index.ts');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('renders process unit and php vhost configs', () => {

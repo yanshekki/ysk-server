@@ -92,6 +92,15 @@ export function getProjectUiProfile(runtime: ProjectRuntime): ProjectUiProfile {
   if (runtime === 'rust') {
     return processProfile('rust', 'projects.railRust', 'Rust process');
   }
+  if (runtime === 'java') {
+    return processProfile('java', 'projects.railJava', 'Java process');
+  }
+  if (runtime === 'kotlin') {
+    return processProfile('kotlin', 'projects.railKotlin', 'Kotlin process');
+  }
+  if (runtime === 'bun') {
+    return processProfile('bun', 'projects.railBun', 'Bun process');
+  }
   // node (default)
   return processProfile('node', 'projects.railNode', 'Node process');
 }
@@ -104,6 +113,9 @@ export function formatRuntimeName(runtime?: string, t?: TFunction): string {
     if (runtime === 'python') return t('projects.runtimeName.python');
     if (runtime === 'go') return t('projects.runtimeName.go');
     if (runtime === 'rust') return t('projects.runtimeName.rust');
+    if (runtime === 'java') return t('projects.runtimeName.java');
+    if (runtime === 'kotlin') return t('projects.runtimeName.kotlin');
+    if (runtime === 'bun') return t('projects.runtimeName.bun');
     return runtime ?? t('common.noneSelectedShort');
   }
   if (runtime === 'php') return 'PHP';
@@ -112,5 +124,8 @@ export function formatRuntimeName(runtime?: string, t?: TFunction): string {
   if (runtime === 'python') return 'Python';
   if (runtime === 'go') return 'Go';
   if (runtime === 'rust') return 'Rust';
+  if (runtime === 'java') return 'Java';
+  if (runtime === 'kotlin') return 'Kotlin';
+  if (runtime === 'bun') return 'Bun';
   return runtime ?? '—';
 }

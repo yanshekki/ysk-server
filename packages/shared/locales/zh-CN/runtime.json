@@ -305,7 +305,33 @@
     "options": {
       "sessionFiles": "文件",
       "sessionRedis": "Redis",
-      "sessionMemcached": "Memcached"
+      "sessionMemcached": "Memcached",
+      "errorReportingProd": "生产建议（E_ALL 除 deprecated/strict）",
+      "errorReportingAll": "全部（E_ALL）",
+      "errorReportingQuiet": "较安静（除 NOTICE/DEPRECATED）",
+      "errorReportingMinimal": "仅错误／警告／解析",
+      "errorReportingOff": "关闭（0）",
+      "openBasedirNone": "不限制（空）",
+      "openBasedirVarWww": "/var/www",
+      "openBasedirHome": "/home",
+      "openBasedirWwwTmp": "/var/www 与 /tmp",
+      "errorLogDefault": "系统默认（空）",
+      "errorLogPhp": "/var/log/php/error.log",
+      "errorLogFpm": "FPM 日志路径",
+      "errorLogSyslog": "syslog"
+    },
+    "disableFn": {
+      "groups": {
+        "process": "进程执行",
+        "dynamic": "动态加载",
+        "info": "信息泄露",
+        "filesystem": "文件系统",
+        "network": "网络／其他"
+      },
+      "extraHint": "清单外（主机既有）",
+      "customPlaceholder": "其他函数名…",
+      "searchPlaceholder": "搜索函数…",
+      "emptyText": "无匹配项"
     }
   }
 }

@@ -21,6 +21,7 @@ export * from './project-logs.js';
 export * from './ssl-certs.js';
 export * from './php-fpm.js';
 export * from './php-ini-catalog.js';
+export * from './php-disable-functions.js';
 export * from './php-ini.js';
 export * from './runtime-tuning.js';
 export * from './quota.js';

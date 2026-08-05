@@ -6,7 +6,14 @@
 
 import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { CapabilityId, SystemRole, ApprovalStatus, RiskTier, OperationLevel } from '@ysk/shared';
+import type {
+  CapabilityId,
+  SystemRole,
+  ApprovalStatus,
+  RiskTier,
+  OperationLevel,
+  HostingRuntime,
+} from '@ysk/shared';
 
 export interface StoreUser {
   id: string;
@@ -90,7 +97,7 @@ export interface StoreProject {
   linux_user: string;
   linux_group: string;
   home_dir: string;
-  runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+  runtime: HostingRuntime;
   runtime_version?: string;
   env: 'staging' | 'production';
   status: string;

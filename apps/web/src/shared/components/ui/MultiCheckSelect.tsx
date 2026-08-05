@@ -24,6 +24,8 @@ export type MultiCheckSelectProps = {
   emptyText?: string;
   maxVisible?: number;
   disabled?: boolean;
+  /** How to normalize free-typed custom values (default upper for ASN/geo legacy). */
+  customCase?: 'upper' | 'lower' | 'as-is';
 };
 
 export function MultiCheckSelect({
@@ -38,6 +40,7 @@ export function MultiCheckSelect({
   /** Only truncate when option count exceeds this (default 100). */
   maxVisible = 100,
   disabled = false,
+  customCase = 'upper',
 }: MultiCheckSelectProps) {
   const { t } = useTranslation();
   const [q, setQ] = useState('');
@@ -72,9 +75,16 @@ export function MultiCheckSelect({
   }
 
   function addCustom() {
-    const raw = custom.trim().toUpperCase();
+    const trimmed = custom.trim();
+    if (!trimmed) return;
+    const raw =
+      customCase === 'upper'
+        ? trimmed.toUpperCase()
+        : customCase === 'lower'
+          ? trimmed.toLowerCase()
+          : trimmed;
     if (!raw) return;
-    const v = raw.startsWith('AS') || /^[A-Z]{2}$/.test(raw) ? raw : raw;
+    const v = raw;
     if (!selected.has(v)) onChange([...value, v]);
     setCustom('');
   }

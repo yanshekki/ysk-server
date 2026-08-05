@@ -123,6 +123,9 @@ export function ProjectsPage() {
                     { id: 'python', label: 'Python', count: facets?.runtime?.python },
                     { id: 'go', label: 'Go', count: facets?.runtime?.go },
                     { id: 'rust', label: 'Rust', count: facets?.runtime?.rust },
+                    { id: 'java', label: 'Java', count: facets?.runtime?.java },
+                    { id: 'kotlin', label: 'Kotlin', count: facets?.runtime?.kotlin },
+                    { id: 'bun', label: 'Bun', count: facets?.runtime?.bun },
                     {
                       id: 'static',
                       label: t('common.static'),

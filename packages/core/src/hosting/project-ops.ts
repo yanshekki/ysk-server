@@ -30,9 +30,12 @@ import {
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
 import {
   defaultProcessCommands,
+  detectBunEntry,
+  detectJavaEntry,
   isProcessRuntime,
   renderProcessUnit,
-  selectPhpRuntime } from './runtime.js';
+  selectPhpRuntime,
+} from './runtime.js';
 import { gitSync } from './git-deploy.js';
 import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
@@ -1854,13 +1857,19 @@ export class ProjectOpsService {
 
     const port = opts.port ?? row.port ?? (await findFreePort(3200, 3999));
     const cargoName = resolveCargoPackageName(appDir);
-    // entry: request → saved deploy_entry → auto-detect (python/rust)
+    // entry: request → saved deploy_entry → auto-detect per runtime
     let entry = opts.entry?.trim() || row.deploy_entry?.trim() || undefined;
     if (!entry && row.runtime === 'python') {
       entry = detectPythonEntry(appDir) ?? undefined;
     }
     if (!entry && row.runtime === 'rust' && cargoName) {
       entry = `./target/release/${cargoName}`;
+    }
+    if (!entry && (row.runtime === 'java' || row.runtime === 'kotlin')) {
+      entry = detectJavaEntry(appDir) ?? undefined;
+    }
+    if (!entry && row.runtime === 'bun') {
+      entry = detectBunEntry(appDir) ?? undefined;
     }
     const cmds = defaultProcessCommands(row.runtime, {
       version: row.runtime_version,

@@ -275,9 +275,14 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         </select>
       );
     }
-    if (s.type === 'int' || s.type === 'number' || /port|timeout|conn|size|memory|buffer|worker|pool/i.test(s.key)) {
-      const numish = val === '' || /^-?\d+(\.\d+)?$/.test(val.trim());
-      if (numish) {
+    if (
+      s.type === 'int' ||
+      s.type === 'number' ||
+      s.type === 'duration' ||
+      /port|timeout|conn|size|memory|buffer|worker|pool/i.test(s.key)
+    ) {
+      const numish = val === '' || /^-?\d+(\.\d+)?[smh]?$/.test(val.trim());
+      if (numish || s.type === 'duration') {
         const presets = /port/i.test(s.key)
           ? [
               { value: '3306', label: '3306' },
@@ -285,12 +290,13 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
               { value: '6379', label: '6379' },
               { value: '8080', label: '8080' },
             ]
-          : /timeout|idle/i.test(s.key)
+          : s.type === 'duration' || /timeout|idle|query_time/i.test(s.key)
             ? [
-                { value: '0', label: '0' },
-                { value: '30', label: '30' },
-                { value: '60', label: '60' },
-                { value: '300', label: '300' },
+                { value: '30', label: '30s' },
+                { value: '60', label: '60s' },
+                { value: '300', label: '300s' },
+                { value: '600', label: '600s' },
+                { value: '28800', label: '28800s' },
               ]
             : /conn|client|worker|pool/i.test(s.key)
               ? [
@@ -317,6 +323,20 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           />
         );
       }
+    }
+    // Secrets stay free-text password fields
+    if (s.danger && /pass|password|secret|requirepass/i.test(s.key)) {
+      return (
+        <input
+          id={id}
+          type="password"
+          autoComplete="new-password"
+          value={val}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={s.liveValue == null ? t('db.console.notReadFromService') : undefined}
+          aria-label={s.label}
+        />
+      );
     }
     return (
       <input

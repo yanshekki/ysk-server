@@ -1,10 +1,12 @@
 /**
  * Multi-version hosting runtime selection contracts.
- * Process apps: node | python | go | rust
+ * Process apps: node | python | go | rust | java | kotlin | bun
  * PHP-FPM: php · Static files: static
  */
 
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { ErrorCodes, YskError, tl } from '@ysk/shared';
 
 export type RuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
 
@@ -462,12 +464,89 @@ export function defaultProcessCommands(
       entry,
     };
   }
-  // node
+  if (runtime === 'java' || runtime === 'kotlin') {
+    // JVM apps: prefer fat jar; build via Maven wrapper / Gradle when present
+    const entry = opts.entry ?? 'app.jar';
+    const build =
+      'if [ -x ./mvnw ]; then ./mvnw -q -DskipTests package; ' +
+      'elif [ -x ./gradlew ]; then ./gradlew -q bootJar || ./gradlew -q jar; ' +
+      'elif [ -f pom.xml ]; then mvn -q -DskipTests package; ' +
+      'elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then gradle -q bootJar || gradle -q jar; ' +
+      'else echo "no Maven/Gradle build — using existing jar"; fi';
+    const jar = entry.startsWith('./') || entry.startsWith('/') ? entry : `./${entry}`;
+    return {
+      build,
+      // Spring Boot honors SERVER_PORT; others often use PORT
+      execStart: `/bin/bash -lc 'export SERVER_PORT="\${PORT:-3000}"; exec java -jar ${jar}'`,
+      entry: jar,
+    };
+  }
+  if (runtime === 'bun') {
+    const entry = opts.entry ?? 'index.ts';
+    return {
+      build: 'if [ -f package.json ]; then bun install; else echo "no package.json — skip bun install"; fi',
+      execStart: `/bin/bash -lc 'if [ -f package.json ] && bun run --silent start >/dev/null 2>&1; then exec bun run start; else exec bun ${entry}; fi'`,
+      entry,
+    };
+  }
+  // node (default process fallback only for kind=node)
   const entry = opts.entry ?? 'server.js';
   return {
     execStart: `node ${entry}`,
     entry,
   };
+}
+
+/** Detect a reasonable jar path under appDir (Maven/Gradle layouts). */
+export function detectJavaEntry(appDir: string): string | undefined {
+  const candidates = [
+    'app.jar',
+    'application.jar',
+    join('target', 'app.jar'),
+    join('build', 'libs'),
+    'target',
+  ];
+  for (const rel of candidates) {
+    const abs = join(appDir, rel);
+    try {
+      if (!existsSync(abs)) continue;
+      const st = statSync(abs);
+      if (st.isFile() && abs.endsWith('.jar')) return `./${rel}`;
+      if (st.isDirectory()) {
+        const jars = readdirSync(abs)
+          .filter(
+            (n) =>
+              n.endsWith('.jar') &&
+              !n.endsWith('-sources.jar') &&
+              !n.endsWith('-javadoc.jar'),
+          )
+          .sort();
+        const boot = jars.find(
+          (n) => n.includes('boot') || n.includes('SNAPSHOT') || n.includes('all'),
+        );
+        const pick = boot ?? jars[jars.length - 1];
+        if (pick) return `./${rel}/${pick}`;
+      }
+    } catch {
+      /* skip */
+    }
+  }
+  return undefined;
+}
+
+/** Detect Bun/TS entry under appDir. */
+export function detectBunEntry(appDir: string): string | undefined {
+  for (const rel of [
+    'index.ts',
+    'server.ts',
+    'src/index.ts',
+    'src/server.ts',
+    'index.js',
+    'server.js',
+  ]) {
+    if (existsSync(join(appDir, rel))) return rel;
+  }
+  return undefined;
 }
 
 /**

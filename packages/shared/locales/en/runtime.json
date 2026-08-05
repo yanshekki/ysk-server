@@ -305,7 +305,33 @@
     "options": {
       "sessionFiles": "Files",
       "sessionRedis": "Redis",
-      "sessionMemcached": "Memcached"
+      "sessionMemcached": "Memcached",
+      "errorReportingProd": "Production (E_ALL minus deprecated/strict)",
+      "errorReportingAll": "Everything (E_ALL)",
+      "errorReportingQuiet": "Quieter (no NOTICE/DEPRECATED)",
+      "errorReportingMinimal": "Errors / warnings / parse only",
+      "errorReportingOff": "Off (0)",
+      "openBasedirNone": "No restriction (empty)",
+      "openBasedirVarWww": "/var/www",
+      "openBasedirHome": "/home",
+      "openBasedirWwwTmp": "/var/www and /tmp",
+      "errorLogDefault": "System default (empty)",
+      "errorLogPhp": "/var/log/php/error.log",
+      "errorLogFpm": "FPM log path",
+      "errorLogSyslog": "syslog"
+    },
+    "disableFn": {
+      "groups": {
+        "process": "Process execution",
+        "dynamic": "Dynamic loading",
+        "info": "Information disclosure",
+        "filesystem": "Filesystem",
+        "network": "Network / other"
+      },
+      "extraHint": "Not in catalog (host existing)",
+      "customPlaceholder": "Other function name…",
+      "searchPlaceholder": "Search functions…",
+      "emptyText": "No matches"
     }
   }
 }

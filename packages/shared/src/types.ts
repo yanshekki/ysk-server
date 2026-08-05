@@ -36,8 +36,17 @@ export type ProtectionMode = 'normal' | 'degraded' | 'offline' | 'ddos-protectio
 /** Supported AI agent runtimes */
 export type AgentRuntimeKind = 'openclaw' | 'hermes' | 'ionclaw';
 
-/** Hosting runtime kinds */
-export type HostingRuntime = 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+/** Hosting runtime kinds (project + host install) */
+export type HostingRuntime =
+  | 'node'
+  | 'php'
+  | 'static'
+  | 'python'
+  | 'go'
+  | 'rust'
+  | 'java'
+  | 'kotlin'
+  | 'bun';
 
 /** Re-export apply lifecycle for discoverability (canonical: ops.ts) */
 export type { ApplyStatus } from './ops.js';

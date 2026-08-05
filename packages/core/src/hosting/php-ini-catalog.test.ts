@@ -43,6 +43,19 @@ describe('php-ini-catalog', () => {
     expect(cs?.options?.some((o) => o.value === 'UTF-8')).toBe(true);
   });
 
+  it('disable_functions is multiselect; error_reporting is select', () => {
+    const fields = listPhpIniCatalog().flatMap((g) => g.fields);
+    const dis = fields.find((f) => f.key === 'disable_functions');
+    const er = fields.find((f) => f.key === 'error_reporting');
+    const ob = fields.find((f) => f.key === 'open_basedir');
+    expect(dis?.type).toBe('multiselect');
+    expect((dis?.options?.length ?? 0) > 10).toBe(true);
+    expect(String(dis?.default)).toContain('exec');
+    expect(er?.type).toBe('select');
+    expect((er?.options?.length ?? 0) >= 4).toBe(true);
+    expect(ob?.type).toBe('select');
+  });
+
   it('labels are localized (not raw keys or empty English stubs)', () => {
     const groups = listPhpIniCatalog();
     for (const grp of groups) {

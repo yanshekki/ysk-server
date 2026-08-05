@@ -475,12 +475,18 @@
     "static": "Static",
     "python": "Python",
     "go": "Go",
-    "rust": "Rust"
+    "rust": "Rust",
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "bun": "Bun"
   },
   "netCacheTitle": "Cache",
   "logsDeepAccess": "Log center · access",
   "logsDeepError": "Log center · error",
   "logsDeepNginxUnit": "Nginx unit logs",
   "logsPresetAccess": "Filter access.log",
-  "logsPresetError": "Filter error.log"
+  "logsPresetError": "Filter error.log",
+  "railJava": "Java process",
+  "railKotlin": "Kotlin process",
+  "railBun": "Bun process"
 }

@@ -475,12 +475,18 @@
     "static": "静态",
     "python": "Python",
     "go": "Go",
-    "rust": "Rust"
+    "rust": "Rust",
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "bun": "Bun"
   },
   "netCacheTitle": "缓存",
   "logsDeepAccess": "日志中心 · access",
   "logsDeepError": "日志中心 · error",
   "logsDeepNginxUnit": "Nginx 服务日志",
   "logsPresetAccess": "筛选 access.log",
-  "logsPresetError": "筛选 error.log"
+  "logsPresetError": "筛选 error.log",
+  "railJava": "Java 进程",
+  "railKotlin": "Kotlin 进程",
+  "railBun": "Bun 进程"
 }

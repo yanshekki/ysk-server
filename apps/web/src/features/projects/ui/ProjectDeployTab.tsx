@@ -65,6 +65,18 @@ export function processDeployHint(runtime: string): string {
   if (runtime === 'node') {
     return i18n.t('projects.deployNodeHint');
   }
+  if (runtime === 'java' || runtime === 'kotlin') {
+    return i18n.t('projects.deployJvmHint', {
+      defaultValue:
+        'Needs JDK on host. Deploy runs Maven/Gradle when present, then java -jar. Set entry to the fat jar path.',
+    });
+  }
+  if (runtime === 'bun') {
+    return i18n.t('projects.deployBunHint', {
+      defaultValue:
+        'Needs Bun on host. Runs bun install when package.json exists, then bun entry (or bun run start).',
+    });
+  }
   return i18n.t('projects.deployDefaultHint');
 }
 
@@ -73,6 +85,10 @@ export function defaultEntryHint(runtime: string): string {
   if (runtime === 'go') return './app';
   if (runtime === 'rust') return './target/release/<crate>';
   if (runtime === 'node') return 'server.js';
+  if (runtime === 'java' || runtime === 'kotlin') {
+    return 'app.jar · target/*.jar · build/libs/*.jar';
+  }
+  if (runtime === 'bun') return 'index.ts · server.ts · src/index.ts';
   return '';
 }
 
@@ -80,6 +96,10 @@ export function envPlaceholder(runtime: string, deployIsPhp: boolean): string {
   if (deployIsPhp) return 'APP_ENV=production\n# KEY=value';
   if (runtime === 'python') return 'APP_ENV=production\n# DATABASE_URL=\n';
   if (runtime === 'go' || runtime === 'rust') return 'APP_ENV=production\n# KEY=value\n';
+  if (runtime === 'java' || runtime === 'kotlin') {
+    return 'APP_ENV=production\n# SERVER_PORT is set from panel PORT\n# JAVA_OPTS=\n';
+  }
+  if (runtime === 'bun') return 'NODE_ENV=production\n# KEY=value\n';
   return 'NODE_ENV=production\n# KEY=value';
 }
 
@@ -94,12 +114,29 @@ export function checklistItems(runtime: string): string[] {
       i18n.t('projects.deployPublishProxy'),
     ];
   }
-  if (runtime === 'go' || runtime === 'rust') {
+  if (runtime === 'go' || runtime === 'rust' || runtime === 'java' || runtime === 'kotlin') {
+    const label =
+      runtime === 'go'
+        ? 'Go'
+        : runtime === 'rust'
+          ? 'Rust'
+          : runtime === 'java'
+            ? 'Java'
+            : 'Kotlin';
     return [
       osFirst,
-      i18n.t('projects.deployToolchainReady', { runtime: runtime === 'go' ? 'Go' : 'Rust' }),
+      i18n.t('projects.deployToolchainReady', { runtime: label }),
       i18n.t('projects.deployFirstBuild'),
       i18n.t('projects.deployNeedBinary'),
+      i18n.t('projects.deployPublishProxy'),
+    ];
+  }
+  if (runtime === 'bun') {
+    return [
+      osFirst,
+      i18n.t('projects.deployToolchainReady', { runtime: 'Bun' }),
+      i18n.t('projects.deployConfirmCode'),
+      i18n.t('projects.deployCheckPort'),
       i18n.t('projects.deployPublishProxy'),
     ];
   }
@@ -168,7 +205,10 @@ export function ProjectDeployTab({
     project.runtime === 'node' ||
     project.runtime === 'python' ||
     project.runtime === 'go' ||
-    project.runtime === 'rust';
+    project.runtime === 'rust' ||
+    project.runtime === 'java' ||
+    project.runtime === 'kotlin' ||
+    project.runtime === 'bun';
   const rtKind = runtimeInstallKind(project.runtime);
   const rtPath = runtimePagePath(project.runtime);
 
@@ -471,7 +511,10 @@ export function ProjectDeployTab({
             {processRuntime &&
             (project.runtime === 'python' ||
               project.runtime === 'go' ||
-              project.runtime === 'rust') ? (
+              project.runtime === 'rust' ||
+              project.runtime === 'java' ||
+              project.runtime === 'kotlin' ||
+              project.runtime === 'bun') ? (
               <div className="form-check-row u-mt-3">
                 <CheckboxField
                   id="skip-build"

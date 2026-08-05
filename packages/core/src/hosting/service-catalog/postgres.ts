@@ -11,7 +11,8 @@ export const POSTGRES_SETTING_DEFS: SettingDef[] = [
     key: 'listen_addresses',
     label: 'notes.auto.n1267',
     category: 'network',
-    type: 'string',
+    type: 'enum',
+    enumValues: ['localhost', '*', '0.0.0.0', '127.0.0.1'],
     applyMode: 'restart',
     description: 'notes.auto.n0320' },
   {
@@ -70,7 +71,8 @@ export const POSTGRES_SETTING_DEFS: SettingDef[] = [
     key: 'checkpoint_timeout',
     label: 'notes.auto.n1026',
     category: 'persistence',
-    type: 'duration',
+    type: 'enum',
+    enumValues: ['30s', '1min', '5min', '10min', '15min'],
     applyMode: 'reload' },
   {
     key: 'archive_mode',

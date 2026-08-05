@@ -20,4 +20,13 @@ describe('service-catalog', () => {
     expect(cs?.enumValues?.includes('utf8mb4')).toBe(true);
     expect(col?.enumValues?.some((v) => v.startsWith('utf8mb4_'))).toBe(true);
   });
+
+  it('bind addresses and auth plugins are selections not free text', () => {
+    const bind = MYSQL_SETTING_DEFS.find((d) => d.key === 'bind_address');
+    const auth = MYSQL_SETTING_DEFS.find((d) => d.key === 'default_authentication_plugin');
+    expect(bind?.type).toBe('enum');
+    expect(bind?.enumValues?.includes('127.0.0.1')).toBe(true);
+    expect(auth?.type).toBe('enum');
+    expect(auth?.enumValues?.includes('caching_sha2_password')).toBe(true);
+  });
 });

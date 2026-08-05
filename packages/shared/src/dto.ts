@@ -6,6 +6,7 @@ import type { CapabilityId } from './capabilities.js';
 import type {
   AgentRuntimeKind,
   ApprovalStatus,
+  HostingRuntime,
   OperationLevel,
   ProtectionMode,
   ResourceScope,
@@ -127,7 +128,7 @@ export interface ProjectDto {
   homeDir: string;
   /** Panel user who owns the project (package quota) */
   ownerUserId?: string;
-  runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+  runtime: HostingRuntime;
   runtimeVersion?: string;
   env: 'staging' | 'production';
   /** Control-plane lifecycle: active | running | stopped | suspended | unhealthy | failed | … */

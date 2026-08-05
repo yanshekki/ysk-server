@@ -78,7 +78,14 @@ export function parseEnvText(envText: string): Record<string, string> {
 export function defaultEnvText(runtime?: string): string {
   if (runtime === 'php') return 'APP_ENV=production\n';
   if (runtime === 'static') return '';
-  if (runtime === 'python' || runtime === 'go' || runtime === 'rust') {
+  if (
+    runtime === 'python' ||
+    runtime === 'go' ||
+    runtime === 'rust' ||
+    runtime === 'java' ||
+    runtime === 'kotlin' ||
+    runtime === 'bun'
+  ) {
     return 'APP_ENV=production\n';
   }
   return 'NODE_ENV=production\n';
@@ -109,6 +116,9 @@ function formatRuntimeNameForLabel(runtime?: string, t?: TFunction): string {
     if (runtime === 'python') return t('projects.runtimeName.python');
     if (runtime === 'go') return t('projects.runtimeName.go');
     if (runtime === 'rust') return t('projects.runtimeName.rust');
+    if (runtime === 'java') return t('projects.runtimeName.java');
+    if (runtime === 'kotlin') return t('projects.runtimeName.kotlin');
+    if (runtime === 'bun') return t('projects.runtimeName.bun');
     return runtime ?? t('common.noneSelectedShort');
   }
   // Fallback without t (English brand names + static key)
@@ -118,5 +128,8 @@ function formatRuntimeNameForLabel(runtime?: string, t?: TFunction): string {
   if (runtime === 'python') return 'Python';
   if (runtime === 'go') return 'Go';
   if (runtime === 'rust') return 'Rust';
+  if (runtime === 'java') return 'Java';
+  if (runtime === 'kotlin') return 'Kotlin';
+  if (runtime === 'bun') return 'Bun';
   return runtime ?? '—';
 }

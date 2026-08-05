@@ -5,7 +5,7 @@
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl, type HostingRuntime } from '@ysk/shared';
 
 export type AppTemplateId =
   | 'node-starter'
@@ -22,7 +22,7 @@ export interface AppTemplateMeta {
   id: AppTemplateId;
   name: string;
   description: string;
-  runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+  runtime: HostingRuntime;
   runtimeVersion: string;
 }
 

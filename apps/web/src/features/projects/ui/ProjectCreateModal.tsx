@@ -27,7 +27,7 @@ export interface ProjectCreateModalProps {
     name: string;
     domain?: string;
     domainAliases?: string[];
-    runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust';
+    runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
     runtimeVersion?: string;
     templateId?: string;
     createDnsZone?: boolean;
@@ -48,7 +48,7 @@ export function ProjectCreateModal({
   const [domain, setDomain] = useState('');
   const [aliases, setAliases] = useState('');
   const [runtime, setRuntime] = useState<
-    'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
+    'node' | 'php' | 'static' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun'
   >('node');
   const [runtimeVersion, setRuntimeVersion] = useState(() =>
     defaultRuntimeInstallVersion('node'),
@@ -201,6 +201,9 @@ export function ProjectCreateModal({
                 { value: 'python', label: 'Python' },
                 { value: 'go', label: 'Go' },
                 { value: 'rust', label: 'Rust' },
+                { value: 'java', label: 'Java' },
+                { value: 'kotlin', label: 'Kotlin' },
+                { value: 'bun', label: 'Bun' },
                 { value: 'static', label: t('common.static') },
               ]}
             />
@@ -276,7 +279,10 @@ export function ProjectCreateModal({
                   tpl?.runtime === 'static' ||
                   tpl?.runtime === 'python' ||
                   tpl?.runtime === 'go' ||
-                  tpl?.runtime === 'rust'
+                  tpl?.runtime === 'rust' ||
+                  tpl?.runtime === 'java' ||
+                  tpl?.runtime === 'kotlin' ||
+                  tpl?.runtime === 'bun'
                 ) {
                   applyRuntime(tpl.runtime);
                 }

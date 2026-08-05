@@ -40,13 +40,16 @@ export function saveDeployPrefs(projectId: string, prefs: DeployPrefs): void {
 
 export function runtimeInstallKind(
   runtime: string,
-): 'node' | 'php' | 'python' | 'go' | 'rust' | null {
+): 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun' | null {
   if (
     runtime === 'node' ||
     runtime === 'php' ||
     runtime === 'python' ||
     runtime === 'go' ||
-    runtime === 'rust'
+    runtime === 'rust' ||
+    runtime === 'java' ||
+    runtime === 'kotlin' ||
+    runtime === 'bun'
   ) {
     return runtime;
   }
@@ -64,6 +67,9 @@ export function defaultRuntimeInstallVersion(runtime: string): string {
   if (runtime === 'go') return '1.22';
   if (runtime === 'rust') return 'stable';
   if (runtime === 'node') return '20';
+  if (runtime === 'java') return '21';
+  if (runtime === 'kotlin') return '2.1.0';
+  if (runtime === 'bun') return 'latest';
   return '';
 }
 
@@ -74,5 +80,8 @@ export function runtimeVersionChoices(runtime: string): string[] {
   if (runtime === 'python') return ['3.10', '3.11', '3.12'];
   if (runtime === 'go') return ['1.21', '1.22', '1.23'];
   if (runtime === 'rust') return ['stable', '1.78', '1.81'];
+  if (runtime === 'java') return ['17', '21'];
+  if (runtime === 'kotlin') return ['2.1.0', '2.0.21'];
+  if (runtime === 'bun') return ['latest', '1.1.38'];
   return [];
 }

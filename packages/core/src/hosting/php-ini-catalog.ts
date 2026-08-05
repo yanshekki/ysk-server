@@ -1,11 +1,22 @@
 import { tl } from '@ysk/shared';
 import { FALLBACK_TIMEZONES } from '../host/timezones.js';
+import {
+  PHP_DISABLE_FUNCTIONS_DEFAULT,
+  PHP_DISABLE_FUNCTIONS_OPTIONS,
+} from './php-disable-functions.js';
 /**
- * Curated php.ini directives for panel forms (zh-TW labels).
+ * Curated php.ini directives for panel forms.
  * One catalog field → one form row in the UI.
  */
 
-export type PhpIniFieldType = 'string' | 'int' | 'bool' | 'bytes' | 'select' | 'textarea';
+export type PhpIniFieldType =
+  | 'string'
+  | 'int'
+  | 'bool'
+  | 'bytes'
+  | 'select'
+  | 'multiselect'
+  | 'textarea';
 
 /** IANA zones for date.timezone — select only, not free text. */
 export const PHP_TIMEZONE_OPTIONS: Array<{ value: string; label: string }> = [
@@ -60,15 +71,47 @@ export const PHP_CHARSET_OPTIONS: Array<{ value: string; label: string }> = [
 
 export interface PhpIniField {
   key: string;
-  /** Human label (zh-TW) shown in form */
+  /** Human label shown in form (resolved via tl at list time) */
   label: string;
   type: PhpIniFieldType;
   default: string | number | boolean;
   hint?: string;
   danger?: boolean;
-  options?: Array<{ value: string; label: string }>;
+  options?: Array<{ value: string; label: string; group?: string }>;
   group: string;
 }
+
+/** error_reporting select schemes (value = php.ini expression). */
+export const PHP_ERROR_REPORTING_OPTIONS: Array<{ value: string; labelKey: string }> = [
+  {
+    value: 'E_ALL & ~E_DEPRECATED & ~E_STRICT',
+    labelKey: 'runtime.phpIniCatalog.options.errorReportingProd',
+  },
+  { value: 'E_ALL', labelKey: 'runtime.phpIniCatalog.options.errorReportingAll' },
+  {
+    value: 'E_ALL & ~E_NOTICE & ~E_DEPRECATED',
+    labelKey: 'runtime.phpIniCatalog.options.errorReportingQuiet',
+  },
+  {
+    value: 'E_ERROR | E_WARNING | E_PARSE',
+    labelKey: 'runtime.phpIniCatalog.options.errorReportingMinimal',
+  },
+  { value: '0', labelKey: 'runtime.phpIniCatalog.options.errorReportingOff' },
+];
+
+export const PHP_OPEN_BASEDIR_OPTIONS: Array<{ value: string; labelKey: string }> = [
+  { value: '', labelKey: 'runtime.phpIniCatalog.options.openBasedirNone' },
+  { value: '/var/www', labelKey: 'runtime.phpIniCatalog.options.openBasedirVarWww' },
+  { value: '/home', labelKey: 'runtime.phpIniCatalog.options.openBasedirHome' },
+  { value: '/var/www:/tmp', labelKey: 'runtime.phpIniCatalog.options.openBasedirWwwTmp' },
+];
+
+export const PHP_ERROR_LOG_OPTIONS: Array<{ value: string; labelKey: string }> = [
+  { value: '', labelKey: 'runtime.phpIniCatalog.options.errorLogDefault' },
+  { value: '/var/log/php/error.log', labelKey: 'runtime.phpIniCatalog.options.errorLogPhp' },
+  { value: '/var/log/php8.3-fpm.log', labelKey: 'runtime.phpIniCatalog.options.errorLogFpm' },
+  { value: 'syslog', labelKey: 'runtime.phpIniCatalog.options.errorLogSyslog' },
+];
 
 export interface PhpIniGroup {
   id: string;
@@ -229,16 +272,24 @@ function buildPhpIniGroups(): PhpIniGroup[] {
       {
         key: 'error_reporting',
         label: fl('error_reporting'),
-        type: 'string',
+        type: 'select',
         default: 'E_ALL & ~E_DEPRECATED & ~E_STRICT',
         hint: fh('error_reporting'),
+        options: PHP_ERROR_REPORTING_OPTIONS.map((o) => ({
+          value: o.value,
+          label: tl(o.labelKey),
+        })),
         group: 'error' },
       {
         key: 'error_log',
         label: fl('error_log'),
-        type: 'string',
+        type: 'select',
         default: '',
         hint: fh('error_log'),
+        options: PHP_ERROR_LOG_OPTIONS.map((o) => ({
+          value: o.value,
+          label: tl(o.labelKey),
+        })),
         group: 'error' },
     ] },
   {
@@ -318,19 +369,27 @@ function buildPhpIniGroups(): PhpIniGroup[] {
       {
         key: 'open_basedir',
         label: fl('open_basedir'),
-        type: 'string',
+        type: 'select',
         default: '',
         hint: fh('open_basedir'),
         danger: true,
+        options: PHP_OPEN_BASEDIR_OPTIONS.map((o) => ({
+          value: o.value,
+          label: tl(o.labelKey),
+        })),
         group: 'security' },
       {
         key: 'disable_functions',
         label: fl('disable_functions'),
-        type: 'textarea',
-        default:
-          'exec,passthru,shell_exec,system,proc_open,popen,curl_multi_exec,parse_ini_file,show_source',
+        type: 'multiselect',
+        default: PHP_DISABLE_FUNCTIONS_DEFAULT,
         hint: fh('disable_functions'),
         danger: true,
+        options: PHP_DISABLE_FUNCTIONS_OPTIONS.map((o) => ({
+          value: o.value,
+          label: o.value,
+          group: o.group,
+        })),
         group: 'security' },
     ] },
   {
