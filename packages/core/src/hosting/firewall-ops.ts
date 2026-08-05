@@ -252,11 +252,12 @@ export async function firewallDeleteRuleNumber(
 /**
  * Allow a single port or UFW range (e.g. 30000:30100 for FTPS PASV).
  * `port` may be number, "80", or "30000:30100".
+ * `proto: 'both'` opens TCP and UDP (two UFW rules).
  */
 export async function firewallAllowPort(
   host: HostExecutor,
   port: number | string,
-  proto: 'tcp' | 'udp' = 'tcp',
+  proto: 'tcp' | 'udp' | 'both' = 'tcp',
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
   const block = needExec(host);
   if (block) return block;
@@ -271,20 +272,26 @@ export async function firewallAllowPort(
   if (spec.to - spec.from > 200) {
     return { ok: false, notes: [tl('notes.auto.n1113')] };
   }
-  const target = ufwPortTarget(raw, proto);
-  if (!target) {
-    return { ok: false, notes: [tl('notes.auto.n1113')] };
-  }
-  const r = await host.runCommand(['ufw', 'allow', target], { timeoutMs: 12_000 });
   const label = spec.from === spec.to ? String(spec.from) : `${spec.from}:${spec.to}`;
-  return {
-    ok: r.exitCode === 0,
-    notes: [
-      r.exitCode === 0
-        ? tl('notes.auto.t0168', { v0: label, v1: proto })
-        : tl('notes.auto.t0169', { v0: (r.stderr || r.stdout || '').slice(0, 300) }),
-    ],
-  };
+  const protos: Array<'tcp' | 'udp'> =
+    proto === 'both' ? ['tcp', 'udp'] : [proto === 'udp' ? 'udp' : 'tcp'];
+
+  const notes: string[] = [];
+  let allOk = true;
+  for (const p of protos) {
+    const target = ufwPortTarget(raw, p);
+    if (!target) {
+      return { ok: false, notes: [tl('notes.auto.n1113')] };
+    }
+    const r = await host.runCommand(['ufw', 'allow', target], { timeoutMs: 12_000 });
+    if (r.exitCode === 0) {
+      notes.push(tl('notes.auto.t0168', { v0: label, v1: p }));
+    } else {
+      allOk = false;
+      notes.push(tl('notes.auto.t0169', { v0: (r.stderr || r.stdout || '').slice(0, 300) }));
+    }
+  }
+  return { ok: allOk, notes };
 }
 
 /** Hosting-oriented quick profiles (ports only — not fail2ban). */

@@ -41,6 +41,8 @@
   "emptyRulesNotInstalled": "Install UFW then refresh",
   "allowPortTitle": "Allow port",
   "protocol": "Protocol",
+  "protoBoth": "Both",
+  "protoBothLabel": "TCP+UDP",
   "port": "Port",
   "portHint": "Pick a common port, or custom below",
   "portHintYsk": "All YSK service ports (Panel, Web, SSH, mail, FTP, DNS, DB, Redis); custom allowed",

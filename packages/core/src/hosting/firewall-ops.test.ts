@@ -236,6 +236,17 @@ describe('firewall-ops', () => {
     });
     expect((await firewallSetEnabled(okHost, false)).ok).toBe(true);
     expect((await firewallAllowPort(okHost, 443)).ok).toBe(true);
+    const bothCalls: string[][] = [];
+    const bothHost = host({
+      execute: true,
+      run: (argv) => {
+        bothCalls.push(argv.map(String));
+        return { stdout: 'ok', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    });
+    expect((await firewallAllowPort(bothHost, 53, 'both')).ok).toBe(true);
+    expect(bothCalls.some((a) => a.includes('53/tcp'))).toBe(true);
+    expect(bothCalls.some((a) => a.includes('53/udp'))).toBe(true);
 
     const blocked = host({ execute: false });
     expect((await firewallDenyIp(blocked, '1.1.1.1')).blocked).toBe(true);

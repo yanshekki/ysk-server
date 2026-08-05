@@ -77,8 +77,8 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify({ num }),
     }),
-  /** port: number | "80" | "30000:30100" */
-  firewallAllowPort: (port: number | string, proto: 'tcp' | 'udp' = 'tcp') =>
+  /** port: number | "80" | "30000:30100"; proto includes both (TCP+UDP) */
+  firewallAllowPort: (port: number | string, proto: 'tcp' | 'udp' | 'both' = 'tcp') =>
     api.requestRaw('/api/v1/system/firewall/allow-port', {
       method: 'POST',
       body: JSON.stringify({ port, proto }),

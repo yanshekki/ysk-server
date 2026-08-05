@@ -345,7 +345,10 @@ export function isPortRange(raw: string): boolean {
   return false;
 }
 
-/** UFW rule target: `80/tcp` or `30000:30100/tcp` */
+/** Protocol for allow-port UI / API. `both` opens TCP and UDP. */
+export type FirewallPortProto = 'tcp' | 'udp' | 'both';
+
+/** UFW rule target: `80/tcp` or `30000:30100/tcp`. Not used for `both` (dual allow). */
 export function ufwPortTarget(port: string, proto: 'tcp' | 'udp'): string | null {
   const spec = parsePortSpec(port);
   if (!spec) return null;

@@ -50,6 +50,8 @@
   "emptyRulesNotInstalled": "安裝 UFW 後再整理",
   "allowPortTitle": "允許埠",
   "protocol": "協議",
+  "protoBoth": "兩者",
+  "protoBothLabel": "TCP+UDP",
   "port": "埠",
   "portHint": "選常用埠，或下面自訂",
   "portHintYsk": "YSK 服務埠一覽（Panel／Web／SSH／郵件／FTP／DNS／DB／Redis）；可自訂埠號",

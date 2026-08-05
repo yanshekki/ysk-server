@@ -182,11 +182,12 @@ export function FirewallPage() {
   const [allowSmtp, setAllowSmtp] = useState(false);
   const [denyIp, setDenyIp] = useState('');
   const [portInput, setPortInput] = useState('80/tcp');
-  const [portProto, setPortProto] = useState<'tcp' | 'udp'>('tcp');
+  const [portProto, setPortProto] = useState<'tcp' | 'udp' | 'both'>('tcp');
 
   const onPortChipChange = useCallback((v: string) => {
     setPortInput(v);
     const parsed = parsePortChipValue(v);
+    // Chip may pin tcp/udp; leave "both" when user already chose it unless chip specifies
     if (parsed?.proto) setPortProto(parsed.proto);
   }, []);
   const [delRuleNum, setDelRuleNum] = useState<number | null>(null);
@@ -473,6 +474,7 @@ export function FirewallPage() {
                     options={[
                       { value: 'tcp', label: 'TCP' },
                       { value: 'udp', label: 'UDP' },
+                      { value: 'both', label: t('firewall.protoBoth') },
                     ]}
                     disabled={busy}
                   />
@@ -525,7 +527,10 @@ export function FirewallPage() {
                       await refresh();
                       return r;
                     }, t('firewall.allowedPort', {
-                      proto: portProto.toUpperCase(),
+                      proto:
+                        portProto === 'both'
+                          ? t('firewall.protoBothLabel')
+                          : portProto.toUpperCase(),
                       port: parsePortInput(portInput) ?? portInput,
                     }))
                   }

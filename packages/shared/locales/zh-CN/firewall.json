@@ -41,6 +41,8 @@
   "emptyRulesNotInstalled": "安装 UFW 后再刷新",
   "allowPortTitle": "允许端口",
   "protocol": "协议",
+  "protoBoth": "两者",
+  "protoBothLabel": "TCP+UDP",
   "port": "端口",
   "portHint": "选常用端口，或下面自定义",
   "portHintYsk": "YSK 服务端口一览（Panel／Web／SSH／邮件／FTP／DNS／DB／Redis）；可自定义",
