@@ -453,7 +453,10 @@ export function PhpRuntimePage() {
                     onChange={onExtChange}
                     searchPlaceholder={t('runtime.phpExtSearch')}
                     emptyText={t('runtime.phpExtEmpty')}
-                    maxVisible={80}
+                    maxVisible={200}
+                    showSelectAll
+                    listSize="lg"
+                    listMaxHeight="28rem"
                   />
                 </Field>
                 <FormActions>
@@ -464,6 +467,17 @@ export function PhpRuntimePage() {
                     onClick={() => setExtSelected([...extDefaults])}
                   >
                     {t('runtime.phpExtRecommended')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    disabled={busy || !selectableExtIds.length}
+                    onClick={() => {
+                      const required = extCatalog.filter((e) => e.required).map((e) => e.id);
+                      setExtSelected([...new Set([...required, ...selectableExtIds])]);
+                    }}
+                  >
+                    {t('runtime.phpExtSelectAll')}
                   </Button>
                   <Button
                     variant="ghost"

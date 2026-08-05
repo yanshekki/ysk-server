@@ -6,5 +6,13 @@
   "noneSelected": "Nothing selected",
   "optionsAria": "Options",
   "showingCapped": "Showing first {{shown}} of {{total}} — use search to narrow",
-  "add": "Add"
+  "add": "Add",
+  "bulkAria": "Bulk selection",
+  "selectAll": "Select all",
+  "selectAllTitle": "Select all {{n}} items",
+  "selectFiltered": "Select filtered ({{n}})",
+  "selectFilteredTitle": "Select all {{n}} search results",
+  "clearAll": "Clear all",
+  "clearFiltered": "Clear filtered",
+  "selectedCount": "{{n}} / {{total}} selected"
 }

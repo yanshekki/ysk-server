@@ -48,6 +48,12 @@
   opacity: 0.65;
 }
 
+.mcs__toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
 .mcs__search {
   width: 100%;
   font: inherit;
@@ -58,23 +64,60 @@
   background: var(--bg-white);
 }
 
+.mcs__bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+}
+
+.mcs__count {
+  margin-left: 0.15rem;
+}
+
 .mcs__list {
-  max-height: 12.5rem;
+  max-height: 22rem;
+  min-height: 12rem;
   overflow: auto;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   background: var(--bg-subtle, #f8fafc);
-  padding: 0.25rem;
+  padding: 0.35rem;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  /* Prefer smooth scrolling on long catalogs (PHP extensions) */
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+.mcs__list--sm {
+  max-height: 12.5rem;
+  min-height: 8rem;
+}
+
+.mcs__list--md {
+  max-height: 18rem;
+  min-height: 10rem;
+}
+
+.mcs__list--lg {
+  max-height: 26rem;
+  min-height: 14rem;
+}
+
+@media (min-height: 800px) {
+  .mcs__list--lg {
+    max-height: 32rem;
+    min-height: 16rem;
+  }
 }
 
 .mcs__opt {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  padding: 0.4rem 0.5rem;
+  padding: 0.5rem 0.55rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: var(--text-sm);

@@ -6,5 +6,13 @@
   "noneSelected": "尚未选择",
   "optionsAria": "选项",
   "showingCapped": "显示前 {{shown}}／共 {{total}} 项 — 用搜索收窄",
-  "add": "加入"
+  "add": "加入",
+  "bulkAria": "批量选择",
+  "selectAll": "全选",
+  "selectAllTitle": "全选全部 {{n}} 项",
+  "selectFiltered": "全选筛选（{{n}}）",
+  "selectFilteredTitle": "全选当前搜索结果 {{n}} 项",
+  "clearAll": "全不选",
+  "clearFiltered": "清除筛选",
+  "selectedCount": "已选 {{n}}／{{total}}"
 }

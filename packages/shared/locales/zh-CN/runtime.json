@@ -51,6 +51,7 @@
   "phpExtSelectHint": "软件包会装成 php{{version}}-…；核心 FPM/CLI 必装",
   "phpExtRequired": "必装（核心）",
   "phpExtRecommended": "常用默认",
+  "phpExtSelectAll": "全选扩展",
   "phpExtCoreOnly": "只装核心",
   "phpExtSearch": "搜索扩展（mysql、gd、redis…）",
   "phpExtEmpty": "无匹配的扩展",

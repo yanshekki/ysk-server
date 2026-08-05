@@ -51,6 +51,7 @@
   "phpExtSelectHint": "Packages install as php{{version}}-…; FPM/CLI core is always included",
   "phpExtRequired": "Required (core)",
   "phpExtRecommended": "Recommended set",
+  "phpExtSelectAll": "Select all extensions",
   "phpExtCoreOnly": "Core only",
   "phpExtSearch": "Search extensions (mysql, gd, redis…)",
   "phpExtEmpty": "No matching extensions",
