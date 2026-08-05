@@ -27,7 +27,7 @@
 | ID | 項 | Status | 建議 |
 |----|-----|--------|------|
 | B7–B8 | Rename domain / custom docroot | **done** | domain 衝突／格式校驗；docroot 安全相對路徑；network tab 一級 UI |
-| B20 | Access/error log viewer polish | **partial** | logs tab 有；篩選/深鏈 journal 可加強 |
+| B20 | Access/error log viewer polish | **done** | access/error 預設篩選 + 日誌中心／nginx unit 深鏈 |
 
 ---
 
@@ -43,7 +43,7 @@
 
 | ID | 項 | Status | 建議 |
 |----|-----|--------|------|
-| F6–F7 | DKIM/SPF/DMARC 面板完整度 | **partial** | DNS tab 有基礎；一鍵核對/修復文案 |
+| F6–F7 | DKIM/SPF/DMARC 面板完整度 | **done** | 即時檢查 + 失敗修復提示（SPF/DKIM/DMARC/MX） |
 | F10 | Antispam per-domain | **partial** | flag 層 |
 | F13 | Outbound rate limits | **partial** | flag 層 |
 | F20–F22 | Bootstrap honesty · mail SSL · suspend | **partial** | suspend flags 有；mail SSL 深鏈 |
@@ -54,7 +54,7 @@
 
 | ID | 項 | Status | 建議 |
 |----|-----|--------|------|
-| D7 | Mail domain SSL 整合 | **partial** | LE deep-link；郵件 vhost 一鍵綁 |
+| D7 | Mail domain SSL 整合 | **done** | LE deep-link i18n + 套用既有憑證路徑到 Postfix/Dovecot |
 
 ---
 
@@ -94,4 +94,4 @@
 | A 今輪主線碼 | **~95–100%**（差真機 S6 / 環境 S8） |
 | B–E matrix partial | **~60–70%** 已有能力，差收口 |
 | F 多租戶 | **0%（刻意不做 P0）** |
-| 整體「P0 polish 清單收口」 | **約 78%**；若只計 Admin 已交付功能則 **~90%+** |
+| 整體「P0 polish 清單收口」 | **約 85%**；若只計 Admin 已交付功能則 **~93%+** |

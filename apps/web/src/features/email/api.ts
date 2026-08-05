@@ -60,6 +60,12 @@ export const emailApi = {
       method: 'POST',
       body: '{}',
     }),
+  /** Apply existing LE cert under /etc/letsencrypt/live/mail.<domain> to Postfix/Dovecot */
+  applyMailTls: (body: { domain: string; mailHost?: string; applyDovecot?: boolean }) =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/email/mail-tls/apply', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   /** Unified deliverability pack (PTR/DNSBL/warmup/relay honesty) */
   deliverability: (id: string) =>
     api.requestRaw<{

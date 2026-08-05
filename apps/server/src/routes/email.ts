@@ -225,6 +225,33 @@ export async function handleEmailRoutes(
         sendOpsResult(res, result);
         return true;
       }
+
+      // D7: bind existing LE cert paths into Postfix/Dovecot (does not run certbot)
+      if (method === 'POST' && url.pathname === '/api/v1/email/mail-tls/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          mailHost?: string;
+          applyDovecot?: boolean;
+        };
+        const { applyMailTlsPaths } = await import('@ysk/core');
+        const result = await applyMailTlsPaths({
+          host: ctx.host,
+          domain: data.domain ?? '',
+          mailHost: data.mailHost,
+          applyDovecot: data.applyDovecot,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.mail_tls.apply',
+          resource: data.domain,
+          detail: { mailHost: result.mailHost, ok: result.ok, applied: result.applied },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
       if (method === 'POST' && url.pathname === '/api/v1/email/bootstrap') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);

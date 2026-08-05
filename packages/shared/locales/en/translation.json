@@ -2800,6 +2800,35 @@
       "hintDeferred": "If deferred: check Port 25 block or relay credentials",
       "hintSpam": "If accepted but spam: improve SPF/DKIM/DMARC/PTR and warm-up",
       "hintLogs": "Inspect /var/log/mail.log or journalctl -u postfix"
+    },
+    "leMailHost": "Issue cert · {{host}}",
+    "leWebmailHost": "Issue cert · {{host}} (webmail)",
+    "leApexHost": "Issue cert · {{host}} (apex)",
+    "applyMailTls": "Apply mail TLS paths",
+    "applyMailTlsHint": "Cert must already exist under /etc/letsencrypt/live/mail.<domain>. This only sets Postfix/Dovecot paths and reloads — it does not run certbot.",
+    "probeMx": "MX",
+    "probeSpf": "SPF",
+    "probeDkim": "DKIM",
+    "probeDmarc": "DMARC",
+    "probePtr": "PTR",
+    "probeDnsbl": "DNSBL",
+    "dnsAuthRepairTitle": "DNS auth needs repair",
+    "dnsAuthRepairHint": "Copy suggested records from the DNS tab, publish them, then re-run live check.",
+    "fixHintSpf": "SPF failed: publish a v=spf1 TXT at @.",
+    "fixHintDkim": "DKIM failed: publish selector._domainkey TXT.",
+    "fixHintDmarc": "DMARC failed: publish _dmarc TXT.",
+    "fixHintMx": "MX failed: point MX to mail.<domain>.",
+    "mailTls": {
+      "needRootExecute": "Applying mail TLS needs root and YSK_EXECUTE.",
+      "certMissing": "No cert files for {{host}} ({{path}}).",
+      "getCertFirst": "Issue a Let’s Encrypt cert for {{host}} on the SSL page first.",
+      "certFound": "Found cert for {{host}}.",
+      "postconfFailed": "postconf failed: {{detail}}",
+      "postfixPathsSet": "Postfix TLS cert paths set.",
+      "postfixReloaded": "Postfix reloaded.",
+      "postfixReloadFailed": "Postfix reload failed: {{detail}}",
+      "dovecotApplied": "Wrote Dovecot TLS snippet and attempted reload.",
+      "dovecotSkipped": "Skipped Dovecot (not installed or doveconf unavailable)."
     }
   },
   "errors": {
@@ -7250,7 +7279,12 @@
       "go": "Go",
       "rust": "Rust"
     },
-    "netCacheTitle": "Cache"
+    "netCacheTitle": "Cache",
+    "logsDeepAccess": "Log center · access",
+    "logsDeepError": "Log center · error",
+    "logsDeepNginxUnit": "Nginx unit logs",
+    "logsPresetAccess": "Filter access.log",
+    "logsPresetError": "Filter error.log"
   },
   "protection": {
     "levels": {

@@ -477,5 +477,10 @@
     "go": "Go",
     "rust": "Rust"
   },
-  "netCacheTitle": "缓存"
+  "netCacheTitle": "缓存",
+  "logsDeepAccess": "日志中心 · access",
+  "logsDeepError": "日志中心 · error",
+  "logsDeepNginxUnit": "Nginx 服务日志",
+  "logsPresetAccess": "筛选 access.log",
+  "logsPresetError": "筛选 error.log"
 }

@@ -106,6 +106,15 @@ export function ProjectLogsTab({
         ? `/logs?tab=explore&project=${encodeURIComponent(projectId)}`
         : '/logs?tab=explore&projectsOnly=1';
 
+  /** B20: deep links for common nginx site logs */
+  const nginxAccessHref = projectId
+    ? `/logs?tab=explore&project=${encodeURIComponent(projectId)}&q=${encodeURIComponent('access.log')}`
+    : '/logs?tab=explore&q=access.log';
+  const nginxErrorHref = projectId
+    ? `/logs?tab=explore&project=${encodeURIComponent(projectId)}&q=${encodeURIComponent('error.log')}`
+    : '/logs?tab=explore&q=error.log';
+  const journalNginxHref = '/logs?unit=nginx';
+
   const filteredByLocalName = useMemo(() => {
     // Server already filters by name when scanning; keep client filter for snappy UI
     const q = nameQ.trim().toLowerCase();
@@ -225,7 +234,52 @@ export function ProjectLogsTab({
           >
             {t('system.scLogs')}
           </Link>
+          <Link
+            to={nginxAccessHref}
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+            onClick={() => setNameQ('access.log')}
+          >
+            {t('projects.logsDeepAccess')}
+          </Link>
+          <Link
+            to={nginxErrorHref}
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+            onClick={() => setNameQ('error.log')}
+          >
+            {t('projects.logsDeepError')}
+          </Link>
+          <Link
+            to={journalNginxHref}
+            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+          >
+            {t('projects.logsDeepNginxUnit')}
+          </Link>
         </FormActions>
+
+        <div className="u-flex u-flex-wrap u-gap-2 u-mt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              setNameQ('access.log');
+              onLoad({ name: 'access.log', grep: grepQ.trim() || undefined });
+            }}
+          >
+            {t('projects.logsPresetAccess')}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              setNameQ('error.log');
+              onLoad({ name: 'error.log', grep: grepQ.trim() || undefined });
+            }}
+          >
+            {t('projects.logsPresetError')}
+          </Button>
+        </div>
 
         {searchNotes.length ? (
           <FormHint>{searchNotes.join(' · ')}</FormHint>

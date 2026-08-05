@@ -169,24 +169,48 @@ export function probeOkTone(
 export function mapLiveProbeRows(
   live: Record<string, unknown>,
   port25Label: string,
-): Array<{ label: string; ok: boolean | null; detail: string }> {
-  const pairs: Array<[string, unknown]> = [
-    ['MX', live.mx],
-    ['SPF', live.spf],
-    ['DKIM', live.dkim],
-    ['DMARC', live.dmarc],
-    ['PTR', live.ptr],
-    [port25Label, live.port25],
-    ['DNSBL', live.dnsbl],
+  labels?: {
+    mx?: string;
+    spf?: string;
+    dkim?: string;
+    dmarc?: string;
+    ptr?: string;
+    dnsbl?: string;
+  },
+): Array<{ label: string; ok: boolean | null; detail: string; id: string }> {
+  const pairs: Array<[string, string, unknown]> = [
+    ['mx', labels?.mx ?? 'MX', live.mx],
+    ['spf', labels?.spf ?? 'SPF', live.spf],
+    ['dkim', labels?.dkim ?? 'DKIM', live.dkim],
+    ['dmarc', labels?.dmarc ?? 'DMARC', live.dmarc],
+    ['ptr', labels?.ptr ?? 'PTR', live.ptr],
+    ['port25', port25Label, live.port25],
+    ['dnsbl', labels?.dnsbl ?? 'DNSBL', live.dnsbl],
   ];
-  return pairs.map(([label, cell]) => {
+  return pairs.map(([id, label, cell]) => {
     const c = cell as { ok?: boolean | null; detail?: string } | undefined;
     return {
+      id,
       label,
       ok: c?.ok ?? null,
       detail: String(c?.detail ?? '—'),
     };
   });
+}
+
+/** Build short repair hints for failed DNS auth probes (F6–F7). */
+export function dnsAuthRepairHints(
+  live: Record<string, unknown> | null | undefined,
+  t: (key: string, opts?: Record<string, string>) => string,
+): string[] {
+  if (!live) return [];
+  const hints: string[] = [];
+  const cell = (k: string) => live[k] as { ok?: boolean } | undefined;
+  if (cell('spf')?.ok === false) hints.push(t('email.fixHintSpf'));
+  if (cell('dkim')?.ok === false) hints.push(t('email.fixHintDkim'));
+  if (cell('dmarc')?.ok === false) hints.push(t('email.fixHintDmarc'));
+  if (cell('mx')?.ok === false) hints.push(t('email.fixHintMx'));
+  return hints;
 }
 
 /** Policy rate-limit with fallback. */
@@ -1009,10 +1033,28 @@ export function EmailDomainPage() {
                         ),
                       },
                     ]}
-                    rows={mapLiveProbeRows(live, t('email.outboundPort25'))}
-                    rowKey={(r) => r.label}
+                    rows={mapLiveProbeRows(live, t('email.outboundPort25'), {
+                      mx: t('email.probeMx'),
+                      spf: t('email.probeSpf'),
+                      dkim: t('email.probeDkim'),
+                      dmarc: t('email.probeDmarc'),
+                      ptr: t('email.probePtr'),
+                      dnsbl: t('email.probeDnsbl'),
+                    })}
+                    rowKey={(r) => r.id}
                     empty={<p className="muted">{t('email.noProbeResults')}</p>}
                   />
+                  {dnsAuthRepairHints(live, t).length > 0 ? (
+                    <Alert variant="warn" className="u-mt-3">
+                      <strong>{t('email.dnsAuthRepairTitle')}</strong>
+                      <ul className="list-flush u-mt-2 u-mb-0">
+                        {dnsAuthRepairHints(live, t).map((h) => (
+                          <li key={h}>{h}</li>
+                        ))}
+                      </ul>
+                      <p className="muted u-text-sm u-mb-0 u-mt-2">{t('email.dnsAuthRepairHint')}</p>
+                    </Alert>
+                  ) : null}
                   {Array.isArray(
                     (live as { health?: { messages?: string[] } }).health?.messages,
                   ) &&
@@ -1046,14 +1088,16 @@ export function EmailDomainPage() {
                     size="sm"
                     onClick={bindNavigate(navigate, `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`)}
                   >
-                    LE · mail.{domain.domain}
+                    {t('email.leMailHost', { host: defaultMailSslDomain(domain.domain) })}
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={bindNavigate(navigate, `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`)}
                   >
-                    LE · webmail
+                    {t('email.leWebmailHost', {
+                      host: webmailDomain || defaultWebmailDomain(domain.domain),
+                    })}
                   </Button>
                   <Button
                     variant="ghost"
@@ -1063,7 +1107,26 @@ export function EmailDomainPage() {
                       `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
                     )}
                   >
-                    LE · {domain.domain}
+                    {t('email.leApexHost', { host: domain.domain })}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => {
+                      void withBusy(async () => {
+                        const r = await emailApi.applyMailTls({
+                          domain: domain.domain,
+                          mailHost: defaultMailSslDomain(domain.domain),
+                        });
+                        setLive((prev) => ({
+                          ...(prev ?? {}),
+                          mailTlsApply: r,
+                        }));
+                      });
+                    }}
+                  >
+                    {t('email.applyMailTls')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -1073,6 +1136,7 @@ export function EmailDomainPage() {
                     {t('email.openSslPage')}
                   </Button>
                 </ActionBar>
+                <p className="muted u-text-sm u-mt-2">{t('email.applyMailTlsHint')}</p>
               </div>
 
               <div className="u-mt-4">

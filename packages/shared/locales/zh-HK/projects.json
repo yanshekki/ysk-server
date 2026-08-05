@@ -477,5 +477,10 @@
     "go": "Go",
     "rust": "Rust"
   },
-  "netCacheTitle": "快取"
+  "netCacheTitle": "快取",
+  "logsDeepAccess": "日誌中心 · access",
+  "logsDeepError": "日誌中心 · error",
+  "logsDeepNginxUnit": "Nginx 服務日誌",
+  "logsPresetAccess": "篩選 access.log",
+  "logsPresetError": "篩選 error.log"
 }
