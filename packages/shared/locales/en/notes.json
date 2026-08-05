@@ -769,7 +769,7 @@
     "n0647": "intern (MB)",
     "n0648": "password",
     "n0649": "Error, please apply",
-    "n0650": "Security → Account security → enable 2FA; policy may set requireAdminTotp",
+    "n0650": "Security → My security → enable 2FA; policy may set requireAdminTotp",
     "n0651": "and path",
     "n0652": "install PAM",
     "n0653": "install vsftpd",

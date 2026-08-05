@@ -69,6 +69,9 @@ export type UserDetailModalProps = {
   onImpersonate?: () => void;
   onDelete?: () => void;
   onRestoreOverrides?: () => void;
+  /** Admin: force-clear this user's 2FA (per-user secret). */
+  onClearTotp?: () => void;
+  clearTotpBusy?: boolean;
 };
 
 export function UserDetailModal({
@@ -96,6 +99,8 @@ export function UserDetailModal({
   onImpersonate,
   onDelete,
   onRestoreOverrides,
+  onClearTotp,
+  clearTotpBusy,
 }: UserDetailModalProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<DetailTab>('account');
@@ -228,6 +233,35 @@ export function UserDetailModal({
                       </label>
                     ))}
                   </div>
+                </section>
+
+                <section className="user-detail__section">
+                  <div className="user-detail__section-head">
+                    <h4 className="user-detail__section-title">{t('users.securityTitle')}</h4>
+                    <p className="user-detail__section-hint">{t('users.securityPerUserHint')}</p>
+                  </div>
+                  <div className="user-detail__badges u-mb-2">
+                    {user.totpEnabled ? (
+                      <Badge tone="ok">{t('users.securityStatusOn')}</Badge>
+                    ) : (
+                      <Badge tone="neutral">{t('users.securityStatusOff')}</Badge>
+                    )}
+                  </div>
+                  <p className="muted u-text-sm u-mb-2">{t('users.securitySelfNote')}</p>
+                  {onClearTotp ? (
+                    <ActionBar>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        loading={clearTotpBusy}
+                        disabled={busy || clearTotpBusy || !user.totpEnabled}
+                        onClick={onClearTotp}
+                      >
+                        {t('users.securityClearTotp')}
+                      </Button>
+                    </ActionBar>
+                  ) : null}
+                  <p className="muted u-text-sm u-mt-2">{t('users.securityClearTotpHint')}</p>
                 </section>
 
                 <section className="user-detail__section">

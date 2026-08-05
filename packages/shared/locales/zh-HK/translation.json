@@ -4572,7 +4572,7 @@
       "n0361": "套件 失敗 — 不得進入 傳輸",
       "n0362": "套件 需要 系統變更權限已開啟",
       "n0363": "pam.d/sshd 尚未引用 pam_google_authenticator（檔寫了也未 enforce）",
-      "n0364": "面板 尚未設定 雙重驗證 或無 secret — 請先在「帳戶安全」啟用 TOTP",
+      "n0364": "面板 尚未設定 雙重驗證 或無 secret — 請先在「我的安全」啟用 TOTP",
       "n0365": "面板 無 TOTP secret — 先在 Web 啟用 雙重驗證 或勿用 --from-面板",
       "n0366": "面板 需把 login 失敗寫入可被 fail2ban 讀的 日誌（系統日誌 或檔）",
       "n0367": "passkey 已登記",
@@ -4858,7 +4858,7 @@
       "n0647": "字串 intern 緩衝（MB）",
       "n0648": "存取密碼",
       "n0649": "存在錯誤級問題，請修正後再 套用",
-      "n0650": "安全 → 帳戶安全 → 啟用 雙重驗證；政策可開 requireAdminTotp",
+      "n0650": "安全 → 我的安全 → 啟用 雙重驗證；政策可開 requireAdminTotp",
       "n0651": "安全與路徑",
       "n0652": "安裝 PAM",
       "n0653": "安裝 vsftpd",
@@ -8326,7 +8326,7 @@
     "on": "開",
     "off": "關",
     "output": "輸出",
-    "tabAccount": "帳戶安全",
+    "tabAccount": "我的安全",
     "tabApiKeys": "介面 金鑰",
     "tabSsh": "SSH",
     "tabApprovals": "審批",
@@ -8590,7 +8590,7 @@
       "gaWritten": "已寫入 .google_authenticator",
       "needExecute": "需開啟系統執行權限",
       "ssh2faTitle": "遠端登入 登入第二因素",
-      "ssh2faDesc": "保護 ssh 登入 Linux 用戶。與「帳戶安全」的 面板 雙重驗證 分開；預設獨立 secret。",
+      "ssh2faDesc": "保護 ssh 登入 Linux 用戶。與「我的安全」的 面板 雙重驗證 分開；預設獨立 secret。",
       "ssh2faStep1": "為 Linux 用戶登記 TOTP（掃碼）",
       "ssh2faStep2": "確認 App 6 位碼",
       "ssh2faStep3": "寫入 主目錄",
@@ -8661,7 +8661,9 @@
     "revokeSessionDesc": "結束 {{device}}（{{ip}}）的階段，該裝置需重新登入。",
     "revokeOthersTitle": "登出所有其他裝置？",
     "revokeOthersDesc": "將結束 {{count}} 個其他工作階段。目前瀏覽器保持登入。",
-    "sessionRevoked": "已登出該工作階段"
+    "sessionRevoked": "已登出該工作階段",
+    "mySecurityHint": "只影響目前登入帳號。每位用戶嘅雙重驗證 secret 獨立，唔會全站共用。",
+    "policyTotpHint": "全站政策：要求 admin 角色各自啟用 2FA（每人自己掃碼），唔係共用同一組驗證碼。"
   },
   "services": {
     "enabledBoot": "自啟",
@@ -9364,6 +9366,16 @@
       "operator": "日常運維：服務、更新、DNS／SSL、建站等。",
       "viewer": "只讀：睇狀態、日誌、列表，唔可以改。",
       "agent": "自動化／代理：低危寫入，受 scope 限制。"
-    }
+    },
+    "securityTitle": "雙重驗證（此用戶）",
+    "securityPerUserHint": "每位用戶獨立 TOTP／Passkey。管理員可清除此用戶 2FA，但唔可以代持或共用 secret。",
+    "securityStatusOn": "已啟用 2FA",
+    "securityStatusOff": "未設定 2FA",
+    "securitySessions": "活躍工作階段",
+    "securityClearTotp": "強制清除此用戶 2FA",
+    "securityClearTotpHint": "需 step-up 驗證；清除後該用戶下次只需密碼登入（直至自行重設 2FA）。",
+    "securityClearConfirm": "輸入用戶名以確認清除 2FA",
+    "securityClearOk": "已清除 {{name}} 的 2FA",
+    "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。"
   }
 }

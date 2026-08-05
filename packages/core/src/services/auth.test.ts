@@ -285,4 +285,48 @@ describe('auth + protection (persistent)', () => {
     closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adminClearUserTotp clears another user 2FA only (per-user)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-auth-clear-totp-'));
+    const db = openDatabase(join(dir, 't.json'));
+    const users = new UserRepository(db);
+    const sessions = new SessionRepository(db);
+    const auth = new AuthService(users, sessions, new AuditRepository(db), db, dir);
+    auth.ensureAdmin('admin', 'secret-long-ok4', 'zh-TW');
+    const admin = users.findByUsername('admin')!;
+    const salt = 'opsalt1';
+    const now = new Date().toISOString();
+    users.insert({
+      id: 'u-op1',
+      username: 'op1',
+      password_hash: hashPassword('password1xx', salt),
+      password_salt: salt,
+      roles: ['operator'],
+      locale: 'en',
+      created_at: now,
+      updated_at: now,
+    });
+    const begin = auth.beginTotp('u-op1', { password: 'password1xx' });
+    const conf = auth.confirmTotp('u-op1', generateTotpCode(begin.secret));
+    expect(conf.enabled).toBe(true);
+    expect(auth.totpStatus('u-op1').enabled).toBe(true);
+    expect(auth.userSecuritySummary('u-op1').totpEnabled).toBe(true);
+    expect(auth.userSecuritySummary('u-op1').recoveryRemaining).toBe(10);
+
+    const r = auth.adminClearUserTotp(admin.id, 'u-op1');
+    expect(r.cleared).toBe(true);
+    expect(r.username).toBe('op1');
+    expect(auth.totpStatus('u-op1').enabled).toBe(false);
+    expect(auth.totpStatus('u-op1').enrolled).toBe(false);
+    expect(auth.userSecuritySummary('u-op1').totpEnabled).toBe(false);
+    // Admin's own status unchanged (no shared secret)
+    expect(auth.totpStatus(admin.id).enabled).toBe(false);
+
+    const r2 = auth.adminClearUserTotp(admin.id, 'u-op1');
+    expect(r2.cleared).toBe(false);
+
+    expect(() => auth.adminClearUserTotp(admin.id, 'missing')).toThrow();
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
 });

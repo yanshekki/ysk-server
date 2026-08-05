@@ -15,7 +15,7 @@
   "on": "开",
   "off": "关",
   "output": "输出",
-  "tabAccount": "账户安全",
+  "tabAccount": "我的安全",
   "tabApiKeys": "API 密钥",
   "tabSsh": "SSH",
   "tabApprovals": "审批",
@@ -279,7 +279,7 @@
     "gaWritten": "已写入 .google_authenticator",
     "needExecute": "需开启系统执行权限",
     "ssh2faTitle": "SSH 登录第二因素",
-    "ssh2faDesc": "保护 ssh 登录 Linux 用户。与「账户安全」的 panel 2FA 分开；默认独立 secret。",
+    "ssh2faDesc": "保护 ssh 登录 Linux 用户。与「我的安全」的 panel 2FA 分开；默认独立 secret。",
     "ssh2faStep1": "为 Linux 用户登记 TOTP（扫码）",
     "ssh2faStep2": "确认 App 6 位码",
     "ssh2faStep3": "写入 home",
@@ -350,5 +350,7 @@
   "revokeSessionDesc": "结束 {{device}}（{{ip}}）的会话，该设备需重新登录。",
   "revokeOthersTitle": "登出所有其他设备？",
   "revokeOthersDesc": "将结束 {{count}} 个其他会话。当前浏览器保持登录。",
-  "sessionRevoked": "已登出该会话"
+  "sessionRevoked": "已登出该会话",
+  "mySecurityHint": "只影响当前登录账号。每位用户的双重验证 secret 独立，不会全站共用。",
+  "policyTotpHint": "全站政策：要求 admin 角色各自启用 2FA（每人自己扫码），不是共用同一组验证码。"
 }

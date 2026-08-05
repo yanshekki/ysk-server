@@ -4858,7 +4858,7 @@
       "n0647": "intern (MB)",
       "n0648": "password",
       "n0649": "Error, please apply",
-      "n0650": "Security → Account security → enable 2FA; policy may set requireAdminTotp",
+      "n0650": "Security → My security → enable 2FA; policy may set requireAdminTotp",
       "n0651": "and path",
       "n0652": "install PAM",
       "n0653": "install vsftpd",
@@ -8326,7 +8326,7 @@
     "on": "On",
     "off": "Off",
     "output": "Output",
-    "tabAccount": "Account security",
+    "tabAccount": "My security",
     "tabApiKeys": "API keys",
     "tabSsh": "SSH",
     "tabApprovals": "Approvals",
@@ -8661,7 +8661,9 @@
     "revokeSessionDesc": "End session for {{device}} ({{ip}}). That device will need to sign in again.",
     "revokeOthersTitle": "Sign out all other devices?",
     "revokeOthersDesc": "This will end {{count}} other session(s). Your current browser stays signed in.",
-    "sessionRevoked": "Session signed out"
+    "sessionRevoked": "Session signed out",
+    "mySecurityHint": "Applies only to the signed-in account. Each user has their own 2FA secrets — nothing is shared site-wide.",
+    "policyTotpHint": "Site policy: each admin must enable their own 2FA (individual QR). Not a shared authenticator."
   },
   "services": {
     "enabledBoot": "On boot",
@@ -9364,6 +9366,16 @@
       "operator": "Day-to-day ops: services, updates, DNS/SSL, sites.",
       "viewer": "Read-only: status, logs, lists — no changes.",
       "agent": "Automation agent: low-risk writes with scope limits."
-    }
+    },
+    "securityTitle": "Two-factor auth (this user)",
+    "securityPerUserHint": "TOTP/Passkey is per user. Admins can clear this user's 2FA but cannot hold or share their secret.",
+    "securityStatusOn": "2FA enabled",
+    "securityStatusOff": "2FA not set",
+    "securitySessions": "Active sessions",
+    "securityClearTotp": "Force-clear this user's 2FA",
+    "securityClearTotpHint": "Requires step-up. After clear, this user can sign in with password until they re-enroll 2FA.",
+    "securityClearConfirm": "Type the username to confirm clearing 2FA",
+    "securityClearOk": "Cleared 2FA for {{name}}",
+    "securitySelfNote": "To set up your own 2FA, open Security → My security."
   }
 }

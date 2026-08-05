@@ -108,5 +108,15 @@
     "operator": "Day-to-day ops: services, updates, DNS/SSL, sites.",
     "viewer": "Read-only: status, logs, lists — no changes.",
     "agent": "Automation agent: low-risk writes with scope limits."
-  }
+  },
+  "securityTitle": "Two-factor auth (this user)",
+  "securityPerUserHint": "TOTP/Passkey is per user. Admins can clear this user's 2FA but cannot hold or share their secret.",
+  "securityStatusOn": "2FA enabled",
+  "securityStatusOff": "2FA not set",
+  "securitySessions": "Active sessions",
+  "securityClearTotp": "Force-clear this user's 2FA",
+  "securityClearTotpHint": "Requires step-up. After clear, this user can sign in with password until they re-enroll 2FA.",
+  "securityClearConfirm": "Type the username to confirm clearing 2FA",
+  "securityClearOk": "Cleared 2FA for {{name}}",
+  "securitySelfNote": "To set up your own 2FA, open Security → My security."
 }

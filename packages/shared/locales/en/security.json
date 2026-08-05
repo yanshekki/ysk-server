@@ -15,7 +15,7 @@
   "on": "On",
   "off": "Off",
   "output": "Output",
-  "tabAccount": "Account security",
+  "tabAccount": "My security",
   "tabApiKeys": "API keys",
   "tabSsh": "SSH",
   "tabApprovals": "Approvals",
@@ -350,5 +350,7 @@
   "revokeSessionDesc": "End session for {{device}} ({{ip}}). That device will need to sign in again.",
   "revokeOthersTitle": "Sign out all other devices?",
   "revokeOthersDesc": "This will end {{count}} other session(s). Your current browser stays signed in.",
-  "sessionRevoked": "Session signed out"
+  "sessionRevoked": "Session signed out",
+  "mySecurityHint": "Applies only to the signed-in account. Each user has their own 2FA secrets — nothing is shared site-wide.",
+  "policyTotpHint": "Site policy: each admin must enable their own 2FA (individual QR). Not a shared authenticator."
 }

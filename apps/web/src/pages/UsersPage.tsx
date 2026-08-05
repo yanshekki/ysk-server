@@ -29,6 +29,7 @@ import {
   LoadingBlock,
   Modal,
   ConfirmDialog,
+  PromptDialog,
   PageTabs,
   PresetChips,
   SegRadio,
@@ -36,7 +37,7 @@ import {
 } from '../shared/components/ui';
 import { UserDetailModal } from '../features/users/UserDetailModal';
 import { RolePermissionsPanel } from '../features/users/RolePermissionsPanel';
-import { api } from '../shared/services/api';
+import { ApiError, api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindCall1, bindCheck, bindCloseIfIdle, bindInput, bindSet, bindValueSet } from './bind-handlers';
@@ -198,6 +199,12 @@ export function UsersPage() {
     | { kind: 'dangerPolicySave'; next: () => void }
     | null
   >(null);
+  /** Admin force-clear another user's 2FA (per-user secret). */
+  const [clearTotp, setClearTotp] = useState<
+    | null
+    | { user: UserRow; phase: 'username' | 'totp'; confirmUsername?: string }
+  >(null);
+  const [clearTotpBusy, setClearTotpBusy] = useState(false);
 
   const loadPkgOptions = useCallback(async () => {
     const p = await api.requestRaw<{ items: Pkg[]; hostUsage?: HostUsage }>('/api/v1/packages');
@@ -1170,6 +1177,95 @@ export function UsersPage() {
             ? () => setPending({ kind: 'restoreUserOverrides', user: detailUser })
             : undefined
         }
+        onClearTotp={
+          detailUser
+            ? () => setClearTotp({ user: detailUser, phase: 'username' })
+            : undefined
+        }
+        clearTotpBusy={clearTotpBusy}
+      />
+
+      <PromptDialog
+        open={clearTotp?.phase === 'username'}
+        onClose={() => !clearTotpBusy && setClearTotp(null)}
+        title={t('users.securityClearTotp')}
+        description={t('users.securityClearConfirm')}
+        label={t('users.username')}
+        expectExact={clearTotp?.user.username}
+        placeholder={clearTotp?.user.username}
+        danger
+        busy={clearTotpBusy}
+        confirmLabel={t('common.confirm')}
+        onSubmit={async (name) => {
+          if (!clearTotp) return false;
+          const target = clearTotp.user;
+          setClearTotpBusy(true);
+          try {
+            await api.requestRaw(`/api/v1/users/${target.id}/security/totp/clear`, {
+              method: 'POST',
+              body: JSON.stringify({ confirmUsername: name }),
+            });
+            setMsg(t('users.securityClearOk', { name: target.username }));
+            setDetailUser((u) =>
+              u && u.id === target.id ? { ...u, totpEnabled: false } : u,
+            );
+            setClearTotp(null);
+            await refresh();
+            return true;
+          } catch (e) {
+            // Admin has 2FA: require step-up code (keep dialog chain via phase change).
+            if (e instanceof ApiError && e.needsTotp) {
+              setClearTotp({
+                user: target,
+                phase: 'totp',
+                confirmUsername: name,
+              });
+              // false → do not run onClose (would wipe phase); open prop switches dialogs
+              return false;
+            }
+            setError(e instanceof Error ? e.message : t('common.failed'));
+            return false;
+          } finally {
+            setClearTotpBusy(false);
+          }
+        }}
+      />
+
+      <PromptDialog
+        open={clearTotp?.phase === 'totp'}
+        onClose={() => !clearTotpBusy && setClearTotp(null)}
+        title={t('users.securityClearTotp')}
+        description={t('security.enterTotpCode')}
+        label="TOTP"
+        secret
+        placeholder={t('security.digit6Placeholder')}
+        danger
+        busy={clearTotpBusy}
+        confirmLabel={t('common.confirm')}
+        onSubmit={async (totp) => {
+          if (!clearTotp) return false;
+          const target = clearTotp.user;
+          const confirmUsername = clearTotp.confirmUsername ?? target.username;
+          setClearTotpBusy(true);
+          try {
+            await api.requestRaw(`/api/v1/users/${target.id}/security/totp/clear`, {
+              method: 'POST',
+              body: JSON.stringify({ totp, confirmUsername }),
+            });
+            setMsg(t('users.securityClearOk', { name: target.username }));
+            setDetailUser((u) =>
+              u && u.id === target.id ? { ...u, totpEnabled: false } : u,
+            );
+            setClearTotp(null);
+            await refresh();
+            return true;
+          } catch (e) {
+            setError(e instanceof Error ? e.message : t('common.failed'));
+            return false;
+          } finally {
+            setClearTotpBusy(false);
+          }
+        }}
       />
 
       <ConfirmDialog

@@ -136,6 +136,56 @@ export async function handleMiscRoutes(
         sendJson(res, 200, result);
         return true;
       }
+      // Per-user security summary (no secrets) — admin
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/users\/[^/]+\/security$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { requireCap } = await import('../http/rbac-guard.js');
+        requireCap(ctx, user, 'users.manage');
+        const id = url.pathname.split('/')[4]!;
+        sendJson(res, 200, ctx.auth.userSecuritySummary(id));
+        return true;
+      }
+      // Admin clears another user's TOTP (step-up required; per-user only)
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/users\/[^/]+\/security\/totp\/clear$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { requireCap } = await import('../http/rbac-guard.js');
+        requireCap(ctx, user, 'users.manage');
+        const id = url.pathname.split('/')[4]!;
+        const raw = await readBody(req).catch(() => '{}');
+        const data = JSON.parse(raw || '{}') as { totp?: string; confirmUsername?: string };
+        try {
+          ctx.auth.requireStepUp(user.id, data.totp);
+        } catch (e) {
+          if (e instanceof YskError) {
+            sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true,
+            });
+            return true;
+          }
+          throw e;
+        }
+        const target = ctx.db.snapshot.users.find((u) => u.id === id);
+        if (!target) {
+          sendJson(res, 404, { ok: false, message: 'user not found' });
+          return true;
+        }
+        if (
+          data.confirmUsername &&
+          data.confirmUsername.trim().toLowerCase() !== target.username.toLowerCase()
+        ) {
+          sendJson(res, 400, {
+            ok: false,
+            message: 'confirmUsername must match target username',
+          });
+          return true;
+        }
+        const result = ctx.auth.adminClearUserTotp(user.id, id);
+        sendJson(res, 200, { ok: true, ...result });
+        return true;
+      }
       if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/packages\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const { requireCap } = await import('../http/rbac-guard.js');

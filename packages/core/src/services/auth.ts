@@ -459,6 +459,56 @@ export class AuthService {
     return { enabled: false };
   }
 
+  /**
+   * Admin clears another user's 2FA (per-user secret only — never shared).
+   * Actor must already have step-up (caller enforces totp on request).
+   */
+  adminClearUserTotp(
+    actorUserId: string,
+    targetUserId: string,
+  ): { cleared: boolean; username: string } {
+    const actor = this.users.findById(actorUserId);
+    const target = this.users.findById(targetUserId);
+    if (!actor || !target) {
+      throw yskError(ErrorCodes.NOT_FOUND, { httpStatus: 404, messageKey: 'errors.auth.userNotFound' });
+    }
+    const had =
+      Boolean(target.totp_enabled) ||
+      Boolean(target.totp_secret) ||
+      (target.totp_recovery_hashes?.length ?? 0) > 0;
+    this.users.updateTotp(targetUserId, {
+      totp_secret: null,
+      totp_enabled: false,
+      totp_last_step: null,
+      totp_recovery_hashes: null,
+    });
+    this.audit?.append({
+      actor: actor.username,
+      action: 'users.totp.clear',
+      resource: target.username,
+      detail: { targetId: targetUserId, had2fa: had },
+      ok: true,
+    });
+    return { cleared: had, username: target.username };
+  }
+
+  /** Public security summary for a user (no secrets). */
+  userSecuritySummary(userId: string): {
+    totpEnabled: boolean;
+    totpEnrolled: boolean;
+    recoveryRemaining: number;
+    sessionCount: number;
+  } {
+    const st = this.totpStatus(userId);
+    const sessions = this.sessions.listPublic(userId);
+    return {
+      totpEnabled: st.enabled,
+      totpEnrolled: st.enrolled,
+      recoveryRemaining: st.recoveryRemaining,
+      sessionCount: sessions.length,
+    };
+  }
+
   totpStatus(userId: string): {
     enabled: boolean;
     enrolled: boolean;

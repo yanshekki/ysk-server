@@ -260,6 +260,9 @@ export function SecurityPage() {
       >
         {tab === 'account' ? (
           <div className="tab-panel">
+            <Alert variant="info" className="u-mb-3">
+              {t('security.mySecurityHint')}
+            </Alert>
             <Card>
               <CardSection title={t('security.totpTitle')}>
                 <p className="muted u-text-sm">
@@ -744,6 +747,7 @@ export function SecurityPage() {
                 title={t('security.adminPolicyTitle')}
                 description={t('security.adminPolicyDesc')}
               >
+                <p className="muted u-text-sm u-mb-3">{t('security.policyTotpHint')}</p>
                 <label className="ssh-check">
                   <input
                     type="checkbox"

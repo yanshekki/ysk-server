@@ -95,7 +95,9 @@ function throwFromResponse(data: unknown, status: number): never {
   throw new ApiError(errorMessageFromBody(data, status), {
     status,
     code: typeof o.code === 'string' ? o.code : undefined,
-    needsTotp: Boolean(o.needsTotp ?? d.needsTotp),
+    needsTotp: Boolean(
+      o.needsTotp ?? d.needsTotp ?? o.needsStepUp ?? d.needsStepUp,
+    ),
     locked: Boolean(o.locked ?? d.locked),
     retryAfterSec:
       typeof o.retryAfterSec === 'number'

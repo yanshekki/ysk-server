@@ -108,5 +108,15 @@
     "operator": "日常運維：服務、更新、DNS／SSL、建站等。",
     "viewer": "只讀：睇狀態、日誌、列表，唔可以改。",
     "agent": "自動化／代理：低危寫入，受 scope 限制。"
-  }
+  },
+  "securityTitle": "雙重驗證（此用戶）",
+  "securityPerUserHint": "每位用戶獨立 TOTP／Passkey。管理員可清除此用戶 2FA，但唔可以代持或共用 secret。",
+  "securityStatusOn": "已啟用 2FA",
+  "securityStatusOff": "未設定 2FA",
+  "securitySessions": "活躍工作階段",
+  "securityClearTotp": "強制清除此用戶 2FA",
+  "securityClearTotpHint": "需 step-up 驗證；清除後該用戶下次只需密碼登入（直至自行重設 2FA）。",
+  "securityClearConfirm": "輸入用戶名以確認清除 2FA",
+  "securityClearOk": "已清除 {{name}} 的 2FA",
+  "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。"
 }
