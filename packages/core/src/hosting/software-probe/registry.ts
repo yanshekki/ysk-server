@@ -26,6 +26,7 @@ const VERSION_CMD: Partial<Record<SoftwareId, string[]>> = {
   dovecot: ['dovecot', '--version'],
   git: ['git', '--version'],
   node: ['node', '--version'],
+  pm2: ['pm2', '-v'],
   php: ['php', '-v'],
   python: ['python3', '--version'],
   go: ['go', 'version'],

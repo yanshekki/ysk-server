@@ -12,7 +12,12 @@ import {
   type SoftwareSpec } from './software-catalog.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
 import { planOrInstallRuntime } from './runtime-probe.js';
-import { HostSoftwareProbe, unitIsActive, waitUnitActive } from './software-probe/index.js';
+import {
+  HostSoftwareProbe,
+  resolveBin,
+  unitIsActive,
+  waitUnitActive,
+} from './software-probe/index.js';
 
 export type SoftwareStatus = {
   id: SoftwareId | string;
@@ -213,6 +218,71 @@ export async function installSoftware(input: {
       notes,
       steps,
       status: before };
+  }
+
+  // npm -g installers (PM2, etc.) — requires node/npm already on PATH
+  if (spec.installer === 'npm-global') {
+    const pkgs = (spec.npmPackages ?? []).filter(Boolean);
+    if (!pkgs.length) {
+      notes.push(tl('notes.auto.n1041'));
+      return {
+        ok: false,
+        executed: false,
+        id: spec.id,
+        title: resolveSoftwareTitle(spec),
+        installed: false,
+        notes,
+        steps: [{ name: tl('notes.install'), status: 'failed', detail: tl('notes.tpl.noPackages') }],
+        status: before,
+      };
+    }
+    const npmPath = await resolveBin(input.host, 'npm');
+    const nodePath = await resolveBin(input.host, 'node');
+    if (!npmPath || !nodePath) {
+      notes.push(tl('notes.software.needNodeForNpm', { title: resolveSoftwareTitle(spec) }));
+      steps.push({
+        name: tl('notes.install'),
+        status: 'failed',
+        detail: tl('notes.software.needNodeForNpm', { title: resolveSoftwareTitle(spec) }),
+      });
+      return {
+        ok: false,
+        executed: false,
+        id: spec.id,
+        title: resolveSoftwareTitle(spec),
+        installed: false,
+        notes,
+        steps,
+        status: before,
+      };
+    }
+    const cmd = ['bash', '-c', `npm install -g ${pkgs.map((p) => JSON.stringify(p)).join(' ')}`];
+    const r = await input.host.runCommand(cmd, { timeoutMs: 300_000 });
+    const status = await probeSoftware(input.host, spec);
+    const ok = r.exitCode === 0 && status.installed;
+    steps.push({
+      name: tl('notes.software.npmGlobal', { pkgs: pkgs.join(', ') }),
+      status: r.exitCode === 0 ? 'ok' : 'failed',
+      detail: r.exitCode === 0 ? undefined : (r.stderr || r.stdout || '').slice(0, 400),
+    });
+    notes.push(
+      ok
+        ? tl('notes.software.installedSpec', { title: resolveSoftwareTitle(spec) })
+        : tl('notes.tpl.installIncomplete'),
+    );
+    if (!ok && (r.stderr || r.stdout)) {
+      notes.push((r.stderr || r.stdout || '').trim().slice(0, 300));
+    }
+    return {
+      ok,
+      executed: true,
+      id: spec.id,
+      title: resolveSoftwareTitle(spec),
+      installed: status.installed,
+      notes,
+      steps,
+      status,
+    };
   }
 
   // Runtime installers

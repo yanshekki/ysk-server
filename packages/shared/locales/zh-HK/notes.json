@@ -95,7 +95,9 @@
   "software": {
     "startUnit": "啟動 {{u}}",
     "installedSpec": "已安裝 {{title}}",
-    "installPkg": "安裝 {{p}}"
+    "installPkg": "安裝 {{p}}",
+    "npmGlobal": "npm install -g {{pkgs}}",
+    "needNodeForNpm": "未找到 node／npm — 請先安裝 Node.js 再安裝 {{title}}"
   },
   "approval": {
     "notFound": "找不到審批：{{id}}"

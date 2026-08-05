@@ -95,7 +95,9 @@
   "software": {
     "startUnit": "Start {{u}}",
     "installedSpec": "Installed {{title}}",
-    "installPkg": "Install {{p}}"
+    "installPkg": "Install {{p}}",
+    "npmGlobal": "npm install -g {{pkgs}}",
+    "needNodeForNpm": "node/npm not found — install Node.js before {{title}}"
   },
   "approval": {
     "notFound": "Approval not found: {{id}}"

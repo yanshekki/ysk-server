@@ -24,6 +24,7 @@ export type SoftwareId =
   | 'pdns-server'
   | 'git'
   | 'node'
+  | 'pm2'
   | 'php'
   | 'python'
   | 'go'
@@ -57,6 +58,7 @@ export type FeatureSoftwareKey =
 
 export type RuntimeInstaller =
   | 'apt'
+  | 'npm-global'
   | 'runtime-node'
   | 'runtime-php'
   | 'runtime-python'
@@ -79,6 +81,8 @@ export interface SoftwareSpec {
   bins: string[];
   /** Debian/Ubuntu packages */
   aptPackages: string[];
+  /** npm packages for installer: npm-global (e.g. pm2) */
+  npmPackages?: string[];
   /** systemctl units to enable --now after install */
   units?: string[];
   features: FeatureSoftwareKey[];
@@ -240,6 +244,14 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     features: ['node'],
     installer: 'runtime-node',
     runtimeVersion: '20' },
+  {
+    id: 'pm2',
+    title: 'PM2',
+    bins: ['pm2'],
+    aptPackages: [],
+    npmPackages: ['pm2'],
+    features: ['node'],
+    installer: 'npm-global' },
   {
     id: 'php',
     title: 'PHP',
