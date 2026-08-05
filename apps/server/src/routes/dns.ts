@@ -160,18 +160,54 @@ export async function handleDnsRoutes(
         sendOpsResult(res, r);
         return true;
       }
+      if (method === 'GET' && url.pathname === '/api/v1/dns/health') {
+        ctx.auth.authenticate(getBearer(req));
+        const digName = (url.searchParams.get('name') ?? '').trim() || undefined;
+        const { probeDnsServiceHealth } = await import('@ysk/core');
+        const r = await probeDnsServiceHealth({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          digName,
+        });
+        sendJson(res, 200, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/dns/probe-local') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          type?: string;
+        };
+        const { digLocalAuthoritative } = await import('@ysk/core');
+        const r = await digLocalAuthoritative({
+          host: ctx.host,
+          name: data.name ?? '',
+          type: data.type ?? 'SOA',
+        });
+        sendOpsResult(res, {
+          ok: r.ok,
+          notes: r.notes,
+          answers: r.answers,
+          method: r.method,
+          name: data.name,
+        });
+        return true;
+      }
       if (method === 'POST' && url.pathname === '/api/v1/dns/lookup') {
         ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
           name?: string;
           type?: 'A' | 'AAAA' | 'MX' | 'TXT' | 'CNAME' | 'NS';
+          server?: string;
         };
         const { lookupDns } = await import('@ysk/core');
         const r = await lookupDns({
           host: ctx.host,
           name: data.name ?? '',
           type: data.type ?? 'A',
+          server: data.server,
         });
         sendOpsResult(res, r);
         return true;

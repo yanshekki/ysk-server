@@ -383,5 +383,8 @@
   "pluginUninstalled": "Uninstalled {{name}}",
   "pluginUninstallFailed": "Failed to uninstall {{name}}",
   "pluginUninstallBlocked": "Panel cannot uninstall (needs root + EXECUTE)",
-  "phpExtAlreadyOnHost": "Installed extensions"
+  "phpExtAlreadyOnHost": "Installed extensions",
+  "pluginsInstallSelected": "Install selected ({{n}})",
+  "pluginInstallOk": "Installed {{n}} tool(s)",
+  "pluginInstallFailed": "Tool install failed"
 }

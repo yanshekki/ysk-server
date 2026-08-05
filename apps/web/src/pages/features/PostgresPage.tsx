@@ -166,7 +166,6 @@ export function PostgresPage() {
 
       <SoftwareInstallBanner feature="postgres" title={t('db.pgSoftwareMissing')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {dbs.msg ? <Alert variant="ok">{dbs.msg}</Alert> : null}
       <Card>
         <CardSection title={t('db.serviceOverview')} description={t('db.readonlyProbe')}>
           <DescriptionList

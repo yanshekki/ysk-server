@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
@@ -6,6 +6,7 @@ import {
   DataTable,
   ActionBar,
   Alert,
+  Badge,
   Button,
   Card,
   CardSection,
@@ -32,7 +33,37 @@ import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
+import { systemApi } from '../../features/system';
+import { toast } from '../../shared/stores/toast-store';
 import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
+
+type DnsHealth = {
+  ok: boolean;
+  unit: string;
+  unitActive: boolean;
+  listenUdp53: boolean;
+  listenTcp53: boolean;
+  zoneFiles: number;
+  latestZoneWriteAt?: string;
+  latestZone?: string;
+  answeringLocal?: boolean;
+  digAnswers?: string[];
+  digNotes?: string[];
+  states: {
+    service: string;
+    listen: string;
+    written: string;
+    answering: string;
+  };
+  notes: string[];
+};
+
+function toneBadge(tone: string | undefined): 'ok' | 'warn' | 'danger' | 'neutral' {
+  if (tone === 'ok') return 'ok';
+  if (tone === 'warn') return 'warn';
+  if (tone === 'danger') return 'danger';
+  return 'neutral';
+}
 
 const ZONE_TEMPLATE_IDS = ['minimal', 'web', 'mail', 'full', 'cdn'] as const;
 
@@ -353,6 +384,7 @@ export function DnsPage() {
         body: JSON.stringify({
           name: lookupName.trim(),
           type: lookupType,
+          server: lookupServer.trim() || undefined,
         }),
       });
       setLookupResult(r);
@@ -368,6 +400,31 @@ export function DnsPage() {
   }
 
   const [tab, setTab] = usePageTab(DNS_TABS, 'zones');
+  const [health, setHealth] = useState<DnsHealth | null>(null);
+  const [healthBusy, setHealthBusy] = useState(false);
+  const [fwBusy, setFwBusy] = useState(false);
+  const [lookupServer, setLookupServer] = useState('127.0.0.1');
+
+  const refreshHealth = useCallback(async () => {
+    setHealthBusy(true);
+    try {
+      const digName =
+        selectedZone && typeof selectedZone.zone === 'string'
+          ? selectedZone.zone
+          : undefined;
+      const q = digName ? `?name=${encodeURIComponent(digName)}` : '';
+      const r = await api.requestRaw<DnsHealth>(`/api/v1/dns/health${q}`);
+      setHealth(r);
+    } catch {
+      setHealth(null);
+    } finally {
+      setHealthBusy(false);
+    }
+  }, [selectedZone]);
+
+  useEffect(() => {
+    void refreshHealth();
+  }, [refreshHealth]);
 
   // Load cluster peers when opening cluster tab
   useEffect(() => {
@@ -381,41 +438,157 @@ export function DnsPage() {
       showCapability={false}
       status={{
         pill: {
-          label: `${zones.items.length} zones`,
-          tone: zones.items.length ? 'ok' : 'warn',
+          label: health
+            ? health.ok
+              ? t('dns.healthPillOk')
+              : t('dns.healthPillBad')
+            : `${zones.items.length} zones`,
+          tone: health ? (health.ok ? 'ok' : 'danger') : zones.items.length ? 'ok' : 'warn',
         },
         items: [
-          { label: 'Zones', value: zones.items.length },
-          { label: t('dns.statRecords'), value: records.items.length },
-          { label: 'Peers', value: peers.length },
           {
-            label: t('dns.statSelected'),
-            value: selectedLive ? String(selectedLive.zone ?? selectedLive.id) : '—',
+            label: t('dns.healthService'),
+            value: health?.unitActive ? health.unit : t('dns.healthServiceDown'),
+            tone: health?.unitActive ? 'ok' : 'danger',
+          },
+          {
+            label: t('dns.healthListen'),
+            value: health
+              ? `UDP${health.listenUdp53 ? '✓' : '×'} TCP${health.listenTcp53 ? '✓' : '×'}`
+              : '—',
+            tone: health?.listenUdp53 || health?.listenTcp53 ? 'ok' : 'danger',
+          },
+          {
+            label: t('dns.healthWritten'),
+            value: health ? String(health.zoneFiles) : zones.items.length,
+            tone: (health?.zoneFiles ?? 0) > 0 ? 'ok' : 'warn',
+          },
+          {
+            label: t('dns.healthAnswering'),
+            value:
+              health?.answeringLocal === true
+                ? t('dns.healthAnsweringYes')
+                : health?.answeringLocal === false
+                  ? t('dns.healthAnsweringNo')
+                  : '—',
+            tone:
+              health?.answeringLocal === true
+                ? 'ok'
+                : health?.answeringLocal === false
+                  ? 'danger'
+                  : undefined,
           },
         ],
       }}
-      actions={<>
-          
+      actions={
+        <>
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={healthBusy}
+            onClick={() => void refreshHealth()}
+          >
+            {t('dns.healthRefresh')}
+          </Button>
           <Button variant="secondary" size="sm" onClick={bindSet(setTab, 'records')}>
             {t('dns.statRecords')}
           </Button>
           <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             SSL
           </Link>
+          <Link to="/firewall" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+            {t('nav.firewall', { defaultValue: 'Firewall' })}
+          </Link>
         </>
       }
     >
       <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} />
+      {health ? (
+        <Card className="u-mb-3">
+          <CardSection
+            title={t('dns.healthTitle')}
+            description={t('dns.healthDesc')}
+          >
+            <div className="u-flex u-flex-wrap u-gap-2 u-mb-2">
+              <Badge tone={toneBadge(health.states.service)}>
+                {t('dns.stateService')}: {health.unitActive ? health.unit : '—'}
+              </Badge>
+              <Badge tone={toneBadge(health.states.listen)}>
+                {t('dns.stateListen')}:{' '}
+                {health.listenUdp53 || health.listenTcp53
+                  ? `53 ${health.listenUdp53 ? 'UDP' : ''}${health.listenUdp53 && health.listenTcp53 ? '+' : ''}${health.listenTcp53 ? 'TCP' : ''}`
+                  : t('dns.healthPortClosed')}
+              </Badge>
+              <Badge tone={toneBadge(health.states.written)}>
+                {t('dns.stateWritten')}: {health.zoneFiles}{' '}
+                {health.latestZoneWriteAt
+                  ? `(${health.latestZone ?? ''} ${health.latestZoneWriteAt.slice(0, 19)})`
+                  : ''}
+              </Badge>
+              <Badge tone={toneBadge(health.states.answering)}>
+                {t('dns.stateAnswering')}:{' '}
+                {health.answeringLocal === true
+                  ? 'OK'
+                  : health.answeringLocal === false
+                    ? t('dns.healthAnsweringNo')
+                    : '—'}
+              </Badge>
+            </div>
+            {health.notes.length ? (
+              <ul className="notes-list u-mb-2">
+                {health.notes.slice(0, 6).map((n) => (
+                  <li key={n} className="muted u-text-sm">
+                    {n}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <FormActions>
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={healthBusy}
+                onClick={() => void refreshHealth()}
+              >
+                {t('dns.healthProbeLocal')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                loading={fwBusy}
+                disabled={health.listenUdp53 && health.listenTcp53}
+                title={
+                  health.listenUdp53 && health.listenTcp53
+                    ? t('dns.healthPortOpenAlready')
+                    : undefined
+                }
+                onClick={() => {
+                  setFwBusy(true);
+                  void systemApi
+                    .firewallAllowPort(53, 'both')
+                    .then((r) => {
+                      const ok = (r as { ok?: boolean }).ok !== false;
+                      if (ok) toast.ok(t('dns.healthOpened53'));
+                      else
+                        toast.error(
+                          (r as { notes?: string[] }).notes?.[0] ??
+                            t('dns.healthOpen53Failed'),
+                        );
+                      return refreshHealth();
+                    })
+                    .catch((e: Error) => toast.error(e.message))
+                    .finally(() => setFwBusy(false));
+                }}
+              >
+                {t('dns.healthOpen53')}
+              </Button>
+            </FormActions>
+            <FormHint>{t('dns.healthHint')}</FormHint>
+          </CardSection>
+        </Card>
+      ) : null}
       {zones.error || records.error ? (
         <Alert variant="error">{zones.error ?? records.error}</Alert>
-      ) : null}
-      {zones.msg ? (
-        <Alert variant="ok">
-          {zones.msg}{' '}
-          <button type="button" className={buttonClassName({ variant: 'ghost', size: 'sm' })} onClick={bindSet(zones.setMsg, null)}>
-            {t('common.close')}
-          </button>
-        </Alert>
       ) : null}
       {dnssecMsg ? (
         <Alert
@@ -1322,8 +1495,22 @@ export function DnsPage() {
                         value={lookupType}
                         onChange={setLookupType}
                         options={['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS'].map(
-                          (t) => ({ value: t, label: t }),
+                          (ty) => ({ value: ty, label: ty }),
                         )}
+                      />
+                    </Field>
+                    <Field
+                      label={t('dns.lookupServer')}
+                      htmlFor="lookup-server"
+                      flush
+                      hint={t('dns.lookupServerHint')}
+                    >
+                      <input
+                        id="lookup-server"
+                        value={lookupServer}
+                        onChange={bindInput(setLookupServer)}
+                        placeholder="127.0.0.1"
+                        spellCheck={false}
                       />
                     </Field>
                   </FormLayout>
@@ -1344,6 +1531,7 @@ export function DnsPage() {
                         onClick={() => {
                           setLookupName(String(selectedLive.zone ?? ''));
                           setLookupType('A');
+                          setLookupServer('127.0.0.1');
                         }}
                       >
                         {t('dns.fillCurrentZone')}

@@ -33,6 +33,7 @@
 | `GET /api/v1/hosting/runtimes/plugins?kind=` | Legacy plugins-only |
 | `GET /api/v1/hosting/php/extensions?version=` | PHP extensions + host probe (`php -m` / dpkg) |
 | `GET /api/v1/hosting/runtimes/latest?kind=` | Optional remote latest hint (24h cache) |
+| `POST /api/v1/hosting/runtimes/plugins/install` | Install companion tools only `{ kind, plugins[] }` |
 | `POST /api/v1/hosting/runtimes/plugins/uninstall` | Uninstall companion tools `{ kind, plugins[] }` |
 
 ### Install vs uninstall UX

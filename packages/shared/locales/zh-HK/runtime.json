@@ -383,5 +383,8 @@
       "searchPlaceholder": "搜尋函式…",
       "emptyText": "無符合項目"
     }
-  }
+  },
+  "pluginsInstallSelected": "安裝選定工具 ({{n}})",
+  "pluginInstallOk": "已安裝 {{n}} 個工具",
+  "pluginInstallFailed": "工具安裝失敗"
 }

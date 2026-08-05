@@ -383,5 +383,8 @@
   "pluginUninstalled": "已卸载 {{name}}",
   "pluginUninstallFailed": "卸载 {{name}} 失败",
   "pluginUninstallBlocked": "面板无权执行卸载（需要 root 与 EXECUTE）",
-  "phpExtAlreadyOnHost": "已安装扩展"
+  "phpExtAlreadyOnHost": "已安装扩展",
+  "pluginsInstallSelected": "安装选定工具 ({{n}})",
+  "pluginInstallOk": "已安装 {{n}} 个工具",
+  "pluginInstallFailed": "工具安装失败"
 }

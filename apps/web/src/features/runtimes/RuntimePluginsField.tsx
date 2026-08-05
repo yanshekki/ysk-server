@@ -44,6 +44,7 @@ export function RuntimePluginsField({
   const [defaults, setDefaults] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [busyUninstall, setBusyUninstall] = useState(false);
+  const [busyInstall, setBusyInstall] = useState(false);
   const [confirmUninstall, setConfirmUninstall] = useState<RuntimePluginRow | null>(null);
 
   const load = useCallback(async () => {
@@ -149,19 +150,45 @@ export function RuntimePluginsField({
     [value, selectableIds],
   );
 
+  const kindArg = kind as
+    | 'node'
+    | 'python'
+    | 'go'
+    | 'rust'
+    | 'java'
+    | 'kotlin'
+    | 'bun';
+
+  const doInstallSelected = useCallback(async () => {
+    if (!selectedForInstall.length) return;
+    setBusyInstall(true);
+    try {
+      const r = (await systemApi.runtimePluginsInstall({
+        kind: kindArg,
+        plugins: selectedForInstall,
+      })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
+      if (r.blocked) {
+        toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
+      } else if (r.ok === false) {
+        toast.error(r.notes?.[0] ?? t('runtime.pluginInstallFailed'));
+      } else {
+        toast.ok(t('runtime.pluginInstallOk', { n: selectedForInstall.length }));
+        onChange(requiredRows.map((x) => x.id));
+      }
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('runtime.pluginInstallFailed'));
+    } finally {
+      setBusyInstall(false);
+    }
+  }, [kindArg, load, onChange, requiredRows, selectedForInstall, t]);
+
   const doUninstall = useCallback(
     async (plugin: RuntimePluginRow) => {
       setBusyUninstall(true);
       try {
         const r = (await systemApi.runtimePluginsUninstall({
-          kind: kind as
-            | 'node'
-            | 'python'
-            | 'go'
-            | 'rust'
-            | 'java'
-            | 'kotlin'
-            | 'bun',
+          kind: kindArg,
           plugins: [plugin.id],
         })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
         if (r.blocked) {
@@ -179,7 +206,7 @@ export function RuntimePluginsField({
         setConfirmUninstall(null);
       }
     },
-    [kind, load, t],
+    [kindArg, load, t],
   );
 
   if (kind === 'php' || (loaded && rows.length === 0)) return null;
@@ -247,9 +274,23 @@ export function RuntimePluginsField({
           </Field>
           <FormActions>
             <Button
+              variant="primary"
+              size="sm"
+              disabled={
+                disabled || busyUninstall || busyInstall || !selectedForInstall.length
+              }
+              loading={busyInstall}
+              onClick={() => void doInstallSelected()}
+            >
+              {t('runtime.pluginsInstallSelected', {
+                n: selectedForInstall.length,
+                defaultValue: `安裝選定工具 (${selectedForInstall.length})`,
+              })}
+            </Button>
+            <Button
               variant="secondary"
               size="sm"
-              disabled={disabled || busyUninstall || !recommendedAvailable.length}
+              disabled={disabled || busyUninstall || busyInstall || !recommendedAvailable.length}
               onClick={() => onChange([...recommendedAvailable])}
             >
               {t('runtime.pluginsRecommended')}
@@ -257,7 +298,7 @@ export function RuntimePluginsField({
             <Button
               variant="ghost"
               size="sm"
-              disabled={disabled || busyUninstall || !selectableIds.length}
+              disabled={disabled || busyUninstall || busyInstall || !selectableIds.length}
               onClick={() => {
                 const required = requiredRows.map((r) => r.id);
                 onChange([...new Set([...required, ...selectableIds])]);
@@ -268,7 +309,7 @@ export function RuntimePluginsField({
             <Button
               variant="ghost"
               size="sm"
-              disabled={disabled || busyUninstall}
+              disabled={disabled || busyUninstall || busyInstall}
               onClick={() => onChange(requiredRows.map((r) => r.id))}
             >
               {t('runtime.pluginsNone')}

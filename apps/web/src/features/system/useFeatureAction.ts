@@ -12,6 +12,7 @@ import {
   sanitizeOperatorNotes,
 } from '../../shared/lib/operator-messages';
 import { toast } from '../../shared/stores/toast-store';
+import { notifyError, notifyOk, notifyWarn } from '../../shared/lib/notify';
 
 export function useFeatureAction() {
   const { t } = useTranslation();
@@ -21,11 +22,11 @@ export function useFeatureAction() {
   const [error, setErrorRaw] = useState<string | null>(null);
   const [msg, setMsgRaw] = useState<string | null>(null);
   const setMsg = useCallback((m: string | null) => {
-    if (m) toast.ok(m);
+    if (m) notifyOk(m);
     setMsgRaw(null);
   }, []);
   const setError = useCallback((m: string | null) => {
-    if (m) toast.error(m);
+    if (m) notifyError(m);
     setErrorRaw(null);
   }, []);
 
@@ -89,11 +90,11 @@ export function useFeatureAction() {
         if (ops.blocked || ops.ok === false) {
           const warn =
             ops.blockMessage ?? ops.notes?.[0] ?? t('common.panelBlocked');
-          toast.warn(warn);
+          notifyWarn(warn);
         } else {
           // Prefer caller label; fall back to first operator note, then generic completed
           const note = ops.notes?.[0]?.trim();
-          toast.ok(okMessage ?? note ?? t('common.completed'));
+          notifyOk(okMessage ?? note ?? t('common.completed'));
         }
         return r;
       } catch (e) {
@@ -109,7 +110,7 @@ export function useFeatureAction() {
           ) {
             const ops = toOpsResult({ ...d, ok: false });
             setResult(ops);
-            toast.warn(ops.blockMessage ?? ops.notes?.[0] ?? t('common.opFailed'));
+            notifyWarn(ops.blockMessage ?? ops.notes?.[0] ?? t('common.opFailed'));
             return null;
           }
         }
@@ -123,7 +124,7 @@ export function useFeatureAction() {
           blockMessage: m,
           notes: sanitizeOperatorNotes([raw]),
         });
-        toast.error(m);
+        notifyError(m);
         return null;
       } finally {
         setBusy(false);

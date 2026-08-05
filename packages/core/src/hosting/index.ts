@@ -37,6 +37,7 @@ export * from './wordpress-download.js';
 export * from './postgres-provision.js';
 export * from './pm2-apply.js';
 export * from './dns-zone.js';
+export * from './dns-health.js';
 export * from './powerdns-apply.js';
 export * from './runtime-probe.js';
 export * from './production-readiness.js';

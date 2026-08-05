@@ -398,8 +398,6 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {dbs.msg || users.msg ? <Alert variant="ok">{dbs.msg ?? users.msg}</Alert> : null}
-
       <Card>
         <CardSection title={t('db.serviceOverview')} description={t('db.readonlyStatus')}>
           <DescriptionList

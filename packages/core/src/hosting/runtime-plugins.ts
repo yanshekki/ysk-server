@@ -622,6 +622,92 @@ export type RuntimePluginUninstallResult = {
   requiresRoot?: boolean;
 };
 
+export type RuntimePluginInstallResult = RuntimePluginUninstallResult;
+
+/**
+ * Install companion plugins only (no full runtime tarball/apt stack).
+ */
+export async function installRuntimePlugins(input: {
+  dataDir: string;
+  host: {
+    executeEnabled: () => boolean;
+    isRoot: () => boolean;
+    runCommand: (
+      argv: string[],
+      opts?: { timeoutMs?: number },
+    ) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
+  };
+  kind: RuntimeKind;
+  plugins: string[];
+}): Promise<RuntimePluginInstallResult> {
+  const { join } = await import('node:path');
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  const { tl } = await import('@ysk/shared');
+
+  const built = buildRuntimePluginScriptLines(input.kind, input.plugins);
+  const notes: string[] = [];
+  if (!built.ids.length) {
+    return {
+      ok: false,
+      kind: input.kind,
+      notes: [tl('notes.runtime.pluginsNoneToUninstall')],
+      pluginIds: [],
+    };
+  }
+
+  const dir = join(input.dataDir, 'runtimes', input.kind, '_plugins');
+  mkdirSync(dir, { recursive: true });
+  const scriptPath = join(dir, 'install-plugins.sh');
+  const body = ['#!/usr/bin/env bash', 'set -uo pipefail', ...built.lines].join('\n') + '\n';
+  writeFileSync(scriptPath, body, 'utf8');
+  notes.push(
+    tl('notes.runtime.plugins', {
+      list: built.labels.join(', ') || built.ids.join(', '),
+    }),
+  );
+
+  const execOn = input.host.executeEnabled();
+  const rootOn = input.host.isRoot();
+  if (!execOn || !rootOn) {
+    const blockMessage = !execOn ? tl('ops.blocked.install') : tl('notes.auto.n1582');
+    return {
+      ok: false,
+      kind: input.kind,
+      notes: [blockMessage, ...notes],
+      pluginIds: built.ids,
+      blocked: true,
+      blockMessage,
+      requiresExecute: !execOn,
+      requiresRoot: !rootOn,
+    };
+  }
+
+  const r = await input.host.runCommand(['bash', scriptPath], { timeoutMs: 600_000 });
+  const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+  const pluginFailMatch = out.match(/YSK_PLUGIN_FAILED:([^\n]+)/);
+  const pluginFailed = pluginFailMatch
+    ? pluginFailMatch[1]!
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+    : [];
+
+  if (r.exitCode === 0) {
+    notes.push(tl('notes.runtime.pluginsOk'));
+    return { ok: true, kind: input.kind, notes, pluginIds: built.ids };
+  }
+  if (pluginFailed.length) {
+    notes.unshift(tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }));
+  } else {
+    notes.unshift(
+      tl('notes.runtime.pluginsFailed', {
+        list: (r.stderr || r.stdout || String(r.exitCode)).slice(0, 300),
+      }),
+    );
+  }
+  return { ok: false, kind: input.kind, notes, pluginIds: built.ids };
+}
+
 /**
  * Uninstall selected companion plugins on the host (root + execute).
  */

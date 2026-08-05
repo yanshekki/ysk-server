@@ -26,9 +26,12 @@ export async function lookupDns(input: {
   host?: HostExecutor;
   name: string;
   type?: DnsLookupType;
+  /** e.g. 127.0.0.1 or 84.32.34.14 — dig @server */
+  server?: string;
 }): Promise<DnsLookupResult> {
   const name = input.name.trim().replace(/\.$/, '');
   const type = (input.type ?? 'A').toUpperCase() as DnsLookupType;
+  const server = (input.server ?? '').trim().replace(/^@/, '');
   const notes: string[] = [];
   if (!name) {
     return {
@@ -47,16 +50,25 @@ export async function lookupDns(input: {
     const digType = type === 'CNAME' ? 'CNAME' : type;
     const { resolveBin, shellBinExists } = await import('./software-probe/index.js');
     const digPath = await resolveBin(input.host, 'dig');
+    const at = server ? `@${server}` : '';
     const r = digPath
       ? await input.host.runCommand(
-          [digPath, '+time=3', '+tries=1', '+short', digType, name],
+          [
+            digPath,
+            ...(at ? [at] : []),
+            '+time=3',
+            '+tries=1',
+            '+short',
+            digType,
+            name,
+          ],
           { timeoutMs: 12_000 },
         )
       : await input.host.runCommand(
           [
             'bash',
             '-c',
-            `if ${shellBinExists('dig')}; then dig +time=3 +tries=1 +short ${JSON.stringify(digType)} ${JSON.stringify(name)} 2>/dev/null; else echo YSK_NO_DIG; fi`,
+            `if ${shellBinExists('dig')}; then dig ${at ? JSON.stringify(at) + ' ' : ''}+time=3 +tries=1 +short ${JSON.stringify(digType)} ${JSON.stringify(name)} 2>/dev/null; else echo YSK_NO_DIG; fi`,
           ],
           { timeoutMs: 12_000 },
         );

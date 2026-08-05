@@ -277,21 +277,32 @@ export async function firewallAllowPort(
     proto === 'both' ? ['tcp', 'udp'] : [proto === 'udp' ? 'udp' : 'tcp'];
 
   const notes: string[] = [];
-  let allOk = true;
+  let okCount = 0;
+  let failCount = 0;
+  // Idempotent hint: if rule already present, ufw still exits 0 with "Skipping"
   for (const p of protos) {
     const target = ufwPortTarget(raw, p);
     if (!target) {
       return { ok: false, notes: [tl('notes.auto.n1113')] };
     }
     const r = await host.runCommand(['ufw', 'allow', target], { timeoutMs: 12_000 });
+    const combined = `${r.stdout || ''}\n${r.stderr || ''}`;
     if (r.exitCode === 0) {
-      notes.push(tl('notes.auto.t0168', { v0: label, v1: p }));
+      okCount += 1;
+      if (/skipping|existing|already/i.test(combined)) {
+        notes.push(`${label}/${p}: already allowed (idempotent)`);
+      } else {
+        notes.push(tl('notes.auto.t0168', { v0: label, v1: p }));
+      }
     } else {
-      allOk = false;
+      failCount += 1;
       notes.push(tl('notes.auto.t0169', { v0: (r.stderr || r.stdout || '').slice(0, 300) }));
     }
   }
-  return { ok: allOk, notes };
+  if (okCount > 0 && failCount > 0) {
+    notes.unshift(`partial: ${okCount} ok, ${failCount} failed (some rules may be open)`);
+  }
+  return { ok: failCount === 0 && okCount > 0, notes };
 }
 
 /** Hosting-oriented quick profiles (ports only — not fail2ban). */

@@ -432,6 +432,16 @@ export const systemApi = {
       defaults: string[];
       useExtensions?: boolean;
     }>(`/api/v1/hosting/runtimes/plugins?kind=${encodeURIComponent(kind)}`),
+  /** Install companion tools only (no full runtime stack) */
+  runtimePluginsInstall: (body: {
+    kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
+    plugins: string[];
+  }) =>
+    api.requestRawAllowStatus('/api/v1/hosting/runtimes/plugins/install', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
   /** Uninstall companion tools (pm2, poetry, …) — not PHP extensions */
   runtimePluginsUninstall: (body: {
     kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
