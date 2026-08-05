@@ -145,12 +145,15 @@ export function AppShell() {
           </button>
           <div className="shell__search shell-search">
             <input
+              id={globalSearchId}
+              name="global-search"
               type="search"
               placeholder={t('common.searchGlobal')}
               value={searchQ}
               onChange={(e) => void onSearch(e.target.value)}
               aria-label={t('common.searchGlobal')}
               className="shell-search__input"
+              autoComplete="off"
             />
             {searchHits.length > 0 ? (
               <div className="card shell-search__menu">
