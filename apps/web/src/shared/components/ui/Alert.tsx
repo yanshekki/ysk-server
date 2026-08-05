@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type AlertVariant = 'error' | 'ok' | 'info';
+export type AlertVariant = 'error' | 'ok' | 'info' | 'warn';
 
 export interface AlertProps {
   children: ReactNode;
@@ -12,6 +12,7 @@ const VARIANT_CLASS: Record<AlertVariant, string> = {
   error: 'alert alert--error',
   ok: 'alert alert--ok',
   info: 'alert alert--info',
+  warn: 'alert alert--warn',
 };
 
 export function Alert({ children, variant = 'info', className }: AlertProps) {

@@ -2053,7 +2053,11 @@
     ],
     "sections": [],
     "tips": [],
-    "cautions": []
+    "cautions": [],
+    "features": [],
+    "useCases": [],
+    "workflow": [],
+    "caveats": []
   },
   "kotlin": {
     "id": "kotlin",
@@ -2065,7 +2069,11 @@
     ],
     "sections": [],
     "tips": [],
-    "cautions": []
+    "cautions": [],
+    "features": [],
+    "useCases": [],
+    "workflow": [],
+    "caveats": []
   },
   "bun": {
     "id": "bun",
@@ -2077,6 +2085,10 @@
     ],
     "sections": [],
     "tips": [],
-    "cautions": []
+    "cautions": [],
+    "features": [],
+    "useCases": [],
+    "workflow": [],
+    "caveats": []
   }
 }
