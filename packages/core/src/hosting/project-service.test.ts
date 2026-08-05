@@ -87,6 +87,17 @@ describe('ProjectService real lifecycle', () => {
 });
 
 describe('ProjectService network meta and honesty paths', () => {
+  it('updateNetwork rejects domain collision and bad docroot', async () => {
+    const a = svc.create({ name: 'A', domain: 'a.example.test', runtime: 'static', actor: 't' });
+    const b = svc.create({ name: 'B', domain: 'b.example.test', runtime: 'static', actor: 't' });
+    expect(() =>
+      svc.updateNetwork(b.id, { domain: 'a.example.test' }, 't'),
+    ).toThrow(/使用|used|in use|domain/i);
+    expect(() => svc.updateNetwork(a.id, { docRoot: '../etc' }, 't')).toThrow(/docRoot|文件根|invalid/i);
+    const ok = svc.updateNetwork(a.id, { docRoot: 'public/web' }, 't');
+    expect(ok.docRoot).toBe('public/web');
+  });
+
   it('updateNetwork patches domain aliases and auth flags', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-net-'));
     const db = openDatabase(join(dir, 'db.json'));

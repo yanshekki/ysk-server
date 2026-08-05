@@ -64,10 +64,49 @@ export type OpsProcessStatus = 'stopped' | 'starting' | 'running' | 'unhealthy' 
 
 export type DeployMode = 'systemd' | 'pm2' | 'pidfile' | 'none';
 
+/**
+ * Coerce a doc_root string to a safe relative path under project home.
+ * Strips leading slashes (legacy "absolute-looking" values), drops `..`.
+ */
+export function coerceProjectDocRootRel(raw: string | null | undefined): string {
+  let s = String(raw ?? 'app/public').trim().replace(/\\/g, '/');
+  if (!s) return 'app/public';
+  // Drive letters / Windows — treat as invalid → default
+  if (/^[A-Za-z]:\//.test(s)) return 'app/public';
+  s = s.replace(/^\/+/, '');
+  const parts = s.split('/').filter((p) => p && p !== '.' && p !== '..' && !p.includes('\0'));
+  const out = parts.join('/');
+  return out.slice(0, 200) || 'app/public';
+}
+
+/**
+ * Normalize project document root for API save (relative to home only).
+ * Rejects `..` and empty; leading slash is stripped (same as home-relative intent).
+ */
+export function normalizeProjectDocRoot(raw: string | null | undefined): string | undefined {
+  if (raw == null) return undefined;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return undefined;
+  if (trimmed.includes('..') || trimmed.includes('\0')) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.project.docRootInvalid'), {
+      httpStatus: 400,
+      details: { docRoot: raw },
+    });
+  }
+  if (/^[A-Za-z]:\//.test(trimmed.replace(/\\/g, '/'))) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.project.docRootMustBeRelative'), {
+      httpStatus: 400,
+      details: { docRoot: raw },
+    });
+  }
+  const rel = coerceProjectDocRootRel(trimmed);
+  return rel || undefined;
+}
+
 /** Resolve document root: relative doc_root under home, default app/public */
 export function resolveProjectDocRoot(row: ProjectRow): string {
-  const rel = (row.doc_root ?? 'app/public').replace(/^\/+/, '').replace(/\.\./g, '');
-  return join(row.home_dir, rel || 'app/public');
+  const rel = coerceProjectDocRootRel(row.doc_root ?? 'app/public');
+  return join(row.home_dir, rel);
 }
 
 /**

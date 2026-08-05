@@ -78,7 +78,11 @@
     "needNmActive": "無法持久化：需要 NetworkManager 作用中連線"
   },
   "project": {
-    "notFound": "找不到專案：{{id}}"
+    "notFound": "找不到專案：{{id}}",
+    "docRootMustBeRelative": "文件根必須為相對路徑（相對於專案家目錄），不可用絕對路徑。",
+    "docRootInvalid": "文件根路徑無效（不可含 .. 或非法字元）。",
+    "domainInvalid": "網域名稱格式無效：{{domain}}",
+    "domainInUse": "網域 {{domain}} 已被專案「{{other}}」使用。"
   },
   "email": {
     "domainNotFound": "找不到郵件域名：{{id}}",
@@ -2614,5 +2618,10 @@
     "dnsWritten": "已寫入 {{conn}}：DNS {{dns}}{{search}}",
     "peerInstalled": "已安裝到 {{dest}}{{重新啟動}}"
   },
-  "installedTool": "已安裝（工具）"
+  "installedTool": "已安裝（工具）",
+  "cron": {
+    "preserveHostLines": "已保留主機 crontab 中 {{count}} 行非 YSK 工作（不會整份覆蓋）。",
+    "noHostLinesOrEmpty": "主機 crontab 無額外非 YSK 行（或空白）。",
+    "installReplacesYskOnly": "安裝只更新帶 YSK 標記的工作；其他主機工作已合併保留。"
+  }
 }

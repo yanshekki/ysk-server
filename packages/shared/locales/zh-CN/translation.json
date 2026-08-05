@@ -1880,7 +1880,7 @@
     "hostYsk": "主机 YSK",
     "lastInstall": "上次安装",
     "installToSystem": "安装到系统 crontab",
-    "installHint": "创建／启用／停用只改管理档；必须安装后系统才会执行。",
+    "installHint": "安装会合并主机 crontab：保留非 YSK 行，只更新面板管理的任务。需系统变更权限。",
     "hostPreview": "主机 crontab 预览",
     "cannotRead": "无法读取或尚未安装（需权限）",
     "addJobTitle": "新增工作",
@@ -1906,7 +1906,9 @@
     "projectNoLinux": "（未有 linux 用户）",
     "createManageOnlyParen": "创建（僅管理档）",
     "runAsHintFull": "选项目用户会同步上方项目；选系统用户則为系统级 cron",
-    "systemParenFull": "（系统级，未綁项目）"
+    "systemParenFull": "（系统级，未綁项目）",
+    "hostOtherLines": "主机非 YSK 行数",
+    "hostOtherLinesVal": "其他 {{other}} 行（主机有效共 {{total}}）"
   },
   "dashboard": {
     "title": "控制台",
@@ -4110,7 +4112,11 @@
       "needNmActive": "无法持久化：需要 NetworkManager 活动连接"
     },
     "project": {
-      "notFound": "找不到项目：{{id}}"
+      "notFound": "找不到项目：{{id}}",
+      "docRootMustBeRelative": "文档根必须为相对路径（相对于项目家目录），不可用绝对路径。",
+      "docRootInvalid": "文档根路径无效（不可含 .. 或非法字符）。",
+      "domainInvalid": "域名格式无效：{{domain}}",
+      "domainInUse": "域名 {{domain}} 已被项目「{{other}}」使用。"
     },
     "email": {
       "domainNotFound": "找不到邮件域名：{{id}}",
@@ -6646,7 +6652,12 @@
       "dnsWritten": "已写入 {{conn}}：DNS {{dns}}{{search}}",
       "peerInstalled": "已安装到 {{dest}}{{restart}}"
     },
-    "installedTool": "已安装（工具）"
+    "installedTool": "已安装（工具）",
+    "cron": {
+      "preserveHostLines": "已保留主机 crontab 中 {{count}} 行非 YSK 任务（不会整份覆盖）。",
+      "noHostLinesOrEmpty": "主机 crontab 无额外非 YSK 行（或空白）。",
+      "installReplacesYskOnly": "安装只更新带 YSK 标记的任务；其他主机任务已合并保留。"
+    }
   },
   "ops": {
     "blocked": {
@@ -7238,7 +7249,8 @@
       "python": "Python",
       "go": "Go",
       "rust": "Rust"
-    }
+    },
+    "netCacheTitle": "缓存"
   },
   "protection": {
     "levels": {

@@ -78,7 +78,11 @@
     "needNmActive": "无法持久化：需要 NetworkManager 活动连接"
   },
   "project": {
-    "notFound": "找不到项目：{{id}}"
+    "notFound": "找不到项目：{{id}}",
+    "docRootMustBeRelative": "文档根必须为相对路径（相对于项目家目录），不可用绝对路径。",
+    "docRootInvalid": "文档根路径无效（不可含 .. 或非法字符）。",
+    "domainInvalid": "域名格式无效：{{domain}}",
+    "domainInUse": "域名 {{domain}} 已被项目「{{other}}」使用。"
   },
   "email": {
     "domainNotFound": "找不到邮件域名：{{id}}",
@@ -2614,5 +2618,10 @@
     "dnsWritten": "已写入 {{conn}}：DNS {{dns}}{{search}}",
     "peerInstalled": "已安装到 {{dest}}{{restart}}"
   },
-  "installedTool": "已安装（工具）"
+  "installedTool": "已安装（工具）",
+  "cron": {
+    "preserveHostLines": "已保留主机 crontab 中 {{count}} 行非 YSK 任务（不会整份覆盖）。",
+    "noHostLinesOrEmpty": "主机 crontab 无额外非 YSK 行（或空白）。",
+    "installReplacesYskOnly": "安装只更新带 YSK 标记的任务；其他主机任务已合并保留。"
+  }
 }

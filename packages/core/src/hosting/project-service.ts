@@ -21,6 +21,7 @@ import type { AuditRepository } from '../repositories/audit-repo.js';
 import { getAppTemplate, scaffoldAppTemplate, type AppTemplateId } from './app-templates.js';
 import { normalizeRuntimeVersion } from './runtime.js';
 import { normalizeExtraLogDirs } from './project-logs.js';
+import { normalizeProjectDocRoot } from './project-ops.js';
 
 export class ProjectService {
   constructor(
@@ -667,7 +668,7 @@ export class ProjectService {
     return { project: this.get(id), notes };
   }
 
-  /** Update network fields (domain, aliases, HTTPS flags). Does not publish nginx. */
+  /** Update network fields (domain, aliases, HTTPS flags, docroot). Does not publish nginx. */
   updateNetwork(
     id: string,
     patch: {
@@ -687,11 +688,37 @@ export class ProjectService {
     if (!row) {
       throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
     }
-    const domain = patch.domain !== undefined ? patch.domain.trim() || undefined : row.domain;
+    const domain = patch.domain !== undefined ? patch.domain.trim().toLowerCase() || undefined : row.domain;
+    if (domain && !/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(domain)) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.project.domainInvalid', { domain }), {
+        httpStatus: 400,
+      });
+    }
+    // B7: rename must not collide with another project's primary domain or aliases
+    if (domain) {
+      const clash = this.projects.list().find((p) => {
+        if (p.id === id) return false;
+        const primary = (p.domain ?? '').toLowerCase();
+        if (primary && primary === domain) return true;
+        return (p.domain_aliases ?? []).some((a) => a.toLowerCase() === domain);
+      });
+      if (clash) {
+        throw new YskError(
+          ErrorCodes.VALIDATION,
+          tl('notes.project.domainInUse', { domain, other: clash.name || clash.id }),
+          { httpStatus: 409, details: { otherProjectId: clash.id } },
+        );
+      }
+    }
     const aliases =
       patch.domainAliases !== undefined
         ? normalizeAliases(patch.domainAliases, domain)
         : (row.domain_aliases ?? []);
+    let nextDocRoot = row.doc_root;
+    if (patch.docRoot === null) nextDocRoot = undefined;
+    else if (patch.docRoot !== undefined) {
+      nextDocRoot = normalizeProjectDocRoot(patch.docRoot);
+    }
     this.projects.updateMeta(id, {
       domain,
       domain_aliases: aliases,
@@ -715,19 +742,13 @@ export class ProjectService {
           : patch.httpAuthPass !== undefined
             ? patch.httpAuthPass || undefined
             : row.http_auth_pass,
-      doc_root:
-        patch.docRoot === null
-          ? undefined
-          : patch.docRoot !== undefined
-            ? patch.docRoot.trim().replace(/^\//, '') || undefined
-            : row.doc_root,
+      doc_root: nextDocRoot,
       bind_ip:
         patch.bindIp === null
           ? undefined
           : patch.bindIp !== undefined
             ? patch.bindIp.trim() || undefined
-            : row.bind_ip });
-    this.audit?.append({
+            : row.bind_ip });    this.audit?.append({
       actor,
       action: 'project.update_network',
       resource: id,

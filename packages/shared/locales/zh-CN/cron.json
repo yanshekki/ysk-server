@@ -95,7 +95,7 @@
   "hostYsk": "主机 YSK",
   "lastInstall": "上次安装",
   "installToSystem": "安装到系统 crontab",
-  "installHint": "创建／启用／停用只改管理档；必须安装后系统才会执行。",
+  "installHint": "安装会合并主机 crontab：保留非 YSK 行，只更新面板管理的任务。需系统变更权限。",
   "hostPreview": "主机 crontab 预览",
   "cannotRead": "无法读取或尚未安装（需权限）",
   "addJobTitle": "新增工作",
@@ -121,5 +121,7 @@
   "projectNoLinux": "（未有 linux 用户）",
   "createManageOnlyParen": "创建（僅管理档）",
   "runAsHintFull": "选项目用户会同步上方项目；选系统用户則为系统级 cron",
-  "systemParenFull": "（系统级，未綁项目）"
+  "systemParenFull": "（系统级，未綁项目）",
+  "hostOtherLines": "主机非 YSK 行数",
+  "hostOtherLinesVal": "其他 {{other}} 行（主机有效共 {{total}}）"
 }

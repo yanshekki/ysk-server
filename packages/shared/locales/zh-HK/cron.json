@@ -95,7 +95,7 @@
   "hostYsk": "主機 YSK",
   "lastInstall": "上次安裝",
   "installToSystem": "安裝到系統 定時工作表",
-  "installHint": "建立／啟用／停用只改管理檔；必須安裝後系統才會執行。",
+  "installHint": "安裝會合併主機 crontab：保留非 YSK 行，只更新面板管理的工作。需系統變更權限。",
   "hostPreview": "主機 定時工作表 預覽",
   "cannotRead": "無法讀取或尚未安裝（需權限）",
   "addJobTitle": "新增工作",
@@ -121,5 +121,7 @@
   "projectNoLinux": "（未有 linux 用戶）",
   "createManageOnlyParen": "建立（僅管理檔）",
   "runAsHintFull": "揀專案用戶會同步上方專案；揀系統用戶則為系統級 定時工作",
-  "systemParenFull": "（系統級，未綁專案）"
+  "systemParenFull": "（系統級，未綁專案）",
+  "hostOtherLines": "主機非 YSK 行數",
+  "hostOtherLinesVal": "其他 {{other}} 行（主機有效共 {{total}}）"
 }

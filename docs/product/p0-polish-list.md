@@ -17,7 +17,7 @@
 | S4 | MySQL XOR MariaDB switch + migrate | **done** | dialog + dump/import |
 | S5 | unit `activating` 假失敗 | **done** | `waitUnitActive` |
 | S6 | 真機 E2E switch（有數據） | **partial** | 清單：`docs/product/sql-switch-e2e-checklist.md`；待運維跑通 |
-| S7 | Cron UI vs 主機 crontab | **partial** | 只顯示控制面 `cron_jobs`；可選只讀 import 全機 crontab |
+| S7 | Cron UI vs 主機 crontab | **done** | 狀態頁顯示非 YSK 行數；install 合併保留主機非 YSK 行 |
 | S8 | 本機 Apache 仍佔 :80 | **ops** | 環境：rebind/stop apache 後起 nginx |
 
 ---
@@ -26,7 +26,7 @@
 
 | ID | 項 | Status | 建議 |
 |----|-----|--------|------|
-| B7–B8 | Rename domain / custom docroot | **partial** | network tab 有 domain；docroot 編輯要收口 |
+| B7–B8 | Rename domain / custom docroot | **done** | domain 衝突／格式校驗；docroot 安全相對路徑；network tab 一級 UI |
 | B20 | Access/error log viewer polish | **partial** | logs tab 有；篩選/深鏈 journal 可加強 |
 
 ---
@@ -73,7 +73,7 @@
 |----|-----|--------|
 | Cov | line coverage → 90% | open track |
 | Shared DTO | ServiceConsole 單共享 type 跨 web/server | polish |
-| installCrontab | 寫入可能覆蓋用戶整份 crontab — 警告文案 | open |
+| installCrontab | 寫入可能覆蓋用戶整份 crontab — 警告文案 | **done** | 合併安裝 + 保留非 YSK 行 + 狀態 UI |
 
 ---
 
@@ -94,4 +94,4 @@
 | A 今輪主線碼 | **~95–100%**（差真機 S6 / 環境 S8） |
 | B–E matrix partial | **~60–70%** 已有能力，差收口 |
 | F 多租戶 | **0%（刻意不做 P0）** |
-| 整體「P0 polish 清單收口」 | **約 70%**；若只計 Admin 已交付功能則 **~90%+** |
+| 整體「P0 polish 清單收口」 | **約 78%**；若只計 Admin 已交付功能則 **~90%+** |

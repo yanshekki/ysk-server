@@ -308,7 +308,7 @@ export function ProjectNetworkTab({
       {/* 4. Cache */}
       <Card>
         <CardSection
-          title="Cache"
+          title={t('projects.netCacheTitle')}
           description={t('projects.netCacheNote')}
         >
           <FormHint>

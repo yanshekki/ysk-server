@@ -476,5 +476,6 @@
     "python": "Python",
     "go": "Go",
     "rust": "Rust"
-  }
+  },
+  "netCacheTitle": "Cache"
 }

@@ -150,6 +150,8 @@ type CronStatus = {
   totalJobs: number;
   hostHasYskEntries: boolean | null;
   hostCrontabPreview: string;
+  hostOtherLines?: number | null;
+  hostTotalLines?: number | null;
   executeEnabled: boolean;
   lastInstallOk: boolean | null;
   lastInstallAt: string | null;
@@ -597,6 +599,17 @@ export function CronPage() {
                             ? t('ssl.filesYes')
                             : t('ssl.filesNo')}
                       </Badge>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t('cron.hostOtherLines')}</dt>
+                    <dd>
+                      {status?.hostOtherLines == null
+                        ? '—'
+                        : t('cron.hostOtherLinesVal', {
+                            other: status.hostOtherLines,
+                            total: status.hostTotalLines ?? '—',
+                          })}
                     </dd>
                   </div>
                   <div>

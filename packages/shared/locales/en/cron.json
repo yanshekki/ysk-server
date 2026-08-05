@@ -95,7 +95,7 @@
   "hostYsk": "Host YSK",
   "lastInstall": "Last install",
   "installToSystem": "Install to system crontab",
-  "installHint": "Create/enable/disable only change management; install is required for the host to run them.",
+  "installHint": "Install merges host crontab: keeps non-YSK lines and updates panel-managed jobs only. Needs YSK_EXECUTE.",
   "hostPreview": "Host crontab preview",
   "cannotRead": "Cannot read or not installed (needs privileges)",
   "addJobTitle": "Add job",
@@ -121,5 +121,7 @@
   "projectNoLinux": "(no linux user)",
   "createManageOnlyParen": "Create (management only)",
   "runAsHintFull": "Project user syncs project above; system user = system-level cron",
-  "systemParenFull": "(system-level, unbound)"
+  "systemParenFull": "(system-level, unbound)",
+  "hostOtherLines": "Host non-YSK lines",
+  "hostOtherLinesVal": "{{other}} other ({{total}} host job lines)"
 }

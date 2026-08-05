@@ -78,7 +78,11 @@
     "needNmActive": "Cannot persist: need an active NetworkManager connection"
   },
   "project": {
-    "notFound": "Project not found: {{id}}"
+    "notFound": "Project not found: {{id}}",
+    "docRootMustBeRelative": "Document root must be relative to the project home (not an absolute path).",
+    "docRootInvalid": "Invalid document root (no .. or illegal characters).",
+    "domainInvalid": "Invalid domain name: {{domain}}",
+    "domainInUse": "Domain {{domain}} is already used by project “{{other}}”."
   },
   "email": {
     "domainNotFound": "Mail domain not found: {{id}}",
@@ -2614,5 +2618,10 @@
     "dnsWritten": "Wrote {{conn}}: DNS {{dns}}{{search}}",
     "peerInstalled": "Installed to {{dest}}{{restart}}"
   },
-  "installedTool": "Installed (tool)"
+  "installedTool": "Installed (tool)",
+  "cron": {
+    "preserveHostLines": "Preserved {{count}} non-YSK host crontab line(s) (not a full wipe).",
+    "noHostLinesOrEmpty": "No extra non-YSK host crontab lines (or empty).",
+    "installReplacesYskOnly": "Install updates YSK-marked jobs only; other host jobs were merged and kept."
+  }
 }
