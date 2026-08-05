@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSecurity } from '../features/security';
+import { TotpSetupPanel } from '../features/security/TotpSetupPanel';
 import { SshWorkspace } from '../features/security/ssh';
 import { api } from '../shared/services/api';
 import {
@@ -246,20 +247,17 @@ export function SecurityPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = usePageTab(TAB_IDS, 'account');
   const [createKeyOpen, setCreateKeyOpen] = useState(false);
-  const [totpStatus, setTotpStatus] = useState<{ enabled: boolean; enrolled: boolean } | null>(
-    null,
-  );
-  const [totpSecret, setTotpSecret] = useState<string | null>(null);
-  const [totpUrl, setTotpUrl] = useState<string | null>(null);
-  const [totpCode, setTotpCode] = useState('');
+  const [totpStatus, setTotpStatus] = useState<{
+    enabled: boolean;
+    enrolled: boolean;
+    recoveryRemaining?: number;
+  } | null>(null);
   const [totpMsg, setTotpMsg] = useState<string | null>(null);
   const [totpErr, setTotpErr] = useState<string | null>(null);
   /** Passkey errors stay in-section — do not spam page-top like TOTP/session errors. */
   const [passkeyErr, setPasskeyErr] = useState<string | null>(null);
   const [passkeyMsg, setPasskeyMsg] = useState<string | null>(null);
   const [totpBusy, setTotpBusy] = useState(false);
-  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
-  const [reauthPassword, setReauthPassword] = useState('');
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [revokeTarget, setRevokeTarget] = useState<SessionRow | null>(null);
   const [revokeOthersOpen, setRevokeOthersOpen] = useState(false);
@@ -417,143 +415,20 @@ export function SecurityPage() {
               {t('security.mySecurityHint')}
             </Alert>
             <Card>
-              <CardSection title={t('security.totpTitle')}>
-                <p className="muted u-text-sm">
-                  {t('security.totpStatus')}
-                  {totpStatus?.enabled
-                    ? t('security.totpEnabled')
-                    : totpStatus?.enrolled
-                      ? t('security.totpEnrolledUnconfirmed')
-                      : t('security.totpNotSet')}
-                </p>
-                <FormLayout columns={2}>
-                  <Field
-                    label={t('security.reauthPassword')}
-                    htmlFor="reauth-pw"
-                    flush
-                    hint={t('security.reauthPasswordHint')}
-                  >
-                    <input
-                      id="reauth-pw"
-                      type="password"
-                      value={reauthPassword}
-                      onChange={bindInput(setReauthPassword)}
-                      autoComplete="current-password"
-                    />
-                  </Field>
-                </FormLayout>
-                <ActionBar className="u-mt-3">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    loading={totpBusy}
-                    disabled={!reauthPassword}
-                    onClick={() => {
-                      setTotpBusy(true);
+              <CardSection>
+                <TotpSetupPanel
+                  status={totpStatus}
+                  onStatusChange={refreshTotp}
+                  onFlash={(kind, message) => {
+                    if (kind === 'ok') {
                       setTotpErr(null);
-                      void api
-                        .totpBegin({ password: reauthPassword })
-                        .then((r) => {
-                          setTotpSecret(r.secret);
-                          setTotpUrl(r.otpauthUrl);
-                          setTotpMsg(t('security.totpSecretGenerated'));
-                          setReauthPassword('');
-                          return refreshTotp();
-                        })
-                        .catch((e: Error) => setTotpErr(e.message))
-                        .finally(() => setTotpBusy(false));
-                    }}
-                  >
-                    {totpStatus?.enabled ? t('security.reset2fa') : t('security.start2fa')}
-                  </Button>
-                </ActionBar>
-                {totpSecret ? (
-                  <div className="u-mt-4">
-                    <FormHint>
-                      {t('security.secretLabel')}<code className="inline">{totpSecret}</code>
-                      {totpUrl ? (
-                        <>
-                          <br />
-                          otpauth：
-                          <code className="inline u-break-all">{totpUrl}</code>
-                        </>
-                      ) : null}
-                    </FormHint>
-                    <FormLayout columns={2}>
-                      <Field
-                        label={t('security.confirmCode')}
-                        htmlFor="totp-confirm"
-                        flush
-                        required
-                        hint={t('security.confirmCodeHint')}
-                      >
-                        <input
-                          id="totp-confirm"
-                          value={totpCode}
-                          onChange={bindInput(setTotpCode)}
-                          maxLength={6}
-                          placeholder="000000"
-                          inputMode="numeric"
-                          autoComplete="one-time-code"
-                        />
-                      </Field>
-                    </FormLayout>
-                    <FormActions>
-                      <Button
-                        variant="primary"
-                        size="md"
-                        loading={totpBusy}
-                        onClick={() => {
-                          setTotpBusy(true);
-                          setTotpErr(null);
-                          void api
-                            .totpConfirm(totpCode)
-                            .then((r) => {
-                              setTotpMsg(
-                                t('security.totpEnabledSaveCodes'),
-                              );
-                              setRecoveryCodes(r.recoveryCodes ?? null);
-                              setTotpSecret(null);
-                              setTotpUrl(null);
-                              setTotpCode('');
-                              return refreshTotp();
-                            })
-                            .catch((e: Error) => setTotpErr(e.message))
-                            .finally(() => setTotpBusy(false));
-                        }}
-                      >
-                        {t('security.confirmEnable')}
-                      </Button>
-                    </FormActions>
-                  </div>
-                ) : null}
-                {recoveryCodes && recoveryCodes.length > 0 ? (
-                  <div className="u-mt-4">
-                    <FormHint>
-                      {t('security.recoveryCodesHint')}
-                    </FormHint>
-                    <pre className="u-font-mono u-text-sm">
-                      {recoveryCodes.join('\n')}
-                    </pre>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        void navigator.clipboard?.writeText(recoveryCodes.join('\n'));
-                        setTotpMsg(t('security.copiedRecoveryCodes'));
-                      }}
-                    >
-                      {t('security.copyAll')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={bindSet(setRecoveryCodes, null)}
-                    >
-                      {t('security.savedClose')}
-                    </Button>
-                  </div>
-                ) : null}
+                      setTotpMsg(message);
+                    } else {
+                      setTotpMsg(null);
+                      setTotpErr(message);
+                    }
+                  }}
+                />
               </CardSection>
             </Card>
 
