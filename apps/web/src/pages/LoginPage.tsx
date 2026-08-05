@@ -52,6 +52,7 @@ export function LoginPage() {
       nav(from === '/login' ? '/' : from, { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('login.failed');
+      let totpRequired = false;
       if (err instanceof ApiError) {
         if (
           err.needsTotp ||
@@ -60,15 +61,26 @@ export function LoginPage() {
             typeof err.details === 'object' &&
             (err.details as { needsTotp?: boolean }).needsTotp)
         ) {
-          setNeedsTotp(true);
+          totpRequired = true;
         }
       } else if (
         /needsTotp|TOTP|2FA|YSK_TOTP|authenticator/i.test(String(msg))
       ) {
         // Legacy backends without code field
-        setNeedsTotp(true);
+        totpRequired = true;
       }
-      setError(msg);
+      if (totpRequired) {
+        setNeedsTotp(true);
+        // First step: only show the info hint + TOTP field — not a second red banner.
+        // Wrong/missing code after the field is visible still shows a single error.
+        if (!needsTotp && !totp.trim()) {
+          setError(null);
+        } else {
+          setError(msg);
+        }
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
