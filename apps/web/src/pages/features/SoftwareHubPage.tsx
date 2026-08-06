@@ -65,6 +65,32 @@ type AptUpgradeRow = {
   source?: string;
 };
 
+/** Extract panel pin from host version strings (PATH default). */
+function extractHostRuntimePin(kind: RuntimeKindKey, hostReport: string): string | undefined {
+  const h = String(hostReport || '').trim();
+  if (!h) return undefined;
+  if (kind === 'node') {
+    return h.replace(/^v/i, '').match(/^(\d+)/)?.[1];
+  }
+  if (kind === 'go') {
+    return h.replace(/^go/i, '').match(/(\d+\.\d+)/)?.[1];
+  }
+  if (kind === 'java') {
+    return h.match(/version "?(\d+)/)?.[1] || h.match(/(\d+)\.\d+\.\d+/)?.[1];
+  }
+  if (kind === 'kotlin') {
+    return h.match(/(\d+\.\d+\.\d+)/)?.[1];
+  }
+  if (kind === 'bun') {
+    return h.match(/(\d+\.\d+[\w.-]*)/)?.[1];
+  }
+  if (kind === 'rust') {
+    return h.match(/(\d+\.\d+\.\d+)/)?.[1] || (/\bstable\b/i.test(h) ? 'stable' : undefined);
+  }
+  // php / python → X.Y
+  return h.match(/(\d+\.\d+)/)?.[1];
+}
+
 /** All probe/runtime ids that hub cards may need for version checks */
 function allVersionIds(): string[] {
   const ids = new Set<string>();
@@ -284,17 +310,58 @@ export function SoftwareHubPage() {
     return out;
   }, [runtimeProbe]);
 
+  /** hostNode / hostPhp / … strings from probe report (PATH default). */
+  const hostDefaultByKind = useMemo(() => {
+    const probe = (runtimeProbe?.probe ?? runtimeProbe) as
+      | Record<string, unknown>
+      | undefined;
+    if (!probe) return {} as Partial<Record<RuntimeKindKey, string>>;
+    const map: Partial<Record<RuntimeKindKey, string>> = {};
+    const keys: Array<[RuntimeKindKey, string]> = [
+      ['node', 'hostNode'],
+      ['php', 'hostPhp'],
+      ['python', 'hostPython'],
+      ['go', 'hostGo'],
+      ['rust', 'hostRust'],
+      ['java', 'hostJava'],
+      ['kotlin', 'hostKotlin'],
+      ['bun', 'hostBun'],
+    ];
+    for (const [kind, key] of keys) {
+      const v = probe[key];
+      if (v != null && String(v).trim()) map[kind] = String(v).trim();
+    }
+    return map;
+  }, [runtimeProbe]);
+
   const cardView = useCallback(
     (def: SoftwareCardDef) => {
       const mx = matrixMatch(matrix, def.matrixIds);
       const items = def.runtimeKind ? probeByKind[def.runtimeKind] ?? [] : [];
       const installed = items.filter((i) => i.available);
       const activeItem = installed.find((i) => i.active) ?? installed[0];
-      const installedLabels = installed.map((i) => String(i.version ?? '')).filter(Boolean);
+      let installedLabels = installed.map((i) => String(i.version ?? '')).filter(Boolean);
       const latest = def.runtimeKind ? latestByKind[def.runtimeKind] : undefined;
       const candidates = def.runtimeKind
         ? runtimeCandidates[def.runtimeKind] ?? []
         : [];
+      // softwareVersions batch also stores runtime rows under the kind id
+      const runtimeSv = def.runtimeKind ? aptById[def.runtimeKind] : undefined;
+      const hostDefault = def.runtimeKind
+        ? hostDefaultByKind[def.runtimeKind]
+        : undefined;
+
+      // —— Multi-source "installed" (probe pins alone are often empty / incomplete) ——
+      // 1) probe.available  2) softwareVersions.installed+current  3) host* PATH default
+      if (!installedLabels.length && runtimeSv?.installed && runtimeSv.currentVersion) {
+        installedLabels = [runtimeSv.currentVersion];
+      }
+      if (!installedLabels.length && hostDefault) {
+        const pin = extractHostRuntimePin(def.runtimeKind!, hostDefault);
+        installedLabels = [pin || hostDefault.split(/\s+/).slice(0, 3).join(' ')];
+      }
+
+      const runtimeInstalled = installedLabels.length > 0;
 
       const aptRows = (def.softwareIds ?? [])
         .map((id) => aptById[id])
@@ -316,7 +383,7 @@ export function SoftwareHubPage() {
       let statusLabel = t('software.status.unknown', { defaultValue: '—' });
 
       if (def.runtimeKind) {
-        if (installed.length) {
+        if (runtimeInstalled) {
           status = 'ok';
           statusLabel = t('software.status.installed', { defaultValue: '已安裝' });
         } else {
@@ -349,15 +416,15 @@ export function SoftwareHubPage() {
       }
 
       const runtimeUpdate = Boolean(
-        latest?.newerThanPanel ||
-          (latest?.remoteLatest &&
-            installedLabels.length > 0 &&
-            !installedLabels.some(
-              (v) =>
-                latest.remoteLatest === v ||
-                String(latest.remoteLatest).startsWith(`${v}.`) ||
-                String(v).startsWith(String(latest.remoteLatest)),
-            )),
+        runtimeInstalled &&
+          (latest?.newerThanPanel ||
+            (latest?.remoteLatest &&
+              !installedLabels.some(
+                (v) =>
+                  latest.remoteLatest === v ||
+                  String(latest.remoteLatest).startsWith(`${v}.`) ||
+                  String(v).startsWith(String(latest.remoteLatest)),
+              ))),
       );
 
       // Panel supports more pins than installed (go/rust)
@@ -409,8 +476,13 @@ export function SoftwareHubPage() {
         status,
         statusLabel,
         installedLabels,
-        activeVersion: activeItem?.version != null ? String(activeItem.version) : null,
-        versionOutput: activeItem?.versionOutput,
+        activeVersion:
+          activeItem?.version != null
+            ? String(activeItem.version)
+            : runtimeInstalled
+              ? installedLabels[0] ?? null
+              : null,
+        versionOutput: activeItem?.versionOutput || hostDefault,
         hasUpdate,
         latest,
         mx,
@@ -427,7 +499,16 @@ export function SoftwareHubPage() {
         candidates,
       };
     },
-    [matrix, probeByKind, latestByKind, runtimeCandidates, aptById, hostUpgradable, t],
+    [
+      matrix,
+      probeByKind,
+      hostDefaultByKind,
+      latestByKind,
+      runtimeCandidates,
+      aptById,
+      hostUpgradable,
+      t,
+    ],
   );
 
   const allViews = useMemo(
