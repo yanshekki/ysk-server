@@ -78,4 +78,33 @@ describe('runtimePluginsCatalogWithProbe', () => {
     expect(body).toMatch(/install "cargo-watch"/);
     expect(body).toMatch(/\/usr\/local\/bin\/cargo-watch/);
   });
+
+  it('go install script symlinks air into /usr/local/bin', () => {
+    const { lines } = buildRuntimePluginScriptLines('go', ['air']);
+    const body = lines.join('\n');
+    expect(body).toMatch(/go install|install "github.com\/air-verse\/air/);
+    expect(body).toMatch(/\/usr\/local\/bin\/air/);
+    expect(body).toMatch(/\$HOME\/go\/bin\/air|GOPATH\/bin\/air/);
+  });
+
+  it('detects go air when only under \$HOME/go/bin', async () => {
+    const host = {
+      runCommand: async (argv: string[]) => {
+        const s = argv.join(' ');
+        if (s.includes('INSTALLED:') && s.includes('$HOME/go/bin/air')) {
+          // Simulate path test: script has [ -x "$HOME/go/bin/air" ] — we echo installed for air
+          return {
+            stdout: 'INSTALLED:air\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        return { stdout: '', stderr: '', exitCode: 1, argv, dryRun: false };
+      },
+    };
+    const r = await runtimePluginsCatalogWithProbe('go', host as never);
+    expect(r.plugins.find((p) => p.id === 'air')?.installed).toBe(true);
+  });
 });

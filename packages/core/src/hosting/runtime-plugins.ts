@@ -410,12 +410,14 @@ export function buildRuntimePluginScriptLines(
     'ysk_plugin_fail() { YSK_PLUGIN_FAILED="${YSK_PLUGIN_FAILED} $1"; echo "YSK_PLUGIN_SKIP:$1" >&2; }',
     'echo "Installing companion tools: ' + ids.join(', ') + '"',
     // Prefer concrete bin dirs (glob in PATH is unreliable)
-    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:/usr/local/ysk/rust/bin:/usr/local/ysk/rust/cargo/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:/root/.cargo/bin:$HOME/go/bin:$PATH"',
-    'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/python/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
+    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:/usr/local/ysk/rust/bin:/usr/local/ysk/rust/cargo/bin:/usr/local/ysk/go/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:/root/.cargo/bin:$HOME/go/bin:/root/go/bin:$PATH"',
+    'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/python/*/bin /usr/local/ysk/go/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
     'export PATH',
     'export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}"',
     'export RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"',
     '[ -d /usr/local/ysk/rust ] && export RUSTUP_HOME="${RUSTUP_HOME:-/usr/local/ysk/rust/rustup}" CARGO_HOME="${CARGO_HOME:-/usr/local/ysk/rust/cargo}"',
+    'export GOPATH="${GOPATH:-$HOME/go}"',
+    'export GOBIN="${GOBIN:-}"',
   ];
 
   for (const p of plugins) {
@@ -480,8 +482,20 @@ export function buildRuntimePluginScriptLines(
       }
       case 'go-install': {
         for (const mod of p.goModules ?? []) {
+          const bin = (p.bins && p.bins[0]) || mod.split('/').pop()?.split('@')[0] || p.id;
           lines.push(
-            `if command -v go >/dev/null 2>&1; then go install ${JSON.stringify(mod)} || ysk_plugin_fail ${p.id}`,
+            'ysk_go() { command -v go 2>/dev/null || { [ -x /usr/local/ysk/go/bin/go ] && echo /usr/local/ysk/go/bin/go; }; for _g in /usr/local/ysk/go/*/bin/go; do [ -x "$_g" ] && echo "$_g" && return; done; true; }',
+            `GO_BIN="$(ysk_go)"`,
+            `if [ -n "$GO_BIN" ]; then`,
+            // Install into GOPATH/bin then symlink so panel probe always finds it
+            `  export PATH="$(dirname "$GO_BIN"):$PATH"`,
+            `  export GOPATH="\${GOPATH:-$HOME/go}"`,
+            `  "$GO_BIN" install ${JSON.stringify(mod)} || ysk_plugin_fail ${p.id}`,
+            `  for _cand in "$GOPATH/bin/${bin}" "$HOME/go/bin/${bin}" /root/go/bin/${bin} /usr/local/ysk/go/bin/${bin}; do`,
+            `    if [ -x "$_cand" ]; then ln -sfn "$_cand" /usr/local/bin/${bin} 2>/dev/null || true; break; fi`,
+            `  done`,
+            `  export PATH="/usr/local/bin:$GOPATH/bin:$HOME/go/bin:/root/go/bin:$PATH"`,
+            `  command -v ${JSON.stringify(bin)} >/dev/null 2>&1 || ysk_plugin_fail ${p.id}`,
             `else ysk_plugin_fail ${p.id}; fi`,
           );
         }
@@ -571,8 +585,8 @@ export function buildRuntimePluginUninstallScriptLines(
     'YSK_PLUGIN_FAILED=""',
     'ysk_plugin_fail() { YSK_PLUGIN_FAILED="${YSK_PLUGIN_FAILED} $1"; echo "YSK_PLUGIN_SKIP:$1" >&2; }',
     'echo "Uninstalling companion tools: ' + ids.join(', ') + '"',
-    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
-    'for _d in /usr/local/ysk/node/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
+    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:/usr/local/ysk/go/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:/root/.cargo/bin:$HOME/go/bin:/root/go/bin:$PATH"',
+    'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/go/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
     'export PATH',
   ];
 
@@ -626,6 +640,13 @@ export function buildRuntimePluginUninstallScriptLines(
           lines.push(
             'ysk_rm_go_bin() {',
             '  local b="$1" p',
+            '  for p in "$HOME/go/bin/$b" "/root/go/bin/$b" "${GOPATH:-$HOME/go}/bin/$b" "/usr/local/ysk/go/bin/$b" "/usr/local/bin/$b"; do',
+            '    if [ -e "$p" ] || [ -L "$p" ]; then',
+            '      case "$p" in',
+            '        "$HOME"/go/bin/*|*/go/bin/*|/root/go/bin/*|/usr/local/ysk/*|/usr/local/bin/*) rm -f "$p" || return 1 ;;',
+            '      esac',
+            '    fi',
+            '  done',
             '  p="$(command -v "$b" 2>/dev/null || true)"',
             '  [ -n "$p" ] || return 0',
             '  case "$p" in',
@@ -895,8 +916,8 @@ export function runtimePluginsCatalogDto(kind: RuntimeKind) {
 /** Shell PATH prefix shared by install scripts and probe (cargo/rustup homes). */
 export function pluginProbePathExport(): string {
   return [
-    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:/usr/local/ysk/rust/bin:/usr/local/ysk/rust/cargo/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:/root/.cargo/bin:$HOME/go/bin:$PATH"',
-    'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/python/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
+    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:/usr/local/ysk/rust/bin:/usr/local/ysk/rust/cargo/bin:/usr/local/ysk/go/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:/root/.cargo/bin:$HOME/go/bin:/root/go/bin:${GOPATH:-$HOME/go}/bin:$PATH"',
+    'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/python/*/bin /usr/local/ysk/go/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
     'export PATH',
     'RU="$(command -v rustup 2>/dev/null || true)"',
     '[ -z "$RU" ] && [ -x /usr/local/ysk/rust/bin/rustup ] && RU=/usr/local/ysk/rust/bin/rustup',
@@ -948,10 +969,16 @@ export async function runtimePluginsCatalogWithProbe(
       .join(' || ');
     const pathTests = bins
       .flatMap((b) => [
+        `[ -x "/usr/local/bin/${b}" ]`,
+        `[ -x "$HOME/go/bin/${b}" ]`,
+        `[ -x "/root/go/bin/${b}" ]`,
+        `[ -x "\${GOPATH:-$HOME/go}/bin/${b}" ]`,
+        `[ -x "/usr/local/ysk/go/bin/${b}" ]`,
         `[ -x "$HOME/.cargo/bin/${b}" ]`,
         `[ -x "/root/.cargo/bin/${b}" ]`,
         `[ -x "/usr/local/ysk/rust/cargo/bin/${b}" ]`,
-        `[ -x "/usr/local/bin/${b}" ]`,
+        `[ -x "$HOME/.local/bin/${b}" ]`,
+        `[ -x "/root/.local/bin/${b}" ]`,
       ])
       .join(' || ');
 
