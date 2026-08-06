@@ -949,12 +949,6 @@ export async function runtimePluginsCatalogWithProbe(
 
   // Single host shell: print INSTALLED:<id> for each found plugin
   const checks: string[] = [pathPreamble, 'set +e'];
-  for (const p of base.plugins) {
-    const id = p.id;
-    if (p.installer === 'rustup-component' && (p as { rustupComponents?: string[] }).rustupComponents?.length) {
-      // DTO may not include rustupComponents — look up full spec
-    }
-  }
 
   const fullSpecs = listRuntimePlugins(kind);
   const byId = new Map(fullSpecs.map((s) => [s.id, s]));

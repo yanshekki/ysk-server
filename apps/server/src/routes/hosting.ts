@@ -7,7 +7,6 @@ import { randomUUID } from 'node:crypto';
 import {
   listManagedNginxConfs,
   planDnsZone,
-  writeManagedDnsZone,
   listManagedDnsZones,
   applyPowerDnsZone,
   powerDnsStatus,
