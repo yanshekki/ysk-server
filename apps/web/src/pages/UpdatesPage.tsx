@@ -194,6 +194,8 @@ export function UpdatesPage() {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set());
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
+  /** Soft-cancel sequential fallback between packages */
+  const [batchAbort, setBatchAbort] = useState<AbortController | null>(null);
 
   // Deep-link from software hub: /updates?q=nginx
   useEffect(() => {
@@ -320,42 +322,57 @@ export function UpdatesPage() {
     if (!selectedUpgradable.length) return;
     setBatchConfirmOpen(false);
     const rows = [...selectedUpgradable];
-    const result = await applyPackages(rows, {
-      confirmHighRisk: true,
-      quiet: true,
-      onProgress: (n, total, pkg) => {
-        setBatchProgress(
-          t('updates.batchProgress', {
-            n,
-            total,
-            pkg,
-            defaultValue: `批量更新 ${n}/${total}：${pkg}`,
-          }),
-        );
-      },
-    });
-    setSelectedKeys(new Set());
+    const ac = new AbortController();
+    setBatchAbort(ac);
     setBatchProgress(
-      t('updates.batchDone', {
-        ok: result.ok.length,
-        fail: result.fail.length,
-        defaultValue: `批量完成：成功 ${result.ok.length}，失敗 ${result.fail.length}`,
-      }) +
-        (result.fail.length
-          ? ' · ' +
-            t('updates.batchPartialFail', {
-              list: result.fail
-                .slice(0, 5)
-                .map((f) => `${f.pkg}: ${f.message}`)
-                .join('；'),
-              defaultValue: result.fail
-                .slice(0, 5)
-                .map((f) => `${f.pkg}: ${f.message}`)
-                .join('；'),
-            })
-          : ''),
+      t('updates.batchProgress', {
+        n: 0,
+        total: rows.length,
+        pkg: rows[0]?.packageName ?? '',
+        defaultValue: `批量更新 0/${rows.length}：準備中…`,
+      }),
     );
-    void load(false, false, listQuery);
+    try {
+      const result = await applyPackages(rows, {
+        confirmHighRisk: true,
+        quiet: true,
+        signal: ac.signal,
+        onProgress: (n, total, pkg) => {
+          setBatchProgress(
+            t('updates.batchProgress', {
+              n,
+              total,
+              pkg,
+              defaultValue: `批量更新 ${n}/${total}：${pkg}`,
+            }),
+          );
+        },
+      });
+      setSelectedKeys(new Set());
+      setBatchProgress(
+        t('updates.batchDone', {
+          ok: result.ok.length,
+          fail: result.fail.length,
+          defaultValue: `批量完成：成功 ${result.ok.length}，失敗 ${result.fail.length}`,
+        }) +
+          (result.fail.length
+            ? ' · ' +
+              t('updates.batchPartialFail', {
+                list: result.fail
+                  .slice(0, 5)
+                  .map((f) => `${f.pkg}: ${f.message}`)
+                  .join('；'),
+                defaultValue: result.fail
+                  .slice(0, 5)
+                  .map((f) => `${f.pkg}: ${f.message}`)
+                  .join('；'),
+              })
+            : ''),
+      );
+      void load(false, false, listQuery);
+    } finally {
+      setBatchAbort(null);
+    }
   }
 
   const allUpgradableSelected =
@@ -464,16 +481,34 @@ export function UpdatesPage() {
         {tab === 'packages' ? (
           <div className="tab-panel stack">
             {batchProgress ? (
-              <Alert variant="info">
-                {batchProgress}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="u-ml-2"
-                  onClick={() => setBatchProgress(null)}
-                >
-                  {t('common.dismiss', { defaultValue: '關閉' })}
-                </Button>
+              <Alert variant={busy ? 'info' : 'ok'}>
+                <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
+                  <span>{batchProgress}</span>
+                  {busy && batchAbort ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        batchAbort.abort();
+                        setBatchProgress(
+                          t('updates.batchCancelling', {
+                            defaultValue: '正在取消…（目前套件完成後停止）',
+                          }),
+                        );
+                      }}
+                    >
+                      {t('updates.batchCancel', { defaultValue: '取消批量' })}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setBatchProgress(null)}
+                    >
+                      {t('common.dismiss', { defaultValue: '關閉' })}
+                    </Button>
+                  )}
+                </div>
               </Alert>
             ) : null}
             {busy && inventory.length === 0 ? (

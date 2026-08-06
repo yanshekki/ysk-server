@@ -61,7 +61,7 @@ export const updatesApi = {
     summary?: string;
     confirmHighRisk?: boolean;
   }) =>
-    api.requestRaw<{
+    api.requestRawAllowStatus<{
       ok: boolean;
       applied?: boolean;
       blocked?: boolean;
@@ -70,6 +70,38 @@ export const updatesApi = {
     }>('/api/v1/updates/apply', {
       method: 'POST',
       body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
+  /** Sequential bulk apply (server-side loop, max 40 packages) */
+  applyBatch: (body: {
+    packages: Array<{
+      packageName: string;
+      currentVersion: string;
+      candidateVersion?: string;
+      risk?: string;
+      cves?: string[];
+      requiresApproval?: boolean;
+      summary?: string;
+    }>;
+    confirmHighRisk?: boolean;
+  }) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      appliedCount: number;
+      failedCount: number;
+      results: Array<{
+        packageName: string;
+        ok: boolean;
+        applied: boolean;
+        blocked?: boolean;
+        blockMessage?: string;
+        notes: string[];
+      }>;
+      notes: string[];
+    }>('/api/v1/updates/apply-batch', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [207, 403, 422],
     }),
   self: () => api.requestRaw<Record<string, unknown>>('/api/v1/updates/self'),
   selfApply: () =>

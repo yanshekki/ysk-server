@@ -78,6 +78,7 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
 
   // —— Write-high ——
   { methods: ['POST'], pattern: /^\/api\/v1\/updates\/apply$/, cap: 'updates.apply' },
+  { methods: ['POST'], pattern: /^\/api\/v1\/updates\/apply-batch$/, cap: 'updates.apply' },
   { methods: ['POST'], pattern: /^\/api\/v1\/updates\/self\/apply$/, cap: 'updates.apply' },
   {
     methods: ['POST'],

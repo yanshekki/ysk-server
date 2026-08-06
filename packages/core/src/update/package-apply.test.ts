@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyPackageUpdate } from './package-apply.js';
+import { applyPackageUpdate, applyPackageUpdateBatch } from './package-apply.js';
+import { adviseUpdate } from './advisor.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
 import type { UpdateItemDto } from '@ysk/shared';
 
@@ -95,5 +96,34 @@ describe('applyPackageUpdate', () => {
     });
     expect(missing.ok).toBe(false);
     expect(missing.blocked).toBe(true);
+  });
+
+  it('applyPackageUpdateBatch applies multiple packages sequentially', async () => {
+    const host = mockHost({});
+    const batch = await applyPackageUpdateBatch({
+      host,
+      confirmHighRisk: true,
+      items: [
+        {
+          packageName: 'curl',
+          currentVersion: '1.0',
+          candidateVersion: '1.1',
+        },
+        {
+          packageName: 'wget',
+          currentVersion: '2.0',
+          candidateVersion: '2.1',
+        },
+      ],
+      toItem: (row) =>
+        adviseUpdate({
+          packageName: row.packageName,
+          currentVersion: row.currentVersion,
+          candidateVersion: row.candidateVersion,
+        }),
+    });
+    expect(batch.results).toHaveLength(2);
+    expect(batch.appliedCount).toBeGreaterThanOrEqual(0);
+    expect(batch.appliedCount + batch.failedCount).toBe(2);
   });
 });

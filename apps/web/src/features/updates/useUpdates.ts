@@ -136,9 +136,9 @@ export function useUpdates() {
   }, [t]);
 
   /**
-   * Sequential multi-package apply (no silent full-system apt upgrade).
-   * onProgress(i, total, packageName) for UI banners.
-   * Does not toast each package — caller shows summary.
+   * Multi-package apply (no silent full-system apt upgrade).
+   * Prefer server apply-batch when N>1; fall back to sequential single apply.
+   * onProgress for UI; signal?.aborted stops sequential path between packages.
    */
   const applyPackages = useCallback(
     async (
@@ -147,6 +147,7 @@ export function useUpdates() {
         confirmHighRisk?: boolean;
         onProgress?: (n: number, total: number, pkg: string) => void;
         quiet?: boolean;
+        signal?: AbortSignal;
       },
     ): Promise<{ ok: string[]; fail: Array<{ pkg: string; message: string }> }> => {
       const ok: string[] = [];
@@ -155,7 +156,68 @@ export function useUpdates() {
       setBusy(true);
       setError(null);
       try {
+        // Prefer one server round-trip for bulk
+        if (rows.length > 1 && !opts?.signal?.aborted) {
+          opts?.onProgress?.(0, rows.length, rows[0]!.packageName);
+          try {
+            const batch = await updatesApi.applyBatch({
+              packages: rows.map((row) => ({
+                packageName: row.packageName,
+                currentVersion: row.currentVersion,
+                candidateVersion: row.candidateVersion,
+                risk: row.risk,
+                cves: row.cves,
+                requiresApproval: row.requiresApproval,
+                summary: row.summary,
+              })),
+              confirmHighRisk: Boolean(opts?.confirmHighRisk),
+            });
+            for (const r of batch.results ?? []) {
+              if (r.ok && r.applied) ok.push(r.packageName);
+              else {
+                fail.push({
+                  pkg: r.packageName,
+                  message:
+                    r.blockMessage ??
+                    (r.notes ?? [])[0] ??
+                    t('updates.applyIncomplete'),
+                });
+              }
+            }
+            opts?.onProgress?.(rows.length, rows.length, rows[rows.length - 1]!.packageName);
+            if (!opts?.quiet) {
+              const msg = t('updates.batchDone', {
+                ok: ok.length,
+                fail: fail.length,
+                defaultValue: `批量完成：成功 ${ok.length}，失敗 ${fail.length}`,
+              });
+              if (fail.length) toast.error(msg);
+              else toast.ok(msg);
+            }
+            return { ok, fail };
+          } catch {
+            // fall through to sequential
+          }
+        }
+
         for (let i = 0; i < rows.length; i++) {
+          if (opts?.signal?.aborted) {
+            fail.push({
+              pkg: rows[i]!.packageName,
+              message: t('updates.batchCancelled', {
+                defaultValue: '已取消（其餘未執行）',
+              }),
+            });
+            for (let j = i + 1; j < rows.length; j++) {
+              fail.push({
+                pkg: rows[j]!.packageName,
+                message: t('updates.batchCancelled', {
+                  defaultValue: '已取消（其餘未執行）',
+                }),
+              });
+            }
+            break;
+          }
           const row = rows[i]!;
           opts?.onProgress?.(i + 1, rows.length, row.packageName);
           try {

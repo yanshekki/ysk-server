@@ -9612,7 +9612,10 @@
     "batchDone": "Bulk done: {{ok}} ok, {{fail}} failed",
     "batchPartialFail": "Some failed: {{list}}",
     "batchEmpty": "Select upgradable packages first",
-    "batchNoneUpgradable": "No upgradable packages in current filter"
+    "batchNoneUpgradable": "No upgradable packages in current filter",
+    "batchCancel": "Cancel bulk",
+    "batchCancelling": "Cancelling… (stops after current package)",
+    "batchCancelled": "Cancelled (remaining skipped)"
   },
   "users": {
     "userCount": "{{count}} users",

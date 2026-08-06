@@ -281,6 +281,101 @@ export async function handleUpdatesRoutes(
         sendOpsResult(res, result);
         return true;
       }
+
+      // —— Bulk package apply (sequential, capped) ——
+      if (method === 'POST' && url.pathname === '/api/v1/updates/apply-batch') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          packages?: Array<{
+            packageName?: string;
+            currentVersion?: string;
+            candidateVersion?: string;
+            risk?: string;
+            requiresApproval?: boolean;
+            cves?: string[];
+            summary?: string;
+          }>;
+          confirmHighRisk?: boolean;
+        };
+        const { applyPackageUpdateBatch, adviseUpdate } = await import('@ysk/core');
+        const packages = (data.packages ?? [])
+          .filter(
+            (p) =>
+              p.packageName &&
+              p.currentVersion &&
+              p.candidateVersion &&
+              p.candidateVersion !== p.currentVersion,
+          )
+          .slice(0, 40)
+          .map((p) => ({
+            packageName: String(p.packageName),
+            currentVersion: String(p.currentVersion),
+            candidateVersion: String(p.candidateVersion),
+            risk: p.risk,
+            requiresApproval: p.requiresApproval,
+            cves: p.cves,
+            summary: p.summary,
+          }));
+
+        if (!packages.length) {
+          sendJson(res, 422, {
+            ok: false,
+            appliedCount: 0,
+            failedCount: 0,
+            results: [],
+            notes: [tl('notes.auto.n0780')],
+            blockMessage: tl('notes.auto.n1581'),
+          });
+          return true;
+        }
+
+        const batch = await applyPackageUpdateBatch({
+          host: ctx.host,
+          items: packages,
+          confirmHighRisk: data.confirmHighRisk,
+          toItem: (row) => {
+            const item = adviseUpdate({
+              packageName: row.packageName,
+              currentVersion: row.currentVersion,
+              candidateVersion: row.candidateVersion,
+              knownCves: row.cves,
+              hasSecurityFix: Boolean(row.cves?.length),
+            });
+            if (row.risk) (item as { risk: string }).risk = row.risk;
+            if (row.requiresApproval != null) item.requiresApproval = row.requiresApproval;
+            if (row.summary) item.summary = row.summary;
+            return item;
+          },
+        });
+
+        for (const r of batch.results) {
+          ctx.db.snapshot.update_jobs.unshift({
+            id: randomUUID(),
+            packageName: r.packageName,
+            at: new Date().toISOString(),
+            actor: user.username,
+            ok: r.ok,
+            applied: r.applied,
+            notes: r.notes,
+          } as never);
+        }
+        ctx.db.persist();
+        ctx.audit.append({
+          actor: user.username,
+          action: 'update.package.apply_batch',
+          detail: {
+            count: packages.length,
+            appliedCount: batch.appliedCount,
+            failedCount: batch.failedCount,
+            ok: batch.ok,
+          },
+          ok: batch.ok,
+        });
+        sendJson(res, batch.ok ? 200 : batch.appliedCount > 0 ? 207 : 422, batch);
+        return true;
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/scheduler') {
         ctx.auth.authenticate(getBearer(req));
         sendJson(res, 200, { jobs: ctx.scheduler.list() });

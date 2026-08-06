@@ -229,4 +229,16 @@ describe('updates routes (HTTP)', () => {
       globalThis.fetch = origFetch;
     }
   }, 180_000);
+
+  it('apply-batch empty packages is blocked honestly', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/updates/apply-batch', {
+      packages: [],
+      confirmHighRisk: true,
+    });
+    expect(res.status).toBe(422);
+    const body = res.body as { ok?: boolean; results?: unknown[] };
+    expect(body.ok).toBe(false);
+    expect(Array.isArray(body.results)).toBe(true);
+  });
 });

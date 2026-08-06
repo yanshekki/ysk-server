@@ -9612,7 +9612,10 @@
     "batchDone": "批量完成：成功 {{ok}}，失败 {{fail}}",
     "batchPartialFail": "部分失败：{{list}}",
     "batchEmpty": "请先勾选可升级软件包",
-    "batchNoneUpgradable": "当前筛选没有可升级软件包"
+    "batchNoneUpgradable": "当前筛选没有可升级软件包",
+    "batchCancel": "取消批量",
+    "batchCancelling": "正在取消…（当前软件包完成后停止）",
+    "batchCancelled": "已取消（其余未执行）"
   },
   "users": {
     "userCount": "{{count}} 用户",

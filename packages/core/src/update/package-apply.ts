@@ -107,3 +107,97 @@ export async function applyPackageUpdate(input: {
     exitCode: r.exitCode,
   };
 }
+
+export type PackageApplyResult = Awaited<ReturnType<typeof applyPackageUpdate>>;
+
+export type BatchPackageApplyItem = {
+  packageName: string;
+  currentVersion: string;
+  candidateVersion?: string;
+  risk?: string;
+  requiresApproval?: boolean;
+  cves?: string[];
+  summary?: string;
+};
+
+/**
+ * Sequential multi-package apply — never silent full-system apt upgrade.
+ * Caps batch size; each package uses the same fail-closed path as single apply.
+ */
+export async function applyPackageUpdateBatch(input: {
+  host: HostExecutor;
+  items: BatchPackageApplyItem[];
+  confirmHighRisk?: boolean;
+  /** Max packages per request (default 40) */
+  limit?: number;
+  /** Build UpdateItemDto from inventory fields (inject adviseUpdate from caller) */
+  toItem: (row: BatchPackageApplyItem) => UpdateItemDto;
+}): Promise<{
+  ok: boolean;
+  appliedCount: number;
+  failedCount: number;
+  results: Array<{
+    packageName: string;
+    ok: boolean;
+    applied: boolean;
+    blocked?: boolean;
+    blockMessage?: string;
+    notes: string[];
+  }>;
+  notes: string[];
+}> {
+  const limit = Math.min(Math.max(input.limit ?? 40, 1), 40);
+  const slice = (input.items ?? []).slice(0, limit);
+  const results: Array<{
+    packageName: string;
+    ok: boolean;
+    applied: boolean;
+    blocked?: boolean;
+    blockMessage?: string;
+    notes: string[];
+  }> = [];
+  const notes: string[] = [];
+
+  if (!slice.length) {
+    return {
+      ok: false,
+      appliedCount: 0,
+      failedCount: 0,
+      results: [],
+      notes: [tl('notes.auto.n0640')],
+    };
+  }
+
+  let appliedCount = 0;
+  let failedCount = 0;
+  for (const row of slice) {
+    const item = input.toItem(row);
+    const r = await applyPackageUpdate({
+      host: input.host,
+      item,
+      confirmHighRisk: input.confirmHighRisk,
+    });
+    if (r.ok && r.applied) appliedCount += 1;
+    else failedCount += 1;
+    results.push({
+      packageName: item.packageName,
+      ok: r.ok,
+      applied: r.applied,
+      blocked: r.blocked,
+      blockMessage: r.blockMessage,
+      notes: r.notes,
+    });
+  }
+
+  notes.push(
+    `batch=${slice.length} applied=${appliedCount} failed=${failedCount}`,
+  );
+
+  return {
+    ok: failedCount === 0 && appliedCount > 0,
+    appliedCount,
+    failedCount,
+    results,
+    notes,
+  };
+}
