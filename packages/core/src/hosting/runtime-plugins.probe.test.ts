@@ -85,6 +85,10 @@ describe('runtimePluginsCatalogWithProbe', () => {
     expect(body).toMatch(/go install|install "github.com\/air-verse\/air/);
     expect(body).toMatch(/\/usr\/local\/bin\/air/);
     expect(body).toMatch(/\$HOME\/go\/bin\/air|GOPATH\/bin\/air/);
+    // ysk_go must return early (not cmd || {…}; for that concatenates two go paths)
+    expect(body).toContain('YSK_PREFERRED_GO');
+    expect(body).toMatch(/ysk_go\(\) \{/);
+    expect(body).not.toMatch(/command -v go 2>\/dev\/null \|\| \{ \[ -x/);
   });
 
   it('detects go air when only under \$HOME/go/bin', async () => {

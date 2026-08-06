@@ -483,10 +483,22 @@ export function buildRuntimePluginScriptLines(
       case 'go-install': {
         for (const mod of p.goModules ?? []) {
           const bin = (p.bins && p.bins[0]) || mod.split('/').pop()?.split('@')[0] || p.id;
+          // ysk_go must print exactly one path. Previous bug: `cmd || {…}; for` always ran the
+          // for-loop after command -v, concatenating two go paths → "No such file or directory".
           lines.push(
-            'ysk_go() { command -v go 2>/dev/null || { [ -x /usr/local/ysk/go/bin/go ] && echo /usr/local/ysk/go/bin/go; }; for _g in /usr/local/ysk/go/*/bin/go; do [ -x "$_g" ] && echo "$_g" && return; done; true; }',
+            'ysk_go() {',
+            '  if [ -n "${YSK_PREFERRED_GO:-}" ] && [ -x "$YSK_PREFERRED_GO" ]; then echo "$YSK_PREFERRED_GO"; return 0; fi',
+            '  if command -v go >/dev/null 2>&1; then command -v go; return 0; fi',
+            '  if [ -x /usr/local/ysk/go/bin/go ]; then echo /usr/local/ysk/go/bin/go; return 0; fi',
+            '  # Newest managed minor under /usr/local/ysk/go/<x.y>/bin/go',
+            '  local _best',
+            '  _best=$(ls -1d /usr/local/ysk/go/*/bin/go 2>/dev/null | sort -V | tail -1)',
+            '  if [ -n "$_best" ] && [ -x "$_best" ]; then echo "$_best"; return 0; fi',
+            '  return 1',
+            '}',
             `GO_BIN="$(ysk_go)"`,
-            `if [ -n "$GO_BIN" ]; then`,
+            `if [ -n "$GO_BIN" ] && [ -x "$GO_BIN" ]; then`,
+            `  echo "YSK_GO_BIN=$GO_BIN"`,
             // Install into GOPATH/bin then symlink so panel probe always finds it
             `  export PATH="$(dirname "$GO_BIN"):$PATH"`,
             `  export GOPATH="\${GOPATH:-$HOME/go}"`,

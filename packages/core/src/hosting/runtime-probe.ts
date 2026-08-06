@@ -1093,6 +1093,9 @@ export async function planOrInstallRuntime(input: {
       'ln -sfn "$DEST/bin/go" /usr/local/bin/go || true',
       'mkdir -p /usr/local/ysk/go/bin',
       'ln -sfn "$DEST/bin/go" /usr/local/ysk/go/bin/go || true',
+      'export PATH="$DEST/bin:/usr/local/bin:/usr/local/ysk/go/bin:$PATH"',
+      // So companion tools (air, …) use the just-installed go, not a stale multi-path ysk_go
+      'export YSK_PREFERRED_GO="$DEST/bin/go"',
       '"$DEST/bin/go" version',
       '',
     ].join('\n');
