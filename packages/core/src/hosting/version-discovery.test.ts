@@ -37,8 +37,10 @@ describe('version-discovery', () => {
       }),
     );
     const r = await discoverRuntimeVersions('go');
-    expect(r.latestVersion).toBe('1.99.1');
-    expect(r.candidates.some((c) => c.version.includes('1.99'))).toBe(true);
+    // Panel pin is minor (matches /usr/local/ysk/go/<minor>); full patch only in label
+    expect(r.latestVersion).toBe('1.99');
+    expect(r.candidates.some((c) => c.version === '1.99')).toBe(true);
+    expect(r.candidates.find((c) => c.version === '1.99')?.label).toMatch(/1\.99\.1/);
     expect(r.source).toContain('go.dev');
   });
 

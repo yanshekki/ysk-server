@@ -73,4 +73,20 @@ describe('runtime install-state', () => {
     expect(st.canSwitch).toBe(true);
     expect(st.installDisabled).toBe(true);
   });
+
+  it('go: full patch target matches probe minor (1.26.5 ↔ 1.26)', () => {
+    const st = resolveRuntimeInstallState({
+      selectedVersion: '1.26.5',
+      supportedVersions: ['1.26.5', '1.25.12'],
+      multiVersion: true,
+      hostDefault: 'go version go1.26.5 linux/amd64',
+      probeItems: [
+        { version: '1.26', available: true, active: true, versionOutput: 'go version go1.26.5 linux/amd64' },
+        { version: '1.25', available: true, active: false },
+      ],
+    });
+    expect(st.selectedInstalled).toBe(true);
+    expect(st.installDisabled).toBe(true);
+    expect(st.installedVersions).toContain('1.26.5');
+  });
 });

@@ -205,10 +205,9 @@ export async function discoverRuntimeVersions(
         .map((v) => v.match(/^(\d+\.\d+\.\d+)/)?.[1] || v)
         .filter(Boolean);
       patches.sort((a, b) => cmpSemver(a, b));
-      if (patches.length) {
-        latestVersion = patches[patches.length - 1];
-      }
-      // Candidates: unique minor lines with best patch
+      // Candidates + latest use **minor** pins (1.26) — same SSOT as
+      // /usr/local/ysk/go/<minor> and probe 已就緒. Full patch only in label;
+      // install script resolves go1.x.y.z tarball from go.dev at apply time.
       const byMinor = new Map<string, string>();
       for (const p of patches) {
         const minor = p.match(/^(\d+\.\d+)/)?.[1];
@@ -217,10 +216,13 @@ export async function discoverRuntimeVersions(
         if (!prev || cmpSemver(p, prev) > 0) byMinor.set(minor, p);
       }
       const minors = [...byMinor.entries()].sort((a, b) => cmpSemver(a[1], b[1])).reverse();
+      if (minors.length) {
+        latestVersion = minors[0]![0]; // e.g. 1.26
+      }
       for (const [minor, full] of minors.slice(0, 12)) {
         candidates.push({
-          version: full, // install uses full patch when possible
-          label: `${full} (${minor})`,
+          version: minor,
+          label: `${minor} (go${full})`,
           source,
         });
       }
@@ -443,7 +445,8 @@ async function resolveInstalledRuntime(
     let currentVersion: string | undefined;
     if (kind === 'node') currentVersion = out.replace(/^v/i, '').split('.')[0];
     else if (kind === 'go')
-      currentVersion = out.replace(/^go/i, '').match(/\d+\.\d+(\.\d+)?/)?.[0];
+      // Minor SSOT (1.26) — matches panel chips + managed dirs
+      currentVersion = out.replace(/^go/i, '').match(/(\d+\.\d+)/)?.[1];
     else if (kind === 'java') {
       const m = out.match(/version "?(\d+)/) || out.match(/(\d+)\.\d+\.\d+/);
       currentVersion = m?.[1];

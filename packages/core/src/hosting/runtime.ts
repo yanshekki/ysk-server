@@ -220,14 +220,12 @@ export function selectPythonRuntime(version: string): RuntimeSelection {
 
 export function selectGoRuntime(version: string): RuntimeSelection {
   const raw = (version ?? '').replace(/^go/, '').trim();
-  // Accept full patch (1.26.5) or minor (1.26) — install resolves tarball from go.dev
-  const full = raw.match(/^(\d+\.\d+\.\d+)/)?.[1];
+  // Accept full patch (1.26.5) or minor (1.26). Panel + managed path SSOT is always minor.
   const minor = raw.match(/^(\d+\.\d+)/)?.[1] ?? raw;
   assertVersionShape('go', version, /^\d+\.\d+(\.\d+)?$/.test(raw));
-  const pin = full ?? minor;
   return {
     kind: 'go',
-    version: pin,
+    version: minor,
     binaryPath: `/usr/local/ysk/go/${minor}/bin/go`,
     manager: 'go-official',
   };

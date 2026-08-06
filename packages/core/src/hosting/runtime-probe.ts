@@ -68,8 +68,16 @@ async function probeGoVersions(
     const m = hostDefault.match(/go(\d+\.\d+)/);
     if (m) activeMinor = m[1];
   }
-  for (const v of versions) {
-    const plan = selectGoRuntime(v);
+  // Dedup by minor pin (1.26.5 and 1.26 → one slot under /usr/local/ysk/go/1.26)
+  const minorPins = [
+    ...new Set(
+      versions
+        .map((v) => v.replace(/^go/i, '').match(/^(\d+\.\d+)/)?.[1] ?? '')
+        .filter(Boolean),
+    ),
+  ];
+  for (const minor of minorPins) {
+    const plan = selectGoRuntime(minor);
     let available = false;
     let resolvedPath: string | undefined;
     let versionOutput: string | undefined;
@@ -84,18 +92,21 @@ async function probeGoVersions(
       }
     }
     // Host default only counts as this minor when version string matches
-    if (!available && hostDefault && (hostDefault.includes(`go${v}`) || hostDefault.includes(v))) {
+    if (
+      !available &&
+      hostDefault &&
+      (hostDefault.includes(`go${minor}`) ||
+        new RegExp(`\\bgo?${minor.replace('.', '\\.')}(?:\\.|\\s|$)`).test(hostDefault))
+    ) {
       available = true;
       versionOutput = hostDefault;
       notes.push(tl('notes.auto.n1302'));
     }
     if (!available) notes.push(tl('notes.auto.t0395', { v0: plan.binaryPath }));
-    const active = Boolean(
-      available && activeMinor === v,
-    );
+    const active = Boolean(available && activeMinor === minor);
     out.push({
       kind: 'go',
-      version: v,
+      version: minor,
       binaryPath: plan.binaryPath,
       available,
       active,
@@ -923,13 +934,13 @@ export async function planOrInstallRuntime(input: {
     notes.push('source=deadsnakes/ppa or distro; no silent python3 fallback');
   } else if (input.kind === 'go') {
     const plan = selectGoRuntime(input.version);
-    // Panel version is often minor (1.21); go.dev needs full patch (1.21.13).
+    // Panel + DEST always minor (1.26); go.dev download resolves full patch (1.26.5).
     script = [
       '#!/usr/bin/env bash',
       `# YSK Server — install Go ${plan.version} (resolves full patch version)`,
       'set -euo pipefail',
       `VER=${JSON.stringify(plan.version)}`,
-      `DEST=/usr/local/ysk/go/$VER`,
+      `DEST=${JSON.stringify(plan.binaryPath.replace(/\/bin\/go$/, ''))}`,
       'mkdir -p /usr/local/ysk/go /tmp/ysk-go-install',
       'cd /tmp/ysk-go-install',
       'case "$(uname -m)" in aarch64|arm64) GOARCH=linux-arm64 ;; *) GOARCH=linux-amd64 ;; esac',

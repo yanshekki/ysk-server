@@ -127,30 +127,43 @@ export function resolveRuntimeInstallState(input: {
     }
   }
 
+  /** Match panel pin ↔ probe pin across full/minor (1.26.5 ↔ 1.26). */
+  const pinMatch = (a: string, b: string): boolean => {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    return hostSatisfiesTarget(a, b) || hostSatisfiesTarget(b, a);
+  };
+
   // Keep only supported ids (stable order)
   const installedVersions = supported.filter((s) => {
     if (fromProbe.has(s)) return true;
+    if ([...fromProbe].some((p) => pinMatch(p, s))) return true;
     if (multi) {
-      // multi-version: trust probe.available only
+      // multi-version: probe.available (allow minor↔patch)
       return (input.probeItems ?? []).some(
-        (i) => i.available && String(i.version ?? '') === s,
+        (i) => i.available && pinMatch(String(i.version ?? ''), s),
       );
     }
     for (const item of input.probeItems ?? []) {
       if (!item.available) continue;
       if (hostSatisfiesTarget(item.versionOutput, s)) return true;
-      if (hostSatisfiesTarget(String(item.version ?? ''), s)) return true;
+      if (pinMatch(String(item.version ?? ''), s)) return true;
     }
     return hostSatisfiesTarget(input.hostDefault, s);
   });
 
   const selectedInstalled =
     installedVersions.includes(selected) ||
+    installedVersions.some((v) => pinMatch(v, selected)) ||
     (!multi && hostSatisfiesTarget(input.hostDefault, selected)) ||
-    fromProbe.has(selected);
+    fromProbe.has(selected) ||
+    [...fromProbe].some((p) => pinMatch(p, selected));
 
   const selectedActive = (input.probeItems ?? []).some(
-    (i) => String(i.version ?? '') === selected && i.available && i.active,
+    (i) =>
+      i.available &&
+      i.active &&
+      pinMatch(String(i.version ?? ''), selected),
   );
 
   const anyInstalled = installedVersions.length > 0 || Boolean(input.hostDefault?.trim());
