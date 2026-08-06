@@ -581,50 +581,57 @@ export function PhpRuntimePage() {
                   />
                 </Field>
                 <FormActions>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    disabled={
-                      busy ||
-                      extUninstallBusy ||
-                      extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
-                    }
-                    loading={busy}
-                    onClick={() => {
-                      const optional = extSelected.filter((id) =>
-                        selectableExtIds.includes(id),
-                      );
-                      void run(async () => {
-                        const required = extCatalog
-                          .filter((e) => e.required)
-                          .map((e) => e.id);
-                        const r = await systemApi.runtimeInstall({
-                          kind: 'php',
-                          version,
-                          install: true,
-                          extensions: [...new Set([...required, ...optional])],
-                        });
-                        // Optimistic UI + forced re-probe so list moves to「已安裝」
-                        setExtCatalog((prev) =>
-                          prev.map((e) =>
-                            optional.includes(e.id) ? { ...e, installed: true } : e,
-                          ),
+                  {/*
+                    Single primary CTA:
+                    - PHP already on host → install selected extensions only
+                    - PHP missing → first-time install is RuntimeInstallActions below (core+ext)
+                    Never two primary buttons that both call runtimeInstall.
+                  */}
+                  {phpInstallState.selectedInstalled ? (
+                    <Button
+                      variant="primary"
+                      size="md"
+                      disabled={
+                        busy ||
+                        extUninstallBusy ||
+                        extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
+                      }
+                      loading={busy}
+                      onClick={() => {
+                        const optional = extSelected.filter((id) =>
+                          selectableExtIds.includes(id),
                         );
-                        await refresh();
-                        await loadExtensions(version, {
-                          bust: true,
-                          optimisticInstalled: optional,
-                        });
-                        return r as OpsResultLike;
-                      }, t('runtime.phpExtInstallSelected', {
-                        n: optional.length,
-                      }));
-                    }}
-                  >
-                    {t('runtime.phpExtInstallSelected', {
-                      n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
-                    })}
-                  </Button>
+                        void run(async () => {
+                          const required = extCatalog
+                            .filter((e) => e.required)
+                            .map((e) => e.id);
+                          const r = await systemApi.runtimeInstall({
+                            kind: 'php',
+                            version,
+                            install: true,
+                            extensions: [...new Set([...required, ...optional])],
+                          });
+                          setExtCatalog((prev) =>
+                            prev.map((e) =>
+                              optional.includes(e.id) ? { ...e, installed: true } : e,
+                            ),
+                          );
+                          await refresh();
+                          await loadExtensions(version, {
+                            bust: true,
+                            optimisticInstalled: optional,
+                          });
+                          return r as OpsResultLike;
+                        }, t('runtime.phpExtInstallSelected', {
+                          n: optional.length,
+                        }));
+                      }}
+                    >
+                      {t('runtime.phpExtInstallSelected', {
+                        n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
+                      })}
+                    </Button>
+                  ) : null}
                   <Button
                     variant="secondary"
                     size="md"
@@ -655,35 +662,63 @@ export function PhpRuntimePage() {
                     {t('runtime.phpExtCoreOnly')}
                   </Button>
                 </FormActions>
-                <FormHint>{t('runtime.phpExtInstallNote')}</FormHint>
-                <RuntimeInstallActions
-                  installState={phpInstallState}
-                  version={version}
-                  busy={busy}
-                  installLabel={t('runtime.installPhpVBtn', { version })}
-                  onSelectNewer={setVersion}
-                  extraHints={
-                    phpInstallState.selectedInstalled ? (
-                      <FormHint>{t('runtime.addonsInstallAbove')}</FormHint>
-                    ) : phpInstallState.newerAvailable.length === 0 ? (
-                      <FormHint>{t('runtime.phpExtHint')}</FormHint>
-                    ) : null
-                  }
-                  onInstall={() =>
-                    void run(async () => {
-                      // Full PHP stack: selected extensions or catalog defaults
-                      const r = await systemApi.runtimeInstall({
-                        kind: 'php',
+                <FormHint>
+                  {phpInstallState.selectedInstalled
+                    ? t('runtime.phpExtInstallNoteInstalled', {
+                        defaultValue:
+                          '勾選擴充後按「安裝選定擴充」。此版本已在主機上，無需再裝 runtime。',
+                      })
+                    : t('runtime.phpExtInstallNoteFirst', {
                         version,
-                        install: true,
-                        extensions: extSelected.length ? extSelected : extDefaults,
-                      });
-                      await refresh();
-                      await loadExtensions(version, { bust: true });
-                      return r as OpsResultLike;
-                    }, t('runtime.installedPhp', { version }))
-                  }
-                />
+                        defaultValue: `尚未安裝 PHP ${version}：勾選擴充後按下方「安裝 PHP ${version}」一併裝核心+擴充（只有一個安裝按鈕）。`,
+                      })}
+                </FormHint>
+                {/* Runtime install only when pin not on host (or user picks a newer pin). */}
+                {!phpInstallState.selectedInstalled ? (
+                  <RuntimeInstallActions
+                    installState={phpInstallState}
+                    version={version}
+                    busy={busy}
+                    installLabel={t('runtime.installPhpWithExt', {
+                      version,
+                      n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
+                      defaultValue: `安裝 PHP ${version}（含選定擴充）`,
+                    })}
+                    onSelectNewer={setVersion}
+                    extraHints={<FormHint>{t('runtime.phpExtHint')}</FormHint>}
+                    onInstall={() =>
+                      void run(async () => {
+                        const optional = extSelected.filter((id) =>
+                          selectableExtIds.includes(id),
+                        );
+                        const required = extCatalog
+                          .filter((e) => e.required)
+                          .map((e) => e.id);
+                        const r = await systemApi.runtimeInstall({
+                          kind: 'php',
+                          version,
+                          install: true,
+                          extensions: [
+                            ...new Set([
+                              ...required,
+                              ...(optional.length ? optional : extDefaults),
+                            ]),
+                          ],
+                        });
+                        await refresh();
+                        await loadExtensions(version, { bust: true });
+                        return r as OpsResultLike;
+                      }, t('runtime.installedPhp', { version }))
+                    }
+                  />
+                ) : phpInstallState.newerAvailable.length > 0 ? (
+                  <FormHint>
+                    {t('runtime.newerVersionAvailable', {
+                      current: phpInstallState.newestInstalled ?? version,
+                      newer: phpInstallState.newerAvailable.join(', '),
+                    })}
+                  </FormHint>
+                ) : null}
                 {extOps ? (
                   <div className="u-mt-3">
                     <OpsResultPanel title={t('runtime.phpExtOpsTitle', { defaultValue: '擴充操作結果' })} result={extOps} />
