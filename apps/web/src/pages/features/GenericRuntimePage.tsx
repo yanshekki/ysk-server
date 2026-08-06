@@ -210,9 +210,13 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           source: h.source,
           notes: h.notes,
         });
-        // Prefer discovered latest when user has not pinned via URL
-        if (!searchParams.get('version') && h.latestVersion) {
-          setVersion((prev) => prev || h.latestVersion || meta.defaultVersion);
+        // No URL pin: always prefer discovered latest over offline META default
+        // (do not use `prev || latest` — defaultVersion is truthy and would lock forever)
+        const urlPin = searchParams.get('version');
+        if (!urlPin && h.latestVersion) {
+          setVersion(h.latestVersion);
+        } else if (!urlPin && candidates[0]?.version) {
+          setVersion(candidates[0].version);
         }
       })
       .catch(() => {
@@ -221,7 +225,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     return () => {
       cancelled = true;
     };
-  }, [kind, searchParams, meta.defaultVersion]);
+  }, [kind, searchParams]);
 
   const refresh = useCallback(async () => {
     try {
@@ -247,7 +251,9 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   }, [kind, version]);
 
   useEffect(() => {
+    // Offline placeholder only until discovery returns; discovery overwrites with latest
     setVersion(meta.defaultVersion);
+    setVersionStatus(null);
     setTuningLoaded(false);
     void refresh();
   }, [kind, meta.defaultVersion, refresh]);
@@ -535,6 +541,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   <FormHint>
                     {t('runtime.remoteNewerHint', {
                       remote: versionStatus.latestVersion,
+                      current: versionStatus.currentVersion || '—',
+                      // legacy alias — old locales used {{panel}} for current install
                       panel: versionStatus.currentVersion || '—',
                       defaultValue: `已裝 ${versionStatus.currentVersion || '—'} · 上游最新 ${versionStatus.latestVersion}${versionStatus.source ? `（${versionStatus.source}）` : ''}`,
                     })}

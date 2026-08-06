@@ -67,7 +67,7 @@
   "installExtOnly": "Install selected extensions (PHP {{version}} present)",
   "pluginAlreadyOnHost": "already on host",
   "installAddonsOnly": "Install selected add-ons ({{version}} present)",
-  "remoteNewerHint": "Upstream latest ~{{remote}}; panel supports up to {{panel}} (install targets stay panel list)",
+  "remoteNewerHint": "Installed {{current}} · upstream latest {{remote}} (install targets follow the version list)",
   "installedPhp": "Installed PHP {{version}}",
   "nextSteps": "Next",
   "suggestedFlow": "Suggested flow",

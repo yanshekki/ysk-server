@@ -8155,7 +8155,7 @@
     "installExtOnly": "安裝選定擴充（PHP {{version}} 已有）",
     "pluginAlreadyOnHost": "主機已有",
     "installAddonsOnly": "安裝選定插件／擴充（{{version}} 已有）",
-    "remoteNewerHint": "上游最新約 {{remote}}；面板目前支援到 {{panel}}（安裝目標以面板清單為準）",
+    "remoteNewerHint": "已裝 {{current}} · 上游最新 {{remote}}（安裝目標以版本清單為準）",
     "installedPhp": "已安裝 PHP {{version}}",
     "nextSteps": "下一步",
     "suggestedFlow": "建議流程",

@@ -233,8 +233,10 @@ export function PhpRuntimePage() {
         if (cancelled) return;
         const cands = (h.candidates ?? []).map((c) => c.version).filter(Boolean);
         setPhpCandidates(cands);
-        if (!searchParams.get('version') && h.latestVersion) {
-          setVersion((prev) => prev || h.latestVersion || '8.2');
+        // Prefer discovered latest; do not lock on initial '8.2' via `prev ||`
+        if (!searchParams.get('version')) {
+          if (h.latestVersion) setVersion(h.latestVersion);
+          else if (cands[0]) setVersion(cands[0]);
         }
       })
       .catch(() => {

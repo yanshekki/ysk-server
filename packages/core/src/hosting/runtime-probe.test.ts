@@ -6,14 +6,15 @@ import { LocalHostExecutor } from '../host/executor.js';
 import { planOrInstallRuntime, probeRuntimes } from './runtime-probe.js';
 
 describe('runtime-probe', () => {
-  it('probes host for supported node/php/python/go/rust versions', async () => {
+  it('probes host for installed runtime pins (discovery SSOT for install list)', async () => {
     const host = new LocalHostExecutor({ executeEnabled: false });
     const r = await probeRuntimes(host);
-    expect(r.node.length).toBeGreaterThanOrEqual(3);
-    expect(r.php.length).toBeGreaterThanOrEqual(3);
-    expect(r.python.length).toBeGreaterThanOrEqual(3);
-    expect(r.go.length).toBeGreaterThanOrEqual(3);
-    expect(r.rust.length).toBeGreaterThanOrEqual(1);
+    // Installable pins come from version-discovery API; probe only reports host-found pins
+    expect(r.node.length).toBeGreaterThanOrEqual(0);
+    expect(r.php.length).toBeGreaterThanOrEqual(0);
+    expect(r.python.length).toBeGreaterThanOrEqual(0);
+    expect(r.go.length).toBeGreaterThanOrEqual(0);
+    expect(r.rust.length).toBeGreaterThanOrEqual(1); // always includes stable channel pin
     expect(r.notes.length).toBeGreaterThan(0);
     expect(r.node.every((n) => typeof n.available === 'boolean')).toBe(true);
   });
@@ -92,6 +93,52 @@ describe('runtime-probe', () => {
     expect(nodeScript).toMatch(/npm install -g/);
     expect(nodeScript).toContain('pm2');
     expect(nodeScript).not.toMatch(/exit 0\nfi\n$/);
+
+    const pyPlan = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'python',
+      version: '3.14',
+      install: false,
+    });
+    const pyScript = (await import('node:fs')).readFileSync(pyPlan.written[0], 'utf8');
+    expect(pyScript).toContain('deadsnakes');
+    expect(pyScript).toContain('python${VER}');
+    expect(pyScript).not.toMatch(/apt-get install -y python3 python3-venv/);
+    expect(pyScript).toMatch(/No fallback to system python3|no silent python3 fallback|exit 32/);
+
+    const javaPlan = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'java',
+      version: '21',
+      install: false,
+    });
+    const javaScript = (await import('node:fs')).readFileSync(javaPlan.written[0], 'utf8');
+    expect(javaScript).toContain('openjdk-${VER}-jdk');
+    expect(javaScript).not.toContain('openjdk-17-jdk');
+
+    const ktPlan = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'kotlin',
+      version: '2.1.0',
+      install: false,
+    });
+    const ktScript = (await import('node:fs')).readFileSync(ktPlan.written[0], 'utf8');
+    expect(ktScript).not.toContain('VER=2.0.21');
+    expect(ktScript).toMatch(/no fallback pin|exit 22/);
+
+    const bunPlan = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'bun',
+      version: '1.2.0',
+      install: false,
+    });
+    const bunScript = (await import('node:fs')).readFileSync(bunPlan.written[0], 'utf8');
+    expect(bunScript).toContain('oven-sh/bun/releases');
+    expect(bunScript).toContain('WANT=');
 
     rmSync(dir, { recursive: true, force: true });
   });

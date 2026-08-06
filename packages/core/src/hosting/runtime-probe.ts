@@ -424,6 +424,42 @@ async function listDirVersions(
   }
 }
 
+/**
+ * Discover multi-version binaries already on the host (e.g. python3.14, php8.3).
+ * Expands probe pins so post-install refresh lists the new version.
+ */
+async function listHostVersionedBins(
+  host: HostExecutor,
+  kind: 'python' | 'php' | 'node',
+): Promise<string[]> {
+  let cmd: string;
+  if (kind === 'python') {
+    cmd =
+      'ls -1 /usr/bin/python3.[0-9]* 2>/dev/null | sed -n "s|.*/python3\\.\\([0-9][0-9]*\\.[0-9][0-9]*\\)$|\\1|p"';
+  } else if (kind === 'php') {
+    cmd =
+      'ls -1 /usr/bin/php[0-9]* 2>/dev/null | sed -n "s|.*/php\\([0-9][0-9]*\\.[0-9][0-9]*\\)$|\\1|p"';
+  } else {
+    cmd =
+      'ls -1 /usr/local/ysk/node 2>/dev/null; ls -1 /usr/bin/node[0-9]* 2>/dev/null | sed -n "s|.*/node\\([0-9][0-9]*\\)$|\\1|p"';
+  }
+  try {
+    const r = await host.runCommand(['bash', '-c', `${cmd} || true`], { timeoutMs: 5_000 });
+    return [
+      ...new Set(
+        (r.stdout || '')
+          .split('\n')
+          .map((s) => s.trim())
+          .filter((s) =>
+            kind === 'node' ? /^\d+$/.test(s) : /^\d+\.\d+/.test(s),
+          ),
+      ),
+    ];
+  } catch {
+    return [];
+  }
+}
+
 function extractPin(kind: string, versionText?: string): string | undefined {
   if (!versionText) return undefined;
   if (kind === 'node') return versionText.replace(/^v/i, '').match(/^(\d+)/)?.[1];
@@ -468,18 +504,21 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
     ...new Set([
       ...supported.node,
       ...(await listDirVersions(host, '/usr/local/ysk/node', /^\d+$/)),
+      ...(await listHostVersionedBins(host, 'node')),
       extractPin('node', hostNode),
     ].filter(Boolean) as string[]),
   ];
   const phpPins = [
     ...new Set([
       ...supported.php,
+      ...(await listHostVersionedBins(host, 'php')),
       extractPin('php', hostPhp),
     ].filter(Boolean) as string[]),
   ];
   const pythonPins = [
     ...new Set([
       ...supported.python,
+      ...(await listHostVersionedBins(host, 'python')),
       extractPin('python', hostPython),
     ].filter(Boolean) as string[]),
   ];
@@ -749,6 +788,12 @@ export async function planOrInstallRuntime(input: {
       '  test -n "$NODE_BIN"',
       '  ln -sfn "$NODE_BIN" "$DEST/bin/node"',
       'fi',
+      // Verify requested major is what we got (no silent wrong major)
+      '  NODE_V="$("$DEST/bin/node" -v 2>/dev/null | sed "s/^v//" || true)"',
+      '  case "$NODE_V" in',
+      '    ${MAJOR}.*) ;;',
+      '    *) echo "node major mismatch: wanted ${MAJOR} got ${NODE_V:-missing}" >&2; exit 32 ;;',
+      '  esac',
       'fi', // SKIP_NODE_TARBALL
       '',
     ].join('\n');
@@ -838,20 +883,33 @@ export async function planOrInstallRuntime(input: {
     }
   } else if (input.kind === 'python') {
     const plan = selectPythonRuntime(input.version);
+    // deadsnakes for multi-version on Ubuntu; never silently fall back to system python3
     script = [
       '#!/usr/bin/env bash',
-      `# YSK Server — install Python ${plan.version}`,
+      `# YSK Server — install Python ${plan.version} (requested pin only)`,
       'set -euo pipefail',
       'export DEBIAN_FRONTEND=noninteractive',
-      'apt-get update',
-      'apt-get install -y software-properties-common',
-      'add-apt-repository -y ppa:deadsnakes/ppa 2>/dev/null || echo "skip deadsnakes PPA"',
-      'apt-get update',
-      `if ! apt-get install -y python${plan.version} python${plan.version}-venv python${plan.version}-dev; then apt-get install -y python3 python3-venv python3-dev; fi`,
-      `python${plan.version} --version 2>/dev/null || python3 --version`,
+      'export LC_ALL=C',
+      `VER=${JSON.stringify(plan.version)}`,
+      'apt-get update -qq || true',
+      'apt-get install -y software-properties-common ca-certificates 2>/dev/null || true',
+      'if ! add-apt-repository -y ppa:deadsnakes/ppa; then',
+      '  echo "deadsnakes PPA unavailable — will try distro packages for python${VER} only" >&2',
+      'fi',
+      'apt-get update -qq',
+      'if ! apt-get install -y "python${VER}" "python${VER}-venv" "python${VER}-dev"; then',
+      '  echo "failed to install python${VER} (and venv/dev). No fallback to system python3." >&2',
+      '  echo "Hint: deadsnakes may not ship this minor on this Ubuntu release; check apt-cache policy python${VER}" >&2',
+      '  exit 32',
+      'fi',
+      'if ! "python${VER}" --version; then',
+      '  echo "python${VER} binary missing after apt install" >&2',
+      '  exit 32',
+      'fi',
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0408', { v0: (plan.version) }));
+    notes.push('source=deadsnakes/ppa or distro; no silent python3 fallback');
   } else if (input.kind === 'go') {
     const plan = selectGoRuntime(input.version);
     // Panel version is often minor (1.21); go.dev needs full patch (1.21.13).
@@ -876,9 +934,13 @@ export async function planOrInstallRuntime(input: {
       '  if [ -n "$json" ]; then',
       '    best=$(printf "%s" "$json" | grep -oE "go${minor}\\.[0-9]+" | sed "s/^go//" | sort -t. -k3 -n | tail -1)',
       '  fi',
-      '  if [ -n "$best" ]; then echo "$best"; else echo "${minor}.0"; fi',
+      '  if [ -n "$best" ]; then echo "$best"; else echo ""; fi',
       '}',
       'FULL_VER=$(resolve_go_full "$VER")',
+      'if [ -z "$FULL_VER" ]; then',
+      '  echo "cannot resolve full Go patch version for $VER from go.dev/dl JSON" >&2',
+      '  exit 22',
+      'fi',
       'echo "YSK_GO_PANEL_VERSION=$VER"',
       'echo "YSK_GO_DOWNLOAD_VERSION=$FULL_VER"',
       'URL="https://go.dev/dl/go${FULL_VER}.${GOARCH}.tar.gz"',
@@ -898,9 +960,7 @@ export async function planOrInstallRuntime(input: {
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0409', { v0: plan.version }));
-    notes.push(
-      'Go tarball uses full patch from last-known table (minor-only URLs 404 on go.dev)',
-    );
+    notes.push('Go tarball full patch resolved from go.dev/dl JSON (no hardcoded patch table)');
   } else if (input.kind === 'rust') {
     const plan = selectRustRuntime(input.version);
     // rustup needs a channel/toolchain id; panel pins like "1.78" are valid.
@@ -958,38 +1018,51 @@ export async function planOrInstallRuntime(input: {
     );
   } else if (input.kind === 'java') {
     const plan = selectJavaRuntime(input.version);
+    // Never silently install a different feature version (no openjdk-17 fallback)
     script = [
       '#!/usr/bin/env bash',
-      `# YSK Server — install OpenJDK ${plan.version}`,
+      `# YSK Server — install OpenJDK ${plan.version} (requested pin only)`,
       'set -euo pipefail',
       'export DEBIAN_FRONTEND=noninteractive',
+      `VER=${JSON.stringify(plan.version)}`,
       'apt-get update -qq',
-      `if ! apt-get install -y openjdk-${plan.version}-jdk; then`,
-      '  apt-get install -y openjdk-17-jdk',
+      'if ! apt-get install -y "openjdk-${VER}-jdk"; then',
+      '  echo "openjdk-${VER}-jdk not available from apt; refusing silent downgrade" >&2',
+      '  exit 32',
       'fi',
       'java -version',
       'javac -version',
+      // Best-effort check that installed major matches request
+      'JV=$(java -version 2>&1 | head -1 || true)',
+      'echo "YSK_JAVA_VERSION_LINE=$JV"',
+      'if ! echo "$JV" | grep -qE "version \\"?${VER}([.\\"_]|$)"; then',
+      '  if ! echo "$JV" | grep -qE " ${VER}\\.|openjdk ${VER}|version \\"${VER}"; then',
+      '    echo "installed java does not look like feature version ${VER}: $JV" >&2',
+      '    exit 32',
+      '  fi',
+      'fi',
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0412', { v0: plan.version }));
+    notes.push('no silent openjdk-17 fallback');
   } else if (input.kind === 'kotlin') {
     const plan = selectKotlinRuntime(input.version);
     script = [
       '#!/usr/bin/env bash',
-      `# YSK Server — install Kotlin ${plan.version} (requires JDK)`,
+      `# YSK Server — install Kotlin ${plan.version} (requires JDK; no version downgrade fallback)`,
       'set -euo pipefail',
       'export DEBIAN_FRONTEND=noninteractive',
       `if ! ${shellBinExists('java')}; then apt-get update -qq && apt-get install -y openjdk-21-jdk; fi`,
-      `VER=${plan.version}`,
+      `VER=${JSON.stringify(plan.version)}`,
       'DEST=/usr/local/ysk/kotlin',
       'TMP=$(mktemp -d)',
       'mkdir -p /usr/local/ysk /usr/local/bin',
       'URL="https://github.com/JetBrains/kotlin/releases/download/v${VER}/kotlin-compiler-${VER}.zip"',
-      'curl -fsSL "$URL" -o "$TMP/kotlin.zip" || {',
-      '  VER=2.0.21',
-      '  URL="https://github.com/JetBrains/kotlin/releases/download/v${VER}/kotlin-compiler-${VER}.zip"',
-      '  curl -fsSL "$URL" -o "$TMP/kotlin.zip"',
-      '}',
+      'echo "YSK_KOTLIN_URL=$URL"',
+      'if ! curl -fsSL "$URL" -o "$TMP/kotlin.zip"; then',
+      '  echo "Kotlin download failed for version ${VER} (no fallback pin)" >&2',
+      '  exit 22',
+      'fi',
       'rm -rf "$DEST"',
       'mkdir -p "$DEST" "$TMP/out"',
       'if command -v unzip >/dev/null 2>&1; then unzip -q "$TMP/kotlin.zip" -d "$TMP/out";',
@@ -1002,18 +1075,48 @@ export async function planOrInstallRuntime(input: {
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0413', { v0: plan.version }));
+    notes.push('no hardcoded kotlin fallback pin');
   } else if (input.kind === 'bun') {
     const plan = selectBunRuntime(input.version);
+    // latest / empty → official installer; specific pin → GitHub release tarball
+    const pin = plan.version === 'latest' || plan.version === 'stable' ? '' : plan.version;
     script = [
       '#!/usr/bin/env bash',
       `# YSK Server — install Bun (${plan.version})`,
       'set -euo pipefail',
       'export BUN_INSTALL=/usr/local/ysk/bun',
       'mkdir -p /usr/local/ysk/bun /usr/local/bin',
-      'curl -fsSL https://bun.sh/install | bash',
+      `WANT=${JSON.stringify(pin)}`,
+      'if [ -z "$WANT" ]; then',
+      '  curl -fsSL https://bun.sh/install | bash',
+      'else',
+      '  case "$(uname -m)" in aarch64|arm64) BUN_OS=linux-aarch64 ;; *) BUN_OS=linux-x64 ;; esac',
+      '  URL="https://github.com/oven-sh/bun/releases/download/bun-v${WANT}/bun-${BUN_OS}.zip"',
+      '  echo "YSK_BUN_URL=$URL"',
+      '  TMP=$(mktemp -d)',
+      '  if ! curl -fsSL "$URL" -o "$TMP/bun.zip"; then',
+      '    echo "Bun download failed for version ${WANT}" >&2',
+      '    exit 22',
+      '  fi',
+      '  mkdir -p "$TMP/out" "$BUN_INSTALL/bin"',
+      '  if command -v unzip >/dev/null 2>&1; then unzip -q "$TMP/bun.zip" -d "$TMP/out";',
+      '  else python3 -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$TMP/bun.zip" "$TMP/out"; fi',
+      '  BIN=$(find "$TMP/out" -type f -name bun | head -1)',
+      '  test -n "$BIN"',
+      '  install -m 755 "$BIN" "$BUN_INSTALL/bin/bun"',
+      '  rm -rf "$TMP"',
+      'fi',
       'ln -sfn /usr/local/ysk/bun/bin/bun /usr/local/bin/bun || true',
       'export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:$PATH"',
-      'bun --version',
+      'GOT=$(bun --version)',
+      'echo "YSK_BUN_VERSION=$GOT"',
+      'if [ -n "$WANT" ] && [ "$GOT" != "$WANT" ]; then',
+      '  # allow patch drift only if prefix matches (e.g. 1.2 vs 1.2.3)',
+      '  case "$GOT" in',
+      '    "$WANT"|"$WANT".*) ;;',
+      '    *) echo "bun version mismatch: wanted ${WANT} got ${GOT}" >&2; exit 32 ;;',
+      '  esac',
+      'fi',
       '',
     ].join('\n');
     notes.push(tl('notes.auto.t0414', { v0: plan.version }));
