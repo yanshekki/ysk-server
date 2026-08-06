@@ -58,7 +58,19 @@ type AptUpgradeRow = {
   currentVersion?: string;
   candidateVersion?: string;
   upgradable: boolean;
+  latestVersion?: string;
+  source?: string;
 };
+
+/** All probe/runtime ids that hub cards may need for version checks */
+function allVersionIds(): string[] {
+  const ids = new Set<string>();
+  for (const c of SOFTWARE_CARDS) {
+    if (c.runtimeKind) ids.add(c.runtimeKind);
+    for (const sid of c.softwareIds ?? []) ids.add(sid);
+  }
+  return [...ids];
+}
 
 function isTabId(v: string | null): v is SoftwareTabId {
   return (
@@ -143,27 +155,21 @@ export function SoftwareHubPage() {
     setLoading(true);
     setError(null);
     try {
-      const [mx, rt, up, inv] = await Promise.all([
+      const versionIds = allVersionIds();
+      const [mx, rt, inv, batch] = await Promise.all([
         systemApi.servicesMatrix().catch(() => ({ items: [] as MatrixItem[] })),
         systemApi.runtimes().catch(() => null),
-        systemApi.softwareUpgrades().catch(() => ({
-          items: [] as AptUpgradeRow[],
-          upgradableCount: 0,
-        })),
         updatesApi
           .inventory({ upgradable: '1', cached: true })
           .catch(() => null),
+        // ALL package-backed software + runtimes — not runtimes only
+        systemApi
+          .softwareVersions({ ids: versionIds })
+          .catch(() => ({ items: [] as Array<Record<string, unknown>> })),
       ]);
       setMatrix((mx as { items?: MatrixItem[] }).items ?? []);
       setRuntimeProbe((rt as Record<string, unknown>) ?? null);
-      const aptMap: Record<string, AptUpgradeRow> = {};
-      for (const row of (up as { items?: AptUpgradeRow[] }).items ?? []) {
-        if (row?.id) aptMap[row.id] = row;
-      }
-      setAptById(aptMap);
-      setCatalogAptUpgradable(
-        Number((up as { upgradableCount?: number }).upgradableCount ?? 0) || 0,
-      );
+
       const metaUp = Number(inv?.meta?.upgradableCount ?? 0);
       const rowUp = (inv?.inventory ?? []).filter(
         (i) =>
@@ -171,35 +177,65 @@ export function SoftwareHubPage() {
       ).length;
       setHostUpgradable(Math.max(metaUp, rowUp) || 0);
 
-      // Dynamic upstream versions for all runtimes (no hardcoded pins)
-      const kinds = SOFTWARE_CARDS.map((c) => c.runtimeKind).filter(
-        Boolean,
-      ) as RuntimeKindKey[];
-      try {
-        const batch = await systemApi.softwareVersions({ ids: kinds });
-        const map: Partial<Record<RuntimeKindKey, LatestHint>> = {};
-        const candMap: Partial<
-          Record<RuntimeKindKey, Array<{ version: string; label: string }>>
-        > = {};
-        for (const row of batch.items ?? []) {
-          const kind = row.id as RuntimeKindKey;
-          if (!kinds.includes(kind)) continue;
+      const map: Partial<Record<RuntimeKindKey, LatestHint>> = {};
+      const candMap: Partial<
+        Record<RuntimeKindKey, Array<{ version: string; label: string }>>
+      > = {};
+      const aptMap: Record<string, AptUpgradeRow> = {};
+      let aptUpCount = 0;
+
+      for (const row of (batch as { items?: Array<Record<string, unknown>> })
+        .items ?? []) {
+        const id = String(row.id ?? '');
+        if (!id) continue;
+        const updateKind = String(row.updateKind ?? '');
+        const installed = Boolean(row.installed);
+        const upgradable = Boolean(row.upgradable);
+        const currentVersion =
+          row.currentVersion != null ? String(row.currentVersion) : undefined;
+        const latestVersion =
+          row.latestVersion != null ? String(row.latestVersion) : undefined;
+        const packageName =
+          row.packageName != null ? String(row.packageName) : id;
+        const candidates = Array.isArray(row.candidates)
+          ? (row.candidates as Array<{ version?: string; label?: string }>).map(
+              (c) => ({
+                version: String(c.version ?? ''),
+                label: String(c.label ?? c.version ?? ''),
+              }),
+            )
+          : [];
+
+        if (updateKind === 'runtime' || (SOFTWARE_CARDS.some((c) => c.runtimeKind === id))) {
+          const kind = id as RuntimeKindKey;
           map[kind] = {
-            panelLatest: row.currentVersion || '—',
-            remoteLatest: row.latestVersion,
-            newerThanPanel: Boolean(row.upgradable),
+            panelLatest: currentVersion || '—',
+            remoteLatest: latestVersion,
+            newerThanPanel: upgradable,
           };
-          candMap[kind] = (row.candidates ?? []).map((c) => ({
-            version: c.version,
-            label: c.label,
-          }));
+          candMap[kind] = candidates.filter((c) => c.version);
         }
-        // Soft-merge: never wipe previous discovery on partial empty response
-        setLatestByKind((prev) => ({ ...prev, ...map }));
-        setRuntimeCandidates((prev) => ({ ...prev, ...candMap }));
-      } catch {
-        // Keep last known discovery so update cards do not vanish on transient failure
+
+        // Apt / catalog packages (also store runtime ids harmlessly for lookups)
+        aptMap[id] = {
+          id,
+          packageName,
+          installed,
+          currentVersion,
+          candidateVersion: upgradable
+            ? latestVersion || candidates[0]?.version
+            : latestVersion || currentVersion,
+          latestVersion,
+          upgradable,
+          source: row.source != null ? String(row.source) : undefined,
+        };
+        if (upgradable && updateKind === 'apt') aptUpCount += 1;
       }
+
+      setCatalogAptUpgradable(aptUpCount);
+      setAptById((prev) => ({ ...prev, ...aptMap }));
+      setLatestByKind((prev) => ({ ...prev, ...map }));
+      setRuntimeCandidates((prev) => ({ ...prev, ...candMap }));
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     } finally {
@@ -248,7 +284,17 @@ export function SoftwareHubPage() {
         .map((id) => aptById[id])
         .filter((r): r is AptUpgradeRow => Boolean(r));
       const aptUpgradable = aptRows.filter((r) => r.upgradable);
-      const primaryApt = aptUpgradable[0] ?? aptRows[0];
+      // Prefer an upgradable package; else first installed; else first probed row
+      const primaryApt =
+        aptUpgradable[0] ??
+        aptRows.find((r) => r.installed) ??
+        aptRows[0];
+      const aptChecked = aptRows.length > 0 || Boolean(def.softwareIds?.length);
+      const aptInstalled = aptRows.some((r) => r.installed);
+      const aptCurrentLatest =
+        primaryApt?.latestVersion ||
+        primaryApt?.candidateVersion ||
+        primaryApt?.currentVersion;
 
       let status: 'ok' | 'warn' | 'danger' | 'neutral' = 'neutral';
       let statusLabel = t('software.status.unknown', { defaultValue: '—' });
@@ -281,6 +327,9 @@ export function SoftwareHubPage() {
       } else if (primaryApt?.installed) {
         status = 'ok';
         statusLabel = t('software.status.installed', { defaultValue: '已安裝' });
+      } else if (aptChecked && !aptInstalled) {
+        status = 'warn';
+        statusLabel = t('software.status.notInstalled', { defaultValue: '未安裝' });
       }
 
       const runtimeUpdate = Boolean(
@@ -303,6 +352,13 @@ export function SoftwareHubPage() {
           installedLabels.length;
 
       const aptUpdate = aptUpgradable.length > 0;
+      /** Package-backed card that is installed and already at apt candidate */
+      const aptUpToDate = Boolean(
+        !def.runtimeKind &&
+          aptInstalled &&
+          !aptUpdate &&
+          primaryApt?.currentVersion,
+      );
       // Host "updates" card: surface full-host inventory count (not a fake package version)
       const hostUpdatesHint =
         def.id === 'updates' && hostUpgradable > 0
@@ -325,9 +381,11 @@ export function SoftwareHubPage() {
         latest,
         mx,
         aptCurrent: primaryApt?.currentVersion,
-        aptCandidate: primaryApt?.candidateVersion,
+        aptCandidate: primaryApt?.candidateVersion || aptCurrentLatest,
         aptPackage: primaryApt?.packageName,
         aptUpdate,
+        aptUpToDate,
+        aptChecked,
         hostUpdatesHint,
         candidates,
       };
@@ -825,6 +883,10 @@ type CardView = {
   aptCandidate?: string;
   aptPackage?: string;
   aptUpdate?: boolean;
+  /** Installed package-backed software already at apt candidate */
+  aptUpToDate?: boolean;
+  /** Card has softwareIds and we ran version discovery */
+  aptChecked?: boolean;
   /** Full-host inventory upgradable count (updates card only) */
   hostUpdatesHint?: number;
   /** Discovery candidates for in-page version pick */
@@ -861,6 +923,8 @@ function SoftwareCard({
     aptCandidate,
     aptPackage,
     aptUpdate,
+    aptUpToDate,
+    aptChecked,
     hostUpdatesHint,
     candidates = [],
   } = view;
@@ -894,9 +958,9 @@ function SoftwareCard({
   const canOneClickApt = Boolean(
     aptUpdate &&
       aptPackage &&
-      aptCurrent &&
       aptCandidate &&
-      onRequestAptApply,
+      onRequestAptApply &&
+      aptCandidate !== aptCurrent,
   );
 
   const canInstallRuntime = Boolean(
@@ -904,6 +968,9 @@ function SoftwareCard({
       onInstallRuntime &&
       (picked || updateTarget || candidates[0]?.version),
   );
+
+  /** Package-backed: always offer update CTA when warehouse has a newer candidate */
+  const showAptUpdate = canOneClickApt;
 
   const projectHref =
     def.projectRuntime && def.runtimeKind
@@ -948,11 +1015,24 @@ function SoftwareCard({
         defaultValue: `系統倉庫 ${aptCurrent} → ${aptCandidate}`,
       }),
     );
+  } else if (aptCurrent && aptUpToDate) {
+    metaParts.push(
+      t('software.meta.aptCurrentLatest', {
+        v: aptCurrent,
+        defaultValue: `已裝 ${aptCurrent} · 已是倉庫最新`,
+      }),
+    );
   } else if (aptCurrent && !def.runtimeKind) {
     metaParts.push(
       t('software.meta.aptVersion', {
         v: aptCurrent,
         defaultValue: `版本 ${aptCurrent}`,
+      }),
+    );
+  } else if (aptChecked && !aptCurrent && !def.runtimeKind) {
+    metaParts.push(
+      t('software.meta.aptNotInstalled', {
+        defaultValue: '系統未安裝此套件（可到管理頁安裝）',
       }),
     );
   }
@@ -966,7 +1046,13 @@ function SoftwareCard({
   }
   if (!metaParts.length) {
     metaParts.push(
-      t('software.meta.openManage', { defaultValue: '開啟管理頁安裝或設定' }),
+      def.softwareIds?.length || def.runtimeKind
+        ? t('software.meta.checking', {
+            defaultValue: '正在檢查版本…或開啟管理頁設定',
+          })
+        : t('software.meta.openManage', {
+            defaultValue: '面板功能頁（非 OS 套件，無系統版本更新）',
+          }),
     );
   }
 
@@ -984,6 +1070,10 @@ function SoftwareCard({
           {hasUpdate ? (
             <Badge tone="warn">
               {t('software.badge.update', { defaultValue: '有新版本' })}
+            </Badge>
+          ) : aptUpToDate ? (
+            <Badge tone="ok">
+              {t('software.badge.upToDate', { defaultValue: '已是最新' })}
             </Badge>
           ) : null}
         </div>
@@ -1030,7 +1120,7 @@ function SoftwareCard({
               ? t('software.runtime.installingShort', { defaultValue: '安裝中…' })
               : t('software.action.update', { defaultValue: '更新' })}
           </button>
-        ) : canOneClickApt ? (
+        ) : showAptUpdate ? (
           <button
             type="button"
             className={buttonClassName({ variant: 'primary', size: 'sm' })}
@@ -1041,7 +1131,7 @@ function SoftwareCard({
             onClick={() =>
               onRequestAptApply?.({
                 packageName: String(aptPackage),
-                currentVersion: String(aptCurrent),
+                currentVersion: String(aptCurrent || ''),
                 candidateVersion: String(aptCandidate),
               })
             }
