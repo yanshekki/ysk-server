@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { canSeeFeature } from '@ysk/shared';
 import { useAuth } from '../../shared/hooks/useAuth';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
+import { useSoftwareNavBadges } from '../../shared/hooks/useSoftwareNavBadges';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { api } from '../../shared/services/api';
 import { buttonClassName, ToastViewport } from '../../shared/components/ui';
@@ -48,6 +49,7 @@ export function AppShell() {
   >([]);
 
   const isAdmin = Boolean(user?.roles?.includes('admin'));
+  const navBadges = useSoftwareNavBadges();
   const navSections = useMemo(
     () =>
       FEATURE_SECTIONS.map((section) => ({
@@ -58,6 +60,12 @@ export function AppShell() {
       })).filter((section) => section.items.length > 0),
     [capabilities, isAdmin],
   );
+
+  function navBadgeFor(to: string): number | undefined {
+    if (to === '/software' && navBadges.software > 0) return navBadges.software;
+    if (to === '/updates' && navBadges.updates > 0) return navBadges.updates;
+    return undefined;
+  }
 
   async function onLogout() {
     await logout();
@@ -107,22 +115,45 @@ export function AppShell() {
                   })}
                 </span>
               ) : null}
-              {section.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={() =>
-                    `shell__link${isNavActive(item.to, location.pathname) ? ' active' : ''}`
-                  }
-                  onClick={() => setOpen(false)}
-                >
-                  <span className="shell__link-icon" aria-hidden>
-                    {item.icon}
-                  </span>
-                  {t(`nav.${item.key}`, { defaultValue: item.key })}
-                </NavLink>
-              ))}
+              {section.items.map((item) => {
+                const badgeN = navBadgeFor(item.to);
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === '/'}
+                    className={() =>
+                      `shell__link${isNavActive(item.to, location.pathname) ? ' active' : ''}`
+                    }
+                    onClick={() => setOpen(false)}
+                  >
+                    <span className="shell__link-icon" aria-hidden>
+                      {item.icon}
+                    </span>
+                    <span className="shell__link-label">
+                      {t(`nav.${item.key}`, { defaultValue: item.key })}
+                    </span>
+                    {badgeN != null ? (
+                      <span
+                        className="shell__link-badge"
+                        title={
+                          item.to === '/software'
+                            ? t('software.navBadgeTitle', {
+                                n: badgeN,
+                                defaultValue: `目錄軟件系統倉庫可升級：${badgeN}`,
+                              })
+                            : t('updates.navBadgeTitle', {
+                                n: badgeN,
+                                defaultValue: `主機可升級套件：${badgeN}`,
+                              })
+                        }
+                      >
+                        {badgeN > 99 ? '99+' : badgeN}
+                      </span>
+                    ) : null}
+                  </NavLink>
+                );
+              })}
             </div>
           ))}
         </nav>

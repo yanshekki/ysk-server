@@ -10,12 +10,15 @@ import {
   Button,
   Card,
   CardSection,
+  ConfirmDialog,
   FeaturePageLayout,
   LoadingBlock,
   PageTabs,
   buttonClassName,
 } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
+import { updatesApi } from '../../features/updates';
+import { toast } from '../../shared/stores/toast-store';
 import {
   SOFTWARE_CARDS,
   SOFTWARE_TABS,
@@ -97,6 +100,16 @@ export function SoftwareHubPage() {
     Partial<Record<RuntimeKindKey, LatestHint>>
   >({});
   const [aptById, setAptById] = useState<Record<string, AptUpgradeRow>>({});
+  /** Product-catalog apt upgradable count (from software/upgrades) */
+  const [catalogAptUpgradable, setCatalogAptUpgradable] = useState(0);
+  /** Full-host inventory upgradable (updates page) */
+  const [hostUpgradable, setHostUpgradable] = useState(0);
+  const [applyTarget, setApplyTarget] = useState<{
+    packageName: string;
+    currentVersion: string;
+    candidateVersion: string;
+  } | null>(null);
+  const [applyBusy, setApplyBusy] = useState(false);
 
   // Sync tab ↔ URL
   useEffect(() => {
@@ -116,13 +129,16 @@ export function SoftwareHubPage() {
     setLoading(true);
     setError(null);
     try {
-      const [mx, rt, up] = await Promise.all([
+      const [mx, rt, up, inv] = await Promise.all([
         systemApi.servicesMatrix().catch(() => ({ items: [] as MatrixItem[] })),
         systemApi.runtimes().catch(() => null),
         systemApi.softwareUpgrades().catch(() => ({
           items: [] as AptUpgradeRow[],
           upgradableCount: 0,
         })),
+        updatesApi
+          .inventory({ upgradable: '1', cached: true })
+          .catch(() => null),
       ]);
       setMatrix((mx as { items?: MatrixItem[] }).items ?? []);
       setRuntimeProbe((rt as Record<string, unknown>) ?? null);
@@ -131,6 +147,15 @@ export function SoftwareHubPage() {
         if (row?.id) aptMap[row.id] = row;
       }
       setAptById(aptMap);
+      setCatalogAptUpgradable(
+        Number((up as { upgradableCount?: number }).upgradableCount ?? 0) || 0,
+      );
+      const metaUp = Number(inv?.meta?.upgradableCount ?? 0);
+      const rowUp = (inv?.inventory ?? []).filter(
+        (i) =>
+          i.candidateVersion && i.candidateVersion !== i.currentVersion,
+      ).length;
+      setHostUpgradable(Math.max(metaUp, rowUp) || 0);
 
       const kinds = SOFTWARE_CARDS.map((c) => c.runtimeKind).filter(
         Boolean,
@@ -248,7 +273,16 @@ export function SoftwareHubPage() {
           installedLabels.length;
 
       const aptUpdate = aptUpgradable.length > 0;
-      const hasUpdate = runtimeUpdate || Boolean(panelGap) || aptUpdate;
+      // Host "updates" card: surface full-host inventory count (not a fake package version)
+      const hostUpdatesHint =
+        def.id === 'updates' && hostUpgradable > 0
+          ? hostUpgradable
+          : undefined;
+      const hasUpdate =
+        runtimeUpdate ||
+        Boolean(panelGap) ||
+        aptUpdate ||
+        Boolean(hostUpdatesHint);
 
       return {
         def,
@@ -264,9 +298,10 @@ export function SoftwareHubPage() {
         aptCandidate: primaryApt?.candidateVersion,
         aptPackage: primaryApt?.packageName,
         aptUpdate,
+        hostUpdatesHint,
       };
     },
-    [matrix, probeByKind, latestByKind, aptById, t],
+    [matrix, probeByKind, latestByKind, aptById, hostUpgradable, t],
   );
 
   const allViews = useMemo(
@@ -287,8 +322,47 @@ export function SoftwareHubPage() {
       runtimeTotal: runtimeViews.length,
       updates,
       serviceBad,
+      catalogAptUpgradable,
+      hostUpgradable,
     };
-  }, [allViews]);
+  }, [allViews, catalogAptUpgradable, hostUpgradable]);
+
+  const confirmApplyPackage = useCallback(async () => {
+    if (!applyTarget) return;
+    setApplyBusy(true);
+    try {
+      const r = await updatesApi.applyPackage({
+        packageName: applyTarget.packageName,
+        currentVersion: applyTarget.currentVersion,
+        candidateVersion: applyTarget.candidateVersion,
+        confirmHighRisk: true,
+      });
+      if (r.blocked) {
+        toast.error(
+          r.blockMessage ||
+            t('software.apply.blocked', { defaultValue: '更新被阻擋（需 root+EXECUTE）' }),
+        );
+      } else if (r.ok && r.applied) {
+        toast.ok(
+          t('software.apply.ok', {
+            pkg: applyTarget.packageName,
+            defaultValue: `已套用 ${applyTarget.packageName} 更新`,
+          }),
+        );
+        setApplyTarget(null);
+        void refresh();
+      } else {
+        toast.error(
+          (r.notes ?? []).slice(0, 2).join(' · ') ||
+            t('software.apply.failed', { defaultValue: '更新未完成' }),
+        );
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('common.loadFailed'));
+    } finally {
+      setApplyBusy(false);
+    }
+  }, [applyTarget, refresh, t]);
 
   const visibleCards = useMemo(() => {
     const list = cardsForTab(tab);
@@ -380,6 +454,43 @@ export function SoftwareHubPage() {
                     </div>
                   </div>
 
+                  {(summary.catalogAptUpgradable > 0 || summary.hostUpgradable > 0) ? (
+                    <Card className="u-mb-3">
+                      <CardSection
+                        title={t('software.aptSummaryTitle', {
+                          defaultValue: '系統倉庫可升級',
+                        })}
+                        description={t('software.aptSummaryDesc', {
+                          defaultValue:
+                            '目錄軟件與主機套件清單分開統計；實際套用可在更新中心或卡片一鍵確認。',
+                        })}
+                      >
+                        <div className="software-card__actions">
+                          <Badge tone="warn">
+                            {t('software.aptSummary.catalog', {
+                              n: summary.catalogAptUpgradable,
+                              defaultValue: `目錄軟件 ${summary.catalogAptUpgradable}`,
+                            })}
+                          </Badge>
+                          <Badge tone={summary.hostUpgradable ? 'warn' : 'neutral'}>
+                            {t('software.aptSummary.host', {
+                              n: summary.hostUpgradable,
+                              defaultValue: `主機套件 ${summary.hostUpgradable}`,
+                            })}
+                          </Badge>
+                          <Link
+                            to="/updates"
+                            className={buttonClassName({ variant: 'primary', size: 'sm' })}
+                          >
+                            {t('software.aptSummary.openUpdates', {
+                              defaultValue: '開啟更新中心',
+                            })}
+                          </Link>
+                        </div>
+                      </CardSection>
+                    </Card>
+                  ) : null}
+
                   <Card className="u-mb-3">
                     <CardSection
                       title={t('software.quickTitle', { defaultValue: '快捷' })}
@@ -420,6 +531,12 @@ export function SoftwareHubPage() {
                         >
                           {t('nav.projects')}
                         </Link>
+                        <Link
+                          to="/updates"
+                          className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                        >
+                          {t('nav.updates')}
+                        </Link>
                       </div>
                     </CardSection>
                   </Card>
@@ -432,14 +549,19 @@ export function SoftwareHubPage() {
                         })}
                         description={t('software.updatesDesc', {
                           defaultValue:
-                            '執行環境：上游／面板新版本；服務：系統倉庫可升級。套件更新會前往更新中心。',
+                            '執行環境：上游／面板新版本；服務：系統倉庫可升級。可一鍵套用套件或前往更新中心。',
                         })}
                       >
                         <div className="software-hub__grid">
                           {allViews
                             .filter((v) => v.hasUpdate)
                             .map((v) => (
-                              <SoftwareCard key={v.def.id} view={v} t={t} />
+                              <SoftwareCard
+                                key={v.def.id}
+                                view={v}
+                                t={t}
+                                onRequestAptApply={setApplyTarget}
+                              />
                             ))}
                         </div>
                       </CardSection>
@@ -457,7 +579,12 @@ export function SoftwareHubPage() {
               ) : (
                 <div className="software-hub__grid">
                   {visibleCards.map((v) => (
-                    <SoftwareCard key={v.def.id} view={v} t={t} />
+                    <SoftwareCard
+                      key={v.def.id}
+                      view={v}
+                      t={t}
+                      onRequestAptApply={setApplyTarget}
+                    />
                   ))}
                 </div>
               )}
@@ -465,6 +592,31 @@ export function SoftwareHubPage() {
           )}
         </div>
       </PageTabs>
+
+      <ConfirmDialog
+        open={Boolean(applyTarget)}
+        title={t('software.apply.confirmTitle', {
+          defaultValue: '確認套用系統套件更新？',
+        })}
+        description={
+          applyTarget
+            ? t('software.apply.confirmBody', {
+                pkg: applyTarget.packageName,
+                from: applyTarget.currentVersion,
+                to: applyTarget.candidateVersion,
+                defaultValue: `將升級 ${applyTarget.packageName}：${applyTarget.currentVersion} → ${applyTarget.candidateVersion}。需 root 且已開啟 EXECUTE。`,
+              })
+            : ''
+        }
+        confirmLabel={t('software.apply.confirm', { defaultValue: '確認更新' })}
+        cancelLabel={t('common.cancel', { defaultValue: '取消' })}
+        busy={applyBusy}
+        danger
+        onConfirm={() => void confirmApplyPackage()}
+        onClose={() => {
+          if (!applyBusy) setApplyTarget(null);
+        }}
+      />
     </FeaturePageLayout>
   );
 }
@@ -482,14 +634,22 @@ type CardView = {
   aptCandidate?: string;
   aptPackage?: string;
   aptUpdate?: boolean;
+  /** Full-host inventory upgradable count (updates card only) */
+  hostUpdatesHint?: number;
 };
 
 function SoftwareCard({
   view,
   t,
+  onRequestAptApply,
 }: {
   view: CardView;
   t: (k: string, o?: Record<string, unknown>) => string;
+  onRequestAptApply?: (target: {
+    packageName: string;
+    currentVersion: string;
+    candidateVersion: string;
+  }) => void;
 }) {
   const {
     def,
@@ -504,6 +664,7 @@ function SoftwareCard({
     aptCandidate,
     aptPackage,
     aptUpdate,
+    hostUpdatesHint,
   } = view;
 
   const name = t(`nav.${def.navKey}`, { defaultValue: def.navKey });
@@ -514,14 +675,24 @@ function SoftwareCard({
   const updateHref = hasUpdate
     ? def.runtimeKind && updateTarget
       ? `${def.to}?version=${encodeURIComponent(updateTarget)}`
-      : aptUpdate && aptPackage
-        ? `/updates?q=${encodeURIComponent(aptPackage)}`
-        : def.runtimeKind
-          ? def.to
-          : aptPackage
-            ? `/updates?q=${encodeURIComponent(aptPackage)}`
-            : def.to
+      : def.id === 'updates'
+        ? '/updates'
+        : aptUpdate && aptPackage
+          ? `/updates?q=${encodeURIComponent(aptPackage)}`
+          : def.runtimeKind
+            ? def.to
+            : aptPackage
+              ? `/updates?q=${encodeURIComponent(aptPackage)}`
+              : def.to
     : null;
+
+  const canOneClickApt = Boolean(
+    aptUpdate &&
+      aptPackage &&
+      aptCurrent &&
+      aptCandidate &&
+      onRequestAptApply,
+  );
 
   const projectHref =
     def.projectRuntime && def.runtimeKind
@@ -574,6 +745,14 @@ function SoftwareCard({
       }),
     );
   }
+  if (hostUpdatesHint != null && hostUpdatesHint > 0) {
+    metaParts.push(
+      t('software.meta.hostUpgradable', {
+        n: hostUpdatesHint,
+        defaultValue: `主機約 ${hostUpdatesHint} 個套件可升級`,
+      }),
+    );
+  }
   if (!metaParts.length) {
     metaParts.push(
       t('software.meta.openManage', { defaultValue: '開啟管理頁安裝或設定' }),
@@ -600,7 +779,25 @@ function SoftwareCard({
       </div>
       <p className="software-card__meta">{metaParts.join(' · ')}</p>
       <div className="software-card__actions">
-        {updateHref ? (
+        {canOneClickApt ? (
+          <button
+            type="button"
+            className={buttonClassName({ variant: 'primary', size: 'sm' })}
+            title={t('software.action.applyAptTitle', {
+              pkg: aptPackage,
+              defaultValue: `確認後套用 ${aptPackage} 系統更新`,
+            })}
+            onClick={() =>
+              onRequestAptApply?.({
+                packageName: String(aptPackage),
+                currentVersion: String(aptCurrent),
+                candidateVersion: String(aptCandidate),
+              })
+            }
+          >
+            {t('software.action.update', { defaultValue: '更新' })}
+          </button>
+        ) : updateHref ? (
           <Link
             to={updateHref}
             className={buttonClassName({ variant: 'primary', size: 'sm' })}
