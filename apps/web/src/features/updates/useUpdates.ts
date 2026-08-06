@@ -105,25 +105,30 @@ export function useUpdates() {
   const rescanInventoryQuiet = useCallback(async () => {
     try {
       const inv = await updatesApi.refresh(false);
-      setInventory((inv.advice ?? inv.inventory ?? []).slice(0, 200).map((a) => {
-        // normalize inventory-only rows if advice empty
-        if ('packageName' in a && 'advice' in a) return a as AdviceRow;
-        const i = a as {
-          packageName?: string;
-          currentVersion?: string;
-          candidateVersion?: string;
-        };
-        return {
-          packageName: String(i.packageName ?? ''),
-          currentVersion: String(i.currentVersion ?? ''),
-          candidateVersion: i.candidateVersion,
-          advice: 'skip' as const,
-          risk: 'low' as const,
-          cves: [] as string[],
-          requiresApproval: false,
-          summary: '',
-        };
-      }));
+      // Prefer advice (has risk/approval); fall back to inventory rows
+      const advice = (inv.advice ?? []) as AdviceRow[];
+      const invRows = inv.inventory ?? [];
+      if (advice.length > 0) {
+        setInventory(advice.slice(0, 200));
+      } else {
+        setInventory(
+          invRows.slice(0, 200).map((i) => {
+            const cur = String(i.currentVersion ?? '');
+            const cand = String(i.candidateVersion ?? cur);
+            const up = Boolean(cand && cand !== cur);
+            return {
+              packageName: String(i.packageName ?? ''),
+              currentVersion: cur,
+              candidateVersion: cand,
+              advice: (up ? 'update' : 'skip') as AdviceRow['advice'],
+              risk: 'low' as const,
+              cves: [] as string[],
+              requiresApproval: up,
+              summary: '',
+            };
+          }),
+        );
+      }
       setLastAt(inv.collectedAt ?? new Date().toISOString());
     } catch {
       /* keep prior list; user can click 掃描套件 */

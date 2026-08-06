@@ -7,6 +7,8 @@ import type { UpdateItemDto } from '@ysk/shared';
 function mockHost(opts: {
   execute?: boolean;
   root?: boolean;
+  /** Installed version reported by dpkg-query after apply (default 1.1 = success) */
+  dpkgVersion?: string;
   run?: (argv: string[]) => RunResult;
 }): HostExecutor {
   return {
@@ -20,14 +22,26 @@ function mockHost(opts: {
     mkdirp: async () => undefined,
     sysInfo: async () => ({}),
     serviceStatus: async () => ({ stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false }),
-    runCommand: async (argv) =>
-      opts.run?.(argv) ?? {
+    runCommand: async (argv) => {
+      if (opts.run) return opts.run(argv);
+      const joined = argv.join(' ');
+      if (joined.includes('dpkg-query')) {
+        return {
+          stdout: `${opts.dpkgVersion ?? '1.1'}\n`,
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        };
+      }
+      return {
         stdout: 'ok',
         stderr: '',
         exitCode: 0,
         argv,
         dryRun: false,
-      },
+      };
+    },
   };
 }
 
@@ -74,12 +88,21 @@ describe('applyPackageUpdate', () => {
     expect(bad.notes.some((n) => /不合法/.test(n))).toBe(true);
 
     const ok = await applyPackageUpdate({
-      host: mockHost({}),
+      host: mockHost({ dpkgVersion: '1.1' }),
       item: baseItem,
       confirmHighRisk: true,
     });
     expect(ok.applied).toBe(true);
     expect(ok.ok).toBe(true);
+
+    // apt exit 0 but dpkg still old → not applied (honest)
+    const fake = await applyPackageUpdate({
+      host: mockHost({ dpkgVersion: '1.0' }),
+      item: baseItem,
+      confirmHighRisk: true,
+    });
+    expect(fake.applied).toBe(false);
+    expect(fake.ok).toBe(false);
   });
 
   it('blocks when candidate missing or equals current', async () => {
