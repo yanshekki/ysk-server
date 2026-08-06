@@ -148,6 +148,15 @@ describe('multi-version runtimes', () => {
     expect(unit).toContain('LimitNOFILE=65535');
     expect(unit).toContain('StartLimitBurst=5');
     expect(unit).toContain('StartLimitIntervalSec=120');
+    const spaced = renderNodeProcessUnit({
+      projectName: 'demo',
+      linuxUser: 'ysk_demo',
+      appDir: '/var/lib/ysk-server/projects/ysk_demo/app',
+      nodeBinary: '/opt/my node/bin/node',
+      entry: 'server.js',
+      port: 3000,
+    });
+    expect(spaced).toContain("'/opt/my node/bin/node'");
 
     const py = renderProcessUnit({
       projectName: 'py',

@@ -103,7 +103,16 @@ server.listen(port, host, () => {
     const r1 = await input.host.runCommand(['cp', unitPath, `/etc/systemd/system/${unitName}`]);
     const r2 = await input.host.runCommand(['systemctl', 'daemon-reload']);
     const r3 = await input.host.runCommand(['systemctl', 'enable', '--now', unitName]);
-    enabled = r1.exitCode === 0 && r2.exitCode === 0 && r3.exitCode === 0;
+    if (r1.exitCode === 0 && r2.exitCode === 0 && r3.exitCode === 0) {
+      const { assertSystemdUnitHealthy } = await import('./project-ops.js');
+      const health = await assertSystemdUnitHealthy(input.host, unitName);
+      notes.push(...health.notes);
+      enabled = health.ok;
+      if (!health.ok) {
+        await input.host.runCommand(['systemctl', 'stop', unitName], { timeoutMs: 15_000 });
+        await input.host.runCommand(['systemctl', 'reset-failed', unitName], { timeoutMs: 10_000 });
+      }
+    }
     notes.push(enabled ? tl('notes.auto.n0749') : tl('notes.auto.n1153'));
   } else {
     notes.push(tl('notes.auto.n1154'));

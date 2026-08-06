@@ -17,9 +17,57 @@ import {
   applyRedisInstance,
   applyDnsZone,
   seedDnsZoneRecords,
+  hashFtpPassword,
+  isCryptPasswordHash,
   type CollectionKey } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
+
+/** Never return secrets to the panel list/detail API. */
+export function redactResourceSecrets(
+  key: CollectionKey,
+  row: Record<string, unknown>,
+): Record<string, unknown> {
+  if (key !== 'ftp_accounts' && key !== 'mysql_users' && key !== 'postgres_users') {
+    return row;
+  }
+  const {
+    password_plain: _pp,
+    password: _p,
+    password_hash: _ph,
+    ...rest
+  } = row;
+  return {
+    ...rest,
+    passwordSet: Boolean(
+      (typeof _ph === 'string' && _ph.length > 0) ||
+        (typeof _pp === 'string' && _pp.length > 0) ||
+        (typeof _p === 'string' && _p.length > 0),
+    ),
+  };
+}
+
+/** Hash FTP plaintext on write so plain is never stored long-term. */
+function normalizeFtpPasswordFields(data: Record<string, unknown>): Record<string, unknown> {
+  const plain = String(data.password_plain ?? data.password ?? '').trim();
+  if (!plain) {
+    const next = { ...data };
+    delete next.password_plain;
+    delete next.password;
+    return next;
+  }
+  const hash = hashFtpPassword(plain);
+  const next = { ...data };
+  delete next.password_plain;
+  delete next.password;
+  if (isCryptPasswordHash(hash)) {
+    next.password_hash = hash;
+  } else {
+    // keep plain only if hash failed (apply path will warn) — still avoid bare password key
+    next.password_plain = plain;
+  }
+  return next;
+}
 
 const COLLECTIONS: Record<string, CollectionKey> = {
   'nginx/sites': 'nginx_sites',
@@ -98,7 +146,10 @@ export async function handleResourcesRoutes(
           .filter((v) => typeof v === 'string' || typeof v === 'number')
           .map(String),
     });
-    sendJson(res, 200, { items: filtered, meta });
+    sendJson(res, 200, {
+      items: filtered.map((r) => redactResourceSecrets(key, r as Record<string, unknown>)),
+      meta,
+    });
     return true;
   }
 
@@ -109,7 +160,9 @@ export async function handleResourcesRoutes(
       sendJson(res, 404, { ok: false, message: tl('notes.auto.n0004') });
       return true;
     }
-    sendJson(res, 200, { item: row });
+    sendJson(res, 200, {
+      item: redactResourceSecrets(key, row as Record<string, unknown>),
+    });
     return true;
   }
 
@@ -222,22 +275,31 @@ export async function handleResourcesRoutes(
       return true;
     }
 
-    const row = createResource(ctx.db, key, { ...data, apply_status: data.apply_status ?? 'draft' });
+    const createData =
+      key === 'ftp_accounts'
+        ? normalizeFtpPasswordFields({ ...data, apply_status: data.apply_status ?? 'draft' })
+        : { ...data, apply_status: data.apply_status ?? 'draft' };
+    const row = createResource(ctx.db, key, createData);
     ctx.audit.append({
       actor: user.username,
       action: 'resources.create',
       resource: prefix,
       detail: { id: row.id },
       ok: true });
-    sendJson(res, 201, { item: row });
+    sendJson(res, 201, {
+      item: redactResourceSecrets(key, row as Record<string, unknown>),
+    });
     return true;
   }
 
   // PATCH
   if (method === 'PATCH' && id && !action) {
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+    let data = JSON.parse(raw || '{}') as Record<string, unknown>;
     delete data.id;
+    if (key === 'ftp_accounts') {
+      data = normalizeFtpPasswordFields(data);
+    }
     const row = updateResource(ctx.db, key, id, data);
     if (!row) {
       sendJson(res, 404, { ok: false, message: tl('notes.auto.n0004') });
@@ -247,9 +309,11 @@ export async function handleResourcesRoutes(
       actor: user.username,
       action: 'resources.update',
       resource: `${prefix}/${id}`,
-      detail: data,
+      detail: { ...data, password_plain: undefined, password: undefined, password_hash: data.password_hash ? '[set]' : undefined },
       ok: true });
-    sendJson(res, 200, { item: row });
+    sendJson(res, 200, {
+      item: redactResourceSecrets(key, row as Record<string, unknown>),
+    });
     return true;
   }
 

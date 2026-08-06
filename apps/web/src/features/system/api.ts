@@ -52,7 +52,13 @@ export const systemApi = {
     }),
   firewallStatus: () =>
     api.requestRaw<FirewallStatusDto>('/api/v1/system/firewall/status'),
-  firewallApply: (body: { allowSmtp?: boolean; apply?: boolean; extraTcpPorts?: number[] }) =>
+  firewallApply: (body: {
+    allowSmtp?: boolean;
+    apply?: boolean;
+    extraTcpPorts?: number[];
+    /** Prefer: ["21","30000:30100"] one UFW range rule — not 101 expanded ports */
+    extraPortSpecs?: string[];
+  }) =>
     api.requestRaw('/api/v1/system/firewall/apply', {
       method: 'POST',
       body: JSON.stringify(body),

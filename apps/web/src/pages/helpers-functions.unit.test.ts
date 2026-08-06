@@ -11,7 +11,7 @@ import {
   formatValue,
   keysInDb,
 } from './features/RedisPage';
-import { parsePorts } from './features/FirewallPage';
+import { parsePorts, parsePortSpecs } from './features/FirewallPage';
 import { enabledLabel, actionLabel, toneFor } from './features/ServicesPage';
 import { applyLabel } from './EmailPage';
 import { statusLabel as ftpsStatusLabel } from './features/FtpsServicePage';
@@ -120,6 +120,12 @@ describe('Firewall parsePorts', () => {
     expect(pasv).toContain(30100);
     expect(pasv.length).toBe(102);
     expect(parsePorts('1:300').length).toBeLessThanOrEqual(200);
+  });
+
+  it('parsePortSpecs keeps ranges whole for UFW', () => {
+    expect(parsePortSpecs('21,30000:30100,990')).toEqual(['21', '30000:30100', '990']);
+    expect(parsePortSpecs('5:3')).toEqual(['3:5']);
+    expect(parsePortSpecs('')).toEqual([]);
   });
 });
 

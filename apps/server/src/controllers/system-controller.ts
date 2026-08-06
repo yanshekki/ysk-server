@@ -1689,6 +1689,7 @@ export async function handleSystemRoutes(
       allowSmtp?: boolean;
       apply?: boolean;
       extraTcpPorts?: number[];
+      extraPortSpecs?: string[];
     };
     const result = await applyFirewall({
       host: ctx.host,
@@ -1696,6 +1697,7 @@ export async function handleSystemRoutes(
       allowSmtp: data.allowSmtp,
       apply: data.apply,
       extraTcpPorts: data.extraTcpPorts,
+      extraPortSpecs: data.extraPortSpecs,
     });
     ctx.audit.append({
       actor: user.username,

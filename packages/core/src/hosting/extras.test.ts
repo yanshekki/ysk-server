@@ -42,6 +42,15 @@ describe('phase3 hosting extras', () => {
     const fw = planFirewall({ allowSmtp: true, extraTcpPorts: [2222] });
     expect(fw.rules.some((r) => r.includes('25/tcp'))).toBe(true);
     expect(fw.fail2banJails).toContain('sshd');
+
+    const fwFtps = planFirewall({
+      extraPortSpecs: ['21', '990', '30000:30100'],
+    });
+    expect(fwFtps.rules).toContain('ufw allow 21/tcp');
+    expect(fwFtps.rules).toContain('ufw allow 990/tcp');
+    expect(fwFtps.rules).toContain('ufw allow 30000:30100/tcp');
+    // Must not explode into 101 single-port rules
+    expect(fwFtps.rules.filter((r) => /ufw allow 30\d{3}\/tcp$/.test(r)).length).toBe(0);
   });
 
   it('plans cron, backup, monitoring, logs', () => {

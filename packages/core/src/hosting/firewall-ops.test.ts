@@ -50,7 +50,8 @@ describe('firewall-ops', () => {
     expect(rules.some((r) => r.action === 'ALLOW' && r.num === 1)).toBe(true);
     expect(extractDenyFromIps(rules)).toContain('203.0.113.10');
     expect(FIREWALL_PROFILES.web.extraTcpPorts).toEqual([]);
-    expect(FIREWALL_PROFILES.ftps.extraTcpPorts.length).toBeGreaterThan(0);
+    expect(FIREWALL_PROFILES.ftps.extraPortSpecs).toContain('30000:30100');
+    expect(FIREWALL_PROFILES.ftps.extraPortSpecs).toContain('21');
   });
 
   it('probes and mutates with honest blocks', async () => {

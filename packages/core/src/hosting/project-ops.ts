@@ -204,7 +204,7 @@ export class ProjectOpsService {
       this.host.executeEnabled() && this.host.isRoot() && Boolean(row.os_provisioned);
     if (isolatedDeploy && !nodeBinaryExists(nodeBinary, this.host)) {
       notes.push(
-        `Node binary missing for isolated deploy: ${nodeBinary} — install Node ${nodeVer} toolchain (panel 執行環境) then redeploy. Refusing to write a unit that would 203/EXEC.`,
+        tl('notes.deploy.nodeMissingIsolated', { path: nodeBinary, version: nodeVer }),
       );
       this.projects.updateRuntimeState(projectId, {
         process_status: 'failed',
@@ -323,13 +323,16 @@ export class ProjectOpsService {
           notes.push(tl('notes.auto.t0176', { v0: (unitName) }));
         } else {
           notes.push(tl('notes.auto.n0443'));
-          if (!isProjectUserExecutableNodePath(nodeBinary)) {
+          if (!isProjectUserExecutablePath(nodeBinary)) {
             notes.push(
-              `Node binary rejected for project user: ${nodeBinary} — use ${selectNodeRuntime(nodeVer).binaryPath}`,
+              tl('notes.deploy.nodeRejectedPath', {
+                path: nodeBinary,
+                planned: selectNodeRuntime(nodeVer).binaryPath,
+              }),
             );
           } else if (!nodeBinaryExists(nodeBinary, this.host)) {
             notes.push(
-              `Node binary missing: ${nodeBinary} — install toolchain (Node ${nodeVer}) then redeploy`,
+              tl('notes.deploy.nodeMissing', { path: nodeBinary, version: nodeVer }),
             );
           }
           // Stop crash loops when unit is broken
@@ -2176,9 +2179,7 @@ export async function assertSystemdUnitHealthy(
   // Type=simple: active + MainPID>0 is the real success signal
   const ok = active === 'active' && mainPid != null;
   if (!ok) {
-    notes.push(
-      `systemd unit not healthy (${detail}). journalctl -u ${unitName} — 203/EXEC often means binary not executable by project user`,
-    );
+    notes.push(tl('notes.deploy.unitUnhealthy', { detail, unit: unitName }));
   }
   return { ok, active, result: unitResult, mainPid, notes, detail };
 }
@@ -2198,18 +2199,27 @@ function nodeBinaryExists(
 
 /**
  * True if a project linux user (ysks_*) can exec this path.
- * Panel often runs as root from /root/.hermes/node — that must never go into systemd ExecStart.
+ * Rejects root-private and per-user toolchains (hermes/nvm/cargo under /root).
  */
-export function isProjectUserExecutableNodePath(bin: string): boolean {
+export function isProjectUserExecutablePath(bin: string): boolean {
   const p = String(bin || '').trim();
   if (!p) return false;
-  if (p === 'node') return true; // resolved via unit PATH / Environment
+  // bare names resolve via unit PATH
   if (!p.startsWith('/')) return true;
   if (p.startsWith('/root/')) return false;
   if (p.includes('/.hermes/')) return false;
-  // Private nvm/fnm under a home dir is not shared with project users
-  if (/\/\.(nvm|fnm|local\/share\/fnm|volta)\//.test(p)) return false;
+  // Private toolchains under a home dir are not shared with project users
+  if (/\/\.(nvm|fnm|local\/share\/fnm|volta|cargo)\//.test(p)) return false;
+  if (/\/go\/bin\//.test(p) && (p.includes('/root/') || p.includes('/home/'))) {
+    // allow only if under project home would need more context — block generic home go/bin
+    if (!p.includes('/ysk-server') && !p.includes('/usr/local/ysk')) return false;
+  }
   return true;
+}
+
+/** @deprecated use isProjectUserExecutablePath */
+export function isProjectUserExecutableNodePath(bin: string): boolean {
+  return isProjectUserExecutablePath(bin);
 }
 
 export type ResolveNodeBinaryResult = { path: string; notes: string[] };
@@ -2251,35 +2261,37 @@ export function resolveNodeBinary(
   };
 
   for (const c of candidates) {
-    if (!isProjectUserExecutableNodePath(c)) continue;
+    if (!isProjectUserExecutablePath(c)) continue;
     if (exists(c)) {
-      if (c !== planned) {
-        notes.push(`Node binary: using ${c} (planned ${planned} not found)`);
+      // Prefer planned major path; only accept system node if major matches or ysk path missing
+      if (c === planned || c.includes(`/ysk/node/${major}/`)) {
+        if (c !== planned) {
+          notes.push(tl('notes.deploy.usingFallback', { path: c, planned }));
+        }
+        return { path: c, notes };
       }
-      return { path: c, notes };
+      // /usr/bin/node — only if no ysk major path; note version may skew
+      if (c === '/usr/bin/node' || c === '/usr/local/bin/node' || c === `/usr/bin/node${major}`) {
+        notes.push(tl('notes.deploy.usingFallback', { path: c, planned }));
+        return { path: c, notes };
+      }
     }
   }
 
   if (process.execPath && exists(process.execPath)) {
-    if (isProjectUserExecutableNodePath(process.execPath)) {
-      notes.push(`Node binary: fallback to panel execPath ${process.execPath}`);
+    if (isProjectUserExecutablePath(process.execPath)) {
+      notes.push(tl('notes.deploy.usingPanelExec', { path: process.execPath }));
       return { path: process.execPath, notes };
     }
     if (!isolatedTarget) {
       // Dev / non-root panel: same-user pidfile can use nvm/hermes path
-      notes.push(
-        `Node binary: degraded deploy using panel ${process.execPath} (not for systemd User=ysks_*)`,
-      );
+      notes.push(tl('notes.deploy.usingPanelDegraded', { path: process.execPath }));
       return { path: process.execPath, notes };
     }
-    notes.push(
-      `Skipped panel Node at ${process.execPath} (not executable by project user; would cause systemd 203/EXEC)`,
-    );
+    notes.push(tl('notes.deploy.skippedPanelNode', { path: process.execPath }));
   }
 
-  notes.push(
-    `Node ${major} binary not found on host — unit will use ${planned}; install toolchain then redeploy`,
-  );
+  notes.push(tl('notes.deploy.nodeNotFoundPlanned', { version: major, planned }));
   return { path: planned, notes };
 }
 

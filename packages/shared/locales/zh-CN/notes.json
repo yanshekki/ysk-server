@@ -60,6 +60,17 @@
     "openPortsReminder": "请在主机防火墙和云安全组放行 TCP：{{ports}}。套用 FTPS 不会代你开端口。",
     "openPortsPasvHint": "若登录成功但列目录 LIST 超时，多半是 PASV 数据端口被挡——要开齐 PASV 范围，不是只开 21。"
   },
+  "deploy": {
+    "nodeMissingIsolated": "隔离部署找不到 Node：{{path}} — 请先安装 Node {{version}} toolchain 再部署。拒绝写入会 203/EXEC 的 unit。",
+    "nodeMissing": "找不到 Node：{{path}} — 请安装 toolchain（Node {{version}}）再部署",
+    "nodeRejectedPath": "project user 不能执行此 Node 路径：{{path}} — 应使用 {{planned}}",
+    "unitUnhealthy": "systemd unit 不健康（{{detail}}）。journalctl -u {{unit}} — 203/EXEC 多半是 binary 对 project user 无权限",
+    "skippedPanelNode": "已跳过 panel Node {{path}}（project user 无法执行，会导致 systemd 203/EXEC）",
+    "usingFallback": "Node binary：使用 {{path}}（计划路径 {{planned}} 不存在）",
+    "usingPanelExec": "Node binary：回退 panel execPath {{path}}",
+    "usingPanelDegraded": "Node binary：degraded 部署使用 panel {{path}}（不适用于 systemd User=ysks_*）",
+    "nodeNotFoundPlanned": "主机未找到 Node {{version}} — unit 将使用 {{planned}}；请安装 toolchain 再部署"
+  },
   "files": {
     "needSrcDst": "请指定来源与目标路径",
     "pathOutsideSandbox": "路径超出沙箱范围：{{target}}",

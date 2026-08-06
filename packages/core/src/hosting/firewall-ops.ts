@@ -312,24 +312,21 @@ export const FIREWALL_PROFILES = {
     label: tl('notes.auto.n0203'),
     short: 'SSH + 80/443',
     allowSmtp: false,
-    extraTcpPorts: [] as number[] },
+    extraTcpPorts: [] as number[],
+    /** Prefer UFW range specs over expanded port lists */
+    extraPortSpecs: [] as string[] },
   mail: {
     id: 'mail',
     label: tl('notes.auto.n0201'),
     short: 'SSH + Web + SMTP/IMAP',
     allowSmtp: true,
-    extraTcpPorts: [] as number[] },
+    extraTcpPorts: [] as number[],
+    extraPortSpecs: [] as string[] },
   ftps: {
     id: 'ftps',
     label: 'Web + FTPS',
     short: tl('notes.auto.n0609'),
     allowSmtp: false,
-    // Full PASV band (was capped at 40 ports → 30098+ blocked, LIST timeout)
-    extraTcpPorts: [21, 990, ...range(30000, 30100)] } } as const;
-
-function range(a: number, b: number): number[] {
-  const out: number[] = [];
-  // Match firewallAllowPort max span (200) so 30000–30100 is complete
-  for (let p = a; p <= b && out.length < 200; p++) out.push(p);
-  return out;
-}
+    extraTcpPorts: [] as number[],
+    // One UFW rule for PASV band — not 101 individual allows
+    extraPortSpecs: ['21', '990', '30000:30100'] } } as const;

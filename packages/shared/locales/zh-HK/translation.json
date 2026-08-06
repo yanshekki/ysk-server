@@ -6817,6 +6817,17 @@
       "preserveHostLines": "已保留主機 crontab 中 {{count}} 行非 YSK 工作（不會整份覆蓋）。",
       "noHostLinesOrEmpty": "主機 crontab 無額外非 YSK 行（或空白）。",
       "installReplacesYskOnly": "安裝只更新帶 YSK 標記的工作；其他主機工作已合併保留。"
+    },
+    "deploy": {
+      "nodeMissingIsolated": "隔離部署找不到 Node：{{path}} — 請先裝 Node {{version}} toolchain 再部署。拒絕寫入會 203/EXEC 嘅 unit。",
+      "nodeMissing": "找不到 Node：{{path}} — 請裝 toolchain（Node {{version}}）再部署",
+      "nodeRejectedPath": "project user 唔能執行此 Node 路徑：{{path}} — 應使用 {{planned}}",
+      "unitUnhealthy": "systemd unit 唔健康（{{detail}}）。journalctl -u {{unit}} — 203/EXEC 多半係 binary 對 project user 無權限",
+      "skippedPanelNode": "已跳過 panel Node {{path}}（project user 執行唔到，會導致 systemd 203/EXEC）",
+      "usingFallback": "Node binary：使用 {{path}}（計劃路徑 {{planned}} 不存在）",
+      "usingPanelExec": "Node binary：回退 panel execPath {{path}}",
+      "usingPanelDegraded": "Node binary：degraded 部署使用 panel {{path}}（唔適用於 systemd User=ysks_*）",
+      "nodeNotFoundPlanned": "主機未找到 Node {{version}} — unit 會用 {{planned}}；請裝 toolchain 再部署"
     }
   },
   "ops": {

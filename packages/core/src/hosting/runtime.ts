@@ -364,7 +364,7 @@ export function renderNodeProcessUnit(opts: {
     projectName: opts.projectName,
     linuxUser: opts.linuxUser,
     appDir: opts.appDir,
-    execStart: `${opts.nodeBinary} ${opts.entry}`,
+    execStart: `${shellQuoteUnitArg(opts.nodeBinary)} ${shellQuoteUnitArg(opts.entry)}`,
     port: opts.port,
     env: {
       NODE_ENV: 'production',
@@ -375,6 +375,14 @@ export function renderNodeProcessUnit(opts: {
     cpuQuotaPercent: opts.cpuQuotaPercent,
     limitNOFILE: opts.limitNOFILE,
   });
+}
+
+/** Quote ExecStart tokens that contain spaces/meta (systemd argv split). */
+export function shellQuoteUnitArg(s: string): string {
+  const v = String(s ?? '');
+  if (!v) return "''";
+  if (/^[A-Za-z0-9_./:=+-]+$/.test(v)) return v;
+  return `'${v.replace(/'/g, `'\\''`)}'`;
 }
 
 /** Generic process unit for node/python/go/rust — runs as project Linux user. */

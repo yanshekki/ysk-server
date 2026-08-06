@@ -339,13 +339,14 @@ describe('ProjectOpsService helpers and honesty paths', () => {
     };
     const bad = await assertSystemdUnitHealthy(hostFail as never, 'ysk-project-x.service');
     expect(bad.ok).toBe(false);
-    expect(bad.notes.join(' ')).toMatch(/not healthy|203/);
+    expect(bad.notes.join(' ')).toMatch(/not healthy|203|unitUnhealthy|journalctl/i);
   });
 
   it('resolveNodeBinary prefers ysk node path and rejects /root panel binaries', () => {
     expect(isProjectUserExecutableNodePath('/root/.hermes/node/bin/node')).toBe(false);
     expect(isProjectUserExecutableNodePath('/usr/local/ysk/node/26/bin/node')).toBe(true);
     expect(isProjectUserExecutableNodePath('/usr/bin/node')).toBe(true);
+    expect(isProjectUserExecutableNodePath('/root/go/bin/air')).toBe(false);
 
     // Isolated (root+execute): never use /root/.hermes even if that is process.execPath
     const isolated = resolveNodeBinary('26', {

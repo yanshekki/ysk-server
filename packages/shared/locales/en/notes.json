@@ -60,6 +60,17 @@
     "openPortsReminder": "Open TCP ports on host firewall and cloud security group: {{ports}}. FTPS apply does not open ports for you.",
     "openPortsPasvHint": "If login works but directory LIST times out, the PASV data range is blocked — open the full PASV range, not only port 21."
   },
+  "deploy": {
+    "nodeMissingIsolated": "Node binary missing for isolated deploy: {{path}} — install Node {{version}} toolchain then redeploy. Refusing to write a unit that would 203/EXEC.",
+    "nodeMissing": "Node binary missing: {{path}} — install toolchain (Node {{version}}) then redeploy",
+    "nodeRejectedPath": "Node binary rejected for project user: {{path}} — use {{planned}}",
+    "unitUnhealthy": "systemd unit not healthy ({{detail}}). journalctl -u {{unit}} — 203/EXEC often means binary not executable by project user",
+    "skippedPanelNode": "Skipped panel Node at {{path}} (not executable by project user; would cause systemd 203/EXEC)",
+    "usingFallback": "Node binary: using {{path}} (planned {{planned}} not found)",
+    "usingPanelExec": "Node binary: fallback to panel execPath {{path}}",
+    "usingPanelDegraded": "Node binary: degraded deploy using panel {{path}} (not for systemd User=ysks_*)",
+    "nodeNotFoundPlanned": "Node {{version}} binary not found on host — unit will use {{planned}}; install toolchain then redeploy"
+  },
   "files": {
     "needSrcDst": "Specify source and destination paths",
     "pathOutsideSandbox": "Path outside sandbox: {{target}}",

@@ -1,7 +1,7 @@
 /**
  * vsftpd service page — professional console layout.
  */
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
@@ -32,7 +32,25 @@ import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { softwareApi } from '../../features/software';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
+import { toast } from '../../shared/stores/toast-store';
 import { bindSet } from '../bind-handlers';
+
+/** Ports the operator must open — never auto-opened by FTPS apply. */
+export function ftpsOpenPortList(settings: Pick<FtpsSettings, 'listenPort' | 'pasvMin' | 'pasvMax'>): string[] {
+  const listen = Number(settings.listenPort) || 21;
+  const min = Number(settings.pasvMin) || 30000;
+  const max = Number(settings.pasvMax) || 30100;
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  const ports = [String(listen), lo === hi ? String(lo) : `${lo}:${hi}`];
+  if (listen !== 990) ports.push('990');
+  return [...new Set(ports)];
+}
+
+/** Shell lines to copy — operator runs manually / cloud SG. */
+export function ftpsUfwCopyCommands(ports: string[]): string {
+  return ports.map((p) => `sudo ufw allow ${p}/tcp`).join('\n') + '\n';
+}
 
 const empty: FtpsSettings = {
   listen: true,
@@ -86,6 +104,9 @@ export function FtpsServicePage() {
   function patch<K extends keyof FtpsSettings>(key: K, value: FtpsSettings[K]) {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
+
+  const openPorts = useMemo(() => ftpsOpenPortList(settings), [settings]);
+  const needPasvPublicIp = !String(settings.pasvAddress ?? '').trim();
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
@@ -205,18 +226,38 @@ export function FtpsServicePage() {
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
       <Alert variant="info">
         <strong>{t('ftp.openPortsAlertTitle')}</strong>{' '}
-        {t('ftp.openPortsAlert', {
-          ports: [
-            String(settings.listenPort),
-            settings.pasvMin === settings.pasvMax
-              ? String(settings.pasvMin)
-              : `${settings.pasvMin}:${settings.pasvMax}`,
-            settings.listenPort !== 990 ? '990' : null,
-          ]
-            .filter(Boolean)
-            .join(', '),
-        })}
+        {t('ftp.openPortsAlert', { ports: openPorts.join(', ') })}
+        <div className="u-flex u-flex-wrap u-gap-2 u-mt-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              const text = ftpsUfwCopyCommands(openPorts);
+              void navigator.clipboard?.writeText(text).then(
+                () => toast.ok(t('ftp.ufwCopied')),
+                () => toast.error(t('common.copyFailed', { defaultValue: 'Copy failed' })),
+              );
+            }}
+          >
+            {t('ftp.copyUfwCommands')}
+          </Button>
+          <Link to="/firewall">
+            <Button type="button" variant="secondary" size="sm">
+              {t('ftp.openFirewallPage')}
+            </Button>
+          </Link>
+        </div>
+        <p className="muted u-text-sm u-mb-0 u-mt-2">
+          {t('ftp.firewallPresetHint')}
+        </p>
       </Alert>
+      {needPasvPublicIp ? (
+        <Alert variant="warn">
+          <strong>{t('ftp.pasvPublicIpNeededTitle')}</strong>{' '}
+          {t('ftp.pasvPublicIpNeeded')}
+        </Alert>
+      ) : null}
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'lifecycle' ? (
           <Card>

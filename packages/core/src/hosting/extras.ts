@@ -179,12 +179,18 @@ export interface FirewallPlan {
   commands: string[];
 }
 
+/**
+ * Prefer extraPortSpecs ("21", "30000:30100") → one UFW rule per range.
+ * extraTcpPorts still accepted for legacy callers (one rule per number).
+ */
 export function planFirewall(opts: {
   allowSsh?: boolean;
   allowHttp?: boolean;
   allowHttps?: boolean;
   allowSmtp?: boolean;
   extraTcpPorts?: number[];
+  /** e.g. ["21", "990", "30000:30100"] — FTPS PASV as a single range rule */
+  extraPortSpecs?: string[];
 }): FirewallPlan {
   const rules: string[] = ['ufw default deny incoming', 'ufw default allow outgoing'];
   if (opts.allowSsh !== false) rules.push('ufw allow OpenSSH');
@@ -193,11 +199,35 @@ export function planFirewall(opts: {
   if (opts.allowSmtp) {
     rules.push('ufw allow 25/tcp', 'ufw allow 587/tcp', 'ufw allow 465/tcp', 'ufw allow 993/tcp');
   }
-  for (const p of opts.extraTcpPorts ?? []) {
-    if (!Number.isInteger(p) || p < 1 || p > 65535) {
-      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0358', { v0: (p) }), { httpStatus: 400 });
+  const specs = opts.extraPortSpecs?.length
+    ? opts.extraPortSpecs
+    : (opts.extraTcpPorts ?? []).map((p) => String(p));
+  for (const raw of specs) {
+    const s = String(raw ?? '').trim();
+    if (!s) continue;
+    // Validate single or range (max span 200 — same as firewallAllowPort)
+    if (s.includes(':')) {
+      const [a, b] = s.split(':').map((x) => Number(x.trim()));
+      if (!Number.isInteger(a) || !Number.isInteger(b) || a! < 1 || b! < 1 || a! > 65535 || b! > 65535) {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0358', { v0: s }), {
+          httpStatus: 400,
+        });
+      }
+      const lo = Math.min(a!, b!);
+      const hi = Math.max(a!, b!);
+      if (hi - lo > 200) {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1113'), { httpStatus: 400 });
+      }
+      rules.push(`ufw allow ${lo}:${hi}/tcp`);
+    } else {
+      const p = Number(s);
+      if (!Number.isInteger(p) || p < 1 || p > 65535) {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0358', { v0: s }), {
+          httpStatus: 400,
+        });
+      }
+      rules.push(`ufw allow ${p}/tcp`);
     }
-    rules.push(`ufw allow ${p}/tcp`);
   }
   rules.push('ufw --force enable');
   // UFW only — fail2ban is a separate stack (do not couple install into firewall apply)
