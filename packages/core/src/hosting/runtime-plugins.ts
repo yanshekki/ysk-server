@@ -10,6 +10,8 @@ export type RuntimePluginInstaller =
   | 'npm-global'
   | 'apt'
   | 'pip'
+  /** Official Poetry installer (avoids PEP 668 / bare pip on Ubuntu) */
+  | 'poetry-official'
   | 'go-install'
   | 'cargo-install'
   | 'rustup-component'
@@ -143,10 +145,10 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     id: 'poetry',
     kind: 'python',
     label: 'Poetry',
-    hint: 'pip install poetry',
+    hint: 'official installer → /usr/local/ysk/poetry (not bare pip)',
     group: 'package',
-    installer: 'pip',
-    pipPackages: ['poetry'],
+    recommended: true,
+    installer: 'poetry-official',
     bins: ['poetry'],
   },
   {
@@ -407,8 +409,8 @@ export function buildRuntimePluginScriptLines(
     'ysk_plugin_fail() { YSK_PLUGIN_FAILED="${YSK_PLUGIN_FAILED} $1"; echo "YSK_PLUGIN_SKIP:$1" >&2; }',
     'echo "Installing companion tools: ' + ids.join(', ') + '"',
     // Prefer concrete bin dirs (glob in PATH is unreliable)
-    'export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
-    'for _d in /usr/local/ysk/node/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
+    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
+    'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/python/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
     'export PATH',
   ];
 
@@ -432,12 +434,43 @@ export function buildRuntimePluginScriptLines(
         );
         break;
       }
+      case 'poetry-official': {
+        // Official installer → POETRY_HOME (avoids PEP 668). Fallback: pipx, then pip --break-system-packages.
+        lines.push(
+          'export PATH="/usr/local/ysk/poetry/bin:$HOME/.local/bin:/root/.local/bin:$PATH"',
+          'if command -v poetry >/dev/null 2>&1; then poetry --version',
+          'elif command -v pipx >/dev/null 2>&1; then',
+          '  pipx install poetry && export PATH="$HOME/.local/bin:$PATH" && command -v poetry || ysk_plugin_fail poetry',
+          'else',
+          '  export DEBIAN_FRONTEND=noninteractive',
+          '  apt-get install -y python3-pip python3-venv curl ca-certificates 2>/dev/null || true',
+          '  export POETRY_HOME=/usr/local/ysk/poetry',
+          '  mkdir -p "$POETRY_HOME"',
+          '  if curl -fsSL https://install.python-poetry.org | python3 -; then',
+          '    ln -sfn "$POETRY_HOME/bin/poetry" /usr/local/bin/poetry || true',
+          '    export PATH="$POETRY_HOME/bin:/usr/local/bin:$PATH"',
+          '    command -v poetry || ysk_plugin_fail poetry',
+          '  elif python3 -m pip install --break-system-packages poetry 2>/dev/null || python3 -m pip install poetry; then',
+          '    export PATH="$HOME/.local/bin:/root/.local/bin:$PATH"',
+          '    command -v poetry || ysk_plugin_fail poetry',
+          '  else ysk_plugin_fail poetry; fi',
+          'fi',
+        );
+        break;
+      }
       case 'pip': {
         const pkgs = (p.pipPackages ?? []).map((x) => JSON.stringify(x)).join(' ');
+        // Prefer python3 -m pip (PEP 668: --break-system-packages); ensure pip present
         lines.push(
-          `if command -v pip3 >/dev/null 2>&1; then pip3 install --break-system-packages ${pkgs} 2>/dev/null || pip3 install ${pkgs} || ysk_plugin_fail ${p.id}`,
+          'export DEBIAN_FRONTEND=noninteractive',
+          'command -v pip3 >/dev/null 2>&1 || command -v pip >/dev/null 2>&1 || apt-get install -y python3-pip 2>/dev/null || true',
+          `if python3 -m pip install --break-system-packages ${pkgs} 2>/dev/null; then true`,
+          `elif python3 -m pip install ${pkgs} 2>/dev/null; then true`,
+          `elif command -v pip3 >/dev/null 2>&1; then pip3 install --break-system-packages ${pkgs} 2>/dev/null || pip3 install ${pkgs} || ysk_plugin_fail ${p.id}`,
           `elif command -v pip >/dev/null 2>&1; then pip install ${pkgs} || ysk_plugin_fail ${p.id}`,
           `else ysk_plugin_fail ${p.id}; fi`,
+          // pip may drop scripts under ~/.local/bin
+          'export PATH="$HOME/.local/bin:/root/.local/bin:$PATH"',
         );
         break;
       }
@@ -513,7 +546,7 @@ export function buildRuntimePluginUninstallScriptLines(
     'YSK_PLUGIN_FAILED=""',
     'ysk_plugin_fail() { YSK_PLUGIN_FAILED="${YSK_PLUGIN_FAILED} $1"; echo "YSK_PLUGIN_SKIP:$1" >&2; }',
     'echo "Uninstalling companion tools: ' + ids.join(', ') + '"',
-    'export PATH="/usr/local/bin:/usr/local/ysk/bun/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
+    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
     'for _d in /usr/local/ysk/node/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
     'export PATH',
   ];
@@ -538,10 +571,24 @@ export function buildRuntimePluginUninstallScriptLines(
         );
         break;
       }
+      case 'poetry-official': {
+        lines.push(
+          'export PATH="/usr/local/ysk/poetry/bin:$HOME/.local/bin:$PATH"',
+          'if [ -x /usr/local/ysk/poetry/bin/poetry ] || [ -d /usr/local/ysk/poetry ]; then',
+          '  curl -fsSL https://install.python-poetry.org | POETRY_HOME=/usr/local/ysk/poetry python3 - --uninstall 2>/dev/null || true',
+          '  rm -rf /usr/local/ysk/poetry',
+          '  rm -f /usr/local/bin/poetry',
+          'elif command -v pipx >/dev/null 2>&1; then pipx uninstall poetry || ysk_plugin_fail poetry',
+          'elif python3 -m pip uninstall -y poetry 2>/dev/null; then true',
+          'else ysk_plugin_fail poetry; fi',
+        );
+        break;
+      }
       case 'pip': {
         const pkgs = (p.pipPackages ?? []).map((x) => JSON.stringify(x)).join(' ');
         lines.push(
-          `if command -v pip3 >/dev/null 2>&1; then pip3 uninstall -y ${pkgs} || ysk_plugin_fail ${p.id}`,
+          `if python3 -m pip uninstall -y ${pkgs} 2>/dev/null; then true`,
+          `elif command -v pip3 >/dev/null 2>&1; then pip3 uninstall -y ${pkgs} || ysk_plugin_fail ${p.id}`,
           `elif command -v pip >/dev/null 2>&1; then pip uninstall -y ${pkgs} || ysk_plugin_fail ${p.id}`,
           `else ysk_plugin_fail ${p.id}; fi`,
         );

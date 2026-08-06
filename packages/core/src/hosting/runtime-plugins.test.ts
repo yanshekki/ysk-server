@@ -35,6 +35,15 @@ describe('runtime-plugins', () => {
     expect(body).toContain('ysk_plugin_fail');
   });
 
+  it('poetry uses official installer not bare pip only', () => {
+    const { lines, ids } = buildRuntimePluginScriptLines('python', ['poetry']);
+    expect(ids).toEqual(['poetry']);
+    const body = lines.join('\n');
+    expect(body).toMatch(/install\.python-poetry\.org/);
+    expect(body).toMatch(/POETRY_HOME/);
+    expect(body).toMatch(/ysk_plugin_fail poetry/);
+  });
+
   it('dto for each kind', () => {
     for (const kind of ['node', 'python', 'go', 'rust', 'java', 'kotlin', 'bun'] as const) {
       const dto = runtimePluginsCatalogDto(kind);
