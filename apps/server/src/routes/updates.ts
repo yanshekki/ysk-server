@@ -395,6 +395,15 @@ export async function handleUpdatesRoutes(
           stream?: boolean;
         };
         const { applyPackageUpdateBatch, adviseUpdate } = await import('@ysk/core');
+        type BatchRow = {
+          packageName: string;
+          currentVersion: string;
+          candidateVersion?: string;
+          risk?: string;
+          requiresApproval?: boolean;
+          cves?: string[];
+          summary?: string;
+        };
         const packages = (data.packages ?? [])
           .filter(
             (p) =>
@@ -426,11 +435,11 @@ export async function handleUpdatesRoutes(
           return true;
         }
 
-        const toItem = (row: (typeof packages)[0]) => {
+        const toItem = (row: BatchRow) => {
             const item = adviseUpdate({
               packageName: row.packageName,
               currentVersion: row.currentVersion,
-              candidateVersion: row.candidateVersion,
+              candidateVersion: row.candidateVersion ?? row.currentVersion,
               knownCves: row.cves,
               hasSecurityFix: Boolean(row.cves?.length),
             });
