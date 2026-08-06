@@ -38,27 +38,56 @@ export type Pm2Snapshot = {
   notes: string[];
 };
 
+export type ProjectProcessRow = {
+  projectId: string;
+  name: string;
+  runtime: string;
+  runtimeVersion: string;
+  linuxUser: string;
+  unit: string;
+  deployMode: string;
+  active: string;
+  mainPid?: number;
+  port?: number;
+  entry?: string;
+  execStart?: string;
+  yskManaged: true;
+};
+
+export type ProcessFleetSnapshot = {
+  at: string;
+  pm2: Pm2Snapshot;
+  projects: ProjectProcessRow[];
+  notes: string[];
+};
+
 function apiBase(): string {
   return '';
 }
 
 export const pm2Api = {
   status: () => api.requestRaw<Pm2Snapshot>('/api/v1/hosting/pm2/status'),
+  fleet: (runtimes = 'node,bun') =>
+    api.requestRaw<ProcessFleetSnapshot>(
+      `/api/v1/hosting/process-fleet?runtimes=${encodeURIComponent(runtimes)}`,
+    ),
 
-  openStream: (opts: {
+  openFleetStream: (opts: {
     interval?: number;
-    onTick: (s: Pm2Snapshot) => void;
+    runtimes?: string;
+    onTick: (s: ProcessFleetSnapshot) => void;
     onError?: (msg: string) => void;
     onEnd?: (reason?: string) => void;
   }): AbortController => {
     const ac = new AbortController();
     const q = new URLSearchParams();
     if (opts.interval != null) q.set('interval', String(opts.interval));
+    q.set('runtimes', opts.runtimes ?? 'node,bun');
     const token = authStore.getToken();
     void (async () => {
       try {
         const res = await fetch(
-          `${apiBase()}/api/v1/hosting/pm2/stream?${q.toString()}`,
+          `${apiBase()}/api/v1/hosting/process-fleet/stream?${q.toString()}`,
           {
             headers: {
               Accept: 'text/event-stream',
@@ -88,11 +117,11 @@ export const pm2Api = {
             } else if (line.startsWith('data:')) {
               const raw = line.slice(5).trim();
               try {
-                const data = JSON.parse(raw) as Pm2Snapshot & {
+                const data = JSON.parse(raw) as ProcessFleetSnapshot & {
                   message?: string;
                   reason?: string;
                 };
-                if (event === 'tick') opts.onTick(data as Pm2Snapshot);
+                if (event === 'tick') opts.onTick(data as ProcessFleetSnapshot);
                 else if (event === 'error') opts.onError?.(data.message || 'stream error');
                 else if (event === 'end') opts.onEnd?.(data.reason);
               } catch {

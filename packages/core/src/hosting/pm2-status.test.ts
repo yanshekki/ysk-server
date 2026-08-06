@@ -65,6 +65,12 @@ describe('pm2-status', () => {
     expect(parsePm2Jlist('{}')).toEqual([]);
   });
 
+  it('parsePm2Jlist strips warnings and accepts wrapped arrays', () => {
+    const warn = 'Use --update-env\n' + JSON.stringify(SAMPLE);
+    expect(parsePm2Jlist(warn)).toHaveLength(2);
+    expect(parsePm2Jlist(JSON.stringify({ processes: SAMPLE }))).toHaveLength(2);
+  });
+
   it('filterPm2Apps yskOnly and query', () => {
     const rows = parsePm2Jlist(JSON.stringify(SAMPLE));
     expect(filterPm2Apps(rows, { yskOnly: true })).toHaveLength(1);

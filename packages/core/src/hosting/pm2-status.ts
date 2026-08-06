@@ -87,19 +87,46 @@ export function normalizePm2App(raw: Record<string, unknown>): Pm2AppRow {
 
 /**
  * Parse `pm2 jlist` stdout into rows. Empty / invalid → [].
+ * Tolerates warning prefixes and wrapped { processes: [] } shapes.
  */
 export function parsePm2Jlist(stdout: string): Pm2AppRow[] {
-  const t = String(stdout || '').trim();
+  let t = String(stdout || '').trim();
   if (!t) return [];
+  // Drop leading non-JSON noise (pm2 warnings)
+  const bracket = t.indexOf('[');
+  const brace = t.indexOf('{');
+  if (bracket >= 0 || brace >= 0) {
+    const start =
+      bracket >= 0 && brace >= 0
+        ? Math.min(bracket, brace)
+        : bracket >= 0
+          ? bracket
+          : brace;
+    t = t.slice(start);
+  }
   try {
     const data = JSON.parse(t) as unknown;
-    if (!Array.isArray(data)) return [];
-    return data
+    let arr: unknown[] = [];
+    if (Array.isArray(data)) arr = data;
+    else if (data && typeof data === 'object') {
+      const o = data as Record<string, unknown>;
+      if (Array.isArray(o.processes)) arr = o.processes;
+      else if (Array.isArray(o.apps)) arr = o.apps;
+      else if (Array.isArray(o.data)) arr = o.data;
+    }
+    return arr
       .filter((x): x is Record<string, unknown> => x != null && typeof x === 'object')
       .map((x) => normalizePm2App(x));
   } catch {
     return [];
   }
+}
+
+/** True when stdout looked like JSON but did not yield apps (vs truly empty). */
+export function pm2JlistLooksBroken(stdout: string, apps: Pm2AppRow[]): boolean {
+  const t = String(stdout || '').trim();
+  if (!t || apps.length > 0) return false;
+  return t.includes('{') || t.includes('[');
 }
 
 export function filterPm2Apps(
@@ -182,14 +209,23 @@ export async function collectPm2Snapshot(host: HostExecutor): Promise<Pm2Snapsho
     };
   }
 
-  const apps = parsePm2Jlist(jlist.stdout || '');
-  if (!(jlist.stdout || '').trim()) {
-    notes.push('pm2 jlist empty — no processes under this panel user PM2_HOME');
-  } else if (apps.length === 0 && (jlist.stdout || '').trim()) {
-    notes.push('pm2 jlist parse failed or unexpected shape');
+  const rawOut = jlist.stdout || '';
+  const apps = parsePm2Jlist(rawOut);
+  if (!rawOut.trim()) {
+    notes.push(
+      'PM2 process list empty under the panel user (projects default to systemd — they will not appear here unless started with pm2)',
+    );
+  } else if (apps.length === 0 && pm2JlistLooksBroken(rawOut, apps)) {
+    notes.push(
+      `PM2 list could not be parsed: ${rawOut.replace(/\s+/g, ' ').slice(0, 180)}`,
+    );
+  } else if (apps.length === 0) {
+    notes.push(
+      'PM2 reports no apps for the panel user. YSK projects usually run under systemd (see project list below when available).',
+    );
   }
   notes.push(
-    'Snapshot is from the panel process user PM2_HOME; project-scoped pm2 under other users may not appear',
+    'PM2 list is for the panel process user only; other Linux users have separate PM2 homes',
   );
 
   const counts = countByStatus(apps);

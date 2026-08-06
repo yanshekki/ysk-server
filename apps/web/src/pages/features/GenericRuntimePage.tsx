@@ -370,19 +370,38 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     <FeaturePageLayout
       title={meta.title}
       status={{
-        pill: {
-          label: probeData.available.length
-            ? t('runtime.availableCount', { n: probeData.available.length })
-            : t('runtime.notDetected'),
-          tone: probeData.available.length ? 'ok' : 'warn',
-        },
+        pill: (() => {
+          if (probeData.available.length) {
+            return {
+              label: t('runtime.availableCount', { n: probeData.available.length }),
+              tone: 'ok' as const,
+            };
+          }
+          // softwareVersions may know install while matrix probe is empty — don't only say "not detected"
+          const recorded = versionStatus?.currentVersion;
+          if (recorded) {
+            return {
+              label: t('runtime.recordedInstalled', {
+                v: recorded,
+                defaultValue: `記錄已裝 ${recorded}`,
+              }),
+              tone: 'warn' as const,
+            };
+          }
+          return { label: t('runtime.notDetected'), tone: 'warn' as const };
+        })(),
         items: [
           {
             label: t('common.probe'),
             value: probe ? t('runtime.readShort') : '—',
             tone: probe ? 'ok' : 'neutral',
           },
-          { label: t('common.available'), value: probeData.available.length || 0 },
+          {
+            label: t('common.available'),
+            value:
+              probeData.available.length ||
+              (versionStatus?.currentVersion ? `≈${versionStatus.currentVersion}` : 0),
+          },
           { label: t('common.target'), value: version },
           { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
           { label: t('common.host'), value: probeData.host || '—' },
@@ -428,7 +447,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       >
         {tab === 'processes' && (kind === 'node' || kind === 'bun') ? (
           <div className="tab-panel">
-            <RuntimePm2Panel />
+            <RuntimePm2Panel runtimes={kind === 'bun' ? 'bun' : 'node,bun'} />
           </div>
         ) : null}
         {tab === 'overview' ? (

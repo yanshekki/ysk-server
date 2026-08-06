@@ -58,7 +58,7 @@ export async function handleHostingRoutes(
         return true;
       }
 
-      // —— PM2 fleet (Node/Bun Processes tab; read-only jlist) ——
+      // —— PM2 + YSK project process fleet (Node/Bun Processes tab) ——
       if (method === 'GET' && url.pathname === '/api/v1/hosting/pm2/status') {
         ctx.auth.authenticate(getBearer(req));
         const { collectPm2Snapshot } = await import('@ysk/core');
@@ -66,20 +66,40 @@ export async function handleHostingRoutes(
         sendJson(res, 200, snap);
         return true;
       }
-      if (method === 'GET' && url.pathname === '/api/v1/hosting/pm2/stream') {
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/process-fleet') {
         ctx.auth.authenticate(getBearer(req));
-        const { collectPm2Snapshot } = await import('@ysk/core');
+        const { collectProcessFleet } = await import('@ysk/core');
+        const runtimes = (url.searchParams.get('runtimes') || 'node,bun')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const fleet = await collectProcessFleet(ctx.host, ctx.db, { runtimes });
+        sendJson(res, 200, fleet);
+        return true;
+      }
+      if (
+        method === 'GET' &&
+        (url.pathname === '/api/v1/hosting/pm2/stream' ||
+          url.pathname === '/api/v1/hosting/process-fleet/stream')
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const { collectProcessFleet } = await import('@ysk/core');
         const intervalSec = Math.max(
           1,
           Math.min(10, Number(url.searchParams.get('interval') || 2)),
         );
+        const runtimes = (url.searchParams.get('runtimes') || 'node,bun')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const useFleet = url.pathname.includes('process-fleet');
         res.writeHead(200, {
           'Content-Type': 'text/event-stream; charset=utf-8',
           'Cache-Control': 'no-cache, no-transform',
           Connection: 'keep-alive',
           'X-Accel-Buffering': 'no',
         });
-        res.write(`: ysk-pm2-stream\n\n`);
+        res.write(`: ysk-process-fleet-stream\n\n`);
         let closed = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
         const maxTicks = Math.min(300, Math.floor((10 * 60) / intervalSec));
@@ -96,11 +116,12 @@ export async function handleHostingRoutes(
           if (closed) return;
           ticks += 1;
           try {
-            const snap = await collectPm2Snapshot(ctx.host);
-            send('tick', snap);
+            const fleet = await collectProcessFleet(ctx.host, ctx.db, { runtimes });
+            // Legacy pm2/stream clients expect Pm2Snapshot shape
+            send('tick', useFleet ? fleet : fleet.pm2);
           } catch (e) {
             send('error', {
-              message: e instanceof Error ? e.message : 'pm2 stream error',
+              message: e instanceof Error ? e.message : 'process fleet stream error',
             });
           }
           if (ticks >= maxTicks) {

@@ -430,7 +430,7 @@
     "emptyTitle": "PM2 not available",
     "emptyDesc": "Install the pm2 plugin for Node, then refresh.",
     "noApps": "No processes",
-    "noAppsDesc": "pm2 jlist is empty under this user, or filter matched nothing.",
+    "noAppsDesc": "No PM2 apps for the panel user. Projects usually use systemd (see YSK list above).",
     "streamLog": "Live tick log",
     "streamLogDesc": "One line per SSE tick (not process stdout).",
     "col": {
@@ -441,7 +441,17 @@
       "uptime": "Uptime",
       "mode": "Mode",
       "script": "Script",
-      "interpreter": "Interpreter"
-    }
-  }
+      "interpreter": "Interpreter",
+      "user": "User",
+      "unit": "Unit",
+      "runtime": "Runtime"
+    },
+    "projectsTitle": "YSK project processes",
+    "projectsDesc": "systemd units for panel projects (default deploy path — not PM2).",
+    "projectsCount": "YSK projects",
+    "noProjects": "No projects",
+    "noProjectsDesc": "No node/bun projects in the panel, or OS user not provisioned.",
+    "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above."
+  },
+  "recordedInstalled": "Recorded {{v}}"
 }

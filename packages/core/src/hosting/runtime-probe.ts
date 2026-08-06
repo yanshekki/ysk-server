@@ -515,7 +515,27 @@ export async function probeRuntimes(
     return text || undefined;
   }
 
-  const hostNode = await hostDefault('node', ['node', '-v']);
+  /** Prefer PATH node; fall back to newest ysk node major install */
+  async function hostNodeDefault(): Promise<string | undefined> {
+    const fromPath = await hostDefault('node', ['node', '-v']);
+    if (fromPath) return fromPath;
+    try {
+      const r = await host.runCommand(
+        [
+          'bash',
+          '-c',
+          'for d in /usr/local/ysk/node/*/bin/node; do [ -x "$d" ] && { "$d" -v 2>/dev/null; exit 0; }; done; true',
+        ],
+        { timeoutMs: 8_000 },
+      );
+      const text = (r.stdout || '').trim().split('\n')[0];
+      return text || undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  let hostNode = await hostNodeDefault();
   const hostPhp = await hostDefault('php', ['php', '-v']);
   const hostPython = await hostDefault('python3', ['python3', '--version']);
   const hostGo = await hostDefault('go', ['go', 'version']);
@@ -658,6 +678,12 @@ export async function probeRuntimes(
     },
     hostBun,
   );
+
+  // If PATH node missing but a pin resolved, surface first available as host default
+  if (!hostNode) {
+    const hit = node.find((n) => n.available && n.versionOutput);
+    if (hit?.versionOutput) hostNode = hit.versionOutput;
+  }
 
   notes.push(
     tl('notes.auto.t0396', { v0: (hostNode ?? tl('notes.tpl.none')) }),

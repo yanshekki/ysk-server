@@ -430,7 +430,7 @@
     "emptyTitle": "PM2 不可用",
     "emptyDesc": "请先为 Node 安装 pm2 plugin，再刷新。",
     "noApps": "没有进程",
-    "noAppsDesc": "此用户下 pm2 jlist 为空，或筛选无结果。",
+    "noAppsDesc": "panel 用户下没有 PM2 进程。项目多数用 systemd（见上方 YSK 列表）。",
     "streamLog": "实时 tick 日志",
     "streamLogDesc": "每个 SSE tick 一行（不是进程 stdout）。",
     "col": {
@@ -441,7 +441,17 @@
       "uptime": "运行时间",
       "mode": "模式",
       "script": "脚本",
-      "interpreter": "Interpreter"
-    }
-  }
+      "interpreter": "Interpreter",
+      "user": "用户",
+      "unit": "Unit",
+      "runtime": "Runtime"
+    },
+    "projectsTitle": "YSK 项目进程",
+    "projectsDesc": "面板项目对应的 systemd unit（默认部署路径，不是 PM2）。",
+    "projectsCount": "YSK 项目数",
+    "noProjects": "没有项目",
+    "noProjectsDesc": "面板没有 node/bun 项目，或未建 OS 用户。",
+    "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。"
+  },
+  "recordedInstalled": "记录已装 {{v}}"
 }

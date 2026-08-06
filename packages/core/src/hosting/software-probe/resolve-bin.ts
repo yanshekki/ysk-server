@@ -9,6 +9,23 @@ import type { HostExecutor } from '../../host/executor.js';
 export const PROBE_PATH =
   '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cargo/bin';
 
+/**
+ * Bash snippet: prepend YSK toolchain bins (node/go/bun/python) so probes find
+ * installs under /usr/local/ysk even when not symlinked into /usr/local/bin.
+ */
+export function shellPrependYskToolchainPath(): string {
+  // Note: shell globs use star-slash-bin — keep out of block comments (breaks esbuild).
+  const nodeGlob = '/usr/local/ysk/node/' + '*/bin';
+  const goGlob = '/usr/local/ysk/go/' + '*/bin';
+  const pyGlob = '/usr/local/ysk/python/' + '*/bin';
+  return [
+    'export PATH="' + PROBE_PATH + ':${HOME:-}/.cargo/bin:${PATH:-}"',
+    `for _ysk_d in ${nodeGlob} ${goGlob} /usr/local/ysk/bun/bin ${pyGlob}; do`,
+    '  [ -d "$_ysk_d" ] && PATH="$_ysk_d:$PATH"',
+    'done',
+  ].join('\n');
+}
+
 export function absoluteBinCandidates(bin: string): string[] {
   return [
     `/usr/local/sbin/${bin}`,
@@ -69,7 +86,7 @@ export async function resolveBin(host: HostExecutor, bin: string): Promise<strin
       [
         'bash',
         '-c',
-        `export PATH="${PROBE_PATH}:\${HOME}/.cargo/bin:\${PATH:-}"; command -v ${bin} 2>/dev/null || true`,
+        `${shellPrependYskToolchainPath()}\ncommand -v ${bin} 2>/dev/null || true`,
       ],
       { timeoutMs: 5_000 },
     );

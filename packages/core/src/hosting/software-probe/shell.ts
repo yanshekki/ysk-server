@@ -5,11 +5,11 @@
  * TypeScript host probes use resolveBin/binPresent; generated bash uses these helpers only.
  */
 
-import { PROBE_PATH } from './resolve-bin.js';
+import { shellPrependYskToolchainPath } from './resolve-bin.js';
 
-/** export PATH=… used by every shell probe fragment */
+/** export PATH used by every shell probe fragment (includes ysk toolchain bin dirs) */
 export function shellProbePathExport(): string {
-  return `export PATH="${PROBE_PATH}:\${HOME:-}/.cargo/bin:\${PATH:-}"`;
+  return shellPrependYskToolchainPath();
 }
 
 /**
