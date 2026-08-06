@@ -8,7 +8,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ProductionReadinessDto, ReadinessItemDto } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
-import { listSupportedRuntimes } from './runtime.js';
+
 import { probeRuntimes } from './runtime-probe.js';
 import { probePowerDns } from './powerdns-apply.js';
 import { probePm2 } from './pm2-apply.js';
@@ -365,7 +365,7 @@ export async function assessProductionReadiness(input: {
     level: nodeReady.length ? 'ready' : 'degraded',
     detail: nodeReady.length
       ? tl('notes.auto.t0389', { v0: (nodeReady.join(', ')) })
-      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().node.join(', ') }),
+      : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.2',
     fixHint: tl('notes.auto.n0910'),
     fixHref: nodeReady.length ? undefined : '/runtimes/node',
@@ -377,7 +377,7 @@ export async function assessProductionReadiness(input: {
     level: phpReady.length ? 'ready' : 'degraded',
     detail: phpReady.length
       ? tl('notes.tpl.available', { detail: phpReady.join(', ') })
-      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().php.join(', ') }),
+      : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.3',
     fixHint: tl('notes.auto.n0911'),
     fixHref: phpReady.length ? undefined : '/runtimes/php',
@@ -389,7 +389,7 @@ export async function assessProductionReadiness(input: {
     level: pyReady.length ? 'ready' : 'degraded',
     detail: pyReady.length
       ? tl('notes.tpl.available', { detail: pyReady.join(', ') })
-      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().python.join(', ') }),
+      : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.2',
     fixHint: tl('notes.auto.n0912'),
     fixHref: pyReady.length ? undefined : '/runtimes/python',
@@ -401,7 +401,7 @@ export async function assessProductionReadiness(input: {
     level: goReady.length ? 'ready' : 'degraded',
     detail: goReady.length
       ? tl('notes.tpl.available', { detail: goReady.join(', ') })
-      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().go.join(', ') }),
+      : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.2',
     fixHint: tl('notes.auto.n0909'),
     fixHref: goReady.length ? undefined : '/runtimes/go',
@@ -413,7 +413,7 @@ export async function assessProductionReadiness(input: {
     level: rustReady.length ? 'ready' : 'degraded',
     detail: rustReady.length
       ? tl('notes.tpl.available', { detail: rustReady.join(', ') })
-      : tl('notes.tpl.supportedNotProbed', { name: listSupportedRuntimes().rust.join(', ') }),
+      : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.2',
     fixHint: tl('notes.auto.n0913'),
     fixHref: rustReady.length ? undefined : '/runtimes/rust',

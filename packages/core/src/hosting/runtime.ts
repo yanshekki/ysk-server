@@ -42,33 +42,21 @@ export interface RuntimeSelection {
   manager: RuntimeManager;
 }
 
-export const NODE_SUPPORTED = ['18', '20', '22'] as const;
-export const PHP_SUPPORTED = ['8.1', '8.2', '8.3'] as const;
-export const PYTHON_SUPPORTED = ['3.10', '3.11', '3.12'] as const;
-/** Panel minor pins — install resolves to newest full patch tarball on go.dev */
-export const GO_SUPPORTED = ['1.21', '1.22', '1.23', '1.24', '1.25', '1.26'] as const;
-
 /**
- * Last-known full patch when go.dev/dl/?mode=json omits older minors
- * (JSON often only lists current stable lines). Prefer JSON when present.
- * Update occasionally; wrong pin → 404 and clear install error.
+ * @deprecated NOT a source of truth for installable versions.
+ * Installable pins come from version-discovery (upstream APIs).
+ * Kept only so older tests/imports compile; values are empty.
  */
-export const GO_LAST_KNOWN_PATCH: Record<(typeof GO_SUPPORTED)[number], string> = {
-  '1.21': '1.21.13',
-  '1.22': '1.22.12',
-  '1.23': '1.23.12',
-  '1.24': '1.24.6',
-  '1.25': '1.25.12',
-  '1.26': '1.26.5',
-};
-/** rustup channel or stable minor pin */
-export const RUST_SUPPORTED = ['stable', '1.78', '1.81'] as const;
-/** OpenJDK LTS majors */
-export const JAVA_SUPPORTED = ['17', '21'] as const;
-/** Kotlin compiler releases (JetBrains) */
-export const KOTLIN_SUPPORTED = ['2.1.0', '2.0.21'] as const;
-/** Bun — latest channel + common pin */
-export const BUN_SUPPORTED = ['latest', '1.1.38'] as const;
+export const NODE_SUPPORTED: readonly string[] = [];
+export const PHP_SUPPORTED: readonly string[] = [];
+export const PYTHON_SUPPORTED: readonly string[] = [];
+export const GO_SUPPORTED: readonly string[] = [];
+/** @deprecated removed — use go.dev live list via pickLatestGoDownloadVersion(available) */
+export const GO_LAST_KNOWN_PATCH: Record<string, string> = {};
+export const RUST_SUPPORTED: readonly string[] = [];
+export const JAVA_SUPPORTED: readonly string[] = [];
+export const KOTLIN_SUPPORTED: readonly string[] = [];
+export const BUN_SUPPORTED: readonly string[] = [];
 
 const PROCESS_RUNTIMES = new Set(['node', 'python', 'go', 'rust', 'java', 'kotlin', 'bun']);
 
@@ -632,6 +620,11 @@ export function renderPhpVhost(opts: {
 `;
 }
 
+/**
+ * Installable version lists are empty by design — clients must use
+ * GET /api/v1/system/software/versions (dynamic discovery).
+ * Probe still finds *installed* pins via host scan (runtime-probe).
+ */
 export function listSupportedRuntimes(): {
   node: string[];
   php: string[];
@@ -643,13 +636,13 @@ export function listSupportedRuntimes(): {
   bun: string[];
 } {
   return {
-    node: [...NODE_SUPPORTED],
-    php: [...PHP_SUPPORTED],
-    python: [...PYTHON_SUPPORTED],
-    go: [...GO_SUPPORTED],
-    rust: [...RUST_SUPPORTED],
-    java: [...JAVA_SUPPORTED],
-    kotlin: [...KOTLIN_SUPPORTED],
-    bun: [...BUN_SUPPORTED],
+    node: [],
+    php: [],
+    python: [],
+    go: [],
+    rust: [],
+    java: [],
+    kotlin: [],
+    bun: [],
   };
 }

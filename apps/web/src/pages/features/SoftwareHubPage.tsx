@@ -99,6 +99,10 @@ export function SoftwareHubPage() {
   const [latestByKind, setLatestByKind] = useState<
     Partial<Record<RuntimeKindKey, LatestHint>>
   >({});
+  /** Discovery candidates per runtime (for hub in-page version pick + install) */
+  const [runtimeCandidates, setRuntimeCandidates] = useState<
+    Partial<Record<RuntimeKindKey, Array<{ version: string; label: string }>>>
+  >({});
   const [aptById, setAptById] = useState<Record<string, AptUpgradeRow>>({});
   /** Product-catalog apt upgradable count (from software/upgrades) */
   const [catalogAptUpgradable, setCatalogAptUpgradable] = useState(0);
@@ -164,6 +168,9 @@ export function SoftwareHubPage() {
       try {
         const batch = await systemApi.softwareVersions({ ids: kinds });
         const map: Partial<Record<RuntimeKindKey, LatestHint>> = {};
+        const candMap: Partial<
+          Record<RuntimeKindKey, Array<{ version: string; label: string }>>
+        > = {};
         for (const row of batch.items ?? []) {
           const kind = row.id as RuntimeKindKey;
           if (!kinds.includes(kind)) continue;
@@ -172,11 +179,16 @@ export function SoftwareHubPage() {
             remoteLatest: row.latestVersion,
             newerThanPanel: Boolean(row.upgradable),
           };
-          // Merge apt-style rows for runtime into aptById is N/A; keep latestByKind
+          candMap[kind] = (row.candidates ?? []).map((c) => ({
+            version: c.version,
+            label: c.label,
+          }));
         }
         setLatestByKind(map);
+        setRuntimeCandidates(candMap);
       } catch {
         setLatestByKind({});
+        setRuntimeCandidates({});
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
@@ -218,6 +230,9 @@ export function SoftwareHubPage() {
       const activeItem = installed.find((i) => i.active) ?? installed[0];
       const installedLabels = installed.map((i) => String(i.version ?? '')).filter(Boolean);
       const latest = def.runtimeKind ? latestByKind[def.runtimeKind] : undefined;
+      const candidates = def.runtimeKind
+        ? runtimeCandidates[def.runtimeKind] ?? []
+        : [];
 
       const aptRows = (def.softwareIds ?? [])
         .map((id) => aptById[id])
@@ -304,9 +319,10 @@ export function SoftwareHubPage() {
         aptPackage: primaryApt?.packageName,
         aptUpdate,
         hostUpdatesHint,
+        candidates,
       };
     },
-    [matrix, probeByKind, latestByKind, aptById, hostUpgradable, t],
+    [matrix, probeByKind, latestByKind, runtimeCandidates, aptById, hostUpgradable, t],
   );
 
   const allViews = useMemo(
@@ -368,6 +384,46 @@ export function SoftwareHubPage() {
       setApplyBusy(false);
     }
   }, [applyTarget, refresh, t]);
+
+  const installRuntimeVersion = useCallback(
+    async (kind: RuntimeKindKey, version: string) => {
+      setApplyBusy(true);
+      try {
+        const r = (await systemApi.runtimeInstall({
+          kind,
+          version,
+          install: true,
+        })) as { ok?: boolean; applied?: boolean; blocked?: boolean; blockMessage?: string; notes?: string[] };
+        if (r.blocked) {
+          toast.error(
+            r.blockMessage ||
+              t('software.apply.blocked', {
+                defaultValue: '更新被阻擋（需 root+EXECUTE）',
+              }),
+          );
+        } else if (r.ok !== false) {
+          toast.ok(
+            t('software.runtime.installed', {
+              kind,
+              v: version,
+              defaultValue: `已提交 ${kind} ${version} 安裝／切換`,
+            }),
+          );
+          void refresh();
+        } else {
+          toast.error(
+            (r.notes ?? []).slice(0, 2).join(' · ') ||
+              t('software.apply.failed', { defaultValue: '更新未完成' }),
+          );
+        }
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : t('common.loadFailed'));
+      } finally {
+        setApplyBusy(false);
+      }
+    },
+    [refresh, t],
+  );
 
   const visibleCards = useMemo(() => {
     const list = cardsForTab(tab);
@@ -566,6 +622,8 @@ export function SoftwareHubPage() {
                                 view={v}
                                 t={t}
                                 onRequestAptApply={setApplyTarget}
+                                onInstallRuntime={installRuntimeVersion}
+                                installBusy={applyBusy}
                               />
                             ))}
                         </div>
@@ -589,6 +647,8 @@ export function SoftwareHubPage() {
                       view={v}
                       t={t}
                       onRequestAptApply={setApplyTarget}
+                      onInstallRuntime={installRuntimeVersion}
+                      installBusy={applyBusy}
                     />
                   ))}
                 </div>
@@ -641,12 +701,16 @@ type CardView = {
   aptUpdate?: boolean;
   /** Full-host inventory upgradable count (updates card only) */
   hostUpdatesHint?: number;
+  /** Discovery candidates for in-page version pick */
+  candidates?: Array<{ version: string; label: string }>;
 };
 
 function SoftwareCard({
   view,
   t,
   onRequestAptApply,
+  onInstallRuntime,
+  installBusy,
 }: {
   view: CardView;
   t: (k: string, o?: Record<string, unknown>) => string;
@@ -655,6 +719,8 @@ function SoftwareCard({
     currentVersion: string;
     candidateVersion: string;
   }) => void;
+  onInstallRuntime?: (kind: RuntimeKindKey, version: string) => void | Promise<void>;
+  installBusy?: boolean;
 }) {
   const {
     def,
@@ -670,6 +736,7 @@ function SoftwareCard({
     aptPackage,
     aptUpdate,
     hostUpdatesHint,
+    candidates = [],
   } = view;
 
   const name = t(`nav.${def.navKey}`, { defaultValue: def.navKey });
@@ -677,6 +744,13 @@ function SoftwareCard({
   const updateTarget = String(
     latest?.remoteLatest || latest?.panelLatest || '',
   ).trim();
+  const [picked, setPicked] = useState(
+    () => updateTarget || candidates[0]?.version || '',
+  );
+  useEffect(() => {
+    setPicked(updateTarget || candidates[0]?.version || '');
+  }, [updateTarget, candidates]);
+
   const updateHref = hasUpdate
     ? def.runtimeKind && updateTarget
       ? `${def.to}?version=${encodeURIComponent(updateTarget)}`
@@ -697,6 +771,12 @@ function SoftwareCard({
       aptCurrent &&
       aptCandidate &&
       onRequestAptApply,
+  );
+
+  const canInstallRuntime = Boolean(
+    def.runtimeKind &&
+      onInstallRuntime &&
+      (picked || updateTarget || candidates[0]?.version),
   );
 
   const projectHref =
@@ -783,8 +863,44 @@ function SoftwareCard({
         </div>
       </div>
       <p className="software-card__meta">{metaParts.join(' · ')}</p>
+      {canInstallRuntime && candidates.length > 0 ? (
+        <div className="software-card__actions u-mb-1">
+          <select
+            className="input input--sm"
+            value={picked}
+            onChange={(e) => setPicked(e.target.value)}
+            aria-label={t('software.version.pick', { defaultValue: '選擇版本' })}
+          >
+            {candidates.map((c) => (
+              <option key={c.version} value={c.version}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
       <div className="software-card__actions">
-        {canOneClickApt ? (
+        {canInstallRuntime ? (
+          <button
+            type="button"
+            className={buttonClassName({ variant: 'primary', size: 'sm' })}
+            disabled={installBusy}
+            title={t('software.action.installVersion', {
+              v: picked || updateTarget,
+              defaultValue: `安裝／更新到 ${picked || updateTarget}`,
+            })}
+            onClick={() => {
+              if (def.runtimeKind) {
+                void onInstallRuntime?.(
+                  def.runtimeKind,
+                  picked || updateTarget || candidates[0]!.version,
+                );
+              }
+            }}
+          >
+            {t('software.action.update', { defaultValue: '更新' })}
+          </button>
+        ) : canOneClickApt ? (
           <button
             type="button"
             className={buttonClassName({ variant: 'primary', size: 'sm' })}

@@ -4,7 +4,7 @@
  * "gd2" in older panels maps to suffix "gd" (php-gd).
  */
 
-import { PHP_SUPPORTED } from './runtime.js';
+import { defaultRuntimeVersion } from './runtime.js';
 
 export type PhpExtensionGroup =
   | 'core'
@@ -295,10 +295,9 @@ export function resolvePhpAptPackages(
   version: string,
   extensionIds?: string[] | null,
 ): { version: string; packages: string[]; resolvedIds: string[] } {
-  const ver = version.startsWith('php') ? version.slice(3) : version;
-  if (!(PHP_SUPPORTED as readonly string[]).includes(ver)) {
-    // still produce packages for free-form if needed; caller validates
-  }
+  const verRaw = version.startsWith('php') ? version.slice(3) : version;
+  const ver = verRaw.match(/^(\d+\.\d+)/)?.[1] ?? verRaw;
+  // Shape-only — any PHP minor from discovery is valid
 
   // undefined/null → recommended defaults; [] → required core only; else merge with required
   const extra =
@@ -351,10 +350,12 @@ export function resolvePhpAptPackages(
 
 /** Catalog payload for API / UI (no secrets). */
 export function phpExtensionCatalogDto(version?: string) {
-  const ver = version && (PHP_SUPPORTED as readonly string[]).includes(version) ? version : '8.2';
+  const raw = (version ?? '').trim();
+  const ver = raw.match(/^(\d+\.\d+)/)?.[1] || defaultRuntimeVersion('php');
   return {
     version: ver,
-    supportedVersions: [...PHP_SUPPORTED],
+    /** Empty — UI loads candidates from software/versions discovery */
+    supportedVersions: [] as string[],
     extensions: PHP_EXTENSIONS.map((e) => ({
       id: e.id,
       group: e.group,
@@ -512,9 +513,7 @@ export async function uninstallPhpExtensions(input: {
 }): Promise<PhpExtensionUninstallResult> {
   const { tl } = await import('@ysk/shared');
   const ver =
-    input.version && (PHP_SUPPORTED as readonly string[]).includes(input.version)
-      ? input.version
-      : '8.2';
+    input.version?.match(/^(\d+\.\d+)/)?.[1] || defaultRuntimeVersion('php');
   const requested = [...new Set((input.extensions ?? []).filter(Boolean))];
   const removable = requested.filter((id) => {
     const spec = BY_ID.get(id);

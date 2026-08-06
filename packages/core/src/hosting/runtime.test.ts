@@ -28,10 +28,11 @@ describe('multi-version runtimes', () => {
   it('selects supported node and php versions', () => {
     expect(selectNodeRuntime('20').binaryPath).toContain('/20/');
     expect(selectPhpRuntime('8.2').version).toBe('8.2');
-    expect(listSupportedRuntimes().node).toContain('20');
-    expect(listSupportedRuntimes().python).toContain('3.12');
-    expect(listSupportedRuntimes().go).toContain('1.22');
-    expect(listSupportedRuntimes().rust).toContain('stable');
+    // Installable pins are discovered at runtime — listSupported is empty by design
+    expect(listSupportedRuntimes().node).toEqual([]);
+    expect(listSupportedRuntimes().python).toEqual([]);
+    expect(listSupportedRuntimes().go).toEqual([]);
+    expect(listSupportedRuntimes().rust).toEqual([]);
   });
 
   it('selects python go rust', () => {
@@ -102,8 +103,8 @@ describe('multi-version runtimes', () => {
     expect(selectBunRuntime('latest').binaryPath).toContain('bun');
     expect(defaultRuntimeVersion('java')).toBe('21');
     expect(normalizeRuntimeVersion('java', '17')).toBe('17');
-    expect(listSupportedRuntimes().java).toContain('21');
-    expect(listSupportedRuntimes().bun).toContain('latest');
+    expect(listSupportedRuntimes().java).toEqual([]);
+    expect(listSupportedRuntimes().bun).toEqual([]);
 
     const j = defaultProcessCommands('java', { entry: 'app.jar', port: 8080 });
     expect(j.execStart).toContain('java -jar');

@@ -205,6 +205,7 @@ export function PhpRuntimePage() {
   const [domain, setDomain] = useState(`php.${ctx.domain}`);
   const [poolName, setPoolName] = useState('demo');
   const [version, setVersion] = useState('8.2');
+  const [phpCandidates, setPhpCandidates] = useState<string[]>([]);
   const [enableSite, setEnableSite] = useState(false);
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
   const [tools, setTools] = useState<ToolsProbe | null>(null);
@@ -223,25 +224,46 @@ export function PhpRuntimePage() {
   const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
+  // Dynamic PHP minors from upstream (no hardcoded 8.1/8.2/8.3 chips)
+  useEffect(() => {
+    let cancelled = false;
+    void systemApi
+      .softwareVersions({ id: 'php' })
+      .then((h) => {
+        if (cancelled) return;
+        const cands = (h.candidates ?? []).map((c) => c.version).filter(Boolean);
+        setPhpCandidates(cands);
+        if (!searchParams.get('version') && h.latestVersion) {
+          setVersion((prev) => prev || h.latestVersion || '8.2');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPhpCandidates([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
+
   // Software hub "更新" → /runtimes/php?version=8.3
   useEffect(() => {
     const raw = searchParams.get('version');
     if (!raw) return;
-    const supported = ['8.1', '8.2', '8.3'];
-    setVersion(pickSupportedVersion(raw, supported, '8.2'));
-  }, [searchParams]);
+    setVersion(pickSupportedVersion(raw, phpCandidates, raw));
+  }, [searchParams, phpCandidates]);
 
   const phpInstallState = useMemo(() => {
     const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
     const supported =
-      (probe?.supported as Record<string, string[]> | undefined)?.php ??
-      ['8.1', '8.2', '8.3'];
+      phpCandidates.length > 0
+        ? phpCandidates
+        : (probe?.supported as Record<string, string[]> | undefined)?.php ?? [];
     const items = (p?.php as Array<Record<string, unknown>> | undefined) ?? [];
     const available = items.filter((i) => i.available).map((i) => String(i.version));
     const hostPhp = p?.hostPhp != null ? String(p.hostPhp) : null;
     return resolveRuntimeInstallState({
       selectedVersion: version,
-      supportedVersions: supported,
+      supportedVersions: supported.length ? supported : version ? [version] : [],
       availableVersions: available,
       probeItems: items.map((i) => ({
         version: i.version != null ? String(i.version) : undefined,
@@ -250,7 +272,7 @@ export function PhpRuntimePage() {
       })),
       hostDefault: hostPhp,
     });
-  }, [probe, version]);
+  }, [probe, version, phpCandidates]);
 
   const refresh = useCallback(async () => {
     try {
@@ -263,7 +285,22 @@ export function PhpRuntimePage() {
     } catch {
       /* optional */
     }
+    try {
+      const h = await systemApi.softwareVersions({ id: 'php', refresh: true });
+      setPhpCandidates((h.candidates ?? []).map((c) => c.version).filter(Boolean));
+    } catch {
+      /* optional */
+    }
   }, []);
+
+  const phpVersionOptions = useMemo(() => {
+    const set = new Set([
+      ...phpCandidates,
+      ...phpInstallState.installedVersions,
+      version,
+    ].filter(Boolean));
+    return [...set];
+  }, [phpCandidates, phpInstallState.installedVersions, version]);
 
   const loadExtensions = useCallback(
     async (ver: string, opts?: { bust?: boolean; optimisticInstalled?: string[] }) => {
@@ -453,16 +490,30 @@ export function PhpRuntimePage() {
               <CardSection title={t('runtime.installPhp')} description={t('runtime.phpInstallHint')}>
                 <FormLayout columns={2}>
                   <Field label={t('runtime.phpVersion')} htmlFor="php-ver" flush required>
-                    <SegRadio
-                      name="php-ver"
-                      aria-label={t('runtime.phpVersion')}
-                      value={version}
-                      onChange={setVersion}
-                      options={['8.1', '8.2', '8.3'].map((v) => ({
-                        value: v,
-                        label: versionChipLabel(v, phpInstallState.installedVersions),
-                      }))}
-                    />
+                    {phpVersionOptions.length <= 8 ? (
+                      <SegRadio
+                        name="php-ver"
+                        aria-label={t('runtime.phpVersion')}
+                        value={version}
+                        onChange={setVersion}
+                        options={phpVersionOptions.map((v) => ({
+                          value: v,
+                          label: versionChipLabel(v, phpInstallState.installedVersions),
+                        }))}
+                      />
+                    ) : (
+                      <select
+                        id="php-ver"
+                        value={version}
+                        onChange={bindInput(setVersion)}
+                      >
+                        {phpVersionOptions.map((v) => (
+                          <option key={v} value={v}>
+                            {versionChipLabel(v, phpInstallState.installedVersions)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </Field>
                 </FormLayout>
                 {requiredExtLabels ? (
@@ -748,17 +799,30 @@ export function PhpRuntimePage() {
               >
                 <FormLayout columns={2}>
                   <Field label={t('runtime.phpVersion')} htmlFor="ini-ver" flush required>
-                    <SegRadio
-                      name="ini-ver"
-                      aria-label={t('runtime.phpVersion')}
-                      value={version}
-                      onChange={setVersion}
-                      options={[
-                        { value: '8.1', label: '8.1' },
-                        { value: '8.2', label: '8.2' },
-                        { value: '8.3', label: '8.3' },
-                      ]}
-                    />
+                    {phpVersionOptions.length <= 8 ? (
+                      <SegRadio
+                        name="ini-ver"
+                        aria-label={t('runtime.phpVersion')}
+                        value={version}
+                        onChange={setVersion}
+                        options={phpVersionOptions.map((v) => ({
+                          value: v,
+                          label: v,
+                        }))}
+                      />
+                    ) : (
+                      <select
+                        id="ini-ver"
+                        value={version}
+                        onChange={bindInput(setVersion)}
+                      >
+                        {phpVersionOptions.map((v) => (
+                          <option key={v} value={v}>
+                            {v}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </Field>
                   <Field label={t('runtime.managePath')} htmlFor="ini-path" flush>
                     <input id="ini-path" value={managedPath || '—'} readOnly spellCheck={false} />

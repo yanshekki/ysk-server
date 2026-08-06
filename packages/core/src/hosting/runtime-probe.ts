@@ -8,7 +8,6 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import {
-  goLastKnownPatchShellCase,
   listSupportedRuntimes,
   selectBunRuntime,
   selectGoRuntime,
@@ -405,7 +404,44 @@ async function probeBinaryVersions(
 /**
  * Probe which supported runtime versions exist on PATH / well-known paths.
  */
+/** Scan managed install dirs + host version strings (no hardcoded pin tables). */
+async function listDirVersions(
+  host: HostExecutor,
+  dir: string,
+  pattern: RegExp,
+): Promise<string[]> {
+  try {
+    const r = await host.runCommand(
+      ['bash', '-c', `ls -1 ${JSON.stringify(dir)} 2>/dev/null || true`],
+      { timeoutMs: 5_000 },
+    );
+    return (r.stdout || '')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter((s) => pattern.test(s));
+  } catch {
+    return [];
+  }
+}
+
+function extractPin(kind: string, versionText?: string): string | undefined {
+  if (!versionText) return undefined;
+  if (kind === 'node') return versionText.replace(/^v/i, '').match(/^(\d+)/)?.[1];
+  if (kind === 'go') return versionText.replace(/^go/i, '').match(/(\d+\.\d+)/)?.[1];
+  if (kind === 'php' || kind === 'python')
+    return versionText.match(/(\d+\.\d+)/)?.[1];
+  if (kind === 'java') {
+    const m = versionText.match(/version "?(\d+)/) || versionText.match(/(\d+)\.\d+\.\d+/);
+    return m?.[1];
+  }
+  if (kind === 'kotlin') return versionText.match(/(\d+\.\d+\.\d+)/)?.[1];
+  if (kind === 'bun') return versionText.match(/(\d+\.\d+[\w.-]*)/)?.[1] || 'latest';
+  if (kind === 'rust') return versionText.match(/(\d+\.\d+\.\d+)/)?.[1] || 'stable';
+  return undefined;
+}
+
 export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeReport> {
+  // Installable list is empty (discovery API). Probe only *installed* pins on disk/PATH.
   const supported = listSupportedRuntimes();
   const notes: string[] = [];
 
@@ -428,10 +464,63 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
     (await hostDefault('kotlin', ['kotlin', '-version']));
   const hostBun = await hostDefault('bun', ['bun', '--version']);
 
+  const nodePins = [
+    ...new Set([
+      ...supported.node,
+      ...(await listDirVersions(host, '/usr/local/ysk/node', /^\d+$/)),
+      extractPin('node', hostNode),
+    ].filter(Boolean) as string[]),
+  ];
+  const phpPins = [
+    ...new Set([
+      ...supported.php,
+      extractPin('php', hostPhp),
+    ].filter(Boolean) as string[]),
+  ];
+  const pythonPins = [
+    ...new Set([
+      ...supported.python,
+      extractPin('python', hostPython),
+    ].filter(Boolean) as string[]),
+  ];
+  const goPins = [
+    ...new Set([
+      ...supported.go,
+      ...(await listDirVersions(host, '/usr/local/ysk/go', /^\d+\.\d+/)),
+      extractPin('go', hostGo),
+    ].filter(Boolean) as string[]),
+  ];
+  const rustPins = [
+    ...new Set([
+      ...supported.rust,
+      'stable',
+      extractPin('rust', hostRust),
+    ].filter(Boolean) as string[]),
+  ];
+  const javaPins = [
+    ...new Set([
+      ...supported.java,
+      extractPin('java', hostJava),
+    ].filter(Boolean) as string[]),
+  ];
+  const kotlinPins = [
+    ...new Set([
+      ...supported.kotlin,
+      extractPin('kotlin', hostKotlin),
+    ].filter(Boolean) as string[]),
+  ];
+  const bunPins = [
+    ...new Set([
+      ...supported.bun,
+      'latest',
+      extractPin('bun', hostBun),
+    ].filter(Boolean) as string[]),
+  ];
+
   const node = await probeBinaryVersions(
     host,
     'node',
-    supported.node,
+    nodePins,
     selectNodeRuntime,
     (p) => [p, '-v'],
     (out, v) => new RegExp(`v?${v}\\b`).test(out),
@@ -441,7 +530,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const php = await probeBinaryVersions(
     host,
     'php',
-    supported.php,
+    phpPins,
     selectPhpRuntime,
     (p) => [p, '-v'],
     (out, v) => out.includes(v),
@@ -451,7 +540,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const python = await probeBinaryVersions(
     host,
     'python',
-    supported.python,
+    pythonPins,
     selectPythonRuntime,
     (p) => [p, '--version'],
     (out, v) => out.includes(v),
@@ -459,15 +548,15 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   );
 
   // Go: multi-version under /usr/local/ysk/go/<minor>/ — probe each path; active = PATH go matches
-  const go = await probeGoVersions(host, supported.go, hostGo);
+  const go = await probeGoVersions(host, goPins, hostGo);
 
   // Rust: multi-toolchain via rustup; pins stay installed even when not default
-  const rust = await probeRustVersions(host, supported.rust, hostRust);
+  const rust = await probeRustVersions(host, rustPins, hostRust);
 
   const java = await probeBinaryVersions(
     host,
     'java',
-    supported.java,
+    javaPins,
     selectJavaRuntime,
     (p) => [p, '-version'],
     (out, v) => out.includes(`"${v}`) || out.includes(`version ${v}`) || new RegExp(`\\b${v}\\b`).test(out),
@@ -477,7 +566,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const kotlin = await probeBinaryVersions(
     host,
     'kotlin',
-    supported.kotlin,
+    kotlinPins,
     selectKotlinRuntime,
     (p) => [p, '-version'],
     (out, v) => out.includes(v) || /kotlinc/i.test(out),
@@ -487,7 +576,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const bun = await probeBinaryVersions(
     host,
     'bun',
-    supported.bun,
+    bunPins,
     selectBunRuntime,
     (p) => [p, '--version'],
     (out, v) => {
@@ -729,16 +818,19 @@ export async function planOrInstallRuntime(input: {
       'mkdir -p /usr/local/ysk/go /tmp/ysk-go-install',
       'cd /tmp/ysk-go-install',
       'case "$(uname -m)" in aarch64|arm64) GOARCH=linux-arm64 ;; *) GOARCH=linux-amd64 ;; esac',
+      // Resolve full patch from live go.dev JSON — no hardcoded patch table
       'resolve_go_full() {',
       '  local minor="$1"',
       '  if echo "$minor" | grep -qE "^[0-9]+\\.[0-9]+\\.[0-9]+$"; then',
       '    echo "$minor"',
       '    return',
       '  fi',
-      '  case "$minor" in',
-      goLastKnownPatchShellCase(),
-      '    *) echo "${minor}.0" ;;',
-      '  esac',
+      '  local json best=""',
+      '  json=$(curl -fsSL "https://go.dev/dl/?mode=json" 2>/dev/null || true)',
+      '  if [ -n "$json" ]; then',
+      '    best=$(printf "%s" "$json" | grep -oE "go${minor}\\.[0-9]+" | sed "s/^go//" | sort -t. -k3 -n | tail -1)',
+      '  fi',
+      '  if [ -n "$best" ]; then echo "$best"; else echo "${minor}.0"; fi',
       '}',
       'FULL_VER=$(resolve_go_full "$VER")',
       'echo "YSK_GO_PANEL_VERSION=$VER"',

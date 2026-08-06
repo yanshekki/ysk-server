@@ -14,6 +14,7 @@ import {
   probeRuntimes,
   planOrInstallRuntime,
   listSupportedRuntimes,
+  defaultRuntimeVersion,
   runtimePluginsCatalogWithProbe,
   getRuntimeLatestHint,
   applyPublicFileServer,
@@ -69,17 +70,8 @@ export async function handleHostingRoutes(
           plugins?: string[];
         };
         const kind = data.kind ?? 'node';
-        const defaultVerMap: Record<string, string> = {
-          node: '20',
-          php: '8.2',
-          python: '3.12',
-          go: '1.22',
-          rust: 'stable',
-          java: '21',
-          kotlin: '2.1.0',
-          bun: 'latest',
-        };
-        const defaultVer = defaultVerMap[kind] ?? '20';
+        // Defaults only when client omits version — not "latest" SSOT
+        const defaultVer = defaultRuntimeVersion(kind);
         const result = await planOrInstallRuntime({
           dataDir: ctx.dataDir,
           host: ctx.host,
