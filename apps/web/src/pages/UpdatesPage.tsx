@@ -3,7 +3,7 @@
  * Inventory filters are server-backed (ListQuery on GET /updates/inventory).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUpdates } from '../features/updates';
 import type { AdviceRow } from '../features/updates';
@@ -158,9 +158,21 @@ export function UpdatesPage() {
 
   const [tab, setTab] = usePageTab(UPD_TABS, 'packages');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
-  const [q, setQ] = useState('');
-  const [debouncedQ, setDebouncedQ] = useState('');
+  const [searchParams] = useSearchParams();
+  const qFromUrl = (searchParams.get('q') ?? '').trim();
+  const [q, setQ] = useState(qFromUrl);
+  const [debouncedQ, setDebouncedQ] = useState(qFromUrl);
   const [highRiskApply, setHighRiskApply] = useState<AdviceRow | null>(null);
+
+  // Deep-link from software hub: /updates?q=nginx
+  useEffect(() => {
+    if (qFromUrl && qFromUrl !== q) {
+      setQ(qFromUrl);
+      setDebouncedQ(qFromUrl);
+    }
+    // Only re-sync when URL q changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qFromUrl]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedQ(q.trim()), 300);

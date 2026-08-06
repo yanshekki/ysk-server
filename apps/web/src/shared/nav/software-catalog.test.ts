@@ -56,4 +56,30 @@ describe('software-catalog', () => {
       expect(c.navKey.length).toBeGreaterThan(0);
     }
   });
+
+  it('package-backed service cards declare softwareIds for upgrade checks', () => {
+    const expected: Record<string, string[]> = {
+      mysql: ['mysql-server'],
+      mariadb: ['mariadb-server'],
+      postgres: ['postgresql'],
+      redis: ['redis-server'],
+      dns: ['pdns-server'],
+      ssl: ['certbot'],
+      nginx: ['nginx'],
+      email: ['postfix', 'dovecot'],
+      ftpService: ['vsftpd'],
+      protection: ['ufw', 'fail2ban'],
+    };
+    for (const [id, softwareIds] of Object.entries(expected)) {
+      const card = SOFTWARE_CARDS.find((c) => c.id === id);
+      expect(card?.softwareIds).toEqual(softwareIds);
+    }
+  });
+
+  it('pure UI cards do not claim apt upgrade softwareIds', () => {
+    for (const id of ['cdn', 'files', 'publicFiles', 'metrics', 'logs', 'cron']) {
+      const card = SOFTWARE_CARDS.find((c) => c.id === id);
+      expect(card?.softwareIds).toBeUndefined();
+    }
+  });
 });

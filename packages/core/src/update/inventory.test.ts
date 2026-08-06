@@ -1,6 +1,11 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import type { HostExecutor } from '../host/executor.js';
-import { adviseInventory, collectInventory, lookupOsvVulns } from './inventory.js';
+import {
+  adviseInventory,
+  collectCatalogSoftwareUpgrades,
+  collectInventory,
+  lookupOsvVulns,
+} from './inventory.js';
 // HostExecutor is structural — tests use minimal mocks
 
 describe('inventory', () => {
@@ -79,6 +84,44 @@ describe('inventory', () => {
     expect(curl?.currentVersion).toBe('7.81.0-1');
     expect(curl?.candidateVersion).toBe('7.81.0-1');
     expect(meta.upgradableCount).toBe(0);
+  });
+
+  it('collectCatalogSoftwareUpgrades returns installed catalog rows only', async () => {
+    const host = {
+      executeEnabled: () => false,
+      isRoot: () => false,
+      runCommand: async (argv: string[]) => {
+        const joined = argv.join(' ');
+        // Batch upgrades script: one tab row per package in the for-loop
+        if (joined.includes('apt-cache policy') && joined.includes('for p in')) {
+          const m = joined.match(/for p in (.+?); do/s);
+          const pkgs =
+            m?.[1]?.match(/"([^"]+)"/g)?.map((x) => x.replace(/"/g, '')) ?? [];
+          const lines = pkgs.map((p) => {
+            if (p === 'nginx') return 'nginx\t1.24.0-1\t1.24.0-2';
+            if (p === 'redis-server') return 'redis-server\t5:7.0.0\t5:7.0.0';
+            return `${p}\t(none)\t(none)`;
+          });
+          return {
+            exitCode: 0,
+            stdout: `${lines.join('\n')}\n`,
+            stderr: '',
+            argv,
+            dryRun: false,
+          };
+        }
+        return { exitCode: 0, stdout: '', stderr: '', argv, dryRun: false };
+      },
+    } as unknown as HostExecutor;
+
+    const items = await collectCatalogSoftwareUpgrades(host);
+    expect(items.every((i) => i.installed)).toBe(true);
+    expect(items.some((i) => i.id === 'nginx' && i.upgradable)).toBe(true);
+    expect(items.some((i) => i.id === 'redis-server' && !i.upgradable)).toBe(
+      true,
+    );
+    // Uninstalled packages must not appear
+    expect(items.every((i) => i.currentVersion)).toBe(true);
   });
 
   it('lookupOsvVulns returns ids from mock API', async () => {

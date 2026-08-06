@@ -205,4 +205,42 @@ describe('HostSoftwareProbe version + upgrade', () => {
     const u = await probe.upgrade('nginx');
     expect(u.upgradable).toBe(false);
   });
+
+  it('upgrades batch path marks nginx upgradable', async () => {
+    const host = {
+      executeEnabled: () => false,
+      isRoot: () => false,
+      runCommand: async (argv: string[]) => {
+        const s = argv.join(' ');
+        if (s.includes('for p in') && s.includes('apt-cache policy')) {
+          // Emit one row per package token in the for-loop args
+          const m = s.match(/for p in (.+?); do/s);
+          const pkgs = (m?.[1] ?? '')
+            .match(/"([^"]+)"/g)
+            ?.map((x) => x.replace(/"/g, '')) ?? ['nginx'];
+          const lines = pkgs.map((p) =>
+            p === 'nginx' ? 'nginx\t1.24.0-1\t1.24.0-2' : `${p}\t(none)\t(none)`,
+          );
+          return {
+            exitCode: 0,
+            stdout: `${lines.join('\n')}\n`,
+            stderr: '',
+            argv,
+            dryRun: false,
+          };
+        }
+        return { exitCode: 0, stdout: '', stderr: '', argv, dryRun: false };
+      },
+    } as unknown as HostExecutor;
+    const probe = new HostSoftwareProbe(host);
+    const rows = await probe.upgrades(['nginx', 'redis-server']);
+    expect(rows).toHaveLength(2);
+    const nginx = rows.find((r) => r.id === 'nginx');
+    expect(nginx?.upgradable).toBe(true);
+    expect(nginx?.currentVersion).toBe('1.24.0-1');
+    expect(nginx?.candidateVersion).toBe('1.24.0-2');
+    const redis = rows.find((r) => r.id === 'redis-server');
+    expect(redis?.installed).toBe(false);
+    expect(redis?.upgradable).toBe(false);
+  });
 });

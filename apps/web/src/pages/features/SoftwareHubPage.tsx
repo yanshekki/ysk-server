@@ -46,6 +46,15 @@ type LatestHint = {
   newerThanPanel?: boolean;
 };
 
+type AptUpgradeRow = {
+  id: string;
+  packageName: string;
+  installed: boolean;
+  currentVersion?: string;
+  candidateVersion?: string;
+  upgradable: boolean;
+};
+
 function isTabId(v: string | null): v is SoftwareTabId {
   return (
     v === 'overview' ||
@@ -87,6 +96,7 @@ export function SoftwareHubPage() {
   const [latestByKind, setLatestByKind] = useState<
     Partial<Record<RuntimeKindKey, LatestHint>>
   >({});
+  const [aptById, setAptById] = useState<Record<string, AptUpgradeRow>>({});
 
   // Sync tab ↔ URL
   useEffect(() => {
@@ -106,12 +116,21 @@ export function SoftwareHubPage() {
     setLoading(true);
     setError(null);
     try {
-      const [mx, rt] = await Promise.all([
+      const [mx, rt, up] = await Promise.all([
         systemApi.servicesMatrix().catch(() => ({ items: [] as MatrixItem[] })),
         systemApi.runtimes().catch(() => null),
+        systemApi.softwareUpgrades().catch(() => ({
+          items: [] as AptUpgradeRow[],
+          upgradableCount: 0,
+        })),
       ]);
       setMatrix((mx as { items?: MatrixItem[] }).items ?? []);
       setRuntimeProbe((rt as Record<string, unknown>) ?? null);
+      const aptMap: Record<string, AptUpgradeRow> = {};
+      for (const row of (up as { items?: AptUpgradeRow[] }).items ?? []) {
+        if (row?.id) aptMap[row.id] = row;
+      }
+      setAptById(aptMap);
 
       const kinds = SOFTWARE_CARDS.map((c) => c.runtimeKind).filter(
         Boolean,
@@ -170,6 +189,12 @@ export function SoftwareHubPage() {
       const installedLabels = installed.map((i) => String(i.version ?? '')).filter(Boolean);
       const latest = def.runtimeKind ? latestByKind[def.runtimeKind] : undefined;
 
+      const aptRows = (def.softwareIds ?? [])
+        .map((id) => aptById[id])
+        .filter((r): r is AptUpgradeRow => Boolean(r));
+      const aptUpgradable = aptRows.filter((r) => r.upgradable);
+      const primaryApt = aptUpgradable[0] ?? aptRows[0];
+
       let status: 'ok' | 'warn' | 'danger' | 'neutral' = 'neutral';
       let statusLabel = t('software.status.unknown', { defaultValue: '—' });
 
@@ -198,9 +223,12 @@ export function SoftwareHubPage() {
           status = 'ok';
           statusLabel = t('software.status.installed', { defaultValue: '已安裝' });
         }
+      } else if (primaryApt?.installed) {
+        status = 'ok';
+        statusLabel = t('software.status.installed', { defaultValue: '已安裝' });
       }
 
-      const hasUpdate = Boolean(
+      const runtimeUpdate = Boolean(
         latest?.newerThanPanel ||
           (latest?.remoteLatest &&
             installedLabels.length > 0 &&
@@ -219,6 +247,9 @@ export function SoftwareHubPage() {
         (probeByKind[def.runtimeKind]?.length ?? 0) >
           installedLabels.length;
 
+      const aptUpdate = aptUpgradable.length > 0;
+      const hasUpdate = runtimeUpdate || Boolean(panelGap) || aptUpdate;
+
       return {
         def,
         status,
@@ -226,12 +257,16 @@ export function SoftwareHubPage() {
         installedLabels,
         activeVersion: activeItem?.version != null ? String(activeItem.version) : null,
         versionOutput: activeItem?.versionOutput,
-        hasUpdate: hasUpdate || Boolean(panelGap),
+        hasUpdate,
         latest,
         mx,
+        aptCurrent: primaryApt?.currentVersion,
+        aptCandidate: primaryApt?.candidateVersion,
+        aptPackage: primaryApt?.packageName,
+        aptUpdate,
       };
     },
-    [matrix, probeByKind, latestByKind, t],
+    [matrix, probeByKind, latestByKind, aptById, t],
   );
 
   const allViews = useMemo(
@@ -276,12 +311,11 @@ export function SoftwareHubPage() {
                   ? '郵件與檔案'
                   : '主機服務',
     }),
-    badge:
-      x.id === 'runtimes' && summary.updates > 0
-        ? summary.updates
-        : x.id === 'overview' && summary.updates > 0
-          ? summary.updates
-          : undefined,
+    badge: (() => {
+      if (x.id === 'overview') return summary.updates > 0 ? summary.updates : undefined;
+      const n = allViews.filter((v) => v.def.tab === x.id && v.hasUpdate).length;
+      return n > 0 ? n : undefined;
+    })(),
   }));
 
   return (
@@ -398,7 +432,7 @@ export function SoftwareHubPage() {
                         })}
                         description={t('software.updatesDesc', {
                           defaultValue:
-                            '上游或面板支援較新版本。安裝後可在專案選擇對應 runtime。',
+                            '執行環境：上游／面板新版本；服務：系統倉庫可升級。套件更新會前往更新中心。',
                         })}
                       >
                         <div className="software-hub__grid">
@@ -444,6 +478,10 @@ type CardView = {
   versionOutput?: string;
   hasUpdate: boolean;
   latest?: LatestHint;
+  aptCurrent?: string;
+  aptCandidate?: string;
+  aptPackage?: string;
+  aptUpdate?: boolean;
 };
 
 function SoftwareCard({
@@ -462,17 +500,27 @@ function SoftwareCard({
     versionOutput,
     hasUpdate,
     latest,
+    aptCurrent,
+    aptCandidate,
+    aptPackage,
+    aptUpdate,
   } = view;
 
   const name = t(`nav.${def.navKey}`, { defaultValue: def.navKey });
-  // Prefer remote/panel latest for "update" deep-link (runtime page reads ?version=)
+  // Prefer remote/panel latest for runtime update deep-link; apt → updates center
   const updateTarget = String(
     latest?.remoteLatest || latest?.panelLatest || '',
   ).trim();
   const updateHref = hasUpdate
     ? def.runtimeKind && updateTarget
       ? `${def.to}?version=${encodeURIComponent(updateTarget)}`
-      : def.to
+      : aptUpdate && aptPackage
+        ? `/updates?q=${encodeURIComponent(aptPackage)}`
+        : def.runtimeKind
+          ? def.to
+          : aptPackage
+            ? `/updates?q=${encodeURIComponent(aptPackage)}`
+            : def.to
     : null;
 
   const projectHref =
@@ -502,11 +550,27 @@ function SoftwareCard({
     );
   }
   if (versionOutput) metaParts.push(versionOutput);
-  if (latest?.remoteLatest && hasUpdate) {
+  if (latest?.remoteLatest && hasUpdate && !aptUpdate) {
     metaParts.push(
       t('software.meta.remote', {
         v: latest.remoteLatest,
         defaultValue: `上游約 ${latest.remoteLatest}`,
+      }),
+    );
+  }
+  if (aptCurrent && aptUpdate && aptCandidate) {
+    metaParts.push(
+      t('software.meta.aptUpgrade', {
+        from: aptCurrent,
+        to: aptCandidate,
+        defaultValue: `系統倉庫 ${aptCurrent} → ${aptCandidate}`,
+      }),
+    );
+  } else if (aptCurrent && !def.runtimeKind) {
+    metaParts.push(
+      t('software.meta.aptVersion', {
+        v: aptCurrent,
+        defaultValue: `版本 ${aptCurrent}`,
       }),
     );
   }
@@ -546,7 +610,12 @@ function SoftwareCard({
                     v: updateTarget,
                     defaultValue: `前往安裝／切換至 ${updateTarget}`,
                   })
-                : undefined
+                : aptPackage
+                  ? t('software.action.updateAptTitle', {
+                      pkg: aptPackage,
+                      defaultValue: `前往更新中心處理 ${aptPackage}`,
+                    })
+                  : undefined
             }
           >
             {t('software.action.update', { defaultValue: '更新' })}

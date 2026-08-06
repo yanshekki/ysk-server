@@ -423,6 +423,13 @@ describe('system-controller deep coverage', () => {
         expect((inst.body as { apply_status?: string }).apply_status).not.toBe('applied');
       }
 
+      const upgrades = await apiJson(ts, 'GET', '/api/v1/system/software/upgrades');
+      expect(upgrades.status).toBeLessThan(500);
+      expect(Array.isArray((upgrades.body as { items?: unknown[] }).items)).toBe(true);
+      expect(
+        typeof (upgrades.body as { upgradableCount?: number }).upgradableCount,
+      ).toBe('number');
+
       const softInstall = await apiJson(ts, 'POST', '/api/v1/system/software/install', {
         packages: ['curl'],
         install: false,

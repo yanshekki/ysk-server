@@ -23,6 +23,7 @@ import {
   installSoftwareBatch,
   installForFeature,
   getSoftware,
+  collectCatalogSoftwareUpgrades,
   listStackPlans,
   listStackBundles,
   getStackStatus,
@@ -877,6 +878,15 @@ export async function handleSystemRoutes(
       ok: true,
     });
     sendJson(res, 200, result);
+    return true;
+  }
+
+  // —— Catalog apt upgrade status (software hub cards) ——
+  if (method === 'GET' && url.pathname === '/api/v1/system/software/upgrades') {
+    ctx.auth.authenticate(getBearer(req));
+    const items = await collectCatalogSoftwareUpgrades(ctx.host);
+    const upgradableCount = items.filter((i) => i.upgradable).length;
+    sendJson(res, 200, { items, upgradableCount });
     return true;
   }
 

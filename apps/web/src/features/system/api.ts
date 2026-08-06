@@ -300,6 +300,21 @@ export const systemApi = {
     }>('/api/v1/system/systemd/status'),
   servicesMatrix: () =>
     api.requestRaw<ServiceMatrixDto>('/api/v1/system/services/matrix'),
+  /** Product catalog apt upgrade status (software hub) */
+  softwareUpgrades: () =>
+    api.requestRaw<{
+      items: Array<{
+        id: string;
+        packageName: string;
+        installed: boolean;
+        currentVersion?: string;
+        candidateVersion?: string;
+        upgradable: boolean;
+        source?: string;
+        notes?: string[];
+      }>;
+      upgradableCount: number;
+    }>('/api/v1/system/software/upgrades'),
   serviceLifecycle: (body: {
     unit: string;
     action: 'start' | 'stop' | 'restart' | 'reload';

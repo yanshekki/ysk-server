@@ -36,6 +36,11 @@ export type SoftwareCardDef = {
   serviceNavKey?: string;
   /** matrix id hints for services API */
   matrixIds?: string[];
+  /**
+   * HostSoftwareProbe / SOFTWARE_CATALOG ids for apt upgrade checks.
+   * Omit for pure UI surfaces (CDN, file browser, metrics, …) — never fake updates.
+   */
+  softwareIds?: string[];
   /** Can be selected as project runtime */
   projectRuntime?: boolean;
 };
@@ -137,6 +142,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     serviceTo: '/databases/mysql/service',
     serviceNavKey: 'mysqlService',
     matrixIds: ['mysql', 'mysqld'],
+    softwareIds: ['mysql-server'],
   },
   {
     id: 'mariadb',
@@ -147,6 +153,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     serviceTo: '/databases/mariadb/service',
     serviceNavKey: 'mariadbService',
     matrixIds: ['mariadb', 'mysql'],
+    softwareIds: ['mariadb-server'],
   },
   {
     id: 'postgres',
@@ -157,6 +164,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     serviceTo: '/databases/postgres/service',
     serviceNavKey: 'postgresService',
     matrixIds: ['postgresql', 'postgres'],
+    softwareIds: ['postgresql'],
   },
   {
     id: 'redis',
@@ -167,6 +175,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     serviceTo: '/databases/redis/service',
     serviceNavKey: 'redisService',
     matrixIds: ['redis', 'redis-server'],
+    softwareIds: ['redis-server'],
   },
 
   // —— Edge / DNS / SSL ——
@@ -177,6 +186,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     navKey: 'dns',
     icon: '🌐',
     matrixIds: ['pdns', 'named', 'bind9'],
+    softwareIds: ['pdns-server'],
   },
   {
     id: 'cdn',
@@ -191,6 +201,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     to: '/ssl',
     navKey: 'ssl',
     icon: '🔒',
+    softwareIds: ['certbot'],
   },
   {
     id: 'nginx',
@@ -199,6 +210,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     navKey: 'nginx',
     icon: '🔀',
     matrixIds: ['nginx'],
+    softwareIds: ['nginx'],
   },
 
   // —— Mail & files ——
@@ -209,6 +221,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     navKey: 'email',
     icon: '✉',
     matrixIds: ['postfix', 'dovecot'],
+    softwareIds: ['postfix', 'dovecot'],
   },
   {
     id: 'files',
@@ -238,6 +251,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     navKey: 'ftpService',
     icon: '⚙',
     matrixIds: ['vsftpd'],
+    softwareIds: ['vsftpd'],
   },
 
   // —— Host / security / ops ——
@@ -248,6 +262,7 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     navKey: 'protection',
     icon: '🛡',
     matrixIds: ['ufw', 'fail2ban'],
+    softwareIds: ['ufw', 'fail2ban'],
   },
   {
     id: 'security',

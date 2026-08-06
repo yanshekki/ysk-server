@@ -286,13 +286,122 @@ export class HostSoftwareProbe {
     };
   }
 
+  /**
+   * Batch catalog upgrade probe (one host round-trip when possible).
+   * Falls back to sequential upgrade() when batch output is unusable (tests / broken apt).
+   */
   async upgrades(ids?: SoftwareProbeId[]): Promise<SoftwareUpgradeInfo[]> {
     const list = ids?.length ? ids : listProbeIds();
+    const batch = await this.upgradesBatch(list);
+    if (batch) return batch;
     const out: SoftwareUpgradeInfo[] = [];
     for (const id of list) {
       out.push(await this.upgrade(id));
     }
     return out;
+  }
+
+  /**
+   * Single bash loop over apt-cache policy for all probe packages.
+   * Returns null when stdout cannot be mapped (caller should sequential-fallback).
+   */
+  private async upgradesBatch(
+    list: SoftwareProbeId[],
+  ): Promise<SoftwareUpgradeInfo[] | null> {
+    const specs = list.map((id) => {
+      const entry = getProbeEntry(id);
+      const packageName = entry?.dpkgPackage || entry?.aptPackages[0] || id;
+      return { id, packageName, entry };
+    });
+    const packages = [
+      ...new Set(
+        specs
+          .map((s) => s.packageName)
+          .filter((p) => /^[a-zA-Z0-9.+_-]+$/.test(p)),
+      ),
+    ];
+    if (!packages.length) return [];
+
+    const pkgArgs = packages.map((p) => JSON.stringify(p)).join(' ');
+    const script = `
+set +e
+export LANG=C
+for p in ${pkgArgs}; do
+  out=$(apt-cache policy "$p" 2>/dev/null | head -n 16)
+  inst=$(printf '%s\\n' "$out" | awk '/^[[:space:]]*Installed:/{print $2; exit}')
+  cand=$(printf '%s\\n' "$out" | awk '/^[[:space:]]*Candidate:/{print $2; exit}')
+  [ -z "$inst" ] && inst="(none)"
+  [ -z "$cand" ] && cand="(none)"
+  printf '%s\\t%s\\t%s\\n' "$p" "$inst" "$cand"
+done
+`.trim();
+
+    const r = await this.host.runCommand(['bash', '-c', script], {
+      timeoutMs: 45_000,
+    });
+    const byPkg = new Map<
+      string,
+      { current?: string; candidate?: string; source: 'apt' | 'none' }
+    >();
+    let parsed = 0;
+    for (const line of (r.stdout || '').trim().split('\n')) {
+      if (!line.includes('\t')) continue;
+      const [name, inst, cand] = line.split('\t');
+      if (!name) continue;
+      parsed += 1;
+      const current =
+        inst && inst !== '(none)' ? inst.trim() : undefined;
+      const candidate =
+        cand && cand !== '(none)' ? cand.trim() : undefined;
+      byPkg.set(name, {
+        current,
+        candidate,
+        source: r.stdout?.trim() ? 'apt' : 'none',
+      });
+    }
+    // Need a usable row per requested package; otherwise sequential fallback
+    if (parsed === 0 || packages.some((p) => !byPkg.has(p))) return null;
+
+    return specs.map(({ id, packageName, entry }) => {
+      if (!entry) {
+        return {
+          id,
+          packageName,
+          installed: false,
+          upgradable: false,
+          source: 'none' as const,
+          notes: ['unknown id'],
+        };
+      }
+      const row = byPkg.get(packageName);
+      if (!row?.current) {
+        return {
+          id,
+          packageName,
+          installed: false,
+          upgradable: false,
+          source: 'none' as const,
+          notes: ['not installed'],
+        };
+      }
+      const upgradable = Boolean(
+        row.candidate &&
+          row.current !== row.candidate &&
+          row.candidate !== '(none)',
+      );
+      return {
+        id,
+        packageName,
+        installed: true,
+        currentVersion: row.current,
+        candidateVersion: row.candidate,
+        upgradable,
+        source: row.source,
+        notes: upgradable
+          ? [`${packageName}: ${row.current} → ${row.candidate}`]
+          : ['no upgrade candidate'],
+      };
+    });
   }
 
   /** Convenience for service-console engines */
