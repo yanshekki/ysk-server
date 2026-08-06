@@ -191,22 +191,26 @@ export async function applyPm2Start(input: {
   }
 
   notes.push(tl('notes.auto.t0307', { v0: (eco.appName) }));
-  // best-effort pid from pm2 jlist
-  let pid: number | undefined;
-  const jlist = await input.host.runCommand(['pm2', 'jlist'], { timeoutMs: 15_000 });
-  commandResults.push({
-    argv: ['pm2', 'jlist'],
-    exitCode: jlist.exitCode,
-    stderr: jlist.stderr,
-  });
-  if (jlist.exitCode === 0 && jlist.stdout.trim()) {
-    try {
-      const apps = JSON.parse(jlist.stdout) as Array<{ name?: string; pid?: number }>;
-      const hit = apps.find((a) => a.name === eco.appName);
-      if (hit?.pid && hit.pid > 0) pid = hit.pid;
-    } catch {
-      notes.push('pm2 jlist parse failed — pid unknown');
-    }
+
+  // Wait for app to become online — start exit 0 can still mean crash loop / EADDRINUSE
+  const live = await waitPm2AppOnline(input.host, eco.appName, 10_000);
+  notes.push(...live.notes);
+  commandResults.push(...live.commandResults);
+
+  if (!live.ok) {
+    notes.push(
+      `pm2 app ${eco.appName} not online (status=${live.status ?? '?'}) — often port still held by systemd; stop/disable unit then redeploy`,
+    );
+    return {
+      ok: false,
+      appName: eco.appName,
+      ecosystemPath: eco.ecosystemPath,
+      pid: live.pid,
+      notes,
+      commandResults,
+      requiresExecute: false,
+      pm2Available: true,
+    };
   }
 
   // Persist process list for reboot survival (best-effort)
@@ -223,12 +227,95 @@ export async function applyPm2Start(input: {
     ok: true,
     appName: eco.appName,
     ecosystemPath: eco.ecosystemPath,
-    pid,
+    pid: live.pid,
     notes,
     commandResults,
     requiresExecute: false,
     pm2Available: true,
   };
+}
+
+/**
+ * Poll pm2 jlist until app is online or timeout.
+ */
+export async function waitPm2AppOnline(
+  host: HostExecutor,
+  appName: string,
+  timeoutMs = 10_000,
+): Promise<{
+  ok: boolean;
+  status?: string;
+  pid?: number;
+  notes: string[];
+  commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+}> {
+  const notes: string[] = [];
+  const commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }> = [];
+  const deadline = Date.now() + timeoutMs;
+  let lastStatus = 'unknown';
+  let pid: number | undefined;
+
+  while (Date.now() < deadline) {
+    const jlist = await host.runCommand(['pm2', 'jlist'], { timeoutMs: 15_000 });
+    commandResults.push({
+      argv: ['pm2', 'jlist'],
+      exitCode: jlist.exitCode,
+      stderr: jlist.stderr,
+    });
+    if (jlist.exitCode === 0 && jlist.stdout.trim()) {
+      try {
+        const { parsePm2Jlist } = await import('./pm2-status.js');
+        const apps = parsePm2Jlist(jlist.stdout);
+        const hit = apps.find((a) => a.name === appName);
+        if (hit) {
+          lastStatus = hit.status || 'unknown';
+          if (hit.pid && hit.pid > 0) pid = hit.pid;
+          const s = lastStatus.toLowerCase();
+          // online / launching / or pid present without explicit error (sparse jlist mocks)
+          if (s === 'online' || s === 'launching') {
+            notes.push(`pm2 ${appName} ${s}${pid ? ` pid=${pid}` : ''}`);
+            return { ok: true, status: lastStatus, pid, notes, commandResults };
+          }
+          if (pid && s !== 'errored' && s !== 'error' && s !== 'stopped' && s !== 'stopping') {
+            notes.push(`pm2 ${appName} running pid=${pid} (status=${lastStatus})`);
+            return { ok: true, status: lastStatus, pid, notes, commandResults };
+          }
+          if (s === 'errored' || s === 'error' || s === 'stopped') {
+            // brief grace: one more poll after short sleep for launching→online
+            await new Promise((r) => setTimeout(r, 400));
+            const j2 = await host.runCommand(['pm2', 'jlist'], { timeoutMs: 15_000 });
+            commandResults.push({
+              argv: ['pm2', 'jlist'],
+              exitCode: j2.exitCode,
+              stderr: j2.stderr,
+            });
+            try {
+              const apps2 = parsePm2Jlist(j2.stdout || '');
+              const hit2 = apps2.find((a) => a.name === appName);
+              if (hit2) {
+                lastStatus = hit2.status || lastStatus;
+                if (hit2.pid && hit2.pid > 0) pid = hit2.pid;
+                const s2 = String(hit2.status || '').toLowerCase();
+                if (s2 === 'online' || (hit2.pid && hit2.pid > 0 && s2 !== 'errored' && s2 !== 'stopped')) {
+                  notes.push(`pm2 ${appName} online pid=${pid ?? '?'}`);
+                  return { ok: true, status: hit2.status, pid, notes, commandResults };
+                }
+              }
+            } catch {
+              /* */
+            }
+            notes.push(`pm2 ${appName} status=${lastStatus}`);
+            return { ok: false, status: lastStatus, pid, notes, commandResults };
+          }
+        }
+      } catch {
+        notes.push('pm2 jlist parse failed while waiting for online');
+      }
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  notes.push(`pm2 ${appName} not online within ${timeoutMs}ms (last=${lastStatus})`);
+  return { ok: false, status: lastStatus, pid, notes, commandResults };
 }
 
 /**

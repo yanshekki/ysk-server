@@ -236,12 +236,26 @@ export class ProjectOpsService {
       notes.push(tl('notes.auto.t0174', { v0: (Object.keys(tuningEnv).join(', ')) }));
     }
 
-    // Stop any previous process for this project
-    await this.stopProcess(row, notes);
-
     const preferSystemd =
       opts.enableSystemd === true ||
       (opts.enableSystemd !== false && this.host.executeEnabled() && this.host.isRoot());
+
+    const unitName = `ysk-project-${row.linux_user}.service`;
+
+    // Clean slate: always release both runners before starting one (systemd↔PM2 switch)
+    if (this.host.executeEnabled()) {
+      if (this.host.isRoot()) {
+        const stopNotes = await stopAndDisableProjectUnit(this.host, unitName);
+        notes.push(...stopNotes);
+      }
+      const pm2Stop = await applyPm2Stop({ host: this.host, linuxUser: row.linux_user });
+      notes.push(...pm2Stop.notes);
+    }
+    await this.stopProcess(row, notes);
+    // Brief settle so port is free after systemd stop (EADDRINUSE → PM2 errored)
+    if (this.host.executeEnabled()) {
+      await new Promise((r) => setTimeout(r, 400));
+    }
 
     const memoryMax = opts.memoryMax ?? row.memory_max;
     const cpuQuotaPercent = opts.cpuQuotaPercent ?? row.cpu_quota_percent;
@@ -274,7 +288,6 @@ export class ProjectOpsService {
 
     mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
     const pidfile = join(row.home_dir, 'app.pid');
-    const unitName = `ysk-project-${row.linux_user}.service`;
 
     this.projects.updateRuntimeState(projectId, {
       port,
@@ -346,11 +359,15 @@ export class ProjectOpsService {
       }
     }
 
-    // PM2 path after systemd miss: needs YSK_EXECUTE + pm2 on PATH (never fake ok).
+    // PM2 when not on systemd (explicit enableSystemd:false or systemd failed)
     const tryPm2 =
       deployMode !== 'systemd' && opts.preferPm2 !== false && this.host.executeEnabled();
 
     if (tryPm2) {
+      // Belt-and-suspenders: unit must stay down so PM2 can bind PORT
+      if (this.host.isRoot()) {
+        notes.push(...(await stopAndDisableProjectUnit(this.host, unitName)));
+      }
       const pm2 = await applyPm2Start({
         host: this.host,
         homeDir: row.home_dir,
@@ -372,6 +389,9 @@ export class ProjectOpsService {
         notes.push(tl('notes.auto.n1143'));
       } else {
         notes.push(tl('notes.auto.n0152'));
+        notes.push(
+          'PM2 deploy failed — ensure systemd unit is stopped and port is free, then redeploy',
+        );
       }
     }
 
@@ -2195,6 +2215,27 @@ function nodeBinaryExists(
   } catch {
     return false;
   }
+}
+
+/**
+ * Stop + disable project systemd unit so PM2 (or a new unit start) can bind the port.
+ * Idempotent; safe when unit missing.
+ */
+export async function stopAndDisableProjectUnit(
+  host: HostExecutor,
+  unitName: string,
+): Promise<string[]> {
+  const notes: string[] = [];
+  if (!host.executeEnabled() || !host.isRoot()) {
+    notes.push(`skip stop/disable ${unitName} (need root+execute)`);
+    return notes;
+  }
+  const stop = await host.runCommand(['systemctl', 'stop', unitName], { timeoutMs: 20_000 });
+  notes.push(`systemctl stop ${unitName} exit=${stop.exitCode}`);
+  const dis = await host.runCommand(['systemctl', 'disable', unitName], { timeoutMs: 15_000 });
+  notes.push(`systemctl disable ${unitName} exit=${dis.exitCode}`);
+  await host.runCommand(['systemctl', 'reset-failed', unitName], { timeoutMs: 10_000 });
+  return notes;
 }
 
 /**
