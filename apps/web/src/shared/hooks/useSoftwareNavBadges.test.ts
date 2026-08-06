@@ -4,7 +4,7 @@ import { useSoftwareNavBadges } from './useSoftwareNavBadges';
 
 vi.mock('../../features/system', () => ({
   systemApi: {
-    softwareUpgrades: vi.fn(),
+    softwareVersions: vi.fn(),
   },
 }));
 
@@ -19,7 +19,7 @@ import { updatesApi } from '../../features/updates';
 
 describe('useSoftwareNavBadges', () => {
   beforeEach(() => {
-    vi.mocked(systemApi.softwareUpgrades).mockResolvedValue({
+    vi.mocked(systemApi.softwareVersions).mockResolvedValue({
       items: [],
       upgradableCount: 3,
     });

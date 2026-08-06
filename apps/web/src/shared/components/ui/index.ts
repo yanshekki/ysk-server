@@ -102,6 +102,8 @@ export { FeatureIconGrid } from './FeatureIconGrid';
 export type { FeatureIconGridProps, FeatureTileBadge } from './FeatureIconGrid';
 export { SoftwareInstallBanner } from './SoftwareInstallBanner';
 export type { SoftwareInstallBannerProps } from './SoftwareInstallBanner';
+export { SoftwareVersionBar } from './SoftwareVersionBar';
+export type { SoftwareVersionBarProps } from './SoftwareVersionBar';
 export { Button, buttonClassName } from './Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 export { PromptDialog } from './PromptDialog';

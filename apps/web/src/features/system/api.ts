@@ -315,6 +315,45 @@ export const systemApi = {
       }>;
       upgradableCount: number;
     }>('/api/v1/system/software/upgrades'),
+  /**
+   * Dynamic version discovery (no hardcoded latest pins).
+   * Runtime = upstream APIs; services = apt Candidate.
+   */
+  softwareVersions: (query: { id?: string; ids?: string[]; refresh?: boolean }) => {
+    const sp = new URLSearchParams();
+    if (query.id) sp.set('id', query.id);
+    if (query.ids?.length) sp.set('ids', query.ids.join(','));
+    if (query.refresh) sp.set('refresh', '1');
+    const qs = sp.toString();
+    return api.requestRaw<{
+      id?: string;
+      title?: string;
+      updateKind?: 'runtime' | 'apt' | 'none';
+      installed?: boolean;
+      currentVersion?: string;
+      latestVersion?: string;
+      upgradable?: boolean;
+      candidates?: Array<{ version: string; label: string; source: string }>;
+      packageName?: string;
+      source?: string;
+      fetchedAt?: string;
+      notes?: string[];
+      items?: Array<{
+        id: string;
+        title: string;
+        updateKind: 'runtime' | 'apt' | 'none';
+        installed: boolean;
+        currentVersion?: string;
+        latestVersion?: string;
+        upgradable: boolean;
+        candidates: Array<{ version: string; label: string; source: string }>;
+        packageName?: string;
+        source?: string;
+        notes?: string[];
+      }>;
+      upgradableCount?: number;
+    }>(`/api/v1/system/software/versions${qs ? `?${qs}` : ''}`);
+  },
   serviceLifecycle: (body: {
     unit: string;
     action: 'start' | 'stop' | 'restart' | 'reload';

@@ -24,6 +24,9 @@ import {
   installForFeature,
   getSoftware,
   collectCatalogSoftwareUpgrades,
+  resolveSoftwareVersionStatus,
+  resolveSoftwareVersionBatch,
+  listVersionDiscoveryIds,
   listStackPlans,
   listStackBundles,
   getStackStatus,
@@ -887,6 +890,48 @@ export async function handleSystemRoutes(
     const items = await collectCatalogSoftwareUpgrades(ctx.host);
     const upgradableCount = items.filter((i) => i.upgradable).length;
     sendJson(res, 200, { items, upgradableCount });
+    return true;
+  }
+
+  // —— Dynamic version discovery (no hardcoded latest versions) ——
+  if (method === 'GET' && url.pathname === '/api/v1/system/software/versions') {
+    ctx.auth.authenticate(getBearer(req));
+    const refresh = url.searchParams.get('refresh') === '1';
+    const id = (url.searchParams.get('id') ?? '').trim();
+    const idsParam = (url.searchParams.get('ids') ?? '').trim();
+    if (idsParam) {
+      const ids = idsParam
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 40);
+      const items = await resolveSoftwareVersionBatch({
+        host: ctx.host,
+        dataDir: ctx.dataDir,
+        ids: ids.length ? ids : listVersionDiscoveryIds().slice(0, 40),
+        refresh,
+      });
+      sendJson(res, 200, {
+        items,
+        upgradableCount: items.filter((i) => i.upgradable).length,
+      });
+      return true;
+    }
+    if (!id) {
+      sendJson(res, 400, {
+        ok: false,
+        message: 'id or ids query required',
+        knownIds: listVersionDiscoveryIds(),
+      });
+      return true;
+    }
+    const status = await resolveSoftwareVersionStatus({
+      host: ctx.host,
+      dataDir: ctx.dataDir,
+      id,
+      refresh,
+    });
+    sendJson(res, 200, status);
     return true;
   }
 

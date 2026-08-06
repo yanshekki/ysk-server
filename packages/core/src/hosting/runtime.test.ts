@@ -51,8 +51,8 @@ describe('multi-version runtimes', () => {
       ]),
     ).toBe('1.21.13');
     expect(pickLatestGoDownloadVersion('1.21.5', ['go1.21.13'])).toBe('1.21.5');
-    // Empty JSON (current go.dev behaviour for EOL minors) → last-known table
-    expect(pickLatestGoDownloadVersion('1.21', [])).toBe('1.21.13');
+    // Empty list → no hardcoded patch table (caller should pass live go.dev list)
+    expect(pickLatestGoDownloadVersion('1.21', [])).toBe('1.21.0');
     expect(pickLatestGoDownloadVersion('1.26', ['go1.26.5', 'go1.25.12'])).toBe(
       '1.26.5',
     );
@@ -71,15 +71,17 @@ describe('multi-version runtimes', () => {
     expect(normalizeRuntimeVersion('node', undefined)).toBe('20');
     expect(normalizeRuntimeVersion('static', '20')).toBe('');
     expect(normalizeRuntimeVersion('python', '3.11.5')).toBe('3.11');
-    expect(normalizeRuntimeVersion('go', 'go1.22.1')).toBe('1.22');
+    expect(normalizeRuntimeVersion('go', 'go1.22.1')).toBe('1.22.1');
     expect(normalizeRuntimeVersion('rust', undefined)).toBe('stable');
   });
 
-  it('rejects unsupported versions', () => {
-    expect(() => selectNodeRuntime('16')).toThrow(/不支援|Unsupported/);
-    expect(() => selectPhpRuntime('7.4')).toThrow(/不支援|Unsupported/);
-    expect(() => selectPythonRuntime('2.7')).toThrow(/不支援/);
-    expect(() => selectGoRuntime('1.18')).toThrow(/不支援/);
+  it('accepts shape-valid versions outside legacy lists; rejects garbage', () => {
+    expect(selectNodeRuntime('16').version).toBe('16');
+    expect(selectPhpRuntime('7.4').version).toBe('7.4');
+    expect(selectPythonRuntime('2.7').version).toBe('2.7');
+    expect(selectGoRuntime('1.18').version).toMatch(/^1\.18/);
+    expect(() => selectGoRuntime('not-a-version')).toThrow();
+    expect(() => selectNodeRuntime('abc')).toThrow();
   });
 
   it('marks process runtimes', () => {

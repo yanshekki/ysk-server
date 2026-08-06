@@ -157,22 +157,27 @@ export function SoftwareHubPage() {
       ).length;
       setHostUpgradable(Math.max(metaUp, rowUp) || 0);
 
+      // Dynamic upstream versions for all runtimes (no hardcoded pins)
       const kinds = SOFTWARE_CARDS.map((c) => c.runtimeKind).filter(
         Boolean,
       ) as RuntimeKindKey[];
-      const latestEntries = await Promise.all(
-        kinds.map(async (kind) => {
-          try {
-            const h = await systemApi.runtimeLatest(kind);
-            return [kind, h] as const;
-          } catch {
-            return [kind, {} as LatestHint] as const;
-          }
-        }),
-      );
-      const map: Partial<Record<RuntimeKindKey, LatestHint>> = {};
-      for (const [k, h] of latestEntries) map[k] = h;
-      setLatestByKind(map);
+      try {
+        const batch = await systemApi.softwareVersions({ ids: kinds });
+        const map: Partial<Record<RuntimeKindKey, LatestHint>> = {};
+        for (const row of batch.items ?? []) {
+          const kind = row.id as RuntimeKindKey;
+          if (!kinds.includes(kind)) continue;
+          map[kind] = {
+            panelLatest: row.currentVersion || '—',
+            remoteLatest: row.latestVersion,
+            newerThanPanel: Boolean(row.upgradable),
+          };
+          // Merge apt-style rows for runtime into aptById is N/A; keep latestByKind
+        }
+        setLatestByKind(map);
+      } catch {
+        setLatestByKind({});
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     } finally {

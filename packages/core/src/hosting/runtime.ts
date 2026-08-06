@@ -105,6 +105,7 @@ export function defaultRuntimeVersion(runtime: ProjectRuntimeKind | string): str
 
 /**
  * Normalize / repair stored runtimeVersion.
+ * Accepts any shape-valid version from discovery — does NOT clamp to a hardcoded list.
  * Fixes historical bug: PHP projects incorrectly defaulted to Node "20".
  */
 export function normalizeRuntimeVersion(
@@ -115,89 +116,87 @@ export function normalizeRuntimeVersion(
   if (runtime === 'static') return '';
 
   if (runtime === 'php') {
-    if (!raw || raw === '18' || raw === '20' || raw === '22' || /^v?\d+$/.test(raw)) {
+    // Node majors wrongly stored as PHP
+    if (!raw || raw === '18' || raw === '20' || raw === '22') {
       return defaultRuntimeVersion('php');
     }
     const normalized = raw.startsWith('php') ? raw.slice(3).replace(/^\s+/, '') : raw;
-    if (PHP_SUPPORTED.includes(normalized as (typeof PHP_SUPPORTED)[number])) {
-      return normalized;
-    }
-    if (/^\d+(\.\d+)?$/.test(normalized) && !normalized.includes('.')) {
+    if (/^\d+$/.test(normalized) && !normalized.includes('.')) {
       return defaultRuntimeVersion('php');
     }
-    return PHP_SUPPORTED.includes(normalized as (typeof PHP_SUPPORTED)[number])
-      ? normalized
-      : defaultRuntimeVersion('php');
+    const minor = normalized.match(/^(\d+\.\d+)/)?.[1];
+    return minor ?? defaultRuntimeVersion('php');
   }
 
   if (runtime === 'node') {
     if (!raw) return defaultRuntimeVersion('node');
     const major = raw.replace(/^v/, '').split('.')[0];
-    if (NODE_SUPPORTED.includes(major as (typeof NODE_SUPPORTED)[number])) return major;
-    return defaultRuntimeVersion('node');
+    return /^\d+$/.test(major) ? major : defaultRuntimeVersion('node');
   }
 
   if (runtime === 'python') {
     if (!raw) return defaultRuntimeVersion('python');
     const m = raw.replace(/^python/, '').trim();
-    if (PYTHON_SUPPORTED.includes(m as (typeof PYTHON_SUPPORTED)[number])) return m;
-    // Accept 3.12.1 → 3.12
     const minor = m.match(/^(\d+\.\d+)/)?.[1];
-    if (minor && PYTHON_SUPPORTED.includes(minor as (typeof PYTHON_SUPPORTED)[number])) {
-      return minor;
-    }
-    return defaultRuntimeVersion('python');
+    return minor ?? defaultRuntimeVersion('python');
   }
 
   if (runtime === 'go') {
     if (!raw) return defaultRuntimeVersion('go');
     const m = raw.replace(/^go/, '').trim();
-    if (GO_SUPPORTED.includes(m as (typeof GO_SUPPORTED)[number])) return m;
+    const full = m.match(/^(\d+\.\d+\.\d+)/)?.[1];
+    if (full) return full;
     const minor = m.match(/^(\d+\.\d+)/)?.[1];
-    if (minor && GO_SUPPORTED.includes(minor as (typeof GO_SUPPORTED)[number])) return minor;
-    return defaultRuntimeVersion('go');
+    return minor ?? defaultRuntimeVersion('go');
   }
 
   if (runtime === 'rust') {
     if (!raw) return defaultRuntimeVersion('rust');
-    if (raw === 'stable' || raw === 'nightly' || raw === 'beta') return raw === 'nightly' || raw === 'beta' ? 'stable' : raw;
-    if (RUST_SUPPORTED.includes(raw as (typeof RUST_SUPPORTED)[number])) return raw;
-    const minor = raw.match(/^(\d+\.\d+)/)?.[1];
-    if (minor && RUST_SUPPORTED.includes(minor as (typeof RUST_SUPPORTED)[number])) return minor;
-    return defaultRuntimeVersion('rust');
+    if (raw === 'stable' || raw === 'nightly' || raw === 'beta') return raw;
+    const minor = raw.match(/^(\d+\.\d+(\.\d+)?)/)?.[1];
+    return minor ?? defaultRuntimeVersion('rust');
   }
 
   if (runtime === 'java') {
     if (!raw) return defaultRuntimeVersion('java');
     const major = raw.replace(/^jdk-?|^java-?/i, '').split('.')[0];
-    if (JAVA_SUPPORTED.includes(major as (typeof JAVA_SUPPORTED)[number])) return major;
-    return defaultRuntimeVersion('java');
+    return /^\d+$/.test(major) ? major : defaultRuntimeVersion('java');
   }
 
   if (runtime === 'kotlin') {
     if (!raw || raw === 'stable' || raw === 'latest') return defaultRuntimeVersion('kotlin');
-    if (KOTLIN_SUPPORTED.includes(raw as (typeof KOTLIN_SUPPORTED)[number])) return raw;
-    return defaultRuntimeVersion('kotlin');
+    const v = raw.replace(/^v/i, '');
+    return /^\d+\.\d+/.test(v) ? v : defaultRuntimeVersion('kotlin');
   }
 
   if (runtime === 'bun') {
     if (!raw) return defaultRuntimeVersion('bun');
-    if (BUN_SUPPORTED.includes(raw as (typeof BUN_SUPPORTED)[number])) return raw;
-    return defaultRuntimeVersion('bun');
+    if (raw === 'latest') return 'latest';
+    return /^\d+\.\d+/.test(raw) ? raw : defaultRuntimeVersion('bun');
   }
 
   return raw;
 }
 
+/**
+ * Shape-only validation — versions come from version-discovery / user choice,
+ * NOT a hardcoded allow-list of release numbers.
+ */
+function assertVersionShape(kind: RuntimeKind, version: string, ok: boolean): void {
+  if (ok) return;
+  throw new YskError(
+    ErrorCodes.VALIDATION,
+    tl('notes.auto.t0254', {
+      v0: version,
+      v1: `${kind}: invalid version shape (discover via software/versions API)`,
+    }),
+    { httpStatus: 400 },
+  );
+}
+
 export function selectNodeRuntime(version: string): RuntimeSelection {
   const major = version.replace(/^v/, '').split('.')[0];
-  if (!NODE_SUPPORTED.includes(major as (typeof NODE_SUPPORTED)[number])) {
-    throw new YskError(
-      ErrorCodes.VALIDATION,
-      tl('notes.auto.t0254', { v0: (version), v1: (NODE_SUPPORTED.join(', ')) }),
-      { httpStatus: 400 },
-    );
-  }
+  assertVersionShape('node', version, /^\d+$/.test(major) && Number(major) >= 12);
   return {
     kind: 'node',
     version: major,
@@ -207,18 +206,13 @@ export function selectNodeRuntime(version: string): RuntimeSelection {
 }
 
 export function selectPhpRuntime(version: string): RuntimeSelection {
-  const normalized = version.startsWith('php') ? version.slice(3) : version;
-  if (!PHP_SUPPORTED.includes(normalized as (typeof PHP_SUPPORTED)[number])) {
-    throw new YskError(
-      ErrorCodes.VALIDATION,
-      tl('notes.auto.t0255', { v0: (version), v1: (PHP_SUPPORTED.join(', ')) }),
-      { httpStatus: 400 },
-    );
-  }
+  const normalized = (version.startsWith('php') ? version.slice(3) : version).trim();
+  const minor = normalized.match(/^(\d+\.\d+)/)?.[1] ?? normalized;
+  assertVersionShape('php', version, /^\d+\.\d+$/.test(minor));
   return {
     kind: 'php',
-    version: normalized,
-    binaryPath: `/usr/bin/php${normalized}`,
+    version: minor,
+    binaryPath: `/usr/bin/php${minor}`,
     manager: 'ondrej-php',
   };
 }
@@ -226,13 +220,7 @@ export function selectPhpRuntime(version: string): RuntimeSelection {
 export function selectPythonRuntime(version: string): RuntimeSelection {
   const raw = (version ?? '').replace(/^python/, '').trim();
   const minor = raw.match(/^(\d+\.\d+)/)?.[1] ?? raw;
-  if (!PYTHON_SUPPORTED.includes(minor as (typeof PYTHON_SUPPORTED)[number])) {
-    throw new YskError(
-      ErrorCodes.VALIDATION,
-      tl('notes.auto.t0256', { v0: (version), v1: (PYTHON_SUPPORTED.join(', ')) }),
-      { httpStatus: 400 },
-    );
-  }
+  assertVersionShape('python', version, /^\d+\.\d+$/.test(minor));
   return {
     kind: 'python',
     version: minor,
@@ -243,17 +231,14 @@ export function selectPythonRuntime(version: string): RuntimeSelection {
 
 export function selectGoRuntime(version: string): RuntimeSelection {
   const raw = (version ?? '').replace(/^go/, '').trim();
+  // Accept full patch (1.26.5) or minor (1.26) — install resolves tarball from go.dev
+  const full = raw.match(/^(\d+\.\d+\.\d+)/)?.[1];
   const minor = raw.match(/^(\d+\.\d+)/)?.[1] ?? raw;
-  if (!GO_SUPPORTED.includes(minor as (typeof GO_SUPPORTED)[number])) {
-    throw new YskError(
-      ErrorCodes.VALIDATION,
-      tl('notes.auto.t0257', { v0: (version), v1: (GO_SUPPORTED.join(', ')) }),
-      { httpStatus: 400 },
-    );
-  }
+  assertVersionShape('go', version, /^\d+\.\d+(\.\d+)?$/.test(raw));
+  const pin = full ?? minor;
   return {
     kind: 'go',
-    version: minor,
+    version: pin,
     binaryPath: `/usr/local/ysk/go/${minor}/bin/go`,
     manager: 'go-official',
   };
@@ -261,9 +246,9 @@ export function selectGoRuntime(version: string): RuntimeSelection {
 
 /**
  * go.dev/dl only ships full patch tarballs (go1.21.13.linux-amd64.tar.gz).
- * Panel selects minor "1.21"; resolve to newest matching patch from version list.
- * Accepts entries like "go1.21.13" or "1.21.13".
- * When `available` is empty / missing minor, falls back to GO_LAST_KNOWN_PATCH.
+ * Resolve minor "1.21" to newest matching patch from **live** go.dev version list.
+ * When `available` is empty, returns full version if already x.y.z, else minor+".0"
+ * (caller should re-fetch go.dev — no hardcoded patch table).
  */
 export function pickLatestGoDownloadVersion(
   panelVersion: string,
@@ -286,8 +271,8 @@ export function pickLatestGoDownloadVersion(
     }
   }
   if (patches.length === 0) {
-    const known = GO_LAST_KNOWN_PATCH[minor as (typeof GO_SUPPORTED)[number]];
-    return known ?? `${minor}.0`;
+    // No hardcoded fallback table — prefer explicit full version from discovery
+    return /^\d+\.\d+\.\d+$/.test(raw) ? raw : `${minor}.0`;
   }
   const rank = (s: string) => s.split('.').map((n) => parseInt(n, 10) || 0);
   patches.sort((a, b) => {
@@ -302,37 +287,44 @@ export function pickLatestGoDownloadVersion(
   return patches[patches.length - 1]!;
 }
 
-/** Bash case arms for GO_LAST_KNOWN_PATCH (install script fallback). */
+/**
+ * @deprecated No hardcoded patch map — kept empty for older install scripts.
+ * Prefer live go.dev list in runtime-probe.
+ */
 export function goLastKnownPatchShellCase(): string {
-  return GO_SUPPORTED.map(
-    (m) => `    ${m}) echo ${JSON.stringify(GO_LAST_KNOWN_PATCH[m])} ;;`,
-  ).join('\n');
+  return '    *) echo "" ;;';
 }
 
 export function selectRustRuntime(version: string): RuntimeSelection {
-  const v = normalizeRuntimeVersion('rust', version);
-  // Managed layout: RUSTUP_HOME=/usr/local/ysk/rust/rustup CARGO_HOME=/usr/local/ysk/rust/cargo
-  // cargo proxy lives in CARGO_HOME/bin (works for stable + pinned after `rustup default`).
+  const raw = (version ?? '').trim() || 'stable';
+  const ok =
+    raw === 'stable' ||
+    raw === 'beta' ||
+    raw === 'nightly' ||
+    /^\d+\.\d+(\.\d+)?$/.test(raw);
+  assertVersionShape('rust', version, ok);
   return {
     kind: 'rust',
-    version: v,
+    version: raw,
     binaryPath: '/usr/local/ysk/rust/cargo/bin/cargo',
     manager: 'rustup',
   };
 }
 
 export function selectJavaRuntime(version: string): RuntimeSelection {
-  const v = normalizeRuntimeVersion('java', version);
+  const major = (version ?? '').replace(/^jdk-?/i, '').split('.')[0];
+  assertVersionShape('java', version, /^\d+$/.test(major) && Number(major) >= 8);
   return {
     kind: 'java',
-    version: v,
-    binaryPath: `/usr/lib/jvm/java-${v}-openjdk-amd64/bin/java`,
+    version: major,
+    binaryPath: `/usr/lib/jvm/java-${major}-openjdk-amd64/bin/java`,
     manager: 'openjdk-apt',
   };
 }
 
 export function selectKotlinRuntime(version: string): RuntimeSelection {
-  const v = normalizeRuntimeVersion('kotlin', version);
+  const v = (version ?? '').replace(/^v/i, '').trim();
+  assertVersionShape('kotlin', version, /^\d+\.\d+(\.\d+)?$/.test(v));
   return {
     kind: 'kotlin',
     version: v,
@@ -342,10 +334,12 @@ export function selectKotlinRuntime(version: string): RuntimeSelection {
 }
 
 export function selectBunRuntime(version: string): RuntimeSelection {
-  const v = normalizeRuntimeVersion('bun', version);
+  const raw = (version ?? '').trim() || 'latest';
+  const ok = raw === 'latest' || /^\d+\.\d+/.test(raw);
+  assertVersionShape('bun', version, ok);
   return {
     kind: 'bun',
-    version: v,
+    version: raw,
     binaryPath: '/usr/local/ysk/bun/bin/bun',
     manager: 'bun-official',
   };

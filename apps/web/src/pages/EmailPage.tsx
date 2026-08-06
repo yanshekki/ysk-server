@@ -25,6 +25,7 @@ import {
   ConfirmDialog,
   PageTabs,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
 } from '../shared/components/ui';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -241,6 +242,8 @@ export function EmailPage() {
       }
     >
       <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
+      <SoftwareVersionBar softwareId="postfix" />
+      <SoftwareVersionBar softwareId="dovecot" />
       {list.error ? <Alert variant="error">{list.error}</Alert> : null}
 
       <PageTabs

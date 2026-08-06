@@ -17,6 +17,7 @@ import {
   FormLayout,
   Modal,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
   PageTabs,
   FormActions,
   FormHint,
@@ -543,6 +544,7 @@ export function DnsPage() {
       }
     >
       <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} />
+      <SoftwareVersionBar softwareId="pdns-server" />
       {health ? (
         <Card className="u-mb-3">
           <CardSection

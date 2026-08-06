@@ -25,6 +25,7 @@ import {
   SegRadio,
   PageTabs,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
@@ -199,6 +200,7 @@ export function FtpsServicePage() {
         title={t('ftp.softwareMissingService')}
         onInstalled={() => void refresh()}
       />
+      <SoftwareVersionBar softwareId="vsftpd" />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">

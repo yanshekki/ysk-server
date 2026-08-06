@@ -27,6 +27,7 @@ import {
   ConfirmDialog,
   PromptDialog,
   ServerListFilters,
+  SoftwareVersionBar,
   buttonClassName,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -900,6 +901,9 @@ export function ProtectionPage() {
       {loadErr ? <Alert variant="error">{loadErr}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {loading && !status ? <LoadingBlock label={t('protection.loadingStatus')} /> : null}
+
+      <SoftwareVersionBar softwareId="ufw" />
+      <SoftwareVersionBar softwareId="fail2ban" />
 
       <Alert variant="info">
         <strong>{t('protection.singleEntryPrefix')}</strong> {t('protection.singleEntryBody')}

@@ -23,6 +23,7 @@ import {
   PageTabs,
   FeaturePageLayout,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import type { DbServiceEngine } from '../../features/db-service';
@@ -521,6 +522,17 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         feature={engine}
         title={t('db.console.softwareMissing', { title: console?.title ?? engine })}
         onInstalled={() => void refresh()}
+      />
+      <SoftwareVersionBar
+        softwareId={
+          engine === 'mysql'
+            ? 'mysql-server'
+            : engine === 'mariadb'
+              ? 'mariadb-server'
+              : engine === 'postgres'
+                ? 'postgresql'
+                : 'redis-server'
+        }
       />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}

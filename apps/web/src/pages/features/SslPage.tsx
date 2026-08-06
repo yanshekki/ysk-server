@@ -19,6 +19,7 @@ import {
   OpsResultPanel,
   ServerListFilters,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
   FormHint,
   WithPageGuide,
   buttonClassName,
@@ -265,6 +266,7 @@ export function SslPage() {
     >
       <WithPageGuide guideId="ssl">
         <SoftwareInstallBanner feature="ssl" title={t('ssl.certbotNotInstalled')} />
+        <SoftwareVersionBar softwareId="certbot" />
         {error ? (
           <Alert variant="error" className="u-mb-3">
             <strong className="u-block u-mb-1">{t('ssl.requestFailedWhy')}</strong>

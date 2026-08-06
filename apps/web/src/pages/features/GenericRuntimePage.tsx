@@ -50,12 +50,13 @@ export type HostingRuntimeKind =
   | 'bun';
 type TuningKind = 'node' | 'python' | 'go' | 'rust';
 
+/** Display meta only — version lists come from software/versions API (never hardcode pins). */
 const META: Record<
   HostingRuntimeKind,
   {
     title: string;
+    /** Offline placeholder until discovery returns */
     defaultVersion: string;
-    versions: string[];
     installLabelKey: string;
     bannerTitle: string;
   }
@@ -63,56 +64,48 @@ const META: Record<
   node: {
     title: 'Node.js',
     defaultVersion: '20',
-    versions: ['18', '20', '22'],
     installLabelKey: 'runtime.installNodeLabel',
     bannerTitle: i18n.t('runtime.nodeMissing'),
   },
   php: {
     title: 'PHP',
     defaultVersion: '8.2',
-    versions: ['8.1', '8.2', '8.3'],
     installLabelKey: 'runtime.installPhpLabel',
     bannerTitle: i18n.t('runtime.phpMissing'),
   },
   python: {
     title: 'Python',
     defaultVersion: '3.12',
-    versions: ['3.10', '3.11', '3.12'],
     installLabelKey: 'runtime.installPythonLabel',
     bannerTitle: i18n.t('runtime.pythonMissing'),
   },
   go: {
     title: 'Go',
     defaultVersion: '1.22',
-    versions: ['1.21', '1.22', '1.23'],
     installLabelKey: 'runtime.installGoLabel',
     bannerTitle: i18n.t('runtime.goMissing'),
   },
   rust: {
     title: 'Rust',
     defaultVersion: 'stable',
-    versions: ['stable', '1.78', '1.81'],
     installLabelKey: 'runtime.installRustLabel',
     bannerTitle: i18n.t('runtime.rustMissing'),
   },
   java: {
     title: 'Java',
     defaultVersion: '21',
-    versions: ['17', '21'],
     installLabelKey: 'runtime.installJavaLabel',
     bannerTitle: i18n.t('runtime.javaMissing'),
   },
   kotlin: {
     title: 'Kotlin',
     defaultVersion: '2.1.0',
-    versions: ['2.1.0', '2.0.21'],
     installLabelKey: 'runtime.installKotlinLabel',
     bannerTitle: i18n.t('runtime.kotlinMissing'),
   },
   bun: {
     title: 'Bun',
     defaultVersion: 'latest',
-    versions: ['latest', '1.1.38'],
     installLabelKey: 'runtime.installBunLabel',
     bannerTitle: i18n.t('runtime.bunMissing'),
   },
@@ -182,31 +175,53 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const [tuningLoaded, setTuningLoaded] = useState(false);
   const [plugins, setPlugins] = useState<string[]>([]);
   const [pluginsRefreshToken, setPluginsRefreshToken] = useState(0);
-  const [latestHint, setLatestHint] = useState<{
-    panelLatest: string;
-    remoteLatest?: string;
-    newerThanPanel?: boolean;
+  const [versionStatus, setVersionStatus] = useState<{
+    latestVersion?: string;
+    currentVersion?: string;
+    upgradable?: boolean;
+    candidates: Array<{ version: string; label: string }>;
+    source?: string;
+    notes?: string[];
   } | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   // Reset plugin picks when switching runtime kind
   useEffect(() => {
     setPlugins([]);
-    setLatestHint(null);
+    setVersionStatus(null);
   }, [kind]);
 
+  // Dynamic upstream versions (no hardcoded chip list)
   useEffect(() => {
+    let cancelled = false;
     void systemApi
-      .runtimeLatest(kind)
-      .then((h) =>
-        setLatestHint({
-          panelLatest: h.panelLatest,
-          remoteLatest: h.remoteLatest,
-          newerThanPanel: h.newerThanPanel,
-        }),
-      )
-      .catch(() => setLatestHint(null));
-  }, [kind]);
+      .softwareVersions({ id: kind, refresh: false })
+      .then((h) => {
+        if (cancelled) return;
+        const candidates = (h.candidates ?? []).map((c) => ({
+          version: c.version,
+          label: c.label,
+        }));
+        setVersionStatus({
+          latestVersion: h.latestVersion,
+          currentVersion: h.currentVersion,
+          upgradable: h.upgradable,
+          candidates,
+          source: h.source,
+          notes: h.notes,
+        });
+        // Prefer discovered latest when user has not pinned via URL
+        if (!searchParams.get('version') && h.latestVersion) {
+          setVersion((prev) => prev || h.latestVersion || meta.defaultVersion);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setVersionStatus(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [kind, searchParams, meta.defaultVersion]);
 
   const refresh = useCallback(async () => {
     try {
@@ -237,15 +252,23 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     void refresh();
   }, [kind, meta.defaultVersion, refresh]);
 
-  // Software hub "更新" → /runtimes/x?version=24 (or panel pin)
+  // Software hub / deep-link → ?version= (accept any shape-valid pin from discovery)
   useEffect(() => {
     const raw = searchParams.get('version');
     if (!raw) return;
-    const supported =
-      (probe?.supported as Record<string, string[]> | undefined)?.[kind] ??
-      meta.versions;
-    setVersion(pickSupportedVersion(raw, supported, meta.defaultVersion));
-  }, [searchParams, kind, meta.defaultVersion, meta.versions, probe?.supported]);
+    const supported = [
+      ...(versionStatus?.candidates.map((c) => c.version) ?? []),
+      ...((probe?.supported as Record<string, string[]> | undefined)?.[kind] ??
+        []),
+    ];
+    setVersion(pickSupportedVersion(raw, supported, raw || meta.defaultVersion));
+  }, [
+    searchParams,
+    kind,
+    meta.defaultVersion,
+    versionStatus?.candidates,
+    probe?.supported,
+  ]);
 
   useEffect(() => {
     if (tab === 'tuning' && isTuningKind(kind)) {
@@ -284,10 +307,13 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       available,
       host: hostRaw || '—',
       hostRaw,
-      supported: supported?.[kind] ?? meta.versions,
+      supported:
+        versionStatus?.candidates.map((c) => c.version).filter(Boolean) ??
+        supported?.[kind] ??
+        [],
       notes: Array.isArray(p?.notes) ? (p!.notes as string[]) : [],
     };
-  }, [probe, kind, meta.versions]);
+  }, [probe, kind, versionStatus?.candidates]);
 
   const multiVersion = kind === 'go' || kind === 'rust';
   const installState = useMemo(
@@ -458,8 +484,23 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     }
                   >
                     {(() => {
-                      const vers =
-                        probeData.supported.length ? probeData.supported : meta.versions;
+                      const vers = probeData.supported.length
+                        ? probeData.supported
+                        : version
+                          ? [version]
+                          : [];
+                      if (!vers.length) {
+                        return (
+                          <input
+                            id={`rt-${kind}-ver`}
+                            value={version}
+                            onChange={bindInput(setVersion)}
+                            placeholder={t('runtime.versionPlaceholder', {
+                              defaultValue: '載入最新版本中，或手動輸入',
+                            })}
+                          />
+                        );
+                      }
                       if (vers.length <= 8) {
                         return (
                           <SegRadio
@@ -490,12 +531,17 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     })()}
                   </Field>
                 </FormLayout>
-                {latestHint?.remoteLatest && latestHint.newerThanPanel ? (
+                {versionStatus?.latestVersion ? (
                   <FormHint>
                     {t('runtime.remoteNewerHint', {
-                      remote: latestHint.remoteLatest,
-                      panel: latestHint.panelLatest,
+                      remote: versionStatus.latestVersion,
+                      panel: versionStatus.currentVersion || '—',
+                      defaultValue: `已裝 ${versionStatus.currentVersion || '—'} · 上游最新 ${versionStatus.latestVersion}${versionStatus.source ? `（${versionStatus.source}）` : ''}`,
                     })}
+                  </FormHint>
+                ) : versionStatus?.notes?.length ? (
+                  <FormHint>
+                    {versionStatus.notes.slice(0, 2).join(' · ')}
                   </FormHint>
                 ) : null}
                 <RuntimePluginsField
@@ -570,8 +616,11 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 <FormLayout columns={2}>
                   <Field label={t('runtime.bindVersion')} htmlFor={`tune-${kind}-ver`} flush>
                     {(() => {
-                      const vers =
-                        probeData.supported.length ? probeData.supported : meta.versions;
+                      const vers = probeData.supported.length
+                        ? probeData.supported
+                        : version
+                          ? [version]
+                          : [];
                       if (vers.length <= 8) {
                         return (
                           <SegRadio

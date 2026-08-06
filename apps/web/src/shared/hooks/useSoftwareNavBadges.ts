@@ -20,13 +20,41 @@ export function useSoftwareNavBadges(): SoftwareNavBadges {
 
   const refresh = useCallback(async () => {
     try {
-      const [sw, inv] = await Promise.all([
-        systemApi.softwareUpgrades().catch(() => null),
+      const [vers, inv] = await Promise.all([
+        systemApi
+          .softwareVersions({
+            ids: [
+              'node',
+              'php',
+              'python',
+              'go',
+              'rust',
+              'java',
+              'kotlin',
+              'bun',
+              'nginx',
+              'mysql-server',
+              'mariadb-server',
+              'postgresql',
+              'redis-server',
+              'pdns-server',
+              'certbot',
+              'postfix',
+              'dovecot',
+              'vsftpd',
+              'ufw',
+              'fail2ban',
+            ],
+          })
+          .catch(() => null),
         updatesApi
           .inventory({ upgradable: '1', cached: true })
           .catch(() => null),
       ]);
-      const cat = Number(sw?.upgradableCount ?? 0);
+      const cat = Number(
+        vers?.upgradableCount ??
+          (vers?.items ?? []).filter((i) => i.upgradable).length,
+      );
       setSoftware(Number.isFinite(cat) && cat > 0 ? cat : 0);
 
       const metaCount = Number(inv?.meta?.upgradableCount ?? 0);

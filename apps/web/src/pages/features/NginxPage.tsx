@@ -15,6 +15,7 @@ import {
   Modal,
   ServerListFilters,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
   FormHint,
   CheckboxField,
   SegRadio,
@@ -162,6 +163,7 @@ export function NginxPage() {
     >
       <WithPageGuide guideId="nginx">
         <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
+        <SoftwareVersionBar softwareId="nginx" />
         {error ? <Alert variant="error">{error}</Alert> : null}
         {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
         <DataTable
