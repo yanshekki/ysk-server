@@ -3,7 +3,9 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import i18n from '../../shared/lib/i18n';
+import { pickSupportedVersion } from './GenericRuntimePage';
 import {
   PageGuide,
   Alert,
@@ -197,6 +199,7 @@ const PHP_TABS = ['overview', 'ini', 'site', 'tools', 'about'] as const;
 
 export function PhpRuntimePage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const ctx = getServerContext();
   const [tab, setTab] = usePageTab(PHP_TABS, 'overview');
   const [domain, setDomain] = useState(`php.${ctx.domain}`);

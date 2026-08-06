@@ -9711,7 +9711,9 @@
     "action": {
       "manage": "Manage",
       "useInProject": "Use in project",
-      "useInProjectTitle": "Open projects — set this runtime on an app"
+      "useInProjectTitle": "Open projects — set this runtime on an app",
+      "update": "Update",
+      "updateTitle": "Install or switch to {{v}}"
     }
   }
 }

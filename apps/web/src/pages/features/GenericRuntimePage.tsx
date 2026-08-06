@@ -24,7 +24,7 @@ import {
   PageTabs,
   buttonClassName,
 } from '../../shared/components/ui';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -137,8 +137,40 @@ export function isTuningKind(k: HostingRuntimeKind): k is TuningKind {
   return k === 'node' || k === 'python' || k === 'go' || k === 'rust';
 }
 
+/** Map ?version= from software hub to a panel-supported pin when possible. */
+export function pickSupportedVersion(
+  wanted: string,
+  supported: string[],
+  fallback: string,
+): string {
+  const w = wanted.trim().replace(/^v/i, '');
+  if (!w || !supported.length) return fallback;
+  if (supported.includes(w)) return w;
+  // Major-only remote (e.g. 24) → highest panel pin with same major, else highest pin
+  const major = w.split('.')[0] ?? w;
+  const sameMajor = supported.filter(
+    (s) => s === major || s.startsWith(`${major}.`) || (!s.includes('.') && s === major),
+  );
+  if (sameMajor.length) {
+    return sameMajor.reduce((a, b) => {
+      const pa = a.split(/[.+]/).map((x) => parseInt(x, 10) || 0);
+      const pb = b.split(/[.+]/).map((x) => parseInt(x, 10) || 0);
+      for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const d = (pb[i] ?? 0) - (pa[i] ?? 0);
+        if (d !== 0) return d > 0 ? b : a;
+      }
+      return b;
+    });
+  }
+  // Rolling channels
+  if (supported.includes('stable') && /stable|latest/i.test(w)) return 'stable';
+  if (supported.includes('latest') && /latest|stable/i.test(w)) return 'latest';
+  return fallback;
+}
+
 export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const meta = META[kind];
   const [tab, setTab] = usePageTab(RT_TABS, 'overview');
   const [version, setVersion] = useState(meta.defaultVersion);
@@ -204,6 +236,16 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     setTuningLoaded(false);
     void refresh();
   }, [kind, meta.defaultVersion, refresh]);
+
+  // Software hub "更新" → /runtimes/x?version=24 (or panel pin)
+  useEffect(() => {
+    const raw = searchParams.get('version');
+    if (!raw) return;
+    const supported =
+      (probe?.supported as Record<string, string[]> | undefined)?.[kind] ??
+      meta.versions;
+    setVersion(pickSupportedVersion(raw, supported, meta.defaultVersion));
+  }, [searchParams, kind, meta.defaultVersion, meta.versions, probe?.supported]);
 
   useEffect(() => {
     if (tab === 'tuning' && isTuningKind(kind)) {

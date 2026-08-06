@@ -465,14 +465,22 @@ function SoftwareCard({
   } = view;
 
   const name = t(`nav.${def.navKey}`, { defaultValue: def.navKey });
+  // Prefer remote/panel latest for "update" deep-link (runtime page reads ?version=)
+  const updateTarget = String(
+    latest?.remoteLatest || latest?.panelLatest || '',
+  ).trim();
+  const updateHref = hasUpdate
+    ? def.runtimeKind && updateTarget
+      ? `${def.to}?version=${encodeURIComponent(updateTarget)}`
+      : def.to
+    : null;
+
   const projectHref =
     def.projectRuntime && def.runtimeKind
       ? `/projects?hintRuntime=${encodeURIComponent(def.runtimeKind)}${
-          activeVersion
-            ? `&version=${encodeURIComponent(activeVersion)}`
-            : latest?.remoteLatest
-              ? `&version=${encodeURIComponent(latest.remoteLatest)}`
-              : ''
+          updateTarget || activeVersion
+            ? `&version=${encodeURIComponent(updateTarget || activeVersion || '')}`
+            : ''
         }`
       : null;
 
@@ -528,9 +536,28 @@ function SoftwareCard({
       </div>
       <p className="software-card__meta">{metaParts.join(' · ')}</p>
       <div className="software-card__actions">
+        {updateHref ? (
+          <Link
+            to={updateHref}
+            className={buttonClassName({ variant: 'primary', size: 'sm' })}
+            title={
+              updateTarget
+                ? t('software.action.updateTitle', {
+                    v: updateTarget,
+                    defaultValue: `前往安裝／切換至 ${updateTarget}`,
+                  })
+                : undefined
+            }
+          >
+            {t('software.action.update', { defaultValue: '更新' })}
+          </Link>
+        ) : null}
         <Link
           to={def.to}
-          className={buttonClassName({ variant: 'primary', size: 'sm' })}
+          className={buttonClassName({
+            variant: updateHref ? 'secondary' : 'primary',
+            size: 'sm',
+          })}
         >
           {t('software.action.manage', { defaultValue: '管理' })}
         </Link>
