@@ -12,6 +12,7 @@ import {
   renderProcessUnit,
   selectBunRuntime,
   selectGoRuntime,
+  pickLatestGoDownloadVersion,
   selectJavaRuntime,
   selectKotlinRuntime,
   selectNodeRuntime,
@@ -37,6 +38,24 @@ describe('multi-version runtimes', () => {
     expect(selectPythonRuntime('3.12').binaryPath).toContain('python3.12');
     expect(selectGoRuntime('1.22').binaryPath).toContain('/1.22/');
     expect(selectRustRuntime('stable').manager).toBe('rustup');
+  });
+
+  it('pickLatestGoDownloadVersion resolves minor to newest patch (go.dev full tarball)', () => {
+    expect(
+      pickLatestGoDownloadVersion('1.21', [
+        'go1.21.0',
+        'go1.21.12',
+        'go1.21.13',
+        'go1.22.0',
+        'go1.20.14',
+      ]),
+    ).toBe('1.21.13');
+    expect(pickLatestGoDownloadVersion('1.21.5', ['go1.21.13'])).toBe('1.21.5');
+    // Empty JSON (current go.dev behaviour for EOL minors) → last-known table
+    expect(pickLatestGoDownloadVersion('1.21', [])).toBe('1.21.13');
+    expect(pickLatestGoDownloadVersion('1.26', ['go1.26.5', 'go1.25.12'])).toBe(
+      '1.26.5',
+    );
   });
 
   it('defaults version by runtime kind (never PHP→20)', () => {

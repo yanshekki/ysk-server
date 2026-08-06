@@ -8,6 +8,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import {
+  goLastKnownPatchShellCase,
   listSupportedRuntimes,
   selectBunRuntime,
   selectGoRuntime,
@@ -465,46 +466,135 @@ export async function planOrInstallRuntime(input: {
     notes.push(tl('notes.auto.t0408', { v0: (plan.version) }));
   } else if (input.kind === 'go') {
     const plan = selectGoRuntime(input.version);
+    // Panel version is minor (1.21); go.dev requires full patch (1.21.13) — resolve in script
     script = [
       '#!/usr/bin/env bash',
-      `# YSK Server — install Go ${plan.version}`,
+      `# YSK Server — install Go ${plan.version} (resolves patch from go.dev/dl)`,
       'set -euo pipefail',
-      `VER=${plan.version}`,
+      `VER=${JSON.stringify(plan.version)}`,
       `DEST=/usr/local/ysk/go/$VER`,
       'mkdir -p /usr/local/ysk/go /tmp/ysk-go-install',
       'cd /tmp/ysk-go-install',
       'case "$(uname -m)" in aarch64|arm64) GOARCH=linux-arm64 ;; *) GOARCH=linux-amd64 ;; esac',
-      'curl -fsSL "https://go.dev/dl/go${VER}.${GOARCH}.tar.gz" -o go.tgz',
+      '# go.dev only publishes full versions: go1.21.13.linux-amd64.tar.gz — not go1.21.linux-amd64.tar.gz',
+      'resolve_go_full() {',
+      '  local minor="$1"',
+      '  if echo "$minor" | grep -qE "^[0-9]+\\.[0-9]+\\.[0-9]+$"; then',
+      '    echo "$minor"',
+      '    return',
+      '  fi',
+      '  local json full',
+      '  json=$(curl -fsSL "https://go.dev/dl/?mode=json" 2>/dev/null || true)',
+      '  if [ -n "$json" ]; then',
+      '    full=$(printf "%s" "$json" | python3 -c \'',
+      'import json,sys,re',
+      'minor=sys.argv[1]',
+      'try:',
+      '  data=json.load(sys.stdin)',
+      'except Exception:',
+      '  sys.exit(0)',
+      'cands=[]',
+      'for x in data:',
+      '  v=str(x.get("version") or "")',
+      '  if v.startswith("go"): v=v[2:]',
+      '  if v==minor: cands.append(minor+".0")',
+      '  elif v.startswith(minor+"."):',
+      '    m=re.match(r"^(\\d+\\.\\d+\\.\\d+)", v)',
+      '    if m: cands.append(m.group(1))',
+      'if not cands: sys.exit(0)',
+      'def key(s): return tuple(int(p) for p in s.split("."))',
+      'print(sorted(cands, key=key)[-1])',
+      `'\' "$minor" 2>/dev/null || true)',
+      '  fi',
+      '  if [ -n "${full:-}" ]; then',
+      '    echo "$full"',
+      '    return',
+      '  fi',
+      '  # go.dev/dl/?mode=json often only lists current stable lines — use last-known patch table',
+      '  case "$minor" in',
+      goLastKnownPatchShellCase(),
+      '    *) echo "${minor}.0" ;;',
+      '  esac',
+      '}',
+      'FULL_VER=$(resolve_go_full "$VER")',
+      'echo "YSK_GO_PANEL_VERSION=$VER"',
+      'echo "YSK_GO_DOWNLOAD_VERSION=$FULL_VER"',
+      'URL="https://go.dev/dl/go${FULL_VER}.${GOARCH}.tar.gz"',
+      'echo "YSK_GO_DOWNLOAD_URL=$URL"',
+      'if ! curl -fsSL "$URL" -o go.tgz; then',
+      '  echo "Go download failed (HTTP error). Panel version=$VER download=$FULL_VER arch=$GOARCH" >&2',
+      '  echo "Hint: go.dev requires a full patch version (e.g. 1.21.13), not minor-only (1.21)." >&2',
+      '  exit 22',
+      'fi',
       'rm -rf "$DEST"',
       'mkdir -p "$DEST"',
       'tar -C "$DEST" --strip-components=1 -xzf go.tgz',
       'ln -sfn "$DEST/bin/go" /usr/local/bin/go || true',
+      '# Symlink for tools that look at /usr/local/ysk/go/bin',
+      'mkdir -p /usr/local/ysk/go/bin',
+      'ln -sfn "$DEST/bin/go" /usr/local/ysk/go/bin/go || true',
       '"$DEST/bin/go" version',
       '',
     ].join('\n');
-    notes.push(tl('notes.auto.t0409', { v0: (plan.version) }));
+    notes.push(tl('notes.auto.t0409', { v0: plan.version }));
+    notes.push(
+      'Go tarball uses full patch from go.dev/dl JSON (minor-only URLs 404)',
+    );
   } else if (input.kind === 'rust') {
     const plan = selectRustRuntime(input.version);
+    // rustup needs a channel/toolchain id; panel pins like "1.78" are valid.
+    // Layout matches runtime-plugins probe: RUSTUP_HOME=…/rustup CARGO_HOME=…/cargo
+    // (putting both on the same dir leaves rustup off PATH after partial installs.)
+    const tc = plan.version === 'stable' ? 'stable' : plan.version;
     script = [
       '#!/usr/bin/env bash',
       `# YSK Server — install Rust (${plan.version}) via rustup`,
       'set -euo pipefail',
-      'export RUSTUP_HOME=/usr/local/ysk/rust',
-      'export CARGO_HOME=/usr/local/ysk/rust',
-      'mkdir -p /usr/local/ysk/rust',
-      `if ! ${shellBinExists('rustup')} && [ ! -x /usr/local/ysk/rust/bin/rustup ]; then`,
-      '  curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --default-toolchain ' +
-        (plan.version === 'stable' ? 'stable' : plan.version),
+      'export RUSTUP_HOME=/usr/local/ysk/rust/rustup',
+      'export CARGO_HOME=/usr/local/ysk/rust/cargo',
+      'mkdir -p "$RUSTUP_HOME" "$CARGO_HOME" /usr/local/ysk/rust/bin',
+      'export PATH="$CARGO_HOME/bin:$RUSTUP_HOME/bin:/usr/local/ysk/rust/bin:$PATH"',
+      'ysk_rustup_bin() {',
+      '  if [ -x "$CARGO_HOME/bin/rustup" ]; then echo "$CARGO_HOME/bin/rustup"; return; fi',
+      '  if [ -x /usr/local/ysk/rust/bin/rustup ]; then echo /usr/local/ysk/rust/bin/rustup; return; fi',
+      '  command -v rustup 2>/dev/null || true',
+      '}',
+      'RU="$(ysk_rustup_bin)"',
+      'if [ -z "$RU" ]; then',
+      '  echo "YSK_RUST_INSTALLING_RUSTUP"',
+      // Install without default first, then set toolchain explicitly (clearer errors)
+      '  curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --default-toolchain none',
+      '  RU="$(ysk_rustup_bin)"',
       'fi',
-      'export PATH="/usr/local/ysk/rust/bin:$PATH"',
-      plan.version === 'stable'
-        ? 'rustup default stable || true'
-        : `rustup toolchain install ${plan.version} || true`,
+      'if [ -z "$RU" ] || [ ! -x "$RU" ]; then',
+      '  echo "rustup missing after install (RUSTUP_HOME=$RUSTUP_HOME CARGO_HOME=$CARGO_HOME)" >&2',
+      '  exit 1',
+      'fi',
+      'echo "YSK_RUSTUP=$RU"',
+      `TC=${JSON.stringify(tc)}`,
+      'echo "YSK_RUST_TOOLCHAIN=$TC"',
+      // Install pin/channel then make it default so bare cargo works
+      '"$RU" toolchain install "$TC"',
+      '"$RU" default "$TC"',
+      '"$RU" show',
+      // Symlinks for panel probe + /usr/local/bin
+      'ln -sfn "$CARGO_HOME/bin/rustup" /usr/local/ysk/rust/bin/rustup 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/cargo" /usr/local/ysk/rust/bin/cargo 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/rustc" /usr/local/ysk/rust/bin/rustc 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/cargo" /usr/local/bin/cargo 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/rustc" /usr/local/bin/rustc 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/rustup" /usr/local/bin/rustup 2>/dev/null || true',
+      // Prefer explicit toolchain run (does not depend on default alone)
+      '"$RU" run "$TC" cargo --version',
+      '"$RU" run "$TC" rustc --version',
       'cargo --version',
       'rustc --version',
       '',
     ].join('\n');
-    notes.push(tl('notes.auto.t0410', { v0: (plan.version) }));
+    notes.push(tl('notes.auto.t0410', { v0: plan.version }));
+    notes.push(
+      'Rust install uses rustup under /usr/local/ysk/rust/{rustup,cargo}; sets default toolchain',
+    );
   } else if (input.kind === 'java') {
     const plan = selectJavaRuntime(input.version);
     script = [

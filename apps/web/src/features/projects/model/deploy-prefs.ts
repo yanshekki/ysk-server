@@ -78,7 +78,7 @@ export function runtimeVersionChoices(runtime: string): string[] {
   if (runtime === 'php') return ['8.1', '8.2', '8.3'];
   if (runtime === 'node') return ['18', '20', '22'];
   if (runtime === 'python') return ['3.10', '3.11', '3.12'];
-  if (runtime === 'go') return ['1.21', '1.22', '1.23'];
+  if (runtime === 'go') return ['1.21', '1.22', '1.23', '1.24', '1.25', '1.26'];
   if (runtime === 'rust') return ['stable', '1.78', '1.81'];
   if (runtime === 'java') return ['17', '21'];
   if (runtime === 'kotlin') return ['2.1.0', '2.0.21'];

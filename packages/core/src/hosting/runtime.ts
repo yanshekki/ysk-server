@@ -45,7 +45,22 @@ export interface RuntimeSelection {
 export const NODE_SUPPORTED = ['18', '20', '22'] as const;
 export const PHP_SUPPORTED = ['8.1', '8.2', '8.3'] as const;
 export const PYTHON_SUPPORTED = ['3.10', '3.11', '3.12'] as const;
-export const GO_SUPPORTED = ['1.21', '1.22', '1.23'] as const;
+/** Panel minor pins — install resolves to newest full patch tarball on go.dev */
+export const GO_SUPPORTED = ['1.21', '1.22', '1.23', '1.24', '1.25', '1.26'] as const;
+
+/**
+ * Last-known full patch when go.dev/dl/?mode=json omits older minors
+ * (JSON often only lists current stable lines). Prefer JSON when present.
+ * Update occasionally; wrong pin → 404 and clear install error.
+ */
+export const GO_LAST_KNOWN_PATCH: Record<(typeof GO_SUPPORTED)[number], string> = {
+  '1.21': '1.21.13',
+  '1.22': '1.22.12',
+  '1.23': '1.23.12',
+  '1.24': '1.24.6',
+  '1.25': '1.25.12',
+  '1.26': '1.26.5',
+};
 /** rustup channel or stable minor pin */
 export const RUST_SUPPORTED = ['stable', '1.78', '1.81'] as const;
 /** OpenJDK LTS majors */
@@ -244,15 +259,64 @@ export function selectGoRuntime(version: string): RuntimeSelection {
   };
 }
 
+/**
+ * go.dev/dl only ships full patch tarballs (go1.21.13.linux-amd64.tar.gz).
+ * Panel selects minor "1.21"; resolve to newest matching patch from version list.
+ * Accepts entries like "go1.21.13" or "1.21.13".
+ * When `available` is empty / missing minor, falls back to GO_LAST_KNOWN_PATCH.
+ */
+export function pickLatestGoDownloadVersion(
+  panelVersion: string,
+  available: string[],
+): string {
+  const raw = panelVersion.replace(/^go/i, '').trim();
+  // Already full x.y.z
+  if (/^\d+\.\d+\.\d+$/.test(raw)) return raw;
+  const minor = raw.match(/^(\d+\.\d+)/)?.[1] ?? raw;
+  const patches: string[] = [];
+  for (const entry of available) {
+    const v = String(entry).replace(/^go/i, '').trim();
+    if (v === minor) {
+      patches.push(`${minor}.0`);
+      continue;
+    }
+    if (v.startsWith(`${minor}.`) && /^\d+\.\d+\.\d+/.test(v)) {
+      const full = v.match(/^(\d+\.\d+\.\d+)/)?.[1];
+      if (full) patches.push(full);
+    }
+  }
+  if (patches.length === 0) {
+    const known = GO_LAST_KNOWN_PATCH[minor as (typeof GO_SUPPORTED)[number]];
+    return known ?? `${minor}.0`;
+  }
+  const rank = (s: string) => s.split('.').map((n) => parseInt(n, 10) || 0);
+  patches.sort((a, b) => {
+    const aa = rank(a);
+    const bb = rank(b);
+    for (let i = 0; i < 3; i++) {
+      const d = (aa[i] ?? 0) - (bb[i] ?? 0);
+      if (d !== 0) return d;
+    }
+    return 0;
+  });
+  return patches[patches.length - 1]!;
+}
+
+/** Bash case arms for GO_LAST_KNOWN_PATCH (install script fallback). */
+export function goLastKnownPatchShellCase(): string {
+  return GO_SUPPORTED.map(
+    (m) => `    ${m}) echo ${JSON.stringify(GO_LAST_KNOWN_PATCH[m])} ;;`,
+  ).join('\n');
+}
+
 export function selectRustRuntime(version: string): RuntimeSelection {
   const v = normalizeRuntimeVersion('rust', version);
+  // Managed layout: RUSTUP_HOME=/usr/local/ysk/rust/rustup CARGO_HOME=/usr/local/ysk/rust/cargo
+  // cargo proxy lives in CARGO_HOME/bin (works for stable + pinned after `rustup default`).
   return {
     kind: 'rust',
     version: v,
-    binaryPath:
-      v === 'stable'
-        ? '/usr/local/ysk/rust/bin/cargo'
-        : `/usr/local/ysk/rust/toolchains/${v}-x86_64-unknown-linux-gnu/bin/cargo`,
+    binaryPath: '/usr/local/ysk/rust/cargo/bin/cargo',
     manager: 'rustup',
   };
 }
