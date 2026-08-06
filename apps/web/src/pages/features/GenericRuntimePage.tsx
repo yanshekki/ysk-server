@@ -38,6 +38,7 @@ import {
 } from '../../features/runtimes/install-state';
 import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
 import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
+import { RuntimePm2Panel } from '../../features/runtimes/RuntimePm2Panel';
 import { bindSet, bindInput } from '../bind-handlers';
 
 export type HostingRuntimeKind =
@@ -112,7 +113,12 @@ const META: Record<
   },
 };
 
-const RT_TABS = ['overview', 'tuning', 'about'] as const;
+const RT_TABS_BASE = ['overview', 'tuning', 'about'] as const;
+const RT_TABS_PROCESS = ['overview', 'processes', 'tuning', 'about'] as const;
+
+export function runtimeTabsForKind(kind: HostingRuntimeKind): readonly string[] {
+  return kind === 'node' || kind === 'bun' ? RT_TABS_PROCESS : RT_TABS_BASE;
+}
 
 type TuningGroup = {
   id: string;
@@ -166,7 +172,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const meta = META[kind];
-  const [tab, setTab] = usePageTab(RT_TABS, 'overview');
+  const tabs = useMemo(() => runtimeTabsForKind(kind), [kind]);
+  const [tab, setTab] = usePageTab(tabs, 'overview');
   const [version, setVersion] = useState(meta.defaultVersion);
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
   const [catalog, setCatalog] = useState<TuningGroup[]>([]);
@@ -409,14 +416,21 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       <PageTabs
         tabs={[
           { id: 'overview', label: t('runtime.tabOverviewInstall') },
+          ...(kind === 'node' || kind === 'bun'
+            ? [{ id: 'processes', label: t('runtime.tabProcesses') }]
+            : []),
           { id: 'tuning', label: t('runtime.tabTune') },
-        
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
         variant="scroll"
       >
+        {tab === 'processes' && (kind === 'node' || kind === 'bun') ? (
+          <div className="tab-panel">
+            <RuntimePm2Panel />
+          </div>
+        ) : null}
         {tab === 'overview' ? (
           <div className="tab-panel">
             <Card>

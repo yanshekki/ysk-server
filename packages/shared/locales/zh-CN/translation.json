@@ -8493,7 +8493,40 @@
     "switchDefaultBtn": "切换为默认 {{version}}",
     "switchDefaultHint": "此版本已安装但不是当前默认。可切换而无需重装；其他版本会保留。",
     "installedNotActive": "{{version}} 已安装（非默认）",
-    "multiVersionHint": "Go／Rust 可同时保留多个版本：先安装缺少的，再切换默认决定 PATH。"
+    "multiVersionHint": "Go／Rust 可同时保留多个版本：先安装缺少的，再切换默认决定 PATH。",
+    "tabProcesses": "进程",
+    "pm2": {
+      "title": "PM2 进程列表",
+      "desc": "只读 pm2 jlist（面板用户的 PM2_HOME）。实时 SSE 每 2 秒刷新。",
+      "live": "实时",
+      "installed": "PM2 已装",
+      "version": "pm2 版本",
+      "path": "pm2 路径",
+      "counts": "进程",
+      "countsValue": "共 {{n}} · 运行 {{run}} · 停止 {{stop}} · 错误 {{err}}",
+      "updatedAt": "上次刷新",
+      "notInstalled": "PATH 上未找到 PM2。",
+      "installHint": "在「总览 / 安装」安装 companion plugin",
+      "tableTitle": "进程列表",
+      "yskOnly": "仅 YSK（ysk-*）",
+      "filterPh": "筛选名称 / 脚本 / pid…",
+      "emptyTitle": "PM2 不可用",
+      "emptyDesc": "请先为 Node 安装 pm2 plugin，再刷新。",
+      "noApps": "没有进程",
+      "noAppsDesc": "此用户下 pm2 jlist 为空，或筛选无结果。",
+      "streamLog": "实时 tick 日志",
+      "streamLogDesc": "每个 SSE tick 一行（不是进程 stdout）。",
+      "col": {
+        "name": "名称",
+        "status": "状态",
+        "mem": "内存",
+        "restarts": "重启",
+        "uptime": "运行时间",
+        "mode": "模式",
+        "script": "脚本",
+        "interpreter": "Interpreter"
+      }
+    }
   },
   "security": {
     "title": "安全与审批",

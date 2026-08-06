@@ -410,5 +410,38 @@
   "switchDefaultBtn": "Switch default to {{version}}",
   "switchDefaultHint": "This version is installed but not the active default. Switch without reinstalling; other versions stay on disk.",
   "installedNotActive": "{{version}} installed (not default)",
-  "multiVersionHint": "Go/Rust keep multiple versions: Install missing ones, then Switch default for PATH."
+  "multiVersionHint": "Go/Rust keep multiple versions: Install missing ones, then Switch default for PATH.",
+  "tabProcesses": "Processes",
+  "pm2": {
+    "title": "PM2 fleet",
+    "desc": "Read-only view of pm2 jlist (panel user PM2_HOME). Live SSE refreshes every 2s.",
+    "live": "Live",
+    "installed": "PM2 installed",
+    "version": "pm2 version",
+    "path": "pm2 path",
+    "counts": "Processes",
+    "countsValue": "{{n}} total · {{run}} online · {{stop}} stopped · {{err}} errored",
+    "updatedAt": "Last refresh",
+    "notInstalled": "PM2 is not on PATH.",
+    "installHint": "Install companion plugin on Overview",
+    "tableTitle": "Process list",
+    "yskOnly": "YSK apps only (ysk-*)",
+    "filterPh": "Filter name / script / pid…",
+    "emptyTitle": "PM2 not available",
+    "emptyDesc": "Install the pm2 plugin for Node, then refresh.",
+    "noApps": "No processes",
+    "noAppsDesc": "pm2 jlist is empty under this user, or filter matched nothing.",
+    "streamLog": "Live tick log",
+    "streamLogDesc": "One line per SSE tick (not process stdout).",
+    "col": {
+      "name": "Name",
+      "status": "Status",
+      "mem": "Memory",
+      "restarts": "Restarts",
+      "uptime": "Uptime",
+      "mode": "Mode",
+      "script": "Script",
+      "interpreter": "Interpreter"
+    }
+  }
 }

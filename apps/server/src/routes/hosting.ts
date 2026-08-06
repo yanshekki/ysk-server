@@ -57,6 +57,73 @@ export async function handleHostingRoutes(
         sendJson(res, 200, { supported, probe });
         return true;
       }
+
+      // —— PM2 fleet (Node/Bun Processes tab; read-only jlist) ——
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/pm2/status') {
+        ctx.auth.authenticate(getBearer(req));
+        const { collectPm2Snapshot } = await import('@ysk/core');
+        const snap = await collectPm2Snapshot(ctx.host);
+        sendJson(res, 200, snap);
+        return true;
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/pm2/stream') {
+        ctx.auth.authenticate(getBearer(req));
+        const { collectPm2Snapshot } = await import('@ysk/core');
+        const intervalSec = Math.max(
+          1,
+          Math.min(10, Number(url.searchParams.get('interval') || 2)),
+        );
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+          'X-Accel-Buffering': 'no',
+        });
+        res.write(`: ysk-pm2-stream\n\n`);
+        let closed = false;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const maxTicks = Math.min(300, Math.floor((10 * 60) / intervalSec));
+        let ticks = 0;
+        const send = (event: string, data: unknown) => {
+          if (closed || res.writableEnded) return;
+          try {
+            res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+          } catch {
+            closed = true;
+          }
+        };
+        const tick = async () => {
+          if (closed) return;
+          ticks += 1;
+          try {
+            const snap = await collectPm2Snapshot(ctx.host);
+            send('tick', snap);
+          } catch (e) {
+            send('error', {
+              message: e instanceof Error ? e.message : 'pm2 stream error',
+            });
+          }
+          if (ticks >= maxTicks) {
+            send('end', { reason: 'max_duration' });
+            closed = true;
+            try {
+              res.end();
+            } catch {
+              /* */
+            }
+            return;
+          }
+          if (!closed) {
+            timer = setTimeout(() => void tick(), intervalSec * 1000);
+          }
+        };
+        req.on('close', () => {
+          closed = true;
+          if (timer) clearTimeout(timer);
+        });
+        void tick();
+        return true;
+      }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/runtimes/install') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
