@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActionBar,
@@ -16,6 +16,7 @@ import { formatRuntimeName } from '../model/runtime-ui';
 import { bindInput } from '../../../pages/bind-handlers';
 import {
   defaultRuntimeInstallVersion,
+  fetchRuntimeVersionChoices,
   runtimeVersionChoices,
 } from '../model/deploy-prefs';
 
@@ -94,9 +95,8 @@ export function ProjectCreateModal({
     Array<{ id: string; name: string; description: string; runtime: string }>
   >([]);
 
-  const versionChoices = useMemo(
-    () => runtimeVersionChoices(runtime),
-    [runtime],
+  const [versionChoices, setVersionChoices] = useState<string[]>(() =>
+    runtimeVersionChoices('node'),
   );
 
   useEffect(() => {
@@ -107,6 +107,24 @@ export function ProjectCreateModal({
       .catch(() => undefined);
   }, [open]);
 
+  // Prefer discovery API for version chips
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void fetchRuntimeVersionChoices(runtime).then((r) => {
+      if (cancelled) return;
+      if (r.choices.length) {
+        setVersionChoices(r.choices);
+        setRuntimeVersion((prev) =>
+          r.choices.includes(prev) ? prev : r.latest || r.choices[0] || prev,
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, runtime]);
+
   useEffect(() => {
     if (!open) {
       setName('');
@@ -114,6 +132,7 @@ export function ProjectCreateModal({
       setAliases('');
       setRuntime('node');
       setRuntimeVersion(defaultRuntimeInstallVersion('node'));
+      setVersionChoices(runtimeVersionChoices('node'));
       setTemplateId('');
       setCreateDns(false);
       setCreateMail(false);
@@ -125,23 +144,28 @@ export function ProjectCreateModal({
     const rt = asProjectRuntime(initialRuntime);
     if (rt) {
       setRuntime(rt);
-      const choices = runtimeVersionChoices(rt);
-      const want = (initialRuntimeVersion ?? '').trim();
-      if (want && (choices.includes(want) || choices.some((c) => want.startsWith(`${c}.`)))) {
-        const match = choices.find((c) => c === want || want.startsWith(`${c}.`)) ?? want;
-        setRuntimeVersion(choices.includes(match) ? match : choices[0] ?? want);
-      } else {
-        const def = defaultRuntimeInstallVersion(rt);
-        setRuntimeVersion(choices.includes(def) ? def : choices[0] ?? '');
-      }
+      void fetchRuntimeVersionChoices(rt).then((r) => {
+        const choices = r.choices.length ? r.choices : runtimeVersionChoices(rt);
+        setVersionChoices(choices);
+        const want = (initialRuntimeVersion ?? '').trim();
+        if (want && (choices.includes(want) || choices.some((c) => want.startsWith(`${c}.`)))) {
+          const match = choices.find((c) => c === want || want.startsWith(`${c}.`)) ?? want;
+          setRuntimeVersion(choices.includes(match) ? match : choices[0] ?? want);
+        } else {
+          setRuntimeVersion(r.latest || choices[0] || defaultRuntimeInstallVersion(rt));
+        }
+      });
     }
   }, [open, initialRuntime, initialRuntimeVersion]);
 
   function applyRuntime(next: ProjectRuntime) {
     setRuntime(next);
-    const choices = runtimeVersionChoices(next);
-    const def = defaultRuntimeInstallVersion(next);
-    setRuntimeVersion(choices.includes(def) ? def : choices[0] ?? '');
+    setVersionChoices(runtimeVersionChoices(next));
+    void fetchRuntimeVersionChoices(next).then((r) => {
+      const choices = r.choices.length ? r.choices : runtimeVersionChoices(next);
+      setVersionChoices(choices);
+      setRuntimeVersion(r.latest || choices[0] || defaultRuntimeInstallVersion(next));
+    });
     const tpl = templates.find((x) => x.id === templateId);
     if (tpl && tpl.runtime !== next) setTemplateId('');
   }

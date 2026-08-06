@@ -16,13 +16,16 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  InstallStreamPanel,
   PresetChips,
   SegRadio,
-
-  buttonClassName,} from '../../../shared/components/ui';
+  buttonClassName,
+} from '../../../shared/components/ui';
+import type { InstallStreamLine } from '../../../shared/components/ui';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
 import {
   defaultRuntimeInstallVersion,
+  fetchRuntimeVersionChoices,
   loadDeployPrefs,
   runtimeInstallKind,
   runtimePagePath,
@@ -184,6 +187,10 @@ export function ProjectDeployTab({
   const [phpIniDisplay, setPhpIniDisplay] = useState<boolean | null>(null);
   const [verBusy, setVerBusy] = useState(false);
   const [chainBusy, setChainBusy] = useState(false);
+  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
+  const [versionChoices, setVersionChoices] = useState<string[]>(() =>
+    runtimeVersionChoices(project.runtime),
+  );
   const [history, setHistory] = useState<
     Array<{
       id: string;
@@ -226,6 +233,25 @@ export function ProjectDeployTab({
       project.runtimeVersion || defaultRuntimeInstallVersion(project.runtime) || '',
     );
   }, [project.id, project.runtimeVersion, project.runtime]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setVersionChoices(runtimeVersionChoices(project.runtime));
+    void fetchRuntimeVersionChoices(project.runtime).then((r) => {
+      if (cancelled || !r.choices.length) return;
+      setVersionChoices(r.choices);
+      setRtVer((prev) => {
+        if (prev && r.choices.includes(prev)) return prev;
+        if (project.runtimeVersion && r.choices.includes(project.runtimeVersion)) {
+          return project.runtimeVersion;
+        }
+        return r.latest || r.choices[0] || prev;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [project.id, project.runtime, project.runtimeVersion]);
 
   useEffect(() => {
     if (project.runtime !== 'php') return;
@@ -298,6 +324,7 @@ export function ProjectDeployTab({
       return;
     }
     setChainBusy(true);
+    setInstallLog([]);
     onOpsMessage?.(t('projects.deployInstallingToolchain'));
     try {
       const version =
@@ -307,11 +334,16 @@ export function ProjectDeployTab({
       if (rtVer && rtVer !== project.runtimeVersion) {
         await projectsApi.setRuntimeVersion(project.id, rtVer).catch(() => undefined);
       }
-      const r = (await systemApi.runtimeInstall({
-        kind: rtKind,
-        version,
-        install: true,
-      })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
+      const r = await systemApi.runtimeInstallStream(
+        {
+          kind: rtKind,
+          version,
+          install: true,
+        },
+        {
+          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]),
+        },
+      );
       const notes = r.notes?.join('；') ?? '';
       if (r.blocked || r.ok === false) {
         onOpsMessage?.(
@@ -332,7 +364,6 @@ export function ProjectDeployTab({
   }
 
   const anyBusy = Boolean(busy || phpBusy || chainBusy || verBusy);
-  const versionChoices = runtimeVersionChoices(project.runtime);
 
   return (
     <div className="tab-panel">
@@ -384,6 +415,7 @@ export function ProjectDeployTab({
                 {t('projects.later')}
               </Button>
             </FormActions>
+            <InstallStreamPanel lines={installLog} busy={chainBusy} />
           </CardSection>
         </Card>
       ) : null}

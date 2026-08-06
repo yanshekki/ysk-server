@@ -17,12 +17,14 @@ import {
   DataTable,
   EmptyState,
   FeaturePageLayout,
+  InstallStreamPanel,
   InfoCard,
   InfoCardGrid,
   ListToolbar,
   LoadingBlock,
   PageTabs,
 } from '../shared/components/ui';
+import type { InstallStreamLine } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
@@ -194,6 +196,7 @@ export function UpdatesPage() {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set());
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
+  const [applyLog, setApplyLog] = useState<InstallStreamLine[]>([]);
   /** Soft-cancel sequential fallback between packages */
   const [batchAbort, setBatchAbort] = useState<AbortController | null>(null);
 
@@ -324,6 +327,7 @@ export function UpdatesPage() {
     const rows = [...selectedUpgradable];
     const ac = new AbortController();
     setBatchAbort(ac);
+    setApplyLog([]);
     setBatchProgress(
       t('updates.batchProgress', {
         n: 0,
@@ -337,6 +341,7 @@ export function UpdatesPage() {
         confirmHighRisk: true,
         quiet: true,
         signal: ac.signal,
+        onLog: (line) => setApplyLog((prev) => [...prev.slice(-1999), line]),
         onProgress: (n, total, pkg) => {
           setBatchProgress(
             t('updates.batchProgress', {
@@ -486,36 +491,50 @@ export function UpdatesPage() {
       >
         {tab === 'packages' ? (
           <div className="tab-panel stack">
-            {batchProgress ? (
-              <Alert variant={busy ? 'info' : 'ok'}>
-                <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
-                  <span>{batchProgress}</span>
-                  {busy && batchAbort ? (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        batchAbort.abort();
-                        setBatchProgress(
-                          t('updates.batchCancelling', {
-                            defaultValue: '正在取消…（目前套件完成後停止）',
-                          }),
-                        );
-                      }}
-                    >
-                      {t('updates.batchCancel', { defaultValue: '取消批量' })}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setBatchProgress(null)}
-                    >
-                      {t('common.dismiss', { defaultValue: '關閉' })}
-                    </Button>
-                  )}
-                </div>
-              </Alert>
+            {batchProgress || applyLog.length > 0 ? (
+              <div className="u-mb-3 stack">
+                {batchProgress ? (
+                  <Alert variant={busy ? 'info' : 'ok'}>
+                    <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
+                      <span>{batchProgress}</span>
+                      {busy && batchAbort ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            batchAbort.abort();
+                            setBatchProgress(
+                              t('updates.batchCancelling', {
+                                defaultValue: '正在取消…（目前套件完成後停止）',
+                              }),
+                            );
+                          }}
+                        >
+                          {t('updates.batchCancel', { defaultValue: '取消批量' })}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setBatchProgress(null);
+                            if (!busy) setApplyLog([]);
+                          }}
+                        >
+                          {t('common.dismiss', { defaultValue: '關閉' })}
+                        </Button>
+                      )}
+                    </div>
+                  </Alert>
+                ) : null}
+                <InstallStreamPanel
+                  lines={applyLog}
+                  busy={Boolean(busy && batchProgress)}
+                  title={t('updates.applyLogTitle', {
+                    defaultValue: '套件更新日誌（即時）',
+                  })}
+                />
+              </div>
             ) : null}
             {busy && inventory.length === 0 ? (
               <LoadingBlock label={t('updates.scanning')} />

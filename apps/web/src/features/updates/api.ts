@@ -72,6 +72,44 @@ export const updatesApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  applyPackageStream: (
+    body: {
+      packageName: string;
+      currentVersion: string;
+      candidateVersion?: string;
+      risk?: string;
+      cves?: string[];
+      requiresApproval?: boolean;
+      summary?: string;
+      confirmHighRisk?: boolean;
+    },
+    opts?: {
+      onLog?: (line: {
+        stream: 'stdout' | 'stderr' | 'status';
+        line: string;
+        at?: string;
+      }) => void;
+      signal?: AbortSignal;
+    },
+  ) =>
+    import('../runtimes/stream-sse').then(async (m) => {
+      const { ops, raw } = await m.postSseJson(
+        '/api/v1/updates/apply',
+        body as unknown as Record<string, unknown>,
+        opts,
+      );
+      const r = (raw && typeof raw === 'object' ? raw : {}) as {
+        applied?: boolean;
+        notes?: string[];
+      };
+      return {
+        ok: ops.ok,
+        applied: Boolean(r.applied) && ops.ok,
+        blocked: ops.blocked,
+        blockMessage: ops.blockMessage,
+        notes: ops.notes ?? r.notes ?? [],
+      };
+    }),
   /** Sequential bulk apply (server-side loop, max 40 packages) */
   applyBatch: (body: {
     packages: Array<{
@@ -102,6 +140,56 @@ export const updatesApi = {
       method: 'POST',
       body: JSON.stringify(body),
       allowStatuses: [207, 403, 422],
+    }),
+  applyBatchStream: (
+    body: {
+      packages: Array<{
+        packageName: string;
+        currentVersion: string;
+        candidateVersion?: string;
+        risk?: string;
+        cves?: string[];
+        requiresApproval?: boolean;
+        summary?: string;
+      }>;
+      confirmHighRisk?: boolean;
+    },
+    opts?: {
+      onLog?: (line: {
+        stream: 'stdout' | 'stderr' | 'status';
+        line: string;
+        at?: string;
+      }) => void;
+      signal?: AbortSignal;
+    },
+  ) =>
+    import('../runtimes/stream-sse').then(async (m) => {
+      const { ops, raw } = await m.postSseJson(
+        '/api/v1/updates/apply-batch',
+        body as unknown as Record<string, unknown>,
+        opts,
+      );
+      const r = (raw && typeof raw === 'object' ? raw : {}) as {
+        ok?: boolean;
+        appliedCount?: number;
+        failedCount?: number;
+        results?: Array<{
+          packageName: string;
+          ok: boolean;
+          applied: boolean;
+          blocked?: boolean;
+          blockMessage?: string;
+          notes: string[];
+        }>;
+        notes?: string[];
+      };
+      return {
+        ok: r.ok !== false && ops.ok,
+        appliedCount: Number(r.appliedCount ?? 0),
+        failedCount: Number(r.failedCount ?? 0),
+        results: r.results ?? [],
+        notes: r.notes ?? ops.notes ?? [],
+      };
     }),
   self: () => api.requestRaw<Record<string, unknown>>('/api/v1/updates/self'),
   selfApply: () =>

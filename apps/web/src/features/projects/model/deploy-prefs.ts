@@ -61,8 +61,12 @@ export function runtimePagePath(runtime: string): string | null {
   return k ? `/runtimes/${k}` : null;
 }
 
+/**
+ * Offline placeholder only — UI should prefer fetchRuntimeVersionChoices (discovery).
+ * Not a product SSOT for installable versions.
+ */
 export function defaultRuntimeInstallVersion(runtime: string): string {
-  if (runtime === 'php') return '8.2';
+  if (runtime === 'php') return '8.3';
   if (runtime === 'python') return '3.12';
   if (runtime === 'go') return '1.22';
   if (runtime === 'rust') return 'stable';
@@ -73,15 +77,51 @@ export function defaultRuntimeInstallVersion(runtime: string): string {
   return '';
 }
 
-/** Versions offered in project deploy tab (must match core supported lists). */
+/**
+ * Offline fallback choices when software/versions is unavailable.
+ * Prefer {@link fetchRuntimeVersionChoices} in UI.
+ */
 export function runtimeVersionChoices(runtime: string): string[] {
-  if (runtime === 'php') return ['8.1', '8.2', '8.3'];
-  if (runtime === 'node') return ['18', '20', '22'];
-  if (runtime === 'python') return ['3.10', '3.11', '3.12'];
-  if (runtime === 'go') return ['1.21', '1.22', '1.23', '1.24', '1.25', '1.26'];
-  if (runtime === 'rust') return ['stable', '1.78', '1.81'];
+  const def = defaultRuntimeInstallVersion(runtime);
+  if (!def) return [];
+  // Minimal offline set (single pin + common neighbors) — not a hard-coded product menu
+  if (runtime === 'php') return ['8.2', '8.3', '8.4', '8.5'];
+  if (runtime === 'node') return ['20', '22', '24'];
+  if (runtime === 'python') return ['3.11', '3.12', '3.13', '3.14'];
+  if (runtime === 'go') return ['1.22', '1.23', '1.24', '1.25', '1.26'];
+  if (runtime === 'rust') return ['stable'];
   if (runtime === 'java') return ['17', '21'];
-  if (runtime === 'kotlin') return ['2.1.0', '2.0.21'];
-  if (runtime === 'bun') return ['latest', '1.1.38'];
-  return [];
+  if (runtime === 'kotlin') return [def];
+  if (runtime === 'bun') return ['latest'];
+  return def ? [def] : [];
+}
+
+/** Load version chips from version-discovery API (no hardcode). */
+export async function fetchRuntimeVersionChoices(
+  runtime: string,
+): Promise<{ choices: string[]; latest?: string; source?: string }> {
+  const kind = runtimeInstallKind(runtime);
+  if (!kind) return { choices: [] };
+  try {
+    const { systemApi } = await import('../../system');
+    const h = await systemApi.softwareVersions({ id: kind, refresh: false });
+    const choices = (h.candidates ?? [])
+      .map((c) => c.version)
+      .filter((v): v is string => Boolean(v));
+    if (choices.length) {
+      return {
+        choices,
+        latest: h.latestVersion || choices[0],
+        source: h.source,
+      };
+    }
+  } catch {
+    /* offline */
+  }
+  const fallback = runtimeVersionChoices(runtime);
+  return {
+    choices: fallback,
+    latest: defaultRuntimeInstallVersion(runtime) || fallback[0],
+    source: 'offline-fallback',
+  };
 }

@@ -12,6 +12,8 @@ export async function applyPackageUpdate(input: {
   item: UpdateItemDto;
   /** Operator confirmed high-risk apply */
   confirmHighRisk?: boolean;
+  onLog?: (ev: { stream: 'stdout' | 'stderr'; line: string }) => void;
+  abortSignal?: AbortSignal;
 }): Promise<{
   ok: boolean;
   applied: boolean;
@@ -91,7 +93,17 @@ export async function applyPackageUpdate(input: {
   // Exact candidate only — never fall back to unversioned upgrade (wrong version risk)
   const cmd = `export DEBIAN_FRONTEND=noninteractive; apt-get install -y --only-upgrade ${JSON.stringify(pkg)}=${JSON.stringify(cand)} 2>&1`;
 
-  const r = await input.host.runCommand(['bash', '-c', cmd], { timeoutMs: 300_000 });
+  input.onLog?.({
+    stream: 'stdout',
+    line: `YSK_APT_UPGRADE ${pkg}=${cand}`,
+  });
+  const r = await input.host.runCommand(['bash', '-c', cmd], {
+    timeoutMs: 300_000,
+    onChunk: input.onLog
+      ? (c) => input.onLog!({ stream: c.stream, line: c.text })
+      : undefined,
+    signal: input.abortSignal,
+  });
   const out = ((r.stdout || '') + (r.stderr || '')).slice(0, 800);
 
   // Honest applied: exit 0 alone is not enough — verify dpkg version matches candidate
@@ -165,6 +177,16 @@ export async function applyPackageUpdateBatch(input: {
   limit?: number;
   /** Build UpdateItemDto from inventory fields (inject adviseUpdate from caller) */
   toItem: (row: BatchPackageApplyItem) => UpdateItemDto;
+  onLog?: (ev: { stream: 'stdout' | 'stderr'; line: string }) => void;
+  abortSignal?: AbortSignal;
+  /** Fired after each package (for SSE progress) */
+  onItemDone?: (row: {
+    packageName: string;
+    ok: boolean;
+    applied: boolean;
+    index: number;
+    total: number;
+  }) => void;
 }): Promise<{
   ok: boolean;
   appliedCount: number;
@@ -203,15 +225,34 @@ export async function applyPackageUpdateBatch(input: {
 
   let appliedCount = 0;
   let failedCount = 0;
+  let index = 0;
   for (const row of slice) {
+    if (input.abortSignal?.aborted) {
+      notes.push('batch aborted');
+      break;
+    }
+    index += 1;
     const item = input.toItem(row);
+    input.onLog?.({
+      stream: 'stdout',
+      line: `YSK_BATCH ${index}/${slice.length} ${item.packageName}`,
+    });
     const r = await applyPackageUpdate({
       host: input.host,
       item,
       confirmHighRisk: input.confirmHighRisk,
+      onLog: input.onLog,
+      abortSignal: input.abortSignal,
     });
     if (r.ok && r.applied) appliedCount += 1;
     else failedCount += 1;
+    input.onItemDone?.({
+      packageName: item.packageName,
+      ok: r.ok,
+      applied: r.applied,
+      index,
+      total: slice.length,
+    });
     results.push({
       packageName: item.packageName,
       ok: r.ok,

@@ -135,12 +135,18 @@ export function useUpdates() {
     }
   }, []);
 
-  const applyPackage = useCallback(async (row: AdviceRow, confirmHighRisk = false) => {
+  const applyPackage = useCallback(async (
+    row: AdviceRow,
+    confirmHighRisk = false,
+    opts?: {
+      onLog?: (line: { stream: 'stdout' | 'stderr' | 'status'; line: string }) => void;
+    },
+  ) => {
     setBusy(true);
     setError(null);
     setMsg(null);
     try {
-      const r = await updatesApi.applyPackage({
+      const body = {
         packageName: row.packageName,
         currentVersion: row.currentVersion,
         candidateVersion: row.candidateVersion,
@@ -149,7 +155,10 @@ export function useUpdates() {
         requiresApproval: row.requiresApproval,
         summary: row.summary,
         confirmHighRisk,
-      });
+      };
+      const r = opts?.onLog
+        ? await updatesApi.applyPackageStream(body, { onLog: opts.onLog })
+        : await updatesApi.applyPackage(body);
       const notes = sanitizeOperatorNotes(r.notes);
       if (r.blocked || !r.ok || r.applied === false) {
         setError(null);
@@ -197,6 +206,7 @@ export function useUpdates() {
         onProgress?: (n: number, total: number, pkg: string) => void;
         quiet?: boolean;
         signal?: AbortSignal;
+        onLog?: (line: { stream: 'stdout' | 'stderr' | 'status'; line: string }) => void;
       },
     ): Promise<{ ok: string[]; fail: Array<{ pkg: string; message: string }> }> => {
       const ok: string[] = [];
@@ -209,7 +219,7 @@ export function useUpdates() {
         if (rows.length > 1 && !opts?.signal?.aborted) {
           opts?.onProgress?.(0, rows.length, rows[0]!.packageName);
           try {
-            const batch = await updatesApi.applyBatch({
+            const batchBody = {
               packages: rows.map((row) => ({
                 packageName: row.packageName,
                 currentVersion: row.currentVersion,
@@ -220,7 +230,13 @@ export function useUpdates() {
                 summary: row.summary,
               })),
               confirmHighRisk: Boolean(opts?.confirmHighRisk),
-            });
+            };
+            const batch = opts?.onLog
+              ? await updatesApi.applyBatchStream(batchBody, {
+                  onLog: opts.onLog,
+                  signal: opts.signal,
+                })
+              : await updatesApi.applyBatch(batchBody);
             for (const r of batch.results ?? []) {
               // Require applied===true — never count plan-only / empty as success
               if (r.ok && r.applied === true) ok.push(r.packageName);
@@ -289,7 +305,7 @@ export function useUpdates() {
           const row = rows[i]!;
           opts?.onProgress?.(i + 1, rows.length, row.packageName);
           try {
-            const r = await updatesApi.applyPackage({
+            const body = {
               packageName: row.packageName,
               currentVersion: row.currentVersion,
               candidateVersion: row.candidateVersion,
@@ -298,7 +314,13 @@ export function useUpdates() {
               requiresApproval: row.requiresApproval,
               summary: row.summary,
               confirmHighRisk: Boolean(opts?.confirmHighRisk),
-            });
+            };
+            const r = opts?.onLog
+              ? await updatesApi.applyPackageStream(body, {
+                  onLog: opts.onLog,
+                  signal: opts.signal,
+                })
+              : await updatesApi.applyPackage(body);
             const notes = sanitizeOperatorNotes(r.notes);
             if (r.blocked || !r.ok || r.applied === false) {
               fail.push({

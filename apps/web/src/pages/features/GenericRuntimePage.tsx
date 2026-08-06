@@ -561,62 +561,64 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   onChange={setPlugins}
                   disabled={busy}
                   refreshToken={pluginsRefreshToken}
+                  // Only one primary install CTA: plugins when runtime already on host
+                  showInstallButton={installState.selectedInstalled}
                 />
-                <RuntimeInstallActions
-                  installState={installState}
-                  version={version}
-                  busy={busy}
-                  installLabel={t(meta.installLabelKey, { v: version })}
-                  onSelectNewer={setVersion}
-                  onSwitch={
-                    multiVersion
-                      ? () =>
-                          void run(async () => {
-                            const r = await systemApi.runtimeSwitch({
-                              kind: kind as 'go' | 'rust',
-                              version,
-                            });
-                            await refresh();
-                            setPluginsRefreshToken((n) => n + 1);
-                            return r as OpsResultLike;
-                          }, t('runtime.switchDefaultBtn', { version }))
-                      : undefined
-                  }
-                  extraHints={
-                    multiVersion ? (
-                      <FormHint>
-                        {t('runtime.multiVersionHint', {
-                          defaultValue:
-                            'Go／Rust 可同時保留多個版本：先「安裝」缺少的版本，再「切換為預設」決定 PATH 用邊個。',
-                        })}
-                      </FormHint>
-                    ) : installState.selectedInstalled ? (
-                      <FormHint>{t('runtime.addonsInstallAbove')}</FormHint>
-                    ) : installState.newerAvailable.length === 0 ? (
-                      <FormHint>{t('runtime.installScriptNote')}</FormHint>
-                    ) : null
-                  }
-                  onInstall={() =>
-                    void run(async () => {
-                      setInstallLog([]);
-                      const r = await systemApi.runtimeInstallStream(
-                        {
-                          kind,
-                          version,
-                          install: true,
-                          plugins,
-                        },
-                        {
-                          onLog: (line) =>
-                            setInstallLog((prev) => [...prev.slice(-1999), line]),
-                        },
-                      );
-                      await refresh();
-                      setPluginsRefreshToken((n) => n + 1);
-                      return r as OpsResultLike;
-                    }, t(meta.installLabelKey, { v: version }))
-                  }
-                />
+                {!installState.selectedInstalled || multiVersion ? (
+                  <RuntimeInstallActions
+                    installState={installState}
+                    version={version}
+                    busy={busy}
+                    installLabel={t(meta.installLabelKey, { v: version })}
+                    onSelectNewer={setVersion}
+                    onSwitch={
+                      multiVersion
+                        ? () =>
+                            void run(async () => {
+                              const r = await systemApi.runtimeSwitch({
+                                kind: kind as 'go' | 'rust',
+                                version,
+                              });
+                              await refresh();
+                              setPluginsRefreshToken((n) => n + 1);
+                              return r as OpsResultLike;
+                            }, t('runtime.switchDefaultBtn', { version }))
+                        : undefined
+                    }
+                    extraHints={
+                      multiVersion ? (
+                        <FormHint>
+                          {t('runtime.multiVersionHint', {
+                            defaultValue:
+                              'Go／Rust 可同時保留多個版本：先「安裝」缺少的版本，再「切換為預設」決定 PATH 用邊個。',
+                          })}
+                        </FormHint>
+                      ) : installState.newerAvailable.length === 0 ? (
+                        <FormHint>{t('runtime.installScriptNote')}</FormHint>
+                      ) : null
+                    }
+                    onInstall={() =>
+                      void run(async () => {
+                        setInstallLog([]);
+                        const r = await systemApi.runtimeInstallStream(
+                          {
+                            kind,
+                            version,
+                            install: true,
+                            plugins,
+                          },
+                          {
+                            onLog: (line) =>
+                              setInstallLog((prev) => [...prev.slice(-1999), line]),
+                          },
+                        );
+                        await refresh();
+                        setPluginsRefreshToken((n) => n + 1);
+                        return r as OpsResultLike;
+                      }, t(meta.installLabelKey, { v: version }))
+                    }
+                  />
+                ) : null}
                 <InstallStreamPanel lines={installLog} busy={busy} />
               </CardSection>
             </Card>

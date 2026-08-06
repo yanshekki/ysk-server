@@ -12,10 +12,11 @@ import {
   Field,
   FormActions,
   FormHint,
+  InstallStreamPanel,
   MultiCheckSelect,
   OpsResultPanel,
 } from '../../shared/components/ui';
-import type { MultiCheckOption, OpsResultLike } from '../../shared/components/ui';
+import type { InstallStreamLine, MultiCheckOption, OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../system';
 import { toast } from '../../shared/stores/toast-store';
 
@@ -36,12 +37,15 @@ export function RuntimePluginsField({
   disabled,
   /** Bump after parent runtime install so catalog re-probes */
   refreshToken = 0,
+  /** Hide standalone install when parent shows one runtime install CTA */
+  showInstallButton = true,
 }: {
   kind: string;
   value: string[];
   onChange: (ids: string[]) => void;
   disabled?: boolean;
   refreshToken?: number;
+  showInstallButton?: boolean;
 }) {
   const { t } = useTranslation();
   const [rows, setRows] = useState<RuntimePluginRow[]>([]);
@@ -49,6 +53,7 @@ export function RuntimePluginsField({
   const [loaded, setLoaded] = useState(false);
   const [busyUninstall, setBusyUninstall] = useState(false);
   const [busyInstall, setBusyInstall] = useState(false);
+  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
   const [confirmUninstall, setConfirmUninstall] = useState<RuntimePluginRow | null>(null);
   const [batchUninstall, setBatchUninstall] = useState(false);
   const [uninstallSelected, setUninstallSelected] = useState<string[]>([]);
@@ -197,14 +202,20 @@ export function RuntimePluginsField({
   );
 
   const doInstallSelected = useCallback(async () => {
-    if (!selectedForInstall.length) return;
+    if (!selectedForInstall.length || !showInstallButton) return;
     const installedNow = [...selectedForInstall];
     setBusyInstall(true);
+    setInstallLog([]);
     try {
-      const r = (await systemApi.runtimePluginsInstall({
-        kind: kindArg,
-        plugins: installedNow,
-      })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
+      const r = (await systemApi.runtimePluginsInstallStream(
+        {
+          kind: kindArg,
+          plugins: installedNow,
+        },
+        {
+          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]),
+        },
+      )) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
       presentOps(
         r,
         t('runtime.pluginInstallOk', { n: installedNow.length }),
@@ -230,7 +241,16 @@ export function RuntimePluginsField({
     } finally {
       setBusyInstall(false);
     }
-  }, [kindArg, load, onChange, presentOps, requiredRows, selectedForInstall, t]);
+  }, [
+    kindArg,
+    load,
+    onChange,
+    presentOps,
+    requiredRows,
+    selectedForInstall,
+    showInstallButton,
+    t,
+  ]);
 
   const runUninstallIds = useCallback(
     async (ids: string[], label: string) => {
@@ -377,20 +397,28 @@ export function RuntimePluginsField({
             />
           </Field>
           <FormActions>
-            <Button
-              variant="primary"
-              size="md"
-              disabled={
-                disabled || busyUninstall || busyInstall || !selectedForInstall.length
-              }
-              loading={busyInstall}
-              onClick={() => void doInstallSelected()}
-            >
-              {t('runtime.pluginsInstallSelected', {
-                n: selectedForInstall.length,
-                defaultValue: `安裝選定工具 (${selectedForInstall.length})`,
-              })}
-            </Button>
+            {showInstallButton ? (
+              <Button
+                variant="primary"
+                size="md"
+                disabled={
+                  disabled || busyUninstall || busyInstall || !selectedForInstall.length
+                }
+                loading={busyInstall}
+                onClick={() => void doInstallSelected()}
+              >
+                {t('runtime.pluginsInstallSelected', {
+                  n: selectedForInstall.length,
+                  defaultValue: `安裝選定工具 (${selectedForInstall.length})`,
+                })}
+              </Button>
+            ) : (
+              <FormHint>
+                {t('runtime.pluginsBundleWithRuntime', {
+                  defaultValue: '選定工具會隨下方「安裝 runtime」一併安裝（只有一個安裝按鈕）。',
+                })}
+              </FormHint>
+            )}
             <Button
               variant="secondary"
               size="md"
@@ -420,6 +448,9 @@ export function RuntimePluginsField({
             </Button>
           </FormActions>
           <FormHint>{t('runtime.pluginsInstallNote')}</FormHint>
+          {showInstallButton ? (
+            <InstallStreamPanel lines={installLog} busy={busyInstall} />
+          ) : null}
         </>
       ) : installed.length > 0 ? (
         <FormHint>{t('runtime.pluginsAllInstalled')}</FormHint>

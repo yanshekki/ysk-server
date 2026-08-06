@@ -530,6 +530,28 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  runtimePluginsInstallStream: (
+    body: {
+      kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
+      plugins: string[];
+    },
+    opts?: {
+      onLog?: (line: {
+        stream: 'stdout' | 'stderr' | 'status';
+        line: string;
+        at?: string;
+      }) => void;
+      signal?: AbortSignal;
+    },
+  ) =>
+    import('../runtimes/stream-sse').then(async (m) => {
+      const { ops } = await m.postSseJson(
+        '/api/v1/hosting/runtimes/plugins/install',
+        body as unknown as Record<string, unknown>,
+        opts,
+      );
+      return ops;
+    }),
   /** Uninstall companion tools (pm2, poetry, …) — not PHP extensions */
   runtimePluginsUninstall: (body: {
     kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
