@@ -359,7 +359,9 @@ async function probeBinaryVersions(
       // PATH probe via unified resolveBin (same PATH rules as HostSoftwareProbe)
       const candidates: string[] =
         kind === 'python'
-          ? [`python${v}`, 'python3']
+          // Only versioned binary (python3.14). Bare `python3` is often still 3.12 and
+          // must not be used to decide whether 3.14 is installed.
+          ? [`python${v}`]
           : kind === 'go'
             ? ['go']
             : kind === 'rust'
@@ -427,6 +429,9 @@ async function listDirVersions(
 /**
  * Discover multi-version binaries already on the host (e.g. python3.14, php8.3).
  * Expands probe pins so post-install refresh lists the new version.
+ *
+ * NOTE: deadsnakes / distro name binaries as `python3.14` (major.minor after "python"),
+ * NOT `python3.` + extra `x.y`. Wrong sed never finds 3.14 after a successful install.
  */
 async function listHostVersionedBins(
   host: HostExecutor,
@@ -434,14 +439,16 @@ async function listHostVersionedBins(
 ): Promise<string[]> {
   let cmd: string;
   if (kind === 'python') {
+    // /usr/bin/python3.12 → 3.12 ; /usr/bin/python3.14 → 3.14
+    // (binary name is python + major.minor, not python3 + .x.y)
     cmd =
-      'ls -1 /usr/bin/python3.[0-9]* 2>/dev/null | sed -n "s|.*/python3\\.\\([0-9][0-9]*\\.[0-9][0-9]*\\)$|\\1|p"';
+      'ls -1 /usr/bin/python[0-9]* /usr/local/bin/python[0-9]* 2>/dev/null | sed -n "s|.*/python\\([0-9][0-9]*\\.[0-9][0-9]*\\)$|\\1|p"';
   } else if (kind === 'php') {
     cmd =
-      'ls -1 /usr/bin/php[0-9]* 2>/dev/null | sed -n "s|.*/php\\([0-9][0-9]*\\.[0-9][0-9]*\\)$|\\1|p"';
+      'ls -1 /usr/bin/php[0-9]* /usr/local/bin/php[0-9]* 2>/dev/null | sed -n "s|.*/php\\([0-9][0-9]*\\.[0-9][0-9]*\\)$|\\1|p"';
   } else {
     cmd =
-      'ls -1 /usr/local/ysk/node 2>/dev/null; ls -1 /usr/bin/node[0-9]* 2>/dev/null | sed -n "s|.*/node\\([0-9][0-9]*\\)$|\\1|p"';
+      'ls -1 /usr/local/ysk/node 2>/dev/null; ls -1 /usr/bin/node[0-9]* /usr/local/bin/node[0-9]* 2>/dev/null | sed -n "s|.*/node\\([0-9][0-9]*\\)$|\\1|p"';
   }
   try {
     const r = await host.runCommand(['bash', '-c', `${cmd} || true`], { timeoutMs: 5_000 });
@@ -451,7 +458,7 @@ async function listHostVersionedBins(
           .split('\n')
           .map((s) => s.trim())
           .filter((s) =>
-            kind === 'node' ? /^\d+$/.test(s) : /^\d+\.\d+/.test(s),
+            kind === 'node' ? /^\d+$/.test(s) : /^\d+\.\d+$/.test(s),
           ),
       ),
     ];

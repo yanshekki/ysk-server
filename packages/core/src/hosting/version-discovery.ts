@@ -424,7 +424,12 @@ async function resolveInstalledRuntime(
   const cmds: Record<RuntimeKind, string[]> = {
     node: ['bash', '-c', 'node -v 2>/dev/null | head -1'],
     php: ['bash', '-c', 'php -r "echo PHP_MAJOR_VERSION.\'.\'.PHP_MINOR_VERSION;" 2>/dev/null'],
-    python: ['bash', '-c', 'python3 -c "import sys;print(f\\"{sys.version_info.major}.{sys.version_info.minor}\\")" 2>/dev/null'],
+    python: [
+      'bash',
+      '-c',
+      // Highest versioned binary wins (python3.14 over PATH python3 → 3.12)
+      'bins=$(ls -1 /usr/bin/python[0-9]* /usr/local/bin/python[0-9]* 2>/dev/null | sed -n "s|.*/python\\([0-9][0-9]*\\.[0-9][0-9]*\\)$|\\1|p" | sort -t. -k1,1n -k2,2n | tail -1); if [ -n "$bins" ]; then echo "$bins"; else python3 -c "import sys;print(f\\"{sys.version_info.major}.{sys.version_info.minor}\\")" 2>/dev/null; fi',
+    ],
     go: ['bash', '-c', 'go env GOVERSION 2>/dev/null || go version 2>/dev/null | awk \'{print $3}\''],
     rust: ['bash', '-c', 'rustc --version 2>/dev/null | awk \'{print $2}\''],
     java: ['bash', '-c', 'java -version 2>&1 | head -1'],
@@ -448,6 +453,9 @@ async function resolveInstalledRuntime(
       currentVersion = out.match(/(\d+\.\d+[\w.-]*)/)?.[1];
     } else if (kind === 'rust') {
       currentVersion = out.match(/(\d+\.\d+\.\d+)/)?.[1] || out;
+    } else if (kind === 'python') {
+      // may already be "3.14" from versioned scan, or "3.12" from python3
+      currentVersion = out.match(/(\d+\.\d+)/)?.[1] || out;
     } else {
       currentVersion = out.match(/(\d+\.\d+)/)?.[1] || out;
     }
