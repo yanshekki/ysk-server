@@ -43,7 +43,7 @@ export async function collectProjectProcessRows(
   runtimes: string[] = ['node', 'bun'],
 ): Promise<ProjectProcessRow[]> {
   const want = new Set(runtimes.map((r) => r.toLowerCase()));
-  const projects = (db.snapshot.projects ?? []) as Array<Record<string, unknown>>;
+  const projects = (db.snapshot.projects ?? []) as unknown as Array<Record<string, unknown>>;
   const rows: ProjectProcessRow[] = [];
 
   for (const p of projects) {
