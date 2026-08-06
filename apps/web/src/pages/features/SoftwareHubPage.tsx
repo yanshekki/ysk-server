@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
   Badge,
   Button,
   Card,
@@ -19,6 +20,7 @@ import {
 import { systemApi } from '../../features/system';
 import { updatesApi } from '../../features/updates';
 import { toast } from '../../shared/stores/toast-store';
+import { humanizeOperatorNote } from '../../shared/lib/operator-messages';
 import {
   SOFTWARE_CARDS,
   SOFTWARE_TABS,
@@ -114,6 +116,14 @@ export function SoftwareHubPage() {
     candidateVersion: string;
   } | null>(null);
   const [applyBusy, setApplyBusy] = useState(false);
+  /** Only the card being installed — do not freeze every Update button */
+  const [installingKind, setInstallingKind] = useState<RuntimeKindKey | null>(null);
+  /** Last runtime install outcome (honest notes, not silent success) */
+  const [installFeedback, setInstallFeedback] = useState<{
+    tone: 'ok' | 'error' | 'info';
+    title: string;
+    detail: string;
+  } | null>(null);
 
   // Sync tab ↔ URL
   useEffect(() => {
@@ -184,11 +194,11 @@ export function SoftwareHubPage() {
             label: c.label,
           }));
         }
-        setLatestByKind(map);
-        setRuntimeCandidates(candMap);
+        // Soft-merge: never wipe previous discovery on partial empty response
+        setLatestByKind((prev) => ({ ...prev, ...map }));
+        setRuntimeCandidates((prev) => ({ ...prev, ...candMap }));
       } catch {
-        setLatestByKind({});
-        setRuntimeCandidates({});
+        // Keep last known discovery so update cards do not vanish on transient failure
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
@@ -387,39 +397,122 @@ export function SoftwareHubPage() {
 
   const installRuntimeVersion = useCallback(
     async (kind: RuntimeKindKey, version: string) => {
-      setApplyBusy(true);
+      const ver = String(version || '').trim();
+      if (!ver) {
+        toast.error(
+          t('software.version.noTarget', { defaultValue: '未有可選版本' }),
+        );
+        return;
+      }
+      setInstallingKind(kind);
+      setInstallFeedback({
+        tone: 'info',
+        title: t('software.runtime.installing', {
+          kind,
+          v: ver,
+          defaultValue: `正在安裝／更新 ${kind} ${ver}…（可能需要一兩分鐘）`,
+        }),
+        detail: t('software.runtime.installingHint', {
+          defaultValue: '請勿關閉頁面。完成後會顯示結果說明。',
+        }),
+      });
       try {
         const r = (await systemApi.runtimeInstall({
           kind,
-          version,
+          version: ver,
           install: true,
-        })) as { ok?: boolean; applied?: boolean; blocked?: boolean; blockMessage?: string; notes?: string[] };
-        if (r.blocked) {
-          toast.error(
+        })) as {
+          ok?: boolean;
+          blocked?: boolean;
+          blockMessage?: string;
+          notes?: string[];
+          requiresExecute?: boolean;
+          requiresRoot?: boolean;
+          apply_status?: string;
+          message?: string;
+        };
+        const notes = (r.notes ?? [])
+          .map((n) => humanizeOperatorNote(String(n)))
+          .filter((n): n is string => Boolean(n));
+        const detail =
+          notes.slice(0, 4).join(' · ') ||
+          r.blockMessage ||
+          r.message ||
+          '';
+
+        if (r.blocked || r.requiresExecute || r.requiresRoot) {
+          const msg =
             r.blockMessage ||
-              t('software.apply.blocked', {
-                defaultValue: '更新被阻擋（需 root+EXECUTE）',
-              }),
-          );
-        } else if (r.ok !== false) {
+            t('software.apply.blocked', {
+              defaultValue: '更新被阻擋（需 root 且 YSK_EXECUTE=1）',
+            });
+          toast.error(msg);
+          setInstallFeedback({
+            tone: 'error',
+            title: t('software.runtime.blockedTitle', {
+              kind,
+              v: ver,
+              defaultValue: `${kind} ${ver} 未能安裝`,
+            }),
+            detail: [msg, detail].filter(Boolean).join(' · '),
+          });
+          return;
+        }
+
+        // Strict success only — never treat "plan only" / missing ok as success
+        if (r.ok === true) {
           toast.ok(
             t('software.runtime.installed', {
               kind,
-              v: version,
-              defaultValue: `已提交 ${kind} ${version} 安裝／切換`,
+              v: ver,
+              defaultValue: `已安裝／更新 ${kind} ${ver}`,
             }),
           );
+          setInstallFeedback({
+            tone: 'ok',
+            title: t('software.runtime.installed', {
+              kind,
+              v: ver,
+              defaultValue: `已安裝／更新 ${kind} ${ver}`,
+            }),
+            detail:
+              detail ||
+              t('software.runtime.installedDetail', {
+                defaultValue: '狀態已重新整理。若仍顯示有新版本，可再檢查或到執行環境頁確認。',
+              }),
+          });
+          // Soft refresh — discovery failure must not wipe cards
           void refresh();
-        } else {
-          toast.error(
-            (r.notes ?? []).slice(0, 2).join(' · ') ||
-              t('software.apply.failed', { defaultValue: '更新未完成' }),
-          );
+          return;
         }
+
+        const failMsg =
+          detail ||
+          t('software.apply.failed', { defaultValue: '更新未完成' });
+        toast.error(failMsg);
+        setInstallFeedback({
+          tone: 'error',
+          title: t('software.runtime.failedTitle', {
+            kind,
+            v: ver,
+            defaultValue: `${kind} ${ver} 安裝失敗`,
+          }),
+          detail: failMsg,
+        });
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : t('common.loadFailed'));
+        const msg = e instanceof Error ? e.message : t('common.loadFailed');
+        toast.error(msg);
+        setInstallFeedback({
+          tone: 'error',
+          title: t('software.runtime.failedTitle', {
+            kind,
+            v: ver,
+            defaultValue: `${kind} ${ver} 安裝失敗`,
+          }),
+          detail: msg,
+        });
       } finally {
-        setApplyBusy(false);
+        setInstallingKind(null);
       }
     },
     [refresh, t],
@@ -472,6 +565,33 @@ export function SoftwareHubPage() {
             <p className="muted u-mb-3" role="alert">
               {error}
             </p>
+          ) : null}
+
+          {installFeedback ? (
+            <Alert
+              variant={
+                installFeedback.tone === 'ok'
+                  ? 'ok'
+                  : installFeedback.tone === 'error'
+                    ? 'error'
+                    : 'info'
+              }
+              className="u-mb-3"
+            >
+              <strong>{installFeedback.title}</strong>
+              {installFeedback.detail ? (
+                <p className="u-mt-1 u-mb-0">{installFeedback.detail}</p>
+              ) : null}
+              <div className="u-mt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setInstallFeedback(null)}
+                >
+                  {t('common.dismiss', { defaultValue: '關閉' })}
+                </Button>
+              </div>
+            </Alert>
           ) : null}
 
           {loading && !runtimeProbe && matrix.length === 0 ? (
@@ -623,7 +743,10 @@ export function SoftwareHubPage() {
                                 t={t}
                                 onRequestAptApply={setApplyTarget}
                                 onInstallRuntime={installRuntimeVersion}
-                                installBusy={applyBusy}
+                                installBusy={
+                                  Boolean(v.def.runtimeKind) &&
+                                  installingKind === v.def.runtimeKind
+                                }
                               />
                             ))}
                         </div>
@@ -648,7 +771,10 @@ export function SoftwareHubPage() {
                       t={t}
                       onRequestAptApply={setApplyTarget}
                       onInstallRuntime={installRuntimeVersion}
-                      installBusy={applyBusy}
+                      installBusy={
+                        Boolean(v.def.runtimeKind) &&
+                        installingKind === v.def.runtimeKind
+                      }
                     />
                   ))}
                 </div>
@@ -884,21 +1010,25 @@ function SoftwareCard({
           <button
             type="button"
             className={buttonClassName({ variant: 'primary', size: 'sm' })}
-            disabled={installBusy}
+            disabled={installBusy || !String(picked || updateTarget || candidates[0]?.version || '').trim()}
             title={t('software.action.installVersion', {
               v: picked || updateTarget,
               defaultValue: `安裝／更新到 ${picked || updateTarget}`,
             })}
             onClick={() => {
-              if (def.runtimeKind) {
-                void onInstallRuntime?.(
-                  def.runtimeKind,
-                  picked || updateTarget || candidates[0]!.version,
-                );
+              if (!def.runtimeKind) return;
+              const target = String(
+                picked || updateTarget || candidates[0]?.version || '',
+              ).trim();
+              if (!target) {
+                return;
               }
+              void onInstallRuntime?.(def.runtimeKind, target);
             }}
           >
-            {t('software.action.update', { defaultValue: '更新' })}
+            {installBusy
+              ? t('software.runtime.installingShort', { defaultValue: '安裝中…' })
+              : t('software.action.update', { defaultValue: '更新' })}
           </button>
         ) : canOneClickApt ? (
           <button
