@@ -72,6 +72,12 @@ describe('runtime-probe', () => {
     const phpScript = (await import('node:fs')).readFileSync(phpPlan.written[0], 'utf8');
     expect(phpScript).toContain('php8.2-mysql');
     expect(phpScript).toContain('php8.2-gd');
+    // Must not use archived ondrej Launchpad PPA; use packages.sury.org/php
+    expect(phpScript).not.toMatch(/ppa:ondrej\/php/);
+    expect(phpScript).not.toMatch(/add-apt-repository.*ondrej/);
+    expect(phpScript).toContain('packages.sury.org/php');
+    expect(phpScript).toContain('debsuryorg-archive-keyring');
+    expect(phpScript).toContain('/etc/apt/sources.list.d/php.list');
 
     const nodeWithPm2 = await planOrInstallRuntime({
       dataDir: dir,

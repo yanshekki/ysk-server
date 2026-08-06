@@ -1,5 +1,5 @@
 /**
- * PHP apt extension catalog (ondrej/php + Debian/Ubuntu).
+ * PHP apt extension catalog (packages.sury.org/php + Debian/Ubuntu).
  * Package names are versioned: php{X.Y}-{suffix} e.g. php8.2-mysql, php8.3-gd.
  * "gd2" in older panels maps to suffix "gd" (php-gd).
  */

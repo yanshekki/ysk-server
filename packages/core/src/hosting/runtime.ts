@@ -25,7 +25,8 @@ export type RuntimeManager =
   | 'nvm'
   | 'fnm'
   | 'nodesource'
-  | 'ondrej-php'
+  | 'sury-php'
+  | 'ondrej-php' // legacy alias — install uses packages.sury.org/php
   | 'deadsnakes'
   | 'go-official'
   | 'rustup'
@@ -201,7 +202,7 @@ export function selectPhpRuntime(version: string): RuntimeSelection {
     kind: 'php',
     version: minor,
     binaryPath: `/usr/bin/php${minor}`,
-    manager: 'ondrej-php',
+    manager: 'sury-php',
   };
 }
 
