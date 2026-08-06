@@ -466,51 +466,22 @@ export async function planOrInstallRuntime(input: {
     notes.push(tl('notes.auto.t0408', { v0: (plan.version) }));
   } else if (input.kind === 'go') {
     const plan = selectGoRuntime(input.version);
-    // Panel version is minor (1.21); go.dev requires full patch (1.21.13) — resolve in script
+    // Panel version is often minor (1.21); go.dev needs full patch (1.21.13).
     script = [
       '#!/usr/bin/env bash',
-      `# YSK Server — install Go ${plan.version} (resolves patch from go.dev/dl)`,
+      `# YSK Server — install Go ${plan.version} (resolves full patch version)`,
       'set -euo pipefail',
       `VER=${JSON.stringify(plan.version)}`,
       `DEST=/usr/local/ysk/go/$VER`,
       'mkdir -p /usr/local/ysk/go /tmp/ysk-go-install',
       'cd /tmp/ysk-go-install',
       'case "$(uname -m)" in aarch64|arm64) GOARCH=linux-arm64 ;; *) GOARCH=linux-amd64 ;; esac',
-      '# go.dev only publishes full versions: go1.21.13.linux-amd64.tar.gz — not go1.21.linux-amd64.tar.gz',
       'resolve_go_full() {',
       '  local minor="$1"',
       '  if echo "$minor" | grep -qE "^[0-9]+\\.[0-9]+\\.[0-9]+$"; then',
       '    echo "$minor"',
       '    return',
       '  fi',
-      '  local json full',
-      '  json=$(curl -fsSL "https://go.dev/dl/?mode=json" 2>/dev/null || true)',
-      '  if [ -n "$json" ]; then',
-      '    full=$(printf "%s" "$json" | python3 -c \'',
-      'import json,sys,re',
-      'minor=sys.argv[1]',
-      'try:',
-      '  data=json.load(sys.stdin)',
-      'except Exception:',
-      '  sys.exit(0)',
-      'cands=[]',
-      'for x in data:',
-      '  v=str(x.get("version") or "")',
-      '  if v.startswith("go"): v=v[2:]',
-      '  if v==minor: cands.append(minor+".0")',
-      '  elif v.startswith(minor+"."):',
-      '    m=re.match(r"^(\\d+\\.\\d+\\.\\d+)", v)',
-      '    if m: cands.append(m.group(1))',
-      'if not cands: sys.exit(0)',
-      'def key(s): return tuple(int(p) for p in s.split("."))',
-      'print(sorted(cands, key=key)[-1])',
-      `'\' "$minor" 2>/dev/null || true)',
-      '  fi',
-      '  if [ -n "${full:-}" ]; then',
-      '    echo "$full"',
-      '    return',
-      '  fi',
-      '  # go.dev/dl/?mode=json often only lists current stable lines — use last-known patch table',
       '  case "$minor" in',
       goLastKnownPatchShellCase(),
       '    *) echo "${minor}.0" ;;',
@@ -530,7 +501,6 @@ export async function planOrInstallRuntime(input: {
       'mkdir -p "$DEST"',
       'tar -C "$DEST" --strip-components=1 -xzf go.tgz',
       'ln -sfn "$DEST/bin/go" /usr/local/bin/go || true',
-      '# Symlink for tools that look at /usr/local/ysk/go/bin',
       'mkdir -p /usr/local/ysk/go/bin',
       'ln -sfn "$DEST/bin/go" /usr/local/ysk/go/bin/go || true',
       '"$DEST/bin/go" version',
@@ -538,7 +508,7 @@ export async function planOrInstallRuntime(input: {
     ].join('\n');
     notes.push(tl('notes.auto.t0409', { v0: plan.version }));
     notes.push(
-      'Go tarball uses full patch from go.dev/dl JSON (minor-only URLs 404)',
+      'Go tarball uses full patch from last-known table (minor-only URLs 404 on go.dev)',
     );
   } else if (input.kind === 'rust') {
     const plan = selectRustRuntime(input.version);
