@@ -101,6 +101,35 @@ export function useUpdates() {
     }
   }, [t]);
 
+  /** Force re-scan host apt inventory (invalidates stale cached list after apply). */
+  const rescanInventoryQuiet = useCallback(async () => {
+    try {
+      const inv = await updatesApi.refresh(false);
+      setInventory((inv.advice ?? inv.inventory ?? []).slice(0, 200).map((a) => {
+        // normalize inventory-only rows if advice empty
+        if ('packageName' in a && 'advice' in a) return a as AdviceRow;
+        const i = a as {
+          packageName?: string;
+          currentVersion?: string;
+          candidateVersion?: string;
+        };
+        return {
+          packageName: String(i.packageName ?? ''),
+          currentVersion: String(i.currentVersion ?? ''),
+          candidateVersion: i.candidateVersion,
+          advice: 'skip' as const,
+          risk: 'low' as const,
+          cves: [] as string[],
+          requiresApproval: false,
+          summary: '',
+        };
+      }));
+      setLastAt(inv.collectedAt ?? new Date().toISOString());
+    } catch {
+      /* keep prior list; user can click 掃描套件 */
+    }
+  }, []);
+
   const applyPackage = useCallback(async (row: AdviceRow, confirmHighRisk = false) => {
     setBusy(true);
     setError(null);
@@ -117,12 +146,27 @@ export function useUpdates() {
         confirmHighRisk,
       });
       const notes = sanitizeOperatorNotes(r.notes);
-      if (r.blocked || !r.ok) {
+      if (r.blocked || !r.ok || r.applied === false) {
         setError(null);
         toast.error(r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete'));
       } else {
         setMsg(null);
         toast.ok(notes[0] ?? t('updates.appliedPackage'));
+        // Optimistic: stop showing as upgradable immediately
+        setInventory((prev) =>
+          prev.map((x) =>
+            x.packageName === row.packageName
+              ? {
+                  ...x,
+                  currentVersion: row.candidateVersion ?? x.currentVersion,
+                  candidateVersion: row.candidateVersion ?? x.candidateVersion,
+                  advice: 'skip',
+                  requiresApproval: false,
+                }
+              : x,
+          ),
+        );
+        await rescanInventoryQuiet();
       }
       return r;
     } catch (e) {
@@ -133,7 +177,7 @@ export function useUpdates() {
     } finally {
       setBusy(false);
     }
-  }, [t]);
+  }, [t, rescanInventoryQuiet]);
 
   /**
    * Multi-package apply (no silent full-system apt upgrade).
@@ -173,7 +217,8 @@ export function useUpdates() {
               confirmHighRisk: Boolean(opts?.confirmHighRisk),
             });
             for (const r of batch.results ?? []) {
-              if (r.ok && r.applied) ok.push(r.packageName);
+              // Require applied===true — never count plan-only / empty as success
+              if (r.ok && r.applied === true) ok.push(r.packageName);
               else {
                 fail.push({
                   pkg: r.packageName,
@@ -185,6 +230,24 @@ export function useUpdates() {
               }
             }
             opts?.onProgress?.(rows.length, rows.length, rows[rows.length - 1]!.packageName);
+            // Optimistic UI + force host rescan so list cannot show same upgrades again
+            if (ok.length) {
+              const okSet = new Set(ok);
+              setInventory((prev) =>
+                prev.map((x) => {
+                  if (!okSet.has(x.packageName)) return x;
+                  const cand = x.candidateVersion ?? x.currentVersion;
+                  return {
+                    ...x,
+                    currentVersion: cand,
+                    candidateVersion: cand,
+                    advice: 'skip',
+                    requiresApproval: false,
+                  };
+                }),
+              );
+              await rescanInventoryQuiet();
+            }
             if (!opts?.quiet) {
               const msg = t('updates.batchDone', {
                 ok: ok.length,
@@ -232,7 +295,7 @@ export function useUpdates() {
               confirmHighRisk: Boolean(opts?.confirmHighRisk),
             });
             const notes = sanitizeOperatorNotes(r.notes);
-            if (r.blocked || !r.ok) {
+            if (r.blocked || !r.ok || r.applied === false) {
               fail.push({
                 pkg: row.packageName,
                 message: r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete'),
@@ -246,6 +309,23 @@ export function useUpdates() {
               message: e instanceof Error ? e.message : t('updates.updateFailed'),
             });
           }
+        }
+        if (ok.length) {
+          const okSet = new Set(ok);
+          setInventory((prev) =>
+            prev.map((x) => {
+              if (!okSet.has(x.packageName)) return x;
+              const cand = x.candidateVersion ?? x.currentVersion;
+              return {
+                ...x,
+                currentVersion: cand,
+                candidateVersion: cand,
+                advice: 'skip',
+                requiresApproval: false,
+              };
+            }),
+          );
+          await rescanInventoryQuiet();
         }
         if (!opts?.quiet) {
           if (ok.length && !fail.length) {
@@ -271,7 +351,7 @@ export function useUpdates() {
         setBusy(false);
       }
     },
-    [t],
+    [t, rescanInventoryQuiet],
   );
 
   const applySelf = useCallback(async () => {

@@ -367,9 +367,15 @@ export function UpdatesPage() {
                   .map((f) => `${f.pkg}: ${f.message}`)
                   .join('；'),
               })
+            : '') +
+          (result.ok.length
+            ? ' · ' +
+              t('updates.batchRescanned', {
+                defaultValue: '已重新掃描主機套件狀態',
+              })
             : ''),
       );
-      void load(false, false, listQuery);
+      // Do NOT reload cached inventory — applyPackages already rescanned live apt
     } finally {
       setBatchAbort(null);
     }

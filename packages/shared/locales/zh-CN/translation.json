@@ -9615,7 +9615,8 @@
     "batchNoneUpgradable": "当前筛选没有可升级软件包",
     "batchCancel": "取消批量",
     "batchCancelling": "正在取消…（当前软件包完成后停止）",
-    "batchCancelled": "已取消（其余未执行）"
+    "batchCancelled": "已取消（其余未执行）",
+    "batchRescanned": "已重新扫描主机软件包状态"
   },
   "users": {
     "userCount": "{{count}} 用户",

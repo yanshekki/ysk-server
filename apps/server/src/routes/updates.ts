@@ -88,19 +88,24 @@ export async function handleUpdatesRoutes(
         const cached = url.searchParams.get('cached') === '1';
         if (cached) {
           const last = ctx.settings.getJson<Record<string, unknown>>('last_inventory');
+          // After package apply we mark cache stale — never serve empty/stale as truth
+          const stale = Boolean(last?.stale);
           const inv = ((last?.items as unknown[]) ?? last?.sample ?? []) as InvRow[];
           const advice = ((last?.advice as unknown[]) ?? []) as InvRow[];
-          const filtered = filterInventoryAdvice(inv, advice, url);
-          sendJson(res, 200, {
-            cached: true,
-            last,
-            inventory: filtered.inventory,
-            advice: filtered.advice,
-            meta: { ...(typeof last?.meta === 'object' && last?.meta ? last.meta : {}), list: filtered.meta },
-            listMeta: filtered.meta,
-            collectedAt: (last?.at as string) ?? null,
-          });
-          return true;
+          if (!stale && inv.length > 0) {
+            const filtered = filterInventoryAdvice(inv, advice, url);
+            sendJson(res, 200, {
+              cached: true,
+              last,
+              inventory: filtered.inventory,
+              advice: filtered.advice,
+              meta: { ...(typeof last?.meta === 'object' && last?.meta ? last.meta : {}), list: filtered.meta },
+              listMeta: filtered.meta,
+              collectedAt: (last?.at as string) ?? null,
+            });
+            return true;
+          }
+          // fall through to live collectInventory
         }
         const [{ items: inv, meta }, catalogSoftware] = await Promise.all([
           collectInventory(ctx.host),
@@ -278,6 +283,22 @@ export async function handleUpdatesRoutes(
           detail: result,
           ok: result.ok,
         });
+        // Invalidate cached inventory so next list is not stale after successful apply
+        if (result.ok && result.applied) {
+          try {
+            ctx.settings.setJson('last_inventory', {
+              at: new Date().toISOString(),
+              stale: true,
+              items: [],
+              advice: [],
+              sample: [],
+              count: 0,
+              upgradable: 0,
+            });
+          } catch {
+            /* ignore */
+          }
+        }
         sendOpsResult(res, result);
         return true;
       }
@@ -372,6 +393,22 @@ export async function handleUpdatesRoutes(
           },
           ok: batch.ok,
         });
+        // Always mark inventory cache stale after batch so UI cannot re-show old upgrades
+        if (batch.appliedCount > 0) {
+          try {
+            ctx.settings.setJson('last_inventory', {
+              at: new Date().toISOString(),
+              stale: true,
+              items: [],
+              advice: [],
+              sample: [],
+              count: 0,
+              upgradable: 0,
+            });
+          } catch {
+            /* ignore */
+          }
+        }
         sendJson(res, batch.ok ? 200 : batch.appliedCount > 0 ? 207 : 422, batch);
         return true;
       }

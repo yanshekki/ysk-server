@@ -9615,7 +9615,8 @@
     "batchNoneUpgradable": "No upgradable packages in current filter",
     "batchCancel": "Cancel bulk",
     "batchCancelling": "Cancelling… (stops after current package)",
-    "batchCancelled": "Cancelled (remaining skipped)"
+    "batchCancelled": "Cancelled (remaining skipped)",
+    "batchRescanned": "Host package state re-scanned"
   },
   "users": {
     "userCount": "{{count}} users",
