@@ -44,16 +44,25 @@ type DnsHealth = {
   listenUdp53: boolean;
   listenTcp53: boolean;
   zoneFiles: number;
+  pdnsZoneCount?: number;
+  pdnsZones?: string[];
   latestZoneWriteAt?: string;
   latestZone?: string;
   answeringLocal?: boolean;
   digAnswers?: string[];
   digNotes?: string[];
+  answeringLocalA?: boolean;
+  digAName?: string;
+  digAAnswers?: string[];
+  publicNs?: string[];
+  publicNsPointsHere?: boolean;
   states: {
     service: string;
     listen: string;
     written: string;
+    loaded?: string;
     answering: string;
+    publicNs?: string;
   };
   notes: string[];
 };
@@ -465,18 +474,48 @@ export function DnsPage() {
             tone: (health?.zoneFiles ?? 0) > 0 ? 'ok' : 'warn',
           },
           {
+            label: t('dns.healthLoaded', { defaultValue: 'Loaded' }),
+            value:
+              health?.pdnsZoneCount != null
+                ? String(health.pdnsZoneCount)
+                : '—',
+            tone:
+              health?.pdnsZoneCount == null
+                ? 'neutral'
+                : health.pdnsZoneCount === 0 && (health.zoneFiles ?? 0) > 0
+                  ? 'danger'
+                  : health.pdnsZoneCount > 0
+                    ? 'ok'
+                    : 'warn',
+          },
+          {
             label: t('dns.healthAnswering'),
             value:
-              health?.answeringLocal === true
-                ? t('dns.healthAnsweringYes')
-                : health?.answeringLocal === false
-                  ? t('dns.healthAnsweringNo')
-                  : '—',
+              health?.answeringLocalA === true
+                ? `${health.digAName ?? 'A'}=${health.digAAnswers?.[0] ?? 'OK'}`
+                : health?.answeringLocal === true
+                  ? t('dns.healthAnsweringYes')
+                  : health?.answeringLocal === false
+                    ? t('dns.healthAnsweringNo')
+                    : '—',
             tone:
-              health?.answeringLocal === true
+              health?.answeringLocalA === true || health?.answeringLocal === true
                 ? 'ok'
                 : health?.answeringLocal === false
                   ? 'danger'
+                  : undefined,
+          },
+          {
+            label: t('dns.healthPublicNs', { defaultValue: 'Public NS' }),
+            value:
+              health?.publicNs && health.publicNs.length
+                ? health.publicNs.slice(0, 2).join(', ')
+                : '—',
+            tone:
+              health?.publicNsPointsHere === true
+                ? 'ok'
+                : health?.publicNs && health.publicNs.length
+                  ? 'warn'
                   : undefined,
           },
         ],
@@ -526,12 +565,26 @@ export function DnsPage() {
                   ? `(${health.latestZone ?? ''} ${health.latestZoneWriteAt.slice(0, 19)})`
                   : ''}
               </Badge>
+              <Badge tone={toneBadge(health.states.loaded ?? 'neutral')}>
+                {t('dns.stateLoaded', { defaultValue: 'Loaded' })}:{' '}
+                {health.pdnsZoneCount != null ? health.pdnsZoneCount : '—'}
+              </Badge>
               <Badge tone={toneBadge(health.states.answering)}>
                 {t('dns.stateAnswering')}:{' '}
-                {health.answeringLocal === true
-                  ? 'OK'
-                  : health.answeringLocal === false
-                    ? t('dns.healthAnsweringNo')
+                {health.answeringLocalA === true
+                  ? `A ${health.digAAnswers?.[0] ?? 'OK'}`
+                  : health.answeringLocal === true
+                    ? 'OK'
+                    : health.answeringLocal === false
+                      ? t('dns.healthAnsweringNo')
+                      : '—'}
+              </Badge>
+              <Badge tone={toneBadge(health.states.publicNs ?? 'neutral')}>
+                {t('dns.statePublicNs', { defaultValue: 'Public NS' })}:{' '}
+                {health.publicNsPointsHere === true
+                  ? t('dns.publicNsHere', { defaultValue: '→ this host' })
+                  : health.publicNs?.length
+                    ? health.publicNs[0]
                     : '—'}
               </Badge>
             </div>
@@ -557,7 +610,15 @@ export function DnsPage() {
                 variant="primary"
                 size="sm"
                 loading={pdnsHealBusy}
-                disabled={health.ok && health.unitActive}
+                disabled={
+                  // Keep enabled when listen is OK but zones not loaded / dig REFUSED
+                  Boolean(
+                    health.unitActive &&
+                      health.listenUdp53 &&
+                      health.answeringLocal === true &&
+                      (health.pdnsZoneCount == null || health.pdnsZoneCount > 0),
+                  )
+                }
                 title={t('dns.healthHealPdnsHint')}
                 onClick={() => {
                   setPdnsHealBusy(true);

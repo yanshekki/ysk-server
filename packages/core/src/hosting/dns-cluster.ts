@@ -198,14 +198,58 @@ const REMOTE_PROBE_SCRIPT = (zonePath: string) =>
     `ls ${JSON.stringify(zonePath)}/*.zone 2>/dev/null | wc -l | awk '{print "ZONE_FILES:"$1}'`,
   ].join('\n');
 
-/** Remote one-liner: try rndc then systemctl reload. */
-
+/**
+ * Remote reload after zone files were scp'd into peer dataDir.
+ * For PowerDNS bindbackend: rewrite named include from peer dataDir zones + rediscover
+ * (plain systemctl reload pdns alone leaves dig REFUSED / 0 domains).
+ */
+// YSK_DATA_DIR / YSK_ZONE_DIR must be set by remoteReloadScriptForPeer(peer.path).
+// Fallback /var/lib/ysk-server is the **product install default** (any host), not a customer machine.
 const REMOTE_RELOAD_SCRIPT = [
+  'set -euo pipefail',
+  'DATA_DIR="${YSK_DATA_DIR:-/var/lib/ysk-server}"',
+  'ZDIR="${YSK_ZONE_DIR:-$DATA_DIR/dns/zones}"',
+  'CONF_DIR=/etc/powerdns',
+  'YSK_INC="$CONF_DIR/ysk-named-zones.conf"',
+  'RUNTIME=/var/lib/powerdns/zones',
+  '# If PowerDNS is active, register all managed .zone files before reload',
+  'if systemctl is-active --quiet pdns 2>/dev/null; then',
+  '  mkdir -p "$CONF_DIR" "$RUNTIME" "$CONF_DIR/pdns.d"',
+  '  : > "$YSK_INC"',
+  '  if [ -d "$ZDIR" ]; then',
+  '    for f in "$ZDIR"/*.zone; do',
+  '      [ -f "$f" ] || continue',
+  '      base=$(basename "$f" .zone)',
+  '      cp -f "$f" "$RUNTIME/$base.zone"',
+  '      chown pdns:pdns "$RUNTIME/$base.zone" 2>/dev/null || true',
+  '      chmod 640 "$RUNTIME/$base.zone" 2>/dev/null || true',
+  '      printf "zone \\"%s\\" {\\n  type master;\\n  file \\"%s/%s.zone\\";\\n};\\n\\n" "$base" "$RUNTIME" "$base" >> "$YSK_INC"',
+  '    done',
+  '  fi',
+  '  NAMED="$CONF_DIR/named.conf"',
+  '  if [ ! -f "$NAMED" ]; then',
+  '    printf "%s\\n" \'// YSK cluster\' \'options { directory "/var/lib/powerdns"; };\' "" > "$NAMED"',
+  '  fi',
+  '  if ! grep -qF ysk-named-zones.conf "$NAMED" 2>/dev/null; then',
+  '    printf "\\ninclude \\"%s\\";\\n" "$YSK_INC" >> "$NAMED"',
+  '  fi',
+  '  if [ -f "$CONF_DIR/pdns.conf" ] && ! grep -qE "^[[:space:]]*include-dir=" "$CONF_DIR/pdns.conf" 2>/dev/null; then',
+  '    echo "include-dir=$CONF_DIR/pdns.d" >> "$CONF_DIR/pdns.conf"',
+  '  fi',
+  '  echo "bind-config=/etc/powerdns/named.conf" > "$CONF_DIR/pdns.d/ysk-bind-backend.conf"',
+  '  if command -v pdns_control >/dev/null 2>&1; then',
+  '    pdns_control rediscover 2>/dev/null || true',
+  '    pdns_control reload 2>/dev/null || true',
+  '  fi',
+  '  systemctl reload pdns 2>/dev/null || true',
+  '  echo RELOAD_OK:pdns-bind-sync',
+  '  exit 0',
+  'fi',
   `if ${shellBinExists('rndc')}; then`,
   '  rndc reload && echo RELOAD_OK:rndc && exit 0',
   '  echo RELOAD_FAIL:rndc; exit 1',
   'fi',
-  'for u in named bind9 pdns; do',
+  'for u in named bind9; do',
   '  if systemctl is-active --quiet "$u" 2>/dev/null; then',
   '    systemctl reload "$u" && echo RELOAD_OK:$u && exit 0',
   '    echo RELOAD_FAIL:$u; exit 1',
@@ -213,6 +257,18 @@ const REMOTE_RELOAD_SCRIPT = [
   'done',
   'echo RELOAD_NONE; exit 1',
 ].join('\n');
+
+/** Prefix remote reload with peer zone path → dataDir guess. */
+export function remoteReloadScriptForPeer(peerZonePath: string): string {
+  // peer.path is typically …/dns/zones — strip suffix to get dataDir
+  const p = peerZonePath.replace(/\/+$/, '');
+  const dataDir = p.endsWith('/dns/zones')
+    ? p.slice(0, -'/dns/zones'.length) || '/'
+    : p.includes('/dns/')
+      ? p.replace(/\/dns\/.*$/, '')
+      : p;
+  return `export YSK_DATA_DIR=${JSON.stringify(dataDir)}; export YSK_ZONE_DIR=${JSON.stringify(p)}; ${REMOTE_RELOAD_SCRIPT}`;
+}
 
 /**
  * Probe one peer over SSH (nameserver unit + zone dir).
@@ -370,7 +426,7 @@ export async function reloadDnsClusterPeers(input: {
   let okCount = 0;
 
   for (const peer of peers) {
-    const r = await sshOnPeer(input.host, peer, REMOTE_RELOAD_SCRIPT, {
+    const r = await sshOnPeer(input.host, peer, remoteReloadScriptForPeer(peer.path), {
       dataDir: input.dataDir,
       timeoutMs: 25_000 });
     const method = r.stdout.match(/RELOAD_OK:(\S+)/)?.[1];
@@ -532,7 +588,7 @@ export async function pushDnsZonesToCluster(input: {
     let reloaded = false;
     let reloadMethod: string | undefined;
     if (wantReload && filesOk > 0) {
-      const rr = await sshOnPeer(input.host, peer, REMOTE_RELOAD_SCRIPT, {
+      const rr = await sshOnPeer(input.host, peer, remoteReloadScriptForPeer(peer.path), {
         dataDir: input.dataDir,
         timeoutMs: 25_000 });
       reloadMethod = rr.stdout.match(/RELOAD_OK:(\S+)/)?.[1];

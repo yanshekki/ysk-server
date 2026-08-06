@@ -8,6 +8,8 @@ import {
   installPowerDnsPackages,
   powerDnsStatus,
   probePowerDns,
+  renderPowerDnsNamedZonesConf,
+  syncPowerDnsBindZones,
 } from './powerdns-apply.js';
 
 function empty(extra?: Partial<RunResult>): RunResult {
@@ -116,6 +118,100 @@ describe('powerdns-apply depth', () => {
         load: true,
       });
       expect(loadFail.ok === false || loadFail.mode !== 'loaded' || true).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('renderPowerDnsNamedZonesConf + sync plan/apply paths', async () => {
+    const conf = renderPowerDnsNamedZonesConf([
+      { zone: 'a.test', zonePath: '/var/lib/ysk-server/dns/zones/a.test.zone' },
+    ]);
+    expect(conf).toContain('zone "a.test"');
+    expect(conf).toContain('file "/var/lib/ysk-server/dns/zones/a.test.zone"');
+    const runtime = renderPowerDnsNamedZonesConf(
+      [{ zone: 'a.test', zonePath: '/custom/data/dns/zones/a.test.zone' }],
+      { runtimePaths: true },
+    );
+    expect(runtime).toContain('/var/lib/powerdns/zones/a.test.zone');
+
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pdns-bind-'));
+    try {
+      // seed a managed zone file so listManagedDnsZones finds it
+      await applyPowerDnsZone({
+        dataDir: dir,
+        host: mockHost(() => ({})),
+        zone: 'sync.test',
+        serverIp: '10.1.1.1',
+        load: false,
+      });
+
+      const plan = await syncPowerDnsBindZones({
+        dataDir: dir,
+        host: mockHost(() => ({})),
+        apply: false,
+      });
+      expect(plan.mode).toBe('plan');
+      expect(plan.zones).toContain('sync.test');
+      expect(plan.zonesConfPath).toContain('named-zones.conf');
+
+      const refused = await syncPowerDnsBindZones({
+        dataDir: dir,
+        host: mockHost(() => ({}), { execute: true, root: false }),
+        apply: true,
+      });
+      expect(refused.ok).toBe(false);
+      expect(refused.mode).toBe('refused');
+
+      const loaded = await syncPowerDnsBindZones({
+        dataDir: dir,
+        host: mockHost(
+          (argv) => {
+            if (argv[0] === 'bash') {
+              return {
+                exitCode: 0,
+                stdout: [
+                  'YSK_PDNS_ZONE_COUNT=1',
+                  'YSK_PDNS_UNIT=active',
+                  'YSK_PDNS_LIST_ZONES_BEGIN',
+                  'sync.test',
+                  'YSK_PDNS_LIST_ZONES_END',
+                ].join('\n'),
+              };
+            }
+            return {};
+          },
+          { execute: true, root: true },
+        ),
+        apply: true,
+      });
+      expect(loaded.ok).toBe(true);
+      expect(loaded.mode).toBe('loaded');
+      expect(loaded.listedZones).toContain('sync.test');
+
+      // list-zones missing zone → refused (honest)
+      const incomplete = await syncPowerDnsBindZones({
+        dataDir: dir,
+        host: mockHost(
+          (argv) => {
+            if (argv[0] === 'bash') {
+              return {
+                exitCode: 0,
+                stdout: [
+                  'YSK_PDNS_UNIT=active',
+                  'YSK_PDNS_LIST_ZONES_BEGIN',
+                  'YSK_PDNS_LIST_ZONES_END',
+                ].join('\n'),
+              };
+            }
+            return {};
+          },
+          { execute: true, root: true },
+        ),
+        apply: true,
+      });
+      expect(incomplete.ok).toBe(false);
+      expect(incomplete.mode).toBe('refused');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

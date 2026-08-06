@@ -198,6 +198,115 @@ describe('managed-resources apply honesty', () => {
     expect(existsSync(String(zoneRow?.zonePath))).toBe(true);
   });
 
+  it('applyDnsZone never marks applied when pdns reload alone succeeds without list-zones', async () => {
+    const { db, dir, cleanup } = (() => {
+      const s = setup(true);
+      return s;
+    })();
+    const zone = createResource(db, 'dns_zones', {
+      zone: 'falsegreen.test',
+      serverIp: '10.9.9.9',
+    });
+    // Host: pdns tools present, systemctl reload ok, but list-zones empty + dig REFUSED
+    const host = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => {},
+      deletePath: async () => {},
+      mkdirp: async () => {},
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv: string[]) => {
+        const s = argv.join(' ');
+        if (s.includes('pdnsutil') || s.includes('pdns_control') || s.includes('pdns_server')) {
+          if (argv[0] === 'pdnsutil' || argv[0] === 'pdns_control' || argv[0] === 'pdns_server') {
+            return { stdout: '', stderr: 'fail', exitCode: 1, argv, dryRun: false };
+          }
+          // resolveBin via bash command -v
+          if (s.includes('command -v') || s.includes('pdns')) {
+            return {
+              stdout: '/usr/bin/pdns_control\n',
+              stderr: '',
+              exitCode: 0,
+              argv,
+              dryRun: false,
+            };
+          }
+        }
+        if (argv[0] === 'bash' && s.includes('sync-powerdns')) {
+          return {
+            stdout: [
+              'YSK_PDNS_UNIT=active',
+              'YSK_PDNS_LIST_ZONES_BEGIN',
+              'YSK_PDNS_LIST_ZONES_END',
+            ].join('\n'),
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (argv[0] === 'bash') {
+          // probe bins, dig, etc.
+          if (s.includes('list-zones')) {
+            return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+          }
+          if (s.includes('dig') || s.includes('+short')) {
+            return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+          }
+          if (s.includes('+comments') || s.includes('status')) {
+            return {
+              stdout: ';; ->>HEADER<<- opcode: QUERY, status: REFUSED, id: 1\n',
+              stderr: '',
+              exitCode: 0,
+              argv,
+              dryRun: false,
+            };
+          }
+          if (s.includes('command -v')) {
+            return { stdout: '/usr/bin/pdns_control\n', stderr: '', exitCode: 0, argv, dryRun: false };
+          }
+          // default: treat as the big sync script
+          return {
+            stdout: [
+              'YSK_PDNS_UNIT=active',
+              'YSK_PDNS_LIST_ZONES_BEGIN',
+              'YSK_PDNS_LIST_ZONES_END',
+            ].join('\n'),
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (s.includes('systemctl reload pdns') || s.includes('is-active pdns')) {
+          return { stdout: 'active\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('named-checkzone')) {
+          return { stdout: 'OK\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const r = await applyDnsZone(db, dir, String(zone.id), {
+      host: host as never,
+      validate: false,
+      tryReload: true,
+    });
+    expect(r.apply_status).not.toBe('applied');
+    expect(['written', 'failed'].includes(String(r.apply_status))).toBe(true);
+    void cleanup;
+  });
+
   it('applyFtpAccount never fakes applied — pending_execute + writes map', () => {
     const { db, dir } = setup();
     const acc = createResource(db, 'ftp_accounts', {

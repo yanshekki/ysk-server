@@ -44,9 +44,13 @@ describe('powerdns-apply', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it('refuses load when pdnsutil missing even with EXECUTE', async () => {
+  it('refuses load when tools missing / no root even with EXECUTE', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-pdns-'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
+    // execute without root → bind named.conf sync refused; no pdnsutil on empty PATH
+    const host = new LocalHostExecutor({
+      allowedWriteRoots: [dir],
+      executeEnabled: true,
+    });
     const prev = process.env.PATH;
     process.env.PATH = '/nonexistent-bin-path';
     try {
@@ -59,11 +63,33 @@ describe('powerdns-apply', () => {
       });
       expect(r.ok).toBe(false);
       expect(r.mode).toBe('refused');
-      expect(r.probe.available).toBe(false);
+      // Either no probe tools, or bind path refused for non-root
+      expect(r.probe.available === false || r.requiresRoot || r.loadMethod === 'none').toBe(true);
     } finally {
       process.env.PATH = prev;
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('plan mode writes named-zones.conf for BIND backend (runtime paths)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-pdns-nz-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const r = await applyPowerDnsZone({
+      dataDir: dir,
+      host,
+      zone: 'bind.example',
+      serverIp: '203.0.113.60',
+      load: false,
+    });
+    expect(r.ok).toBe(true);
+    expect(existsSync(join(dir, 'dns', 'powerdns', 'named-zones.conf'))).toBe(true);
+    const body = (await import('node:fs')).readFileSync(
+      join(dir, 'dns', 'powerdns', 'named-zones.conf'),
+      'utf8',
+    );
+    expect(body).toContain('zone "bind.example"');
+    expect(body).toContain('/var/lib/powerdns/zones/bind.example.zone');
+    rmSync(dir, { recursive: true, force: true });
   });
 
   it('probePowerDns returns structure', async () => {

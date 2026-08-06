@@ -42,15 +42,15 @@ describe('powerdns heal / local-address', () => {
         if (s.includes('heal') || s.includes('local-address') || s.includes('YSK_PDNS')) {
           return {
             exitCode: 0,
-            stdout: 'YSK_PDNS_LOCAL_ADDRESS=84.32.34.14\nactive\nUNCONN 0 0 84.32.34.14:53\n',
+            stdout: 'YSK_PDNS_LOCAL_ADDRESS=203.0.113.10\nactive\nUNCONN 0 0 203.0.113.10:53\n',
           };
         }
         if (s.includes('is-active')) return { exitCode: 0, stdout: 'active\n' };
-        if (s.includes('ss -ulnp')) return { exitCode: 0, stdout: 'UNCONN 0 0 84.32.34.14:53 *:*\n' };
+        if (s.includes('ss -ulnp')) return { exitCode: 0, stdout: 'UNCONN 0 0 203.0.113.10:53 *:*\n' };
         return { exitCode: 0, stdout: '' };
       }),
     });
-    expect(r.localAddress).toBe('84.32.34.14');
+    expect(r.localAddress).toBe('203.0.113.10');
     expect(r.ok).toBe(true);
     expect(r.unitActive).toBe(true);
     expect(r.listenUdp53).toBe(true);

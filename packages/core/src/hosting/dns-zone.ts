@@ -3,7 +3,14 @@
  * Never fakes success: named-checkzone / reload only when EXECUTE + binary present.
  */
 
-import { mkdirSync, writeFileSync, readdirSync, existsSync, readFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  writeFileSync,
+  readdirSync,
+  existsSync,
+  readFileSync,
+  unlinkSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
@@ -302,7 +309,10 @@ export async function writeManagedDnsZone(input: {
 
   // Reload only if validation did not fail
   if (wantReload && canExecute && input.host && validated !== false) {
-    reloaded = await tryReloadNameserver(input.host, notes, commandResults);
+    // Prefer classic named/bind9; pure pdns reload alone does not load zones
+    reloaded = await tryReloadClassicNameserver(input.host, notes, commandResults, {
+      includePdns: true,
+    });
   } else if (wantReload && canExecute && validated === false) {
     notes.push(tl('notes.auto.n1257'));
   }
@@ -336,18 +346,27 @@ export async function writeManagedDnsZone(input: {
   };
 }
 
-async function tryReloadNameserver(
+/**
+ * Reload classic BIND (rndc/named/bind9). Optionally try pdns unit reload.
+ *
+ * Warning: `systemctl reload pdns` alone does NOT register zones for bindbackend.
+ * Callers that need PowerDNS authority must use syncPowerDnsBindZones first and
+ * must not treat pure pdns reload as "applied".
+ */
+export async function tryReloadClassicNameserver(
   host: HostExecutor,
   notes: string[],
   commandResults: ZoneFileResult['commandResults'],
+  opts?: { /** default false — skip pdns so callers do not false-green */ includePdns?: boolean },
 ): Promise<boolean> {
-  // Prefer rndc, then systemctl units common on Debian/Ubuntu
   const attempts: string[][] = [
     ['rndc', 'reload'],
     ['systemctl', 'reload', 'named'],
     ['systemctl', 'reload', 'bind9'],
-    ['systemctl', 'reload', 'pdns'],
   ];
+  if (opts?.includePdns) {
+    attempts.push(['systemctl', 'reload', 'pdns']);
+  }
   for (const argv of attempts) {
     if (argv[0] !== 'systemctl') {
       const { binPresent } = await import('./software-probe/index.js');
@@ -368,6 +387,34 @@ async function tryReloadNameserver(
   }
   notes.push(tl('notes.auto.n0857'));
   return false;
+}
+
+/**
+ * Remove managed zone file + meta under dataDir (does not touch PowerDNS by itself).
+ */
+export function removeManagedDnsZoneFiles(
+  dataDir: string,
+  zone: string,
+): { ok: boolean; removed: string[]; notes: string[] } {
+  const z = zone.trim().toLowerCase().replace(/\.$/, '');
+  const removed: string[] = [];
+  const notes: string[] = [];
+  if (!z) return { ok: false, removed, notes: ['empty zone'] };
+  const dir = join(dataDir, 'dns', 'zones');
+  for (const f of [`${z}.zone`, `${z}.json`]) {
+    const p = join(dir, f);
+    if (existsSync(p)) {
+      try {
+        unlinkSync(p);
+        removed.push(p);
+      } catch (e) {
+        notes.push(`failed to remove ${p}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+  if (removed.length === 0) notes.push(`no managed files for ${z}`);
+  else notes.push(`removed ${removed.length} file(s) for ${z}`);
+  return { ok: notes.every((n) => !n.startsWith('failed')), removed, notes };
 }
 
 /**

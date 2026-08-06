@@ -462,41 +462,69 @@ export async function handleHostingRoutes(
           serverIpv6?: string;
           mailHost?: string;
           validate?: boolean;
+          /** default true: register into PowerDNS after write (needs EXECUTE+root) */
+          load?: boolean;
         };
-        const result = await writeManagedDnsZone({
+        const wantLoad = data.load !== false;
+        // Align with panel apply: write zone file, then optional PowerDNS BIND load
+        const result = await applyPowerDnsZone({
           dataDir: ctx.dataDir,
+          host: ctx.host,
           zone: data.zone ?? 'example.com',
           serverIp: data.serverIp ?? '203.0.113.10',
           serverIpv6: data.serverIpv6,
           mailHost: data.mailHost,
-          host: ctx.host,
-          validate: data.validate,
+          load: wantLoad,
+          rewriteZone: true,
         });
+        const applyStatus =
+          result.mode === 'loaded'
+            ? 'applied'
+            : result.mode === 'plan'
+              ? 'written'
+              : result.ok
+                ? 'written'
+                : 'failed';
         ctx.db.snapshot.dns_zones = [
           {
             id: randomUUID(),
             zone: result.zone,
-            provider: 'bind-file',
+            provider: wantLoad ? 'powerdns' : 'bind-file',
             zonePath: result.zonePath,
-            serial: result.serial,
-            records: result.records,
+            mode: result.mode,
+            apply_status: applyStatus,
+            loadMethod: result.loadMethod,
             ok: result.ok,
             updated_at: new Date().toISOString(),
             actor: user.username,
           },
           ...ctx.db.snapshot.dns_zones.filter(
-            (z) => !(String(z.zone) === result.zone && z.provider === 'bind-file'),
+            (z) =>
+              !(
+                String(z.zone) === result.zone &&
+                (z.provider === 'bind-file' || z.provider === 'powerdns')
+              ),
           ),
         ].slice(0, 50);
         ctx.db.persist();
         ctx.audit.append({
           actor: user.username,
-          action: 'dns.zone_file.write',
+          action: wantLoad ? 'dns.zone_file.write_load' : 'dns.zone_file.write',
           resource: result.zone,
-          detail: { zonePath: result.zonePath, serial: result.serial, ok: result.ok },
-          ok: result.ok,
+          detail: {
+            zonePath: result.zonePath,
+            mode: result.mode,
+            loadMethod: result.loadMethod,
+            ok: result.ok,
+          },
+          ok: result.ok || result.mode === 'plan',
         });
-        sendOpsResult(res, result);
+        sendOpsResult(res, {
+          ...result,
+          applyStatus,
+          // plan-only write still HTTP-ok for operators previewing
+          ok: result.ok || result.mode === 'plan',
+        });
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/dns/zone-files') {
@@ -536,11 +564,16 @@ export async function handleHostingRoutes(
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/powerdns/heal') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { localAddress?: string };
+        const data = JSON.parse(raw || '{}') as {
+          localAddress?: string;
+          resyncZones?: boolean;
+        };
         const { healPowerDnsListener } = await import('@ysk/core');
         const result = await healPowerDnsListener({
           host: ctx.host,
           localAddress: data.localAddress,
+          dataDir: ctx.dataDir,
+          resyncZones: data.resyncZones,
         });
         ctx.audit.append({
           actor: user.username,

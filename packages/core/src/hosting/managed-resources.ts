@@ -415,6 +415,9 @@ export async function applyDnsZone(
   const validate = opts?.validate ?? true;
   const tryReload = opts?.tryReload ?? canExecute;
   try {
+    // Write zone file first. For PowerDNS BIND backend, plain `systemctl reload pdns`
+    // without named.conf registration still leaves dig REFUSED (0 domains) — so we
+    // register zones via syncPowerDnsBindZones when reloading is requested.
     const result = await writeManagedDnsZone({
       dataDir,
       zone: zoneName,
@@ -423,7 +426,8 @@ export async function applyDnsZone(
       mailHost: zone.mailHost ? String(zone.mailHost) : undefined,
       host,
       validate,
-      tryReload,
+      // Defer nameserver reload until after PowerDNS BIND registration below
+      tryReload: false,
       template: zone.template ? String(zone.template) : 'full',
       records: dataRecords.length ? dataRecords : undefined,
       nsName: zone.nsName ? String(zone.nsName) : undefined,
@@ -435,25 +439,119 @@ export async function applyDnsZone(
       soaExpire: zone.soaExpire != null ? Number(zone.soaExpire) : undefined,
       soaMinimum: zone.soaMinimum != null ? Number(zone.soaMinimum) : undefined,
     });
-    // Honest: applied only if nameserver reload OK; else written
-    const applyStatus = result.applyStatus;
+
+    const notes = [...(result.notes ?? [])];
+    let applyStatus = result.applyStatus;
+    let reloaded = Boolean(result.reloaded);
+    let requiresExecute = Boolean(result.requiresExecute);
+
+    if (result.ok && tryReload && host && result.validated !== false) {
+      if (!canExecute) {
+        notes.push(tl('notes.auto.n0988'));
+        requiresExecute = true;
+      } else {
+        const { syncPowerDnsBindZones, probePowerDns } = await import('./powerdns-apply.js');
+        const { digLocalAuthoritative } = await import('./dns-health.js');
+        const { tryReloadClassicNameserver } = await import('./dns-zone.js');
+        const probe = await probePowerDns(host);
+        const pdnsPresent = Boolean(probe.available || probe.pdnsControl || probe.pdnsServer);
+
+        if (pdnsPresent) {
+          // PowerDNS: pure systemctl reload is NOT enough (BIND backend needs named.conf).
+          // Never mark applied from reload alone.
+          const sync = await syncPowerDnsBindZones({
+            dataDir,
+            host,
+            apply: true,
+          });
+          notes.push(...sync.notes);
+          if (sync.requiresExecute || sync.requiresRoot) {
+            requiresExecute = true;
+          }
+          if (sync.ok && sync.mode === 'loaded') {
+            // Post-condition: dig SOA + A for this zone's records (generic, not fixed hostnames)
+            const dig = await digLocalAuthoritative({
+              host,
+              name: zoneName,
+              type: 'SOA',
+            });
+            notes.push(...dig.notes);
+            const { buildLocalAProbeNames } = await import('./dns-health.js');
+            const relA = dataRecords
+              .filter((r) => String(r.type).toUpperCase() === 'A')
+              .map((r) => r.name)
+              .slice(0, 5);
+            let aOk = false;
+            for (const aName of buildLocalAProbeNames(zoneName, relA)) {
+              const aDig = await digLocalAuthoritative({
+                host,
+                name: aName,
+                type: 'A',
+              });
+              if (aDig.ok && aDig.answers.length) {
+                aOk = true;
+                notes.push(`dig A ${aName} → ${aDig.answers[0]}`);
+                break;
+              }
+            }
+            if (dig.ok || aOk) {
+              reloaded = true;
+              applyStatus = 'applied';
+              notes.push(tl('notes.dns.applyDigOk'));
+              // P2-6: if :53 not open, hint firewall both
+              try {
+                const ss = await host.runCommand(
+                  ['bash', '-c', 'ss -uln 2>/dev/null | grep -E ":53\\s" || true'],
+                  { timeoutMs: 4_000 },
+                );
+                if (!(ss.stdout || '').includes(':53')) {
+                  notes.push(tl('notes.dns.firewall53Hint'));
+                }
+              } catch {
+                /* optional */
+              }
+            } else {
+              applyStatus = 'written';
+              notes.push(tl('notes.dns.applyDigFail'));
+            }
+          } else {
+            applyStatus = 'written';
+            notes.push(tl('notes.dns.applySyncIncomplete'));
+          }
+        } else {
+          // Classic named/bind9 only (no PowerDNS tools) — rndc/systemctl reload is valid applied signal
+          const cmdResults: Array<{ argv: string[]; exitCode: number; stderr: string }> = [];
+          const classicOk = await tryReloadClassicNameserver(host, notes, cmdResults);
+          if (classicOk) {
+            reloaded = true;
+            applyStatus = 'applied';
+          } else {
+            applyStatus = 'written';
+          }
+        }
+      }
+    } else if (result.ok && !tryReload) {
+      notes.push(tl('notes.dns.writeOnlyHint'));
+    }
+
+    // Honest: applied only if nameserver reload/register + dig OK; else written
     updateResource(db, 'dns_zones', id, {
       apply_status: applyStatus,
       zonePath: result.zonePath,
-      last_apply: result,
+      last_apply: { ...result, notes, reloaded, applyStatus },
       last_serial: result.serial,
       validated: result.validated,
-      reloaded: result.reloaded });
+      reloaded });
     // Mark records as same honesty level (written, not fake applied)
     for (const rec of records) {
       updateResource(db, 'dns_records', String(rec.id), {
         apply_status: applyStatus === 'applied' ? 'applied' : applyStatus === 'failed' ? 'failed' : 'written' });
     }
-    const blocked = Boolean(result.requiresExecute);
+    const blocked = requiresExecute;
     return {
       ok: result.ok,
-      notes: result.notes ?? [],
-      result,
+      notes,
+      result: { ...result, notes, reloaded, applyStatus },
       apply_status: applyStatus,
       blocked,
       blockMessage: blocked

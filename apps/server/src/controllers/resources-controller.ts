@@ -273,9 +273,41 @@ export async function handleResourcesRoutes(
       return true;
     }
     if (key === 'dns_zones') {
+      const zoneRow = getResource(ctx.db, 'dns_zones', id);
+      const zoneName = zoneRow ? String(zoneRow.zone ?? '') : '';
       // cascade records
       for (const rec of listResources(ctx.db, 'dns_records').filter((r) => r.zoneId === id)) {
         deleteResource(ctx.db, 'dns_records', String(rec.id));
+      }
+      // Drop managed zone files + re-sync PowerDNS named.conf (avoid answering deleted zones)
+      if (zoneName) {
+        try {
+          const { removeManagedDnsZoneFiles, syncPowerDnsBindZones } = await import('@ysk/core');
+          const rm = removeManagedDnsZoneFiles(ctx.dataDir, zoneName);
+          ctx.audit.append({
+            actor: user.username,
+            action: 'dns.zone_file.remove',
+            resource: zoneName,
+            detail: rm,
+            ok: rm.ok,
+          });
+          if (ctx.host.executeEnabled() && ctx.host.isRoot()) {
+            const sync = await syncPowerDnsBindZones({
+              dataDir: ctx.dataDir,
+              host: ctx.host,
+              apply: true,
+            });
+            ctx.audit.append({
+              actor: user.username,
+              action: 'dns.powerdns.unbind',
+              resource: zoneName,
+              detail: { ok: sync.ok, mode: sync.mode, zones: sync.zones },
+              ok: sync.ok,
+            });
+          }
+        } catch {
+          /* best-effort cleanup */
+        }
       }
     }
     if (key === 'mysql_databases') {

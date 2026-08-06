@@ -4,6 +4,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { tl } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listManagedDnsZones } from './dns-zone.js';
 
@@ -18,18 +19,33 @@ export type DnsHealthDto = {
   listenTcp53: boolean;
   /** Managed zone files under dataDir */
   zoneFiles: number;
+  /** Zones reported by pdns_control list-zones (when available) */
+  pdnsZoneCount?: number;
+  pdnsZones?: string[];
   latestZoneWriteAt?: string;
   latestZone?: string;
-  /** dig @127.0.0.1 when zone provided or latest zone */
+  /** dig @local when zone provided or latest zone */
   answeringLocal?: boolean;
   digAnswers?: string[];
   digNotes?: string[];
+  /** Sample A dig (www / ns1 / apex) when local SOA ok or as extra check */
+  answeringLocalA?: boolean;
+  digAName?: string;
+  digAAnswers?: string[];
+  /** Public NS for zone via dig @8.8.8.8 NS (honest: public may still be Cloudflare) */
+  publicNs?: string[];
+  publicNsNotes?: string[];
+  /** true if public NS hostnames look like this host (ns1.<zone>) — weak heuristic */
+  publicNsPointsHere?: boolean;
   /** Panel honesty chips */
   states: {
     service: DnsHealthTone;
     listen: DnsHealthTone;
     written: DnsHealthTone;
+    /** PowerDNS list-zones vs disk zone files */
+    loaded: DnsHealthTone;
     answering: DnsHealthTone;
+    publicNs: DnsHealthTone;
   };
   notes: string[];
 };
@@ -136,7 +152,33 @@ export async function digLocalAuthoritative(input: {
         method: 'dig',
       };
     }
-    lastNotes = answers.length ? [`empty dig answer from ${at}`] : lastNotes;
+
+    // Empty +short: check status (REFUSED = zone not loaded into PowerDNS)
+    const statusArgv = digPath
+      ? [digPath, at, '+time=2', '+tries=1', '+noall', '+comments', type, name]
+      : [
+          'bash',
+          '-c',
+          `if ${shellBinExists('dig')}; then dig ${at} +time=2 +tries=1 +noall +comments ${JSON.stringify(type)} ${JSON.stringify(name)} 2>&1; else true; fi`,
+        ];
+    const st = await input.host.runCommand(statusArgv, { timeoutMs: 8_000 });
+    const stOut = `${st.stdout || ''}\n${st.stderr || ''}`;
+    if (/status:\s*REFUSED/i.test(stOut)) {
+      lastNotes = [
+        `dig ${at} status: REFUSED — PowerDNS is up but zone not loaded (named.conf / rediscover). Apply zone or powerdns/load.`,
+      ];
+      // Keep trying other servers in case only one path refuses
+      continue;
+    }
+    if (/status:\s*NXDOMAIN/i.test(stOut)) {
+      lastNotes = [`dig ${at} status: NXDOMAIN`];
+      continue;
+    }
+    lastNotes = answers.length
+      ? [`empty dig answer from ${at}`]
+      : lastNotes.length
+        ? lastNotes
+        : [`empty dig answer from ${at}`];
   }
   return {
     ok: false,
@@ -146,11 +188,57 @@ export async function digLocalAuthoritative(input: {
   };
 }
 
+/**
+ * Build FQDNs to probe for local A answers — generic, not business hostnames.
+ * Prefer apex + www + optional relative A names from managed zone meta/records.
+ */
+export function buildLocalAProbeNames(
+  zone: string,
+  relativeANames?: string[],
+  max = 4,
+): string[] {
+  const z = zone.trim().toLowerCase().replace(/\.$/, '');
+  if (!z) return [];
+  const out: string[] = [];
+  const push = (fqdn: string) => {
+    const n = fqdn.trim().toLowerCase().replace(/\.$/, '');
+    if (n && !out.includes(n)) out.push(n);
+  };
+  push(z);
+  push(`www.${z}`);
+  for (const rel of relativeANames ?? []) {
+    const r = String(rel ?? '').trim().toLowerCase().replace(/\.$/, '');
+    if (!r || r === '@') {
+      push(z);
+      continue;
+    }
+    // relative label → zone; already-absolute under zone kept as-is
+    if (r === z || r.endsWith(`.${z}`)) push(r);
+    else if (!r.includes('.')) push(`${r}.${z}`);
+    else push(r); // other FQDN left absolute (operator data)
+    if (out.length >= max) break;
+  }
+  push(`ns1.${z}`);
+  return out.slice(0, max);
+}
+
+/** Whether public NS hostnames look like in-zone nameservers (ns1.zone / *.zone). */
+export function publicNsLooksInZone(zone: string, nsList: string[]): boolean {
+  const z = zone.trim().toLowerCase().replace(/\.$/, '');
+  if (!z) return false;
+  return nsList.some((raw) => {
+    const n = raw.trim().toLowerCase().replace(/\.$/, '');
+    return n === `ns1.${z}` || n === `ns2.${z}` || n.endsWith(`.${z}`);
+  });
+}
+
 export async function probeDnsServiceHealth(input: {
   dataDir: string;
   host: HostExecutor;
   /** Optional zone name for local dig (defaults to latest managed zone) */
   digName?: string;
+  /** Override public NS dig resolver (default 8.8.8.8 or YSK_DNS_PUBLIC_RESOLVER) */
+  publicResolver?: string;
 }): Promise<DnsHealthDto> {
   const notes: string[] = [];
   const units = ['named', 'bind9', 'pdns'] as const;
@@ -224,10 +312,45 @@ export async function probeDnsServiceHealth(input: {
   }
   if (zoneFiles === 0) notes.push('No managed zone files under dataDir/dns/zones');
 
+  // PowerDNS loaded zone count (honest: disk files ≠ list-zones)
+  let pdnsZoneCount: number | undefined;
+  let pdnsZones: string[] | undefined;
+  if (unit === 'pdns' && unitActive) {
+    try {
+      const lz = await input.host.runCommand(
+        [
+          'bash',
+          '-c',
+          'if command -v pdns_control >/dev/null 2>&1; then pdns_control list-zones 2>/dev/null; else echo YSK_NO_PDNS_CTL; fi',
+        ],
+        { timeoutMs: 6_000 },
+      );
+      const raw = (lz.stdout || '').trim();
+      if (!raw.includes('YSK_NO_PDNS_CTL')) {
+        const { parsePdnsListZonesOutput } = await import('./powerdns-apply.js');
+        // parse without markers: inject markers
+        pdnsZones = parsePdnsListZonesOutput(
+          `YSK_PDNS_LIST_ZONES_BEGIN\n${raw}\nYSK_PDNS_LIST_ZONES_END`,
+        );
+        pdnsZoneCount = pdnsZones.length;
+        if (zoneFiles > 0 && pdnsZoneCount === 0) {
+          notes.push(tl('notes.dns.zeroDomainsHint'));
+        } else if (pdnsZoneCount != null) {
+          notes.push(`PowerDNS list-zones: ${pdnsZoneCount}`);
+        }
+      }
+    } catch {
+      /* optional */
+    }
+  }
+
   const digTarget = (input.digName || latestZone || '').trim();
   let answeringLocal: boolean | undefined;
   let digAnswers: string[] | undefined;
   let digNotes: string[] | undefined;
+  let answeringLocalA: boolean | undefined;
+  let digAName: string | undefined;
+  let digAAnswers: string[] | undefined;
   if (digTarget && (listenUdp53 || unitActive)) {
     const dig = await digLocalAuthoritative({
       host: input.host,
@@ -238,20 +361,109 @@ export async function probeDnsServiceHealth(input: {
     digAnswers = dig.answers;
     digNotes = dig.notes;
     if (!dig.ok) notes.push(...(dig.notes ?? []).slice(0, 2));
+
+    // Local A probe: apex/www + relative names from managed zone meta (no hard-coded business hosts)
+    let relA: string[] | undefined;
+    try {
+      const metaPath = join(input.dataDir, 'dns', 'zones', `${digTarget}.json`);
+      if (existsSync(metaPath)) {
+        const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as {
+          records?: Array<{ type?: string; name?: string }>;
+        };
+        relA = (meta.records ?? [])
+          .filter((r) => String(r.type ?? '').toUpperCase() === 'A')
+          .map((r) => String(r.name ?? '@'))
+          .slice(0, 5);
+      }
+    } catch {
+      /* optional */
+    }
+    const aCandidates = buildLocalAProbeNames(digTarget, relA);
+    for (const aName of aCandidates) {
+      const aDig = await digLocalAuthoritative({
+        host: input.host,
+        name: aName,
+        type: 'A',
+      });
+      if (aDig.ok && aDig.answers.length > 0) {
+        answeringLocalA = true;
+        digAName = aName;
+        digAAnswers = aDig.answers;
+        notes.push(`local A ${aName} → ${aDig.answers[0]}`);
+        break;
+      }
+      if (answeringLocalA == null) {
+        answeringLocalA = false;
+        digAName = aName;
+        digAAnswers = [];
+      }
+    }
+    if (answeringLocalA === false) {
+      notes.push(tl('notes.dns.localAFailed', { zone: digTarget }));
+    }
   } else if (digTarget && !listenUdp53 && !unitActive) {
     answeringLocal = false;
     digNotes = ['skip dig: service not listening'];
   }
 
+  // Public NS via configurable resolver — do not pretend local zone is worldwide
+  let publicNs: string[] | undefined;
+  let publicNsNotes: string[] | undefined;
+  let publicNsPointsHere: boolean | undefined;
+  if (digTarget) {
+    const pub = await digPublicNs({
+      host: input.host,
+      zone: digTarget,
+      publicResolver: input.publicResolver,
+    });
+    publicNs = pub.ns;
+    publicNsNotes = pub.notes;
+    publicNsPointsHere = pub.pointsHere;
+    notes.push(...pub.notes.slice(0, 2));
+  }
+
+  const loadedTone: DnsHealthTone =
+    pdnsZoneCount == null
+      ? zoneFiles > 0
+        ? 'neutral'
+        : 'warn'
+      : pdnsZoneCount === 0 && zoneFiles > 0
+        ? 'danger'
+        : pdnsZoneCount > 0
+          ? 'ok'
+          : 'warn';
+
+  const publicNsTone: DnsHealthTone =
+    publicNs == null
+      ? 'neutral'
+      : publicNs.length === 0
+        ? 'warn'
+        : publicNsPointsHere === true
+          ? 'ok'
+          : 'warn';
+
   const states: DnsHealthDto['states'] = {
     service: unitActive ? 'ok' : 'danger',
     listen: listenUdp53 || listenTcp53 ? (listenUdp53 && listenTcp53 ? 'ok' : 'warn') : 'danger',
     written: zoneFiles > 0 ? 'ok' : 'warn',
+    loaded: loadedTone,
     answering:
-      answeringLocal === true ? 'ok' : answeringLocal === false ? 'danger' : 'neutral',
+      answeringLocal === true || answeringLocalA === true
+        ? 'ok'
+        : answeringLocal === false
+          ? 'danger'
+          : 'neutral',
+    publicNs: publicNsTone,
   };
 
-  const ok = unitActive && (listenUdp53 || listenTcp53);
+  // ok = local authority useful (not public NS). Public CF is a separate warn chip.
+  const listenOk = listenUdp53 || listenTcp53;
+  const zonesHealthy =
+    zoneFiles === 0 ||
+    answeringLocal === true ||
+    answeringLocalA === true ||
+    (pdnsZoneCount != null && pdnsZoneCount > 0 && answeringLocal !== false);
+  const ok = unitActive && listenOk && zonesHealthy;
 
   return {
     ok,
@@ -260,14 +472,86 @@ export async function probeDnsServiceHealth(input: {
     listenUdp53,
     listenTcp53,
     zoneFiles,
+    pdnsZoneCount,
+    pdnsZones,
     latestZoneWriteAt,
     latestZone,
     answeringLocal,
     digAnswers,
     digNotes,
+    answeringLocalA,
+    digAName,
+    digAAnswers,
+    publicNs,
+    publicNsNotes,
+    publicNsPointsHere,
     states,
     notes,
   };
+}
+
+/**
+ * dig public NS for zone — honest delegation view (any domain).
+ * Resolver: input.publicResolver → env YSK_DNS_PUBLIC_RESOLVER → 8.8.8.8
+ * pointsHere: only in-zone nameserver names (ns1.zone / *.zone), never product branding.
+ */
+export async function digPublicNs(input: {
+  host: HostExecutor;
+  zone: string;
+  publicResolver?: string;
+}): Promise<{ ns: string[]; notes: string[]; pointsHere?: boolean; resolver: string }> {
+  const zone = input.zone.trim().toLowerCase().replace(/\.$/, '');
+  const resolver =
+    (input.publicResolver || process.env.YSK_DNS_PUBLIC_RESOLVER || '8.8.8.8').trim() ||
+    '8.8.8.8';
+  if (!zone) return { ns: [], notes: ['empty zone for public NS dig'], resolver };
+  const { resolveBin, shellBinExists } = await import('./software-probe/index.js');
+  const digPath = await resolveBin(input.host, 'dig');
+  const at = `@${resolver}`;
+  const argv = digPath
+    ? [digPath, at, '+time=2', '+tries=1', '+short', 'NS', zone]
+    : [
+        'bash',
+        '-c',
+        `if ${shellBinExists('dig')}; then dig ${at} +time=2 +tries=1 +short NS ${JSON.stringify(zone)} 2>&1; else echo YSK_NO_DIG; fi`,
+      ];
+  try {
+    const r = await input.host.runCommand(argv, { timeoutMs: 8_000 });
+    const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+    if (out.includes('YSK_NO_DIG')) {
+      return { ns: [], notes: ['dig not installed — skip public NS check'], resolver };
+    }
+    if (/connection refused|timed out|no servers could be reached/i.test(out)) {
+      return { ns: [], notes: [`public dig ${at} failed (network)`], resolver };
+    }
+    const ns = (r.stdout || '')
+      .split('\n')
+      .map((l) => l.trim().replace(/\.$/, '').toLowerCase())
+      .filter((l) => l && !l.startsWith(';') && /^[a-z0-9._-]+$/.test(l));
+    if (ns.length === 0) {
+      return { ns: [], notes: [`no public NS for ${zone} via ${resolver}`], resolver };
+    }
+    const pointsHere = publicNsLooksInZone(zone, ns);
+    // Third-party CDN/DNS brands (generic patterns only — no customer-specific NS names)
+    const thirdParty = ns.some((n) =>
+      /cloudflare|awsdns|azure-dns|domaincontrol|googledomains|ultradns|dnsimple|route53/i.test(n),
+    );
+    const notes = [
+      `public NS (${zone}) via ${resolver}: ${ns.join(', ')}`,
+      pointsHere
+        ? tl('notes.dns.publicNsHere')
+        : thirdParty
+          ? tl('notes.dns.publicNsCloudflare')
+          : tl('notes.dns.publicNsOther'),
+    ];
+    return { ns, notes, pointsHere, resolver };
+  } catch (e) {
+    return {
+      ns: [],
+      notes: [`public NS dig error: ${e instanceof Error ? e.message : String(e)}`],
+      resolver,
+    };
+  }
 }
 
 /** Read latest apply meta if present (optional future). */
