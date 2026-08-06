@@ -26,7 +26,14 @@ export const projectsApi = {
   remove: (id: string) => api.deleteProject(id),
   deploy: (
     id: string,
-    body?: { entry?: string; skipBuild?: boolean; port?: number; nodeVersion?: string },
+    body?: {
+      entry?: string;
+      skipBuild?: boolean;
+      port?: number;
+      nodeVersion?: string;
+      /** false → PM2 path (node/bun); omit/true → systemd when root */
+      enableSystemd?: boolean;
+    },
   ) => api.deployProject(id, body),
   deployPhp: (
     id: string,

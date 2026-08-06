@@ -39,6 +39,7 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
         phpVersion?: string;
         entry?: string;
         skipBuild?: boolean;
+        enableSystemd?: boolean;
       },
     ) => {
       setBusy(true);
@@ -51,6 +52,7 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
             result = await projectsApi.deploy(id, {
               entry: opts?.entry || undefined,
               skipBuild: opts?.skipBuild,
+              enableSystemd: opts?.enableSystemd,
             });
             break;
           case 'deploy-php':

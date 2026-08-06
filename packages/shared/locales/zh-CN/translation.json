@@ -7432,7 +7432,12 @@
     "logsPresetError": "筛选 error.log",
     "railJava": "Java 进程",
     "railKotlin": "Kotlin 进程",
-    "railBun": "Bun 进程"
+    "railBun": "Bun 进程",
+    "deployProcessManager": "进程管理",
+    "deployProcessManagerSystemd": "systemd（推荐）",
+    "deployProcessManagerPm2": "PM2",
+    "deploySystemdHint": "生产默认：unit ysk-project-*.service、开机自启、cgroup 限额跟项目资源。",
+    "deployPm2Hint": "用 pm2 start ecosystem（需已装 PM2 plugin）。进程见「运行环境 → 进程」PM2 表。部署前会停旧 runner，避免抢端口。"
   },
   "protection": {
     "levels": {

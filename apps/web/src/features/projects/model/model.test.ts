@@ -16,7 +16,9 @@ import {
 } from './ops';
 import {
   defaultRuntimeInstallVersion,
+  enableSystemdFromProcessManager,
   loadDeployPrefs,
+  normalizeProcessManager,
   runtimeInstallKind,
   runtimePagePath,
   runtimeVersionChoices,
@@ -204,5 +206,11 @@ describe('runtime-ui + deploy-prefs', () => {
     saveDeployPrefs('px', { entry: 'main.js', skipBuild: true });
     expect(loadDeployPrefs('px').entry).toBe('main.js');
     expect(loadDeployPrefs('missing').skipBuild).toBeFalsy();
+    saveDeployPrefs('pm', { entry: 's.js', processManager: 'pm2' });
+    expect(loadDeployPrefs('pm').processManager).toBe('pm2');
+    expect(normalizeProcessManager('pm2')).toBe('pm2');
+    expect(normalizeProcessManager('nope')).toBe('systemd');
+    expect(enableSystemdFromProcessManager('pm2')).toBe(false);
+    expect(enableSystemdFromProcessManager('systemd')).toBe(true);
   });
 });

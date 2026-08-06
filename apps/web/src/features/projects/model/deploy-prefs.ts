@@ -4,10 +4,24 @@
 
 const PREFIX = 'ysk.deployPrefs.v1.';
 
+/** Process supervisor for Node/Bun deploys. Default production path is systemd. */
+export type ProcessManager = 'systemd' | 'pm2';
+
 export type DeployPrefs = {
   entry?: string;
   skipBuild?: boolean;
+  /** node/bun only; omitted → systemd */
+  processManager?: ProcessManager;
 };
+
+export function normalizeProcessManager(v: unknown): ProcessManager {
+  return v === 'pm2' ? 'pm2' : 'systemd';
+}
+
+/** Map UI process manager → deploy API enableSystemd flag. */
+export function enableSystemdFromProcessManager(pm: ProcessManager): boolean {
+  return pm === 'systemd';
+}
 
 export function loadDeployPrefs(projectId: string): DeployPrefs {
   try {
@@ -17,6 +31,10 @@ export function loadDeployPrefs(projectId: string): DeployPrefs {
     return {
       entry: typeof o.entry === 'string' ? o.entry : undefined,
       skipBuild: Boolean(o.skipBuild),
+      processManager:
+        o.processManager === 'pm2' || o.processManager === 'systemd'
+          ? o.processManager
+          : undefined,
     };
   } catch {
     return {};
@@ -31,6 +49,9 @@ export function saveDeployPrefs(projectId: string, prefs: DeployPrefs): void {
       JSON.stringify({
         entry: prefs.entry ?? prev.entry ?? '',
         skipBuild: prefs.skipBuild ?? prev.skipBuild ?? false,
+        processManager: normalizeProcessManager(
+          prefs.processManager ?? prev.processManager ?? 'systemd',
+        ),
       }),
     );
   } catch {

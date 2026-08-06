@@ -462,6 +462,7 @@ export function ProjectDetailPage() {
                 phpVersion,
                 entry: opts?.entry,
                 skipBuild: opts?.skipBuild,
+                enableSystemd: opts?.enableSystemd,
               }).catch(() => undefined)
             }
             onGitDeploy={(opts) =>

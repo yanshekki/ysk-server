@@ -26,11 +26,14 @@ import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
 import {
   defaultRuntimeInstallVersion,
   fetchRuntimeVersionChoices,
+  enableSystemdFromProcessManager,
   loadDeployPrefs,
+  normalizeProcessManager,
   runtimeInstallKind,
   runtimePagePath,
   runtimeVersionChoices,
   saveDeployPrefs,
+  type ProcessManager,
 } from '../model/deploy-prefs';
 import { projectsApi } from '../api';
 import { systemApi } from '../../system/api';
@@ -43,7 +46,11 @@ export interface ProjectDeployTabProps {
   setGitUrl: (v: string) => void;
   envText: string;
   setEnvText: (v: string) => void;
-  onDeploy: (opts?: { entry?: string; skipBuild?: boolean }) => void | Promise<unknown>;
+  onDeploy: (opts?: {
+    entry?: string;
+    skipBuild?: boolean;
+    enableSystemd?: boolean;
+  }) => void | Promise<unknown>;
   onGitDeploy: (opts?: { entry?: string; skipBuild?: boolean }) => void;
   onSaveEnv: () => void;
   onPhpVersionChange?: (v: string) => void;
@@ -207,6 +214,10 @@ export function ProjectDeployTab({
     () => project.deployEntry || prefs.entry || '',
   );
   const [skipBuild, setSkipBuild] = useState(Boolean(prefs.skipBuild));
+  /** Node/Bun: systemd (default) vs PM2 — professional process manager choice */
+  const [processManager, setProcessManager] = useState<ProcessManager>(() =>
+    normalizeProcessManager(prefs.processManager),
+  );
   const runtimeLabel = formatRuntimeName(project.runtime, t);
   const processRuntime =
     project.runtime === 'node' ||
@@ -216,6 +227,8 @@ export function ProjectDeployTab({
     project.runtime === 'java' ||
     project.runtime === 'kotlin' ||
     project.runtime === 'bun';
+  const supportsPm2Choice =
+    project.runtime === 'node' || project.runtime === 'bun';
   const rtKind = runtimeInstallKind(project.runtime);
   const rtPath = runtimePagePath(project.runtime);
 
@@ -286,10 +299,15 @@ export function ProjectDeployTab({
       .catch(() => setHistory([]));
   }, [project.id, project.lastDeployAt]);
 
-  function persist(next?: { entry?: string; skipBuild?: boolean }) {
+  function persist(next?: {
+    entry?: string;
+    skipBuild?: boolean;
+    processManager?: ProcessManager;
+  }) {
     const e = next?.entry ?? entry;
     const s = next?.skipBuild ?? skipBuild;
-    saveDeployPrefs(project.id, { entry: e, skipBuild: s });
+    const pm = normalizeProcessManager(next?.processManager ?? processManager);
+    saveDeployPrefs(project.id, { entry: e, skipBuild: s, processManager: pm });
     // Best-effort server sync (cross-device)
     if (e !== (project.deployEntry ?? '')) {
       void projectsApi.setDeployEntry(project.id, e.trim() || null).catch(() => undefined);
@@ -300,7 +318,13 @@ export function ProjectDeployTab({
     return {
       entry: entry.trim() || undefined,
       skipBuild:
-        processRuntime && project.runtime !== 'node' ? skipBuild : undefined,
+        processRuntime && project.runtime !== 'node' && project.runtime !== 'bun'
+          ? skipBuild
+          : undefined,
+      // node/bun: explicit supervisor; omit for other runtimes
+      ...(supportsPm2Choice
+        ? { enableSystemd: enableSystemdFromProcessManager(processManager) }
+        : {}),
     };
   }
 
@@ -531,6 +555,7 @@ export function ProjectDeployTab({
                       saveDeployPrefs(project.id, {
                         entry: e.target.value,
                         skipBuild,
+                        processManager,
                       });
                     }}
                     onBlur={bindVoid(persist)}
@@ -540,6 +565,39 @@ export function ProjectDeployTab({
                 </Field>
               ) : null}
             </FormLayout>
+            {supportsPm2Choice ? (
+              <Field
+                label={t('projects.deployProcessManager')}
+                htmlFor="deploy-pm"
+                flush
+                hint={
+                  processManager === 'pm2'
+                    ? t('projects.deployPm2Hint')
+                    : t('projects.deploySystemdHint')
+                }
+              >
+                <SegRadio
+                  name="deploy-process-manager"
+                  aria-label={t('projects.deployProcessManager')}
+                  value={processManager}
+                  onChange={(v) => {
+                    const pm = normalizeProcessManager(v);
+                    setProcessManager(pm);
+                    persist({ processManager: pm });
+                  }}
+                  options={[
+                    {
+                      value: 'systemd',
+                      label: t('projects.deployProcessManagerSystemd'),
+                    },
+                    {
+                      value: 'pm2',
+                      label: t('projects.deployProcessManagerPm2'),
+                    },
+                  ]}
+                />
+              </Field>
+            ) : null}
             {processRuntime &&
             (project.runtime === 'python' ||
               project.runtime === 'go' ||
@@ -555,7 +613,11 @@ export function ProjectDeployTab({
                   checked={skipBuild}
                   onChange={(v) => {
                     setSkipBuild(v);
-                    saveDeployPrefs(project.id, { entry, skipBuild: v });
+                    saveDeployPrefs(project.id, {
+                      entry,
+                      skipBuild: v,
+                      processManager,
+                    });
                   }}
                 />
               </div>

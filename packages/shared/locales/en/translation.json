@@ -7432,7 +7432,12 @@
     "logsPresetError": "Filter error.log",
     "railJava": "Java process",
     "railKotlin": "Kotlin process",
-    "railBun": "Bun process"
+    "railBun": "Bun process",
+    "deployProcessManager": "Process manager",
+    "deployProcessManagerSystemd": "systemd (recommended)",
+    "deployProcessManagerPm2": "PM2",
+    "deploySystemdHint": "Production default: unit ysk-project-*.service, boot start, cgroup limits from project resources.",
+    "deployPm2Hint": "Starts via pm2 (ecosystem.config.cjs). Requires PM2 plugin. Appears under Runtimes → Processes (PM2 list). Stops the old runner first."
   },
   "protection": {
     "levels": {
