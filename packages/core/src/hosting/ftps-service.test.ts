@@ -22,6 +22,7 @@ import {
   ftpsPaths,
   hashFtpPassword,
   isCryptPasswordHash,
+  pamUserDbBasePath,
   listFtpDomainOptions,
   listFtpHomeOptions,
   loadFtpsSettings,
@@ -30,7 +31,7 @@ import {
   saveFtpsSettings,
   writeManagedFtpAccounts,
 } from './ftps-service.js';
-import { listResources } from './managed-resources.js';
+import { listResources, updateResource } from './managed-resources.js';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -109,8 +110,21 @@ describe('ftps-service pure helpers', () => {
     expect(v6).toContain('ssl_enable=YES');
 
     const pam = buildPamSnippet(dir);
+    const base = pamUserDbBasePath(ftpsPaths(dir).userDb);
     expect(pam).toContain('pam_userdb.so');
-    expect(pam).toContain(ftpsPaths(dir).userDb.replace(/\.db$/, ''));
+    // man pam_userdb: path must be WITHOUT .db — module appends it
+    expect(base).not.toMatch(/\.db$/i);
+    expect(pam).toContain(`db=${base}`);
+    expect(pam).not.toMatch(/db=\S+\.db(\s|$)/);
+    // regression: broken /\\.db$/ never stripped and still passed weak toContain tests
+    expect(pam).not.toContain(ftpsPaths(dir).userDb);
+  });
+
+  it('pamUserDbBasePath strips only a trailing .db suffix', () => {
+    expect(pamUserDbBasePath('/data/ftps/virtual_users.db')).toBe('/data/ftps/virtual_users');
+    expect(pamUserDbBasePath('/data/ftps/virtual_users.DB')).toBe('/data/ftps/virtual_users');
+    expect(pamUserDbBasePath('/data/ftps/virtual_users')).toBe('/data/ftps/virtual_users');
+    expect(pamUserDbBasePath('/tmp/foo.db.db')).toBe('/tmp/foo.db');
   });
 
   it('resolveCertPaths prefers explicit paths then managed certs', () => {
@@ -217,11 +231,44 @@ describe('ftps-service managed write + honesty apply', () => {
     expect(existsSync(paths.mapPath)).toBe(true);
     expect(existsSync(paths.userDbTxt)).toBe(true);
     expect(existsSync(paths.pam)).toBe(true);
+    const pamBody = readFileSync(paths.pam, 'utf8');
+    expect(pamBody).toContain(`db=${pamUserDbBasePath(paths.userDb)}`);
+    expect(pamBody).not.toMatch(/db=\S+\.db(\s|$)/);
+    const dbTxt = readFileSync(paths.userDbTxt, 'utf8');
+    expect(dbTxt).toContain(String(created.account.username));
+    expect(dbTxt).toMatch(/\$[156y]\$/);
     const uc = join(paths.userConfDir, String(created.account.username));
     expect(existsSync(uc)).toBe(true);
     const body = readFileSync(uc, 'utf8');
     expect(body).toContain('guest_username=ysks_a1b2c3d4e5f6');
     expect(body).toContain('local_root=');
+  });
+
+  it('writeManagedFtpAccounts rehashes password_plain over stale password_hash', () => {
+    const { db, dir } = setup();
+    const home = join(dir, 'homes', 'proj');
+    mkdirSync(home, { recursive: true });
+    const created = createProjectFtpAccount(db, {
+      projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+      projectHome: home,
+      linuxUser: 'ysks_a1b2c3d4e5f6',
+      password: 'password-old-1',
+      homeSubdir: 'root',
+    });
+    expect(created.ok).toBe(true);
+    const id = String(created.account.id);
+    const oldHash = String(
+      listResources(db, 'ftp_accounts').find((a) => a.id === id)?.password_hash ?? '',
+    );
+    // Simulate panel password reset (FtpPage PATCH password_plain)
+    updateResource(db, 'ftp_accounts', id, { password_plain: 'password-new-2' });
+    writeManagedFtpAccounts({ db, dataDir: dir });
+    const row = listResources(db, 'ftp_accounts').find((a) => a.id === id)!;
+    expect(String(row.password_plain ?? '')).toBeFalsy();
+    expect(String(row.password_hash)).not.toBe(oldHash);
+    expect(isCryptPasswordHash(String(row.password_hash))).toBe(true);
+    const dbTxt = readFileSync(ftpsPaths(dir).userDbTxt, 'utf8');
+    expect(dbTxt).toContain(String(row.password_hash));
   });
 
   it('applyFtpsService with execute disabled writes config and blocks system', async () => {
@@ -337,10 +384,24 @@ describe('ftps-service apply with execute mock', () => {
             dryRun: false,
           };
         }
+        if (j.includes('db_load')) {
+          // Real apply checks existsSync(userDb); mock must materialize it.
+          // Command uses JSON.stringify paths: db_load -T -t hash -f "txt" "db"
+          const quoted = [...j.matchAll(/"([^"]+virtual_users\.db)"/g)].map((x) => x[1]);
+          const outPath = quoted[0] || join(dir, 'ftps', 'virtual_users.db');
+          mkdirSync(join(outPath, '..'), { recursive: true });
+          writeFileSync(outPath, 'mock-userdb');
+          return {
+            stdout: '',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
         if (
           j.includes('id ') ||
           j.includes('useradd') ||
-          j.includes('db_load') ||
           j.includes('apt-get') ||
           j.includes('chown') ||
           j.includes('systemctl') ||
