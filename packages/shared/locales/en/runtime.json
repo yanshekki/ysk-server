@@ -398,5 +398,10 @@
   "pluginBatchLabel": "selected tools",
   "addonsInstallAbove": "Use “Install selected…” above for tools/extensions. This button only installs/confirms the runtime version.",
   "phpExtInstallSelected": "Install selected extensions ({{n}})",
-  "phpExtInstallNote": "Select extensions then Install selected. First-time PHP install can use the runtime button below; if PHP is present, only use Install selected above."
+  "phpExtInstallNote": "Select extensions then Install selected. First-time PHP install can use the runtime button below; if PHP is present, only use Install selected above.",
+  "activeDefault": "default",
+  "switchDefaultBtn": "Switch default to {{version}}",
+  "switchDefaultHint": "This version is installed but not the active default. Switch without reinstalling; other versions stay on disk.",
+  "installedNotActive": "{{version}} installed (not default)",
+  "multiVersionHint": "Go/Rust keep multiple versions: Install missing ones, then Switch default for PATH."
 }

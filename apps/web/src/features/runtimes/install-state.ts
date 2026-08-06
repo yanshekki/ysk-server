@@ -7,6 +7,8 @@
 export type RuntimeInstallState = {
   /** Selected target version is present on host */
   selectedInstalled: boolean;
+  /** Selected is the active default (PATH / rustup default / go symlink) */
+  selectedActive: boolean;
   /** Any supported version installed */
   anyInstalled: boolean;
   /** Versions from probe (or host string) that count as installed */
@@ -17,6 +19,11 @@ export type RuntimeInstallState = {
   newestInstalled: string | null;
   /** Install primary button should be disabled */
   installDisabled: boolean;
+  /**
+   * Selected is installed but not active — show "switch default" (Go multi-dir / rustup).
+   * Install stays disabled; switch re-points default without reinstall.
+   */
+  canSwitch: boolean;
 };
 
 /** Compare dotted/numeric runtime versions; `latest`/`stable` sort as highest. */
@@ -85,15 +92,26 @@ export function resolveRuntimeInstallState(input: {
   selectedVersion: string;
   /** Panel-supported version ids in display order */
   supportedVersions: string[];
-  /** Probe items: version + available */
-  probeItems?: Array<{ version?: string; available?: boolean; versionOutput?: string }>;
+  /** Probe items: version + available (+ optional active) */
+  probeItems?: Array<{
+    version?: string;
+    available?: boolean;
+    active?: boolean;
+    versionOutput?: string;
+  }>;
   /** Flattened list of installed version ids if already computed */
   availableVersions?: string[];
   /** Host default string e.g. hostNode v20.18.0 */
   hostDefault?: string | null;
+  /**
+   * When true (go/rust), hostDefault must not mark every pin installed —
+   * only probe.available counts (multi-version model).
+   */
+  multiVersion?: boolean;
 }): RuntimeInstallState {
   const supported = (input.supportedVersions ?? []).map(String).filter(Boolean);
   const selected = String(input.selectedVersion ?? '');
+  const multi = Boolean(input.multiVersion);
 
   const fromProbe = new Set<string>();
   for (const v of input.availableVersions ?? []) {
@@ -102,8 +120,8 @@ export function resolveRuntimeInstallState(input: {
   for (const item of input.probeItems ?? []) {
     if (item.available && item.version != null) fromProbe.add(String(item.version));
   }
-  // Map host default onto supported targets
-  if (input.hostDefault) {
+  // Map host default onto supported targets (single-active runtimes only)
+  if (input.hostDefault && !multi) {
     for (const s of supported) {
       if (hostSatisfiesTarget(input.hostDefault, s)) fromProbe.add(s);
     }
@@ -112,7 +130,12 @@ export function resolveRuntimeInstallState(input: {
   // Keep only supported ids (stable order)
   const installedVersions = supported.filter((s) => {
     if (fromProbe.has(s)) return true;
-    // host or versionOutput match
+    if (multi) {
+      // multi-version: trust probe.available only
+      return (input.probeItems ?? []).some(
+        (i) => i.available && String(i.version ?? '') === s,
+      );
+    }
     for (const item of input.probeItems ?? []) {
       if (!item.available) continue;
       if (hostSatisfiesTarget(item.versionOutput, s)) return true;
@@ -123,8 +146,12 @@ export function resolveRuntimeInstallState(input: {
 
   const selectedInstalled =
     installedVersions.includes(selected) ||
-    hostSatisfiesTarget(input.hostDefault, selected) ||
+    (!multi && hostSatisfiesTarget(input.hostDefault, selected)) ||
     fromProbe.has(selected);
+
+  const selectedActive = (input.probeItems ?? []).some(
+    (i) => String(i.version ?? '') === selected && i.available && i.active,
+  );
 
   const anyInstalled = installedVersions.length > 0 || Boolean(input.hostDefault?.trim());
 
@@ -142,13 +169,19 @@ export function resolveRuntimeInstallState(input: {
       )
     : [];
 
+  // Go/Rust: installed but not active → switch; Node/PHP: installDisabled when installed
+  const canSwitch = multi && selectedInstalled && !selectedActive;
+  const installDisabled = selectedInstalled;
+
   return {
     selectedInstalled,
+    selectedActive,
     anyInstalled,
     installedVersions,
     newerAvailable,
     newestInstalled,
-    installDisabled: selectedInstalled,
+    installDisabled,
+    canSwitch,
   };
 }
 

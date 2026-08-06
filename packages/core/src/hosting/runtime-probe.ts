@@ -29,6 +29,8 @@ export interface RuntimeProbeItem {
   version: string;
   binaryPath: string;
   available: boolean;
+  /** On PATH / rustup default / go active symlink (only one per kind typically) */
+  active?: boolean;
   resolvedPath?: string;
   versionOutput?: string;
   notes: string[];
@@ -52,6 +54,274 @@ export interface RuntimeProbeReport {
   hostKotlin?: string;
   hostBun?: string;
   notes: string[];
+}
+
+/** Managed Go roots: /usr/local/ysk/go/<minor>/bin/go */
+async function probeGoVersions(
+  host: HostExecutor,
+  versions: string[],
+  hostDefault?: string,
+): Promise<RuntimeProbeItem[]> {
+  const out: RuntimeProbeItem[] = [];
+  // Resolve active go on PATH
+  let activeMinor: string | undefined;
+  if (hostDefault) {
+    const m = hostDefault.match(/go(\d+\.\d+)/);
+    if (m) activeMinor = m[1];
+  }
+  for (const v of versions) {
+    const plan = selectGoRuntime(v);
+    let available = false;
+    let resolvedPath: string | undefined;
+    let versionOutput: string | undefined;
+    const notes: string[] = [];
+    // Prefer managed multi-version path
+    if (host.pathExists(plan.binaryPath)) {
+      const ver = await host.runCommand([plan.binaryPath, 'version'], { timeoutMs: 8_000 });
+      if (ver.exitCode === 0) {
+        available = true;
+        resolvedPath = plan.binaryPath;
+        versionOutput = (ver.stdout || ver.stderr).trim().split('\n')[0];
+      }
+    }
+    // Host default only counts as this minor when version string matches
+    if (!available && hostDefault && (hostDefault.includes(`go${v}`) || hostDefault.includes(v))) {
+      available = true;
+      versionOutput = hostDefault;
+      notes.push(tl('notes.auto.n1302'));
+    }
+    if (!available) notes.push(tl('notes.auto.t0395', { v0: plan.binaryPath }));
+    const active = Boolean(
+      available && activeMinor === v,
+    );
+    out.push({
+      kind: 'go',
+      version: v,
+      binaryPath: plan.binaryPath,
+      available,
+      active,
+      resolvedPath,
+      versionOutput,
+      notes,
+    });
+  }
+  // If only one available and PATH matches that install, mark active
+  const avail = out.filter((i) => i.available);
+  if (avail.length === 1 && hostDefault && !out.some((i) => i.active)) {
+    avail[0]!.active = true;
+  }
+  return out;
+}
+
+/**
+ * Parse `rustup toolchain list` lines into toolchain ids + default.
+ * Examples: "stable-x86_64-unknown-linux-gnu (default)", "1.78.0-x86_64-..."
+ */
+export function parseRustupToolchainList(text: string): {
+  ids: string[];
+  defaultId?: string;
+} {
+  const ids: string[] = [];
+  let defaultId: string | undefined;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith('YSK_') || line.startsWith('#')) continue;
+    // skip cargo version lines
+    if (/^cargo\s+/i.test(line)) continue;
+    const def = /\(default\)/i.test(line);
+    const id = line.replace(/\s*\(default\)\s*/i, '').trim().split(/\s+/)[0] ?? '';
+    if (!id || !/^[a-zA-Z0-9._-]+$/.test(id)) continue;
+    if (!ids.includes(id)) ids.push(id);
+    if (def) defaultId = id;
+  }
+  return { ids, defaultId };
+}
+
+/** Whether panel pin (stable | 1.78) is present in rustup toolchain ids. */
+export function rustPanelVersionInstalled(
+  panelVer: string,
+  toolchainIds: string[],
+): boolean {
+  const v = panelVer.trim().toLowerCase();
+  if (!v) return false;
+  if (v === 'stable') {
+    return toolchainIds.some((id) => id === 'stable' || id.startsWith('stable-'));
+  }
+  // 1.78 → 1.78, 1.78.0-x86_64-..., 1.78-x86_64-...
+  return toolchainIds.some((id) => {
+    const base = id.split('-')[0] ?? id;
+    return base === v || base.startsWith(`${v}.`);
+  });
+}
+
+export function rustPanelVersionIsDefault(
+  panelVer: string,
+  defaultId: string | undefined,
+): boolean {
+  if (!defaultId) return false;
+  const v = panelVer.trim().toLowerCase();
+  const d = defaultId.toLowerCase();
+  if (v === 'stable') return d === 'stable' || d.startsWith('stable-');
+  const base = d.split('-')[0] ?? d;
+  return base === v || base.startsWith(`${v}.`);
+}
+
+/**
+ * Managed rustup: list installed toolchains; stable + minor pins can coexist.
+ * Scans new layout, legacy single-dir layout, and verifies with `rustup run`.
+ */
+async function probeRustVersions(
+  host: HostExecutor,
+  versions: string[],
+  hostDefault?: string,
+): Promise<RuntimeProbeItem[]> {
+  // Probe both current layout and legacy RUSTUP_HOME=/usr/local/ysk/rust (pre-split)
+  const shell = [
+    'set +e',
+    'export PATH="/usr/local/ysk/rust/cargo/bin:/usr/local/ysk/rust/bin:/usr/local/ysk/rust/rustup/bin:$HOME/.cargo/bin:$PATH"',
+    'RU=""',
+    'for c in /usr/local/ysk/rust/cargo/bin/rustup /usr/local/ysk/rust/bin/rustup /usr/local/ysk/rust/rustup/bin/rustup; do',
+    '  [ -x "$c" ] && RU="$c" && break',
+    'done',
+    '[ -z "$RU" ] && RU=$(command -v rustup 2>/dev/null || true)',
+    'echo "YSK_RUSTUP=${RU:-}"',
+    // Collect toolchains from every known RUSTUP_HOME (install may have used either layout)
+    'echo "YSK_TOOLCHAIN_LIST_BEGIN"',
+    'if [ -n "$RU" ]; then',
+    '  for RH in /usr/local/ysk/rust/rustup /usr/local/ysk/rust "$HOME/.rustup"; do',
+    '    [ -d "$RH" ] || continue',
+    '    export RUSTUP_HOME="$RH"',
+    '    # Prefer matching CARGO_HOME next to managed tree',
+    '    if [ "$RH" = /usr/local/ysk/rust/rustup ]; then export CARGO_HOME=/usr/local/ysk/rust/cargo',
+    '    elif [ "$RH" = /usr/local/ysk/rust ]; then export CARGO_HOME=/usr/local/ysk/rust',
+    '    else export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}"; fi',
+    '    echo "YSK_RH=$RH"',
+    '    "$RU" toolchain list 2>/dev/null',
+    '    echo -n "YSK_DEFAULT_FOR_RH="',
+    '    "$RU" show active-toolchain 2>/dev/null | head -1',
+    '    echo',
+    '    # Directory scan (authoritative when rustup list is empty/wrong home)',
+    '    if [ -d "$RH/toolchains" ]; then',
+    '      for d in "$RH/toolchains"/*; do',
+    '        [ -d "$d" ] || continue',
+    '        echo "YSK_DIR_TC=$(basename "$d")"',
+    '      done',
+    '    fi',
+    '  done',
+    'fi',
+    'echo "YSK_TOOLCHAIN_LIST_END"',
+    // Per-panel-version verify via rustup run (works even if not default)
+    'if [ -n "$RU" ]; then',
+    `  for TC in ${versions.map((v) => JSON.stringify(v)).join(' ')}; do`,
+    '    echo -n "YSK_RUN_${TC}="',
+    '    ok=""',
+    '    for RH in /usr/local/ysk/rust/rustup /usr/local/ysk/rust "$HOME/.rustup"; do',
+    '      [ -d "$RH" ] || continue',
+    '      export RUSTUP_HOME="$RH"',
+    '      if [ "$RH" = /usr/local/ysk/rust/rustup ]; then export CARGO_HOME=/usr/local/ysk/rust/cargo',
+    '      elif [ "$RH" = /usr/local/ysk/rust ]; then export CARGO_HOME=/usr/local/ysk/rust',
+    '      else export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}"; fi',
+    '      out=$("$RU" run "$TC" cargo --version 2>/dev/null) && { ok="$out"; break; }',
+    '    done',
+    '    echo "$ok"',
+    '  done',
+    'fi',
+    'command -v cargo >/dev/null 2>&1 && echo "YSK_PATH_CARGO=$(cargo --version 2>/dev/null)"',
+  ].join('\n');
+
+  let listOut = '';
+  try {
+    const r = await host.runCommand(['bash', '-c', shell], { timeoutMs: 45_000 });
+    listOut = `${r.stdout || ''}\n${r.stderr || ''}`;
+  } catch {
+    listOut = '';
+  }
+
+  const listMatch = listOut.match(
+    /YSK_TOOLCHAIN_LIST_BEGIN\r?\n([\s\S]*?)\r?\nYSK_TOOLCHAIN_LIST_END/,
+  );
+  const block = listMatch?.[1] ?? listOut;
+  const parsed = parseRustupToolchainList(block);
+  // Also fold YSK_DIR_TC= lines
+  for (const line of block.split(/\r?\n/)) {
+    const m = line.trim().match(/^YSK_DIR_TC=(.+)$/);
+    if (m?.[1] && !parsed.ids.includes(m[1])) parsed.ids.push(m[1]);
+  }
+  // Default from first YSK_DEFAULT_FOR_RH= with content, or (default) in list
+  const defaultFromRh = [...block.matchAll(/YSK_DEFAULT_FOR_RH=(.+)/g)]
+    .map((m) => m[1]?.trim())
+    .find((s) => s && s.length > 0);
+  if (defaultFromRh) parsed.defaultId = defaultFromRh.split(/\s+/)[0];
+
+  // rustup run results for panel pins
+  const runOk = new Map<string, string>();
+  for (const v of versions) {
+    const key = v === 'stable' ? 'stable' : v;
+    // Match YSK_RUN_1.78=...  (dot in name)
+    const re = new RegExp(
+      `YSK_RUN_${key.replace(/\./g, '\\.')}=(.+)`,
+    );
+    const m = listOut.match(re);
+    const val = m?.[1]?.trim();
+    if (val && /cargo\s+\d/i.test(val)) runOk.set(v, val);
+  }
+
+  const out: RuntimeProbeItem[] = [];
+  for (const v of versions) {
+    const plan = selectRustRuntime(v);
+    let available =
+      rustPanelVersionInstalled(v, parsed.ids) || runOk.has(v);
+    let versionOutput = runOk.get(v);
+    const notes: string[] = [];
+
+    // PATH cargo → only attribute to default toolchain (or stable if unknown)
+    if (!available && hostDefault && /cargo\s+\d/i.test(hostDefault)) {
+      if (rustPanelVersionIsDefault(v, parsed.defaultId) || (v === 'stable' && !parsed.defaultId && parsed.ids.length === 0)) {
+        available = true;
+        versionOutput = hostDefault;
+        notes.push(tl('notes.auto.n1302'));
+      }
+    }
+
+    if (available && !versionOutput) {
+      versionOutput =
+        v === 'stable' && hostDefault
+          ? hostDefault
+          : `toolchain ${v}${parsed.ids.find((id) => rustPanelVersionInstalled(v, [id])) ? ` (${parsed.ids.find((id) => rustPanelVersionInstalled(v, [id]))})` : ''}`;
+    }
+    if (!available) notes.push(tl('notes.auto.t0395', { v0: plan.binaryPath }));
+
+    out.push({
+      kind: 'rust',
+      version: v,
+      binaryPath: plan.binaryPath,
+      available,
+      active: available && rustPanelVersionIsDefault(v, parsed.defaultId),
+      versionOutput,
+      notes,
+    });
+  }
+
+  // PATH-only cargo (no rustup homes): mark stable only
+  if (!out.some((i) => i.available) && hostDefault && /cargo\s+\d/i.test(hostDefault)) {
+    const stable = out.find((i) => i.version === 'stable');
+    if (stable) {
+      stable.available = true;
+      stable.active = true;
+      stable.versionOutput = hostDefault;
+      stable.notes = [tl('notes.auto.n1302')];
+    }
+  }
+
+  const avail = out.filter((i) => i.available);
+  if (avail.length === 1 && !out.some((i) => i.active)) avail[0]!.active = true;
+  // Prefer explicit default over heuristic
+  if (parsed.defaultId) {
+    for (const i of out) {
+      i.active = i.available && rustPanelVersionIsDefault(i.version, parsed.defaultId);
+    }
+  }
+  return out;
 }
 
 async function probeBinaryVersions(
@@ -188,28 +458,11 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
     hostPython,
   );
 
-  const go = await probeBinaryVersions(
-    host,
-    'go',
-    supported.go,
-    selectGoRuntime,
-    (p) => [p, 'version'],
-    (out, v) => out.includes(`go${v}`) || out.includes(v),
-    hostGo,
-  );
+  // Go: multi-version under /usr/local/ysk/go/<minor>/ — probe each path; active = PATH go matches
+  const go = await probeGoVersions(host, supported.go, hostGo);
 
-  const rust = await probeBinaryVersions(
-    host,
-    'rust',
-    supported.rust,
-    selectRustRuntime,
-    (p) => [p, '--version'],
-    (out, v) => {
-      if (v === 'stable') return /cargo\s+\d/i.test(out);
-      return out.includes(v);
-    },
-    hostRust,
-  );
+  // Rust: multi-toolchain via rustup; pins stay installed even when not default
+  const rust = await probeRustVersions(host, supported.rust, hostRust);
 
   const java = await probeBinaryVersions(
     host,
@@ -725,5 +978,145 @@ export async function planOrInstallRuntime(input: {
     packages,
     extensionIds,
     pluginIds,
+  };
+}
+
+export type RuntimeSwitchResult = {
+  ok: boolean;
+  kind: RuntimeKind;
+  version: string;
+  notes: string[];
+  commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+  requiresExecute: boolean;
+  requiresRoot: boolean;
+  blocked?: boolean;
+  blockMessage?: string;
+};
+
+/**
+ * Switch the **active** default for multi-version runtimes without reinstalling.
+ * - go: retarget /usr/local/bin/go → /usr/local/ysk/go/<minor>/bin/go
+ * - rust: rustup default <toolchain> (+ refresh cargo/rustc symlinks)
+ * Other kinds: refused (use install path).
+ */
+export async function switchRuntimeDefault(input: {
+  host: HostExecutor;
+  kind: RuntimeKind;
+  version: string;
+}): Promise<RuntimeSwitchResult> {
+  const notes: string[] = [];
+  const commandResults: RuntimeSwitchResult['commandResults'] = [];
+  const execOn = input.host.executeEnabled();
+  const rootOn = input.host.isRoot();
+  const can = execOn && rootOn;
+
+  if (input.kind !== 'go' && input.kind !== 'rust') {
+    return {
+      ok: false,
+      kind: input.kind,
+      version: input.version,
+      notes: [
+        'Switch is only supported for Go (multi-dir) and Rust (rustup toolchains). Install other runtimes per version.',
+      ],
+      commandResults,
+      requiresExecute: !execOn,
+      requiresRoot: !rootOn,
+    };
+  }
+
+  if (!can) {
+    return {
+      ok: false,
+      kind: input.kind,
+      version: input.version,
+      notes: [tl('notes.auto.n1163')],
+      commandResults,
+      requiresExecute: !execOn,
+      requiresRoot: !rootOn,
+      blocked: true,
+      blockMessage: tl('notes.auto.n1163'),
+    };
+  }
+
+  let script = '';
+  if (input.kind === 'go') {
+    const plan = selectGoRuntime(input.version);
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      `DEST=/usr/local/ysk/go/$VER`,
+      'if [ ! -x "$DEST/bin/go" ]; then',
+      '  echo "Go $VER not installed at $DEST — install first" >&2',
+      '  exit 2',
+      'fi',
+      'mkdir -p /usr/local/ysk/go/bin /usr/local/bin',
+      'ln -sfn "$DEST/bin/go" /usr/local/bin/go',
+      'ln -sfn "$DEST/bin/go" /usr/local/ysk/go/bin/go',
+      'echo "YSK_GO_ACTIVE=$VER"',
+      'go version',
+      'readlink -f /usr/local/bin/go || true',
+      '',
+    ].join('\n');
+    notes.push(`Switch active Go symlink → ${plan.version}`);
+  } else {
+    const plan = selectRustRuntime(input.version);
+    const tc = plan.version === 'stable' ? 'stable' : plan.version;
+    script = [
+      'set -euo pipefail',
+      'export RUSTUP_HOME=/usr/local/ysk/rust/rustup',
+      'export CARGO_HOME=/usr/local/ysk/rust/cargo',
+      'export PATH="$CARGO_HOME/bin:$RUSTUP_HOME/bin:/usr/local/ysk/rust/bin:$PATH"',
+      'RU=""',
+      '[ -x "$CARGO_HOME/bin/rustup" ] && RU="$CARGO_HOME/bin/rustup"',
+      '[ -z "$RU" ] && [ -x /usr/local/ysk/rust/bin/rustup ] && RU=/usr/local/ysk/rust/bin/rustup',
+      '[ -z "$RU" ] && RU=$(command -v rustup 2>/dev/null || true)',
+      'if [ -z "$RU" ] || [ ! -x "$RU" ]; then',
+      '  echo "rustup not found — install Rust first" >&2',
+      '  exit 2',
+      'fi',
+      `TC=${JSON.stringify(tc)}`,
+      'if ! "$RU" toolchain list 2>/dev/null | grep -qE "^${TC}(\\.|\\s|-|$)"; then',
+      '  echo "Toolchain $TC not installed — install first" >&2',
+      '  exit 2',
+      'fi',
+      '"$RU" default "$TC"',
+      'mkdir -p /usr/local/ysk/rust/bin /usr/local/bin',
+      'ln -sfn "$CARGO_HOME/bin/cargo" /usr/local/bin/cargo 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/rustc" /usr/local/bin/rustc 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/rustup" /usr/local/bin/rustup 2>/dev/null || true',
+      'ln -sfn "$CARGO_HOME/bin/cargo" /usr/local/ysk/rust/bin/cargo 2>/dev/null || true',
+      'echo "YSK_RUST_ACTIVE=$TC"',
+      'cargo --version',
+      'rustc --version',
+      '',
+    ].join('\n');
+    notes.push(`Switch rustup default → ${tc}`);
+  }
+
+  const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 120_000 });
+  commandResults.push({
+    argv: ['bash', '-c', `switch-${input.kind}-${input.version}`],
+    exitCode: r.exitCode,
+    stderr: r.stderr,
+  });
+  const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+  notes.push(
+    ...out
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .slice(0, 12),
+  );
+  if (r.exitCode !== 0) {
+    notes.unshift(summarizeInstallLog(r.stderr || '', r.stdout || '') || `exit ${r.exitCode}`);
+  }
+  return {
+    ok: r.exitCode === 0,
+    kind: input.kind,
+    version: input.version,
+    notes,
+    commandResults,
+    requiresExecute: false,
+    requiresRoot: false,
   };
 }

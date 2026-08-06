@@ -54,4 +54,23 @@ describe('runtime install-state', () => {
     expect(versionChipLabel('20', ['20'])).toBe('20 ✓');
     expect(versionChipLabel('22', ['20'])).toBe('22');
   });
+
+  it('go/rust multi-version: hostDefault does not mark all pins; canSwitch when installed not active', () => {
+    const st = resolveRuntimeInstallState({
+      selectedVersion: '1.78',
+      supportedVersions: ['stable', '1.78', '1.81'],
+      multiVersion: true,
+      hostDefault: 'cargo 1.97.1 (c980f4866 2026-06-30)',
+      probeItems: [
+        { version: 'stable', available: true, active: true, versionOutput: 'cargo 1.97.1' },
+        { version: '1.78', available: true, active: false },
+        { version: '1.81', available: false },
+      ],
+    });
+    expect(st.installedVersions).toEqual(['stable', '1.78']);
+    expect(st.selectedInstalled).toBe(true);
+    expect(st.selectedActive).toBe(false);
+    expect(st.canSwitch).toBe(true);
+    expect(st.installDisabled).toBe(true);
+  });
 });

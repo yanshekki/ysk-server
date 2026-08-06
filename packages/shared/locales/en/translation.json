@@ -3992,7 +3992,8 @@
     },
     "java": "Java",
     "kotlin": "Kotlin",
-    "bun": "Bun"
+    "bun": "Bun",
+    "software": "Software"
   },
   "network": {
     "title": "Network interfaces",
@@ -8471,7 +8472,12 @@
     "pluginBatchLabel": "selected tools",
     "addonsInstallAbove": "Use “Install selected…” above for tools/extensions. This button only installs/confirms the runtime version.",
     "phpExtInstallSelected": "Install selected extensions ({{n}})",
-    "phpExtInstallNote": "Select extensions then Install selected. First-time PHP install can use the runtime button below; if PHP is present, only use Install selected above."
+    "phpExtInstallNote": "Select extensions then Install selected. First-time PHP install can use the runtime button below; if PHP is present, only use Install selected above.",
+    "activeDefault": "default",
+    "switchDefaultBtn": "Switch default to {{version}}",
+    "switchDefaultHint": "This version is installed but not the active default. Switch without reinstalling; other versions stay on disk.",
+    "installedNotActive": "{{version}} installed (not default)",
+    "multiVersionHint": "Go/Rust keep multiple versions: Install missing ones, then Switch default for PATH."
   },
   "security": {
     "title": "Security & Approvals",
@@ -9661,5 +9667,51 @@
     "securityClearConfirm": "Type the username to confirm clearing 2FA",
     "securityClearOk": "Cleared 2FA for {{name}}",
     "securitySelfNote": "To set up your own 2FA, open Security → My security."
+  },
+  "software": {
+    "title": "Software",
+    "desc": "All managed software: install status, service health, newer versions, and links to use in projects.",
+    "tabs": {
+      "overview": "Overview",
+      "runtimes": "Runtimes",
+      "databases": "Databases",
+      "edge": "Domains & edge",
+      "mailFiles": "Mail & files",
+      "host": "Host services"
+    },
+    "stat": {
+      "catalog": "Catalog items",
+      "runtimesInstalled": "Runtimes installed",
+      "updates": "Updates / expandable",
+      "attention": "Needs attention"
+    },
+    "quickTitle": "Shortcuts",
+    "quickDesc": "Jump to a section or host tools",
+    "updatesTitle": "Updates & installable versions",
+    "updatesDesc": "Newer upstream or panel pins. Install, then select the runtime on a project.",
+    "allSoftware": "All software",
+    "status": {
+      "unknown": "—",
+      "installed": "Installed",
+      "notInstalled": "Not installed",
+      "running": "Running",
+      "missing": "Not detected",
+      "failed": "Failed",
+      "stopped": "Stopped"
+    },
+    "badge": {
+      "update": "Update available"
+    },
+    "meta": {
+      "installed": "Installed: {{list}}",
+      "default": "Default {{v}}",
+      "remote": "Upstream ~{{v}}",
+      "openManage": "Open manage page to install or configure"
+    },
+    "action": {
+      "manage": "Manage",
+      "useInProject": "Use in project",
+      "useInProjectTitle": "Open projects — set this runtime on an app"
+    }
   }
 }

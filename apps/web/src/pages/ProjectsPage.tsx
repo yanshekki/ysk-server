@@ -1,8 +1,8 @@
 /**
  * Projects list — server-backed search / runtime filter + ListToolbar.
  */
-import { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import {
@@ -27,12 +27,33 @@ import { bindFilter, bindFormSubmit, bindInput, bindSet, bindValueSet } from './
 export function ProjectsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const list = useServerList<ProjectDto>({ path: '/api/v1/projects', debounceMs: 300 });
   const [createOpen, setCreateOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const setMsg = useCallback((text: string | null) => {
     if (text) toast.ok(text);
   }, []);
+
+  // From software hub: ?hintRuntime=go&version=1.24
+  useEffect(() => {
+    const rt = searchParams.get('hintRuntime');
+    if (!rt) return;
+    const ver = searchParams.get('version');
+    toast.ok(
+      t('software.projectHint', {
+        runtime: rt,
+        version: ver ?? '—',
+        defaultValue: ver
+          ? `可將專案 runtime 設為 ${rt} ${ver}（建立或編輯專案時選擇）`
+          : `可將專案 runtime 設為 ${rt}（建立或編輯專案時選擇）`,
+      }),
+    );
+    const next = new URLSearchParams(searchParams);
+    next.delete('hintRuntime');
+    next.delete('version');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams, t]);
 
   const items = list.items;
   const stats = useMemo(() => summarizeProjects(items), [items]);

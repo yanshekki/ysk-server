@@ -9,6 +9,13 @@ describe('FEATURE_SECTIONS', () => {
     );
   });
 
+  it('includes software hub entry', () => {
+    const overview = FEATURE_SECTIONS.find((s) => s.sectionKey === 'overview');
+    expect(overview?.items.some((i) => i.to === '/software' && i.key === 'software')).toBe(
+      true,
+    );
+  });
+
   it('every item has to, key, icon', () => {
     for (const section of FEATURE_SECTIONS) {
       expect(section.sectionKey).toBeTruthy();

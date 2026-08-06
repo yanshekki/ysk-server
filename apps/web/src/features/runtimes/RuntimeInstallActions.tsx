@@ -2,7 +2,8 @@
  * Shared **runtime version** install CTA only.
  * Companion tools / PHP extensions install via their own「安裝選定…」buttons above.
  * - Disabled when selected version already installed
- * - Optional "switch to newer version" button
+ * - Go/Rust: "switch default" when installed but not active
+ * - Optional "switch to newer version" chip select
  */
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +16,7 @@ export function RuntimeInstallActions({
   busy,
   installLabel,
   onInstall,
+  onSwitch,
   onSelectNewer,
   extraHints,
 }: {
@@ -24,18 +26,34 @@ export function RuntimeInstallActions({
   /** Primary when installing e.g. t('runtime.installNodeVBtn', {version}) */
   installLabel: string;
   onInstall: () => void;
+  /** Go/Rust: make selected installed version the active default */
+  onSwitch?: () => void;
   onSelectNewer?: (v: string) => void;
   extraHints?: ReactNode;
 }) {
   const { t } = useTranslation();
   const already = installState.installDisabled;
+  const canSwitch = Boolean(installState.canSwitch && onSwitch);
   const primaryLabel = already
-    ? t('runtime.installedVersionBtn', { version })
+    ? installState.selectedActive
+      ? t('runtime.installedVersionBtn', { version })
+      : t('runtime.installedNotActive', {
+          version,
+          defaultValue: `${version} 已安裝（非預設）`,
+        })
     : installLabel;
 
   return (
     <>
-      {installState.selectedInstalled ? (
+      {installState.canSwitch ? (
+        <FormHint>
+          {t('runtime.switchDefaultHint', {
+            version,
+            defaultValue:
+              '此版本已安裝但不是目前預設。可「切換為預設」而無需重裝；亦可安裝其他版本並存。',
+          })}
+        </FormHint>
+      ) : installState.selectedInstalled ? (
         <FormHint>{t('runtime.versionAlreadyInstalled', { version })}</FormHint>
       ) : installState.newerAvailable.length > 0 ? (
         <FormHint>
@@ -57,6 +75,14 @@ export function RuntimeInstallActions({
         >
           {primaryLabel}
         </Button>
+        {canSwitch ? (
+          <Button variant="secondary" size="md" loading={busy} onClick={onSwitch}>
+            {t('runtime.switchDefaultBtn', {
+              version,
+              defaultValue: `切換為預設 ${version}`,
+            })}
+          </Button>
+        ) : null}
         {installState.newerAvailable[0] && already && onSelectNewer ? (
           <Button
             variant="secondary"

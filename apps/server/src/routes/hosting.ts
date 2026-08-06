@@ -108,6 +108,34 @@ export async function handleHostingRoutes(
         sendOpsResult(res, result);
         return true;
       }
+      /** Switch active default for multi-version Go / Rust (no reinstall) */
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/runtimes/switch') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          kind?: 'go' | 'rust';
+          version?: string;
+        };
+        const { switchRuntimeDefault } = await import('@ysk/core');
+        const result = await switchRuntimeDefault({
+          host: ctx.host,
+          kind: data.kind ?? 'go',
+          version: data.version ?? (data.kind === 'rust' ? 'stable' : '1.22'),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.runtime.switch',
+          detail: {
+            kind: result.kind,
+            version: result.version,
+            ok: result.ok,
+            blocked: Boolean(result.blocked),
+          },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
       // —— Unified addons catalog: PHP extensions OR companion plugins ——
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/addons') {
         ctx.auth.authenticate(getBearer(req));

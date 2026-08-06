@@ -133,6 +133,9 @@ const RedisPage = lazy(() =>
 const ServicesPage = lazy(() =>
   import('../pages/features/ServicesPage').then((m) => ({ default: m.ServicesPage })),
 );
+const SoftwareHubPage = lazy(() =>
+  import('../pages/features/SoftwareHubPage').then((m) => ({ default: m.SoftwareHubPage })),
+);
 const SystemdUnitPage = lazy(() =>
   import('../pages/features/SystemdUnitPage').then((m) => ({ default: m.SystemdUnitPage })),
 );
@@ -298,6 +301,14 @@ export function App() {
               element={
                 <Lazy>
                   <DnsPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="software"
+              element={
+                <Lazy>
+                  <SoftwareHubPage />
                 </Lazy>
               }
             />

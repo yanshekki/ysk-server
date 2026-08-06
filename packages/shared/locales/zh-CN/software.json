@@ -1,0 +1,46 @@
+{
+  "title": "软件中心",
+  "desc": "全部可管理软件一览：安装状态、服务健康、新版本提示；可进入管理页或用于项目。",
+  "tabs": {
+    "overview": "总览",
+    "runtimes": "运行环境",
+    "databases": "数据库",
+    "edge": "域名与边缘",
+    "mailFiles": "邮件与文件",
+    "host": "主机服务"
+  },
+  "stat": {
+    "catalog": "目录项目",
+    "runtimesInstalled": "运行环境已装",
+    "updates": "有新版本／可扩充",
+    "attention": "需关注"
+  },
+  "quickTitle": "快捷",
+  "quickDesc": "常用分区与主机服务入口",
+  "updatesTitle": "可更新／可安装版本",
+  "updatesDesc": "上游或面板支持较新版本。安装后可在项目选择对应 runtime。",
+  "allSoftware": "全部软件",
+  "status": {
+    "unknown": "—",
+    "installed": "已安装",
+    "notInstalled": "未安装",
+    "running": "运行中",
+    "missing": "未检测",
+    "failed": "失败",
+    "stopped": "已停止"
+  },
+  "badge": {
+    "update": "有新版本"
+  },
+  "meta": {
+    "installed": "已装：{{list}}",
+    "default": "默认 {{v}}",
+    "remote": "上游约 {{v}}",
+    "openManage": "打开管理页安装或设置"
+  },
+  "action": {
+    "manage": "管理",
+    "useInProject": "用到项目",
+    "useInProjectTitle": "到项目页，可将此 runtime 用于应用"
+  }
+}

@@ -19,7 +19,10 @@ export type FeatureSection = {
 export const FEATURE_SECTIONS: FeatureSection[] = [
   {
     sectionKey: 'overview',
-    items: [{ to: '/', key: 'dashboard', icon: '◉' }],
+    items: [
+      { to: '/', key: 'dashboard', icon: '◉' },
+      { to: '/software', key: 'software', icon: '▦' },
+    ],
   },
   {
     sectionKey: 'sites',

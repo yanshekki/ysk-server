@@ -398,5 +398,10 @@
   "pluginBatchLabel": "選定工具",
   "addonsInstallAbove": "配套／擴充請用上方「安裝選定…」；此按鈕只負責裝／確認 runtime 版本。",
   "phpExtInstallSelected": "安裝選定擴充 ({{n}})",
-  "phpExtInstallNote": "勾選後按「安裝選定擴充」。首次裝 PHP 可用下方主按鈕一併裝核心+擴充；已裝 PHP 請只按上方選定擴充。"
+  "phpExtInstallNote": "勾選後按「安裝選定擴充」。首次裝 PHP 可用下方主按鈕一併裝核心+擴充；已裝 PHP 請只按上方選定擴充。",
+  "activeDefault": "預設",
+  "switchDefaultBtn": "切換為預設 {{version}}",
+  "switchDefaultHint": "此版本已安裝但不是目前預設。可切換而無需重裝；其他版本會保留。",
+  "installedNotActive": "{{version}} 已安裝（非預設）",
+  "multiVersionHint": "Go／Rust 可同時保留多個版本：先安裝缺少的，再切換預設決定 PATH。"
 }

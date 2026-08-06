@@ -1,0 +1,46 @@
+{
+  "title": "Software",
+  "desc": "All managed software: install status, service health, newer versions, and links to use in projects.",
+  "tabs": {
+    "overview": "Overview",
+    "runtimes": "Runtimes",
+    "databases": "Databases",
+    "edge": "Domains & edge",
+    "mailFiles": "Mail & files",
+    "host": "Host services"
+  },
+  "stat": {
+    "catalog": "Catalog items",
+    "runtimesInstalled": "Runtimes installed",
+    "updates": "Updates / expandable",
+    "attention": "Needs attention"
+  },
+  "quickTitle": "Shortcuts",
+  "quickDesc": "Jump to a section or host tools",
+  "updatesTitle": "Updates & installable versions",
+  "updatesDesc": "Newer upstream or panel pins. Install, then select the runtime on a project.",
+  "allSoftware": "All software",
+  "status": {
+    "unknown": "—",
+    "installed": "Installed",
+    "notInstalled": "Not installed",
+    "running": "Running",
+    "missing": "Not detected",
+    "failed": "Failed",
+    "stopped": "Stopped"
+  },
+  "badge": {
+    "update": "Update available"
+  },
+  "meta": {
+    "installed": "Installed: {{list}}",
+    "default": "Default {{v}}",
+    "remote": "Upstream ~{{v}}",
+    "openManage": "Open manage page to install or configure"
+  },
+  "action": {
+    "manage": "Manage",
+    "useInProject": "Use in project",
+    "useInProjectTitle": "Open projects — set this runtime on an app"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "title": "軟件中心",
+  "desc": "全部可管理軟件一覽：安裝狀態、服務健康、新版本提示；可進入管理頁或用於專案。",
+  "tabs": {
+    "overview": "總覽",
+    "runtimes": "執行環境",
+    "databases": "資料庫",
+    "edge": "域名與邊緣",
+    "mailFiles": "郵件與檔案",
+    "host": "主機服務"
+  },
+  "stat": {
+    "catalog": "目錄項目",
+    "runtimesInstalled": "執行環境已裝",
+    "updates": "有新版本／可擴充",
+    "attention": "需關注"
+  },
+  "quickTitle": "快捷",
+  "quickDesc": "常用分區與主機服務入口",
+  "updatesTitle": "可更新／可安裝版本",
+  "updatesDesc": "上游或面板支援較新版本。安裝後可在專案選擇對應 runtime。",
+  "allSoftware": "全部軟件",
+  "status": {
+    "unknown": "—",
+    "installed": "已安裝",
+    "notInstalled": "未安裝",
+    "running": "運行中",
+    "missing": "未偵測",
+    "failed": "失敗",
+    "stopped": "已停止"
+  },
+  "badge": {
+    "update": "有新版本"
+  },
+  "meta": {
+    "installed": "已裝：{{list}}",
+    "default": "預設 {{v}}",
+    "remote": "上游約 {{v}}",
+    "openManage": "開啟管理頁安裝或設定"
+  },
+  "action": {
+    "manage": "管理",
+    "useInProject": "用到專案",
+    "useInProjectTitle": "到專案頁，可將此 runtime 用於應用"
+  }
+}

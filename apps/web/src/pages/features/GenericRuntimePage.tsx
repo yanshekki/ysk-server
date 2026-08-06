@@ -247,6 +247,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     };
   }, [probe, kind, meta.versions]);
 
+  const multiVersion = kind === 'go' || kind === 'rust';
   const installState = useMemo(
     () =>
       resolveRuntimeInstallState({
@@ -256,11 +257,13 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         probeItems: probeData.items.map((i) => ({
           version: i.version != null ? String(i.version) : undefined,
           available: Boolean(i.available),
+          active: Boolean(i.active),
           versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
         })),
         hostDefault: probeData.hostRaw || null,
+        multiVersion,
       }),
-    [version, probeData],
+    [version, probeData, multiVersion],
   );
 
   const parseExtraEnv = (): Record<string, string> => {
@@ -373,6 +376,11 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         <Badge tone={i.available ? 'ok' : 'neutral'}>
                           {i.available ? t('common.available') : t('runtime.notFound')}
                         </Badge>
+                        {i.available && i.active ? (
+                          <Badge tone="ok">
+                            {t('runtime.activeDefault', { defaultValue: '預設' })}
+                          </Badge>
+                        ) : null}
                         {i.resolvedPath ? (
                           <span className="muted u-text-sm"> · {String(i.resolvedPath)}</span>
                         ) : null}
@@ -461,8 +469,29 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   busy={busy}
                   installLabel={t(meta.installLabelKey, { v: version })}
                   onSelectNewer={setVersion}
+                  onSwitch={
+                    multiVersion
+                      ? () =>
+                          void run(async () => {
+                            const r = await systemApi.runtimeSwitch({
+                              kind: kind as 'go' | 'rust',
+                              version,
+                            });
+                            await refresh();
+                            setPluginsRefreshToken((n) => n + 1);
+                            return r as OpsResultLike;
+                          }, t('runtime.switchDefaultBtn', { version }))
+                      : undefined
+                  }
                   extraHints={
-                    installState.selectedInstalled ? (
+                    multiVersion ? (
+                      <FormHint>
+                        {t('runtime.multiVersionHint', {
+                          defaultValue:
+                            'Go／Rust 可同時保留多個版本：先「安裝」缺少的版本，再「切換為預設」決定 PATH 用邊個。',
+                        })}
+                      </FormHint>
+                    ) : installState.selectedInstalled ? (
                       <FormHint>{t('runtime.addonsInstallAbove')}</FormHint>
                     ) : installState.newerAvailable.length === 0 ? (
                       <FormHint>{t('runtime.installScriptNote')}</FormHint>
