@@ -68,10 +68,12 @@ export const PHP_EXTENSION_CATALOG: PhpExtensionSpec[] = [
   },
   {
     id: 'opcache',
-    aptSuffix: 'opcache',
+    // No separate phpX.Y-opcache on packages.sury.org / modern Debian — module ships in php-common
+    aptSuffix: '',
     group: 'core',
     recommended: true,
     label: 'OPcache',
+    hint: 'bundled in php-common (no apt package)',
   },
   {
     id: 'readline',
@@ -267,9 +269,9 @@ const CRYPTO_AND_REST: PhpExtensionSpec[] = [
   },
 ];
 
-/** Full catalog without the placeholder row */
+/** Full catalog without the placeholder row (keep bundled modules like opcache with empty aptSuffix). */
 export const PHP_EXTENSIONS: PhpExtensionSpec[] = [
-  ...PHP_EXTENSION_CATALOG.filter((e) => e.aptSuffix && e.id !== 'mbstring-already'),
+  ...PHP_EXTENSION_CATALOG.filter((e) => e.id !== 'mbstring-already' && (e.aptSuffix || e.id === 'opcache')),
   ...CRYPTO_AND_REST,
 ];
 
@@ -363,8 +365,8 @@ export function phpExtensionCatalogDto(version?: string) {
       hint: e.hint,
       recommended: Boolean(e.recommended),
       required: Boolean(e.required),
-      /** Example package for selected version */
-      package: `php${ver}-${e.aptSuffix}`,
+      /** Apt package for selected version; empty when bundled (e.g. opcache → common) */
+      package: e.aptSuffix ? `php${ver}-${e.aptSuffix}` : '',
       installed: false as boolean,
     })),
     defaults: defaultPhpExtensionIds(),

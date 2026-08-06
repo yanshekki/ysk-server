@@ -84,6 +84,10 @@ describe('runtime-probe', () => {
     expect(phpScript).toContain('Pin: origin packages.sury.org');
     expect(phpScript).toContain('--allow-downgrades');
     expect(phpScript).toMatch(/YSK_PHP_EXT_FAILED|exit 33/);
+    expect(phpScript).toContain('ysk_php_pick_ver');
+    expect(phpScript).toContain('YSK_PHP_SKIP_MISSING');
+    // Must not hard-request phpX.Y-opcache (does not exist on sury)
+    expect(phpScript).not.toMatch(/php8\.2-opcache/);
 
     const nodeWithPm2 = await planOrInstallRuntime({
       dataDir: dir,

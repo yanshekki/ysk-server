@@ -54,6 +54,15 @@ describe('php-extensions', () => {
     expect(defs.packages).toContain('php8.2-mysql');
   });
 
+  it('opcache has no separate apt package (bundled in common)', () => {
+    const r = resolvePhpAptPackages('8.5', ['opcache', 'mysql']);
+    expect(r.packages).not.toContain('php8.5-opcache');
+    expect(r.packages).toContain('php8.5-common');
+    expect(r.packages).toContain('php8.5-mysql');
+    const dto = phpExtensionCatalogDto('8.5');
+    expect(dto.extensions.find((e) => e.id === 'opcache')?.package).toBe('');
+  });
+
   it('dto exposes package names for UI', () => {
     const dto = phpExtensionCatalogDto('8.2');
     expect(dto.version).toBe('8.2');
