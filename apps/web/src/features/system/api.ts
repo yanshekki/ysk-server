@@ -469,6 +469,30 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  /**
+   * Live SSE install — streams apt/curl lines to onLog, returns final ops result.
+   * Prefer this for UI installs longer than a few seconds.
+   */
+  runtimeInstallStream: (
+    body: {
+      kind: 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
+      version: string;
+      install?: boolean;
+      extensions?: string[];
+      plugins?: string[];
+    },
+    opts?: {
+      onLog?: (line: {
+        stream: 'stdout' | 'stderr' | 'status';
+        line: string;
+        at?: string;
+      }) => void;
+      signal?: AbortSignal;
+    },
+  ) =>
+    import('../runtimes/stream-runtime-install').then((m) =>
+      m.streamRuntimeInstall(body, opts),
+    ),
   /** Switch active default for multi-version Go / Rust (no reinstall) */
   runtimeSwitch: (body: { kind: 'go' | 'rust'; version: string }) =>
     api.requestRawAllowStatus('/api/v1/hosting/runtimes/switch', {

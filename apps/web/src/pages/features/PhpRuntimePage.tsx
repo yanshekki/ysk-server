@@ -23,12 +23,13 @@ import {
   FormLayout,
   MultiCheckSelect,
   OpsResultPanel,
+  InstallStreamPanel,
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
   PageTabs,
 } from '../../shared/components/ui';
-import type { OpsResultLike, MultiCheckOption } from '../../shared/components/ui';
+import type { OpsResultLike, MultiCheckOption, InstallStreamLine } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -223,6 +224,7 @@ export function PhpRuntimePage() {
   const [confirmExtUninstall, setConfirmExtUninstall] = useState<PhpExtRow | null>(null);
   const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
 
   // Dynamic PHP minors from upstream (no hardcoded 8.1/8.2/8.3 chips)
   useEffect(() => {
@@ -605,12 +607,19 @@ export function PhpRuntimePage() {
                           const required = extCatalog
                             .filter((e) => e.required)
                             .map((e) => e.id);
-                          const r = await systemApi.runtimeInstall({
-                            kind: 'php',
-                            version,
-                            install: true,
-                            extensions: [...new Set([...required, ...optional])],
-                          });
+                          setInstallLog([]);
+                          const r = await systemApi.runtimeInstallStream(
+                            {
+                              kind: 'php',
+                              version,
+                              install: true,
+                              extensions: [...new Set([...required, ...optional])],
+                            },
+                            {
+                              onLog: (line) =>
+                                setInstallLog((prev) => [...prev.slice(-1999), line]),
+                            },
+                          );
                           setExtCatalog((prev) =>
                             prev.map((e) =>
                               optional.includes(e.id) ? { ...e, installed: true } : e,
@@ -694,17 +703,24 @@ export function PhpRuntimePage() {
                         const required = extCatalog
                           .filter((e) => e.required)
                           .map((e) => e.id);
-                        const r = await systemApi.runtimeInstall({
-                          kind: 'php',
-                          version,
-                          install: true,
-                          extensions: [
-                            ...new Set([
-                              ...required,
-                              ...(optional.length ? optional : extDefaults),
-                            ]),
-                          ],
-                        });
+                        setInstallLog([]);
+                        const r = await systemApi.runtimeInstallStream(
+                          {
+                            kind: 'php',
+                            version,
+                            install: true,
+                            extensions: [
+                              ...new Set([
+                                ...required,
+                                ...(optional.length ? optional : extDefaults),
+                              ]),
+                            ],
+                          },
+                          {
+                            onLog: (line) =>
+                              setInstallLog((prev) => [...prev.slice(-1999), line]),
+                          },
+                        );
                         await refresh();
                         await loadExtensions(version, { bust: true });
                         return r as OpsResultLike;
@@ -719,6 +735,7 @@ export function PhpRuntimePage() {
                     })}
                   </FormHint>
                 ) : null}
+                <InstallStreamPanel lines={installLog} busy={busy} />
                 {extOps ? (
                   <div className="u-mt-3">
                     <OpsResultPanel title={t('runtime.phpExtOpsTitle', { defaultValue: '擴充操作結果' })} result={extOps} />

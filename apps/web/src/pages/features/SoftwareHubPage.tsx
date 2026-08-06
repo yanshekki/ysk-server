@@ -13,10 +13,12 @@ import {
   CardSection,
   ConfirmDialog,
   FeaturePageLayout,
+  InstallStreamPanel,
   LoadingBlock,
   PageTabs,
   buttonClassName,
 } from '../../shared/components/ui';
+import type { InstallStreamLine } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { updatesApi } from '../../features/updates';
 import { softwareApi } from '../../features/software/api';
@@ -148,6 +150,8 @@ export function SoftwareHubPage() {
     title: string;
     detail: string;
   } | null>(null);
+  /** Live install log (SSE) while hub runtime install runs */
+  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
 
   // Sync tab ↔ URL
   useEffect(() => {
@@ -645,6 +649,7 @@ export function SoftwareHubPage() {
         return;
       }
       setInstallingKind(kind);
+      setInstallLog([]);
       setInstallFeedback({
         tone: 'info',
         title: t('software.runtime.installing', {
@@ -653,31 +658,26 @@ export function SoftwareHubPage() {
           defaultValue: `正在安裝／更新 ${kind} ${ver}…（可能需要一兩分鐘）`,
         }),
         detail: t('software.runtime.installingHint', {
-          defaultValue: '請勿關閉頁面。完成後會顯示結果說明。',
+          defaultValue: '下方會即時顯示 server 輸出，請勿關閉頁面。',
         }),
       });
       try {
-        const r = (await systemApi.runtimeInstall({
-          kind,
-          version: ver,
-          install: true,
-        })) as {
-          ok?: boolean;
-          blocked?: boolean;
-          blockMessage?: string;
-          notes?: string[];
-          requiresExecute?: boolean;
-          requiresRoot?: boolean;
-          apply_status?: string;
-          message?: string;
-        };
+        const r = await systemApi.runtimeInstallStream(
+          {
+            kind,
+            version: ver,
+            install: true,
+          },
+          {
+            onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]),
+          },
+        );
         const notes = (r.notes ?? [])
           .map((n) => humanizeOperatorNote(String(n)))
           .filter((n): n is string => Boolean(n));
         const detail =
           notes.slice(0, 4).join(' · ') ||
           r.blockMessage ||
-          r.message ||
           '';
 
         if (r.blocked || r.requiresExecute || r.requiresRoot) {
@@ -822,11 +822,20 @@ export function SoftwareHubPage() {
               {installFeedback.detail ? (
                 <p className="u-mt-1 u-mb-0">{installFeedback.detail}</p>
               ) : null}
+              {(installLog.length > 0 || installingKind) ? (
+                <InstallStreamPanel
+                  lines={installLog}
+                  busy={Boolean(installingKind)}
+                />
+              ) : null}
               <div className="u-mt-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setInstallFeedback(null)}
+                  onClick={() => {
+                    setInstallFeedback(null);
+                    if (!installingKind) setInstallLog([]);
+                  }}
                 >
                   {t('common.dismiss', { defaultValue: '關閉' })}
                 </Button>

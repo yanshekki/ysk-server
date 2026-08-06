@@ -18,6 +18,7 @@ import {
   FormHint,
   FormLayout,
   OpsResultPanel,
+  InstallStreamPanel,
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
@@ -25,7 +26,7 @@ import {
   buttonClassName,
 } from '../../shared/components/ui';
 import { Link, useSearchParams } from 'react-router-dom';
-import type { OpsResultLike } from '../../shared/components/ui';
+import type { OpsResultLike, InstallStreamLine } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -184,11 +185,13 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     notes?: string[];
   } | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
 
   // Reset plugin picks when switching runtime kind
   useEffect(() => {
     setPlugins([]);
     setVersionStatus(null);
+    setInstallLog([]);
   }, [kind]);
 
   // Dynamic upstream versions (no hardcoded chip list)
@@ -595,20 +598,26 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   }
                   onInstall={() =>
                     void run(async () => {
-                      // Fresh runtime install may still bundle selected plugins
-                      const r = await systemApi.runtimeInstall({
-                        kind,
-                        version,
-                        install: true,
-                        plugins,
-                      });
+                      setInstallLog([]);
+                      const r = await systemApi.runtimeInstallStream(
+                        {
+                          kind,
+                          version,
+                          install: true,
+                          plugins,
+                        },
+                        {
+                          onLog: (line) =>
+                            setInstallLog((prev) => [...prev.slice(-1999), line]),
+                        },
+                      );
                       await refresh();
-                      // Force plugins catalog re-probe (installed chips)
                       setPluginsRefreshToken((n) => n + 1);
                       return r as OpsResultLike;
                     }, t(meta.installLabelKey, { v: version }))
                   }
                 />
+                <InstallStreamPanel lines={installLog} busy={busy} />
               </CardSection>
             </Card>
           </div>

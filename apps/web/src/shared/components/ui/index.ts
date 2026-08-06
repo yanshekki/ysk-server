@@ -77,6 +77,9 @@ export type { CodeBlockProps, LogViewerProps } from './CodeBlock';
 export { OpsResultPanel } from './OpsResultPanel';
 export type { OpsResultPanelProps, OpsResultLike } from './OpsResultPanel';
 
+export { InstallStreamPanel } from './InstallStreamPanel';
+export type { InstallStreamLine } from './InstallStreamPanel';
+
 export { SummaryStrip } from './SummaryStrip';
 export type { SummaryStripProps, StatItem, StatTone } from './SummaryStrip';
 

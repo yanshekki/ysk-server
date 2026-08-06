@@ -68,10 +68,100 @@ export async function handleHostingRoutes(
           extensions?: string[];
           /** Companion tools: node pm2, python poetry, go air, … */
           plugins?: string[];
+          /** Live SSE log stream for the panel terminal */
+          stream?: boolean;
         };
         const kind = data.kind ?? 'node';
         // Defaults only when client omits version — not "latest" SSOT
         const defaultVer = defaultRuntimeVersion(kind);
+        const wantStream =
+          data.stream === true ||
+          String(req.headers.accept || '').includes('text/event-stream') ||
+          url.searchParams.get('stream') === '1';
+
+        if (wantStream) {
+          res.writeHead(200, {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive',
+            'X-Accel-Buffering': 'no',
+          });
+          res.write(`: ysk-runtime-install-stream\n\n`);
+          let closed = false;
+          const send = (event: string, payload: unknown) => {
+            if (closed || res.writableEnded) return;
+            try {
+              res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+            } catch {
+              closed = true;
+            }
+          };
+          req.on('close', () => {
+            closed = true;
+          });
+          send('status', { phase: 'planning', kind, version: data.version ?? defaultVer });
+          try {
+            const result = await planOrInstallRuntime({
+              dataDir: ctx.dataDir,
+              host: ctx.host,
+              kind,
+              version: data.version ?? defaultVer,
+              install: data.install,
+              extensions: kind === 'php' ? data.extensions : undefined,
+              plugins: kind !== 'php' ? data.plugins : undefined,
+              onLog: (ev) => {
+                if (!closed) send('log', { stream: ev.stream, line: ev.line, at: new Date().toISOString() });
+              },
+            });
+            ctx.audit.append({
+              actor: user.username,
+              action: 'hosting.runtime.install',
+              detail: {
+                kind: result.kind,
+                version: result.version,
+                ok: result.ok,
+                install: Boolean(data.install),
+                blocked: Boolean(result.blocked),
+                extensions: result.extensionIds,
+                packages: result.packages,
+                plugins: result.pluginIds,
+                stream: true,
+              },
+              ok: result.ok,
+            });
+            const phase = result.blocked
+              ? 'blocked'
+              : result.ok
+                ? 'done'
+                : 'failed';
+            send('status', { phase });
+            send('result', result);
+            send('end', { reason: 'complete', ok: result.ok });
+          } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
+            send('status', { phase: 'failed' });
+            send('result', {
+              ok: false,
+              kind,
+              version: data.version ?? defaultVer,
+              notes: [message],
+              written: [],
+              commandResults: [],
+              requiresExecute: false,
+              requiresRoot: false,
+            });
+            send('end', { reason: 'error', message });
+          }
+          if (!res.writableEnded) {
+            try {
+              res.end();
+            } catch {
+              /* */
+            }
+          }
+          return true;
+        }
+
         const result = await planOrInstallRuntime({
           dataDir: ctx.dataDir,
           host: ctx.host,

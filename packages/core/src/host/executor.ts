@@ -3,7 +3,7 @@
  * High-risk commands only run when explicitly allowed by policy layer.
  */
 
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import {
   mkdirSync,
   readFileSync,
@@ -28,6 +28,20 @@ export interface RunResult {
   dryRun: boolean;
 }
 
+/** Live output callback for long installs (apt, curl, …). */
+export type CommandChunkHandler = (chunk: {
+  stream: 'stdout' | 'stderr';
+  text: string;
+}) => void;
+
+export type RunCommandOpts = {
+  dryRun?: boolean;
+  timeoutMs?: number;
+  cwd?: string;
+  /** When set, use spawn and stream chunks as they arrive (line-ish). */
+  onChunk?: CommandChunkHandler;
+};
+
 export interface HostExecutor {
   readFile(path: string): Promise<string>;
   listDir(path: string): Promise<string[]>;
@@ -36,7 +50,7 @@ export interface HostExecutor {
   mkdirp(path: string): Promise<void>;
   sysInfo(): Promise<Record<string, unknown>>;
   serviceStatus(name: string): Promise<RunResult>;
-  runCommand(argv: string[], opts?: { dryRun?: boolean; timeoutMs?: number; cwd?: string }): Promise<RunResult>;
+  runCommand(argv: string[], opts?: RunCommandOpts): Promise<RunResult>;
   pathExists(path: string): boolean;
   isRoot(): boolean;
   executeEnabled(): boolean;
@@ -165,10 +179,7 @@ export class LocalHostExecutor implements HostExecutor {
     return this.runCommand(['systemctl', 'is-active', name], { dryRun: false, timeoutMs: 5000 });
   }
 
-  async runCommand(
-    argv: string[],
-    opts: { dryRun?: boolean; timeoutMs?: number; cwd?: string } = {},
-  ): Promise<RunResult> {
+  async runCommand(argv: string[], opts: RunCommandOpts = {}): Promise<RunResult> {
     if (!argv.length) {
       throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0882'), { httpStatus: 400 });
     }
@@ -182,6 +193,13 @@ export class LocalHostExecutor implements HostExecutor {
         httpStatus: 403,
         messageKey: 'notes.auto.n0883',
         details: { argv },
+      });
+    }
+    if (opts.onChunk) {
+      return runCommandStreaming(argv, {
+        timeoutMs: opts.timeoutMs ?? 30_000,
+        cwd: opts.cwd,
+        onChunk: opts.onChunk,
       });
     }
     try {
@@ -379,6 +397,113 @@ function isMutatingArgv(argv: string[]): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Spawn process and stream stdout/stderr as line-oriented chunks.
+ * Used for long runtime installs so the panel can show live progress.
+ */
+export function runCommandStreaming(
+  argv: string[],
+  opts: {
+    timeoutMs: number;
+    cwd?: string;
+    onChunk: CommandChunkHandler;
+  },
+): Promise<RunResult> {
+  return new Promise((resolve) => {
+    // Prefer line-buffered stdio when stdbuf is available (apt/curl progress for SSE)
+    let bin = argv[0]!;
+    let args = argv.slice(1);
+    if (existsSync('/usr/bin/stdbuf')) {
+      args = ['-oL', '-eL', bin, ...args];
+      bin = 'stdbuf';
+    }
+    const child = spawn(bin, args, {
+      cwd: opts.cwd,
+      env: { ...process.env, DEBIAN_FRONTEND: 'noninteractive', LC_ALL: 'C' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+    let settled = false;
+    let stdoutBuf = '';
+    let stderrBuf = '';
+
+    const safeChunk = (stream: 'stdout' | 'stderr', text: string) => {
+      try {
+        opts.onChunk({ stream, text });
+      } catch {
+        /* UI callback must not kill install */
+      }
+    };
+
+    const emit = (stream: 'stdout' | 'stderr', text: string) => {
+      if (stream === 'stdout') stdout += text;
+      else stderr += text;
+      let hold = stream === 'stdout' ? stdoutBuf : stderrBuf;
+      hold += text;
+      const lines = hold.split('\n');
+      const rest = lines.pop() ?? '';
+      if (stream === 'stdout') stdoutBuf = rest;
+      else stderrBuf = rest;
+      for (const line of lines) safeChunk(stream, line);
+    };
+
+    const finish = (exitCode: number) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (stdoutBuf) {
+        safeChunk('stdout', stdoutBuf);
+        stdoutBuf = '';
+      }
+      if (stderrBuf) {
+        safeChunk('stderr', stderrBuf);
+        stderrBuf = '';
+      }
+      resolve({ stdout, stderr, exitCode, argv, dryRun: false });
+    };
+
+    child.stdout?.on('data', (d: Buffer | string) => emit('stdout', String(d)));
+    child.stderr?.on('data', (d: Buffer | string) => emit('stderr', String(d)));
+    child.on('error', (err) => {
+      const msg = err.message || 'spawn failed';
+      stderr += msg;
+      safeChunk('stderr', msg);
+      finish(1);
+    });
+    child.on('close', (code, signal) => {
+      if (signal) {
+        const msg = `killed by signal ${signal}`;
+        stderr += (stderr ? '\n' : '') + msg;
+        safeChunk('stderr', msg);
+        finish(code ?? 1);
+        return;
+      }
+      finish(typeof code === 'number' ? code : 1);
+    });
+
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGTERM');
+        setTimeout(() => {
+          try {
+            child.kill('SIGKILL');
+          } catch {
+            /* */
+          }
+        }, 2_000).unref?.();
+      } catch {
+        /* */
+      }
+      const msg = `timeout after ${opts.timeoutMs}ms`;
+      stderr += (stderr ? '\n' : '') + msg;
+      safeChunk('stderr', msg);
+      finish(124);
+    }, opts.timeoutMs);
+    timer.unref?.();
+  });
 }
 
 /** Append a line to audit file (best-effort side channel). */

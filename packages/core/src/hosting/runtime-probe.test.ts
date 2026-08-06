@@ -140,6 +140,19 @@ describe('runtime-probe', () => {
     expect(bunScript).toContain('oven-sh/bun/releases');
     expect(bunScript).toContain('WANT=');
 
+    // onLog is only used when install runs; plan-only still accepts the option
+    const withLog = await planOrInstallRuntime({
+      dataDir: dir,
+      host,
+      kind: 'go',
+      version: '1.22',
+      install: false,
+      onLog: () => {
+        throw new Error('plan-only must not invoke onLog for bash install');
+      },
+    });
+    expect(withLog.ok).toBe(true);
+
     rmSync(dir, { recursive: true, force: true });
   });
 });

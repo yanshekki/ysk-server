@@ -38,4 +38,20 @@ describe('LocalHostExecutor', () => {
     await expect(host.writeFile('/etc/ysk-forbidden-test', 'x')).rejects.toThrow(YskError);
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('streams stdout lines via onChunk when requested', async () => {
+    const host = new LocalHostExecutor({ executeEnabled: true });
+    const lines: string[] = [];
+    const r = await host.runCommand(
+      ['bash', '-c', 'echo line1; echo line2; echo line3'],
+      {
+        timeoutMs: 5_000,
+        onChunk: (c) => {
+          if (c.stream === 'stdout' && c.text) lines.push(c.text);
+        },
+      },
+    );
+    expect(r.exitCode).toBe(0);
+    expect(lines).toEqual(expect.arrayContaining(['line1', 'line2', 'line3']));
+  });
 });

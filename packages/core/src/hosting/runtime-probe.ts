@@ -718,6 +718,10 @@ export async function planOrInstallRuntime(input: {
    * PHP still uses `extensions` for apt modules; can also pass plugins if defined.
    */
   plugins?: string[];
+  /**
+   * Live install log lines (stdout/stderr). When provided, host.runCommand uses spawn stream.
+   */
+  onLog?: (ev: { stream: 'stdout' | 'stderr'; line: string }) => void;
 }): Promise<RuntimeInstallResult> {
   const notes: string[] = [];
   const written: string[] = [];
@@ -1165,7 +1169,18 @@ export async function planOrInstallRuntime(input: {
   }
 
   if (can) {
-    const r = await input.host.runCommand(['bash', scriptPath], { timeoutMs: 600_000 });
+    input.onLog?.({
+      stream: 'stdout',
+      line: `YSK_INSTALL_START kind=${input.kind} version=${input.version}`,
+    });
+    input.onLog?.({ stream: 'stdout', line: `YSK_INSTALL_SCRIPT ${scriptPath}` });
+    const r = await input.host.runCommand(['bash', scriptPath], {
+      timeoutMs: 600_000,
+      // Executor already splits on newlines; map chunk.text → line
+      onChunk: input.onLog
+        ? (c) => input.onLog!({ stream: c.stream, line: c.text })
+        : undefined,
+    });
     commandResults.push({
       argv: ['bash', scriptPath],
       exitCode: r.exitCode,
