@@ -19,6 +19,7 @@ import {
 } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { updatesApi } from '../../features/updates';
+import { softwareApi } from '../../features/software/api';
 import { toast } from '../../shared/stores/toast-store';
 import { humanizeOperatorNote } from '../../shared/lib/operator-messages';
 import {
@@ -122,15 +123,26 @@ export function SoftwareHubPage() {
   const [catalogAptUpgradable, setCatalogAptUpgradable] = useState(0);
   /** Full-host inventory upgradable (updates page) */
   const [hostUpgradable, setHostUpgradable] = useState(0);
-  const [applyTarget, setApplyTarget] = useState<{
+  type AptPkgTarget = {
     packageName: string;
     currentVersion: string;
     candidateVersion: string;
+    softwareId?: string;
+  };
+  const [applyTarget, setApplyTarget] = useState<{
+    packages: AptPkgTarget[];
+    cardLabel: string;
+  } | null>(null);
+  const [installTarget, setInstallTarget] = useState<{
+    ids: string[];
+    cardLabel: string;
   } | null>(null);
   const [applyBusy, setApplyBusy] = useState(false);
-  /** Only the card being installed — do not freeze every Update button */
+  /** Runtime kind currently installing — do not freeze every Update button */
   const [installingKind, setInstallingKind] = useState<RuntimeKindKey | null>(null);
-  /** Last runtime install outcome (honest notes, not silent success) */
+  /** Apt/software card id busy (multi-package update or install) */
+  const [busyCardId, setBusyCardId] = useState<string | null>(null);
+  /** Progress / result banner */
   const [installFeedback, setInstallFeedback] = useState<{
     tone: 'ok' | 'error' | 'info';
     title: string;
@@ -359,6 +371,15 @@ export function SoftwareHubPage() {
           !aptUpdate &&
           primaryApt?.currentVersion,
       );
+      /** softwareIds not present on host — can one-click install */
+      const aptMissingIds = (def.softwareIds ?? []).filter((id) => {
+        const row = aptById[id];
+        return !row?.installed;
+      });
+      const canInstallMissing =
+        !def.runtimeKind &&
+        aptMissingIds.length > 0 &&
+        Boolean(def.softwareIds?.length);
       // Host "updates" card: surface full-host inventory count (not a fake package version)
       const hostUpdatesHint =
         def.id === 'updates' && hostUpgradable > 0
@@ -369,6 +390,15 @@ export function SoftwareHubPage() {
         Boolean(panelGap) ||
         aptUpdate ||
         Boolean(hostUpdatesHint);
+
+      const aptPackagesToUpdate: AptPkgTarget[] = aptUpgradable.map((r) => ({
+        packageName: r.packageName || r.id,
+        currentVersion: r.currentVersion || '',
+        candidateVersion: String(
+          r.candidateVersion || r.latestVersion || '',
+        ),
+        softwareId: r.id,
+      }));
 
       return {
         def,
@@ -386,6 +416,9 @@ export function SoftwareHubPage() {
         aptUpdate,
         aptUpToDate,
         aptChecked,
+        aptPackagesToUpdate,
+        aptMissingIds,
+        canInstallMissing,
         hostUpdatesHint,
         candidates,
       };
@@ -416,42 +449,191 @@ export function SoftwareHubPage() {
     };
   }, [allViews, catalogAptUpgradable, hostUpgradable]);
 
-  const confirmApplyPackage = useCallback(async () => {
-    if (!applyTarget) return;
+  const confirmApplyPackages = useCallback(async () => {
+    if (!applyTarget?.packages.length) return;
+    const pkgs = applyTarget.packages;
+    const label = applyTarget.cardLabel;
     setApplyBusy(true);
+    const okList: string[] = [];
+    const failList: string[] = [];
     try {
-      const r = await updatesApi.applyPackage({
-        packageName: applyTarget.packageName,
-        currentVersion: applyTarget.currentVersion,
-        candidateVersion: applyTarget.candidateVersion,
-        confirmHighRisk: true,
-      });
-      if (r.blocked) {
-        toast.error(
-          r.blockMessage ||
-            t('software.apply.blocked', { defaultValue: '更新被阻擋（需 root+EXECUTE）' }),
-        );
-      } else if (r.ok && r.applied) {
+      for (let i = 0; i < pkgs.length; i++) {
+        const p = pkgs[i]!;
+        setInstallFeedback({
+          tone: 'info',
+          title: t('software.apply.progress', {
+            n: i + 1,
+            total: pkgs.length,
+            pkg: p.packageName,
+            defaultValue: `更新中 ${i + 1}/${pkgs.length}：${p.packageName}`,
+          }),
+          detail: t('software.apply.progressDetail', {
+            from: p.currentVersion || '—',
+            to: p.candidateVersion,
+            defaultValue: `${p.currentVersion || '—'} → ${p.candidateVersion}`,
+          }),
+        });
+        try {
+          const r = await updatesApi.applyPackage({
+            packageName: p.packageName,
+            currentVersion: p.currentVersion,
+            candidateVersion: p.candidateVersion,
+            confirmHighRisk: true,
+          });
+          if (r.blocked) {
+            failList.push(
+              `${p.packageName}: ${r.blockMessage || t('software.apply.blocked', { defaultValue: '被阻擋' })}`,
+            );
+          } else if (r.ok && r.applied) {
+            okList.push(p.packageName);
+          } else {
+            failList.push(
+              `${p.packageName}: ${(r.notes ?? []).slice(0, 1).join(' ') || t('software.apply.failed', { defaultValue: '失敗' })}`,
+            );
+          }
+        } catch (e) {
+          failList.push(
+            `${p.packageName}: ${e instanceof Error ? e.message : t('common.loadFailed')}`,
+          );
+        }
+      }
+      if (okList.length && !failList.length) {
         toast.ok(
-          t('software.apply.ok', {
-            pkg: applyTarget.packageName,
-            defaultValue: `已套用 ${applyTarget.packageName} 更新`,
+          t('software.apply.okMulti', {
+            list: okList.join(', '),
+            defaultValue: `已更新：${okList.join(', ')}`,
           }),
         );
+        setInstallFeedback({
+          tone: 'ok',
+          title: t('software.apply.okMultiTitle', {
+            label,
+            defaultValue: `${label} 更新完成`,
+          }),
+          detail: okList.join(', '),
+        });
+        setApplyTarget(null);
+        void refresh();
+      } else if (okList.length && failList.length) {
+        toast.error(
+          t('software.apply.partial', {
+            defaultValue: `部分成功：${okList.join(', ')}；失敗：${failList.join(' · ')}`,
+          }),
+        );
+        setInstallFeedback({
+          tone: 'error',
+          title: t('software.apply.partialTitle', {
+            defaultValue: '部分套件更新失敗',
+          }),
+          detail: `OK: ${okList.join(', ')} · FAIL: ${failList.join(' · ')}`,
+        });
         setApplyTarget(null);
         void refresh();
       } else {
-        toast.error(
-          (r.notes ?? []).slice(0, 2).join(' · ') ||
-            t('software.apply.failed', { defaultValue: '更新未完成' }),
-        );
+        toast.error(failList.join(' · ') || t('software.apply.failed', { defaultValue: '更新未完成' }));
+        setInstallFeedback({
+          tone: 'error',
+          title: t('software.apply.failedTitle', {
+            label,
+            defaultValue: `${label} 更新失敗`,
+          }),
+          detail: failList.join(' · '),
+        });
       }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t('common.loadFailed'));
     } finally {
       setApplyBusy(false);
+      setBusyCardId(null);
     }
   }, [applyTarget, refresh, t]);
+
+  const confirmInstallMissing = useCallback(async () => {
+    if (!installTarget?.ids.length) return;
+    const ids = installTarget.ids;
+    const label = installTarget.cardLabel;
+    setApplyBusy(true);
+    setInstallFeedback({
+      tone: 'info',
+      title: t('software.install.progress', {
+        list: ids.join(', '),
+        defaultValue: `正在安裝：${ids.join(', ')}…`,
+      }),
+      detail: t('software.install.progressHint', {
+        defaultValue: '需 root + EXECUTE；可能需要一兩分鐘。',
+      }),
+    });
+    try {
+      const r = (await softwareApi.installMany(ids)) as {
+        ok?: boolean;
+        blocked?: boolean;
+        blockMessage?: string;
+        notes?: string[];
+        applied?: boolean;
+      };
+      const notes = (r.notes ?? [])
+        .map((n) => humanizeOperatorNote(String(n)))
+        .filter((n): n is string => Boolean(n));
+      if (r.blocked) {
+        const msg =
+          r.blockMessage ||
+          t('software.apply.blocked', {
+            defaultValue: '安裝被阻擋（需 root+EXECUTE）',
+          });
+        toast.error(msg);
+        setInstallFeedback({
+          tone: 'error',
+          title: t('software.install.blockedTitle', {
+            label,
+            defaultValue: `${label} 未能安裝`,
+          }),
+          detail: [msg, ...notes].filter(Boolean).join(' · '),
+        });
+      } else if (r.ok !== false) {
+        toast.ok(
+          t('software.install.ok', {
+            list: ids.join(', '),
+            defaultValue: `已提交安裝：${ids.join(', ')}`,
+          }),
+        );
+        setInstallFeedback({
+          tone: 'ok',
+          title: t('software.install.okTitle', {
+            label,
+            defaultValue: `${label} 安裝完成／已提交`,
+          }),
+          detail: notes.slice(0, 4).join(' · ') || ids.join(', '),
+        });
+        setInstallTarget(null);
+        void refresh();
+      } else {
+        const msg =
+          notes.slice(0, 2).join(' · ') ||
+          t('software.apply.failed', { defaultValue: '安裝未完成' });
+        toast.error(msg);
+        setInstallFeedback({
+          tone: 'error',
+          title: t('software.install.failedTitle', {
+            label,
+            defaultValue: `${label} 安裝失敗`,
+          }),
+          detail: msg,
+        });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t('common.loadFailed');
+      toast.error(msg);
+      setInstallFeedback({
+        tone: 'error',
+        title: t('software.install.failedTitle', {
+          label,
+          defaultValue: `${label} 安裝失敗`,
+        }),
+        detail: msg,
+      });
+    } finally {
+      setApplyBusy(false);
+      setBusyCardId(null);
+    }
+  }, [installTarget, refresh, t]);
 
   const installRuntimeVersion = useCallback(
     async (kind: RuntimeKindKey, version: string) => {
@@ -799,11 +981,19 @@ export function SoftwareHubPage() {
                                 key={v.def.id}
                                 view={v}
                                 t={t}
-                                onRequestAptApply={setApplyTarget}
+                                onRequestAptApply={(pkgs, cardLabel) => {
+                                  setBusyCardId(v.def.id);
+                                  setApplyTarget({ packages: pkgs, cardLabel });
+                                }}
+                                onRequestInstall={(ids, cardLabel) => {
+                                  setBusyCardId(v.def.id);
+                                  setInstallTarget({ ids, cardLabel });
+                                }}
                                 onInstallRuntime={installRuntimeVersion}
                                 installBusy={
-                                  Boolean(v.def.runtimeKind) &&
-                                  installingKind === v.def.runtimeKind
+                                  (Boolean(v.def.runtimeKind) &&
+                                    installingKind === v.def.runtimeKind) ||
+                                  busyCardId === v.def.id
                                 }
                               />
                             ))}
@@ -827,11 +1017,19 @@ export function SoftwareHubPage() {
                       key={v.def.id}
                       view={v}
                       t={t}
-                      onRequestAptApply={setApplyTarget}
+                      onRequestAptApply={(pkgs, cardLabel) => {
+                        setBusyCardId(v.def.id);
+                        setApplyTarget({ packages: pkgs, cardLabel });
+                      }}
+                      onRequestInstall={(ids, cardLabel) => {
+                        setBusyCardId(v.def.id);
+                        setInstallTarget({ ids, cardLabel });
+                      }}
                       onInstallRuntime={installRuntimeVersion}
                       installBusy={
-                        Boolean(v.def.runtimeKind) &&
-                        installingKind === v.def.runtimeKind
+                        (Boolean(v.def.runtimeKind) &&
+                          installingKind === v.def.runtimeKind) ||
+                        busyCardId === v.def.id
                       }
                     />
                   ))}
@@ -849,11 +1047,20 @@ export function SoftwareHubPage() {
         })}
         description={
           applyTarget
-            ? t('software.apply.confirmBody', {
-                pkg: applyTarget.packageName,
-                from: applyTarget.currentVersion,
-                to: applyTarget.candidateVersion,
-                defaultValue: `將升級 ${applyTarget.packageName}：${applyTarget.currentVersion} → ${applyTarget.candidateVersion}。需 root 且已開啟 EXECUTE。`,
+            ? t('software.apply.confirmBodyMulti', {
+                label: applyTarget.cardLabel,
+                list: applyTarget.packages
+                  .map(
+                    (p) =>
+                      `${p.packageName} (${p.currentVersion || '—'} → ${p.candidateVersion})`,
+                  )
+                  .join('；'),
+                defaultValue: `將升級 ${applyTarget.cardLabel} 共 ${applyTarget.packages.length} 個套件：${applyTarget.packages
+                  .map(
+                    (p) =>
+                      `${p.packageName} (${p.currentVersion || '—'} → ${p.candidateVersion})`,
+                  )
+                  .join('；')}。需 root 且 YSK_EXECUTE=1。`,
               })
             : ''
         }
@@ -861,9 +1068,38 @@ export function SoftwareHubPage() {
         cancelLabel={t('common.cancel', { defaultValue: '取消' })}
         busy={applyBusy}
         danger
-        onConfirm={() => void confirmApplyPackage()}
+        onConfirm={() => void confirmApplyPackages()}
         onClose={() => {
-          if (!applyBusy) setApplyTarget(null);
+          if (!applyBusy) {
+            setApplyTarget(null);
+            setBusyCardId(null);
+          }
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(installTarget)}
+        title={t('software.install.confirmTitle', {
+          defaultValue: '確認安裝軟件？',
+        })}
+        description={
+          installTarget
+            ? t('software.install.confirmBody', {
+                label: installTarget.cardLabel,
+                list: installTarget.ids.join(', '),
+                defaultValue: `將安裝 ${installTarget.cardLabel}：${installTarget.ids.join(', ')}。需 root 且 YSK_EXECUTE=1。`,
+              })
+            : ''
+        }
+        confirmLabel={t('software.install.confirm', { defaultValue: '確認安裝' })}
+        cancelLabel={t('common.cancel', { defaultValue: '取消' })}
+        busy={applyBusy}
+        onConfirm={() => void confirmInstallMissing()}
+        onClose={() => {
+          if (!applyBusy) {
+            setInstallTarget(null);
+            setBusyCardId(null);
+          }
         }}
       />
     </FeaturePageLayout>
@@ -887,6 +1123,15 @@ type CardView = {
   aptUpToDate?: boolean;
   /** Card has softwareIds and we ran version discovery */
   aptChecked?: boolean;
+  /** All upgradable apt packages on this card (email/protection multi) */
+  aptPackagesToUpdate?: Array<{
+    packageName: string;
+    currentVersion: string;
+    candidateVersion: string;
+    softwareId?: string;
+  }>;
+  aptMissingIds?: string[];
+  canInstallMissing?: boolean;
   /** Full-host inventory upgradable count (updates card only) */
   hostUpdatesHint?: number;
   /** Discovery candidates for in-page version pick */
@@ -897,16 +1142,22 @@ function SoftwareCard({
   view,
   t,
   onRequestAptApply,
+  onRequestInstall,
   onInstallRuntime,
   installBusy,
 }: {
   view: CardView;
   t: (k: string, o?: Record<string, unknown>) => string;
-  onRequestAptApply?: (target: {
-    packageName: string;
-    currentVersion: string;
-    candidateVersion: string;
-  }) => void;
+  onRequestAptApply?: (
+    packages: Array<{
+      packageName: string;
+      currentVersion: string;
+      candidateVersion: string;
+      softwareId?: string;
+    }>,
+    cardLabel: string,
+  ) => void;
+  onRequestInstall?: (ids: string[], cardLabel: string) => void;
   onInstallRuntime?: (kind: RuntimeKindKey, version: string) => void | Promise<void>;
   installBusy?: boolean;
 }) {
@@ -925,6 +1176,9 @@ function SoftwareCard({
     aptUpdate,
     aptUpToDate,
     aptChecked,
+    aptPackagesToUpdate = [],
+    aptMissingIds = [],
+    canInstallMissing,
     hostUpdatesHint,
     candidates = [],
   } = view;
@@ -957,10 +1211,8 @@ function SoftwareCard({
 
   const canOneClickApt = Boolean(
     aptUpdate &&
-      aptPackage &&
-      aptCandidate &&
-      onRequestAptApply &&
-      aptCandidate !== aptCurrent,
+      aptPackagesToUpdate.length > 0 &&
+      onRequestAptApply,
   );
 
   const canInstallRuntime = Boolean(
@@ -969,8 +1221,12 @@ function SoftwareCard({
       (picked || updateTarget || candidates[0]?.version),
   );
 
-  /** Package-backed: always offer update CTA when warehouse has a newer candidate */
+  /** Package-backed: offer update when warehouse has newer candidate(s) */
   const showAptUpdate = canOneClickApt;
+  const showAptInstall = Boolean(
+    canInstallMissing && aptMissingIds.length > 0 && onRequestInstall,
+  );
+  const cardLabel = t(`nav.${def.navKey}`, { defaultValue: def.navKey });
 
   const projectHref =
     def.projectRuntime && def.runtimeKind
@@ -1007,7 +1263,19 @@ function SoftwareCard({
       }),
     );
   }
-  if (aptCurrent && aptUpdate && aptCandidate) {
+  if (aptPackagesToUpdate.length > 1) {
+    metaParts.push(
+      t('software.meta.aptUpgradeMulti', {
+        n: aptPackagesToUpdate.length,
+        list: aptPackagesToUpdate
+          .map((p) => `${p.packageName}→${p.candidateVersion}`)
+          .join(', '),
+        defaultValue: `${aptPackagesToUpdate.length} 個套件可升級：${aptPackagesToUpdate
+          .map((p) => `${p.packageName}→${p.candidateVersion}`)
+          .join(', ')}`,
+      }),
+    );
+  } else if (aptCurrent && aptUpdate && aptCandidate) {
     metaParts.push(
       t('software.meta.aptUpgrade', {
         from: aptCurrent,
@@ -1124,19 +1392,36 @@ function SoftwareCard({
           <button
             type="button"
             className={buttonClassName({ variant: 'primary', size: 'sm' })}
+            disabled={installBusy}
             title={t('software.action.applyAptTitle', {
-              pkg: aptPackage,
-              defaultValue: `確認後套用 ${aptPackage} 系統更新`,
+              pkg: aptPackagesToUpdate.map((p) => p.packageName).join(', '),
+              defaultValue: `確認後更新 ${aptPackagesToUpdate.map((p) => p.packageName).join(', ')}`,
             })}
-            onClick={() =>
-              onRequestAptApply?.({
-                packageName: String(aptPackage),
-                currentVersion: String(aptCurrent || ''),
-                candidateVersion: String(aptCandidate),
-              })
-            }
+            onClick={() => onRequestAptApply?.(aptPackagesToUpdate, cardLabel)}
           >
-            {t('software.action.update', { defaultValue: '更新' })}
+            {installBusy
+              ? t('software.runtime.installingShort', { defaultValue: '安裝中…' })
+              : aptPackagesToUpdate.length > 1
+                ? t('software.action.updateN', {
+                    n: aptPackagesToUpdate.length,
+                    defaultValue: `更新 ${aptPackagesToUpdate.length} 項`,
+                  })
+                : t('software.action.update', { defaultValue: '更新' })}
+          </button>
+        ) : showAptInstall ? (
+          <button
+            type="button"
+            className={buttonClassName({ variant: 'primary', size: 'sm' })}
+            disabled={installBusy}
+            title={t('software.action.installTitle', {
+              list: aptMissingIds.join(', '),
+              defaultValue: `安裝 ${aptMissingIds.join(', ')}`,
+            })}
+            onClick={() => onRequestInstall?.(aptMissingIds, cardLabel)}
+          >
+            {installBusy
+              ? t('software.runtime.installingShort', { defaultValue: '安裝中…' })
+              : t('software.action.install', { defaultValue: '安裝' })}
           </button>
         ) : updateHref ? (
           <Link
