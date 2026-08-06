@@ -4,6 +4,7 @@ import { tl } from '@ysk/shared';
  */
 
 import type { HostExecutor } from '../host/executor.js';
+import { withHostMutatingJob } from '../host/host-job.js';
 import type { UpdateItemDto } from '@ysk/shared';
 import { planUpdateExecution } from './advisor.js';
 
@@ -93,64 +94,67 @@ export async function applyPackageUpdate(input: {
   // Exact candidate only — never fall back to unversioned upgrade (wrong version risk)
   const cmd = `export DEBIAN_FRONTEND=noninteractive; apt-get install -y --only-upgrade ${JSON.stringify(pkg)}=${JSON.stringify(cand)} 2>&1`;
 
-  input.onLog?.({
-    stream: 'stdout',
-    line: `YSK_APT_UPGRADE ${pkg}=${cand}`,
-  });
-  const r = await input.host.runCommand(['bash', '-c', cmd], {
-    timeoutMs: 300_000,
-    onChunk: input.onLog
-      ? (c) => input.onLog!({ stream: c.stream, line: c.text })
-      : undefined,
-    signal: input.abortSignal,
-  });
-  const out = ((r.stdout || '') + (r.stderr || '')).slice(0, 800);
+  // Serialize with runtime PHP/apt installs to avoid dpkg lock races
+  return withHostMutatingJob(async () => {
+    input.onLog?.({
+      stream: 'stdout',
+      line: `YSK_APT_UPGRADE ${pkg}=${cand}`,
+    });
+    const r = await input.host.runCommand(['bash', '-c', cmd], {
+      timeoutMs: 300_000,
+      onChunk: input.onLog
+        ? (c) => input.onLog!({ stream: c.stream, line: c.text })
+        : undefined,
+      signal: input.abortSignal,
+    });
+    const out = ((r.stdout || '') + (r.stderr || '')).slice(0, 800);
 
-  // Honest applied: exit 0 alone is not enough — verify dpkg version matches candidate
-  const verR = await input.host.runCommand(
-    [
-      'bash',
-      '-c',
-      `dpkg-query -W -f='\${Version}' ${JSON.stringify(pkg)} 2>/dev/null || true`,
-    ],
-    { timeoutMs: 15_000 },
-  );
-  const installedNow = (verR.stdout || '').trim();
-  const versionMatches = (have: string, want: string) => {
-    if (!have || !want) return false;
-    if (have === want) return true;
-    // Epoch-tolerant: "2:1.0-1" vs "1.0-1"
-    const stripEpoch = (v: string) => v.replace(/^\d+:/, '');
-    return stripEpoch(have) === stripEpoch(want);
-  };
-  const versionOk =
-    versionMatches(installedNow, cand) || versionMatches(installedNow, rawCand);
-  const cmdOk = r.exitCode === 0;
-  const applied = cmdOk && versionOk;
-  const ok = applied;
-
-  if (cmdOk && !versionOk) {
-    notes.push(
-      tl('notes.auto.t0462', { v0: r.exitCode }),
-      `verify_failed: dpkg=${installedNow || '(none)'} wanted=${cand}`,
+    // Honest applied: exit 0 alone is not enough — verify dpkg version matches candidate
+    const verR = await input.host.runCommand(
+      [
+        'bash',
+        '-c',
+        `dpkg-query -W -f='\${Version}' ${JSON.stringify(pkg)} 2>/dev/null || true`,
+      ],
+      { timeoutMs: 15_000 },
     );
-  }
+    const installedNow = (verR.stdout || '').trim();
+    const versionMatches = (have: string, want: string) => {
+      if (!have || !want) return false;
+      if (have === want) return true;
+      // Epoch-tolerant: "2:1.0-1" vs "1.0-1"
+      const stripEpoch = (v: string) => v.replace(/^\d+:/, '');
+      return stripEpoch(have) === stripEpoch(want);
+    };
+    const versionOk =
+      versionMatches(installedNow, cand) || versionMatches(installedNow, rawCand);
+    const cmdOk = r.exitCode === 0;
+    const applied = cmdOk && versionOk;
+    const ok = applied;
 
-  return {
-    ok,
-    applied,
-    notes: [
-      ...notes,
-      tl('notes.auto.t0460', { v0: input.item.currentVersion, v1: cand }),
-      applied
-        ? tl('notes.auto.t0461', { v0: pkg })
-        : tl('notes.auto.t0462', { v0: r.exitCode }),
-      installedNow ? `dpkg_now=${installedNow}` : 'dpkg_now=(none)',
-      out.slice(0, 400),
-    ],
-    commands: [cmd],
-    exitCode: r.exitCode,
-  };
+    if (cmdOk && !versionOk) {
+      notes.push(
+        tl('notes.auto.t0462', { v0: r.exitCode }),
+        `verify_failed: dpkg=${installedNow || '(none)'} wanted=${cand}`,
+      );
+    }
+
+    return {
+      ok,
+      applied,
+      notes: [
+        ...notes,
+        tl('notes.auto.t0460', { v0: input.item.currentVersion, v1: cand }),
+        applied
+          ? tl('notes.auto.t0461', { v0: pkg })
+          : tl('notes.auto.t0462', { v0: r.exitCode }),
+        installedNow ? `dpkg_now=${installedNow}` : 'dpkg_now=(none)',
+        out.slice(0, 400),
+      ],
+      commands: [cmd],
+      exitCode: r.exitCode,
+    };
+  });
 }
 
 export type PackageApplyResult = Awaited<ReturnType<typeof applyPackageUpdate>>;

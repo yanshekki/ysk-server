@@ -352,6 +352,48 @@ export async function assessProductionReadiness(input: {
       severity: b.critical ? 'critical' : 'optional' });
   }
 
+  // Residual ondrej Launchpad PHP sources break apt (version skew with packages.sury.org)
+  try {
+    const src = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        'ls /etc/apt/sources.list.d/*ondrej* 2>/dev/null; grep -rliE "ppa\\.launchpad\\.(net|content\\.com)/ondrej/php|launchpadcontent\\.com/ondrej/php" /etc/apt/sources.list.d 2>/dev/null | head -8; true',
+      ],
+      { timeoutMs: 8_000 },
+    );
+    const residual = (src.stdout || '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (residual.length) {
+      push({
+        id: 'apt-php-ondrej-residual',
+        category: 'hosting',
+        title: 'PHP apt source (ondrej residual)',
+        level: 'degraded',
+        detail: `Found legacy ondrej/php sources that conflict with packages.sury.org: ${residual.slice(0, 4).join(', ')}`,
+        spec: '§4.3',
+        fixHint:
+          'Remove ondrej Launchpad lists; re-run PHP install from panel (pins packages.sury.org only)',
+        fixHref: '/runtimes/php',
+        severity: 'recommended',
+      });
+    } else {
+      push({
+        id: 'apt-php-ondrej-residual',
+        category: 'hosting',
+        title: 'PHP apt source (ondrej residual)',
+        level: 'ready',
+        detail: 'No ondrej Launchpad PHP sources detected',
+        spec: '§4.3',
+        severity: 'optional',
+      });
+    }
+  } catch {
+    /* probe optional */
+  }
+
   const runtimes = await probeRuntimes(host);
   const nodeReady = runtimes.node.filter((n) => n.available).map((n) => n.version);
   const phpReady = runtimes.php.filter((p) => p.available).map((p) => p.version);

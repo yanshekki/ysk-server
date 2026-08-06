@@ -781,44 +781,47 @@ export async function installRuntimePlugins(input: {
     };
   }
 
-  input.onLog?.({
-    stream: 'stdout',
-    line: `YSK_PLUGIN_INSTALL_START kind=${input.kind} plugins=${built.ids.join(',')}`,
-  });
-  input.onLog?.({ stream: 'stdout', line: `YSK_PLUGIN_SCRIPT ${scriptPath}` });
-  const r = await input.host.runCommand(['bash', scriptPath], {
-    timeoutMs: 600_000,
-    onChunk: input.onLog
-      ? (c) => input.onLog!({ stream: c.stream, line: c.text })
-      : undefined,
-    signal: input.abortSignal,
-  });
-  const out = `${r.stdout || ''}\n${r.stderr || ''}`;
-  const pluginFailMatch = out.match(/YSK_PLUGIN_FAILED:([^\n]+)/);
-  const pluginFailed = pluginFailMatch
-    ? pluginFailMatch[1]!
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-    : [];
+  const { withHostMutatingJob } = await import('../host/host-job.js');
+  return withHostMutatingJob(async () => {
+    input.onLog?.({
+      stream: 'stdout',
+      line: `YSK_PLUGIN_INSTALL_START kind=${input.kind} plugins=${built.ids.join(',')}`,
+    });
+    input.onLog?.({ stream: 'stdout', line: `YSK_PLUGIN_SCRIPT ${scriptPath}` });
+    const r = await input.host.runCommand(['bash', scriptPath], {
+      timeoutMs: 600_000,
+      onChunk: input.onLog
+        ? (c) => input.onLog!({ stream: c.stream, line: c.text })
+        : undefined,
+      signal: input.abortSignal,
+    });
+    const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+    const pluginFailMatch = out.match(/YSK_PLUGIN_FAILED:([^\n]+)/);
+    const pluginFailed = pluginFailMatch
+      ? pluginFailMatch[1]!
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+      : [];
 
-  if (r.exitCode === 0) {
-    notes.push(tl('notes.runtime.pluginsOk'));
-    return { ok: true, kind: input.kind, notes, pluginIds: built.ids };
-  }
-  if (r.exitCode === 130) {
-    notes.unshift('安裝已中止（客戶端斷線或取消）');
-  }
-  if (pluginFailed.length) {
-    notes.unshift(tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }));
-  } else {
-    notes.unshift(
-      tl('notes.runtime.pluginsFailed', {
-        list: (r.stderr || r.stdout || String(r.exitCode)).slice(0, 300),
-      }),
-    );
-  }
-  return { ok: false, kind: input.kind, notes, pluginIds: built.ids };
+    if (r.exitCode === 0) {
+      notes.push(tl('notes.runtime.pluginsOk'));
+      return { ok: true, kind: input.kind, notes, pluginIds: built.ids };
+    }
+    if (r.exitCode === 130) {
+      notes.unshift('安裝已中止（客戶端斷線或取消）');
+    }
+    if (pluginFailed.length) {
+      notes.unshift(tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }));
+    } else {
+      notes.unshift(
+        tl('notes.runtime.pluginsFailed', {
+          list: (r.stderr || r.stdout || String(r.exitCode)).slice(0, 300),
+        }),
+      );
+    }
+    return { ok: false, kind: input.kind, notes, pluginIds: built.ids };
+  });
 }
 
 /**

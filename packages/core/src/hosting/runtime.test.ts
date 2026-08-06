@@ -182,5 +182,11 @@ describe('multi-version runtimes', () => {
     expect(
       defaultProcessCommands('python', { entry: 'mysite.wsgi:application' }).execStart,
     ).toContain('gunicorn');
+    // Pinned minor uses versioned interpreter for venv + fallback (not bare python3 only)
+    const py314 = defaultProcessCommands('python', { version: '3.14', entry: 'app.py' });
+    expect(py314.build).toContain('python3.14 -m venv');
+    expect(py314.execStart).toMatch(/python3\.14/);
+    const pyAsgi = defaultProcessCommands('python', { version: '3.12', entry: 'main:app' });
+    expect(pyAsgi.build).toContain('python3.12 -m venv');
   });
 });

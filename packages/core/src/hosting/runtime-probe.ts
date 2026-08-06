@@ -23,6 +23,7 @@ import { resolvePhpAptPackages } from './php-extensions.js';
 import { buildRuntimePluginScriptLines } from './runtime-plugins.js';
 import { resolveBin, shellBinExists, shellResolveBin } from './software-probe/index.js';
 import { getCachedRuntimeVersionPins } from './version-discovery.js';
+import { withHostMutatingJob } from '../host/host-job.js';
 
 export interface RuntimeProbeItem {
   kind: RuntimeKind;
@@ -1267,61 +1268,64 @@ export async function planOrInstallRuntime(input: {
   let failedPackages: string[] | undefined;
 
   if (can) {
-    input.onLog?.({
-      stream: 'stdout',
-      line: `YSK_INSTALL_START kind=${input.kind} version=${input.version}`,
-    });
-    input.onLog?.({ stream: 'stdout', line: `YSK_INSTALL_SCRIPT ${scriptPath}` });
-    const r = await input.host.runCommand(['bash', scriptPath], {
-      timeoutMs: 600_000,
-      // Executor already splits on newlines; map chunk.text → line
-      onChunk: input.onLog
-        ? (c) => input.onLog!({ stream: c.stream, line: c.text })
-        : undefined,
-      signal: input.abortSignal,
-    });
-    commandResults.push({
-      argv: ['bash', scriptPath],
-      exitCode: r.exitCode,
-      stderr: r.stderr,
-    });
-    const out = `${r.stdout || ''}\n${r.stderr || ''}`;
-    const pluginFailMatch = out.match(/YSK_PLUGIN_FAILED:([^\n]+)/);
-    const pluginFailed = pluginFailMatch
-      ? pluginFailMatch[1]!
+    // Serialize with apt package updates (shared host mutating job lock)
+    await withHostMutatingJob(async () => {
+      input.onLog?.({
+        stream: 'stdout',
+        line: `YSK_INSTALL_START kind=${input.kind} version=${input.version}`,
+      });
+      input.onLog?.({ stream: 'stdout', line: `YSK_INSTALL_SCRIPT ${scriptPath}` });
+      const r = await input.host.runCommand(['bash', scriptPath], {
+        timeoutMs: 600_000,
+        // Executor already splits on newlines; map chunk.text → line
+        onChunk: input.onLog
+          ? (c) => input.onLog!({ stream: c.stream, line: c.text })
+          : undefined,
+        signal: input.abortSignal,
+      });
+      commandResults.push({
+        argv: ['bash', scriptPath],
+        exitCode: r.exitCode,
+        stderr: r.stderr,
+      });
+      const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+      const pluginFailMatch = out.match(/YSK_PLUGIN_FAILED:([^\n]+)/);
+      const pluginFailed = pluginFailMatch
+        ? pluginFailMatch[1]!
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+        : [];
+      const phpFailMatch = out.match(/YSK_PHP_EXT_FAILED:\s*([^\n]+)/);
+      if (phpFailMatch?.[1]) {
+        failedPackages = phpFailMatch[1]
           .trim()
           .split(/\s+/)
-          .filter(Boolean)
-      : [];
-    const phpFailMatch = out.match(/YSK_PHP_EXT_FAILED:\s*([^\n]+)/);
-    if (phpFailMatch?.[1]) {
-      failedPackages = phpFailMatch[1]
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-      notes.unshift(
-        `部分 PHP 套件安裝失敗：${failedPackages.join(', ')}（核心 CLI 可能仍可用）`,
-      );
-    }
-    // exit 3 = runtime ok-ish but plugins failed; other non-zero = hard fail
-    if (r.exitCode === 0) {
-      notes.push(tl('notes.auto.n0656'));
-      if (pluginIds?.length) notes.push(tl('notes.runtime.pluginsOk'));
-    } else if (r.exitCode === 3 && pluginFailed.length) {
-      notes.push(tl('notes.auto.n0656'));
-      notes.unshift(
-        tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }),
-      );
-    } else if (r.exitCode === 130) {
-      notes.unshift('安裝已中止（客戶端斷線或取消）');
-    } else {
-      const detail = summarizeInstallLog(r.stderr || '', r.stdout || '') || String(r.exitCode);
-      const failNote = tl('notes.auto.t0411', { v0: detail });
-      notes.unshift(failNote);
-      if (pluginFailed.length) {
-        notes.push(tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }));
+          .filter(Boolean);
+        notes.unshift(
+          `部分 PHP 套件安裝失敗：${failedPackages.join(', ')}（核心 CLI 可能仍可用）`,
+        );
       }
-    }
+      // exit 3 = runtime ok-ish but plugins failed; other non-zero = hard fail
+      if (r.exitCode === 0) {
+        notes.push(tl('notes.auto.n0656'));
+        if (pluginIds?.length) notes.push(tl('notes.runtime.pluginsOk'));
+      } else if (r.exitCode === 3 && pluginFailed.length) {
+        notes.push(tl('notes.auto.n0656'));
+        notes.unshift(
+          tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }),
+        );
+      } else if (r.exitCode === 130) {
+        notes.unshift('安裝已中止（客戶端斷線或取消）');
+      } else {
+        const detail = summarizeInstallLog(r.stderr || '', r.stdout || '') || String(r.exitCode);
+        const failNote = tl('notes.auto.t0411', { v0: detail });
+        notes.unshift(failNote);
+        if (pluginFailed.length) {
+          notes.push(tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }));
+        }
+      }
+    });
   }
 
   const hardFail = commandResults.some((c) => c.exitCode !== 0 && c.exitCode !== 3);

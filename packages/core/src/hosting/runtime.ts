@@ -463,18 +463,24 @@ export function defaultProcessCommands(
     // FastAPI/ASGI: "main:app" → uvicorn
     // Plain script: app.py / main.py
     const entry = opts.entry ?? 'main:app';
+    // Prefer project pin pythonX.Y (deadsnakes multi-version); fall back to python3
+    const pyMinor = (opts.version ?? '').replace(/^python/, '').match(/^(\d+\.\d+)/)?.[1];
+    const pyBin = pyMinor ? `python${pyMinor}` : 'python3';
     // Honest: if requirements.txt exists it must install; missing file is skip
+    // Create venv with the pinned interpreter so site-packages match runtimeVersion
     const pyBuild =
-      'python3 -m venv venv && ./venv/bin/pip install -U pip && if [ -f requirements.txt ]; then ./venv/bin/pip install -r requirements.txt; else echo "no requirements.txt — skip deps"; fi';
+      `${pyBin} -m venv venv && ./venv/bin/pip install -U pip && if [ -f requirements.txt ]; then ./venv/bin/pip install -r requirements.txt; else echo "no requirements.txt — skip deps"; fi`;
     const isWsgi =
       /\.wsgi:application$/.test(entry) ||
       entry.endsWith('.wsgi:app') ||
       entry.startsWith('gunicorn:');
     const wsgiTarget = entry.startsWith('gunicorn:') ? entry.slice('gunicorn:'.length) : entry;
+    // Prefer venv → pinned binary → python3
+    const pyFallback = `elif command -v ${pyBin} >/dev/null 2>&1; then exec ${pyBin}`;
     if (isWsgi) {
       return {
         build: pyBuild,
-        execStart: `/bin/bash -lc 'cd "$PWD" && if [ -x venv/bin/gunicorn ]; then exec venv/bin/gunicorn ${wsgiTarget} --bind 127.0.0.1:"\${PORT:-3000}" --workers 2; elif [ -x venv/bin/python ]; then exec venv/bin/python -m gunicorn ${wsgiTarget} --bind 127.0.0.1:"\${PORT:-3000}"; else exec python3 -m gunicorn ${wsgiTarget} --bind 127.0.0.1:"\${PORT:-3000}"; fi'`,
+        execStart: `/bin/bash -lc 'cd "$PWD" && if [ -x venv/bin/gunicorn ]; then exec venv/bin/gunicorn ${wsgiTarget} --bind 127.0.0.1:"\${PORT:-3000}" --workers 2; elif [ -x venv/bin/python ]; then exec venv/bin/python -m gunicorn ${wsgiTarget} --bind 127.0.0.1:"\${PORT:-3000}"; ${pyFallback} -m gunicorn ${wsgiTarget} --bind 127.0.0.1:"\${PORT:-3000}"; else exec python3 -m gunicorn ${wsgiTarget} --bind 127.0.0.1:"\${PORT:-3000}"; fi'`,
         entry: wsgiTarget,
       };
     }
@@ -482,13 +488,13 @@ export function defaultProcessCommands(
     if (isAsgi) {
       return {
         build: pyBuild,
-        execStart: `/bin/bash -lc 'cd "$PWD" && if [ -x venv/bin/uvicorn ]; then exec venv/bin/uvicorn ${entry} --host 127.0.0.1 --port "\${PORT:-3000}"; elif [ -x venv/bin/python ]; then exec venv/bin/python -m uvicorn ${entry} --host 127.0.0.1 --port "\${PORT:-3000}"; else exec python3 -m uvicorn ${entry} --host 127.0.0.1 --port "\${PORT:-3000}"; fi'`,
+        execStart: `/bin/bash -lc 'cd "$PWD" && if [ -x venv/bin/uvicorn ]; then exec venv/bin/uvicorn ${entry} --host 127.0.0.1 --port "\${PORT:-3000}"; elif [ -x venv/bin/python ]; then exec venv/bin/python -m uvicorn ${entry} --host 127.0.0.1 --port "\${PORT:-3000}"; ${pyFallback} -m uvicorn ${entry} --host 127.0.0.1 --port "\${PORT:-3000}"; else exec python3 -m uvicorn ${entry} --host 127.0.0.1 --port "\${PORT:-3000}"; fi'`,
         entry,
       };
     }
     return {
       build: pyBuild,
-      execStart: `/bin/bash -lc 'cd "$PWD" && if [ -x venv/bin/python ]; then exec venv/bin/python ${entry}; else exec python3 ${entry}; fi'`,
+      execStart: `/bin/bash -lc 'cd "$PWD" && if [ -x venv/bin/python ]; then exec venv/bin/python ${entry}; ${pyFallback} ${entry}; else exec python3 ${entry}; fi'`,
       entry,
     };
   }
