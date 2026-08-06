@@ -19,15 +19,47 @@ import {
   runtimeVersionChoices,
 } from '../model/deploy-prefs';
 
+type ProjectRuntime =
+  | 'node'
+  | 'php'
+  | 'static'
+  | 'python'
+  | 'go'
+  | 'rust'
+  | 'java'
+  | 'kotlin'
+  | 'bun';
+
+const PROJECT_RUNTIMES: ProjectRuntime[] = [
+  'node',
+  'php',
+  'static',
+  'python',
+  'go',
+  'rust',
+  'java',
+  'kotlin',
+  'bun',
+];
+
+function asProjectRuntime(v: string | undefined | null): ProjectRuntime | null {
+  if (!v) return null;
+  const x = v.trim().toLowerCase();
+  return PROJECT_RUNTIMES.includes(x as ProjectRuntime) ? (x as ProjectRuntime) : null;
+}
+
 export interface ProjectCreateModalProps {
   open: boolean;
   onClose: () => void;
   busy?: boolean;
+  /** Prefill from software hub ?hintRuntime= */
+  initialRuntime?: string | null;
+  initialRuntimeVersion?: string | null;
   onSubmit: (input: {
     name: string;
     domain?: string;
     domainAliases?: string[];
-    runtime: 'node' | 'php' | 'static' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
+    runtime: ProjectRuntime;
     runtimeVersion?: string;
     templateId?: string;
     createDnsZone?: boolean;
@@ -41,15 +73,15 @@ export function ProjectCreateModal({
   open,
   onClose,
   busy,
+  initialRuntime,
+  initialRuntimeVersion,
   onSubmit,
 }: ProjectCreateModalProps) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [aliases, setAliases] = useState('');
-  const [runtime, setRuntime] = useState<
-    'node' | 'php' | 'static' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun'
-  >('node');
+  const [runtime, setRuntime] = useState<ProjectRuntime>('node');
   const [runtimeVersion, setRuntimeVersion] = useState(() =>
     defaultRuntimeInstallVersion('node'),
   );
@@ -87,10 +119,25 @@ export function ProjectCreateModal({
       setCreateMail(false);
       setServerIp('');
       setServerIpv6('');
+      return;
     }
-  }, [open]);
+    // Prefill when opened from software hub
+    const rt = asProjectRuntime(initialRuntime);
+    if (rt) {
+      setRuntime(rt);
+      const choices = runtimeVersionChoices(rt);
+      const want = (initialRuntimeVersion ?? '').trim();
+      if (want && (choices.includes(want) || choices.some((c) => want.startsWith(`${c}.`)))) {
+        const match = choices.find((c) => c === want || want.startsWith(`${c}.`)) ?? want;
+        setRuntimeVersion(choices.includes(match) ? match : choices[0] ?? want);
+      } else {
+        const def = defaultRuntimeInstallVersion(rt);
+        setRuntimeVersion(choices.includes(def) ? def : choices[0] ?? '');
+      }
+    }
+  }, [open, initialRuntime, initialRuntimeVersion]);
 
-  function applyRuntime(next: typeof runtime) {
+  function applyRuntime(next: ProjectRuntime) {
     setRuntime(next);
     const choices = runtimeVersionChoices(next);
     const def = defaultRuntimeInstallVersion(next);

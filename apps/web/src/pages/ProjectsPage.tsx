@@ -30,23 +30,28 @@ export function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const list = useServerList<ProjectDto>({ path: '/api/v1/projects', debounceMs: 300 });
   const [createOpen, setCreateOpen] = useState(false);
+  const [hintRuntime, setHintRuntime] = useState<string | null>(null);
+  const [hintVersion, setHintVersion] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const setMsg = useCallback((text: string | null) => {
     if (text) toast.ok(text);
   }, []);
 
-  // From software hub: ?hintRuntime=go&version=1.24
+  // From software hub: ?hintRuntime=go&version=1.24 → open create with prefilled runtime
   useEffect(() => {
     const rt = searchParams.get('hintRuntime');
     if (!rt) return;
     const ver = searchParams.get('version');
+    setHintRuntime(rt);
+    setHintVersion(ver);
+    setCreateOpen(true);
     toast.ok(
       t('software.projectHint', {
         runtime: rt,
         version: ver ?? '—',
         defaultValue: ver
-          ? `可將專案 runtime 設為 ${rt} ${ver}（建立或編輯專案時選擇）`
-          : `可將專案 runtime 設為 ${rt}（建立或編輯專案時選擇）`,
+          ? `已預填 runtime ${rt} ${ver}，可建立專案`
+          : `已預填 runtime ${rt}，可建立專案`,
       }),
     );
     const next = new URLSearchParams(searchParams);
@@ -181,7 +186,13 @@ export function ProjectsPage() {
 
         <ProjectCreateModal
           open={createOpen}
-          onClose={bindSet(setCreateOpen, false)}
+          initialRuntime={hintRuntime}
+          initialRuntimeVersion={hintVersion}
+          onClose={() => {
+            setCreateOpen(false);
+            setHintRuntime(null);
+            setHintVersion(null);
+          }}
           busy={busy}
           onSubmit={async (input) => {
             setMsg(null);
@@ -194,6 +205,8 @@ export function ProjectsPage() {
                 : '';
               setMsg(`${t('projects.created', { name: r.project.name })}${extra}`);
               setCreateOpen(false);
+              setHintRuntime(null);
+              setHintVersion(null);
               await list.refresh();
               navigate(`/projects/${r.project.id}?tab=deploy&fresh=1`);
             } catch (e) {
