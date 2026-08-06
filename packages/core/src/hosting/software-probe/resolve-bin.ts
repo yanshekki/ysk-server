@@ -12,17 +12,22 @@ export const PROBE_PATH =
 /**
  * Bash snippet: prepend YSK toolchain bins (node/go/bun/python) so probes find
  * installs under /usr/local/ysk even when not symlinked into /usr/local/bin.
+ *
+ * Safe under `set -u` / `set -e` (used inside install.sh via shellBinExists).
+ * Avoids `for x in empty-glob` unbound-variable failures on some bash + nullglob.
  */
 export function shellPrependYskToolchainPath(): string {
-  // Note: shell globs use star-slash-bin — keep out of block comments (breaks esbuild).
+  // Build globs without */ inside block comments (esbuild).
   const nodeGlob = '/usr/local/ysk/node/' + '*/bin';
   const goGlob = '/usr/local/ysk/go/' + '*/bin';
   const pyGlob = '/usr/local/ysk/python/' + '*/bin';
+  const bunBin = '/usr/local/ysk/bun/bin';
   return [
     'export PATH="' + PROBE_PATH + ':${HOME:-}/.cargo/bin:${PATH:-}"',
-    `for _ysk_d in ${nodeGlob} ${goGlob} /usr/local/ysk/bun/bin ${pyGlob}; do`,
-    '  [ -d "$_ysk_d" ] && PATH="$_ysk_d:$PATH"',
-    'done',
+    // ls -d: no match → empty + exit 1; || true keeps set -e happy
+    `_ysk_extra="$(ls -d ${nodeGlob} ${goGlob} ${pyGlob} ${bunBin} 2>/dev/null | tr '\\n' ':' | sed 's/:$//')" || true`,
+    'if [ -n "${_ysk_extra:-}" ]; then export PATH="${_ysk_extra}:$PATH"; fi',
+    'unset _ysk_extra 2>/dev/null || true',
   ].join('\n');
 }
 

@@ -332,23 +332,38 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   }, [probe, kind, versionStatus?.candidates]);
 
   const multiVersion = kind === 'go' || kind === 'rust';
-  const installState = useMemo(
-    () =>
-      resolveRuntimeInstallState({
-        selectedVersion: version,
-        supportedVersions: probeData.supported,
-        availableVersions: probeData.available,
-        probeItems: probeData.items.map((i) => ({
-          version: i.version != null ? String(i.version) : undefined,
-          available: Boolean(i.available),
-          active: Boolean(i.active),
-          versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
-        })),
-        hostDefault: probeData.hostRaw || null,
-        multiVersion,
-      }),
-    [version, probeData, multiVersion],
-  );
+  const installState = useMemo(() => {
+    // softwareVersions.currentVersion / latest recorded install — treat as installed
+    // when probe matrix is empty (common when Node lives under /usr/local/ysk but PATH is bare)
+    const recorded = [
+      versionStatus?.currentVersion,
+      // If UI already says 已裝 N in version status notes path
+    ]
+      .map((v) => (v != null ? String(v).replace(/^v/i, '').split('.')[0] : ''))
+      .filter(Boolean);
+    const availableVersions = [
+      ...new Set([...probeData.available, ...recorded]),
+    ];
+    // Prefer host version string; fall back to recorded pin for lineage match
+    const hostDefault =
+      probeData.hostRaw ||
+      (versionStatus?.currentVersion
+        ? `v${String(versionStatus.currentVersion).replace(/^v/i, '')}`
+        : null);
+    return resolveRuntimeInstallState({
+      selectedVersion: version,
+      supportedVersions: probeData.supported,
+      availableVersions,
+      probeItems: probeData.items.map((i) => ({
+        version: i.version != null ? String(i.version) : undefined,
+        available: Boolean(i.available),
+        active: Boolean(i.active),
+        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
+      })),
+      hostDefault,
+      multiVersion,
+    });
+  }, [version, probeData, multiVersion, versionStatus?.currentVersion]);
 
   const parseExtraEnv = (): Record<string, string> => {
     const out: Record<string, string> = {};

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import { resolveBin, binPresent } from './resolve-bin.js';
+import {
+  resolveBin,
+  binPresent,
+  shellPrependYskToolchainPath,
+} from './resolve-bin.js';
 
 function host(opts: {
   pathExists?: (p: string) => boolean;
@@ -40,6 +44,15 @@ const empty = (argv: string[]): RunResult => ({
   exitCode: 1,
   argv,
   dryRun: false,
+});
+
+describe('shellPrependYskToolchainPath', () => {
+  it('is safe under set -u (no for-loop unbound vars)', () => {
+    const snip = shellPrependYskToolchainPath();
+    expect(snip).toContain('ls -d');
+    expect(snip).not.toMatch(/\bfor _ysk_d\b/);
+    expect(snip).toContain('${_ysk_extra:-}');
+  });
 });
 
 describe('resolveBin', () => {
