@@ -122,5 +122,23 @@
   "updateFailed": "Update failed",
   "updateIncomplete": "Update incomplete",
   "appliedUpdate": "Update applied",
-  "aptCandidate": "apt Candidate"
+  "aptCandidate": "apt Candidate",
+  "advice": {
+    "update": "Update recommended",
+    "skip": "Skip",
+    "watch": "Watch",
+    "urgent": "Urgent update"
+  },
+  "selectCol": "Select",
+  "selectAllUpgradable": "Select all upgradable",
+  "clearSelection": "Clear selection",
+  "updateSelected": "Update selected ({{n}})",
+  "batchConfirmTitle": "Confirm bulk package update?",
+  "batchConfirmBody": "Will upgrade {{n}} package(s) in order. Requires root and EXECUTE.",
+  "batchConfirmHighRisk": "Selection includes high-risk / approval packages; I have reviewed and approve apply.",
+  "batchProgress": "Bulk update {{n}}/{{total}}: {{pkg}}",
+  "batchDone": "Bulk done: {{ok}} ok, {{fail}} failed",
+  "batchPartialFail": "Some failed: {{list}}",
+  "batchEmpty": "Select upgradable packages first",
+  "batchNoneUpgradable": "No upgradable packages in current filter"
 }

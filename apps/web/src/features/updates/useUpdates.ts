@@ -135,6 +135,83 @@ export function useUpdates() {
     }
   }, [t]);
 
+  /**
+   * Sequential multi-package apply (no silent full-system apt upgrade).
+   * onProgress(i, total, packageName) for UI banners.
+   * Does not toast each package — caller shows summary.
+   */
+  const applyPackages = useCallback(
+    async (
+      rows: AdviceRow[],
+      opts?: {
+        confirmHighRisk?: boolean;
+        onProgress?: (n: number, total: number, pkg: string) => void;
+        quiet?: boolean;
+      },
+    ): Promise<{ ok: string[]; fail: Array<{ pkg: string; message: string }> }> => {
+      const ok: string[] = [];
+      const fail: Array<{ pkg: string; message: string }> = [];
+      if (!rows.length) return { ok, fail };
+      setBusy(true);
+      setError(null);
+      try {
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i]!;
+          opts?.onProgress?.(i + 1, rows.length, row.packageName);
+          try {
+            const r = await updatesApi.applyPackage({
+              packageName: row.packageName,
+              currentVersion: row.currentVersion,
+              candidateVersion: row.candidateVersion,
+              risk: row.risk,
+              cves: row.cves,
+              requiresApproval: row.requiresApproval,
+              summary: row.summary,
+              confirmHighRisk: Boolean(opts?.confirmHighRisk),
+            });
+            const notes = sanitizeOperatorNotes(r.notes);
+            if (r.blocked || !r.ok) {
+              fail.push({
+                pkg: row.packageName,
+                message: r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete'),
+              });
+            } else {
+              ok.push(row.packageName);
+            }
+          } catch (e) {
+            fail.push({
+              pkg: row.packageName,
+              message: e instanceof Error ? e.message : t('updates.updateFailed'),
+            });
+          }
+        }
+        if (!opts?.quiet) {
+          if (ok.length && !fail.length) {
+            toast.ok(
+              t('updates.batchDone', {
+                ok: ok.length,
+                fail: 0,
+                defaultValue: `批量完成：成功 ${ok.length}，失敗 0`,
+              }),
+            );
+          } else if (ok.length || fail.length) {
+            toast.error(
+              t('updates.batchDone', {
+                ok: ok.length,
+                fail: fail.length,
+                defaultValue: `批量完成：成功 ${ok.length}，失敗 ${fail.length}`,
+              }),
+            );
+          }
+        }
+        return { ok, fail };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [t],
+  );
+
   const applySelf = useCallback(async () => {
     setBusy(true);
     setError(null);
@@ -185,5 +262,6 @@ export function useUpdates() {
     load,
     applySelf,
     applyPackage,
+    applyPackages,
   };
 }

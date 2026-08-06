@@ -122,5 +122,23 @@
   "updateFailed": "更新失敗",
   "updateIncomplete": "更新未完成",
   "appliedUpdate": "已套用更新",
-  "aptCandidate": "套件管理 Candidate（候選版本）"
+  "aptCandidate": "套件管理 Candidate（候選版本）",
+  "advice": {
+    "update": "建議更新",
+    "skip": "略過",
+    "watch": "觀察",
+    "urgent": "緊急更新"
+  },
+  "selectCol": "選擇",
+  "selectAllUpgradable": "全選可升級",
+  "clearSelection": "清除選擇",
+  "updateSelected": "更新已選 ({{n}})",
+  "batchConfirmTitle": "確認批量更新套件？",
+  "batchConfirmBody": "將依序升級 {{n}} 個套件。需 root 且已開啟 EXECUTE。",
+  "batchConfirmHighRisk": "所選包含高風險／需審批套件，我已審閱並同意套用。",
+  "batchProgress": "批量更新 {{n}}/{{total}}：{{pkg}}",
+  "batchDone": "批量完成：成功 {{ok}}，失敗 {{fail}}",
+  "batchPartialFail": "部分失敗：{{list}}",
+  "batchEmpty": "請先勾選可升級套件",
+  "batchNoneUpgradable": "目前篩選結果沒有可升級套件"
 }

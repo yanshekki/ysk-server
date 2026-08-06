@@ -2356,6 +2356,11 @@
     "statusLabel": "Status",
     "addRecord": "+ Add record",
     "writeZoneFile": "Write & load zone",
+    "healthLoaded": "Loaded",
+    "stateLoaded": "Loaded",
+    "healthPublicNs": "Public NS",
+    "statePublicNs": "Public NS",
+    "publicNsHere": "→ this host",
     "requestLeTitle": "Request Let’s Encrypt for {{zone}}",
     "requestZoneSsl": "Request SSL for zone",
     "soaTitle": "SOA / default TTL",
@@ -2510,12 +2515,7 @@
     "healthHealPdns": "Heal PowerDNS bind",
     "healthHealPdnsHint": "Set local-address to public IP to avoid clashing with systemd-resolved on 0.0.0.0:53",
     "healthHealPdnsOk": "PowerDNS bound to {{ip}} and start attempted",
-    "healthHealPdnsFailed": "PowerDNS heal failed",
-    "healthPublicNs": "Public NS",
-    "statePublicNs": "Public NS",
-    "publicNsHere": "→ this host",
-    "healthLoaded": "Loaded",
-    "stateLoaded": "Loaded"
+    "healthHealPdnsFailed": "PowerDNS heal failed"
   },
   "email": {
     "title": "Email",
@@ -3236,6 +3236,8 @@
     "emptyRulesNotInstalled": "Install UFW then refresh",
     "allowPortTitle": "Allow port",
     "protocol": "Protocol",
+    "protoBoth": "Both",
+    "protoBothLabel": "TCP+UDP",
     "port": "Port",
     "portHint": "Pick a common port, or custom below",
     "portHintYsk": "All YSK service ports (Panel, Web, SSH, mail, FTP, DNS, DB, Redis); custom allowed",
@@ -8913,6 +8915,54 @@
     "runProtection": "Run protection probe",
     "notProbedYet": "Not probed yet"
   },
+  "software": {
+    "title": "Software",
+    "desc": "All managed software: install status, service health, newer versions, and links to use in projects.",
+    "tabs": {
+      "overview": "Overview",
+      "runtimes": "Runtimes",
+      "databases": "Databases",
+      "edge": "Domains & edge",
+      "mailFiles": "Mail & files",
+      "host": "Host services"
+    },
+    "stat": {
+      "catalog": "Catalog items",
+      "runtimesInstalled": "Runtimes installed",
+      "updates": "Updates / expandable",
+      "attention": "Needs attention"
+    },
+    "quickTitle": "Shortcuts",
+    "quickDesc": "Jump to a section or host tools",
+    "updatesTitle": "Updates & installable versions",
+    "updatesDesc": "Newer upstream or panel pins. Install, then select the runtime on a project.",
+    "allSoftware": "All software",
+    "status": {
+      "unknown": "—",
+      "installed": "Installed",
+      "notInstalled": "Not installed",
+      "running": "Running",
+      "missing": "Not detected",
+      "failed": "Failed",
+      "stopped": "Stopped"
+    },
+    "badge": {
+      "update": "Update available"
+    },
+    "meta": {
+      "installed": "Installed: {{list}}",
+      "default": "Default {{v}}",
+      "remote": "Upstream ~{{v}}",
+      "openManage": "Open manage page to install or configure"
+    },
+    "action": {
+      "manage": "Manage",
+      "useInProject": "Use in project",
+      "useInProjectTitle": "Open projects — set this runtime on an app",
+      "update": "Update",
+      "updateTitle": "Install or switch to {{v}}"
+    }
+  },
   "softwareBanner": {
     "titleDefault": "Required software is not installed",
     "missing": "Missing: {{names}}",
@@ -9544,7 +9594,25 @@
     "updateFailed": "Update failed",
     "updateIncomplete": "Update incomplete",
     "appliedUpdate": "Update applied",
-    "aptCandidate": "apt Candidate"
+    "aptCandidate": "apt Candidate",
+    "advice": {
+      "update": "Update recommended",
+      "skip": "Skip",
+      "watch": "Watch",
+      "urgent": "Urgent update"
+    },
+    "selectCol": "Select",
+    "selectAllUpgradable": "Select all upgradable",
+    "clearSelection": "Clear selection",
+    "updateSelected": "Update selected ({{n}})",
+    "batchConfirmTitle": "Confirm bulk package update?",
+    "batchConfirmBody": "Will upgrade {{n}} package(s) in order. Requires root and EXECUTE.",
+    "batchConfirmHighRisk": "Selection includes high-risk / approval packages; I have reviewed and approve apply.",
+    "batchProgress": "Bulk update {{n}}/{{total}}: {{pkg}}",
+    "batchDone": "Bulk done: {{ok}} ok, {{fail}} failed",
+    "batchPartialFail": "Some failed: {{list}}",
+    "batchEmpty": "Select upgradable packages first",
+    "batchNoneUpgradable": "No upgradable packages in current filter"
   },
   "users": {
     "userCount": "{{count}} users",
@@ -9667,53 +9735,5 @@
     "securityClearConfirm": "Type the username to confirm clearing 2FA",
     "securityClearOk": "Cleared 2FA for {{name}}",
     "securitySelfNote": "To set up your own 2FA, open Security → My security."
-  },
-  "software": {
-    "title": "Software",
-    "desc": "All managed software: install status, service health, newer versions, and links to use in projects.",
-    "tabs": {
-      "overview": "Overview",
-      "runtimes": "Runtimes",
-      "databases": "Databases",
-      "edge": "Domains & edge",
-      "mailFiles": "Mail & files",
-      "host": "Host services"
-    },
-    "stat": {
-      "catalog": "Catalog items",
-      "runtimesInstalled": "Runtimes installed",
-      "updates": "Updates / expandable",
-      "attention": "Needs attention"
-    },
-    "quickTitle": "Shortcuts",
-    "quickDesc": "Jump to a section or host tools",
-    "updatesTitle": "Updates & installable versions",
-    "updatesDesc": "Newer upstream or panel pins. Install, then select the runtime on a project.",
-    "allSoftware": "All software",
-    "status": {
-      "unknown": "—",
-      "installed": "Installed",
-      "notInstalled": "Not installed",
-      "running": "Running",
-      "missing": "Not detected",
-      "failed": "Failed",
-      "stopped": "Stopped"
-    },
-    "badge": {
-      "update": "Update available"
-    },
-    "meta": {
-      "installed": "Installed: {{list}}",
-      "default": "Default {{v}}",
-      "remote": "Upstream ~{{v}}",
-      "openManage": "Open manage page to install or configure"
-    },
-    "action": {
-      "manage": "Manage",
-      "useInProject": "Use in project",
-      "useInProjectTitle": "Open projects — set this runtime on an app",
-      "update": "Update",
-      "updateTitle": "Install or switch to {{v}}"
-    }
   }
 }

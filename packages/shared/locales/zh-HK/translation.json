@@ -2356,6 +2356,11 @@
     "statusLabel": "狀態",
     "addRecord": "+ 新增記錄",
     "writeZoneFile": "寫入並載入區域",
+    "healthLoaded": "已載入",
+    "stateLoaded": "已載入",
+    "healthPublicNs": "公網 NS",
+    "statePublicNs": "公網 NS",
+    "publicNsHere": "→ 呢部機",
     "requestLeTitle": "申請 {{zone}} Let’s Encrypt",
     "requestZoneSsl": "申請本區域 SSL",
     "soaTitle": "SOA / 預設 TTL",
@@ -2510,12 +2515,7 @@
     "healthHealPdns": "修復 PowerDNS 綁定",
     "healthHealPdnsHint": "將 local-address 設為公網 IP，避免同 systemd-resolved 搶 0.0.0.0:53",
     "healthHealPdnsOk": "PowerDNS 已綁 {{ip}} 並嘗試啟動",
-    "healthHealPdnsFailed": "PowerDNS 修復失敗",
-    "healthPublicNs": "公網 NS",
-    "statePublicNs": "公網 NS",
-    "publicNsHere": "→ 呢部機",
-    "healthLoaded": "已載入",
-    "stateLoaded": "已載入"
+    "healthHealPdnsFailed": "PowerDNS 修復失敗"
   },
   "email": {
     "title": "郵件",
@@ -3236,6 +3236,8 @@
     "emptyRulesNotInstalled": "安裝 UFW 後再整理",
     "allowPortTitle": "允許埠",
     "protocol": "協議",
+    "protoBoth": "兩者",
+    "protoBothLabel": "TCP+UDP",
     "port": "埠",
     "portHint": "選常用埠，或下面自訂",
     "portHintYsk": "YSK 服務埠一覽（Panel／Web／SSH／郵件／FTP／DNS／DB／Redis）；可自訂埠號",
@@ -8123,6 +8125,7 @@
     "phpExtHint": "選擇要一併安裝的擴充。不同 PHP 版本對應不同 apt 套件名（例：php8.2-mysql ≠ php8.3-mysql）。GD 即舊稱 gd2。",
     "phpExtSelect": "PHP 擴充 / 插件",
     "phpExtSelectHint": "套件會裝成 php{{version}}-…；核心 FPM/CLI 必裝；已裝項目唔會出現喺勾選清單",
+    "phpExtAlreadyOnHost": "已安裝擴充",
     "phpExtRequired": "必裝（核心）",
     "phpExtRecommended": "常用預設",
     "phpExtSelectAll": "全選擴充",
@@ -8131,12 +8134,23 @@
     "phpExtEmpty": "無符合的擴充",
     "pluginsSelect": "常用工具 / 插件",
     "pluginsSelectHint": "勾選後與執行環境一併安裝（例如 Node 的 PM2、Python 的 Poetry）",
+    "pluginsAvailableTitle": "可安裝工具",
+    "pluginsInstalledTitle": "主機已安裝",
+    "pluginsInstalledHint": "已在 PATH 偵測到；唔再出現於安裝勾選。可卸載（best-effort）。",
+    "pluginsAllInstalled": "目錄內工具均已在主機；如需新工具請先卸載或等待目錄更新。",
     "pluginsSearch": "搜尋工具（pm2、poetry、maven…）",
     "pluginsEmpty": "無符合的工具",
     "pluginsRecommended": "常用預設",
     "pluginsSelectAll": "全選可安裝",
     "pluginsNone": "不安裝工具",
     "pluginsInstallNote": "勾選後按「安裝選定工具」。首次裝 runtime 時可連工具一齊裝；已裝 runtime 請只按上方按鈕。",
+    "pluginStatusInstalled": "已安裝",
+    "pluginUninstall": "卸載",
+    "pluginUninstallConfirmTitle": "卸載工具？",
+    "pluginUninstallConfirm": "將從主機移除「{{name}}」（npm/apt/pip 等對應方式）。如有依賴此工具的服務，請先停用。",
+    "pluginUninstalled": "已卸載 {{name}}",
+    "pluginUninstallFailed": "卸載 {{name}} 失敗",
+    "pluginUninstallBlocked": "面板無權執行卸載（需要 root 與 EXECUTE）",
     "installPluginsOnly": "安裝選定工具（{{version}} 已有）",
     "installExtOnly": "安裝選定擴充（PHP {{version}} 已有）",
     "pluginAlreadyOnHost": "主機已有",
@@ -8446,18 +8460,6 @@
         "emptyText": "無符合項目"
       }
     },
-    "pluginsAvailableTitle": "可安裝工具",
-    "pluginsInstalledTitle": "主機已安裝",
-    "pluginsInstalledHint": "已在 PATH 偵測到；唔再出現於安裝勾選。可卸載（best-effort）。",
-    "pluginsAllInstalled": "目錄內工具均已在主機；如需新工具請先卸載或等待目錄更新。",
-    "pluginStatusInstalled": "已安裝",
-    "pluginUninstall": "卸載",
-    "pluginUninstallConfirmTitle": "卸載工具？",
-    "pluginUninstallConfirm": "將從主機移除「{{name}}」（npm/apt/pip 等對應方式）。如有依賴此工具的服務，請先停用。",
-    "pluginUninstalled": "已卸載 {{name}}",
-    "pluginUninstallFailed": "卸載 {{name}} 失敗",
-    "pluginUninstallBlocked": "面板無權執行卸載（需要 root 與 EXECUTE）",
-    "phpExtAlreadyOnHost": "已安裝擴充",
     "pluginsInstallSelected": "安裝選定工具 ({{n}})",
     "pluginInstallOk": "已安裝 {{n}} 個工具",
     "pluginInstallFailed": "工具安裝失敗",
@@ -8912,6 +8914,54 @@
     "probeDone": "探測完成",
     "runProtection": "執行保護探測",
     "notProbedYet": "尚未探測"
+  },
+  "software": {
+    "title": "軟件中心",
+    "desc": "全部可管理軟件一覽：安裝狀態、服務健康、新版本提示；可進入管理頁或用於專案。",
+    "tabs": {
+      "overview": "總覽",
+      "runtimes": "執行環境",
+      "databases": "資料庫",
+      "edge": "域名與邊緣",
+      "mailFiles": "郵件與檔案",
+      "host": "主機服務"
+    },
+    "stat": {
+      "catalog": "目錄項目",
+      "runtimesInstalled": "執行環境已裝",
+      "updates": "有新版本／可擴充",
+      "attention": "需關注"
+    },
+    "quickTitle": "快捷",
+    "quickDesc": "常用分區與主機服務入口",
+    "updatesTitle": "可更新／可安裝版本",
+    "updatesDesc": "上游或面板支援較新版本。安裝後可在專案選擇對應 runtime。",
+    "allSoftware": "全部軟件",
+    "status": {
+      "unknown": "—",
+      "installed": "已安裝",
+      "notInstalled": "未安裝",
+      "running": "運行中",
+      "missing": "未偵測",
+      "failed": "失敗",
+      "stopped": "已停止"
+    },
+    "badge": {
+      "update": "有新版本"
+    },
+    "meta": {
+      "installed": "已裝：{{list}}",
+      "default": "預設 {{v}}",
+      "remote": "上游約 {{v}}",
+      "openManage": "開啟管理頁安裝或設定"
+    },
+    "action": {
+      "manage": "管理",
+      "useInProject": "用到專案",
+      "useInProjectTitle": "到專案頁，可將此 runtime 用於應用",
+      "update": "更新",
+      "updateTitle": "前往安裝／切換至 {{v}}"
+    }
   },
   "softwareBanner": {
     "titleDefault": "尚未安裝所需軟件",
@@ -9544,7 +9594,25 @@
     "updateFailed": "更新失敗",
     "updateIncomplete": "更新未完成",
     "appliedUpdate": "已套用更新",
-    "aptCandidate": "套件管理 Candidate（候選版本）"
+    "aptCandidate": "套件管理 Candidate（候選版本）",
+    "advice": {
+      "update": "建議更新",
+      "skip": "略過",
+      "watch": "觀察",
+      "urgent": "緊急更新"
+    },
+    "selectCol": "選擇",
+    "selectAllUpgradable": "全選可升級",
+    "clearSelection": "清除選擇",
+    "updateSelected": "更新已選 ({{n}})",
+    "batchConfirmTitle": "確認批量更新套件？",
+    "batchConfirmBody": "將依序升級 {{n}} 個套件。需 root 且已開啟 EXECUTE。",
+    "batchConfirmHighRisk": "所選包含高風險／需審批套件，我已審閱並同意套用。",
+    "batchProgress": "批量更新 {{n}}/{{total}}：{{pkg}}",
+    "batchDone": "批量完成：成功 {{ok}}，失敗 {{fail}}",
+    "batchPartialFail": "部分失敗：{{list}}",
+    "batchEmpty": "請先勾選可升級套件",
+    "batchNoneUpgradable": "目前篩選結果沒有可升級套件"
   },
   "users": {
     "userCount": "{{count}} 用戶",
@@ -9667,53 +9735,5 @@
     "securityClearConfirm": "輸入用戶名以確認清除 2FA",
     "securityClearOk": "已清除 {{name}} 的 2FA",
     "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。"
-  },
-  "software": {
-    "title": "軟件中心",
-    "desc": "全部可管理軟件一覽：安裝狀態、服務健康、新版本提示；可進入管理頁或用於專案。",
-    "tabs": {
-      "overview": "總覽",
-      "runtimes": "執行環境",
-      "databases": "資料庫",
-      "edge": "域名與邊緣",
-      "mailFiles": "郵件與檔案",
-      "host": "主機服務"
-    },
-    "stat": {
-      "catalog": "目錄項目",
-      "runtimesInstalled": "執行環境已裝",
-      "updates": "有新版本／可擴充",
-      "attention": "需關注"
-    },
-    "quickTitle": "快捷",
-    "quickDesc": "常用分區與主機服務入口",
-    "updatesTitle": "可更新／可安裝版本",
-    "updatesDesc": "上游或面板支援較新版本。安裝後可在專案選擇對應 runtime。",
-    "allSoftware": "全部軟件",
-    "status": {
-      "unknown": "—",
-      "installed": "已安裝",
-      "notInstalled": "未安裝",
-      "running": "運行中",
-      "missing": "未偵測",
-      "failed": "失敗",
-      "stopped": "已停止"
-    },
-    "badge": {
-      "update": "有新版本"
-    },
-    "meta": {
-      "installed": "已裝：{{list}}",
-      "default": "預設 {{v}}",
-      "remote": "上游約 {{v}}",
-      "openManage": "開啟管理頁安裝或設定"
-    },
-    "action": {
-      "manage": "管理",
-      "useInProject": "用到專案",
-      "useInProjectTitle": "到專案頁，可將此 runtime 用於應用",
-      "update": "更新",
-      "updateTitle": "前往安裝／切換至 {{v}}"
-    }
   }
 }

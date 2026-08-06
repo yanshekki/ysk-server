@@ -54,6 +54,32 @@ export function isHighRisk(row: AdviceRow): boolean {
   );
 }
 
+/** Map API advice enum to locale (never show raw English "update"/"skip"). */
+export function adviceLabel(
+  advice: string | undefined | null,
+  tr: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  const a = (advice ?? '').trim().toLowerCase();
+  if (!a) return '—';
+  const key = `updates.advice.${a}`;
+  const out = tr(key, { defaultValue: '' });
+  if (out && out !== key) return out;
+  // fallbacks if locale missing
+  if (a === 'update') return tr('updates.advice.update', { defaultValue: '建議更新' });
+  if (a === 'skip') return tr('updates.advice.skip', { defaultValue: '略過' });
+  if (a === 'watch') return tr('updates.advice.watch', { defaultValue: '觀察' });
+  if (a === 'urgent') return tr('updates.advice.urgent', { defaultValue: '緊急更新' });
+  return advice ?? '—';
+}
+
+/** Row key stable for selection set */
+export function packageRowKey(row: {
+  packageName?: string;
+  currentVersion?: string;
+}): string {
+  return `${row.packageName ?? ''}@${row.currentVersion ?? ''}`;
+}
+
 export function relTime(iso: string | null, tr: (k: string, o?: Record<string, unknown>) => string): string {
   if (!iso) return '—';
   try {
@@ -154,6 +180,7 @@ export function UpdatesPage() {
     load,
     applySelf,
     applyPackage,
+    applyPackages,
   } = useUpdates();
 
   const [tab, setTab] = usePageTab(UPD_TABS, 'packages');
@@ -163,6 +190,10 @@ export function UpdatesPage() {
   const [q, setQ] = useState(qFromUrl);
   const [debouncedQ, setDebouncedQ] = useState(qFromUrl);
   const [highRiskApply, setHighRiskApply] = useState<AdviceRow | null>(null);
+  /** Selected package row keys for bulk update */
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set());
+  const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<string | null>(null);
 
   // Deep-link from software hub: /updates?q=nginx
   useEffect(() => {
@@ -224,6 +255,112 @@ export function UpdatesPage() {
   const filtered = inventory;
   const activeFilterCount =
     (q.trim() ? 1 : 0) + (riskFilter !== 'all' ? 1 : 0);
+
+  const filteredUpgradable = useMemo(
+    () => filtered.filter(isUpgradableRow),
+    [filtered],
+  );
+
+  const selectedRows = useMemo(() => {
+    return filtered.filter((r) => selectedKeys.has(packageRowKey(r)));
+  }, [filtered, selectedKeys]);
+
+  const selectedUpgradable = useMemo(
+    () => selectedRows.filter(isUpgradableRow),
+    [selectedRows],
+  );
+
+  const selectedHasHighRisk = useMemo(
+    () =>
+      selectedUpgradable.some(
+        (r) => r.risk === 'high' || r.risk === 'critical' || r.requiresApproval,
+      ),
+    [selectedUpgradable],
+  );
+
+  function toggleSelect(row: AdviceRow, on: boolean) {
+    if (!isUpgradableRow(row)) return;
+    const k = packageRowKey(row);
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(k);
+      else next.delete(k);
+      return next;
+    });
+  }
+
+  function selectAllUpgradableInFilter() {
+    if (!filteredUpgradable.length) {
+      toastEmptySelect();
+      return;
+    }
+    setSelectedKeys(new Set(filteredUpgradable.map(packageRowKey)));
+  }
+
+  function toastEmptySelect() {
+    // lightweight: set batch progress message
+    setBatchProgress(
+      t('updates.batchNoneUpgradable', {
+        defaultValue: '目前篩選結果沒有可升級套件',
+      }),
+    );
+  }
+
+  function openBatchConfirm() {
+    if (!selectedUpgradable.length) {
+      setBatchProgress(
+        t('updates.batchEmpty', { defaultValue: '請先勾選可升級套件' }),
+      );
+      return;
+    }
+    setBatchConfirmOpen(true);
+  }
+
+  async function runBatchApply() {
+    if (!selectedUpgradable.length) return;
+    setBatchConfirmOpen(false);
+    const rows = [...selectedUpgradable];
+    const result = await applyPackages(rows, {
+      confirmHighRisk: true,
+      quiet: true,
+      onProgress: (n, total, pkg) => {
+        setBatchProgress(
+          t('updates.batchProgress', {
+            n,
+            total,
+            pkg,
+            defaultValue: `批量更新 ${n}/${total}：${pkg}`,
+          }),
+        );
+      },
+    });
+    setSelectedKeys(new Set());
+    setBatchProgress(
+      t('updates.batchDone', {
+        ok: result.ok.length,
+        fail: result.fail.length,
+        defaultValue: `批量完成：成功 ${result.ok.length}，失敗 ${result.fail.length}`,
+      }) +
+        (result.fail.length
+          ? ' · ' +
+            t('updates.batchPartialFail', {
+              list: result.fail
+                .slice(0, 5)
+                .map((f) => `${f.pkg}: ${f.message}`)
+                .join('；'),
+              defaultValue: result.fail
+                .slice(0, 5)
+                .map((f) => `${f.pkg}: ${f.message}`)
+                .join('；'),
+            })
+          : ''),
+    );
+    void load(false, false, listQuery);
+  }
+
+  const allUpgradableSelected =
+    filteredUpgradable.length > 0 &&
+    filteredUpgradable.every((r) => selectedKeys.has(packageRowKey(r)));
 
   return (
     <FeaturePageLayout
@@ -326,6 +463,19 @@ export function UpdatesPage() {
       >
         {tab === 'packages' ? (
           <div className="tab-panel stack">
+            {batchProgress ? (
+              <Alert variant="info">
+                {batchProgress}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="u-ml-2"
+                  onClick={() => setBatchProgress(null)}
+                >
+                  {t('common.dismiss', { defaultValue: '關閉' })}
+                </Button>
+              </Alert>
+            ) : null}
             {busy && inventory.length === 0 ? (
               <LoadingBlock label={t('updates.scanning')} />
             ) : (
@@ -336,6 +486,53 @@ export function UpdatesPage() {
                   total: filtered.length,
                   when: relTime(lastAt, t),
                 })}
+                toolbar={
+                  <ActionBar align="end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={busy || !filteredUpgradable.length}
+                      onClick={selectAllUpgradableInFilter}
+                    >
+                      {t('updates.selectAllUpgradable', {
+                        defaultValue: '全選可升級',
+                      })}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy || selectedKeys.size === 0}
+                      onClick={() => setSelectedKeys(new Set())}
+                    >
+                      {t('updates.clearSelection', {
+                        defaultValue: '清除選擇',
+                      })}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      disabled={
+                        busy || !canApply || selectedUpgradable.length === 0
+                      }
+                      loading={busy && batchProgress != null}
+                      title={
+                        !canApply
+                          ? t('rbac.cap.updatesApply')
+                          : selectedUpgradable.length === 0
+                            ? t('updates.batchEmpty', {
+                                defaultValue: '請先勾選可升級套件',
+                              })
+                            : undefined
+                      }
+                      onClick={openBatchConfirm}
+                    >
+                      {t('updates.updateSelected', {
+                        n: selectedUpgradable.length,
+                        defaultValue: `更新已選 (${selectedUpgradable.length})`,
+                      })}
+                    </Button>
+                  </ActionBar>
+                }
                 filters={
                   <ListToolbar
                     search={q}
@@ -393,6 +590,35 @@ export function UpdatesPage() {
                   />
                 }
                 columns={[
+                  {
+                    key: 'sel',
+                    header: (
+                      <input
+                        type="checkbox"
+                        aria-label={t('updates.selectAllUpgradable')}
+                        checked={allUpgradableSelected}
+                        disabled={!filteredUpgradable.length || busy}
+                        onChange={(e) => {
+                          if (e.target.checked) selectAllUpgradableInFilter();
+                          else setSelectedKeys(new Set());
+                        }}
+                      />
+                    ),
+                    nowrap: true,
+                    render: (i) => {
+                      const up = isUpgradableRow(i);
+                      const k = packageRowKey(i);
+                      return (
+                        <input
+                          type="checkbox"
+                          aria-label={i.packageName}
+                          disabled={!up || busy || !canApply}
+                          checked={up && selectedKeys.has(k)}
+                          onChange={(e) => toggleSelect(i, e.target.checked)}
+                        />
+                      );
+                    },
+                  },
                   {
                     key: 'pkg',
                     header: t('updates.colPackage'),
@@ -454,13 +680,24 @@ export function UpdatesPage() {
                     key: 'advice',
                     header: t('updates.colAdvice'),
                     render: (i) => {
-                      const advice =
-                        humanizeOperatorNote(i.advice ?? i.summary ?? '') ??
-                        i.advice ??
-                        i.summary ??
-                        null;
-                      return advice ? (
-                        <span className="upd-pkg-cell__advice">{advice}</span>
+                      // Prefer localized advice enum; summary may already be i18n from API
+                      const fromEnum = adviceLabel(i.advice, t);
+                      const fromSummary =
+                        i.summary && i.summary !== i.advice
+                          ? humanizeOperatorNote(i.summary) ?? i.summary
+                          : null;
+                      // If advice is enum-like, show adviceLabel; else humanize
+                      const raw = (i.advice ?? '').toLowerCase();
+                      const isEnum = ['update', 'skip', 'watch', 'urgent'].includes(
+                        raw,
+                      );
+                      const text = isEnum
+                        ? fromEnum
+                        : fromSummary ||
+                          humanizeOperatorNote(i.advice ?? '') ||
+                          fromEnum;
+                      return text && text !== '—' ? (
+                        <span className="upd-pkg-cell__advice">{text}</span>
                       ) : (
                         <span className="muted">—</span>
                       );
@@ -468,7 +705,10 @@ export function UpdatesPage() {
                   },
                 ]}
                 rows={filtered}
-                rowKey={(i) => `${i.packageName}-${i.currentVersion}`}
+                rowKey={(i) => packageRowKey(i)}
+                rowClassName={(i) =>
+                  selectedKeys.has(packageRowKey(i)) ? 'is-selected' : undefined
+                }
                 rowActions={(i) => {
                   const hasUpgrade =
                     Boolean(i.candidateVersion) &&
@@ -721,7 +961,12 @@ export function UpdatesPage() {
         }
         description={
           highRiskApply
-            ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${highRiskApply.summary ?? highRiskApply.advice ?? ''}`
+            ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${
+                highRiskApply.summary
+                  ? humanizeOperatorNote(highRiskApply.summary) ??
+                    highRiskApply.summary
+                  : adviceLabel(highRiskApply.advice, t)
+              }`
             : ''
         }
         confirmLabel={t('common.apply')}
@@ -732,6 +977,48 @@ export function UpdatesPage() {
           setHighRiskApply(null);
           if (row) void applyPackage(row, true);
         }}
+      />
+
+      <ConfirmDialog
+        open={batchConfirmOpen}
+        onClose={() => {
+          if (!busy) setBatchConfirmOpen(false);
+        }}
+        title={t('updates.batchConfirmTitle', {
+          defaultValue: '確認批量更新套件？',
+        })}
+        description={
+          t('updates.batchConfirmBody', {
+            n: selectedUpgradable.length,
+            defaultValue: `將依序升級 ${selectedUpgradable.length} 個套件。需 root 且已開啟 EXECUTE。`,
+          }) +
+          (selectedHasHighRisk
+            ? '\n\n' +
+              t('updates.batchConfirmHighRisk', {
+                defaultValue:
+                  '所選包含高風險／需審批套件；確認即表示已審閱並同意套用。',
+              })
+            : '') +
+          '\n\n' +
+          selectedUpgradable
+            .slice(0, 12)
+            .map(
+              (r) =>
+                `• ${r.packageName}: ${r.currentVersion} → ${r.candidateVersion}`,
+            )
+            .join('\n') +
+          (selectedUpgradable.length > 12
+            ? `\n… +${selectedUpgradable.length - 12}`
+            : '')
+        }
+        confirmLabel={t('updates.updateSelected', {
+          n: selectedUpgradable.length,
+          defaultValue: `更新已選 (${selectedUpgradable.length})`,
+        })}
+        cancelLabel={t('common.cancel')}
+        danger={selectedHasHighRisk}
+        busy={busy}
+        onConfirm={() => void runBatchApply()}
       />
     </FeaturePageLayout>
   );

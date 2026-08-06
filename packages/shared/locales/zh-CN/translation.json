@@ -2356,6 +2356,11 @@
     "statusLabel": "状态",
     "addRecord": "+ 新增记录",
     "writeZoneFile": "写入并加载区域",
+    "healthLoaded": "已加载",
+    "stateLoaded": "已加载",
+    "healthPublicNs": "公网 NS",
+    "statePublicNs": "公网 NS",
+    "publicNsHere": "→ 本机",
     "requestLeTitle": "申请 {{zone}} Let’s Encrypt",
     "requestZoneSsl": "申请本区域 SSL",
     "soaTitle": "SOA / 默认 TTL",
@@ -2510,12 +2515,7 @@
     "healthHealPdns": "修复 PowerDNS 绑定",
     "healthHealPdnsHint": "将 local-address 设为公网 IP，避免与 systemd-resolved 抢 0.0.0.0:53",
     "healthHealPdnsOk": "PowerDNS 已绑定 {{ip}} 并尝试启动",
-    "healthHealPdnsFailed": "PowerDNS 修复失败",
-    "healthPublicNs": "公网 NS",
-    "statePublicNs": "公网 NS",
-    "publicNsHere": "→ 本机",
-    "healthLoaded": "已加载",
-    "stateLoaded": "已加载"
+    "healthHealPdnsFailed": "PowerDNS 修复失败"
   },
   "email": {
     "title": "邮件",
@@ -3236,6 +3236,8 @@
     "emptyRulesNotInstalled": "安装 UFW 后再刷新",
     "allowPortTitle": "允许端口",
     "protocol": "协议",
+    "protoBoth": "两者",
+    "protoBothLabel": "TCP+UDP",
     "port": "端口",
     "portHint": "选常用端口，或下面自定义",
     "portHintYsk": "YSK 服务端口一览（Panel／Web／SSH／邮件／FTP／DNS／DB／Redis）；可自定义",
@@ -8913,6 +8915,54 @@
     "runProtection": "执行保护探测",
     "notProbedYet": "尚未探测"
   },
+  "software": {
+    "title": "软件中心",
+    "desc": "全部可管理软件一览：安装状态、服务健康、新版本提示；可进入管理页或用于项目。",
+    "tabs": {
+      "overview": "总览",
+      "runtimes": "运行环境",
+      "databases": "数据库",
+      "edge": "域名与边缘",
+      "mailFiles": "邮件与文件",
+      "host": "主机服务"
+    },
+    "stat": {
+      "catalog": "目录项目",
+      "runtimesInstalled": "运行环境已装",
+      "updates": "有新版本／可扩充",
+      "attention": "需关注"
+    },
+    "quickTitle": "快捷",
+    "quickDesc": "常用分区与主机服务入口",
+    "updatesTitle": "可更新／可安装版本",
+    "updatesDesc": "上游或面板支持较新版本。安装后可在项目选择对应 runtime。",
+    "allSoftware": "全部软件",
+    "status": {
+      "unknown": "—",
+      "installed": "已安装",
+      "notInstalled": "未安装",
+      "running": "运行中",
+      "missing": "未检测",
+      "failed": "失败",
+      "stopped": "已停止"
+    },
+    "badge": {
+      "update": "有新版本"
+    },
+    "meta": {
+      "installed": "已装：{{list}}",
+      "default": "默认 {{v}}",
+      "remote": "上游约 {{v}}",
+      "openManage": "打开管理页安装或设置"
+    },
+    "action": {
+      "manage": "管理",
+      "useInProject": "用到项目",
+      "useInProjectTitle": "到项目页，可将此 runtime 用于应用",
+      "update": "更新",
+      "updateTitle": "前往安装／切换至 {{v}}"
+    }
+  },
   "softwareBanner": {
     "titleDefault": "尚未安装所需软件",
     "missing": "缺少：{{names}}",
@@ -9544,7 +9594,25 @@
     "updateFailed": "更新失败",
     "updateIncomplete": "更新未完成",
     "appliedUpdate": "已应用更新",
-    "aptCandidate": "apt Candidate（候选版本）"
+    "aptCandidate": "apt Candidate（候选版本）",
+    "advice": {
+      "update": "建议更新",
+      "skip": "跳过",
+      "watch": "观察",
+      "urgent": "紧急更新"
+    },
+    "selectCol": "选择",
+    "selectAllUpgradable": "全选可升级",
+    "clearSelection": "清除选择",
+    "updateSelected": "更新已选 ({{n}})",
+    "batchConfirmTitle": "确认批量更新软件包？",
+    "batchConfirmBody": "将按序升级 {{n}} 个软件包。需 root 且已开启 EXECUTE。",
+    "batchConfirmHighRisk": "所选含高风险/需审批软件包，我已审阅并同意套用。",
+    "batchProgress": "批量更新 {{n}}/{{total}}：{{pkg}}",
+    "batchDone": "批量完成：成功 {{ok}}，失败 {{fail}}",
+    "batchPartialFail": "部分失败：{{list}}",
+    "batchEmpty": "请先勾选可升级软件包",
+    "batchNoneUpgradable": "当前筛选没有可升级软件包"
   },
   "users": {
     "userCount": "{{count}} 用户",
@@ -9667,53 +9735,5 @@
     "securityClearConfirm": "输入用户名以确认清除 2FA",
     "securityClearOk": "已清除 {{name}} 的 2FA",
     "securitySelfNote": "要为自己设置 2FA，请到「安全 → 我的安全」。"
-  },
-  "software": {
-    "title": "软件中心",
-    "desc": "全部可管理软件一览：安装状态、服务健康、新版本提示；可进入管理页或用于项目。",
-    "tabs": {
-      "overview": "总览",
-      "runtimes": "运行环境",
-      "databases": "数据库",
-      "edge": "域名与边缘",
-      "mailFiles": "邮件与文件",
-      "host": "主机服务"
-    },
-    "stat": {
-      "catalog": "目录项目",
-      "runtimesInstalled": "运行环境已装",
-      "updates": "有新版本／可扩充",
-      "attention": "需关注"
-    },
-    "quickTitle": "快捷",
-    "quickDesc": "常用分区与主机服务入口",
-    "updatesTitle": "可更新／可安装版本",
-    "updatesDesc": "上游或面板支持较新版本。安装后可在项目选择对应 runtime。",
-    "allSoftware": "全部软件",
-    "status": {
-      "unknown": "—",
-      "installed": "已安装",
-      "notInstalled": "未安装",
-      "running": "运行中",
-      "missing": "未检测",
-      "failed": "失败",
-      "stopped": "已停止"
-    },
-    "badge": {
-      "update": "有新版本"
-    },
-    "meta": {
-      "installed": "已装：{{list}}",
-      "default": "默认 {{v}}",
-      "remote": "上游约 {{v}}",
-      "openManage": "打开管理页安装或设置"
-    },
-    "action": {
-      "manage": "管理",
-      "useInProject": "用到项目",
-      "useInProjectTitle": "到项目页，可将此 runtime 用于应用",
-      "update": "更新",
-      "updateTitle": "前往安装／切换至 {{v}}"
-    }
   }
 }
