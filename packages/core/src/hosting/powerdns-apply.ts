@@ -278,7 +278,147 @@ export interface PowerDnsInstallResult {
 }
 
 /**
+ * Bash: set local-address via pdns.d drop-in (public IPv4 only).
+ * Avoids 0.0.0.0:53 which conflicts with systemd-resolved on 127.0.0.53/54:53.
+ * Override with env YSK_PDNS_LOCAL_ADDRESS=x.x.x.x
+ */
+export function configurePdnsLocalAddressShell(): string {
+  return [
+    'set -euo pipefail',
+    'CONF_DIR=/etc/powerdns',
+    'CONF="$CONF_DIR/pdns.conf"',
+    'DROP="$CONF_DIR/pdns.d/ysk-local-address.conf"',
+    'mkdir -p "$CONF_DIR/pdns.d" 2>/dev/null || true',
+    'if [ -n "${YSK_PDNS_LOCAL_ADDRESS:-}" ]; then',
+    '  PUB="$YSK_PDNS_LOCAL_ADDRESS"',
+    'else',
+    '  PUB=$(ip -4 route get 1.1.1.1 2>/dev/null | awk \'{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}\')',
+    '  if [ -z "$PUB" ] || [ "$PUB" = "127.0.0.1" ]; then',
+    '    PUB=$(hostname -I 2>/dev/null | tr " " "\\n" | grep -E "^[0-9]+\\." | grep -vE "^(127\\.)" | head -1)',
+    '  fi',
+    'fi',
+    'if [ -z "$PUB" ]; then',
+    '  echo "YSK_PDNS_NO_PUBLIC_IP" >&2',
+    '  exit 2',
+    'fi',
+    'echo "YSK_PDNS_LOCAL_ADDRESS=$PUB"',
+    'cat > "$DROP" <<EOF',
+    '# Managed by YSK Server — bind only public IP (avoid systemd-resolved 127.0.0.53:53 conflict)',
+    'local-address=$PUB',
+    'local-port=53',
+    'EOF',
+    'if [ -f "$CONF" ]; then',
+    '  sed -i -E "s/^[[:space:]]*local-address=.*/# &  # disabled by ysk (see pdns.d\\/ysk-local-address.conf)/" "$CONF" || true',
+    '  sed -i -E "s/^[[:space:]]*local-ipv6=.*/# &  # disabled by ysk/" "$CONF" || true',
+    'fi',
+    'if [ -f "$CONF" ] && ! grep -qE "^[[:space:]]*include-dir=" "$CONF" 2>/dev/null; then',
+    '  echo "include-dir=$CONF_DIR/pdns.d" >> "$CONF"',
+    'fi',
+    'systemctl stop pdns 2>/dev/null || true',
+    'systemctl reset-failed pdns 2>/dev/null || true',
+    'systemctl enable pdns 2>/dev/null || true',
+    'systemctl start pdns',
+    'sleep 1',
+    'systemctl is-active pdns',
+    'ss -ulnp 2>/dev/null | grep -E ":53\\s" || true',
+  ].join('\n');
+}
+
+export type PowerDnsHealResult = {
+  ok: boolean;
+  localAddress?: string;
+  notes: string[];
+  commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
+  requiresExecute: boolean;
+  requiresRoot: boolean;
+  unitActive?: boolean;
+  listenUdp53?: boolean;
+};
+
+/**
+ * Fix PowerDNS crash-loop: bind only public IPv4 instead of 0.0.0.0:53
+ * (conflicts with systemd-resolved on 127.0.0.53/54).
+ */
+export async function healPowerDnsListener(input: {
+  host: HostExecutor;
+  /** Override bind address (default: detect public IPv4) */
+  localAddress?: string;
+}): Promise<PowerDnsHealResult> {
+  const notes: string[] = [];
+  const commandResults: PowerDnsHealResult['commandResults'] = [];
+  const execute = input.host.executeEnabled() && input.host.isRoot();
+  if (!execute) {
+    return {
+      ok: false,
+      notes: [tl('notes.auto.n1163'), 'Need root + EXECUTE to rewrite pdns local-address'],
+      commandResults,
+      requiresExecute: !input.host.executeEnabled(),
+      requiresRoot: !input.host.isRoot(),
+    };
+  }
+
+  const envPrefix = input.localAddress?.trim()
+    ? `export YSK_PDNS_LOCAL_ADDRESS=${JSON.stringify(input.localAddress.trim())}; `
+    : '';
+  const script = configurePdnsLocalAddressShell();
+  const r = await input.host.runCommand(
+    ['bash', '-c', `${envPrefix}${script}`],
+    { timeoutMs: 60_000 },
+  );
+  commandResults.push({
+    argv: ['bash', '-c', 'heal-pdns-local-address'],
+    exitCode: r.exitCode,
+    stderr: r.stderr,
+  });
+  const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+  notes.push(...out.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 20));
+
+  const addrMatch = out.match(/YSK_PDNS_LOCAL_ADDRESS=([0-9.]+)/);
+  const localAddress = addrMatch?.[1];
+  if (r.exitCode !== 0) {
+    if (out.includes('YSK_PDNS_NO_PUBLIC_IP')) {
+      notes.unshift('Could not detect public IPv4 for local-address');
+    }
+    return {
+      ok: false,
+      localAddress,
+      notes,
+      commandResults,
+      requiresExecute: false,
+      requiresRoot: false,
+    };
+  }
+
+  // Probe listen
+  const ss = await input.host.runCommand(
+    ['bash', '-c', 'ss -ulnp 2>/dev/null | grep -E ":53\\s" || true'],
+    { timeoutMs: 5_000 },
+  );
+  const active = await input.host.runCommand(['systemctl', 'is-active', 'pdns'], {
+    timeoutMs: 5_000,
+  });
+  const unitActive = (active.stdout || '').trim() === 'active';
+  const listenUdp53 = /:53\b/.test(ss.stdout || '');
+  notes.push(
+    unitActive ? 'pdns unit: active' : 'pdns unit: not active',
+    listenUdp53 ? 'UDP/53: listening' : 'UDP/53: still not listening',
+  );
+
+  return {
+    ok: unitActive && listenUdp53,
+    localAddress,
+    notes,
+    commandResults,
+    requiresExecute: false,
+    requiresRoot: false,
+    unitActive,
+    listenUdp53,
+  };
+}
+
+/**
  * Write PowerDNS install helper under dataDir; optional apt install when root+EXECUTE.
+ * After install, configures local-address to public IP (systemd-resolved safe).
  * Never fakes success when install was requested but skipped/failed.
  */
 export async function installPowerDnsPackages(input: {
@@ -286,11 +426,14 @@ export async function installPowerDnsPackages(input: {
   host: HostExecutor;
   /** When true, run apt install (needs root + YSK_EXECUTE) */
   install?: boolean;
+  /** Preferred bind IP for authoritative DNS */
+  localAddress?: string;
 }): Promise<PowerDnsInstallResult> {
   const dir = join(input.dataDir, 'dns', 'powerdns');
   mkdirSync(dir, { recursive: true });
   const scriptPath = join(dir, 'install-pdns.sh');
   const packages = ['pdns-server', 'pdns-backend-bind', 'pdns-tools'];
+  const healBody = configurePdnsLocalAddressShell();
   writeFileSync(
     scriptPath,
     [
@@ -300,7 +443,11 @@ export async function installPowerDnsPackages(input: {
       'export DEBIAN_FRONTEND=noninteractive',
       'apt-get update',
       `apt-get install -y ${packages.join(' ')}`,
-      'systemctl enable --now pdns',
+      '# Bind public IP only — 0.0.0.0:53 conflicts with systemd-resolved 127.0.0.53:53',
+      input.localAddress?.trim()
+        ? `export YSK_PDNS_LOCAL_ADDRESS=${JSON.stringify(input.localAddress.trim())}`
+        : 'true',
+      healBody,
       'echo "PowerDNS installed — use ysk-server hosting powerdns-load --load"',
       '',
     ].join('\n'),
@@ -309,6 +456,7 @@ export async function installPowerDnsPackages(input: {
   const notes = [
     `Install helper: ${scriptPath}`,
     `Packages: ${packages.join(', ')}`,
+    'Configures local-address to public IPv4 (avoids systemd-resolved :53 conflict)',
     'After install, load zones with pdnsutil via powerdns/load API',
   ];
   const written = [scriptPath];
@@ -322,7 +470,14 @@ export async function installPowerDnsPackages(input: {
       '-c',
       `DEBIAN_FRONTEND=noninteractive apt-get install -y ${packages.join(' ')}`,
     ]);
-    commands.push(['systemctl', 'enable', '--now', 'pdns']);
+    // heal replaces bare enable --now
+    commands.push([
+      'bash',
+      '-c',
+      input.localAddress?.trim()
+        ? `export YSK_PDNS_LOCAL_ADDRESS=${JSON.stringify(input.localAddress.trim())}; ${configurePdnsLocalAddressShell()}`
+        : configurePdnsLocalAddressShell(),
+    ]);
   }
   const execute = Boolean(want && input.host.executeEnabled() && input.host.isRoot());
   if (want && !execute) {

@@ -513,11 +513,15 @@ export async function handleHostingRoutes(
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/powerdns/install') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { install?: boolean };
+        const data = JSON.parse(raw || '{}') as {
+          install?: boolean;
+          localAddress?: string;
+        };
         const result = await installPowerDnsPackages({
           dataDir: ctx.dataDir,
           host: ctx.host,
           install: data.install,
+          localAddress: data.localAddress,
         });
         ctx.audit.append({
           actor: user.username,
@@ -526,6 +530,30 @@ export async function handleHostingRoutes(
           ok: result.ok,
         });
         sendJson(res, result.ok || !data.install ? 200 : 422, result);
+        return true;
+      }
+      /** Fix pdns EADDRINUSE: bind public IP only (not 0.0.0.0 vs systemd-resolved) */
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/powerdns/heal') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { localAddress?: string };
+        const { healPowerDnsListener } = await import('@ysk/core');
+        const result = await healPowerDnsListener({
+          host: ctx.host,
+          localAddress: data.localAddress,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.powerdns.heal',
+          detail: {
+            ok: result.ok,
+            localAddress: result.localAddress,
+            unitActive: result.unitActive,
+            listenUdp53: result.listenUdp53,
+          },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/dns/powerdns/load') {

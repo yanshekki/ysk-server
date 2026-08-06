@@ -2500,13 +2500,17 @@
     "healthOpen53Failed": "Failed to open 53",
     "healthPortClosed": "not listening",
     "healthPortOpenAlready": "53 appears open",
-    "healthHint": "dig @publicIP connection refused usually means named is down or firewall blocks 53. Install DNS, write zone, open 53, then probe.",
+    "healthHint": "dig @publicIP connection refused usually means pdns is down (vs resolved on :53) or firewall. Heal PowerDNS first, open 53, write zones. If NS is still Cloudflare, normal dig still hits CF.",
     "stateService": "Service",
     "stateListen": "Listen",
     "stateWritten": "Written",
     "stateAnswering": "Local answering",
     "lookupServer": "Server (@)",
-    "lookupServerHint": "127.0.0.1 = local auth; public IP tests external; empty = system resolver"
+    "lookupServerHint": "127.0.0.1 = local auth; public IP tests external; empty = system resolver",
+    "healthHealPdns": "Heal PowerDNS bind",
+    "healthHealPdnsHint": "Set local-address to public IP to avoid clashing with systemd-resolved on 0.0.0.0:53",
+    "healthHealPdnsOk": "PowerDNS bound to {{ip}} and start attempted",
+    "healthHealPdnsFailed": "PowerDNS heal failed"
   },
   "email": {
     "title": "Email",

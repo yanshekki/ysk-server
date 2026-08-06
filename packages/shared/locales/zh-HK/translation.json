@@ -2500,13 +2500,17 @@
     "healthOpen53Failed": "開放 53 失敗",
     "healthPortClosed": "未聽 53",
     "healthPortOpenAlready": "53 似已在聽",
-    "healthHint": "dig @公網IP connection refused 通常係 named 未開或防火牆擋 53。先裝 DNS 軟件、寫入區域檔、開 53，再探測。",
+    "healthHint": "dig @公網IP connection refused 通常係 pdns 起唔到（同 resolved 搶 53）或防火牆。先「修復 PowerDNS」，再開 53，再寫入 zone。公網 NS 若仍係 Cloudflare，正常 dig 仍問 CF。",
     "stateService": "服務",
     "stateListen": "聽埠",
     "stateWritten": "已寫入",
     "stateAnswering": "本機 answering",
     "lookupServer": "查詢伺服器（@）",
-    "lookupServerHint": "127.0.0.1 = 本機權威；公網 IP 測對外；留空用系統 resolver"
+    "lookupServerHint": "127.0.0.1 = 本機權威；公網 IP 測對外；留空用系統 resolver",
+    "healthHealPdns": "修復 PowerDNS 綁定",
+    "healthHealPdnsHint": "將 local-address 設為公網 IP，避免同 systemd-resolved 搶 0.0.0.0:53",
+    "healthHealPdnsOk": "PowerDNS 已綁 {{ip}} 並嘗試啟動",
+    "healthHealPdnsFailed": "PowerDNS 修復失敗"
   },
   "email": {
     "title": "郵件",

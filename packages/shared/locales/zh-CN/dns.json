@@ -189,11 +189,15 @@
   "healthOpen53Failed": "开放 53 失败",
   "healthPortClosed": "未监听 53",
   "healthPortOpenAlready": "53 似已在听",
-  "healthHint": "dig @公网IP connection refused 通常是 named 未开或防火墙挡 53。先装 DNS 软件、写入区域文件、开 53，再探测。",
+  "healthHint": "dig @公网IP connection refused 通常是 pdns 起不来（与 resolved 抢 53）或防火墙。先「修复 PowerDNS」，再开 53，再写入 zone。公网 NS 若仍是 Cloudflare，正常 dig 仍问 CF。",
   "stateService": "服务",
   "stateListen": "监听",
   "stateWritten": "已写入",
   "stateAnswering": "本机 answering",
   "lookupServer": "查询服务器（@）",
-  "lookupServerHint": "127.0.0.1 = 本机权威；公网 IP 测对外；留空用系统 resolver"
+  "lookupServerHint": "127.0.0.1 = 本机权威；公网 IP 测对外；留空用系统 resolver",
+  "healthHealPdns": "修复 PowerDNS 绑定",
+  "healthHealPdnsHint": "将 local-address 设为公网 IP，避免与 systemd-resolved 抢 0.0.0.0:53",
+  "healthHealPdnsOk": "PowerDNS 已绑定 {{ip}} 并尝试启动",
+  "healthHealPdnsFailed": "PowerDNS 修复失败"
 }

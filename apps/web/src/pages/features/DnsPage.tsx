@@ -403,6 +403,7 @@ export function DnsPage() {
   const [health, setHealth] = useState<DnsHealth | null>(null);
   const [healthBusy, setHealthBusy] = useState(false);
   const [fwBusy, setFwBusy] = useState(false);
+  const [pdnsHealBusy, setPdnsHealBusy] = useState(false);
   const [lookupServer, setLookupServer] = useState('127.0.0.1');
 
   const refreshHealth = useCallback(async () => {
@@ -554,6 +555,50 @@ export function DnsPage() {
               </Button>
               <Button
                 variant="primary"
+                size="sm"
+                loading={pdnsHealBusy}
+                disabled={health.ok && health.unitActive}
+                title={t('dns.healthHealPdnsHint')}
+                onClick={() => {
+                  setPdnsHealBusy(true);
+                  void api
+                    .requestRawAllowStatus<{
+                      ok?: boolean;
+                      notes?: string[];
+                      localAddress?: string;
+                      blocked?: boolean;
+                      blockMessage?: string;
+                    }>('/api/v1/hosting/dns/powerdns/heal', {
+                      method: 'POST',
+                      body: '{}',
+                      allowStatuses: [403, 422],
+                    })
+                    .then((r) => {
+                      if (r.blocked) {
+                        toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('dns.healthHealPdnsFailed'));
+                      } else if (r.ok === false) {
+                        toast.error(
+                          r.notes?.[0] ?? t('dns.healthHealPdnsFailed'),
+                          { detail: r.notes?.slice(1, 4).join('\n') },
+                        );
+                      } else {
+                        toast.ok(
+                          t('dns.healthHealPdnsOk', {
+                            ip: r.localAddress ?? '—',
+                          }),
+                          { detail: r.notes?.slice(0, 3).join('\n') },
+                        );
+                      }
+                      return refreshHealth();
+                    })
+                    .catch((e: Error) => toast.error(e.message))
+                    .finally(() => setPdnsHealBusy(false));
+                }}
+              >
+                {t('dns.healthHealPdns')}
+              </Button>
+              <Button
+                variant="secondary"
                 size="sm"
                 loading={fwBusy}
                 disabled={health.listenUdp53 && health.listenTcp53}
