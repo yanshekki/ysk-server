@@ -265,7 +265,8 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     recommended: true,
     installer: 'rustup-component',
     rustupComponents: ['clippy'],
-    bins: ['cargo-clippy'],
+    // cargo-clippy lives under toolchain bin; also probe rustup component list
+    bins: ['cargo-clippy', 'clippy-driver'],
   },
   {
     id: 'rustfmt',
@@ -276,7 +277,7 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     recommended: true,
     installer: 'rustup-component',
     rustupComponents: ['rustfmt'],
-    bins: ['rustfmt'],
+    bins: ['rustfmt', 'cargo-fmt'],
   },
   {
     id: 'cargo-watch',
@@ -297,7 +298,7 @@ export const RUNTIME_PLUGINS: RuntimePluginSpec[] = [
     group: 'dev',
     installer: 'cargo-install',
     cargoCrates: ['cargo-edit'],
-    bins: ['cargo-add'],
+    bins: ['cargo-add', 'cargo-rm', 'cargo-upgrade'],
   },
 
   // —— Java ——
@@ -409,9 +410,12 @@ export function buildRuntimePluginScriptLines(
     'ysk_plugin_fail() { YSK_PLUGIN_FAILED="${YSK_PLUGIN_FAILED} $1"; echo "YSK_PLUGIN_SKIP:$1" >&2; }',
     'echo "Installing companion tools: ' + ids.join(', ') + '"',
     // Prefer concrete bin dirs (glob in PATH is unreliable)
-    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"',
+    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:/usr/local/ysk/rust/bin:/usr/local/ysk/rust/cargo/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:/root/.cargo/bin:$HOME/go/bin:$PATH"',
     'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/python/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
     'export PATH',
+    'export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}"',
+    'export RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"',
+    '[ -d /usr/local/ysk/rust ] && export RUSTUP_HOME="${RUSTUP_HOME:-/usr/local/ysk/rust/rustup}" CARGO_HOME="${CARGO_HOME:-/usr/local/ysk/rust/cargo}"',
   ];
 
   for (const p of plugins) {
@@ -485,8 +489,18 @@ export function buildRuntimePluginScriptLines(
       }
       case 'cargo-install': {
         for (const crate of p.cargoCrates ?? []) {
+          const bin = (p.bins && p.bins[0]) || crate;
           lines.push(
-            `if command -v cargo >/dev/null 2>&1; then cargo install ${JSON.stringify(crate)} || ysk_plugin_fail ${p.id}`,
+            'ysk_cargo() { command -v cargo 2>/dev/null || { [ -x /usr/local/ysk/rust/bin/cargo ] && echo /usr/local/ysk/rust/bin/cargo; }; }',
+            `CARGO_BIN="$(ysk_cargo)"`,
+            `if [ -n "$CARGO_BIN" ]; then`,
+            `  "$CARGO_BIN" install ${JSON.stringify(crate)} --locked 2>/dev/null || "$CARGO_BIN" install ${JSON.stringify(crate)} || ysk_plugin_fail ${p.id}`,
+            // Symlink into /usr/local/bin so panel probe (command -v) always finds it
+            `  for _cand in "$CARGO_HOME/bin/${bin}" "$HOME/.cargo/bin/${bin}" /root/.cargo/bin/${bin} /usr/local/ysk/rust/cargo/bin/${bin}; do`,
+            `    if [ -x "$_cand" ]; then ln -sfn "$_cand" /usr/local/bin/${bin} 2>/dev/null || true; break; fi`,
+            `  done`,
+            `  export PATH="/usr/local/bin:$CARGO_HOME/bin:$PATH"`,
+            `  command -v ${JSON.stringify(bin)} >/dev/null 2>&1 || ysk_plugin_fail ${p.id}`,
             `else ysk_plugin_fail ${p.id}; fi`,
           );
         }
@@ -495,8 +509,19 @@ export function buildRuntimePluginScriptLines(
       case 'rustup-component': {
         for (const c of p.rustupComponents ?? []) {
           lines.push(
-            `if command -v rustup >/dev/null 2>&1; then rustup component add ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
-            `elif [ -x /usr/local/ysk/rust/bin/rustup ]; then /usr/local/ysk/rust/bin/rustup component add ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
+            'ysk_rustup() { command -v rustup 2>/dev/null || { [ -x /usr/local/ysk/rust/bin/rustup ] && echo /usr/local/ysk/rust/bin/rustup; }; }',
+            `RU="$(ysk_rustup)"`,
+            `if [ -n "$RU" ]; then`,
+            `  "$RU" component add ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
+            // Ensure toolchain bins on PATH + optional symlinks for probe
+            `  export PATH="$("$RU" which rustc 2>/dev/null | xargs -r dirname 2>/dev/null):$HOME/.cargo/bin:/root/.cargo/bin:/usr/local/ysk/rust/bin:$PATH"`,
+            `  if [ ${JSON.stringify(c)} = "clippy" ]; then`,
+            `    command -v cargo-clippy >/dev/null 2>&1 || "$RU" which cargo-clippy >/dev/null 2>&1 || ysk_plugin_fail ${p.id}`,
+            `  elif [ ${JSON.stringify(c)} = "rustfmt" ]; then`,
+            `    command -v rustfmt >/dev/null 2>&1 || "$RU" which rustfmt >/dev/null 2>&1 || ysk_plugin_fail ${p.id}`,
+            `  fi`,
+            // Verify via rustup component list (authoritative)
+            `  "$RU" component list --installed 2>/dev/null | grep -qiE ${JSON.stringify(c)} || ysk_plugin_fail ${p.id}`,
             `else ysk_plugin_fail ${p.id}; fi`,
           );
         }
@@ -867,38 +892,141 @@ export function runtimePluginsCatalogDto(kind: RuntimeKind) {
   };
 }
 
+/** Shell PATH prefix shared by install scripts and probe (cargo/rustup homes). */
+export function pluginProbePathExport(): string {
+  return [
+    'export PATH="/usr/local/bin:/usr/local/ysk/poetry/bin:/usr/local/ysk/bun/bin:/usr/local/ysk/rust/bin:/usr/local/ysk/rust/cargo/bin:$HOME/.local/bin:/root/.local/bin:$HOME/.cargo/bin:/root/.cargo/bin:$HOME/go/bin:$PATH"',
+    'for _d in /usr/local/ysk/node/*/bin /usr/local/ysk/python/*/bin; do [ -d "$_d" ] && PATH="$_d:$PATH"; done',
+    'export PATH',
+    'RU="$(command -v rustup 2>/dev/null || true)"',
+    '[ -z "$RU" ] && [ -x /usr/local/ysk/rust/bin/rustup ] && RU=/usr/local/ysk/rust/bin/rustup',
+    'if [ -n "$RU" ]; then',
+    '  _tb="$("$RU" which rustc 2>/dev/null | xargs -r dirname 2>/dev/null || true)"',
+    '  [ -n "$_tb" ] && PATH="$_tb:$PATH"',
+    'fi',
+    'export PATH',
+  ].join('\n');
+}
+
 /**
- * Probe which plugins already exist on PATH (via bins).
- * Defaults = recommended && !installed (skip already present tools).
+ * Probe which plugins already exist.
+ * - bins: command -v with cargo/rustup PATH
+ * - rustup-component: also `rustup component list --installed`
+ * Defaults = recommended && !installed.
  */
 export async function runtimePluginsCatalogWithProbe(
   kind: RuntimeKind,
-  host: { runCommand: (argv: string[], opts?: { timeoutMs?: number }) => Promise<{ exitCode: number; stdout: string }> },
+  host: {
+    runCommand: (
+      argv: string[],
+      opts?: { timeoutMs?: number },
+    ) => Promise<{ exitCode: number; stdout: string }>;
+  },
 ) {
   const base = runtimePluginsCatalogDto(kind);
-  const plugins = [];
+  const pathPreamble = pluginProbePathExport();
+
+  // Single host shell: print INSTALLED:<id> for each found plugin
+  const checks: string[] = [pathPreamble, 'set +e'];
   for (const p of base.plugins) {
-    let installed = false;
-    for (const bin of p.bins ?? []) {
-      if (!bin) continue;
-      try {
-        const r = await host.runCommand(['bash', '-c', `command -v ${JSON.stringify(bin)}`], {
-          timeoutMs: 4_000,
-        });
-        if (r.exitCode === 0 && r.stdout.trim()) {
-          installed = true;
-          break;
+    const id = p.id;
+    if (p.installer === 'rustup-component' && (p as { rustupComponents?: string[] }).rustupComponents?.length) {
+      // DTO may not include rustupComponents — look up full spec
+    }
+  }
+
+  const fullSpecs = listRuntimePlugins(kind);
+  const byId = new Map(fullSpecs.map((s) => [s.id, s]));
+
+  for (const p of base.plugins) {
+    const pluginId = p.id;
+    const spec = byId.get(pluginId);
+    const bins = (p.bins ?? []).filter(Boolean);
+    const comps = spec?.rustupComponents ?? [];
+    const binTests = bins
+      .map((b) => `command -v ${JSON.stringify(b)} >/dev/null 2>&1`)
+      .join(' || ');
+    const pathTests = bins
+      .flatMap((b) => [
+        `[ -x "$HOME/.cargo/bin/${b}" ]`,
+        `[ -x "/root/.cargo/bin/${b}" ]`,
+        `[ -x "/usr/local/ysk/rust/cargo/bin/${b}" ]`,
+        `[ -x "/usr/local/bin/${b}" ]`,
+      ])
+      .join(' || ');
+
+    if (spec?.installer === 'rustup-component' && comps.length) {
+      const c = comps[0]!;
+      checks.push(
+        `{`,
+        `  ok=0`,
+        `  if [ -n "$RU" ]; then`,
+        `    "$RU" component list --installed 2>/dev/null | grep -qiE ${JSON.stringify(c)} && ok=1`,
+        `  fi`,
+        `  if [ "$ok" = 0 ]; then`,
+        `    ${binTests || 'false'} || ${pathTests || 'false'} && ok=1`,
+        `  fi`,
+        `  [ "$ok" = 1 ] && echo INSTALLED:${pluginId}`,
+        `}`,
+      );
+    } else if (bins.length) {
+      checks.push(
+        `{ (${binTests}) || (${pathTests}); } && echo INSTALLED:${pluginId}`,
+      );
+    } else if (spec?.installer === 'apt' && (spec.aptPackages?.length ?? 0) > 0) {
+      // apt packages without bins (e.g. python3-venv): dpkg
+      const pkg = spec.aptPackages![0]!;
+      checks.push(
+        `dpkg -s ${JSON.stringify(pkg)} 2>/dev/null | grep -q '^Status:.*installed' && echo INSTALLED:${pluginId}`,
+      );
+    }
+  }
+
+  let installedSet = new Set<string>();
+  try {
+    const r = await host.runCommand(['bash', '-c', checks.join('\n')], {
+      timeoutMs: 20_000,
+    });
+    for (const line of (r.stdout || '').split('\n')) {
+      const m = line.trim().match(/^INSTALLED:(\S+)/);
+      if (m) installedSet.add(m[1]!);
+    }
+  } catch {
+    installedSet = new Set();
+  }
+
+  // Fallback per-bin probe if batch shell produced nothing (test mocks)
+  if (installedSet.size === 0) {
+    for (const p of base.plugins) {
+      for (const bin of p.bins ?? []) {
+        if (!bin) continue;
+        try {
+          const r = await host.runCommand(
+            [
+              'bash',
+              '-c',
+              `${pathPreamble}\ncommand -v ${JSON.stringify(bin)}`,
+            ],
+            { timeoutMs: 4_000 },
+          );
+          if (r.exitCode === 0 && r.stdout.trim()) {
+            installedSet.add(p.id);
+            break;
+          }
+        } catch {
+          /* */
         }
-      } catch {
-        /* */
       }
     }
-    plugins.push({ ...p, installed });
   }
+
+  const plugins = base.plugins.map((p) => ({
+    ...p,
+    installed: installedSet.has(p.id),
+  }));
   const defaults = plugins
     .filter((p) => (p.recommended || p.required) && !p.installed)
     .map((p) => p.id);
-  // Always include required even if "installed" flag wrong
   for (const p of plugins) {
     if (p.required && !defaults.includes(p.id)) defaults.push(p.id);
   }

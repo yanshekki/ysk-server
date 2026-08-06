@@ -1,12 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { runtimePluginsCatalogWithProbe } from './runtime-plugins.js';
+import {
+  buildRuntimePluginScriptLines,
+  runtimePluginsCatalogWithProbe,
+} from './runtime-plugins.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
 
 function mockHost(bins: Record<string, boolean>): HostExecutor {
   return {
     runCommand: async (argv) => {
       const s = argv.join(' ');
-      // command -v "pm2"
+      // Batch probe prints INSTALLED:id
+      if (s.includes('INSTALLED:')) {
+        const lines: string[] = [];
+        for (const [bin, ok] of Object.entries(bins)) {
+          if (ok && s.includes(bin)) {
+            // map common bins to plugin ids in the script body
+            if (bin === 'pm2') lines.push('INSTALLED:pm2');
+            if (bin === 'cargo-clippy' || bin === 'clippy') lines.push('INSTALLED:clippy');
+            if (bin === 'rustfmt') lines.push('INSTALLED:rustfmt');
+            if (bin === 'cargo-watch') lines.push('INSTALLED:cargo-watch');
+          }
+        }
+        // rustup component list --installed
+        if (bins.clippy && s.includes('component list')) {
+          lines.push('clippy-x86_64-unknown-linux-gnu');
+        }
+        return {
+          stdout: lines.join('\n') + '\n',
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        } as RunResult;
+      }
       for (const [bin, ok] of Object.entries(bins)) {
         if (s.includes(bin) && s.includes('command -v')) {
           return {
@@ -34,5 +60,22 @@ describe('runtimePluginsCatalogWithProbe', () => {
   it('keeps pm2 in defaults when missing', async () => {
     const r = await runtimePluginsCatalogWithProbe('node', mockHost({ pm2: false }));
     expect(r.defaults).toContain('pm2');
+  });
+
+  it('detects rust clippy/rustfmt via component list or bins', async () => {
+    const r = await runtimePluginsCatalogWithProbe(
+      'rust',
+      mockHost({ clippy: true, rustfmt: true, 'cargo-watch': true }),
+    );
+    expect(r.plugins.find((p) => p.id === 'clippy')?.installed).toBe(true);
+    expect(r.plugins.find((p) => p.id === 'rustfmt')?.installed).toBe(true);
+    expect(r.plugins.find((p) => p.id === 'cargo-watch')?.installed).toBe(true);
+  });
+
+  it('cargo install script symlinks into /usr/local/bin', () => {
+    const { lines } = buildRuntimePluginScriptLines('rust', ['cargo-watch']);
+    const body = lines.join('\n');
+    expect(body).toMatch(/install "cargo-watch"/);
+    expect(body).toMatch(/\/usr\/local\/bin\/cargo-watch/);
   });
 });
