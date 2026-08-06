@@ -9,6 +9,7 @@ import {
   Badge,
   Button,
   Card,
+  CardHeader,
   CardSection,
   DataTable,
   DescriptionList,
@@ -126,7 +127,7 @@ export function RuntimePm2Panel() {
   return (
     <div className="u-stack u-gap-4">
       <Card>
-        <CardSection
+        <CardHeader
           title={t('runtime.pm2.title')}
           description={t('runtime.pm2.desc')}
           actions={
@@ -149,11 +150,12 @@ export function RuntimePm2Panel() {
               </Button>
             </div>
           }
-        >
+        />
+        <CardSection>
           {err ? <Alert variant="error">{err}</Alert> : null}
           {snap ? (
             <DescriptionList
-              columns={3}
+              columns={2}
               items={[
                 {
                   label: t('runtime.pm2.installed'),
