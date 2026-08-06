@@ -22,6 +22,7 @@ import {
 import { resolvePhpAptPackages } from './php-extensions.js';
 import { buildRuntimePluginScriptLines } from './runtime-plugins.js';
 import { resolveBin, shellBinExists, shellResolveBin } from './software-probe/index.js';
+import { getCachedRuntimeVersionPins } from './version-discovery.js';
 
 export interface RuntimeProbeItem {
   kind: RuntimeKind;
@@ -494,9 +495,15 @@ function extractPin(kind: string, versionText?: string): string | undefined {
   return undefined;
 }
 
-export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeReport> {
-  // Installable list is empty (discovery API). Probe only *installed* pins on disk/PATH.
+export async function probeRuntimes(
+  host: HostExecutor,
+  opts?: { dataDir?: string },
+): Promise<RuntimeProbeReport> {
+  // Installable list from listSupportedRuntimes is empty by design.
+  // Merge disk discovery cache + host bins so post-install pins (e.g. 3.14) are probed.
   const supported = listSupportedRuntimes();
+  const cachePins = (kind: RuntimeKind): string[] =>
+    opts?.dataDir ? getCachedRuntimeVersionPins(opts.dataDir, kind) : [];
   const notes: string[] = [];
 
   async function hostDefault(bin: string, versionArgv: string[]): Promise<string | undefined> {
@@ -521,6 +528,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const nodePins = [
     ...new Set([
       ...supported.node,
+      ...cachePins('node'),
       ...(await listDirVersions(host, '/usr/local/ysk/node', /^\d+$/)),
       ...(await listHostVersionedBins(host, 'node')),
       extractPin('node', hostNode),
@@ -529,6 +537,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const phpPins = [
     ...new Set([
       ...supported.php,
+      ...cachePins('php'),
       ...(await listHostVersionedBins(host, 'php')),
       extractPin('php', hostPhp),
     ].filter(Boolean) as string[]),
@@ -536,6 +545,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const pythonPins = [
     ...new Set([
       ...supported.python,
+      ...cachePins('python'),
       ...(await listHostVersionedBins(host, 'python')),
       extractPin('python', hostPython),
     ].filter(Boolean) as string[]),
@@ -543,6 +553,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const goPins = [
     ...new Set([
       ...supported.go,
+      ...cachePins('go'),
       ...(await listDirVersions(host, '/usr/local/ysk/go', /^\d+\.\d+/)),
       extractPin('go', hostGo),
     ].filter(Boolean) as string[]),
@@ -550,6 +561,7 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const rustPins = [
     ...new Set([
       ...supported.rust,
+      ...cachePins('rust'),
       'stable',
       extractPin('rust', hostRust),
     ].filter(Boolean) as string[]),
@@ -557,18 +569,21 @@ export async function probeRuntimes(host: HostExecutor): Promise<RuntimeProbeRep
   const javaPins = [
     ...new Set([
       ...supported.java,
+      ...cachePins('java'),
       extractPin('java', hostJava),
     ].filter(Boolean) as string[]),
   ];
   const kotlinPins = [
     ...new Set([
       ...supported.kotlin,
+      ...cachePins('kotlin'),
       extractPin('kotlin', hostKotlin),
     ].filter(Boolean) as string[]),
   ];
   const bunPins = [
     ...new Set([
       ...supported.bun,
+      ...cachePins('bun'),
       'latest',
       extractPin('bun', hostBun),
     ].filter(Boolean) as string[]),
@@ -695,6 +710,8 @@ export interface RuntimeInstallResult {
   extensionIds?: string[];
   /** Companion tools (pm2, poetry, maven, …) */
   pluginIds?: string[];
+  /** Packages that failed during install (e.g. PHP ext version skew) */
+  failedPackages?: string[];
 }
 
 /** Compress install stderr for panel notes (avoid dumping full apt logs). */
@@ -740,6 +757,8 @@ export async function planOrInstallRuntime(input: {
    * Live install log lines (stdout/stderr). When provided, host.runCommand uses spawn stream.
    */
   onLog?: (ev: { stream: 'stdout' | 'stderr'; line: string }) => void;
+  /** Abort long install (SSE disconnect). */
+  abortSignal?: AbortSignal;
 }): Promise<RuntimeInstallResult> {
   const notes: string[] = [];
   const written: string[] = [];
@@ -1245,6 +1264,8 @@ export async function planOrInstallRuntime(input: {
     notes.unshift(blockMessage);
   }
 
+  let failedPackages: string[] | undefined;
+
   if (can) {
     input.onLog?.({
       stream: 'stdout',
@@ -1257,6 +1278,7 @@ export async function planOrInstallRuntime(input: {
       onChunk: input.onLog
         ? (c) => input.onLog!({ stream: c.stream, line: c.text })
         : undefined,
+      signal: input.abortSignal,
     });
     commandResults.push({
       argv: ['bash', scriptPath],
@@ -1271,6 +1293,16 @@ export async function planOrInstallRuntime(input: {
           .split(/\s+/)
           .filter(Boolean)
       : [];
+    const phpFailMatch = out.match(/YSK_PHP_EXT_FAILED:\s*([^\n]+)/);
+    if (phpFailMatch?.[1]) {
+      failedPackages = phpFailMatch[1]
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      notes.unshift(
+        `部分 PHP 套件安裝失敗：${failedPackages.join(', ')}（核心 CLI 可能仍可用）`,
+      );
+    }
     // exit 3 = runtime ok-ish but plugins failed; other non-zero = hard fail
     if (r.exitCode === 0) {
       notes.push(tl('notes.auto.n0656'));
@@ -1280,6 +1312,8 @@ export async function planOrInstallRuntime(input: {
       notes.unshift(
         tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }),
       );
+    } else if (r.exitCode === 130) {
+      notes.unshift('安裝已中止（客戶端斷線或取消）');
     } else {
       const detail = summarizeInstallLog(r.stderr || '', r.stdout || '') || String(r.exitCode);
       const failNote = tl('notes.auto.t0411', { v0: detail });
@@ -1311,6 +1345,7 @@ export async function planOrInstallRuntime(input: {
     packages,
     extensionIds,
     pluginIds,
+    failedPackages,
   };
 }
 

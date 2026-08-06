@@ -54,6 +54,7 @@ function normalizeToken(v: string): string {
   return String(v ?? '')
     .trim()
     .replace(/^v/i, '')
+    .replace(/^go/i, '')
     .toLowerCase();
 }
 
@@ -61,9 +62,42 @@ function isRolling(v: string): boolean {
   return v === 'latest' || v === 'stable' || v === 'nightly' || v === 'current';
 }
 
+/** Numeric components of first version-like token (8.1.12 → [8,1,12]). */
+export function versionComponents(raw: string): number[] | null {
+  const n = normalizeToken(raw);
+  if (!n || isRolling(n)) return null;
+  const m = n.match(/(\d+(?:[.+_-]\d+)*)/);
+  if (!m?.[1]) return null;
+  return m[1]
+    .split(/[.+_-]/)
+    .map((x) => parseInt(x, 10))
+    .filter((x) => Number.isFinite(x));
+}
+
+/**
+ * True when A and B are the same release line: longer is a patch of shorter.
+ * 8.1 ↔ 8.1.12 ✓ · 8.1 ↔ 8.10 ✗ · 1.26 ↔ 1.26.5 ✓ · 1.2 ↔ 1.26 ✗ · 20 ↔ 20.18 ✓
+ */
+export function versionLineageMatch(a: string, b: string): boolean {
+  const na = normalizeToken(a);
+  const nb = normalizeToken(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  if (isRolling(na) || isRolling(nb)) return na === nb;
+  const ca = versionComponents(na);
+  const cb = versionComponents(nb);
+  if (!ca?.length || !cb?.length) return false;
+  const shorter = ca.length <= cb.length ? ca : cb;
+  const longer = ca.length <= cb.length ? cb : ca;
+  for (let i = 0; i < shorter.length; i++) {
+    if (shorter[i] !== longer[i]) return false;
+  }
+  return true;
+}
+
 /**
  * Does host report (e.g. v20.18.0 or PHP 8.2.12) satisfy panel target (20 / 8.2)?
- * Targets are panel majors/minors from the SegRadio list.
+ * Uses component lineage — not string prefix (avoids 8.10 matching 8.1).
  */
 export function hostSatisfiesTarget(hostReport: string | null | undefined, target: string): boolean {
   if (!hostReport || !target) return false;
@@ -71,18 +105,10 @@ export function hostSatisfiesTarget(hostReport: string | null | undefined, targe
   const t = normalizeToken(target);
   if (!h || !t) return false;
   if (h === t) return true;
-  // Exact prefix: 8.2 matches 8.2.12; 20 matches 20.18.0
-  if (h === t || h.startsWith(`${t}.`) || h.startsWith(`${t}-`)) return true;
-  // Major-only target against multi-part host (node 20 vs 20.18.0)
-  if (!t.includes('.') && h.split(/[.+_-]/)[0] === t) return true;
-  // PHP "8.2.12 (cli)" style
-  const m = h.match(/(\d+(?:\.\d+){0,3})/);
-  if (m) {
-    const ver = m[1]!;
-    if (ver === t || ver.startsWith(`${t}.`)) return true;
-    if (!t.includes('.') && ver.split('.')[0] === t) return true;
-  }
-  return false;
+  if (isRolling(t) || isRolling(h)) return h === t;
+  // Prefer first version token in host string ("go version go1.26.5 …")
+  const hostVer = h.match(/(\d+(?:[.+_-]\d+)*)/)?.[1] ?? h;
+  return versionLineageMatch(hostVer, t);
 }
 
 /**
@@ -127,12 +153,8 @@ export function resolveRuntimeInstallState(input: {
     }
   }
 
-  /** Match panel pin ↔ probe pin across full/minor (1.26.5 ↔ 1.26). */
-  const pinMatch = (a: string, b: string): boolean => {
-    if (!a || !b) return false;
-    if (a === b) return true;
-    return hostSatisfiesTarget(a, b) || hostSatisfiesTarget(b, a);
-  };
+  /** Match panel pin ↔ probe pin across full/minor (1.26.5 ↔ 1.26), not 8.1↔8.10. */
+  const pinMatch = (a: string, b: string): boolean => versionLineageMatch(a, b);
 
   // Keep only supported ids (stable order)
   const installedVersions = supported.filter((s) => {

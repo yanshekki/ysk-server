@@ -53,7 +53,7 @@ export async function handleHostingRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes') {
         ctx.auth.authenticate(getBearer(req));
         const supported = listSupportedRuntimes();
-        const probe = await probeRuntimes(ctx.host);
+        const probe = await probeRuntimes(ctx.host, { dataDir: ctx.dataDir });
         sendJson(res, 200, { supported, probe });
         return true;
       }
@@ -88,6 +88,7 @@ export async function handleHostingRoutes(
           });
           res.write(`: ysk-runtime-install-stream\n\n`);
           let closed = false;
+          const abortCtl = new AbortController();
           const send = (event: string, payload: unknown) => {
             if (closed || res.writableEnded) return;
             try {
@@ -98,6 +99,12 @@ export async function handleHostingRoutes(
           };
           req.on('close', () => {
             closed = true;
+            // Kill apt/bash install so dpkg is not left locked by orphan processes
+            try {
+              abortCtl.abort();
+            } catch {
+              /* */
+            }
           });
           send('status', { phase: 'planning', kind, version: data.version ?? defaultVer });
           try {
@@ -109,6 +116,7 @@ export async function handleHostingRoutes(
               install: data.install,
               extensions: kind === 'php' ? data.extensions : undefined,
               plugins: kind !== 'php' ? data.plugins : undefined,
+              abortSignal: abortCtl.signal,
               onLog: (ev) => {
                 if (!closed) send('log', { stream: ev.stream, line: ev.line, at: new Date().toISOString() });
               },

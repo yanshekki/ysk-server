@@ -4,6 +4,7 @@ import {
   hostSatisfiesTarget,
   resolveRuntimeInstallState,
   versionChipLabel,
+  versionLineageMatch,
 } from './install-state';
 
 describe('runtime install-state', () => {
@@ -88,5 +89,15 @@ describe('runtime install-state', () => {
     expect(st.selectedInstalled).toBe(true);
     expect(st.installDisabled).toBe(true);
     expect(st.installedVersions).toContain('1.26.5');
+  });
+
+  it('versionLineageMatch: 8.1 vs 8.10 must not collide; 8.1 vs 8.1.12 ok', () => {
+    expect(versionLineageMatch('8.1', '8.1.12')).toBe(true);
+    expect(versionLineageMatch('8.1', '8.10')).toBe(false);
+    expect(versionLineageMatch('1.26', '1.26.5')).toBe(true);
+    expect(versionLineageMatch('1.2', '1.26')).toBe(false);
+    expect(hostSatisfiesTarget('PHP 8.10.0 (cli)', '8.1')).toBe(false);
+    expect(hostSatisfiesTarget('PHP 8.1.12 (cli)', '8.1')).toBe(true);
+    expect(hostSatisfiesTarget('v20.18.0', '20')).toBe(true);
   });
 });

@@ -474,6 +474,21 @@ function isRuntimeId(id: string): id is RuntimeKind {
 }
 
 /**
+ * Pins from disk cache only (no network). Used by probeRuntimes so installable
+ * candidates are checked after install even when listSupportedRuntimes is empty.
+ */
+export function getCachedRuntimeVersionPins(dataDir: string, kind: RuntimeKind): string[] {
+  try {
+    const cache = readCache(dataDir);
+    const row = cache.byId[kind];
+    if (!row?.candidates?.length) return [];
+    return row.candidates.map((c) => c.version).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Resolve full version status for one software id (runtime or apt catalog).
  */
 export async function resolveSoftwareVersionStatus(input: {

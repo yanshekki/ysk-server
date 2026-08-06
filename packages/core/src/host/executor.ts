@@ -40,6 +40,8 @@ export type RunCommandOpts = {
   cwd?: string;
   /** When set, use spawn and stream chunks as they arrive (line-ish). */
   onChunk?: CommandChunkHandler;
+  /** Abort long installs (SSE client disconnect / cancel). */
+  signal?: AbortSignal;
 };
 
 export interface HostExecutor {
@@ -195,11 +197,12 @@ export class LocalHostExecutor implements HostExecutor {
         details: { argv },
       });
     }
-    if (opts.onChunk) {
+    if (opts.onChunk || opts.signal) {
       return runCommandStreaming(argv, {
         timeoutMs: opts.timeoutMs ?? 30_000,
         cwd: opts.cwd,
-        onChunk: opts.onChunk,
+        onChunk: opts.onChunk ?? (() => {}),
+        signal: opts.signal,
       });
     }
     try {
@@ -409,9 +412,20 @@ export function runCommandStreaming(
     timeoutMs: number;
     cwd?: string;
     onChunk: CommandChunkHandler;
+    signal?: AbortSignal;
   },
 ): Promise<RunResult> {
   return new Promise((resolve) => {
+    if (opts.signal?.aborted) {
+      resolve({
+        stdout: '',
+        stderr: 'aborted before start',
+        exitCode: 130,
+        argv,
+        dryRun: false,
+      });
+      return;
+    }
     // Prefer line-buffered stdio when stdbuf is available (apt/curl progress for SSE)
     let bin = argv[0]!;
     let args = argv.slice(1);
@@ -438,6 +452,22 @@ export function runCommandStreaming(
       }
     };
 
+    const killChild = (why: string) => {
+      try {
+        safeChunk('stderr', why);
+        child.kill('SIGTERM');
+        setTimeout(() => {
+          try {
+            child.kill('SIGKILL');
+          } catch {
+            /* */
+          }
+        }, 2_000).unref?.();
+      } catch {
+        /* */
+      }
+    };
+
     const emit = (stream: 'stdout' | 'stderr', text: string) => {
       if (stream === 'stdout') stdout += text;
       else stderr += text;
@@ -454,6 +484,7 @@ export function runCommandStreaming(
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      opts.signal?.removeEventListener('abort', onAbort);
       if (stdoutBuf) {
         safeChunk('stdout', stdoutBuf);
         stdoutBuf = '';
@@ -465,6 +496,13 @@ export function runCommandStreaming(
       resolve({ stdout, stderr, exitCode, argv, dryRun: false });
     };
 
+    const onAbort = () => {
+      killChild('aborted by client (SSE disconnect or cancel)');
+      // close handler will finish; force if hang
+      setTimeout(() => finish(130), 3_000).unref?.();
+    };
+    opts.signal?.addEventListener('abort', onAbort, { once: true });
+
     child.stdout?.on('data', (d: Buffer | string) => emit('stdout', String(d)));
     child.stderr?.on('data', (d: Buffer | string) => emit('stderr', String(d)));
     child.on('error', (err) => {
@@ -474,6 +512,10 @@ export function runCommandStreaming(
       finish(1);
     });
     child.on('close', (code, signal) => {
+      if (opts.signal?.aborted) {
+        finish(130);
+        return;
+      }
       if (signal) {
         const msg = `killed by signal ${signal}`;
         stderr += (stderr ? '\n' : '') + msg;
@@ -485,21 +527,9 @@ export function runCommandStreaming(
     });
 
     const timer = setTimeout(() => {
-      try {
-        child.kill('SIGTERM');
-        setTimeout(() => {
-          try {
-            child.kill('SIGKILL');
-          } catch {
-            /* */
-          }
-        }, 2_000).unref?.();
-      } catch {
-        /* */
-      }
+      killChild(`timeout after ${opts.timeoutMs}ms`);
       const msg = `timeout after ${opts.timeoutMs}ms`;
       stderr += (stderr ? '\n' : '') + msg;
-      safeChunk('stderr', msg);
       finish(124);
     }, opts.timeoutMs);
     timer.unref?.();

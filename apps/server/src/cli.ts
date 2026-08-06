@@ -2882,7 +2882,8 @@ async function mainInner(
         const { probeRuntimes, listSupportedRuntimes } = await import('@ysk/core');
         printJson({
           supported: listSupportedRuntimes(),
-          probe: await probeRuntimes(ctx.host) });
+          probe: await probeRuntimes(ctx.host, { dataDir: ctx.dataDir }),
+        });
         return 0;
       }
       if (sub === 'runtime-install') {
