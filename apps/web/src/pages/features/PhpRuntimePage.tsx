@@ -223,6 +223,14 @@ export function PhpRuntimePage() {
   const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
+  // Software hub "更新" → /runtimes/php?version=8.3
+  useEffect(() => {
+    const raw = searchParams.get('version');
+    if (!raw) return;
+    const supported = ['8.1', '8.2', '8.3'];
+    setVersion(pickSupportedVersion(raw, supported, '8.2'));
+  }, [searchParams]);
+
   const phpInstallState = useMemo(() => {
     const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
     const supported =
