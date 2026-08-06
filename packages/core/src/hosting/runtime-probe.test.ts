@@ -79,6 +79,11 @@ describe('runtime-probe', () => {
     expect(phpScript).toContain('packages.sury.org/php');
     expect(phpScript).toContain('debsuryorg-archive-keyring');
     expect(phpScript).toContain('/etc/apt/sources.list.d/php.list');
+    // Single-origin pin avoids common vs extension version skew (ondrej gbp vs sury)
+    expect(phpScript).toContain('ysk-php-sury.pref');
+    expect(phpScript).toContain('Pin: origin packages.sury.org');
+    expect(phpScript).toContain('--allow-downgrades');
+    expect(phpScript).toMatch(/YSK_PHP_EXT_FAILED|exit 33/);
 
     const nodeWithPm2 = await planOrInstallRuntime({
       dataDir: dir,
